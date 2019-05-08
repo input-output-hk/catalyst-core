@@ -3,19 +3,19 @@
 | Modules     | Feature             | Number of test cases | Automated | Coverage         |
 |:------------|:--------------------|:---------------------|:----------|:-----------------|
 | JCLI        |                     |                      |           |                  |
-|             | address             | 17                   | 1         | 6 %              |
+|             | address             | 17                   | 8         | 47 %             |
 |             | certificate         | 12                   | 0         | 0 %              |
 |             | debug               | 3                    | 0         | 0 %              |
 |             | genesis             | 34                   | 1         | 3 %              |
-|             | key                 | 14                   | 2         | 14 %             |
-|             | rest                | 20                   | 3         | 15 %             |
+|             | key                 | 14                   | 14        | 100 %            |
+|             | rest                | 20                   | 2         | 1 %              |
 |             | transaction         | 6                    | 1         | 17 %             |
 | Jormungandr |                     |                      |           |                  |
 |             | startup             | 7                    | 1         | 14  %            |
 |             | transaction         | 14                   | 3         | 21  %            |
 |             | configuration       | 21                   | 1         | 5   %            |
 |             | node communications | 8                    | 0         | 0   %            |
-| Summary     |                     | 156                  | 13        | **8 %**          |
+| Summary     |                     | 156                  | 31        | **19 %**         |
 
 ### Coverage History 
 

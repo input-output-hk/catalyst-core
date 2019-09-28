@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "bip39",
+    "bip44",
+    "hdwallet",
+]

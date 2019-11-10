@@ -104,7 +104,7 @@ compareBalances() {
 }
 
 sendMoney() {
-    if [[ $# -ne 3 ]]; then
+    if [[ $# -ne 2 ]]; then
         echo "usage: $0 <DST_ADDRESS> <AMOUNT>"
         echo "    <DST_ADDRESS>   Address to send amount of money to"
         echo "    <AMOUNT>        Amount in lovelace"

@@ -9,16 +9,15 @@
 #
 #  It also assumes that `jcli` is in the same folder with the script.
 #
-#
-#  This script is sending a number of transactions from a source account (that needs to have enough funds) to 
-#  a new account address. 
+#  This script is sending a number of transactions from a source account (that needs to have enough funds) to
+#  a new account address.
 
 ### CONFIGURATION
 CLI="./jcli"
 COLORS=1
 ADDRTYPE="--testing"
 INITIAL_TIP=""
-TX_COUNTER_SAME_SLOT=0
+TX_COUNTER_SAME_SLOT="aa"
 INITIAL_SRC_COUNTER=0
 INITIAL_SOURCE_COUNTER=0
 TIMEOUT_NO_OF_BLOCKS=100
@@ -95,10 +94,12 @@ getTotalNoOfMesageLogs() {
 }
 
 compareBalances() {
+#    $1 = expected value
+#    $2 = actual value
     if [[ $1 == $2 ]]; then
       echo "  ###OK; Correct Balance; $1 = $2"
     else
-      echo " !!!!! ERROR: Actual Balance is different than expected; Actual: $1  vs  Expected: $2"
+      echo " !!!!! ERROR: Actual Balance is different than expected; Expected: $1  vs  Actual: $2"
       exit 2
     fi
 }
@@ -110,7 +111,6 @@ sendMoney() {
         echo "    <AMOUNT>        Amount in lovelace"
         exit 1
     fi
-
 
     SOURCE_ADDRESS=$($CLI address account ${ADDRTYPE} ${SOURCE_PK})
     DESTINATION_ADDRESS="$1"
@@ -160,7 +160,7 @@ sendMoney() {
     $CLI transaction add-output "${DESTINATION_ADDRESS}" "${DESTINATION_AMOUNT}" --staging "${STAGING_FILE}"
     $CLI transaction finalize --staging ${STAGING_FILE}
 
-    TRANSACTION_ID=$($CLI transaction data-for-witness --staging ${STAGING_FILE})
+    TRANSACTION_DATA=$($CLI transaction data-for-witness --staging ${STAGING_FILE})
 
     # Create the witness for the 1 input (add-account) and add it
     SRC_WITNESS_SECRET_FILE="witness.secret.$$"
@@ -168,7 +168,7 @@ sendMoney() {
 
     printf "${SOURCE_SK}" > ${SRC_WITNESS_SECRET_FILE}
 
-    $CLI transaction make-witness ${TRANSACTION_ID} \
+    $CLI transaction make-witness ${TRANSACTION_DATA} \
         --genesis-block-hash ${BLOCK0_HASH} \
         --type "account" --account-spending-counter "${SOURCE_COUNTER}" \
         ${SRC_WITNESS_OUTPUT_FILE} ${SRC_WITNESS_SECRET_FILE}
@@ -176,25 +176,36 @@ sendMoney() {
 
     # Finalize the transaction and send it
     $CLI transaction seal --staging "${STAGING_FILE}"
-    $CLI transaction to-message --staging "${STAGING_FILE}" | $CLI rest v0 message post -h "${REST_URL}"
+    tx_hash=$($CLI transaction to-message --staging "${STAGING_FILE}" | $CLI rest v0 message post -h "${REST_URL}")
+
+    echo "${tx_hash}" >> ${TX_HISTORY}
 
     rm ${STAGING_FILE} ${SRC_WITNESS_SECRET_FILE} ${SRC_WITNESS_OUTPUT_FILE}
 }
 
 ######################## START TEST ########################
+TX_VALUE=100
+SRC_TX_VALUE=$((${TX_VALUE} + ${FEE_CONSTANT} + $((2 * ${FEE_COEFFICIENT}))))
+REQUIRED_SRC_BALANCE=$((${NO_OF_TRANSACTIONS} * ${SRC_TX_VALUE}))
+
 SOURCE_PK=$(echo ${SOURCE_SK} | $CLI key to-public)
 SRC_ADDR=$($CLI address account ${ADDRTYPE} ${SOURCE_PK})
 
 SRC_BALANCE_INIT=$(getAccountValue ${SRC_ADDR})
 SOURCE_COUNTER=$( $CLI rest v0 account get "${SRC_ADDR}" -h "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //' )
 if [[ ${SOURCE_COUNTER} -gt 0 ]]; then
-    SRC_BALANCE_INIT=$(getAccountValue ${SRC_ADDR})dd
+    SRC_BALANCE_INIT=$(getAccountValue ${SRC_ADDR})
 fi
 echo "SOURCE_SK         : ${SOURCE_SK}"
 echo "SOURCE_PK         : ${SOURCE_PK}"
 echo "SRC_ADDR          : ${SRC_ADDR}"
 echo "SRC_BALANCE_INIT  : ${SRC_BALANCE_INIT}"
 echo "SOURCE_COUNTER    : ${SOURCE_COUNTER}"
+
+echo "- Required funds: ${REQUIRED_SRC_BALANCE}  vs  Available funds: ${SRC_BALANCE_INIT}"
+if [ ${REQUIRED_SRC_BALANCE} -gt ${SRC_BALANCE_INIT} ]; then
+  echo "!!!!! WARNING: Source Account's funds are insufficient for all required transactions !!!!!"
+fi
 
 echo "Create a destination Account address (RECEIVER_ADDR)"
 DST_SK=$($CLI key generate --type=ed25519extended)
@@ -217,10 +228,16 @@ echo "noOfTotalMessages_init: ${noOfTotalMessages_init}"
 ##
 
 BALANCE_HISTORY="balance_history.txt"
+TX_HISTORY="tx_history.txt"
 
 if [ -e ${BALANCE_HISTORY} ]; then
   rm ${BALANCE_HISTORY}
   touch ${BALANCE_HISTORY}
+fi
+
+if [ -e ${TX_HISTORY} ]; then
+  rm ${TX_HISTORY}
+  touch ${TX_HISTORY}
 fi
 
 SRC_BALANCE_INIT=$(getAccountValue ${SRC_ADDR})
@@ -232,7 +249,6 @@ SENT_VALUE=0
 START_TIME="`date +%Y%m%d%H%M%S`";
 for i in `seq 1 ${NO_OF_TRANSACTIONS}`;
 do
-    TX_VALUE=100
     echo "##Transaction No: ${BLUE}$i${WHITE}; Value: $TX_VALUE"
     sendMoney ${DST_ADDR} ${TX_VALUE}
     SENT_VALUE=$((${SENT_VALUE} + ${TX_VALUE}))
@@ -272,6 +288,8 @@ echo "SRC_BALANCE_FINAL: ${SRC_BALANCE_FINAL}" >> ${BALANCE_HISTORY}
 echo "DST_BALANCE_FINAL: ${DST_BALANCE_FINAL}" >> ${BALANCE_HISTORY}
 echo "SRC_BALANCE_DIFF: $((${SRC_BALANCE_INIT} - ${SRC_BALANCE_FINAL}))" >> ${BALANCE_HISTORY}
 echo "DST_BALANCE_DIFF: $((${DST_BALANCE_FINAL} - ${DST_BALANCE_INIT}))" >> ${BALANCE_HISTORY}
+echo "Sent transactions (based on consumed funds): $(($((${SRC_BALANCE_INIT} - ${SRC_BALANCE_FINAL})) / ${SRC_TX_VALUE}))" >> ${BALANCE_HISTORY}
+echo "Received transactions (based on received funds): $(($((${DST_BALANCE_FINAL} - ${DST_BALANCE_INIT})) / ${TX_VALUE}))" >> ${BALANCE_HISTORY}
 
 ACTUAL_DST_VALUE=$(getAccountValue ${DST_ADDR})
 EXPECTED_DST_VALUE=$((${DST_BALANCE_INIT} + ${SENT_VALUE}))

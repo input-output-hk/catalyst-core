@@ -95,19 +95,10 @@ ACCOUNT_ADDR=$($CLI address account ${ADDRTYPE} ${ACCOUNT_PK})
 
 echo " ##1. Create the delegation certificate for the Account address"
 
-ACCOUNT_SK_FILE="account.prv"
 CERTIFICATE_FILE="account_delegation_certificate"
 SIGNED_CERTIFICATE_FILE="account_delegation_certificate.signed"
-echo ${ACCOUNT_SK} > ${ACCOUNT_SK_FILE}
 
-$CLI certificate new stake-delegation \
-    ${STAKE_POOL_ID} \
-    ${ACCOUNT_PK} \
-    ${CERTIFICATE_FILE}
-$CLI certificate sign \
-    --certificate ${CERTIFICATE_FILE} \
-    --key ${ACCOUNT_SK_FILE} \
-    --output ${SIGNED_CERTIFICATE_FILE}
+./seate_and_sign_account_delegation_certificate.sh ${STAKE_POOL_ID} ${ACCOUNT_SK}
 
 ACCOUNT_COUNTER=$( $CLI rest v0 account get "${ACCOUNT_ADDR}" -h "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //' )
 ACCOUNT_AMOUNT=$((${FEE_CONSTANT} + ${FEE_COEFFICIENT} + ${FEE_CERTIFICATE}))

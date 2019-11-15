@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### CONFIGURATION
-CLI="jcli"
+CLI="./jcli"
 COLORS=1
 ADDRTYPE="--testing"
 

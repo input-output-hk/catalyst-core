@@ -1,12 +1,12 @@
 #!/bin/sh
 
 ### CONFIGURATION
-CLI="jcli"
+CLI="./jcli"
 COLORS=1
 ADDRTYPE="--testing"
 
 if [ $# -ne 2 ]; then
-    echo "usage: $0 <REST-LISTEN-PORT> <ACCOUNT_SK>"
+    echo "usage: $0 <STAKE_POOL_ID> <ACCOUNT_SK>"
     echo "    <STAKE_POOL_ID>  The ID of the Stake Pool you want to delegate to"
     echo "    <SOURCE-SK>   The Secret key of the Source address"
     exit 1
@@ -43,4 +43,4 @@ $CLI certificate sign \
 
 echo "SIGNED_CERTIFICATE_FILE: $(cat ${SIGNED_CERTIFICATE_FILE})"
 
-rm ${ACCOUNT_SK_FILE} ${CERTIFICATE_FILE} ${SIGNED_CERTIFICATE_FILE}
+rm ${ACCOUNT_SK_FILE}

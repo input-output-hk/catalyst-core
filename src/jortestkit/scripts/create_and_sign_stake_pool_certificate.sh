@@ -6,8 +6,8 @@ COLORS=1
 ADDRTYPE="--testing"
 
 if [ $# -ne 1 ]; then
-    echo "usage: $0 <REST-LISTEN-PORT> <ACCOUNT_SK>"
-    echo "    <SOURCE-SK>   The Secret key of the Source address"
+    echo "usage: $0 <ACCOUNT_SK>"
+    echo "    <ACCOUNT_SK>   The Secret key of the Source address"
     exit 1
 fi
 

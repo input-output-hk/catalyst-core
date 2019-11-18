@@ -8,7 +8,7 @@ ADDRTYPE="--testing"
 if [ $# -ne 2 ]; then
     echo "usage: $0 <STAKE_POOL_ID> <ACCOUNT_SK>"
     echo "    <STAKE_POOL_ID>  The ID of the Stake Pool you want to delegate to"
-    echo "    <SOURCE-SK>   The Secret key of the Source address"
+    echo "    <ACCOUNT_SK>   The Secret key of the Source address"
     exit 1
 fi
 

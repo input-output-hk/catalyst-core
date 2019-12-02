@@ -8,7 +8,7 @@ use crate::key::{
 use crate::multisig;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
-use chain_crypto::{Ed25519Bip32, PublicKey, SecretKey, Signature};
+use chain_crypto::{Ed25519, PublicKey, Signature};
 
 /// Structure that proofs that certain user agrees with
 /// some data. This structure is used to sign `Transaction`
@@ -21,8 +21,9 @@ pub enum Witness {
     Utxo(SpendingSignature<WitnessUtxoData>),
     Account(account::Witness),
     OldUtxo(
-        PublicKey<Ed25519Bip32>,
-        Signature<WitnessUtxoData, Ed25519Bip32>,
+        PublicKey<Ed25519>,
+        [u8; 32],
+        Signature<WitnessUtxoData, Ed25519>,
     ),
     Multisig(multisig::Witness),
 }
@@ -33,8 +34,8 @@ impl PartialEq for Witness {
             (Witness::Utxo(s1), Witness::Utxo(s2)) => s1.as_ref() == s2.as_ref(),
             (Witness::Account(s1), Witness::Account(s2)) => s1.as_ref() == s2.as_ref(),
             (Witness::Multisig(s1), Witness::Multisig(s2)) => s1 == s2,
-            (Witness::OldUtxo(p1, s1), Witness::OldUtxo(p2, s2)) => {
-                s1.as_ref() == s2.as_ref() && p1 == p2
+            (Witness::OldUtxo(p1, c1, s1), Witness::OldUtxo(p2, c2, s2)) => {
+                s1.as_ref() == s2.as_ref() && c1 == c2 && p1 == p2
             }
             (_, _) => false,
         }
@@ -47,7 +48,7 @@ impl std::fmt::Display for Witness {
         match self {
             Witness::Utxo(_) => write!(f, "UTxO Witness"),
             Witness::Account(_) => write!(f, "Account Witness"),
-            Witness::OldUtxo(_, _) => write!(f, "Old UTxO Witness"),
+            Witness::OldUtxo(..) => write!(f, "Old UTxO Witness"),
             Witness::Multisig(_) => write!(f, "Multisig Witness"),
         }
     }
@@ -140,10 +141,15 @@ impl Witness {
     pub fn new_old_utxo(
         block0: &HeaderId,
         sign_data_hash: &TransactionSignDataHash,
-        secret_key: &SecretKey<Ed25519Bip32>,
+        secret_key: &EitherEd25519SecretKey,
+        some_bytes: &[u8; 32],
     ) -> Self {
         let wud = WitnessUtxoData::new(block0, sign_data_hash, true);
-        Witness::OldUtxo(secret_key.to_public(), secret_key.sign(&wud))
+        Witness::OldUtxo(
+            secret_key.to_public(),
+            some_bytes.clone(),
+            secret_key.sign(&wud),
+        )
     }
 
     pub fn new_account(
@@ -174,12 +180,14 @@ impl property::Serialize for Witness {
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         use chain_core::packer::*;
+        use std::io::Write;
 
         let mut codec = Codec::new(writer);
         match self {
-            Witness::OldUtxo(xpub, sig) => {
+            Witness::OldUtxo(pk, cc, sig) => {
                 codec.put_u8(WITNESS_TAG_OLDUTXO)?;
-                serialize_public_key(xpub, &mut codec)?;
+                serialize_public_key(pk, &mut codec)?;
+                codec.write_all(cc)?;
                 serialize_signature(sig, &mut codec)
             }
             Witness::Utxo(sig) => {
@@ -202,9 +210,10 @@ impl Readable for Witness {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         match buf.get_u8()? {
             WITNESS_TAG_OLDUTXO => {
-                let xpub = deserialize_public_key(buf)?;
+                let pk = deserialize_public_key(buf)?;
+                let some_bytes = <[u8; 32]>::read(buf)?;
                 let sig = deserialize_signature(buf)?;
-                Ok(Witness::OldUtxo(xpub, sig))
+                Ok(Witness::OldUtxo(pk, some_bytes, sig))
             }
             WITNESS_TAG_UTXO => deserialize_signature(buf).map(Witness::Utxo),
             WITNESS_TAG_ACCOUNT => deserialize_signature(buf).map(Witness::Account),

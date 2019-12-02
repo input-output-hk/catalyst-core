@@ -5,7 +5,7 @@ pub use cardano_legacy_address::AddressMatchXPub as OldAddressMatchXPub;
 
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
-use chain_crypto::{Ed25519Bip32, PublicKey};
+use chain_crypto::{Ed25519, PublicKey};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UtxoDeclaration {
@@ -14,9 +14,12 @@ pub struct UtxoDeclaration {
 
 pub fn oldaddress_from_xpub(
     address: &OldAddress,
-    xpub: &PublicKey<Ed25519Bip32>,
+    pk: &PublicKey<Ed25519>,
+    some_bytes: &[u8; 32],
 ) -> OldAddressMatchXPub {
-    address.identical_with_pubkey_raw(xpub.as_ref())
+    let mut pkraw = [0u8; 32];
+    pkraw.copy_from_slice(&pk.as_ref());
+    address.identical_with_pubkey_raw(&pkraw, some_bytes)
 }
 
 impl Readable for UtxoDeclaration {

@@ -31,10 +31,7 @@ impl OldAddressBuilder {
         let xpub = {
             let mut buf = [0u8; XPUB_SIZE];
             rng.fill_bytes(&mut buf);
-            match XPub::from_slice(&buf) {
-                Ok(xpub) => xpub,
-                Err(_) => panic!("xpub not built correctly"),
-            }
+            XPub::from_bytes(buf)
         };
         let ea = ExtendedAddr::new_simple(&xpub, None);
         (ea.to_address(), value)

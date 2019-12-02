@@ -4,7 +4,7 @@ use super::{
 };
 use crate::certificate::OwnerStakeDelegation;
 use crate::key::{EitherEd25519SecretKey, SpendingSignature};
-use chain_crypto::{testing::arbitrary_secret_key, Ed25519Bip32, SecretKey, Signature};
+use chain_crypto::{testing::arbitrary_secret_key, Ed25519, SecretKey, Signature};
 use quickcheck::{Arbitrary, Gen, TestResult};
 use quickcheck_macros::quickcheck;
 
@@ -193,8 +193,8 @@ impl Arbitrary for Witness {
             0 => Witness::Utxo(SpendingSignature::arbitrary(g)),
             1 => Witness::Account(SpendingSignature::arbitrary(g)),
             2 => {
-                let sk: SecretKey<Ed25519Bip32> = arbitrary_secret_key(g);
-                Witness::OldUtxo(sk.to_public(), Signature::arbitrary(g))
+                let sk: SecretKey<Ed25519> = arbitrary_secret_key(g);
+                Witness::OldUtxo(sk.to_public(), [0u8; 32], Signature::arbitrary(g))
             }
             _ => panic!("not implemented"),
         }

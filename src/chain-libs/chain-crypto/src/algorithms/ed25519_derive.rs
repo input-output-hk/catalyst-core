@@ -47,7 +47,7 @@ impl AsymmetricKey for Ed25519Bip32 {
     fn generate<T: RngCore + CryptoRng>(mut rng: T) -> Self::Secret {
         let mut priv_bytes = [0u8; XPRV_SIZE];
         rng.fill_bytes(&mut priv_bytes);
-        XPrv::normalize_bytes(priv_bytes)
+        XPrv::normalize_bytes_force3rd(priv_bytes)
     }
 
     fn compute_public(key: &Self::Secret) -> <Self as AsymmetricPublicKey>::Public {

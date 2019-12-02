@@ -56,16 +56,22 @@ impl std::fmt::Display for Witness {
 
 pub struct WitnessUtxoData(Vec<u8>);
 
+#[derive(Debug, Clone, Copy)]
+pub enum WitnessUtxoVersion {
+    Legacy,
+    Normal,
+}
+
 impl WitnessUtxoData {
     pub fn new(
         block0: &HeaderId,
         transaction_id: &TransactionSignDataHash,
-        is_legacy: bool,
+        utxo_version: WitnessUtxoVersion,
     ) -> Self {
         let mut v = Vec::with_capacity(65);
-        let tag = match is_legacy {
-            true => WITNESS_TAG_OLDUTXO,
-            false => WITNESS_TAG_UTXO,
+        let tag = match utxo_version {
+            WitnessUtxoVersion::Legacy => WITNESS_TAG_OLDUTXO,
+            WitnessUtxoVersion::Normal => WITNESS_TAG_UTXO,
         };
         v.push(tag);
         v.extend_from_slice(block0.as_ref());
@@ -133,7 +139,7 @@ impl Witness {
         sign_data_hash: &TransactionSignDataHash,
         secret_key: &EitherEd25519SecretKey,
     ) -> Self {
-        let wud = WitnessUtxoData::new(block0, sign_data_hash, false);
+        let wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Normal);
         let sig = secret_key.sign(&wud);
         Witness::Utxo(sig)
     }
@@ -144,7 +150,7 @@ impl Witness {
         secret_key: &EitherEd25519SecretKey,
         some_bytes: &[u8; 32],
     ) -> Self {
-        let wud = WitnessUtxoData::new(block0, sign_data_hash, true);
+        let wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Legacy);
         Witness::OldUtxo(
             secret_key.to_public(),
             some_bytes.clone(),

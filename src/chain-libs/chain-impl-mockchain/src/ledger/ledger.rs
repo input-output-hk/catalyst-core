@@ -1234,7 +1234,7 @@ impl Ledger {
                 let data_to_verify = WitnessUtxoData::new(
                     &self.static_params.block0_initial_hash,
                     sign_data_hash,
-                    true,
+                    WitnessUtxoVersion::Legacy,
                 );
                 let verified = signature.verify(&pk, &data_to_verify);
                 if verified == chain_crypto::Verification::Failed {
@@ -1261,7 +1261,7 @@ impl Ledger {
                 let data_to_verify = WitnessUtxoData::new(
                     &self.static_params.block0_initial_hash,
                     sign_data_hash,
-                    false,
+                    WitnessUtxoVersion::Normal,
                 );
                 let verified = signature.verify(
                     &associated_output.address.public_key().unwrap(),

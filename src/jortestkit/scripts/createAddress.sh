@@ -14,6 +14,7 @@
 ### CONFIGURATION
 CLI="./jcli"
 ADDRTYPE="--testing"
+PREFIX="--prefix addr"
 
 if [ $# -ne 1 ]; then
     echo "usage: $0 <ADDR_TYPE>"
@@ -24,9 +25,9 @@ fi
 ADDR_SK=$($CLI key generate --type=ed25519extended)
 ADDR_PK=$(echo ${ADDR_SK} | $CLI key to-public)
 if [ $1 = "account" ]; then
-    ADDR=$($CLI address account ${ADDR_PK} ${ADDRTYPE})
+    ADDR=$($CLI address account ${PREFIX} ${ADDR_PK} ${ADDRTYPE})
 elif [ $1 = "utxo" ]; then
-    ADDR=$($CLI address single ${ADDR_PK} ${ADDRTYPE})
+    ADDR=$($CLI address single ${PREFIX} ${ADDR_PK} ${ADDRTYPE})
 else
     echo "$1 - Unsupported value!"
     echo "Permitted values: account, utxo"

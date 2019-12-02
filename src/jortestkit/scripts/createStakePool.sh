@@ -62,7 +62,7 @@ echo POOL_KES_SK: ${POOL_KES_SK}
 echo POOL_KES_PK: ${POOL_KES_PK}
 
 echo " ##3. Create the Stake Pool certificate using above VRF and KEY public keys"
-$CLI certificate new stake-pool-registration --kes-key ${POOL_KES_PK} --vrf-key ${POOL_VRF_PK} --owner ${ACCOUNT_PK} --serial 1010101010 --start-validity 0 --management-threshold 1 >stake_pool.cert
+$CLI certificate new stake-pool-registration --kes-key ${POOL_KES_PK} --vrf-key ${POOL_VRF_PK} --owner ${ACCOUNT_PK} --start-validity 0 --management-threshold 1 >stake_pool.cert
 
 cat stake_pool.cert
 

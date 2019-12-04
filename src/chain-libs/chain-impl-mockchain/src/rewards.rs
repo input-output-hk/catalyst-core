@@ -141,7 +141,7 @@ pub fn rewards_contribution_calculation(epoch: Epoch, params: &Parameters) -> Va
             if params.initial_value >= reduce_by {
                 Value(params.initial_value - reduce_by)
             } else {
-                Value(params.initial_value)
+                Value::zero()
             }
         }
         CompoundingType::Halvening => {

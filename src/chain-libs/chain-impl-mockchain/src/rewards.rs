@@ -85,21 +85,21 @@ impl TaxType {
 ///
 /// * Rewards contributions
 /// * Treasury cuts
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Parameters {
     /// This is an initial_value for the linear or halvening function.
     /// In the case of the linear function it is the value that is going to be calculated
     /// from the contribution.
-    pub(crate) initial_value: u64,
+    pub initial_value: u64,
     /// This is the ratio used by either the linear or the halvening function.
     /// The semantic and result of this is deeply linked to either.
-    pub(crate) compounding_ratio: Ratio,
+    pub compounding_ratio: Ratio,
     /// The type of compounding
-    pub(crate) compounding_type: CompoundingType,
+    pub compounding_type: CompoundingType,
     /// Number of epoch between reduction phase, cannot be 0
-    pub(crate) epoch_rate: NonZeroU32,
+    pub epoch_rate: NonZeroU32,
     /// When to start
-    pub(crate) epoch_start: Epoch,
+    pub epoch_start: Epoch,
 }
 
 impl Parameters {

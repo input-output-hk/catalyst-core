@@ -9,7 +9,7 @@
 #
 #  It also asumes that `jcli` is in the same folder with the script.
 #
-#  Tutorials can be found here: https://iohk.zendesk.com/hc/en-us/categories/360002383814-Shelley-Networked-Testnet
+#  Tutorials can be found here: https://github.com/input-output-hk/shelley-testnet/wiki
 
 ### CONFIGURATION
 CLI="./jcli"
@@ -74,12 +74,12 @@ SLOT_DURATION=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'slotDuration:
 SLOTS_PER_EPOCH=$($CLI rest v0 settings get -h "${REST_URL}" | grep 'slotsPerEpoch:' | sed -e 's/^[[:space:]]*//' | sed -e 's/slotsPerEpoch: //')
 
 echo "================DELEGATE ACCOUNT================="
-echo "REST_PORT: ${REST_PORT}"
-echo "ACCOUNT_SK: ${ACCOUNT_SK}"
-echo "BLOCK0_HASH: ${BLOCK0_HASH}"
-echo "FEE_CONSTANT: ${FEE_CONSTANT}"
-echo "FEE_COEFFICIENT: ${FEE_COEFFICIENT}"
-echo "FEE_CERTIFICATE: ${FEE_CERTIFICATE}"
+echo "REST_PORT:        ${REST_PORT}"
+echo "ACCOUNT_SK:       ${ACCOUNT_SK}"
+echo "BLOCK0_HASH:      ${BLOCK0_HASH}"
+echo "FEE_CONSTANT:     ${FEE_CONSTANT}"
+echo "FEE_COEFFICIENT:  ${FEE_COEFFICIENT}"
+echo "FEE_CERTIFICATE:  ${FEE_CERTIFICATE}"
 echo "=================================================="
 
 STAGING_FILE="staging.$$.transaction"
@@ -95,10 +95,21 @@ ACCOUNT_ADDR=$($CLI address account ${ADDRTYPE} ${ACCOUNT_PK})
 
 echo " ##1. Create the delegation certificate for the Account address"
 
+ACCOUNT_SK_FILE="account.prv"
 CERTIFICATE_FILE="account_delegation_certificate"
 SIGNED_CERTIFICATE_FILE="account_delegation_certificate.signed"
+echo ${ACCOUNT_SK} > ${ACCOUNT_SK_FILE}
 
-./create_and_sign_account_delegation_certificate.sh ${STAKE_POOL_ID} ${ACCOUNT_SK}
+$CLI certificate new stake-delegation \
+    ${ACCOUNT_PK} \
+    ${STAKE_POOL_ID} \
+    --output ${CERTIFICATE_FILE}
+
+echo "Sign the delegation certificate"
+$CLI certificate sign \
+    --certificate ${CERTIFICATE_FILE} \
+    --key ${ACCOUNT_SK_FILE} \
+    --output ${SIGNED_CERTIFICATE_FILE}
 
 ACCOUNT_COUNTER=$( $CLI rest v0 account get "${ACCOUNT_ADDR}" -h "${REST_URL}" | grep '^counter:' | sed -e 's/counter: //' )
 ACCOUNT_AMOUNT=$((${FEE_CONSTANT} + ${FEE_COEFFICIENT} + ${FEE_CERTIFICATE}))

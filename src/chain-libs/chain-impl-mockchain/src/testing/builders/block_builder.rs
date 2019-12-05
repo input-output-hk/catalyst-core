@@ -53,6 +53,13 @@ impl GenesisPraosBlockBuilder {
         self
     }
 
+    pub fn with_fragments(&mut self, fragments: Vec<Fragment>) -> &mut Self {
+        for fragment in fragments {
+            self.with_fragment(fragment);
+        }
+        self
+    }
+
     pub fn build(&self, stake_pool: &StakePool, time_era: &TimeEra) -> Block {
         if self.date.is_none() || self.chain_length.is_none() || self.parent_id.is_none() {
             panic!("date,chain_length or hash is not set");

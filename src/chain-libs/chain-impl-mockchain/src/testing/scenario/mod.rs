@@ -4,4 +4,4 @@ pub mod template;
 
 pub use controller::Controller;
 
-pub use scenario_builder::{prepare_scenario, wallet};
+pub use scenario_builder::{prepare_scenario, stake_pool, wallet};

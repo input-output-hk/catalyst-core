@@ -1,10 +1,16 @@
 use crate::{
-    testing::data::Wallet, testing::scenario::scenario_builder::ScenarioBuilderError, value::Value,
+    rewards::{Ratio, TaxType},
+    testing::data::Wallet,
+    testing::scenario::{scenario_builder::ScenarioBuilderError, template::StakePoolDef},
+    value::Value,
 };
 
 use super::{StakePoolTemplate, WalletTemplate};
 
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    num::NonZeroU64,
+};
 
 #[derive(Clone, Debug)]
 pub struct WalletTemplateBuilder {
@@ -151,5 +157,55 @@ impl StakePoolTemplateBuilder {
             }
         }
         output
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct StakePoolDefBuilder {
+    alias: String,
+    permissions_threshold: u8,
+    reward_account: bool,
+    tax_type: Option<TaxType>,
+}
+
+impl StakePoolDefBuilder {
+    pub fn new(alias: &str) -> Self {
+        StakePoolDefBuilder {
+            alias: alias.to_owned(),
+            permissions_threshold: 1u8,
+            reward_account: false,
+            tax_type: None,
+        }
+    }
+
+    pub fn with_permissions_threshold(&mut self, threshold: u8) -> &mut Self {
+        self.permissions_threshold = threshold;
+        self
+    }
+
+    pub fn with_reward_account(&mut self, reward_account: bool) -> &mut Self {
+        self.reward_account = reward_account;
+        self
+    }
+
+    pub fn tax_ratio(&mut self, numerator: u64, denominator: u64) -> &mut Self {
+        self.tax_type = Some(TaxType {
+            fixed: Value(0),
+            ratio: Ratio {
+                numerator: numerator,
+                denominator: NonZeroU64::new(denominator).unwrap(),
+            },
+            max_limit: None,
+        });
+        self
+    }
+
+    pub fn build(&self) -> StakePoolDef {
+        StakePoolDef {
+            alias: self.alias.clone(),
+            permissions_threshold: Some(self.permissions_threshold),
+            has_reward_account: self.reward_account,
+            tax_type: self.tax_type,
+        }
     }
 }

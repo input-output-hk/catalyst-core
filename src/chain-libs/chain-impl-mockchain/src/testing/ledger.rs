@@ -2,15 +2,20 @@ use crate::{
     account::Ledger as AccountLedger,
     block::{Block, ConsensusVersion, HeaderId, LeadersParticipationRecord},
     certificate::PoolId,
-    config::ConfigParam,
+    config::{ConfigParam, RewardParams},
+    date::BlockDate,
     fee::LinearFee,
     fragment::{config::ConfigParams, Fragment, FragmentId},
-    header::{BlockDate, ChainLength},
+    header::ChainLength,
     leadership::bft::LeaderId,
     ledger::{Error, Ledger, LedgerParameters},
     milli::Milli,
+    rewards::{Ratio, TaxType},
     stake::PoolsState,
-    testing::data::{AddressData, AddressDataValue, Wallet},
+    testing::{
+        builders::GenesisPraosBlockBuilder,
+        data::{AddressData, AddressDataValue, StakePool, Wallet},
+    },
     transaction::{Output, TxBuilder},
     utxo::{Entry, Iter},
     value::Value,
@@ -18,7 +23,10 @@ use crate::{
 use chain_addr::{Address, Discrimination};
 use chain_crypto::*;
 use chain_time::TimeEra;
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    num::{NonZeroU32, NonZeroU64},
+};
 
 #[derive(Clone)]
 pub struct ConfigBuilder {
@@ -29,6 +37,10 @@ pub struct ConfigBuilder {
     linear_fee: Option<LinearFee>,
     leaders: Vec<LeaderId>,
     seed: u64,
+    rewards: Value,
+    treasury: Value,
+    treasury_params: TaxType,
+    reward_params: RewardParams,
 }
 
 impl ConfigBuilder {
@@ -41,7 +53,39 @@ impl ConfigBuilder {
             leaders: Vec::new(),
             linear_fee: None,
             seed,
+            rewards: Value(1_000_000),
+            reward_params: RewardParams::Linear {
+                constant: 100,
+                ratio: Ratio {
+                    numerator: 1,
+                    denominator: NonZeroU64::new(100).unwrap(),
+                },
+                epoch_start: 0,
+                epoch_rate: NonZeroU32::new(1).unwrap(),
+            },
+            treasury_params: TaxType::zero(),
+            treasury: Value(1_000),
         }
+    }
+
+    pub fn with_rewards(mut self, value: Value) -> Self {
+        self.rewards = value;
+        self
+    }
+
+    pub fn with_treasury(mut self, value: Value) -> Self {
+        self.treasury = value;
+        self
+    }
+
+    pub fn with_treasury_params(mut self, tax_type: TaxType) -> Self {
+        self.treasury_params = tax_type;
+        self
+    }
+
+    pub fn with_rewards_params(mut self, reward_params: RewardParams) -> Self {
+        self.reward_params = reward_params;
+        self
     }
 
     pub fn with_discrimination(mut self, discrimination: Discrimination) -> Self {
@@ -96,6 +140,11 @@ impl ConfigBuilder {
         for leader_id in self.leaders.iter().cloned() {
             ie.push(ConfigParam::AddBftLeader(leader_id));
         }
+
+        ie.push(ConfigParam::RewardPot(self.rewards.clone()));
+        ie.push(ConfigParam::TreasuryAdd(self.treasury.clone()));
+        ie.push(ConfigParam::TreasuryParams(self.treasury_params.clone()));
+        ie.push(ConfigParam::RewardParams(self.reward_params.clone()));
 
         if self.linear_fee.is_some() {
             ie.push(ConfigParam::LinearFee(self.linear_fee.clone().unwrap()));
@@ -398,6 +447,37 @@ impl TestLedger {
     // use it only for negative testing since it introduce bad state in ledger
     pub fn increase_leader_log(&mut self, pool_id: &PoolId) {
         self.ledger.leaders_log.increase_for(pool_id);
+    }
+
+    pub fn distribute_rewards(&mut self) -> Result<(), Error> {
+        match self.ledger.distribute_rewards(
+            &self.ledger.get_stake_distribution(),
+            &self.ledger.get_ledger_parameters(),
+        ) {
+            Err(err) => Err(err),
+            Ok(ledger) => {
+                self.ledger = ledger;
+                Ok(())
+            }
+        }
+    }
+
+    pub fn forge_empty_block(&self, date: BlockDate, stake_pool: &StakePool) -> Block {
+        self.forge_block(date, stake_pool, Vec::new())
+    }
+
+    pub fn forge_block(
+        &self,
+        date: BlockDate,
+        stake_pool: &StakePool,
+        fragments: Vec<Fragment>,
+    ) -> Block {
+        GenesisPraosBlockBuilder::new()
+            .with_date(date)
+            .with_fragments(fragments)
+            .with_chain_length(self.ledger.chain_length())
+            .with_parent_id(self.block0_hash)
+            .build(stake_pool, self.ledger.era())
     }
 }
 

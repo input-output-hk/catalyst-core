@@ -2033,7 +2033,7 @@ mod tests {
             .is_ok());
         LedgerStateVerifier::new(test_ledger.into())
             .pots()
-            .has_fee_equal_to(&Value(12))
+            .has_fee_equals_to(&Value(12));
     }
 
     #[quickcheck]

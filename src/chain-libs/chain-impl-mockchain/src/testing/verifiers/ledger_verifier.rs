@@ -1,5 +1,5 @@
 use crate::{
-    account::Identifier,
+    account::{Identifier, Ledger as AccountLedger},
     accounting::account::account_state::AccountState,
     certificate::PoolId,
     ledger::{ledger::Ledger, Pots},
@@ -76,6 +76,14 @@ impl LedgerStateVerifier {
         let account_state = self.ledger.accounts.get_state(&id).unwrap();
         assert_eq!(account_state.clone(), expected_account_state);
         self
+    }
+
+    pub fn account(&self, address_data: AddressData) -> AccountVerifier {
+        AccountVerifier::new(
+            self.ledger.accounts.clone(),
+            address_data,
+            self.info.clone(),
+        )
     }
 
     pub fn utxos_count_is(&self, count: usize) -> &Self {
@@ -172,6 +180,66 @@ impl LedgerStateVerifier {
     }
 }
 
+pub struct AccountVerifier {
+    accounts: AccountLedger,
+    address: AddressData,
+    info: Info,
+}
+
+impl AccountVerifier {
+    pub fn new(accounts: AccountLedger, address: AddressData, info: Info) -> Self {
+        AccountVerifier {
+            accounts,
+            address,
+            info,
+        }
+    }
+
+    pub fn has_last_reward(&self, value: &Value) -> &Self {
+        let reward_value = self
+            .accounts
+            .get_state(&self.address.to_id())
+            .expect("cannot find account")
+            .last_rewards
+            .reward;
+        let expected_value = *value;
+        assert_eq!(
+            reward_value, expected_value,
+            "incorrect rewards value {} vs {} {}",
+            reward_value, expected_value, self.info
+        );
+        self
+    }
+
+    pub fn and(&self) -> &Self {
+        self
+    }
+
+    pub fn does_not_exist(&self) -> &Self {
+        assert!(
+            !self.accounts.exists(&self.address.to_id()),
+            "account should not exists {}",
+            self.info
+        );
+        self
+    }
+
+    pub fn has_value(&self, value: &Value) -> &Self {
+        let actual_value = self
+            .accounts
+            .get_state(&self.address.to_id())
+            .expect("cannot find account")
+            .value;
+        let expected_value = *value;
+        assert_eq!(
+            actual_value, expected_value,
+            "incorrect account value {} vs {} {}",
+            actual_value, expected_value, self.info
+        );
+        self
+    }
+}
+
 pub struct PotsVerifier {
     pots: Pots,
     info: Info,
@@ -182,12 +250,36 @@ impl PotsVerifier {
         PotsVerifier { pots, info }
     }
 
-    pub fn has_fee_equal_to(&self, value: &Value) {
+    pub fn has_fee_equals_to(&self, value: &Value) -> &Self {
         assert_eq!(
             self.pots.fees, *value,
             "incorrect pot fee value {}",
             self.info
         );
+        self
+    }
+
+    pub fn and(&self) -> &Self {
+        self
+    }
+
+    pub fn has_treasury_equals_to(&self, value: &Value) -> &Self {
+        assert_eq!(
+            self.pots.treasury.value(),
+            *value,
+            "incorrect treasury value {}",
+            self.info
+        );
+        self
+    }
+
+    pub fn has_remaining_rewards_equals_to(&self, value: &Value) -> &Self {
+        assert_eq!(
+            self.pots.rewards, *value,
+            "incorrect remaining rewards value {}",
+            self.info
+        );
+        self
     }
 }
 

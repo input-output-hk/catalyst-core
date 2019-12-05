@@ -8,14 +8,14 @@ use crate::{
         },
         data::{AddressDataValue, StakePool, Wallet},
         ledger::{ConfigBuilder, LedgerBuilder, TestLedger},
-        scenario::template::StakePoolDef,
     },
 };
 use chain_addr::Discrimination;
 
 use super::{
     template::{
-        StakePoolTemplate, StakePoolTemplateBuilder, WalletTemplate, WalletTemplateBuilder,
+        StakePoolDefBuilder, StakePoolTemplate, StakePoolTemplateBuilder, WalletTemplate,
+        WalletTemplateBuilder,
     },
     Controller,
 };
@@ -32,7 +32,7 @@ custom_error! {
 pub struct ScenarioBuilder {
     config: ConfigBuilder,
     initials: Option<Vec<WalletTemplateBuilder>>,
-    stake_pools_info_def: Vec<StakePoolDef>,
+    stake_pools: Option<Vec<StakePoolDefBuilder>>,
 }
 
 pub fn prepare_scenario() -> ScenarioBuilder {
@@ -43,7 +43,7 @@ pub fn prepare_scenario() -> ScenarioBuilder {
     ScenarioBuilder {
         config: default_config_builder,
         initials: None,
-        stake_pools_info_def: Vec::new(),
+        stake_pools: None,
     }
 }
 
@@ -58,9 +58,8 @@ impl ScenarioBuilder {
         self
     }
 
-    pub fn with_stake_pools(&mut self, stake_pools_info_def: Vec<StakePoolDef>) -> &mut Self {
-        self.stake_pools_info_def
-            .extend(stake_pools_info_def.iter().cloned());
+    pub fn with_stake_pools(&mut self, stake_pools: Vec<&mut StakePoolDefBuilder>) -> &mut Self {
+        self.stake_pools = Some(stake_pools.iter().map(|x| (**x).clone()).collect());
         self
     }
 
@@ -170,17 +169,25 @@ impl ScenarioBuilder {
     }
 
     fn build_stake_pool(&self, template: StakePoolTemplate) -> StakePool {
-        let stake_pool_def_opt = self
-            .stake_pools_info_def
-            .iter()
-            .find(|x| x.name == template.alias);
         let mut builder = StakePoolBuilder::new();
         builder.with_owners(template.owners());
         builder.with_alias(&template.alias());
 
-        if let Some(stake_pool_def) = stake_pool_def_opt {
-            if let Some(pool_permission) = stake_pool_def.pool_permission() {
-                builder.with_pool_permissions(pool_permission);
+        if let Some(stake_pools) = &self.stake_pools {
+            let stake_pool_def_opt = stake_pools
+                .iter()
+                .cloned()
+                .map(|x| x.build())
+                .find(|x| x.alias == template.alias);
+
+            if let Some(stake_pool_def) = stake_pool_def_opt {
+                if let Some(pool_permission) = stake_pool_def.pool_permission() {
+                    builder.with_pool_permissions(pool_permission);
+                }
+                if let Some(tax_type) = stake_pool_def.tax_type {
+                    builder.with_tax_type(tax_type);
+                }
+                builder.with_reward_account(stake_pool_def.has_reward_account);
             }
         }
         builder.build()
@@ -189,4 +196,8 @@ impl ScenarioBuilder {
 
 pub fn wallet(alias: &str) -> WalletTemplateBuilder {
     WalletTemplateBuilder::new(alias)
+}
+
+pub fn stake_pool(alias: &str) -> StakePoolDefBuilder {
+    StakePoolDefBuilder::new(alias)
 }

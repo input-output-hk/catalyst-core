@@ -18,7 +18,7 @@ use crate::{
     value::Value,
 };
 
-use super::scenario_builder::{prepare_scenario, wallet};
+use super::scenario_builder::{prepare_scenario, stake_pool, wallet};
 use chain_addr::Discrimination;
 
 custom_error! {
@@ -179,9 +179,7 @@ mod tests {
     use crate::{
         fee::LinearFee,
         stake::Stake,
-        testing::{
-            ledger::ConfigBuilder, scenario::template::StakePoolDef, verifiers::LedgerStateVerifier,
-        },
+        testing::{ledger::ConfigBuilder, verifiers::LedgerStateVerifier},
         value::Value,
     };
 
@@ -198,10 +196,9 @@ mod tests {
                 wallet("Bob").with(1_000),
                 wallet("Clarice").with(1_000).owns("stake_pool"),
             ])
-            .with_stake_pools(vec![StakePoolDef {
-                name: "stake_pool".to_owned(),
-                permissions_threshold: Some(1u8),
-            }])
+            .with_stake_pools(vec![
+                stake_pool("stake_pool").with_permissions_threshold(1u8)
+            ])
             .build()
             .unwrap();
         let mut alice = controller.wallet("Alice").unwrap();

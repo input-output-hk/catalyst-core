@@ -2,7 +2,7 @@ mod builders;
 
 pub use builders::*;
 
-use crate::{certificate::PoolPermissions, value::Value};
+use crate::{certificate::PoolPermissions, rewards::TaxType, value::Value};
 use chain_crypto::{Ed25519, PublicKey};
 
 #[derive(Clone, Debug, Hash)]
@@ -62,8 +62,10 @@ impl StakePoolTemplate {
 
 #[derive(Clone, Debug)]
 pub struct StakePoolDef {
-    pub name: String,
+    pub alias: String,
     pub permissions_threshold: Option<u8>,
+    pub has_reward_account: bool,
+    pub tax_type: Option<TaxType>,
 }
 
 impl StakePoolDef {

@@ -1,6 +1,7 @@
 use super::components::ChainLength;
 use crate::certificate::PoolId;
 use crate::date::BlockDate;
+use crate::fragment::BlockContentHash;
 use crate::leadership;
 
 /// Genesis Praos related data extract from the header
@@ -15,6 +16,7 @@ pub(crate) struct HeaderGPContentEvalContext {
 pub struct HeaderContentEvalContext {
     pub(crate) block_date: BlockDate,
     pub(crate) chain_length: ChainLength,
+    pub(crate) content_hash: BlockContentHash,
     pub(crate) gp_content: Option<HeaderGPContentEvalContext>,
 }
 
@@ -38,6 +40,7 @@ mod test {
                 block_date: Arbitrary::arbitrary(g),
                 chain_length: Arbitrary::arbitrary(g),
                 gp_content: Arbitrary::arbitrary(g),
+                content_hash: Arbitrary::arbitrary(g),
             }
         }
     }

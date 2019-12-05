@@ -207,6 +207,7 @@ impl Header {
         HeaderContentEvalContext {
             block_date: self.block_date(),
             chain_length: self.chain_length(),
+            content_hash: self.block_content_hash(),
             gp_content,
         }
     }

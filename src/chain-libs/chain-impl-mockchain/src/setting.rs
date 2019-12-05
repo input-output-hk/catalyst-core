@@ -1,7 +1,7 @@
 //! define the Blockchain settings
 //!
 
-use crate::fragment::config::ConfigParams;
+use crate::fragment::{config::ConfigParams, BlockContentSize};
 use crate::leadership::genesis::ActiveSlotsCoeff;
 use crate::milli::Milli;
 use crate::update::Error;
@@ -23,7 +23,7 @@ pub struct Settings {
     pub slot_duration: u8,
     pub epoch_stability_depth: u32,
     pub active_slots_coeff: ActiveSlotsCoeff,
-    pub block_content_max_size: u32,
+    pub block_content_max_size: BlockContentSize,
     pub bft_slots_ratio: Milli, // aka "d" parameter
     pub bft_leaders: Arc<Vec<bft::LeaderId>>,
     pub linear_fees: Arc<LinearFee>,

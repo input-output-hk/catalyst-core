@@ -1310,18 +1310,17 @@ mod tests {
 
     #[quickcheck]
     pub fn apply_empty_block_prop_test(
-        context: HeaderContentEvalContext,
+        mut context: HeaderContentEvalContext,
         ledger: ArbitraryEmptyLedger,
     ) -> TestResult {
         let ledger: Ledger = ledger.into();
         let should_succeed =
             context.chain_length == ledger.chain_length.next() && context.block_date > ledger.date;
 
-        let result = ledger.apply_block(
-            &ledger.get_ledger_parameters(),
-            &Contents::empty(),
-            &context,
-        );
+        let contents = Contents::empty();
+        context.content_hash = contents.compute_hash();
+
+        let result = ledger.apply_block(&ledger.get_ledger_parameters(), &contents, &context);
         match (result, should_succeed) {
             (Ok(_), true) => TestResult::passed(),
             (Ok(_), false) => TestResult::error("should pass"),

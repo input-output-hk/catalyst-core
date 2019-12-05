@@ -43,6 +43,8 @@ pub struct LedgerParameters {
     pub treasury_tax: rewards::TaxType,
     /// Reward contribution parameters for this epoch
     pub reward_params: rewards::Parameters,
+    /// the block content's max size in bytes
+    pub block_content_max_size: usize,
 }
 
 /// Overall ledger structure.
@@ -857,6 +859,7 @@ impl Ledger {
                 .treasury_params
                 .unwrap_or_else(|| rewards::TaxType::zero()),
             reward_params: self.settings.to_reward_params(),
+            block_content_max_size: self.settings.block_content_max_size as usize,
         }
     }
 
@@ -1249,6 +1252,7 @@ mod tests {
                 fees: Arbitrary::arbitrary(g),
                 treasury_tax: Arbitrary::arbitrary(g),
                 reward_params: Arbitrary::arbitrary(g),
+                block_content_max_size: Arbitrary::arbitrary(g),
             }
         }
     }
@@ -1695,6 +1699,7 @@ mod tests {
                 fees: fees,
                 treasury_tax: rewards::TaxType::zero(),
                 reward_params: rewards::Parameters::zero(),
+                block_content_max_size: 10_240,
             };
             InternalApplyTransactionTestParams {
                 dyn_params: dyn_params,

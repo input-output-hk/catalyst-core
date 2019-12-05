@@ -141,7 +141,7 @@ pub fn rewards_contribution_calculation(epoch: Epoch, params: &Parameters) -> Va
             if params.initial_value >= reduce_by {
                 Value(params.initial_value - reduce_by)
             } else {
-                Value(params.initial_value)
+                Value::zero()
             }
         }
         CompoundingType::Halvening => {
@@ -150,7 +150,7 @@ pub fn rewards_contribution_calculation(epoch: Epoch, params: &Parameters) -> Va
             // that it allow for integer computation and that the reduce_epoch_rate
             // should prevent growth to large amount of zones
             let rr = &params.compounding_ratio;
-            const SCALE: u128 = 10 ^ 18;
+            const SCALE: u128 = 1_000_000_000_000_000_000;
 
             let mut acc = params.initial_value as u128 * SCALE;
             for _ in 0..zone {
@@ -187,7 +187,7 @@ pub fn tax_cut(v: Value, tax_type: &TaxType) -> Result<TaxDistribution, ValueErr
         let rr = tax_type.ratio;
         let olimit = tax_type.max_limit;
 
-        const SCALE: u128 = 10 ^ 9;
+        const SCALE: u128 = 1_000_000_000;
         let out = ((((left.0 as u128 * SCALE) * rr.numerator as u128)
             / rr.denominator.get() as u128)
             / SCALE) as u64;

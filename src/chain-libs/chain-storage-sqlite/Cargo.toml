@@ -15,6 +15,7 @@ chain-core = { path = "../chain-core" }
 chain-storage = { path = "../chain-storage" }
 r2d2 = { version = "0.8" }
 r2d2_sqlite = { version = "0.8" }
+thiserror = "1.0"
 
 [dependencies.rusqlite]
 version = "0.16.0"

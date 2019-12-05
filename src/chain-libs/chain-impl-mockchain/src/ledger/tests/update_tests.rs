@@ -49,7 +49,7 @@ pub fn ledger_adopt_settings_from_update_proposal(
     ledger = ledger
         .apply_block(
             &ledger.get_ledger_parameters(),
-            block.contents.iter(),
+            &block.contents,
             &header_meta,
         )
         .unwrap();

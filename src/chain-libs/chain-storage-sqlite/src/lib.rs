@@ -20,6 +20,20 @@ enum IndexError {
     BlockNotFound,
 }
 
+#[derive(Debug, Error)]
+enum IndexCreationError {
+    #[error("cannot insert to index: {0}")]
+    IndexError(IndexError),
+    #[error("cannot read from sqlite: {0}")]
+    SQLiteError(rusqlite::Error),
+}
+
+impl std::convert::From<rusqlite::Error> for IndexCreationError {
+    fn from(e: rusqlite::Error) -> Self {
+        IndexCreationError::SQLiteError(e)
+    }
+}
+
 type IndexResult = Result<(), IndexError>;
 
 struct ChainStorageIndex<B>
@@ -150,39 +164,50 @@ where
             .unwrap();
 
         let mut index = ChainStorageIndex::new();
-
         connection
             .prepare("select rowid, hash from Blocks")
             .unwrap()
-            .query_map(rusqlite::NO_PARAMS, |row| {
+            .query_and_then(rusqlite::NO_PARAMS, |row| {
                 let row_id = row.get(0);
                 let hash = blob_to_hash(row.get(1));
 
-                index.add_block(hash, row_id).unwrap();
+                index
+                    .add_block(hash, row_id)
+                    .map_err(IndexCreationError::IndexError)
             })
+            .unwrap()
+            .try_for_each(std::convert::identity)
             .unwrap();
 
         connection
             .prepare("select rowid, hash from BlockInfo")
             .unwrap()
-            .query_map(rusqlite::NO_PARAMS, |row| {
+            .query_and_then(rusqlite::NO_PARAMS, |row| {
                 let row_id = row.get(0);
                 let hash = blob_to_hash(row.get(1));
 
-                index.add_block_info(hash, row_id).unwrap();
+                index
+                    .add_block_info(hash, row_id)
+                    .map_err(IndexCreationError::IndexError)
             })
+            .unwrap()
+            .try_for_each(std::convert::identity)
             .unwrap();
 
         connection
             .prepare("select rowid, hash, name from Tags")
             .unwrap()
-            .query_map(rusqlite::NO_PARAMS, |row| {
+            .query_and_then(rusqlite::NO_PARAMS, |row| {
                 let row_id = row.get(0);
                 let hash = blob_to_hash(row.get(1));
                 let name = row.get(2);
 
-                index.add_tag(name, &hash, row_id).unwrap();
+                index
+                    .add_tag(name, &hash, row_id)
+                    .map_err(IndexCreationError::IndexError)
             })
+            .unwrap()
+            .try_for_each(std::convert::identity)
             .unwrap();
 
         SQLiteBlockStore {

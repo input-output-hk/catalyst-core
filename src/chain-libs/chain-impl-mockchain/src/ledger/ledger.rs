@@ -45,6 +45,10 @@ pub struct LedgerParameters {
     pub reward_params: rewards::Parameters,
     /// the block content's max size in bytes
     pub block_content_max_size: BlockContentSize,
+    /// the epoch stability parameter, the depth, number of blocks, to which
+    /// we consider the blockchain to be stable and prevent rollback beyond
+    /// that depth.
+    pub epoch_stability_depth: u32,
 }
 
 /// Overall ledger structure.
@@ -875,6 +879,7 @@ impl Ledger {
                 .unwrap_or_else(|| rewards::TaxType::zero()),
             reward_params: self.settings.to_reward_params(),
             block_content_max_size: self.settings.block_content_max_size,
+            epoch_stability_depth: self.settings.epoch_stability_depth,
         }
     }
 
@@ -1268,6 +1273,7 @@ mod tests {
                 treasury_tax: Arbitrary::arbitrary(g),
                 reward_params: Arbitrary::arbitrary(g),
                 block_content_max_size: Arbitrary::arbitrary(g),
+                epoch_stability_depth: Arbitrary::arbitrary(g),
             }
         }
     }
@@ -1718,6 +1724,7 @@ mod tests {
                 treasury_tax: rewards::TaxType::zero(),
                 reward_params: rewards::Parameters::zero(),
                 block_content_max_size: 10_240,
+                epoch_stability_depth: 1000,
             };
             InternalApplyTransactionTestParams {
                 dyn_params: dyn_params,

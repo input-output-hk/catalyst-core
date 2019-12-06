@@ -391,13 +391,24 @@ where
             .get()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        conn.prepare_cached("insert or replace into Tags (name, hash) values(?, ?)")
-            .map_err(|err| Error::BackendError(Box::new(err)))?
-            .execute(&[
-                Value::Text(tag_name.to_string()),
-                Value::Blob(block_hash.serialize_as_vec().unwrap()),
-            ])
-            .map_err(|err| Error::BackendError(Box::new(err)))?;
+        match self.index.get_tag(&tag_name.to_owned()) {
+            Some(row_id) => conn
+                .prepare_cached("replace into Tags (rowid, name, hash) values(?, ?, ?)")
+                .map_err(|err| Error::BackendError(Box::new(err)))?
+                .execute(&[
+                    Value::Integer(*row_id as i64),
+                    Value::Text(tag_name.to_string()),
+                    Value::Blob(block_hash.serialize_as_vec().unwrap()),
+                ]),
+            None => conn
+                .prepare_cached("insert into Tags (name, hash) values(?, ?)")
+                .map_err(|err| Error::BackendError(Box::new(err)))?
+                .execute(&[
+                    Value::Text(tag_name.to_string()),
+                    Value::Blob(block_hash.serialize_as_vec().unwrap()),
+                ]),
+        }
+        .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         conn.prepare_cached("select last_insert_rowid()")
             .map_err(|err| Error::BackendError(Box::new(err)))?

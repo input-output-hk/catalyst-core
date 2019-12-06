@@ -926,6 +926,11 @@ impl Ledger {
     }
 
     fn validate_utxo_total_value(&self) -> Result<(), Error> {
+        self.get_total_value()?;
+        Ok(())
+    }
+
+    pub fn get_total_value(&self) -> Result<Value, Error> {
         let old_utxo_values = self.oldutxos.iter().map(|entry| entry.output.value);
         let new_utxo_values = self.utxos.iter().map(|entry| entry.output.value);
         let account_value = self.accounts.get_total_value().map_err(|_| Error::Block0 {
@@ -941,8 +946,7 @@ impl Ledger {
             .chain(self.pots.values());
         Value::sum(all_utxo_values).map_err(|_| Error::Block0 {
             source: Block0Error::UtxoTotalValueTooBig,
-        })?;
-        Ok(())
+        })
     }
 
     fn apply_tx_inputs<'a, Extra: Payload>(
@@ -2172,9 +2176,13 @@ mod tests {
         sender_address: AddressData,
         reciever_address: AddressData,
     ) {
+        let config_builder = ConfigBuilder::new(0)
+            .with_rewards(Value(0))
+            .with_treasury(Value(0));
+
         let faucet = AddressDataValue::new(sender_address, Value(1));
         let reciever = AddressDataValue::new(reciever_address, Value(1));
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(config_builder)
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2189,7 +2197,7 @@ mod tests {
             .and()
             .address_has_expected_balance(faucet.into(), Value(0))
             .and()
-            .total_value_is(Value(1));
+            .total_value_is(&Value(1));
     }
 
     #[test]

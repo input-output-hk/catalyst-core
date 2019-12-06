@@ -1,24 +1,16 @@
 use crate::{
-    accounting::account::{DelegationRatio, DelegationType},
-    certificate::Certificate,
-    certificate::PoolId,
-    date::BlockDate,
     key::Hash,
     ledger::Error as LedgerError,
     testing::{
-        builders::{
-            build_no_stake_delegation, build_owner_stake_delegation,
-            build_owner_stake_full_delegation, build_stake_delegation_cert,
-            build_stake_pool_registration_cert, build_stake_pool_retirement_cert, TestTxBuilder,
-            TestTxCertBuilder,
-        },
         data::{StakePool, Wallet},
         ledger::TestLedger,
     },
-    value::Value,
 };
 
-use super::scenario_builder::{prepare_scenario, stake_pool, wallet};
+use super::{
+    scenario_builder::{prepare_scenario, stake_pool, wallet},
+    FragmentFactory,
+};
 use chain_addr::Discrimination;
 
 custom_error! {
@@ -32,9 +24,23 @@ pub struct Controller {
     pub block0_hash: Hash,
     pub declared_wallets: Vec<Wallet>,
     pub declared_stake_pools: Vec<StakePool>,
+    fragment_factory: FragmentFactory,
 }
 
 impl Controller {
+    pub fn new(
+        block0_hash: Hash,
+        declared_wallets: Vec<Wallet>,
+        declared_stake_pools: Vec<StakePool>,
+    ) -> Self {
+        Controller {
+            block0_hash: block0_hash.clone(),
+            declared_wallets: declared_wallets,
+            declared_stake_pools: declared_stake_pools,
+            fragment_factory: FragmentFactory::new(block0_hash),
+        }
+    }
+
     pub fn wallet(&self, alias: &str) -> Result<Wallet, ControllerError> {
         self.declared_wallets
             .iter()
@@ -65,21 +71,20 @@ impl Controller {
             })
     }
 
+    pub fn fragment_factory(&self) -> FragmentFactory {
+        self.fragment_factory.clone()
+    }
+
     pub fn transfer_funds(
         &self,
         from: &Wallet,
         to: &Wallet,
-        mut test_ledger: &mut TestLedger,
+        test_ledger: &mut TestLedger,
         funds: u64,
     ) -> Result<(), LedgerError> {
-        let transaction = TestTxBuilder::new(&test_ledger.block0_hash)
-            .move_funds(
-                &mut test_ledger,
-                &from.as_account(),
-                &to.as_account(),
-                &Value(funds),
-            )
-            .get_fragment();
+        let transaction = self
+            .fragment_factory
+            .transaction(from, to, test_ledger, funds);
         test_ledger.apply_transaction(transaction)
     }
 
@@ -87,20 +92,24 @@ impl Controller {
         &self,
         funder: &Wallet,
         stake_pool: &StakePool,
-        ledger: &mut TestLedger,
+        test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let cert = build_stake_pool_registration_cert(&stake_pool.info());
-        self.apply_transaction_with_cert(&[funder], cert, ledger)
+        let fragment =
+            self.fragment_factory
+                .stake_pool_registration(funder, stake_pool, test_ledger);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
     pub fn delegates(
         &self,
         from: &Wallet,
         stake_pool: &StakePool,
-        ledger: &mut TestLedger,
+        test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let cert = build_stake_delegation_cert(&stake_pool.info(), &from.as_account_data());
-        self.apply_transaction_with_cert(&[from], cert, ledger)
+        let fragment = self
+            .fragment_factory
+            .delegation(from, stake_pool, test_ledger);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
     pub fn delegates_different_funder(
@@ -108,67 +117,60 @@ impl Controller {
         funder: &Wallet,
         delegation: &Wallet,
         stake_pool: &StakePool,
-        ledger: &mut TestLedger,
+        test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let cert = build_stake_delegation_cert(&stake_pool.info(), &delegation.as_account_data());
-        self.apply_transaction_with_cert(&[funder], cert, ledger)
+        let fragment = self.fragment_factory.delegation_different_funder(
+            funder,
+            delegation,
+            stake_pool,
+            test_ledger,
+        );
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
     pub fn removes_delegation(
         &self,
         from: &Wallet,
-        ledger: &mut TestLedger,
+        test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let cert = build_no_stake_delegation();
-        self.apply_transaction_with_cert(&[from], cert, ledger)
+        let fragment = self.fragment_factory.delegation_remove(from, test_ledger);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
     pub fn delegates_to_many(
         &self,
         from: &Wallet,
         distribution: &[(&StakePool, u8)],
-        ledger: &mut TestLedger,
+        test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let pools_ratio_sum: u8 = distribution.iter().map(|(_st, ratio)| *ratio as u8).sum();
-        let pools: Vec<(PoolId, u8)> = distribution
-            .iter()
-            .map(|(st, ratio)| (st.info().to_id().clone(), *ratio))
-            .collect();
-
-        let delegation_ratio = DelegationRatio::new(pools_ratio_sum, pools);
-        let delegation_type = DelegationType::Ratio(delegation_ratio.unwrap());
-        let cert = build_owner_stake_delegation(delegation_type);
-        self.apply_transaction_with_cert(&[from], cert, ledger)
+        let fragment = self
+            .fragment_factory
+            .delegation_to_many(from, distribution, test_ledger);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
     pub fn owner_delegates(
         &self,
         from: &Wallet,
         stake_pool: &StakePool,
-        ledger: &mut TestLedger,
+        test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let cert = build_owner_stake_full_delegation(stake_pool.id());
-        self.apply_transaction_with_cert(&[from], cert, ledger)
+        let fragment = self
+            .fragment_factory
+            .owner_delegation(from, stake_pool, test_ledger);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
     pub fn retire(
         &self,
         owners: &[&Wallet],
         stake_pool: &StakePool,
-        ledger: &mut TestLedger,
-    ) -> Result<(), LedgerError> {
-        let certificate = build_stake_pool_retirement_cert(stake_pool.id(), 0);
-        self.apply_transaction_with_cert(&owners, certificate, ledger)
-    }
-
-    fn apply_transaction_with_cert(
-        &self,
-        wallets: &[&Wallet],
-        certificate: Certificate,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = TestTxCertBuilder::new(&test_ledger).make_transaction(wallets, &certificate);
-        test_ledger.apply_fragment(&fragment, BlockDate::first())
+        let fragment = self
+            .fragment_factory
+            .stake_pool_retire(owners, stake_pool, test_ledger);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 }
 

@@ -122,18 +122,12 @@ impl LedgerStateVerifier {
         StakePoolsVerifier::new(self.ledger.delegation.clone(), self.info.clone())
     }
 
-    pub fn total_value_is(&self, value: Value) -> &Self {
-        let account_total = self.ledger.accounts.get_total_value().unwrap();
-        let multisig_total = self.ledger.multisig.get_total_value().unwrap();
-        let utxos_total =
-            Value::sum(self.ledger.utxos.iter().map(|entry| entry.output.value)).unwrap();
-        let totals = vec![account_total, multisig_total, utxos_total];
-        let actual_value =
-            Value::sum(totals.iter().cloned()).expect("cannot sum up ledger total value");
+    pub fn total_value_is(&self, value: &Value) -> &Self {
+        let actual_value = self.ledger.get_total_value().expect("total amount too big");
         assert_eq!(
-            value, actual_value,
+            *value, actual_value,
             "Expected value {:?} vs {:?} of actual {}",
-            value, actual_value, self.info
+            *value, actual_value, self.info
         );
         self
     }

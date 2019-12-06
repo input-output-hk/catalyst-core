@@ -462,22 +462,42 @@ impl TestLedger {
         }
     }
 
-    pub fn forge_empty_block(&self, date: BlockDate, stake_pool: &StakePool) -> Block {
-        self.forge_block(date, stake_pool, Vec::new())
+    pub fn forge_empty_block(&self, stake_pool: &StakePool) -> Block {
+        self.forge_block_with_fragments(stake_pool, Vec::new())
     }
 
-    pub fn forge_block(
+    pub fn produce_empty_block(&mut self, stake_pool: &StakePool) -> Result<(), Error> {
+        self.produce_block(stake_pool, vec![])
+    }
+
+    pub fn produce_block(
+        &mut self,
+        stake_pool: &StakePool,
+        fragments: Vec<Fragment>,
+    ) -> Result<(), Error> {
+        let block = self.forge_block_with_fragments(stake_pool, fragments);
+        self.apply_block(block)
+    }
+
+    pub fn forge_block_with_fragments(
         &self,
-        date: BlockDate,
         stake_pool: &StakePool,
         fragments: Vec<Fragment>,
     ) -> Block {
         GenesisPraosBlockBuilder::new()
-            .with_date(date)
+            .with_date(self.date().clone())
             .with_fragments(fragments)
             .with_chain_length(self.ledger.chain_length())
             .with_parent_id(self.block0_hash)
             .build(stake_pool, self.ledger.era())
+    }
+
+    pub fn forward_date(&mut self) {
+        self.ledger.date.next(self.ledger.era());
+    }
+
+    pub fn fast_forward_to(&mut self, date: BlockDate) {
+        self.set_date(date);
     }
 }
 

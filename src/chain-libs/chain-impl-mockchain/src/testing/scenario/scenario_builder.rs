@@ -96,14 +96,9 @@ impl ScenarioBuilder {
             .build()
             .expect("cannot build test ledger");
         let block0_hash = test_ledger.block0_hash.clone();
-
         Ok((
             test_ledger,
-            Controller {
-                block0_hash: block0_hash,
-                declared_wallets: wallets,
-                declared_stake_pools: stake_pools,
-            },
+            Controller::new(block0_hash.clone(), wallets, stake_pools),
         ))
     }
 

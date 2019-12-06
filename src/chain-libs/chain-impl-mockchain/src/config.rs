@@ -64,7 +64,6 @@ pub enum ConfigParam {
     EpochStabilityDepth(u32),
     ConsensusGenesisPraosActiveSlotsCoeff(Milli),
     BlockContentMaxSize(u32),
-    BftSlotsRatio(Milli),
     AddBftLeader(LeaderId),
     RemoveBftLeader(LeaderId),
     LinearFee(LinearFee),
@@ -112,8 +111,6 @@ pub enum Tag {
     ConsensusGenesisPraosActiveSlotsCoeff = 8,
     #[strum(to_string = "block-content-max-size")]
     BlockContentMaxSize = 9,
-    #[strum(to_string = "bft-slots-ratio")]
-    BftSlotsRatio = 10,
     #[strum(to_string = "add-bft-leader")]
     AddBftLeader = 11,
     #[strum(to_string = "remove-bft-leader")]
@@ -147,7 +144,6 @@ impl Tag {
             6 => Some(Tag::EpochStabilityDepth),
             8 => Some(Tag::ConsensusGenesisPraosActiveSlotsCoeff),
             9 => Some(Tag::BlockContentMaxSize),
-            10 => Some(Tag::BftSlotsRatio),
             11 => Some(Tag::AddBftLeader),
             12 => Some(Tag::RemoveBftLeader),
             14 => Some(Tag::LinearFee),
@@ -176,7 +172,6 @@ impl<'a> From<&'a ConfigParam> for Tag {
                 Tag::ConsensusGenesisPraosActiveSlotsCoeff
             }
             ConfigParam::BlockContentMaxSize(_) => Tag::BlockContentMaxSize,
-            ConfigParam::BftSlotsRatio(_) => Tag::BftSlotsRatio,
             ConfigParam::AddBftLeader(_) => Tag::AddBftLeader,
             ConfigParam::RemoveBftLeader(_) => Tag::RemoveBftLeader,
             ConfigParam::LinearFee(_) => Tag::LinearFee,
@@ -216,9 +211,6 @@ impl Readable for ConfigParam {
                 .map(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff),
             Tag::BlockContentMaxSize => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::BlockContentMaxSize)
-            }
-            Tag::BftSlotsRatio => {
-                ConfigParamVariant::from_payload(bytes).map(ConfigParam::BftSlotsRatio)
             }
             Tag::AddBftLeader => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::AddBftLeader)
@@ -265,7 +257,6 @@ impl property::Serialize for ConfigParam {
             ConfigParam::EpochStabilityDepth(data) => data.to_payload(),
             ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(data) => data.to_payload(),
             ConfigParam::BlockContentMaxSize(data) => data.to_payload(),
-            ConfigParam::BftSlotsRatio(data) => data.to_payload(),
             ConfigParam::AddBftLeader(data) => data.to_payload(),
             ConfigParam::RemoveBftLeader(data) => data.to_payload(),
             ConfigParam::LinearFee(data) => data.to_payload(),
@@ -680,7 +671,7 @@ mod test {
 
     impl Arbitrary for ConfigParam {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            match u8::arbitrary(g) % 16 {
+            match u8::arbitrary(g) % 15 {
                 0 => ConfigParam::Block0Date(Arbitrary::arbitrary(g)),
                 1 => ConfigParam::Discrimination(Arbitrary::arbitrary(g)),
                 2 => ConfigParam::ConsensusVersion(Arbitrary::arbitrary(g)),
@@ -688,15 +679,14 @@ mod test {
                 4 => ConfigParam::SlotDuration(Arbitrary::arbitrary(g)),
                 5 => ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(Arbitrary::arbitrary(g)),
                 6 => ConfigParam::BlockContentMaxSize(Arbitrary::arbitrary(g)),
-                7 => ConfigParam::BftSlotsRatio(Arbitrary::arbitrary(g)),
-                8 => ConfigParam::AddBftLeader(Arbitrary::arbitrary(g)),
-                9 => ConfigParam::RemoveBftLeader(Arbitrary::arbitrary(g)),
-                10 => ConfigParam::LinearFee(Arbitrary::arbitrary(g)),
-                11 => ConfigParam::ProposalExpiration(Arbitrary::arbitrary(g)),
-                12 => ConfigParam::TreasuryAdd(Arbitrary::arbitrary(g)),
-                13 => ConfigParam::RewardPot(Arbitrary::arbitrary(g)),
-                14 => ConfigParam::RewardParams(Arbitrary::arbitrary(g)),
-                15 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)),
+                7 => ConfigParam::AddBftLeader(Arbitrary::arbitrary(g)),
+                8 => ConfigParam::RemoveBftLeader(Arbitrary::arbitrary(g)),
+                9 => ConfigParam::LinearFee(Arbitrary::arbitrary(g)),
+                10 => ConfigParam::ProposalExpiration(Arbitrary::arbitrary(g)),
+                11 => ConfigParam::TreasuryAdd(Arbitrary::arbitrary(g)),
+                12 => ConfigParam::RewardPot(Arbitrary::arbitrary(g)),
+                13 => ConfigParam::RewardParams(Arbitrary::arbitrary(g)),
+                14 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)),
                 _ => unreachable!(),
             }
         }

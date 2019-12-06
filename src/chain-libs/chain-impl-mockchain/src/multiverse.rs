@@ -245,7 +245,7 @@ impl Multiverse<Ledger> {
             state = state
                 .apply_block(
                     &state.get_ledger_parameters(),
-                    block.fragments(),
+                    &block.contents,
                     &header_meta,
                 )
                 .unwrap();
@@ -281,7 +281,7 @@ mod test {
         state
             .apply_block(
                 &state.get_ledger_parameters(),
-                block.fragments(),
+                &block.contents,
                 &block.header.to_content_eval_context(),
             )
             .unwrap()

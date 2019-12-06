@@ -67,7 +67,7 @@ impl Arbitrary for UpdateProposalData {
             ConfigParam::SlotsPerEpoch(u32::arbitrary(gen)),
             ConfigParam::SlotDuration(u8::arbitrary(gen)),
             ConfigParam::EpochStabilityDepth(u32::arbitrary(gen)),
-            ConfigParam::MaxNumberOfTransactionsPerBlock(u32::arbitrary(gen)),
+            ConfigParam::BlockContentMaxSize(u32::arbitrary(gen)),
             ConfigParam::BftSlotsRatio(Milli::arbitrary(gen)),
             ConfigParam::LinearFee(LinearFee::arbitrary(gen)),
             ConfigParam::ProposalExpiration(u32::arbitrary(gen)),

@@ -63,7 +63,7 @@ pub enum ConfigParam {
     SlotDuration(u8),
     EpochStabilityDepth(u32),
     ConsensusGenesisPraosActiveSlotsCoeff(Milli),
-    MaxNumberOfTransactionsPerBlock(u32),
+    BlockContentMaxSize(u32),
     BftSlotsRatio(Milli),
     AddBftLeader(LeaderId),
     RemoveBftLeader(LeaderId),
@@ -110,8 +110,8 @@ pub enum Tag {
     EpochStabilityDepth = 6,
     #[strum(to_string = "genesis-praos-param-f")]
     ConsensusGenesisPraosActiveSlotsCoeff = 8,
-    #[strum(to_string = "max-number-of-transactions-per-block")]
-    MaxNumberOfTransactionsPerBlock = 9,
+    #[strum(to_string = "block-content-max-size")]
+    BlockContentMaxSize = 9,
     #[strum(to_string = "bft-slots-ratio")]
     BftSlotsRatio = 10,
     #[strum(to_string = "add-bft-leader")]
@@ -146,7 +146,7 @@ impl Tag {
             5 => Some(Tag::SlotDuration),
             6 => Some(Tag::EpochStabilityDepth),
             8 => Some(Tag::ConsensusGenesisPraosActiveSlotsCoeff),
-            9 => Some(Tag::MaxNumberOfTransactionsPerBlock),
+            9 => Some(Tag::BlockContentMaxSize),
             10 => Some(Tag::BftSlotsRatio),
             11 => Some(Tag::AddBftLeader),
             12 => Some(Tag::RemoveBftLeader),
@@ -175,7 +175,7 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(_) => {
                 Tag::ConsensusGenesisPraosActiveSlotsCoeff
             }
-            ConfigParam::MaxNumberOfTransactionsPerBlock(_) => Tag::MaxNumberOfTransactionsPerBlock,
+            ConfigParam::BlockContentMaxSize(_) => Tag::BlockContentMaxSize,
             ConfigParam::BftSlotsRatio(_) => Tag::BftSlotsRatio,
             ConfigParam::AddBftLeader(_) => Tag::AddBftLeader,
             ConfigParam::RemoveBftLeader(_) => Tag::RemoveBftLeader,
@@ -214,8 +214,9 @@ impl Readable for ConfigParam {
             }
             Tag::ConsensusGenesisPraosActiveSlotsCoeff => ConfigParamVariant::from_payload(bytes)
                 .map(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff),
-            Tag::MaxNumberOfTransactionsPerBlock => ConfigParamVariant::from_payload(bytes)
-                .map(ConfigParam::MaxNumberOfTransactionsPerBlock),
+            Tag::BlockContentMaxSize => {
+                ConfigParamVariant::from_payload(bytes).map(ConfigParam::BlockContentMaxSize)
+            }
             Tag::BftSlotsRatio => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::BftSlotsRatio)
             }
@@ -263,7 +264,7 @@ impl property::Serialize for ConfigParam {
             ConfigParam::SlotDuration(data) => data.to_payload(),
             ConfigParam::EpochStabilityDepth(data) => data.to_payload(),
             ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(data) => data.to_payload(),
-            ConfigParam::MaxNumberOfTransactionsPerBlock(data) => data.to_payload(),
+            ConfigParam::BlockContentMaxSize(data) => data.to_payload(),
             ConfigParam::BftSlotsRatio(data) => data.to_payload(),
             ConfigParam::AddBftLeader(data) => data.to_payload(),
             ConfigParam::RemoveBftLeader(data) => data.to_payload(),
@@ -686,7 +687,7 @@ mod test {
                 3 => ConfigParam::SlotsPerEpoch(Arbitrary::arbitrary(g)),
                 4 => ConfigParam::SlotDuration(Arbitrary::arbitrary(g)),
                 5 => ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(Arbitrary::arbitrary(g)),
-                6 => ConfigParam::MaxNumberOfTransactionsPerBlock(Arbitrary::arbitrary(g)),
+                6 => ConfigParam::BlockContentMaxSize(Arbitrary::arbitrary(g)),
                 7 => ConfigParam::BftSlotsRatio(Arbitrary::arbitrary(g)),
                 8 => ConfigParam::AddBftLeader(Arbitrary::arbitrary(g)),
                 9 => ConfigParam::RemoveBftLeader(Arbitrary::arbitrary(g)),

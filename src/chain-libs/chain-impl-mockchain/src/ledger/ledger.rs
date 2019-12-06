@@ -7,7 +7,7 @@ use crate::block::{ConsensusVersion, LeadersParticipationRecord};
 use crate::certificate::PoolId;
 use crate::config::{self, ConfigParam};
 use crate::fee::{FeeAlgorithm, LinearFee};
-use crate::fragment::{Fragment, FragmentId};
+use crate::fragment::{BlockContentHash, BlockContentSize, Contents, Fragment, FragmentId};
 use crate::header::{BlockDate, ChainLength, Epoch, HeaderContentEvalContext, HeaderId};
 use crate::leadership::genesis::ActiveSlotsCoeffError;
 use crate::rewards;
@@ -43,6 +43,8 @@ pub struct LedgerParameters {
     pub treasury_tax: rewards::TaxType,
     /// Reward contribution parameters for this epoch
     pub reward_params: rewards::Parameters,
+    /// the block content's max size in bytes
+    pub block_content_max_size: BlockContentSize,
 }
 
 /// Overall ledger structure.
@@ -135,6 +137,8 @@ custom_error! {
         OwnerStakeDelegationInvalidTransaction = "Transaction for OwnerStakeDelegation is invalid. expecting 1 input, 1 witness and 0 output",
         WrongChainLength { actual: ChainLength, expected: ChainLength } = "Wrong chain length, expected {expected} but received {actual}",
         NonMonotonicDate { block_date: BlockDate, chain_date: BlockDate } = "Non Monotonic date, chain date is at {chain_date} but the block is at {block_date}",
+        InvalidContentSize { actual: u32, max: u32 } = "Wrong block content size, received {actual} bytes but max is {max} bytes",
+        InvalidContentHash { actual: BlockContentHash, expected: BlockContentHash } = "Wrong block content hash, received {actual} but expected {expected}",
         IncompleteLedger = "Ledger cannot be reconstructed from serialized state because of missing entries",
         PotValueInvalid { error: ValueError } = "Ledger pot value invalid: {error}",
         PoolRegistrationHasNoOwner = "Pool registration with no owner",
@@ -483,19 +487,32 @@ impl Ledger {
         Ok(())
     }
 
-    /// Try to apply messages to a State, and return the new State if succesful
-    pub fn apply_block<'a, I>(
+    /// Try to apply messages to a State, and return the new State if successful
+    pub fn apply_block(
         &self,
         ledger_params: &LedgerParameters,
-        contents: I,
+        contents: &Contents,
         metadata: &HeaderContentEvalContext,
-    ) -> Result<Self, Error>
-    where
-        I: IntoIterator<Item = &'a Fragment>,
-    {
+    ) -> Result<Self, Error> {
         let mut new_ledger = self.clone();
 
         new_ledger.chain_length = self.chain_length.increase();
+
+        let (content_hash, content_size) = contents.compute_hash_size();
+
+        if content_size > ledger_params.block_content_max_size {
+            return Err(Error::InvalidContentSize {
+                actual: content_size,
+                max: ledger_params.block_content_max_size,
+            });
+        }
+
+        if content_hash != metadata.content_hash {
+            return Err(Error::InvalidContentHash {
+                actual: content_hash,
+                expected: metadata.content_hash,
+            });
+        }
 
         // Check if the metadata (date/heigth) check out compared to the current state
         if metadata.chain_length != new_ledger.chain_length {
@@ -529,7 +546,7 @@ impl Ledger {
         new_ledger.settings = settings;
 
         // Apply all the fragments
-        for content in contents {
+        for content in contents.iter() {
             new_ledger = new_ledger.apply_fragment(ledger_params, content, metadata.block_date)?;
         }
 
@@ -857,6 +874,7 @@ impl Ledger {
                 .treasury_params
                 .unwrap_or_else(|| rewards::TaxType::zero()),
             reward_params: self.settings.to_reward_params(),
+            block_content_max_size: self.settings.block_content_max_size,
         }
     }
 
@@ -1249,6 +1267,7 @@ mod tests {
                 fees: Arbitrary::arbitrary(g),
                 treasury_tax: Arbitrary::arbitrary(g),
                 reward_params: Arbitrary::arbitrary(g),
+                block_content_max_size: Arbitrary::arbitrary(g),
             }
         }
     }
@@ -1291,14 +1310,17 @@ mod tests {
 
     #[quickcheck]
     pub fn apply_empty_block_prop_test(
-        context: HeaderContentEvalContext,
+        mut context: HeaderContentEvalContext,
         ledger: ArbitraryEmptyLedger,
     ) -> TestResult {
         let ledger: Ledger = ledger.into();
         let should_succeed =
             context.chain_length == ledger.chain_length.next() && context.block_date > ledger.date;
 
-        let result = ledger.apply_block(&ledger.get_ledger_parameters(), Vec::new(), &context);
+        let contents = Contents::empty();
+        context.content_hash = contents.compute_hash();
+
+        let result = ledger.apply_block(&ledger.get_ledger_parameters(), &contents, &context);
         match (result, should_succeed) {
             (Ok(_), true) => TestResult::passed(),
             (Ok(_), false) => TestResult::error("should pass"),
@@ -1695,6 +1717,7 @@ mod tests {
                 fees: fees,
                 treasury_tax: rewards::TaxType::zero(),
                 reward_params: rewards::Parameters::zero(),
+                block_content_max_size: 10_240,
             };
             InternalApplyTransactionTestParams {
                 dyn_params: dyn_params,

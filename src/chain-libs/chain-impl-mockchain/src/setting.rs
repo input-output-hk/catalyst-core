@@ -1,7 +1,7 @@
 //! define the Blockchain settings
 //!
 
-use crate::fragment::config::ConfigParams;
+use crate::fragment::{config::ConfigParams, BlockContentSize};
 use crate::leadership::genesis::ActiveSlotsCoeff;
 use crate::milli::Milli;
 use crate::update::Error;
@@ -23,7 +23,7 @@ pub struct Settings {
     pub slot_duration: u8,
     pub epoch_stability_depth: u32,
     pub active_slots_coeff: ActiveSlotsCoeff,
-    pub max_number_of_transactions_per_block: u32,
+    pub block_content_max_size: BlockContentSize,
     pub bft_slots_ratio: Milli, // aka "d" parameter
     pub bft_leaders: Arc<Vec<bft::LeaderId>>,
     pub linear_fees: Arc<LinearFee>,
@@ -47,7 +47,7 @@ impl Settings {
             slot_duration: 10,         // 10 sec
             epoch_stability_depth: 10, // num of block
             active_slots_coeff: ActiveSlotsCoeff::try_from(Milli::HALF).unwrap(),
-            max_number_of_transactions_per_block: 100,
+            block_content_max_size: 102_400,
             bft_slots_ratio: Milli::ONE,
             bft_leaders: Arc::new(Vec::new()),
             linear_fees: Arc::new(LinearFee::new(0, 0, 0)),
@@ -89,8 +89,8 @@ impl Settings {
                 ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(d) => {
                     new_state.active_slots_coeff = ActiveSlotsCoeff::try_from(*d)?;
                 }
-                ConfigParam::MaxNumberOfTransactionsPerBlock(d) => {
-                    new_state.max_number_of_transactions_per_block = *d;
+                ConfigParam::BlockContentMaxSize(d) => {
+                    new_state.block_content_max_size = *d;
                 }
                 ConfigParam::BftSlotsRatio(d) => {
                     if *d > Milli::ONE {
@@ -151,8 +151,8 @@ impl Settings {
         params.push(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(
             self.active_slots_coeff.into(),
         ));
-        params.push(ConfigParam::MaxNumberOfTransactionsPerBlock(
-            self.max_number_of_transactions_per_block,
+        params.push(ConfigParam::BlockContentMaxSize(
+            self.block_content_max_size,
         ));
         params.push(ConfigParam::BftSlotsRatio(self.bft_slots_ratio));
         for bft_leader in self.bft_leaders.iter() {

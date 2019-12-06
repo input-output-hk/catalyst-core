@@ -1,5 +1,4 @@
 use crate::key::Hash;
-use crate::milli::Milli;
 use crate::{
     config::ConfigParam,
     fee::LinearFee,
@@ -68,7 +67,6 @@ impl Arbitrary for UpdateProposalData {
             ConfigParam::SlotDuration(u8::arbitrary(gen)),
             ConfigParam::EpochStabilityDepth(u32::arbitrary(gen)),
             ConfigParam::BlockContentMaxSize(u32::arbitrary(gen)),
-            ConfigParam::BftSlotsRatio(Milli::arbitrary(gen)),
             ConfigParam::LinearFee(LinearFee::arbitrary(gen)),
             ConfigParam::ProposalExpiration(u32::arbitrary(gen)),
         ];

@@ -24,7 +24,6 @@ pub struct Settings {
     pub epoch_stability_depth: u32,
     pub active_slots_coeff: ActiveSlotsCoeff,
     pub block_content_max_size: BlockContentSize,
-    pub bft_slots_ratio: Milli, // aka "d" parameter
     pub bft_leaders: Arc<Vec<bft::LeaderId>>,
     pub linear_fees: Arc<LinearFee>,
     /// The number of epochs that a proposal remains valid. To be
@@ -48,7 +47,6 @@ impl Settings {
             epoch_stability_depth: 10, // num of block
             active_slots_coeff: ActiveSlotsCoeff::try_from(Milli::HALF).unwrap(),
             block_content_max_size: 102_400,
-            bft_slots_ratio: Milli::ONE,
             bft_leaders: Arc::new(Vec::new()),
             linear_fees: Arc::new(LinearFee::new(0, 0, 0)),
             proposal_expiration: 100,
@@ -91,12 +89,6 @@ impl Settings {
                 }
                 ConfigParam::BlockContentMaxSize(d) => {
                     new_state.block_content_max_size = *d;
-                }
-                ConfigParam::BftSlotsRatio(d) => {
-                    if *d > Milli::ONE {
-                        return Err(Error::BadBftSlotsRatio(*d));
-                    }
-                    new_state.bft_slots_ratio = *d;
                 }
                 ConfigParam::AddBftLeader(d) => {
                     // FIXME: O(n)
@@ -154,7 +146,6 @@ impl Settings {
         params.push(ConfigParam::BlockContentMaxSize(
             self.block_content_max_size,
         ));
-        params.push(ConfigParam::BftSlotsRatio(self.bft_slots_ratio));
         for bft_leader in self.bft_leaders.iter() {
             params.push(ConfigParam::AddBftLeader(bft_leader.clone()));
         }

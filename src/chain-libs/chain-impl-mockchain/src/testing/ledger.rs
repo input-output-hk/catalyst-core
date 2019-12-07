@@ -8,7 +8,7 @@ use crate::{
     fragment::{config::ConfigParams, Fragment, FragmentId},
     header::ChainLength,
     leadership::bft::LeaderId,
-    ledger::{Error, Ledger, LedgerParameters},
+    ledger::{Error, Ledger, LedgerParameters, RewardsInfoParameters},
     milli::Milli,
     rewards::{Ratio, TaxType},
     stake::PoolsState,
@@ -453,9 +453,10 @@ impl TestLedger {
         match self.ledger.distribute_rewards(
             &self.ledger.get_stake_distribution(),
             &self.ledger.get_ledger_parameters(),
+            RewardsInfoParameters::default(),
         ) {
             Err(err) => Err(err),
-            Ok(ledger) => {
+            Ok((ledger, _)) => {
                 self.ledger = ledger;
                 Ok(())
             }

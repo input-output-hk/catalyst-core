@@ -3,6 +3,7 @@
 
 use super::check::{self, TxVerifyError};
 use super::pots::Pots;
+use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
 use crate::block::{ConsensusVersion, LeadersParticipationRecord};
 use crate::certificate::PoolId;
 use crate::config::{self, ConfigParam};
@@ -349,12 +350,16 @@ impl Ledger {
         &'a self,
         distribution: &StakeDistribution,
         ledger_params: &LedgerParameters,
-    ) -> Result<Self, Error> {
+        rewards_info_params: RewardsInfoParameters,
+    ) -> Result<(Self, EpochRewardsInfo), Error> {
         let mut new_ledger = self.clone();
+        let mut rewards_info = EpochRewardsInfo::new(rewards_info_params);
 
         if self.leaders_log.total() == 0 {
-            return Ok(new_ledger);
+            return Ok((new_ledger, rewards_info));
         }
+
+        let treasury_initial_value = new_ledger.pots.treasury_value();
 
         // grab the total contribution in the system
         // with all the stake pools and start rewarding them
@@ -364,7 +369,16 @@ impl Ledger {
         let expected_epoch_reward =
             rewards::rewards_contribution_calculation(epoch, &ledger_params.reward_params);
 
-        let mut total_reward = new_ledger.pots.draw_reward(expected_epoch_reward);
+        let drawn = new_ledger.pots.draw_reward(expected_epoch_reward);
+
+        // set basic reward info
+        {
+            let fees_in_pot = new_ledger.pots.fees_value();
+            rewards_info.drawn = drawn;
+            rewards_info.fees = fees_in_pot;
+        }
+
+        let mut total_reward = drawn;
 
         // Move fees in the rewarding pots for distribution or depending on settings
         // to the treasury directly
@@ -402,6 +416,7 @@ impl Ledger {
                 ) {
                     (Ok(pool_reg), Some(pool_distribution)) => {
                         new_ledger.distribute_poolid_rewards(
+                            &mut rewards_info,
                             epoch,
                             &pool_id,
                             &pool_reg,
@@ -422,11 +437,16 @@ impl Ledger {
             }
         }
 
-        Ok(new_ledger)
+        let treasury_added_value =
+            (new_ledger.pots.treasury_value() - treasury_initial_value).unwrap();
+        rewards_info.set_treasury(treasury_added_value);
+
+        Ok((new_ledger, rewards_info))
     }
 
     fn distribute_poolid_rewards(
         &mut self,
+        reward_info: &mut EpochRewardsInfo,
         epoch: Epoch,
         pool_id: &PoolId,
         reg: &certificate::PoolRegistration,
@@ -435,6 +455,7 @@ impl Ledger {
     ) -> Result<(), Error> {
         let distr = rewards::tax_cut(total_reward, &reg.rewards).unwrap();
 
+        reward_info.set_stake_pool(pool_id, distr.taxed, distr.after_tax);
         self.delegation
             .stake_pool_set_rewards(pool_id, epoch, distr.taxed, distr.after_tax)?;
 
@@ -448,27 +469,37 @@ impl Ledger {
                         distr.taxed,
                         (),
                     )?;
+                    reward_info.add_to_account(&single_account, distr.taxed);
                 }
                 AccountIdentifier::Multi(_multi_account) => unimplemented!(),
             },
             None => {
-                let splitted = distr.taxed.split_in(reg.owners.len() as u32);
-                for owner in &reg.owners {
-                    self.accounts = self.accounts.add_rewards_to_account(
-                        &owner.clone().into(),
-                        epoch,
-                        splitted.parts,
-                        (),
-                    )?;
-                }
-                // pool owners 0 get potentially an extra sweetener of value 1 to #owners - 1
-                if splitted.remaining > Value::zero() {
-                    self.accounts = self.accounts.add_rewards_to_account(
-                        &reg.owners[0].clone().into(),
-                        epoch,
-                        splitted.remaining,
-                        (),
-                    )?;
+                if reg.owners.len() > 1 {
+                    let splitted = distr.taxed.split_in(reg.owners.len() as u32);
+                    for owner in &reg.owners {
+                        let id = owner.clone().into();
+                        self.accounts =
+                            self.accounts
+                                .add_rewards_to_account(&id, epoch, splitted.parts, ())?;
+                        reward_info.add_to_account(&id, splitted.parts);
+                    }
+                    // pool owners 0 get potentially an extra sweetener of value 1 to #owners - 1
+                    if splitted.remaining > Value::zero() {
+                        let id = reg.owners[0].clone().into();
+                        self.accounts = self.accounts.add_rewards_to_account(
+                            &id,
+                            epoch,
+                            splitted.remaining,
+                            (),
+                        )?;
+                        reward_info.add_to_account(&id, splitted.remaining);
+                    }
+                } else {
+                    let id = reg.owners[0].clone().into();
+                    self.accounts =
+                        self.accounts
+                            .add_rewards_to_account(&id, epoch, distr.taxed, ())?;
+                    reward_info.add_to_account(&id, distr.taxed);
                 }
             }
         }
@@ -482,6 +513,7 @@ impl Ledger {
             self.accounts = self
                 .accounts
                 .add_rewards_to_account(account, epoch, r, ())?;
+            reward_info.add_to_account(account, r);
         }
 
         if leftover_reward > Value::zero() {

@@ -7,7 +7,7 @@ use crate::{
     fee::LinearFee,
     fragment::{config::ConfigParams, Fragment, FragmentId},
     header::ChainLength,
-    leadership::bft::LeaderId,
+    leadership::{bft::LeaderId, genesis::LeadershipData},
     ledger::{Error, Ledger, LedgerParameters},
     milli::Milli,
     rewards::{Ratio, TaxType},
@@ -444,6 +444,15 @@ impl TestLedger {
         self.ledger.leaders_log.clone()
     }
 
+    pub fn leaders_log_for(&self, pool_id: &PoolId) -> u32 {
+        *self
+            .leaders_log()
+            .iter()
+            .find(|record| *record.0 == *pool_id)
+            .unwrap()
+            .1
+    }
+
     // use it only for negative testing since it introduce bad state in ledger
     pub fn increase_leader_log(&mut self, pool_id: &PoolId) {
         self.ledger.leaders_log.increase_for(pool_id);
@@ -493,11 +502,34 @@ impl TestLedger {
     }
 
     pub fn forward_date(&mut self) {
-        self.ledger.date.next(self.ledger.era());
+        self.ledger.date = self.ledger.date.next(self.ledger.era());
     }
 
     pub fn fast_forward_to(&mut self, date: BlockDate) {
         self.set_date(date);
+    }
+
+    pub fn fire_leadership_event(
+        &mut self,
+        stake_pools: Vec<StakePool>,
+        fragments: Vec<Fragment>,
+    ) -> Result<bool, Error> {
+        let selection = LeadershipData::new(self.date().epoch, &self.ledger);
+        for stake_pool in stake_pools {
+            if let Some(_) = selection
+                .leader(
+                    &stake_pool.id(),
+                    &stake_pool.vrf().private_key(),
+                    self.ledger.date().clone(),
+                )
+                .expect("cannot calculate leader")
+            {
+                self.produce_block(&stake_pool, fragments.clone())?;
+                return Ok(true);
+            }
+        }
+        self.forward_date();
+        Ok(false)
     }
 }
 

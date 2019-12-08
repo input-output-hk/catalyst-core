@@ -61,6 +61,10 @@ impl Controller {
     }
     */
 
+    pub fn initial_stake_pools(&self) -> Vec<StakePool> {
+        self.declared_stake_pools.clone()
+    }
+
     pub fn stake_pool(&self, alias: &str) -> Result<StakePool, ControllerError> {
         self.declared_stake_pools
             .iter()

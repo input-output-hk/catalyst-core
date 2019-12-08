@@ -45,6 +45,11 @@ impl WalletTemplateBuilder {
         self
     }
 
+    pub fn owns_and_delegates_to(&mut self, ownership_alias: &str) -> &mut Self {
+        self.owns(ownership_alias).delegates_to(ownership_alias);
+        self
+    }
+
     pub fn build(&self) -> Result<WalletTemplate, ScenarioBuilderError> {
         let value = self
             .initial_value

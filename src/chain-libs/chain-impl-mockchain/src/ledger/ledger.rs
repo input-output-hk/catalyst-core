@@ -50,6 +50,8 @@ pub struct LedgerParameters {
     /// we consider the blockchain to be stable and prevent rollback beyond
     /// that depth.
     pub epoch_stability_depth: u32,
+    /// Where the fees get transfered to during the rewards
+    pub fees_goes_to: setting::FeesGoesTo,
 }
 
 /// Overall ledger structure.
@@ -382,11 +384,14 @@ impl Ledger {
 
         // Move fees in the rewarding pots for distribution or depending on settings
         // to the treasury directly
-        if true {
-            total_reward = (total_reward + new_ledger.pots.siphon_fees()).unwrap();
-        } else {
-            let fees = new_ledger.pots.siphon_fees();
-            new_ledger.pots.treasury_add(fees)?
+        match ledger_params.fees_goes_to {
+            setting::FeesGoesTo::Rewards => {
+                total_reward = (total_reward + new_ledger.pots.siphon_fees()).unwrap();
+            }
+            setting::FeesGoesTo::Treasury => {
+                let fees = new_ledger.pots.siphon_fees();
+                new_ledger.pots.treasury_add(fees)?
+            }
         }
 
         // Take treasury cut
@@ -912,6 +917,7 @@ impl Ledger {
             reward_params: self.settings.to_reward_params(),
             block_content_max_size: self.settings.block_content_max_size,
             epoch_stability_depth: self.settings.epoch_stability_depth,
+            fees_goes_to: self.settings.fees_goes_to,
         }
     }
 
@@ -1271,7 +1277,7 @@ mod tests {
         key::Hash,
         multisig,
         //reward::RewardParams,
-        setting::Settings,
+        setting::{FeesGoesTo, Settings},
         testing::{
             address::ArbitraryAddressDataValueVec,
             builders::{
@@ -1310,6 +1316,7 @@ mod tests {
                 reward_params: Arbitrary::arbitrary(g),
                 block_content_max_size: Arbitrary::arbitrary(g),
                 epoch_stability_depth: Arbitrary::arbitrary(g),
+                fees_goes_to: Arbitrary::arbitrary(g),
             }
         }
     }
@@ -1761,6 +1768,7 @@ mod tests {
                 reward_params: rewards::Parameters::zero(),
                 block_content_max_size: 10_240,
                 epoch_stability_depth: 1000,
+                fees_goes_to: FeesGoesTo::Rewards,
             };
             InternalApplyTransactionTestParams {
                 dyn_params: dyn_params,

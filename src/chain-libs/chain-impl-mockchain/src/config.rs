@@ -74,6 +74,7 @@ pub enum ConfigParam {
     RewardPot(Value),
     RewardParams(RewardParams),
     PerCertificateFees(PerCertificateFee),
+    FeesInTreasury(bool),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -131,6 +132,8 @@ pub enum Tag {
     RewardParams = 20,
     #[strum(to_string = "per-certificate-fees")]
     PerCertificateFees = 21,
+    #[strum(to_string = "fees-in-treasury")]
+    FeesInTreasury = 22,
 }
 
 impl Tag {
@@ -154,6 +157,7 @@ impl Tag {
             19 => Some(Tag::RewardPot),
             20 => Some(Tag::RewardParams),
             21 => Some(Tag::PerCertificateFees),
+            22 => Some(Tag::FeesInTreasury),
             _ => None,
         }
     }
@@ -182,6 +186,7 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::RewardPot(_) => Tag::RewardPot,
             ConfigParam::RewardParams(_) => Tag::RewardParams,
             ConfigParam::PerCertificateFees(_) => Tag::PerCertificateFees,
+            ConfigParam::FeesInTreasury(_) => Tag::FeesInTreasury,
         }
     }
 }
@@ -238,6 +243,9 @@ impl Readable for ConfigParam {
             Tag::PerCertificateFees => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::PerCertificateFees)
             }
+            Tag::FeesInTreasury => {
+                ConfigParamVariant::from_payload(bytes).map(ConfigParam::FeesInTreasury)
+            }
         }
         .map_err(Into::into)
     }
@@ -267,6 +275,7 @@ impl property::Serialize for ConfigParam {
             ConfigParam::RewardPot(data) => data.to_payload(),
             ConfigParam::RewardParams(data) => data.to_payload(),
             ConfigParam::PerCertificateFees(data) => data.to_payload(),
+            ConfigParam::FeesInTreasury(data) => data.to_payload(),
         };
         let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
             io::Error::new(
@@ -671,7 +680,7 @@ mod test {
 
     impl Arbitrary for ConfigParam {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            match u8::arbitrary(g) % 15 {
+            match u8::arbitrary(g) % 16 {
                 0 => ConfigParam::Block0Date(Arbitrary::arbitrary(g)),
                 1 => ConfigParam::Discrimination(Arbitrary::arbitrary(g)),
                 2 => ConfigParam::ConsensusVersion(Arbitrary::arbitrary(g)),
@@ -687,6 +696,7 @@ mod test {
                 12 => ConfigParam::RewardPot(Arbitrary::arbitrary(g)),
                 13 => ConfigParam::RewardParams(Arbitrary::arbitrary(g)),
                 14 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)),
+                15 => ConfigParam::FeesInTreasury(Arbitrary::arbitrary(g)),
                 _ => unreachable!(),
             }
         }

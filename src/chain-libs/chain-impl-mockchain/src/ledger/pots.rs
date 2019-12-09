@@ -139,9 +139,19 @@ impl Pots {
         siphoned
     }
 
-    /// Draw
+    /// Add to treasury
     pub fn treasury_add(&mut self, value: Value) -> Result<(), Error> {
         self.treasury.add(value)
+    }
+
+    /// Get the value in the treasury
+    pub fn fees_value(&self) -> Value {
+        self.fees
+    }
+
+    /// Get the value in the treasury
+    pub fn treasury_value(&self) -> Value {
+        self.treasury.value()
     }
 
     pub fn set_from_entry(&mut self, e: &Entry) {

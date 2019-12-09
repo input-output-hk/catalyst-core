@@ -3,10 +3,12 @@ mod info;
 pub mod iter;
 pub mod ledger;
 mod pots;
+mod reward_info;
 
 pub use iter::*;
 pub use ledger::*;
 pub use pots::Pots;
+pub use reward_info::{EpochRewardsInfo, RewardsInfoParameters};
 
 cfg_if! {
    if #[cfg(test)] {

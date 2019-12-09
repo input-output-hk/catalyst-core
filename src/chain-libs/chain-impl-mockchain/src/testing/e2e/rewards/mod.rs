@@ -13,6 +13,8 @@ use crate::{
 
 use std::num::{NonZeroU32, NonZeroU64};
 
+pub mod tax;
+
 #[test]
 pub fn rewards_no_block() {
     let (mut ledger, _) = prepare_scenario()

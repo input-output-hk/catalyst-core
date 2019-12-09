@@ -205,6 +205,28 @@ impl StakePoolDefBuilder {
         self
     }
 
+    pub fn tax_limit(&mut self, limit: u64) -> &mut Self {
+        match self.tax_type.as_mut() {
+            Some(tax_type) => tax_type.max_limit = Some(NonZeroU64::new(limit).unwrap()),
+            None => unreachable!("setting tax limit for none TaxType"),
+        };
+        self
+    }
+
+    pub fn fixed_tax(&mut self, value: u64) -> &mut Self {
+        self.tax_type = Some(TaxType {
+            fixed: Value(value),
+            ratio: Ratio::zero(),
+            max_limit: None,
+        });
+        self
+    }
+
+    pub fn no_tax(&mut self) -> &mut Self {
+        self.tax_type = Some(TaxType::zero());
+        self
+    }
+
     pub fn build(&self) -> StakePoolDef {
         StakePoolDef {
             alias: self.alias.clone(),

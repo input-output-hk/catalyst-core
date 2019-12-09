@@ -33,6 +33,23 @@ pub struct Settings {
     pub proposal_expiration: u32,
     pub reward_params: Option<RewardParams>,
     pub treasury_params: Option<rewards::TaxType>,
+    pub fees_goes_to: FeesGoesTo,
+}
+
+/// Fees nSettings
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FeesGoesTo {
+    /// Move the fees to the rewards; this is the common mode of blockchain operation.
+    Rewards,
+    /// Move the fees directly to treasury. this is not a recommended settings, as
+    /// it fundamentally change the dynamic of the blockchain operation.
+    Treasury,
+}
+
+impl Default for FeesGoesTo {
+    fn default() -> Self {
+        FeesGoesTo::Rewards
+    }
 }
 
 pub const SLOTS_PERCENTAGE_RANGE: u8 = 100;
@@ -52,6 +69,7 @@ impl Settings {
             proposal_expiration: 100,
             reward_params: None,
             treasury_params: None,
+            fees_goes_to: FeesGoesTo::Rewards,
         }
     }
 
@@ -120,6 +138,13 @@ impl Settings {
                 }
                 ConfigParam::PerCertificateFees(pcf) => {
                     per_certificate_fees = Some(pcf);
+                }
+                ConfigParam::FeesInTreasury(value) => {
+                    new_state.fees_goes_to = if *value {
+                        FeesGoesTo::Treasury
+                    } else {
+                        FeesGoesTo::Rewards
+                    };
                 }
             }
         }
@@ -199,8 +224,18 @@ impl Settings {
 
 #[cfg(test)]
 mod tests {
-    use super::Settings;
+    use super::{FeesGoesTo, Settings};
     use quickcheck::{Arbitrary, Gen};
+
+    impl Arbitrary for FeesGoesTo {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            if Arbitrary::arbitrary(g) {
+                FeesGoesTo::Treasury
+            } else {
+                FeesGoesTo::Rewards
+            }
+        }
+    }
 
     impl Arbitrary for Settings {
         fn arbitrary<G: Gen>(_: &mut G) -> Self {

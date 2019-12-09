@@ -7,6 +7,7 @@ members = [
     "chain-crypto",
     "chain-storage",
     "chain-storage-sqlite",
+    "chain-storage-sqlite-old",
     "chain-impl-mockchain",
     "cardano-legacy-address",
     "network-core",

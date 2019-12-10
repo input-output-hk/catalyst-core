@@ -251,6 +251,10 @@ pub enum Error {
     PoolRetirementSignatureFailed,
     #[error("Pool update payload signature failed")]
     PoolUpdateSignatureFailed,
+    #[error("Pool update last known registration hash doesn't match")]
+    PoolUpdateLastHashDoesntMatch,
+    #[error("Pool update doesnt currently allow keys update")]
+    PoolUpdateKeysUpdateNotAllowed,
     #[error("Update not yet allowed")]
     UpdateNotAllowedYet,
 }
@@ -519,19 +523,12 @@ impl Ledger {
                     }
                 };
 
-                match (
-                    new_ledger
-                        .delegation
-                        .stake_pool_get(&pool_id)
-                        .map(|reg| reg.clone()),
-                    distribution.to_pools.get(pool_id),
-                ) {
-                    (Ok(pool_reg), Some(pool_distribution)) => {
+                match distribution.to_pools.get(pool_id) {
+                    Some(pool_distribution) => {
                         new_ledger.distribute_poolid_rewards(
                             &mut rewards_info,
                             epoch,
                             &pool_id,
-                            &pool_reg,
                             pool_total_reward,
                             pool_distribution,
                         )?;
@@ -561,10 +558,17 @@ impl Ledger {
         reward_info: &mut EpochRewardsInfo,
         epoch: Epoch,
         pool_id: &PoolId,
-        reg: &certificate::PoolRegistration,
         total_reward: Value,
         distribution: &PoolStakeInformation,
     ) -> Result<(), Error> {
+        let reg = match distribution.registration {
+            None => {
+                self.pots.treasury_add(total_reward)?;
+                return Ok(());
+            }
+            Some(ref reg) => reg,
+        };
+
         let distr = rewards::tax_cut(total_reward, &reg.rewards).unwrap();
 
         reward_info.set_stake_pool(pool_id, distr.taxed, distr.after_tax);
@@ -618,10 +622,9 @@ impl Ledger {
 
         // distribute the rest to delegators
         let mut leftover_reward = distr.after_tax;
-
         if leftover_reward > Value::zero() {
-            for (account, stake) in distribution.stake_owners.iter() {
-                let ps = PercentStake::new(*stake, distribution.total.total_stake);
+            for (account, stake) in distribution.stake.accounts.iter() {
+                let ps = PercentStake::new(*stake, distribution.stake.total);
                 let r = ps.scale_value(distr.after_tax);
                 leftover_reward = (leftover_reward - r).unwrap();
                 self.accounts = self
@@ -911,7 +914,7 @@ impl Ledger {
     }
 
     pub fn apply_pool_update<'a>(
-        self,
+        mut self,
         auth_cert: &certificate::PoolUpdate,
         bad: &TransactionBindingAuthData<'a>,
         sig: certificate::PoolSignature,
@@ -919,12 +922,25 @@ impl Ledger {
         check::valid_pool_update_certificate(auth_cert)?;
         check::valid_pool_signature(&sig)?;
 
-        let reg = self.delegation.stake_pool_get(&auth_cert.pool_id)?;
-        if sig.verify(reg, bad) == Verification::Failed {
+        let state = self.delegation.stake_pool_get_state(&auth_cert.pool_id)?;
+
+        if auth_cert.last_pool_reg_hash != state.current_pool_registration_hash() {
+            return Err(Error::PoolUpdateLastHashDoesntMatch);
+        }
+
+        if sig.verify(&state.registration, bad) == Verification::Failed {
             return Err(Error::PoolUpdateSignatureFailed);
         }
-        // TODO do things
-        Err(Error::PoolUpdateNotAllowedYet)
+
+        let new_pool_reg = auth_cert.new_pool_reg.clone();
+
+        let mut updated_state = state.clone();
+        updated_state.registration = Arc::new(new_pool_reg);
+
+        self.delegation
+            .stake_pool_set_state(&auth_cert.pool_id, updated_state)?;
+
+        Ok(self)
     }
 
     pub fn apply_stake_delegation(

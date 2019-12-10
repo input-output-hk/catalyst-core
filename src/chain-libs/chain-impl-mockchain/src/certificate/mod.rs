@@ -9,7 +9,8 @@ use crate::transaction::{Payload, PayloadData, PayloadSlice};
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
 pub use pool::{
     GenesisPraosLeaderHash, IndexSignatures, ManagementThreshold, PoolId, PoolOwnersSigned,
-    PoolPermissions, PoolRegistration, PoolRetirement, PoolSignature, PoolUpdate,
+    PoolPermissions, PoolRegistration, PoolRegistrationHash, PoolRetirement, PoolSignature,
+    PoolUpdate,
 };
 
 pub enum CertificateSlice<'a> {

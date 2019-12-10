@@ -128,7 +128,8 @@ pub(super) fn valid_pool_retirement_certificate(_: &certificate::PoolRetirement)
     Ok(())
 }
 
-pub(super) fn valid_pool_update_certificate(_: &certificate::PoolUpdate) -> LedgerCheck {
+pub(super) fn valid_pool_update_certificate(reg: &certificate::PoolUpdate) -> LedgerCheck {
+    valid_pool_registration_certificate(&reg.new_pool_reg)?;
     Ok(())
 }
 

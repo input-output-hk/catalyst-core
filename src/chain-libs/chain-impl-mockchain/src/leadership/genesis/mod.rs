@@ -258,7 +258,7 @@ mod tests {
     use crate::header::HeaderId;
     use crate::ledger::Ledger;
     use crate::milli::Milli;
-    use crate::stake::{PoolStakeDistribution, PoolStakeInformation, PoolStakeTotal};
+    use crate::stake::{PoolStakeDistribution, PoolStakeInformation};
     use crate::testing::{
         builders::{GenesisPraosBlockBuilder, StakePoolBuilder},
         ConfigBuilder, LedgerBuilder,
@@ -324,10 +324,8 @@ mod tests {
         selection.distribution.to_pools.insert(
             pool_id.clone(),
             PoolStakeInformation {
-                total: PoolStakeTotal { total_stake: value },
-                stake_owners: PoolStakeDistribution {
-                    accounts: HashMap::new(),
-                },
+                registration: None,
+                stake: PoolStakeDistribution::test_new_with_total_value(value),
             },
         );
     }

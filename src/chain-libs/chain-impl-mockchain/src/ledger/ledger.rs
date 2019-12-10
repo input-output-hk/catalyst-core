@@ -1170,6 +1170,14 @@ impl Ledger {
             }
         }
     }
+
+    pub fn remaining_rewards(&self) -> Value {
+        self.pots.rewards
+    }
+
+    pub fn treasury_value(&self) -> Value {
+        self.pots.treasury.value()
+    }
 }
 
 fn apply_old_declaration(

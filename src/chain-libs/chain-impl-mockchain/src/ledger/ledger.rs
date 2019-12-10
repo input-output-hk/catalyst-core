@@ -511,14 +511,17 @@ impl Ledger {
 
         // distribute the rest to delegators
         let mut leftover_reward = distr.after_tax;
-        for (account, stake) in distribution.stake_owners.iter() {
-            let ps = PercentStake::new(*stake, distribution.total.total_stake);
-            let r = ps.scale_value(distr.after_tax);
-            leftover_reward = (leftover_reward - r).unwrap();
-            self.accounts = self
-                .accounts
-                .add_rewards_to_account(account, epoch, r, ())?;
-            reward_info.add_to_account(account, r);
+
+        if leftover_reward > Value::zero() {
+            for (account, stake) in distribution.stake_owners.iter() {
+                let ps = PercentStake::new(*stake, distribution.total.total_stake);
+                let r = ps.scale_value(distr.after_tax);
+                leftover_reward = (leftover_reward - r).unwrap();
+                self.accounts = self
+                    .accounts
+                    .add_rewards_to_account(account, epoch, r, ())?;
+                reward_info.add_to_account(account, r);
+            }
         }
 
         if leftover_reward > Value::zero() {

@@ -20,6 +20,12 @@ pub struct StakeDistribution {
     pub to_pools: HashMap<PoolId, PoolStakeInformation>,
 }
 
+impl StakeDistribution {
+    pub fn get_total_stake(&self) -> Stake {
+        Stake::sum(self.to_pools.values().map(|psi| psi.total.total_stake))
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PoolStakeInformation {
     pub total: PoolStakeTotal,

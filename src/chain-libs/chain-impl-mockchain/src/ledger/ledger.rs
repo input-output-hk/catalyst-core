@@ -368,8 +368,15 @@ impl Ledger {
 
         let epoch = new_ledger.date.epoch + 1;
 
-        let expected_epoch_reward =
-            rewards::rewards_contribution_calculation(epoch, &ledger_params.reward_params);
+        let system_info = rewards::SystemInformation {
+            declared_stake: distribution.get_total_stake(),
+        };
+
+        let expected_epoch_reward = rewards::rewards_contribution_calculation(
+            epoch,
+            &ledger_params.reward_params,
+            &system_info,
+        );
 
         let drawn = new_ledger.pots.draw_reward(expected_epoch_reward);
 
@@ -406,11 +413,35 @@ impl Ledger {
         swap(&mut new_ledger.leaders_log, &mut leaders_log);
 
         if total_reward > Value::zero() {
+            // pool capping only exists if there's enough participants
+            let pool_capper = match ledger_params.reward_params.pool_participation_capping {
+                None => None,
+                Some((threshold, expected_nb_pools)) => {
+                    let nb_participants = leaders_log.nb_participants();
+                    if nb_participants >= threshold.get() as usize {
+                        Some(Value(total_reward.0 / expected_nb_pools.get() as u64))
+                    } else {
+                        None
+                    }
+                }
+            };
+
             let total_blocks = leaders_log.total();
             let reward_unit = total_reward.split_in(total_blocks);
 
             for (pool_id, pool_blocks) in leaders_log.iter() {
-                let pool_total_reward = reward_unit.parts.scale(*pool_blocks).unwrap();
+                // possibly cap the reward for a given pool.
+                // if this is capped, then the overflow amount is send to treasury
+                let pool_total_reward_uncapped = reward_unit.parts.scale(*pool_blocks).unwrap();
+                let pool_total_reward = match pool_capper {
+                    None => pool_total_reward_uncapped,
+                    Some(pool_cap) => {
+                        let actual_pool_total = std::cmp::min(pool_cap, pool_total_reward_uncapped);
+                        let forfeited = (pool_total_reward_uncapped - actual_pool_total).unwrap();
+                        new_ledger.pots.treasury_add(forfeited)?;
+                        actual_pool_total
+                    }
+                };
 
                 match (
                     new_ledger

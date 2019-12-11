@@ -14,6 +14,10 @@ impl LeadersParticipationRecord {
         self.total
     }
 
+    pub fn nb_participants(&self) -> usize {
+        self.log.size()
+    }
+
     /// new empty leader log
     pub fn new() -> Self {
         Self {

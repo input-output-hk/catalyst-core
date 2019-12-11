@@ -13,6 +13,7 @@ use crate::{
     rewards,
 };
 use std::convert::TryFrom;
+use std::num::NonZeroU32;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -34,6 +35,8 @@ pub struct Settings {
     pub reward_params: Option<RewardParams>,
     pub treasury_params: Option<rewards::TaxType>,
     pub fees_goes_to: FeesGoesTo,
+    pub rewards_limit: rewards::Limit,
+    pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
 }
 
 /// Fees nSettings
@@ -70,6 +73,8 @@ impl Settings {
             reward_params: None,
             treasury_params: None,
             fees_goes_to: FeesGoesTo::Rewards,
+            rewards_limit: rewards::Limit::None,
+            pool_participation_capping: None,
         }
     }
 
@@ -146,6 +151,13 @@ impl Settings {
                         FeesGoesTo::Rewards
                     };
                 }
+                ConfigParam::RewardLimitNone => new_state.rewards_limit = rewards::Limit::None,
+                ConfigParam::RewardLimitByAbsoluteStake(ratio) => {
+                    new_state.rewards_limit = rewards::Limit::ByStakeAbsolute(ratio.clone())
+                }
+                ConfigParam::PoolRewardParticipationCapping(r) => {
+                    new_state.pool_participation_capping = Some(r.clone())
+                }
             }
         }
 
@@ -192,6 +204,9 @@ impl Settings {
     }
 
     pub fn to_reward_params(&self) -> rewards::Parameters {
+        let reward_drawing_limit_max = self.rewards_limit.clone();
+        let pool_participation_capping = self.pool_participation_capping.clone();
+
         match self.reward_params {
             None => rewards::Parameters::zero(),
             Some(RewardParams::Halving {
@@ -205,6 +220,8 @@ impl Settings {
                 compounding_type: rewards::CompoundingType::Halvening,
                 epoch_start,
                 epoch_rate,
+                reward_drawing_limit_max,
+                pool_participation_capping,
             },
             Some(RewardParams::Linear {
                 constant,
@@ -217,6 +234,8 @@ impl Settings {
                 compounding_type: rewards::CompoundingType::Linear,
                 epoch_start,
                 epoch_rate,
+                reward_drawing_limit_max,
+                pool_participation_capping,
             },
         }
     }

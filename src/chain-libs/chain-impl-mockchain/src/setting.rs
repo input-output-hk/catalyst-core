@@ -13,6 +13,7 @@ use crate::{
     rewards,
 };
 use std::convert::TryFrom;
+use std::num::NonZeroU32;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -35,6 +36,7 @@ pub struct Settings {
     pub treasury_params: Option<rewards::TaxType>,
     pub fees_goes_to: FeesGoesTo,
     pub rewards_limit: rewards::Limit,
+    pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
 }
 
 /// Fees nSettings
@@ -72,6 +74,7 @@ impl Settings {
             treasury_params: None,
             fees_goes_to: FeesGoesTo::Rewards,
             rewards_limit: rewards::Limit::None,
+            pool_participation_capping: None,
         }
     }
 
@@ -152,6 +155,9 @@ impl Settings {
                 ConfigParam::RewardLimitByAbsoluteStake(ratio) => {
                     new_state.rewards_limit = rewards::Limit::ByStakeAbsolute(ratio.clone())
                 }
+                ConfigParam::PoolRewardParticipationCapping(r) => {
+                    new_state.pool_participation_capping = Some(r.clone())
+                }
             }
         }
 
@@ -199,6 +205,7 @@ impl Settings {
 
     pub fn to_reward_params(&self) -> rewards::Parameters {
         let reward_drawing_limit_max = self.rewards_limit.clone();
+        let pool_participation_capping = self.pool_participation_capping.clone();
 
         match self.reward_params {
             None => rewards::Parameters::zero(),
@@ -214,6 +221,7 @@ impl Settings {
                 epoch_start,
                 epoch_rate,
                 reward_drawing_limit_max,
+                pool_participation_capping,
             },
             Some(RewardParams::Linear {
                 constant,
@@ -227,6 +235,7 @@ impl Settings {
                 epoch_start,
                 epoch_rate,
                 reward_drawing_limit_max,
+                pool_participation_capping,
             },
         }
     }

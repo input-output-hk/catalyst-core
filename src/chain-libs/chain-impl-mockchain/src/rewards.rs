@@ -113,6 +113,9 @@ pub struct Parameters {
     pub epoch_start: Epoch,
     /// Max Drawing limit
     pub reward_drawing_limit_max: Limit,
+    /// Pool Capping
+    /// This doesn't really make sense
+    pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
 }
 
 impl Parameters {
@@ -124,6 +127,7 @@ impl Parameters {
             epoch_rate: NonZeroU32::new(u32::max_value()).unwrap(),
             epoch_start: 0,
             reward_drawing_limit_max: Limit::None,
+            pool_participation_capping: None,
         }
     }
 }
@@ -329,6 +333,7 @@ mod tests {
                 epoch_rate: epoch_rate,
                 epoch_start: Arbitrary::arbitrary(g),
                 reward_drawing_limit_max: Limit::arbitrary(g),
+                pool_participation_capping: None,
             }
         }
     }

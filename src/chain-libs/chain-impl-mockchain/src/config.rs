@@ -77,6 +77,7 @@ pub enum ConfigParam {
     FeesInTreasury(bool),
     RewardLimitNone,
     RewardLimitByAbsoluteStake(Ratio),
+    PoolRewardParticipationCapping((NonZeroU32, NonZeroU32)),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -140,6 +141,8 @@ pub enum Tag {
     RewardLimitNone = 23,
     #[strum(to_string = "reward-limit-by-absolute-stake")]
     RewardLimitByAbsoluteStake = 24,
+    #[strum(to_string = "pool-reward-participation-capping")]
+    PoolRewardParticipationCapping = 25,
 }
 
 impl Tag {
@@ -166,6 +169,7 @@ impl Tag {
             22 => Some(Tag::FeesInTreasury),
             23 => Some(Tag::RewardLimitNone),
             24 => Some(Tag::RewardLimitByAbsoluteStake),
+            25 => Some(Tag::PoolRewardParticipationCapping),
             _ => None,
         }
     }
@@ -197,6 +201,7 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::FeesInTreasury(_) => Tag::FeesInTreasury,
             ConfigParam::RewardLimitNone => Tag::RewardLimitNone,
             ConfigParam::RewardLimitByAbsoluteStake(_) => Tag::RewardLimitByAbsoluteStake,
+            ConfigParam::PoolRewardParticipationCapping(..) => Tag::PoolRewardParticipationCapping,
         }
     }
 }
@@ -266,6 +271,8 @@ impl Readable for ConfigParam {
             Tag::RewardLimitByAbsoluteStake => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::RewardLimitByAbsoluteStake)
             }
+            Tag::PoolRewardParticipationCapping => ConfigParamVariant::from_payload(bytes)
+                .map(ConfigParam::PoolRewardParticipationCapping),
         }
         .map_err(Into::into)
     }
@@ -298,6 +305,7 @@ impl property::Serialize for ConfigParam {
             ConfigParam::FeesInTreasury(data) => data.to_payload(),
             ConfigParam::RewardLimitNone => Vec::with_capacity(0),
             ConfigParam::RewardLimitByAbsoluteStake(data) => data.to_payload(),
+            ConfigParam::PoolRewardParticipationCapping(data) => data.to_payload(),
         };
         let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
             io::Error::new(
@@ -553,6 +561,20 @@ impl ConfigParamVariant for u32 {
         };
         bytes.copy_from_slice(payload);
         Ok(Self::from_be_bytes(bytes))
+    }
+}
+
+impl ConfigParamVariant for (NonZeroU32, NonZeroU32) {
+    fn to_payload(&self) -> Vec<u8> {
+        let bb: ByteBuilder<()> = ByteBuilder::new();
+        bb.u32(self.0.get()).u32(self.1.get()).finalize_as_vec()
+    }
+
+    fn from_payload(payload: &[u8]) -> Result<Self, Error> {
+        let mut rb = ReadBuf::from(payload);
+        let x = rb.get_nz_u32()?;
+        let y = rb.get_nz_u32()?;
+        Ok((x, y))
     }
 }
 

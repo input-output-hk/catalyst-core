@@ -84,6 +84,9 @@ impl TaxType {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Limit {
+    /// the drawn value will not be limited
+    None,
+
     /// The drawn value will be limited by the absoluted stake in the system
     /// with a given ratio.
     ByStakeAbsolute(Ratio),
@@ -109,7 +112,7 @@ pub struct Parameters {
     /// When to start
     pub epoch_start: Epoch,
     /// Max Drawing limit
-    pub reward_drawing_limit_max: Option<Limit>,
+    pub reward_drawing_limit_max: Limit,
 }
 
 impl Parameters {
@@ -120,7 +123,7 @@ impl Parameters {
             compounding_type: CompoundingType::Linear,
             epoch_rate: NonZeroU32::new(u32::max_value()).unwrap(),
             epoch_start: 0,
-            reward_drawing_limit_max: None,
+            reward_drawing_limit_max: Limit::None,
         }
     }
 }
@@ -183,8 +186,8 @@ pub fn rewards_contribution_calculation(
     };
 
     match params.reward_drawing_limit_max {
-        None => drawn,
-        Some(Limit::ByStakeAbsolute(ratio)) => {
+        Limit::None => drawn,
+        Limit::ByStakeAbsolute(ratio) => {
             let x = (u64::from(system_info.declared_stake) as u128 * ratio.numerator as u128)
                 / ratio.denominator.get() as u128;
             std::cmp::min(drawn, Value(x as u64))

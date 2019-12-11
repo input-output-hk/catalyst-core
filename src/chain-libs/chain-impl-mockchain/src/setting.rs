@@ -34,7 +34,7 @@ pub struct Settings {
     pub reward_params: Option<RewardParams>,
     pub treasury_params: Option<rewards::TaxType>,
     pub fees_goes_to: FeesGoesTo,
-    pub rewards_limit: Option<rewards::Limit>,
+    pub rewards_limit: rewards::Limit,
 }
 
 /// Fees nSettings
@@ -71,7 +71,7 @@ impl Settings {
             reward_params: None,
             treasury_params: None,
             fees_goes_to: FeesGoesTo::Rewards,
-            rewards_limit: None,
+            rewards_limit: rewards::Limit::None,
         }
     }
 
@@ -148,9 +148,9 @@ impl Settings {
                         FeesGoesTo::Rewards
                     };
                 }
-                ConfigParam::RewardLimitNone => new_state.rewards_limit = None,
+                ConfigParam::RewardLimitNone => new_state.rewards_limit = rewards::Limit::None,
                 ConfigParam::RewardLimitByAbsoluteStake(ratio) => {
-                    new_state.rewards_limit = Some(rewards::Limit::ByStakeAbsolute(ratio.clone()))
+                    new_state.rewards_limit = rewards::Limit::ByStakeAbsolute(ratio.clone())
                 }
             }
         }

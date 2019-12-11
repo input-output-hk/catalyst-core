@@ -1,4 +1,5 @@
 use crate::block::Epoch;
+use crate::stake::Stake;
 use crate::value::{Value, ValueError};
 use chain_core::mempack::{ReadBuf, ReadError};
 use std::num::{NonZeroU32, NonZeroU64};
@@ -81,6 +82,13 @@ impl TaxType {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum Limit {
+    /// The drawn value will be limited by the absoluted stake in the system
+    /// with a given ratio.
+    ByStakeAbsolute(Ratio),
+}
+
 /// Parameters for rewards calculation. This controls:
 ///
 /// * Rewards contributions
@@ -100,6 +108,8 @@ pub struct Parameters {
     pub epoch_rate: NonZeroU32,
     /// When to start
     pub epoch_start: Epoch,
+    /// Max Drawing limit
+    pub reward_drawing_limit_max: Option<Limit>,
 }
 
 impl Parameters {
@@ -110,6 +120,7 @@ impl Parameters {
             compounding_type: CompoundingType::Linear,
             epoch_rate: NonZeroU32::new(u32::max_value()).unwrap(),
             epoch_start: 0,
+            reward_drawing_limit_max: None,
         }
     }
 }
@@ -121,11 +132,20 @@ pub struct TaxDistribution {
     pub after_tax: Value,
 }
 
+#[derive(Debug, Clone)]
+pub struct SystemInformation {
+    pub declared_stake: Stake,
+}
+
 /// Calculate the reward contribution from the parameters
 ///
 /// Note that the contribution in the system is still bounded by the remaining
 /// rewards pot, which is not taken in considering for this calculation.
-pub fn rewards_contribution_calculation(epoch: Epoch, params: &Parameters) -> Value {
+pub fn rewards_contribution_calculation(
+    epoch: Epoch,
+    params: &Parameters,
+    system_info: &SystemInformation,
+) -> Value {
     assert!(params.epoch_rate.get() != 0);
 
     if epoch < params.epoch_start {
@@ -133,7 +153,7 @@ pub fn rewards_contribution_calculation(epoch: Epoch, params: &Parameters) -> Va
     }
 
     let zone = ((epoch - params.epoch_start) / params.epoch_rate.get()) as u64;
-    match params.compounding_type {
+    let drawn = match params.compounding_type {
         CompoundingType::Linear => {
             // C - rratio * (#epoch / erate)
             let rr = &params.compounding_ratio;
@@ -159,6 +179,15 @@ pub fn rewards_contribution_calculation(epoch: Epoch, params: &Parameters) -> Va
             }
 
             Value((acc / SCALE) as u64)
+        }
+    };
+
+    match params.reward_drawing_limit_max {
+        None => drawn,
+        Some(Limit::ByStakeAbsolute(ratio)) => {
+            let x = (u64::from(system_info.declared_stake) as u128 * ratio.numerator as u128)
+                / ratio.denominator.get() as u128;
+            std::cmp::min(drawn, Value(x as u64))
         }
     }
 }
@@ -243,8 +272,11 @@ mod tests {
         let mut params = Parameters::zero();
         params.epoch_start = 1;
         let epoch = 0;
+        let system_info = SystemInformation {
+            declared_stake: Stake::from_value(Value(100)),
+        };
         assert_eq!(
-            rewards_contribution_calculation(epoch, &params),
+            rewards_contribution_calculation(epoch, &params, &system_info),
             Value::zero()
         );
     }
@@ -283,6 +315,7 @@ mod tests {
                 compounding_type: CompoundingType::arbitrary(g),
                 epoch_rate: epoch_rate,
                 epoch_start: Arbitrary::arbitrary(g),
+                reward_drawing_limit_max: None,
             }
         }
     }

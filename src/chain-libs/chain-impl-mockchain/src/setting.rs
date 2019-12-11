@@ -34,6 +34,7 @@ pub struct Settings {
     pub reward_params: Option<RewardParams>,
     pub treasury_params: Option<rewards::TaxType>,
     pub fees_goes_to: FeesGoesTo,
+    pub rewards_limit: Option<rewards::Limit>,
 }
 
 /// Fees nSettings
@@ -70,6 +71,7 @@ impl Settings {
             reward_params: None,
             treasury_params: None,
             fees_goes_to: FeesGoesTo::Rewards,
+            rewards_limit: None,
         }
     }
 
@@ -146,6 +148,10 @@ impl Settings {
                         FeesGoesTo::Rewards
                     };
                 }
+                ConfigParam::RewardLimitNone => new_state.rewards_limit = None,
+                ConfigParam::RewardLimitByAbsoluteStake(ratio) => {
+                    new_state.rewards_limit = Some(rewards::Limit::ByStakeAbsolute(ratio.clone()))
+                }
             }
         }
 
@@ -192,6 +198,8 @@ impl Settings {
     }
 
     pub fn to_reward_params(&self) -> rewards::Parameters {
+        let reward_drawing_limit_max = self.rewards_limit.clone();
+
         match self.reward_params {
             None => rewards::Parameters::zero(),
             Some(RewardParams::Halving {
@@ -205,6 +213,7 @@ impl Settings {
                 compounding_type: rewards::CompoundingType::Halvening,
                 epoch_start,
                 epoch_rate,
+                reward_drawing_limit_max,
             },
             Some(RewardParams::Linear {
                 constant,
@@ -217,6 +226,7 @@ impl Settings {
                 compounding_type: rewards::CompoundingType::Linear,
                 epoch_start,
                 epoch_rate,
+                reward_drawing_limit_max,
             },
         }
     }

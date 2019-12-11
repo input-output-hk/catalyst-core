@@ -75,6 +75,8 @@ pub enum ConfigParam {
     RewardParams(RewardParams),
     PerCertificateFees(PerCertificateFee),
     FeesInTreasury(bool),
+    RewardLimitNone,
+    RewardLimitByAbsoluteStake(Ratio),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -134,6 +136,10 @@ pub enum Tag {
     PerCertificateFees = 21,
     #[strum(to_string = "fees-in-treasury")]
     FeesInTreasury = 22,
+    #[strum(to_string = "reward-limit-none")]
+    RewardLimitNone = 23,
+    #[strum(to_string = "reward-limit-by-absolute-stake")]
+    RewardLimitByAbsoluteStake = 24,
 }
 
 impl Tag {
@@ -158,6 +164,8 @@ impl Tag {
             20 => Some(Tag::RewardParams),
             21 => Some(Tag::PerCertificateFees),
             22 => Some(Tag::FeesInTreasury),
+            23 => Some(Tag::RewardLimitNone),
+            24 => Some(Tag::RewardLimitByAbsoluteStake),
             _ => None,
         }
     }
@@ -187,6 +195,8 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::RewardParams(_) => Tag::RewardParams,
             ConfigParam::PerCertificateFees(_) => Tag::PerCertificateFees,
             ConfigParam::FeesInTreasury(_) => Tag::FeesInTreasury,
+            ConfigParam::RewardLimitNone => Tag::RewardLimitNone,
+            ConfigParam::RewardLimitByAbsoluteStake(_) => Tag::RewardLimitByAbsoluteStake,
         }
     }
 }
@@ -246,6 +256,16 @@ impl Readable for ConfigParam {
             Tag::FeesInTreasury => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::FeesInTreasury)
             }
+            Tag::RewardLimitNone => {
+                if bytes.len() != 0 {
+                    Err(Error::SizeInvalid)
+                } else {
+                    Ok(ConfigParam::RewardLimitNone)
+                }
+            }
+            Tag::RewardLimitByAbsoluteStake => {
+                ConfigParamVariant::from_payload(bytes).map(ConfigParam::RewardLimitByAbsoluteStake)
+            }
         }
         .map_err(Into::into)
     }
@@ -276,6 +296,8 @@ impl property::Serialize for ConfigParam {
             ConfigParam::RewardParams(data) => data.to_payload(),
             ConfigParam::PerCertificateFees(data) => data.to_payload(),
             ConfigParam::FeesInTreasury(data) => data.to_payload(),
+            ConfigParam::RewardLimitNone => Vec::with_capacity(0),
+            ConfigParam::RewardLimitByAbsoluteStake(data) => data.to_payload(),
         };
         let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
             io::Error::new(
@@ -321,6 +343,25 @@ impl ConfigParamVariant for TaxType {
     }
 }
 
+impl ConfigParamVariant for Ratio {
+    fn to_payload(&self) -> Vec<u8> {
+        let bb: ByteBuilder<Ratio> = ByteBuilder::new();
+        bb.u64(self.numerator)
+            .u64(self.denominator.get())
+            .finalize_as_vec()
+    }
+
+    fn from_payload(payload: &[u8]) -> Result<Self, Error> {
+        let mut rb = ReadBuf::from(payload);
+        let num = rb.get_u64()?;
+        let denom = rb.get_nz_u64()?;
+        rb.expect_end()?;
+        Ok(Ratio {
+            numerator: num,
+            denominator: denom,
+        })
+    }
+}
 impl ConfigParamVariant for RewardParams {
     fn to_payload(&self) -> Vec<u8> {
         let bb: ByteBuilder<RewardParams> = match self {

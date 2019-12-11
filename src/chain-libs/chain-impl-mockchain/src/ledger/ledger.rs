@@ -368,8 +368,15 @@ impl Ledger {
 
         let epoch = new_ledger.date.epoch + 1;
 
-        let expected_epoch_reward =
-            rewards::rewards_contribution_calculation(epoch, &ledger_params.reward_params);
+        let system_info = rewards::SystemInformation {
+            declared_stake: distribution.get_total_stake(),
+        };
+
+        let expected_epoch_reward = rewards::rewards_contribution_calculation(
+            epoch,
+            &ledger_params.reward_params,
+            &system_info,
+        );
 
         let drawn = new_ledger.pots.draw_reward(expected_epoch_reward);
 

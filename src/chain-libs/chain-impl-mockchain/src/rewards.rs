@@ -302,6 +302,16 @@ mod tests {
         }
     }
 
+    impl Arbitrary for Limit {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            if bool::arbitrary(g) {
+                Limit::None
+            } else {
+                Limit::ByStakeAbsolute(Ratio::arbitrary(g))
+            }
+        }
+    }
+
     impl Arbitrary for Parameters {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let epoch_rate = {
@@ -318,7 +328,7 @@ mod tests {
                 compounding_type: CompoundingType::arbitrary(g),
                 epoch_rate: epoch_rate,
                 epoch_start: Arbitrary::arbitrary(g),
-                reward_drawing_limit_max: None,
+                reward_drawing_limit_max: Limit::arbitrary(g),
             }
         }
     }

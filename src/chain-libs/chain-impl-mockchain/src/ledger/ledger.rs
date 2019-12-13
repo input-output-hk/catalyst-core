@@ -924,8 +924,9 @@ impl Ledger {
                     tx.payload().into_payload().get_delegation_type(),
                 )?;
             }
-        }
-        Ok((self, value))
+        };
+        self = self.apply_tx_fee(fee)?;
+        Ok((self, fee))
     }
 
     pub fn get_stake_distribution(&self) -> StakeDistribution {

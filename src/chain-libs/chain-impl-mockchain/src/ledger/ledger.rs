@@ -24,6 +24,7 @@ use chain_time::{SlotDuration, TimeEra, TimeFrame, Timeline};
 use std::mem::swap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
+use thiserror::Error;
 
 // static parameters, effectively this is constant in the parameter of the blockchain
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -78,86 +79,180 @@ pub struct Ledger {
     pub(crate) leaders_log: LeadersParticipationRecord,
 }
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub Block0Error
-        TransactionHasInput = "Transaction should not have inputs in a block0",
-        CertTransactionHasInput = "Certificate should not have inputs in a block0",
-        CertTransactionHasOutput = "Certificate should not have outputs in a block0",
-        TransactionHasWitnesses = "Transaction should not have witnesses in a block0",
-        InitialMessageMissing = "The initial message is missing.",
-        InitialMessageMany = "Only one initial message is required",
-        InitialMessageDuplicateBlock0Date = "Block0 Date is duplicated in the initial message",
-        InitialMessageDuplicateDiscrimination = "Address discrimination setting is duplicated in the initial fragment",
-        InitialMessageDuplicateConsensusVersion = "Consensus version is duplicated in the initial fragment",
-        InitialMessageDuplicateSlotDuration = "Slot Duration is duplicated in the initial fragment",
-        InitialMessageDuplicateEpochStabilityDepth = "Epoch stability depth is duplicated in the initial fragment",
-        InitialMessageDuplicatePraosActiveSlotsCoeff = "Praos active slot coefficient setting is duplicated in the initial fragment",
-        InitialMessageNoDate = "Missing block0 date in the initial fragment",
-        InitialMessageNoSlotDuration = "Missing slot duration in the initial fragment",
-        InitialMessageNoSlotsPerEpoch = "Missing slots per epoch in the initial fragment",
-        InitialMessageNoDiscrimination = "Missing address discrimination in the initial fragment",
-        InitialMessageNoConsensusVersion = "Missing consensus version in the initial fragment",
-        InitialMessageNoConsensusLeaderId = "Missing consensus leader id list in the initial fragment",
-        InitialMessageNoPraosActiveSlotsCoeff = "Missing praos active slot coefficient in the initial fragment",
-        InitialMessageNoKesUpdateSpeed = "Missing KES Update speed in the initial fragment",
-        UtxoTotalValueTooBig = "Total initial value is too big",
-        HasOwnerStakeDelegation = "Owner stake delegation are not valid in the block0",
-        HasUpdateProposal = "Update proposal fragments are not valid in the block0",
-        HasUpdateVote = "Update vote fragments are not valid in the block0",
-        HasPoolManagement = "Pool management are not valid in the block0",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum Block0Error {
+    #[error("Transaction should not have inputs in a block0")]
+    TransactionHasInput,
+    #[error("Certificate should not have inputs in a block0")]
+    CertTransactionHasInput,
+    #[error("Certificate should not have outputs in a block0")]
+    CertTransactionHasOutput,
+    #[error("Transaction should not have witnesses in a block0")]
+    TransactionHasWitnesses,
+    #[error("The initial message is missing.")]
+    InitialMessageMissing,
+    #[error("Only one initial message is required")]
+    InitialMessageMany,
+    #[error("Block0 Date is duplicated in the initial message")]
+    InitialMessageDuplicateBlock0Date,
+    #[error("Address discrimination setting is duplicated in the initial fragment")]
+    InitialMessageDuplicateDiscrimination,
+    #[error("Consensus version is duplicated in the initial fragment")]
+    InitialMessageDuplicateConsensusVersion,
+    #[error("Slot Duration is duplicated in the initial fragment")]
+    InitialMessageDuplicateSlotDuration,
+    #[error("Epoch stability depth is duplicated in the initial fragment")]
+    InitialMessageDuplicateEpochStabilityDepth,
+    #[error("Praos active slot coefficient setting is duplicated in the initial fragment")]
+    InitialMessageDuplicatePraosActiveSlotsCoeff,
+    #[error("Missing block0 date in the initial fragment")]
+    InitialMessageNoDate,
+    #[error("Missing slot duration in the initial fragment")]
+    InitialMessageNoSlotDuration,
+    #[error("Missing slots per epoch in the initial fragment")]
+    InitialMessageNoSlotsPerEpoch,
+    #[error("Missing address discrimination in the initial fragment")]
+    InitialMessageNoDiscrimination,
+    #[error("Missing consensus version in the initial fragment")]
+    InitialMessageNoConsensusVersion,
+    #[error("Missing consensus leader id list in the initial fragment")]
+    InitialMessageNoConsensusLeaderId,
+    #[error("Missing praos active slot coefficient in the initial fragment")]
+    InitialMessageNoPraosActiveSlotsCoeff,
+    #[error("Missing KES Update speed in the initial fragment")]
+    InitialMessageNoKesUpdateSpeed,
+    #[error("Total initial value is too big")]
+    UtxoTotalValueTooBig,
+    #[error("Owner stake delegation are not valid in the block0")]
+    HasOwnerStakeDelegation,
+    #[error("Update proposal fragments are not valid in the block0")]
+    HasUpdateProposal,
+    #[error("Update vote fragments are not valid in the block0")]
+    HasUpdateVote,
+    #[error("Pool management are not valid in the block0")]
+    HasPoolManagement,
 }
 
 pub type OutputOldAddress = Output<legacy::OldAddress>;
 pub type OutputAddress = Output<Address>;
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub Error
-        Config { source: config::Error } = "Invalid settings",
-        UtxoValueNotMatching { expected: Value, value: Value } = "The UTxO value ({expected}) in the transaction does not match the actually state value: {value}",
-        UtxoError { source: utxo::Error } = "Invalid UTxO",
-        UtxoInvalidSignature { utxo: UtxoPointer, output: OutputAddress, witness: Witness } = "Transaction with invalid signature",
-        OldUtxoInvalidSignature { utxo: UtxoPointer, output: OutputOldAddress, witness: Witness } = "Old Transaction with invalid signature",
-        OldUtxoInvalidPublicKey { utxo: UtxoPointer, output: OutputOldAddress, witness: Witness } = "Old Transaction with invalid public key",
-        AccountInvalidSignature { account: account::Identifier, witness: Witness } = "Account with invalid signature",
-        MultisigInvalidSignature { multisig: multisig::Identifier, witness: Witness } = "Multisig with invalid signature",
-        TransactionMalformed { source: TxVerifyError } = "Transaction malformed",
-        FeeCalculationError { source: ValueError } = "Error while computing the fees",
-        PraosActiveSlotsCoeffInvalid { error: ActiveSlotsCoeffError } = "Praos active slot coefficient invalid: {error}",
-        TransactionBalanceInvalid { source: BalanceError } = "Failed to validate transaction balance",
-        Block0 { source: Block0Error } = "Invalid Block0",
-        Block0OnlyFragmentReceived = "Old UTxOs and Initial Message are not valid in a normal block",
-        Account { source: account::LedgerError } = "Error or Invalid account",
-        Multisig { source: multisig::LedgerError } = "Error or Invalid multisig",
-        NotBalanced { inputs: Value, outputs: Value } = "Inputs, outputs and fees are not balanced, transaction with {inputs} input and {outputs} output",
-        ZeroOutput { output: Output<Address> } = "Empty output",
-        OutputGroupInvalid { output: Output<Address> } = "Output group invalid",
-        Delegation { source: PoolError } = "Error or Invalid delegation",
-        AccountIdentifierInvalid = "Invalid account identifier",
-        InvalidDiscrimination = "Invalid discrimination",
-        ExpectingAccountWitness = "Expected an account witness",
-        ExpectingUtxoWitness = "Expected a UTxO witness",
-        ExpectingInitialMessage = "Expected an Initial Fragment",
-        CertificateInvalidSignature = "Invalid certificate's signature",
-        Update { source: update::Error } = "Error or Invalid update",
-        OwnerStakeDelegationInvalidTransaction = "Transaction for OwnerStakeDelegation is invalid. expecting 1 input, 1 witness and 0 output",
-        WrongChainLength { actual: ChainLength, expected: ChainLength } = "Wrong chain length, expected {expected} but received {actual}",
-        NonMonotonicDate { block_date: BlockDate, chain_date: BlockDate } = "Non Monotonic date, chain date is at {chain_date} but the block is at {block_date}",
-        InvalidContentSize { actual: u32, max: u32 } = "Wrong block content size, received {actual} bytes but max is {max} bytes",
-        InvalidContentHash { actual: BlockContentHash, expected: BlockContentHash } = "Wrong block content hash, received {actual} but expected {expected}",
-        IncompleteLedger = "Ledger cannot be reconstructed from serialized state because of missing entries",
-        PotValueInvalid { error: ValueError } = "Ledger pot value invalid: {error}",
-        PoolRegistrationHasNoOwner = "Pool registration with no owner",
-        PoolRegistrationHasTooManyOwners = "Pool registration with too many owners",
-        PoolRegistrationHasTooManyOperators = "Pool registration with too many operators",
-        PoolRegistrationManagementThresholdZero = "Pool registration management threshold is zero",
-        PoolRegistrationManagementThresholdAbove = "Pool registration management threshold above owners",
-        PoolUpdateNotAllowedYet = "Pool Update not allowed yet",
-        StakeDelegationSignatureFailed = "Stake Delegation payload signature failed",
-        PoolRetirementSignatureFailed = "Pool Retirement payload signature failed",
-        PoolUpdateSignatureFailed = "Pool update payload signature failed",
-        UpdateNotAllowedYet = "Update not yet allowed",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum Error {
+    #[error("Invalid settings")]
+    Config(#[from] config::Error),
+    #[error("The UTxO value ({expected}) in the transaction does not match the actually state value: {value}")]
+    UtxoValueNotMatching { expected: Value, value: Value },
+    #[error("Invalid UTxO")]
+    UtxoError(#[from] utxo::Error),
+    #[error("Transaction with invalid signature")]
+    UtxoInvalidSignature {
+        utxo: UtxoPointer,
+        output: OutputAddress,
+        witness: Witness,
+    },
+    #[error("Old Transaction with invalid signature")]
+    OldUtxoInvalidSignature {
+        utxo: UtxoPointer,
+        output: OutputOldAddress,
+        witness: Witness,
+    },
+    #[error("Old Transaction with invalid public key")]
+    OldUtxoInvalidPublicKey {
+        utxo: UtxoPointer,
+        output: OutputOldAddress,
+        witness: Witness,
+    },
+    #[error("Account with invalid signature")]
+    AccountInvalidSignature {
+        account: account::Identifier,
+        witness: Witness,
+    },
+    #[error("Multisig with invalid signature")]
+    MultisigInvalidSignature {
+        multisig: multisig::Identifier,
+        witness: Witness,
+    },
+    #[error("Transaction malformed")]
+    TransactionMalformed(#[from] TxVerifyError),
+    #[error("Error while computing the fees")]
+    FeeCalculationError(#[from] ValueError),
+    #[error("Praos active slot coefficient invalid: {error}")]
+    PraosActiveSlotsCoeffInvalid { error: ActiveSlotsCoeffError },
+    #[error("Failed to validate transaction balance")]
+    TransactionBalanceInvalid(#[from] BalanceError),
+    #[error("Invalid Block0")]
+    Block0(#[from] Block0Error),
+    #[error("Old UTxOs and Initial Message are not valid in a normal block")]
+    Block0OnlyFragmentReceived,
+    #[error("Error or Invalid account")]
+    Account(#[from] account::LedgerError),
+    #[error("Error or Invalid multisig")]
+    Multisig(#[from] multisig::LedgerError),
+    #[error("Inputs, outputs and fees are not balanced, transaction with {inputs} input and {outputs} output")]
+    NotBalanced { inputs: Value, outputs: Value },
+    #[error("Empty output")]
+    ZeroOutput { output: Output<Address> },
+    #[error("Output group invalid")]
+    OutputGroupInvalid { output: Output<Address> },
+    #[error("Error or Invalid delegation")]
+    Delegation(#[from] PoolError),
+    #[error("Invalid account identifier")]
+    AccountIdentifierInvalid,
+    #[error("Invalid discrimination")]
+    InvalidDiscrimination,
+    #[error("Expected an account witness")]
+    ExpectingAccountWitness,
+    #[error("Expected a UTxO witness")]
+    ExpectingUtxoWitness,
+    #[error("Expected an Initial Fragment")]
+    ExpectingInitialMessage,
+    #[error("Invalid certificate's signature")]
+    CertificateInvalidSignature,
+    #[error("Error or Invalid update")]
+    Update(#[from] update::Error),
+    #[error("Transaction for OwnerStakeDelegation is invalid. expecting 1 input, 1 witness and 0 output")]
+    OwnerStakeDelegationInvalidTransaction,
+    #[error("Wrong chain length, expected {expected} but received {actual}")]
+    WrongChainLength {
+        actual: ChainLength,
+        expected: ChainLength,
+    },
+    #[error("Non Monotonic date, chain date is at {chain_date} but the block is at {block_date}")]
+    NonMonotonicDate {
+        block_date: BlockDate,
+        chain_date: BlockDate,
+    },
+    #[error("Wrong block content size, received {actual} bytes but max is {max} bytes")]
+    InvalidContentSize { actual: u32, max: u32 },
+    #[error("Wrong block content hash, received {actual} but expected {expected}")]
+    InvalidContentHash {
+        actual: BlockContentHash,
+        expected: BlockContentHash,
+    },
+    #[error("Ledger cannot be reconstructed from serialized state because of missing entries")]
+    IncompleteLedger,
+    #[error("Ledger pot value invalid: {error}")]
+    PotValueInvalid { error: ValueError },
+    #[error("Pool registration with no owner")]
+    PoolRegistrationHasNoOwner,
+    #[error("Pool registration with too many owners")]
+    PoolRegistrationHasTooManyOwners,
+    #[error("Pool registration with too many operators")]
+    PoolRegistrationHasTooManyOperators,
+    #[error("Pool registration management threshold is zero")]
+    PoolRegistrationManagementThresholdZero,
+    #[error("Pool registration management threshold above owners")]
+    PoolRegistrationManagementThresholdAbove,
+    #[error("Pool Update not allowed yet")]
+    PoolUpdateNotAllowedYet,
+    #[error("Stake Delegation payload signature failed")]
+    StakeDelegationSignatureFailed,
+    #[error("Pool Retirement payload signature failed")]
+    PoolRetirementSignatureFailed,
+    #[error("Pool update payload signature failed")]
+    PoolUpdateSignatureFailed,
+    #[error("Update not yet allowed")]
+    UpdateNotAllowedYet,
 }
 
 impl LedgerParameters {
@@ -199,9 +294,7 @@ impl Ledger {
         let init_ents = match content_iter.next() {
             Some(Fragment::Initial(ref init_ents)) => Ok(init_ents),
             Some(_) => Err(Error::ExpectingInitialMessage),
-            None => Err(Error::Block0 {
-                source: Block0Error::InitialMessageMissing,
-            }),
+            None => Err(Error::Block0(Block0Error::InitialMessageMissing)),
         }?;
 
         let mut ledger = {
@@ -241,21 +334,16 @@ impl Ledger {
             }
 
             // here we make sure those specific parameters are present, otherwise we returns a given error
-            let block0_start_time = block0_start_time.ok_or(Error::Block0 {
-                source: Block0Error::InitialMessageNoDate,
-            })?;
-            let discrimination = discrimination.ok_or(Error::Block0 {
-                source: Block0Error::InitialMessageNoDiscrimination,
-            })?;
-            let slot_duration = slot_duration.ok_or(Error::Block0 {
-                source: Block0Error::InitialMessageNoSlotDuration,
-            })?;
-            let slots_per_epoch = slots_per_epoch.ok_or(Error::Block0 {
-                source: Block0Error::InitialMessageNoSlotsPerEpoch,
-            })?;
-            let kes_update_speed = kes_update_speed.ok_or(Error::Block0 {
-                source: Block0Error::InitialMessageNoKesUpdateSpeed,
-            })?;
+            let block0_start_time =
+                block0_start_time.ok_or(Error::Block0(Block0Error::InitialMessageNoDate))?;
+            let discrimination =
+                discrimination.ok_or(Error::Block0(Block0Error::InitialMessageNoDiscrimination))?;
+            let slot_duration =
+                slot_duration.ok_or(Error::Block0(Block0Error::InitialMessageNoSlotDuration))?;
+            let slots_per_epoch =
+                slots_per_epoch.ok_or(Error::Block0(Block0Error::InitialMessageNoSlotsPerEpoch))?;
+            let kes_update_speed = kes_update_speed
+                .ok_or(Error::Block0(Block0Error::InitialMessageNoKesUpdateSpeed))?;
 
             let static_params = LedgerStaticParameters {
                 block0_initial_hash,
@@ -274,9 +362,9 @@ impl Ledger {
             let settings = setting::Settings::new().apply(&regular_ents)?;
 
             if settings.bft_leaders.is_empty() {
-                return Err(Error::Block0 {
-                    source: Block0Error::InitialMessageNoConsensusLeaderId,
-                });
+                return Err(Error::Block0(
+                    Block0Error::InitialMessageNoConsensusLeaderId,
+                ));
             }
             Ledger::empty(settings, static_params, era, pots)
         };
@@ -285,9 +373,7 @@ impl Ledger {
             let fragment_id = content.hash();
             match content {
                 Fragment::Initial(_) => {
-                    return Err(Error::Block0 {
-                        source: Block0Error::InitialMessageMany,
-                    });
+                    return Err(Error::Block0(Block0Error::InitialMessageMany));
                 }
                 Fragment::OldUtxoDeclaration(old) => {
                     ledger.oldutxos = apply_old_declaration(&fragment_id, ledger.oldutxos, old)?;
@@ -299,19 +385,13 @@ impl Ledger {
                     ledger = ledger.apply_tx_outputs(fragment_id, tx.outputs())?;
                 }
                 Fragment::UpdateProposal(_) => {
-                    return Err(Error::Block0 {
-                        source: Block0Error::HasUpdateProposal,
-                    });
+                    return Err(Error::Block0(Block0Error::HasUpdateProposal));
                 }
                 Fragment::UpdateVote(_) => {
-                    return Err(Error::Block0 {
-                        source: Block0Error::HasUpdateVote,
-                    });
+                    return Err(Error::Block0(Block0Error::HasUpdateVote));
                 }
                 Fragment::OwnerStakeDelegation(_) => {
-                    return Err(Error::Block0 {
-                        source: Block0Error::HasOwnerStakeDelegation,
-                    });
+                    return Err(Error::Block0(Block0Error::HasOwnerStakeDelegation));
                 }
                 Fragment::StakeDelegation(tx) => {
                     let tx = tx.as_slice();
@@ -324,14 +404,10 @@ impl Ledger {
                     ledger = ledger.apply_pool_registration(&tx.payload().into_payload())?;
                 }
                 Fragment::PoolRetirement(_) => {
-                    return Err(Error::Block0 {
-                        source: Block0Error::HasPoolManagement,
-                    });
+                    return Err(Error::Block0(Block0Error::HasPoolManagement));
                 }
                 Fragment::PoolUpdate(_) => {
-                    return Err(Error::Block0 {
-                        source: Block0Error::HasPoolManagement,
-                    });
+                    return Err(Error::Block0(Block0Error::HasPoolManagement));
                 }
             }
         }
@@ -1005,20 +1081,20 @@ impl Ledger {
     pub fn get_total_value(&self) -> Result<Value, Error> {
         let old_utxo_values = self.oldutxos.iter().map(|entry| entry.output.value);
         let new_utxo_values = self.utxos.iter().map(|entry| entry.output.value);
-        let account_value = self.accounts.get_total_value().map_err(|_| Error::Block0 {
-            source: Block0Error::UtxoTotalValueTooBig,
-        })?;
-        let multisig_value = self.multisig.get_total_value().map_err(|_| Error::Block0 {
-            source: Block0Error::UtxoTotalValueTooBig,
-        })?;
+        let account_value = self
+            .accounts
+            .get_total_value()
+            .map_err(|_| Error::Block0(Block0Error::UtxoTotalValueTooBig))?;
+        let multisig_value = self
+            .multisig
+            .get_total_value()
+            .map_err(|_| Error::Block0(Block0Error::UtxoTotalValueTooBig))?;
         let all_utxo_values = old_utxo_values
             .chain(new_utxo_values)
             .chain(Some(account_value))
             .chain(Some(multisig_value))
             .chain(self.pots.values());
-        Value::sum(all_utxo_values).map_err(|_| Error::Block0 {
-            source: Block0Error::UtxoTotalValueTooBig,
-        })
+        Value::sum(all_utxo_values).map_err(|_| Error::Block0(Block0Error::UtxoTotalValueTooBig))
     }
 
     fn apply_tx_inputs<'a, Extra: Payload>(

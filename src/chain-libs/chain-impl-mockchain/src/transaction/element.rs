@@ -3,6 +3,7 @@ use crate::transaction::TransactionBindingAuthData;
 use crate::value::{Value, ValueError};
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_crypto::{digest::DigestOf, Blake2b256, Ed25519, PublicKey, Signature, Verification};
+use thiserror::Error;
 use typed_bytes::ByteBuilder;
 
 pub struct TransactionSignData(Box<[u8]>);
@@ -98,19 +99,12 @@ pub enum Balance {
     Zero,
 }
 
-type Filler = ();
-#[allow(unused_variables)]
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub BalanceError
-        InputsTotalFailed { source: ValueError, filler: Filler } = @{{
-            let _ = (source, filler);
-            "failed to compute total input"
-        }},
-        OutputsTotalFailed { source: ValueError, filler: Filler } = @{{
-            let _ = (source, filler);
-            "failed to compute total output"
-        }},
-        NotBalanced { inputs: Value, outputs: Value }
-            = "transaction value not balanced, has inputs sum {inputs} and outputs sum {outputs}",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum BalanceError {
+    #[error("failed to compute total input")]
+    InputsTotalFailed(#[source] ValueError),
+    #[error("failed to compute total output")]
+    OutputsTotalFailed(#[source] ValueError),
+    #[error("transaction value not balanced, has inputs sum {inputs} and outputs sum {outputs}")]
+    NotBalanced { inputs: Value, outputs: Value },
 }

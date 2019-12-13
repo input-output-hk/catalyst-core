@@ -3,6 +3,7 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use std::convert::TryFrom;
 use std::ops;
+use thiserror::Error;
 
 /// Unspent transaction value.
 #[cfg_attr(feature = "generic-serialization", derive(serde_derive::Serialize))]
@@ -71,13 +72,16 @@ impl Value {
     }
 }
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub ValueError
-        NegativeAmount = "Value cannot be negative",
-        Overflow = "Value overflowed its maximum value",
-        FromSliceTooSmall = "Value from too small slice",
-        FromSliceTooBig = "Value from too big slice",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum ValueError {
+    #[error("Value cannot be negative")]
+    NegativeAmount,
+    #[error("Value overflowed its maximum value")]
+    Overflow,
+    #[error("Value from too small slice")]
+    FromSliceTooSmall,
+    #[error("Value from too big slice")]
+    FromSliceTooBig,
 }
 
 impl ops::Add for Value {

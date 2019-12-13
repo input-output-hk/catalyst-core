@@ -14,6 +14,7 @@ use chain_crypto::Verification as SigningVerification;
 use chain_crypto::{
     digest::DigestOf, Blake2b256, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12,
 };
+use thiserror::Error;
 use typed_bytes::ByteBuilder;
 pub(crate) use vrfeval::witness_to_nonce;
 use vrfeval::VrfEvaluator;
@@ -48,9 +49,12 @@ pub struct LeadershipData {
     active_slots_coeff: ActiveSlotsCoeff,
 }
 
-custom_error! {GenesisError
-    InvalidEpoch { expected: Epoch, actual: Epoch } = "Wrong epoch, expected epoch {expected} but received block at epoch {actual}",
-    TotalStakeIsZero = "Total stake is null",
+#[derive(Debug, Error)]
+enum GenesisError {
+    #[error("Wrong epoch, expected epoch {expected} but received block at epoch {actual}")]
+    InvalidEpoch { expected: Epoch, actual: Epoch },
+    #[error("Total stake is null")]
+    TotalStakeIsZero,
 }
 
 impl LeadershipData {

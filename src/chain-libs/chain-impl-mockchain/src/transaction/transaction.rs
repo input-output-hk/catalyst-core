@@ -392,11 +392,11 @@ impl<P> Transaction<P> {
     pub fn verify_strictly_balanced(&self, fee: Value) -> Result<(), BalanceError> {
         let inputs = self
             .total_input()
-            .map_err(|source| BalanceError::InputsTotalFailed { source, filler: () })?;
+            .map_err(BalanceError::InputsTotalFailed)?;
         let outputs = self
             .total_output()
             .and_then(|out| out + fee)
-            .map_err(|source| BalanceError::OutputsTotalFailed { source, filler: () })?;
+            .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs != outputs {
             Err(BalanceError::NotBalanced { inputs, outputs })?;
         };
@@ -406,10 +406,10 @@ impl<P> Transaction<P> {
     pub fn verify_possibly_balanced(&self) -> Result<(), BalanceError> {
         let inputs = self
             .total_input()
-            .map_err(|source| BalanceError::InputsTotalFailed { source, filler: () })?;
+            .map_err(BalanceError::InputsTotalFailed)?;
         let outputs = self
             .total_output()
-            .map_err(|source| BalanceError::OutputsTotalFailed { source, filler: () })?;
+            .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs < outputs {
             Err(BalanceError::NotBalanced { inputs, outputs })?;
         };
@@ -501,11 +501,11 @@ impl<'a, P> TransactionSlice<'a, P> {
     pub fn verify_strictly_balanced(&self, fee: Value) -> Result<(), BalanceError> {
         let inputs = self
             .total_input()
-            .map_err(|source| BalanceError::InputsTotalFailed { source, filler: () })?;
+            .map_err(BalanceError::InputsTotalFailed)?;
         let outputs = self
             .total_output()
             .and_then(|out| out + fee)
-            .map_err(|source| BalanceError::OutputsTotalFailed { source, filler: () })?;
+            .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs != outputs {
             Err(BalanceError::NotBalanced { inputs, outputs })?;
         };

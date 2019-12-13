@@ -10,15 +10,18 @@ use chain_addr::Address;
 use sparse_array::{FastSparseArray, FastSparseArrayBuilder, FastSparseArrayIter};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
+use thiserror::Error;
 
 use imhamt::{Hamt, HamtIter, InsertError, RemoveError, ReplaceError, UpdateError};
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub Error
-        AlreadyExists = "Transaction ID Already exist",
-        TransactionNotFound = "Transaction is not found",
-        IndexNotFound = "Index not found",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum Error {
+    #[error("Transaction ID Already exist")]
+    AlreadyExists,
+    #[error("Transaction is not found")]
+    TransactionNotFound,
+    #[error("Index not found")]
+    IndexNotFound,
 }
 
 impl From<InsertError> for Error {

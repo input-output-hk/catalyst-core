@@ -13,11 +13,14 @@ use super::{
 };
 use chain_addr::Discrimination;
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub ControllerError
-        UnknownWallet { alias: String } = "cannot find wallet with alias {alias}",
-        UnknownStakePool { alias: String } = "cannot find stake pool with alias {alias}",
+use thiserror::Error;
+
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum ControllerError {
+    #[error("cannot find wallet with alias {alias}")]
+    UnknownWallet { alias: String },
+    #[error("cannot find stake pool with alias {alias}")]
+    UnknownStakePool { alias: String },
 }
 
 pub struct Controller {

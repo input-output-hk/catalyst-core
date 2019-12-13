@@ -110,9 +110,7 @@ pub fn test_first_initial_fragment_empty() {
     let content = Vec::new();
     assert_eq!(
         Ledger::new(header_id, content).err().unwrap(),
-        Block0 {
-            source: Block0Error::InitialMessageMissing,
-        }
+        Block0(Block0Error::InitialMessageMissing)
     );
 }
 
@@ -141,9 +139,7 @@ pub fn ledger_new_no_block_start_time() {
         Ledger::new(header_id, vec![&Fragment::Initial(ie)])
             .err()
             .unwrap(),
-        Block0 {
-            source: Block0Error::InitialMessageNoDate,
-        }
+        Block0(Block0Error::InitialMessageNoDate)
     );
 }
 
@@ -162,9 +158,7 @@ pub fn ledger_new_no_discrimination() {
         Ledger::new(header_id, vec![&Fragment::Initial(ie)])
             .err()
             .unwrap(),
-        Block0 {
-            source: Block0Error::InitialMessageNoDiscrimination,
-        }
+        Block0(Block0Error::InitialMessageNoDiscrimination)
     );
 }
 
@@ -183,9 +177,7 @@ pub fn ledger_new_no_slot_duration() {
         Ledger::new(header_id, vec![&Fragment::Initial(ie)])
             .err()
             .unwrap(),
-        Block0 {
-            source: Block0Error::InitialMessageNoSlotDuration,
-        }
+        Block0(Block0Error::InitialMessageNoSlotDuration)
     );
 }
 
@@ -204,9 +196,7 @@ pub fn ledger_new_no_slots_per_epoch() {
         Ledger::new(header_id, vec![&Fragment::Initial(ie)])
             .err()
             .unwrap(),
-        Block0 {
-            source: Block0Error::InitialMessageNoSlotsPerEpoch,
-        }
+        Block0(Block0Error::InitialMessageNoSlotsPerEpoch)
     );
 }
 
@@ -225,9 +215,7 @@ pub fn ledger_new_no_kes_update_speed() {
         Ledger::new(header_id, vec![&Fragment::Initial(ie)])
             .err()
             .unwrap(),
-        Block0 {
-            source: Block0Error::InitialMessageNoKesUpdateSpeed,
-        }
+        Block0(Block0Error::InitialMessageNoKesUpdateSpeed)
     );
 }
 
@@ -245,8 +233,6 @@ pub fn ledger_new_no_bft_leader() {
         Ledger::new(header_id, vec![&Fragment::Initial(ie)])
             .err()
             .unwrap(),
-        Block0 {
-            source: Block0Error::InitialMessageNoConsensusLeaderId,
-        }
+        Block0(Block0Error::InitialMessageNoConsensusLeaderId)
     );
 }

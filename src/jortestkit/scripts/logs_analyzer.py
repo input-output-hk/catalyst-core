@@ -121,7 +121,7 @@ def main():
                 print(rejected_txs_df['status'].value_counts())
 
                 print(f"======= Node {node_port} - Rejected fragment_ids =======")
-                print(rejected_txs_df['fragment_id'].values)
+                print(rejected_txs_df['fragment_id'].head().values)
 
                 # print(f"======= Node {node_port} - Pending fragment_ids =======")
                 # print(pending_txs_df['fragment_id'].values)

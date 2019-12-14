@@ -41,6 +41,7 @@ pub struct ConfigBuilder {
     treasury: Value,
     treasury_params: TaxType,
     reward_params: RewardParams,
+    block_content_max_size: Option<u32>,
 }
 
 impl ConfigBuilder {
@@ -65,6 +66,7 @@ impl ConfigBuilder {
             },
             treasury_params: TaxType::zero(),
             treasury: Value(1_000),
+            block_content_max_size: None,
         }
     }
 
@@ -118,6 +120,11 @@ impl ConfigBuilder {
         self
     }
 
+    pub fn with_block_content_max_size(mut self, block_content_max_size: u32) -> Self {
+        self.block_content_max_size = Some(block_content_max_size);
+        self
+    }
+
     fn create_single_bft_leader() -> LeaderId {
         let leader_prv_key: SecretKey<Ed25519Extended> =
             SecretKey::generate(rand_os::OsRng::new().unwrap());
@@ -146,8 +153,12 @@ impl ConfigBuilder {
         ie.push(ConfigParam::TreasuryParams(self.treasury_params.clone()));
         ie.push(ConfigParam::RewardParams(self.reward_params.clone()));
 
-        if self.linear_fee.is_some() {
-            ie.push(ConfigParam::LinearFee(self.linear_fee.clone().unwrap()));
+        if let Some(linear_fee) = self.linear_fee {
+            ie.push(ConfigParam::LinearFee(linear_fee.clone()));
+        }
+
+        if let Some(block_content_max_size) = self.block_content_max_size {
+            ie.push(ConfigParam::BlockContentMaxSize(block_content_max_size));
         }
 
         ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));

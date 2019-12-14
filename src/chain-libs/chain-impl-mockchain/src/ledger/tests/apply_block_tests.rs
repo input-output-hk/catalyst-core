@@ -6,7 +6,8 @@ use crate::{
     ledger::{ledger::Error::Account, Error as LedgerError},
     testing::{
         builders::{GenesisPraosBlockBuilder, TestTxBuilder},
-        scenario::{prepare_scenario, wallet},
+        ledger::ConfigBuilder,
+        scenario::{prepare_scenario, wallet, FragmentFactory},
     },
     value::{Value, ValueError::NegativeAmount},
 };
@@ -171,6 +172,46 @@ pub fn apply_block_incorrect_fragment() {
             source: ValueError {
                 source: NegativeAmount
             }
+        },
+        ledger.apply_block(block)
+    );
+}
+
+#[test]
+pub fn apply_block_above_max_content_size() {
+    let block_content_max_size = 152;
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(ConfigBuilder::new(0).with_block_content_max_size(block_content_max_size))
+        .with_initials(vec![
+            wallet("Alice").with(1_000).owns("stake_pool"),
+            wallet("Bob").with(1_000),
+        ])
+        .build()
+        .unwrap();
+    let alice = controller.wallet("Alice").unwrap();
+    let bob = controller.wallet("Bob").unwrap();
+    let stake_pool = controller.stake_pool("stake_pool").unwrap();
+    let date = BlockDate {
+        epoch: 1,
+        slot_id: 0,
+    };
+
+    let fragment_factory = FragmentFactory::new(ledger.block0_hash);
+    let fragment = fragment_factory.transaction(&alice, &bob, &mut ledger, 10);
+
+    let block = GenesisPraosBlockBuilder::new()
+        .with_date(date.clone())
+        .with_fragment(fragment)
+        .with_chain_length(ChainLength(0))
+        .with_parent_id(ledger.block0_hash)
+        .build(&stake_pool, ledger.era());
+
+    let (_, content_size) = block.contents.compute_hash_size();
+
+    assert_err!(
+        LedgerError::InvalidContentSize {
+            actual: content_size,
+            max: block_content_max_size
         },
         ledger.apply_block(block)
     );

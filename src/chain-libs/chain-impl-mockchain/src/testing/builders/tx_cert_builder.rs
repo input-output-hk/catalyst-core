@@ -1,5 +1,6 @@
 use crate::{
-    certificate::{Certificate, PoolOwnersSigned, PoolSignature},
+    certificate::{Certificate, CertificatePayload, PoolOwnersSigned, PoolSignature},
+    fee::FeeAlgorithm,
     fragment::Fragment,
     header::HeaderId,
     key::EitherEd25519SecretKey,
@@ -24,18 +25,20 @@ impl<'a> TestTxCertBuilder<'a> {
         &self.test_ledger.block0_hash
     }
 
-    fn fee(&self) -> Value {
+    fn fee(&self, certificate: &Certificate) -> Value {
         let linear_fee = self.test_ledger.fee();
-        Value(linear_fee.certificate + linear_fee.constant + linear_fee.coefficient)
+        let payload: CertificatePayload = certificate.into();
+        linear_fee.calculate(Some(payload.as_slice()), 1, 0)
     }
 
     fn set_initial_ios<P: Payload>(
         &self,
         builder: TxBuilderState<SetIOs<P>>,
         funder: &Wallet,
+        cert: &Certificate,
     ) -> TxBuilderState<SetAuthData<P>> {
         //utxo not supported yet
-        let input = funder.make_input_with_value(&self.fee());
+        let input = funder.make_input_with_value(&self.fee(cert));
         let builder = builder.set_ios(&[input], &[]);
         let witness = make_witness(
             self.block0_hash(),
@@ -53,32 +56,32 @@ impl<'a> TestTxCertBuilder<'a> {
     ) -> Fragment {
         match cert {
             Certificate::StakeDelegation(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
                 let signature =
                     AccountBindingSignature::new_single(&keys[0], &builder.get_auth_data());
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::StakeDelegation(tx)
             }
             Certificate::PoolRegistration(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
                 let signature = pool_owner_sign(&keys, &builder);
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::PoolRegistration(tx)
             }
             Certificate::PoolRetirement(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
                 let signature = pool_owner_sign(&keys, &builder);
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::PoolRetirement(tx)
             }
             Certificate::PoolUpdate(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
                 let signature = pool_owner_sign(&keys, &builder);
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::PoolUpdate(tx)
             }
             Certificate::OwnerStakeDelegation(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
                 let tx = builder.set_payload_auth(&());
                 Fragment::OwnerStakeDelegation(tx)
             }

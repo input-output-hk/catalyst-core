@@ -106,7 +106,9 @@ impl FeeAlgorithm for LinearFee {
 #[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
-    use quickcheck::{Arbitrary, Gen};
+    use crate::certificate::{Certificate, CertificatePayload};
+    use quickcheck::{Arbitrary, Gen, TestResult};
+    use quickcheck_macros::quickcheck;
 
     impl Arbitrary for PerCertificateFee {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -126,6 +128,56 @@ mod test {
                 certificate: Arbitrary::arbitrary(g),
                 per_certificate_fees: PerCertificateFee::new(None, None, None),
             }
+        }
+    }
+
+    #[quickcheck]
+    pub fn linear_fee_certificate_calculation(
+        certificate: Certificate,
+        inputs: u8,
+        outputs: u8,
+        mut fee: LinearFee,
+        per_certificate_fees: PerCertificateFee,
+    ) -> TestResult {
+        fee.per_certificate_fees(per_certificate_fees);
+        let per_certificate_fees = fee.per_certificate_fees;
+        if per_certificate_fees.certificate_pool_registration.is_none()
+            || per_certificate_fees.certificate_stake_delegation.is_none()
+            || per_certificate_fees
+                .certificate_owner_stake_delegation
+                .is_none()
+        {
+            return TestResult::discard();
+        }
+
+        let certificate_payload: CertificatePayload = (&certificate).into();
+        let fee_value = fee.calculate(Some(certificate_payload.as_slice()), inputs, outputs);
+        let inputs_outputs_fee: u64 = (inputs + outputs) as u64 * fee.coefficient;
+        let expected_value = Value(
+            calculate_expected_cert_fee_value(&certificate, &fee)
+                + inputs_outputs_fee
+                + fee.constant,
+        );
+
+        match fee_value == expected_value {
+            true => TestResult::passed(),
+            false => TestResult::error(format!("Wrong fee: {} vs {}", fee_value, expected_value)),
+        }
+    }
+
+    fn calculate_expected_cert_fee_value(certificate: &Certificate, fee: &LinearFee) -> u64 {
+        let cert_fees = fee.per_certificate_fees;
+        match certificate {
+            Certificate::PoolRegistration { .. } => {
+                cert_fees.certificate_pool_registration.unwrap().into()
+            }
+            Certificate::StakeDelegation { .. } => {
+                cert_fees.certificate_stake_delegation.unwrap().into()
+            }
+            Certificate::OwnerStakeDelegation { .. } => {
+                cert_fees.certificate_owner_stake_delegation.unwrap().into()
+            }
+            _ => fee.certificate,
         }
     }
 }

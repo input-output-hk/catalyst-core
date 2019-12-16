@@ -1,3 +1,4 @@
+pub mod fees;
 pub mod management_threshold;
 pub mod owner_delegation;
 pub mod rewards;

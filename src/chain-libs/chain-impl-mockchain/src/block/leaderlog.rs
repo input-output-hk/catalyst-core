@@ -49,3 +49,165 @@ impl LeadersParticipationRecord {
         self.log.iter()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{certificate::PoolId, testing::builders::StakePoolBuilder};
+
+    #[test]
+    pub fn test_total() {
+        let leaders_participation_record = create_log(vec![
+            (new_stake_pool_id(), 10),
+            (new_stake_pool_id(), 0),
+            (new_stake_pool_id(), 11),
+            (new_stake_pool_id(), 5),
+        ]);
+        verify_participants_count(&leaders_participation_record, 4);
+        verify_total(&leaders_participation_record, 26);
+    }
+
+    #[test]
+    pub fn test_increase_for_existing_pool() {
+        let stake_pool_id = new_stake_pool_id();
+
+        let mut leaders_participation_record = create_log(vec![(stake_pool_id.clone(), 1)]);
+
+        leaders_participation_record.increase_for(&stake_pool_id);
+
+        assert_eq!(
+            2,
+            get_count(&leaders_participation_record, &stake_pool_id).unwrap(),
+            "wrong count for existing stake pool"
+        );
+        verify_participants_count(&leaders_participation_record, 1);
+        verify_total(&leaders_participation_record, 2);
+    }
+
+    #[test]
+    pub fn test_increase_for_non_existing_pool() {
+        let stake_pool_id = new_stake_pool_id();
+        let non_existing_stake_pool_id = new_stake_pool_id();
+
+        let mut leaders_participation_record = create_log(vec![(stake_pool_id.clone(), 1)]);
+
+        leaders_participation_record.increase_for(&non_existing_stake_pool_id);
+
+        assert_eq!(
+            1,
+            get_count(&leaders_participation_record, &non_existing_stake_pool_id).unwrap(),
+            "wrong count for new stake pool"
+        );
+        assert_eq!(
+            1,
+            get_count(&leaders_participation_record, &stake_pool_id).unwrap(),
+            "wrong count for existing stake pool"
+        );
+
+        verify_participants_count(&leaders_participation_record, 2);
+        verify_total(&leaders_participation_record, 2);
+    }
+
+    #[test]
+    pub fn test_set_new_value_for_existing_stake_pool() {
+        let stake_pool_id = new_stake_pool_id();
+
+        let mut leaders_participation_record = create_log(vec![(stake_pool_id.clone(), 1)]);
+
+        assert_eq!(
+            InsertError::EntryExists,
+            leaders_participation_record
+                .set_for(stake_pool_id.clone(), 10)
+                .err()
+                .unwrap()
+        );
+
+        assert_eq!(
+            1,
+            get_count(&leaders_participation_record, &stake_pool_id).unwrap(),
+            "wrong count for new stake pool"
+        );
+
+        verify_participants_count(&leaders_participation_record, 1);
+        //correct expected value: 1
+        verify_total(&leaders_participation_record, 11);
+    }
+
+    #[test]
+    pub fn test_set_duplicated_value_for_existing_stake_pool() {
+        let first_stake_pool_id = new_stake_pool_id();
+
+        let mut leaders_participation_record = create_log(vec![(first_stake_pool_id.clone(), 1)]);
+
+        assert_eq!(
+            InsertError::EntryExists,
+            leaders_participation_record
+                .set_for(first_stake_pool_id.clone(), 1)
+                .err()
+                .unwrap()
+        );
+        //correct expected value: 1
+        verify_total(&leaders_participation_record, 2);
+    }
+
+    #[test]
+    pub fn test_set_new_value_for_non_existing_stake_pool() {
+        let stake_pool_id = new_stake_pool_id();
+
+        let mut leaders_participation_record = create_log(vec![(new_stake_pool_id(), 1)]);
+
+        leaders_participation_record
+            .set_for(stake_pool_id.clone(), 10)
+            .expect("unexpected panic when set for first stake pool");
+
+        assert_eq!(
+            10,
+            get_count(&leaders_participation_record, &stake_pool_id).unwrap(),
+            "wrong count for new stake pool"
+        );
+
+        verify_participants_count(&leaders_participation_record, 2);
+        verify_total(&leaders_participation_record, 11);
+    }
+
+    fn create_log(records: Vec<(PoolId, u32)>) -> LeadersParticipationRecord {
+        let mut leaders_participation_record = LeadersParticipationRecord::new();
+        for (pool_id, count) in records.iter() {
+            leaders_participation_record
+                .set_for(pool_id.clone(), *count)
+                .expect("panic when filling records");
+        }
+        leaders_participation_record
+    }
+
+    fn get_count(
+        leaders_participation_record: &LeadersParticipationRecord,
+        stake_pool_id: &PoolId,
+    ) -> Option<u32> {
+        leaders_participation_record
+            .iter()
+            .find(|x| *x.0 == *stake_pool_id)
+            .map(|x| *x.1)
+    }
+
+    fn new_stake_pool_id() -> PoolId {
+        StakePoolBuilder::new().build().id()
+    }
+
+    fn verify_total(leaders_participation_record: &LeadersParticipationRecord, count: u32) {
+        let actual = leaders_participation_record.total();
+        assert_eq!(actual, count, "wrong total value {} vs {}", actual, count);
+    }
+
+    fn verify_participants_count(
+        leaders_participation_record: &LeadersParticipationRecord,
+        count: u32,
+    ) {
+        let actual = leaders_participation_record.nb_participants();
+        assert_eq!(
+            actual, count as usize,
+            "wrong no of participants {} vs {}",
+            actual, count
+        );
+    }
+}

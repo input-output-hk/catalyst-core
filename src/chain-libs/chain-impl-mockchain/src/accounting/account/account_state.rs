@@ -529,4 +529,51 @@ mod tests {
         ];
         assert!(DelegationRatio::new(parts, pools).is_none());
     }
+
+    #[quickcheck]
+    pub fn add_rewards(account_state_no_reward: AccountState<()>, value: Value) -> TestResult {
+        let initial_value = account_state_no_reward.value().clone();
+        let account_state_reward = account_state_no_reward.clone();
+
+        let account_state_no_reward = account_state_no_reward
+            .add(value)
+            .expect("cannot add value");
+        let account_state_reward = account_state_reward
+            .add_rewards(1, value)
+            .expect("cannot add reward");
+
+        accounts_are_the_same(account_state_no_reward, account_state_reward, initial_value)
+    }
+
+    #[quickcheck]
+    pub fn new_account_rewards(value: Value) -> TestResult {
+        let account_state = AccountState::new(value.clone(), ());
+        let account_with_reward = AccountState::new_reward(1, value.clone(), ());
+        accounts_are_the_same(account_state, account_with_reward, Value::zero())
+    }
+
+    fn accounts_are_the_same(
+        account_without_reward: AccountState<()>,
+        account_with_reward: AccountState<()>,
+        initial_value: Value,
+    ) -> TestResult {
+        if account_without_reward.value() != account_with_reward.value() {
+            return TestResult::error(format!(
+                "value should be the same {} vs {}",
+                account_without_reward.value(),
+                account_with_reward.value()
+            ));
+        }
+
+        let expected_reward_account_state =
+            (account_with_reward.last_rewards.reward + initial_value).unwrap();
+        if account_without_reward.value() != expected_reward_account_state {
+            return TestResult::error(format!(
+                "reward should be the same {} vs {}",
+                account_without_reward.value(),
+                expected_reward_account_state
+            ));
+        }
+        TestResult::passed()
+    }
 }

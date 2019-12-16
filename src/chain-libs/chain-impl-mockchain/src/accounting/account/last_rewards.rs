@@ -38,3 +38,68 @@ impl LastRewards {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::value::Value;
+
+    #[test]
+    pub fn add_for_new_epoch_replaced_old_value() {
+        let value_to_add = Value(100);
+        let mut last_rewards = LastRewards {
+            epoch: 0,
+            reward: Value(50),
+        };
+        last_rewards.add_for(1, value_to_add);
+        assert_eq!(
+            last_rewards.reward,
+            Value(100),
+            "incorrect value for rewards {} vs {}",
+            last_rewards.reward,
+            value_to_add
+        );
+    }
+
+    #[test]
+    pub fn add_for_current_epoch_increment_value() {
+        let value_to_add = Value(100);
+        let epoch = 1;
+        let mut last_rewards = LastRewards {
+            epoch: 1,
+            reward: Value(50),
+        };
+        last_rewards.add_for(epoch, value_to_add);
+        assert_eq!(
+            last_rewards.reward,
+            Value(150),
+            "incorrect value for rewards {} vs {}",
+            last_rewards.reward,
+            value_to_add
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    pub fn add_for_wrong_epoch() {
+        let value_to_add = Value(100);
+        let epoch = 1;
+        let mut last_rewards = LastRewards {
+            epoch: 2,
+            reward: Value::zero(),
+        };
+        last_rewards.add_for(epoch, value_to_add);
+    }
+
+    #[test]
+    #[should_panic]
+    pub fn add_for_value_overflow() {
+        let value_to_add = Value(std::u64::MAX);
+        let epoch = 0;
+        let mut last_rewards = LastRewards {
+            epoch: 0,
+            reward: Value(std::u64::MAX),
+        };
+        last_rewards.add_for(epoch, value_to_add);
+    }
+}

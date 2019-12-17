@@ -4,6 +4,7 @@ use crate::{
     fee::LinearFee,
     rewards::Ratio,
     testing::{
+        builders::StakePoolBuilder,
         ledger::{ConfigBuilder, TestLedger},
         scenario::{prepare_scenario, stake_pool, wallet},
         verifiers::LedgerStateVerifier,
@@ -539,4 +540,164 @@ fn calculate_reward(expected_total_reward: &Value, pool_id: &PoolId, ledger: &Te
     let reward_unit = expected_total_reward.split_in(ledger.leaders_log().total());
     let block_count = ledger.leaders_log_for(pool_id);
     reward_unit.parts.scale(block_count).unwrap()
+}
+
+#[test]
+pub fn rewards_owner_of_many_stake_pool() {
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000))
+                .with_treasury(Value(0))
+                .with_rewards_params(RewardParams::Linear {
+                    constant: 100,
+                    ratio: Ratio {
+                        numerator: 1,
+                        denominator: NonZeroU64::new(1).unwrap(),
+                    },
+                    epoch_start: 0,
+                    epoch_rate: NonZeroU32::new(1).unwrap(),
+                }),
+        )
+        .with_initials(vec![
+            wallet("Alice").with(1_000).owns("stake_pool"),
+            wallet("Bob").with(1_000),
+            wallet("Clarice").with(1_000),
+        ])
+        .with_stake_pools(vec![stake_pool("stake_pool").tax_ratio(1, 10)])
+        .build()
+        .unwrap();
+
+    let first_alice_stake_pool = controller.stake_pool("stake_pool").unwrap();
+    let alice = controller.wallet("Alice").unwrap();
+    let mut bob = controller.wallet("Bob").unwrap();
+    let mut clarice = controller.wallet("Clarice").unwrap();
+
+    let total_ada_before = ledger.total_funds();
+
+    let second_alice_stake_pool = StakePoolBuilder::new()
+        .with_owners(vec![alice.public_key()])
+        .with_ratio_tax_type(1, 10, None)
+        .build();
+
+    controller
+        .register(&alice, &second_alice_stake_pool, &mut ledger)
+        .unwrap();
+
+    // produce 2 blocks for each stake pool
+    let fragment_factory = controller.fragment_factory();
+
+    let fragment = fragment_factory.transaction(&mut bob, &clarice, &mut ledger, 100);
+    assert!(ledger
+        .produce_block(&first_alice_stake_pool, vec![fragment])
+        .is_ok());
+
+    let fragment = fragment_factory.transaction(&mut clarice, &bob, &mut ledger, 100);
+    assert!(ledger
+        .produce_block(&second_alice_stake_pool, vec![fragment])
+        .is_ok());
+
+    ledger.distribute_rewards().unwrap();
+
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    ledger_verifier.info("after rewards distribution with two transactions");
+
+    ledger_verifier
+        .pots()
+        .has_fee_equals_to(&Value::zero())
+        .and()
+        .has_treasury_equals_to(&Value(98))
+        .and()
+        .has_remaining_rewards_equals_to(&Value(901));
+
+    ledger_verifier.total_value_is(&total_ada_before);
+
+    // check owner account (10 from rewards - 3 from register stake pool fee)
+    ledger_verifier
+        .account(alice.as_account_data())
+        .has_value(&Value(1007));
+}
+
+#[test]
+pub fn rewards_delegators_of_many_stake_pool() {
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000))
+                .with_treasury(Value(0))
+                .with_rewards_params(RewardParams::Linear {
+                    constant: 100,
+                    ratio: Ratio {
+                        numerator: 1,
+                        denominator: NonZeroU64::new(1).unwrap(),
+                    },
+                    epoch_start: 0,
+                    epoch_rate: NonZeroU32::new(1).unwrap(),
+                }),
+        )
+        .with_initials(vec![
+            wallet("Alice").with(1_000).owns("alice_stake_pool"),
+            wallet("Bob").with(1_000).owns("bob_stake_pool"),
+            wallet("Clarice").with(1_000),
+            wallet("David").with(1_000),
+            wallet("Eve").with(1_000),
+        ])
+        .with_stake_pools(vec![
+            stake_pool("alice_stake_pool").tax_ratio(1, 10),
+            stake_pool("bob_stake_pool").tax_ratio(1, 10),
+        ])
+        .build()
+        .unwrap();
+
+    let alice_stake_pool = controller.stake_pool("alice_stake_pool").unwrap();
+    let bob_stake_pool = controller.stake_pool("bob_stake_pool").unwrap();
+
+    let mut clarice = controller.wallet("Clarice").unwrap();
+    let mut david = controller.wallet("David").unwrap();
+    let eve = controller.wallet("Eve").unwrap();
+
+    let total_ada_before = ledger.total_funds();
+
+    controller
+        .delegates_to_many(
+            &eve,
+            &[(&alice_stake_pool, 1), (&bob_stake_pool, 1)],
+            &mut ledger,
+        )
+        .unwrap();
+
+    // produce 2 blocks for each stake pool
+    let fragment_factory = controller.fragment_factory();
+
+    let fragment = fragment_factory.transaction(&mut david, &clarice, &mut ledger, 100);
+    assert!(ledger
+        .produce_block(&alice_stake_pool, vec![fragment])
+        .is_ok());
+
+    let fragment = fragment_factory.transaction(&mut clarice, &david, &mut ledger, 100);
+    assert!(ledger
+        .produce_block(&bob_stake_pool, vec![fragment])
+        .is_ok());
+
+    ledger.distribute_rewards().unwrap();
+
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    ledger_verifier.info("after rewards distribution with two transactions");
+
+    ledger_verifier
+        .pots()
+        .has_fee_equals_to(&Value::zero())
+        .and()
+        .has_treasury_equals_to(&Value(2))
+        .and()
+        .has_remaining_rewards_equals_to(&Value(901));
+
+    ledger_verifier.total_value_is(&total_ada_before);
+
+    // check owner account (94 from rewards - 3 from register stake pool fee)
+    ledger_verifier
+        .account(eve.as_account_data())
+        .has_value(&Value(1093));
 }

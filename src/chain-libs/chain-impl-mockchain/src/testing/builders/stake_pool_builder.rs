@@ -64,6 +64,22 @@ impl StakePoolBuilder {
         self
     }
 
+    pub fn with_ratio_tax_type(
+        &mut self,
+        numerator: u64,
+        denominator: u64,
+        max_limit: Option<u64>,
+    ) -> &mut Self {
+        self.with_tax_type(TaxType {
+            fixed: Value(0),
+            ratio: Ratio {
+                numerator: numerator,
+                denominator: NonZeroU64::new(denominator).unwrap(),
+            },
+            max_limit: max_limit.map(|x| NonZeroU64::new(x).unwrap()),
+        })
+    }
+
     pub fn with_tax_type(&mut self, tax_type: TaxType) -> &mut Self {
         self.tax_type = tax_type;
         self

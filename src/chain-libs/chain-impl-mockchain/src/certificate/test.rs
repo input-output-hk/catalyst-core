@@ -61,6 +61,12 @@ impl Arbitrary for PoolSignature {
     }
 }
 
+impl Arbitrary for PoolPermissions {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        PoolPermissions::new(u8::arbitrary(g))
+    }
+}
+
 impl Arbitrary for DelegationType {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         DelegationType::Full(Arbitrary::arbitrary(g))

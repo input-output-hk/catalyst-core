@@ -3,11 +3,13 @@ use super::cstruct;
 use super::header::{HeaderBft, HeaderGenesisPraos, HeaderUnsigned};
 use super::version::BlockVersion;
 
-use crate::block::{BftSignature, KESSignature};
-use crate::certificate::PoolId;
-use crate::date::BlockDate;
-use crate::fragment::{BlockContentHash, BlockContentSize, Contents};
-use crate::leadership;
+use crate::{
+    block::{BftSignature, KESSignature},
+    certificate::PoolId,
+    date::BlockDate,
+    fragment::{BlockContentHash, BlockContentSize, Contents},
+    leadership,
+};
 
 use chain_crypto::{Ed25519, SecretKey, SumEd25519_12};
 use std::marker::PhantomData;
@@ -206,5 +208,181 @@ impl HeaderGenesisPraosBuilder<HeaderSetConsensusSignature> {
         let data = self.get_authenticated_data();
         let signature = kes_signing_key.sign_slice(data);
         self.set_signature(KESSignature(signature))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        header::components::HeaderId,
+        testing::{
+            data::{LeaderPair, StakePool},
+            TestGen,
+        },
+    };
+
+    fn block_date() -> BlockDate {
+        BlockDate {
+            epoch: 0,
+            slot_id: 1,
+        }
+    }
+
+    fn contents() -> Contents {
+        Contents::empty()
+    }
+
+    fn chain_length() -> ChainLength {
+        ChainLength(1)
+    }
+
+    fn stake_pool() -> StakePool {
+        TestGen::stake_pool()
+    }
+
+    fn parent_id() -> HeaderId {
+        TestGen::hash()
+    }
+
+    fn leader() -> LeaderPair {
+        TestGen::leader_pair()
+    }
+
+    #[test]
+    pub fn correct_header() {
+        let parent_id = parent_id();
+        let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
+            .set_parent(&parent_id, chain_length())
+            .set_date(block_date())
+            .to_genesis_praos_builder()
+            .unwrap()
+            .set_consensus_data(
+                &stake_pool().id(),
+                &TestGen::vrf_proof(&stake_pool()).into(),
+            )
+            .sign_using(stake_pool().kes().private_key())
+            .generalize();
+
+        assert_ne!(header.id(), parent_id, "same id as parent");
+        assert_eq!(
+            header.block_version(),
+            BlockVersion::KesVrfproof,
+            "wrong block version"
+        );
+        assert_eq!(
+            header.block_parent_hash(),
+            parent_id,
+            "wrong block parent hash"
+        );
+        assert_eq!(header.chain_length(), chain_length(), "wrong chain length");
+    }
+
+    #[test]
+    pub fn correct_genesis_header() {
+        let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
+            .set_genesis()
+            .set_date(block_date())
+            .to_genesis_praos_builder()
+            .unwrap()
+            .set_consensus_data(
+                &stake_pool().id(),
+                &TestGen::vrf_proof(&stake_pool()).into(),
+            )
+            .sign_using(stake_pool().kes().private_key())
+            .generalize();
+
+        assert_ne!(header.id(), HeaderId::zero_hash(), "same id as parent");
+        assert_eq!(
+            header.block_version(),
+            BlockVersion::KesVrfproof,
+            "wrong block version"
+        );
+        assert_eq!(
+            header.block_parent_hash(),
+            HeaderId::zero_hash(),
+            "wrong block parent hash"
+        );
+        assert_eq!(header.chain_length(), ChainLength(0), "wrong chain length");
+    }
+
+    #[test]
+    pub fn correct_bft_header() {
+        let parent_id = parent_id();
+        let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
+            .set_parent(&parent_id, chain_length())
+            .set_date(block_date())
+            .to_bft_builder()
+            .unwrap()
+            .sign_using(&leader().key())
+            .generalize();
+
+        assert_ne!(header.id(), parent_id, "same id as parent");
+        assert_eq!(
+            header.block_version(),
+            BlockVersion::Ed25519Signed,
+            "wrong block version"
+        );
+        assert_eq!(
+            header.block_parent_hash(),
+            parent_id,
+            "wrong block parent hash"
+        );
+        assert_eq!(header.chain_length(), chain_length(), "wrong chain length");
+        assert_eq!(header.block_date(), block_date(), "")
+    }
+
+    #[test]
+    pub fn correct_unsigned_header() {
+        let parent_id = parent_id();
+        let header = HeaderBuilderNew::new(BlockVersion::Genesis, &contents())
+            .set_parent(&parent_id, chain_length())
+            .set_date(block_date())
+            .to_unsigned_header()
+            .unwrap()
+            .generalize();
+
+        assert_ne!(header.id(), parent_id, "same id as parent");
+        assert_eq!(
+            header.block_version(),
+            BlockVersion::Genesis,
+            "wrong block version"
+        );
+        assert_eq!(
+            header.block_parent_hash(),
+            parent_id,
+            "wrong block parent hash"
+        );
+        assert_eq!(header.chain_length(), chain_length(), "wrong chain length");
+    }
+
+    #[test]
+    #[should_panic]
+    pub fn wrong_version_bft() {
+        HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
+            .set_parent(&parent_id(), chain_length())
+            .set_date(block_date())
+            .to_bft_builder()
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    pub fn wrong_version_unsigned() {
+        HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
+            .set_genesis()
+            .set_date(block_date())
+            .to_unsigned_header()
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    pub fn wrong_version_genesis_praos() {
+        HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
+            .set_parent(&parent_id(), chain_length())
+            .set_date(block_date())
+            .to_genesis_praos_builder()
+            .unwrap();
     }
 }

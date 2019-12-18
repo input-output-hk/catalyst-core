@@ -170,3 +170,22 @@ pub enum SignedCertificate {
     PoolRetirement(PoolRetirement, <PoolRetirement as Payload>::Auth),
     PoolUpdate(PoolUpdate, <PoolUpdate as Payload>::Auth),
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use quickcheck::TestResult;
+    use quickcheck_macros::quickcheck;
+
+    #[quickcheck]
+    pub fn need_auth(certificate: Certificate) -> TestResult {
+        let expected_result = match certificate {
+            Certificate::PoolRegistration(_) => true,
+            Certificate::PoolUpdate(_) => true,
+            Certificate::PoolRetirement(_) => true,
+            Certificate::StakeDelegation(_) => true,
+            Certificate::OwnerStakeDelegation(_) => false,
+        };
+        TestResult::from_bool(certificate.need_auth() == expected_result)
+    }
+}

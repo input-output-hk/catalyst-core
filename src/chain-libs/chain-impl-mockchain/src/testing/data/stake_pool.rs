@@ -1,7 +1,11 @@
-use crate::certificate::{PoolId, PoolRegistration};
-use crate::testing::data::address::AddressData;
+use crate::{
+    certificate::{PoolId, PoolRegistration},
+    testing::{builders::StakePoolBuilder, data::address::AddressData, TestGen},
+};
 
-use chain_crypto::{Curve25519_2HashDH, KeyPair, SumEd25519_12};
+use chain_crypto::{Curve25519_2HashDH, Ed25519, KeyPair, PublicKey, SumEd25519_12};
+use quickcheck::{Arbitrary, Gen};
+use std::iter;
 
 #[derive(Clone, Debug)]
 pub struct StakePool {
@@ -54,5 +58,26 @@ impl StakePool {
 
     pub fn reward_account(&self) -> Option<&AddressData> {
         self.reward_account.as_ref()
+    }
+}
+
+impl Arbitrary for StakePool {
+    fn arbitrary<G: Gen>(gen: &mut G) -> Self {
+        let owners_count = std::cmp::max(usize::arbitrary(gen) % 8, 1);
+        let operators_count = usize::arbitrary(gen) % 4;
+        let owners: Vec<PublicKey<Ed25519>> = iter::from_fn(|| Some(TestGen::public_key()))
+            .take(owners_count)
+            .collect();
+        let operators: Vec<PublicKey<Ed25519>> = iter::from_fn(|| Some(TestGen::public_key()))
+            .take(operators_count)
+            .collect();
+
+        StakePoolBuilder::new()
+            .with_owners(owners)
+            .with_operators(operators)
+            .with_pool_permissions(Arbitrary::arbitrary(gen))
+            .with_reward_account(Arbitrary::arbitrary(gen))
+            .with_tax_type(Arbitrary::arbitrary(gen))
+            .build()
     }
 }

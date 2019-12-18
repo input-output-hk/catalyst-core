@@ -246,3 +246,26 @@ pub fn ledger_new_no_bft_leader() {
         }
     );
 }
+
+#[quickcheck]
+pub fn wrong_fragment_at_block0(fragment: Fragment) -> TestResult {
+    match fragment {
+        Fragment::OldUtxoDeclaration(_) => return TestResult::discard(),
+        Fragment::Transaction(_) => return TestResult::discard(),
+        Fragment::StakeDelegation(_) => return TestResult::discard(),
+        Fragment::PoolRegistration(_) => return TestResult::discard(),
+        _ => (),
+    };
+
+    let header_id = TestGen::hash();
+    let mut ie = ConfigParams::new();
+    let leader_pair = TestGen::leader_pair();
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::SlotDuration(10u8));
+    ie.push(ConfigParam::SlotsPerEpoch(10u32));
+    ie.push(ConfigParam::KESUpdateSpeed(3600));
+
+    TestResult::from_bool(Ledger::new(header_id, vec![&Fragment::Initial(ie), &fragment]).is_err())
+}

@@ -23,6 +23,15 @@ pub fn create_initial_stake_pool_registration(
     fragment(cert, keys)
 }
 
+pub fn create_initial_transaction(wallet: &Wallet) -> Fragment {
+    let tx = TxBuilder::new()
+        .set_nopayload()
+        .set_ios(&[], &[wallet.make_output()])
+        .set_witnesses(&[])
+        .set_payload_auth(&());
+    Fragment::Transaction(tx)
+}
+
 pub fn create_initial_stake_pool_delegation(stake_pool: &StakePool, wallet: &Wallet) -> Fragment {
     let cert = build_stake_delegation_cert(&stake_pool.info(), &wallet.as_account_data());
     let keys: Vec<EitherEd25519SecretKey> = vec![wallet.private_key()];

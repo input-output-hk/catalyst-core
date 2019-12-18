@@ -4,9 +4,8 @@ use crate::{
     fragment::{Contents, ContentsBuilder, Fragment},
     header::{BlockVersion, ChainLength, Header, HeaderBuilderNew},
     key::Hash,
-    testing::data::StakePool,
+    testing::{data::StakePool, TestGen},
 };
-use chain_crypto::vrf_evaluate_and_prove;
 use chain_time::TimeEra;
 
 pub struct GenesisPraosBlockBuilder {
@@ -64,10 +63,7 @@ impl GenesisPraosBlockBuilder {
         if self.date.is_none() || self.chain_length.is_none() || self.parent_id.is_none() {
             panic!("date,chain_length or hash is not set");
         }
-
-        let mut rng = rand_os::OsRng::new().unwrap();
-        let vrf_proof =
-            vrf_evaluate_and_prove(stake_pool.vrf().private_key(), &[0, 1, 2, 3], &mut rng);
+        let vrf_proof = TestGen::vrf_proof(&stake_pool);
         let contents: Contents = self.contents_builder.clone().into();
         let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents)
             .set_parent(

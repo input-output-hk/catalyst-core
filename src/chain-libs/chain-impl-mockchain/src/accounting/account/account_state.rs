@@ -228,7 +228,7 @@ impl<'a, ID, Extra> Iterator for Iter<'a, ID, Extra> {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::{
         AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,

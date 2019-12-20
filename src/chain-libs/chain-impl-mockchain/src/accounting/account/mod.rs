@@ -215,7 +215,7 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> std::iter::FromIterator<(ID, AccountSt
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod tests {
 
     use super::*;

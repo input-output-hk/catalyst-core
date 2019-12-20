@@ -11,7 +11,7 @@ pub use witness::{Witness, WitnessBuilder};
 
 pub use index::{Index, TreeIndex};
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
     use crate::accounting::account::SpendingCounter;

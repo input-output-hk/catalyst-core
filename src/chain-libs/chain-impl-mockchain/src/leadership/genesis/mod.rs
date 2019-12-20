@@ -202,7 +202,7 @@ impl Readable for GenesisPraosLeader {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
     use crate::certificate::PoolId;

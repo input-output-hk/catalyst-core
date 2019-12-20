@@ -42,7 +42,7 @@ impl<Extra: Payload> Readable for Transaction<Extra> {
 // TEMPORARY
 pub type AuthenticatedTransaction<P> = Transaction<P>;
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::element::SingleAccountBindingSignature;
     use super::*;

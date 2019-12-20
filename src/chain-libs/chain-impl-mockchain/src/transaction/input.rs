@@ -241,7 +241,7 @@ impl Readable for Input {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
     use quickcheck::{Arbitrary, Gen};

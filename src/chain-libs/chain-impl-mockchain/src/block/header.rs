@@ -31,7 +31,7 @@ impl property::Header for Header {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use crate::block::ConsensusVersion;
     use quickcheck::{Arbitrary, Gen};

@@ -217,7 +217,7 @@ impl Readable for Witness {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 pub mod test {
     use super::*;
     use chain_crypto::{testing::arbitrary_secret_key, SecretKey};

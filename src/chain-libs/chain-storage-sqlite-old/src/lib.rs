@@ -6,6 +6,7 @@ use chain_storage::{
 use rusqlite::types::Value;
 use std::path::Path;
 
+#[derive(Clone)]
 pub struct SQLiteBlockStore<B>
 where
     B: Block,

@@ -111,19 +111,32 @@ pub fn listen_unix<P: AsRef<Path>>(
     Ok(listener.incoming())
 }
 
-// Returns true if the error is per-connection, meaning that it's still
+// Returns `Ok` if the error is per-connection, meaning that it's still
 // possible to listen and accept connections on the same socket
-// after this error.
+// after this error. Otherwise, returns the error.
 // Code inspired by crate tk-listen under the terms of
 // Apache-2.0 and MIT licenses.
-fn connection_error(e: &io::Error) -> bool {
+fn handle_accept_error(e: io::Error) -> io::Result<()> {
     use io::ErrorKind::*;
 
     match e.kind() {
-        ConnectionAborted | ConnectionReset | ConnectionRefused => true,
+        ConnectionAborted | ConnectionReset | ConnectionRefused => Ok(()),
         #[cfg(target_os = "macos")]
-        InvalidInput => true,
-        _ => false,
+        InvalidInput => Ok(()),
+        _ => Err(e),
+    }
+}
+
+// Handles errors occurring on setting a socket option.
+// Mac OS requires special treatment because on this platform, EINVAL
+// can occur in case the socket has been remotely disconnected.
+// We ignore this and let the connection die later rather than reporting
+// a listener error.
+fn handle_setsockopt_error(e: io::Error) -> io::Result<()> {
+    match e.kind() {
+        #[cfg(target_os = "macos")]
+        io::ErrorKind::InvalidInput => Ok(()),
+        _ => Err(e),
     }
 }
 
@@ -139,16 +152,12 @@ impl Stream for TcpListen {
         loop {
             match self.incoming.poll() {
                 Ok(Async::Ready(Some(sock))) => {
-                    sock.set_nodelay(true)?;
+                    sock.set_nodelay(true).or_else(handle_setsockopt_error)?;
                     return Ok(Async::Ready(Some(sock)));
                 }
                 Ok(poll_out) => return Ok(poll_out),
                 Err(e) => {
-                    if connection_error(&e) {
-                        continue;
-                    } else {
-                        return Err(e);
-                    }
+                    handle_accept_error(e)?;
                 }
             }
         }
@@ -170,11 +179,7 @@ impl Stream for UnixListen {
             match self.incoming.poll() {
                 Ok(poll_out) => return Ok(poll_out),
                 Err(e) => {
-                    if connection_error(&e) {
-                        continue;
-                    } else {
-                        return Err(e);
-                    }
+                    handle_accept_error(e)?;
                 }
             }
         }

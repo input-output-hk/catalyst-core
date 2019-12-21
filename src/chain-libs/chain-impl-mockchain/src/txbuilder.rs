@@ -16,6 +16,7 @@ use crate::transaction::{self as tx, Balance};
 use crate::value::{Value, ValueError};
 use chain_addr::Address;
 use std::{error, fmt};
+use thiserror::Error;
 
 #[derive(Clone, Debug)]
 /// Transaction builder is an object to construct
@@ -177,10 +178,13 @@ pub struct TransactionFinalizer {
     witnesses: Vec<Option<tx::Witness>>,
 }
 
-custom_error! {pub BuildError
-    WitnessOutOfBound { index: usize, max: usize } = "Witness index {index} out of bound (max {max})",
-    WitnessMismatch { index: usize } = "Invalid witness type at index {index}",
-    MissingWitnessAt { index: usize } = "Missing a witness for input at index {index}",
+pub enum BuildError {
+    #[error("Witness index {index} out of bound (max {max})")]
+    WitnessOutOfBound { index: usize, max: usize },
+    #[error("Invalid witness type at index {index}")]
+    WitnessMismatch { index: usize },
+    #[error("Missing a witness for input at index {index}")]
+    MissingWitnessAt { index: usize },
 }
 
 impl TransactionFinalizer {

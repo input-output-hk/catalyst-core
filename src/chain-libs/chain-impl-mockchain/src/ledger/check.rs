@@ -3,6 +3,7 @@ use crate::certificate;
 use crate::transaction::*;
 use crate::value::Value;
 use chain_addr::Address;
+use thiserror::Error;
 
 pub const CHECK_TX_MAXIMUM_INPUTS: u8 = 255;
 pub const CHECK_TX_MAXIMUM_OUTPUTS: u8 = 254;
@@ -32,9 +33,7 @@ pub(super) fn valid_block0_transaction_no_inputs<'a, Extra>(
 ) -> LedgerCheck {
     if_cond_fail_with!(
         tx.nb_inputs() != 0,
-        Error::Block0 {
-            source: Block0Error::TransactionHasInput
-        }
+        Error::Block0(Block0Error::TransactionHasInput)
     )
 }
 
@@ -44,15 +43,11 @@ pub(super) fn valid_block0_cert_transaction<'a, Extra>(
 ) -> LedgerCheck {
     if_cond_fail_with!(
         tx.nb_inputs() != 0,
-        Error::Block0 {
-            source: Block0Error::CertTransactionHasInput
-        }
+        Error::Block0(Block0Error::CertTransactionHasInput)
     )?;
     if_cond_fail_with!(
         tx.nb_outputs() != 0,
-        Error::Block0 {
-            source: Block0Error::CertTransactionHasOutput
-        }
+        Error::Block0(Block0Error::CertTransactionHasOutput)
     )
 }
 
@@ -137,11 +132,10 @@ pub(super) fn valid_pool_update_certificate(_: &certificate::PoolUpdate) -> Ledg
     Ok(())
 }
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub TxVerifyError
-        TooManyOutputs {expected: u8, actual: u8 }
-            = "too many outputs, expected maximum of {expected}, but received {actual}",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum TxVerifyError {
+    #[error("too many outputs, expected maximum of {expected}, but received {actual}")]
+    TooManyOutputs { expected: u8, actual: u8 },
 }
 
 pub(super) fn valid_transaction_ios_number<'a, P>(

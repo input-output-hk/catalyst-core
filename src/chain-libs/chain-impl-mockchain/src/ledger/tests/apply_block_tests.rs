@@ -168,11 +168,7 @@ pub fn apply_block_incorrect_fragment() {
         .build(&stake_pool, ledger.era());
 
     assert_err!(
-        Account {
-            source: ValueError {
-                source: NegativeAmount
-            }
-        },
+        Account(ValueError(NegativeAmount)),
         ledger.apply_block(block)
     );
 }

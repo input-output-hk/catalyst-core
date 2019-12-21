@@ -3,6 +3,7 @@ use chain_crypto::{PublicKey, Signature};
 
 use super::index::{Index, TreeIndex, LEVEL_MAXLIMIT};
 pub use crate::transaction::WitnessMultisigData;
+use thiserror::Error;
 
 /// Account Identifier (also used as Public Key)
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -26,13 +27,16 @@ impl From<Identifier> for [u8; 32] {
     }
 }
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub DeclarationError
-        ThresholdInvalid = "Invalid threshold",
-        HasNotEnoughOwners = "Not enough owners",
-        HasTooManyOwners = "Too many owners",
-        SubNotImplemented = "Sub not implemented",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum DeclarationError {
+    #[error("Invalid threshold")]
+    ThresholdInvalid,
+    #[error("Not enough owners")]
+    HasNotEnoughOwners,
+    #[error("Too many owners")]
+    HasTooManyOwners,
+    #[error("Sub not implemented")]
+    SubNotImplemented,
 }
 
 impl std::fmt::Display for Identifier {

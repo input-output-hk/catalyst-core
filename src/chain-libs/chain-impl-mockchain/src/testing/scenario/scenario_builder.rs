@@ -20,13 +20,18 @@ use super::{
     Controller,
 };
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub ScenarioBuilderError
-        UndefinedConfig = " no config defined",
-        UndefinedInitials =  "no initials defined",
-        NoOwnersForStakePool{ alias: String} = "stake pool '{alias}' must have at least one owner",
-        UndefinedValueForWallet { alias: String }= "with(...) method must be used for '{alias}' wallet in scenario builder. "
+use thiserror::Error;
+
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum ScenarioBuilderError {
+    #[error("no config defined")]
+    UndefinedConfig,
+    #[error("no initials defined")]
+    UndefinedInitials,
+    #[error("stake pool '{alias}' must have at least one owner")]
+    NoOwnersForStakePool { alias: String },
+    #[error("with(...) method must be used for '{alias}' wallet in scenario builder. ")]
+    UndefinedValueForWallet { alias: String },
 }
 
 pub struct ScenarioBuilder {

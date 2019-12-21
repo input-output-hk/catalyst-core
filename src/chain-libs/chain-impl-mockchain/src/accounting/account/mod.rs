@@ -4,26 +4,32 @@
 //! which contains a non negative value representing your balance with the
 //! identifier of this account as key.
 
+pub mod account_state;
+pub mod last_rewards;
+
 use crate::header::Epoch;
 use crate::value::*;
 use imhamt::{Hamt, InsertError, UpdateError};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt::{self, Debug};
 use std::hash::Hash;
-pub mod account_state;
-pub mod last_rewards;
+use thiserror::Error;
 
 pub use account_state::*;
 pub use last_rewards::LastRewards;
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub LedgerError
-        NonExistent = "Account does not exist",
-        AlreadyExists = "Account already exists",
-        NeedTotalWithdrawal = "Operation counter reached its maximum and next operation must be full withdrawal",
-        NonZero = "Removed account is not empty",
-        ValueError{ source: ValueError } = "Value calculation failed",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum LedgerError {
+    #[error("Account does not exist")]
+    NonExistent,
+    #[error("Account already exists")]
+    AlreadyExists,
+    #[error("Operation counter reached its maximum and next operation must be full withdrawal")]
+    NeedTotalWithdrawal,
+    #[error("Removed account is not empty")]
+    NonZero,
+    #[error("Value calculation failed")]
+    ValueError(#[from] ValueError),
 }
 
 impl From<UpdateError<LedgerError>> for LedgerError {

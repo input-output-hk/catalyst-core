@@ -14,6 +14,7 @@ use chain_addr::{Address, Kind};
 use chain_crypto::{Ed25519, PublicKey};
 use quickcheck::{Arbitrary, Gen};
 use std::iter;
+use thiserror::Error;
 
 #[derive(Clone, Debug)]
 pub struct ArbitraryValidTransactionData {
@@ -159,12 +160,23 @@ impl ArbitraryValidTransactionData {
 
 pub struct AccountStatesVerifier(pub ArbitraryValidTransactionData);
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub Error
-        AccountNotFound { element: PublicKey<Ed25519> } = "Cannot find coresponding account address for expected {element}",
-        UtxoNotFound { output: PublicKey<Ed25519>, value: Value} = "Cannot find expected output: {output} with value: {value}",
-        WrongValue { element: PublicKey<Ed25519>, expected: Value, actual: Value } = "Address funds are different for {element} than expected: {expected}, but got: {actual}",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum Error {
+    #[error("Cannot find coresponding account address for expected {element}")]
+    AccountNotFound { element: PublicKey<Ed25519> },
+    #[error("Cannot find expected output: {output} with value: {value}")]
+    UtxoNotFound {
+        output: PublicKey<Ed25519>,
+        value: Value,
+    },
+    #[error(
+        "Address funds are different for {element} than expected: {expected}, but got: {actual}"
+    )]
+    WrongValue {
+        element: PublicKey<Ed25519>,
+        expected: Value,
+        actual: Value,
+    },
 }
 
 impl AccountStatesVerifier {

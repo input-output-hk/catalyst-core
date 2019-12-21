@@ -1,5 +1,6 @@
 use imhamt::{Hamt, HamtIter, InsertError, RemoveError};
 use std::collections::hash_map::DefaultHasher;
+use thiserror::Error;
 
 use super::declaration::{Declaration, DeclarationError, Identifier};
 use crate::accounting::account::{self, DelegationType, Iter, SpendingCounter};
@@ -13,16 +14,22 @@ pub struct Ledger {
     declarations: Hamt<DefaultHasher, Identifier, Declaration>,
 }
 
-custom_error! {
-    #[derive(Clone, PartialEq, Eq)]
-    pub LedgerError
-        ParticipantOutOfBound = "Too many participant in the multisig account",
-        AlreadyExist = "Multisig account already exists",
-        DoesntExist = "Multisig account does not exist",
-        DeclarationError { source: DeclarationError } = "Multisig declaration error or invalid",
-        AccountError { source: account::LedgerError } = "Multisig account error or invalid",
-        IdentifierMismatch = "Multisig identifier mismatched",
-        ThresholdNotMet = "Multisig account's threshold not met",
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum LedgerError {
+    #[error("Too many participant in the multisig account")]
+    ParticipantOutOfBound,
+    #[error("Multisig account already exists")]
+    AlreadyExist,
+    #[error("Multisig account does not exist")]
+    DoesntExist,
+    #[error("Multisig declaration error or invalid")]
+    DeclarationError(#[from] DeclarationError),
+    #[error("Multisig account error or invalid")]
+    AccountError(#[from] account::LedgerError),
+    #[error("Multisig identifier mismatched")]
+    IdentifierMismatch,
+    #[error("Multisig account's threshold not met")]
+    ThresholdNotMet,
 }
 
 impl From<InsertError> for LedgerError {

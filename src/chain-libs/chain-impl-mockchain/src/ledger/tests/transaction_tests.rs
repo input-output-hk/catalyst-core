@@ -36,12 +36,10 @@ pub fn transaction_fail_when_255_outputs() {
         .get_fragment();
 
     assert_err!(
-        TransactionMalformed {
-            source: TxVerifyError::TooManyOutputs {
-                expected: 254,
-                actual: 255
-            }
-        },
+        TransactionMalformed(TxVerifyError::TooManyOutputs {
+            expected: 254,
+            actual: 255
+        }),
         test_ledger.apply_transaction(fragment)
     );
 }
@@ -87,9 +85,7 @@ pub fn transaction_nonexisting_account_input() {
         .get_fragment();
 
     assert_err!(
-        Account {
-            source: NonExistent
-        },
+        Account(NonExistent),
         test_ledger.apply_transaction(fragment)
     );
 }

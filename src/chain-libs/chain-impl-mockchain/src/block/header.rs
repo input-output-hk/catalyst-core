@@ -30,15 +30,3 @@ impl property::Header for Header {
         self.block_version()
     }
 }
-
-#[cfg(any(test, feature = "property-test-api"))]
-mod test {
-    use crate::block::ConsensusVersion;
-    use quickcheck::{Arbitrary, Gen};
-
-    impl Arbitrary for ConsensusVersion {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            ConsensusVersion::from_u16(u16::arbitrary(g) % 2 + 1).unwrap()
-        }
-    }
-}

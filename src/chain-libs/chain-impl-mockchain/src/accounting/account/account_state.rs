@@ -228,7 +228,7 @@ impl<'a, ID, Extra> Iterator for Iter<'a, ID, Extra> {
     }
 }
 
-#[cfg(any(test, feature = "property-test-api"))]
+#[cfg(test)]
 mod tests {
     use super::{
         AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
@@ -239,22 +239,18 @@ mod tests {
     use quickcheck_macros::quickcheck;
     use std::iter;
 
-    impl Arbitrary for SpendingCounter {
-        fn arbitrary<G: Gen>(gen: &mut G) -> Self {
-            SpendingCounter(Arbitrary::arbitrary(gen))
-        }
-    }
-
-    impl Arbitrary for AccountState<()> {
-        fn arbitrary<G: Gen>(gen: &mut G) -> Self {
-            AccountState {
-                counter: Arbitrary::arbitrary(gen),
-                delegation: DelegationType::Full(Arbitrary::arbitrary(gen)),
-                value: Arbitrary::arbitrary(gen),
-                last_rewards: LastRewards::default(),
-                extra: (),
-            }
-        }
+    #[quickcheck]
+    pub fn account_sub_is_consistent(
+        init_value: Value,
+        sub_value: Value,
+        counter: u32,
+    ) -> TestResult {
+        let mut account_state = AccountState::new(init_value, ());
+        account_state.counter = counter.into();
+        TestResult::from_bool(
+            should_sub_fail(account_state.clone(), sub_value)
+                == account_state.sub(sub_value).is_err(),
+        )
     }
 
     #[derive(Clone, Debug)]
@@ -276,20 +272,6 @@ mod tests {
                 _ => panic!("not implemented"),
             }
         }
-    }
-
-    #[quickcheck]
-    pub fn account_sub_is_consistent(
-        init_value: Value,
-        sub_value: Value,
-        counter: u32,
-    ) -> TestResult {
-        let mut account_state = AccountState::new(init_value, ());
-        account_state.counter = counter.into();
-        TestResult::from_bool(
-            should_sub_fail(account_state.clone(), sub_value)
-                == account_state.sub(sub_value).is_err(),
-        )
     }
 
     #[derive(Clone, Debug)]

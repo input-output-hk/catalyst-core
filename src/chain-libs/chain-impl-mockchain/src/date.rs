@@ -108,7 +108,7 @@ impl str::FromStr for BlockDate {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
     use quickcheck::{Arbitrary, Gen};

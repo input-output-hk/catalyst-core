@@ -7,6 +7,7 @@ pub enum Error {
     BackendError(Box<dyn std::error::Error + Send + Sync>),
     Block0InFuture,
     BlockAlreadyPresent,
+    MissingParent,
 }
 
 impl fmt::Display for Error {
@@ -17,6 +18,7 @@ impl fmt::Display for Error {
             Error::BackendError(err) => write!(f, "{}", err),
             Error::Block0InFuture => write!(f, "block0 is in the future"),
             Error::BlockAlreadyPresent => write!(f, "Block already present in DB"),
+            Error::MissingParent => write!(f, "the parent block is missing for the required write"),
         }
     }
 }

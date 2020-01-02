@@ -371,8 +371,8 @@ impl Readable for SignedUpdateVote {
     }
 }
 
-#[cfg(test)]
-mod test {
+#[cfg(any(test, feature = "property-test-api"))]
+mod tests {
     use super::*;
     use crate::{
         config::ConfigParam,

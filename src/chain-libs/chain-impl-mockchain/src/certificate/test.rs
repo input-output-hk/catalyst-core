@@ -1,3 +1,4 @@
+#[warn(unused_imports)]
 use super::*;
 use crate::accounting::account::DelegationType;
 use crate::leadership::genesis::GenesisPraosLeader;

@@ -214,12 +214,9 @@ mod tests {
         builders::{GenesisPraosBlockBuilder, StakePoolBuilder},
         ConfigBuilder, LedgerBuilder,
     };
-    use crate::value::*;
+    use crate::value::Value;
+    use chain_crypto::{Curve25519_2HashDH, SecretKey};
 
-    use chain_crypto::*;
-    use lazy_static::lazy_static;
-    use quickcheck::{Arbitrary, Gen};
-    use rand_core;
     use std::collections::HashMap;
 
     fn make_pool(ledger: &mut Ledger) -> (PoolId, SecretKey<Curve25519_2HashDH>) {
@@ -237,27 +234,6 @@ mod tests {
         active_slots_coeff: f32,
         pools_count: usize,
         value: Stake,
-    }
-
-    impl Arbitrary for GenesisPraosLeader {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            use rand_core::SeedableRng;
-            lazy_static! {
-                static ref PK_KES: PublicKey<SumEd25519_12> = {
-                    let sk: SecretKey<SumEd25519_12> =
-                        SecretKey::generate(&mut rand_chacha::ChaChaRng::from_seed([0; 32]));
-                    sk.to_public()
-                };
-            }
-
-            let tcg = testing::TestCryptoGen::arbitrary(g);
-            let mut rng = tcg.get_rng(0);
-            let vrf_sk: SecretKey<Curve25519_2HashDH> = SecretKey::generate(&mut rng);
-            GenesisPraosLeader {
-                vrf_public_key: vrf_sk.to_public(),
-                kes_public_key: PK_KES.clone(),
-            }
-        }
     }
 
     impl LeaderElectionParameters {

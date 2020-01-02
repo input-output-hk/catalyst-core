@@ -57,7 +57,7 @@ impl std::fmt::Display for Identifier {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
     use chain_crypto::{Ed25519, KeyPair};

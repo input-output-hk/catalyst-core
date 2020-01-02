@@ -48,26 +48,3 @@ impl Readable for ConfigParams {
         Ok(ConfigParams(configs))
     }
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use quickcheck::{Arbitrary, Gen, TestResult};
-
-    quickcheck! {
-        fn initial_ents_serialization_bijection(b: ConfigParams) -> TestResult {
-            property::testing::serialization_bijection_r(b)
-        }
-    }
-
-    impl Arbitrary for ConfigParams {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let size = u8::arbitrary(g) as usize;
-            ConfigParams(
-                std::iter::repeat_with(|| ConfigParam::arbitrary(g))
-                    .take(size)
-                    .collect(),
-            )
-        }
-    }
-}

@@ -18,6 +18,9 @@ use thiserror::Error;
 pub use account_state::*;
 pub use last_rewards::LastRewards;
 
+#[cfg(any(test, feature = "property-test-api"))]
+pub mod test;
+
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum LedgerError {
     #[error("Account does not exist")]

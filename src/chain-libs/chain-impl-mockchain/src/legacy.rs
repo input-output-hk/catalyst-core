@@ -60,8 +60,8 @@ impl property::Serialize for UtxoDeclaration {
     }
 }
 
-#[cfg(test)]
-mod test {
+#[cfg(any(test, feature = "property-test-api"))]
+mod tests {
     use super::*;
     use cardano_legacy_address::ExtendedAddr;
     use ed25519_bip32::{XPub, XPUB_SIZE};

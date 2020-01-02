@@ -6,6 +6,9 @@ mod eval;
 mod header;
 mod version;
 
+#[cfg(any(test, feature = "property-test-api"))]
+pub mod test;
+
 pub use crate::date::{BlockDate, Epoch, SlotId};
 
 pub use builder::{

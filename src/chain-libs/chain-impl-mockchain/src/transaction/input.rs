@@ -240,29 +240,3 @@ impl Readable for Input {
         })
     }
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use quickcheck::{Arbitrary, Gen};
-
-    impl Arbitrary for UnspecifiedAccountIdentifier {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let mut b = [0u8; 32];
-            for v in b.iter_mut() {
-                *v = Arbitrary::arbitrary(g)
-            }
-            b.into()
-        }
-    }
-
-    impl Arbitrary for AccountIdentifier {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            if Arbitrary::arbitrary(g) {
-                AccountIdentifier::Single(Arbitrary::arbitrary(g))
-            } else {
-                AccountIdentifier::Multi(Arbitrary::arbitrary(g))
-            }
-        }
-    }
-}

@@ -1,7 +1,7 @@
 mod delegation;
 mod pool;
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod test;
 
 use crate::transaction::{Payload, PayloadData, PayloadSlice};

@@ -36,6 +36,7 @@ impl std::convert::From<rusqlite::Error> for IndexCreationError {
 
 type IndexResult = Result<(), IndexError>;
 
+#[derive(Clone)]
 struct ChainStorageIndex<B>
 where
     B: Block,
@@ -106,6 +107,7 @@ where
     }
 }
 
+#[derive(Clone)]
 pub struct SQLiteBlockStore<B>
 where
     B: Block,

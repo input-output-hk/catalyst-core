@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Clone)]
 pub(crate) struct DbIndex<K, V>(HashMap<K, V>);
 
 impl<K, V> DbIndex<K, V>

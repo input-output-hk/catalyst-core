@@ -39,8 +39,8 @@ impl LeadersParticipationRecord {
     /// if the value already exists, then it returns an insert error.
     /// This should only be used related to the iterator construction,
     pub fn set_for(&mut self, pool: PoolId, v: u32) -> Result<(), InsertError> {
-        self.total += v;
         self.log = self.log.insert(pool, v)?;
+        self.total += v;
         Ok(())
     }
 
@@ -129,8 +129,7 @@ mod tests {
         );
 
         verify_participants_count(&leaders_participation_record, 1);
-        //correct expected value: 1
-        verify_total(&leaders_participation_record, 11);
+        verify_total(&leaders_participation_record, 1);
     }
 
     #[test]
@@ -146,8 +145,7 @@ mod tests {
                 .err()
                 .unwrap()
         );
-        //correct expected value: 1
-        verify_total(&leaders_participation_record, 2);
+        verify_total(&leaders_participation_record, 1);
     }
 
     #[test]

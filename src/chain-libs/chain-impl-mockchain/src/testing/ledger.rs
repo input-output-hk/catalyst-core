@@ -133,8 +133,7 @@ impl ConfigBuilder {
     }
 
     fn create_single_bft_leader() -> LeaderId {
-        let leader_prv_key: SecretKey<Ed25519Extended> =
-            SecretKey::generate(rand_os::OsRng::new().unwrap());
+        let leader_prv_key: SecretKey<Ed25519Extended> = SecretKey::generate(rand_core::OsRng);
         let leader_pub_key = leader_prv_key.to_public();
         leader_pub_key.into()
     }

@@ -12,10 +12,10 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 cfg-if = "0.1"
-quickcheck = { version = "0.8", optional = true }
+quickcheck = { version = "0.9", optional = true }
 
 [dev-dependencies]
-quickcheck = "0.8"
+quickcheck = "0.9"
 
 [features]
 property-test-api = ["quickcheck"]

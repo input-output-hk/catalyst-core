@@ -46,25 +46,19 @@ impl Arbitrary for BftProof {
 }
 impl Arbitrary for GenesisPraosProof {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        use rand_chacha::ChaChaRng;
-        use rand_core::SeedableRng;
-        let mut seed = [0; 32];
-        for byte in seed.iter_mut() {
-            *byte = Arbitrary::arbitrary(g);
-        }
-        let mut rng = ChaChaRng::from_seed(seed);
+        use chain_crypto::testing;
+        let tcg = testing::TestCryptoGen::arbitrary(g);
 
         let node_id = Arbitrary::arbitrary(g);
 
         let vrf_proof = {
-            let sk = Curve25519_2HashDH::generate(&mut rng);
-            Curve25519_2HashDH::evaluate_and_prove(&sk, &[0, 1, 2, 3], &mut rng)
+            let sk = Curve25519_2HashDH::generate(&mut tcg.get_rng(0));
+            Curve25519_2HashDH::evaluate_and_prove(&sk, &[0, 1, 2, 3], &mut tcg.get_rng(1))
         };
 
         let kes_proof = {
             lazy_static! {
-                static ref SK_FIRST: SecretKey<SumEd25519_12> =
-                    { SecretKey::generate(&mut ChaChaRng::from_seed([0; 32])) };
+                static ref SK_FIRST: SecretKey<SumEd25519_12> = { testing::static_secret_key() };
             }
             let sk = SK_FIRST.clone();
             let signature = sk.sign(&[0u8, 1, 2, 3]);

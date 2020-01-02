@@ -8,7 +8,7 @@ use chain_crypto::{
     vrf_evaluate_and_prove, vrf_verified_get_output, vrf_verify, Curve25519_2HashDH, PublicKey,
     SecretKey, VRFVerification, VerifiableRandomFunction,
 };
-use rand_os::OsRng;
+use rand_core::OsRng;
 use std::convert::TryFrom;
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
@@ -136,7 +136,7 @@ impl<'a> VrfEvaluator<'a> {
     /// On threshold success, the witness is returned, otherwise None is returned
     pub fn evaluate(&self, key: &SecretKey<Curve25519_2HashDH>) -> Option<Witness> {
         let input = Input::create(self.nonce, self.slot_id);
-        let csprng = OsRng::new().unwrap();
+        let csprng = OsRng;
         let vr = vrf_evaluate_and_prove(key, &input.0, csprng);
         let r = vrf_verified_get_output::<Curve25519_2HashDH>(&vr);
         let t = get_threshold(&input, &r);

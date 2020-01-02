@@ -12,11 +12,10 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 chain-core = { path = "../chain-core" }
-rand_core = { version = "0.3", optional = true }
+rand_core = { version = "0.5", optional = true }
 
 [dev-dependencies]
-rand_core = { version = "0.3" }
-rand_os = { version = "0.1" }
+rand_core = { version = "0.5" }
 
 [features]
 test-api = ["rand_core"]

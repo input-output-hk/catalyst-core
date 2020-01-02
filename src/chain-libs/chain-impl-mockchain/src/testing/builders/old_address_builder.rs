@@ -1,7 +1,8 @@
-use crate::{legacy::UtxoDeclaration, quickcheck::RngCore, value::Value};
+use crate::{legacy::UtxoDeclaration, value::Value};
 use cardano_legacy_address::Addr;
 use cardano_legacy_address::ExtendedAddr;
 use ed25519_bip32::{XPub, XPUB_SIZE};
+use rand_core::RngCore;
 
 #[derive(Default)]
 pub struct OldAddressBuilder;
@@ -11,7 +12,7 @@ impl OldAddressBuilder {
         let nb = match size {
             Some(size) => size,
             None => {
-                let mut rng = rand_os::OsRng::new().unwrap();
+                let mut rng = rand_core::OsRng;
                 let nb: usize = rng.next_u32() as usize;
                 nb % 255
             }
@@ -25,7 +26,7 @@ impl OldAddressBuilder {
 
     pub fn build_old_address() -> (Addr, Value) {
         // some reasonable value
-        let mut rng = rand_os::OsRng::new().unwrap();
+        let mut rng = rand_core::OsRng;
         let value = Value(rng.next_u64() % 2_000_000 + 1);
         let xpub = {
             let mut buf = [0u8; XPUB_SIZE];

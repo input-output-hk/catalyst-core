@@ -54,6 +54,14 @@ where
     TestCryptoGen::arbitrary(g).secret_key(0)
 }
 
+pub fn static_secret_key<A>() -> SecretKey<A>
+where
+    A: AsymmetricKey,
+{
+    let rng = ChaChaRng::seed_from_u64(0xfedc_ba98);
+    SecretKey::generate(rng)
+}
+
 impl<A> Arbitrary for SecretKey<A>
 where
     A: AsymmetricKey + 'static,

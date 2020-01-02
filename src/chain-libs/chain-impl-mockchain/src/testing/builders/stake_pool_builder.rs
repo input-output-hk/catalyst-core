@@ -86,7 +86,7 @@ impl StakePoolBuilder {
     }
 
     pub fn build(&self) -> StakePool {
-        let mut rng = rand_os::OsRng::new().unwrap();
+        let mut rng = rand_core::OsRng;
 
         let pool_vrf: KeyPair<Curve25519_2HashDH> = KeyPair::generate(&mut rng);
         let pool_kes: KeyPair<SumEd25519_12> = KeyPair::generate(&mut rng);

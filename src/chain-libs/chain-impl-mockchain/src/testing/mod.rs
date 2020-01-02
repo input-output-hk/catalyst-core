@@ -20,7 +20,6 @@ use crate::{
     fragment::config::ConfigParams,
     header::VrfProof,
     leadership::bft::LeaderId,
-    quickcheck::RngCore,
     rewards::{Ratio, TaxType},
     setting::Settings,
     testing::data::{AddressData, LeaderPair, StakePool},
@@ -28,6 +27,7 @@ use crate::{
 };
 
 use chain_crypto::{vrf_evaluate_and_prove, Ed25519, KeyPair, PublicKey};
+use rand_core::RngCore;
 use std::{iter, num::NonZeroU64};
 
 pub struct TestGen;
@@ -39,7 +39,8 @@ impl TestGen {
 
     pub fn bytes() -> [u8; 32] {
         let mut random_bytes: [u8; 32] = [0; 32];
-        rand_os::OsRng::new().unwrap().fill_bytes(&mut random_bytes);
+        let mut rng = rand_core::OsRng;
+        rng.fill_bytes(&mut random_bytes);
         random_bytes
     }
 
@@ -80,7 +81,7 @@ impl TestGen {
     }
 
     pub fn vrf_proof(stake_pool: &StakePool) -> VrfProof {
-        let mut rng = rand_os::OsRng::new().unwrap();
+        let mut rng = rand_core::OsRng;
         vrf_evaluate_and_prove(stake_pool.vrf().private_key(), &TestGen::bytes(), &mut rng).into()
     }
 

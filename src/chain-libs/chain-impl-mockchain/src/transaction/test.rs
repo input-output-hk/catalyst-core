@@ -182,16 +182,7 @@ impl std::fmt::Debug for TransactionSigningKey {
 
 impl Arbitrary for TransactionSigningKey {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        use rand_chacha::ChaChaRng;
-        use rand_core::SeedableRng;
-        let mut seed = [0; 32];
-        for byte in seed.iter_mut() {
-            *byte = Arbitrary::arbitrary(g);
-        }
-        let mut rng = ChaChaRng::from_seed(seed);
-        TransactionSigningKey(EitherEd25519SecretKey::Extended(SecretKey::generate(
-            &mut rng,
-        )))
+        TransactionSigningKey(EitherEd25519SecretKey::Extended(arbitrary_secret_key(g)))
     }
 }
 

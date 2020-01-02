@@ -129,8 +129,7 @@ mod tests {
         );
 
         verify_participants_count(&leaders_participation_record, 1);
-        //correct expected value: 1
-        verify_total(&leaders_participation_record, 11);
+        verify_total(&leaders_participation_record, 1);
     }
 
     #[test]
@@ -146,8 +145,7 @@ mod tests {
                 .err()
                 .unwrap()
         );
-        //correct expected value: 1
-        verify_total(&leaders_participation_record, 2);
+        verify_total(&leaders_participation_record, 1);
     }
 
     #[test]

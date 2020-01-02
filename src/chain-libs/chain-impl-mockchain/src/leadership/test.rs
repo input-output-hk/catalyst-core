@@ -1,10 +1,7 @@
 use super::genesis::GenesisPraosLeader;
-use chain_crypto::{
-    testing::TestCryptoGen, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12,
-};
+use chain_crypto::{testing, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12};
 use lazy_static::lazy_static;
 use quickcheck::{Arbitrary, Gen};
-use rand_core;
 
 impl Arbitrary for GenesisPraosLeader {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {

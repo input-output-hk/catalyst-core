@@ -7,7 +7,10 @@ use chain_storage::{
 };
 use index::DbIndex;
 use rusqlite::types::Value;
-use std::path::Path;
+use std::{
+    path::Path,
+    sync::{Arc, RwLock},
+};
 use thiserror::Error;
 
 type RowId = isize;
@@ -36,7 +39,6 @@ impl std::convert::From<rusqlite::Error> for IndexCreationError {
 
 type IndexResult = Result<(), IndexError>;
 
-#[derive(Clone)]
 struct ChainStorageIndex<B>
 where
     B: Block,
@@ -114,7 +116,7 @@ where
 {
     pool: r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>,
     dummy: std::marker::PhantomData<B>,
-    index: ChainStorageIndex<B>,
+    index: Arc<RwLock<ChainStorageIndex<B>>>,
 }
 
 impl<B> SQLiteBlockStore<B>
@@ -215,7 +217,7 @@ where
         SQLiteBlockStore {
             pool,
             dummy: std::marker::PhantomData,
-            index,
+            index: Arc::new(RwLock::new(index)),
         }
     }
 }
@@ -231,7 +233,9 @@ where
     type Block = B;
 
     fn put_block_internal(&mut self, block: &B, block_info: BlockInfo<B::Id>) -> Result<(), Error> {
-        self.index
+        let mut index = self.index.write().unwrap();
+
+        index
             .add_block_check(&block_info.block_hash)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
@@ -309,10 +313,10 @@ where
         tx.commit()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        self.index
+        index
             .add_block(block_info.block_hash.clone(), block_row_id)
             .unwrap();
-        self.index
+        index
             .add_block_info(block_info.block_hash.clone(), block_info_row_id)
             .unwrap();
 
@@ -320,10 +324,9 @@ where
     }
 
     fn get_block(&self, block_hash: &B::Id) -> Result<(B, BlockInfo<B::Id>), Error> {
-        let row_id = self
-            .index
-            .get_block(block_hash)
-            .ok_or(Error::BlockNotFound)?;
+        let index = self.index.read().unwrap();
+
+        let row_id = index.get_block(block_hash).ok_or(Error::BlockNotFound)?;
 
         let blk = self
             .pool
@@ -343,8 +346,9 @@ where
     }
 
     fn get_block_info(&self, block_hash: &B::Id) -> Result<BlockInfo<B::Id>, Error> {
-        let row_id = self
-            .index
+        let index = self.index.read().unwrap();
+
+        let row_id = index
             .get_block_info(block_hash)
             .ok_or(Error::BlockNotFound)?;
 
@@ -381,19 +385,14 @@ where
     }
 
     fn put_tag(&mut self, tag_name: &str, block_hash: &B::Id) -> Result<(), Error> {
-        self.index
-            .add_tag_check(block_hash)
-            .map_err(|err| match err {
-                IndexError::BlockNotFound => Error::BlockNotFound,
-                err => Error::BackendError(Box::new(err)),
-            })?;
+        let mut index = self.index.write().unwrap();
 
         let conn = self
             .pool
             .get()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        match self.index.get_tag(&tag_name.to_owned()) {
+        match index.get_tag(&tag_name.to_owned()) {
             Some(row_id) => conn
                 .prepare_cached("replace into Tags (rowid, name, hash) values(?, ?, ?)")
                 .map_err(|err| Error::BackendError(Box::new(err)))?
@@ -402,20 +401,25 @@ where
                     Value::Text(tag_name.to_string()),
                     Value::Blob(block_hash.serialize_as_vec().unwrap()),
                 ]),
-            None => conn
-                .prepare_cached("insert into Tags (name, hash) values(?, ?)")
-                .map_err(|err| Error::BackendError(Box::new(err)))?
-                .execute(&[
-                    Value::Text(tag_name.to_string()),
-                    Value::Blob(block_hash.serialize_as_vec().unwrap()),
-                ]),
+            None => {
+                if index.get_block(block_hash).is_none() {
+                    return Err(Error::BlockNotFound);
+                }
+
+                conn.prepare_cached("insert into Tags (name, hash) values(?, ?)")
+                    .map_err(|err| Error::BackendError(Box::new(err)))?
+                    .execute(&[
+                        Value::Text(tag_name.to_string()),
+                        Value::Blob(block_hash.serialize_as_vec().unwrap()),
+                    ])
+            }
         }
         .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         conn.prepare_cached("select last_insert_rowid()")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .query_row(rusqlite::NO_PARAMS, |row| {
-                self.index
+                index
                     .add_tag(tag_name.to_owned(), block_hash, row.get(0))
                     .map_err(|err| Error::BackendError(Box::new(err)))
             })
@@ -425,7 +429,8 @@ where
     }
 
     fn get_tag(&self, tag_name: &str) -> Result<Option<B::Id>, Error> {
-        let row_id = match self.index.get_tag(&tag_name.to_owned()) {
+        let index = self.index.read().unwrap();
+        let row_id = match index.get_tag(&tag_name.to_owned()) {
             Some(v) => v,
             None => return Ok(None),
         };

@@ -65,7 +65,10 @@ pub trait BlockStore {
         let depth = if parent_hash == <Self::Block as Block>::Id::zero() {
             1
         } else {
-            let parent_info = self.get_block_info(&parent_hash)?;
+            let parent_info = self.get_block_info(&parent_hash).map_err(|e| match e {
+                Error::BlockNotFound => Error::MissingParent,
+                e => e,
+            })?;
             assert!(parent_info.depth > 0);
             let depth = 1 + parent_info.depth;
             let fast_link = compute_fast_link(depth);

@@ -1,6 +1,6 @@
 [package]
 name = "network-grpc"
-version = "0.1.0-dev"
+version = "0.1.0"
 authors = [
     "Nicolas Di Prima <nicolas.diprima@iohk.io>",
     "Vincent Hanquez <vincent.hanquez@iohk.io>",

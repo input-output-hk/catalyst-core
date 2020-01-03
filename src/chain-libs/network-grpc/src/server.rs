@@ -7,16 +7,18 @@ use network_core::server::{BlockService, FragmentService, GossipService, Node};
 
 use futures::prelude::*;
 use tokio_io::{AsyncRead, AsyncWrite};
-use tokio_tcp::{self as tcp, TcpListener, TcpStream};
+use tokio_tcp::{TcpListener, TcpStream};
 use tower_grpc::codegen::server::grpc::Never as NeverError;
 use tower_hyper::server::Http;
 
 #[cfg(unix)]
-use tokio_uds::{self as uds, UnixListener, UnixStream};
+use tokio_uds::{UnixListener, UnixStream};
 
 use std::io;
 use std::net::SocketAddr;
 
+#[cfg(unix)]
+use std::os::unix::net::SocketAddr as UnixSocketAddr;
 #[cfg(unix)]
 use std::path::Path;
 
@@ -94,10 +96,8 @@ where
 /// The TCP_NODELAY option is disabled on the returned sockets as
 /// necessary for the HTTP/2 protocol.
 pub fn listen(addr: &SocketAddr) -> Result<TcpListen, io::Error> {
-    let listener = TcpListener::bind(&addr)?;
-    Ok(TcpListen {
-        incoming: listener.incoming(),
-    })
+    let inner = TcpListener::bind(&addr)?;
+    Ok(TcpListen { inner })
 }
 
 /// Sets up a listening Unix socket bound to the specified path.
@@ -141,21 +141,21 @@ fn handle_setsockopt_error(e: io::Error) -> io::Result<()> {
 }
 
 pub struct TcpListen {
-    incoming: tcp::Incoming,
+    inner: TcpListener,
 }
 
 impl Stream for TcpListen {
-    type Item = TcpStream;
+    type Item = (TcpStream, SocketAddr);
     type Error = io::Error;
 
-    fn poll(&mut self) -> Poll<Option<TcpStream>, io::Error> {
+    fn poll(&mut self) -> Poll<Option<Self::Item>, io::Error> {
         loop {
-            match self.incoming.poll() {
-                Ok(Async::Ready(Some(sock))) => {
+            match self.inner.poll_accept() {
+                Ok(Async::Ready((sock, addr))) => {
                     sock.set_nodelay(true).or_else(handle_setsockopt_error)?;
-                    return Ok(Async::Ready(Some(sock)));
+                    return Ok(Async::Ready(Some((sock, addr))));
                 }
-                Ok(poll_out) => return Ok(poll_out),
+                Ok(Async::NotReady) => return Ok(Async::NotReady),
                 Err(e) => {
                     handle_accept_error(e)?;
                 }
@@ -166,18 +166,21 @@ impl Stream for TcpListen {
 
 #[cfg(unix)]
 pub struct UnixListen {
-    incoming: uds::Incoming,
+    inner: UnixListener,
 }
 
 #[cfg(unix)]
 impl Stream for UnixListen {
-    type Item = UnixStream;
+    type Item = (UnixStream, UnixSocketAddr);
     type Error = io::Error;
 
-    fn poll(&mut self) -> Poll<Option<UnixStream>, io::Error> {
+    fn poll(&mut self) -> Poll<Option<Self::Item>, io::Error> {
         loop {
-            match self.incoming.poll() {
-                Ok(poll_out) => return Ok(poll_out),
+            match self.inner.poll_accept() {
+                Ok(Async::Ready((sock, addr))) => {
+                    return Ok(Async::Ready(Some((sock, addr))));
+                }
+                Ok(Async::NotReady) => return Ok(Async::NotReady),
                 Err(e) => {
                     handle_accept_error(e)?;
                 }

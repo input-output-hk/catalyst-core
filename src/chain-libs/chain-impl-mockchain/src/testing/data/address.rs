@@ -11,8 +11,8 @@ use chain_addr::{Address, AddressReadable, Discrimination, Kind, KindType};
 use chain_crypto::{
     testing::TestCryptoGen, AsymmetricKey, Ed25519, Ed25519Extended, KeyPair, PublicKey,
 };
+use rand_core::RngCore;
 
-use crate::quickcheck::RngCore;
 use std::fmt::{self, Debug};
 
 ///
@@ -192,7 +192,7 @@ impl AddressData {
     }
 
     pub fn generate_key_pair<A: AsymmetricKey>() -> KeyPair<A> {
-        TestCryptoGen(0).keypair::<A>(rand_os::OsRng::new().unwrap().next_u32())
+        TestCryptoGen(0).keypair::<A>(rand_core::OsRng.next_u32())
     }
 
     pub fn delegation_for_account(

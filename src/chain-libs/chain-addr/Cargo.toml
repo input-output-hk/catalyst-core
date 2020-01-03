@@ -15,8 +15,8 @@ chain-core = { path = "../chain-core" }
 chain-crypto = { path = "../chain-crypto" }
 cryptoxide = "0.1"
 cfg-if = "0.1"
-quickcheck = { version = "0.8", optional = true }
+quickcheck = { version = "0.9", optional = true }
 
 [dev-dependencies]
-quickcheck = "0.8"
+quickcheck = "0.9"
 chain-crypto = { path = "../chain-crypto", features = [ "property-test-api" ] }

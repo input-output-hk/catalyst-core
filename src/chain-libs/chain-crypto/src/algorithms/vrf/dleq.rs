@@ -87,7 +87,7 @@ pub fn verify(dleq: &DLEQ, proof: &Proof) -> bool {
 mod tests {
     use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
     use curve25519_dalek::{ristretto::RistrettoPoint, scalar::Scalar};
-    use rand_os::OsRng;
+    use rand_core::OsRng;
     use sha2::Sha512;
 
     use super::{generate, verify, DLEQ};
@@ -97,7 +97,7 @@ mod tests {
     pub fn it_works() {
         let G = &RISTRETTO_BASEPOINT_POINT;
         let H = RistrettoPoint::hash_from_bytes::<Sha512>(G.compress().as_bytes());
-        let mut csprng: OsRng = OsRng::new().unwrap();
+        let mut csprng: OsRng = OsRng;
 
         let a = Scalar::random(&mut csprng);
         let w = Scalar::random(&mut csprng);

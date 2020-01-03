@@ -246,7 +246,7 @@ where
 mod tests {
     use super::*;
     use chain_storage::store::testing::Block;
-    use rand_os::OsRng;
+    use rand_core::OsRng;
 
     #[test]
     pub fn put_get() {
@@ -256,14 +256,14 @@ mod tests {
 
     #[test]
     pub fn nth_ancestor() {
-        let mut rng = OsRng::new().unwrap();
+        let mut rng = OsRng;
         let mut store = SQLiteBlockStore::<Block>::new(":memory:");
         chain_storage::store::testing::test_nth_ancestor(&mut rng, &mut store);
     }
 
     #[test]
     pub fn iterate_range() {
-        let mut rng = OsRng::new().unwrap();
+        let mut rng = OsRng;
         let mut store = SQLiteBlockStore::<Block>::new(":memory:");
         chain_storage::store::testing::test_iterate_range(&mut rng, &mut store);
     }

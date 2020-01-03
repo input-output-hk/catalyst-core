@@ -572,7 +572,7 @@ mod tests {
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
         let selection = LeadershipData::new(date.epoch, &ledger);
-        let rng = rand_os::OsRng::new().unwrap();
+        let rng = rand_core::OsRng;
         let sk = &SecretKey::generate(rng);
         let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
             .set_parent(&HeaderId::zero_hash(), ledger.chain_length().next())

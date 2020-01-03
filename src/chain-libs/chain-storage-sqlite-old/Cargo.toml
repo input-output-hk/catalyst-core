@@ -22,4 +22,4 @@ features = ["bundled"]
 
 [dev-dependencies]
 chain-storage = { path = "../chain-storage", features=["test-api"] }
-rand_os = "0.1"
+rand_core = "0.5"

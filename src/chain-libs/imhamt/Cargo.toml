@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 
 [dev-dependencies]
-quickcheck = "0.8"
+quickcheck = "0.9"
 quickcheck_macros = "0.8"
 
 [target.'cfg(unix)'.dev-dependencies]

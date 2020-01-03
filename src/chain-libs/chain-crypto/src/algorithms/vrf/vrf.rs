@@ -264,11 +264,11 @@ fn make_message_hash_point(data: &[u8]) -> Point {
 #[cfg(test)]
 mod tests {
     use super::SecretKey;
-    use rand_os::{rand_core::RngCore, OsRng};
+    use rand_core::{OsRng, RngCore};
 
     #[test]
     fn it_works() {
-        let mut csprng: OsRng = OsRng::new().unwrap();
+        let mut csprng: OsRng = OsRng;
         let sk = SecretKey::random(&mut csprng);
         let pk = sk.public();
 
@@ -300,7 +300,7 @@ mod tests {
 #[cfg(feature = "with-bench")]
 mod bench {
     use super::{PublicKey, SecretKey};
-    use rand_os::OsRng;
+    use rand_core::OsRng;
     use test::Bencher;
 
     fn common() -> (OsRng, SecretKey, PublicKey, [u8; 10], [u8; 10]) {

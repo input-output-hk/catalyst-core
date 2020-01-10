@@ -21,5 +21,10 @@ version = "0.16.0"
 features = ["bundled"]
 
 [dev-dependencies]
+criterion = "0.3.0"
 chain-storage = { path = "../chain-storage", features=["test-api"] }
 rand_core = { version = "0.5", features = ["getrandom"] }
+
+[[bench]]
+harness = false
+name = "storage"

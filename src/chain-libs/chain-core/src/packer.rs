@@ -62,6 +62,7 @@ impl<R: std::io::BufRead> Codec<R> {
         Ok(buf)
     }
 }
+
 impl<W: std::io::Write> Codec<W> {
     #[inline]
     pub fn buffered(self) -> Buffered<W> {
@@ -87,6 +88,10 @@ impl<W: std::io::Write> Codec<W> {
     #[inline]
     pub fn put_u128(&mut self, v: u128) -> std::io::Result<()> {
         self.0.write_all(&v.to_be_bytes())
+    }
+    #[inline]
+    pub fn put_bytes(&mut self, v: &[u8]) -> std::io::Result<()> {
+        self.0.write_all(v)
     }
 }
 impl<W: std::io::Write> Buffered<W> {

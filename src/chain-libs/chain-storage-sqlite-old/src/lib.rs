@@ -59,7 +59,7 @@ enum StoreType {
     File(PathBuf),
 }
 
-pub struct SQLiteBlockStore {
+pub struct BlockStore {
     store_type: StoreType,
     // An optional connection to be always held open. This is a workaround to
     // prevent an in-memory storage from resetting, because it is getting reset
@@ -69,9 +69,9 @@ pub struct SQLiteBlockStore {
 
 // persistent_connection does not implement Sync but is never actually used
 // which makes it safe to be shared
-unsafe impl Sync for SQLiteBlockStore {}
+unsafe impl Sync for BlockStore {}
 
-pub struct SQLiteBlockStoreConnection<B>
+pub struct BlockStoreConnection<B>
 where
     B: Block,
 {
@@ -79,7 +79,7 @@ where
     dummy: std::marker::PhantomData<B>,
 }
 
-impl SQLiteBlockStore {
+impl BlockStore {
     pub fn memory() -> Self {
         Self::init(StoreType::Memory)
     }
@@ -148,18 +148,18 @@ impl SQLiteBlockStore {
         .map_err(|err| Error::BackendError(Box::new(err)))
     }
 
-    pub fn connect<B>(&self) -> Result<SQLiteBlockStoreConnection<B>, Error>
+    pub fn connect<B>(&self) -> Result<BlockStoreConnection<B>, Error>
     where
         B: Block,
     {
-        Ok(SQLiteBlockStoreConnection {
+        Ok(BlockStoreConnection {
             inner: self.connect_internal()?,
             dummy: std::marker::PhantomData,
         })
     }
 }
 
-impl<B> SQLiteBlockStoreConnection<B>
+impl<B> BlockStoreConnection<B>
 where
     B: Block,
 {
@@ -436,7 +436,7 @@ fn blob_to_hash<Id: BlockId>(blob: Vec<u8>) -> Id {
 /// The travelling algorithm uses back links to skip over parts of the chain,
 /// so the callback will not be invoked for all blocks in the linear sequence.
 pub fn for_path_to_nth_ancestor<B, F>(
-    store: &SQLiteBlockStoreConnection<B>,
+    store: &BlockStoreConnection<B>,
     block_hash: &B::Id,
     distance: u64,
     mut callback: F,
@@ -496,7 +496,7 @@ fn compute_fast_link(chain_length: u64) -> u64 {
 /// the half-open range `(from, to]`. `from` must be an ancestor
 /// of `to` and may be the zero hash.
 pub fn iterate_range<'store, B>(
-    store: &'store SQLiteBlockStoreConnection<B>,
+    store: &'store BlockStoreConnection<B>,
     from: &B::Id,
     to: &B::Id,
 ) -> Result<BlockIterator<'store, B>, Error>
@@ -522,7 +522,7 @@ pub struct BlockIterator<'store, B>
 where
     B: Block,
 {
-    store: &'store SQLiteBlockStoreConnection<B>,
+    store: &'store BlockStoreConnection<B>,
     to_chain_length: u64,
     cur_chain_length: u64,
     pending_infos: Vec<BlockInfo<B::Id>>,
@@ -720,7 +720,7 @@ pub mod tests {
 
     pub fn generate_chain<R: RngCore>(
         rng: &mut R,
-        store: &mut SQLiteBlockStoreConnection<Block>,
+        store: &mut BlockStoreConnection<Block>,
     ) -> Vec<Block> {
         let mut blocks = vec![];
 
@@ -744,7 +744,7 @@ pub mod tests {
 
     #[test]
     pub fn test_put_get() {
-        let mut store = SQLiteBlockStore::file("file:test_put_get?mode=memory&cache=shared")
+        let mut store = BlockStore::file("file:test_put_get?mode=memory&cache=shared")
             .connect()
             .unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
@@ -770,7 +770,7 @@ pub mod tests {
     #[test]
     pub fn test_nth_ancestor() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::file("file:test_nth_ancestor?mode=memory&cache=shared")
+        let mut store = BlockStore::file("file:test_nth_ancestor?mode=memory&cache=shared")
             .connect()
             .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
@@ -814,7 +814,7 @@ pub mod tests {
     #[test]
     pub fn test_iterate_range() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::file("file:test_iterate_range?mode=memory&cache=shared")
+        let mut store = BlockStore::file("file:test_iterate_range?mode=memory&cache=shared")
             .connect()
             .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
@@ -851,8 +851,7 @@ pub mod tests {
     #[test]
     fn simultaneous_read_write() {
         let mut rng = OsRng;
-        let store =
-            SQLiteBlockStore::file("file:test_simultaneous_read_write?mode=memory&cache=shared");
+        let store = BlockStore::file("file:test_simultaneous_read_write?mode=memory&cache=shared");
 
         let mut conn = store.connect::<Block>().unwrap();
 

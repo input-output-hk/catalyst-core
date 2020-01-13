@@ -7,7 +7,6 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 chain-core = { path = "../chain-core" }
-chain-storage = { path = "../chain-storage" }
 r2d2 = "0.8"
 r2d2_sqlite = "0.8"
 rusqlite = { version = "0.16.0", features = ["bundled", "unlock_notify"] }

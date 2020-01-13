@@ -30,13 +30,34 @@ struct Origin {
     authority: uri::Authority,
 }
 
+impl<P, C> Connect<P, C, tokio_executor::DefaultExecutor>
+where
+    P: ProtocolConfig,
+    C: HyperConnect,
+    C::Transport: HttpConnection,
+{
+    /// create a new Connection utilizing the Global tokio `DefaultExecutor`.
+    pub fn new(connector: C) -> Self {
+        let connector = Connector::new(connector);
+        let mut settings = tower_hyper::client::Builder::new();
+        settings.http2_only(true);
+        let tower_connect = tower_hyper::client::Connect::with_builder(connector, settings);
+        Connect {
+            tower_connect,
+            origin: None,
+            node_id: None,
+        }
+    }
+}
+
 impl<P, C, E> Connect<P, C, E>
 where
     P: ProtocolConfig,
     C: HyperConnect,
     C::Transport: HttpConnection,
 {
-    pub fn new(connector: C, executor: E) -> Self {
+    /// create a new Connection but using the the given `Executor`.
+    pub fn with_executor(connector: C, executor: E) -> Self {
         let connector = Connector::new(connector);
         let mut settings = tower_hyper::client::Builder::new();
         settings.http2_only(true);

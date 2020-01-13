@@ -13,13 +13,13 @@ r2d2_sqlite = "0.8"
 rusqlite = { version = "0.16.0", features = ["bundled", "unlock_notify"] }
 
 criterion = { version = "0.3.0", optional = true }
+rand_core = { version = "0.5", features = ["getrandom"], optional = true }
 tempfile = { version = "3.1.0", optional = true }
 
 [features]
-with-bench = ["criterion", "tempfile"]
+with-bench = ["criterion", "tempfile", "rand_core"]
 
 [dev-dependencies]
-chain-storage = { path = "../chain-storage", features=["test-api"] }
 rand_core = { version = "0.5", features = ["getrandom"] }
 
 [[bench]]

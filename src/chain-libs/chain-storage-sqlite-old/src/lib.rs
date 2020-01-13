@@ -1,31 +1,23 @@
 use chain_core::property::{Block, BlockId, Serialize};
 use rusqlite::{types::Value, Connection};
-use std::{error, fmt, path::{Path, PathBuf}};
+use std::path::{Path, PathBuf};
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
+    #[error("block not found")]
     BlockNotFound, // FIXME: add BlockId
+    #[error("cannot iterate between the 2 given blocks")]
     CannotIterate,
-    BackendError(Box<dyn std::error::Error + Send + Sync>),
+    #[error("database backend error")]
+    BackendError(#[from] Box<dyn std::error::Error + Send + Sync>),
+    #[error("block0 is in the future")]
     Block0InFuture,
+    #[error("Block already present in DB")]
     BlockAlreadyPresent,
+    #[error("the parent block is missing for the required write")]
     MissingParent,
 }
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Error::BlockNotFound => write!(f, "block not found"),
-            Error::CannotIterate => write!(f, "cannot iterate between the 2 given blocks"),
-            Error::BackendError(err) => write!(f, "{}", err),
-            Error::Block0InFuture => write!(f, "block0 is in the future"),
-            Error::BlockAlreadyPresent => write!(f, "Block already present in DB"),
-            Error::MissingParent => write!(f, "the parent block is missing for the required write"),
-        }
-    }
-}
-
-impl error::Error for Error {}
 
 #[derive(Clone, Debug)]
 pub struct BackLink<Id: BlockId> {
@@ -309,8 +301,7 @@ where
     }
 
     pub fn get_block_info(&self, block_hash: &B::Id) -> Result<BlockInfo<B::Id>, Error> {
-        self
-            .inner
+        self.inner
             .prepare_cached(
                 "select depth, parent, fast_distance, fast_hash from BlockInfo where hash = ?",
             )
@@ -751,10 +742,9 @@ pub mod tests {
 
     #[test]
     pub fn test_put_get() {
-        let mut store =
-            SQLiteBlockStore::file("file:test_put_get?mode=memory&cache=shared")
-                .connect()
-                .unwrap();
+        let mut store = SQLiteBlockStore::file("file:test_put_get?mode=memory&cache=shared")
+            .connect()
+            .unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
 
         match store.put_tag("tip", &BlockId::zero()) {
@@ -778,10 +768,9 @@ pub mod tests {
     #[test]
     pub fn test_nth_ancestor() {
         let mut rng = OsRng;
-        let mut store =
-            SQLiteBlockStore::file("file:test_nth_ancestor?mode=memory&cache=shared")
-                .connect()
-                .unwrap();
+        let mut store = SQLiteBlockStore::file("file:test_nth_ancestor?mode=memory&cache=shared")
+            .connect()
+            .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
 
         let mut blocks_fetched = 0;
@@ -820,10 +809,9 @@ pub mod tests {
     #[test]
     pub fn test_iterate_range() {
         let mut rng = OsRng;
-        let mut store =
-            SQLiteBlockStore::file("file:test_iterate_range?mode=memory&cache=shared")
-                .connect()
-                .unwrap();
+        let mut store = SQLiteBlockStore::file("file:test_iterate_range?mode=memory&cache=shared")
+            .connect()
+            .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
 
         let blocks_by_id: HashMap<BlockId, &Block> = blocks.iter().map(|b| (b.id(), b)).collect();

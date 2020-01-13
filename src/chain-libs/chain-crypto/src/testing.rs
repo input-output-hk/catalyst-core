@@ -54,6 +54,7 @@ where
     TestCryptoGen::arbitrary(g).secret_key(0)
 }
 
+#[allow(dead_code)]
 pub fn static_secret_key<A>() -> SecretKey<A>
 where
     A: AsymmetricKey,

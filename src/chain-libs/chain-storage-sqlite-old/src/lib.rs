@@ -32,11 +32,10 @@ pub struct BlockInfo<Id: BlockId> {
     pub block_hash: Id,
 
     /// Length of the chain. I.e. a block whose parent is the zero
-    /// hash has depth 1, its children have depth 2, and so on. Note
-    /// that there is no block with depth 0 because there is no block
-    /// with the zero hash.
-    // FIXME: rename to chain_length
-    pub depth: u64,
+    /// hash has chain_length 1, its children have chain_length 2, and so on.
+    /// Note that there is no block with chain_length 0 because there is no
+    /// block with the zero hash.
+    pub chain_length: u64,
 
     /// One or more ancestors of this block. Must include at least the
     /// parent, but may include other ancestors to enable efficient
@@ -97,6 +96,7 @@ impl SQLiteBlockStore {
 
         let connection = store.connect_internal().unwrap();
 
+        // TODO rename depth to chain_length (left it unchanged for compatibility)
         connection
             .execute_batch(
                 r#"
@@ -191,32 +191,32 @@ where
             block_hash: parent_hash.clone(),
         }];
 
-        let depth = if parent_hash == B::Id::zero() {
+        let chain_length = if parent_hash == B::Id::zero() {
             1
         } else {
             let parent_info = self.get_block_info(&parent_hash).map_err(|e| match e {
                 Error::BlockNotFound => Error::MissingParent,
                 e => e,
             })?;
-            assert!(parent_info.depth > 0);
-            let depth = 1 + parent_info.depth;
-            let fast_link = compute_fast_link(depth);
-            //println!("from {} -> {}", depth, fast_link);
-            let distance = depth - fast_link;
+            assert!(parent_info.chain_length > 0);
+            let chain_length = 1 + parent_info.chain_length;
+            let fast_link = compute_fast_link(chain_length);
+            let distance = chain_length - fast_link;
             if distance != 1 && fast_link > 0 {
-                let far_block_info = self.get_nth_ancestor(&parent_hash, depth - 1 - fast_link)?;
+                let far_block_info =
+                    self.get_nth_ancestor(&parent_hash, chain_length - 1 - fast_link)?;
                 back_links.push(BackLink {
                     distance,
                     block_hash: far_block_info.block_hash,
                 })
             }
 
-            depth
+            chain_length
         };
 
         let block_info = BlockInfo {
             block_hash: block_hash.clone(),
-            depth,
+            chain_length,
             back_links,
         };
 
@@ -268,7 +268,7 @@ where
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .execute(&[
                 Value::Blob(block_info.block_hash.serialize_as_vec().unwrap()),
-                Value::Integer(block_info.depth as i64),
+                Value::Integer(block_info.chain_length as i64),
                 Value::Blob(parent.block_hash.serialize_as_vec().unwrap()),
                 fast_distance,
                 fast_hash,
@@ -320,11 +320,11 @@ where
                     });
                 }
 
-                let depth: i64 = row.get(0);
+                let chain_length: i64 = row.get(0);
 
                 BlockInfo {
                     block_hash: block_hash.clone(),
-                    depth: depth as u64,
+                    chain_length: chain_length as u64,
                     back_links,
                 }
             })
@@ -391,24 +391,26 @@ where
         let descendent = self.get_block_info(&descendent)?;
 
         if ancestor == &B::Id::zero() {
-            return Ok(Some(descendent.depth));
+            return Ok(Some(descendent.chain_length));
         }
 
         let ancestor = self.get_block_info(&ancestor)?;
 
         // Bail out right away if the "descendent" does not have a
-        // higher depth.
-        if descendent.depth <= ancestor.depth {
+        // higher chain_length.
+        if descendent.chain_length <= ancestor.chain_length {
             return Ok(None);
         }
 
         // Seek back from the descendent to check whether it has the
         // ancestor at the expected place.
-        let info =
-            self.get_nth_ancestor(&descendent.block_hash, descendent.depth - ancestor.depth)?;
+        let info = self.get_nth_ancestor(
+            &descendent.block_hash,
+            descendent.chain_length - ancestor.chain_length,
+        )?;
 
         if info.block_hash == ancestor.block_hash {
-            Ok(Some(descendent.depth - ancestor.depth))
+            Ok(Some(descendent.chain_length - ancestor.chain_length))
         } else {
             Ok(None)
         }
@@ -445,26 +447,26 @@ where
 {
     let mut cur_block_info = store.get_block_info(block_hash)?;
 
-    if distance >= cur_block_info.depth {
+    if distance >= cur_block_info.chain_length {
         // FIXME: return error
         panic!(
             "distance {} > chain length {}",
-            distance, cur_block_info.depth
+            distance, cur_block_info.chain_length
         );
     }
 
-    let target = cur_block_info.depth - distance;
+    let target = cur_block_info.chain_length - distance;
 
     // Travel back through the chain using the back links until we
     // reach the desired block.
-    while target < cur_block_info.depth {
+    while target < cur_block_info.chain_length {
         // We're not there yet. Use the back link that takes us
         // furthest back in the chain, without going beyond the
         // block we're looking for.
         let best_link = cur_block_info
             .back_links
             .iter()
-            .filter(|x| cur_block_info.depth - target >= x.distance)
+            .filter(|x| cur_block_info.chain_length - target >= x.distance)
             .max_by_key(|x| x.distance)
             .unwrap()
             .clone();
@@ -472,19 +474,19 @@ where
         cur_block_info = store.get_block_info(&best_link.block_hash)?;
     }
 
-    assert_eq!(target, cur_block_info.depth);
+    assert_eq!(target, cur_block_info.chain_length);
 
     Ok(cur_block_info)
 }
 
-/// Compute the fast link for a block with a given depth. Successive
-/// blocks make a depth jump equal to differents powers of two, minus
+/// Compute the fast link for a block with a given chain_length. Successive
+/// blocks make a chain_length jump equal to differents powers of two, minus
 /// 1, e.g. 1, 3, 7, 15, 31, ...
-fn compute_fast_link(depth: u64) -> u64 {
-    let order = depth % 32;
+fn compute_fast_link(chain_length: u64) -> u64 {
+    let order = chain_length % 32;
     let distance = if order == 0 { 1 } else { (1 << order) - 1 };
-    if distance < depth {
-        depth - distance
+    if distance < chain_length {
+        chain_length - distance
     } else {
         0
     }
@@ -508,8 +510,8 @@ where
             let to_info = store.get_block_info(&to)?;
             Ok(BlockIterator {
                 store: store,
-                to_depth: to_info.depth,
-                cur_depth: to_info.depth - distance,
+                to_chain_length: to_info.chain_length,
+                cur_chain_length: to_info.chain_length - distance,
                 pending_infos: vec![to_info],
             })
         }
@@ -521,8 +523,8 @@ where
     B: Block,
 {
     store: &'store SQLiteBlockStoreConnection<B>,
-    to_depth: u64,
-    cur_depth: u64,
+    to_chain_length: u64,
+    cur_chain_length: u64,
     pending_infos: Vec<BlockInfo<B::Id>>,
 }
 
@@ -533,27 +535,27 @@ where
     type Item = Result<BlockInfo<B::Id>, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.cur_depth >= self.to_depth {
+        if self.cur_chain_length >= self.to_chain_length {
             None
         } else {
-            self.cur_depth += 1;
+            self.cur_chain_length += 1;
 
             let block_info = self.pending_infos.pop().unwrap();
 
-            if block_info.depth == self.cur_depth {
+            if block_info.chain_length == self.cur_chain_length {
                 // We've seen this block on a previous ancestor traversal.
                 Some(Ok(block_info))
             } else {
                 // We don't have this block yet, so search back from
                 // the furthest block that we do have.
-                assert!(self.cur_depth < block_info.depth);
-                let depth = block_info.depth;
+                assert!(self.cur_chain_length < block_info.chain_length);
+                let chain_length = block_info.chain_length;
                 let parent = block_info.parent_id();
                 self.pending_infos.push(block_info);
                 Some(for_path_to_nth_ancestor(
                     self.store,
                     &parent,
-                    depth - self.cur_depth - 1,
+                    chain_length - self.cur_chain_length - 1,
                     |new_info| {
                         self.pending_infos.push(new_info.clone());
                     },
@@ -757,7 +759,7 @@ pub mod tests {
         let (genesis_block_restored, block_info) = store.get_block(&genesis_block.id()).unwrap();
         assert_eq!(genesis_block, genesis_block_restored);
         assert_eq!(block_info.block_hash, genesis_block.id());
-        assert_eq!(block_info.depth, genesis_block.chain_length().0);
+        assert_eq!(block_info.chain_length, genesis_block.chain_length().0);
         assert_eq!(block_info.back_links.len(), 1);
         assert_eq!(block_info.parent_id(), BlockId::zero());
 
@@ -789,7 +791,10 @@ pub mod tests {
             })
             .unwrap();
 
-            assert_eq!(ancestor_info.depth + distance, block.chain_length().0);
+            assert_eq!(
+                ancestor_info.chain_length + distance,
+                block.chain_length().0
+            );
 
             let ancestor = store.get_block(&ancestor_info.block_hash).unwrap().0;
 

@@ -492,86 +492,12 @@ fn compute_fast_link(chain_length: u64) -> u64 {
     }
 }
 
-/// Return an iterator that yields block info for the blocks of `store` in
-/// the half-open range `(from, to]`. `from` must be an ancestor
-/// of `to` and may be the zero hash.
-pub fn iterate_range<'store, B>(
-    store: &'store BlockStoreConnection<B>,
-    from: &B::Id,
-    to: &B::Id,
-) -> Result<BlockIterator<'store, B>, Error>
-where
-    B: Block,
-{
-    // FIXME: put blocks loaded by is_ancestor into pending_infos.
-    match store.is_ancestor(from, to)? {
-        None => Err(Error::CannotIterate),
-        Some(distance) => {
-            let to_info = store.get_block_info(&to)?;
-            Ok(BlockIterator {
-                store: store,
-                to_chain_length: to_info.chain_length,
-                cur_chain_length: to_info.chain_length - distance,
-                pending_infos: vec![to_info],
-            })
-        }
-    }
-}
-
-pub struct BlockIterator<'store, B>
-where
-    B: Block,
-{
-    store: &'store BlockStoreConnection<B>,
-    to_chain_length: u64,
-    cur_chain_length: u64,
-    pending_infos: Vec<BlockInfo<B::Id>>,
-}
-
-impl<'store, B> Iterator for BlockIterator<'store, B>
-where
-    B: Block,
-{
-    type Item = Result<BlockInfo<B::Id>, Error>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.cur_chain_length >= self.to_chain_length {
-            None
-        } else {
-            self.cur_chain_length += 1;
-
-            let block_info = self.pending_infos.pop().unwrap();
-
-            if block_info.chain_length == self.cur_chain_length {
-                // We've seen this block on a previous ancestor traversal.
-                Some(Ok(block_info))
-            } else {
-                // We don't have this block yet, so search back from
-                // the furthest block that we do have.
-                assert!(self.cur_chain_length < block_info.chain_length);
-                let chain_length = block_info.chain_length;
-                let parent = block_info.parent_id();
-                self.pending_infos.push(block_info);
-                Some(for_path_to_nth_ancestor(
-                    self.store,
-                    &parent,
-                    chain_length - self.cur_chain_length - 1,
-                    |new_info| {
-                        self.pending_infos.push(new_info.clone());
-                    },
-                ))
-            }
-        }
-    }
-}
-
 #[cfg(any(test, feature = "with-bench"))]
 pub mod tests {
     use super::*;
     use chain_core::packer::*;
     use chain_core::property::{Block as _, BlockDate as _, BlockId as _};
     use rand_core::{OsRng, RngCore};
-    use std::collections::HashMap;
     use std::sync::atomic::{AtomicU64, Ordering};
 
     const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
@@ -809,43 +735,6 @@ pub mod tests {
         );
 
         assert!(blocks_per_test < 35.0);
-    }
-
-    #[test]
-    pub fn test_iterate_range() {
-        let mut rng = OsRng;
-        let mut store = BlockStore::file("file:test_iterate_range?mode=memory&cache=shared")
-            .connect()
-            .unwrap();
-        let blocks = generate_chain(&mut rng, &mut store);
-
-        let blocks_by_id: HashMap<BlockId, &Block> = blocks.iter().map(|b| (b.id(), b)).collect();
-
-        for _ in 0..1000 {
-            let from = pick_from_vector(&mut rng, &blocks);
-            let to = pick_from_vector(&mut rng, &blocks);
-
-            match iterate_range(&store, &from.id(), &to.id()) {
-                Ok(iter) => {
-                    let mut prev = from.id();
-                    for block_info in iter {
-                        let block_info = block_info.unwrap();
-                        assert_eq!(block_info.parent_id(), prev);
-                        prev = block_info.block_hash;
-                    }
-                    assert_eq!(prev, to.id());
-                }
-                Err(Error::CannotIterate) => {
-                    // Check that 'from' really isn't an ancestor of 'to'.
-                    let mut cur = to.id();
-                    while cur != BlockId::zero() {
-                        assert_ne!(cur, from.id());
-                        cur = blocks_by_id[&cur].parent_id();
-                    }
-                }
-                Err(_) => panic!(),
-            }
-        }
     }
 
     #[test]

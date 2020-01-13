@@ -1,8 +1,4 @@
-#[macro_use]
-extern crate criterion;
-extern crate tempfile;
-
-use criterion::{BatchSize, Criterion};
+use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use rand_core::{OsRng, RngCore};
 
 use chain_core::property::Block;

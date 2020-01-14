@@ -13,18 +13,21 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 chain-core = { path = "../chain-core" }
 chain-storage = { path = "../chain-storage" }
-r2d2 = { version = "0.8" }
-r2d2_sqlite = { version = "0.8" }
+r2d2 = "0.8"
+r2d2_sqlite = "0.8"
+rusqlite = { version = "0.16.0", features = ["bundled"] }
 
-[dependencies.rusqlite]
-version = "0.16.0"
-features = ["bundled"]
+criterion = { version = "0.3.0", optional = true }
+tempfile = { version = "3.1.0", optional = true }
+
+[features]
+with-bench = ["criterion", "tempfile"]
 
 [dev-dependencies]
-criterion = "0.3.0"
 chain-storage = { path = "../chain-storage", features=["test-api"] }
 rand_core = { version = "0.5", features = ["getrandom"] }
 
 [[bench]]
 harness = false
 name = "storage"
+required-features = ["with-bench"]

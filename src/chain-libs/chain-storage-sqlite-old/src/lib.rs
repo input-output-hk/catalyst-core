@@ -3,7 +3,8 @@ use chain_storage::{
     error::Error,
     store::{BackLink, BlockInfo, BlockStore},
 };
-use rusqlite::types::Value;
+use r2d2_sqlite::SqliteConnectionManager;
+use rusqlite::{types::Value, OpenFlags};
 use std::path::Path;
 
 #[derive(Clone)]
@@ -19,8 +20,25 @@ impl<B> SQLiteBlockStore<B>
 where
     B: Block,
 {
-    pub fn new<P: AsRef<Path>>(path: P) -> Self {
-        let manager = r2d2_sqlite::SqliteConnectionManager::file(path);
+    pub fn memory() -> Self {
+        // Shared cacge should be always enabled for in-memory databases so that
+        // all connections in a pool access the same database. Otherwise each
+        // connection has its own database which leads to bugs, because only one
+        // of those databases will have a schema set.
+        let manager = SqliteConnectionManager::memory().with_flags(
+            OpenFlags::SQLITE_OPEN_READ_WRITE
+                | OpenFlags::SQLITE_OPEN_CREATE
+                | OpenFlags::SQLITE_OPEN_SHARED_CACHE,
+        );
+        Self::init(manager)
+    }
+
+    pub fn file<P: AsRef<Path>>(path: P) -> Self {
+        let manager = SqliteConnectionManager::file(path);
+        Self::init(manager)
+    }
+
+    fn init(manager: SqliteConnectionManager) -> Self {
         let pool = r2d2::Pool::new(manager).unwrap();
 
         let connection = pool.get().unwrap();
@@ -250,21 +268,21 @@ mod tests {
 
     #[test]
     pub fn put_get() {
-        let mut store = SQLiteBlockStore::<Block>::new(":memory:");
+        let mut store = SQLiteBlockStore::<Block>::memory();
         chain_storage::store::testing::test_put_get(&mut store);
     }
 
     #[test]
     pub fn nth_ancestor() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::<Block>::new(":memory:");
+        let mut store = SQLiteBlockStore::<Block>::memory();
         chain_storage::store::testing::test_nth_ancestor(&mut rng, &mut store);
     }
 
     #[test]
     pub fn iterate_range() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::<Block>::new(":memory:");
+        let mut store = SQLiteBlockStore::<Block>::memory();
         chain_storage::store::testing::test_iterate_range(&mut rng, &mut store);
     }
 }

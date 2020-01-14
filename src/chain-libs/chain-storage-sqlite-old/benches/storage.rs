@@ -15,7 +15,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let genesis_block = TestBlock::genesis(Some(Box::new(block_data.clone())));
 
     let path = tempfile::NamedTempFile::new().unwrap().into_temp_path();
-    let mut store = SQLiteBlockStore::<TestBlock>::new(path);
+    let mut store = SQLiteBlockStore::<TestBlock>::file(path);
     store.put_block(&genesis_block).unwrap();
 
     let mut blocks = vec![genesis_block];

@@ -179,7 +179,12 @@ where
     pub fn put_block(&mut self, block: &B) -> Result<(), Error> {
         let block_hash = block.id();
 
-        if self.block_exists(&block_hash)? {
+        let tx = self
+            .inner
+            .transaction()
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        if Self::block_exists_internal(&tx, &block_hash)? {
             return Ok(());
         }
 
@@ -194,17 +199,21 @@ where
         let chain_length = if parent_hash == B::Id::zero() {
             1
         } else {
-            let parent_info = self.get_block_info(&parent_hash).map_err(|e| match e {
-                Error::BlockNotFound => Error::MissingParent,
-                e => e,
-            })?;
+            let parent_info =
+                Self::get_block_info_internal(&tx, &parent_hash).map_err(|e| match e {
+                    Error::BlockNotFound => Error::MissingParent,
+                    e => e,
+                })?;
             assert!(parent_info.chain_length > 0);
             let chain_length = 1 + parent_info.chain_length;
             let fast_link = compute_fast_link(chain_length);
             let distance = chain_length - fast_link;
             if distance != 1 && fast_link > 0 {
-                let far_block_info =
-                    self.get_nth_ancestor(&parent_hash, chain_length - 1 - fast_link)?;
+                let far_block_info = Self::get_nth_ancestor_internal(
+                    &tx,
+                    &parent_hash,
+                    chain_length - 1 - fast_link,
+                )?;
                 back_links.push(BackLink {
                     distance,
                     block_hash: far_block_info.block_hash,
@@ -219,11 +228,6 @@ where
             chain_length,
             back_links,
         };
-
-        let tx = self
-            .inner
-            .transaction()
-            .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let worked = tx
             .prepare_cached("insert into Blocks (hash, block) values(?, ?)")
@@ -281,9 +285,13 @@ where
         Ok(())
     }
 
-    pub fn get_block(&self, block_hash: &B::Id) -> Result<(B, BlockInfo<B::Id>), Error> {
-        let blk = self
+    pub fn get_block(&mut self, block_hash: &B::Id) -> Result<(B, BlockInfo<B::Id>), Error> {
+        let tx = self
             .inner
+            .transaction()
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let blk = tx
             .prepare_cached("select block from Blocks where hash = ?")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .query_row(&[&block_hash.serialize_as_vec().unwrap()[..]], |row| {
@@ -295,13 +303,25 @@ where
                 err => Error::BackendError(Box::new(err)),
             })?;
 
-        let info = self.get_block_info(block_hash)?;
+        let info = Self::get_block_info_internal(&tx, block_hash)?;
 
         Ok((blk, info))
     }
 
-    pub fn get_block_info(&self, block_hash: &B::Id) -> Result<BlockInfo<B::Id>, Error> {
-        self.inner
+    pub fn get_block_info(&mut self, block_hash: &B::Id) -> Result<BlockInfo<B::Id>, Error> {
+        let tx = self
+            .inner
+            .transaction()
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        Self::get_block_info_internal(&tx, block_hash)
+    }
+
+    fn get_block_info_internal(
+        connection: &Connection,
+        block_hash: &B::Id,
+    ) -> Result<BlockInfo<B::Id>, Error> {
+        connection
             .prepare_cached(
                 "select depth, parent, fast_distance, fast_hash from BlockInfo where hash = ?",
             )
@@ -353,7 +373,7 @@ where
         }
     }
 
-    pub fn get_tag(&self, tag_name: &str) -> Result<Option<B::Id>, Error> {
+    pub fn get_tag(&mut self, tag_name: &str) -> Result<Option<B::Id>, Error> {
         match self
             .inner
             .prepare_cached("select hash from Tags where name = ?")
@@ -367,8 +387,12 @@ where
     }
 
     /// Check whether a block exists.
-    pub fn block_exists(&self, block_hash: &B::Id) -> Result<bool, Error> {
-        match self.get_block_info(block_hash) {
+    pub fn block_exists(&mut self, block_hash: &B::Id) -> Result<bool, Error> {
+        Self::block_exists_internal(&self.inner, block_hash)
+    }
+
+    fn block_exists_internal(connection: &Connection, block_hash: &B::Id) -> Result<bool, Error> {
+        match Self::get_block_info_internal(connection, block_hash) {
             Ok(_) => Ok(true),
             Err(Error::BlockNotFound) => Ok(false),
             Err(err) => Err(err),
@@ -382,19 +406,28 @@ where
     ///     and there are `dist` blocks between them
     /// - `Ok(None)` - `ancestor` is not ancestor of `descendent`
     /// - `Err(error)` - `ancestor` or `descendent` was not found
-    pub fn is_ancestor(&self, ancestor: &B::Id, descendent: &B::Id) -> Result<Option<u64>, Error> {
+    pub fn is_ancestor(
+        &mut self,
+        ancestor: &B::Id,
+        descendent: &B::Id,
+    ) -> Result<Option<u64>, Error> {
         // Optimization.
         if ancestor == descendent {
             return Ok(Some(0));
         }
 
-        let descendent = self.get_block_info(&descendent)?;
+        let tx = self
+            .inner
+            .transaction()
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let descendent = Self::get_block_info_internal(&tx, &descendent)?;
 
         if ancestor == &B::Id::zero() {
             return Ok(Some(descendent.chain_length));
         }
 
-        let ancestor = self.get_block_info(&ancestor)?;
+        let ancestor = Self::get_block_info_internal(&tx, &ancestor)?;
 
         // Bail out right away if the "descendent" does not have a
         // higher chain_length.
@@ -404,7 +437,8 @@ where
 
         // Seek back from the descendent to check whether it has the
         // ancestor at the expected place.
-        let info = self.get_nth_ancestor(
+        let info = Self::get_nth_ancestor_internal(
+            &tx,
             &descendent.block_hash,
             descendent.chain_length - ancestor.chain_length,
         )?;
@@ -417,11 +451,24 @@ where
     }
 
     pub fn get_nth_ancestor(
-        &self,
+        &mut self,
         block_hash: &B::Id,
         distance: u64,
     ) -> Result<BlockInfo<B::Id>, Error> {
-        for_path_to_nth_ancestor(self, block_hash, distance, |_| {})
+        let tx = self
+            .inner
+            .transaction()
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        Self::get_nth_ancestor_internal(&tx, block_hash, distance)
+    }
+
+    fn get_nth_ancestor_internal(
+        connection: &Connection,
+        block_hash: &B::Id,
+        distance: u64,
+    ) -> Result<BlockInfo<B::Id>, Error> {
+        for_path_to_nth_ancestor_internal::<B, _>(connection, block_hash, distance, |_| {})
     }
 }
 
@@ -436,7 +483,25 @@ fn blob_to_hash<Id: BlockId>(blob: Vec<u8>) -> Id {
 /// The travelling algorithm uses back links to skip over parts of the chain,
 /// so the callback will not be invoked for all blocks in the linear sequence.
 pub fn for_path_to_nth_ancestor<B, F>(
-    store: &BlockStoreConnection<B>,
+    store: &mut BlockStoreConnection<B>,
+    block_hash: &B::Id,
+    distance: u64,
+    callback: F,
+) -> Result<BlockInfo<B::Id>, Error>
+where
+    B: Block,
+    F: FnMut(&BlockInfo<B::Id>),
+{
+    let tx = store
+        .inner
+        .transaction()
+        .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+    for_path_to_nth_ancestor_internal::<B, F>(&tx, block_hash, distance, callback)
+}
+
+fn for_path_to_nth_ancestor_internal<B, F>(
+    connection: &Connection,
     block_hash: &B::Id,
     distance: u64,
     mut callback: F,
@@ -445,7 +510,8 @@ where
     B: Block,
     F: FnMut(&BlockInfo<B::Id>),
 {
-    let mut cur_block_info = store.get_block_info(block_hash)?;
+    let mut cur_block_info =
+        BlockStoreConnection::<B>::get_block_info_internal(connection, block_hash)?;
 
     if distance >= cur_block_info.chain_length {
         // FIXME: return error
@@ -471,7 +537,8 @@ where
             .unwrap()
             .clone();
         callback(&cur_block_info);
-        cur_block_info = store.get_block_info(&best_link.block_hash)?;
+        cur_block_info =
+            BlockStoreConnection::<B>::get_block_info_internal(connection, &best_link.block_hash)?;
     }
 
     assert_eq!(target, cur_block_info.chain_length);
@@ -712,7 +779,7 @@ pub mod tests {
             let distance = rng.next_u64() % block.chain_length().0;
             total_distance += distance;
 
-            let ancestor_info = for_path_to_nth_ancestor(&store, &block.id(), distance, |_| {
+            let ancestor_info = for_path_to_nth_ancestor(&mut store, &block.id(), distance, |_| {
                 blocks_fetched += 1;
             })
             .unwrap();
@@ -755,7 +822,7 @@ pub mod tests {
             conn.put_block(&block).unwrap()
         }
 
-        let conn_1 = store.connect::<Block>().unwrap();
+        let mut conn_1 = store.connect::<Block>().unwrap();
         let blocks_1 = blocks.clone();
 
         let thread_1 = std::thread::spawn(move || {

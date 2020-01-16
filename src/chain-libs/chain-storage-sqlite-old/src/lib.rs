@@ -86,7 +86,7 @@ where
         }
     }
 
-    pub fn connect(&mut self) -> Result<SQLiteBlockStoreConnection<B>, Error> {
+    pub fn connect(&self) -> Result<SQLiteBlockStoreConnection<B>, Error> {
         Ok(SQLiteBlockStoreConnection {
             connection: self
                 .pool

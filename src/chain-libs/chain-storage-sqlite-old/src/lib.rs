@@ -19,6 +19,10 @@ pub struct SQLiteBlockStore {
     persistent_connection: Option<Connection>,
 }
 
+// persistent_connection does not implement Sync but is never actually used
+// which makes it safe to be shared
+unsafe impl Sync for SQLiteBlockStore {}
+
 pub struct SQLiteBlockStoreConnection<B>
 where
     B: Block,

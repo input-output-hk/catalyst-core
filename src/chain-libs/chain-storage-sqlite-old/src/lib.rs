@@ -116,6 +116,17 @@ fn blob_to_hash<Id: BlockId>(blob: Vec<u8>) -> Id {
     Id::deserialize(&blob[..]).unwrap()
 }
 
+impl<B> SQLiteBlockStoreConnection<B>
+where
+    B: Block,
+{
+    pub fn ping(&self) -> Result<(), Error> {
+        self.inner
+            .execute_batch("")
+            .map_err(|e| Error::BackendError(Box::new(e)))
+    }
+}
+
 impl<B> BlockStore for SQLiteBlockStoreConnection<B>
 where
     B: Block,

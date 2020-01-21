@@ -25,11 +25,7 @@ where
         // all connections in a pool access the same database. Otherwise each
         // connection has its own database which leads to bugs, because only one
         // of those databases will have a schema set.
-        let manager = SqliteConnectionManager::memory().with_flags(
-            OpenFlags::SQLITE_OPEN_READ_WRITE
-                | OpenFlags::SQLITE_OPEN_CREATE
-                | OpenFlags::SQLITE_OPEN_SHARED_CACHE,
-        );
+        let manager = SqliteConnectionManager::file("file::memory:?cache=shared");
         Self::init(manager)
     }
 

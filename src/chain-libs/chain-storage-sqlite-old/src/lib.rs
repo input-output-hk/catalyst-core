@@ -4,7 +4,7 @@ use chain_storage::{
     store::{BackLink, BlockInfo, BlockStore},
 };
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::{types::Value, OpenFlags};
+use rusqlite::types::Value;
 use std::path::Path;
 
 #[derive(Clone)]
@@ -25,11 +25,7 @@ where
         // all connections in a pool access the same database. Otherwise each
         // connection has its own database which leads to bugs, because only one
         // of those databases will have a schema set.
-        let manager = SqliteConnectionManager::memory().with_flags(
-            OpenFlags::SQLITE_OPEN_READ_WRITE
-                | OpenFlags::SQLITE_OPEN_CREATE
-                | OpenFlags::SQLITE_OPEN_SHARED_CACHE,
-        );
+        let manager = SqliteConnectionManager::file("file::memory:?cache=shared");
         Self::init(manager)
     }
 
@@ -266,23 +262,35 @@ mod tests {
     use chain_storage::store::testing::Block;
     use rand_core::OsRng;
 
-    #[test]
-    pub fn put_get() {
+    fn put_get() {
         let mut store = SQLiteBlockStore::<Block>::memory();
         chain_storage::store::testing::test_put_get(&mut store);
     }
 
-    #[test]
-    pub fn nth_ancestor() {
+    fn nth_ancestor() {
         let mut rng = OsRng;
         let mut store = SQLiteBlockStore::<Block>::memory();
         chain_storage::store::testing::test_nth_ancestor(&mut rng, &mut store);
     }
 
-    #[test]
-    pub fn iterate_range() {
+    fn iterate_range() {
         let mut rng = OsRng;
         let mut store = SQLiteBlockStore::<Block>::memory();
         chain_storage::store::testing::test_iterate_range(&mut rng, &mut store);
+    }
+
+    #[test]
+    fn test_all() {
+        // We use in-memory sqlite in shared mode to work with multiple
+        // connections correctly. But sqlite shared context is hidden from the
+        // user somewhere inside of the library and when there are multiple
+        // testing threads the tests are not really isolated because they share
+        // a single database. The database is actually removed when the last
+        // connection to it dies.
+        // A better solution would be to run it with `--test-threads 1` but this
+        // will slow the whole thing down when running on the CI.
+        put_get();
+        nth_ancestor();
+        iterate_range();
     }
 }

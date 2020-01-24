@@ -259,24 +259,64 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chain_storage::store::testing::Block;
-    use rand_core::OsRng;
+    use chain_storage::store::testing::Block as TestBlock;
+    use rand_core::{OsRng, RngCore};
 
     fn put_get() {
-        let mut store = SQLiteBlockStore::<Block>::memory();
+        let mut store = SQLiteBlockStore::<TestBlock>::memory();
         chain_storage::store::testing::test_put_get(&mut store);
     }
 
     fn nth_ancestor() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::<Block>::memory();
+        let mut store = SQLiteBlockStore::<TestBlock>::memory();
         chain_storage::store::testing::test_nth_ancestor(&mut rng, &mut store);
     }
 
     fn iterate_range() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::<Block>::memory();
+        let mut store = SQLiteBlockStore::<TestBlock>::memory();
         chain_storage::store::testing::test_iterate_range(&mut rng, &mut store);
+    }
+
+    fn simultaneous_read_write() {
+        let mut rng = OsRng;
+        let mut store = SQLiteBlockStore::<TestBlock>::memory();
+
+        let genesis_block = TestBlock::genesis(None);
+        store.put_block(&genesis_block).unwrap();
+        let mut blocks = vec![genesis_block];
+
+        for _ in 1..1000 {
+            let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
+            let block = last_block.make_child(None);
+            blocks.push(block.clone());
+            store.put_block(&block).unwrap()
+        }
+
+        let store_1 = store.clone();
+        let blocks_1 = blocks.clone();
+
+        let thread_1 = std::thread::spawn(move || {
+            for _ in 1..1000 {
+                let block_id = blocks_1
+                    .get(rng.next_u32() as usize % blocks_1.len())
+                    .unwrap()
+                    .id();
+                store_1.get_block(&block_id).unwrap();
+            }
+        });
+
+        let thread_2 = std::thread::spawn(move || {
+            for _ in 1..1000 {
+                let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
+                let block = last_block.make_child(None);
+                store.put_block(&block).unwrap();
+            }
+        });
+
+        thread_1.join().unwrap();
+        thread_2.join().unwrap();
     }
 
     #[test]
@@ -292,5 +332,6 @@ mod tests {
         put_get();
         nth_ancestor();
         iterate_range();
+        simultaneous_read_write()
     }
 }

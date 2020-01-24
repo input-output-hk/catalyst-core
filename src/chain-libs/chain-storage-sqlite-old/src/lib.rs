@@ -35,6 +35,8 @@ where
     }
 
     fn init(manager: SqliteConnectionManager) -> Self {
+        let manager = manager
+            .with_init(|connection| connection.execute_batch("pragma read_uncommitted = true"));
         let pool = r2d2::Pool::new(manager).unwrap();
 
         let connection = pool.get().unwrap();
@@ -69,14 +71,12 @@ where
             )
             .unwrap();
 
-        /*
-        connection
-            .execute("pragma synchronous = off", rusqlite::NO_PARAMS)
-            .unwrap();
-        */
-
         connection
             .execute_batch("pragma journal_mode = WAL")
+            .unwrap();
+
+        connection
+            .execute_batch("pragma read_uncommitted = true")
             .unwrap();
 
         SQLiteBlockStore {

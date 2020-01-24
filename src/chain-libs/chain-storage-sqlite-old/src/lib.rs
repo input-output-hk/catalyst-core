@@ -75,10 +75,6 @@ where
             .execute_batch("pragma journal_mode = WAL")
             .unwrap();
 
-        connection
-            .execute_batch("pragma read_uncommitted = true")
-            .unwrap();
-
         SQLiteBlockStore {
             pool,
             dummy: std::marker::PhantomData,

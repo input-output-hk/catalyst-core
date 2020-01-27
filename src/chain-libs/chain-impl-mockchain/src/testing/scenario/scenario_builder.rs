@@ -101,9 +101,11 @@ impl ScenarioBuilder {
             .build()
             .expect("cannot build test ledger");
         let block0_hash = test_ledger.block0_hash.clone();
+        let fee = test_ledger.fee().clone();
+
         Ok((
             test_ledger,
-            Controller::new(block0_hash.clone(), wallets, stake_pools),
+            Controller::new(block0_hash, fee, wallets, stake_pools),
         ))
     }
 

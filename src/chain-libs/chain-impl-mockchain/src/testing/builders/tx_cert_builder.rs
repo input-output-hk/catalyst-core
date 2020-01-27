@@ -1,10 +1,11 @@
 use crate::{
     certificate::{Certificate, CertificatePayload, PoolOwnersSigned, PoolSignature},
     fee::FeeAlgorithm,
+    fee::LinearFee,
     fragment::Fragment,
     header::HeaderId,
     key::EitherEd25519SecretKey,
-    testing::{builders::make_witness, data::Wallet, ledger::TestLedger},
+    testing::{builders::make_witness, data::Wallet},
     transaction::{
         AccountBindingSignature, Payload, SetAuthData, SetIOs, SingleAccountBindingSignature,
         TxBuilder, TxBuilderState,
@@ -12,23 +13,23 @@ use crate::{
     value::Value,
 };
 
-pub struct TestTxCertBuilder<'a> {
-    test_ledger: &'a TestLedger,
+pub struct TestTxCertBuilder {
+    block0_hash: HeaderId,
+    fee: LinearFee,
 }
 
-impl<'a> TestTxCertBuilder<'a> {
-    pub fn new(test_ledger: &'a TestLedger) -> Self {
-        Self { test_ledger }
+impl TestTxCertBuilder {
+    pub fn new(block0_hash: HeaderId, fee: LinearFee) -> Self {
+        Self { block0_hash, fee }
     }
 
     fn block0_hash(&self) -> &HeaderId {
-        &self.test_ledger.block0_hash
+        &self.block0_hash
     }
 
     fn fee(&self, certificate: &Certificate) -> Value {
-        let linear_fee = self.test_ledger.fee();
         let payload: CertificatePayload = certificate.into();
-        linear_fee.calculate(Some(payload.as_slice()), 1, 0)
+        self.fee.calculate(Some(payload.as_slice()), 1, 0)
     }
 
     fn set_initial_ios<P: Payload>(

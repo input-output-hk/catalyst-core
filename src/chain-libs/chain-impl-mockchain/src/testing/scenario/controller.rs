@@ -1,4 +1,5 @@
 use crate::{
+    fee::LinearFee,
     key::Hash,
     ledger::Error as LedgerError,
     testing::{
@@ -33,6 +34,7 @@ pub struct Controller {
 impl Controller {
     pub fn new(
         block0_hash: Hash,
+        fee: LinearFee,
         declared_wallets: Vec<Wallet>,
         declared_stake_pools: Vec<StakePool>,
     ) -> Self {
@@ -40,7 +42,7 @@ impl Controller {
             block0_hash: block0_hash.clone(),
             declared_wallets: declared_wallets,
             declared_stake_pools: declared_stake_pools,
-            fragment_factory: FragmentFactory::new(block0_hash),
+            fragment_factory: FragmentFactory::new(block0_hash, fee),
         }
     }
 
@@ -101,9 +103,9 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment =
-            self.fragment_factory
-                .stake_pool_registration(funder, stake_pool, test_ledger);
+        let fragment = self
+            .fragment_factory
+            .stake_pool_registration(funder, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -113,9 +115,7 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .delegation(from, stake_pool, test_ledger);
+        let fragment = self.fragment_factory.delegation(from, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -126,12 +126,9 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self.fragment_factory.delegation_different_funder(
-            funder,
-            delegation,
-            stake_pool,
-            test_ledger,
-        );
+        let fragment = self
+            .fragment_factory
+            .delegation_different_funder(funder, delegation, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -140,7 +137,7 @@ impl Controller {
         from: &Wallet,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self.fragment_factory.delegation_remove(from, test_ledger);
+        let fragment = self.fragment_factory.delegation_remove(from);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -150,9 +147,7 @@ impl Controller {
         distribution: &[(&StakePool, u8)],
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .delegation_to_many(from, distribution, test_ledger);
+        let fragment = self.fragment_factory.delegation_to_many(from, distribution);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -162,9 +157,7 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .owner_delegation(from, stake_pool, test_ledger);
+        let fragment = self.fragment_factory.owner_delegation(from, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -174,9 +167,7 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .stake_pool_retire(owners, stake_pool, test_ledger);
+        let fragment = self.fragment_factory.stake_pool_retire(owners, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 }

@@ -38,8 +38,9 @@ pub fn pool_registration_is_accepted() {
         .build();
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
-    let fragment = TestTxCertBuilder::new(&test_ledger)
-        .make_transaction(&vec![&alice, &bob, &clarice], &certificate);
+    let fragment =
+        TestTxCertBuilder::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+            .make_transaction(&vec![&alice, &bob, &clarice], &certificate);
     assert!(test_ledger
         .apply_fragment(&fragment, BlockDate::first())
         .is_ok());
@@ -66,8 +67,9 @@ pub fn pool_registration_zero_management_threshold() {
         .build();
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
-    let fragment = TestTxCertBuilder::new(&test_ledger)
-        .make_transaction(&vec![&alice, &bob, &clarice], &certificate);
+    let fragment =
+        TestTxCertBuilder::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+            .make_transaction(&vec![&alice, &bob, &clarice], &certificate);
     assert_err!(
         Error::PoolRegistrationManagementThresholdZero,
         test_ledger.apply_fragment(&fragment, BlockDate::first())
@@ -95,8 +97,9 @@ pub fn pool_registration_management_threshold_above() {
         .build();
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
-    let fragment = TestTxCertBuilder::new(&test_ledger)
-        .make_transaction(&vec![&alice, &bob, &clarice], &certificate);
+    let fragment =
+        TestTxCertBuilder::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+            .make_transaction(&vec![&alice, &bob, &clarice], &certificate);
     assert_err!(
         Error::PoolRegistrationManagementThresholdAbove,
         test_ledger.apply_fragment(&fragment, BlockDate::first())
@@ -123,7 +126,8 @@ pub fn pool_registration_too_many_owners() {
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
     let fragment =
-        TestTxCertBuilder::new(&test_ledger).make_transaction(&vec![&alice], &certificate);
+        TestTxCertBuilder::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+            .make_transaction(&vec![&alice], &certificate);
     assert_err!(
         Error::PoolRegistrationHasTooManyOwners,
         test_ledger.apply_fragment(&fragment, BlockDate::first())
@@ -151,7 +155,8 @@ pub fn pool_registration_too_many_operators() {
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
     let fragment =
-        TestTxCertBuilder::new(&test_ledger).make_transaction(&vec![&alice], &certificate);
+        TestTxCertBuilder::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+            .make_transaction(&vec![&alice], &certificate);
     assert_err!(
         Error::PoolRegistrationHasTooManyOperators,
         test_ledger.apply_fragment(&fragment, BlockDate::first())
@@ -174,11 +179,9 @@ pub fn pool_registration_zero_signatures() {
         .build();
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
-    let fragment = TestTxCertBuilder::new(&test_ledger).make_transaction_different_signers(
-        &alice,
-        &vec![],
-        &certificate,
-    );
+    let fragment =
+        TestTxCertBuilder::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+            .make_transaction_different_signers(&alice, &vec![], &certificate);
     test_ledger
         .apply_fragment(&fragment, BlockDate::first())
         .unwrap();
@@ -204,11 +207,9 @@ pub fn pool_registration_too_many_signatures() {
         .build();
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
-    let fragment = TestTxCertBuilder::new(&test_ledger).make_transaction_different_signers(
-        &alice,
-        &signers,
-        &certificate,
-    );
+    let fragment =
+        TestTxCertBuilder::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+            .make_transaction_different_signers(&alice, &signers, &certificate);
     assert_err!(
         Error::CertificateInvalidSignature,
         test_ledger.apply_fragment(&fragment, BlockDate::first())

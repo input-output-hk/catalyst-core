@@ -15,7 +15,7 @@ chain-core = { path = "../chain-core" }
 chain-storage = { path = "../chain-storage" }
 r2d2 = "0.8"
 r2d2_sqlite = "0.8"
-rusqlite = { version = "0.16.0", features = ["bundled"] }
+rusqlite = { version = "0.16.0", features = ["bundled", "unlock_notify"] }
 
 criterion = { version = "0.3.0", optional = true }
 tempfile = { version = "3.1.0", optional = true }

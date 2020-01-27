@@ -69,12 +69,6 @@ where
             )
             .unwrap();
 
-        /*
-        connection
-            .execute("pragma synchronous = off", rusqlite::NO_PARAMS)
-            .unwrap();
-        */
-
         connection
             .execute_batch("pragma journal_mode = WAL")
             .unwrap();
@@ -259,38 +253,74 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chain_storage::store::testing::Block;
-    use rand_core::OsRng;
+    use chain_storage::store::testing::Block as TestBlock;
+    use rand_core::{OsRng, RngCore};
 
+    const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
+
+    #[test]
     fn put_get() {
-        let mut store = SQLiteBlockStore::<Block>::memory();
+        let mut store =
+            SQLiteBlockStore::<TestBlock>::file("file:test_put_get?mode=memory&cache=shared");
         chain_storage::store::testing::test_put_get(&mut store);
     }
 
+    #[test]
     fn nth_ancestor() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::<Block>::memory();
+        let mut store =
+            SQLiteBlockStore::<TestBlock>::file("file:test_nth_ancestor?mode=memory&cache=shared");
         chain_storage::store::testing::test_nth_ancestor(&mut rng, &mut store);
     }
 
+    #[test]
     fn iterate_range() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::<Block>::memory();
+        let mut store =
+            SQLiteBlockStore::<TestBlock>::file("file:test_iterate_range?mode=memory&cache=shared");
         chain_storage::store::testing::test_iterate_range(&mut rng, &mut store);
     }
 
     #[test]
-    fn test_all() {
-        // We use in-memory sqlite in shared mode to work with multiple
-        // connections correctly. But sqlite shared context is hidden from the
-        // user somewhere inside of the library and when there are multiple
-        // testing threads the tests are not really isolated because they share
-        // a single database. The database is actually removed when the last
-        // connection to it dies.
-        // A better solution would be to run it with `--test-threads 1` but this
-        // will slow the whole thing down when running on the CI.
-        put_get();
-        nth_ancestor();
-        iterate_range();
+    fn simultaneous_read_write() {
+        let mut rng = OsRng;
+        let mut store = SQLiteBlockStore::<TestBlock>::file(
+            "file:test_simultaneous_read_write?mode=memory&cache=shared",
+        );
+
+        let genesis_block = TestBlock::genesis(None);
+        store.put_block(&genesis_block).unwrap();
+        let mut blocks = vec![genesis_block];
+
+        for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
+            let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
+            let block = last_block.make_child(None);
+            blocks.push(block.clone());
+            store.put_block(&block).unwrap()
+        }
+
+        let store_1 = store.clone();
+        let blocks_1 = blocks.clone();
+
+        let thread_1 = std::thread::spawn(move || {
+            for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
+                let block_id = blocks_1
+                    .get(rng.next_u32() as usize % blocks_1.len())
+                    .unwrap()
+                    .id();
+                store_1.get_block(&block_id).unwrap();
+            }
+        });
+
+        let thread_2 = std::thread::spawn(move || {
+            for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
+                let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
+                let block = last_block.make_child(None);
+                store.put_block(&block).unwrap();
+            }
+        });
+
+        thread_1.join().unwrap();
+        thread_2.join().unwrap();
     }
 }

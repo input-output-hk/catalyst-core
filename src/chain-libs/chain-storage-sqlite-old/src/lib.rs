@@ -35,8 +35,6 @@ where
     }
 
     fn init(manager: SqliteConnectionManager) -> Self {
-        let manager = manager
-            .with_init(|connection| connection.execute_batch("pragma read_uncommitted = true"));
         let pool = r2d2::Pool::new(manager).unwrap();
 
         let connection = pool.get().unwrap();

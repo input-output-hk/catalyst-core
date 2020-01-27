@@ -2,6 +2,7 @@ use crate::{
     accounting::account::{DelegationRatio, DelegationType},
     certificate::Certificate,
     certificate::PoolId,
+    fee::LinearFee,
     fragment::Fragment,
     key::Hash,
     testing::{
@@ -20,11 +21,16 @@ use crate::{
 #[derive(Clone, Debug)]
 pub struct FragmentFactory {
     pub block0_hash: Hash,
+    pub fee: LinearFee,
 }
 
 impl FragmentFactory {
-    pub fn new(block0_hash: Hash) -> Self {
-        FragmentFactory { block0_hash }
+    pub fn from_ledger(test_ledger: &TestLedger) -> Self {
+        Self::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+    }
+
+    pub fn new(block0_hash: Hash, fee: LinearFee) -> Self {
+        Self { block0_hash, fee }
     }
 
     pub fn transaction(
@@ -44,24 +50,14 @@ impl FragmentFactory {
             .get_fragment()
     }
 
-    pub fn stake_pool_registration(
-        &self,
-        funder: &Wallet,
-        stake_pool: &StakePool,
-        ledger: &mut TestLedger,
-    ) -> Fragment {
+    pub fn stake_pool_registration(&self, funder: &Wallet, stake_pool: &StakePool) -> Fragment {
         let cert = build_stake_pool_registration_cert(&stake_pool.info());
-        self.transaction_with_cert(&[funder], cert, ledger)
+        self.transaction_with_cert(&[funder], cert)
     }
 
-    pub fn delegation(
-        &self,
-        from: &Wallet,
-        stake_pool: &StakePool,
-        ledger: &mut TestLedger,
-    ) -> Fragment {
+    pub fn delegation(&self, from: &Wallet, stake_pool: &StakePool) -> Fragment {
         let cert = build_stake_delegation_cert(&stake_pool.info(), &from.as_account_data());
-        self.transaction_with_cert(&[from], cert, ledger)
+        self.transaction_with_cert(&[from], cert)
     }
 
     pub fn delegation_different_funder(
@@ -69,23 +65,17 @@ impl FragmentFactory {
         funder: &Wallet,
         delegation: &Wallet,
         stake_pool: &StakePool,
-        ledger: &mut TestLedger,
     ) -> Fragment {
         let cert = build_stake_delegation_cert(&stake_pool.info(), &delegation.as_account_data());
-        self.transaction_with_cert(&[funder], cert, ledger)
+        self.transaction_with_cert(&[funder], cert)
     }
 
-    pub fn delegation_remove(&self, from: &Wallet, ledger: &mut TestLedger) -> Fragment {
+    pub fn delegation_remove(&self, from: &Wallet) -> Fragment {
         let cert = build_no_stake_delegation();
-        self.transaction_with_cert(&[from], cert, ledger)
+        self.transaction_with_cert(&[from], cert)
     }
 
-    pub fn delegation_to_many(
-        &self,
-        from: &Wallet,
-        distribution: &[(&StakePool, u8)],
-        ledger: &mut TestLedger,
-    ) -> Fragment {
+    pub fn delegation_to_many(&self, from: &Wallet, distribution: &[(&StakePool, u8)]) -> Fragment {
         let pools_ratio_sum: u8 = distribution.iter().map(|(_st, ratio)| *ratio as u8).sum();
         let pools: Vec<(PoolId, u8)> = distribution
             .iter()
@@ -95,35 +85,21 @@ impl FragmentFactory {
         let delegation_ratio = DelegationRatio::new(pools_ratio_sum, pools);
         let delegation_type = DelegationType::Ratio(delegation_ratio.unwrap());
         let cert = build_owner_stake_delegation(delegation_type);
-        self.transaction_with_cert(&[from], cert, ledger)
+        self.transaction_with_cert(&[from], cert)
     }
 
-    pub fn owner_delegation(
-        &self,
-        from: &Wallet,
-        stake_pool: &StakePool,
-        ledger: &mut TestLedger,
-    ) -> Fragment {
+    pub fn owner_delegation(&self, from: &Wallet, stake_pool: &StakePool) -> Fragment {
         let cert = build_owner_stake_full_delegation(stake_pool.id());
-        self.transaction_with_cert(&[from], cert, ledger)
+        self.transaction_with_cert(&[from], cert)
     }
 
-    pub fn stake_pool_retire(
-        &self,
-        owners: &[&Wallet],
-        stake_pool: &StakePool,
-        ledger: &mut TestLedger,
-    ) -> Fragment {
+    pub fn stake_pool_retire(&self, owners: &[&Wallet], stake_pool: &StakePool) -> Fragment {
         let certificate = build_stake_pool_retirement_cert(stake_pool.id(), 0);
-        self.transaction_with_cert(&owners, certificate, ledger)
+        self.transaction_with_cert(&owners, certificate)
     }
 
-    fn transaction_with_cert(
-        &self,
-        wallets: &[&Wallet],
-        certificate: Certificate,
-        test_ledger: &mut TestLedger,
-    ) -> Fragment {
-        TestTxCertBuilder::new(&test_ledger).make_transaction(wallets, &certificate)
+    fn transaction_with_cert(&self, wallets: &[&Wallet], certificate: Certificate) -> Fragment {
+        TestTxCertBuilder::new(self.block0_hash.clone(), self.fee.clone())
+            .make_transaction(wallets, &certificate)
     }
 }

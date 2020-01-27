@@ -192,7 +192,7 @@ pub fn apply_block_above_max_content_size() {
         slot_id: 0,
     };
 
-    let fragment_factory = FragmentFactory::new(ledger.block0_hash);
+    let fragment_factory = FragmentFactory::from_ledger(&ledger);
     let fragment = fragment_factory.transaction(&alice, &bob, &mut ledger, 10);
 
     let block = GenesisPraosBlockBuilder::new()

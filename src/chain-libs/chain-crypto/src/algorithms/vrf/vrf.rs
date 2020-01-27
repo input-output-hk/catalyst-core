@@ -300,11 +300,11 @@ mod tests {
 #[cfg(feature = "with-bench")]
 mod bench {
     use super::{PublicKey, SecretKey};
-    use rand_core::OsRng;
+    use rand_core::{OsRng, RngCore};
     use test::Bencher;
 
     fn common() -> (OsRng, SecretKey, PublicKey, [u8; 10], [u8; 10]) {
-        let mut csprng: OsRng = OsRng::new().unwrap();
+        let mut csprng: OsRng = OsRng;
         let sk = SecretKey::random(&mut csprng);
         let pk = sk.public();
 

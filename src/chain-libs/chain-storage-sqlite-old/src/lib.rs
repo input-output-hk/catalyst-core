@@ -82,9 +82,7 @@ impl SQLiteBlockStore {
             .execute_batch("pragma journal_mode = WAL")
             .unwrap();
 
-        if let StoreType::Memory = store.store_type {
-            store.persistent_connection = Some(connection);
-        }
+        store.persistent_connection = Some(connection);
 
         store
     }
@@ -318,7 +316,7 @@ mod tests {
     #[test]
     fn simultaneous_read_write() {
         let mut rng = OsRng;
-        let mut store =
+        let store =
             SQLiteBlockStore::file("file:test_simultaneous_read_write?mode=memory&cache=shared");
 
         let mut conn = store.connect::<TestBlock>().unwrap();

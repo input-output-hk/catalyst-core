@@ -62,6 +62,17 @@ pub enum WitnessUtxoVersion {
     Normal,
 }
 
+fn witness_data_common(
+    data: &mut Vec<u8>,
+    tag: u8,
+    block0: &HeaderId,
+    transaction_id: &TransactionSignDataHash,
+) {
+    data.push(tag);
+    data.extend_from_slice(block0.as_ref());
+    data.extend_from_slice(transaction_id.as_ref());
+}
+
 impl WitnessUtxoData {
     pub fn new(
         block0: &HeaderId,
@@ -73,9 +84,7 @@ impl WitnessUtxoData {
             WitnessUtxoVersion::Legacy => WITNESS_TAG_OLDUTXO,
             WitnessUtxoVersion::Normal => WITNESS_TAG_UTXO,
         };
-        v.push(tag);
-        v.extend_from_slice(block0.as_ref());
-        v.extend_from_slice(transaction_id.as_ref());
+        witness_data_common(&mut v, tag, block0, transaction_id);
         WitnessUtxoData(v)
     }
 }
@@ -95,9 +104,7 @@ impl WitnessAccountData {
         spending_counter: &account::SpendingCounter,
     ) -> Self {
         let mut v = Vec::with_capacity(69);
-        v.push(WITNESS_TAG_ACCOUNT);
-        v.extend_from_slice(block0.as_ref());
-        v.extend_from_slice(transaction_id.as_ref());
+        witness_data_common(&mut v, WITNESS_TAG_ACCOUNT, block0, transaction_id);
         v.extend_from_slice(&spending_counter.to_bytes());
         WitnessAccountData(v)
     }
@@ -118,9 +125,7 @@ impl WitnessMultisigData {
         spending_counter: &account::SpendingCounter,
     ) -> Self {
         let mut v = Vec::with_capacity(69);
-        v.push(WITNESS_TAG_MULTISIG);
-        v.extend_from_slice(block0.as_ref());
-        v.extend_from_slice(transaction_id.as_ref());
+        witness_data_common(&mut v, WITNESS_TAG_MULTISIG, block0, transaction_id);
         v.extend_from_slice(&spending_counter.to_bytes());
         Self(v)
     }

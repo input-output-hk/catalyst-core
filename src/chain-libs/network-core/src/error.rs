@@ -63,6 +63,6 @@ impl fmt::Display for Error {
             Code::Internal => "internal processing error",
             Code::Unavailable => "the service is unavailable",
         };
-        f.write_str(msg)
+        write!(f, "{} ({})", msg, self.source)
     }
 }

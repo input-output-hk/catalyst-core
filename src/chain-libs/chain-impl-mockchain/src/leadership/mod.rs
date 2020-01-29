@@ -25,6 +25,7 @@ pub enum ErrorKind {
     InvalidLeaderProof,
     InvalidBlockMessage,
     InvalidStateUpdate,
+    VrfNonceIsEmptyButNotSupposedTo,
 }
 
 #[derive(Debug)]
@@ -275,6 +276,7 @@ impl std::fmt::Display for ErrorKind {
             ErrorKind::InvalidLeaderProof => write!(f, "Block proof is invalid"),
             ErrorKind::InvalidBlockMessage => write!(f, "Invalid block message"),
             ErrorKind::InvalidStateUpdate => write!(f, "Invalid State Update"),
+            ErrorKind::VrfNonceIsEmptyButNotSupposedTo => write!(f, "Vrf Nonce is empty"),
         }
     }
 }

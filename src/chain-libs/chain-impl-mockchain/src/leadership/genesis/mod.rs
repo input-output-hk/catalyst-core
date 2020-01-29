@@ -168,7 +168,7 @@ impl LeadershipData {
 
                         if vrf_nonce.is_none() {
                             return Verification::Failure(Error::new(
-                                ErrorKind::InvalidLeaderProof,
+                                ErrorKind::VrfNonceIsEmptyButNotSupposedTo,
                             ));
                         }
 

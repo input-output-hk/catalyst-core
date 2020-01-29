@@ -51,7 +51,7 @@ pub trait BlockStore {
         let block_hash = block.id();
 
         if self.block_exists(&block_hash)? {
-            return Ok(());
+            return Err(Error::BlockAlreadyPresent);
         }
 
         let parent_hash = block.parent_id();

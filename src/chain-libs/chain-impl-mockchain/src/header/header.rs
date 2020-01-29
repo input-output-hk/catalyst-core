@@ -63,6 +63,36 @@ impl HeaderGenesisPraos {
     }
 }
 
+/// Header description
+#[derive(Clone)]
+pub struct HeaderDesc {
+    pub id: HeaderId,
+    pub date: BlockDate,
+    pub height: ChainLength,
+}
+
+impl fmt::Debug for HeaderDesc {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}-{:08x}-{}.{}",
+            self.id, self.height.0, self.date.epoch, self.date.slot_id,
+        )
+    }
+}
+impl fmt::Display for HeaderDesc {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{:.8}-{:08x}-{}.{}",
+            self.id.to_string(),
+            self.height.0,
+            self.date.epoch,
+            self.date.slot_id,
+        )
+    }
+}
+
 impl Header {
     pub fn id(&self) -> HeaderId {
         match self {
@@ -80,6 +110,14 @@ impl Header {
     #[inline]
     pub fn hash(&self) -> HeaderId {
         self.id()
+    }
+
+    pub fn description(&self) -> HeaderDesc {
+        HeaderDesc {
+            id: self.id(),
+            date: self.block_date(),
+            height: self.chain_length(),
+        }
     }
 
     fn get_cstruct<'a>(&'a self) -> cstruct::HeaderSlice<'a> {

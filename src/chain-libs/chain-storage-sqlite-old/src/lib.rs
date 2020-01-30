@@ -619,24 +619,27 @@ pub mod tests {
         parent: BlockId,
         date: BlockDate,
         chain_length: ChainLength,
+        data: Box<[u8]>,
     }
 
     impl Block {
-        pub fn genesis() -> Self {
+        pub fn genesis(data: Option<Box<[u8]>>) -> Self {
             Self {
                 id: BlockId::generate(),
                 parent: BlockId::zero(),
                 date: BlockDate::from_epoch_slot_id(0, 0),
                 chain_length: ChainLength(1),
+                data: data.unwrap_or_default(),
             }
         }
 
-        pub fn make_child(&self) -> Self {
+        pub fn make_child(&self, data: Option<Box<[u8]>>) -> Self {
             Self {
                 id: BlockId::generate(),
                 parent: self.id,
                 date: BlockDate::from_epoch_slot_id(self.date.0, self.date.1 + 1),
                 chain_length: ChainLength(self.chain_length.0 + 1),
+                data: data.unwrap_or_default(),
             }
         }
     }
@@ -687,6 +690,8 @@ pub mod tests {
             codec.put_u32(self.date.0)?;
             codec.put_u32(self.date.1)?;
             codec.put_u64(self.chain_length.0)?;
+            codec.put_u64(self.data.len() as u64)?;
+            codec.put_bytes(&self.data)?;
             Ok(())
         }
     }
@@ -701,6 +706,10 @@ pub mod tests {
                 parent: BlockId(codec.get_u64()?),
                 date: BlockDate(codec.get_u32()?, codec.get_u32()?),
                 chain_length: ChainLength(codec.get_u64()?),
+                data: {
+                    let length = codec.get_u64()?;
+                    codec.get_bytes(length as usize)?.into_boxed_slice()
+                },
             })
         }
     }
@@ -717,7 +726,7 @@ pub mod tests {
     ) -> Vec<Block> {
         let mut blocks = vec![];
 
-        let genesis_block = Block::genesis();
+        let genesis_block = Block::genesis(None);
         store.put_block(&genesis_block).unwrap();
         blocks.push(genesis_block);
 
@@ -725,7 +734,7 @@ pub mod tests {
             let mut parent_block = pick_from_vector(rng, &blocks).clone();
             let r = 1 + (rng.next_u32() % 9999);
             for _ in 0..r {
-                let block = parent_block.make_child();
+                let block = parent_block.make_child(None);
                 store.put_block(&block).unwrap();
                 parent_block = block.clone();
                 blocks.push(block);
@@ -747,7 +756,7 @@ pub mod tests {
             err => panic!(err),
         }
 
-        let genesis_block = Block::genesis();
+        let genesis_block = Block::genesis(None);
         store.put_block(&genesis_block).unwrap();
         let (genesis_block_restored, block_info) = store.get_block(&genesis_block.id()).unwrap();
         assert_eq!(genesis_block, genesis_block_restored);
@@ -811,13 +820,13 @@ pub mod tests {
 
         let mut conn = store.connect::<Block>().unwrap();
 
-        let genesis_block = Block::genesis();
+        let genesis_block = Block::genesis(None);
         conn.put_block(&genesis_block).unwrap();
         let mut blocks = vec![genesis_block];
 
         for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
             let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
-            let block = last_block.make_child();
+            let block = last_block.make_child(None);
             blocks.push(block.clone());
             conn.put_block(&block).unwrap()
         }
@@ -838,7 +847,7 @@ pub mod tests {
         let thread_2 = std::thread::spawn(move || {
             for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
                 let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
-                let block = last_block.make_child();
+                let block = last_block.make_child(None);
                 conn.put_block(&block).unwrap();
             }
         });

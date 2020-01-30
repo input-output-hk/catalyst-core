@@ -11,7 +11,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let mut block_data = [0; BLOCK_DATA_LENGTH];
 
     rng.fill_bytes(&mut block_data);
-    let genesis_block = Block::genesis();
+    let genesis_block = Block::genesis(Some(Box::new(block_data.clone())));
 
     let path = tempfile::NamedTempFile::new().unwrap().into_temp_path();
     let store = BlockStore::file(path);
@@ -25,7 +25,7 @@ fn criterion_benchmark(c: &mut Criterion) {
             || {
                 let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
                 rng.fill_bytes(&mut block_data);
-                let block = last_block.make_child();
+                let block = last_block.make_child(Some(Box::new(block_data.clone())));
                 blocks.push(block.clone());
                 block
             },

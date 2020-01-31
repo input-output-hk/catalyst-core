@@ -1,19 +1,17 @@
 //! Multiverse
 //!
-//! This is a multi temporal store, where the timeline is accessible by HeaderHash
+//! This is a multi temporal store, where the timeline is accessible by HeaderId
 //! and multiple timelines are possible.
 //!
 //! For now this only track block at the headerhash level, and doesn't order them
 //! temporaly, leaving no way to do garbage collection
 
 use crate::block::ChainLength;
+use crate::header::HeaderId;
 use crate::ledger::Ledger;
-use chain_core::property::BlockId as _;
 use chain_storage::store::BlockStore;
 use std::collections::{hash_map::Entry, BTreeMap, HashMap, HashSet};
 use std::sync::{Arc, RwLock};
-
-type BlockId = crate::key::Hash;
 
 //
 // The multiverse is characterized by a single origin and multiple state of a given time
@@ -31,8 +29,8 @@ type BlockId = crate::key::Hash;
 // t=0                            t=latest known
 //
 pub struct Multiverse<State> {
-    states_by_hash: HashMap<BlockId, State>,
-    states_by_chain_length: BTreeMap<ChainLength, HashSet<BlockId>>, // FIXME: use multimap?
+    states_by_hash: HashMap<HeaderId, State>,
+    states_by_chain_length: BTreeMap<ChainLength, HashSet<HeaderId>>, // FIXME: use multimap?
     roots: Arc<RwLock<Roots>>,
 }
 
@@ -41,18 +39,18 @@ const SUFFIX_TO_KEEP: u32 = 50;
 
 struct Roots {
     /// Record how many GCRoot objects currently exist for this block ID.
-    roots: HashMap<BlockId, usize>,
+    roots: HashMap<HeaderId, usize>,
 }
 
 /// A RAII wrapper around a block identifier that keeps the state
 /// corresponding to the block pinned in memory.
 pub struct GCRoot {
-    hash: BlockId,
+    hash: HeaderId,
     roots: Arc<RwLock<Roots>>,
 }
 
 impl GCRoot {
-    fn new(hash: BlockId, roots: Arc<RwLock<Roots>>) -> Self {
+    fn new(hash: HeaderId, roots: Arc<RwLock<Roots>>) -> Self {
         {
             let mut roots = roots.write().unwrap();
             *roots.roots.entry(hash.clone()).or_insert(0) += 1;
@@ -63,7 +61,7 @@ impl GCRoot {
 }
 
 impl std::ops::Deref for GCRoot {
-    type Target = BlockId;
+    type Target = HeaderId;
     fn deref(&self) -> &Self::Target {
         &self.hash
     }
@@ -96,12 +94,12 @@ impl<State> Multiverse<State> {
             })),
         }
     }
-    fn make_root(&mut self, k: BlockId) -> GCRoot {
+    fn make_root(&mut self, k: HeaderId) -> GCRoot {
         debug_assert!(self.states_by_hash.contains_key(&k));
         GCRoot::new(k, self.roots.clone())
     }
 
-    pub fn get(&self, k: &BlockId) -> Option<&State> {
+    pub fn get(&self, k: &HeaderId) -> Option<&State> {
         self.states_by_hash.get(&k)
     }
 
@@ -117,7 +115,7 @@ impl<State> Multiverse<State> {
 
     /// Add a state to the multiverse. Return a GCRoot object that
     /// pins the state into memory.
-    pub fn insert(&mut self, chain_length: ChainLength, k: BlockId, st: State) -> GCRoot {
+    pub fn insert(&mut self, chain_length: ChainLength, k: HeaderId, st: State) -> GCRoot {
         self.states_by_chain_length
             .entry(chain_length)
             .or_insert(HashSet::new())
@@ -130,11 +128,11 @@ impl<State> Multiverse<State> {
 impl Multiverse<Ledger> {
     /// Add a state to the multiverse. Return a GCRoot object that
     /// pins the state into memory.
-    pub fn add(&mut self, k: BlockId, st: Ledger) -> GCRoot {
+    pub fn add(&mut self, k: HeaderId, st: Ledger) -> GCRoot {
         self.insert(st.chain_length(), k, st)
     }
 
-    fn delete(&mut self, k: &BlockId) {
+    fn delete(&mut self, k: &HeaderId) {
         //println!("deleting state {:?}", k);
         let st = self.states_by_hash.remove(&k).unwrap();
         // Remove the hash from states_by_chain_length, then prune
@@ -201,7 +199,7 @@ impl Multiverse<Ledger> {
     /// applying them to the nearest ancestor state that we do have.
     pub fn get_from_storage<S: BlockStore<Block = crate::block::Block>>(
         &mut self,
-        k: BlockId,
+        k: HeaderId,
         store: &S,
     ) -> Result<GCRoot, chain_storage::error::Error> {
         if let Some(_) = self.states_by_hash.get(&k) {
@@ -218,7 +216,7 @@ impl Multiverse<Ledger> {
         let mut cur_hash = k.clone();
 
         let mut state = loop {
-            if cur_hash == BlockId::zero() {
+            if cur_hash == HeaderId::zero_hash() {
                 panic!("don't know how to reconstruct initial chain state");
             }
 

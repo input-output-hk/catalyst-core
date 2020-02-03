@@ -175,6 +175,10 @@ impl<A: AsymmetricPublicKey> PublicKey<A> {
             data,
         )?))
     }
+
+    pub fn inner(self) -> A::Public {
+        self.0
+    }
 }
 
 impl<A: AsymmetricKey> Clone for SecretKey<A> {

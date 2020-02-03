@@ -3,7 +3,7 @@ use crate::account;
 use crate::header::HeaderId;
 use crate::key::{
     deserialize_public_key, deserialize_signature, serialize_public_key, serialize_signature,
-    EitherEd25519SecretKey, SpendingSignature,
+    SpendingSignature,
 };
 use crate::multisig;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
@@ -139,38 +139,39 @@ impl AsRef<[u8]> for WitnessMultisigData {
 
 impl Witness {
     /// Creates new `Witness` value.
-    pub fn new_utxo(
-        block0: &HeaderId,
-        sign_data_hash: &TransactionSignDataHash,
-        secret_key: &EitherEd25519SecretKey,
-    ) -> Self {
+    pub fn new_utxo<F>(block0: &HeaderId, sign_data_hash: &TransactionSignDataHash, sign: F) -> Self
+    where
+        F: FnOnce(&WitnessUtxoData) -> Signature<WitnessUtxoData, Ed25519>,
+    {
         let wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Normal);
-        let sig = secret_key.sign(&wud);
-        Witness::Utxo(sig)
+        Witness::Utxo(sign(&wud))
     }
 
-    pub fn new_old_utxo(
+    pub fn new_old_utxo<F>(
         block0: &HeaderId,
         sign_data_hash: &TransactionSignDataHash,
-        secret_key: &EitherEd25519SecretKey,
+        sign: F,
         some_bytes: &[u8; 32],
-    ) -> Self {
+    ) -> Self
+    where
+        F: FnOnce(&WitnessUtxoData) -> (PublicKey<Ed25519>, Signature<WitnessUtxoData, Ed25519>),
+    {
         let wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Legacy);
-        Witness::OldUtxo(
-            secret_key.to_public(),
-            some_bytes.clone(),
-            secret_key.sign(&wud),
-        )
+        let (pk, sig) = sign(&wud);
+        Witness::OldUtxo(pk, some_bytes.clone(), sig)
     }
 
-    pub fn new_account(
+    pub fn new_account<F>(
         block0: &HeaderId,
         sign_data_hash: &TransactionSignDataHash,
         spending_counter: &account::SpendingCounter,
-        secret_key: &EitherEd25519SecretKey,
-    ) -> Self {
+        sign: F,
+    ) -> Self
+    where
+        F: FnOnce(&WitnessAccountData) -> account::Witness,
+    {
         let wud = WitnessAccountData::new(block0, sign_data_hash, spending_counter);
-        let sig = secret_key.sign(&wud);
+        let sig = sign(&wud);
         Witness::Account(sig)
     }
 

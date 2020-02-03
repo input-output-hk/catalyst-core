@@ -1400,7 +1400,7 @@ mod tests {
         testing::{
             address::ArbitraryAddressDataValueVec,
             builders::{
-                witness_builder::{make_account_witness, make_witness, make_witnesses},
+                witness_builder::{make_witness, make_witnesses},
                 TestTx, TestTxBuilder,
             },
             data::{AddressData, AddressDataValue},
@@ -2370,11 +2370,11 @@ mod tests {
             .set_payload(&NoExtra)
             .set_ios(&[faucet.make_input(utxo)], &[reciever.make_output()]);
 
-        let witness = make_account_witness(
+        let witness = Witness::new_account(
             &test_ledger.block0_hash,
-            &SpendingCounter::zero(),
-            &faucet.private_key(),
             &tx_builder.get_auth_data_for_witness().hash(),
+            &SpendingCounter::zero(),
+            |d| faucet.private_key().sign(d),
         );
 
         let tx = tx_builder.set_witnesses(&[witness]).set_payload_auth(&());

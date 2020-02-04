@@ -66,7 +66,6 @@ impl Metadata {
 
     pub(crate) fn write(&self, writer: &mut impl Write) -> Result<(), BTreeStoreError> {
         writer.write(&MAGIC)?;
-
         writer.write_u32::<LittleEndian>(self.root)?;
 
         self.page_manager.write(writer)?;

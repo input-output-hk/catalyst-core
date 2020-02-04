@@ -109,38 +109,11 @@ impl Drop for MmapStorage {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::OpenOptions;
-
-    struct RAIIFilePath {
-        path: String,
-    }
-
-    use std::ops::Deref;
-    impl Deref for RAIIFilePath {
-        type Target = str;
-        fn deref(&self) -> &str {
-            &self.path
-        }
-    }
-
-    impl Drop for RAIIFilePath {
-        fn drop(&mut self) {
-            std::fs::remove_file(&self.path).unwrap();
-        }
-    }
+    use tempfile::tempfile;
 
     #[test]
     fn mmap_put_and_get() {
-        let path = RAIIFilePath {
-            path: "mmap_put_and_get".to_owned(),
-        };
-        let file = OpenOptions::new()
-            .write(true)
-            .read(true)
-            .create(true)
-            .open(&*path)
-            .unwrap();
-
+        let file = tempfile().unwrap();
         let mut storage = MmapStorage::new(file).unwrap();
 
         let expected = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];

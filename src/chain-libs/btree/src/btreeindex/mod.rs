@@ -394,10 +394,12 @@ impl<K> Drop for BTree<K> {
 #[cfg(test)]
 mod tests {
     extern crate rand;
+    extern crate tempfile;
     use super::*;
     use crate::tests::U64Key;
     use crate::Key;
     use std::sync::Arc;
+    use tempfile::tempfile;
 
     impl<K> BTree<K>
     where
@@ -454,60 +456,10 @@ mod tests {
         }
     }
 
-    struct RAIITree(BTree<U64Key>, Vec<String>);
-
-    use std::ops::Deref;
-    impl Deref for RAIITree {
-        type Target = BTree<U64Key>;
-        fn deref(&self) -> &BTree<U64Key> {
-            &self.0
-        }
-    }
-
-    impl Drop for RAIITree {
-        fn drop(&mut self) {
-            for file_name in self.1.iter() {
-                std::fs::remove_file(file_name).unwrap();
-            }
-        }
-    }
-
-    use crate::btreeindex::tests::rand::Rng as _;
-    fn new_tree() -> RAIITree {
-        use rand::distributions::Alphanumeric;
-        let file_name = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(10)
-            .collect::<String>();
-
-        let metadata_file_name = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(10)
-            .collect::<String>();
-
-        let static_settings_file_name = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(10)
-            .collect::<String>();
-
-        let tree_file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .read(true)
-            .open(file_name.clone())
-            .expect("Couldn't create pages file");
-
-        let metadata_file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .open(metadata_file_name.clone())
-            .expect("Couldn't create metadata file");
-
-        let static_file = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .open(static_settings_file_name.clone())
-            .expect("Couldn't create metadata file");
+    fn new_tree() -> BTree<U64Key> {
+        let metadata_file = tempfile().unwrap();
+        let tree_file = tempfile().unwrap();
+        let static_file = tempfile().unwrap();
 
         let tree: BTree<U64Key> = BTree::new(
             metadata_file,
@@ -518,10 +470,7 @@ mod tests {
         )
         .unwrap();
 
-        RAIITree(
-            tree,
-            vec![file_name, metadata_file_name, static_settings_file_name],
-        )
+        tree
     }
 
     use std::mem::size_of;
@@ -540,7 +489,6 @@ mod tests {
     }
 
     #[quickcheck]
-    #[ignore]
     fn qc_inserted_keys_are_found(xs: Vec<(u64, u64)>) -> bool {
         let mut reference = std::collections::BTreeMap::new();
 
@@ -572,6 +520,7 @@ mod tests {
             let metadata_file = OpenOptions::new()
                 .create(true)
                 .write(true)
+                .read(true)
                 .open("metadata")
                 .expect("Couldn't create metadata file");
 

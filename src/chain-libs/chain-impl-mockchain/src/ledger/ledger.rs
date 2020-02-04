@@ -1208,7 +1208,7 @@ impl Ledger {
         match witness {
             Witness::Account(_) => Err(Error::ExpectingUtxoWitness),
             Witness::Multisig(_) => Err(Error::ExpectingUtxoWitness),
-            Witness::OldUtxo(xpub, signature) => {
+            Witness::OldUtxo(pk, cc, signature) => {
                 let (old_utxos, associated_output) = self
                     .oldutxos
                     .remove(&utxo.transaction_id, utxo.output_index)?;
@@ -1221,7 +1221,7 @@ impl Ledger {
                     });
                 };
 
-                if legacy::oldaddress_from_xpub(&associated_output.address, xpub)
+                if legacy::oldaddress_from_xpub(&associated_output.address, pk, cc)
                     == legacy::OldAddressMatchXPub::No
                 {
                     return Err(Error::OldUtxoInvalidPublicKey {
@@ -1234,9 +1234,9 @@ impl Ledger {
                 let data_to_verify = WitnessUtxoData::new(
                     &self.static_params.block0_initial_hash,
                     sign_data_hash,
-                    true,
+                    WitnessUtxoVersion::Legacy,
                 );
-                let verified = signature.verify(&xpub, &data_to_verify);
+                let verified = signature.verify(&pk, &data_to_verify);
                 if verified == chain_crypto::Verification::Failed {
                     return Err(Error::OldUtxoInvalidSignature {
                         utxo: utxo.clone(),
@@ -1261,7 +1261,7 @@ impl Ledger {
                 let data_to_verify = WitnessUtxoData::new(
                     &self.static_params.block0_initial_hash,
                     sign_data_hash,
-                    false,
+                    WitnessUtxoVersion::Normal,
                 );
                 let verified = signature.verify(
                     &associated_output.address.public_key().unwrap(),
@@ -1323,7 +1323,7 @@ fn match_identifier_witness<'a>(
     witness: &'a Witness,
 ) -> Result<MatchingIdentifierWitness<'a>, Error> {
     match witness {
-        Witness::OldUtxo(_, _) => Err(Error::ExpectingAccountWitness),
+        Witness::OldUtxo(..) => Err(Error::ExpectingAccountWitness),
         Witness::Utxo(_) => Err(Error::ExpectingAccountWitness),
         Witness::Account(sig) => {
             // refine account to a single account identifier
@@ -1400,7 +1400,7 @@ mod tests {
         testing::{
             address::ArbitraryAddressDataValueVec,
             builders::{
-                witness_builder::{make_account_witness, make_witness, make_witnesses},
+                witness_builder::{make_witness, make_witnesses},
                 TestTx, TestTxBuilder,
             },
             data::{AddressData, AddressDataValue},
@@ -1543,10 +1543,8 @@ mod tests {
     ) -> TestResult {
         let result = super::match_identifier_witness(&id, &witness);
         match (witness.clone(), result) {
-            (Witness::OldUtxo(_, _), Ok(_)) => {
-                TestResult::error("expecting error, but got success")
-            }
-            (Witness::OldUtxo(_, _), Err(_)) => TestResult::passed(),
+            (Witness::OldUtxo(..), Ok(_)) => TestResult::error("expecting error, but got success"),
+            (Witness::OldUtxo(..), Err(_)) => TestResult::passed(),
             (Witness::Utxo(_), Ok(_)) => TestResult::error("expecting error, but got success"),
             (Witness::Utxo(_), Err(_)) => TestResult::passed(),
             (Witness::Account(_), Ok(_)) => TestResult::passed(),
@@ -1724,10 +1722,8 @@ mod tests {
         let inner_ledger: Ledger = test_ledger.into();
         let result = inner_ledger.apply_input_to_utxo(&sign_data_hash, &utxo_pointer, &witness);
         match (witness, result) {
-            (Witness::OldUtxo(_, _), Ok(_)) => {
-                TestResult::error("expecting error, but got success")
-            }
-            (Witness::OldUtxo(_, _), Err(_)) => TestResult::passed(),
+            (Witness::OldUtxo(..), Ok(_)) => TestResult::error("expecting error, but got success"),
+            (Witness::OldUtxo(..), Err(_)) => TestResult::passed(),
             (Witness::Utxo(_), Ok(_)) => TestResult::error("expecting error, but got success"),
             (Witness::Utxo(_), Err(_)) => TestResult::passed(),
             (Witness::Account(_), Ok(_)) => TestResult::error("expecting error, but got success"),
@@ -2374,11 +2370,11 @@ mod tests {
             .set_payload(&NoExtra)
             .set_ios(&[faucet.make_input(utxo)], &[reciever.make_output()]);
 
-        let witness = make_account_witness(
+        let witness = Witness::new_account(
             &test_ledger.block0_hash,
-            &SpendingCounter::zero(),
-            &faucet.private_key(),
             &tx_builder.get_auth_data_for_witness().hash(),
+            &SpendingCounter::zero(),
+            |d| faucet.private_key().sign(d),
         );
 
         let tx = tx_builder.set_witnesses(&[witness]).set_payload_auth(&());

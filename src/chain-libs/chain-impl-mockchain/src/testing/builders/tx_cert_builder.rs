@@ -59,7 +59,9 @@ impl TestTxCertBuilder {
             Certificate::StakeDelegation(s) => {
                 let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
                 let signature =
-                    AccountBindingSignature::new_single(&keys[0], &builder.get_auth_data());
+                    AccountBindingSignature::new_single(&builder.get_auth_data(), |d| {
+                        keys[0].sign_slice(&d.0)
+                    });
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::StakeDelegation(tx)
             }
@@ -123,7 +125,7 @@ pub fn pool_owner_signed<P: Payload>(
     let auth_data = builder.get_auth_data();
     let mut sigs = Vec::new();
     for (i, key) in keys.iter().enumerate() {
-        let sig = SingleAccountBindingSignature::new(key, &auth_data);
+        let sig = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
         sigs.push((i as u8, sig))
     }
     PoolOwnersSigned { signatures: sigs }

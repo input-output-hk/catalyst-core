@@ -48,7 +48,9 @@ fn fragment(cert: Certificate, keys: Vec<EitherEd25519SecretKey>) -> Fragment {
     match cert {
         Certificate::StakeDelegation(s) => {
             let builder = set_initial_ios(TxBuilder::new().set_payload(&s));
-            let signature = AccountBindingSignature::new_single(&keys[0], &builder.get_auth_data());
+            let signature = AccountBindingSignature::new_single(&builder.get_auth_data(), |d| {
+                keys[0].sign_slice(&d.0)
+            });
             let tx = builder.set_payload_auth(&signature);
             Fragment::StakeDelegation(tx)
         }

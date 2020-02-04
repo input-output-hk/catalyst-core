@@ -1,4 +1,4 @@
-use crate::key::{deserialize_signature, EitherEd25519SecretKey};
+use crate::key::deserialize_signature;
 use crate::transaction::TransactionBindingAuthData;
 use crate::value::{Value, ValueError};
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
@@ -22,8 +22,16 @@ impl AsRef<[u8]> for TransactionSignData {
 
 pub type TransactionSignDataHash = DigestOf<Blake2b256, TransactionSignData>;
 
+// cannot use TransactionSignDataHash<'a> as a phantom in the signature,
+// as the lifetime is still kept behind, so invent a new phantom type
+// to track the SignDataHash
 #[derive(Debug, Clone)]
-pub struct SingleAccountBindingSignature(pub(crate) Signature<u32, Ed25519>);
+pub struct TransactionBindingAuthDataPhantom();
+
+#[derive(Debug, Clone)]
+pub struct SingleAccountBindingSignature(
+    pub(crate) Signature<TransactionBindingAuthDataPhantom, Ed25519>,
+);
 
 impl SingleAccountBindingSignature {
     pub fn verify_slice<'a>(
@@ -34,8 +42,14 @@ impl SingleAccountBindingSignature {
         self.0.verify_slice(pk, data.0)
     }
 
-    pub fn new<'a>(sk: &EitherEd25519SecretKey, data: &TransactionBindingAuthData<'a>) -> Self {
-        SingleAccountBindingSignature(sk.sign_slice(data.0))
+    pub fn new<'a, F>(data: &TransactionBindingAuthData<'a>, sign: F) -> Self
+    where
+        F: FnOnce(
+            &TransactionBindingAuthData<'a>,
+        ) -> Signature<TransactionBindingAuthDataPhantom, Ed25519>,
+    {
+        let sig = sign(data);
+        SingleAccountBindingSignature(sig) // sk.sign_slice(data.0))
     }
 }
 
@@ -58,11 +72,13 @@ pub enum AccountBindingSignature {
 }
 
 impl AccountBindingSignature {
-    pub fn new_single<'a>(
-        sk: &EitherEd25519SecretKey,
-        data: &TransactionBindingAuthData<'a>,
-    ) -> Self {
-        AccountBindingSignature::Single(SingleAccountBindingSignature::new(sk, data))
+    pub fn new_single<'a, F>(data: &TransactionBindingAuthData<'a>, sign: F) -> Self
+    where
+        F: FnOnce(
+            &TransactionBindingAuthData<'a>,
+        ) -> Signature<TransactionBindingAuthDataPhantom, Ed25519>,
+    {
+        AccountBindingSignature::Single(SingleAccountBindingSignature::new(data, sign))
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {

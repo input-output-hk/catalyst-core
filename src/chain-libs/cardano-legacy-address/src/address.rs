@@ -14,6 +14,7 @@ use crate::cbor;
 use cbor_event::{self, de::Deserializer, se::Serializer};
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
+use cryptoxide::ed25519::PUBLIC_KEY_LENGTH;
 use cryptoxide::sha3::Sha3;
 use ed25519_bip32::XPub;
 
@@ -168,7 +169,7 @@ impl Addr {
     }
 
     /// Check if the Addr can be reconstructed with a specific xpub
-    pub fn identical_with_pubkey(&self, xpub: &XPub) -> AddressMatchXPub {
+    pub fn identical_with_xpub(&self, xpub: &XPub) -> AddressMatchXPub {
         let ea = self.deconstruct();
         let newea = ExtendedAddr::new(xpub, ea.attributes);
         if self == &newea.to_address() {
@@ -179,9 +180,22 @@ impl Addr {
     }
 
     /// mostly helper of the previous function, so not to have to expose the xpub construction
-    pub fn identical_with_pubkey_raw(&self, xpub: &[u8]) -> AddressMatchXPub {
+    pub fn identical_with_pubkey_raw(
+        &self,
+        pk: &[u8; PUBLIC_KEY_LENGTH],
+        chain_code: &[u8; 32],
+    ) -> AddressMatchXPub {
+        let mut xpub_raw = [0u8; 64];
+        xpub_raw[0..32].copy_from_slice(pk);
+        xpub_raw[32..64].copy_from_slice(chain_code);
+        let xpub = XPub::from_bytes(xpub_raw);
+        self.identical_with_xpub(&xpub)
+    }
+
+    /// mostly helper of the previous function, so not to have to expose the xpub construction
+    pub fn identical_with_xpub_raw(&self, xpub: &[u8]) -> AddressMatchXPub {
         match XPub::from_slice(xpub) {
-            Ok(xpub) => self.identical_with_pubkey(&xpub),
+            Ok(xpub) => self.identical_with_xpub(&xpub),
             _ => AddressMatchXPub::No,
         }
     }
@@ -371,7 +385,7 @@ mod tests {
 
     fn assert_same_address(address: Addr, xpub: XPub) {
         assert_eq!(
-            address.identical_with_pubkey(&xpub),
+            address.identical_with_xpub(&xpub),
             AddressMatchXPub::Yes,
             "expected public key {} to match address {}",
             xpub,

@@ -6,13 +6,13 @@ use super::ed25519 as ei;
 use cryptoxide::ed25519;
 use rand_core::{CryptoRng, RngCore};
 
-use ed25519_bip32::{XPrv, XPRV_SIZE};
-
 /// ED25519 Signing Algorithm with extended secret key
 pub struct Ed25519Extended;
 
+const EXTENDED_KEY_SIZE: usize = 64;
+
 #[derive(Clone)]
-pub struct ExtendedPriv([u8; ed25519::PRIVATE_KEY_LENGTH]);
+pub struct ExtendedPriv([u8; EXTENDED_KEY_SIZE]);
 
 impl AsRef<[u8]> for ExtendedPriv {
     fn as_ref(&self) -> &[u8] {
@@ -20,11 +20,9 @@ impl AsRef<[u8]> for ExtendedPriv {
     }
 }
 
-impl ExtendedPriv {
-    pub fn from_xprv(xprv: &XPrv) -> Self {
-        let mut buf = [0; ed25519::PRIVATE_KEY_LENGTH];
-        xprv.get_extended(&mut buf);
-        ExtendedPriv(buf)
+impl From<[u8; EXTENDED_KEY_SIZE]> for ExtendedPriv {
+    fn from(b: [u8; EXTENDED_KEY_SIZE]) -> ExtendedPriv {
+        ExtendedPriv(b)
     }
 }
 
@@ -35,13 +33,13 @@ impl AsymmetricKey for Ed25519Extended {
     const SECRET_BECH32_HRP: &'static str = "ed25519e_sk";
 
     fn generate<T: RngCore + CryptoRng>(mut rng: T) -> Self::Secret {
-        let mut priv_bytes = [0u8; XPRV_SIZE];
-        rng.fill_bytes(&mut priv_bytes);
-        let xprv = XPrv::normalize_bytes(priv_bytes);
+        let mut bytes = [0u8; EXTENDED_KEY_SIZE];
+        rng.fill_bytes(&mut bytes);
 
-        let mut out = [0u8; ed25519::PRIVATE_KEY_LENGTH];
-        xprv.get_extended(&mut out);
-        ExtendedPriv(out)
+        bytes[0] &= 0b1111_1000;
+        bytes[31] &= 0b0011_1111;
+        bytes[31] |= 0b0100_0000;
+        ExtendedPriv(bytes)
     }
 
     fn compute_public(key: &Self::Secret) -> <Self::PubAlg as AsymmetricPublicKey>::Public {
@@ -50,18 +48,18 @@ impl AsymmetricKey for Ed25519Extended {
     }
 
     fn secret_from_binary(data: &[u8]) -> Result<Self::Secret, SecretKeyError> {
-        if data.len() != ed25519::PRIVATE_KEY_LENGTH {
+        if data.len() != EXTENDED_KEY_SIZE {
             return Err(SecretKeyError::SizeInvalid);
         }
-        let mut buf = [0; ed25519::PRIVATE_KEY_LENGTH];
-        buf[0..ed25519::PRIVATE_KEY_LENGTH].clone_from_slice(data);
+        let mut buf = [0; EXTENDED_KEY_SIZE];
+        buf.clone_from_slice(data);
         // TODO structure check
         Ok(ExtendedPriv(buf))
     }
 }
 
 impl SecretKeySizeStatic for Ed25519Extended {
-    const SECRET_KEY_SIZE: usize = ed25519::PRIVATE_KEY_LENGTH;
+    const SECRET_KEY_SIZE: usize = EXTENDED_KEY_SIZE;
 }
 
 impl SigningAlgorithm for Ed25519Extended {

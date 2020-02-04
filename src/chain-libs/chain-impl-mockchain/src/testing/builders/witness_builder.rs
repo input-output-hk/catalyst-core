@@ -1,11 +1,7 @@
-use crate::{
-    account::SpendingCounter,
-    header::HeaderId,
-    key::EitherEd25519SecretKey,
-    testing::data::AddressData,
-    transaction::{TransactionSignDataHash, Witness},
-};
+use crate::{header::HeaderId, testing::data::AddressData, transaction::TransactionSignDataHash};
 use chain_addr::Kind;
+
+pub use crate::transaction::Witness;
 
 pub fn make_witnesses(
     block0: &HeaderId,
@@ -24,29 +20,14 @@ pub fn make_witness(
     transaction_hash: &TransactionSignDataHash,
 ) -> Witness {
     match addres_data.address.kind() {
-        Kind::Account(_) => self::make_account_witness(
+        Kind::Account(_) => Witness::new_account(
             block0,
-            &addres_data.spending_counter.unwrap(),
-            &addres_data.private_key(),
             transaction_hash,
+            &addres_data.spending_counter.unwrap(),
+            |d| addres_data.private_key().sign(d),
         ),
-        _ => self::make_utxo_witness(block0, &addres_data.private_key(), &transaction_hash),
+        _ => Witness::new_utxo(block0, transaction_hash, |d| {
+            addres_data.private_key().sign(d)
+        }),
     }
-}
-
-pub fn make_utxo_witness(
-    block0: &HeaderId,
-    secret_key: &EitherEd25519SecretKey,
-    transaction_hash: &TransactionSignDataHash,
-) -> Witness {
-    Witness::new_utxo(block0, transaction_hash, secret_key)
-}
-
-pub fn make_account_witness(
-    block0: &HeaderId,
-    spending_counter: &SpendingCounter,
-    secret_key: &EitherEd25519SecretKey,
-    transaction_hash: &TransactionSignDataHash,
-) -> Witness {
-    Witness::new_account(block0, transaction_hash, spending_counter, secret_key)
 }

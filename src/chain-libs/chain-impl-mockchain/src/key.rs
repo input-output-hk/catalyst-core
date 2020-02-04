@@ -318,4 +318,13 @@ mod tests {
             Hash(Arbitrary::arbitrary(g))
         }
     }
+    impl Arbitrary for EitherEd25519SecretKey {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            if Arbitrary::arbitrary(g) {
+                EitherEd25519SecretKey::Normal(Arbitrary::arbitrary(g))
+            } else {
+                EitherEd25519SecretKey::Extended(Arbitrary::arbitrary(g))
+            }
+        }
+    }
 }

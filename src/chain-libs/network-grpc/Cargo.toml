@@ -1,13 +1,7 @@
 [package]
 name = "network-grpc"
 version = "0.1.0"
-authors = [
-    "Nicolas Di Prima <nicolas.diprima@iohk.io>",
-    "Vincent Hanquez <vincent.hanquez@iohk.io>",
-    "Mikhail Zabaluev <mikhail.zabaluev@iohk.io>",
-    "Eelco Dolstra <edolstra@gmail.com>",
-    "Alexander Vershilov <alexander.vershilov@gmail.com>",
-]
+authors = ["Mikhail Zabaluev <mikhail.zabaluev@iohk.io>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 

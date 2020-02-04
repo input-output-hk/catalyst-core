@@ -24,7 +24,7 @@ typed-bytes = { path = "../typed-bytes" }
 
 [dev-dependencies]
 quickcheck = "0.9"
-quickcheck_macros = "0.8"
+quickcheck_macros = "0.9"
 rand_chacha = "0.2"
 
 [features]

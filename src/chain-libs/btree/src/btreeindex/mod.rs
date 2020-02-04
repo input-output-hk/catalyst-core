@@ -548,10 +548,12 @@ mod tests {
             .unwrap();
         }
 
-        let restored_tree =
-            BTree::<U64Key>::open("metadata", "tree", "static").expect("restore to work");
-        assert_eq!(restored_tree.key_buffer_size(), key_buffer_size);
-        assert_eq!(restored_tree.page_size(), page_size);
+        {
+            let restored_tree =
+                BTree::<U64Key>::open("metadata", "tree", "static").expect("restore to work");
+            assert_eq!(restored_tree.key_buffer_size(), key_buffer_size);
+            assert_eq!(restored_tree.page_size(), page_size);
+        }
 
         std::fs::remove_file("tree").unwrap();
         std::fs::remove_file("metadata").unwrap();

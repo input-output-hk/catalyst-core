@@ -169,6 +169,16 @@ impl<'a> VrfEvaluator<'a> {
             None
         }
     }
+
+    /// get the actual threshold and threshold limit for this witness
+    pub fn get_threshold_phi(&self, witness: &'a Witness) -> (f64, f64) {
+        let input = Input::create(&self.nonce, self.slot_id);
+        let r = vrf_verified_get_output::<Curve25519_2HashDH>(witness);
+        let t = get_threshold(&input, &r);
+        let p = phi(self.active_slots_coeff, &self.stake);
+
+        (t.0, p.0)
+    }
 }
 
 fn above_stake_threshold(

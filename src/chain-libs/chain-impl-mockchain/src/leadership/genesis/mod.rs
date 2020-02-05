@@ -18,7 +18,9 @@ use thiserror::Error;
 use typed_bytes::ByteBuilder;
 pub(crate) use vrfeval::witness_to_nonce;
 use vrfeval::VrfEvaluator;
-pub use vrfeval::{ActiveSlotsCoeff, ActiveSlotsCoeffError, Nonce, Witness, WitnessOutput};
+pub use vrfeval::{
+    ActiveSlotsCoeff, ActiveSlotsCoeffError, Nonce, Threshold, Witness, WitnessOutput,
+};
 
 /// Praos Leader consisting of the KES public key and VRF public key
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -55,6 +57,26 @@ enum GenesisError {
     InvalidEpoch { expected: Epoch, actual: Epoch },
     #[error("Total stake is null")]
     TotalStakeIsZero,
+}
+
+#[derive(Debug, Error)]
+enum VrfError {
+    #[error(
+        "Invalid Vrf Proof, poolId: {poolid}, pool_stake: {pool_stake}, total_stake: {total_stake}"
+    )]
+    InvalidProof {
+        poolid: String,
+        pool_stake: Stake,
+        total_stake: Stake,
+    },
+    #[error("Vrf Nonce is empty, poolId: {poolid}, pool_stake: {pool_stake}, total_stake: {total_stake}, threshold: {threshold}, threshold_limit: {threshold_limit}")]
+    NonceEmpty {
+        poolid: String,
+        pool_stake: Stake,
+        total_stake: Stake,
+        threshold: f64,
+        threshold_limit: f64,
+    },
 }
 
 impl LeadershipData {
@@ -151,24 +173,39 @@ impl LeadershipData {
 
                         let proof = match genesis_praos_proof.vrf_proof.to_vrf_proof() {
                             None => {
-                                return Verification::Failure(Error::new(
+                                return Verification::Failure(Error::new_(
                                     ErrorKind::InvalidLeaderProof,
-                                ))
+                                    VrfError::InvalidProof {
+                                        poolid: node_id.to_string(),
+                                        pool_stake: stake,
+                                        total_stake: total_stake,
+                                    },
+                                ));
                             }
                             Some(p) => p,
                         };
 
-                        let vrf_nonce = VrfEvaluator {
+                        let evaluator = VrfEvaluator {
                             stake: percent_stake,
                             nonce: &self.epoch_nonce,
                             slot_id: block_header.block_date().slot_id,
                             active_slots_coeff: self.active_slots_coeff,
-                        }
-                        .verify(&pool_info.keys.vrf_public_key, &proof);
+                        };
+
+                        let vrf_nonce = evaluator.verify(&pool_info.keys.vrf_public_key, &proof);
 
                         if vrf_nonce.is_none() {
-                            return Verification::Failure(Error::new(
+                            let (threshold, phi) = evaluator.get_threshold_phi(&proof);
+
+                            return Verification::Failure(Error::new_(
                                 ErrorKind::VrfNonceIsEmptyButNotSupposedTo,
+                                VrfError::NonceEmpty {
+                                    poolid: node_id.to_string(),
+                                    pool_stake: stake,
+                                    total_stake: total_stake,
+                                    threshold: threshold,
+                                    threshold_limit: phi,
+                                },
                             ));
                         }
 

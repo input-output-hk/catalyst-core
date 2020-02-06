@@ -22,6 +22,7 @@ impl From<ChainLength> for u32 {
 }
 
 impl ChainLength {
+    #[inline]
     pub fn increase(&self) -> Self {
         ChainLength(self.0.checked_add(1).unwrap())
     }

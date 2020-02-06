@@ -10,8 +10,8 @@ use crate::block::ChainLength;
 use crate::header::HeaderId;
 use crate::ledger::Ledger;
 use chain_storage::store::BlockStore;
-use std::collections::{hash_map::Entry, BTreeMap, HashMap, HashSet};
-use std::sync::{Arc, RwLock};
+use std::collections::{BTreeMap, HashMap, HashSet};
+use std::sync::{Arc, Weak};
 
 //
 // The multiverse is characterized by a single origin and multiple state of a given time
@@ -29,58 +29,31 @@ use std::sync::{Arc, RwLock};
 // t=0                            t=latest known
 //
 pub struct Multiverse<State> {
-    states_by_hash: HashMap<HeaderId, State>,
+    states_by_hash: HashMap<HeaderId, Weak<State>>,
     states_by_chain_length: BTreeMap<ChainLength, HashSet<HeaderId>>, // FIXME: use multimap?
-    roots: Arc<RwLock<Roots>>,
 }
 
 /// Keep all states that are this close to the longest chain.
 const SUFFIX_TO_KEEP: u32 = 50;
 
-struct Roots {
-    /// Record how many GCRoot objects currently exist for this block ID.
-    roots: HashMap<HeaderId, usize>,
-}
-
-/// A RAII wrapper around a block identifier that keeps the state
-/// corresponding to the block pinned in memory.
-pub struct GCRoot {
+/// A RAII wrapper around a block identifier and the state pointer
+/// that keeps the state corresponding to the block pinned in memory.
+pub struct Ref<State> {
     hash: HeaderId,
-    roots: Arc<RwLock<Roots>>,
+    state: Arc<State>,
 }
 
-impl GCRoot {
-    fn new(hash: HeaderId, roots: Arc<RwLock<Roots>>) -> Self {
-        {
-            let mut roots = roots.write().unwrap();
-            *roots.roots.entry(hash.clone()).or_insert(0) += 1;
-        }
-
-        GCRoot { hash, roots }
+impl<State> Ref<State> {
+    fn new(hash: HeaderId, state: Arc<State>) -> Self {
+        Ref { hash, state }
     }
-}
 
-impl std::ops::Deref for GCRoot {
-    type Target = HeaderId;
-    fn deref(&self) -> &Self::Target {
+    pub fn id(&self) -> &HeaderId {
         &self.hash
     }
-}
 
-impl Drop for GCRoot {
-    fn drop(&mut self) {
-        let mut roots = self.roots.write().unwrap();
-        if let Entry::Occupied(mut entry) = roots.roots.entry(self.hash.clone()) {
-            if *entry.get() > 1 {
-                *entry.get_mut() -= 1;
-            } else {
-                //println!("state for block {:?} became garbage", self.hash);
-                entry.remove_entry();
-                // put on GC list?
-            }
-        } else {
-            unreachable!();
-        }
+    pub fn state(&self) -> &State {
+        &self.state
     }
 }
 
@@ -89,23 +62,15 @@ impl<State> Multiverse<State> {
         Multiverse {
             states_by_hash: HashMap::new(),
             states_by_chain_length: BTreeMap::new(),
-            roots: Arc::new(RwLock::new(Roots {
-                roots: HashMap::new(),
-            })),
         }
     }
-    fn make_root(&mut self, k: HeaderId) -> GCRoot {
-        debug_assert!(self.states_by_hash.contains_key(&k));
-        GCRoot::new(k, self.roots.clone())
+
+    pub fn get(&self, k: &HeaderId) -> Option<Arc<State>> {
+        self.states_by_hash.get(k).and_then(|weak| weak.upgrade())
     }
 
-    pub fn get(&self, k: &HeaderId) -> Option<&State> {
-        self.states_by_hash.get(&k)
-    }
-
-    pub fn get_from_root(&self, root: &GCRoot) -> &State {
-        assert!(Arc::ptr_eq(&root.roots, &self.roots));
-        self.get(&*root).unwrap()
+    pub fn get_ref(&self, k: &HeaderId) -> Option<Ref<State>> {
+        self.get(k).map(|state| Ref::new(k.clone(), state))
     }
 
     /// Return the number of states stored in memory.
@@ -113,84 +78,79 @@ impl<State> Multiverse<State> {
         self.states_by_hash.len()
     }
 
-    /// Add a state to the multiverse. Return a GCRoot object that
-    /// pins the state into memory.
-    pub fn insert(&mut self, chain_length: ChainLength, k: HeaderId, st: State) -> GCRoot {
+    /// Add a state to the multiverse. Return a Ref object that
+    /// pins the state in memory.
+    pub fn insert(&mut self, chain_length: ChainLength, k: HeaderId, st: State) -> Ref<State> {
         self.states_by_chain_length
             .entry(chain_length)
-            .or_insert(HashSet::new())
+            .or_insert_with(|| HashSet::new())
             .insert(k.clone());
-        self.states_by_hash.entry(k.clone()).or_insert(st);
-        self.make_root(k)
+        let state = Arc::new(st);
+        self.states_by_hash
+            .insert(k.clone(), Arc::downgrade(&state));
+        Ref::new(k, state)
     }
 }
 
 impl Multiverse<Ledger> {
-    /// Add a state to the multiverse. Return a GCRoot object that
+    /// Add a state to the multiverse. Return a `Ref` object that
     /// pins the state into memory.
-    pub fn add(&mut self, k: HeaderId, st: Ledger) -> GCRoot {
+    pub fn add(&mut self, k: HeaderId, st: Ledger) -> Ref<Ledger> {
         self.insert(st.chain_length(), k, st)
-    }
-
-    fn delete(&mut self, k: &HeaderId) {
-        //println!("deleting state {:?}", k);
-        let st = self.states_by_hash.remove(&k).unwrap();
-        // Remove the hash from states_by_chain_length, then prune
-        // the latter.
-        if let std::collections::btree_map::Entry::Occupied(mut entry) =
-            self.states_by_chain_length.entry(st.chain_length())
-        {
-            let removed = entry.get_mut().remove(&k);
-            assert!(removed);
-            if entry.get().is_empty() {
-                //println!("removing chain length {}", st.chain_length().0);
-                entry.remove_entry();
-            }
-        } else {
-            unreachable!();
-        }
     }
 
     /// Once the state are old in the timeline, they are less
     /// and less likely to be used anymore, so we leave
     /// a gap between different version that gets bigger and bigger
     pub fn gc(&mut self) {
-        let mut garbage = vec![];
+        let longest_chain = match self.states_by_chain_length.keys().next_back() {
+            Some(len) => *len,
+            None => return,
+        };
 
-        {
-            let roots = self.roots.read().unwrap();
-
-            let longest_chain = self.states_by_chain_length.iter().next_back().unwrap().0;
-
+        if let Some(gc_threshold_length) = longest_chain.nth_ancestor(SUFFIX_TO_KEEP) {
+            let mut scan_length = ChainLength(0);
             let mut to_keep = ChainLength(0);
 
-            for (chain_length, hashes) in &self.states_by_chain_length {
-                // Keep states close to the current longest
-                // chain. FIXME: we should keep only the state that is
-                // an ancestor of the current longest chain. However,
-                // checking ancestry requires access to BlockStore.
-                if chain_length.0 + SUFFIX_TO_KEEP >= longest_chain.0 {
-                    break;
-                }
+            // Keep states close to the current longest
+            // chain. FIXME: we should keep only the state that is
+            // an ancestor of the current longest chain. However,
+            // checking ancestry requires access to BlockStore.
+            let states_by_hash = &mut self.states_by_hash;
+            while let Some((&chain_length, hashes)) = self
+                .states_by_chain_length
+                .range_mut(scan_length..gc_threshold_length)
+                .next()
+            {
                 // Keep states in gaps that get exponentially smaller
                 // as they get closer to the longest chain.
-                if chain_length >= &to_keep {
+                let keep = if chain_length >= to_keep {
                     to_keep = ChainLength(chain_length.0 + (longest_chain.0 - chain_length.0) / 2);
+                    true
                 } else {
-                    for k in hashes {
-                        // Keep states that are GC roots.
-                        if !roots.roots.contains_key(&k) {
-                            garbage.push(k.clone());
+                    // Keep states that are kept alive by Ref values.
+                    hashes.retain(|k| {
+                        use std::collections::hash_map::Entry::*;
+
+                        match states_by_hash.entry(k.clone()) {
+                            Occupied(entry) => {
+                                if entry.get().strong_count() == 0 {
+                                    entry.remove();
+                                    false
+                                } else {
+                                    true
+                                }
+                            }
+                            Vacant(_) => panic!("dangling state index entry"),
                         }
-                    }
+                    });
+                    !hashes.is_empty()
+                };
+                if !keep {
+                    self.states_by_chain_length.remove(&chain_length);
                 }
+                scan_length = chain_length.increase();
             }
-        }
-
-        //println!("deleting {} states from multiverse", garbage.len());
-
-        for k in garbage {
-            self.delete(&k);
         }
     }
 
@@ -201,9 +161,9 @@ impl Multiverse<Ledger> {
         &mut self,
         k: HeaderId,
         store: &S,
-    ) -> Result<GCRoot, chain_storage::error::Error> {
-        if let Some(_) = self.states_by_hash.get(&k) {
-            return Ok(self.make_root(k));
+    ) -> Result<Ref<Ledger>, chain_storage::error::Error> {
+        if let Some(r) = self.get_ref(&k) {
+            return Ok(r);
         }
 
         // Find the most recent ancestor that we have in
@@ -215,13 +175,13 @@ impl Multiverse<Ledger> {
         let mut blocks_to_apply = vec![];
         let mut cur_hash = k.clone();
 
-        let mut state = loop {
+        let mut state_ref = loop {
             if cur_hash == HeaderId::zero_hash() {
                 panic!("don't know how to reconstruct initial chain state");
             }
 
-            if let Some(state) = self.get(&cur_hash) {
-                break state.clone();
+            if let Some(state_ref) = self.get_ref(&cur_hash) {
+                break state_ref;
             }
 
             let cur_block_info = store.get_block_info(&cur_hash).unwrap();
@@ -240,17 +200,18 @@ impl Multiverse<Ledger> {
         for hash in blocks_to_apply.iter().rev() {
             let block = store.get_block(&hash).unwrap().0;
             let header_meta = block.header.to_content_eval_context();
-            state = state
+            let state = state_ref.state();
+            let state = state
                 .apply_block(
                     &state.get_ledger_parameters(),
                     &block.contents,
                     &header_meta,
                 )
                 .unwrap();
-            // FIXME: add the intermediate states to memory?
+            state_ref = self.add(hash.clone(), state);
         }
 
-        Ok(self.add(k, state))
+        Ok(state_ref)
     }
 }
 
@@ -270,6 +231,7 @@ mod test {
     use chain_crypto::{Ed25519, SecretKey};
     use chain_storage::store::BlockStore;
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
+    use std::mem;
     use std::time::SystemTime;
 
     fn apply_block(state: &Ledger, block: &Block) -> Ledger {
@@ -334,10 +296,10 @@ mod test {
         let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
         store.put_block(&genesis_block).unwrap();
-        multiverse.add(genesis_block.header.id(), genesis_state.clone());
+        let _root = multiverse.add(genesis_block.header.id(), genesis_state.clone());
 
         let mut state = genesis_state;
-        let mut _root = None;
+        let mut _ref = None;
         let mut parent = genesis_block.id();
         let mut ids = vec![];
         for i in 1..10001 {
@@ -355,7 +317,7 @@ mod test {
             assert_eq!(state.chain_length().0, i);
             assert_eq!(state.date, block.date());
             store.put_block(&block).unwrap();
-            _root = Some(multiverse.add(block.id(), state.clone()));
+            _ref = Some(multiverse.add(block.id(), state.clone()));
             multiverse.gc();
             ids.push(block.header.id());
             parent = block.header.id();
@@ -365,33 +327,33 @@ mod test {
             );
         }
 
-        {
-            let root = multiverse
-                .get_from_storage(ids[9999].clone(), &store)
-                .unwrap();
-            let state = multiverse.get_from_root(&root);
-            assert_eq!(state.chain_length().0, 10000);
-        }
+        let ref1 = multiverse
+            .get_from_storage(ids[1234].clone(), &store)
+            .unwrap();
+        let state = ref1.state();
+        assert_eq!(state.chain_length().0, 1235);
 
-        {
-            let root = multiverse
-                .get_from_storage(ids[1234].clone(), &store)
-                .unwrap();
-            let state = multiverse.get_from_root(&root);
-            assert_eq!(state.chain_length().0, 1235);
-        }
+        let ref2 = multiverse
+            .get_from_storage(ids[9999].clone(), &store)
+            .unwrap();
+        let state = ref2.state();
+        assert_eq!(state.chain_length().0, 10000);
 
-        {
-            let root = multiverse
-                .get_from_storage(ids[9500].clone(), &store)
-                .unwrap();
-            let state = multiverse.get_from_root(&root);
-            assert_eq!(state.chain_length().0, 9501);
-        }
+        let ref3 = multiverse
+            .get_from_storage(ids[9500].clone(), &store)
+            .unwrap();
+        let state = ref3.state();
+        assert_eq!(state.chain_length().0, 9501);
 
-        let before = multiverse.nr_states();
         multiverse.gc();
-        let after = multiverse.nr_states();
-        assert_eq!(before, after + 2);
+
+        {
+            let before = multiverse.nr_states();
+            mem::drop(ref1);
+            mem::drop(ref3);
+            multiverse.gc();
+            let after = multiverse.nr_states();
+            assert_eq!(before, after + 2);
+        }
     }
 }

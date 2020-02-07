@@ -1,6 +1,7 @@
 //! Split timeframe in eras
 
 use crate::timeframe::Slot;
+use std::fmt;
 
 /// Epoch number
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -15,6 +16,12 @@ pub struct EpochSlotOffset(pub u32);
 pub struct EpochPosition {
     pub epoch: Epoch,
     pub slot: EpochSlotOffset,
+}
+
+impl fmt::Display for EpochPosition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}.{}", self.epoch.0, self.slot.0)
+    }
 }
 
 /// Describe a new era, which start at epoch_start and is associated

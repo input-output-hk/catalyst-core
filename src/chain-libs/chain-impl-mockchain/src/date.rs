@@ -1,4 +1,5 @@
 use chain_core::property;
+use chain_time::era::EpochPosition;
 use chain_time::era::TimeEra;
 
 use std::{error, fmt, num::ParseIntError, str};
@@ -44,6 +45,15 @@ impl BlockDate {
         BlockDate {
             epoch: self.epoch + 1,
             slot_id: 0,
+        }
+    }
+}
+
+impl From<EpochPosition> for BlockDate {
+    fn from(e: EpochPosition) -> BlockDate {
+        BlockDate {
+            epoch: e.epoch.0,
+            slot_id: e.slot.0,
         }
     }
 }

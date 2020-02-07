@@ -56,6 +56,10 @@ impl<State> Ref<State> {
     pub fn state(&self) -> &State {
         &self.state
     }
+
+    pub fn state_arc(&self) -> Arc<State> {
+        self.state.clone()
+    }
 }
 
 impl<State> Multiverse<State> {

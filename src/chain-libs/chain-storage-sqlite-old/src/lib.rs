@@ -3,41 +3,50 @@ use chain_storage::{
     error::Error,
     store::{BackLink, BlockInfo, BlockStore},
 };
-use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::types::Value;
-use std::path::Path;
+use rusqlite::{types::Value, Connection};
+use std::path::{Path, PathBuf};
 
-#[derive(Clone)]
-pub struct SQLiteBlockStore<B>
+enum StoreType {
+    Memory,
+    File(PathBuf),
+}
+
+pub struct SQLiteBlockStore {
+    store_type: StoreType,
+    // An optional connection to be always held open. This is a workaround to
+    // prevent an in-memory storage from resetting, because it is getting reset
+    // once the last open connection was removed.
+    persistent_connection: Option<Connection>,
+}
+
+// persistent_connection does not implement Sync but is never actually used
+// which makes it safe to be shared
+unsafe impl Sync for SQLiteBlockStore {}
+
+pub struct SQLiteBlockStoreConnection<B>
 where
     B: Block,
 {
-    pool: r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>,
+    inner: Connection,
     dummy: std::marker::PhantomData<B>,
 }
 
-impl<B> SQLiteBlockStore<B>
-where
-    B: Block,
-{
+impl SQLiteBlockStore {
     pub fn memory() -> Self {
-        // Shared cacge should be always enabled for in-memory databases so that
-        // all connections in a pool access the same database. Otherwise each
-        // connection has its own database which leads to bugs, because only one
-        // of those databases will have a schema set.
-        let manager = SqliteConnectionManager::file("file::memory:?cache=shared");
-        Self::init(manager)
+        Self::init(StoreType::Memory)
     }
 
     pub fn file<P: AsRef<Path>>(path: P) -> Self {
-        let manager = SqliteConnectionManager::file(path);
-        Self::init(manager)
+        Self::init(StoreType::File(path.as_ref().to_path_buf()))
     }
 
-    fn init(manager: SqliteConnectionManager) -> Self {
-        let pool = r2d2::Pool::new(manager).unwrap();
+    fn init(store_type: StoreType) -> Self {
+        let mut store = Self {
+            store_type,
+            persistent_connection: None,
+        };
 
-        let connection = pool.get().unwrap();
+        let connection = store.connect_internal().unwrap();
 
         connection
             .execute_batch(
@@ -73,10 +82,31 @@ where
             .execute_batch("pragma journal_mode = WAL")
             .unwrap();
 
-        SQLiteBlockStore {
-            pool,
-            dummy: std::marker::PhantomData,
+        store.persistent_connection = Some(connection);
+
+        store
+    }
+
+    fn connect_internal(&self) -> Result<Connection, Error> {
+        // Shared cache should be always enabled for in-memory databases so that
+        // all connections in a pool access the same database. Otherwise each
+        // connection has its own database which leads to bugs, because only one
+        // of those databases will have a schema set.
+        match &self.store_type {
+            StoreType::Memory => Connection::open("file::memory:?cache=shared"),
+            StoreType::File(path) => Connection::open(path),
         }
+        .map_err(|err| Error::BackendError(Box::new(err)))
+    }
+
+    pub fn connect<B>(&self) -> Result<SQLiteBlockStoreConnection<B>, Error>
+    where
+        B: Block,
+    {
+        Ok(SQLiteBlockStoreConnection {
+            inner: self.connect_internal()?,
+            dummy: std::marker::PhantomData,
+        })
     }
 }
 
@@ -84,19 +114,26 @@ fn blob_to_hash<Id: BlockId>(blob: Vec<u8>) -> Id {
     Id::deserialize(&blob[..]).unwrap()
 }
 
-impl<B> BlockStore for SQLiteBlockStore<B>
+impl<B> SQLiteBlockStoreConnection<B>
+where
+    B: Block,
+{
+    pub fn ping(&self) -> Result<(), Error> {
+        self.inner
+            .execute_batch("")
+            .map_err(|e| Error::BackendError(Box::new(e)))
+    }
+}
+
+impl<B> BlockStore for SQLiteBlockStoreConnection<B>
 where
     B: Block,
 {
     type Block = B;
 
     fn put_block_internal(&mut self, block: &B, block_info: BlockInfo<B::Id>) -> Result<(), Error> {
-        let mut conn = self
-            .pool
-            .get()
-            .map_err(|err| Error::BackendError(Box::new(err)))?;
-
-        let tx = conn
+        let tx = self
+            .inner
             .transaction()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
@@ -158,9 +195,7 @@ where
 
     fn get_block(&self, block_hash: &B::Id) -> Result<(B, BlockInfo<B::Id>), Error> {
         let blk = self
-            .pool
-            .get()
-            .map_err(|err| Error::BackendError(Box::new(err)))?
+            .inner
             .prepare_cached("select block from Blocks where hash = ?")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .query_row(&[&block_hash.serialize_as_vec().unwrap()[..]], |row| {
@@ -178,9 +213,7 @@ where
     }
 
     fn get_block_info(&self, block_hash: &B::Id) -> Result<BlockInfo<B::Id>, Error> {
-        self.pool
-            .get()
-            .map_err(|err| Error::BackendError(Box::new(err)))?
+        self.inner
             .prepare_cached(
                 "select depth, parent, fast_distance, fast_hash from BlockInfo where hash = ?",
             )
@@ -215,9 +248,7 @@ where
 
     fn put_tag(&mut self, tag_name: &str, block_hash: &B::Id) -> Result<(), Error> {
         match self
-            .pool
-            .get()
-            .map_err(|err| Error::BackendError(Box::new(err)))?
+            .inner
             .prepare_cached("insert or replace into Tags (name, hash) values(?, ?)")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .execute(&[
@@ -236,9 +267,7 @@ where
 
     fn get_tag(&self, tag_name: &str) -> Result<Option<B::Id>, Error> {
         match self
-            .pool
-            .get()
-            .map_err(|err| Error::BackendError(Box::new(err)))?
+            .inner
             .prepare_cached("select hash from Tags where name = ?")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .query_row(&[&tag_name], |row| blob_to_hash(row.get(0)))
@@ -260,46 +289,50 @@ mod tests {
 
     #[test]
     fn put_get() {
-        let mut store =
-            SQLiteBlockStore::<TestBlock>::file("file:test_put_get?mode=memory&cache=shared");
+        let mut store = SQLiteBlockStore::file("file:test_put_get?mode=memory&cache=shared")
+            .connect()
+            .unwrap();
         chain_storage::store::testing::test_put_get(&mut store);
     }
 
     #[test]
     fn nth_ancestor() {
         let mut rng = OsRng;
-        let mut store =
-            SQLiteBlockStore::<TestBlock>::file("file:test_nth_ancestor?mode=memory&cache=shared");
+        let mut store = SQLiteBlockStore::file("file:test_nth_ancestor?mode=memory&cache=shared")
+            .connect()
+            .unwrap();
         chain_storage::store::testing::test_nth_ancestor(&mut rng, &mut store);
     }
 
     #[test]
     fn iterate_range() {
         let mut rng = OsRng;
-        let mut store =
-            SQLiteBlockStore::<TestBlock>::file("file:test_iterate_range?mode=memory&cache=shared");
+        let mut store = SQLiteBlockStore::file("file:test_iterate_range?mode=memory&cache=shared")
+            .connect()
+            .unwrap();
         chain_storage::store::testing::test_iterate_range(&mut rng, &mut store);
     }
 
     #[test]
     fn simultaneous_read_write() {
         let mut rng = OsRng;
-        let mut store = SQLiteBlockStore::<TestBlock>::file(
-            "file:test_simultaneous_read_write?mode=memory&cache=shared",
-        );
+        let store =
+            SQLiteBlockStore::file("file:test_simultaneous_read_write?mode=memory&cache=shared");
+
+        let mut conn = store.connect::<TestBlock>().unwrap();
 
         let genesis_block = TestBlock::genesis(None);
-        store.put_block(&genesis_block).unwrap();
+        conn.put_block(&genesis_block).unwrap();
         let mut blocks = vec![genesis_block];
 
         for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
             let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
             let block = last_block.make_child(None);
             blocks.push(block.clone());
-            store.put_block(&block).unwrap()
+            conn.put_block(&block).unwrap()
         }
 
-        let store_1 = store.clone();
+        let conn_1 = store.connect::<TestBlock>().unwrap();
         let blocks_1 = blocks.clone();
 
         let thread_1 = std::thread::spawn(move || {
@@ -308,7 +341,7 @@ mod tests {
                     .get(rng.next_u32() as usize % blocks_1.len())
                     .unwrap()
                     .id();
-                store_1.get_block(&block_id).unwrap();
+                conn_1.get_block(&block_id).unwrap();
             }
         });
 
@@ -316,7 +349,7 @@ mod tests {
             for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
                 let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
                 let block = last_block.make_child(None);
-                store.put_block(&block).unwrap();
+                conn.put_block(&block).unwrap();
             }
         });
 

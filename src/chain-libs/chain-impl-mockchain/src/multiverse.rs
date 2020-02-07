@@ -38,6 +38,7 @@ const SUFFIX_TO_KEEP: u32 = 50;
 
 /// A RAII wrapper around a block identifier and the state pointer
 /// that keeps the state corresponding to the block pinned in memory.
+#[derive(Clone)]
 pub struct Ref<State> {
     hash: HeaderId,
     state: Arc<State>,

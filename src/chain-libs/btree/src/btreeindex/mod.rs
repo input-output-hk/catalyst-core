@@ -3,9 +3,13 @@ mod node;
 mod page_manager;
 mod pages;
 #[allow(dead_code)]
-mod version;
+mod version_management;
 
-use version::*;
+use version_management::transaction::{
+    traits::{ReadTransaction as _, WriteTransaction as _},
+    InsertTransaction, PageHandle, ReadTransaction,
+};
+use version_management::*;
 
 use crate::mem_page::MemPage;
 use crate::BTreeStoreError;
@@ -23,7 +27,7 @@ use std::marker::PhantomData;
 use std::path::Path;
 use std::sync::Mutex;
 
-pub(crate) type PageId = u32;
+pub type PageId = u32;
 
 pub struct BTree<K> {
     // The metadata file contains the latests confirmed version of the tree
@@ -194,7 +198,7 @@ where
 
     fn insert<'a>(
         &self,
-        tx: &mut InsertTransactionBuilder<'a, 'a>,
+        tx: &mut InsertTransaction<'a>,
         key: K,
         value: Value,
     ) -> Result<(), BTreeStoreError> {
@@ -325,10 +329,19 @@ where
     }
 
     pub fn lookup(&self, key: &K) -> Option<Value> {
-        let page_ref = self.search(key);
+        let read_transaction = self
+            .transaction_manager
+            .read_transaction(self.pages.clone());
 
-        page_ref.as_node(|node: Node<K, &[u8]>| {
-            match node.as_leaf().unwrap().keys().binary_search(key) {
+        let page_ref = self.search(&read_transaction, key);
+
+        let page_size = self.static_settings.page_size.try_into().unwrap();
+        let key_buffer_size = self.static_settings.key_buffer_size.try_into().unwrap();
+
+        page_ref.as_node(
+            page_size,
+            key_buffer_size,
+            |node: Node<K, &[u8]>| match node.as_leaf().unwrap().keys().binary_search(key) {
                 Ok(pos) => node
                     .as_leaf()
                     .unwrap()
@@ -336,36 +349,40 @@ where
                     .get(pos)
                     .map(|n| *n.borrow()),
                 Err(_) => None,
-            }
-        })
+            },
+        )
     }
 
-    fn search(&self, key: &K) -> PageRef {
-        // TODO: Care, requesting a read transaction should enforce that it's not released until is finished
-        // in this case, this acts like a lock, but if it does get released then the data may be overwritten
-        let read_transaction = self.transaction_manager.read_transaction();
+    fn search<'a>(
+        &self,
+        tx: &'a ReadTransaction,
+        key: &K,
+    ) -> PageHandle<'a, transaction::borrow::Immutable> {
+        let mut current = tx.get_page(tx.root()).unwrap();
 
-        let mut current = self.pages.get_page(read_transaction.root()).unwrap();
+        let page_size = self.static_settings.page_size.try_into().unwrap();
+        let key_buffer_size = self.static_settings.key_buffer_size.try_into().unwrap();
 
         loop {
-            let new_current: Option<PageRef> = current.as_node(|node: Node<K, &[u8]>| {
-                node.as_internal().map(|inode| {
-                    let upper_pivot = match inode.keys().binary_search(key) {
-                        Ok(pos) => Some(pos + 1),
-                        Err(pos) => Some(pos),
-                    }
-                    .filter(|pos| pos < &inode.children().len());
+            let new_current =
+                current.as_node(page_size, key_buffer_size, |node: Node<K, &[u8]>| {
+                    node.as_internal().map(|inode| {
+                        let upper_pivot = match inode.keys().binary_search(key) {
+                            Ok(pos) => Some(pos + 1),
+                            Err(pos) => Some(pos),
+                        }
+                        .filter(|pos| pos < &inode.children().len());
 
-                    let new_current_id = if let Some(upper_pivot) = upper_pivot {
-                        inode.children().get(upper_pivot).unwrap().clone()
-                    } else {
-                        let last = inode.children().len().checked_sub(1).unwrap();
-                        inode.children().get(last).unwrap().clone()
-                    };
+                        let new_current_id = if let Some(upper_pivot) = upper_pivot {
+                            inode.children().get(upper_pivot).unwrap().clone()
+                        } else {
+                            let last = inode.children().len().checked_sub(1).unwrap();
+                            inode.children().get(last).unwrap().clone()
+                        };
 
-                    self.pages.get_page(new_current_id).unwrap()
-                })
-            });
+                        tx.get_page(new_current_id).unwrap()
+                    })
+                });
 
             if let Some(new_current) = new_current {
                 current = new_current;
@@ -414,7 +431,9 @@ mod tests {
         }
 
         pub fn debug_print(&self) {
-            let read_tx = self.transaction_manager.read_transaction();
+            let read_tx = self
+                .transaction_manager
+                .read_transaction(self.pages.clone());
             let root_id = read_tx.root();
 
             // TODO: get the next page but IN the read transaction

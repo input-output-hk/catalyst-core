@@ -10,7 +10,7 @@ pub(crate) use leaf_node::{LeafInsertStatus, LeafNode};
 const LEN_SIZE: usize = 8;
 const TAG_SIZE: usize = 8;
 
-pub(crate) struct Node<K, T> {
+pub struct Node<K, T> {
     data: T,
     key_buffer_size: usize,
     phantom: PhantomData<[K]>,

@@ -11,8 +11,9 @@ use std::sync::{Arc, RwLock};
 /// a heap allocated read/write page, while PageRef is a wrapper to share a read only page in an Arc
 /// when we move to mmap, this things may change to take advantage of zero copy.
 
+#[derive(Clone)]
 pub(crate) struct Pages {
-    storage: RwLock<MmapStorage>,
+    storage: Arc<RwLock<MmapStorage>>,
     page_size: u16,
     // TODO: we need to remove this from here
     key_buffer_size: u32,
@@ -36,7 +37,7 @@ impl Pages {
             key_buffer_size,
         } = params;
 
-        let storage = RwLock::new(storage);
+        let storage = Arc::new(RwLock::new(storage));
 
         Pages {
             storage,
@@ -110,7 +111,7 @@ impl fmt::Debug for Page {
     }
 }
 
-pub(crate) struct Page {
+pub struct Page {
     pub page_id: PageId,
     pub key_buffer_size: u32,
     pub mem_page: MemPage,
@@ -160,13 +161,6 @@ impl Page {
 impl PageRef {
     pub(crate) fn new(page: Page) -> Self {
         PageRef(Arc::new(page))
-    }
-
-    pub(crate) fn as_node<K, R>(&self, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        self.0.as_node(f)
     }
 
     pub(crate) fn get_mut(&self) -> Page {

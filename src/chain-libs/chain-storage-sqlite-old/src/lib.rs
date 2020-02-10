@@ -560,14 +560,10 @@ fn compute_fast_link(chain_length: u64) -> u64 {
 }
 
 #[cfg(any(test, feature = "with-bench"))]
-pub mod tests {
-    use super::*;
+pub mod test_utils {
     use chain_core::packer::*;
-    use chain_core::property::{Block as _, BlockDate as _, BlockId as _};
-    use rand_core::{OsRng, RngCore};
+    use chain_core::property::{BlockDate as _, BlockId as _};
     use std::sync::atomic::{AtomicU64, Ordering};
-
-    const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
 
     #[derive(Debug, Clone, Hash, Ord, PartialOrd, Eq, PartialEq, Copy)]
     pub struct BlockId(pub u64);
@@ -713,6 +709,16 @@ pub mod tests {
             })
         }
     }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::test_utils::{Block, BlockId};
+    use super::*;
+    use chain_core::property::{Block as _, BlockId as _};
+    use rand_core::{OsRng, RngCore};
+
+    const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
 
     pub fn pick_from_vector<'a, A, R: RngCore>(rng: &mut R, v: &'a Vec<A>) -> &'a A {
         let s = rng.next_u32() as usize;

@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use rand_core::{OsRng, RngCore};
 
 use chain_core::property::Block as _;
-use chain_storage_sqlite_old::{tests::Block, BlockStore};
+use chain_storage_sqlite_old::{test_utils::Block, BlockStore};
 
 const BLOCK_DATA_LENGTH: usize = 1024;
 
@@ -13,7 +13,12 @@ fn criterion_benchmark(c: &mut Criterion) {
     rng.fill_bytes(&mut block_data);
     let genesis_block = Block::genesis(Some(Box::new(block_data.clone())));
 
-    let path = tempfile::NamedTempFile::new().unwrap().into_temp_path();
+    let tempdir = tempfile::TempDir::new().unwrap();
+    let path = {
+        let mut path = tempdir.path().to_path_buf();
+        path.push("test.sqlite");
+        path
+    };
     let store = BlockStore::file(path);
     let mut conn = store.connect::<Block>().unwrap();
     conn.put_block(&genesis_block).unwrap();

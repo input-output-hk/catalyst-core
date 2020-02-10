@@ -9,7 +9,7 @@ cfg_if! {
     }
 }
 
-pub mod abor;
-pub mod mempack;
-pub mod packer;
+pub use chain_ser::abor;
+pub use chain_ser::mempack;
+pub use chain_ser::packer;
 pub mod property;

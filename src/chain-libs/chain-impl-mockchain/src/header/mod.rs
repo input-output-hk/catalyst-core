@@ -17,7 +17,7 @@ pub use builder::{
 };
 pub use components::{BftSignature, ChainLength, HeaderId, KESSignature, VrfProof};
 pub use deconstruct::{BftProof, Common, GenesisPraosProof, Proof};
-pub use header::{Header, HeaderBft, HeaderGenesisPraos, HeaderUnsigned};
+pub use header::{Header, HeaderBft, HeaderDesc, HeaderGenesisPraos, HeaderUnsigned};
 pub use version::{AnyBlockVersion, BlockVersion};
 
 pub use eval::HeaderContentEvalContext;

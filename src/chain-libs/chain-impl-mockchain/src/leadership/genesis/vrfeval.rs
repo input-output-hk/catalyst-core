@@ -130,6 +130,15 @@ pub(crate) fn witness_to_nonce(witness: &Witness) -> Nonce {
     get_nonce(&r)
 }
 
+#[derive(Clone, Debug)]
+pub enum VrfEvalFailure {
+    ProofVerificationFailed,
+    ThresholdNotMet {
+        vrf_value: f64,
+        stake_threshold: f64,
+    },
+}
+
 impl<'a> VrfEvaluator<'a> {
     /// Evaluate if the threshold is above for a given input for the key and the associated stake
     ///
@@ -155,29 +164,24 @@ impl<'a> VrfEvaluator<'a> {
         &self,
         key: &PublicKey<Curve25519_2HashDH>,
         witness: &'a Witness,
-    ) -> Option<Nonce> {
+    ) -> Result<Nonce, VrfEvalFailure> {
         let input = Input::create(&self.nonce, self.slot_id);
         if vrf_verify(key, &input.0, witness) == VRFVerification::Success {
             let r = vrf_verified_get_output::<Curve25519_2HashDH>(witness);
-            let t = get_threshold(&input, &r);
-            if above_stake_threshold(t, &self.stake, self.active_slots_coeff) {
-                Some(get_nonce(&r))
+            // compare threshold against phi-adjusted-stake
+            let threshold = get_threshold(&input, &r);
+            let phi_stake = phi(self.active_slots_coeff, &self.stake);
+            if threshold < phi_stake {
+                Ok(get_nonce(&r))
             } else {
-                None
+                Err(VrfEvalFailure::ThresholdNotMet {
+                    vrf_value: threshold.0,
+                    stake_threshold: phi_stake.0,
+                })
             }
         } else {
-            None
+            Err(VrfEvalFailure::ProofVerificationFailed)
         }
-    }
-
-    /// get the actual threshold and threshold limit for this witness
-    pub fn get_threshold_phi(&self, witness: &'a Witness) -> (f64, f64) {
-        let input = Input::create(&self.nonce, self.slot_id);
-        let r = vrf_verified_get_output::<Curve25519_2HashDH>(witness);
-        let t = get_threshold(&input, &r);
-        let p = phi(self.active_slots_coeff, &self.stake);
-
-        (t.0, p.0)
     }
 }
 

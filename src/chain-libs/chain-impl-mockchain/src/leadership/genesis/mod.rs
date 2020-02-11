@@ -1,9 +1,9 @@
 mod vrfeval;
 
 use crate::{
-    block::{BlockDate, Header, Proof},
     certificate::PoolId,
     date::Epoch,
+    header::{BlockDate, Header, HeaderDesc, Proof},
     key::deserialize_public_key,
     leadership::{Error, ErrorKind, Verification},
     ledger::Ledger,
@@ -19,7 +19,8 @@ use typed_bytes::ByteBuilder;
 pub(crate) use vrfeval::witness_to_nonce;
 use vrfeval::VrfEvaluator;
 pub use vrfeval::{
-    ActiveSlotsCoeff, ActiveSlotsCoeffError, Nonce, Threshold, Witness, WitnessOutput,
+    ActiveSlotsCoeff, ActiveSlotsCoeffError, Nonce, Threshold, VrfEvalFailure, Witness,
+    WitnessOutput,
 };
 
 /// Praos Leader consisting of the KES public key and VRF public key
@@ -61,21 +62,18 @@ enum GenesisError {
 
 #[derive(Debug, Error)]
 enum VrfError {
-    #[error(
-        "Invalid Vrf Proof, poolId: {poolid}, pool_stake: {pool_stake}, total_stake: {total_stake}"
-    )]
-    InvalidProof {
+    #[error("Invalid Vrf Proof Structure in {bdesc} for poolId: {poolid}")]
+    InvalidProofStructure { bdesc: HeaderDesc, poolid: String },
+    #[error("Invalid Vrf Proof value in {bdesc}, poolId: {poolid}")]
+    InvalidProofValue { bdesc: HeaderDesc, poolid: String },
+    #[error("Vrf Threshold is not met in {bdesc}, poolId: {poolid}, pool_stake: {pool_stake}, total_stake: {total_stake}, value: {vrf_value}, threshold: {threshold}")]
+    ThresholdInvalid {
+        bdesc: HeaderDesc,
         poolid: String,
         pool_stake: Stake,
         total_stake: Stake,
-    },
-    #[error("Vrf Nonce is empty, poolId: {poolid}, pool_stake: {pool_stake}, total_stake: {total_stake}, threshold: {threshold}, threshold_limit: {threshold_limit}")]
-    NonceEmpty {
-        poolid: String,
-        pool_stake: Stake,
-        total_stake: Stake,
+        vrf_value: f64,
         threshold: f64,
-        threshold_limit: f64,
     },
 }
 
@@ -175,10 +173,9 @@ impl LeadershipData {
                             None => {
                                 return Verification::Failure(Error::new_(
                                     ErrorKind::InvalidLeaderProof,
-                                    VrfError::InvalidProof {
+                                    VrfError::InvalidProofStructure {
+                                        bdesc: block_header.description(),
                                         poolid: node_id.to_string(),
-                                        pool_stake: stake,
-                                        total_stake: total_stake,
                                     },
                                 ));
                             }
@@ -192,22 +189,37 @@ impl LeadershipData {
                             active_slots_coeff: self.active_slots_coeff,
                         };
 
-                        let vrf_nonce = evaluator.verify(&pool_info.keys.vrf_public_key, &proof);
-
-                        if vrf_nonce.is_none() {
-                            let (threshold, phi) = evaluator.get_threshold_phi(&proof);
-
-                            return Verification::Failure(Error::new_(
-                                ErrorKind::VrfNonceIsEmptyButNotSupposedTo,
-                                VrfError::NonceEmpty {
-                                    poolid: node_id.to_string(),
-                                    pool_stake: stake,
-                                    total_stake: total_stake,
-                                    threshold: threshold,
-                                    threshold_limit: phi,
-                                },
-                            ));
-                        }
+                        match evaluator.verify(&pool_info.keys.vrf_public_key, &proof) {
+                            // it would be the perfect place to keep the nonce ready to use for the context
+                            // instead of ignoring but since the ledger.settings is not accessible,
+                            // we recompute this later, expecting an already verified value.
+                            Ok(_nonce) => (),
+                            Err(VrfEvalFailure::ProofVerificationFailed) => {
+                                return Verification::Failure(Error::new_(
+                                    ErrorKind::InvalidLeaderProof,
+                                    VrfError::InvalidProofValue {
+                                        bdesc: block_header.description(),
+                                        poolid: node_id.to_string(),
+                                    },
+                                ))
+                            }
+                            Err(VrfEvalFailure::ThresholdNotMet {
+                                vrf_value,
+                                stake_threshold,
+                            }) => {
+                                return Verification::Failure(Error::new_(
+                                    ErrorKind::InvalidLeaderProof,
+                                    VrfError::ThresholdInvalid {
+                                        bdesc: block_header.description(),
+                                        poolid: node_id.to_string(),
+                                        pool_stake: stake,
+                                        total_stake: total_stake,
+                                        vrf_value: vrf_value,
+                                        threshold: stake_threshold,
+                                    },
+                                ));
+                            }
+                        };
 
                         let auth = block_header.as_auth_slice();
                         let valid = genesis_praos_proof

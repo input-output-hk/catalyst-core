@@ -35,7 +35,7 @@ extern crate quickcheck;
 #[macro_use]
 extern crate cfg_if;
 
-use bech32::{Bech32, FromBase32, ToBase32};
+use bech32::{self, FromBase32, ToBase32};
 use std::string::ToString;
 
 use chain_crypto::{Ed25519, PublicKey, PublicKeyError};
@@ -309,30 +309,26 @@ impl AddressReadable {
     }
 
     pub fn get_prefix(&self) -> String {
-        use std::str::FromStr;
-        Bech32::from_str(&self.0)
+        bech32::decode(&self.0)
             .expect("only valid bech32 string are accepted")
-            .hrp()
-            .to_string()
+            .0
     }
 
     /// Validate from a String to create a valid AddressReadable
     pub fn from_string(expected_prefix: &str, s: &str) -> Result<Self, Error> {
-        use std::str::FromStr;
-        let r = Bech32::from_str(s)?;
-        if r.hrp() != expected_prefix {
+        let (hrp, data) = bech32::decode(s)?;
+        if hrp != expected_prefix {
             return Err(Error::InvalidPrefix);
         };
-        let dat = Vec::from_base32(r.data())?;
+        let dat = Vec::from_base32(&data)?;
         let _ = is_valid_data(&dat[..])?;
 
         Ok(AddressReadable(s.to_string()))
     }
 
     pub fn from_str_anyprefix(s: &str) -> Result<Self, Error> {
-        use std::str::FromStr;
-        let r = Bech32::from_str(s)?;
-        let dat = Vec::from_base32(r.data())?;
+        let (_, data) = bech32::decode(s)?;
+        let dat = Vec::from_base32(&data)?;
         let _ = is_valid_data(&dat[..])?;
 
         Ok(AddressReadable(s.to_string()))
@@ -345,16 +341,15 @@ impl AddressReadable {
     /// Create a new AddressReadable from an encoded address
     pub fn from_address(prefix: &str, addr: &Address) -> Self {
         let v = ToBase32::to_base32(&addr.to_bytes());
-        let r = Bech32::new(prefix.to_string(), v).unwrap();
-        AddressReadable(r.to_string())
+        let r = bech32::encode(prefix, v).unwrap();
+        AddressReadable(r)
     }
 
     /// Convert a valid AddressReadable to an decoded address
     pub fn to_address(&self) -> Address {
-        use std::str::FromStr;
         // the data has been verified ahead of time, so all unwrap are safe
-        let r = Bech32::from_str(&self.0).unwrap();
-        let dat = Vec::from_base32(r.data()).unwrap();
+        let (_, data) = bech32::decode(&self.0).unwrap();
+        let dat = Vec::from_base32(&data).unwrap();
         Address::from_bytes(&dat[..]).unwrap()
     }
 }

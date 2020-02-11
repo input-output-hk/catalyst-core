@@ -10,7 +10,7 @@ keywords = [ "Cardano", "Wallet", "Crypto", "Address" ]
 property-test-api = ["quickcheck"]
 
 [dependencies]
-bech32 = "0.6"
+bech32 = "0.7"
 chain-core = { path = "../chain-core" }
 chain-crypto = { path = "../chain-crypto" }
 cryptoxide = "0.1"

@@ -6,6 +6,7 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+chain-ser = { path = "../chain-ser" }
 cfg-if = "0.1"
 quickcheck = { version = "0.9", optional = true }
 

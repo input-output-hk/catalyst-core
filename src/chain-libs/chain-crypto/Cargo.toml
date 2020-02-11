@@ -7,7 +7,7 @@ edition = "2018"
 keywords = [ "Crypto", "VRF", "Ed25519", "MMM" ]
 
 [dependencies]
-bech32 = "0.6"
+bech32 = "0.7"
 cryptoxide = "0.1"
 curve25519-dalek = "2"
 ed25519-dalek = "1.0.0-pre.3"

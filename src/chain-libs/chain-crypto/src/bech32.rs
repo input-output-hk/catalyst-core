@@ -1,4 +1,4 @@
-use bech32::{Bech32 as Bech32Data, Error as Bech32Error, FromBase32, ToBase32};
+use bech32::{self, Error as Bech32Error, FromBase32, ToBase32};
 use std::error::Error as StdError;
 use std::fmt;
 use std::result::Result as StdResult;
@@ -16,20 +16,20 @@ pub trait Bech32 {
 }
 
 pub fn to_bech32_from_bytes<B: Bech32>(bytes: &[u8]) -> String {
-    Bech32Data::new(B::BECH32_HRP.to_string(), bytes.to_base32())
+    bech32::encode(B::BECH32_HRP, bytes.to_base32())
         .unwrap_or_else(|e| panic!("Failed to build bech32: {}", e))
         .to_string()
 }
 
 pub fn try_from_bech32_to_bytes<B: Bech32>(bech32_str: &str) -> Result<Vec<u8>> {
-    let bech32: Bech32Data = bech32_str.parse()?;
-    if bech32.hrp() != B::BECH32_HRP {
+    let (hrp, data) = bech32::decode(bech32_str)?;
+    if hrp != B::BECH32_HRP {
         return Err(Error::HrpInvalid {
             expected: B::BECH32_HRP,
-            actual: bech32.hrp().to_string(),
+            actual: hrp.to_string(),
         });
     }
-    Vec::<u8>::from_base32(bech32.data()).map_err(Into::into)
+    Vec::<u8>::from_base32(&data).map_err(Into::into)
 }
 
 #[derive(Debug)]

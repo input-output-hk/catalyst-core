@@ -1,4 +1,4 @@
-use crate::certificate::{PoolId, PoolRegistration};
+use crate::certificate::{PoolId, PoolRegistration, PoolRegistrationHash};
 use crate::header::Epoch;
 use crate::value::Value;
 use imhamt::Hamt;
@@ -47,6 +47,10 @@ impl PoolState {
             last_rewards: PoolLastRewards::default(),
             registration: Arc::new(reg),
         }
+    }
+
+    pub fn current_pool_registration_hash(&self) -> PoolRegistrationHash {
+        self.registration.to_id()
     }
 }
 
@@ -105,6 +109,25 @@ impl PoolsState {
         self.stake_pools
             .lookup(pool_id)
             .map_or_else(|| false, |_| true)
+    }
+
+    pub fn stake_pool_get_state(&self, pool_id: &PoolId) -> Result<&PoolState, PoolError> {
+        self.stake_pools
+            .lookup(pool_id)
+            .ok_or(PoolError::NotFound(pool_id.clone()))
+    }
+
+    pub fn stake_pool_set_state(
+        &mut self,
+        pool_id: &PoolId,
+        pool_state: PoolState,
+    ) -> Result<(), PoolError> {
+        self.stake_pools = self
+            .stake_pools
+            .replace(pool_id, pool_state)
+            .map(|r| r.0)
+            .map_err(|_| PoolError::NotFound(pool_id.clone()))?;
+        Ok(())
     }
 
     pub fn stake_pool_get(&self, pool_id: &PoolId) -> Result<&PoolRegistration, PoolError> {

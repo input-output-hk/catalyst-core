@@ -1,7 +1,13 @@
 use super::stake::Stake;
-use crate::{account, accounting::account::DelegationType, certificate::PoolId, utxo};
+use crate::{
+    account,
+    accounting::account::DelegationType,
+    certificate::{PoolId, PoolRegistration},
+    utxo,
+};
 use chain_addr::{Address, Kind};
 use std::collections::{hash_map, HashMap};
+use std::sync::Arc;
 
 use super::delegation::PoolsState;
 
@@ -22,42 +28,46 @@ pub struct StakeDistribution {
 
 impl StakeDistribution {
     pub fn get_total_stake(&self) -> Stake {
-        Stake::sum(self.to_pools.values().map(|psi| psi.total.total_stake))
+        Stake::sum(self.to_pools.values().map(|psi| psi.stake.total))
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PoolStakeInformation {
-    pub total: PoolStakeTotal,
-    pub stake_owners: PoolStakeDistribution,
+    pub registration: Option<Arc<PoolRegistration>>,
+    pub stake: PoolStakeDistribution,
 }
 
 impl PoolStakeInformation {
     pub fn add_value(&mut self, id: &account::Identifier, s: Stake) {
-        self.stake_owners
-            .accounts
-            .entry(id.clone())
-            .and_modify(|c| *c += s)
-            .or_insert(s);
-        self.total.total_stake = self.total.total_stake + s;
+        self.stake.add(id.clone(), s)
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct PoolStakeTotal {
-    pub total_stake: Stake,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PoolStakeDistribution {
+    pub total: Stake,
     pub accounts: HashMap<account::Identifier, Stake>,
 }
 
 impl PoolStakeDistribution {
     pub fn new() -> Self {
         Self {
+            total: Stake::zero(),
             accounts: HashMap::new(),
         }
+    }
+
+    pub fn test_new_with_total_value(s: Stake) -> Self {
+        Self {
+            total: s,
+            accounts: HashMap::new(),
+        }
+    }
+
+    pub fn add(&mut self, id: account::Identifier, s: Stake) {
+        self.accounts.entry(id).and_modify(|c| *c += s).or_insert(s);
+        self.total += s;
     }
 
     pub fn to_total(&self) -> Stake {
@@ -85,11 +95,11 @@ impl StakeDistribution {
 
     /// Return the total stake held by the eligible stake pools.
     pub fn total_stake(&self) -> Stake {
-        Stake::sum(self.to_pools.iter().map(|(_, pool)| pool.total.total_stake))
+        Stake::sum(self.to_pools.iter().map(|(_, pool)| pool.stake.total))
     }
 
     pub fn get_stake_for(&self, poolid: &PoolId) -> Option<Stake> {
-        self.to_pools.get(poolid).map(|psd| psd.total.total_stake)
+        self.to_pools.get(poolid).map(|psd| psd.stake.total)
     }
 
     pub fn get_distribution(&self, pool_id: &PoolId) -> Option<&PoolStakeInformation> {
@@ -154,22 +164,18 @@ pub fn get_distribution(
 ) -> StakeDistribution {
     use std::iter::FromIterator;
 
-    let p0 = PoolStakeInformation {
-        total: PoolStakeTotal {
-            total_stake: Stake::zero(),
-        },
-        stake_owners: PoolStakeDistribution::new(),
-    };
-
     let mut distribution = StakeDistribution {
         unassigned: Stake::zero(),
         dangling: Stake::zero(),
-        to_pools: HashMap::from_iter(
-            dstate
-                .stake_pools
-                .iter()
-                .map(|(id, _)| (id.clone(), p0.clone())),
-        ),
+        to_pools: HashMap::from_iter(dstate.stake_pools.iter().map(|(id, pool_state)| {
+            (
+                id.clone(),
+                PoolStakeInformation {
+                    registration: Some(pool_state.registration.clone()),
+                    stake: PoolStakeDistribution::new(),
+                },
+            )
+        })),
     };
 
     for (identifier, account_state) in accounts.iter() {
@@ -480,7 +486,7 @@ mod tests {
         }
 
         let pools_total_stake: Stake =
-            Stake::sum(distribution.to_pools.values().map(|x| x.total.total_stake));
+            Stake::sum(distribution.to_pools.values().map(|x| x.stake.total));
         if pools_total_stake != stake_distribution_data.pools_total() {
             return TestResult::error(format!(
                 "Wrong Unassigned value. expected: {} but got {}",
@@ -496,8 +502,7 @@ mod tests {
 
     impl Arbitrary for CorrectDelegationType {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let option: u8 = u8::arbitrary(g) % 3u8;
-            let delegation_type = match option {
+            let delegation_type = match u8::arbitrary(g) % 3u8 {
                 0 => DelegationType::NonDelegated,
                 1 => {
                     let pool_id = PoolRegistration::arbitrary(g).to_id();
@@ -524,24 +529,25 @@ mod tests {
 
     impl CorrectDelegationType {
         pub fn get_pools(&self) -> HashMap<PoolId, PoolStakeInformation> {
-            let p0 = PoolStakeInformation {
-                total: PoolStakeTotal {
-                    total_stake: Stake::zero(),
-                },
-                stake_owners: PoolStakeDistribution::new(),
-            };
-
             match &self.0 {
                 DelegationType::NonDelegated => HashMap::new(),
                 DelegationType::Full(pool_id) => {
                     let mut pools = HashMap::new();
-                    pools.insert(pool_id.clone(), p0.clone());
+                    let information = PoolStakeInformation {
+                        registration: None,
+                        stake: PoolStakeDistribution::new(),
+                    };
+                    pools.insert(pool_id.clone(), information);
                     pools
                 }
                 DelegationType::Ratio(delegation_ratio) => {
                     let mut pools = HashMap::new();
                     for pool_id in delegation_ratio.pools().iter().cloned().map(|x| x.0) {
-                        pools.insert(pool_id.clone(), p0.clone());
+                        let information = PoolStakeInformation {
+                            registration: None,
+                            stake: PoolStakeDistribution::new(),
+                        };
+                        pools.insert(pool_id.clone(), information);
                     }
                     pools
                 }

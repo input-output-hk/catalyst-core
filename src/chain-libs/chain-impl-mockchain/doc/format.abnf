@@ -1,4 +1,4 @@
-; VERSION 0.7
+; VERSION 0.8
 
 ; ####################
 ; HEADER
@@ -81,7 +81,7 @@ DLG-FULL         = %x01 POOL-ID
 DLG-RATIO        = %x02-FF %x02-08 2*8DLG-RATIO-POOL
 DLG-RATIO-POOL   = %x01-FF POOL-ID
 
-POOL-ID          = 32OCTET
+POOL-ID          = 32OCTET ; blake2b256 of REGISTRATION-CERT
 
 ; ####################
 ; FRAGMENT Pool management
@@ -111,7 +111,9 @@ POOL-REWARD-ACNT  = %x00 / ACCOUNT-ID
 
 RETIREMENT-CERT   = POOL-ID
                     TIME-SINCE-EPOCH0 ; time in seconds
-UPDATE-CERT       = TODO
+UPDATE-CERT       = POOL-ID ; pool id
+                    POOL-ID ; last known pool registration hash. on first update it would be the poolid
+                    REGISTRATION-CERT ; the update for the pool which is just a full pool registration certificate
 
 POOL-SIG          = OWNERS-SIG / OP-SIGNATURE
 OPERATOR-SIG      = %x00 SINGLE-ACNT-SIG

@@ -1,7 +1,6 @@
 #[warn(unused_imports)]
 use super::*;
 use crate::accounting::account::DelegationType;
-use crate::leadership::genesis::GenesisPraosLeader;
 use crate::rewards::TaxType;
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::{testing, Ed25519};
@@ -22,16 +21,13 @@ impl Arbitrary for PoolRetirement {
 impl Arbitrary for PoolUpdate {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let pool_id = Arbitrary::arbitrary(g);
-        let start_validity = DurationSeconds::from(u64::arbitrary(g)).into();
-        let prev = GenesisPraosLeader::arbitrary(g);
-        let updated_keys = GenesisPraosLeader::arbitrary(g);
-        let previous_keys = prev.digest();
+        let last_pool_reg_hash = Arbitrary::arbitrary(g);
+        let new_pool_reg = Arbitrary::arbitrary(g);
 
         PoolUpdate {
             pool_id,
-            start_validity,
-            previous_keys,
-            updated_keys,
+            last_pool_reg_hash,
+            new_pool_reg,
         }
     }
 }

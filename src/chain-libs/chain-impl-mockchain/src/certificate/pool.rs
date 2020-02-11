@@ -16,7 +16,10 @@ use std::marker::PhantomData;
 use typed_bytes::{ByteArray, ByteBuilder};
 
 /// Pool ID
-pub type PoolId = DigestOf<Blake2b256, PoolRegistration>;
+pub type PoolId = PoolRegistrationHash;
+
+/// Pool Registration Cryptographic Hash
+pub type PoolRegistrationHash = DigestOf<Blake2b256, PoolRegistration>;
 
 /// Hash of keys used for pool
 pub type GenesisPraosLeaderHash = DigestOf<Blake2b256, GenesisPraosLeader>;
@@ -81,9 +84,8 @@ impl PoolPermissions {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PoolUpdate {
     pub pool_id: PoolId,
-    pub start_validity: TimeOffsetSeconds,
-    pub previous_keys: GenesisPraosLeaderHash,
-    pub updated_keys: GenesisPraosLeader,
+    pub last_pool_reg_hash: PoolRegistrationHash,
+    pub new_pool_reg: PoolRegistration,
 }
 
 /// Retirement info for a pool
@@ -142,10 +144,8 @@ impl PoolRegistration {
 impl PoolUpdate {
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         bb.bytes(self.pool_id.as_ref())
-            .u64(self.start_validity.into())
-            .bytes(self.previous_keys.as_ref())
-            .bytes(self.updated_keys.vrf_public_key.as_ref())
-            .bytes(self.updated_keys.kes_public_key.as_ref())
+            .bytes(self.last_pool_reg_hash.as_ref())
+            .sub(|bb| self.new_pool_reg.serialize_in(bb))
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {
@@ -156,14 +156,12 @@ impl PoolUpdate {
 impl Readable for PoolUpdate {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let pool_id = <[u8; 32]>::read(buf)?.into();
-        let start_validity: DurationSeconds = buf.get_u64()?.into();
-        let previous_keys = <[u8; 32]>::read(buf)?.into();
-        let gpl = GenesisPraosLeader::read(buf)?;
+        let last_pool_reg_hash = <[u8; 32]>::read(buf)?.into();
+        let new_pool_reg = PoolRegistration::read(buf)?;
         Ok(PoolUpdate {
             pool_id,
-            start_validity: start_validity.into(),
-            previous_keys,
-            updated_keys: gpl,
+            last_pool_reg_hash,
+            new_pool_reg,
         })
     }
 }

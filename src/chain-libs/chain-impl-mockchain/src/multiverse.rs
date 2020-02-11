@@ -11,6 +11,7 @@ use crate::header::HeaderId;
 use crate::ledger::Ledger;
 use chain_storage::store::BlockStore;
 use std::collections::{BTreeMap, HashMap, HashSet};
+use std::hint::unreachable_unchecked;
 use std::sync::{Arc, Weak};
 
 //
@@ -29,7 +30,7 @@ use std::sync::{Arc, Weak};
 // t=0                            t=latest known
 //
 pub struct Multiverse<State> {
-    states_by_hash: HashMap<HeaderId, Weak<State>>,
+    states_by_hash: HashMap<HeaderId, GcEntry<State>>,
     states_by_chain_length: BTreeMap<ChainLength, HashSet<HeaderId>>, // FIXME: use multimap?
 }
 
@@ -62,6 +63,31 @@ impl<State> Ref<State> {
     }
 }
 
+enum GcEntry<State> {
+    Retained(Arc<State>),
+    Collectable(Weak<State>),
+}
+
+impl<State> GcEntry<State> {
+    fn get(&self) -> Option<Arc<State>> {
+        match self {
+            GcEntry::Retained(arc) => Some(Arc::clone(arc)),
+            GcEntry::Collectable(weak) => weak.upgrade(),
+        }
+    }
+
+    fn collect(&mut self) -> bool {
+        if let GcEntry::Retained(arc) = self {
+            let weak = Arc::downgrade(arc);
+            *self = GcEntry::Collectable(weak);
+        }
+        match self {
+            GcEntry::Collectable(weak) => weak.strong_count() == 0,
+            GcEntry::Retained(_) => unsafe { unreachable_unchecked() },
+        }
+    }
+}
+
 impl<State> Multiverse<State> {
     pub fn new() -> Self {
         Multiverse {
@@ -71,7 +97,8 @@ impl<State> Multiverse<State> {
     }
 
     pub fn get(&self, k: &HeaderId) -> Option<Arc<State>> {
-        self.states_by_hash.get(k).and_then(|weak| weak.upgrade())
+        let entry = self.states_by_hash.get(k)?;
+        entry.get()
     }
 
     pub fn get_ref(&self, k: &HeaderId) -> Option<Ref<State>> {
@@ -92,7 +119,7 @@ impl<State> Multiverse<State> {
             .insert(k.clone());
         let state = Arc::new(st);
         self.states_by_hash
-            .insert(k.clone(), Arc::downgrade(&state));
+            .insert(k.clone(), GcEntry::Retained(state.clone()));
         Ref::new(k, state)
     }
 }
@@ -138,8 +165,8 @@ impl Multiverse<Ledger> {
                         use std::collections::hash_map::Entry::*;
 
                         match states_by_hash.entry(k.clone()) {
-                            Occupied(entry) => {
-                                if entry.get().strong_count() == 0 {
+                            Occupied(mut entry) => {
+                                if entry.get_mut().collect() {
                                     entry.remove();
                                     false
                                 } else {

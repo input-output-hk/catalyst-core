@@ -2,7 +2,7 @@
 use super::{request_stream, P2pService};
 use crate::{
     error::Error,
-    gossip::{Gossip, Node},
+    gossip::{Gossip, Node, PeersResponse},
 };
 
 use futures::prelude::*;
@@ -31,6 +31,8 @@ pub trait GossipService: P2pService {
         + Send
         + 'static;
 
+    type PeersFuture: Future<Item = PeersResponse, Error = Error> + Send + 'static;
+
     /// Establishes a bidirectional subscription for node gossip messages.
     ///
     /// The network protocol implementation passes the node identifier of
@@ -41,4 +43,6 @@ pub trait GossipService: P2pService {
     /// outbound gossip messages, and as an asynchrounous sink for inbound
     /// gossip messages.
     fn gossip_subscription(&mut self, subscriber: Self::NodeId) -> Self::GossipSubscriptionFuture;
+
+    fn peers(&mut self) -> Self::PeersFuture;
 }

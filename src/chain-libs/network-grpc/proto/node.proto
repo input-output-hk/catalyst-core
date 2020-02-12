@@ -36,6 +36,37 @@ message FragmentIds {
   repeated bytes ids = 1;
 }
 
+// Request for peers
+message PeersRequest {
+  uint32 limit = 1;
+}
+
+// Responses as a bunch of peers
+message PeersResponse {
+  repeated Peer peers = 1;
+}
+
+// A Peer on the network
+message Peer {
+  oneof peer {
+    PeerV4 v4 = 1;
+    PeerV6 v6 = 2;
+  }
+}
+
+// An ipv4 peer
+message PeerV4 {
+  fixed32 ip = 1;
+  fixed32 port = 2;
+}
+
+// An ipv6 peer
+message PeerV6 {
+  fixed64 ip_high = 1;
+  fixed64 ip_low = 2;
+  fixed32 port = 3;
+}
+
 // Request message for method PullHeaders.
 // This message can also be send by the service as a BlockEvent variant.
 message PullHeadersRequest {
@@ -101,6 +132,10 @@ message BlockEvent {
 service Node {
   rpc Handshake(HandshakeRequest) returns (HandshakeResponse);
   rpc Tip(TipRequest) returns (TipResponse);
+
+  // Requests for some peers
+  rpc Peers(PeersRequest) returns (PeersResponse);
+
   rpc GetBlocks(BlockIds) returns (stream Block) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }

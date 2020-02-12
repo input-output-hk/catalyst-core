@@ -107,6 +107,10 @@ where
         gen::node::TipResponse,
         <<T as Node>::BlockService as BlockService>::TipFuture,
     >;
+
+    type PeersFuture =
+        ResponseFuture<gen::node::PeersResponse, <T::GossipService as GossipService>::PeersFuture>;
+
     type GetBlocksStream = ResponseStream<
         gen::node::Block,
         <<T as Node>::BlockService as BlockService>::GetBlocksStream,
@@ -207,6 +211,11 @@ where
     fn tip(&mut self, _request: Request<gen::node::TipRequest>) -> Self::TipFuture {
         let service = try_get_service!(self.inner.block_service());
         ResponseFuture::new(service.tip())
+    }
+
+    fn peers(&mut self, _request: Request<gen::node::PeersRequest>) -> Self::PeersFuture {
+        let service = try_get_service!(self.inner.gossip_service());
+        ResponseFuture::new(service.peers())
     }
 
     fn get_blocks(&mut self, req: Request<gen::node::BlockIds>) -> Self::GetBlocksFuture {

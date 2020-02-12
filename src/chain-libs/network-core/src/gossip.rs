@@ -22,6 +22,21 @@ pub trait Node {
 }
 
 #[derive(Clone, Debug)]
+pub struct Peer {
+    pub addr: SocketAddr,
+}
+
+#[derive(Clone, Debug)]
+pub struct PeersRequest {
+    pub limit: u32,
+}
+
+#[derive(Clone, Debug)]
+pub struct PeersResponse {
+    pub peers: Vec<Peer>,
+}
+
+#[derive(Clone, Debug)]
 pub struct Gossip<T: Node> {
     nodes: Vec<T>,
 }

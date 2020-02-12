@@ -5,7 +5,7 @@ use chain_core::{
     property,
 };
 use network_core::error as core_error;
-use network_core::gossip::{Gossip, Node, NodeId};
+use network_core::gossip::{Gossip, Node, NodeId, Peer, PeersResponse};
 use network_core::subscription::{BlockEvent, ChainPullRequest};
 
 use tower_grpc::{
@@ -193,6 +193,39 @@ where
     }
 }
 
+impl FromProtobuf<gen::node::PeersResponse> for PeersResponse {
+    fn from_message(msg: gen::node::PeersResponse) -> Result<PeersResponse, core_error::Error> {
+        let mut peers = Vec::with_capacity(msg.peers.len());
+        use gen::node::peer;
+        use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
+        for p in msg.peers {
+            match p.peer {
+                Some(peer::Peer::V4(pv4)) => {
+                    let port = pv4.port as u16;
+                    let segments = pv4.ip.to_be_bytes();
+                    let ipv4 = Ipv4Addr::new(segments[0], segments[1], segments[2], segments[3]);
+                    let addr = SocketAddr::new(IpAddr::V4(ipv4), port);
+                    peers.push(Peer { addr });
+                }
+                Some(peer::Peer::V6(pv6)) => {
+                    let port = pv6.port as u16;
+                    let ipv6 = unserialize_ipv6(pv6.ip_high, pv6.ip_low);
+                    let addr = SocketAddr::new(IpAddr::V6(ipv6), port);
+                    peers.push(Peer { addr });
+                }
+                None => {
+                    return Err(core_error::Error::new(
+                        core_error::Code::InvalidArgument,
+                        "invalid Peer payload, one of the fields is required",
+                    ))
+                }
+            }
+        }
+        Ok(PeersResponse { peers })
+    }
+}
+
 pub fn serialize_to_bytes<T>(obj: &T) -> Result<Vec<u8>, Status>
 where
     T: property::Serialize,
@@ -349,4 +382,76 @@ where
     let val = BinaryMetadataValue::from_bytes(&bytes);
     metadata.insert_bin(NODE_ID_HEADER, val);
     Ok(())
+}
+
+impl IntoProtobuf<gen::node::PeersResponse> for PeersResponse {
+    fn into_message(self) -> Result<gen::node::PeersResponse, tower_grpc::Status> {
+        let peers = self.peers.iter().map(serialize_into_peer).collect();
+        Ok(gen::node::PeersResponse { peers })
+    }
+}
+
+fn unserialize_ipv6(high: u64, low: u64) -> std::net::Ipv6Addr {
+    let h = high.to_be_bytes();
+    let l = low.to_be_bytes();
+    fn from_be_bytes(h: u8, l: u8) -> u16 {
+        u16::from_be_bytes([h, l])
+    }
+    let segments: [u16; 8] = [
+        from_be_bytes(h[0], h[1]),
+        from_be_bytes(h[2], h[3]),
+        from_be_bytes(h[4], h[5]),
+        from_be_bytes(h[6], h[7]),
+        from_be_bytes(l[0], l[1]),
+        from_be_bytes(l[2], l[3]),
+        from_be_bytes(l[4], l[5]),
+        from_be_bytes(l[6], l[7]),
+    ];
+    std::net::Ipv6Addr::new(
+        segments[0],
+        segments[1],
+        segments[2],
+        segments[3],
+        segments[4],
+        segments[5],
+        segments[6],
+        segments[7],
+    )
+}
+
+fn serialize_ipv6(ip: &std::net::Ipv6Addr) -> (u64, u64) {
+    let segs = ip.segments();
+    let mut out = [0u64; 2];
+    for i in 0..2 {
+        let mut v = [0u8; 8];
+        for j in 0..4 {
+            let b: [u8; 2] = segs[i * 4 + j].to_be_bytes();
+            v[j * 2] = b[0];
+            v[j * 2 + 1] = b[1];
+        }
+        out[i] = u64::from_be_bytes(v)
+    }
+    (out[0], out[1])
+}
+
+fn serialize_into_peer(p: &Peer) -> gen::node::Peer {
+    use gen::node::peer::Peer;
+    use std::net::SocketAddr;
+    let peer = match p.addr {
+        SocketAddr::V4(v4addr) => {
+            let port: u32 = v4addr.port().into();
+            let ip = u32::from_be_bytes(v4addr.ip().octets());
+            Peer::V4(gen::node::PeerV4 { ip, port })
+        }
+        SocketAddr::V6(v6addr) => {
+            let port: u32 = v6addr.port().into();
+            let (ip_high, ip_low) = serialize_ipv6(v6addr.ip());
+            Peer::V6(gen::node::PeerV6 {
+                port,
+                ip_high,
+                ip_low,
+            })
+        }
+    };
+    gen::node::Peer { peer: Some(peer) }
 }

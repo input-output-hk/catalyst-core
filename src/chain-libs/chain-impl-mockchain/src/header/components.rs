@@ -22,8 +22,14 @@ impl From<ChainLength> for u32 {
 }
 
 impl ChainLength {
+    #[inline]
     pub fn increase(&self) -> Self {
         ChainLength(self.0.checked_add(1).unwrap())
+    }
+
+    #[inline]
+    pub fn nth_ancestor(&self, depth: u32) -> Option<ChainLength> {
+        self.0.checked_sub(depth).map(ChainLength)
     }
 }
 

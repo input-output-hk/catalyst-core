@@ -1,9 +1,8 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use rand_core::{OsRng, RngCore};
 
-use chain_core::property::Block;
-use chain_storage::store::{testing::Block as TestBlock, BlockStore};
-use chain_storage_sqlite_old::SQLiteBlockStore;
+use chain_core::property::Block as _;
+use chain_storage_sqlite_old::{test_utils::Block, BlockStore};
 
 const BLOCK_DATA_LENGTH: usize = 1024;
 
@@ -12,11 +11,17 @@ fn criterion_benchmark(c: &mut Criterion) {
     let mut block_data = [0; BLOCK_DATA_LENGTH];
 
     rng.fill_bytes(&mut block_data);
-    let genesis_block = TestBlock::genesis(Some(Box::new(block_data.clone())));
+    let genesis_block = Block::genesis(Some(Box::new(block_data.clone())));
 
-    let path = tempfile::NamedTempFile::new().unwrap().into_temp_path();
-    let mut store = SQLiteBlockStore::<TestBlock>::file(path);
-    store.put_block(&genesis_block).unwrap();
+    let tempdir = tempfile::TempDir::new().unwrap();
+    let path = {
+        let mut path = tempdir.path().to_path_buf();
+        path.push("test.sqlite");
+        path
+    };
+    let store = BlockStore::file(path);
+    let mut conn = store.connect::<Block>().unwrap();
+    conn.put_block(&genesis_block).unwrap();
 
     let mut blocks = vec![genesis_block];
 
@@ -29,7 +34,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 blocks.push(block.clone());
                 block
             },
-            |block| store.put_block(&block).unwrap(),
+            |block| conn.put_block(&block).unwrap(),
             BatchSize::PerIteration,
         )
     });
@@ -42,7 +47,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                     .unwrap()
                     .id()
             },
-            |block_id| store.get_block(&block_id).unwrap(),
+            |block_id| conn.get_block(&block_id).unwrap(),
             BatchSize::PerIteration,
         )
     });

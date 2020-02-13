@@ -122,6 +122,8 @@ impl BlockStore {
                     foreign key(hash) references BlockInfo(hash)
                   );
 
+                  create index if not exists ChainLengthIndex on BlockInfo(depth);
+
                   commit;
                 "#,
             )
@@ -309,12 +311,7 @@ where
     }
 
     pub fn get_block_info(&mut self, block_hash: &B::Id) -> Result<BlockInfo<B::Id>, Error> {
-        let tx = self
-            .inner
-            .transaction()
-            .map_err(|err| Error::BackendError(Box::new(err)))?;
-
-        Self::get_block_info_internal(&tx, block_hash)
+        Self::get_block_info_internal(&self.inner, block_hash)
     }
 
     fn get_block_info_internal(
@@ -352,6 +349,85 @@ where
                 rusqlite::Error::QueryReturnedNoRows => Error::BlockNotFound,
                 err => Error::BackendError(Box::new(err)),
             })
+    }
+
+    pub fn get_blocks_by_chain_length(
+        &mut self,
+        chain_length: u64,
+    ) -> Result<Vec<(B, BlockInfo<B::Id>)>, Error> {
+        let tx = self
+            .inner
+            .transaction()
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let blocks = tx
+            .prepare_cached(
+                "select block from Blocks
+                  inner join BlockInfo
+                  on Blocks.hash = BlockInfo.hash
+                  where BlockInfo.depth = ?",
+            )
+            .map_err(|err| Error::BackendError(Box::new(err)))?
+            .query_map(&[Value::from(chain_length as i64)], |row| {
+                let x: Vec<u8> = row.get(0)?;
+                Ok(B::deserialize(&x[..]).unwrap())
+            })
+            .map_err(|err| match err {
+                rusqlite::Error::QueryReturnedNoRows => Error::BlockNotFound,
+                err => Error::BackendError(Box::new(err)),
+            })?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| Error::BackendError(Box::new(e)))?;
+
+        let block_infos = Self::get_block_infos_by_chain_length_internal(&tx, chain_length)?;
+
+        Ok(blocks.into_iter().zip(block_infos).collect())
+    }
+
+    pub fn get_block_infos_by_chain_length(
+        &mut self,
+        chain_length: u64,
+    ) -> Result<Vec<BlockInfo<B::Id>>, Error> {
+        Self::get_block_infos_by_chain_length_internal(&self.inner, chain_length)
+    }
+
+    fn get_block_infos_by_chain_length_internal(
+        connection: &Connection,
+        chain_length: u64,
+    ) -> Result<Vec<BlockInfo<B::Id>>, Error> {
+        connection
+            .prepare_cached(
+                "select hash, depth, parent, fast_distance, fast_hash from BlockInfo where depth = ?",
+            )
+            .map_err(|err| Error::BackendError(Box::new(err)))?
+            .query_map(&[Value::from(chain_length as i64)], |row| {
+                let mut back_links = vec![BackLink {
+                    distance: 1,
+                    block_hash: blob_to_hash(row.get(2)?),
+                }];
+
+                let fast_distance: Option<i64> = row.get(3)?;
+                if let Some(fast_distance) = fast_distance {
+                    back_links.push(BackLink {
+                        distance: fast_distance as u64,
+                        block_hash: blob_to_hash(row.get(4)?),
+                    });
+                }
+
+                let chain_length: i64 = row.get(1)?;
+
+                Ok(BlockInfo {
+                    block_hash: blob_to_hash(row.get(0)?),
+                    chain_length: chain_length as u64,
+                    back_links,
+                })
+            })
+            .map_err(|err| match err {
+                rusqlite::Error::QueryReturnedNoRows => Error::BlockNotFound,
+                err => Error::BackendError(Box::new(err)),
+            })?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| Error::BackendError(Box::new(e)))
     }
 
     pub fn put_tag(&mut self, tag_name: &str, block_hash: &B::Id) -> Result<(), Error> {
@@ -455,12 +531,7 @@ where
         block_hash: &B::Id,
         distance: u64,
     ) -> Result<BlockInfo<B::Id>, Error> {
-        let tx = self
-            .inner
-            .transaction()
-            .map_err(|err| Error::BackendError(Box::new(err)))?;
-
-        Self::get_nth_ancestor_internal(&tx, block_hash, distance)
+        Self::get_nth_ancestor_internal(&self.inner, block_hash, distance)
     }
 
     fn get_nth_ancestor_internal(
@@ -770,6 +841,14 @@ pub mod tests {
         assert_eq!(block_info.chain_length, genesis_block.chain_length().0);
         assert_eq!(block_info.back_links.len(), 1);
         assert_eq!(block_info.parent_id(), BlockId::zero());
+
+        let blocks = store.get_blocks_by_chain_length(1).unwrap();
+        println!("{:?}", blocks);
+        assert_eq!(genesis_block, blocks[0].0);
+        assert_eq!(blocks[0].1.block_hash, genesis_block.id());
+        assert_eq!(blocks[0].1.chain_length, genesis_block.chain_length().0);
+        assert_eq!(blocks[0].1.back_links.len(), 1);
+        assert_eq!(blocks[0].1.parent_id(), BlockId::zero());
 
         store.put_tag("tip", &genesis_block.id()).unwrap();
         assert_eq!(store.get_tag("tip").unwrap().unwrap(), genesis_block.id());

@@ -3,6 +3,7 @@ use crate::btreeindex::PageId;
 use crate::storage::MmapStorage;
 use crate::Key;
 use std::marker::PhantomData;
+use std::sync::Mutex;
 
 /// An abstraction over a paged file, Pages is kind of an array but backed from disk. Page represents at the moment
 /// a heap allocated read/write page, while PageRef is a wrapper to share a read only page in an Arc
@@ -11,6 +12,7 @@ use std::marker::PhantomData;
 pub struct Pages {
     storage: MmapStorage,
     page_size: u16,
+    borrows: Mutex<borrow::BorrowChecker>,
 }
 
 // TODO: move this unsafe impls to MmapStorage? although what is most safe is saying that RwLock<MmapStorage> is Sync + Send
@@ -31,12 +33,17 @@ impl Pages {
             key_buffer_size: _,
         } = params;
 
-        Pages { storage, page_size }
+        Pages {
+            storage,
+            page_size,
+            borrows: Mutex::new(borrow::BorrowChecker::new()),
+        }
     }
 
     pub fn get_page<'a>(&'a self, id: PageId) -> Option<PageHandle<'a, borrow::Immutable>> {
         // TODO: Check the page is actually in range
-        // TODO: check mutable aliasing
+        let borrow_guard = self.borrows.lock().unwrap().borrow(id);
+
         let storage = &self.storage;
         let from = u64::from(id.checked_sub(1).expect("0 page is used as a null ptr"))
             * u64::from(self.page_size);
@@ -44,7 +51,10 @@ impl Pages {
         let page = unsafe { storage.get(from, u64::from(self.page_size)) };
         let handle = PageHandle {
             id,
-            borrow: borrow::Immutable { borrow: page },
+            borrow: borrow::Immutable {
+                borrow: page,
+                borrow_guard: borrow_guard,
+            },
             page_marker: PhantomData,
         };
 
@@ -52,7 +62,8 @@ impl Pages {
     }
 
     pub fn mut_page<'a>(&'a self, id: PageId) -> Result<PageHandle<'a, borrow::Mutable>, ()> {
-        // TODO: add checks so the same page is not mutated more than once
+        let borrow_guard = self.borrows.lock().unwrap().borrow_mut(id);
+
         let storage = &self.storage;
         let from = u64::from(id.checked_sub(1).expect("0 page is used as a null ptr"))
             * u64::from(self.page_size);
@@ -61,7 +72,10 @@ impl Pages {
         match unsafe { storage.get_mut(from, u64::from(self.page_size)) } {
             Ok(page) => Ok(PageHandle {
                 id,
-                borrow: borrow::Mutable { borrow: page },
+                borrow: borrow::Mutable {
+                    borrow: page,
+                    borrow_guard,
+                },
                 page_marker: PhantomData,
             }),
             Err(_) => Err(()),
@@ -96,12 +110,75 @@ impl Pages {
 }
 
 pub mod borrow {
+    use crate::btreeindex::PageId;
+    use std::collections::HashMap;
+    use std::sync::{Arc, Weak};
+
+    pub struct BorrowChecker {
+        borrows: HashMap<PageId, Weak<BorrowGuard>>,
+    }
+
+    impl BorrowChecker {
+        pub fn new() -> BorrowChecker {
+            BorrowChecker {
+                borrows: HashMap::new(),
+            }
+        }
+
+        pub fn borrow_mut(&mut self, id: PageId) -> BorrowRAIIGuard {
+            let guard = Arc::new(BorrowGuard::Exclusive);
+
+            if let Some(_) = self.borrows.get(&id).and_then(|weak| weak.upgrade()) {
+                panic!("tried to exclusively borrow already borrowed page");
+            }
+
+            self.borrows.insert(id, Arc::downgrade(&guard));
+
+            BorrowRAIIGuard(guard)
+        }
+
+        pub fn borrow(&mut self, id: PageId) -> BorrowRAIIGuard {
+            use std::cell::RefCell;
+            let guard = RefCell::new(None);
+
+            let weak = self.borrows.entry(id).or_insert_with(|| {
+                let mut guard = guard.borrow_mut();
+                guard.replace(Arc::new(BorrowGuard::Shared));
+                Arc::downgrade(guard.as_ref().unwrap())
+            });
+
+            let arc = weak.upgrade().unwrap_or_else(|| {
+                let mut guard = guard.borrow_mut();
+                guard.replace(Arc::new(BorrowGuard::Shared));
+                self.borrows
+                    .insert(id, Arc::downgrade(guard.as_ref().unwrap()));
+                guard.as_ref().unwrap().clone()
+            });
+
+            match *arc {
+                BorrowGuard::Exclusive => panic!("can't borrow mutably borrowed page"),
+                _ => (),
+            }
+
+            BorrowRAIIGuard(arc)
+        }
+    }
+
+    #[derive(Debug)]
+    enum BorrowGuard {
+        Shared,
+        Exclusive,
+    }
+
+    pub struct BorrowRAIIGuard(Arc<BorrowGuard>);
 
     pub struct Immutable<'a> {
         pub borrow: &'a [u8],
+        pub borrow_guard: BorrowRAIIGuard,
     }
     pub struct Mutable<'a> {
         pub borrow: &'a mut [u8],
+        pub borrow_guard: BorrowRAIIGuard,
     }
 }
 

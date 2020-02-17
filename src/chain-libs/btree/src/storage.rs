@@ -65,7 +65,7 @@ impl MmapStorage {
             .unwrap())
     }
 
-    pub fn resize(&mut self, minimum_required_size: u64) -> Result<(), io::Error> {
+    pub fn extend(&mut self, minimum_required_size: u64) -> Result<(), io::Error> {
         if minimum_required_size > self.allocated_size {
             self.allocated_size = Self::next_power_of_two(minimum_required_size);
 
@@ -122,7 +122,7 @@ mod tests {
 
         match unsafe { storage.get_mut(30, 10) } {
             Ok(_) => panic!("Should need resize"),
-            Err(pos) => storage.resize(pos).unwrap(),
+            Err(pos) => storage.extend(pos).unwrap(),
         }
 
         unsafe { storage.get_mut(30, 10) }

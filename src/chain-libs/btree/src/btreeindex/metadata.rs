@@ -33,7 +33,7 @@ impl StaticSettings {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct Metadata {
     pub root: PageId,
     pub page_manager: PageManager,

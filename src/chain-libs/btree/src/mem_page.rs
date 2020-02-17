@@ -26,11 +26,6 @@ impl MemPage {
         }
         MemPage { data, layout }
     }
-
-    pub(crate) fn len(&self) -> usize {
-        // TODO: Research more, I don't know if this is valid because the docs say 'minimum' size
-        self.layout.size()
-    }
 }
 
 impl AsMut<[u8]> for MemPage {

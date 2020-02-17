@@ -2,7 +2,6 @@ mod metadata;
 mod node;
 mod page_manager;
 mod pages;
-#[allow(dead_code)]
 mod version_management;
 
 use version_management::transaction::{InsertTransaction, ReadTransaction};

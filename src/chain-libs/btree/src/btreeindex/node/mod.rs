@@ -26,14 +26,6 @@ where
     K: Key,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub(crate) fn from_raw_mut(data: T, key_buffer_size: usize) -> Node<K, T> {
-        Node {
-            data,
-            key_buffer_size,
-            phantom: PhantomData,
-        }
-    }
-
     pub(crate) fn new_internal(key_buffer_size: usize, buffer: T) -> Node<K, T> {
         let mut buffer = buffer;
         buffer.as_mut()[0..TAG_SIZE].copy_from_slice(&0u64.to_le_bytes());
@@ -164,7 +156,7 @@ mod tests {
         let i2 = insertions[1];
         let i3 = insertions[2];
 
-        let buffer = MemPage::new(dbg!(mem_size));
+        let buffer = MemPage::new(mem_size);
         buffer.as_ref().len();
         let mut node: Node<U64Key, MemPage> =
             Node::new_internal(std::mem::size_of::<U64Key>(), buffer);
@@ -186,7 +178,6 @@ mod tests {
             _ => panic!("second insertion shouldn't split"),
         };
 
-        println!("Inserting splitting key");
         match node
             .as_internal_mut()
             .unwrap()

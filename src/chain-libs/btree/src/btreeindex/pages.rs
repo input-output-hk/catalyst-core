@@ -12,10 +12,12 @@ use std::sync::Mutex;
 pub struct Pages {
     storage: MmapStorage,
     page_size: u16,
+    // we need this just to make the api safe, in general, higher level code shouldn't actually
+    // need this checks, as we always clone data before mutating it, and there can only be one transaction
+    // at a time, but just in case
     borrows: Mutex<borrow::BorrowChecker>,
 }
 
-// TODO: move this unsafe impls to MmapStorage? although what is most safe is saying that RwLock<MmapStorage> is Sync + Send
 unsafe impl Send for Pages {}
 unsafe impl Sync for Pages {}
 
@@ -40,6 +42,7 @@ impl Pages {
         }
     }
 
+    /// this call is safe, which means that it will panic if the given id is already mutably borrowed
     pub fn get_page<'a>(&'a self, id: PageId) -> Option<PageHandle<'a, borrow::Immutable>> {
         // TODO: Check the page is actually in range
         let borrow_guard = self.borrows.lock().unwrap().borrow(id);
@@ -53,7 +56,7 @@ impl Pages {
             id,
             borrow: borrow::Immutable {
                 borrow: page,
-                borrow_guard: borrow_guard,
+                borrow_guard,
             },
             page_marker: PhantomData,
         };
@@ -61,6 +64,7 @@ impl Pages {
         Some(handle)
     }
 
+    /// this call is safe, which means that it will panic if the given id is already borrowed
     pub fn mut_page<'a>(&'a self, id: PageId) -> Result<PageHandle<'a, borrow::Mutable>, ()> {
         let borrow_guard = self.borrows.lock().unwrap().borrow_mut(id);
 
@@ -82,6 +86,7 @@ impl Pages {
         }
     }
 
+    /// raw clone page old_id to new_id
     pub fn make_shadow(&self, old_id: PageId, new_id: PageId) -> Result<(), ()> {
         assert!(old_id != new_id);
         let page_old = self
@@ -101,7 +106,7 @@ impl Pages {
         let from = u64::from(to.checked_sub(1).expect("0 page is used as a null ptr"))
             * u64::from(self.page_size);
 
-        storage.resize(from + u64::from(self.page_size))
+        storage.extend(from + u64::from(self.page_size))
     }
 
     pub(crate) fn sync_file(&self) -> Result<(), std::io::Error> {
@@ -139,15 +144,18 @@ pub mod borrow {
 
         pub fn borrow(&mut self, id: PageId) -> BorrowRAIIGuard {
             use std::cell::RefCell;
+            // placeholder to keep the Arc alive while we store the Weak pointer in the map
             let guard = RefCell::new(None);
 
             let weak = self.borrows.entry(id).or_insert_with(|| {
+                // if there is no entry for this id, we allocate one and store the reference
                 let mut guard = guard.borrow_mut();
                 guard.replace(Arc::new(BorrowGuard::Shared));
                 Arc::downgrade(guard.as_ref().unwrap())
             });
 
             let arc = weak.upgrade().unwrap_or_else(|| {
+                // if there was an entry, but it was expired, we need to create and insert a new one
                 let mut guard = guard.borrow_mut();
                 guard.replace(Arc::new(BorrowGuard::Shared));
                 self.borrows

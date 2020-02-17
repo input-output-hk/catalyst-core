@@ -1,25 +1,15 @@
 use memmap::MmapMut;
-use std::convert::TryFrom;
+use std::cell::UnsafeCell;
+
 use std::convert::TryInto;
 use std::fs::File;
 use std::io;
 use std::mem::ManuallyDrop;
-
-pub trait Storage<'a> {
-    type Output;
-
-    fn get(&'a self, location: u64, count: u64) -> Result<Self::Output, io::Error>
-    where
-        Self::Output: AsRef<[u8]> + 'a;
-
-    fn put(&mut self, location: u64, bytes: impl AsRef<[u8]>) -> Result<(), io::Error>;
-
-    fn sync(&self) -> Result<(), io::Error>;
-}
+use std::sync::atomic::{AtomicU64, Ordering};
 
 pub struct MmapStorage {
-    mmap: ManuallyDrop<MmapMut>,
-    file_len: u64,
+    mmap: ManuallyDrop<UnsafeCell<MmapMut>>,
+    file_len: AtomicU64,
     allocated_size: u64,
     file: *mut File,
 }
@@ -35,12 +25,65 @@ impl MmapStorage {
         let file = Box::into_raw(boxed_file);
         unsafe {
             Ok(MmapStorage {
-                mmap: ManuallyDrop::new(MmapMut::map_mut(&*file)?),
+                mmap: ManuallyDrop::new(UnsafeCell::new(MmapMut::map_mut(&*file)?)),
                 file,
-                file_len,
+                file_len: AtomicU64::new(file_len),
                 allocated_size,
             })
         }
+    }
+
+    /// this call is unsafe because get_mut is &self and not &mut self, so this could lead to mutable aliasing
+    /// this panics if the location (+ count) is out of range, though
+    pub unsafe fn get(&self, location: u64, count: u64) -> &[u8] {
+        let location: usize = location.try_into().unwrap();
+        let count: usize = count.try_into().unwrap();
+        &(*self.mmap.get())[location..location + count]
+    }
+
+    /// caller must enforce that there is no aliasing here
+    pub unsafe fn get_mut(&self, location: u64, count: u64) -> Result<&mut [u8], u64> {
+        if location + count > self.allocated_size {
+            return Err(location + count);
+        }
+
+        // the file_len is only used in the destructor, to make the file's size on disk be the right one,
+        // at that point there is only one instance, so race conditions originated from this are unlikely
+        if location + count > self.file_len.load(Ordering::Acquire) {
+            self.file_len.store(location + count, Ordering::Release);
+        }
+
+        let location: usize = location.try_into().unwrap();
+        let count: usize = count.try_into().unwrap();
+
+        // this unwrap can't fail because we already checked for size before
+        // I don't think we need any extra synchronization here,
+        // at least I don't think get_mut modifies any shared state
+
+        Ok((*self.mmap.get())
+            .get_mut(location..location + count)
+            .unwrap())
+    }
+
+    pub fn resize(&mut self, minimum_required_size: u64) -> Result<(), io::Error> {
+        if minimum_required_size > self.allocated_size {
+            self.allocated_size = Self::next_power_of_two(minimum_required_size);
+
+            // we need to extend the file, so we unmap, extend and remap
+            unsafe {
+                // it's really important to flush here
+                self.sync()?;
+                ManuallyDrop::drop(&mut self.mmap);
+                (&mut *self.file).set_len(self.allocated_size)?;
+                self.mmap = ManuallyDrop::new(UnsafeCell::new(MmapMut::map_mut(&*self.file)?));
+            }
+        }
+        Ok(())
+    }
+
+    pub fn sync(&self) -> Result<(), io::Error> {
+        // there is nothing really unsafe here, we need the block only because of unsafe cell (at least nothing that is not already present in the memmap api)
+        unsafe { &*self.mmap.get() }.flush()
     }
 
     fn next_power_of_two(n: u64) -> u64 {
@@ -53,47 +96,6 @@ impl MmapStorage {
     }
 }
 
-impl<'a> Storage<'a> for MmapStorage {
-    type Output = &'a [u8];
-
-    fn get(&'a self, location: u64, count: u64) -> Result<Self::Output, io::Error> {
-        let location: usize = location.try_into().unwrap();
-        let count: usize = count.try_into().unwrap();
-        Ok(&self.mmap[location..location + count])
-    }
-
-    fn put(&mut self, location: u64, bytes: impl AsRef<[u8]>) -> Result<(), std::io::Error> {
-        if location + u64::try_from(bytes.as_ref().len()).unwrap() > self.allocated_size {
-            self.allocated_size = Self::next_power_of_two(
-                self.allocated_size + location + u64::try_from(bytes.as_ref().len()).unwrap(),
-            );
-
-            // we need to extend the file, so we unmap, extend and remap
-            unsafe {
-                self.mmap.flush()?;
-                ManuallyDrop::drop(&mut self.mmap);
-                (&mut *self.file).set_len(self.allocated_size)?;
-                self.mmap = ManuallyDrop::new(MmapMut::map_mut(&*self.file)?);
-            }
-        }
-
-        if location + u64::try_from(bytes.as_ref().len()).unwrap() > self.file_len {
-            self.file_len = location + u64::try_from(bytes.as_ref().len()).unwrap();
-        }
-
-        let location: usize = location.try_into().unwrap();
-        self.mmap
-            .get_mut(location..location + bytes.as_ref().len())
-            .unwrap()
-            .copy_from_slice(&bytes.as_ref());
-        Ok(())
-    }
-
-    fn sync(&self) -> Result<(), io::Error> {
-        self.mmap.flush()
-    }
-}
-
 impl Drop for MmapStorage {
     fn drop(&mut self) {
         // self.mmap has reference (with an erased lifetime) to the file handle, so we must ensure that it
@@ -101,7 +103,7 @@ impl Drop for MmapStorage {
         unsafe {
             ManuallyDrop::drop(&mut self.mmap);
             let file = Box::from_raw(self.file);
-            file.set_len(self.file_len).unwrap();
+            file.set_len(self.file_len.load(Ordering::Acquire)).unwrap();
         }
     }
 }
@@ -118,9 +120,16 @@ mod tests {
 
         let expected = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-        storage.put(30, &expected).unwrap();
+        match unsafe { storage.get_mut(30, 10) } {
+            Ok(_) => panic!("Should need resize"),
+            Err(pos) => storage.resize(pos).unwrap(),
+        }
 
-        let result = storage.get(30, expected.len().try_into().unwrap()).unwrap();
+        unsafe { storage.get_mut(30, 10) }
+            .expect("Shouldn't need resize anymore")
+            .copy_from_slice(&expected);
+
+        let result = unsafe { storage.get(30, expected.len().try_into().unwrap()) };
 
         assert_eq!(result, &expected[..]);
     }

@@ -16,7 +16,7 @@ use crate::{
 use chain_core::property;
 use network_core::client::{BlockService, Client, FragmentService, GossipService, P2pService};
 use network_core::error as core_error;
-use network_core::gossip::{self, Gossip};
+use network_core::gossip::{self, Gossip, PeersResponse};
 use network_core::subscription::BlockEvent;
 
 use futures::prelude::*;
@@ -282,6 +282,7 @@ where
     type GossipSubscription = server_streaming::ResponseStream<Gossip<P::Node>, gen::node::Gossip>;
     type GossipSubscriptionFuture =
         subscription::ResponseFuture<Gossip<P::Node>, Self::NodeId, gen::node::Gossip>;
+    type PeersFuture = unary::ResponseFuture<PeersResponse, gen::node::PeersResponse>;
 
     fn gossip_subscription<Out>(&mut self, outbound: Out) -> Self::GossipSubscriptionFuture
     where
@@ -290,5 +291,11 @@ where
         let req = self.new_subscription_request(outbound);
         let future = self.service.gossip_subscription(req);
         subscription::ResponseFuture::new(future)
+    }
+
+    fn peers(&mut self) -> Self::PeersFuture {
+        let req = gen::node::PeersRequest { limit: 128 };
+        let future = self.service.peers(Request::new(req));
+        unary::ResponseFuture::new(future)
     }
 }

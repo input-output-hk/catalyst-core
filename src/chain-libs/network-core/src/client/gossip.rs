@@ -1,7 +1,7 @@
 use super::p2p::P2pService;
 use crate::{
     error::Error,
-    gossip::{Gossip, Node},
+    gossip::{Gossip, Node, PeersResponse},
 };
 
 use futures::prelude::*;
@@ -22,6 +22,8 @@ pub trait GossipService: P2pService {
         Error = Error,
     >;
 
+    type PeersFuture: Future<Item = PeersResponse, Error = Error> + Send + 'static;
+
     /// Establishes a bidirectional stream of notifications for gossip
     /// messages.
     ///
@@ -30,4 +32,6 @@ pub trait GossipService: P2pService {
     fn gossip_subscription<S>(&mut self, outbound: S) -> Self::GossipSubscriptionFuture
     where
         S: Stream<Item = Gossip<Self::Node>, Error = Error> + Send + 'static;
+
+    fn peers(&mut self) -> Self::PeersFuture;
 }

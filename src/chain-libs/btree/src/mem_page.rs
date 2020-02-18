@@ -5,7 +5,7 @@ const MEM_ALIGNMENT: usize = 8;
 /// Box-like structure but with custom alignment
 /// all nodes are allocated on this structure, but ideally at some point we could just use pointers into the mmap
 #[derive(Debug)]
-pub(crate) struct MemPage {
+pub struct MemPage {
     data: *mut u8,
     layout: alloc::Layout,
 }
@@ -25,11 +25,6 @@ impl MemPage {
             panic!("Couldn't allocate memory");
         }
         MemPage { data, layout }
-    }
-
-    pub(crate) fn len(&self) -> usize {
-        // TODO: Research more, I don't know if this is valid because the docs say 'minimum' size
-        self.layout.size()
     }
 }
 

@@ -2,20 +2,21 @@ mod metadata;
 mod node;
 mod page_manager;
 mod pages;
-#[allow(dead_code)]
-mod version;
+mod version_management;
 
-use version::*;
+use version_management::transaction::{InsertTransaction, ReadTransaction};
+use version_management::*;
 
 use crate::mem_page::MemPage;
 use crate::BTreeStoreError;
 use metadata::{Metadata, StaticSettings};
 use node::{InternalInsertStatus, LeafInsertStatus, Node};
-use pages::*;
+use pages::{borrow, PageHandle, Pages, PagesInitializationParams};
 use std::borrow::Borrow;
 
 use crate::{Key, Value};
 
+use parking_lot::RwLock;
 use std::convert::{TryFrom, TryInto};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, SeekFrom};
@@ -23,14 +24,14 @@ use std::marker::PhantomData;
 use std::path::Path;
 use std::sync::Mutex;
 
-pub(crate) type PageId = u32;
+pub type PageId = u32;
 
 pub struct BTree<K> {
     // The metadata file contains the latests confirmed version of the tree
     // this is, the root node, and the list of free pages
     metadata: Mutex<(Metadata, File)>,
     static_settings: StaticSettings,
-    pages: Pages,
+    pages: RwLock<Pages>,
     transaction_manager: TransactionManager,
     phantom_keys: PhantomData<[K]>,
 }
@@ -57,14 +58,11 @@ where
         page_size: u16,
         key_buffer_size: u32,
     ) -> Result<BTree<K>, BTreeStoreError> {
-        let mut root_page = MemPage::new(page_size.try_into().unwrap());
-        Node::<K, &mut [u8]>::new_leaf(key_buffer_size.try_into().unwrap(), root_page.as_mut());
-
         let mut metadata = Metadata::new();
 
         let pages_storage = crate::storage::MmapStorage::new(tree_file)?;
 
-        let pages = Pages::new(PagesInitializationParams {
+        let mut pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,
             page_size: page_size.try_into().unwrap(),
             key_buffer_size,
@@ -72,13 +70,18 @@ where
 
         let first_page_id = metadata.page_manager.new_id();
 
-        pages
-            .write_page(Page {
-                page_id: first_page_id,
-                key_buffer_size,
-                mem_page: root_page,
-            })
-            .expect("Couldn't write first page");
+        let mut root_page = match pages.mut_page(first_page_id) {
+            Ok(page) => page,
+            Err(_) => {
+                pages.extend(first_page_id)?;
+                // this is infallible now
+                pages.mut_page(first_page_id).unwrap()
+            }
+        };
+
+        root_page.as_slice(|page| {
+            Node::<K, &mut [u8]>::new_leaf(key_buffer_size.try_into().unwrap(), page);
+        });
 
         metadata.set_root(first_page_id);
 
@@ -93,7 +96,7 @@ where
 
         Ok(BTree {
             metadata: Mutex::new((metadata, metadata_file)),
-            pages,
+            pages: RwLock::new(pages),
             static_settings,
             transaction_manager,
             phantom_keys: PhantomData,
@@ -122,11 +125,11 @@ where
 
         let static_settings = StaticSettings::read(&mut static_settings_file)?;
 
-        let pages = Pages::new(PagesInitializationParams {
+        let pages = RwLock::new(Pages::new(PagesInitializationParams {
             storage: pages_storage,
             page_size: static_settings.page_size,
             key_buffer_size: static_settings.key_buffer_size,
-        });
+        }));
 
         let transaction_manager = TransactionManager::new(&metadata);
 
@@ -144,7 +147,7 @@ where
         if let Some(checkpoint) = self.transaction_manager.collect_pending() {
             let new_metadata = checkpoint.new_metadata;
 
-            self.pages.sync_file()?;
+            self.pages.read().sync_file()?;
 
             let mut guard = self.metadata.lock().unwrap();
             let (_metadata, metadata_file) = &mut *guard;
@@ -161,7 +164,13 @@ where
     }
 
     pub fn insert_async(&self, key: K, value: Value) -> Result<(), BTreeStoreError> {
-        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
+        let key_buffer_size: u32 = self.static_settings.key_buffer_size.try_into().unwrap();
+        let page_size: u64 = self.static_settings.page_size.try_into().unwrap();
+
+        let mut tx =
+            self.transaction_manager
+                .insert_transaction(&self.pages, key_buffer_size, page_size);
+
         self.insert(&mut tx, key, value)?;
 
         tx.commit::<K>();
@@ -181,7 +190,12 @@ where
         &self,
         iter: impl IntoIterator<Item = (K, Value)>,
     ) -> Result<(), BTreeStoreError> {
-        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
+        let key_buffer_size: u32 = self.static_settings.key_buffer_size.try_into().unwrap();
+        let page_size: u64 = self.static_settings.page_size.try_into().unwrap();
+
+        let mut tx =
+            self.transaction_manager
+                .insert_transaction(&self.pages, key_buffer_size, page_size);
 
         for (key, value) in iter {
             self.insert(&mut tx, key, value)?;
@@ -194,7 +208,7 @@ where
 
     fn insert<'a>(
         &self,
-        tx: &mut InsertTransactionBuilder<'a, 'a>,
+        tx: &mut InsertTransaction<'a, 'a>,
         key: K,
         value: Value,
     ) -> Result<(), BTreeStoreError> {
@@ -202,20 +216,21 @@ where
         backtrack.search_for(&key);
 
         let needs_recurse = {
-            let leaf = backtrack.get_next().unwrap();
+            let leaf = backtrack.get_next()?.unwrap();
+            let leaf_id = leaf.id();
             self.insert_in_leaf(leaf, key, value)?
-                .map(|(split_key, new_node)| (leaf.id(), split_key, new_node))
+                .map(|(split_key, new_node)| (leaf_id, split_key, new_node))
         };
 
         if let Some((leaf_id, split_key, new_node)) = needs_recurse {
             let id =
-                backtrack.add_new_node(new_node.to_page(), self.static_settings.key_buffer_size);
+                backtrack.add_new_node(new_node.to_page(), self.static_settings.key_buffer_size)?;
 
             if backtrack.has_next() {
                 self.insert_in_internals(split_key, id, &mut backtrack)?;
             } else {
                 let new_root = self.create_internal_node(leaf_id, id, split_key);
-                backtrack.new_root(new_root.to_page(), self.static_settings.key_buffer_size);
+                backtrack.new_root(new_root.to_page(), self.static_settings.key_buffer_size)?;
             }
         }
 
@@ -224,7 +239,7 @@ where
 
     pub(crate) fn insert_in_leaf<'a>(
         &self,
-        leaf: &mut Page,
+        mut leaf: PageHandle<'a, borrow::Mutable<'a>>,
         key: K,
         value: Value,
     ) -> Result<Option<(K, Node<K, MemPage>)>, BTreeStoreError> {
@@ -236,11 +251,15 @@ where
                 Node::<K, MemPage>::new_leaf(key_size, uninit)
             };
 
-            let insert_status = leaf.as_node_mut(move |mut node: Node<K, &mut [u8]>| {
-                node.as_leaf_mut()
-                    .unwrap()
-                    .insert(key, value, &mut allocate)
-            });
+            let insert_status = leaf.as_node_mut(
+                page_size.try_into().unwrap(),
+                key_size,
+                move |mut node: Node<K, &mut [u8]>| {
+                    node.as_leaf_mut()
+                        .unwrap()
+                        .insert(key, value, &mut allocate)
+                },
+            );
 
             match insert_status {
                 LeafInsertStatus::Ok => None,
@@ -265,15 +284,16 @@ where
         let mut right_id = to_insert;
         loop {
             let (current_id, new_split_key, new_node) = {
-                let node = backtrack.get_next().unwrap();
+                let mut node = backtrack.get_next()?.unwrap();
                 let node_id = node.id();
                 let key_size = usize::try_from(self.static_settings.key_buffer_size).unwrap();
+                let page_size = self.static_settings.page_size.try_into().unwrap();
                 let mut allocate = || {
-                    let uninit = MemPage::new(self.static_settings.page_size.try_into().unwrap());
+                    let uninit = MemPage::new(page_size);
                     Node::new_internal(key_size, uninit)
                 };
 
-                match node.as_node_mut(|mut node| {
+                match node.as_node_mut(page_size.try_into().unwrap(), key_size, |mut node| {
                     node.as_internal_mut()
                         .unwrap()
                         .insert(split_key, right_id, &mut allocate)
@@ -287,7 +307,7 @@ where
             };
 
             let new_id =
-                backtrack.add_new_node(new_node.to_page(), self.static_settings.key_buffer_size);
+                backtrack.add_new_node(new_node.to_page(), self.static_settings.key_buffer_size)?;
 
             if backtrack.has_next() {
                 // set values to insert in next iteration (recurse on parent)
@@ -298,7 +318,7 @@ where
                 let right_id = new_id;
                 let new_root = self.create_internal_node(left_id, right_id, new_split_key);
 
-                backtrack.new_root(new_root.to_page(), self.static_settings.key_buffer_size);
+                backtrack.new_root(new_root.to_page(), self.static_settings.key_buffer_size)?;
                 return Ok(());
             }
         }
@@ -325,10 +345,17 @@ where
     }
 
     pub fn lookup(&self, key: &K) -> Option<Value> {
-        let page_ref = self.search(key);
+        let read_transaction = self.transaction_manager.read_transaction(&self.pages);
 
-        page_ref.as_node(|node: Node<K, &[u8]>| {
-            match node.as_leaf().unwrap().keys().binary_search(key) {
+        let page_ref = self.search(&read_transaction, key);
+
+        let page_size = self.static_settings.page_size.try_into().unwrap();
+        let key_buffer_size = self.static_settings.key_buffer_size.try_into().unwrap();
+
+        page_ref.as_node(
+            page_size,
+            key_buffer_size,
+            |node: Node<K, &[u8]>| match node.as_leaf().unwrap().keys().binary_search(key) {
                 Ok(pos) => node
                     .as_leaf()
                     .unwrap()
@@ -336,36 +363,36 @@ where
                     .get(pos)
                     .map(|n| *n.borrow()),
                 Err(_) => None,
-            }
-        })
+            },
+        )
     }
 
-    fn search(&self, key: &K) -> PageRef {
-        // TODO: Care, requesting a read transaction should enforce that it's not released until is finished
-        // in this case, this acts like a lock, but if it does get released then the data may be overwritten
-        let read_transaction = self.transaction_manager.read_transaction();
+    fn search<'a>(&'a self, tx: &'a ReadTransaction, key: &K) -> PageHandle<'a, borrow::Immutable> {
+        let mut current = tx.get_page(tx.root()).unwrap();
 
-        let mut current = self.pages.get_page(read_transaction.root()).unwrap();
+        let page_size = self.static_settings.page_size.try_into().unwrap();
+        let key_buffer_size = self.static_settings.key_buffer_size.try_into().unwrap();
 
         loop {
-            let new_current: Option<PageRef> = current.as_node(|node: Node<K, &[u8]>| {
-                node.as_internal().map(|inode| {
-                    let upper_pivot = match inode.keys().binary_search(key) {
-                        Ok(pos) => Some(pos + 1),
-                        Err(pos) => Some(pos),
-                    }
-                    .filter(|pos| pos < &inode.children().len());
+            let new_current =
+                current.as_node(page_size, key_buffer_size, |node: Node<K, &[u8]>| {
+                    node.as_internal().map(|inode| {
+                        let upper_pivot = match inode.keys().binary_search(key) {
+                            Ok(pos) => Some(pos + 1),
+                            Err(pos) => Some(pos),
+                        }
+                        .filter(|pos| pos < &inode.children().len());
 
-                    let new_current_id = if let Some(upper_pivot) = upper_pivot {
-                        inode.children().get(upper_pivot).unwrap().clone()
-                    } else {
-                        let last = inode.children().len().checked_sub(1).unwrap();
-                        inode.children().get(last).unwrap().clone()
-                    };
+                        let new_current_id = if let Some(upper_pivot) = upper_pivot {
+                            inode.children().get(upper_pivot).unwrap().clone()
+                        } else {
+                            let last = inode.children().len().checked_sub(1).unwrap();
+                            inode.children().get(last).unwrap().clone()
+                        };
 
-                    self.pages.get_page(new_current_id).unwrap()
-                })
-            });
+                        tx.get_page(new_current_id).unwrap()
+                    })
+                });
 
             if let Some(new_current) = new_current {
                 current = new_current;
@@ -387,7 +414,10 @@ impl<K> Drop for BTree<K> {
         metadata_file.seek(SeekFrom::Start(0)).unwrap();
         metadata.write(metadata_file).unwrap();
 
-        self.pages.sync_file().expect("tree file sync failed");
+        self.pages
+            .read()
+            .sync_file()
+            .expect("tree file sync failed");
     }
 }
 
@@ -414,12 +444,13 @@ mod tests {
         }
 
         pub fn debug_print(&self) {
-            let read_tx = self.transaction_manager.read_transaction();
+            let read_tx = self.transaction_manager.read_transaction(&self.pages);
             let root_id = read_tx.root();
 
             // TODO: get the next page but IN the read transaction
             for n in 1..self.metadata.lock().unwrap().0.page_manager.next_page() {
-                let page_ref = self.pages.get_page(n).unwrap();
+                let pages = self.pages.read();
+                let page_ref = pages.get_page(n).unwrap();
 
                 println!("-----------------------");
                 println!("PageId: {}", n);
@@ -427,27 +458,33 @@ mod tests {
                 if n == root_id {
                     println!("ROOT");
                 }
-                page_ref.as_node(|node: Node<K, &[u8]>| match node.get_tag() {
-                    node::NodeTag::Internal => {
-                        println!("Internal Node");
-                        println!("keys: ");
-                        for k in node.as_internal().unwrap().keys().into_iter() {
-                            println!("{:?}", k.borrow());
+
+                let page_size = self.page_size().try_into().unwrap();
+                let key_size = self.key_buffer_size().try_into().unwrap();
+
+                page_ref.as_node(page_size, key_size, |node: Node<K, &[u8]>| {
+                    match node.get_tag() {
+                        node::NodeTag::Internal => {
+                            println!("Internal Node");
+                            println!("keys: ");
+                            for k in node.as_internal().unwrap().keys().into_iter() {
+                                println!("{:?}", k.borrow());
+                            }
+                            println!("children: ");
+                            for c in node.as_internal().unwrap().children().into_iter() {
+                                println!("{:?}", c.borrow());
+                            }
                         }
-                        println!("children: ");
-                        for c in node.as_internal().unwrap().children().into_iter() {
-                            println!("{:?}", c.borrow());
-                        }
-                    }
-                    node::NodeTag::Leaf => {
-                        println!("Leaf Node");
-                        println!("keys: ");
-                        for k in node.as_leaf().unwrap().keys().into_iter() {
-                            println!("{:?}", k.borrow());
-                        }
-                        println!("values: ");
-                        for v in node.as_leaf().unwrap().values().into_iter() {
-                            println!("{:?}", v.borrow());
+                        node::NodeTag::Leaf => {
+                            println!("Leaf Node");
+                            println!("keys: ");
+                            for k in node.as_leaf().unwrap().keys().into_iter() {
+                                println!("{:?}", k.borrow());
+                            }
+                            println!("values: ");
+                            for v in node.as_leaf().unwrap().values().into_iter() {
+                                println!("{:?}", v.borrow());
+                            }
                         }
                     }
                 });
@@ -461,11 +498,13 @@ mod tests {
         let tree_file = tempfile().unwrap();
         let static_file = tempfile().unwrap();
 
+        let page_size = 88;
+
         let tree: BTree<U64Key> = BTree::new(
             metadata_file,
             tree_file,
             static_file,
-            86,
+            page_size,
             size_of::<U64Key>().try_into().unwrap(),
         )
         .unwrap();
@@ -483,13 +522,16 @@ mod tests {
         tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
             .unwrap();
 
+        tree.debug_print();
+
         for i in 0..n {
-            assert_eq!(tree.lookup(&U64Key(i)).expect("Key not found"), i);
+            assert_eq!(tree.lookup(&U64Key(dbg!(i))).expect("Key not found"), i);
         }
     }
 
     #[quickcheck]
     fn qc_inserted_keys_are_found(xs: Vec<(u64, u64)>) -> bool {
+        println!("start qc test");
         let mut reference = std::collections::BTreeMap::new();
 
         let tree = new_tree();
@@ -504,7 +546,7 @@ mod tests {
 
         let prop = reference
             .iter()
-            .all(|(k, v)| match tree.lookup(&U64Key(*k)) {
+            .all(|(k, v)| match tree.lookup(&U64Key(*dbg!(k))) {
                 Some(l) => *v == l,
                 None => false,
             });

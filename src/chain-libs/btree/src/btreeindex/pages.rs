@@ -1,181 +1,241 @@
 use crate::btreeindex::node::Node;
 use crate::btreeindex::PageId;
-use crate::storage::{MmapStorage, Storage};
+use crate::storage::MmapStorage;
 use crate::Key;
-use crate::MemPage;
-use byteorder::{ByteOrder, LittleEndian};
-use std::convert::{TryFrom, TryInto};
-use std::sync::{Arc, RwLock};
+use std::marker::PhantomData;
+use std::sync::Mutex;
 
 /// An abstraction over a paged file, Pages is kind of an array but backed from disk. Page represents at the moment
 /// a heap allocated read/write page, while PageRef is a wrapper to share a read only page in an Arc
 /// when we move to mmap, this things may change to take advantage of zero copy.
 
-pub(crate) struct Pages {
-    storage: RwLock<MmapStorage>,
+pub struct Pages {
+    storage: MmapStorage,
     page_size: u16,
-    // TODO: we need to remove this from here
-    key_buffer_size: u32,
+    // we need this just to make the api safe, in general, higher level code shouldn't actually
+    // need this checks, as we always clone data before mutating it, and there can only be one transaction
+    // at a time, but just in case
+    borrows: Mutex<borrow::BorrowChecker>,
 }
 
-// TODO: move this unsafe impls to MmapStorage? although what is most safe is saying that RwLock<MmapStorage> is Sync + Send
 unsafe impl Send for Pages {}
 unsafe impl Sync for Pages {}
 
-pub(crate) struct PagesInitializationParams {
-    pub(crate) storage: MmapStorage,
-    pub(crate) page_size: u16,
-    pub(crate) key_buffer_size: u32,
+pub struct PagesInitializationParams {
+    pub storage: MmapStorage,
+    pub page_size: u16,
+    pub key_buffer_size: u32,
 }
 
 impl Pages {
-    pub(crate) fn new(params: PagesInitializationParams) -> Self {
+    pub fn new(params: PagesInitializationParams) -> Self {
         let PagesInitializationParams {
             storage,
             page_size,
-            key_buffer_size,
+            key_buffer_size: _,
         } = params;
-
-        let storage = RwLock::new(storage);
 
         Pages {
             storage,
             page_size,
-            key_buffer_size,
+            borrows: Mutex::new(borrow::BorrowChecker::new()),
         }
     }
 
-    fn read_page(&self, id: PageId) -> MemPage {
-        let storage = self.storage.read().unwrap();
-        let buf = storage
-            .get(
-                u64::from(id.checked_sub(1).expect("0 page is used as a null ptr"))
-                    * u64::from(self.page_size),
-                self.page_size.into(),
-            )
-            .unwrap();
+    /// this call is safe, which means that it will panic if the given id is already mutably borrowed
+    pub fn get_page<'a>(&'a self, id: PageId) -> Option<PageHandle<'a, borrow::Immutable>> {
+        // TODO: Check the page is actually in range
+        let borrow_guard = self.borrows.lock().unwrap().borrow(id);
 
-        let page_size = self.page_size.try_into().unwrap();
-        let mut page = MemPage::new(page_size);
+        let storage = &self.storage;
+        let from = u64::from(id.checked_sub(1).expect("0 page is used as a null ptr"))
+            * u64::from(self.page_size);
 
-        // Ideally, we don't want to make any copies here, but that would require making the mmaped
-        // storage thread safe (specially if the mmap gets remapped)
-        page.as_mut().copy_from_slice(&buf[..page_size]);
+        let page = unsafe { storage.get(from, u64::from(self.page_size)) };
+        let handle = PageHandle {
+            id,
+            borrow: borrow::Immutable {
+                borrow: page,
+                borrow_guard,
+            },
+            page_marker: PhantomData,
+        };
 
-        page
+        Some(handle)
     }
 
-    pub(crate) fn write_page(&self, page: Page) -> Result<(), std::io::Error> {
-        let mem_page = &page.mem_page;
-        let page_id = page.page_id;
+    /// this call is safe, which means that it will panic if the given id is already borrowed
+    pub fn mut_page<'a>(&'a self, id: PageId) -> Result<PageHandle<'a, borrow::Mutable>, ()> {
+        let borrow_guard = self.borrows.lock().unwrap().borrow_mut(id);
 
-        let mut storage = self.storage.write().unwrap();
+        let storage = &self.storage;
+        let from = u64::from(id.checked_sub(1).expect("0 page is used as a null ptr"))
+            * u64::from(self.page_size);
 
-        storage
-            .put(
-                u64::from(page_id.checked_sub(1).unwrap()) * u64::try_from(mem_page.len()).unwrap(),
-                &mem_page.as_ref(),
-            )
-            .unwrap();
+        // Make sure there is a mapped area for this page
+        match unsafe { storage.get_mut(from, u64::from(self.page_size)) } {
+            Ok(page) => Ok(PageHandle {
+                id,
+                borrow: borrow::Mutable {
+                    borrow: page,
+                    borrow_guard,
+                },
+                page_marker: PhantomData,
+            }),
+            Err(_) => Err(()),
+        }
+    }
+
+    /// raw clone page old_id to new_id
+    pub fn make_shadow(&self, old_id: PageId, new_id: PageId) -> Result<(), ()> {
+        assert!(old_id != new_id);
+        let page_old = self
+            .get_page(old_id)
+            .expect("tried to shadow non existing page");
+
+        let mut page_new = self.mut_page(new_id)?;
+
+        page_new.as_slice(|slice| slice.copy_from_slice(page_old.borrow.borrow));
 
         Ok(())
     }
 
-    pub(crate) fn get_page<'a>(&'a self, id: PageId) -> Option<PageRef> {
-        // TODO: Check the id is in range?
-        let page = self.read_page(id);
+    pub fn extend(&mut self, to: PageId) -> Result<(), std::io::Error> {
+        let storage = &mut self.storage;
 
-        let page_ref = PageRef::new(Page {
-            page_id: id,
-            key_buffer_size: self.key_buffer_size,
-            mem_page: page,
-        });
+        let from = u64::from(to.checked_sub(1).expect("0 page is used as a null ptr"))
+            * u64::from(self.page_size);
 
-        Some(page_ref.clone())
+        storage.extend(from + u64::from(self.page_size))
     }
 
     pub(crate) fn sync_file(&self) -> Result<(), std::io::Error> {
-        self.storage
-            .write()
-            .expect("Coulnd't acquire tree index lock")
-            .sync()
+        self.storage.sync()
     }
 }
 
-use std::fmt;
-impl fmt::Debug for Page {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let tag = LittleEndian::read_u64(&self.mem_page.as_ref()[0..8]);
-        write!(f, "Page {{ page_id: {}, tag: {} }}", self.page_id, tag)
-    }
-}
+pub mod borrow {
+    use crate::btreeindex::PageId;
+    use std::collections::HashMap;
+    use std::sync::{Arc, Weak};
 
-pub(crate) struct Page {
-    pub page_id: PageId,
-    pub key_buffer_size: u32,
-    pub mem_page: MemPage,
-}
-
-#[derive(Clone)]
-pub(crate) struct PageRef(Arc<Page>);
-
-unsafe impl Send for PageRef {}
-unsafe impl Sync for PageRef {}
-
-impl std::ops::Deref for PageRef {
-    type Target = Arc<Page>;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl Page {
-    pub(crate) fn as_node<K, R>(&self, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        let page: &[u8] = self.mem_page.as_ref();
-        let node =
-            Node::<K, &[u8]>::from_raw(page.as_ref(), self.key_buffer_size.try_into().unwrap());
-        f(node)
+    pub struct BorrowChecker {
+        borrows: HashMap<PageId, Weak<BorrowGuard>>,
     }
 
-    pub(crate) fn as_node_mut<K, R>(&mut self, f: impl FnOnce(Node<K, &mut [u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        let page = self.mem_page.as_mut();
-        let node = Node::<K, &mut [u8]>::from_raw_mut(
-            page.as_mut(),
-            self.key_buffer_size.try_into().unwrap(),
-        );
-        f(node)
-    }
-
-    pub(crate) fn id(&self) -> PageId {
-        self.page_id
-    }
-}
-
-impl PageRef {
-    pub(crate) fn new(page: Page) -> Self {
-        PageRef(Arc::new(page))
-    }
-
-    pub(crate) fn as_node<K, R>(&self, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        self.0.as_node(f)
-    }
-
-    pub(crate) fn get_mut(&self) -> Page {
-        let page = &self.0;
-        Page {
-            page_id: page.page_id,
-            key_buffer_size: page.key_buffer_size,
-            mem_page: page.mem_page.clone(),
+    impl BorrowChecker {
+        pub fn new() -> BorrowChecker {
+            BorrowChecker {
+                borrows: HashMap::new(),
+            }
         }
+
+        pub fn borrow_mut(&mut self, id: PageId) -> BorrowRAIIGuard {
+            let guard = Arc::new(BorrowGuard::Exclusive);
+
+            if let Some(_) = self.borrows.get(&id).and_then(|weak| weak.upgrade()) {
+                panic!("tried to exclusively borrow already borrowed page");
+            }
+
+            self.borrows.insert(id, Arc::downgrade(&guard));
+
+            BorrowRAIIGuard(guard)
+        }
+
+        pub fn borrow(&mut self, id: PageId) -> BorrowRAIIGuard {
+            use std::cell::RefCell;
+            // placeholder to keep the Arc alive while we store the Weak pointer in the map
+            let guard = RefCell::new(None);
+
+            let weak = self.borrows.entry(id).or_insert_with(|| {
+                // if there is no entry for this id, we allocate one and store the reference
+                let mut guard = guard.borrow_mut();
+                guard.replace(Arc::new(BorrowGuard::Shared));
+                Arc::downgrade(guard.as_ref().unwrap())
+            });
+
+            let arc = weak.upgrade().unwrap_or_else(|| {
+                // if there was an entry, but it was expired, we need to create and insert a new one
+                let mut guard = guard.borrow_mut();
+                guard.replace(Arc::new(BorrowGuard::Shared));
+                self.borrows
+                    .insert(id, Arc::downgrade(guard.as_ref().unwrap()));
+                guard.as_ref().unwrap().clone()
+            });
+
+            match *arc {
+                BorrowGuard::Exclusive => panic!("can't borrow mutably borrowed page"),
+                _ => (),
+            }
+
+            BorrowRAIIGuard(arc)
+        }
+    }
+
+    #[derive(Debug)]
+    enum BorrowGuard {
+        Shared,
+        Exclusive,
+    }
+
+    pub struct BorrowRAIIGuard(Arc<BorrowGuard>);
+
+    pub struct Immutable<'a> {
+        pub borrow: &'a [u8],
+        pub borrow_guard: BorrowRAIIGuard,
+    }
+    pub struct Mutable<'a> {
+        pub borrow: &'a mut [u8],
+        pub borrow_guard: BorrowRAIIGuard,
+    }
+}
+
+pub struct PageHandle<'a, Borrow: 'a> {
+    id: PageId,
+    borrow: Borrow,
+    page_marker: PhantomData<&'a Borrow>,
+}
+
+impl<'a, T> PageHandle<'a, T> {
+    pub fn id(&self) -> PageId {
+        self.id
+    }
+}
+
+impl<'a> PageHandle<'a, borrow::Immutable<'a>> {
+    pub fn as_node<K, R>(
+        &self,
+        _page_size: u64,
+        key_buffer_size: usize,
+        f: impl FnOnce(Node<K, &[u8]>) -> R,
+    ) -> R
+    where
+        K: Key,
+    {
+        let page = self.borrow.borrow;
+
+        let node = Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size);
+
+        f(node)
+    }
+}
+
+impl<'a> PageHandle<'a, borrow::Mutable<'a>> {
+    pub fn as_node_mut<K, R>(
+        &mut self,
+        _page_size: u64,
+        key_buffer_size: usize,
+        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
+    ) -> R
+    where
+        K: Key,
+    {
+        let node = Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size);
+        f(node)
+    }
+
+    pub fn as_slice(&mut self, f: impl FnOnce(&mut [u8])) {
+        f(self.borrow.borrow);
     }
 }
 

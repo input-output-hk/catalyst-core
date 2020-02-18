@@ -17,6 +17,23 @@ pub struct Ratio {
     pub denominator: NonZeroU64,
 }
 
+impl PartialOrd for Ratio {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for Ratio {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        if self.denominator == other.denominator {
+            self.numerator.cmp(&other.numerator)
+        } else {
+            let left = self.numerator as u128 * other.denominator.get() as u128;
+            let right = other.numerator as u128 * self.denominator.get() as u128;
+            left.cmp(&right)
+        }
+    }
+}
+
 impl Ratio {
     pub fn zero() -> Self {
         Ratio {
@@ -272,6 +289,27 @@ mod tests {
             }
             Err(_) => TestResult::discard(),
         }
+    }
+
+    #[test]
+    fn ratio_cmp_works() {
+        use std::cmp::Ordering;
+        let r1 = Ratio {
+            numerator: 10,
+            denominator: NonZeroU64::new(20).unwrap(),
+        };
+        let r2 = Ratio {
+            numerator: 20,
+            denominator: NonZeroU64::new(10).unwrap(),
+        };
+        let r3 = Ratio {
+            numerator: 20,
+            denominator: NonZeroU64::new(40).unwrap(),
+        };
+        assert_eq!(r1.cmp(&r2), Ordering::Less);
+        assert_eq!(r2.cmp(&r1), Ordering::Greater);
+        assert_eq!(r1.cmp(&r3), Ordering::Equal);
+        assert_eq!(r3.cmp(&r1), Ordering::Equal);
     }
 
     #[test]

@@ -18,7 +18,7 @@ impl MmapStorage {
     pub fn new(file: File) -> Result<Self, io::Error> {
         let file_len = file.metadata()?.len();
 
-        let allocated_size = Self::next_power_of_two(file_len);
+        let allocated_size = file_len.next_power_of_two();
         file.set_len(allocated_size)?;
 
         let boxed_file = Box::new(file);
@@ -67,7 +67,7 @@ impl MmapStorage {
 
     pub fn extend(&mut self, minimum_required_size: u64) -> Result<(), io::Error> {
         if minimum_required_size > self.allocated_size {
-            self.allocated_size = Self::next_power_of_two(minimum_required_size);
+            self.allocated_size = minimum_required_size.next_power_of_two();
 
             // we need to extend the file, so we unmap, extend and remap
             unsafe {
@@ -84,15 +84,6 @@ impl MmapStorage {
     pub fn sync(&self) -> Result<(), io::Error> {
         // there is nothing really unsafe here, we need the block only because of unsafe cell (at least nothing that is not already present in the memmap api)
         unsafe { &*self.mmap.get() }.flush()
-    }
-
-    fn next_power_of_two(n: u64) -> u64 {
-        let mut search = 2;
-        while search < n {
-            search = search << 2;
-        }
-
-        search
     }
 }
 

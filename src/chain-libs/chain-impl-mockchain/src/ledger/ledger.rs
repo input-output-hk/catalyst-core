@@ -253,8 +253,8 @@ pub enum Error {
     PoolUpdateSignatureFailed,
     #[error("Pool update last known registration hash doesn't match")]
     PoolUpdateLastHashDoesntMatch,
-    #[error("Pool update doesnt currently allow keys update")]
-    PoolUpdateKeysUpdateNotAllowed,
+    #[error("Pool update doesnt currently allow fees update")]
+    PoolUpdateFeesNotAllowedYet,
     #[error("Update not yet allowed")]
     UpdateNotAllowedYet,
 }
@@ -928,14 +928,21 @@ impl Ledger {
             return Err(Error::PoolUpdateLastHashDoesntMatch);
         }
 
+        let new = &auth_cert.new_pool_reg;
+
+        // don't allow any fees update for now
+        if new.rewards != state.registration.rewards {
+            return Err(Error::PoolUpdateFeesNotAllowedYet);
+        }
+
         if sig.verify(&state.registration, bad) == Verification::Failed {
             return Err(Error::PoolUpdateSignatureFailed);
         }
 
-        let new_pool_reg = auth_cert.new_pool_reg.clone();
+        let new = new.clone();
 
         let mut updated_state = state.clone();
-        updated_state.registration = Arc::new(new_pool_reg);
+        updated_state.registration = Arc::new(new);
 
         self.delegation
             .stake_pool_set_state(&auth_cert.pool_id, updated_state)?;

@@ -165,11 +165,10 @@ where
 
     pub fn insert_async(&self, key: K, value: Value) -> Result<(), BTreeStoreError> {
         let key_buffer_size: u32 = self.static_settings.key_buffer_size.try_into().unwrap();
-        let page_size: u64 = self.static_settings.page_size.try_into().unwrap();
 
-        let mut tx =
-            self.transaction_manager
-                .insert_transaction(&self.pages, key_buffer_size, page_size);
+        let mut tx = self
+            .transaction_manager
+            .insert_transaction(&self.pages, key_buffer_size);
 
         self.insert(&mut tx, key, value)?;
 
@@ -191,11 +190,10 @@ where
         iter: impl IntoIterator<Item = (K, Value)>,
     ) -> Result<(), BTreeStoreError> {
         let key_buffer_size: u32 = self.static_settings.key_buffer_size.try_into().unwrap();
-        let page_size: u64 = self.static_settings.page_size.try_into().unwrap();
 
-        let mut tx =
-            self.transaction_manager
-                .insert_transaction(&self.pages, key_buffer_size, page_size);
+        let mut tx = self
+            .transaction_manager
+            .insert_transaction(&self.pages, key_buffer_size);
 
         for (key, value) in iter {
             self.insert(&mut tx, key, value)?;
@@ -251,13 +249,9 @@ where
                 Node::<K, MemPage>::new_leaf(key_size, uninit)
             };
 
-            let insert_status = leaf.as_node_mut(
-                page_size.try_into().unwrap(),
-                key_size,
-                move |mut node: Node<K, &mut [u8]>| {
-                    node.as_leaf_mut().insert(key, value, &mut allocate)
-                },
-            );
+            let insert_status = leaf.as_node_mut(key_size, move |mut node: Node<K, &mut [u8]>| {
+                node.as_leaf_mut().insert(key, value, &mut allocate)
+            });
 
             match insert_status {
                 LeafInsertStatus::Ok => None,
@@ -291,7 +285,7 @@ where
                     Node::new_internal(key_size, uninit)
                 };
 
-                match node.as_node_mut(page_size.try_into().unwrap(), key_size, |mut node| {
+                match node.as_node_mut(key_size, |mut node| {
                     node.as_internal_mut()
                         .insert(split_key, right_id, &mut allocate)
                 }) {
@@ -345,45 +339,40 @@ where
 
         let page_ref = self.search(&read_transaction, key);
 
-        let page_size = self.static_settings.page_size.try_into().unwrap();
         let key_buffer_size = self.static_settings.key_buffer_size.try_into().unwrap();
 
-        page_ref.as_node(
-            page_size,
-            key_buffer_size,
-            |node: Node<K, &[u8]>| match node.as_leaf().keys().binary_search(key) {
+        page_ref.as_node(key_buffer_size, |node: Node<K, &[u8]>| {
+            match node.as_leaf().keys().binary_search(key) {
                 Ok(pos) => Some(*node.as_leaf().values().get(pos).borrow()),
                 Err(_) => None,
-            },
-        )
+            }
+        })
     }
 
     fn search<'a>(&'a self, tx: &'a ReadTransaction, key: &K) -> PageHandle<'a, borrow::Immutable> {
         let mut current = tx.get_page(tx.root()).unwrap();
 
-        let page_size = self.static_settings.page_size.try_into().unwrap();
         let key_buffer_size = self.static_settings.key_buffer_size.try_into().unwrap();
 
         loop {
-            let new_current =
-                current.as_node(page_size, key_buffer_size, |node: Node<K, &[u8]>| {
-                    node.try_as_internal().map(|inode| {
-                        let upper_pivot = match inode.keys().binary_search(key) {
-                            Ok(pos) => Some(pos + 1),
-                            Err(pos) => Some(pos),
-                        }
-                        .filter(|pos| pos < &inode.children().len());
+            let new_current = current.as_node(key_buffer_size, |node: Node<K, &[u8]>| {
+                node.try_as_internal().map(|inode| {
+                    let upper_pivot = match inode.keys().binary_search(key) {
+                        Ok(pos) => Some(pos + 1),
+                        Err(pos) => Some(pos),
+                    }
+                    .filter(|pos| pos < &inode.children().len());
 
-                        let new_current_id = if let Some(upper_pivot) = upper_pivot {
-                            inode.children().get(upper_pivot)
-                        } else {
-                            let last = inode.children().len().checked_sub(1).unwrap();
-                            inode.children().get(last)
-                        };
+                    let new_current_id = if let Some(upper_pivot) = upper_pivot {
+                        inode.children().get(upper_pivot)
+                    } else {
+                        let last = inode.children().len().checked_sub(1).unwrap();
+                        inode.children().get(last)
+                    };
 
-                        tx.get_page(new_current_id).unwrap()
-                    })
-                });
+                    tx.get_page(new_current_id).unwrap()
+                })
+            });
 
             if let Some(new_current) = new_current {
                 current = new_current;
@@ -450,32 +439,29 @@ mod tests {
                     println!("ROOT");
                 }
 
-                let page_size = self.page_size().try_into().unwrap();
                 let key_size = self.key_buffer_size().try_into().unwrap();
 
-                page_ref.as_node(page_size, key_size, |node: Node<K, &[u8]>| {
-                    match node.get_tag() {
-                        node::NodeTag::Internal => {
-                            println!("Internal Node");
-                            println!("keys: ");
-                            for k in node.as_internal().keys().into_iter() {
-                                println!("{:?}", k.borrow());
-                            }
-                            println!("children: ");
-                            for c in node.as_internal().children().into_iter() {
-                                println!("{:?}", c.borrow());
-                            }
+                page_ref.as_node(key_size, |node: Node<K, &[u8]>| match node.get_tag() {
+                    node::NodeTag::Internal => {
+                        println!("Internal Node");
+                        println!("keys: ");
+                        for k in node.as_internal().keys().into_iter() {
+                            println!("{:?}", k.borrow());
                         }
-                        node::NodeTag::Leaf => {
-                            println!("Leaf Node");
-                            println!("keys: ");
-                            for k in node.as_leaf().keys().into_iter() {
-                                println!("{:?}", k.borrow());
-                            }
-                            println!("values: ");
-                            for v in node.as_leaf().values().into_iter() {
-                                println!("{:?}", v.borrow());
-                            }
+                        println!("children: ");
+                        for c in node.as_internal().children().into_iter() {
+                            println!("{:?}", c.borrow());
+                        }
+                    }
+                    node::NodeTag::Leaf => {
+                        println!("Leaf Node");
+                        println!("keys: ");
+                        for k in node.as_leaf().keys().into_iter() {
+                            println!("{:?}", k.borrow());
+                        }
+                        println!("values: ");
+                        for v in node.as_leaf().values().into_iter() {
+                            println!("{:?}", v.borrow());
                         }
                     }
                 });

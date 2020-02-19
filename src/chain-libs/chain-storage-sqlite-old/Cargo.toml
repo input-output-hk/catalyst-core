@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 chain-core = { path = "../chain-core" }
-rusqlite = { version = "0.16.0", features = ["bundled", "unlock_notify"] }
+rusqlite = { version = "0.21.0", features = ["bundled", "unlock_notify"] }
 thiserror = "1.0"
 
 criterion = { version = "0.3.0", optional = true }

@@ -295,8 +295,8 @@ where
             .prepare_cached("select block from Blocks where hash = ?")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .query_row(&[&block_hash.serialize_as_vec().unwrap()[..]], |row| {
-                let x: Vec<u8> = row.get(0);
-                B::deserialize(&x[..]).unwrap()
+                let x: Vec<u8> = row.get(0)?;
+                Ok(B::deserialize(&x[..]).unwrap())
             })
             .map_err(|err| match err {
                 rusqlite::Error::QueryReturnedNoRows => Error::BlockNotFound,
@@ -329,24 +329,24 @@ where
             .query_row(&[&block_hash.serialize_as_vec().unwrap()[..]], |row| {
                 let mut back_links = vec![BackLink {
                     distance: 1,
-                    block_hash: blob_to_hash(row.get(1)),
+                    block_hash: blob_to_hash(row.get(1)?),
                 }];
 
-                let fast_distance: Option<i64> = row.get(2);
+                let fast_distance: Option<i64> = row.get(2)?;
                 if let Some(fast_distance) = fast_distance {
                     back_links.push(BackLink {
                         distance: fast_distance as u64,
-                        block_hash: blob_to_hash(row.get(3)),
+                        block_hash: blob_to_hash(row.get(3)?),
                     });
                 }
 
-                let chain_length: i64 = row.get(0);
+                let chain_length: i64 = row.get(0)?;
 
-                BlockInfo {
+                Ok(BlockInfo {
                     block_hash: block_hash.clone(),
                     chain_length: chain_length as u64,
                     back_links,
-                }
+                })
             })
             .map_err(|err| match err {
                 rusqlite::Error::QueryReturnedNoRows => Error::BlockNotFound,
@@ -378,7 +378,7 @@ where
             .inner
             .prepare_cached("select hash from Tags where name = ?")
             .map_err(|err| Error::BackendError(Box::new(err)))?
-            .query_row(&[&tag_name], |row| blob_to_hash(row.get(0)))
+            .query_row(&[&tag_name], |row| Ok(blob_to_hash(row.get(0)?)))
         {
             Ok(s) => Ok(Some(s)),
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),

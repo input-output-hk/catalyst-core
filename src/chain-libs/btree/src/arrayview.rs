@@ -114,7 +114,11 @@ where
         self.len
     }
 
-    pub(crate) fn get<'me>(&'me self, pos: usize) -> Option<<E as Storeable<'_>>::Output> {
+    pub(crate) fn get<'me>(&'me self, pos: usize) -> <E as Storeable<'_>>::Output {
+        self.try_get(pos).unwrap()
+    }
+
+    pub(crate) fn try_get<'me>(&'me self, pos: usize) -> Option<<E as Storeable<'_>>::Output> {
         if pos < self.len() {
             Some(
                 E::read(
@@ -277,7 +281,7 @@ where
     type Item = <E as Storeable<'elements>>::Output;
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos < self.view.len() {
-            let e = self.view.get(self.pos);
+            let e = self.view.try_get(self.pos);
             self.pos += 1;
             e
         } else {

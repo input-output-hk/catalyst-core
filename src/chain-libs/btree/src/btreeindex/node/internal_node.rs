@@ -159,7 +159,7 @@ where
                 // the key would be inserted in the first half
                 if pos < m.try_into().unwrap() {
                     let mut right_node_internal = right_node.as_internal_mut();
-                    let split_key = self.keys().get(m - 1 as usize).unwrap().borrow().clone();
+                    let split_key = self.keys().get(m - 1 as usize).borrow().clone();
 
                     let mut keys_mut = right_node_internal.keys_mut();
                     for k in self.keys().sub(m..self.keys().len()).into_iter() {
@@ -193,7 +193,7 @@ where
                 // the key would be inserted in the last half
                 else if pos > m.try_into().unwrap() {
                     let mut right_internal_node = right_node.as_internal_mut();
-                    let split_key = self.keys().get(m as usize).unwrap().borrow().clone();
+                    let split_key = self.keys().get(m as usize).borrow().clone();
 
                     let mut keys_mut = right_internal_node.keys_mut();
                     for k in self.keys().sub(m + 1..pos as usize).into_iter() {

@@ -206,31 +206,10 @@ mod tests {
         {
             InternalInsertStatus::Split(U64Key(2), new_node) => {
                 assert_eq!(new_node.as_internal().keys().len(), 1);
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .keys()
-                        .get(0)
-                        .expect("Couldn't get first key"),
-                    U64Key(3)
-                );
+                assert_eq!(new_node.as_internal().keys().get(0), U64Key(3));
                 assert_eq!(new_node.as_internal().children().len(), 2);
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .children()
-                        .get(0)
-                        .expect("Couldn't get first key"),
-                    2
-                );
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .children()
-                        .get(1)
-                        .expect("Couldn't get second key"),
-                    3
-                );
+                assert_eq!(new_node.as_internal().children().get(0), 2);
+                assert_eq!(new_node.as_internal().children().get(1), 3);
             }
             _ => {
                 panic!("third insertion should split");
@@ -238,10 +217,10 @@ mod tests {
         };
 
         assert_eq!(node.as_internal().keys().len(), 1);
-        assert_eq!(node.as_internal().keys().get(0).unwrap(), U64Key(1));
+        assert_eq!(node.as_internal().keys().get(0), U64Key(1));
         assert_eq!(node.as_internal().children().len(), 2);
-        assert_eq!(node.as_internal().children().get(0).unwrap(), 0u32);
-        assert_eq!(node.as_internal().children().get(1).unwrap(), 1u32);
+        assert_eq!(node.as_internal().children().get(0), 0u32);
+        assert_eq!(node.as_internal().children().get(1), 1u32);
     }
 
     #[test]
@@ -290,11 +269,11 @@ mod tests {
             LeafInsertStatus::Split(U64Key(2), new_node) => {
                 let new_leaf = new_node.as_leaf();
                 assert_eq!(new_leaf.keys().len(), 2);
-                assert_eq!(new_leaf.keys().get(0).unwrap(), U64Key(2));
-                assert_eq!(new_leaf.keys().get(1).unwrap(), U64Key(3));
+                assert_eq!(new_leaf.keys().get(0), U64Key(2));
+                assert_eq!(new_leaf.keys().get(1), U64Key(3));
                 assert_eq!(new_leaf.values().len(), 2);
-                assert_eq!(new_leaf.values().get(0).unwrap(), 2);
-                assert_eq!(new_leaf.values().get(1).unwrap(), 3);
+                assert_eq!(new_leaf.values().get(0), 2);
+                assert_eq!(new_leaf.values().get(1), 3);
             }
             _ => {
                 panic!("third insertion should split");
@@ -302,8 +281,8 @@ mod tests {
         };
 
         assert_eq!(node.as_leaf().keys().len(), 1);
-        assert_eq!(node.as_leaf().keys().get(0).unwrap(), U64Key(1));
+        assert_eq!(node.as_leaf().keys().get(0), U64Key(1));
         assert_eq!(node.as_leaf().values().len(), 1);
-        assert_eq!(node.as_leaf().values().get(0).unwrap(), 1);
+        assert_eq!(node.as_leaf().values().get(0), 1);
     }
 }

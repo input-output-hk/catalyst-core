@@ -190,10 +190,10 @@ where
                         .filter(|pos| pos < &inode.children().len());
 
                         if let Some(upper_pivot) = upper_pivot {
-                            current = inode.children().get(upper_pivot).unwrap().clone();
+                            current = inode.children().get(upper_pivot);
                         } else {
                             let last = inode.children().len().checked_sub(1).unwrap();
-                            current = inode.children().get(last).unwrap().clone();
+                            current = inode.children().get(last);
                         }
                         false
                     } else {

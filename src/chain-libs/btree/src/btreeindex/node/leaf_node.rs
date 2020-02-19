@@ -106,7 +106,7 @@ where
                 let mut right_node = allocate.unwrap()();
 
                 if pos < m.try_into().unwrap() {
-                    let split_key = self.keys().get(m - 1 as usize).unwrap().borrow().clone();
+                    let split_key = self.keys().get(m - 1 as usize).borrow().clone();
 
                     for (i, (k, v)) in self
                         .keys()
@@ -135,7 +135,7 @@ where
 
                     LeafInsertStatus::Split(split_key.clone(), right_node)
                 } else if pos > m.try_into().unwrap() {
-                    let split_key = self.keys().get(m as usize).unwrap().borrow().clone();
+                    let split_key = self.keys().get(m as usize).borrow().clone();
 
                     let mut position = 0;
                     for (k, v) in self

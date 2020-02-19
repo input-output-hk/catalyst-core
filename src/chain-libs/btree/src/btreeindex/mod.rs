@@ -352,7 +352,7 @@ where
             page_size,
             key_buffer_size,
             |node: Node<K, &[u8]>| match node.as_leaf().keys().binary_search(key) {
-                Ok(pos) => node.as_leaf().values().get(pos).map(|n| *n.borrow()),
+                Ok(pos) => Some(*node.as_leaf().values().get(pos).borrow()),
                 Err(_) => None,
             },
         )
@@ -375,10 +375,10 @@ where
                         .filter(|pos| pos < &inode.children().len());
 
                         let new_current_id = if let Some(upper_pivot) = upper_pivot {
-                            inode.children().get(upper_pivot).unwrap().clone()
+                            inode.children().get(upper_pivot)
                         } else {
                             let last = inode.children().len().checked_sub(1).unwrap();
-                            inode.children().get(last).unwrap().clone()
+                            inode.children().get(last)
                         };
 
                         tx.get_page(new_current_id).unwrap()

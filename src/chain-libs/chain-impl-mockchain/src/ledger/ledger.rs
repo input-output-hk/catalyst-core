@@ -79,6 +79,13 @@ pub struct Ledger {
     pub(crate) leaders_log: LeadersParticipationRecord,
 }
 
+// Dummy implementation of Debug for Ledger
+impl std::fmt::Debug for Ledger {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Ledger")
+    }
+}
+
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum Block0Error {
     #[error("Transaction should not have inputs in a block0")]

@@ -214,7 +214,7 @@ impl<'a> PageHandle<'a, borrow::Immutable<'a>> {
     {
         let page = self.borrow.borrow;
 
-        let node = Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size);
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size) };
 
         f(node)
     }
@@ -230,7 +230,7 @@ impl<'a> PageHandle<'a, borrow::Mutable<'a>> {
     where
         K: Key,
     {
-        let node = Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size);
+        let node = unsafe { Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size) };
         f(node)
     }
 

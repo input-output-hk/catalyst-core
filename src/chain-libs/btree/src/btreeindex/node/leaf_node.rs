@@ -115,7 +115,7 @@ where
                         .zip(self.values().sub(m - 1..self.values().len()).into_iter())
                         .enumerate()
                     {
-                        match right_node.as_leaf_mut().unwrap().insert_key_value::<F>(
+                        match right_node.as_leaf_mut().insert_key_value::<F>(
                             i,
                             k.borrow().clone(),
                             v,
@@ -144,7 +144,7 @@ where
                         .into_iter()
                         .zip(self.values().sub(m..pos).into_iter())
                     {
-                        right_node.as_leaf_mut().unwrap().insert_key_value::<F>(
+                        right_node.as_leaf_mut().insert_key_value::<F>(
                             position,
                             k.borrow().clone(),
                             v,
@@ -153,7 +153,7 @@ where
                         position += 1;
                     }
 
-                    right_node.as_leaf_mut().unwrap().insert_key_value::<F>(
+                    right_node.as_leaf_mut().insert_key_value::<F>(
                         position,
                         key.clone(),
                         value.clone(),
@@ -167,7 +167,7 @@ where
                         .into_iter()
                         .zip(self.values().sub(pos..self.values().len()).into_iter())
                     {
-                        right_node.as_leaf_mut().unwrap().insert_key_value::<F>(
+                        right_node.as_leaf_mut().insert_key_value::<F>(
                             position,
                             k.borrow().clone(),
                             v,
@@ -184,12 +184,9 @@ where
 
                     let split_key = key.clone();
 
-                    right_node.as_leaf_mut().unwrap().insert_key_value::<F>(
-                        0,
-                        key.clone(),
-                        value,
-                        None,
-                    );
+                    right_node
+                        .as_leaf_mut()
+                        .insert_key_value::<F>(0, key.clone(), value, None);
 
                     let mut position = 1;
 
@@ -199,7 +196,7 @@ where
                         .into_iter()
                         .zip(self.values().sub(m..self.values().len()).into_iter())
                     {
-                        right_node.as_leaf_mut().unwrap().insert_key_value::<F>(
+                        right_node.as_leaf_mut().insert_key_value::<F>(
                             position,
                             k.borrow().clone(),
                             v,

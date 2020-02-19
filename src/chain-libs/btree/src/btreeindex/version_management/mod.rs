@@ -182,7 +182,7 @@ where
                 self.page_size,
                 self.key_buffer_size.try_into().unwrap(),
                 |node: Node<K, &[u8]>| {
-                    if let Some(inode) = node.as_internal() {
+                    if let Some(inode) = node.try_as_internal() {
                         let upper_pivot = match inode.keys().binary_search(key) {
                             Ok(pos) => Some(pos + 1),
                             Err(pos) => Some(pos),

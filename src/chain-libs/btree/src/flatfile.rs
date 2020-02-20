@@ -1,5 +1,7 @@
 use crate::storage::MmapStorage;
 use byteorder::{ByteOrder, LittleEndian};
+use parking_lot::lock_api;
+use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWriteGuard};
 use std::io::{self, Error, ErrorKind, Read, Seek, SeekFrom, Write};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::{fs, path};
@@ -119,7 +121,7 @@ impl From<u64> for Pos {
 }
 
 pub struct MmapedAppendOnlyFile {
-    storage: MmapStorage,
+    storage: RwLock<MmapStorage>,
     next_pos: AtomicU64,
 }
 
@@ -152,33 +154,33 @@ impl MmapedAppendOnlyFile {
         }
 
         Ok(Self {
-            storage,
+            storage: RwLock::new(storage),
             next_pos: AtomicU64::new(next_pos),
         })
     }
 
     /// Check if this appender can still be appended to.
     pub fn can_append(&mut self) -> Result<bool, io::Error> {
-        // let pos = self.ahandle.seek(SeekFrom::Current(0))?;
-        // Ok(pos <= MAX_POS_OFFSET)
-        unimplemented!()
+        let pos = self.next_pos.load(Ordering::SeqCst);
+        Ok(pos <= MAX_POS_OFFSET)
     }
 
     /// Append a blob of data and return the file offset
     ///
     /// Can only append data of MAX_BLOB_SIZE
-    pub fn append(&mut self, buf: &[u8]) -> Result<Pos, io::Error> {
+    pub fn append(&self, buf: &[u8]) -> Result<Pos, io::Error> {
         if buf.len() > MAX_BLOB_SIZE {
             return Err(Error::new(ErrorKind::Other, "blob size too big"));
         }
-        // if (buf.len() & 0b11) != 0 {
-        //     return Err(Error::new(
-        //         ErrorKind::Other,
-        //         "blob size is not a multiple of 4",
-        //     ));
-        // }
+        if (buf.len() & 0b11) != 0 {
+            return Err(Error::new(
+                ErrorKind::Other,
+                "blob size is not a multiple of 4",
+            ));
+        }
 
         let next_pos = self.next_pos.load(Ordering::Acquire);
+        let mut storage = self.storage.upgradable_read();
 
         if next_pos > MAX_POS_OFFSET {
             return Err(Error::new(ErrorKind::Other, "offset position too big"));
@@ -189,18 +191,24 @@ impl MmapedAppendOnlyFile {
 
         let region_len = szbuf.len() as u64 + buf.len() as u64;
 
-        self.next_pos
-            .store(next_pos + region_len, Ordering::Release);
-
         let mmaped_region = unsafe {
-            match self.storage.get_mut(next_pos, region_len) {
+            match storage.get_mut(next_pos, region_len) {
                 Ok(slice) => slice,
                 Err(including) => {
-                    self.storage.extend(including)?;
-                    self.storage.get_mut(next_pos, region_len).unwrap()
+                    {
+                        let mut new_guard = RwLockUpgradableReadGuard::upgrade(storage);
+                        new_guard.extend(including)?;
+                        // the upgradable part here is only so we can assign to the storage variable again
+                        // we won't upgrade again
+                        storage = RwLockWriteGuard::downgrade_to_upgradable(new_guard);
+                    }
+                    storage.get_mut(next_pos, region_len).unwrap()
                 }
             }
         };
+
+        self.next_pos
+            .store(next_pos + region_len, Ordering::Release);
 
         mmaped_region[0..szbuf.len()].copy_from_slice(&szbuf[..]);
         mmaped_region[szbuf.len()..].copy_from_slice(&buf[..]);
@@ -212,21 +220,22 @@ impl MmapedAppendOnlyFile {
     /// Get the blob stored at position @pos
     pub fn get_at(&self, pos: Pos) -> Result<Box<[u8]>, io::Error> {
         // TODO: this will panic if position if out of range, we may want to handle that?
-        let szbuf = unsafe { self.storage.get(pos.into(), 4) };
+        let storage = self.storage.read();
+        let szbuf = unsafe { storage.get(pos.into(), 4) };
 
         let len = LittleEndian::read_u32(&szbuf);
 
         let mut v = vec![0u8; len as usize];
 
         unsafe {
-            v.copy_from_slice(self.storage.get(pos.0 + 4, len as u64));
+            v.copy_from_slice(storage.get(pos.0 + 4, len as u64));
         }
 
         Ok(v.into())
     }
 
-    pub fn sync(&mut self) -> Result<(), io::Error> {
-        self.storage.sync()?;
+    pub fn sync(&self) -> Result<(), io::Error> {
+        self.storage.read().sync()?;
         Ok(())
     }
 }

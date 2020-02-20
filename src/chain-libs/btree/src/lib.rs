@@ -51,7 +51,7 @@ where
     K: Key,
 {
     index: BTree<K>,
-    flatfile: RwLock<MmapedAppendOnlyFile>,
+    flatfile: MmapedAppendOnlyFile,
 }
 
 impl<K> BTreeStore<K>
@@ -92,10 +92,7 @@ where
             key_buffer_size,
         )?;
 
-        Ok(BTreeStore {
-            index,
-            flatfile: RwLock::new(flatfile),
-        })
+        Ok(BTreeStore { index, flatfile })
     }
 
     pub fn open(directory: impl AsRef<Path>) -> Result<BTreeStore<K>, BTreeStoreError> {
@@ -118,17 +115,16 @@ where
 
         Ok(BTreeStore {
             index,
-            flatfile: RwLock::new(appender),
+            flatfile: appender,
         })
     }
 
-    pub fn insert(&mut self, key: K, blob: &[u8]) -> Result<(), BTreeStoreError> {
-        let mut flatfile = self.flatfile.write().unwrap();
-        let offset = flatfile.append(&blob)?;
+    pub fn insert(&self, key: K, blob: &[u8]) -> Result<(), BTreeStoreError> {
+        let offset = self.flatfile.append(&blob)?;
 
         let result = self.index.insert_one(key, offset.into());
 
-        flatfile.sync()?;
+        self.flatfile.sync()?;
         self.index.checkpoint()?;
 
         result
@@ -139,17 +135,15 @@ where
         &self,
         iter: impl IntoIterator<Item = (K, B)>,
     ) -> Result<(), BTreeStoreError> {
-        let mut flatfile = self.flatfile.write().unwrap();
-
         let mut offsets: Vec<(K, u64)> = vec![];
         for (key, blob) in iter {
-            let offset = flatfile.append(blob.as_ref())?;
+            let offset = self.flatfile.append(blob.as_ref())?;
             offsets.push((key, offset.into()));
         }
 
         self.index.insert_many(offsets.drain(..))?;
 
-        flatfile.sync()?;
+        self.flatfile.sync()?;
         self.index.checkpoint()?;
         Ok(())
     }
@@ -157,7 +151,7 @@ where
     pub fn get(&self, key: &K) -> Result<Option<Box<[u8]>>, BTreeStoreError> {
         self.index
             .lookup(&key)
-            .map(|pos| self.flatfile.read().unwrap().get_at((pos).into()))
+            .map(|pos| self.flatfile.get_at((pos).into()))
             .transpose()
             .map_err(|e| e.into())
     }

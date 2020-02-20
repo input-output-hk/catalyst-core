@@ -85,6 +85,10 @@ impl MmapStorage {
         // there is nothing really unsafe here, we need the block only because of unsafe cell (at least nothing that is not already present in the memmap api)
         unsafe { &*self.mmap.get() }.flush()
     }
+
+    pub fn len(&self) -> u64 {
+        self.file_len.load(Ordering::SeqCst)
+    }
 }
 
 impl Drop for MmapStorage {

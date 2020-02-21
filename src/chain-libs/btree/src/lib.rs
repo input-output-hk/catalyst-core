@@ -7,8 +7,7 @@ pub mod btreeindex;
 pub mod flatfile;
 mod mem_page;
 pub mod storage;
-use flatfile::{Appender, MmapedAppendOnlyFile};
-use std::sync::{Mutex, RwLock};
+use flatfile::MmapedAppendOnlyFile;
 
 const METADATA_FILE: &'static str = "metadata";
 const TREE_FILE: &'static str = "pages";

@@ -156,8 +156,37 @@ impl From<u64> for Pos {
 
 #[cfg(test)]
 mod test {
+    use super::*;
+    use rand::rngs::StdRng;
+    use rand::Rng as _;
+    use rand::SeedableRng;
+
+    const BLOB_SIZE: usize = 1024;
+    const SEED: u64 = 35;
+
     #[test]
-    fn it_works() {
-        assert!(true)
+    fn inserted_blobs_are_recoverable() {
+        let mut reference = std::collections::BTreeMap::new();
+
+        // TODO: use a tempfile, the problem is that the appender needs to the file
+        let file = "appender";
+
+        let appender = MmapedAppendOnlyFile::new(file).unwrap();
+
+        let mut rng = StdRng::seed_from_u64(SEED);
+
+        for _i in 0..10000 {
+            // TODO: use chunks of random sizes too?
+            let mut buf = vec![0u8; BLOB_SIZE];
+            rng.fill(&mut buf[..]);
+            let pos = appender.append(&buf).unwrap();
+            reference.insert(pos, buf.into_boxed_slice());
+        }
+
+        for (pos, value) in reference.iter() {
+            assert_eq!(appender.get_at(*pos).unwrap()[..], value[..])
+        }
+
+        std::fs::remove_file(file).unwrap();
     }
 }

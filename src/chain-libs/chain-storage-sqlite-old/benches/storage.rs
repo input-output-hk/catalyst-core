@@ -5,6 +5,7 @@ use chain_core::property::Block as _;
 use chain_storage_sqlite_old::{test_utils::Block, BlockStore};
 
 const BLOCK_DATA_LENGTH: usize = 1024;
+const BLOCKSTORE_BUSY_TIMEOUT: u64 = 1000;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
@@ -19,7 +20,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         path.push("test.sqlite");
         path
     };
-    let store = BlockStore::file(path);
+    let store = BlockStore::file(path, BLOCKSTORE_BUSY_TIMEOUT);
     let mut conn = store.connect::<Block>().unwrap();
     conn.put_block(&genesis_block).unwrap();
 

@@ -62,7 +62,7 @@ impl MmapedAppendOnlyFile {
     }
 
     /// Check if this appender can still be appended to.
-    pub fn can_append(&mut self) -> Result<bool, io::Error> {
+    pub fn can_append(&self) -> Result<bool, io::Error> {
         let pos = self.next_pos.load(Ordering::SeqCst);
         Ok(pos <= MAX_POS_OFFSET)
     }
@@ -74,12 +74,13 @@ impl MmapedAppendOnlyFile {
         if buf.len() > MAX_BLOB_SIZE {
             return Err(Error::new(ErrorKind::Other, "blob size too big"));
         }
-        if (buf.len() & 0b11) != 0 {
-            return Err(Error::new(
-                ErrorKind::Other,
-                "blob size is not a multiple of 4",
-            ));
-        }
+
+        // if (buf.len() & 0b11) != 0 {
+        //     return Err(Error::new(
+        //         ErrorKind::Other,
+        //         "blob size is not a multiple of 4",
+        //     ));
+        // }
 
         let next_pos = self.next_pos.load(Ordering::Acquire);
         let mut storage = self.storage.upgradable_read();
@@ -121,7 +122,12 @@ impl MmapedAppendOnlyFile {
 
     /// Get the blob stored at position @pos
     pub fn get_at(&self, pos: Pos) -> Result<Box<[u8]>, io::Error> {
-        // TODO: this will panic if position if out of range, we may want to handle that?
+        if pos.0 >= self.next_pos.load(Ordering::SeqCst) {
+            // it could also be an option, but it shouldn't happen in our usecase anyway
+            // and so, adding an option just for that may be bothersome
+            return Ok(vec![].into_boxed_slice());
+        }
+
         let storage = self.storage.read();
         let szbuf = unsafe { storage.get(pos.into(), 4) };
 

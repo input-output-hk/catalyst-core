@@ -1,5 +1,5 @@
 use chain_core::property::{Block, BlockId, Serialize};
-use rusqlite::{types::Value, Connection};
+use rusqlite::{types::Value, Connection, TransactionBehavior};
 use std::{
     path::{Path, PathBuf},
     time::Duration,
@@ -192,7 +192,7 @@ where
 
         let tx = self
             .inner
-            .transaction()
+            .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         if Self::block_exists_internal(&tx, &block_hash)? {

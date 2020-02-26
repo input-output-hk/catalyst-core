@@ -160,6 +160,7 @@ mod test {
     use rand::rngs::StdRng;
     use rand::Rng as _;
     use rand::SeedableRng;
+    use tempfile::tempdir;
 
     const BLOB_SIZE: usize = 1024;
     const SEED: u64 = 35;
@@ -168,10 +169,14 @@ mod test {
     fn inserted_blobs_are_recoverable() {
         let mut reference = std::collections::BTreeMap::new();
 
-        // TODO: use a tempfile, the problem is that the appender needs to the file
-        let file = "appender";
+        // the appender does need to create the file, as it applies the initial formatting. This means
+        // we can't create a temp file directly, so instead we create a temporal directory and then the
+        // appender can create a file inside
+        let dir = tempdir().unwrap();
+        let mut path = dir.path().to_path_buf();
+        path.push("appender");
 
-        let appender = MmapedAppendOnlyFile::new(file).unwrap();
+        let appender = MmapedAppendOnlyFile::new(path).unwrap();
 
         let mut rng = StdRng::seed_from_u64(SEED);
 
@@ -186,7 +191,5 @@ mod test {
         for (pos, value) in reference.iter() {
             assert_eq!(appender.get_at(*pos).unwrap()[..], value[..])
         }
-
-        std::fs::remove_file(file).unwrap();
     }
 }

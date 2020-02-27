@@ -62,13 +62,45 @@ enum StoreType {
     File(PathBuf),
 }
 
+pub struct BlockStoreBuilder {
+    store_type: StoreType,
+    busy_timeout: Option<u64>,
+}
+
 pub struct BlockStore {
     store_type: StoreType,
     // An optional connection to be always held open. This is a workaround to
     // prevent an in-memory storage from resetting, because it is getting reset
     // once the last open connection was removed.
     persistent_connection: Option<Connection>,
-    busy_timeout: u64,
+    busy_timeout: Option<u64>,
+}
+
+impl BlockStoreBuilder {
+    pub fn memory() -> Self {
+        BlockStoreBuilder {
+            store_type: StoreType::Memory,
+            busy_timeout: None,
+        }
+    }
+
+    pub fn file<P: AsRef<Path>>(path: P) -> Self {
+        BlockStoreBuilder {
+            store_type: StoreType::File(path.as_ref().to_path_buf()),
+            busy_timeout: None,
+        }
+    }
+
+    pub fn busy_timeout(self, busy_timeout: u64) -> Self {
+        BlockStoreBuilder {
+            busy_timeout: Some(busy_timeout),
+            ..self
+        }
+    }
+
+    pub fn build(self) -> BlockStore {
+        BlockStore::init(self.store_type, self.busy_timeout)
+    }
 }
 
 // persistent_connection does not implement Sync but is never actually used
@@ -84,15 +116,7 @@ where
 }
 
 impl BlockStore {
-    pub fn memory(busy_timeout: u64) -> Self {
-        Self::init(StoreType::Memory, busy_timeout)
-    }
-
-    pub fn file<P: AsRef<Path>>(path: P, busy_timeout: u64) -> Self {
-        Self::init(StoreType::File(path.as_ref().to_path_buf()), busy_timeout)
-    }
-
-    fn init(store_type: StoreType, busy_timeout: u64) -> Self {
+    fn init(store_type: StoreType, busy_timeout: Option<u64>) -> Self {
         let mut store = Self {
             store_type,
             persistent_connection: None,
@@ -153,9 +177,11 @@ impl BlockStore {
             StoreType::File(path) => Connection::open(path),
         }
         .map_err(|err| Error::BackendError(Box::new(err)))?;
-        connection
-            .busy_timeout(Duration::from_millis(self.busy_timeout))
-            .map_err(|err| Error::BackendError(Box::new(err)))?;
+        if let Some(busy_timeout) = self.busy_timeout {
+            connection
+                .busy_timeout(Duration::from_millis(busy_timeout))
+                .map_err(|err| Error::BackendError(Box::new(err)))?;
+        }
         Ok(connection)
     }
 
@@ -816,7 +842,6 @@ pub mod tests {
     use rand_core::{OsRng, RngCore};
 
     const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
-    const BLOCKSTORE_BUSY_TIMEOUT: u64 = 1000;
 
     pub fn pick_from_vector<'a, A, R: RngCore>(rng: &mut R, v: &'a Vec<A>) -> &'a A {
         let s = rng.next_u32() as usize;
@@ -850,12 +875,10 @@ pub mod tests {
 
     #[test]
     pub fn test_put_get() {
-        let mut store = BlockStore::file(
-            "file:test_put_get?mode=memory&cache=shared",
-            BLOCKSTORE_BUSY_TIMEOUT,
-        )
-        .connect()
-        .unwrap();
+        let mut store = BlockStoreBuilder::file("file:test_put_get?mode=memory&cache=shared")
+            .build()
+            .connect()
+            .unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
 
         match store.put_tag("tip", &BlockId::zero()) {
@@ -887,12 +910,10 @@ pub mod tests {
     #[test]
     pub fn test_nth_ancestor() {
         let mut rng = OsRng;
-        let mut store = BlockStore::file(
-            "file:test_nth_ancestor?mode=memory&cache=shared",
-            BLOCKSTORE_BUSY_TIMEOUT,
-        )
-        .connect()
-        .unwrap();
+        let mut store = BlockStoreBuilder::file("file:test_nth_ancestor?mode=memory&cache=shared")
+            .build()
+            .connect()
+            .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
 
         let mut blocks_fetched = 0;
@@ -934,10 +955,9 @@ pub mod tests {
     #[test]
     fn simultaneous_read_write() {
         let mut rng = OsRng;
-        let store = BlockStore::file(
-            "file:test_simultaneous_read_write?mode=memory&cache=shared",
-            BLOCKSTORE_BUSY_TIMEOUT,
-        );
+        let store =
+            BlockStoreBuilder::file("file:simultaneous_read_write?mode=memory&cache=shared")
+                .build();
 
         let mut conn = store.connect::<Block>().unwrap();
 

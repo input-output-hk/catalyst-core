@@ -20,7 +20,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         path
     };
     let store = BlockStoreBuilder::file(path).build();
-    let mut conn = store.connect::<Block>().unwrap();
+    let mut conn = store.connect().unwrap();
     conn.put_block(&genesis_block).unwrap();
 
     let mut blocks = vec![genesis_block];

@@ -30,7 +30,7 @@ where
 {
     type Item = Result<<S::Ok as IntoProtobuf>::Message, Status>;
 
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<Self::Item>> {
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let maybe_item = ready!(self.inner().try_poll_next(cx));
         maybe_item
             .map(|item| match item {

@@ -9,31 +9,33 @@ use tonic::{Status, Streaming};
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-pub(super) struct Push<P, Si, T, R>
+#[must_use = "futures do nothing unless polled"]
+pub(super) struct Push<P, T, Si, R>
 where
     R: ResponseHandler,
 {
-    state: State<P, Si, T, R>,
+    state: State<P, T, Si, R>,
 }
 
-enum State<P, Si, T, R: ResponseHandler> {
+enum State<P, T, Si, R: ResponseHandler> {
     Forwarding {
-        forward: Forward<P, Si, T>,
+        forward: Forward<P, T, Si>,
         response_handler: Option<R>,
     },
     PendingResponse {
         future: R::ResponseFuture,
     },
+    Done,
 }
 
-struct Forward<P, Si, T> {
+struct Forward<P, T, Si> {
     stream: Streaming<P>,
     sink: Si,
     buffered: Option<T>,
-    closing: bool,
+    pending_close: bool,
 }
 
-impl<P, Si, T, R> Unpin for Push<P, Si, T, R>
+impl<P, T, Si, R> Unpin for Push<P, T, Si, R>
 where
     Si: Unpin,
     R: ResponseHandler,
@@ -41,16 +43,16 @@ where
 {
 }
 
-impl<P, Si, T> Unpin for Forward<P, Si, T> where Si: Unpin {}
+impl<P, T, Si> Unpin for Forward<P, T, Si> where Si: Unpin {}
 
-impl<P, Si, T> Forward<P, Si, T> {
+impl<P, T, Si> Forward<P, T, Si> {
     unsafe_pinned!(stream: Streaming<P>); // Streaming is Unpin, but we use the pinned projection for convenience
     unsafe_pinned!(sink: Si);
     unsafe_unpinned!(buffered: Option<T>);
-    unsafe_unpinned!(closing: bool);
+    unsafe_unpinned!(pending_close: bool);
 }
 
-impl<P, Si, T, R> Push<P, Si, T, R>
+impl<P, T, Si, R> Push<P, T, Si, R>
 where
     R: ResponseHandler,
 {
@@ -59,7 +61,7 @@ where
             stream,
             sink,
             buffered: None,
-            closing: false,
+            pending_close: false,
         };
         Push {
             state: State::Forwarding {
@@ -68,11 +70,24 @@ where
             },
         }
     }
+
+    pub fn begin_closing(mut self: Pin<&mut Self>) {
+        let state = unsafe { &mut self.as_mut().get_unchecked_mut().state };
+        match state {
+            State::Forwarding {
+                forward: Forward { pending_close, .. },
+                ..
+            } => {
+                *pending_close = true;
+            }
+            State::PendingResponse { .. } | State::Done => {}
+        }
+    }
 }
 
 const POLL_FAILURE: &'static str = "polled `Push` after completion";
 
-impl<P, Si, T, R> Future for Push<P, Si, T, R>
+impl<P, T, Si, R> Future for Push<P, T, Si, R>
 where
     T: FromProtobuf<P>,
     Si: Sink<T, Error = Error>,
@@ -89,7 +104,7 @@ where
     }
 }
 
-impl<P, Si, T, R> Push<P, Si, T, R>
+impl<P, T, Si, R> Push<P, T, Si, R>
 where
     T: FromProtobuf<P>,
     Si: Sink<T, Error = Error>,
@@ -119,13 +134,15 @@ where
             State::PendingResponse { future } => {
                 let future = unsafe { Pin::new_unchecked(future) };
                 let res = ready!(future.poll(cx)).map_err(error_into_grpc);
+                *state = State::Done;
                 Some(res).into()
             }
+            State::Done => panic!(POLL_FAILURE),
         }
     }
 }
 
-impl<P, Si, T> Forward<P, Si, T>
+impl<P, T, Si> Forward<P, T, Si>
 where
     T: FromProtobuf<P>,
     Si: Sink<T, Error = Error>,
@@ -134,12 +151,12 @@ where
         mut self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Option<Result<(), PushError>>> {
-        if self.as_ref().closing {
-            let res = ready!(self.sink().poll_close(cx)).map_err(PushError::Sink);
-            Some(res).into()
-        } else if let Some(item) = self.as_mut().buffered().take() {
+        if let Some(item) = self.as_mut().buffered().take() {
             ready!(self.poll_start_send(cx, item))?;
             None.into()
+        } else if self.as_ref().pending_close {
+            let res = ready!(self.sink().poll_close(cx)).map_err(PushError::Sink);
+            Some(res).into()
         } else {
             match self.as_mut().stream().poll_next(cx) {
                 Poll::Pending => {
@@ -152,7 +169,7 @@ where
                     None.into()
                 }
                 Poll::Ready(None) => {
-                    *self.closing() = true;
+                    *self.pending_close() = true;
                     None.into()
                 }
                 Poll::Ready(Some(Err(status))) => {

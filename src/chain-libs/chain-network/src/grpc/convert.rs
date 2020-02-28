@@ -1,5 +1,5 @@
 use super::proto;
-use crate::data::{gossip::Peer, Block, Fragment, Header};
+use crate::data::{gossip::Peer, Block, BlockEvent, Fragment, Header};
 use crate::error::{self, Error};
 use tonic::{Code, Status};
 
@@ -66,6 +66,10 @@ where
     I::Item: IntoProtobuf,
 {
     iter.into_iter().map(|item| item.into_message()).collect()
+}
+
+fn ids_into_repeated_bytes<Id: AsRef<[u8]>>(ids: Box<[Id]>) -> Vec<Vec<u8>> {
+    ids.iter().map(|id| id.as_ref().to_vec()).collect()
 }
 
 impl FromProtobuf<proto::Block> for Block {
@@ -147,4 +151,29 @@ fn serialize_ipv6(ip: &Ipv6Addr) -> (u64, u64) {
         out[i] = u64::from_be_bytes(v)
     }
     (out[0], out[1])
+}
+
+impl IntoProtobuf for BlockEvent {
+    type Message = proto::BlockEvent;
+
+    fn into_message(self) -> proto::BlockEvent {
+        use proto::block_event::Item;
+        let item = match self {
+            BlockEvent::Announce(header) => Item::Announce(header.into_message()),
+            BlockEvent::Solicit(block_ids) => {
+                let block_ids = proto::BlockIds {
+                    ids: ids_into_repeated_bytes(block_ids),
+                };
+                Item::Solicit(block_ids)
+            }
+            BlockEvent::Missing { from, to } => {
+                let request = proto::PullHeadersRequest {
+                    from: ids_into_repeated_bytes(from),
+                    to: to.as_bytes().into(),
+                };
+                Item::Missing(request)
+            }
+        };
+        proto::BlockEvent { item: Some(item) }
+    }
 }

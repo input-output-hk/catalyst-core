@@ -1,6 +1,12 @@
-use crate::error::Error;
+use crate::error::{self, Error};
 use async_trait::async_trait;
-use futures::future::{BoxFuture, Future};
+use futures::future::{Future, RemoteHandle};
+use futures::task::{Spawn, SpawnError, SpawnExt};
+
+use std::hint::unreachable_unchecked;
+use std::mem;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
 /// Error detailing the reason of a failure to process
 /// a client-streamed request.
@@ -37,7 +43,7 @@ pub trait ResponseHandler {
     type Response;
 
     /// Type of the future that produces the response to the push request.
-    type ResponseFuture: Future<Output = Result<Self::Response, Error>> + Send;
+    type ResponseFuture: Future<Output = Result<Self::Response, Error>> + Send + Sync;
 
     /// Observes the termination result of the request stream and returns
     /// a future used to produce the response.
@@ -84,22 +90,63 @@ pub trait ResponseHandlerBoxed {
 
 /// Adapter to make `ResponseHandlerBoxed` implementations usable with the
 /// `ResponseHandler` bound.
-pub struct AsyncAdapter<T>(T);
+pub struct AsyncAdapter<T, E> {
+    handler: T,
+    executor: E,
+}
 
-impl<T> AsyncAdapter<T> {
-    pub fn new(inner: T) -> Self {
-        AsyncAdapter(inner)
+impl<T, E> AsyncAdapter<T, E> {
+    pub fn new(handler: T, executor: E) -> Self {
+        AsyncAdapter { handler, executor }
     }
 }
 
-impl<T> ResponseHandler for AsyncAdapter<T>
+impl<T, E> ResponseHandler for AsyncAdapter<T, E>
 where
     T: ResponseHandlerBoxed + 'static,
+    T::Response: Send,
+    E: Spawn,
 {
     type Response = T::Response;
-    type ResponseFuture = BoxFuture<'static, Result<T::Response, Error>>;
+    type ResponseFuture = SpawnResponseFuture<T::Response>;
 
     fn end_push(self, push_result: Result<(), PushError>) -> Self::ResponseFuture {
-        self.0.end_push(push_result)
+        use SpawnResponseFuture::*;
+
+        let fut = self.handler.end_push(push_result);
+        match self.executor.spawn_with_handle(fut) {
+            Ok(handle) => Spawned(handle),
+            Err(e) => Failed(e),
+        }
+    }
+}
+
+pub enum SpawnResponseFuture<R> {
+    Spawned(RemoteHandle<Result<R, Error>>),
+    Failed(SpawnError),
+    Done,
+}
+
+impl<R> Future for SpawnResponseFuture<R>
+where
+    R: Send + 'static,
+{
+    type Output = Result<R, Error>;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<R, Error>> {
+        use SpawnResponseFuture::*;
+
+        let this = self.get_mut();
+        match this {
+            Spawned(handle) => Pin::new(handle).poll(cx),
+            Failed(_) => {
+                if let Failed(e) = mem::replace(this, Done) {
+                    Err(Error::new(error::Code::Internal, e)).into()
+                } else {
+                    unsafe { unreachable_unchecked() }
+                }
+            }
+            Done => panic!("future polled after completion"),
+        }
     }
 }

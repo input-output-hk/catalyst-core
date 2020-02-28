@@ -1,5 +1,5 @@
 /// A block header in the byte array representation.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Header(Box<[u8]>);
 
 impl Header {

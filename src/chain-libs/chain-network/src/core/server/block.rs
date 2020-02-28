@@ -1,5 +1,5 @@
 use super::push::ResponseHandler;
-use crate::data::{Block, BlockId, BlockIds, Header};
+use crate::data::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::error::Error;
 use async_trait::async_trait;
 use futures::prelude::*;
@@ -63,7 +63,7 @@ pub trait BlockService {
     /// `BlockEvent::Missing` solicitation.
     ///
     /// Returns a sink object and a push handler object.
-    fn push_headers(
+    async fn push_headers(
         &self,
     ) -> Result<(Self::PushHeadersSink, Self::PushHeadersResponseHandler), Error>;
 
@@ -75,7 +75,32 @@ pub trait BlockService {
     /// `BlockEvent::Solicit` solicitation.
     ///
     /// Returns a sink object and a push handler object.
-    fn upload_blocks(
+    async fn upload_blocks(
         &self,
     ) -> Result<(Self::UploadBlocksSink, Self::UploadBlocksResponseHandler), Error>;
+
+    type SubscriptionStream: Stream<Item = Result<BlockEvent, Error>> + Send + Sync;
+    type SubscriptionSink: Sink<Header, Error = Error> + Send + Sync;
+    type SubscriptionResponseHandler: ResponseHandler<Response = ()> + Send + Sync;
+
+    /// Provides objects to manage a bidirectional subscription
+    /// for announcing blocks.
+    ///
+    /// The implementation of the method returns a future resolving
+    /// to the triplet of:
+    ///
+    /// - an outbound asynchronous stream used by this node to send
+    ///   block announcements and solicitations,
+    /// - an asynchronous sink for inbound block announcements,
+    /// - a push handler to process completion of the inbound stream.
+    async fn subscription(
+        &self,
+    ) -> Result<
+        (
+            Self::SubscriptionStream,
+            Self::SubscriptionSink,
+            Self::SubscriptionResponseHandler,
+        ),
+        Error,
+    >;
 }

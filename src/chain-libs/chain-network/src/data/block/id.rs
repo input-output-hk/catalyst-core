@@ -17,6 +17,13 @@ impl BlockId {
     }
 }
 
+impl AsRef<[u8]> for BlockId {
+    #[inline]
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
 impl TryFrom<&[u8]> for BlockId {
     type Error = Error;
 
@@ -31,7 +38,7 @@ impl TryFrom<&[u8]> for BlockId {
     }
 }
 
-pub fn try_ids_from_iter<I>(iter: I) -> Result<Box<[BlockId]>, Error>
+pub fn try_ids_from_iter<I>(iter: I) -> Result<BlockIds, Error>
 where
     I: IntoIterator,
     I::Item: AsRef<[u8]>,

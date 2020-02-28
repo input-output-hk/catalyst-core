@@ -17,6 +17,13 @@ impl FragmentId {
     }
 }
 
+impl AsRef<[u8]> for FragmentId {
+    #[inline]
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
 impl TryFrom<&[u8]> for FragmentId {
     type Error = Error;
 

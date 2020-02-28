@@ -1,14 +1,15 @@
 mod request_stream;
 mod response_stream;
+mod subscription;
 
 use self::request_stream::Push;
 use self::response_stream::ResponseStream;
-use super::convert::{self, FromProtobuf};
+use self::subscription::Subscription;
+use super::convert;
 use super::proto;
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
 use crate::data::{block, fragment, BlockId, Header};
 use crate::PROTOCOL_VERSION;
-use futures::prelude::*;
 use futures::stream;
 use tonic::{Code, Status};
 
@@ -53,7 +54,7 @@ where
         let service = self.block_service()?;
         let res = proto::HandshakeResponse {
             version: PROTOCOL_VERSION,
-            block0: Vec::from(service.block0().as_bytes()),
+            block0: service.block0().as_bytes().into(),
         };
         Ok(tonic::Response::new(res))
     }
@@ -154,7 +155,7 @@ where
         &self,
         req: tonic::Request<tonic::Streaming<proto::Header>>,
     ) -> Result<tonic::Response<proto::PushHeadersResponse>, tonic::Status> {
-        let (sink, response_handler) = self.block_service()?.push_headers()?;
+        let (sink, response_handler) = self.block_service()?.push_headers().await?;
         let push = Push::new(req.into_inner(), sink, response_handler);
         push.await?;
         Ok(tonic::Response::new(proto::PushHeadersResponse {}))
@@ -164,19 +165,28 @@ where
         &self,
         req: tonic::Request<tonic::Streaming<proto::Block>>,
     ) -> Result<tonic::Response<proto::UploadBlocksResponse>, tonic::Status> {
-        let (sink, response_handler) = self.block_service()?.upload_blocks()?;
+        let (sink, response_handler) = self.block_service()?.upload_blocks().await?;
         let push = Push::new(req.into_inner(), sink, response_handler);
         push.await?;
         Ok(tonic::Response::new(proto::UploadBlocksResponse {}))
     }
 
-    type BlockSubscriptionStream = stream::Empty<Result<proto::BlockEvent, tonic::Status>>;
+    type BlockSubscriptionStream = Subscription<
+        <T::BlockService as BlockService>::SubscriptionStream,
+        proto::Header,
+        Header,
+        <T::BlockService as BlockService>::SubscriptionSink,
+        <T::BlockService as BlockService>::SubscriptionResponseHandler,
+    >;
 
     async fn block_subscription(
         &self,
-        request: tonic::Request<tonic::Streaming<proto::Header>>,
+        req: tonic::Request<tonic::Streaming<proto::Header>>,
     ) -> Result<tonic::Response<Self::BlockSubscriptionStream>, tonic::Status> {
-        unimplemented!()
+        let service = self.block_service()?;
+        let (stream, sink, response_handler) = service.subscription().await?;
+        let subscription = Subscription::new(stream, req.into_inner(), sink, response_handler);
+        Ok(tonic::Response::new(subscription))
     }
 
     type FragmentSubscriptionStream = stream::Empty<Result<proto::Fragment, tonic::Status>>;

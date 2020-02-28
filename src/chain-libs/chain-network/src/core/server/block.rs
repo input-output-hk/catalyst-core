@@ -1,3 +1,4 @@
+use super::push::ResponseHandler;
 use crate::data::{Block, BlockId, BlockIds, Header};
 use crate::error::Error;
 use async_trait::async_trait;
@@ -53,4 +54,28 @@ pub trait BlockService {
         &self,
         from: BlockIds,
     ) -> Result<Self::PullBlocksToTipStream, Error>;
+
+    type PushHeadersSink: Sink<Header, Error = Error> + Send;
+    type PushHeadersResponseHandler: ResponseHandler<Response = ()> + Send;
+
+    /// Called by the protocol implementation to handle a stream
+    /// of block headers sent by the peer in response to a
+    /// `BlockEvent::Missing` solicitation.
+    ///
+    /// Returns a sink object and a push handler object.
+    fn push_headers(
+        &self,
+    ) -> Result<(Self::PushHeadersSink, Self::PushHeadersResponseHandler), Error>;
+
+    type UploadBlocksSink: Sink<Block, Error = Error> + Send;
+    type UploadBlocksResponseHandler: ResponseHandler<Response = ()> + Send;
+
+    /// Called by the protocol implementation to handle a stream
+    /// of blocks sent by the peer in response to a
+    /// `BlockEvent::Solicit` solicitation.
+    ///
+    /// Returns a sink object and a push handler object.
+    fn upload_blocks(
+        &self,
+    ) -> Result<(Self::UploadBlocksSink, Self::UploadBlocksResponseHandler), Error>;
 }

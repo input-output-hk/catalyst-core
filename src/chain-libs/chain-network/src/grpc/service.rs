@@ -1,11 +1,14 @@
+mod request_stream;
 mod response_stream;
 
+use self::request_stream::Push;
 use self::response_stream::ResponseStream;
-use super::convert;
+use super::convert::{self, FromProtobuf};
 use super::proto;
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
-use crate::data::{block, fragment, BlockId};
+use crate::data::{block, fragment, BlockId, Header};
 use crate::PROTOCOL_VERSION;
+use futures::prelude::*;
 use futures::stream;
 use tonic::{Code, Status};
 
@@ -149,16 +152,22 @@ where
 
     async fn push_headers(
         &self,
-        request: tonic::Request<tonic::Streaming<proto::Header>>,
+        req: tonic::Request<tonic::Streaming<proto::Header>>,
     ) -> Result<tonic::Response<proto::PushHeadersResponse>, tonic::Status> {
-        unimplemented!()
+        let (sink, response_handler) = self.block_service()?.push_headers()?;
+        let push = Push::new(req.into_inner(), sink, response_handler);
+        push.await?;
+        Ok(tonic::Response::new(proto::PushHeadersResponse {}))
     }
 
     async fn upload_blocks(
         &self,
-        request: tonic::Request<tonic::Streaming<proto::Block>>,
+        req: tonic::Request<tonic::Streaming<proto::Block>>,
     ) -> Result<tonic::Response<proto::UploadBlocksResponse>, tonic::Status> {
-        unimplemented!()
+        let (sink, response_handler) = self.block_service()?.upload_blocks()?;
+        let push = Push::new(req.into_inner(), sink, response_handler);
+        push.await?;
+        Ok(tonic::Response::new(proto::UploadBlocksResponse {}))
     }
 
     type BlockSubscriptionStream = stream::Empty<Result<proto::BlockEvent, tonic::Status>>;

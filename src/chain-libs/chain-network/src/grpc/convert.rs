@@ -68,6 +68,12 @@ where
     iter.into_iter().map(|item| item.into_message()).collect()
 }
 
+impl FromProtobuf<proto::Block> for Block {
+    fn from_message(message: proto::Block) -> Result<Self, Error> {
+        Ok(Block::from_bytes(message.content))
+    }
+}
+
 impl IntoProtobuf for Block {
     type Message = proto::Block;
 
@@ -75,6 +81,12 @@ impl IntoProtobuf for Block {
         proto::Block {
             content: self.into(),
         }
+    }
+}
+
+impl FromProtobuf<proto::Header> for Header {
+    fn from_message(message: proto::Header) -> Result<Self, Error> {
+        Ok(Header::from_bytes(message.content))
     }
 }
 

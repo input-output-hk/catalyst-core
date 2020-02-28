@@ -18,8 +18,8 @@ impl<S: Unpin> Unpin for ResponseStream<S> {}
 impl<S> ResponseStream<S> {
     unsafe_pinned!(inner: S);
 
-    pub(super) fn new(stream: S) -> Self {
-        ResponseStream { inner: stream }
+    pub(super) fn new(inner: S) -> Self {
+        ResponseStream { inner }
     }
 }
 

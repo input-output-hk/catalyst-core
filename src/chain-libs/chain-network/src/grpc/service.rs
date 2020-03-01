@@ -183,13 +183,18 @@ where
         Ok(tonic::Response::new(res))
     }
 
-    type FragmentSubscriptionStream = stream::Empty<Result<proto::Fragment, tonic::Status>>;
+    type FragmentSubscriptionStream =
+        ResponseStream<<T::FragmentService as FragmentService>::SubscriptionStream>;
 
     async fn fragment_subscription(
         &self,
-        request: tonic::Request<tonic::Streaming<proto::Fragment>>,
+        req: tonic::Request<tonic::Streaming<proto::Fragment>>,
     ) -> Result<tonic::Response<Self::FragmentSubscriptionStream>, tonic::Status> {
-        unimplemented!()
+        let service = self.fragment_service()?;
+        let inbound = RequestStream::new(req.into_inner());
+        let outbound = service.subscription(Box::pin(inbound)).await?;
+        let res = ResponseStream::new(outbound);
+        Ok(tonic::Response::new(res))
     }
 
     type GossipSubscriptionStream = stream::Empty<Result<proto::Gossip, tonic::Status>>;

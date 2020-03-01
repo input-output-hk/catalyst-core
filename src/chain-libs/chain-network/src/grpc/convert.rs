@@ -104,6 +104,12 @@ impl IntoProtobuf for Header {
     }
 }
 
+impl FromProtobuf<proto::Fragment> for Fragment {
+    fn from_message(message: proto::Fragment) -> Result<Self, Error> {
+        Ok(Fragment::from_bytes(message.content))
+    }
+}
+
 impl IntoProtobuf for Fragment {
     type Message = proto::Fragment;
 

@@ -1,4 +1,4 @@
-use super::push::ResponseHandler;
+use super::PushStream;
 use crate::data::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::error::Error;
 use async_trait::async_trait;
@@ -55,52 +55,26 @@ pub trait BlockService {
         from: BlockIds,
     ) -> Result<Self::PullBlocksToTipStream, Error>;
 
-    type PushHeadersSink: Sink<Header, Error = Error> + Send;
-    type PushHeadersResponseHandler: ResponseHandler<Response = ()> + Send;
-
     /// Called by the protocol implementation to handle a stream
     /// of block headers sent by the peer in response to a
     /// `BlockEvent::Missing` solicitation.
-    ///
-    /// Returns a sink object and a push handler object.
-    async fn push_headers(
-        &self,
-    ) -> Result<(Self::PushHeadersSink, Self::PushHeadersResponseHandler), Error>;
-
-    type UploadBlocksSink: Sink<Block, Error = Error> + Send;
-    type UploadBlocksResponseHandler: ResponseHandler<Response = ()> + Send;
+    async fn push_headers(&self, stream: PushStream<Header>) -> Result<(), Error>;
 
     /// Called by the protocol implementation to handle a stream
     /// of blocks sent by the peer in response to a
     /// `BlockEvent::Solicit` solicitation.
-    ///
-    /// Returns a sink object and a push handler object.
-    async fn upload_blocks(
-        &self,
-    ) -> Result<(Self::UploadBlocksSink, Self::UploadBlocksResponseHandler), Error>;
+    async fn upload_blocks(&self, stream: PushStream<Block>) -> Result<(), Error>;
 
+    /// The type of outbound asynchronous streams returned by the
+    /// `subscription` method.
     type SubscriptionStream: Stream<Item = Result<BlockEvent, Error>> + Send + Sync;
-    type SubscriptionSink: Sink<Header, Error = Error> + Send + Sync;
-    type SubscriptionResponseHandler: ResponseHandler<Response = ()> + Send + Sync;
 
-    /// Provides objects to manage a bidirectional subscription
-    /// for announcing blocks.
-    ///
-    /// The implementation of the method returns a future resolving
-    /// to the triplet of:
-    ///
-    /// - an outbound asynchronous stream used by this node to send
-    ///   block announcements and solicitations,
-    /// - an asynchronous sink for inbound block announcements,
-    /// - a push handler to process completion of the inbound stream.
+    /// Called by the protocol implementation to establish a
+    /// bidirectional subscription stream.
+    /// The inbound stream is passed to the asynchronous method,
+    /// which resolves to the outbound stream.
     async fn subscription(
         &self,
-    ) -> Result<
-        (
-            Self::SubscriptionStream,
-            Self::SubscriptionSink,
-            Self::SubscriptionResponseHandler,
-        ),
-        Error,
-    >;
+        stream: PushStream<Header>,
+    ) -> Result<Self::SubscriptionStream, Error>;
 }

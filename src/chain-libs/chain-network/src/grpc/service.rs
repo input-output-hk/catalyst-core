@@ -1,8 +1,8 @@
-mod request_stream;
-mod response_stream;
+mod request;
+mod response;
 
-use self::request_stream::RequestStream;
-use self::response_stream::ResponseStream;
+use self::request::RequestStream;
+use self::response::ResponseStream;
 use super::convert;
 use super::proto;
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};

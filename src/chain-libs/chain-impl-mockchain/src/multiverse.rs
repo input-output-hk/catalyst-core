@@ -8,7 +8,7 @@
 
 use crate::chaintypes::{ChainLength, HeaderId};
 use crate::ledger::Ledger;
-use chain_storage::store::BlockStore;
+use chain_storage::BlockStoreConnection;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::hint::unreachable_unchecked;
 use std::sync::{Arc, Weak};
@@ -188,11 +188,11 @@ impl Multiverse<Ledger> {
     /// Get the chain state at block 'k' from memory if present;
     /// otherwise reconstruct it by reading blocks from storage and
     /// applying them to the nearest ancestor state that we do have.
-    pub fn get_from_storage<S: BlockStore<Block = crate::block::Block>>(
+    pub fn get_from_storage(
         &mut self,
         k: HeaderId,
-        store: &S,
-    ) -> Result<Ref<Ledger>, chain_storage::error::Error> {
+        store: &mut BlockStoreConnection<crate::block::Block>,
+    ) -> Result<Ref<Ledger>, chain_storage::Error> {
         if let Some(r) = self.get_ref(&k) {
             return Ok(r);
         }
@@ -263,8 +263,8 @@ mod test {
     };
 
     use chain_addr::Discrimination;
-    use chain_core::property::Block as _;
-    use chain_storage::store::BlockStore;
+    use chain_core::property::{Block as _, ChainLength as _};
+    use chain_storage::BlockStore;
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
     use std::mem;
     use std::time::SystemTime;
@@ -383,19 +383,19 @@ mod test {
         }
 
         let ref1 = multiverse
-            .get_from_storage(ids[1234].clone(), &store)
+            .get_from_storage(ids[1234].clone(), &mut store)
             .unwrap();
         let state = ref1.state();
         assert_eq!(state.chain_length().0, 1235);
 
         let ref2 = multiverse
-            .get_from_storage(ids[9999].clone(), &store)
+            .get_from_storage(ids[9999].clone(), &mut store)
             .unwrap();
         let state = ref2.state();
         assert_eq!(state.chain_length().0, 10000);
 
         let ref3 = multiverse
-            .get_from_storage(ids[9500].clone(), &store)
+            .get_from_storage(ids[9500].clone(), &mut store)
             .unwrap();
         let state = ref3.state();
         assert_eq!(state.chain_length().0, 9501);

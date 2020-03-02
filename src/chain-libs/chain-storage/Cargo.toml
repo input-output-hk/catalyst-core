@@ -7,10 +7,20 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 chain-core = { path = "../chain-core" }
-rand_core = { version = "0.5", optional = true }
+rusqlite = { version = "0.21.0", features = ["bundled", "unlock_notify"] }
+thiserror = "1.0"
 
-[dev-dependencies]
-rand_core = { version = "0.5" }
+criterion = { version = "0.3.0", optional = true }
+rand_core = { version = "0.5", features = ["getrandom"], optional = true }
+tempfile = { version = "3.1.0", optional = true }
 
 [features]
-test-api = ["rand_core"]
+with-bench = ["criterion", "tempfile", "rand_core"]
+
+[dev-dependencies]
+rand_core = { version = "0.5", features = ["getrandom"] }
+
+[[bench]]
+harness = false
+name = "storage"
+required-features = ["with-bench"]

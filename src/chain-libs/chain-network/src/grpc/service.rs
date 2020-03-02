@@ -8,7 +8,6 @@ use super::proto;
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
 use crate::data::{block, fragment, BlockId};
 use crate::PROTOCOL_VERSION;
-use futures::stream;
 use tonic::{Code, Status};
 
 use std::convert::TryFrom;
@@ -197,12 +196,17 @@ where
         Ok(tonic::Response::new(res))
     }
 
-    type GossipSubscriptionStream = stream::Empty<Result<proto::Gossip, tonic::Status>>;
+    type GossipSubscriptionStream =
+        ResponseStream<<T::GossipService as GossipService>::SubscriptionStream>;
 
     async fn gossip_subscription(
         &self,
-        request: tonic::Request<tonic::Streaming<proto::Gossip>>,
+        req: tonic::Request<tonic::Streaming<proto::Gossip>>,
     ) -> Result<tonic::Response<Self::GossipSubscriptionStream>, tonic::Status> {
-        unimplemented!()
+        let service = self.gossip_service()?;
+        let inbound = RequestStream::new(req.into_inner());
+        let outbound = service.subscription(Box::pin(inbound)).await?;
+        let res = ResponseStream::new(outbound);
+        Ok(tonic::Response::new(res))
     }
 }

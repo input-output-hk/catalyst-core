@@ -1,5 +1,8 @@
 use super::proto;
-use crate::data::{gossip::Peer, Block, BlockEvent, Fragment, Header};
+use crate::data::{
+    gossip::{Gossip, Node, Peer},
+    Block, BlockEvent, Fragment, Header,
+};
 use crate::error::{self, Error};
 use tonic::{Code, Status};
 
@@ -116,6 +119,35 @@ impl IntoProtobuf for Fragment {
     fn into_message(self) -> proto::Fragment {
         proto::Fragment {
             content: self.into(),
+        }
+    }
+}
+
+impl FromProtobuf<proto::Gossip> for Gossip {
+    fn from_message(message: proto::Gossip) -> Result<Self, Error> {
+        let gossip = Gossip {
+            nodes: message
+                .nodes
+                .into_iter()
+                .map(|v| Node::from_bytes(v))
+                .collect::<Vec<_>>()
+                .into(),
+        };
+        Ok(gossip)
+    }
+}
+
+impl IntoProtobuf for Gossip {
+    type Message = proto::Gossip;
+
+    fn into_message(self) -> proto::Gossip {
+        proto::Gossip {
+            nodes: self
+                .nodes
+                .into_vec()
+                .into_iter()
+                .map(|node| node.into_bytes())
+                .collect(),
         }
     }
 }

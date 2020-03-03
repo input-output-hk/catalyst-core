@@ -71,7 +71,7 @@ where
         let service = self.gossip_service()?;
         let peers = service.peers(req.into_inner().limit).await?;
         let res = proto::PeersResponse {
-            peers: convert::into_protobuf_repeated(&*peers),
+            peers: convert::into_protobuf_repeated(peers.into_vec()),
         };
         Ok(tonic::Response::new(res))
     }

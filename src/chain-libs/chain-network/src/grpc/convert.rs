@@ -220,7 +220,7 @@ fn unserialize_ipv6(high: u64, low: u64) -> Ipv6Addr {
     )
 }
 
-impl IntoProtobuf for &Peer {
+impl IntoProtobuf for Peer {
     type Message = proto::Peer;
 
     fn into_message(self) -> proto::Peer {

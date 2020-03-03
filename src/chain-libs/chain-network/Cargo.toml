@@ -11,7 +11,19 @@ futures = "0.3"
 pin-project = "0.4"
 prost = "0.6"
 thiserror = "1.0"
-tonic = "0.1"
 
-[build-dependencies]
-tonic-build = "0.1"
+[dependencies.tonic]
+version = "0.1"
+default-features = false
+features = ["codegen", "transport"]
+# The "transport" feature has to be enabled unconditionally
+# due to https://github.com/hyperium/tonic/issues/281
+
+[build-dependencies.tonic-build]
+version = "0.1"
+default-features = false
+features = ["rustfmt"]
+
+[features]
+default = ["transport"]
+transport = ["tonic-build/transport"]

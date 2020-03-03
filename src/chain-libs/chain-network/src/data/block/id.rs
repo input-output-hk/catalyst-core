@@ -56,3 +56,10 @@ where
         .collect::<Result<Vec<_>, _>>()?;
     Ok(ids.into())
 }
+
+pub fn ids_into_repeated_bytes(ids: BlockIds) -> Vec<Vec<u8>> {
+    ids.into_vec()
+        .into_iter()
+        .map(|id| id.as_bytes().to_vec())
+        .collect()
+}

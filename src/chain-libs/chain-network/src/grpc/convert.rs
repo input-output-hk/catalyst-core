@@ -6,7 +6,7 @@ use crate::data::{
 use crate::error::{self, Error};
 use tonic::{Code, Status};
 
-use std::net::{Ipv6Addr, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 
 pub(super) fn error_into_grpc(err: Error) -> Status {
     use error::Code::*;
@@ -54,6 +54,13 @@ impl From<Error> for Status {
     }
 }
 
+impl From<Status> for Error {
+    #[inline]
+    fn from(status: Status) -> Self {
+        error_from_grpc(status)
+    }
+}
+
 pub trait FromProtobuf<R>: Sized {
     fn from_message(message: R) -> Result<Self, Error>;
 }
@@ -61,6 +68,13 @@ pub trait FromProtobuf<R>: Sized {
 pub trait IntoProtobuf {
     type Message;
     fn into_message(self) -> Self::Message;
+}
+
+pub(super) fn from_protobuf_repeated<P, T>(message: Vec<P>) -> Result<Box<[T]>, Error>
+where
+    T: FromProtobuf<P>,
+{
+    message.into_iter().map(T::from_message).collect()
 }
 
 pub(super) fn into_protobuf_repeated<I>(iter: I) -> Vec<<I::Item as IntoProtobuf>::Message>
@@ -150,6 +164,60 @@ impl IntoProtobuf for Gossip {
                 .collect(),
         }
     }
+}
+
+impl FromProtobuf<proto::Peer> for Peer {
+    fn from_message(message: proto::Peer) -> Result<Self, Error> {
+        use proto::peer;
+
+        match message.peer {
+            Some(peer::Peer::V4(pv4)) => {
+                let port = pv4.port as u16;
+                let segments = pv4.ip.to_be_bytes();
+                let ipv4 = Ipv4Addr::new(segments[0], segments[1], segments[2], segments[3]);
+                let addr = SocketAddr::new(IpAddr::V4(ipv4), port);
+                Ok(addr.into())
+            }
+            Some(peer::Peer::V6(pv6)) => {
+                let port = pv6.port as u16;
+                let ipv6 = unserialize_ipv6(pv6.ip_high, pv6.ip_low);
+                let addr = SocketAddr::new(IpAddr::V6(ipv6), port);
+                Ok(addr.into())
+            }
+            None => Err(Error::new(
+                error::Code::InvalidArgument,
+                "invalid Peer payload, one of the fields is required",
+            )),
+        }
+    }
+}
+
+fn unserialize_ipv6(high: u64, low: u64) -> Ipv6Addr {
+    let h = high.to_be_bytes();
+    let l = low.to_be_bytes();
+    fn from_be_bytes(h: u8, l: u8) -> u16 {
+        u16::from_be_bytes([h, l])
+    }
+    let segments: [u16; 8] = [
+        from_be_bytes(h[0], h[1]),
+        from_be_bytes(h[2], h[3]),
+        from_be_bytes(h[4], h[5]),
+        from_be_bytes(h[6], h[7]),
+        from_be_bytes(l[0], l[1]),
+        from_be_bytes(l[2], l[3]),
+        from_be_bytes(l[4], l[5]),
+        from_be_bytes(l[6], l[7]),
+    ];
+    std::net::Ipv6Addr::new(
+        segments[0],
+        segments[1],
+        segments[2],
+        segments[3],
+        segments[4],
+        segments[5],
+        segments[6],
+        segments[7],
+    )
 }
 
 impl IntoProtobuf for &Peer {

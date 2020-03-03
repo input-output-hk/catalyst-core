@@ -10,4 +10,4 @@ pub use gossip::GossipService;
 
 pub use node::Node;
 
-pub use push::{PushError, PushStream};
+pub use push::PushStream;

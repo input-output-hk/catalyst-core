@@ -1,12 +1,29 @@
-use crate::data::BlockId;
+use crate::data::{Block, BlockId, BlockIds, Header};
 use crate::error::Error;
 use async_trait::async_trait;
+use futures::prelude::*;
 
-/// Interface for the blockchain node service responsible for
-/// providing access to blocks.
+/// Client-side interface for the remote blockchain node service
+/// responsible for providing access to blocks.
 #[async_trait]
 pub trait BlockService {
+    /// Requests the identifier of the genesis block from the service node.
+    ///
+    /// The implementation can also perform version information checks to
+    /// ascertain that the client use compatible protocol versions.
+    ///
+    /// This method should be called first after establishing the client
+    /// connection.
     async fn handshake(&mut self) -> Result<BlockId, HandshakeError>;
+
+    /// Requests the header of the tip block in the node's chain.
+    async fn tip(&mut self) -> Result<Header, Error>;
+
+    /// The type of an asynchronous stream that provides blocks in
+    /// response to method `get_blocks`.
+    type GetBlocksStream: Stream<Item = Result<Block, Error>>;
+
+    async fn get_blocks(&mut self, ids: BlockIds) -> Result<Self::GetBlocksStream, Error>;
 }
 
 /// An error that the future returned by `BlockService::handshake` can

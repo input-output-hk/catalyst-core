@@ -9,18 +9,18 @@ use std::task::{Context, Poll};
 
 #[must_use = "streams do nothing unless polled"]
 #[pin_project]
-pub struct ResponseStream<S> {
+pub struct OutboundStream<S> {
     #[pin]
     inner: S,
 }
 
-impl<S> ResponseStream<S> {
-    pub(super) fn new(inner: S) -> Self {
-        ResponseStream { inner }
+impl<S> OutboundStream<S> {
+    pub(crate) fn new(inner: S) -> Self {
+        OutboundStream { inner }
     }
 }
 
-impl<S> Stream for ResponseStream<S>
+impl<S> Stream for OutboundStream<S>
 where
     S: TryStream<Error = Error>,
     S::Ok: IntoProtobuf,

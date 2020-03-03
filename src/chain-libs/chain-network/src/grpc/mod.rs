@@ -7,3 +7,4 @@ pub mod client;
 pub mod service;
 
 mod convert;
+mod streaming;

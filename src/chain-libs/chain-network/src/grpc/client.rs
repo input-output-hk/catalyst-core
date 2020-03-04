@@ -1,11 +1,12 @@
 use super::convert;
 use super::proto;
-use super::streaming::InboundStream;
+use super::streaming::{InboundStream, OutboundStream};
 use crate::core::client::{BlockService, GossipService, HandshakeError};
-use crate::data::{block, gossip::Peers, Block, BlockId, BlockIds, Header};
+use crate::data::{gossip::Peers, Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::error::Error;
 use crate::PROTOCOL_VERSION;
 use async_trait::async_trait;
+use futures::prelude::*;
 use tonic::body::{Body, BoxBody};
 use tonic::client::GrpcService;
 use tonic::codegen::{HttpBody, StdError};
@@ -79,10 +80,24 @@ where
 
     async fn get_blocks(&mut self, ids: BlockIds) -> Result<Self::GetBlocksStream, Error> {
         let ids = proto::BlockIds {
-            ids: block::ids_into_repeated_bytes(ids),
+            ids: convert::ids_into_repeated_bytes(ids),
         };
         let stream = self.inner.get_blocks(ids).await?.into_inner();
         Ok(InboundStream::new(stream))
+    }
+
+    type BlockSubscriptionStream = InboundStream<proto::BlockEvent, BlockEvent>;
+
+    async fn block_subscription<S>(
+        &mut self,
+        outbound: S,
+    ) -> Result<Self::BlockSubscriptionStream, Error>
+    where
+        S: Stream<Item = Header> + Send + Sync + 'static,
+    {
+        let outbound = OutboundStream::new(outbound);
+        let inbound = self.inner.block_subscription(outbound).await?.into_inner();
+        Ok(InboundStream::new(inbound))
     }
 }
 

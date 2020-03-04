@@ -1,4 +1,4 @@
-use crate::data::{Block, BlockId, BlockIds, Header};
+use crate::data::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::error::Error;
 use async_trait::async_trait;
 use futures::prelude::*;
@@ -24,6 +24,20 @@ pub trait BlockService {
     type GetBlocksStream: Stream<Item = Result<Block, Error>>;
 
     async fn get_blocks(&mut self, ids: BlockIds) -> Result<Self::GetBlocksStream, Error>;
+
+    type BlockSubscriptionStream: Stream<Item = Result<BlockEvent, Error>>;
+
+    /// Establishes a bidirectional stream of notifications for blocks
+    /// created or accepted by either of the peers.
+    ///
+    /// The client can use the stream that the returned future resolves to
+    /// as a long-lived subscription handle.
+    async fn block_subscription<S>(
+        &mut self,
+        outbound: S,
+    ) -> Result<Self::BlockSubscriptionStream, Error>
+    where
+        S: Stream<Item = Header> + Send + Sync + 'static;
 }
 
 /// An error that the future returned by `BlockService::handshake` can

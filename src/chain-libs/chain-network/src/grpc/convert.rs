@@ -1,11 +1,13 @@
 use super::proto;
 use crate::data::{
+    block::{self, Block, BlockEvent, BlockId, Header},
+    fragment::Fragment,
     gossip::{Gossip, Node, Peer},
-    Block, BlockEvent, Fragment, Header,
 };
 use crate::error::{self, Error};
 use tonic::{Code, Status};
 
+use std::convert::TryFrom;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 
 pub(super) fn error_into_grpc(err: Error) -> Status {
@@ -85,7 +87,7 @@ where
     iter.into_iter().map(|item| item.into_message()).collect()
 }
 
-fn ids_into_repeated_bytes<Id: AsRef<[u8]>>(ids: Box<[Id]>) -> Vec<Vec<u8>> {
+pub(super) fn ids_into_repeated_bytes<Id: AsRef<[u8]>>(ids: Box<[Id]>) -> Vec<Vec<u8>> {
     ids.iter().map(|id| id.as_ref().to_vec()).collect()
 }
 
@@ -257,6 +259,32 @@ fn serialize_ipv6(ip: &Ipv6Addr) -> (u64, u64) {
         out[i] = u64::from_be_bytes(v)
     }
     (out[0], out[1])
+}
+
+impl FromProtobuf<proto::BlockEvent> for BlockEvent {
+    fn from_message(msg: proto::BlockEvent) -> Result<Self, Error> {
+        use proto::block_event::Item::*;
+
+        match msg.item {
+            Some(Announce(header)) => {
+                let header = Header::from_message(header)?;
+                Ok(BlockEvent::Announce(header))
+            }
+            Some(Solicit(block_ids)) => {
+                let block_ids = block::try_ids_from_iter(block_ids.ids)?;
+                Ok(BlockEvent::Solicit(block_ids))
+            }
+            Some(Missing(pull_req)) => {
+                let from = block::try_ids_from_iter(pull_req.from)?;
+                let to = BlockId::try_from(&pull_req.to[..])?;
+                Ok(BlockEvent::Missing { from, to })
+            }
+            None => Err(Error::new(
+                error::Code::InvalidArgument,
+                "one of the BlockEvent variants must be present",
+            )),
+        }
+    }
 }
 
 impl IntoProtobuf for BlockEvent {

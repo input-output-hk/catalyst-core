@@ -1,6 +1,6 @@
 use super::convert;
 use super::proto;
-use super::streaming::{InboundStream, OutboundStream};
+use super::streaming::{InboundStream, OutboundTryStream};
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
 use crate::data::{block, fragment, BlockId};
 use crate::PROTOCOL_VERSION;
@@ -76,7 +76,7 @@ where
         Ok(tonic::Response::new(res))
     }
 
-    type GetBlocksStream = OutboundStream<<T::BlockService as BlockService>::GetBlocksStream>;
+    type GetBlocksStream = OutboundTryStream<<T::BlockService as BlockService>::GetBlocksStream>;
 
     async fn get_blocks(
         &self,
@@ -85,10 +85,10 @@ where
         let service = self.block_service()?;
         let ids = block::try_ids_from_iter(req.into_inner().ids)?;
         let stream = service.get_blocks(ids).await?;
-        Ok(tonic::Response::new(OutboundStream::new(stream)))
+        Ok(tonic::Response::new(OutboundTryStream::new(stream)))
     }
 
-    type GetHeadersStream = OutboundStream<<T::BlockService as BlockService>::GetHeadersStream>;
+    type GetHeadersStream = OutboundTryStream<<T::BlockService as BlockService>::GetHeadersStream>;
 
     async fn get_headers(
         &self,
@@ -97,11 +97,11 @@ where
         let service = self.block_service()?;
         let ids = block::try_ids_from_iter(req.into_inner().ids)?;
         let stream = service.get_headers(ids).await?;
-        Ok(tonic::Response::new(OutboundStream::new(stream)))
+        Ok(tonic::Response::new(OutboundTryStream::new(stream)))
     }
 
     type GetFragmentsStream =
-        OutboundStream<<T::FragmentService as FragmentService>::GetFragmentsStream>;
+        OutboundTryStream<<T::FragmentService as FragmentService>::GetFragmentsStream>;
 
     async fn get_fragments(
         &self,
@@ -110,10 +110,11 @@ where
         let service = self.fragment_service()?;
         let ids = fragment::try_ids_from_iter(req.into_inner().ids)?;
         let stream = service.get_fragments(ids).await?;
-        Ok(tonic::Response::new(OutboundStream::new(stream)))
+        Ok(tonic::Response::new(OutboundTryStream::new(stream)))
     }
 
-    type PullHeadersStream = OutboundStream<<T::BlockService as BlockService>::PullHeadersStream>;
+    type PullHeadersStream =
+        OutboundTryStream<<T::BlockService as BlockService>::PullHeadersStream>;
 
     async fn pull_headers(
         &self,
@@ -128,11 +129,11 @@ where
             )
         };
         let stream = service.pull_headers(from, to).await?;
-        Ok(tonic::Response::new(OutboundStream::new(stream)))
+        Ok(tonic::Response::new(OutboundTryStream::new(stream)))
     }
 
     type PullBlocksToTipStream =
-        OutboundStream<<T::BlockService as BlockService>::PullBlocksToTipStream>;
+        OutboundTryStream<<T::BlockService as BlockService>::PullBlocksToTipStream>;
 
     async fn pull_blocks_to_tip(
         &self,
@@ -141,7 +142,7 @@ where
         let service = self.block_service()?;
         let from = block::try_ids_from_iter(req.into_inner().from)?;
         let stream = service.pull_blocks_to_tip(from).await?;
-        Ok(tonic::Response::new(OutboundStream::new(stream)))
+        Ok(tonic::Response::new(OutboundTryStream::new(stream)))
     }
 
     async fn push_headers(
@@ -165,7 +166,7 @@ where
     }
 
     type BlockSubscriptionStream =
-        OutboundStream<<T::BlockService as BlockService>::SubscriptionStream>;
+        OutboundTryStream<<T::BlockService as BlockService>::SubscriptionStream>;
 
     async fn block_subscription(
         &self,
@@ -174,12 +175,12 @@ where
         let service = self.block_service()?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.block_subscription(Box::pin(inbound)).await?;
-        let res = OutboundStream::new(outbound);
+        let res = OutboundTryStream::new(outbound);
         Ok(tonic::Response::new(res))
     }
 
     type FragmentSubscriptionStream =
-        OutboundStream<<T::FragmentService as FragmentService>::SubscriptionStream>;
+        OutboundTryStream<<T::FragmentService as FragmentService>::SubscriptionStream>;
 
     async fn fragment_subscription(
         &self,
@@ -188,12 +189,12 @@ where
         let service = self.fragment_service()?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.fragment_subscription(Box::pin(inbound)).await?;
-        let res = OutboundStream::new(outbound);
+        let res = OutboundTryStream::new(outbound);
         Ok(tonic::Response::new(res))
     }
 
     type GossipSubscriptionStream =
-        OutboundStream<<T::GossipService as GossipService>::SubscriptionStream>;
+        OutboundTryStream<<T::GossipService as GossipService>::SubscriptionStream>;
 
     async fn gossip_subscription(
         &self,
@@ -202,7 +203,7 @@ where
         let service = self.gossip_service()?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.gossip_subscription(Box::pin(inbound)).await?;
-        let res = OutboundStream::new(outbound);
+        let res = OutboundTryStream::new(outbound);
         Ok(tonic::Response::new(res))
     }
 }

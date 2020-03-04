@@ -21,11 +21,11 @@ pub trait BlockService {
 
     /// The type of an asynchronous stream that provides blocks in
     /// response to method `get_blocks`.
-    type GetBlocksStream: Stream<Item = Result<Block, Error>>;
+    type GetBlocksStream: Stream<Item = Result<Block, Error>> + Send;
 
     async fn get_blocks(&mut self, ids: BlockIds) -> Result<Self::GetBlocksStream, Error>;
 
-    type BlockSubscriptionStream: Stream<Item = Result<BlockEvent, Error>>;
+    type BlockSubscriptionStream: Stream<Item = Result<BlockEvent, Error>> + Send;
 
     /// Establishes a bidirectional stream of notifications for blocks
     /// created or accepted by either of the peers.

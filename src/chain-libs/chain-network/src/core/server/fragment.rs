@@ -24,7 +24,7 @@ pub trait FragmentService {
     /// bidirectional subscription stream.
     /// The inbound stream is passed to the asynchronous method,
     /// which resolves to the outbound stream.
-    async fn subscription(
+    async fn fragment_subscription(
         &self,
         stream: PushStream<Fragment>,
     ) -> Result<Self::SubscriptionStream, Error>;

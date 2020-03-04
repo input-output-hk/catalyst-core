@@ -73,7 +73,7 @@ pub trait BlockService {
     /// bidirectional subscription stream.
     /// The inbound stream is passed to the asynchronous method,
     /// which resolves to the outbound stream.
-    async fn subscription(
+    async fn block_subscription(
         &self,
         stream: PushStream<Header>,
     ) -> Result<Self::SubscriptionStream, Error>;

@@ -18,7 +18,7 @@ pub trait GossipService {
     /// bidirectional subscription stream.
     /// The inbound stream is passed to the asynchronous method,
     /// which resolves to the outbound stream.
-    async fn subscription(
+    async fn gossip_subscription(
         &self,
         stream: PushStream<Gossip>,
     ) -> Result<Self::SubscriptionStream, Error>;

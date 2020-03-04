@@ -173,7 +173,7 @@ where
     ) -> Result<tonic::Response<Self::BlockSubscriptionStream>, tonic::Status> {
         let service = self.block_service()?;
         let inbound = InboundStream::new(req.into_inner());
-        let outbound = service.subscription(Box::pin(inbound)).await?;
+        let outbound = service.block_subscription(Box::pin(inbound)).await?;
         let res = OutboundStream::new(outbound);
         Ok(tonic::Response::new(res))
     }
@@ -187,7 +187,7 @@ where
     ) -> Result<tonic::Response<Self::FragmentSubscriptionStream>, tonic::Status> {
         let service = self.fragment_service()?;
         let inbound = InboundStream::new(req.into_inner());
-        let outbound = service.subscription(Box::pin(inbound)).await?;
+        let outbound = service.fragment_subscription(Box::pin(inbound)).await?;
         let res = OutboundStream::new(outbound);
         Ok(tonic::Response::new(res))
     }
@@ -201,7 +201,7 @@ where
     ) -> Result<tonic::Response<Self::GossipSubscriptionStream>, tonic::Status> {
         let service = self.gossip_service()?;
         let inbound = InboundStream::new(req.into_inner());
-        let outbound = service.subscription(Box::pin(inbound)).await?;
+        let outbound = service.gossip_subscription(Box::pin(inbound)).await?;
         let res = OutboundStream::new(outbound);
         Ok(tonic::Response::new(res))
     }

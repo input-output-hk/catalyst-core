@@ -391,13 +391,23 @@ impl<'txmanager, 'storage> InsertTransaction<'txmanager, 'storage> {
             key_buffer_size,
         }
     }
-}
 
-impl<'storage> Deref for ExtendablePages<'storage> {
-    type Target = Pages;
-
-    fn deref(&self) -> &Self::Target {
-        self.0.as_ref().unwrap()
+    /// create a staging area for a single insert
+    pub(crate) fn delete_backtrack<'me, K>(
+        &'me mut self,
+    ) -> super::DeleteBacktrack<'me, 'txmanager, 'storage, K>
+    where
+        K: Key,
+    {
+        let key_buffer_size = self.key_buffer_size.clone();
+        super::DeleteBacktrack {
+            tx: self,
+            backtrack: vec![],
+            parent_info: vec![],
+            new_root: None,
+            phantom_key: PhantomData,
+            key_buffer_size,
+        }
     }
 }
 

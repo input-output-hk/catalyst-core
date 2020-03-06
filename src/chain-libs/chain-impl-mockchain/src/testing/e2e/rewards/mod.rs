@@ -134,6 +134,62 @@ pub fn rewards_owners_split() {
 }
 
 #[test]
+pub fn rewards_owners_uneven_split() {
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_rewards(Value(100))
+                .with_treasury(Value(0))
+                .with_rewards_params(RewardParams::Linear {
+                    constant: 20,
+                    ratio: Ratio {
+                        numerator: 1,
+                        denominator: NonZeroU64::new(1).unwrap(),
+                    },
+                    epoch_start: 0,
+                    epoch_rate: NonZeroU32::new(1).unwrap(),
+                }),
+        )
+        .with_initials(vec![
+            wallet("Alice").with(1_000).owns("stake_pool"),
+            wallet("Bob").with(1_000).owns("stake_pool"),
+            wallet("Clarice").with(1_000).owns("stake_pool"),
+        ])
+        .with_stake_pools(vec![stake_pool("stake_pool").tax_ratio(1, 1)])
+        .build()
+        .unwrap();
+
+    let stake_pool = controller.stake_pool("stake_pool").unwrap();
+    let alice = controller.wallet("Alice").unwrap();
+    let bob = controller.wallet("Bob").unwrap();
+    let clarice = controller.wallet("Clarice").unwrap();
+
+    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    ledger.distribute_rewards().unwrap();
+
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    ledger_verifier.info("tets after reward distribution splitted into 3 accounts");
+
+    ledger_verifier
+        .pots()
+        .has_fee_equals_to(&Value::zero())
+        .and()
+        .has_treasury_equals_to(&Value::zero())
+        .and()
+        .has_remaining_rewards_equals_to(&Value(81));
+
+    ledger_verifier
+        .account(alice.as_account_data())
+        .has_value(&Value(1007));
+    ledger_verifier
+        .account(bob.as_account_data())
+        .has_value(&Value(1006));
+    ledger_verifier
+        .account(clarice.as_account_data())
+        .has_value(&Value(1006));
+}
+
+#[test]
 pub fn rewards_single_owner() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(

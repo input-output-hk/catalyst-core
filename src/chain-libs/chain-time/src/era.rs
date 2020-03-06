@@ -1,7 +1,10 @@
 //! Split timeframe in eras
 
 use crate::timeframe::Slot;
+use chain_ser::deser::Serialize;
 use std::fmt;
+use std::io::Error;
+use chain_ser::packer::Codec;
 
 /// Epoch number
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -31,6 +34,18 @@ pub struct TimeEra {
     epoch_start: Epoch,
     slot_start: Slot,
     slots_per_epoch: u32,
+}
+
+impl Serialize for TimeEra {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u32(self.epoch_start.0)?;
+        codec.put_u64(self.slot_start.0)?;
+        codec.put_u32(self.slots_per_epoch)?;
+        Ok(())
+    }
 }
 
 impl TimeEra {

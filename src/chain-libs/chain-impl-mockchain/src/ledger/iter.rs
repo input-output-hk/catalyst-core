@@ -6,8 +6,10 @@ use crate::header::{BlockDate, ChainLength};
 use crate::stake::PoolsState;
 use crate::{account, legacy, multisig, setting, update, utxo};
 use chain_addr::Address;
+use chain_ser::deser::Serialize;
 use chain_time::TimeEra;
 use std::sync::Arc;
+use chain_ser::packer::Codec;
 
 pub enum Entry<'a> {
     Globals(Globals),
@@ -48,6 +50,19 @@ pub struct Globals {
     pub chain_length: ChainLength,
     pub static_params: LedgerStaticParameters,
     pub era: TimeEra,
+}
+
+impl Serialize for Globals {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        self.date.serialize(&mut codec)?;
+        codec.put_u32(self.chain_length.0)?;
+        self.static_params.serialize(&mut codec)?;
+        self.era.serialize(&mut codec)?;
+        Ok(())
+    }
 }
 
 enum IterState<'a> {

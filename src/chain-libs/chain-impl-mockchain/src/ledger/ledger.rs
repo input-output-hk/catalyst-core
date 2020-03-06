@@ -19,12 +19,14 @@ use crate::value::*;
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
+use chain_ser::deser::Serialize;
 use chain_time::Epoch as TimeEpoch;
 use chain_time::{SlotDuration, TimeEra, TimeFrame, Timeline};
 use std::mem::swap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use thiserror::Error;
+use chain_ser::packer::Codec;
 
 // static parameters, effectively this is constant in the parameter of the blockchain
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -33,6 +35,19 @@ pub struct LedgerStaticParameters {
     pub block0_start_time: config::Block0Date,
     pub discrimination: Discrimination,
     pub kes_update_speed: u32,
+}
+
+impl Serialize for LedgerStaticParameters {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        self.block0_initial_hash.serialize(&mut codec)?;
+        codec.put_u64(self.block0_start_time.0)?;
+        self.discrimination.serialize(&mut codec)?;
+        codec.put_u32(self.kes_update_speed)?;
+        Ok(())
+    }
 }
 
 // parameters to validate ledger

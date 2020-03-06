@@ -42,6 +42,7 @@ use chain_crypto::{Ed25519, PublicKey, PublicKeyError};
 
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property::{self, Serialize as PropertySerialize};
+use chain_core::packer::Codec;
 
 cfg_if! {
    if #[cfg(test)] {
@@ -58,6 +59,23 @@ cfg_if! {
 pub enum Discrimination {
     Production,
     Test,
+}
+
+impl PropertySerialize for Discrimination {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        match self {
+            Discrimination::Production => {
+                codec.put_u8(0);
+            }
+            Discrimination::Test => {
+                codec.put_u8(1);
+            }
+        };
+        Ok(())
+    }
 }
 
 /// Kind of an address, which include the possible variation of scheme

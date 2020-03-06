@@ -3,6 +3,7 @@ mod info;
 pub mod iter;
 pub mod ledger;
 mod pots;
+pub mod recovery;
 mod reward_info;
 
 pub use iter::*;

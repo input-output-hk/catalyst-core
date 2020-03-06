@@ -2,7 +2,10 @@ use chain_core::property;
 use chain_time::era::EpochPosition;
 use chain_time::era::TimeEra;
 
+use chain_ser::deser::Serialize;
+use std::io::Error;
 use std::{error, fmt, num::ParseIntError, str};
+use chain_ser::packer::Codec;
 
 /// Non unique identifier of the transaction position in the
 /// blockchain. There may be many transactions related to the same
@@ -115,6 +118,17 @@ impl str::FromStr for BlockDate {
         let epoch = str::parse::<Epoch>(ep).map_err(BlockDateParseError::BadEpochId)?;
         let slot_id = str::parse::<SlotId>(sp).map_err(BlockDateParseError::BadSlotId)?;
         Ok(BlockDate { epoch, slot_id })
+    }
+}
+
+impl property::Serialize for BlockDate {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self,  writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u32(self.epoch)?;
+        codec.put_u32(self.slot_id)?;
+        Ok(())
     }
 }
 

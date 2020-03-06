@@ -87,8 +87,12 @@ where
     iter.into_iter().map(|item| item.into_message()).collect()
 }
 
-pub(super) fn ids_into_repeated_bytes<Id: AsRef<[u8]>>(ids: Box<[Id]>) -> Vec<Vec<u8>> {
-    ids.iter().map(|id| id.as_ref().to_vec()).collect()
+pub(super) fn ids_into_repeated_bytes<I>(ids: I) -> Vec<Vec<u8>>
+where
+    I: IntoIterator,
+    I::Item: AsRef<[u8]>,
+{
+    ids.into_iter().map(|id| id.as_ref().to_vec()).collect()
 }
 
 impl FromProtobuf<proto::Block> for Block {
@@ -296,13 +300,13 @@ impl IntoProtobuf for BlockEvent {
             BlockEvent::Announce(header) => Item::Announce(header.into_message()),
             BlockEvent::Solicit(block_ids) => {
                 let block_ids = proto::BlockIds {
-                    ids: ids_into_repeated_bytes(block_ids),
+                    ids: ids_into_repeated_bytes(block_ids.iter()),
                 };
                 Item::Solicit(block_ids)
             }
             BlockEvent::Missing { from, to } => {
                 let request = proto::PullHeadersRequest {
-                    from: ids_into_repeated_bytes(from),
+                    from: ids_into_repeated_bytes(from.iter()),
                     to: to.as_bytes().into(),
                 };
                 Item::Missing(request)

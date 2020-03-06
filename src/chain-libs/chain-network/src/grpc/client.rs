@@ -1,11 +1,9 @@
 use super::convert;
 use super::proto;
 use super::streaming::{InboundStream, OutboundStream};
-use crate::core::client::{BlockService, GossipService, HandshakeError};
 use crate::data::{gossip::Peers, Block, BlockEvent, BlockId, BlockIds, Header};
-use crate::error::Error;
+use crate::error::{Error, HandshakeError};
 use crate::PROTOCOL_VERSION;
-use async_trait::async_trait;
 use futures::prelude::*;
 use tonic::body::{Body, BoxBody};
 use tonic::client::GrpcService;
@@ -44,8 +42,7 @@ where
     }
 }
 
-#[async_trait]
-impl<T> BlockService for Client<T>
+impl<T> Client<T>
 where
     T: GrpcService<BoxBody> + Send,
     T::Future: Send,
@@ -53,7 +50,14 @@ where
     T::Error: Into<StdError>,
     <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
 {
-    async fn handshake(&mut self) -> Result<BlockId, HandshakeError> {
+    /// Requests the identifier of the genesis block from the service node.
+    ///
+    /// The implementation can also perform version information checks to
+    /// ascertain that the client use compatible protocol versions.
+    ///
+    /// This method should be called first after establishing the client
+    /// connection.
+    pub async fn handshake(&mut self) -> Result<BlockId, HandshakeError> {
         let req = proto::HandshakeRequest {};
         let res = self
             .inner
@@ -69,16 +73,19 @@ where
         BlockId::try_from(&res.block0[..]).map_err(HandshakeError::InvalidBlock0)
     }
 
-    async fn tip(&mut self) -> Result<Header, Error> {
+    /// Requests the header of the tip block in the node's chain.
+    pub async fn tip(&mut self) -> Result<Header, Error> {
         let req = proto::TipRequest {};
         let res = self.inner.tip(req).await?.into_inner();
         let header = Header::from_bytes(res.block_header);
         Ok(header)
     }
 
-    type GetBlocksStream = InboundStream<proto::Block, Block>;
-
-    async fn get_blocks(&mut self, ids: BlockIds) -> Result<Self::GetBlocksStream, Error> {
+    /// Requests the identified blocks in a streamed response.
+    pub async fn get_blocks(
+        &mut self,
+        ids: BlockIds,
+    ) -> Result<InboundStream<proto::Block, Block>, Error> {
         let ids = proto::BlockIds {
             ids: convert::ids_into_repeated_bytes(ids),
         };
@@ -86,12 +93,15 @@ where
         Ok(InboundStream::new(stream))
     }
 
-    type BlockSubscriptionStream = InboundStream<proto::BlockEvent, BlockEvent>;
-
-    async fn block_subscription<S>(
+    /// Establishes a bidirectional stream of notifications for blocks
+    /// created or accepted by either of the peers.
+    ///
+    /// The client can use the stream that the returned future resolves to
+    /// as a long-lived subscription handle.
+    pub async fn block_subscription<S>(
         &mut self,
         outbound: S,
-    ) -> Result<Self::BlockSubscriptionStream, Error>
+    ) -> Result<InboundStream<proto::BlockEvent, BlockEvent>, Error>
     where
         S: Stream<Item = Header> + Send + Sync + 'static,
     {
@@ -99,18 +109,13 @@ where
         let inbound = self.inner.block_subscription(outbound).await?.into_inner();
         Ok(InboundStream::new(inbound))
     }
-}
 
-#[async_trait]
-impl<T> GossipService for Client<T>
-where
-    T: GrpcService<BoxBody> + Send,
-    T::Future: Send,
-    T::ResponseBody: Body + HttpBody + Send + 'static,
-    T::Error: Into<StdError>,
-    <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
-{
-    async fn peers(&mut self, limit: u32) -> Result<Peers, Error> {
+    /// One-off request for a list of peers known to the remote node.
+    ///
+    /// The peers are picked up accordingly to the Poldercast algorithm
+    /// modules. This request is typically used during bootstrap from
+    /// a trusted peer.
+    pub async fn peers(&mut self, limit: u32) -> Result<Peers, Error> {
         let req = proto::PeersRequest { limit };
         let res = self.inner.peers(req).await?.into_inner();
         let peers = convert::from_protobuf_repeated(res.peers)?;

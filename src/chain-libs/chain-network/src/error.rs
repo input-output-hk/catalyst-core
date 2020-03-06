@@ -66,3 +66,18 @@ impl fmt::Display for Error {
         write!(f, "{} ({})", msg, self.source)
     }
 }
+
+/// An error that the future returned by the `handshake` method can
+/// resolve to.
+#[derive(Debug, thiserror::Error)]
+pub enum HandshakeError {
+    /// Error occurred with the protocol request.
+    #[error("{0}")]
+    Rpc(#[source] Error),
+    /// The protocol version reported by the server is not supported.
+    /// Carries the reported version in a human-readable form.
+    #[error("unsupported protocol version {0}")]
+    UnsupportedVersion(Box<str>),
+    #[error("invalid genesis block payload")]
+    InvalidBlock0(#[source] Error),
+}

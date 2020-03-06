@@ -48,8 +48,8 @@ pub trait BlockService {
     /// response to `pull_blocks_to_tip` method.
     type PullBlocksToTipStream: Stream<Item = Result<Block, Error>> + Send + Sync;
 
-    /// Stream blocks from either of the given starting points
-    /// to the server's tip.
+    /// Stream blocks from the first of the given starting points that is
+    /// found in the node's chain, to the chain's tip.
     async fn pull_blocks_to_tip(
         &self,
         from: BlockIds,

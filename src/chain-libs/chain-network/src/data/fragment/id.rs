@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 const FRAGMENT_ID_LEN: usize = 32;
 
-/// Network representation of a block ID.
+/// Network representation of a fragment ID.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct FragmentId([u8; FRAGMENT_ID_LEN]);
 

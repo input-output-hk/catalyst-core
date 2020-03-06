@@ -1,8 +1,8 @@
 use super::Entry;
+use super::pots;
 use chain_ser::deser::{Deserialize, Serialize};
-use std::convert::{TryFrom, TryInto};
-use std::io::Error;
 use chain_ser::packer::Codec;
+
 
 #[derive(Eq, PartialEq)]
 enum EntrySerializeCode {
@@ -27,10 +27,11 @@ impl Serialize for Entry<'_> {
         match self {
             Entry::Globals(entry) => {
                 codec.put_u8(EntrySerializeCode::Globals as u8)?;
-                entry.date.serialize(codec)?;
+                entry.serialize(&mut codec)?;
             }
             Entry::Pot(entry) => {
                 codec.put_u8(EntrySerializeCode::Pot as u8)?;
+                entry.serialize(&mut codec)?;
             }
             Entry::Utxo(entry) => {
                 codec.put_u8(EntrySerializeCode::Utxo as u8)?;

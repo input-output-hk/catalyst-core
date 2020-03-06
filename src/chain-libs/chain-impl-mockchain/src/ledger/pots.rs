@@ -3,6 +3,8 @@ use crate::treasury::Treasury;
 use crate::value::{Value, ValueError};
 use std::cmp;
 use std::fmt::Debug;
+use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
 
 /// Special pots of money
 #[derive(Clone, PartialEq, Eq, Debug)]
@@ -24,6 +26,29 @@ pub enum EntryType {
     Fees,
     Treasury,
     Rewards,
+}
+
+impl Serialize for Entry {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        match self {
+            Entry::Fees(value) => {
+                codec.put_u8(0)?;
+                codec.put_u64(value.0)?;
+            },
+            Entry::Treasury(value) => {
+                codec.put_u8(0)?;
+                codec.put_u64(value.0)?;
+            },
+            Entry::Rewards(value) => {
+                codec.put_u8(0)?;
+                codec.put_u64(value.0)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 impl Entry {

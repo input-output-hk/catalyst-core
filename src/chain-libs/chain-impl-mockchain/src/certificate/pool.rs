@@ -11,7 +11,9 @@ use chain_core::{
     property,
 };
 use chain_crypto::{digest::DigestOf, Blake2b256, Ed25519, PublicKey, Verification};
+use chain_ser::deser::Serialize;
 use chain_time::{DurationSeconds, TimeOffsetSeconds};
+use std::io::Error;
 use std::marker::PhantomData;
 use typed_bytes::{ByteArray, ByteBuilder};
 

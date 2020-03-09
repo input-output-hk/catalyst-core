@@ -1,6 +1,9 @@
 use crate::legacy::OldAddress;
 use crate::value::*;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
+use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
+use std::io::Error;
 
 /// Information how tokens are spent.
 /// A value of tokens is sent to the address.
@@ -8,6 +11,17 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 pub struct Output<Address> {
     pub address: Address,
     pub value: Value,
+}
+
+impl<Address: Serialize> Serialize for Output<Address> {
+    type Error = <Address as Serialize>::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u64(self.value.0)?;
+        self.address.serialize(&mut codec)?;
+        Ok(())
+    }
 }
 
 impl<Address: Readable> Output<Address> {

@@ -8,7 +8,7 @@ impl Arbitrary for SpendingCounter {
     }
 }
 
-impl Arbitrary for AccountState<()> {
+impl Arbitrary for AccountState<NoExtra> {
     fn arbitrary<G: Gen>(gen: &mut G) -> Self {
         AccountState {
             counter: Arbitrary::arbitrary(gen),

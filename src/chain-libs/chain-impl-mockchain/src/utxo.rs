@@ -12,6 +12,9 @@ use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use thiserror::Error;
 
+use crate::ledger::OutputAddress;
+use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
 use imhamt::{Hamt, HamtIter, InsertError, RemoveError, ReplaceError, UpdateError};
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -102,6 +105,18 @@ pub struct Entry<'a, OutputAddress> {
     pub fragment_id: FragmentId,
     pub output_index: u8,
     pub output: &'a Output<OutputAddress>,
+}
+
+impl<OutputAddress: Serialize> Serialize for Entry<'_, OutputAddress> {
+    type Error = <OutputAddress as Serialize>::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        self.fragment_id.serialize(&mut codec)?;
+        codec.put_u8(self.output_index)?;
+        self.output.serialize(&mut codec)?;
+        Ok(())
+    }
 }
 
 impl<OutAddress> Ledger<OutAddress> {

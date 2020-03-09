@@ -1,5 +1,8 @@
 use crate::header::Epoch;
 use crate::value::Value;
+use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
+use std::io::Error;
 
 /// Last rewards associated with a state
 ///
@@ -9,6 +12,17 @@ use crate::value::Value;
 pub struct LastRewards {
     pub epoch: Epoch,
     pub reward: Value,
+}
+
+impl Serialize for LastRewards {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u32(self.epoch)?;
+        codec.put_u64(self.reward.0)?;
+        Ok(())
+    }
 }
 
 impl LastRewards {

@@ -20,13 +20,13 @@ use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
 use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
 use chain_time::Epoch as TimeEpoch;
 use chain_time::{SlotDuration, TimeEra, TimeFrame, Timeline};
 use std::mem::swap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use thiserror::Error;
-use chain_ser::packer::Codec;
 
 // static parameters, effectively this is constant in the parameter of the blockchain
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1601,7 +1601,7 @@ mod tests {
     #[quickcheck]
     pub fn input_single_account_verify_negative_prop_test(
         id: Identifier,
-        account_state: AccountState<()>,
+        account_state: AccountState<NoExtra>,
         value_to_sub: Value,
         block0_hash: HeaderId,
         sign_data_hash: TransactionSignDataHash,

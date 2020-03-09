@@ -2,9 +2,9 @@
 
 use crate::timeframe::Slot;
 use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
 use std::fmt;
 use std::io::Error;
-use chain_ser::packer::Codec;
 
 /// Epoch number
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

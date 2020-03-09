@@ -18,6 +18,9 @@ use cryptoxide::ed25519::PUBLIC_KEY_LENGTH;
 use cryptoxide::sha3::Sha3;
 use ed25519_bip32::XPub;
 
+use chain_ser::deser::Serialize as PropertySerialize;
+use chain_ser::packer::Codec;
+use std::io::Error;
 use std::{
     convert::{TryFrom, TryInto},
     fmt,
@@ -160,6 +163,19 @@ pub struct Addr(Vec<u8>);
 pub enum AddressMatchXPub {
     Yes,
     No,
+}
+
+impl PropertySerialize for Addr {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u64(self.0.len() as u64)?;
+        for e in &self.0 {
+            codec.put_u8(*e)?;
+        }
+        Ok(())
+    }
 }
 
 impl Addr {

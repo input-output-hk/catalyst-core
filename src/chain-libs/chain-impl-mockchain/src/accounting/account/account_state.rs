@@ -4,6 +4,9 @@ use crate::value::*;
 use imhamt::HamtIter;
 
 use super::{LastRewards, LedgerError};
+use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
+use std::io::Error;
 
 /// Set the choice of delegation:
 ///
@@ -15,6 +18,30 @@ pub enum DelegationType {
     NonDelegated,
     Full(PoolId),
     Ratio(DelegationRatio),
+}
+
+impl Serialize for DelegationType {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        match self {
+            DelegationType::NonDelegated => {
+                codec.put_u8(0)?;
+            }
+            DelegationType::Full(pool_id) => {
+                codec.put_u8(1)?;
+                let data = pool_id.to_string().into_bytes();
+                codec.put_u64(data.len() as u64)?;
+                codec.put_bytes(&data)?;
+            }
+            DelegationType::Ratio(delegation_ratio) => {
+                codec.put_u8(2)?;
+                delegation_ratio.serialize(&mut codec)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// Delegation Ratio type express a number of parts
@@ -31,6 +58,25 @@ pub enum DelegationType {
 pub struct DelegationRatio {
     parts: u8,
     pools: Box<[(PoolId, u8)]>,
+}
+
+impl Serialize for DelegationRatio {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u8(self.parts)?;
+        // len of items in pools, for later use by the deserialize method
+        codec.put_u64(self.pools.len() as u64)?;
+        for (pool_id, u) in self.pools.iter() {
+            codec.put_u8(*u)?;
+            let data = pool_id.to_string().into_bytes();
+            // size of bytes that would need to be read by the deserialize method
+            codec.put_u64(data.len() as u64)?;
+            codec.put_bytes(&data)?;
+        }
+        Ok(())
+    }
 }
 
 /// The maximum number of pools
@@ -82,6 +128,20 @@ pub struct AccountState<Extra> {
     pub value: Value,
     pub last_rewards: LastRewards,
     pub extra: Extra,
+}
+
+impl<Extra> Serialize for AccountState<Extra> {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u32(self.counter.0)?;
+        self.delegation.serialize(&mut codec)?;
+        codec.put_u64(self.value.0)?;
+        self.last_rewards.serialize(&mut codec)?;
+        // TODO: For now we just use () for extra so it is not serializez/ We could use an Option<Extra> instead and build with a None to indicate emptiness instead of ()
+        Ok(())
+    }
 }
 
 impl<Extra> AccountState<Extra> {

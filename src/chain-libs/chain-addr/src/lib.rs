@@ -41,8 +41,8 @@ use std::string::ToString;
 use chain_crypto::{Ed25519, PublicKey, PublicKeyError};
 
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property::{self, Serialize as PropertySerialize};
 use chain_core::packer::Codec;
+use chain_core::property::{self, Serialize as PropertySerialize};
 
 cfg_if! {
    if #[cfg(test)] {
@@ -68,10 +68,10 @@ impl PropertySerialize for Discrimination {
         let mut codec = Codec::new(writer);
         match self {
             Discrimination::Production => {
-                codec.put_u8(0);
+                codec.put_u8(0)?;
             }
             Discrimination::Test => {
-                codec.put_u8(1);
+                codec.put_u8(1)?;
             }
         };
         Ok(())

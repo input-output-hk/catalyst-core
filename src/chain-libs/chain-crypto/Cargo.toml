@@ -21,6 +21,7 @@ ed25519-bip32 = "0.3"
 cfg-if = "0.1"
 hex = "0.4.0"
 typed-bytes = { path = "../typed-bytes" }
+chain-ser = { path = "../chain-ser" }
 
 [dev-dependencies]
 quickcheck = "0.9"

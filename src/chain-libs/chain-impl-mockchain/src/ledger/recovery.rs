@@ -1,8 +1,8 @@
-use super::Entry;
 use super::pots;
+use super::Entry;
 use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
-
+use std::io::Error;
 
 #[derive(Eq, PartialEq)]
 enum EntrySerializeCode {
@@ -22,7 +22,7 @@ enum EntrySerializeCode {
 impl Serialize for Entry<'_> {
     type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self,  writer: W) -> Result<(), Self::Error> {
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         let mut codec = Codec::new(writer);
         match self {
             Entry::Globals(entry) => {
@@ -35,14 +35,16 @@ impl Serialize for Entry<'_> {
             }
             Entry::Utxo(entry) => {
                 codec.put_u8(EntrySerializeCode::Utxo as u8)?;
+                entry.serialize(&mut codec)?;
             }
             Entry::OldUtxo(entry) => {
                 codec.put_u8(EntrySerializeCode::OldUtxo as u8)?;
+                entry.serialize(&mut codec)?;
             }
-            Entry::Account((identifier, account_state)) => {
+            Entry::Account((ref identifier, ref account_state)) => {
                 codec.put_u8(EntrySerializeCode::Account as u8)?;
-                // identifier.serialize(writer)?;
-                // account_state.
+                identifier.serialize(&mut codec)?;
+                account_state.serialize(&mut codec)?;
             }
             Entry::ConfigParam(config_param) => {
                 codec.put_u8(EntrySerializeCode::ConfigParam as u8)?;

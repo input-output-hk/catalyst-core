@@ -4,6 +4,9 @@ use chain_crypto::{PublicKey, Signature};
 use super::index::{Index, TreeIndex, LEVEL_MAXLIMIT};
 pub use crate::transaction::WitnessMultisigData;
 use thiserror::Error;
+use chain_ser::deser::Serialize;
+use chain_core::property;
+use chain_ser::packer::Codec;
 
 /// Account Identifier (also used as Public Key)
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -45,6 +48,15 @@ impl std::fmt::Display for Identifier {
     }
 }
 
+impl Serialize for Identifier {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        self.0.serialize(writer)?;
+        Ok(())
+    }
+}
+
 /// Declaration of a multisig account parameters which is:
 ///
 /// * a threshold that need to be between 1 and the size of owners
@@ -65,6 +77,20 @@ impl Declaration {
     }
 }
 
+impl property::Serialize for Declaration {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u8(self.threshold)?;
+        codec.put_u64(self.owners.len() as u64)?;
+        for owner in &self.owners {
+            owner.serialize(&mut codec)?;
+        }
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeclElement {
     Sub(Declaration),
@@ -81,6 +107,22 @@ impl DeclElement {
 
     pub fn from_publickey(key: &PublicKey<account::AccountAlg>) -> Self {
         DeclElement::Owner(key::Hash::hash_bytes(key.as_ref()))
+    }
+}
+
+impl property::Serialize for DeclElement {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        match &self {
+            DeclElement::Sub(declaration) => {
+                declaration.serialize(writer)?;
+            },
+            DeclElement::Owner(hash) => {
+                hash.serialize(writer)?;
+            }
+        }
+        Ok(())
     }
 }
 

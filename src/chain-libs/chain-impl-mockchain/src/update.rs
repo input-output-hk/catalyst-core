@@ -7,6 +7,8 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::Verification;
 use std::collections::{BTreeMap, HashSet};
+use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateState {
@@ -138,6 +140,21 @@ pub struct UpdateProposalState {
     pub proposal: UpdateProposal,
     pub proposal_date: BlockDate,
     pub votes: HashSet<UpdateVoterId>,
+}
+
+impl property::Serialize for UpdateProposalState {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        self.proposal.serialize(&mut codec)?;
+        self.proposal_date.serialize(&mut codec)?;
+        codec.put_u64(self.votes.len() as u64)?;
+        for e in &self.votes {
+            e.serialize(&mut codec)?;
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

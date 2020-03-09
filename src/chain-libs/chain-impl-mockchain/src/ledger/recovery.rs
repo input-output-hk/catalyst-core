@@ -48,26 +48,32 @@ impl Serialize for Entry<'_> {
             }
             Entry::ConfigParam(config_param) => {
                 codec.put_u8(EntrySerializeCode::ConfigParam as u8)?;
-                // config_param.serialize(writer)?;
+                config_param.serialize(&mut codec)?;
             }
             Entry::UpdateProposal((proposal_id, proposal_state)) => {
                 codec.put_u8(EntrySerializeCode::UpdateProposal as u8)?;
-                // proposal_id.serialize(writer)?;
+                proposal_id.serialize(&mut codec)?;
+                proposal_state.serialize(&mut codec)?;
             }
             Entry::MultisigAccount((identifier, account_state)) => {
                 codec.put_u8(EntrySerializeCode::MultisigAccount as u8)?;
-                // identifier.serialize(writer)?;
+                identifier.serialize(&mut codec)?;
+                account_state.serialize(&mut codec)?;
             }
             Entry::MultisigDeclaration((identifier, declaration)) => {
                 codec.put_u8(EntrySerializeCode::MultisigDeclaration as u8)?;
-                // identifier.serialize(writer)?;
+                identifier.serialize(&mut codec)?;
+                declaration.serialize(&mut codec)?;
             }
             Entry::StakePool((pool_id, pool_state)) => {
                 codec.put_u8(EntrySerializeCode::StakePool as u8)?;
+                pool_id.serialize(&mut codec)?;
+                pool_state.serialize(&mut codec)?;
             }
             Entry::LeaderParticipation((pool_id, participation)) => {
                 codec.put_u8(EntrySerializeCode::LeaderParticipation as u8)?;
-                // participation.serialize(writer)?;
+                pool_id.serialize(&mut codec)?;
+                codec.put_u32(**participation)?;
             }
         }
         Ok(())

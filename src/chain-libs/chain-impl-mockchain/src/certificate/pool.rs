@@ -16,6 +16,7 @@ use chain_time::{DurationSeconds, TimeOffsetSeconds};
 use std::io::Error;
 use std::marker::PhantomData;
 use typed_bytes::{ByteArray, ByteBuilder};
+use chain_ser::packer::Codec;
 
 /// Pool ID
 pub type PoolId = PoolRegistrationHash;
@@ -129,12 +130,12 @@ impl PoolRegistration {
             Some(AccountIdentifier::Multi(pk)) => bb.u8(2).bytes(pk.as_ref()),
         }
     }
-    pub fn serialize(&self) -> ByteArray<Self> {
+    pub fn serialize_into_bytearray(&self) -> ByteArray<Self> {
         self.serialize_in(ByteBuilder::new()).finalize()
     }
 
     pub fn to_id(&self) -> PoolId {
-        let ba = self.serialize();
+        let ba = self.serialize_into_bytearray();
         DigestOf::digest_byteslice(&ba.as_byteslice())
     }
 
@@ -259,7 +260,7 @@ impl Payload for PoolRetirement {
 impl property::Serialize for PoolRegistration {
     type Error = std::io::Error;
     fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.serialize().as_slice())?;
+        writer.write_all(self.serialize_into_bytearray().as_slice())?;
         Ok(())
     }
 }

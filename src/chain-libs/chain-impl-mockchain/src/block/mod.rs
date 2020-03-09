@@ -182,6 +182,9 @@ impl property::HasHeader for Block {
 }
 
 use strum_macros::{Display, EnumString, IntoStaticStr};
+use chain_ser::deser::Serialize;
+use std::io::Error;
+use chain_ser::packer::Codec;
 
 #[derive(
     Debug, Clone, Copy, Display, EnumString, IntoStaticStr, PartialEq, Eq, PartialOrd, Ord, Hash,
@@ -214,6 +217,23 @@ impl ConsensusVersion {
             BlockVersion::Ed25519Signed => Some(ConsensusVersion::Bft),
             BlockVersion::KesVrfproof => Some(ConsensusVersion::GenesisPraos),
         }
+    }
+}
+
+impl Serialize for ConsensusVersion {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        match self {
+            ConsensusVersion::Bft => {
+                codec.put_u8(0)?;
+            }
+            ConsensusVersion::GenesisPraos => {
+                codec.put_u8(1)?;
+            }
+        }
+        Ok(())
     }
 }
 

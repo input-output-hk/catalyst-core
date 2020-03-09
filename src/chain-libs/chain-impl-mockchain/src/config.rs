@@ -17,6 +17,7 @@ use std::io::{self, Write};
 use std::num::{NonZeroU32, NonZeroU64};
 use strum_macros::{AsRefStr, EnumIter, EnumString};
 use typed_bytes::ByteBuilder;
+use chain_ser::deser::Serialize;
 
 /// Possible errors
 #[derive(Debug, Clone, Eq, PartialEq)]

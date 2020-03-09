@@ -288,6 +288,8 @@ impl<H: DigestAlg> Digest<H> {
 }
 
 use std::marker::PhantomData;
+use chain_ser::packer::Codec;
+use chain_ser::deser::Serialize;
 
 /// A typed version of Digest
 pub struct DigestOf<H: DigestAlg, T> {
@@ -295,6 +297,17 @@ pub struct DigestOf<H: DigestAlg, T> {
     marker: PhantomData<T>,
 }
 
+impl<H: DigestAlg, T> Serialize for DigestOf<H, T> {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        let inner_data = self.as_ref();
+        codec.put_u64(inner_data.len() as u64)?;
+        codec.put_bytes(inner_data)?;
+        Ok(())
+    }
+}
 unsafe impl<H: DigestAlg, T> Send for DigestOf<H, T> {}
 
 impl<H: DigestAlg, T> Clone for DigestOf<H, T> {

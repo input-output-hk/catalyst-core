@@ -5,6 +5,10 @@ use imhamt::Hamt;
 use std::collections::hash_map::DefaultHasher;
 use std::fmt::{self, Debug};
 use std::sync::Arc;
+use chain_core::property;
+use chain_ser::deser::Serialize;
+use std::io::Error;
+use chain_ser::packer::Codec;
 
 /// A structure that keeps track of stake keys and stake pools.
 #[derive(Clone, PartialEq, Eq)]
@@ -32,6 +36,18 @@ impl PoolLastRewards {
             value_taxed: Value::zero(),
             value_for_stakers: Value::zero(),
         }
+    }
+}
+
+impl Serialize for PoolLastRewards {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u32(self.epoch)?;
+        self.value_taxed.serialize(&mut codec)?;
+        self.value_for_stakers.serialize(&mut codec)?;
+        Ok(())
     }
 }
 
@@ -64,6 +80,17 @@ impl Debug for PoolsState {
                 .map(|(id, stake)| (id.clone(), stake.clone()))
                 .collect::<Vec<(PoolId, PoolState)>>()
         )
+    }
+}
+
+impl property::Serialize for PoolState {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        self.last_rewards.serialize(&mut codec)?;
+        self.registration.serialize(&mut codec)?;
+        Ok(())
     }
 }
 

@@ -197,14 +197,15 @@ where
             .unwrap();
 
         connection
-            .prepare("select rowid, hash from BlockInfo")
+            .prepare("select rowid, hash, depth from BlockInfo")
             .unwrap()
             .query_and_then(rusqlite::NO_PARAMS, |row| {
                 let row_id = row.get(0).unwrap();
-                let hash = blob_to_hash(row.get(1).unwrap());
+                let hash: B::Id = blob_to_hash(row.get(1).unwrap());
+                let chain_length: i64 = row.get(2).unwrap();
 
                 index
-                    .add_block_info(hash, row_id)
+                    .add_block_info(hash, chain_length as u64, row_id)
                     .map_err(IndexCreationError::IndexError)
             })
             .unwrap()
@@ -388,8 +389,13 @@ where
         index
             .add_block(block_info.block_hash.clone(), block_row_id as isize)
             .unwrap();
+
         index
-            .add_block_info(block_info.block_hash.clone(), block_info_row_id as isize)
+            .add_block_info(
+                block_info.block_hash.clone(),
+                block_info.chain_length,
+                block_info_row_id as isize,
+            )
             .unwrap();
 
         tx.commit()
@@ -406,9 +412,17 @@ where
             .transaction()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
+        Self::get_block_internal(&tx, &index, block_hash)
+    }
+
+    fn get_block_internal(
+        connection: &Connection,
+        index: &ChainStorageIndex<B>,
+        block_hash: &B::Id,
+    ) -> Result<(B, BlockInfo<B::Id>), Error> {
         let row_id = index.get_block(block_hash).ok_or(Error::BlockNotFound)?;
 
-        let blk = tx
+        let blk = connection
             .prepare_cached("select block from Blocks where rowid = ?")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .query_row(&[Value::Integer(*row_id as i64)], |row| {
@@ -420,9 +434,38 @@ where
                 err => Error::BackendError(Box::new(err)),
             })?;
 
-        let info = Self::get_block_info_internal(&tx, &index, block_hash)?;
+        let info = Self::get_block_info_internal(connection, &index, block_hash)?;
 
         Ok((blk, info))
+    }
+
+    fn do_by_chain_length<T, F>(&mut self, chain_length: u64, f: F) -> Result<Vec<T>, Error>
+    where
+        F: Fn(&Connection, &ChainStorageIndex<B>, &B::Id) -> Result<T, Error>,
+    {
+        let index = self.index.read().unwrap();
+
+        let tx = self
+            .inner
+            .transaction()
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let hashes = match index.get_block_by_chain_length(&chain_length) {
+            Some(hashes) => hashes,
+            None => return Ok(Vec::new()),
+        };
+
+        hashes
+            .iter()
+            .map(|block_hash| f(&tx, &index, block_hash))
+            .collect()
+    }
+
+    pub fn get_blocks_by_chain_length(
+        &mut self,
+        chain_length: u64,
+    ) -> Result<Vec<(B, BlockInfo<B::Id>)>, Error> {
+        self.do_by_chain_length(chain_length, Self::get_block_internal)
     }
 
     pub fn get_block_info(&mut self, block_hash: &B::Id) -> Result<BlockInfo<B::Id>, Error> {
@@ -436,12 +479,21 @@ where
         Self::get_block_info_internal(&tx, &index, block_hash)
     }
 
+    pub fn get_block_infos_by_chain_length(
+        &mut self,
+        chain_length: u64,
+    ) -> Result<Vec<BlockInfo<B::Id>>, Error> {
+        self.do_by_chain_length(chain_length, Self::get_block_info_internal)
+    }
+
     fn get_block_info_internal(
         connection: &Connection,
         index: &ChainStorageIndex<B>,
         block_hash: &B::Id,
     ) -> Result<BlockInfo<B::Id>, Error> {
-        let row_id = index.get_block(block_hash).ok_or(Error::BlockNotFound)?;
+        let row_id = index
+            .get_block_info(block_hash)
+            .ok_or(Error::BlockNotFound)?;
 
         connection
             .prepare_cached(
@@ -802,7 +854,7 @@ pub mod test_utils {
         }
     }
 
-    #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Copy)]
+    #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Copy)]
     pub struct ChainLength(pub u64);
 
     impl chain_core::property::ChainLength for ChainLength {

@@ -4,7 +4,7 @@ mod page_manager;
 mod pages;
 mod version_management;
 
-use version_management::transaction::{InsertTransaction, ReadTransaction};
+use version_management::transaction::{InsertTransaction, PageRefMut, ReadTransaction};
 use version_management::*;
 
 use crate::mem_page::MemPage;
@@ -235,9 +235,9 @@ where
         Ok(())
     }
 
-    pub(crate) fn insert_in_leaf<'a>(
+    pub(crate) fn insert_in_leaf<'a, 'b: 'a>(
         &self,
-        mut leaf: PageHandle<'a, borrow::Mutable<'a>>,
+        mut leaf: PageRefMut<'a, 'b>,
         key: K,
         value: Value,
     ) -> Result<Option<(K, Node<K, MemPage>)>, BTreeStoreError> {

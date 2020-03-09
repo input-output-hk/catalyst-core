@@ -1,8 +1,6 @@
 pub mod transaction;
 use super::pages::*;
-use super::Metadata;
-use super::Node;
-use super::PageId;
+use super::{transaction::PageRefMut, Metadata, Node, PageId};
 use crate::btreeindex::page_manager::PageManager;
 use crate::btreeindex::pages::{borrow::Mutable, PageHandle};
 use crate::mem_page::MemPage;
@@ -169,7 +167,7 @@ where
     K: Key,
 {
     /// traverse the tree while storing the path, so we can then backtrack while splitting
-    pub fn search_for(&mut self, key: &K) {
+    pub fn search_for<'a>(&'a mut self, key: &K) {
         let mut current = self.tx.root();
 
         loop {
@@ -206,7 +204,7 @@ where
         }
     }
 
-    pub fn get_next(&mut self) -> Result<Option<PageHandle<Mutable>>, std::io::Error> {
+    pub fn get_next<'a>(&'a mut self) -> Result<Option<PageRefMut<'a, 'index>>, std::io::Error> {
         let id = match self.backtrack.pop() {
             Some(id) => id,
             None => return Ok(None),

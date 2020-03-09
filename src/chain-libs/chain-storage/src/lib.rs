@@ -1,8 +1,12 @@
 use crate::index::{ChainStorageIndex, IndexCreationError};
 use chain_core::property::{Block, BlockId, Serialize};
-use rusqlite::{types::Value, Connection};
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, RwLock};
+use rusqlite::{types::Value, Connection, TransactionBehavior};
+use std::{
+    marker::PhantomData,
+    path::{Path, PathBuf},
+    sync::{Arc, RwLock},
+    time::Duration,
+};
 use thiserror::Error;
 
 mod index;
@@ -59,6 +63,12 @@ impl<Id: BlockId> BlockInfo<Id> {
     }
 }
 
+pub struct BlockStoreBuilder<B> {
+    store_type: StoreType,
+    busy_timeout: Option<u64>,
+    dummy: std::marker::PhantomData<B>,
+}
+
 enum StoreType {
     Memory,
     File(PathBuf),
@@ -74,6 +84,7 @@ where
     // once the last open connection was removed.
     persistent_connection: Option<Connection>,
     index: Arc<RwLock<ChainStorageIndex<B>>>,
+    busy_timeout: Option<u64>,
 }
 
 // persistent_connection does not implement Sync but is never actually used
@@ -85,29 +96,53 @@ where
     B: Block,
 {
     inner: Connection,
-    dummy: std::marker::PhantomData<B>,
     index: Arc<RwLock<ChainStorageIndex<B>>>,
+}
+
+impl<B> BlockStoreBuilder<B>
+where
+    B: Block,
+{
+    pub fn memory() -> Self {
+        BlockStoreBuilder {
+            store_type: StoreType::Memory,
+            busy_timeout: None,
+            dummy: PhantomData,
+        }
+    }
+
+    pub fn file<P: AsRef<Path>>(path: P) -> Self {
+        BlockStoreBuilder {
+            store_type: StoreType::File(path.as_ref().to_path_buf()),
+            busy_timeout: None,
+            dummy: PhantomData,
+        }
+    }
+
+    pub fn busy_timeout(self, busy_timeout: u64) -> Self {
+        BlockStoreBuilder {
+            busy_timeout: Some(busy_timeout),
+            ..self
+        }
+    }
+
+    pub fn build(self) -> BlockStore<B> {
+        BlockStore::init(self.store_type, self.busy_timeout)
+    }
 }
 
 impl<B> BlockStore<B>
 where
     B: Block,
 {
-    pub fn memory() -> Self {
-        Self::init(StoreType::Memory)
-    }
-
-    pub fn file<P: AsRef<Path>>(path: P) -> Self {
-        Self::init(StoreType::File(path.as_ref().to_path_buf()))
-    }
-
-    fn init(store_type: StoreType) -> Self {
+    fn init(store_type: StoreType, busy_timeout: Option<u64>) -> Self {
         let index = Arc::new(RwLock::new(ChainStorageIndex::new()));
 
         let mut store = Self {
             store_type,
             persistent_connection: None,
             index: index.clone(),
+            busy_timeout,
         };
 
         let connection = store.connect_internal().unwrap();
@@ -202,17 +237,22 @@ where
         // all connections in a pool access the same database. Otherwise each
         // connection has its own database which leads to bugs, because only one
         // of those databases will have a schema set.
-        match &self.store_type {
+        let connection = match &self.store_type {
             StoreType::Memory => Connection::open("file::memory:?cache=shared"),
             StoreType::File(path) => Connection::open(path),
         }
-        .map_err(|err| Error::BackendError(Box::new(err)))
+        .map_err(|err| Error::BackendError(Box::new(err)))?;
+        if let Some(busy_timeout) = self.busy_timeout {
+            connection
+                .busy_timeout(Duration::from_millis(busy_timeout))
+                .map_err(|err| Error::BackendError(Box::new(err)))?;
+        }
+        Ok(connection)
     }
 
     pub fn connect(&self) -> Result<BlockStoreConnection<B>, Error> {
         Ok(BlockStoreConnection {
             inner: self.connect_internal()?,
-            dummy: std::marker::PhantomData,
             index: self.index.clone(),
         })
     }
@@ -242,7 +282,7 @@ where
 
         let tx = self
             .inner
-            .transaction()
+            .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         if Self::block_exists_internal(&tx, &index, &block_hash)? {
@@ -440,7 +480,7 @@ where
         let mut index = self.index.write().unwrap();
         let tx = self
             .inner
-            .transaction()
+            .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         match index.get_tag(&tag_name.to_owned()) {
@@ -874,7 +914,8 @@ pub mod tests {
 
     #[test]
     pub fn test_put_get() {
-        let mut store = BlockStore::file("file:test_put_get?mode=memory&cache=shared")
+        let mut store = BlockStoreBuilder::file("file:test_put_get?mode=memory&cache=shared")
+            .build()
             .connect()
             .unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
@@ -900,7 +941,8 @@ pub mod tests {
     #[test]
     pub fn test_nth_ancestor() {
         let mut rng = OsRng;
-        let mut store = BlockStore::file("file:test_nth_ancestor?mode=memory&cache=shared")
+        let mut store = BlockStoreBuilder::file("file:test_nth_ancestor?mode=memory&cache=shared")
+            .build()
             .connect()
             .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
@@ -944,7 +986,9 @@ pub mod tests {
     #[test]
     fn simultaneous_read_write() {
         let mut rng = OsRng;
-        let store = BlockStore::file("file:test_simultaneous_read_write?mode=memory&cache=shared");
+        let store =
+            BlockStoreBuilder::file("file:test_simultaneous_read_write?mode=memory&cache=shared")
+                .build();
 
         let mut conn = store.connect().unwrap();
 

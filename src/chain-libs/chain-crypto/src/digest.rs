@@ -508,11 +508,11 @@ mod test {
     fn test_digest_serialize_deserialize() -> Result<(), std::io::Error> {
         use std::io::Cursor;
 
-        let data : [u8; 32] = [0u8; 32];
+        let data: [u8; 32] = [0u8; 32];
         let slice = &data[..];
-        let byte_array : ByteArray<u8> = ByteArray::from(Vec::from(slice));
+        let byte_array: ByteArray<u8> = ByteArray::from(Vec::from(slice));
         let byte_slice: ByteSlice<u8> = byte_array.as_byteslice();
-        let digest : DigestOf<Blake2b256, u8> = DigestOf::digest_byteslice(&byte_slice);
+        let digest: DigestOf<Blake2b256, u8> = DigestOf::digest_byteslice(&byte_slice);
 
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
         digest.serialize(&mut c)?;

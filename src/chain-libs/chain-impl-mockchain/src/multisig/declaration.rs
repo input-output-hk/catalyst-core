@@ -3,10 +3,10 @@ use chain_crypto::{PublicKey, Signature};
 
 use super::index::{Index, TreeIndex, LEVEL_MAXLIMIT};
 pub use crate::transaction::WitnessMultisigData;
-use thiserror::Error;
-use chain_ser::deser::Serialize;
 use chain_core::property;
+use chain_ser::deser::Serialize;
 use chain_ser::packer::Codec;
+use thiserror::Error;
 
 /// Account Identifier (also used as Public Key)
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -117,7 +117,7 @@ impl property::Serialize for DeclElement {
         match &self {
             DeclElement::Sub(declaration) => {
                 declaration.serialize(writer)?;
-            },
+            }
             DeclElement::Owner(hash) => {
                 hash.serialize(writer)?;
             }

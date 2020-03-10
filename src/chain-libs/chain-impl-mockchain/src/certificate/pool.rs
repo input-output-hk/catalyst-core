@@ -12,11 +12,11 @@ use chain_core::{
 };
 use chain_crypto::{digest::DigestOf, Blake2b256, Ed25519, PublicKey, Verification};
 use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
 use chain_time::{DurationSeconds, TimeOffsetSeconds};
 use std::io::Error;
 use std::marker::PhantomData;
 use typed_bytes::{ByteArray, ByteBuilder};
-use chain_ser::packer::Codec;
 
 /// Pool ID
 pub type PoolId = PoolRegistrationHash;

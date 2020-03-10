@@ -1,14 +1,14 @@
 use crate::certificate::{PoolId, PoolRegistration, PoolRegistrationHash};
 use crate::header::Epoch;
 use crate::value::Value;
+use chain_core::property;
+use chain_ser::deser::Serialize;
+use chain_ser::packer::Codec;
 use imhamt::Hamt;
 use std::collections::hash_map::DefaultHasher;
 use std::fmt::{self, Debug};
-use std::sync::Arc;
-use chain_core::property;
-use chain_ser::deser::Serialize;
 use std::io::Error;
-use chain_ser::packer::Codec;
+use std::sync::Arc;
 
 /// A structure that keeps track of stake keys and stake pools.
 #[derive(Clone, PartialEq, Eq)]

@@ -6,9 +6,9 @@ use crate::setting::Settings;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::Verification;
-use std::collections::{BTreeMap, HashSet};
 use chain_ser::deser::Serialize;
 use chain_ser::packer::Codec;
+use std::collections::{BTreeMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateState {

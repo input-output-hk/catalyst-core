@@ -12,12 +12,12 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::packer::Codec;
 use chain_core::property;
 use chain_crypto::PublicKey;
+use chain_ser::deser::Serialize;
 use std::fmt::{self, Display, Formatter};
 use std::io::{self, Write};
 use std::num::{NonZeroU32, NonZeroU64};
 use strum_macros::{AsRefStr, EnumIter, EnumString};
 use typed_bytes::ByteBuilder;
-use chain_ser::deser::Serialize;
 
 /// Possible errors
 #[derive(Debug, Clone, Eq, PartialEq)]

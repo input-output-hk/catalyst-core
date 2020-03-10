@@ -181,10 +181,10 @@ impl property::HasHeader for Block {
     }
 }
 
-use strum_macros::{Display, EnumString, IntoStaticStr};
 use chain_ser::deser::Serialize;
-use std::io::Error;
 use chain_ser::packer::Codec;
+use std::io::Error;
+use strum_macros::{Display, EnumString, IntoStaticStr};
 
 #[derive(
     Debug, Clone, Copy, Display, EnumString, IntoStaticStr, PartialEq, Eq, PartialOrd, Ord, Hash,

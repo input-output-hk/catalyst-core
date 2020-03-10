@@ -42,7 +42,9 @@ use chain_crypto::{Ed25519, PublicKey, PublicKeyError};
 
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::packer::Codec;
-use chain_core::property::{self, Serialize as PropertySerialize};
+use chain_core::property::{
+    self, Deserialize as PropertyDeserialize, Deserialize, Serialize as PropertySerialize,
+};
 
 cfg_if! {
    if #[cfg(test)] {
@@ -75,6 +77,22 @@ impl PropertySerialize for Discrimination {
             }
         };
         Ok(())
+    }
+}
+
+impl PropertyDeserialize for Discrimination {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        match codec.get_u8()? {
+            0 => Ok(Discrimination::Production),
+            1 => Ok(Discrimination::Test),
+            code => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Not recognize code {}", code),
+            )),
+        }
     }
 }
 
@@ -665,5 +683,19 @@ mod test {
                 "ca1s55j52ev95hz7vp3xgengdfkxuurjw3m8s7nu06qg9pyx3z9ger5samu4rv",
             );
         }
+    }
+
+    #[test]
+    fn test_discrimination_serialize_deserialize() -> Result<(), std::io::Error> {
+        use std::io::Cursor;
+        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        Discrimination::Test.serialize(&mut c)?;
+        Discrimination::Production.serialize(&mut c)?;
+        c.set_position(0);
+        let test = Discrimination::deserialize(&mut c)?;
+        let production = Discrimination::deserialize(&mut c)?;
+        assert_eq!(Discrimination::Test, test);
+        assert_eq!(Discrimination::Production, production);
+        Ok(())
     }
 }

@@ -18,7 +18,9 @@ use cryptoxide::ed25519::PUBLIC_KEY_LENGTH;
 use cryptoxide::sha3::Sha3;
 use ed25519_bip32::XPub;
 
-use chain_ser::deser::Serialize as PropertySerialize;
+use chain_ser::deser::{
+    Deserialize as PropertyDeserialize, Deserialize, Serialize as PropertySerialize,
+};
 use chain_ser::packer::Codec;
 use std::io::Error;
 use std::{
@@ -175,6 +177,20 @@ impl PropertySerialize for Addr {
             codec.put_u8(*e)?;
         }
         Ok(())
+    }
+}
+
+impl PropertyDeserialize for Addr {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let size = codec.get_u64()?;
+        let mut addr = Addr(Vec::with_capacity(size as usize));
+        for _ in 0..size {
+            addr.0.push(codec.get_u8()?);
+        }
+        Ok(addr)
     }
 }
 
@@ -537,5 +553,20 @@ mod tests {
             0x4a, 0xe0, 0xac, 0xac, 0x0c, 0xf7, 0x9e, 0x89,
         ]);
         assert_same_address(address, public_key)
+    }
+
+    #[test]
+    fn test_addr_serialize_deserialize() -> Result<(), std::io::Error> {
+        use super::*;
+        use std::io::Cursor;
+        // set fake buffer
+        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        let address : Addr = "DdzFFzCqrhsqTG4t3uq5UBqFrxhxGVM6bvF4q1QcZXqUpizFddEEip7dx5rbife2s9o2fRU3hVKhRp4higog7As8z42s4AMw6Pcu8vL4".parse().unwrap();
+        address.serialize(&mut c)?;
+        // reset fake buffer
+        c.set_position(0);
+        let new_address = Addr::deserialize(&mut c)?;
+        assert_eq!(address, new_address);
+        Ok(())
     }
 }

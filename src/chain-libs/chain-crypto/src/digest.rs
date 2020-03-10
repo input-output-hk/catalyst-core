@@ -287,9 +287,9 @@ impl<H: DigestAlg> Digest<H> {
     }
 }
 
-use std::marker::PhantomData;
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
-use chain_ser::deser::Serialize;
+use std::marker::PhantomData;
 
 /// A typed version of Digest
 pub struct DigestOf<H: DigestAlg, T> {
@@ -308,6 +308,24 @@ impl<H: DigestAlg, T> Serialize for DigestOf<H, T> {
         Ok(())
     }
 }
+
+impl<H: DigestAlg, T> Deserialize for DigestOf<H, T> {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let size = codec.get_u64()?;
+        let bytes = codec.get_bytes(size as usize)?;
+        match DigestOf::try_from(&bytes[..]) {
+            Ok(data) => Ok(data),
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("{}", e),
+            )),
+        }
+    }
+}
+
 unsafe impl<H: DigestAlg, T> Send for DigestOf<H, T> {}
 
 impl<H: DigestAlg, T> Clone for DigestOf<H, T> {
@@ -480,3 +498,28 @@ macro_rules! typed_define_from_instances {
 
 typed_define_from_instances!(Sha3_256, 32, "sha3");
 typed_define_from_instances!(Blake2b256, 32, "blake2b");
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use typed_bytes::ByteArray;
+
+    #[test]
+    fn test_digest_serialize_deserialize() -> Result<(), std::io::Error> {
+        use std::io::Cursor;
+
+        let data : [u8; 32] = [0u8; 32];
+        let slice = &data[..];
+        let byte_array : ByteArray<u8> = ByteArray::from(Vec::from(slice));
+        let byte_slice: ByteSlice<u8> = byte_array.as_byteslice();
+        let digest : DigestOf<Blake2b256, u8> = DigestOf::digest_byteslice(&byte_slice);
+
+        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        digest.serialize(&mut c)?;
+        c.set_position(0);
+        let deserialize_digest = DigestOf::deserialize(&mut c)?;
+        assert_eq!(digest, deserialize_digest);
+
+        Ok(())
+    }
+}

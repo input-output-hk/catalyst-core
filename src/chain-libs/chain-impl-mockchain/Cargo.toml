@@ -6,7 +6,7 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-serde = { version = "^1.0", features = ["derive"] }
+serde = { version = "^1.0", optional = true }
 serde_derive = { version = "^1.0", optional = true }
 chain-core = { path = "../chain-core" }
 chain-addr = { path = "../chain-addr" }

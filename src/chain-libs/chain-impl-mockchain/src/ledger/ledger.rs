@@ -1601,7 +1601,7 @@ mod tests {
     #[quickcheck]
     pub fn input_single_account_verify_negative_prop_test(
         id: Identifier,
-        account_state: AccountState<NoExtra>,
+        account_state: AccountState<()>,
         value_to_sub: Value,
         block0_hash: HeaderId,
         sign_data_hash: TransactionSignDataHash,

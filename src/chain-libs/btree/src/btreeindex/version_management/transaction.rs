@@ -1,9 +1,6 @@
 use super::Version;
 use crate::btreeindex::{
-    borrow::Immutable,
-    node::{NodeRef, NodeRefMut},
-    page_manager::PageManager,
-    Node, PageHandle, PageId, Pages,
+    borrow::Immutable, page_manager::PageManager, Node, PageHandle, PageId, Pages,
 };
 use crate::Key;
 use parking_lot::lock_api;

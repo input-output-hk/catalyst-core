@@ -1,6 +1,9 @@
 use super::Version;
 use crate::btreeindex::{
-    borrow::Immutable, page_manager::PageManager, Node, PageHandle, PageId, Pages,
+    borrow::Immutable,
+    node::{NodePageRef, NodePageRefMut},
+    page_manager::PageManager,
+    Node, PageHandle, PageId, Pages,
 };
 use crate::Key;
 use parking_lot::lock_api;
@@ -41,17 +44,6 @@ pub struct PageRef<'a, 'b: 'a> {
 }
 
 impl<'a, 'b: 'a> PageRef<'a, 'b> {
-    pub fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        self.pages
-            .borrow()
-            .get_page(self.page_id)
-            .expect("page should be already checked")
-            .as_node(key_buffer_size, f)
-    }
-
     pub fn id(&self) -> PageId {
         self.page_id
     }
@@ -63,8 +55,40 @@ pub struct PageRefMut<'a, 'b: 'a> {
 }
 
 impl<'a, 'b: 'a> PageRefMut<'a, 'b> {
-    pub fn as_node_mut<K, R>(
-        &self,
+    pub fn id(&self) -> PageId {
+        self.page_id
+    }
+}
+
+impl<'a, 'b: 'a> NodePageRef for PageRef<'a, 'b> {
+    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key,
+    {
+        self.pages
+            .borrow()
+            .get_page(self.page_id)
+            .expect("page should be already checked")
+            .as_node(key_buffer_size, f)
+    }
+}
+
+impl<'a, 'b: 'a> NodePageRef for PageRefMut<'a, 'b> {
+    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key,
+    {
+        self.pages
+            .borrow()
+            .get_page(self.page_id)
+            .expect("page should be already checked")
+            .as_node(key_buffer_size, f)
+    }
+}
+
+impl<'a, 'b: 'a> NodePageRefMut for PageRefMut<'a, 'b> {
+    fn as_node_mut<K, R>(
+        &mut self,
         key_buffer_size: usize,
         f: impl FnOnce(Node<K, &mut [u8]>) -> R,
     ) -> R
@@ -77,10 +101,6 @@ impl<'a, 'b: 'a> PageRefMut<'a, 'b> {
             // FIXME: this unwrap
             .unwrap()
             .as_node_mut(key_buffer_size, f)
-    }
-
-    pub fn id(&self) -> PageId {
-        self.page_id
     }
 }
 

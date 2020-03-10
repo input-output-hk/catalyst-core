@@ -16,6 +16,22 @@ pub struct Node<K, T> {
     phantom: PhantomData<[K]>,
 }
 
+pub trait NodePageRef {
+    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key;
+}
+
+pub trait NodePageRefMut: NodePageRef {
+    fn as_node_mut<K, R>(
+        &mut self,
+        key_buffer_size: usize,
+        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
+    ) -> R
+    where
+        K: Key;
+}
+
 pub(crate) enum NodeTag {
     Internal = 0,
     Leaf = 1,

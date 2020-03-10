@@ -30,7 +30,7 @@ fn single_key_insertion(c: &mut Criterion) {
     let key_size = std::mem::size_of::<U64Key>();
     let page_size = 4096;
 
-    let mut tree: BTreeStore<U64Key> =
+    let tree: BTreeStore<U64Key> =
         BTreeStore::new(dir_path, key_size.try_into().unwrap(), page_size).unwrap();
 
     let n: u64 = 2000000;

@@ -2,7 +2,7 @@ pub mod transaction;
 use super::pages::*;
 use super::{transaction::PageRefMut, Metadata, Node, PageId};
 use crate::btreeindex::page_manager::PageManager;
-use crate::btreeindex::pages::{borrow::Mutable, PageHandle};
+
 use crate::mem_page::MemPage;
 use crate::Key;
 use std::collections::VecDeque;

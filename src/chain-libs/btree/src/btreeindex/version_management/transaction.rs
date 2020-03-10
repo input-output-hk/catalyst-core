@@ -1,13 +1,11 @@
 use super::Version;
 use crate::btreeindex::{
-    borrow::{Immutable, Mutable},
-    page_manager::PageManager,
-    Node, PageHandle, PageId, Pages,
+    borrow::Immutable, page_manager::PageManager, Node, PageHandle, PageId, Pages,
 };
 use crate::Key;
 use parking_lot::lock_api;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard};
-use std::cell::{Ref, RefCell};
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::marker::PhantomData;
 use std::ops::Deref;

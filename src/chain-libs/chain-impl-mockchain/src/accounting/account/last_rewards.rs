@@ -1,6 +1,6 @@
 use crate::header::Epoch;
 use crate::value::Value;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Serialize, Deserialize};
 use chain_ser::packer::Codec;
 use std::io::Error;
 
@@ -22,6 +22,18 @@ impl Serialize for LastRewards {
         codec.put_u32(self.epoch)?;
         codec.put_u64(self.reward.0)?;
         Ok(())
+    }
+}
+
+impl Deserialize for LastRewards {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        Ok(LastRewards {
+            epoch: codec.get_u32()?,
+            reward: Value(codec.get_u64()?)
+        })
     }
 }
 
@@ -115,5 +127,23 @@ mod tests {
             reward: Value(std::u64::MAX),
         };
         last_rewards.add_for(epoch, value_to_add);
+    }
+
+    #[test]
+    pub fn last_rewards_serialize_deserialize() -> Result<(), std::io::Error> {
+        use std::io::Cursor;
+
+        let last_rewards = LastRewards {
+            epoch: 0,
+            reward: Value(1),
+        };
+
+        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+
+        last_rewards.serialize(&mut c)?;
+        c.set_position(0);
+        let deserialize_last_rewards = LastRewards::deserialize(&mut c)?;
+        assert_eq!(last_rewards, deserialize_last_rewards);
+        Ok(())
     }
 }

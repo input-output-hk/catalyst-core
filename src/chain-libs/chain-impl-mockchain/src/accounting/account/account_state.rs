@@ -176,8 +176,28 @@ impl<Extra> Serialize for AccountState<Extra> {
         self.delegation.serialize(&mut codec)?;
         codec.put_u64(self.value.0)?;
         self.last_rewards.serialize(&mut codec)?;
-        // TODO: For now we just use () for extra so it is not serializez/ We could use an Option<Extra> instead and build with a None to indicate emptiness instead of ()
+        // TODO: For now we just use () for extra so it is not serialized. We could use an Option<Extra> instead and build with a None to indicate emptiness instead of ()
         Ok(())
+    }
+}
+
+impl Deserialize for AccountState<()> {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let counter = codec.get_u32()?;
+        let delegation = DelegationType::deserialize(&mut codec)?;
+        let value = codec.get_u64()?;
+        let last_rewards = LastRewards::deserialize(&mut codec)?;
+        Ok(AccountState{
+            counter : SpendingCounter(counter),
+            delegation,
+            value : Value(value),
+            last_rewards,
+            extra : ()
+        })
+
     }
 }
 
@@ -704,6 +724,20 @@ mod tests {
             let deserialized_delegation_type = DelegationType::deserialize(&mut c)?;
             assert_eq!(delegation_type, &deserialized_delegation_type);
         }
+        Ok(())
+    }
+
+    #[test]
+    pub fn account_state_serialize_deserialize() -> Result<(), std::io::Error> {
+        use super::*;
+        use std::io::Cursor;
+
+        let account_state = AccountState::new(Value(256), ());
+        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        account_state.serialize(&mut c)?;
+        c.set_position(0);
+        let deserialized_account_state = AccountState::deserialize(&mut c)?;
+        assert_eq!(account_state, deserialized_account_state);
         Ok(())
     }
 }

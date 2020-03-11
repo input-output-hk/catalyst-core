@@ -4,7 +4,7 @@ use chain_crypto::{PublicKey, Signature};
 use super::index::{Index, TreeIndex, LEVEL_MAXLIMIT};
 pub use crate::transaction::WitnessMultisigData;
 use chain_core::property;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::Deserialize;
 use chain_ser::packer::Codec;
 use thiserror::Error;
 
@@ -48,12 +48,21 @@ impl std::fmt::Display for Identifier {
     }
 }
 
-impl Serialize for Identifier {
-    type Error = std::io::Error;
+impl property::Serialize for Identifier {
+    type Error = <key::Hash as property::Serialize>::Error;
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         self.0.serialize(writer)?;
         Ok(())
+    }
+}
+
+impl property::Deserialize for Identifier {
+    type Error = <key::Hash as property::Serialize>::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let hash = key::Hash::deserialize(reader)?;
+        Ok(Identifier(hash))
     }
 }
 
@@ -91,6 +100,22 @@ impl property::Serialize for Declaration {
     }
 }
 
+impl property::Deserialize for Declaration {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let threshold = codec.get_u8()?;
+        let size = codec.get_u64()?;
+        let mut owners: Vec<DeclElement> = Vec::with_capacity(size as usize);
+        for _ in 0..size {
+            let decl_element = DeclElement::deserialize(&mut codec)?;
+            owners.push(decl_element);
+        }
+        Ok(Declaration { threshold, owners })
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeclElement {
     Sub(Declaration),
@@ -114,18 +139,38 @@ impl property::Serialize for DeclElement {
     type Error = std::io::Error;
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
         match &self {
             DeclElement::Sub(declaration) => {
-                declaration.serialize(writer)?;
+                codec.put_u8(0)?;
+                declaration.serialize(&mut codec)?;
             }
             DeclElement::Owner(hash) => {
-                hash.serialize(writer)?;
+                codec.put_u8(1)?;
+                hash.serialize(&mut codec)?;
             }
         }
         Ok(())
     }
 }
 
+impl property::Deserialize for DeclElement {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        match codec.get_u8()? {
+            0 => Ok(DeclElement::Sub(Declaration::deserialize(&mut codec)?)),
+            1 => Ok(DeclElement::Owner(key::Hash::deserialize(&mut codec)?)),
+            code => Err(
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    format!("Invalid DeclElement type code {}", code),
+                )
+            )
+        }
+    }
+}
 // Create an identifier by concatenating the threshold (as a byte) and all the owners
 // and returning the hash of this content
 pub(super) fn owners_to_identifier(threshold: u8, owners: &[DeclElement]) -> Identifier {

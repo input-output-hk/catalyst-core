@@ -8,11 +8,15 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 cfg-if = "0.1"
 quickcheck = { version = "0.9", optional = true }
+quickcheck_macros = { version = "0.9", optional = true }
 chain-ser = { path = "../chain-ser" }
+chain-core = { path = "../chain-core" }
+
 
 [features]
-property-test-api = ["quickcheck"]
+property-test-api = ["quickcheck", "quickcheck_macros"]
 
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
+chain-core = { path = "../chain-core", features=["property-test-api"]}

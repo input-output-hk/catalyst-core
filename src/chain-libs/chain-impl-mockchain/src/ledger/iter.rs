@@ -6,10 +6,12 @@ use crate::header::{BlockDate, ChainLength};
 use crate::stake::PoolsState;
 use crate::{account, legacy, multisig, setting, update, utxo};
 use chain_addr::Address;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Serialize, Deserialize};
 use chain_ser::packer::Codec;
 use chain_time::TimeEra;
 use std::sync::Arc;
+use crate::ledger::Error::Block0;
+use std::io::Chain;
 
 pub enum Entry<'a> {
     Globals(Globals),
@@ -45,6 +47,7 @@ pub enum Entry<'a> {
     LeaderParticipation((&'a crate::certificate::PoolId, &'a u32)),
 }
 
+#[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Globals {
     pub date: BlockDate,
     pub chain_length: ChainLength,
@@ -62,6 +65,24 @@ impl Serialize for Globals {
         self.static_params.serialize(&mut codec)?;
         self.era.serialize(&mut codec)?;
         Ok(())
+    }
+}
+
+impl Deserialize for Globals {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let date = BlockDate::deserialize(&mut codec)?;
+        let chain_length = ChainLength(codec.get_u32()?);
+        let static_params = LedgerStaticParameters::deserialize(&mut codec)?;
+        let era = TimeEra::deserialize(&mut codec)?;
+        Ok(Globals{
+            date,
+            chain_length,
+            static_params,
+            era,
+        })
     }
 }
 
@@ -275,14 +296,37 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod tests {
-
+    use super::*;
     use crate::{
         ledger::{Entry, Ledger},
         testing::{ConfigBuilder, LedgerBuilder},
         value::Value,
     };
+
+
+    use chain_core::property::testing::serialization_bijection;
+    use quickcheck::{quickcheck, TestResult, Arbitrary, Gen};
+
+
+    impl Arbitrary for Globals {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            Globals {
+                date: Arbitrary::arbitrary(g),
+                chain_length: Arbitrary::arbitrary(g),
+                static_params: Arbitrary::arbitrary(g),
+                era: Arbitrary::arbitrary(g),
+            }
+        }
+    }
+
+    quickcheck! {
+        fn globals_serialize_deserialize_bijection(b: Globals) -> TestResult {
+            serialization_bijection(b)
+        }
+    }
+
 
     fn print_from_iter(ledger: &Ledger) {
         for item in ledger.iter() {

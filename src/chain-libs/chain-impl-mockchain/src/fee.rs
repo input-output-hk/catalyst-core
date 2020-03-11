@@ -1,7 +1,7 @@
 use crate::certificate::CertificateSlice;
 use crate::transaction as tx;
 use crate::value::Value;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::io::Error;
 use std::num::NonZeroU64;
@@ -48,6 +48,24 @@ impl Serialize for LinearFee {
         codec.put_u64(self.certificate)?;
         self.per_certificate_fees.serialize(&mut codec)?;
         Ok(())
+    }
+}
+
+impl Deserialize for LinearFee {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let constant = codec.get_u64()?;
+        let coefficient = codec.get_u64()?;
+        let certificate = codec.get_u64()?;
+        let per_certificate_fees = PerCertificateFee::deserialize(&mut codec)?;
+        Ok(LinearFee {
+            constant,
+            coefficient,
+            certificate,
+            per_certificate_fees,
+        })
     }
 }
 
@@ -104,6 +122,23 @@ impl Serialize for PerCertificateFee {
     }
 }
 
+impl Deserialize for PerCertificateFee {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let certificate_pool_registration = std::num::NonZeroU64::new(codec.get_u64()?);
+        let certificate_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
+        let certificate_owner_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
+
+        Ok(PerCertificateFee {
+            certificate_pool_registration,
+            certificate_stake_delegation,
+            certificate_owner_stake_delegation,
+        })
+    }
+}
+
 pub trait FeeAlgorithm {
     fn baseline(&self) -> Value;
     fn fees_for_inputs_outputs(&self, inputs: u8, outputs: u8) -> Value;
@@ -147,6 +182,7 @@ impl FeeAlgorithm for LinearFee {
 mod test {
     use super::*;
     use crate::certificate::{Certificate, CertificatePayload};
+    use chain_core::property::testing::serialization_bijection;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
 
@@ -218,6 +254,16 @@ mod test {
                 cert_fees.certificate_owner_stake_delegation.unwrap().into()
             }
             _ => fee.certificate,
+        }
+    }
+
+    quickcheck! {
+        fn per_certificate_fee_serialize_deserialize_bijection(b: PerCertificateFee) -> TestResult {
+            serialization_bijection(b)
+        }
+
+        fn linear_fee_serialize_deserialize_bijection(b: LinearFee) -> TestResult {
+            serialization_bijection(b)
         }
     }
 }

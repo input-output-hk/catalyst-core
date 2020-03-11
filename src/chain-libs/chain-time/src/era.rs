@@ -1,7 +1,7 @@
 //! Split timeframe in eras
 
 use crate::timeframe::Slot;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Serialize, Deserialize};
 use chain_ser::packer::Codec;
 use std::fmt;
 use std::io::Error;
@@ -48,6 +48,23 @@ impl Serialize for TimeEra {
     }
 }
 
+impl Deserialize for TimeEra {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let epoch_start = Epoch(codec.get_u32()?);
+        let slot_start = Slot(codec.get_u64()?);
+        let slots_per_epoch = codec.get_u32()?;
+
+        Ok(TimeEra{
+            epoch_start,
+            slot_start,
+            slots_per_epoch
+        })
+    }
+}
+
 impl TimeEra {
     /// Set a new era to start on slot_start at epoch_start for a given slots per epoch.
     pub fn new(slot_start: Slot, epoch_start: Epoch, slots_per_epoch: u32) -> Self {
@@ -91,12 +108,23 @@ impl TimeEra {
     }
 }
 
-#[cfg(test)]
+
+#[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
     use crate::timeframe::*;
     use crate::timeline::Timeline;
+
     use std::time::{Duration, SystemTime};
+
+    use chain_core::property::testing::serialization_bijection;
+    use quickcheck::{quickcheck, TestResult};
+
+    quickcheck! {
+        fn time_era_serialize_deserialize_bijection(b: TimeEra) -> TestResult {
+            serialization_bijection(b)
+        }
+    }
 
     #[test]
     pub fn it_works() {

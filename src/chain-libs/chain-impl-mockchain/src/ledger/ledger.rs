@@ -19,7 +19,7 @@ use crate::value::*;
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Serialize, Deserialize};
 use chain_ser::packer::Codec;
 use chain_time::Epoch as TimeEpoch;
 use chain_time::{SlotDuration, TimeEra, TimeFrame, Timeline};
@@ -47,6 +47,24 @@ impl Serialize for LedgerStaticParameters {
         self.discrimination.serialize(&mut codec)?;
         codec.put_u32(self.kes_update_speed)?;
         Ok(())
+    }
+}
+
+impl Deserialize for LedgerStaticParameters {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let block0_initial_hash = HeaderId::deserialize(&mut codec)?;
+        let block0_start_time = config::Block0Date(codec.get_u64()?);
+        let discrimination = Discrimination::deserialize(&mut codec)?;
+        let kes_update_speed = codec.get_u32()?;
+        Ok(LedgerStaticParameters {
+            block0_initial_hash,
+            block0_start_time,
+            discrimination,
+            kes_update_speed,
+        })
     }
 }
 
@@ -1457,6 +1475,7 @@ mod tests {
     };
     use chain_addr::Discrimination;
     use chain_core::property::ChainLength;
+    use chain_core::property::testing::serialization_bijection;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::{fmt, iter};
@@ -1518,6 +1537,12 @@ mod tests {
     impl Into<Ledger> for ArbitraryEmptyLedger {
         fn into(self) -> Ledger {
             self.0
+        }
+    }
+
+    quickcheck! {
+        fn ledger_static_parameters_serialize_deserialize_bijection(b: LedgerStaticParameters) -> TestResult {
+            serialization_bijection(b)
         }
     }
 

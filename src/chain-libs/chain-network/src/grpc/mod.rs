@@ -4,7 +4,7 @@ mod proto {
 }
 
 pub mod client;
-pub mod service;
+pub mod server;
 
 mod convert;
 mod streaming;

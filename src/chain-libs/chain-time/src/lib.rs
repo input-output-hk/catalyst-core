@@ -12,7 +12,6 @@ pub use timeframe::{Slot, SlotDuration, TimeFrame};
 pub use timeline::{TimeOffsetSeconds, Timeline};
 pub use units::DurationSeconds;
 
-
 cfg_if! {
    if #[cfg(test)] {
         pub mod testing;

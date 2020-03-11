@@ -3,15 +3,15 @@ use super::pots::{self, Pots};
 use crate::block::LeadersParticipationRecord;
 use crate::config::ConfigParam;
 use crate::header::{BlockDate, ChainLength};
+use crate::ledger::Error::Block0;
 use crate::stake::PoolsState;
 use crate::{account, legacy, multisig, setting, update, utxo};
 use chain_addr::Address;
-use chain_ser::deser::{Serialize, Deserialize};
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use chain_time::TimeEra;
-use std::sync::Arc;
-use crate::ledger::Error::Block0;
 use std::io::Chain;
+use std::sync::Arc;
 
 pub enum Entry<'a> {
     Globals(Globals),
@@ -77,7 +77,7 @@ impl Deserialize for Globals {
         let chain_length = ChainLength(codec.get_u32()?);
         let static_params = LedgerStaticParameters::deserialize(&mut codec)?;
         let era = TimeEra::deserialize(&mut codec)?;
-        Ok(Globals{
+        Ok(Globals {
             date,
             chain_length,
             static_params,
@@ -305,10 +305,8 @@ mod tests {
         value::Value,
     };
 
-
     use chain_core::property::testing::serialization_bijection;
-    use quickcheck::{quickcheck, TestResult, Arbitrary, Gen};
-
+    use quickcheck::{quickcheck, Arbitrary, Gen, TestResult};
 
     impl Arbitrary for Globals {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -326,7 +324,6 @@ mod tests {
             serialization_bijection(b)
         }
     }
-
 
     fn print_from_iter(ledger: &Ledger) {
         for item in ledger.iter() {

@@ -1,7 +1,7 @@
 //! Split timeframe in eras
 
 use crate::timeframe::Slot;
-use chain_ser::deser::{Serialize, Deserialize};
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::fmt;
 use std::io::Error;
@@ -57,10 +57,10 @@ impl Deserialize for TimeEra {
         let slot_start = Slot(codec.get_u64()?);
         let slots_per_epoch = codec.get_u32()?;
 
-        Ok(TimeEra{
+        Ok(TimeEra {
             epoch_start,
             slot_start,
-            slots_per_epoch
+            slots_per_epoch,
         })
     }
 }
@@ -107,7 +107,6 @@ impl TimeEra {
         Slot(self.slot_start.0 + slot_offset)
     }
 }
-
 
 #[cfg(any(test, feature = "property-test-api"))]
 mod test {

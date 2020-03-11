@@ -19,7 +19,7 @@ use crate::value::*;
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
-use chain_ser::deser::{Serialize, Deserialize};
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use chain_time::Epoch as TimeEpoch;
 use chain_time::{SlotDuration, TimeEra, TimeFrame, Timeline};
@@ -1474,8 +1474,8 @@ mod tests {
         transaction::Witness,
     };
     use chain_addr::Discrimination;
-    use chain_core::property::ChainLength;
     use chain_core::property::testing::serialization_bijection;
+    use chain_core::property::ChainLength;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::{fmt, iter};

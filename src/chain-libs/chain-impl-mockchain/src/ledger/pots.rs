@@ -1,7 +1,7 @@
 use crate::ledger::Error;
 use crate::treasury::Treasury;
 use crate::value::{Value, ValueError};
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::cmp;
 use std::fmt::Debug;
@@ -14,7 +14,7 @@ pub struct Pots {
     pub(crate) rewards: Value,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Entry {
     Fees(Value),
     Treasury(Value),
@@ -39,15 +39,32 @@ impl Serialize for Entry {
                 codec.put_u64(value.0)?;
             }
             Entry::Treasury(value) => {
-                codec.put_u8(0)?;
+                codec.put_u8(1)?;
                 codec.put_u64(value.0)?;
             }
             Entry::Rewards(value) => {
-                codec.put_u8(0)?;
+                codec.put_u8(2)?;
                 codec.put_u64(value.0)?;
             }
         }
         Ok(())
+    }
+}
+
+impl Deserialize for Entry {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        match codec.get_u8()? {
+            0 => Ok(Entry::Fees(Value(codec.get_u64()?))),
+            1 => Ok(Entry::Treasury(Value(codec.get_u64()?))),
+            2 => Ok(Entry::Rewards(Value(codec.get_u64()?))),
+            code => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Invalid Entry type code {}", code),
+            )),
+        }
     }
 }
 
@@ -192,8 +209,10 @@ impl Pots {
 mod tests {
     use super::*;
     use crate::value::Value;
+    use chain_core::property::testing::serialization_bijection;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
+    use std::path::Component::CurDir;
 
     impl Arbitrary for Pots {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -277,5 +296,24 @@ mod tests {
         let before_add = pots.treasury.value();
         pots.treasury_add(value).unwrap();
         TestResult::from_bool(pots.treasury.value() == (before_add + value).unwrap())
+    }
+
+    #[test]
+    fn entry_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
+        use std::io::Cursor;
+        for entry_value in [
+            Entry::Fees(Value(10)),
+            Entry::Rewards(Value(10)),
+            Entry::Treasury(Value(10)),
+        ]
+        .iter()
+        {
+            let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+            entry_value.serialize(&mut c)?;
+            c.set_position(0);
+            let other_value = Entry::deserialize(&mut c)?;
+            assert_eq!(entry_value, &other_value);
+        }
+        Ok(())
     }
 }

@@ -2,10 +2,10 @@ use chain_core::property;
 use chain_time::era::EpochPosition;
 use chain_time::era::TimeEra;
 
-use chain_ser::deser::Serialize;
 use chain_ser::packer::Codec;
 use std::io::Error;
 use std::{error, fmt, num::ParseIntError, str};
+use chain_ser::deser::Deserialize;
 
 /// Non unique identifier of the transaction position in the
 /// blockchain. There may be many transactions related to the same
@@ -132,11 +132,26 @@ impl property::Serialize for BlockDate {
     }
 }
 
+impl property::Deserialize for BlockDate {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let epoch = codec.get_u32()?;
+        let slot_id = codec.get_u32()?;
+        Ok(BlockDate{
+            epoch,
+            slot_id
+        })
+    }
+}
+
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-    use quickcheck::{Arbitrary, Gen};
+    use quickcheck::{Arbitrary, Gen, TestResult};
     use std::error::Error;
+    use chain_core::property::testing::serialization_bijection;
 
     #[test]
     fn parse_no_dot() {
@@ -182,6 +197,12 @@ mod tests {
                 epoch: Arbitrary::arbitrary(g),
                 slot_id: Arbitrary::arbitrary(g),
             }
+        }
+    }
+
+    quickcheck! {
+        fn block_date_serialize_deserialize_bijection(b: BlockDate) -> TestResult {
+            serialization_bijection(b)
         }
     }
 }

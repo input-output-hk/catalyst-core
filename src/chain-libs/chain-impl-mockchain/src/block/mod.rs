@@ -181,6 +181,7 @@ impl property::HasHeader for Block {
     }
 }
 
+use chain_core::property::Deserialize;
 use chain_ser::deser::Serialize;
 use chain_ser::packer::Codec;
 use std::io::Error;
@@ -220,20 +221,36 @@ impl ConsensusVersion {
     }
 }
 
-impl Serialize for ConsensusVersion {
+impl property::Serialize for ConsensusVersion {
     type Error = std::io::Error;
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         let mut codec = Codec::new(writer);
         match self {
             ConsensusVersion::Bft => {
-                codec.put_u8(0)?;
+                codec.put_u8(1)?;
             }
             ConsensusVersion::GenesisPraos => {
-                codec.put_u8(1)?;
+                codec.put_u8(2)?;
             }
         }
         Ok(())
+    }
+}
+
+impl property::Deserialize for ConsensusVersion {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        match codec.get_u8()? {
+            1 => Ok(ConsensusVersion::Bft),
+            2 => Ok(ConsensusVersion::GenesisPraos),
+            code => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Unrecognized code {} for ConsensusVersion", code),
+            )),
+        }
     }
 }
 

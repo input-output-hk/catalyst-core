@@ -104,14 +104,17 @@ impl Deserialize for DelegationRatio {
         let mut codec = Codec::new(reader);
         let parts = codec.get_u8()?;
         let pools_size = codec.get_u64()?;
-        let mut pools : Vec<(PoolId, u8)>  = Vec::with_capacity(pools_size as usize);
+        let mut pools: Vec<(PoolId, u8)> = Vec::with_capacity(pools_size as usize);
         for _ in 0..pools_size {
             let u = codec.get_u8()?;
             pools.push((PoolId::deserialize(&mut codec)?, u));
         }
         match DelegationRatio::new(parts, pools) {
             Some(delegation_ratio) => Ok(delegation_ratio),
-            None => Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "Error building DelegationRatio from serialized data"))
+            None => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Error building DelegationRatio from serialized data",
+            )),
         }
     }
 }
@@ -190,14 +193,13 @@ impl Deserialize for AccountState<()> {
         let delegation = DelegationType::deserialize(&mut codec)?;
         let value = codec.get_u64()?;
         let last_rewards = LastRewards::deserialize(&mut codec)?;
-        Ok(AccountState{
-            counter : SpendingCounter(counter),
+        Ok(AccountState {
+            counter: SpendingCounter(counter),
             delegation,
-            value : Value(value),
+            value: Value(value),
             last_rewards,
-            extra : ()
+            extra: (),
         })
-
     }
 }
 

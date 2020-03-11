@@ -1,6 +1,6 @@
 use crate::header::Epoch;
 use crate::value::Value;
-use chain_ser::deser::{Serialize, Deserialize};
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::io::Error;
 
@@ -32,7 +32,7 @@ impl Deserialize for LastRewards {
         let mut codec = Codec::new(reader);
         Ok(LastRewards {
             epoch: codec.get_u32()?,
-            reward: Value(codec.get_u64()?)
+            reward: Value(codec.get_u64()?),
         })
     }
 }

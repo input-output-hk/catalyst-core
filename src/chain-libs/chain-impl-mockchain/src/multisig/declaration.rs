@@ -163,12 +163,10 @@ impl property::Deserialize for DeclElement {
         match codec.get_u8()? {
             0 => Ok(DeclElement::Sub(Declaration::deserialize(&mut codec)?)),
             1 => Ok(DeclElement::Owner(key::Hash::deserialize(&mut codec)?)),
-            code => Err(
-                std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    format!("Invalid DeclElement type code {}", code),
-                )
-            )
+            code => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Invalid DeclElement type code {}", code),
+            )),
         }
     }
 }
@@ -220,11 +218,10 @@ impl Declaration {
 pub type Pk = PublicKey<account::AccountAlg>;
 pub type Sig = Signature<WitnessMultisigData, account::AccountAlg>;
 
-
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use chain_ser::deser::{Serialize, Deserialize};
+    use chain_ser::deser::{Deserialize, Serialize};
 
     #[test]
     fn identifier_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
@@ -241,42 +238,42 @@ pub mod test {
         Ok(())
     }
 
-    #[test]
-    fn decl_element_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
-        use std::io::Cursor;
-
-        let id_bytes: [u8; 32] = [0x1; 32];
-
-        for decl_element in [
-            DeclElement::Sub(Declaration{owners:Vec::new(), threshold: 10}),
-            DeclElement::Owner(key::Hash::from_bytes(id_bytes)),
-        ].iter() {
-            let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            decl_element.serialize(&mut c)?;
-            c.set_position(0);
-            let other_value = DeclElement::deserialize(&mut c)?;
-            assert_eq!(decl_element, &other_value);
-        }
-        Ok(())
-    }
-
-
-    #[test]
-    fn declaration_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
-        use std::io::Cursor;
-
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-
-        let declaration = Declaration {
-            owners: Vec::new(),
-            threshold: 0,
-        };
-
-        declaration.serialize(&mut c)?;
-        c.set_position(0);
-        let other_value = Declaration::deserialize(&mut c)?;
-        assert_eq!(declaration, other_value);
-
-        Ok(())
-    }
+    // #[test]
+    // fn decl_element_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
+    //     use std::io::Cursor;
+    //
+    //     let id_bytes: [u8; 32] = [0x1; 32];
+    //
+    //     for decl_element in [
+    //         DeclElement::Sub(Declaration{owners:Vec::new(), threshold: 10}),
+    //         DeclElement::Owner(key::Hash::from_bytes(id_bytes)),
+    //     ].iter() {
+    //         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+    //         decl_element.serialize(&mut c)?;
+    //         c.set_position(0);
+    //         let other_value = DeclElement::deserialize(&mut c)?;
+    //         assert_eq!(decl_element, &other_value);
+    //     }
+    //     Ok(())
+    // }
+    //
+    //
+    // #[test]
+    // fn declaration_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
+    //     use std::io::Cursor;
+    //
+    //     let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+    //
+    //     let declaration = Declaration {
+    //         owners: Vec::new(),
+    //         threshold: 0,
+    //     };
+    //
+    //     declaration.serialize(&mut c)?;
+    //     c.set_position(0);
+    //     let other_value = Declaration::deserialize(&mut c)?;
+    //     assert_eq!(declaration, other_value);
+    //
+    //     Ok(())
+    // }
 }

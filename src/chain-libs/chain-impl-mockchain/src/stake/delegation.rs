@@ -2,7 +2,7 @@ use crate::certificate::{PoolId, PoolRegistration, PoolRegistrationHash};
 use crate::header::Epoch;
 use crate::value::Value;
 use chain_core::property;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::Deserialize;
 use chain_ser::packer::Codec;
 use imhamt::Hamt;
 use std::collections::hash_map::DefaultHasher;
@@ -39,15 +39,32 @@ impl PoolLastRewards {
     }
 }
 
-impl Serialize for PoolLastRewards {
+impl property::Serialize for PoolLastRewards {
     type Error = std::io::Error;
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         let mut codec = Codec::new(writer);
         codec.put_u32(self.epoch)?;
-        self.value_taxed.serialize(&mut codec)?;
-        self.value_for_stakers.serialize(&mut codec)?;
+        codec.put_u64(self.value_taxed.0)?;
+        codec.put_u64(self.value_for_stakers.0)?;
         Ok(())
+    }
+}
+
+impl property::Deserialize for PoolLastRewards {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let epoch = codec.get_u32()?;
+        let value_taxed = Value(codec.get_u64()?);
+        let value_for_stakers = Value(codec.get_u64()?);
+
+        Ok(PoolLastRewards {
+            epoch,
+            value_taxed,
+            value_for_stakers,
+        })
     }
 }
 
@@ -91,6 +108,21 @@ impl property::Serialize for PoolState {
         self.last_rewards.serialize(&mut codec)?;
         self.registration.serialize(&mut codec)?;
         Ok(())
+    }
+}
+
+impl property::Deserialize for PoolState {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let last_rewards = PoolLastRewards::deserialize(&mut codec)?;
+        let registration = Arc::new(PoolRegistration::deserialize(&mut codec)?);
+
+        Ok(PoolState {
+            last_rewards,
+            registration,
+        })
     }
 }
 

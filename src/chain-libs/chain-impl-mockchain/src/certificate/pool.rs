@@ -11,10 +11,10 @@ use chain_core::{
     property,
 };
 use chain_crypto::{digest::DigestOf, Blake2b256, Ed25519, PublicKey, Verification};
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use chain_time::{DurationSeconds, TimeOffsetSeconds};
-use std::io::Error;
+use std::io::{Error, Read};
 use std::marker::PhantomData;
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -265,6 +265,22 @@ impl property::Serialize for PoolRegistration {
     }
 }
 
+impl property::Deserialize for PoolRegistration {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(mut reader: R) -> Result<Self, Self::Error> {
+        let buff: &[u8] = reader.fill_buf()?;
+        let mut read_buff = ReadBuf::from(buff);
+        match PoolRegistration::read(&mut read_buff) {
+            Ok(res) => Ok(res),
+            Err(err) => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Error reading Poolregistration data: {}", err),
+            )),
+        }
+    }
+}
+
 impl Readable for PoolRegistration {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let serial = buf.get_u128()?;
@@ -454,7 +470,7 @@ impl Readable for PoolSignature {
 #[cfg(test)]
 mod tests {
 
-    use super::{PoolOwnersSigned, PoolPermissions};
+    use super::{PoolOwnersSigned, PoolPermissions, PoolRegistration};
     use crate::{
         header::HeaderId,
         key::EitherEd25519SecretKey,
@@ -472,6 +488,16 @@ mod tests {
     use chain_addr::Discrimination;
     use chain_crypto::{Ed25519, PublicKey, Verification};
     use std::iter;
+
+    use chain_core::property::testing::serialization_bijection;
+    use quickcheck::{quickcheck, TestResult};
+
+
+    quickcheck! {
+        fn pool_registration_serialize_deserialize_biyection(p: PoolRegistration) -> TestResult {
+            serialization_bijection(p)
+        }
+    }
 
     #[derive(Clone, Debug)]
     pub struct PoolOwnersWithSignatures {

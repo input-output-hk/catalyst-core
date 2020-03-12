@@ -1,7 +1,7 @@
 use crate::legacy::OldAddress;
 use crate::value::*;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::io::Error;
 
@@ -18,9 +18,20 @@ impl<Address: Serialize> Serialize for Output<Address> {
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         let mut codec = Codec::new(writer);
-        codec.put_u64(self.value.0)?;
         self.address.serialize(&mut codec)?;
+        codec.put_u64(self.value.0)?;
         Ok(())
+    }
+}
+
+impl<Address: Deserialize> Deserialize for Output<Address> {
+    type Error = <Address as Deserialize>::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let address = Address::deserialize(&mut codec)?;
+        let value = Value(codec.get_u64()?);
+        Ok(Output { address, value })
     }
 }
 

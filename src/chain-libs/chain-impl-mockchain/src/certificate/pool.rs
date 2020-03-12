@@ -492,7 +492,6 @@ mod tests {
     use chain_core::property::testing::serialization_bijection;
     use quickcheck::{quickcheck, TestResult};
 
-
     quickcheck! {
         fn pool_registration_serialize_deserialize_biyection(p: PoolRegistration) -> TestResult {
             serialization_bijection(p)

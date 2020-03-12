@@ -23,9 +23,13 @@ quickcheck! {
     fn signed_transaction_encode_decode(transaction: Transaction<NoExtra>) -> TestResult {
         chain_core::property::testing::serialization_bijection_r(transaction)
     }
+
 }
 
 use std::fmt::Display;
+use crate::transaction::Output;
+use crate::ledger::OutputAddress;
+
 
 fn check_eq<X: Eq + Display>(s1: &str, x1: X, s2: &str, x2: X, s: &str) -> Result<(), String> {
     if x1 == x2 {
@@ -219,4 +223,47 @@ impl Arbitrary for AccountIdentifier {
             AccountIdentifier::Multi(Arbitrary::arbitrary(g))
         }
     }
+}
+
+
+use chain_ser::deser::{Serialize, Deserialize};
+use std::io::Error;
+use chain_ser::packer::Codec;
+use crate::value::Value;
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+struct MockU32(u32);
+
+impl Serialize for MockU32 {
+    type Error = std::io::Error;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u32(self.0)?;
+        Ok(())
+    }
+}
+
+impl Deserialize for MockU32 {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        Ok(MockU32(codec.get_u32()?))
+    }
+}
+
+#[test]
+pub fn output_serialize_deserialize_biyection() -> Result<(), std::io::Error> {
+    let output : Output<MockU32> = Output{
+        address: MockU32(1000),
+        value: Value(1000),
+    };
+
+    let mut c = std::io::Cursor::new(Vec::new());
+    output.serialize(&mut c)?;
+    c.set_position(0);
+    let other_output = Output::deserialize(&mut c)?;
+    assert_eq!(output, other_output);
+    Ok(())
 }

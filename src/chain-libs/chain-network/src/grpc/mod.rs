@@ -8,3 +8,6 @@ pub mod server;
 
 mod convert;
 mod streaming;
+
+pub use client::Client;
+pub use server::Server;

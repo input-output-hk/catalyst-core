@@ -13,7 +13,7 @@ use std::fmt;
 use thiserror::Error;
 
 use crate::ledger::OutputAddress;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Serialize, Deserialize};
 use chain_ser::packer::Codec;
 use imhamt::{Hamt, HamtIter, InsertError, RemoveError, ReplaceError, UpdateError};
 
@@ -107,6 +107,16 @@ pub struct Entry<'a, OutputAddress> {
     pub output: &'a Output<OutputAddress>,
 }
 
+/// structure used by the iterator or the getter of the UTxO `Ledger`
+///
+#[derive(Debug, PartialEq, Clone)]
+pub struct EntryOwned<OutputAddress> {
+    pub fragment_id: FragmentId,
+    pub output_index: u8,
+    pub output: Output<OutputAddress>,
+}
+
+
 impl<OutputAddress: Serialize> Serialize for Entry<'_, OutputAddress> {
     type Error = <OutputAddress as Serialize>::Error;
 
@@ -116,6 +126,22 @@ impl<OutputAddress: Serialize> Serialize for Entry<'_, OutputAddress> {
         codec.put_u8(self.output_index)?;
         self.output.serialize(&mut codec)?;
         Ok(())
+    }
+}
+
+impl<OutputAddress: Deserialize> Deserialize for EntryOwned<OutputAddress> {
+    type Error = <OutputAddress as Deserialize>::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let fragment_id =  FragmentId::deserialize(&mut codec)?;
+        let output_index = codec.get_u8()?;
+        let output : Output<OutputAddress> = Output::deserialize(&mut codec)?;
+        Ok(EntryOwned{
+            fragment_id,
+            output_index,
+            output
+        })
     }
 }
 

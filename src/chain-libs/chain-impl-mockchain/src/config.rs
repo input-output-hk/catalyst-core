@@ -12,7 +12,7 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::packer::Codec;
 use chain_core::property;
 use chain_crypto::PublicKey;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Serialize, Deserialize};
 use std::fmt::{self, Display, Formatter};
 use std::io::{self, Write};
 use std::num::{NonZeroU32, NonZeroU64};
@@ -317,6 +317,23 @@ impl property::Serialize for ConfigParam {
         let mut codec = Codec::new(writer);
         codec.put_u16(taglen.0)?;
         codec.write_all(&bytes)
+    }
+}
+
+impl property::Deserialize for ConfigParam {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let tag_len = codec.get_u16()? as usize;
+        let data_bytes = codec.get_bytes(tag_len)?;
+        match ConfigParamVariant::from_payload(&data_bytes) {
+            Ok(res) => res,
+            Err(err) => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Error reading data for ConfigVariant"
+            ))
+        }
     }
 }
 

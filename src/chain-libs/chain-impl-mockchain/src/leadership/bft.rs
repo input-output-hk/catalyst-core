@@ -8,6 +8,7 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::{Ed25519, PublicKey};
 use std::sync::Arc;
+use chain_ser::deser::Deserialize;
 
 pub type BftVerificationAlg = Ed25519;
 
@@ -85,6 +86,15 @@ impl property::Serialize for LeaderId {
     type Error = std::io::Error;
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         serialize_public_key(&self.0, writer)
+    }
+}
+
+impl property::Deserialize for LeaderId {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let pk = deserialize_public_key(reader)?;
+        Ok(LeaderId(pk))
     }
 }
 

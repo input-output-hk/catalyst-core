@@ -1,6 +1,8 @@
 use crate::config::ConfigParam;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
+use chain_ser::deser::Deserialize;
+use std::io::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(
@@ -26,14 +28,30 @@ impl ConfigParams {
 
 impl property::Serialize for ConfigParams {
     type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         // FIXME: put params in canonical order (e.g. sorted by tag)?
-        use chain_core::packer::*;
-        Codec::new(&mut writer).put_u16(self.0.len() as u16)?;
+        use chain_core::packer::Codec;
+        let mut codec = Codec::new(writer);
+        codec.put_u16(self.0.len() as u16)?;
         for config in &self.0 {
-            config.serialize(&mut writer)?
+            config.serialize(&mut codec)?
         }
         Ok(())
+    }
+}
+
+impl property::Deserialize for ConfigParams {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        use chain_core::packer::Codec;
+        let mut codec = Codec::new(reader);
+        let size = codec.get_u16()? as usize;
+        let mut config_params: Vec<ConfigParam> = Vec::with_capacity(size);
+        for _ in 0..size {
+            config_params.push(ConfigParam::deserialize(&mut codec)?);
+        }
+        Ok(ConfigParams(config_params))
     }
 }
 

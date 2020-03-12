@@ -6,9 +6,10 @@ use crate::setting::Settings;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::Verification;
-use chain_ser::deser::Serialize;
+use chain_ser::deser::{Serialize, Deserialize};
 use chain_ser::packer::Codec;
 use std::collections::{BTreeMap, HashSet};
+use crate::config::Tag::Block0Date;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateState {
@@ -157,6 +158,27 @@ impl property::Serialize for UpdateProposalState {
     }
 }
 
+impl property::Deserialize for UpdateProposalState {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let proposal = UpdateProposal::deserialze(&mut codec)?;
+        let proposal_date = BlockDate::deserialize(&mut codec)?;
+        let total_votes = codec.get_u64()?;
+        let mut votes: HashSet<UpdateVoterId> = HashSet::new();
+        for _ in 0..total_votes {
+            let id = UpdateVoterId::deserialize(&mut codec)?;
+            votes.insert(id);
+        }
+        Ok(UpdateProposalState{
+            proposal,
+            proposal_date,
+            votes
+        })
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Error {
     /*
@@ -264,6 +286,18 @@ impl property::Serialize for UpdateProposal {
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         self.changes.serialize(writer)?;
         Ok(())
+    }
+}
+
+impl property::Deserialize for UpdateProposal {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let changes = ConfigParams::deserialize(&mut codec)?;
+        Ok(UpdateProposal {
+            changes
+        })
     }
 }
 

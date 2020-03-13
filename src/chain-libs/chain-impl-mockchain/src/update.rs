@@ -436,9 +436,10 @@ mod tests {
         },
     };
     use chain_addr::Discrimination;
-
-    use quickcheck::{Arbitrary, Gen, TestResult};
+    use std::iter;
+    use quickcheck::{Arbitrary, Gen, TestResult, quickcheck as quick_check};
     use quickcheck_macros::quickcheck;
+    use chain_core::property::testing::serialization_bijection;
 
     impl Arbitrary for UpdateProposal {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -484,6 +485,18 @@ mod tests {
         }
     }
 
+    impl Arbitrary for UpdateProposalState {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let size = usize::arbitrary(g);
+            Self {
+                proposal: UpdateProposal::arbitrary(g),
+                proposal_date: BlockDate::arbitrary(g),
+                votes: iter::from_fn(|| Some(UpdateVoterId::arbitrary(g))).take(size).collect(),
+
+            }
+        }
+    }
+
     fn apply_update_proposal(
         update_state: UpdateState,
         proposal_id: UpdateProposalId,
@@ -516,6 +529,16 @@ mod tests {
             .build();
 
         update_state.apply_vote(&signed_update_vote, &settings)
+    }
+
+    quickcheck! {
+        fn update_proposal_serialize_deserialize_bijection(update_proposal: UpdateProposal) -> TestResult {
+            serialization_bijection(update_proposal)
+        }
+
+        fn update_proposal_state_serialize_deserialize_bijection(update_proposal_state: UpdateProposalState) -> TestResult {
+            serialization_bijection(update_proposal_state)
+        }
     }
 
     #[test]

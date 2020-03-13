@@ -326,13 +326,6 @@ impl property::Deserialize for ConfigParam {
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         let mut codec = Codec::new(reader);
         let tag_len = TagLen(codec.get_u16()?);
-        let tag = match tag_len.get_tag() {
-            Ok(t) => Ok(t),
-            Err(e) => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Error reading Tag info for ConfigParam: {}", e),
-            )),
-        }?;
         let len = tag_len.get_len();
         let bytes = codec.get_bytes(len)?;
         // we will replicate the buffer so we can reuse the reader method

@@ -2,7 +2,6 @@ use crate::certificate::{PoolId, PoolRegistration, PoolRegistrationHash};
 use crate::header::Epoch;
 use crate::value::Value;
 use chain_core::property;
-use chain_ser::deser::Deserialize;
 use chain_ser::packer::Codec;
 use imhamt::Hamt;
 use std::collections::hash_map::DefaultHasher;
@@ -243,23 +242,57 @@ impl PoolsState {
 #[cfg(test)]
 mod tests {
 
-    use super::PoolsState;
+    use super::*;
     use crate::certificate::PoolRegistration;
-    use quickcheck::{Arbitrary, Gen, TestResult};
+    use quickcheck::{Arbitrary, Gen, TestResult, quickcheck as quick_check};
     use quickcheck_macros::quickcheck;
     use std::iter;
+    use crate::stake::PoolLastRewards;
+    use crate::value::Value;
+    use chain_time::Epoch;
+    use chain_core::property::{Serialize, Deserialize};
+    use chain_core::property::testing::serialization_bijection;
 
     impl Arbitrary for PoolsState {
         fn arbitrary<G: Gen>(gen: &mut G) -> Self {
             let size = usize::arbitrary(gen);
-            let arbitrary_stake_pools = iter::from_fn(|| Some(PoolRegistration::arbitrary(gen)))
+            let arbitrary_stake_pools : Vec<PoolRegistration> = iter::from_fn(|| Some(PoolRegistration::arbitrary(gen)))
                 .take(size)
-                .collect::<Vec<PoolRegistration>>();
+                .collect();
             let mut delegation_state = PoolsState::new();
             for stake_pool in arbitrary_stake_pools {
                 delegation_state = delegation_state.register_stake_pool(stake_pool).unwrap();
             }
             delegation_state
+        }
+    }
+
+    impl Arbitrary for PoolState {
+        fn arbitrary<G: Gen>(gen: &mut G) -> Self {
+            let registration = Arc::new(PoolRegistration::arbitrary(gen));
+            PoolState {
+                last_rewards: PoolLastRewards::arbitrary(gen),
+                registration,
+            }
+        }
+    }
+
+    impl Arbitrary for PoolLastRewards {
+        fn arbitrary<G: Gen>(gen: &mut G) -> Self {
+            PoolLastRewards {
+                value_for_stakers: Value(u64::arbitrary(gen)),
+                value_taxed: Value(u64::arbitrary(gen)),
+                epoch: u32::arbitrary(gen),
+            }
+        }
+    }
+
+    quick_check! {
+        fn pool_state_serialize_deserialize_bijection(b: PoolState) -> TestResult {
+            serialization_bijection(b)
+        }
+        fn pool_last_rewards_serialize_deserialize_bijection(b: PoolLastRewards) -> TestResult {
+            serialization_bijection(b)
         }
     }
 

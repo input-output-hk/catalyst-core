@@ -700,9 +700,15 @@ impl TagLen {
 mod test {
     use super::*;
     use quickcheck::{Arbitrary, Gen, TestResult};
+    use chain_core::property::testing::serialization_bijection;
     use strum::IntoEnumIterator;
 
     quickcheck! {
+
+        fn config_param_serialize_deserialize_bijection(config_param: ConfigParam) -> TestResult {
+            serialization_bijection(config_param)
+        }
+
         fn tag_len_computation_correct(tag: Tag, len: usize) -> TestResult {
             let len = len % MAXIMUM_LEN;
             let tag_len = TagLen::new(tag, len).unwrap();

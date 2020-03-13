@@ -1,3 +1,4 @@
+mod backtrack;
 mod metadata;
 // FIXME: allow dead code momentarily, because all of the delete algorithms are unused, and placing the directive with more granularity would be too troublesome
 #[allow(dead_code)]
@@ -6,7 +7,7 @@ mod page_manager;
 mod pages;
 mod version_management;
 
-use version_management::transaction::{InsertTransaction, PageRefMut, ReadTransaction};
+use version_management::transaction::{PageRefMut, ReadTransaction, WriteTransaction};
 use version_management::*;
 
 use crate::mem_page::MemPage;
@@ -22,6 +23,7 @@ use std::borrow::Borrow;
 
 use crate::{Key, Value};
 
+use backtrack::{DeleteBacktrack, InsertBacktrack};
 use parking_lot::RwLock;
 use std::convert::{TryFrom, TryInto};
 use std::fs::{File, OpenOptions};
@@ -212,12 +214,11 @@ where
 
     fn insert<'a>(
         &self,
-        tx: &mut InsertTransaction<'a, 'a>,
+        tx: &mut WriteTransaction<'a, 'a>,
         key: K,
         value: Value,
     ) -> Result<(), BTreeStoreError> {
-        let mut backtrack = tx.backtrack();
-        backtrack.search_for(&key);
+        let mut backtrack = InsertBacktrack::new_search_for(tx, &key);
 
         let needs_recurse = {
             let leaf = backtrack.get_next()?.unwrap();
@@ -408,13 +409,11 @@ where
     fn delete_async<'a>(
         &'a self,
         key: &K,
-        tx: &mut InsertTransaction<'a, 'a>,
+        tx: &mut WriteTransaction<'a, 'a>,
     ) -> Result<(), BTreeStoreError> {
         let key_buffer_size: u32 = self.static_settings.key_buffer_size;
 
-        let mut backtrack = tx.delete_backtrack();
-
-        backtrack.search_for(key);
+        let mut backtrack = DeleteBacktrack::new_search_for(tx, key);
 
         // path loaded (cloned) in transaction
         let next_element = backtrack.get_next()?.unwrap();

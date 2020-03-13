@@ -7,8 +7,9 @@ use crate::{
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::{Ed25519, PublicKey};
-use std::sync::Arc;
 use chain_ser::deser::Deserialize;
+use std::sync::Arc;
+use chain_ser::packer::Codec;
 
 pub type BftVerificationAlg = Ed25519;
 
@@ -93,8 +94,16 @@ impl property::Deserialize for LeaderId {
     type Error = std::io::Error;
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let pk = deserialize_public_key(reader)?;
-        Ok(LeaderId(pk))
+        let mut codec = Codec::new(reader);
+        let bytes = codec.get_bytes(32)?;
+        let mut buff = ReadBuf::from(&bytes);
+        match  deserialize_public_key(&mut buff) {
+            Ok(pk) => Ok(LeaderId(pk)),
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Error reading LeaderId public key: {}", e)
+            )),
+        }
     }
 }
 

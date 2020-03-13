@@ -130,6 +130,7 @@ impl PoolRegistration {
             Some(AccountIdentifier::Multi(pk)) => bb.u8(2).bytes(pk.as_ref()),
         }
     }
+
     pub fn serialize_into_bytearray(&self) -> ByteArray<Self> {
         self.serialize_in(ByteBuilder::new()).finalize()
     }
@@ -259,8 +260,13 @@ impl Payload for PoolRetirement {
 
 impl property::Serialize for PoolRegistration {
     type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
-        writer.write_all(self.serialize_into_bytearray().as_slice())?;
+
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        let bytes = self.serialize_into_bytearray().as_slice();
+        let size = bytes.len() as u64;
+        codec.put_u64(size)?;
+        codec.put_bytes(bytes)?;
         Ok(())
     }
 }
@@ -268,9 +274,11 @@ impl property::Serialize for PoolRegistration {
 impl property::Deserialize for PoolRegistration {
     type Error = std::io::Error;
 
-    fn deserialize<R: std::io::BufRead>(mut reader: R) -> Result<Self, Self::Error> {
-        let buff: &[u8] = reader.fill_buf()?;
-        let mut read_buff = ReadBuf::from(buff);
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let size = codec.get_u64()? as usize;
+        let bytes_buff = codec.get_bytes(size)?;
+        let mut read_buff = ReadBuf::from(&bytes_buff);
         match PoolRegistration::read(&mut read_buff) {
             Ok(res) => Ok(res),
             Err(err) => Err(std::io::Error::new(

@@ -1,4 +1,5 @@
 //use crate::certificate::{verify_certificate, HasPublicKeys, SignatureRaw};
+use crate::config::Tag::Block0Date;
 use crate::date::BlockDate;
 use crate::fragment::config::ConfigParams;
 use crate::leadership::{bft, genesis::ActiveSlotsCoeffError};
@@ -6,10 +7,9 @@ use crate::setting::Settings;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::Verification;
-use chain_ser::deser::{Serialize, Deserialize};
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::collections::{BTreeMap, HashSet};
-use crate::config::Tag::Block0Date;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateState {
@@ -171,10 +171,10 @@ impl property::Deserialize for UpdateProposalState {
             let id = UpdateVoterId::deserialize(&mut codec)?;
             votes.insert(id);
         }
-        Ok(UpdateProposalState{
+        Ok(UpdateProposalState {
             proposal,
             proposal_date,
-            votes
+            votes,
         })
     }
 }
@@ -295,9 +295,7 @@ impl property::Deserialize for UpdateProposal {
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         let mut codec = Codec::new(reader);
         let changes = ConfigParams::deserialize(&mut codec)?;
-        Ok(UpdateProposal {
-            changes
-        })
+        Ok(UpdateProposal { changes })
     }
 }
 

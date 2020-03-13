@@ -12,9 +12,9 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::packer::Codec;
 use chain_core::property;
 use chain_crypto::PublicKey;
-use chain_ser::deser::{Serialize, Deserialize};
+use chain_ser::deser::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
-use std::io::{self, Write};
+use std::io::{self, Cursor, Write};
 use std::num::{NonZeroU32, NonZeroU64};
 use strum_macros::{AsRefStr, EnumIter, EnumString};
 use typed_bytes::ByteBuilder;
@@ -325,14 +325,31 @@ impl property::Deserialize for ConfigParam {
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         let mut codec = Codec::new(reader);
-        let tag_len = codec.get_u16()? as usize;
-        let data_bytes = codec.get_bytes(tag_len)?;
-        match ConfigParamVariant::from_payload(&data_bytes) {
-            Ok(res) => res,
-            Err(err) => Err(std::io::Error::new(
+        let tag_len = TagLen(codec.get_u16()?);
+        let tag = match tag_len.get_tag() {
+            Ok(t) => Ok(t),
+            Err(e) => Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
-                "Error reading data for ConfigVariant"
-            ))
+                format!("Error reading Tag info for ConfigParam: {}", e),
+            )),
+        }?;
+        let len = tag_len.get_len();
+        let bytes = codec.get_bytes(len)?;
+        // we will replicate the buffer so we can reuse the reader method
+        let mut cursor = Cursor::new(Vec::with_capacity(2 + len));
+        {
+            let mut writer = Codec::new(cursor);
+            writer.put_u16(tag_len.0)?;
+            writer.put_bytes(&bytes)?;
+        }
+        cursor.set_position(0);
+        let mut read_buff = ReadBuf::from(cursor.get_ref());
+        match ConfigParam::read(&mut read_buff) {
+            Ok(res) => Ok(res),
+            Err(err) => Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Error reading ConfigParam: {}", err),
+            )),
         }
     }
 }

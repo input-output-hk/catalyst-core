@@ -26,10 +26,9 @@ quickcheck! {
 
 }
 
-use std::fmt::Display;
-use crate::transaction::Output;
 use crate::ledger::OutputAddress;
-
+use crate::transaction::Output;
+use std::fmt::Display;
 
 fn check_eq<X: Eq + Display>(s1: &str, x1: X, s2: &str, x2: X, s: &str) -> Result<(), String> {
     if x1 == x2 {
@@ -225,11 +224,10 @@ impl Arbitrary for AccountIdentifier {
     }
 }
 
-
-use chain_ser::deser::{Serialize, Deserialize};
-use std::io::Error;
-use chain_ser::packer::Codec;
 use crate::value::Value;
+use chain_ser::deser::{Deserialize, Serialize};
+use chain_ser::packer::Codec;
+use std::io::Error;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct MockU32(u32);
@@ -255,7 +253,7 @@ impl Deserialize for MockU32 {
 
 #[test]
 pub fn output_serialize_deserialize_biyection() -> Result<(), std::io::Error> {
-    let output : Output<MockU32> = Output{
+    let output: Output<MockU32> = Output {
         address: MockU32(1000),
         value: Value(1000),
     };

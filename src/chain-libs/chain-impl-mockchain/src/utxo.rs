@@ -13,7 +13,7 @@ use std::fmt;
 use thiserror::Error;
 
 use crate::ledger::OutputAddress;
-use chain_ser::deser::{Serialize, Deserialize};
+use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use imhamt::{Hamt, HamtIter, InsertError, RemoveError, ReplaceError, UpdateError};
 
@@ -116,9 +116,8 @@ pub struct EntryOwned<OutputAddress> {
     pub output: Output<OutputAddress>,
 }
 
-
 impl<OutputAddress: Serialize> Serialize for Entry<'_, OutputAddress> {
-    type Error = <OutputAddress as Serialize>::Error;
+    type Error = std::io::Error;
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         let mut codec = Codec::new(writer);
@@ -130,17 +129,17 @@ impl<OutputAddress: Serialize> Serialize for Entry<'_, OutputAddress> {
 }
 
 impl<OutputAddress: Deserialize> Deserialize for EntryOwned<OutputAddress> {
-    type Error = <OutputAddress as Deserialize>::Error;
+    type Error = std::io::Error;
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         let mut codec = Codec::new(reader);
-        let fragment_id =  FragmentId::deserialize(&mut codec)?;
+        let fragment_id = FragmentId::deserialize(&mut codec)?;
         let output_index = codec.get_u8()?;
-        let output : Output<OutputAddress> = Output::deserialize(&mut codec)?;
-        Ok(EntryOwned{
+        let output: Output<OutputAddress> = Output::deserialize(&mut codec)?;
+        Ok(EntryOwned {
             fragment_id,
             output_index,
-            output
+            output,
         })
     }
 }

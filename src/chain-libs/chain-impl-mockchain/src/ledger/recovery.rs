@@ -1,5 +1,6 @@
 use super::pots;
-use super::Entry;
+use super::{Entry, EntryOwned};
+use chain_addr::Address;
 use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::io::Error;
@@ -17,6 +18,25 @@ enum EntrySerializeCode {
     MultisigDeclaration = 8,
     StakePool = 9,
     LeaderParticipation = 10,
+}
+
+impl EntrySerializeCode {
+    pub fn from_u8(n: u8) -> Option<Self> {
+        match n {
+            0 => Some(EntrySerializeCode::Globals),
+            1 => Some(EntrySerializeCode::Pot),
+            2 => Some(EntrySerializeCode::Utxo),
+            3 => Some(EntrySerializeCode::OldUtxo),
+            4 => Some(EntrySerializeCode::Account),
+            5 => Some(EntrySerializeCode::ConfigParam),
+            6 => Some(EntrySerializeCode::UpdateProposal),
+            7 => Some(EntrySerializeCode::MultisigAccount),
+            8 => Some(EntrySerializeCode::MultisigDeclaration),
+            9 => Some(EntrySerializeCode::StakePool),
+            10 => Some(EntrySerializeCode::LeaderParticipation),
+            _ => None,
+        }
+    }
 }
 
 impl Serialize for Entry<'_> {
@@ -77,5 +97,66 @@ impl Serialize for Entry<'_> {
             }
         }
         Ok(())
+    }
+}
+
+impl Deserialize for EntryOwned {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let code_u8 = codec.get_u8()?;
+        let code = EntrySerializeCode::from_u8(code_u8).ok_or(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Error reading Entry, not recognized type code {}", code_u8),
+        ))?;
+        match code {
+            EntrySerializeCode::Globals => Ok(EntryOwned::Globals(super::Globals::deserialize(
+                &mut codec,
+            )?)),
+            EntrySerializeCode::Pot => Ok(EntryOwned::Pot(super::pots::Entry::deserialize(
+                &mut codec,
+            )?)),
+            EntrySerializeCode::Utxo => Ok(EntryOwned::Utxo(crate::utxo::EntryOwned::deserialize(
+                &mut codec,
+            )?)),
+            EntrySerializeCode::OldUtxo => Ok(EntryOwned::OldUtxo(
+                crate::utxo::EntryOwned::deserialize(&mut codec)?,
+            )),
+            EntrySerializeCode::Account => {
+                let identifier = crate::account::Identifier::deserialize(&mut codec)?;
+                let account = crate::accounting::account::AccountState::deserialize(&mut codec)?;
+                Ok(EntryOwned::Account((identifier, account)))
+            }
+            EntrySerializeCode::ConfigParam => Ok(EntryOwned::ConfigParam(
+                crate::config::ConfigParam::deserialize(&mut codec)?,
+            )),
+            EntrySerializeCode::UpdateProposal => {
+                let proposal_id = crate::update::UpdateProposalId::deserialize(&mut codec)?;
+                let proposal_state = crate::update::UpdateProposalState::deserialize(&mut codec)?;
+                Ok(EntryOwned::UpdateProposal((proposal_id, proposal_state)))
+            }
+            EntrySerializeCode::MultisigAccount => {
+                let identifier = crate::multisig::Identifier::deserialize(&mut codec)?;
+                let account_state =
+                    crate::accounting::account::AccountState::deserialize(&mut codec)?;
+                Ok(EntryOwned::MultisigAccount((identifier, account_state)))
+            }
+            EntrySerializeCode::MultisigDeclaration => {
+                let identifier = crate::multisig::Identifier::deserialize(&mut codec)?;
+                let declaration = crate::multisig::Declaration::deserialize(&mut codec)?;
+                Ok(EntryOwned::MultisigDeclaration((identifier, declaration)))
+            }
+            EntrySerializeCode::StakePool => {
+                let pool_id = crate::certificate::PoolId::deserialize(&mut codec)?;
+                let pool_state = crate::stake::PoolState::deserialize(&mut codec)?;
+                Ok(EntryOwned::StakePool((pool_id, pool_state)))
+            }
+            EntrySerializeCode::LeaderParticipation => {
+                let pool_id = crate::certificate::PoolId::deserialize(&mut codec)?;
+                let v = codec.get_u32()?;
+                Ok(EntryOwned::LeaderParticipation((pool_id, v)))
+            }
+        }
     }
 }

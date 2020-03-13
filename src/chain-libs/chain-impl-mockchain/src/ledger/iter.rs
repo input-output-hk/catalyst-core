@@ -47,6 +47,35 @@ pub enum Entry<'a> {
     LeaderParticipation((&'a crate::certificate::PoolId, &'a u32)),
 }
 
+pub enum EntryOwned {
+    Globals(Globals),
+    Pot(pots::Entry),
+    Utxo(utxo::EntryOwned<Address>),
+    OldUtxo(utxo::EntryOwned<legacy::OldAddress>),
+    Account(
+        (
+            account::Identifier,
+            crate::accounting::account::AccountState<()>,
+        ),
+    ),
+    ConfigParam(ConfigParam),
+    UpdateProposal(
+        (
+            crate::update::UpdateProposalId,
+            crate::update::UpdateProposalState,
+        ),
+    ),
+    MultisigAccount(
+        (
+            crate::multisig::Identifier,
+            crate::accounting::account::AccountState<()>,
+        ),
+    ),
+    MultisigDeclaration((crate::multisig::Identifier, crate::multisig::Declaration)),
+    StakePool((crate::certificate::PoolId, crate::stake::PoolState)),
+    LeaderParticipation((crate::certificate::PoolId, u32)),
+}
+
 #[derive(Eq, PartialEq, Clone, Debug)]
 pub struct Globals {
     pub date: BlockDate,

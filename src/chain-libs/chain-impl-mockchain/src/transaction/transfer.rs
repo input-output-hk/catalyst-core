@@ -20,9 +20,10 @@ impl<Address: Serialize> Serialize for Output<Address> {
         let mut codec = Codec::new(writer);
         match self.address.serialize(&mut codec) {
             Ok(_) => Ok(()),
-            Err(e) => Err(std::io::Error::new(std::io::ErrorKind::Other,
-            format!("Error writing Output data for Address type: {}", e))
-            ),
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Error writing Output data for Address type: {}", e),
+            )),
         }?;
         codec.put_u64(self.value.0)?;
         Ok(())
@@ -36,10 +37,10 @@ impl<Address: Deserialize> Deserialize for Output<Address> {
         let mut codec = Codec::new(reader);
         let address = match Address::deserialize(&mut codec) {
             Ok(address) => Ok(address),
-            Err(e) => Err(
-                std::io::Error::new(std::io::ErrorKind::InvalidData,
-                format!("Error reading Output data for Address type: {}", e))
-            ),
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Error reading Output data for Address type: {}", e),
+            )),
         }?;
         let value = Value(codec.get_u64()?);
         Ok(Output { address, value })

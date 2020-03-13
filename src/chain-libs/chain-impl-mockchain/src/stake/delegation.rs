@@ -244,21 +244,22 @@ mod tests {
 
     use super::*;
     use crate::certificate::PoolRegistration;
-    use quickcheck::{Arbitrary, Gen, TestResult, quickcheck as quick_check};
-    use quickcheck_macros::quickcheck;
-    use std::iter;
     use crate::stake::PoolLastRewards;
     use crate::value::Value;
-    use chain_time::Epoch;
-    use chain_core::property::{Serialize, Deserialize};
     use chain_core::property::testing::serialization_bijection;
+    use chain_core::property::{Deserialize, Serialize};
+    use chain_time::Epoch;
+    use quickcheck::{quickcheck as quick_check, Arbitrary, Gen, TestResult};
+    use quickcheck_macros::quickcheck;
+    use std::iter;
 
     impl Arbitrary for PoolsState {
         fn arbitrary<G: Gen>(gen: &mut G) -> Self {
             let size = usize::arbitrary(gen);
-            let arbitrary_stake_pools : Vec<PoolRegistration> = iter::from_fn(|| Some(PoolRegistration::arbitrary(gen)))
-                .take(size)
-                .collect();
+            let arbitrary_stake_pools: Vec<PoolRegistration> =
+                iter::from_fn(|| Some(PoolRegistration::arbitrary(gen)))
+                    .take(size)
+                    .collect();
             let mut delegation_state = PoolsState::new();
             for stake_pool in arbitrary_stake_pools {
                 delegation_state = delegation_state.register_stake_pool(stake_pool).unwrap();

@@ -8,8 +8,8 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::{Ed25519, PublicKey};
 use chain_ser::deser::Deserialize;
-use std::sync::Arc;
 use chain_ser::packer::Codec;
+use std::sync::Arc;
 
 pub type BftVerificationAlg = Ed25519;
 
@@ -97,11 +97,11 @@ impl property::Deserialize for LeaderId {
         let mut codec = Codec::new(reader);
         let bytes = codec.get_bytes(32)?;
         let mut buff = ReadBuf::from(&bytes);
-        match  deserialize_public_key(&mut buff) {
+        match deserialize_public_key(&mut buff) {
             Ok(pk) => Ok(LeaderId(pk)),
             Err(e) => Err(std::io::Error::new(
                 std::io::ErrorKind::Other,
-                format!("Error reading LeaderId public key: {}", e)
+                format!("Error reading LeaderId public key: {}", e),
             )),
         }
     }

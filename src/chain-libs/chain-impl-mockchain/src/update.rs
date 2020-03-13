@@ -436,10 +436,10 @@ mod tests {
         },
     };
     use chain_addr::Discrimination;
-    use std::iter;
-    use quickcheck::{Arbitrary, Gen, TestResult, quickcheck as quick_check};
-    use quickcheck_macros::quickcheck;
     use chain_core::property::testing::serialization_bijection;
+    use quickcheck::{quickcheck as quick_check, Arbitrary, Gen, TestResult};
+    use quickcheck_macros::quickcheck;
+    use std::iter;
 
     impl Arbitrary for UpdateProposal {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -491,8 +491,9 @@ mod tests {
             Self {
                 proposal: UpdateProposal::arbitrary(g),
                 proposal_date: BlockDate::arbitrary(g),
-                votes: iter::from_fn(|| Some(UpdateVoterId::arbitrary(g))).take(size).collect(),
-
+                votes: iter::from_fn(|| Some(UpdateVoterId::arbitrary(g)))
+                    .take(size)
+                    .collect(),
             }
         }
     }

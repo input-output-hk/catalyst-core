@@ -699,8 +699,8 @@ impl TagLen {
 #[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
-    use quickcheck::{Arbitrary, Gen, TestResult};
     use chain_core::property::testing::serialization_bijection;
+    use quickcheck::{Arbitrary, Gen, TestResult};
     use strum::IntoEnumIterator;
 
     quickcheck! {

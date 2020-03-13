@@ -1,9 +1,9 @@
-use super::genesis::GenesisPraosLeader;
 use super::bft::LeaderId;
+use super::genesis::GenesisPraosLeader;
+use chain_core::property::testing::serialization_bijection;
 use chain_crypto::{testing, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12};
 use lazy_static::lazy_static;
-use quickcheck::{Arbitrary, Gen, quickcheck, TestResult};
-use chain_core::property::testing::serialization_bijection;
+use quickcheck::{quickcheck, Arbitrary, Gen, TestResult};
 
 impl Arbitrary for GenesisPraosLeader {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {

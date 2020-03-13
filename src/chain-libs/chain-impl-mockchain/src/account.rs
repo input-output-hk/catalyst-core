@@ -5,9 +5,12 @@ use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
     property,
 };
-use chain_crypto::{Ed25519, PublicKey, Signature};
+use chain_crypto::{AsymmetricPublicKey, Ed25519, PublicKey, Signature};
 
 pub use account::{DelegationRatio, DelegationType, LedgerError, SpendingCounter};
+use chain_ser::deser::Deserialize;
+use chain_ser::packer::Codec;
+use std::io::Error;
 
 pub type AccountAlg = Ed25519;
 
@@ -39,6 +42,24 @@ impl property::Serialize for Identifier {
     type Error = std::io::Error;
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         serialize_public_key(&self.0, writer)
+    }
+}
+
+impl property::Deserialize for Identifier {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let bytes =
+            codec.get_bytes(<AccountAlg as AsymmetricPublicKey>::PUBLIC_KEY_SIZE as usize)?;
+        let mut bytes_buff = ReadBuf::from(&bytes);
+        match Identifier::read(&mut bytes_buff) {
+            Ok(identifier) => Ok(identifier),
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Error reading Identifier: {}", e),
+            )),
+        }
     }
 }
 

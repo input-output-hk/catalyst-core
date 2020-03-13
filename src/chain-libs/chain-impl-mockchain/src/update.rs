@@ -7,7 +7,6 @@ use crate::setting::Settings;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::Verification;
-use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::collections::{BTreeMap, HashSet};
 
@@ -163,7 +162,7 @@ impl property::Deserialize for UpdateProposalState {
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         let mut codec = Codec::new(reader);
-        let proposal = UpdateProposal::deserialze(&mut codec)?;
+        let proposal = UpdateProposal::deserialize(&mut codec)?;
         let proposal_date = BlockDate::deserialize(&mut codec)?;
         let total_votes = codec.get_u64()?;
         let mut votes: HashSet<UpdateVoterId> = HashSet::new();

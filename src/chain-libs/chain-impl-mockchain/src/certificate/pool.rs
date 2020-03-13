@@ -263,7 +263,8 @@ impl property::Serialize for PoolRegistration {
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         let mut codec = Codec::new(writer);
-        let bytes = self.serialize_into_bytearray().as_slice();
+        let byte_array = self.serialize_into_bytearray();
+        let bytes = byte_array.as_slice();
         let size = bytes.len() as u64;
         codec.put_u64(size)?;
         codec.put_bytes(bytes)?;

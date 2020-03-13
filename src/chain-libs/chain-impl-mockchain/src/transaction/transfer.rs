@@ -14,22 +14,33 @@ pub struct Output<Address> {
 }
 
 impl<Address: Serialize> Serialize for Output<Address> {
-    type Error = <Address as Serialize>::Error;
+    type Error = std::io::Error;
 
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         let mut codec = Codec::new(writer);
-        self.address.serialize(&mut codec)?;
+        match self.address.serialize(&mut codec) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(std::io::Error::new(std::io::ErrorKind::Other,
+            format!("Error writing Output data for Address type: {}", e))
+            ),
+        }?;
         codec.put_u64(self.value.0)?;
         Ok(())
     }
 }
 
 impl<Address: Deserialize> Deserialize for Output<Address> {
-    type Error = <Address as Deserialize>::Error;
+    type Error = std::io::Error;
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         let mut codec = Codec::new(reader);
-        let address = Address::deserialize(&mut codec)?;
+        let address = match Address::deserialize(&mut codec) {
+            Ok(address) => Ok(address),
+            Err(e) => Err(
+                std::io::Error::new(std::io::ErrorKind::InvalidData,
+                format!("Error reading Output data for Address type: {}", e))
+            ),
+        }?;
         let value = Value(codec.get_u64()?);
         Ok(Output { address, value })
     }

@@ -338,7 +338,7 @@ impl property::Deserialize for ConfigParam {
         // we will replicate the buffer so we can reuse the reader method
         let mut cursor = Cursor::new(Vec::with_capacity(2 + len));
         {
-            let mut writer = Codec::new(cursor);
+            let mut writer = Codec::new(&mut cursor);
             writer.put_u16(tag_len.0)?;
             writer.put_bytes(&bytes)?;
         }

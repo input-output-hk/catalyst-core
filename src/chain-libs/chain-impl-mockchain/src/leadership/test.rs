@@ -1,7 +1,9 @@
 use super::genesis::GenesisPraosLeader;
+use super::bft::LeaderId;
 use chain_crypto::{testing, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12};
 use lazy_static::lazy_static;
-use quickcheck::{Arbitrary, Gen};
+use quickcheck::{Arbitrary, Gen, quickcheck, TestResult};
+use chain_core::property::testing::serialization_bijection;
 
 impl Arbitrary for GenesisPraosLeader {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -17,5 +19,11 @@ impl Arbitrary for GenesisPraosLeader {
             vrf_public_key: vrf_sk.to_public(),
             kes_public_key: PK_KES.clone(),
         }
+    }
+}
+
+quickcheck! {
+    fn leader_id_serialize_deserialize_biyection(leader_id: LeaderId) -> TestResult {
+        serialization_bijection(leader_id)
     }
 }

@@ -95,7 +95,8 @@ impl property::Deserialize for LeaderId {
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         let mut codec = Codec::new(reader);
-        let bytes = codec.get_bytes(32)?;
+        let size : usize = 32;
+        let bytes = codec.get_bytes(size)?;
         let mut buff = ReadBuf::from(&bytes);
         match deserialize_public_key(&mut buff) {
             Ok(pk) => Ok(LeaderId(pk)),

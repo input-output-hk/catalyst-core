@@ -46,29 +46,29 @@ pub enum RebalanceResult {
     MergeIntoSelf,
 }
 
-pub struct RebalanceArgs<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> {
+pub struct RebalanceArgs<'a> {
     pub parent: PageHandle<'a, Mutable<'a>>,
     pub parent_anchor: Option<usize>,
-    pub siblings: SiblingsArg<'a, F>,
+    pub siblings: SiblingsArg<'a>,
 }
 
-// pub enum SiblingsArg<'a> {
-//     Left(PageHandle<'a, Mutable<'a>>),
-//     Right(PageHandle<'a, Mutable<'a>>),
-//     Both(PageHandle<'a, Mutable<'a>>, PageHandle<'a, Mutable<'a>>),
+pub enum SiblingsArg<'a> {
+    Left(PageHandle<'a, Immutable<'a>>),
+    Right(PageHandle<'a, Immutable<'a>>),
+    Both(PageHandle<'a, Immutable<'a>>, PageHandle<'a, Immutable<'a>>),
+}
+
+// pub type SiblingHandle<'a, F> = (PageHandle<'a, Immutable<'a>>, F);
+// pub enum SiblingsArg<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> {
+//     Left(SiblingHandle<'a, F>),
+//     Right(SiblingHandle<'a, F>),
+//     Both(SiblingHandle<'a, F>, SiblingHandle<'a, F>),
 // }
 
-pub type SiblingHandle<'a, F> = (PageHandle<'a, Immutable<'a>>, F);
-pub enum SiblingsArg<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> {
-    Left(SiblingHandle<'a, F>),
-    Right(SiblingHandle<'a, F>),
-    Both(SiblingHandle<'a, F>, SiblingHandle<'a, F>),
-}
-
-impl<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> SiblingsArg<'a, F> {
+impl<'a> SiblingsArg<'a> {
     pub fn new_from_options(
-        left_sibling: Option<SiblingHandle<'a, F>>,
-        right_sibling: Option<SiblingHandle<'a, F>>,
+        left_sibling: Option<PageHandle<'a, Immutable<'a>>>,
+        right_sibling: Option<PageHandle<'a, Immutable<'a>>>,
     ) -> Self {
         match (left_sibling, right_sibling) {
             (Some(left), Some(right)) => SiblingsArg::Both(left, right),

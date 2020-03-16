@@ -288,22 +288,20 @@ where
     }
 
     #[allow(dead_code)]
-    pub fn rebalance<'siblings: 'b, F: FnMut() -> PageHandle<'siblings, Mutable<'siblings>>>(
+    pub fn rebalance<'siblings>(
         &'b mut self,
-        args: RebalanceArgs<'siblings, F>,
+        args: SiblingsArg<'siblings>,
     ) -> Result<RebalanceResult, BTreeStoreError> {
         let current_len = self.keys().len();
-        let mut parent_ref = args.parent;
-        let anchor = args.parent_anchor;
 
         let result = {
-            let left_sibling_handle = match &args.siblings {
-                SiblingsArg::Left((handle, _)) | SiblingsArg::Both((handle, _), _) => Some(handle),
+            let left_sibling_handle = match &args {
+                SiblingsArg::Left(handle) | SiblingsArg::Both(handle, _) => Some(handle),
                 _ => None,
             };
 
-            let right_sibling_handle = match &args.siblings {
-                SiblingsArg::Right((handle, _)) | SiblingsArg::Both(_, (handle, _)) => Some(handle),
+            let right_sibling_handle = match &args {
+                SiblingsArg::Right(handle) | SiblingsArg::Both(_, handle) => Some(handle),
                 _ => None,
             };
 
@@ -341,195 +339,188 @@ where
             }
         };
 
-        match result {
-            RebalanceResult::TookKeyFromLeft => {
-                let mut sibling_clone = match args.siblings {
-                    SiblingsArg::Left((_, clone)) | SiblingsArg::Both((_, clone), _) => clone,
-                    _ => unreachable!(),
-                };
+        Ok(result)
+    }
 
-                let mut sibling = sibling_clone();
+    pub fn take_key_from_left<'siblings>(
+        &mut self,
+        mut parent: PageHandle<'siblings, Mutable<'siblings>>,
+        anchor: Option<usize>,
+        mut sibling: PageHandle<'siblings, Mutable<'siblings>>,
+    ) {
+        // steal a key from the left sibling through parent
+        let current_len = self.keys().len();
 
-                // steal a key from the left sibling through parent
-                let (new_anchor_key, new_first_child) =
-                    sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                        let node = node.as_internal();
-                        let keys = node.keys();
-                        let last = keys.len().checked_sub(1).unwrap();
-                        let stolen_key = keys.get(last);
-                        let stolen_child = node.children().get(last + 1);
-                        (stolen_key.borrow().clone(), stolen_child.borrow().clone())
-                    });
+        let (new_anchor_key, new_first_child) =
+            sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
+                let node = node.as_internal();
+                let keys = node.keys();
+                let last = keys.len().checked_sub(1).unwrap();
+                let stolen_key = keys.get(last);
+                let stolen_child = node.children().get(last + 1);
+                (stolen_key.borrow().clone(), stolen_child.borrow().clone())
+            });
 
-                let new_first_key =
-                    parent_ref.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                        let node = node.as_internal();
-                        let keys = node.keys();
-                        let stolen_key = keys.get(anchor.unwrap());
-                        stolen_key.borrow().clone()
-                    });
+        let new_first_key = parent.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
+            let node = node.as_internal();
+            let keys = node.keys();
+            let stolen_key = keys.get(anchor.unwrap());
+            stolen_key.borrow().clone()
+        });
 
-                self.keys_mut()
-                    .insert(0, &new_first_key)
-                    .expect("Couldn't insert key at pos 0");
-                self.children_mut()
-                    .insert(0, &new_first_child)
-                    .expect("Couldn't insert child at pos 0");
-                self.set_len(current_len + 1);
+        self.keys_mut()
+            .insert(0, &new_first_key)
+            .expect("Couldn't insert key at pos 0");
+        self.children_mut()
+            .insert(0, &new_first_child)
+            .expect("Couldn't insert child at pos 0");
+        self.set_len(current_len + 1);
 
-                parent_ref.as_node_mut(self.key_buffer_size, |mut node| {
-                    node.as_internal_mut()
-                        .update_key(anchor.unwrap(), new_anchor_key.borrow().clone())
-                        .unwrap();
-                });
+        parent.as_node_mut(self.key_buffer_size, |mut node| {
+            node.as_internal_mut()
+                .update_key(anchor.unwrap(), new_anchor_key.borrow().clone())
+                .unwrap();
+        });
 
-                sibling.as_node_mut(self.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
-                    let mut sibling = node.as_internal_mut();
-                    let last = sibling.keys().len().checked_sub(1).unwrap();
-                    sibling.keys_mut().delete(last).unwrap();
-                    sibling.children_mut().delete(last + 1).unwrap();
-                    sibling.set_len(last);
-                });
+        sibling.as_node_mut(self.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+            let mut sibling = node.as_internal_mut();
+            let last = sibling.keys().len().checked_sub(1).unwrap();
+            sibling.keys_mut().delete(last).unwrap();
+            sibling.children_mut().delete(last + 1).unwrap();
+            sibling.set_len(last);
+        });
+    }
+
+    pub fn take_key_from_right<'siblings>(
+        &mut self,
+        mut parent: PageHandle<'siblings, Mutable<'siblings>>,
+        anchor: Option<usize>,
+        mut sibling: PageHandle<'siblings, Mutable<'siblings>>,
+    ) {
+        // steal a key from the right sibling though parent
+        let current_len = self.keys().len();
+
+        let (new_right_anchor_key, new_last_child) =
+            sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
+                let node = node.as_internal();
+                let keys = node.keys();
+                let stolen_key = keys.get(0);
+                let stolen_child = node.children().get(0);
+                (stolen_key.borrow().clone(), stolen_child.borrow().clone())
+            });
+
+        let right_anchor_pos = anchor.map(|a| a + 1).unwrap_or(0);
+
+        let new_last_key = parent.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
+            node.as_internal()
+                .keys()
+                .get(right_anchor_pos)
+                .borrow()
+                .clone()
+        });
+
+        parent.as_node_mut(self.key_buffer_size, |mut node| {
+            node.as_internal_mut()
+                .update_key(right_anchor_pos, new_right_anchor_key.borrow().clone())
+                .unwrap()
+        });
+
+        let insert_pos = self.keys().len();
+        self.keys_mut()
+            .append(new_last_key.borrow())
+            .expect("Couldn't append key");
+        self.children_mut()
+            .insert(insert_pos + 1, &new_last_child)
+            .expect("Couldn't append child");
+        self.set_len(current_len + 1);
+
+        sibling.as_node_mut(self.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+            let mut sibling = node.as_internal_mut();
+            let current_len = sibling.keys().len();
+            sibling
+                .keys_mut()
+                .delete(0)
+                .expect("Couldn't delete key at pos 0");
+            sibling
+                .children_mut()
+                .delete(0)
+                .expect("Couldn't delete child at pos 0");
+            sibling.set_len(current_len.checked_sub(1).unwrap());
+        });
+    }
+
+    pub fn merge_into_left<'siblings>(
+        &mut self,
+        mut parent: PageHandle<'siblings, Mutable<'siblings>>,
+        anchor: Option<usize>,
+        mut sibling: PageHandle<'siblings, Mutable<'siblings>>,
+    ) {
+        //merge this into left
+        let anchor_key = parent.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
+            node.as_internal()
+                .keys()
+                .get(anchor.unwrap())
+                .borrow()
+                .clone()
+        });
+
+        sibling.as_node_mut(self.key_buffer_size, |mut node| {
+            for (k, v) in Some(anchor_key.as_output())
+                .into_iter()
+                .chain(self.keys().into_iter())
+                .zip(self.children().into_iter())
+            {
+                let mut merge_target = node.as_internal_mut();
+                let insert_pos = merge_target.keys().len();
+                merge_target
+                    .keys_mut()
+                    .append(k.borrow())
+                    .expect("Couldn't append key");
+                merge_target
+                    .children_mut()
+                    .insert(insert_pos + 1, &v)
+                    .expect("Couldn't append child");
+                merge_target.set_len(insert_pos + 1);
             }
-            RebalanceResult::TookKeyFromRight => {
-                let mut sibling_mut = match args.siblings {
-                    SiblingsArg::Right((_, clone)) | SiblingsArg::Both(_, (_, clone)) => clone,
-                    _ => unreachable!(),
-                };
+        });
 
-                let mut sibling = sibling_mut();
+        self.set_len(0);
+    }
 
-                // steal a key from the right sibling though parent
-                let (new_right_anchor_key, new_last_child) =
-                    sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                        let node = node.as_internal();
-                        let keys = node.keys();
-                        let stolen_key = keys.get(0);
-                        let stolen_child = node.children().get(0);
-                        (stolen_key.borrow().clone(), stolen_child.borrow().clone())
-                    });
+    pub fn merge_into_self<'siblings>(
+        &mut self,
+        parent: PageHandle<'siblings, Mutable<'siblings>>,
+        anchor: Option<usize>,
+        sibling: PageHandle<'siblings, Mutable<'siblings>>,
+    ) {
+        //merge right into this
+        let anchor_key = parent.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
+            node.as_internal()
+                .keys()
+                .get(anchor.map(|a| a + 1).unwrap_or(0))
+                .borrow()
+                .clone()
+        });
 
-                let right_anchor_pos = anchor.map(|a| a + 1).unwrap_or(0);
-
-                let new_last_key =
-                    parent_ref.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                        node.as_internal()
-                            .keys()
-                            .get(right_anchor_pos)
-                            .borrow()
-                            .clone()
-                    });
-
-                parent_ref.as_node_mut(self.key_buffer_size, |mut node| {
-                    node.as_internal_mut()
-                        .update_key(right_anchor_pos, new_right_anchor_key.borrow().clone())
-                        .unwrap()
-                });
-
+        sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
+            for (k, v) in Some(anchor_key.as_output())
+                .into_iter()
+                .chain(node.as_internal().keys().into_iter())
+                .zip(node.as_internal().children().into_iter())
+            {
                 let insert_pos = self.keys().len();
                 self.keys_mut()
-                    .append(new_last_key.borrow())
+                    .append(k.borrow())
                     .expect("Couldn't append key");
                 self.children_mut()
-                    .insert(insert_pos + 1, &new_last_child)
+                    .insert(insert_pos + 1, &v)
                     .expect("Couldn't append child");
-                self.set_len(current_len + 1);
-
-                sibling.as_node_mut(self.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
-                    let mut sibling = node.as_internal_mut();
-                    let current_len = sibling.keys().len();
-                    sibling
-                        .keys_mut()
-                        .delete(0)
-                        .expect("Couldn't delete key at pos 0");
-                    sibling
-                        .children_mut()
-                        .delete(0)
-                        .expect("Couldn't delete child at pos 0");
-                    sibling.set_len(current_len.checked_sub(1).unwrap());
-                });
+                self.set_len(insert_pos + 1);
             }
-            RebalanceResult::MergeIntoLeft => {
-                let mut sibling_clone = match args.siblings {
-                    SiblingsArg::Left((_, clone)) | SiblingsArg::Both((_, clone), _) => clone,
-                    _ => unreachable!(),
-                };
 
-                let mut sibling = sibling_clone();
-
-                //merge this into left
-                let anchor_key =
-                    parent_ref.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                        node.as_internal()
-                            .keys()
-                            .get(anchor.unwrap())
-                            .borrow()
-                            .clone()
-                    });
-
-                sibling.as_node_mut(self.key_buffer_size, |mut node| {
-                    for (k, v) in Some(anchor_key.as_output())
-                        .into_iter()
-                        .chain(self.keys().into_iter())
-                        .zip(self.children().into_iter())
-                    {
-                        let mut merge_target = node.as_internal_mut();
-                        let insert_pos = merge_target.keys().len();
-                        merge_target
-                            .keys_mut()
-                            .append(k.borrow())
-                            .expect("Couldn't append key");
-                        merge_target
-                            .children_mut()
-                            .insert(insert_pos + 1, &v)
-                            .expect("Couldn't append child");
-                        merge_target.set_len(insert_pos + 1);
-                    }
-                });
-
-                self.set_len(0);
-            }
-            RebalanceResult::MergeIntoSelf => {
-                //merge right into this
-                let mut sibling_mut = match args.siblings {
-                    SiblingsArg::Right((_, clone)) | SiblingsArg::Both(_, (_, clone)) => clone,
-                    _ => unreachable!(),
-                };
-
-                let sibling = sibling_mut();
-
-                let anchor_key =
-                    parent_ref.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                        node.as_internal()
-                            .keys()
-                            .get(anchor.map(|a| a + 1).unwrap_or(0))
-                            .borrow()
-                            .clone()
-                    });
-
-                sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                    for (k, v) in Some(anchor_key.as_output())
-                        .into_iter()
-                        .chain(node.as_internal().keys().into_iter())
-                        .zip(node.as_internal().children().into_iter())
-                    {
-                        let insert_pos = self.keys().len();
-                        self.keys_mut()
-                            .append(k.borrow())
-                            .expect("Couldn't append key");
-                        self.children_mut()
-                            .insert(insert_pos + 1, &v)
-                            .expect("Couldn't append child");
-                        self.set_len(insert_pos + 1);
-                    }
-
-                    // node.as_internal_mut().unwrap().set_len(0);
-                    // not really necessary, because this node will get deleted anyway
-                });
-            }
-        }
-
-        Ok(result)
+            // node.as_internal_mut().unwrap().set_len(0);
+            // not really necessary, because this node will get deleted anyway
+        });
     }
 
     pub fn update_key(&mut self, pos: usize, key: K) -> Result<(), ()> {

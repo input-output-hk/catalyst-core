@@ -37,19 +37,11 @@ pub(crate) enum NodeTag {
     Leaf = 1,
 }
 
-use super::pages::borrow::{Immutable, Mutable};
-use super::pages::PageHandle;
 pub enum RebalanceResult {
-    TookKeyFromLeft,
-    TookKeyFromRight,
+    TakeFromLeft,
+    TakeFromRight,
     MergeIntoLeft,
     MergeIntoSelf,
-}
-
-pub struct RebalanceArgs<'a, N: NodePageRef + 'a> {
-    pub parent: PageHandle<'a, Mutable<'a>>,
-    pub parent_anchor: Option<usize>,
-    pub siblings: SiblingsArg<N>,
 }
 
 pub enum SiblingsArg<N: NodePageRef> {
@@ -57,13 +49,6 @@ pub enum SiblingsArg<N: NodePageRef> {
     Right(N),
     Both(N, N),
 }
-
-// pub type SiblingHandle<'a, F> = (PageHandle<'a, Immutable<'a>>, F);
-// pub enum SiblingsArg<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> {
-//     Left(SiblingHandle<'a, F>),
-//     Right(SiblingHandle<'a, F>),
-//     Both(SiblingHandle<'a, F>, SiblingHandle<'a, F>),
-// }
 
 impl<N: NodePageRef> SiblingsArg<N> {
     pub fn new_from_options(left_sibling: Option<N>, right_sibling: Option<N>) -> Self {
@@ -214,6 +199,37 @@ mod tests {
     use crate::tests::U64Key;
     use std::mem::size_of;
     use tempfile::tempfile;
+
+    impl<'a> NodePageRef for PageHandle<'a, Immutable<'a>> {
+        fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+        where
+            K: Key,
+        {
+            self.as_node(key_buffer_size, f)
+        }
+    }
+
+    impl<'a> NodePageRef for PageHandle<'a, Mutable<'a>> {
+        fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+        where
+            K: Key,
+        {
+            self.as_node(key_buffer_size, f)
+        }
+    }
+
+    impl<'a> NodePageRefMut for PageHandle<'a, Mutable<'a>> {
+        fn as_node_mut<K, R>(
+            &mut self,
+            key_buffer_size: usize,
+            f: impl FnOnce(Node<K, &mut [u8]>) -> R,
+        ) -> R
+        where
+            K: Key,
+        {
+            self.as_node_mut(key_buffer_size, f)
+        }
+    }
 
     pub fn pages() -> Pages {
         let page_size = 8 + 8 + 3 * size_of::<U64Key>() + 5 * size_of::<PageId>() + 4 + 8;

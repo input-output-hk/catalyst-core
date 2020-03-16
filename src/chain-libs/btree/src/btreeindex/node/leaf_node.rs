@@ -1,10 +1,7 @@
 use std::marker::PhantomData;
 
-use super::{Node, RebalanceArgs, RebalanceResult, SiblingsArg};
-use crate::btreeindex::{
-    pages::{borrow::Mutable, PageHandle},
-    Keys, KeysMut, PageId, Values, ValuesMut,
-};
+use super::{Node, NodePageRef, NodePageRefMut, RebalanceResult, SiblingsArg};
+use crate::btreeindex::{Keys, KeysMut, PageId, Values, ValuesMut};
 use crate::BTreeStoreError;
 use crate::Key;
 use crate::MemPage;
@@ -227,8 +224,8 @@ where
     }
 
     pub fn rebalance<N: super::NodePageRef>(
-        &'b mut self,
-        mut args: SiblingsArg<N>,
+        &'b self,
+        args: SiblingsArg<N>,
     ) -> Result<RebalanceResult, BTreeStoreError> {
         let current_len = self.keys().len();
 
@@ -253,7 +250,7 @@ where
                     })
                     .is_some()
                 {
-                    RebalanceResult::TookKeyFromLeft
+                    RebalanceResult::TakeFromLeft
                 } else if right_sibling_handle
                     .clone()
                     .filter(|handle| {
@@ -263,7 +260,7 @@ where
                     })
                     .is_some()
                 {
-                    RebalanceResult::TookKeyFromRight
+                    RebalanceResult::TakeFromRight
                 } else if left_sibling_handle.is_some() {
                     RebalanceResult::MergeIntoLeft
                 } else if right_sibling_handle.is_some() {
@@ -282,9 +279,9 @@ where
 
     pub fn take_key_from_left<'siblings>(
         &mut self,
-        mut parent: PageHandle<'siblings, Mutable<'siblings>>,
+        mut parent: impl NodePageRefMut,
         anchor: Option<usize>,
-        mut sibling: PageHandle<'siblings, Mutable<'siblings>>,
+        mut sibling: impl NodePageRefMut,
     ) {
         // steal a key from the left sibling
         let current_len = self.keys().len();
@@ -326,9 +323,9 @@ where
 
     pub fn take_key_from_right<'siblings>(
         &mut self,
-        mut parent: PageHandle<'siblings, Mutable<'siblings>>,
+        mut parent: impl NodePageRefMut,
         anchor: Option<usize>,
-        mut sibling: PageHandle<'siblings, Mutable<'siblings>>,
+        mut sibling: impl NodePageRefMut,
     ) {
         // steal a key from the right sibling
         let current_len = self.keys().len();
@@ -378,9 +375,9 @@ where
 
     pub fn merge_into_left<'siblings>(
         &mut self,
-        parent: PageHandle<'siblings, Mutable<'siblings>>,
-        anchor: Option<usize>,
-        mut sibling: PageHandle<'siblings, Mutable<'siblings>>,
+        _parent: impl NodePageRefMut,
+        _anchor: Option<usize>,
+        mut sibling: impl NodePageRefMut,
     ) {
         //merge this into left
         sibling.as_node_mut(self.key_buffer_size, |mut node| {
@@ -403,9 +400,9 @@ where
 
     pub fn merge_into_self<'siblings>(
         &mut self,
-        parent: PageHandle<'siblings, Mutable<'siblings>>,
-        anchor: Option<usize>,
-        sibling: PageHandle<'siblings, Mutable<'siblings>>,
+        _parent: impl NodePageRefMut,
+        _anchor: Option<usize>,
+        sibling: impl NodePageRef,
     ) {
         //merge right into this
 
@@ -434,7 +431,7 @@ where
     ) -> Result<LeafDeleteStatus, BTreeStoreError> {
         match self.keys().binary_search(key) {
             Ok(pos) => {
-                self.delete_key_value(pos)
+                self.delete_key_value(dbg!(pos))
                     .expect("internal error: keys search returned invalid position");
                 let current_len = self.keys().len();
                 if current_len < self.lower_bound() {
@@ -598,7 +595,7 @@ mod tests {
         assert_eq!(keys.len(), values.len());
 
         const NUMBER_OF_KEYS: usize = 3;
-        let page_size = crate::btreeindex::node::TAG_SIZE
+        let _page_size = crate::btreeindex::node::TAG_SIZE
             + LEN_SIZE
             + NUMBER_OF_KEYS * size_of::<U64Key>()
             + NUMBER_OF_KEYS * size_of::<V>();
@@ -673,17 +670,17 @@ mod tests {
             size_of::<U64Key>(),
             |mut node: Node<U64Key, &mut [u8]>| match node
                 .as_leaf_mut()
-                .rebalance(RebalanceArgs {
-                    parent,
-                    parent_anchor: Some(0),
-                    siblings: SiblingsArg::Left((left_sibling, || {
-                        storage.make_shadow(2, 12).unwrap();
-                        storage.mut_page(12).unwrap()
-                    })),
-                })
+                .rebalance(SiblingsArg::Left(left_sibling))
                 .unwrap()
             {
-                RebalanceResult::TookKeyFromLeft => (),
+                RebalanceResult::TakeFromLeft => {
+                    storage.make_shadow(2, 12).unwrap();
+                    node.as_leaf_mut().take_key_from_left(
+                        parent,
+                        Some(0),
+                        storage.mut_page(12).unwrap(),
+                    );
+                }
                 _ => panic!("need took from left"),
             },
         );
@@ -744,17 +741,17 @@ mod tests {
             size_of::<U64Key>(),
             |mut node: Node<U64Key, &mut [u8]>| match node
                 .as_leaf_mut()
-                .rebalance(RebalanceArgs {
-                    parent,
-                    parent_anchor: None,
-                    siblings: SiblingsArg::Right((right_sibling, || {
-                        storage.make_shadow(2, 12);
-                        storage.mut_page(12).unwrap()
-                    })),
-                })
+                .rebalance(SiblingsArg::Right(right_sibling))
                 .unwrap()
             {
-                RebalanceResult::TookKeyFromRight => (),
+                RebalanceResult::TakeFromRight => {
+                    storage.make_shadow(2, 12).unwrap();
+                    node.as_leaf_mut().take_key_from_right(
+                        parent,
+                        None,
+                        storage.mut_page(12).unwrap(),
+                    );
+                }
                 _ => panic!("need took from right"),
             },
         );
@@ -809,17 +806,17 @@ mod tests {
             size_of::<U64Key>(),
             |mut node: Node<U64Key, &mut [u8]>| match node
                 .as_leaf_mut()
-                .rebalance(RebalanceArgs {
-                    parent,
-                    parent_anchor: Some(0),
-                    siblings: SiblingsArg::Left((left_sibling, || {
-                        storage.make_shadow(2, 12).unwrap();
-                        storage.mut_page(12).unwrap()
-                    })),
-                })
+                .rebalance(SiblingsArg::Left(left_sibling))
                 .unwrap()
             {
-                RebalanceResult::MergeIntoLeft => (),
+                RebalanceResult::MergeIntoLeft => {
+                    storage.make_shadow(2, 12).unwrap();
+                    node.as_leaf_mut().merge_into_left(
+                        parent,
+                        Some(0),
+                        storage.mut_page(12).unwrap(),
+                    );
+                }
                 _ => panic!("need merge into left"),
             },
         );
@@ -875,17 +872,14 @@ mod tests {
             size_of::<U64Key>(),
             |mut node: Node<U64Key, &mut [u8]>| match node
                 .as_leaf_mut()
-                .rebalance(RebalanceArgs {
-                    parent,
-                    parent_anchor: None,
-                    siblings: SiblingsArg::Right((right_sibling, || {
-                        storage.make_shadow(2, 12).unwrap();
-                        storage.mut_page(12).unwrap()
-                    })),
-                })
+                .rebalance(SiblingsArg::Right(right_sibling))
                 .unwrap()
             {
-                RebalanceResult::MergeIntoSelf => (),
+                RebalanceResult::MergeIntoSelf => {
+                    storage.make_shadow(2, 12).unwrap();
+                    node.as_leaf_mut()
+                        .merge_into_self(parent, None, storage.mut_page(12).unwrap());
+                }
                 _ => panic!("need merge into self"),
             },
         );

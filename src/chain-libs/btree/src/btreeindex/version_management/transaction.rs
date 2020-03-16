@@ -1,7 +1,7 @@
 use super::Version;
 use crate::btreeindex::{
     borrow::Immutable,
-    node::{NodePageRef, NodePageRefMut},
+    node::{NodeRef, NodeRefMut},
     page_manager::PageManager,
     Node, PageHandle, PageId, Pages,
 };
@@ -60,7 +60,7 @@ impl<'a, 'b: 'a> PageRefMut<'a, 'b> {
     }
 }
 
-impl<'a, 'b: 'a> NodePageRef for PageRef<'a, 'b> {
+impl<'a, 'b: 'a> NodeRef for PageRef<'a, 'b> {
     fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
         K: Key,
@@ -73,7 +73,7 @@ impl<'a, 'b: 'a> NodePageRef for PageRef<'a, 'b> {
     }
 }
 
-impl<'a, 'b: 'a> NodePageRef for PageRefMut<'a, 'b> {
+impl<'a, 'b: 'a> NodeRef for PageRefMut<'a, 'b> {
     fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
         K: Key,
@@ -86,7 +86,7 @@ impl<'a, 'b: 'a> NodePageRef for PageRefMut<'a, 'b> {
     }
 }
 
-impl<'a, 'b: 'a> NodePageRefMut for PageRefMut<'a, 'b> {
+impl<'a, 'b: 'a> NodeRefMut for PageRefMut<'a, 'b> {
     fn as_node_mut<K, R>(
         &mut self,
         key_buffer_size: usize,

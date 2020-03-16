@@ -7,7 +7,6 @@ use std::{error, fmt, result};
 
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest as _;
-use cryptoxide::sha3::Sha3;
 use hex::FromHexError;
 
 use crate::bech32::{self, Bech32};
@@ -145,16 +144,3 @@ pub const HASH_SIZE_256: usize = 32;
 pub struct Blake2b256([u8; HASH_SIZE_256]);
 define_hash_object!(Blake2b256, Blake2b256, HASH_SIZE_256, "blake2b256");
 define_blake2b_new!(Blake2b256);
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
-pub struct Sha3_256([u8; HASH_SIZE_256]);
-define_hash_object!(Sha3_256, Sha3_256, HASH_SIZE_256, "sha3256");
-impl Sha3_256 {
-    pub fn new(buf: &[u8]) -> Self {
-        let mut sh3 = Sha3::sha3_256();
-        let mut out = [0; Self::HASH_SIZE];
-        sh3.input(buf.as_ref());
-        sh3.result(&mut out);
-        Self::from(out)
-    }
-}

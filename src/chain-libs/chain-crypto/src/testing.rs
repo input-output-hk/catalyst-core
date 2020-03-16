@@ -107,15 +107,6 @@ impl Arbitrary for Blake2b256 {
     }
 }
 
-impl Arbitrary for Sha3_256 {
-    fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let bytes: Vec<_> = std::iter::repeat_with(|| u8::arbitrary(g))
-            .take(Self::HASH_SIZE)
-            .collect();
-        Self::try_from_slice(&bytes).unwrap()
-    }
-}
-
 impl<H: digest::DigestAlg + 'static> Arbitrary for digest::Digest<H> {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let bytes: Vec<_> = std::iter::repeat_with(|| u8::arbitrary(g))

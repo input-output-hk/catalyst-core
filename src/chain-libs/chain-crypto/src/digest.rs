@@ -8,13 +8,12 @@ use std::{error, fmt, result};
 
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest as _;
-use cryptoxide::sha3::Sha3;
 use hex::FromHexError;
 
 use typed_bytes::ByteSlice;
 
 use crate::bech32::{self, Bech32};
-use crate::hash::{Blake2b256, Sha3_256};
+use crate::hash::Blake2b256;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Error {
@@ -106,39 +105,6 @@ impl DigestAlg for Blake2b256 {
     }
 }
 
-impl DigestAlg for Sha3_256 {
-    const HASH_SIZE: usize = 32;
-    type DigestData = [u8; Self::HASH_SIZE];
-    type DigestContext = Sha3;
-
-    fn try_from_slice(slice: &[u8]) -> Result<Self::DigestData, Error> {
-        if slice.len() == Self::HASH_SIZE {
-            let mut out = [0u8; Self::HASH_SIZE];
-            out.copy_from_slice(slice);
-            Ok(out)
-        } else {
-            Err(Error::InvalidDigestSize {
-                expected: Self::HASH_SIZE,
-                got: slice.len(),
-            })
-        }
-    }
-
-    fn new() -> Self::DigestContext {
-        Sha3::sha3_256()
-    }
-
-    fn append_data(ctx: &mut Self::DigestContext, data: &[u8]) {
-        ctx.input(data)
-    }
-
-    fn finalize(mut ctx: Self::DigestContext) -> Self::DigestData {
-        let mut out: Self::DigestData = [0; Self::HASH_SIZE];
-        ctx.result(&mut out);
-        out
-    }
-}
-
 /// A Digest Context for the H digest algorithm
 pub struct Context<H: DigestAlg>(H::DigestContext);
 
@@ -213,7 +179,6 @@ macro_rules! define_from_instances {
     };
 }
 
-define_from_instances!(Sha3_256, 32, "sha3");
 define_from_instances!(Blake2b256, 32, "blake2b");
 
 unsafe impl<H: DigestAlg> Send for Digest<H> {}
@@ -465,5 +430,4 @@ macro_rules! typed_define_from_instances {
     };
 }
 
-typed_define_from_instances!(Sha3_256, 32, "sha3");
 typed_define_from_instances!(Blake2b256, 32, "blake2b");

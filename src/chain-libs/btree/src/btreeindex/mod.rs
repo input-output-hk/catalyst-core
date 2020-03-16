@@ -10,7 +10,7 @@ use version_management::*;
 use crate::mem_page::MemPage;
 use crate::BTreeStoreError;
 use metadata::{Metadata, StaticSettings};
-use node::{InternalInsertStatus, LeafInsertStatus, Node, NodeRefMut};
+use node::{InternalInsertStatus, LeafInsertStatus, Node, NodeRef, NodeRefMut};
 use pages::{borrow, PageHandle, Pages, PagesInitializationParams};
 use std::borrow::Borrow;
 

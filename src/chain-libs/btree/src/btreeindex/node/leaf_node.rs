@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use super::{Node, NodePageRef, NodePageRefMut, RebalanceResult, SiblingsArg};
+use super::{Node, NodeRef, NodeRefMut, RebalanceResult, RebalanceSiblingArg, SiblingsArg};
 use crate::btreeindex::{Keys, KeysMut, PageId, Values, ValuesMut};
 use crate::BTreeStoreError;
 use crate::Key;
@@ -223,10 +223,10 @@ where
         }
     }
 
-    pub fn rebalance<N: super::NodePageRef>(
-        &'b self,
+    pub fn rebalance<N: super::NodeRef>(
+        self,
         args: SiblingsArg<N>,
-    ) -> Result<RebalanceResult, BTreeStoreError> {
+    ) -> Result<RebalanceResult<Self>, BTreeStoreError> {
         let current_len = self.keys().len();
 
         let result = {
@@ -250,7 +250,7 @@ where
                     })
                     .is_some()
                 {
-                    RebalanceResult::TakeFromLeft
+                    RebalanceResult::TakeFromLeft(RebalanceSiblingArg::new(self))
                 } else if right_sibling_handle
                     .clone()
                     .filter(|handle| {
@@ -260,11 +260,11 @@ where
                     })
                     .is_some()
                 {
-                    RebalanceResult::TakeFromRight
+                    RebalanceResult::TakeFromRight(RebalanceSiblingArg::new(self))
                 } else if left_sibling_handle.is_some() {
-                    RebalanceResult::MergeIntoLeft
+                    RebalanceResult::MergeIntoLeft(RebalanceSiblingArg::new(self))
                 } else if right_sibling_handle.is_some() {
-                    RebalanceResult::MergeIntoSelf
+                    RebalanceResult::MergeIntoSelf(RebalanceSiblingArg::new(self))
                 } else {
                     unreachable!();
                 }
@@ -275,154 +275,6 @@ where
         };
 
         Ok(result)
-    }
-
-    pub fn take_key_from_left<'siblings>(
-        &mut self,
-        mut parent: impl NodePageRefMut,
-        anchor: Option<usize>,
-        mut sibling: impl NodePageRefMut,
-    ) {
-        // steal a key from the left sibling
-        let current_len = self.keys().len();
-
-        let (stolen_key, stolen_value) =
-            sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                let node = node.as_leaf();
-                let keys = node.keys();
-                let last = keys.len().checked_sub(1).unwrap();
-                let stolen_key = keys.get(last);
-                let stolen_value = node.values().get(last);
-                (stolen_key.borrow().clone(), stolen_value.borrow().clone())
-            });
-
-        self.keys_mut()
-            .insert(0, &stolen_key)
-            .expect("Couldn't insert key at pos 0");
-        self.values_mut()
-            .insert(0, &stolen_value)
-            .expect("Couldn't insert value at pos 0");
-        self.set_len(current_len + 1);
-
-        sibling.as_node_mut(self.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
-            let mut sibling = node.as_leaf_mut();
-            let last = sibling.keys().len().checked_sub(1).unwrap();
-            sibling.keys_mut().delete(last).unwrap();
-            sibling.values_mut().delete(last).unwrap();
-            sibling.set_len(last);
-        });
-
-        let pos_to_update_in_parent = anchor.unwrap();
-
-        parent.as_node_mut(self.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
-            node.as_internal_mut()
-                .update_key(pos_to_update_in_parent, self.keys().get(0).borrow().clone())
-                .expect("update key failed: tried to update a key not in range");
-        });
-    }
-
-    pub fn take_key_from_right<'siblings>(
-        &mut self,
-        mut parent: impl NodePageRefMut,
-        anchor: Option<usize>,
-        mut sibling: impl NodePageRefMut,
-    ) {
-        // steal a key from the right sibling
-        let current_len = self.keys().len();
-
-        let (stolen_key, stolen_value) =
-            sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                let node = node.as_leaf();
-                let keys = node.keys();
-                let stolen_key = keys.get(0);
-                let stolen_value = node.values().get(0);
-                (stolen_key.borrow().clone(), stolen_value.clone())
-            });
-
-        // in leaf, keys.len() == values.len()
-        let insert_pos = self.keys().len();
-        self.keys_mut()
-            .append(&stolen_key)
-            .expect("Couldn't insert at the end");
-
-        self.values_mut()
-            .insert(insert_pos, &stolen_value)
-            .expect("Couldn't insert at the end");
-
-        self.set_len(current_len + 1);
-
-        sibling.as_node_mut(self.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
-            let mut sibling = node.as_leaf_mut();
-            let current_len = sibling.keys().len();
-            sibling.keys_mut().delete(0).unwrap();
-            sibling.values_mut().delete(0).unwrap();
-            sibling.set_len(current_len.checked_sub(1).unwrap());
-        });
-
-        let pos_to_update_in_parent = anchor.map_or(0, |anchor| anchor + 1);
-
-        parent.as_node_mut(self.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
-            node.as_internal_mut()
-                .update_key(
-                    pos_to_update_in_parent,
-                    sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-                        node.as_leaf().keys().get(0).borrow().clone()
-                    }),
-                )
-                .expect("Couldn't update parent key");
-        });
-    }
-
-    pub fn merge_into_left<'siblings>(
-        &mut self,
-        _parent: impl NodePageRefMut,
-        _anchor: Option<usize>,
-        mut sibling: impl NodePageRefMut,
-    ) {
-        //merge this into left
-        sibling.as_node_mut(self.key_buffer_size, |mut node| {
-            let mut merge_target = node.as_leaf_mut();
-            for (k, v) in self.keys().into_iter().zip(self.values().into_iter()) {
-                // TODO: Create an Append?
-                let insert_pos = merge_target.keys().len();
-                merge_target
-                    .keys_mut()
-                    .insert(insert_pos, &k.borrow().clone())
-                    .expect("Couldn't insert at the end");
-                merge_target
-                    .values_mut()
-                    .insert(insert_pos, &v.borrow().clone())
-                    .expect("Couldn't insert at the end");
-                merge_target.set_len(insert_pos + 1);
-            }
-        });
-    }
-
-    pub fn merge_into_self<'siblings>(
-        &mut self,
-        _parent: impl NodePageRefMut,
-        _anchor: Option<usize>,
-        sibling: impl NodePageRef,
-    ) {
-        //merge right into this
-
-        sibling.as_node(self.key_buffer_size, |node: Node<K, &[u8]>| {
-            for (k, v) in node
-                .as_leaf()
-                .keys()
-                .into_iter()
-                .zip(node.as_leaf().values().into_iter())
-            {
-                let insert_pos = self.keys().len();
-                self.keys_mut()
-                    .insert(insert_pos, &k.borrow().clone())
-                    .expect("Couldn't insert at the end");
-                self.values_mut()
-                    .insert(insert_pos, &v.borrow().clone())
-                    .expect("Couldn't insert at the end");
-                self.set_len(insert_pos + 1);
-            }
-        });
     }
 
     pub fn delete<'siblings: 'b>(
@@ -537,6 +389,187 @@ where
     }
 }
 
+impl<'b, K, T> RebalanceSiblingArg<super::marker::TakeFromLeft, LeafNode<'b, K, T>>
+where
+    K: Key,
+    T: AsMut<[u8]> + AsRef<[u8]> + 'b,
+{
+    pub fn take_key_from_left<'siblings>(
+        mut self,
+        mut parent: impl NodeRefMut,
+        anchor: Option<usize>,
+        mut sibling: impl NodeRefMut,
+    ) -> LeafNode<'b, K, T> {
+        // steal a key from the left sibling
+        let current_len = self.node.keys().len();
+
+        let (stolen_key, stolen_value) =
+            sibling.as_node(self.node.key_buffer_size, |node: Node<K, &[u8]>| {
+                let node = node.as_leaf();
+                let keys = node.keys();
+                let last = keys.len().checked_sub(1).unwrap();
+                let stolen_key = keys.get(last);
+                let stolen_value = node.values().get(last);
+                (stolen_key.borrow().clone(), stolen_value.borrow().clone())
+            });
+
+        self.node
+            .keys_mut()
+            .insert(0, &stolen_key)
+            .expect("Couldn't insert key at pos 0");
+        self.node
+            .values_mut()
+            .insert(0, &stolen_value)
+            .expect("Couldn't insert value at pos 0");
+        self.node.set_len(current_len + 1);
+
+        sibling.as_node_mut(self.node.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+            let mut sibling = node.as_leaf_mut();
+            let last = sibling.keys().len().checked_sub(1).unwrap();
+            sibling.keys_mut().delete(last).unwrap();
+            sibling.values_mut().delete(last).unwrap();
+            sibling.set_len(last);
+        });
+
+        let pos_to_update_in_parent = anchor.unwrap();
+
+        parent.as_node_mut(self.node.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+            node.as_internal_mut()
+                .update_key(
+                    pos_to_update_in_parent,
+                    self.node.keys().get(0).borrow().clone(),
+                )
+                .expect("update key failed: tried to update a key not in range");
+        });
+
+        self.node
+    }
+}
+
+impl<'b, K, T> RebalanceSiblingArg<super::marker::TakeFromRight, LeafNode<'b, K, T>>
+where
+    K: Key,
+    T: AsMut<[u8]> + AsRef<[u8]> + 'b,
+{
+    pub fn take_key_from_right<'siblings>(
+        mut self,
+        mut parent: impl NodeRefMut,
+        anchor: Option<usize>,
+        mut sibling: impl NodeRefMut,
+    ) -> LeafNode<'b, K, T> {
+        // steal a key from the right sibling
+        let current_len = self.node.keys().len();
+
+        let (stolen_key, stolen_value) =
+            sibling.as_node(self.node.key_buffer_size, |node: Node<K, &[u8]>| {
+                let node = node.as_leaf();
+                let keys = node.keys();
+                let stolen_key = keys.get(0);
+                let stolen_value = node.values().get(0);
+                (stolen_key.borrow().clone(), stolen_value.clone())
+            });
+
+        // in leaf, keys.len() == values.len()
+        let insert_pos = self.node.keys().len();
+        self.node
+            .keys_mut()
+            .append(&stolen_key)
+            .expect("Couldn't insert at the end");
+
+        self.node
+            .values_mut()
+            .insert(insert_pos, &stolen_value)
+            .expect("Couldn't insert at the end");
+
+        self.node.set_len(current_len + 1);
+
+        sibling.as_node_mut(self.node.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+            let mut sibling = node.as_leaf_mut();
+            let current_len = sibling.keys().len();
+            sibling.keys_mut().delete(0).unwrap();
+            sibling.values_mut().delete(0).unwrap();
+            sibling.set_len(current_len.checked_sub(1).unwrap());
+        });
+
+        let pos_to_update_in_parent = anchor.map_or(0, |anchor| anchor + 1);
+
+        parent.as_node_mut(self.node.key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+            node.as_internal_mut()
+                .update_key(
+                    pos_to_update_in_parent,
+                    sibling.as_node(self.node.key_buffer_size, |node: Node<K, &[u8]>| {
+                        node.as_leaf().keys().get(0).borrow().clone()
+                    }),
+                )
+                .expect("Couldn't update parent key");
+        });
+        self.node
+    }
+}
+
+impl<'b, K, T> RebalanceSiblingArg<super::marker::MergeIntoLeft, LeafNode<'b, K, T>>
+where
+    K: Key,
+    T: AsMut<[u8]> + AsRef<[u8]> + 'b,
+{
+    pub fn merge_into_left<'siblings>(self, mut sibling: impl NodeRefMut) -> LeafNode<'b, K, T> {
+        //merge this into left
+        sibling.as_node_mut(self.node.key_buffer_size, |mut node| {
+            let mut merge_target = node.as_leaf_mut();
+            for (k, v) in self
+                .node
+                .keys()
+                .into_iter()
+                .zip(self.node.values().into_iter())
+            {
+                // TODO: Create an Append?
+                let insert_pos = merge_target.keys().len();
+                merge_target
+                    .keys_mut()
+                    .insert(insert_pos, &k.borrow().clone())
+                    .expect("Couldn't insert at the end");
+                merge_target
+                    .values_mut()
+                    .insert(insert_pos, &v.borrow().clone())
+                    .expect("Couldn't insert at the end");
+                merge_target.set_len(insert_pos + 1);
+            }
+        });
+
+        self.node
+    }
+}
+
+impl<'b, K, T> RebalanceSiblingArg<super::marker::MergeIntoSelf, LeafNode<'b, K, T>>
+where
+    K: Key,
+    T: AsMut<[u8]> + AsRef<[u8]> + 'b,
+{
+    pub fn merge_into_self<'siblings>(mut self, sibling: impl NodeRef) -> LeafNode<'b, K, T> {
+        //merge right into this
+        sibling.as_node(self.node.key_buffer_size, |node: Node<K, &[u8]>| {
+            for (k, v) in node
+                .as_leaf()
+                .keys()
+                .into_iter()
+                .zip(node.as_leaf().values().into_iter())
+            {
+                let insert_pos = self.node.keys().len();
+                self.node
+                    .keys_mut()
+                    .insert(insert_pos, &k.borrow().clone())
+                    .expect("Couldn't insert at the end");
+                self.node
+                    .values_mut()
+                    .insert(insert_pos, &v.borrow().clone())
+                    .expect("Couldn't insert at the end");
+                self.node.set_len(insert_pos + 1);
+            }
+        });
+
+        self.node
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -673,13 +706,9 @@ mod tests {
                 .rebalance(SiblingsArg::Left(left_sibling))
                 .unwrap()
             {
-                RebalanceResult::TakeFromLeft => {
+                RebalanceResult::TakeFromLeft(add_params) => {
                     storage.make_shadow(2, 12).unwrap();
-                    node.as_leaf_mut().take_key_from_left(
-                        parent,
-                        Some(0),
-                        storage.mut_page(12).unwrap(),
-                    );
+                    add_params.take_key_from_left(parent, Some(0), storage.mut_page(12).unwrap());
                 }
                 _ => panic!("need took from left"),
             },
@@ -744,13 +773,9 @@ mod tests {
                 .rebalance(SiblingsArg::Right(right_sibling))
                 .unwrap()
             {
-                RebalanceResult::TakeFromRight => {
+                RebalanceResult::TakeFromRight(add_params) => {
                     storage.make_shadow(2, 12).unwrap();
-                    node.as_leaf_mut().take_key_from_right(
-                        parent,
-                        None,
-                        storage.mut_page(12).unwrap(),
-                    );
+                    add_params.take_key_from_right(parent, None, storage.mut_page(12).unwrap());
                 }
                 _ => panic!("need took from right"),
             },
@@ -809,13 +834,9 @@ mod tests {
                 .rebalance(SiblingsArg::Left(left_sibling))
                 .unwrap()
             {
-                RebalanceResult::MergeIntoLeft => {
+                RebalanceResult::MergeIntoLeft(add_params) => {
                     storage.make_shadow(2, 12).unwrap();
-                    node.as_leaf_mut().merge_into_left(
-                        parent,
-                        Some(0),
-                        storage.mut_page(12).unwrap(),
-                    );
+                    add_params.merge_into_left(storage.mut_page(12).unwrap());
                 }
                 _ => panic!("need merge into left"),
             },
@@ -841,14 +862,11 @@ mod tests {
         let parent_expected =
             internal_page(&aux_storage, 3, vec![U64Key(3), U64Key(8)], vec![2, 1, 3]);
 
-        storage
-            .get_page(3)
-            .unwrap()
-            .as_node(size_of::<U64Key>(), |before| {
-                parent_expected.as_node(size_of::<U64Key>(), |node_expected| {
-                    assert_eq!(before.as_internal(), node_expected.as_internal())
-                })
-            });
+        parent.as_node(size_of::<U64Key>(), |before| {
+            parent_expected.as_node(size_of::<U64Key>(), |node_expected| {
+                assert_eq!(before.as_internal(), node_expected.as_internal())
+            })
+        });
     }
 
     #[test]
@@ -875,10 +893,9 @@ mod tests {
                 .rebalance(SiblingsArg::Right(right_sibling))
                 .unwrap()
             {
-                RebalanceResult::MergeIntoSelf => {
+                RebalanceResult::MergeIntoSelf(add_params) => {
                     storage.make_shadow(2, 12).unwrap();
-                    node.as_leaf_mut()
-                        .merge_into_self(parent, None, storage.mut_page(12).unwrap());
+                    add_params.merge_into_self(storage.mut_page(12).unwrap());
                 }
                 _ => panic!("need merge into self"),
             },
@@ -899,13 +916,11 @@ mod tests {
 
         let parent_expected =
             internal_page(&aux_storage, 3, vec![U64Key(3), U64Key(8)], vec![1, 2, 3]);
-        storage
-            .get_page(3)
-            .unwrap()
-            .as_node(size_of::<U64Key>(), |before| {
-                parent_expected.as_node(size_of::<U64Key>(), |node_expected| {
-                    assert_eq!(before.as_internal(), node_expected.as_internal())
-                })
-            });
+
+        parent.as_node(size_of::<U64Key>(), |before| {
+            parent_expected.as_node(size_of::<U64Key>(), |node_expected| {
+                assert_eq!(before.as_internal(), node_expected.as_internal())
+            })
+        });
     }
 }

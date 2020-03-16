@@ -1,6 +1,7 @@
 pub mod internal_node;
 pub mod leaf_node;
 
+use marker::*;
 use std::marker::PhantomData;
 
 use crate::Key;
@@ -16,13 +17,13 @@ pub struct Node<K, T> {
     phantom: PhantomData<[K]>,
 }
 
-pub trait NodePageRef {
+pub trait NodeRef {
     fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
         K: Key;
 }
 
-pub trait NodePageRefMut: NodePageRef {
+pub trait NodeRefMut: NodeRef {
     fn as_node_mut<K, R>(
         &mut self,
         key_buffer_size: usize,
@@ -37,20 +38,41 @@ pub(crate) enum NodeTag {
     Leaf = 1,
 }
 
-pub enum RebalanceResult {
-    TakeFromLeft,
-    TakeFromRight,
-    MergeIntoLeft,
-    MergeIntoSelf,
+pub enum RebalanceResult<NodeType> {
+    TakeFromLeft(RebalanceSiblingArg<TakeFromLeft, NodeType>),
+    TakeFromRight(RebalanceSiblingArg<TakeFromRight, NodeType>),
+    MergeIntoLeft(RebalanceSiblingArg<MergeIntoLeft, NodeType>),
+    MergeIntoSelf(RebalanceSiblingArg<MergeIntoSelf, NodeType>),
 }
 
-pub enum SiblingsArg<N: NodePageRef> {
+pub struct RebalanceSiblingArg<Strategy, NodeType> {
+    node: NodeType,
+    phantom: PhantomData<Strategy>,
+}
+
+impl<Strategy, NodeType> RebalanceSiblingArg<Strategy, NodeType> {
+    fn new(node: NodeType) -> Self {
+        Self {
+            node,
+            phantom: PhantomData,
+        }
+    }
+}
+
+mod marker {
+    pub struct TakeFromLeft;
+    pub struct TakeFromRight;
+    pub struct MergeIntoLeft;
+    pub struct MergeIntoSelf;
+}
+
+pub enum SiblingsArg<N: NodeRef> {
     Left(N),
     Right(N),
     Both(N, N),
 }
 
-impl<N: NodePageRef> SiblingsArg<N> {
+impl<N: NodeRef> SiblingsArg<N> {
     pub fn new_from_options(left_sibling: Option<N>, right_sibling: Option<N>) -> Self {
         match (left_sibling, right_sibling) {
             (Some(left), Some(right)) => SiblingsArg::Both(left, right),
@@ -200,43 +222,12 @@ mod tests {
     use std::mem::size_of;
     use tempfile::tempfile;
 
-    impl<'a> NodePageRef for PageHandle<'a, Immutable<'a>> {
-        fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-        where
-            K: Key,
-        {
-            self.as_node(key_buffer_size, f)
-        }
-    }
-
-    impl<'a> NodePageRef for PageHandle<'a, Mutable<'a>> {
-        fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-        where
-            K: Key,
-        {
-            self.as_node(key_buffer_size, f)
-        }
-    }
-
-    impl<'a> NodePageRefMut for PageHandle<'a, Mutable<'a>> {
-        fn as_node_mut<K, R>(
-            &mut self,
-            key_buffer_size: usize,
-            f: impl FnOnce(Node<K, &mut [u8]>) -> R,
-        ) -> R
-        where
-            K: Key,
-        {
-            self.as_node_mut(key_buffer_size, f)
-        }
-    }
-
     pub fn pages() -> Pages {
         let page_size = 8 + 8 + 3 * size_of::<U64Key>() + 5 * size_of::<PageId>() + 4 + 8;
         let storage = MmapStorage::new(tempfile().unwrap()).unwrap();
         let params = PagesInitializationParams {
             storage,
-            page_size: dbg!(page_size) as u16,
+            page_size: page_size as u16,
             key_buffer_size: size_of::<U64Key>() as u32,
         };
 

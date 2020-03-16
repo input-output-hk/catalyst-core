@@ -172,6 +172,7 @@ pub trait Storeable<'a>: Sized {
     type Output: Borrow<Self> + 'a;
     fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error>;
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error>;
+    fn as_output(self) -> Self::Output;
 }
 
 pub trait Key: for<'a> Storeable<'a> + Ord + Clone + Debug {}
@@ -197,8 +198,13 @@ mod tests {
         fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error> {
             Ok(LittleEndian::write_u64(buf, self.0))
         }
+
         fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
             Ok(U64Key(LittleEndian::read_u64(buf)))
+        }
+
+        fn as_output(self) -> Self::Output {
+            self
         }
     }
 

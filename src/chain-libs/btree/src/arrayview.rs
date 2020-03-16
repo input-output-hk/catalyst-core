@@ -306,8 +306,13 @@ impl<'a> Storeable<'a> for u32 {
     fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error> {
         Ok(LittleEndian::write_u32(buf, *self))
     }
+
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
         Ok(LittleEndian::read_u32(buf))
+    }
+
+    fn as_output(self) -> Self::Output {
+        self
     }
 }
 
@@ -318,8 +323,13 @@ impl<'a> Storeable<'a> for u64 {
     fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error> {
         Ok(LittleEndian::write_u64(buf, *self))
     }
+
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
         Ok(LittleEndian::read_u64(buf))
+    }
+
+    fn as_output(self) -> Self::Output {
+        self
     }
 }
 

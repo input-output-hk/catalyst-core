@@ -1,21 +1,11 @@
+use super::transaction;
 use super::transaction::{MutablePage, PageRef, PageRefMut, WriteTransaction};
-use super::{transaction};
-use crate::btreeindex::{
-    borrow::{Immutable, Mutable},
-    node::{NodeRef, NodeRefMut},
-    page_manager::PageManager,
-    Node, PageHandle, PageId, Pages,
-};
+use crate::btreeindex::{node::NodeRef, Node, PageId};
 use crate::mem_page::MemPage;
 use crate::Key;
 
-
-
-
 use std::convert::{TryFrom, TryInto};
 use std::marker::PhantomData;
-
-
 
 /// this is basically a stack, but it will rename pointers and interact with the builder in order to reuse
 /// already cloned pages
@@ -44,12 +34,15 @@ where
     key_buffer_size: u32,
 }
 
+/// type to operate on the current element in the stack (branch) of nodes. This borrows the backtrack and acts as a proxy, in order to make borrowing simpler, because
 pub struct DeleteNextElement<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
 where
     K: Key,
 {
     pub next: PageRefMut<'a, 'd>,
     pub parent: Option<PageRefMut<'a, 'd>>,
+    // anchor is an index into the keys array of a node used to find the current node in the parent without searching. The leftmost(lowest) child has None as anchor
+    // this means it's inmediate right sibling would have anchor of 0, and so on.
     pub anchor: Option<usize>,
     pub left: Option<PageRef<'a, 'd>>,
     pub right: Option<PageRef<'a, 'd>>,

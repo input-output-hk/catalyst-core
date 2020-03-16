@@ -5,13 +5,11 @@ use super::{
     Metadata, Node, PageId,
 };
 use crate::btreeindex::node::NodeRef;
+use super::{Metadata, PageId};
 use crate::btreeindex::page_manager::PageManager;
 use crate::btreeindex::node::NodeRef;
 
-
-
 use std::collections::VecDeque;
-
 
 use transaction::{ReadTransaction, WriteTransaction};
 

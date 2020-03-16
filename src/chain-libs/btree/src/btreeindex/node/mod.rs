@@ -58,11 +58,25 @@ pub struct RebalanceArgs<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> {
 //     Both(PageHandle<'a, Mutable<'a>>, PageHandle<'a, Mutable<'a>>),
 // }
 
-type SiblingHandle<'a, F> = (PageHandle<'a, Immutable<'a>>, F);
+pub type SiblingHandle<'a, F> = (PageHandle<'a, Immutable<'a>>, F);
 pub enum SiblingsArg<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> {
     Left(SiblingHandle<'a, F>),
     Right(SiblingHandle<'a, F>),
     Both(SiblingHandle<'a, F>, SiblingHandle<'a, F>),
+}
+
+impl<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> SiblingsArg<'a, F> {
+    pub fn new_from_options(
+        left_sibling: Option<SiblingHandle<'a, F>>,
+        right_sibling: Option<SiblingHandle<'a, F>>,
+    ) -> Self {
+        match (left_sibling, right_sibling) {
+            (Some(left), Some(right)) => SiblingsArg::Both(left, right),
+            (Some(left), None) => SiblingsArg::Left(left),
+            (None, Some(right)) => SiblingsArg::Right(right),
+            (None, None) => unreachable!(),
+        }
+    }
 }
 
 impl<'b, K, T> Node<K, T>

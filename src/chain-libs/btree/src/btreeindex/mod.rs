@@ -1,4 +1,6 @@
 mod metadata;
+// FIXME: allow dead code momentarily, because all of the delete algorithms are unused, and placing the directive with more granularity would be too troublesome
+#[allow(dead_code)]
 mod node;
 mod page_manager;
 mod pages;

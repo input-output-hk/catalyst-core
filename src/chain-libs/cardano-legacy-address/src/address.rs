@@ -18,9 +18,7 @@ use cryptoxide::ed25519::PUBLIC_KEY_LENGTH;
 use cryptoxide::sha3::Sha3;
 use ed25519_bip32::XPub;
 
-use chain_ser::deser::{
-    Deserialize as PropertyDeserialize, Deserialize, Serialize as PropertySerialize,
-};
+use chain_ser::deser::{Deserialize as PropertyDeserialize, Serialize as PropertySerialize};
 use chain_ser::packer::Codec;
 use std::io::Error;
 use std::{

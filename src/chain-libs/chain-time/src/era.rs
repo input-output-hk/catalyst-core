@@ -108,7 +108,7 @@ impl TimeEra {
     }
 }
 
-#[cfg(any(test, feature = "property-test-api"))]
+#[cfg(any(test))]
 mod test {
     use super::*;
     use crate::timeframe::*;

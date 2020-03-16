@@ -228,6 +228,17 @@ impl<'a> PageHandle<'a, borrow::Mutable<'a>> {
         f(node)
     }
 
+    pub fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key,
+    {
+        let page = self.borrow.borrow as &[u8];
+
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size) };
+
+        f(node)
+    }
+
     pub fn as_slice(&mut self, f: impl FnOnce(&mut [u8])) {
         f(self.borrow.borrow);
     }

@@ -37,6 +37,34 @@ pub(crate) enum NodeTag {
     Leaf = 1,
 }
 
+use super::pages::borrow::{Immutable, Mutable};
+use super::pages::PageHandle;
+pub enum RebalanceResult {
+    TookKeyFromLeft,
+    TookKeyFromRight,
+    MergeIntoLeft,
+    MergeIntoSelf,
+}
+
+pub struct RebalanceArgs<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> {
+    pub parent: PageHandle<'a, Mutable<'a>>,
+    pub parent_anchor: Option<usize>,
+    pub siblings: SiblingsArg<'a, F>,
+}
+
+// pub enum SiblingsArg<'a> {
+//     Left(PageHandle<'a, Mutable<'a>>),
+//     Right(PageHandle<'a, Mutable<'a>>),
+//     Both(PageHandle<'a, Mutable<'a>>, PageHandle<'a, Mutable<'a>>),
+// }
+
+type SiblingHandle<'a, F> = (PageHandle<'a, Immutable<'a>>, F);
+pub enum SiblingsArg<'a, F: FnMut() -> PageHandle<'a, Mutable<'a>>> {
+    Left(SiblingHandle<'a, F>),
+    Right(SiblingHandle<'a, F>),
+    Both(SiblingHandle<'a, F>, SiblingHandle<'a, F>),
+}
+
 impl<'b, K, T> Node<K, T>
 where
     K: Key,
@@ -147,6 +175,10 @@ where
     pub(crate) fn as_leaf(&self) -> LeafNode<K, &[u8]> {
         self.try_as_leaf().unwrap()
     }
+
+    pub(crate) fn as_internal(&self) -> InternalNode<K, &[u8]> {
+        self.try_as_internal().unwrap()
+    }
 }
 
 impl<'b, K> Node<K, crate::mem_page::MemPage>
@@ -161,19 +193,87 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::btreeindex::pages::{
+        borrow::{Immutable, Mutable},
+        PageHandle, Pages, PagesInitializationParams,
+    };
     use crate::btreeindex::PageId;
     use crate::mem_page::MemPage;
+    use crate::storage::MmapStorage;
     use crate::tests::U64Key;
     use std::mem::size_of;
+    use tempfile::tempfile;
 
-    impl<'b, K, T> Node<K, T>
-    where
-        K: Key,
-        T: AsRef<[u8]> + 'b,
-    {
-        pub(crate) fn as_internal(&self) -> InternalNode<K, &[u8]> {
-            self.try_as_internal().unwrap()
+    pub fn pages() -> Pages {
+        let page_size = 8 + 8 + 3 * size_of::<U64Key>() + 5 * size_of::<PageId>() + 4 + 8;
+        let storage = MmapStorage::new(tempfile().unwrap()).unwrap();
+        let params = PagesInitializationParams {
+            storage,
+            page_size: dbg!(page_size) as u16,
+            key_buffer_size: size_of::<U64Key>() as u32,
+        };
+
+        let mut pages = Pages::new(params);
+        pages.extend(300).unwrap();
+        pages
+    }
+
+    pub fn allocate_internal() -> Node<U64Key, MemPage> {
+        let page_size = 8 + 8 + 3 * size_of::<U64Key>() + 4 * size_of::<PageId>();
+        let page = MemPage::new(page_size);
+        Node::new_internal(std::mem::size_of::<U64Key>(), page)
+    }
+
+    pub fn internal_page_mut(
+        pages: &Pages,
+        page_id: PageId,
+        keys: Vec<U64Key>,
+        children: Vec<u32>,
+    ) -> PageHandle<Mutable> {
+        assert_eq!(keys.len() + 1, children.len());
+
+        let mut page = pages.mut_page(page_id).unwrap();
+
+        let key_buffer_size = size_of::<U64Key>();
+        page.as_slice(|slice| {
+            InternalNode::<U64Key, &mut [u8]>::init(key_buffer_size, slice);
+        });
+
+        page.as_node_mut(key_buffer_size, |mut node| {
+            let mut iter = keys.iter();
+
+            if let Some(first_key) = iter.next() {
+                node.as_internal_mut()
+                    .insert_first((*first_key).clone(), children[0], children[1]);
+            }
+
+            for (k, c) in iter.zip(children[2..].iter()) {
+                match node
+                    .as_internal_mut()
+                    .insert((*k).clone(), *c, &mut allocate_internal)
+                {
+                    InternalInsertStatus::Ok => (),
+                    _ => panic!("insertion shouldn't split"),
+                };
+            }
+        });
+
+        page
+    }
+
+    pub fn internal_page(
+        pages: &Pages,
+        page_id: PageId,
+        keys: Vec<U64Key>,
+        children: Vec<u32>,
+    ) -> PageHandle<Immutable> {
+        assert_eq!(keys.len() + 1, children.len());
+
+        {
+            internal_page_mut(pages, page_id, keys, children);
         }
+
+        pages.get_page(page_id).unwrap()
     }
 
     #[test]

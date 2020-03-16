@@ -288,9 +288,9 @@ where
     }
 
     #[allow(dead_code)]
-    pub fn rebalance<'siblings>(
+    pub fn rebalance<N: super::NodePageRef>(
         &'b mut self,
-        args: SiblingsArg<'siblings>,
+        args: SiblingsArg<N>,
     ) -> Result<RebalanceResult, BTreeStoreError> {
         let current_len = self.keys().len();
 

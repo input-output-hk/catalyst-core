@@ -226,9 +226,9 @@ where
         }
     }
 
-    pub fn rebalance(
+    pub fn rebalance<N: super::NodePageRef>(
         &'b mut self,
-        mut args: SiblingsArg,
+        mut args: SiblingsArg<N>,
     ) -> Result<RebalanceResult, BTreeStoreError> {
         let current_len = self.keys().len();
 

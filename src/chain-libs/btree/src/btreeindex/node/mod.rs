@@ -46,16 +46,16 @@ pub enum RebalanceResult {
     MergeIntoSelf,
 }
 
-pub struct RebalanceArgs<'a> {
+pub struct RebalanceArgs<'a, N: NodePageRef + 'a> {
     pub parent: PageHandle<'a, Mutable<'a>>,
     pub parent_anchor: Option<usize>,
-    pub siblings: SiblingsArg<'a>,
+    pub siblings: SiblingsArg<N>,
 }
 
-pub enum SiblingsArg<'a> {
-    Left(PageHandle<'a, Immutable<'a>>),
-    Right(PageHandle<'a, Immutable<'a>>),
-    Both(PageHandle<'a, Immutable<'a>>, PageHandle<'a, Immutable<'a>>),
+pub enum SiblingsArg<N: NodePageRef> {
+    Left(N),
+    Right(N),
+    Both(N, N),
 }
 
 // pub type SiblingHandle<'a, F> = (PageHandle<'a, Immutable<'a>>, F);
@@ -65,11 +65,8 @@ pub enum SiblingsArg<'a> {
 //     Both(SiblingHandle<'a, F>, SiblingHandle<'a, F>),
 // }
 
-impl<'a> SiblingsArg<'a> {
-    pub fn new_from_options(
-        left_sibling: Option<PageHandle<'a, Immutable<'a>>>,
-        right_sibling: Option<PageHandle<'a, Immutable<'a>>>,
-    ) -> Self {
+impl<N: NodePageRef> SiblingsArg<N> {
+    pub fn new_from_options(left_sibling: Option<N>, right_sibling: Option<N>) -> Self {
         match (left_sibling, right_sibling) {
             (Some(left), Some(right)) => SiblingsArg::Both(left, right),
             (Some(left), None) => SiblingsArg::Left(left),

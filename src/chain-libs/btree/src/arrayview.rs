@@ -203,7 +203,6 @@ where
         }
     }
 
-    #[allow(dead_code)]
     pub(crate) fn delete(&mut self, pos: usize) -> Result<(), ()> {
         if pos < self.len() {
             unsafe {

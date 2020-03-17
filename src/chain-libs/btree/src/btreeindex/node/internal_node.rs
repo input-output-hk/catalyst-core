@@ -39,7 +39,9 @@ where
     /// Init the given slice (mutating it) so it is a valid (empty) InternalNode that
     /// can be later read with `from_raw`
     pub fn init(key_buffer_size: usize, buffer: T) -> InternalNode<'b, K, T> {
-        let mut uninit = Self::from_raw(key_buffer_size, buffer);
+        // this is safe because we are not reading the data and by setting the length to 0 we are not
+        // going to
+        let mut uninit = unsafe { Self::from_raw(key_buffer_size, buffer) };
         uninit.set_len(0);
         uninit
     }
@@ -47,7 +49,7 @@ where
     /// mutable version of node interpretated over the given slice
     /// this shouldn't be called before calling `init`
     // TODO: add more rigorous type checking?
-    pub fn from_raw(key_buffer_size: usize, data: T) -> InternalNode<'b, K, T> {
+    pub unsafe fn from_raw(key_buffer_size: usize, data: T) -> InternalNode<'b, K, T> {
         assert_eq!(data.as_ref().as_ptr().align_offset(size_of::<PageId>()), 0);
         assert_eq!(data.as_ref().as_ptr().align_offset(size_of::<u64>()), 0);
         assert!(data.as_ref().len() > 0);

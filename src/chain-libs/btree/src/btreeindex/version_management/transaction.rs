@@ -30,7 +30,6 @@ pub(crate) struct InsertTransaction<'locks, 'storage: 'locks> {
     pages: ExtendablePages<'storage>,
     current_version: Arc<RwLock<Arc<Version>>>,
     key_buffer_size: u32,
-    page_size: u64,
 }
 
 // in most cases, we can access the storage with read only access, but in the (rare) cases
@@ -62,7 +61,6 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
         versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
         current_version: Arc<RwLock<Arc<Version>>>,
         key_buffer_size: u32,
-        page_size: u64,
     ) -> InsertTransaction<'locks, 'storage> {
         let current_root = root;
         InsertTransaction {
@@ -71,7 +69,6 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
             versions,
             current_version,
             key_buffer_size,
-            page_size,
             shadows: HashMap::new(),
             shadows_image: HashSet::new(),
             pages: ExtendablePages::new(pages),
@@ -247,7 +244,6 @@ pub struct RedirectPointers<'a, 'b: 'a, 'c: 'a> {
 impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
     pub fn rename_parent<K: Key>(
         self,
-        page_size: u64,
         key_buffer_size: usize,
         parent_id: PageId,
     ) -> Result<MutablePage<'a, 'b, 'c>, std::io::Error> {
@@ -255,19 +251,15 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
 
         let old_id = self.last_old_id;
         let new_id = self.last_new_id;
-        parent.as_node_mut(
-            page_size,
-            key_buffer_size,
-            |mut node: Node<K, &mut [u8]>| {
-                let mut node = node.as_internal_mut();
-                let pos_to_update = match node.children().linear_search(old_id) {
-                    Some(pos) => pos,
-                    None => unreachable!(),
-                };
+        parent.as_node_mut(key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+            let mut node = node.as_internal_mut();
+            let pos_to_update = match node.children().linear_search(old_id) {
+                Some(pos) => pos,
+                None => unreachable!(),
+            };
 
-                node.children_mut().update(pos_to_update, &new_id).unwrap();
-            },
-        );
+            node.children_mut().update(pos_to_update, &new_id).unwrap();
+        });
 
         let parent_new_id = parent.id();
         if parent_needs_shadowing {
@@ -299,14 +291,12 @@ impl<'txmanager, 'storage> InsertTransaction<'txmanager, 'storage> {
         K: Key,
     {
         let key_buffer_size = self.key_buffer_size.clone();
-        let page_size = self.page_size.clone();
         super::InsertBacktrack {
             tx: self,
             backtrack: vec![],
             new_root: None,
             phantom_key: PhantomData,
             key_buffer_size,
-            page_size,
         }
     }
 }

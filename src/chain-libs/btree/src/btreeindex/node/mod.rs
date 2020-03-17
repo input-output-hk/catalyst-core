@@ -51,21 +51,27 @@ where
     pub(crate) fn try_as_internal_mut<'i: 'b>(
         &'i mut self,
     ) -> Option<InternalNode<'b, K, &mut [u8]>> {
+        // the unsafe part is actually in Node::from_raw, so at this point we don't care that much
         match self.get_tag() {
-            NodeTag::Internal => Some(InternalNode::from_raw(
-                self.key_buffer_size,
-                &mut self.data.as_mut()[TAG_SIZE..],
-            )),
+            NodeTag::Internal => unsafe {
+                Some(InternalNode::from_raw(
+                    self.key_buffer_size,
+                    &mut self.data.as_mut()[TAG_SIZE..],
+                ))
+            },
             NodeTag::Leaf => None,
         }
     }
 
     pub(crate) fn try_as_leaf_mut<'i: 'b>(&'i mut self) -> Option<LeafNode<'b, K, &mut [u8]>> {
+        // the unsafe part is actually in Node::from_raw, so at this point we don't care that much
         match self.get_tag() {
-            NodeTag::Leaf => Some(LeafNode::from_raw(
-                self.key_buffer_size,
-                &mut self.data.as_mut()[TAG_SIZE..],
-            )),
+            NodeTag::Leaf => unsafe {
+                Some(LeafNode::from_raw(
+                    self.key_buffer_size,
+                    &mut self.data.as_mut()[TAG_SIZE..],
+                ))
+            },
             NodeTag::Internal => None,
         }
     }
@@ -84,7 +90,7 @@ where
     K: Key,
     T: AsRef<[u8]> + 'b,
 {
-    pub(crate) fn from_raw(data: T, key_buffer_size: usize) -> Node<K, T> {
+    pub(crate) unsafe fn from_raw(data: T, key_buffer_size: usize) -> Node<K, T> {
         Node {
             data,
             key_buffer_size,

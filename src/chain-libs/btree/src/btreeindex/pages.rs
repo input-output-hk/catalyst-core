@@ -203,18 +203,13 @@ impl<'a, T> PageHandle<'a, T> {
 }
 
 impl<'a> PageHandle<'a, borrow::Immutable<'a>> {
-    pub fn as_node<K, R>(
-        &self,
-        _page_size: u64,
-        key_buffer_size: usize,
-        f: impl FnOnce(Node<K, &[u8]>) -> R,
-    ) -> R
+    pub fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
         K: Key,
     {
         let page = self.borrow.borrow;
 
-        let node = Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size);
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size) };
 
         f(node)
     }
@@ -223,14 +218,13 @@ impl<'a> PageHandle<'a, borrow::Immutable<'a>> {
 impl<'a> PageHandle<'a, borrow::Mutable<'a>> {
     pub fn as_node_mut<K, R>(
         &mut self,
-        _page_size: u64,
         key_buffer_size: usize,
         f: impl FnOnce(Node<K, &mut [u8]>) -> R,
     ) -> R
     where
         K: Key,
     {
-        let node = Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size);
+        let node = unsafe { Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size) };
         f(node)
     }
 

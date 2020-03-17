@@ -41,13 +41,15 @@ where
 {
     /// mutate the slice of bytes so it is a valid leaf node
     pub(crate) fn init(key_buffer_size: usize, data: T) -> LeafNode<'b, K, T> {
-        let mut uninit = Self::from_raw(key_buffer_size, data);
+        // this is safe because we are not reading the data and by setting the length to 0 we are not
+        // going to
+        let mut uninit = unsafe { Self::from_raw(key_buffer_size, data) };
         uninit.set_len(0);
         uninit
     }
 
     /// read an already initialized slice of bytes as a leaf node
-    pub(crate) fn from_raw(key_buffer_size: usize, data: T) -> LeafNode<'b, K, T> {
+    pub(crate) unsafe fn from_raw(key_buffer_size: usize, data: T) -> LeafNode<'b, K, T> {
         assert_eq!(data.as_ref().as_ptr().align_offset(size_of::<PageId>()), 0);
         assert_eq!(data.as_ref().as_ptr().align_offset(size_of::<u64>()), 0);
         assert!(key_buffer_size % 8 == 0);

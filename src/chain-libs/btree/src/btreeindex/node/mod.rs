@@ -17,12 +17,14 @@ pub struct Node<K, T> {
     phantom: PhantomData<[K]>,
 }
 
+/// Trait used to abstract over the input for the rebalance algorithm, taking a Node<K, &[u8]> could be enough in normal cases, but this allows things like RAIIGuards
 pub trait NodeRef {
     fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
         K: Key;
 }
 
+/// Trait used to abstract over the input for the rebalance algorithm, taking a Node<K, &mut [u8]> could be enough in normal cases, but this allows things like RAIIGuards
 pub trait NodeRefMut: NodeRef {
     fn as_node_mut<K, R>(
         &mut self,
@@ -38,6 +40,7 @@ pub(crate) enum NodeTag {
     Leaf = 1,
 }
 
+/// Demultiplexer for the
 pub enum RebalanceResult<NodeType> {
     TakeFromLeft(RebalanceSiblingArg<TakeFromLeft, NodeType>),
     TakeFromRight(RebalanceSiblingArg<TakeFromRight, NodeType>),
@@ -45,7 +48,14 @@ pub enum RebalanceResult<NodeType> {
     MergeIntoSelf(RebalanceSiblingArg<MergeIntoSelf, NodeType>),
 }
 
+/// Auxiliary type for the rebalance process. After calling rebalance, an instance of this if returned with the proper bounds and only one function for providing the
+/// required arguments for the given strategy. Note: This is not enforced by anything, is just a convention.
+
+// The type is necessary in order to only clone/shadow nodes only when it's certain they will be used. For example, if both siblings of the rebalancing node have spare keys,
+// then the selected strategy will always be to take from the left, this means that only the left sibling needs to be mutated/cloned. Doing the cloning lazily with closures
+// would be probably more natural, but I find this approach simpler from a borrowing/state/generic bounds management perspective.
 pub struct RebalanceSiblingArg<Strategy, NodeType> {
+    // in practice, this would be a type that somehow borrows a Node, in order to operate on it, but there is no Node trait, so it is unbounded
     node: NodeType,
     phantom: PhantomData<Strategy>,
 }
@@ -66,6 +76,10 @@ mod marker {
     pub struct MergeIntoSelf;
 }
 
+/// input for the rebalance algorithms, this is used to define which of the strategies is used
+/// in both cases (leaf and internal) these are:
+/// steal key from left sibling, steal a key from right sibling, merge current into left sibling, merge right sibling into current.
+// the generic is bound only on NodeRef (immutable) because this is only used to ask the sibling if it has keys to borrow
 pub enum SiblingsArg<N: NodeRef> {
     Left(N),
     Right(N),

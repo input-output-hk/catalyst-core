@@ -1,6 +1,6 @@
 use crate::storage::MmapStorage;
-use byteorder::{ByteOrder, LittleEndian};
 use parking_lot::{RwLock, RwLockUpgradableReadGuard, RwLockWriteGuard};
+use std::convert::TryInto;
 use std::io::{self, Error, ErrorKind, Write};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::{fs, path};
@@ -131,7 +131,7 @@ impl MmapedAppendOnlyFile {
         let storage = self.storage.read();
         let szbuf = unsafe { storage.get(pos.into(), 4) };
 
-        let len = LittleEndian::read_u32(&szbuf);
+        let len = u32::from_le_bytes(szbuf.try_into().unwrap());
 
         let mut v = vec![0u8; len as usize];
 

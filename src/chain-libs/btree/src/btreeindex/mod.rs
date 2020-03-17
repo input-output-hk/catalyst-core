@@ -255,9 +255,7 @@ where
                 page_size.try_into().unwrap(),
                 key_size,
                 move |mut node: Node<K, &mut [u8]>| {
-                    node.as_leaf_mut()
-                        .unwrap()
-                        .insert(key, value, &mut allocate)
+                    node.as_leaf_mut().insert(key, value, &mut allocate)
                 },
             );
 
@@ -295,7 +293,6 @@ where
 
                 match node.as_node_mut(page_size.try_into().unwrap(), key_size, |mut node| {
                     node.as_internal_mut()
-                        .unwrap()
                         .insert(split_key, right_id, &mut allocate)
                 }) {
                     InternalInsertStatus::Ok => return Ok(()),
@@ -338,7 +335,6 @@ where
         );
 
         node.as_internal_mut()
-            .unwrap()
             .insert_first(key, left_child, right_child);
 
         node
@@ -355,13 +351,8 @@ where
         page_ref.as_node(
             page_size,
             key_buffer_size,
-            |node: Node<K, &[u8]>| match node.as_leaf().unwrap().keys().binary_search(key) {
-                Ok(pos) => node
-                    .as_leaf()
-                    .unwrap()
-                    .values()
-                    .get(pos)
-                    .map(|n| *n.borrow()),
+            |node: Node<K, &[u8]>| match node.as_leaf().keys().binary_search(key) {
+                Ok(pos) => Some(*node.as_leaf().values().get(pos).borrow()),
                 Err(_) => None,
             },
         )
@@ -376,7 +367,7 @@ where
         loop {
             let new_current =
                 current.as_node(page_size, key_buffer_size, |node: Node<K, &[u8]>| {
-                    node.as_internal().map(|inode| {
+                    node.try_as_internal().map(|inode| {
                         let upper_pivot = match inode.keys().binary_search(key) {
                             Ok(pos) => Some(pos + 1),
                             Err(pos) => Some(pos),
@@ -384,10 +375,10 @@ where
                         .filter(|pos| pos < &inode.children().len());
 
                         let new_current_id = if let Some(upper_pivot) = upper_pivot {
-                            inode.children().get(upper_pivot).unwrap().clone()
+                            inode.children().get(upper_pivot)
                         } else {
                             let last = inode.children().len().checked_sub(1).unwrap();
-                            inode.children().get(last).unwrap().clone()
+                            inode.children().get(last)
                         };
 
                         tx.get_page(new_current_id).unwrap()
@@ -467,22 +458,22 @@ mod tests {
                         node::NodeTag::Internal => {
                             println!("Internal Node");
                             println!("keys: ");
-                            for k in node.as_internal().unwrap().keys().into_iter() {
+                            for k in node.as_internal().keys().into_iter() {
                                 println!("{:?}", k.borrow());
                             }
                             println!("children: ");
-                            for c in node.as_internal().unwrap().children().into_iter() {
+                            for c in node.as_internal().children().into_iter() {
                                 println!("{:?}", c.borrow());
                             }
                         }
                         node::NodeTag::Leaf => {
                             println!("Leaf Node");
                             println!("keys: ");
-                            for k in node.as_leaf().unwrap().keys().into_iter() {
+                            for k in node.as_leaf().keys().into_iter() {
                                 println!("{:?}", k.borrow());
                             }
                             println!("values: ");
-                            for v in node.as_leaf().unwrap().values().into_iter() {
+                            for v in node.as_leaf().values().into_iter() {
                                 println!("{:?}", v.borrow());
                             }
                         }

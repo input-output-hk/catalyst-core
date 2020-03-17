@@ -48,7 +48,9 @@ where
         }
     }
 
-    pub(crate) fn as_internal_mut<'i: 'b>(&'i mut self) -> Option<InternalNode<'b, K, &mut [u8]>> {
+    pub(crate) fn try_as_internal_mut<'i: 'b>(
+        &'i mut self,
+    ) -> Option<InternalNode<'b, K, &mut [u8]>> {
         match self.get_tag() {
             NodeTag::Internal => Some(InternalNode::from_raw(
                 self.key_buffer_size,
@@ -58,7 +60,7 @@ where
         }
     }
 
-    pub(crate) fn as_leaf_mut<'i: 'b>(&'i mut self) -> Option<LeafNode<'b, K, &mut [u8]>> {
+    pub(crate) fn try_as_leaf_mut<'i: 'b>(&'i mut self) -> Option<LeafNode<'b, K, &mut [u8]>> {
         match self.get_tag() {
             NodeTag::Leaf => Some(LeafNode::from_raw(
                 self.key_buffer_size,
@@ -66,6 +68,14 @@ where
             )),
             NodeTag::Internal => None,
         }
+    }
+
+    pub(crate) fn as_internal_mut(&mut self) -> InternalNode<K, &mut [u8]> {
+        self.try_as_internal_mut().unwrap()
+    }
+
+    pub(crate) fn as_leaf_mut(&mut self) -> LeafNode<K, &mut [u8]> {
+        self.try_as_leaf_mut().unwrap()
     }
 }
 
@@ -92,7 +102,7 @@ where
         }
     }
 
-    pub(crate) fn as_internal<'i: 'b>(&'i self) -> Option<InternalNode<'b, K, &[u8]>> {
+    pub(crate) fn try_as_internal<'i: 'b>(&'i self) -> Option<InternalNode<'b, K, &[u8]>> {
         match self.get_tag() {
             NodeTag::Internal => Some(InternalNode::view(
                 self.key_buffer_size,
@@ -102,7 +112,7 @@ where
         }
     }
 
-    pub(crate) fn as_leaf<'i: 'b>(&'i self) -> Option<LeafNode<'b, K, &[u8]>> {
+    pub(crate) fn try_as_leaf<'i: 'b>(&'i self) -> Option<LeafNode<'b, K, &[u8]>> {
         match self.get_tag() {
             NodeTag::Leaf => Some(LeafNode::view(
                 self.key_buffer_size,
@@ -110,6 +120,10 @@ where
             )),
             NodeTag::Internal => None,
         }
+    }
+
+    pub(crate) fn as_leaf(&self) -> LeafNode<K, &[u8]> {
+        self.try_as_leaf().unwrap()
     }
 }
 
@@ -129,6 +143,16 @@ mod tests {
     use crate::mem_page::MemPage;
     use crate::tests::U64Key;
     use std::mem::size_of;
+
+    impl<'b, K, T> Node<K, T>
+    where
+        K: Key,
+        T: AsRef<[u8]> + 'b,
+    {
+        pub(crate) fn as_internal(&self) -> InternalNode<K, &[u8]> {
+            self.try_as_internal().unwrap()
+        }
+    }
 
     #[test]
     fn insert_internal_with_split_at_first() {
@@ -167,11 +191,9 @@ mod tests {
         };
 
         node.as_internal_mut()
-            .unwrap()
             .insert_first(U64Key(i1 as u64), 0u32, i1);
         match node
             .as_internal_mut()
-            .unwrap()
             .insert(U64Key(i2 as u64), i2, &mut allocate)
         {
             InternalInsertStatus::Ok => (),
@@ -180,53 +202,25 @@ mod tests {
 
         match node
             .as_internal_mut()
-            .unwrap()
             .insert(U64Key(i3 as u64), i3, &mut allocate)
         {
             InternalInsertStatus::Split(U64Key(2), new_node) => {
-                assert_eq!(new_node.as_internal().unwrap().keys().len(), 1);
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .unwrap()
-                        .keys()
-                        .get(0)
-                        .expect("Couldn't get first key"),
-                    U64Key(3)
-                );
-                assert_eq!(new_node.as_internal().unwrap().children().len(), 2);
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .unwrap()
-                        .children()
-                        .get(0)
-                        .expect("Couldn't get first key"),
-                    2
-                );
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .unwrap()
-                        .children()
-                        .get(1)
-                        .expect("Couldn't get second key"),
-                    3
-                );
+                assert_eq!(new_node.as_internal().keys().len(), 1);
+                assert_eq!(new_node.as_internal().keys().get(0), U64Key(3));
+                assert_eq!(new_node.as_internal().children().len(), 2);
+                assert_eq!(new_node.as_internal().children().get(0), 2);
+                assert_eq!(new_node.as_internal().children().get(1), 3);
             }
             _ => {
                 panic!("third insertion should split");
             }
         };
 
-        assert_eq!(node.as_internal().unwrap().keys().len(), 1);
-        assert_eq!(
-            node.as_internal().unwrap().keys().get(0).unwrap(),
-            U64Key(1)
-        );
-        assert_eq!(node.as_internal().unwrap().children().len(), 2);
-        assert_eq!(node.as_internal().unwrap().children().get(0).unwrap(), 0u32);
-        assert_eq!(node.as_internal().unwrap().children().get(1).unwrap(), 1u32);
+        assert_eq!(node.as_internal().keys().len(), 1);
+        assert_eq!(node.as_internal().keys().get(0), U64Key(1));
+        assert_eq!(node.as_internal().children().len(), 2);
+        assert_eq!(node.as_internal().children().get(0), 0u32);
+        assert_eq!(node.as_internal().children().get(1), 1u32);
     }
 
     #[test]
@@ -263,44 +257,32 @@ mod tests {
             Node::new_leaf(std::mem::size_of::<U64Key>(), page)
         };
 
-        match node
-            .as_leaf_mut()
-            .unwrap()
-            .insert(U64Key(i1), i1, &mut allocate)
-        {
+        match node.as_leaf_mut().insert(U64Key(i1), i1, &mut allocate) {
             LeafInsertStatus::Ok => (),
             _ => panic!("second insertion shouldn't split"),
         };
-        match node
-            .as_leaf_mut()
-            .unwrap()
-            .insert(U64Key(i2), i2, &mut allocate)
-        {
+        match node.as_leaf_mut().insert(U64Key(i2), i2, &mut allocate) {
             LeafInsertStatus::Ok => (),
             _ => panic!("second insertion shouldn't split"),
         };
-        match node
-            .as_leaf_mut()
-            .unwrap()
-            .insert(U64Key(i3), i3, &mut allocate)
-        {
+        match node.as_leaf_mut().insert(U64Key(i3), i3, &mut allocate) {
             LeafInsertStatus::Split(U64Key(2), new_node) => {
-                let new_leaf = new_node.as_leaf().unwrap();
+                let new_leaf = new_node.as_leaf();
                 assert_eq!(new_leaf.keys().len(), 2);
-                assert_eq!(new_leaf.keys().get(0).unwrap(), U64Key(2));
-                assert_eq!(new_leaf.keys().get(1).unwrap(), U64Key(3));
+                assert_eq!(new_leaf.keys().get(0), U64Key(2));
+                assert_eq!(new_leaf.keys().get(1), U64Key(3));
                 assert_eq!(new_leaf.values().len(), 2);
-                assert_eq!(new_leaf.values().get(0).unwrap(), 2);
-                assert_eq!(new_leaf.values().get(1).unwrap(), 3);
+                assert_eq!(new_leaf.values().get(0), 2);
+                assert_eq!(new_leaf.values().get(1), 3);
             }
             _ => {
                 panic!("third insertion should split");
             }
         };
 
-        assert_eq!(node.as_leaf().unwrap().keys().len(), 1);
-        assert_eq!(node.as_leaf().unwrap().keys().get(0).unwrap(), U64Key(1));
-        assert_eq!(node.as_leaf().unwrap().values().len(), 1);
-        assert_eq!(node.as_leaf().unwrap().values().get(0).unwrap(), 1);
+        assert_eq!(node.as_leaf().keys().len(), 1);
+        assert_eq!(node.as_leaf().keys().get(0), U64Key(1));
+        assert_eq!(node.as_leaf().values().len(), 1);
+        assert_eq!(node.as_leaf().values().get(0), 1);
     }
 }

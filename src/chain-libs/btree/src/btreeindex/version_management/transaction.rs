@@ -259,7 +259,7 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
             page_size,
             key_buffer_size,
             |mut node: Node<K, &mut [u8]>| {
-                let mut node = node.as_internal_mut().unwrap();
+                let mut node = node.as_internal_mut();
                 let pos_to_update = match node.children().linear_search(old_id) {
                     Some(pos) => pos,
                     None => unreachable!(),

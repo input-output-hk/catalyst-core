@@ -32,6 +32,7 @@ struct State<'a> {
     shadows: HashMap<PageId, PageId>,
     /// in order to find shadows by the new_id (as we already redirected pointers to this)
     shadows_image: HashSet<PageId>,
+    deleted_pages: Vec<PageId>,
     page_manager: MutexGuard<'a, PageManager>,
 }
 
@@ -108,6 +109,12 @@ impl<'a, 'b: 'a> NodeRefMut for PageRefMut<'a, 'b> {
 // -> drop write guard -> take read guard ourselves
 struct ExtendablePages<'storage>(Option<RwLockUpgradableReadGuard<'storage, Pages>>);
 
+pub(super) struct Neighbourhood {
+    parent: PageId,
+    left: Option<PageId>,
+    right: Option<PageId>,
+}
+
 impl<'a> ReadTransaction<'a> {
     pub(super) fn new(version: Arc<Version>, pages: RwLockReadGuard<Pages>) -> ReadTransaction {
         ReadTransaction { version, pages }
@@ -136,6 +143,7 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
             shadows: HashMap::new(),
             shadows_image: HashSet::new(),
             page_manager,
+            deleted_pages: Vec::new(),
         };
         InsertTransaction {
             current_root,
@@ -202,6 +210,10 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
         };
 
         Ok(id)
+    }
+
+    pub fn delete_node(&mut self, id: PageId) {
+        self.state.borrow_mut().deleted_pages.push(id);
     }
 
     // TODO: mut_page and mut_page_internal are basically the same thing, but I can't find
@@ -297,19 +309,18 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
         K: Key,
     {
         let state = self.state.borrow();
+        let root = self.root();
         let transaction = super::WriteTransaction {
             new_root: self.root(),
             shadowed_pages: state.shadows.keys().cloned().collect(),
             // Pages allocated at the end, basically
             next_page_id: state.page_manager.next_page(),
+            deleted_pages: state.deleted_pages,
         };
 
         let mut current_version = self.current_version.write();
 
-        *current_version = Arc::new(Version {
-            root: self.root(),
-            transaction,
-        });
+        *current_version = Arc::new(Version { root, transaction });
 
         self.versions.push_back(current_version.clone());
     }

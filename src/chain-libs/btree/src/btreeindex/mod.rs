@@ -386,6 +386,220 @@ where
 
         current
     }
+
+    // TODO: the delete function needs a decent cleanup/refactor
+    pub fn delete(&self, key: &K) -> Result<(), BTreeStoreError> {
+        let key_buffer_size: u32 = self.static_settings.key_buffer_size;
+        let mut tx = self
+            .transaction_manager
+            .insert_transaction(&self.pages, key_buffer_size);
+
+        {
+            let mut backtrack = tx.delete_backtrack();
+
+            backtrack.search_for(key);
+
+            // path loaded (cloned) in transaction
+
+            // let (leaf, parent, anchor, left, right) = backtrack.get_next()?.unwrap();
+            let DeleteNextElement {
+                next,
+                parent,
+                anchor,
+                left,
+                right,
+            } = backtrack.get_next()?.unwrap();
+
+            let mut leaf = next;
+            let leaf_id = leaf.id();
+
+            let delete_status = leaf.as_node_mut(key_buffer_size as usize, |mut node| {
+                node.as_leaf_mut().delete(key)
+            })?;
+
+            match delete_status {
+                LeafDeleteStatus::Ok => return Ok(()),
+                LeafDeleteStatus::NeedsRebalance => (),
+            };
+
+            let is_empty = leaf.as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
+                root.as_leaf().keys().len() == 0
+            });
+
+            if let None = parent {
+                if is_empty {
+                    // do something?
+                }
+                return Ok(());
+            };
+
+            let parent = parent.unwrap();
+            let parent_id = parent.id();
+
+            let rebalance_result =
+                leaf.as_node_mut(key_buffer_size as usize, |mut node: Node<K, &mut [u8]>| {
+                    let siblings = SiblingsArg::new_from_options(left, right);
+
+                    node.as_leaf_mut()
+                        .rebalance(siblings)
+                        .expect("couldn't rebalance leaf")
+                });
+
+            match rebalance_result {
+                RebalanceResult::TookKeyFromLeft => {
+                    let siblings = unimplemented!();
+                    leaf.as_node_mut(key_buffer_size as usize, |mut node: Node<K, &mut [u8]>| {
+                        node.as_leaf_mut()
+                            .take_key_from_left(parent, anchor, siblings)
+                    });
+                }
+                RebalanceResult::TookKeyFromRight => {
+                    let siblings = unimplemented!();
+                    leaf.as_node_mut(key_buffer_size as usize, |mut node: Node<K, &mut [u8]>| {
+                        node.as_leaf_mut()
+                            .take_key_from_right(parent, anchor, siblings)
+                    });
+                }
+                RebalanceResult::MergeIntoLeft => {
+                    backtrack.delete_node(leaf_id);
+
+                    self.delete_internal(
+                        anchor.expect("merged into left sibling, but anchor is None"),
+                        &mut backtrack,
+                    );
+                }
+                RebalanceResult::MergeIntoSelf => {
+                    self.delete_internal(anchor.map_or(0, |a| a + 1), &mut backtrack);
+                    backtrack.delete_node(right.unwrap());
+                }
+            };
+        }
+        tx.commit::<K>();
+
+        Ok(())
+    }
+
+    fn delete_internal(&self, anchor: usize, tx: &mut DeleteBacktrack<K>) {
+        unimplemented!()
+        //     enum NeedsRebalance {
+        //         ShouldRecurse {
+        //             rebalance_result: RebalanceResult,
+        //             right_id: Option<PageId>,
+        //             parent_id: PageId,
+        //             parent_anchor: Option<usize>,
+        //             self_id: PageId,
+        //         },
+        //         DeleteRoot {
+        //             new_root: PageId,
+        //         },
+        //     }
+
+        //     let after_delete = {
+        //         let (node, parent, parent_anchor, left, right) = tx.get_next::<K>().unwrap();
+
+        //         let delete_status = node.as_node_mut(|mut node: Node<K, &mut [u8]>| {
+        //             let mut node = node.as_internal_mut().unwrap();
+
+        //             node.delete_key_children(anchor)
+        //         });
+
+        //         match delete_status {
+        //             InternalDeleteStatus::Ok => return,
+        //             InternalDeleteStatus::NeedsRebalance => (),
+        //         };
+
+        //         if let None = parent {
+        //             // the root is not rebalanced, but if it is empty then it can
+        //             // be deleted
+        //             let is_empty = node
+        //                 .as_node(|root: Node<K, &[u8]>| root.as_internal().unwrap().keys().len() == 0);
+
+        //             // after deleting a key at position `anchor` and its right children, the left sibling
+        //             // is in position == anchor
+
+        //             if is_empty {
+        //                 assert!(anchor == 0);
+        //                 let new_root = node.as_node(|node: Node<K, &[u8]>| {
+        //                     node.as_internal().unwrap().children().get(anchor).unwrap()
+        //                 });
+        //                 NeedsRebalance::DeleteRoot { new_root }
+        //             } else {
+        //                 // the root is not rebalanced
+        //                 return;
+        //             }
+        //         } else {
+        //             let left_sibling = left.and_then(|id| self.pages.get_page(id));
+
+        //             let right_sibling = right.and_then(|id| self.pages.get_page(id));
+
+        //             let parent = parent.unwrap();
+        //             let parent_id = parent.page_id;
+
+        //             let rebalance_result = node
+        //                 .as_node_mut(|mut node: Node<K, &mut [u8]>| {
+        //                     let siblings = SiblingsArg::new_from_options(
+        //                         left_sibling.clone(),
+        //                         right_sibling.clone(),
+        //                     );
+
+        //                     node.as_internal_mut().unwrap().rebalance(RebalanceArgs {
+        //                         parent,
+        //                         parent_anchor,
+        //                         siblings,
+        //                     })
+        //                 })
+        //                 .expect("couldn't rebalance internal node");
+
+        //             NeedsRebalance::ShouldRecurse {
+        //                 rebalance_result,
+        //                 right_id: right,
+        //                 parent_id,
+        //                 parent_anchor,
+        //                 self_id: node.page_id,
+        //             }
+        //         }
+        //     };
+
+        //     match after_delete {
+        //         NeedsRebalance::ShouldRecurse {
+        //             rebalance_result,
+        //             right_id,
+        //             parent_id,
+        //             parent_anchor,
+        //             self_id,
+        //         } => match rebalance_result {
+        //             RebalanceResult::TookKeyFromLeft(mut left_clon) => {
+        //                 let old_id = left_clon.page_id;
+        //                 left_clon.page_id = tx.new_id();
+        //                 tx.add_non_search_path_node::<K>(old_id, left_clon, parent_id);
+        //             }
+        //             RebalanceResult::TookKeyFromRight(mut right_clon) => {
+        //                 let old_id = right_clon.page_id;
+        //                 right_clon.page_id = tx.new_id();
+        //                 tx.add_non_search_path_node::<K>(old_id, right_clon, parent_id);
+        //             }
+        //             RebalanceResult::MergeIntoLeft(mut left_clon) => {
+        //                 let old_id = left_clon.page_id;
+        //                 left_clon.page_id = tx.new_id();
+        //                 tx.add_non_search_path_node::<K>(old_id, left_clon, parent_id);
+
+        //                 tx.delete_node(self_id);
+        //                 self.delete_internal(
+        //                     parent_anchor.expect("merged into left sibling, but anchor is None"),
+        //                     tx,
+        //                 );
+        //             }
+        //             RebalanceResult::MergeIntoSelf => {
+        //                 let anchor = parent_anchor.clone().map_or(0, |n| n + 1);
+        //                 tx.delete_node(right_id.unwrap());
+        //                 self.delete_internal(anchor, tx);
+        //             }
+        //         },
+        //         NeedsRebalance::DeleteRoot { new_root } => {
+        //             tx.replace_root(new_root);
+        //         }
+        //     }
+    }
 }
 
 impl<K> Drop for BTree<K> {

@@ -2562,4 +2562,13 @@ mod tests {
             .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
+
+    // #[test]
+    // fn ledger_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
+    //     let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    //         .faucet(&faucet)
+    //         .build()
+    //         .unwrap();
+    //     Ok(())
+    // }
 }

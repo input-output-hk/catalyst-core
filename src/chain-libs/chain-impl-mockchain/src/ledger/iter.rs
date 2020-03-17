@@ -74,6 +74,60 @@ pub enum EntryOwned {
     MultisigDeclaration((crate::multisig::Identifier, crate::multisig::Declaration)),
     StakePool((crate::certificate::PoolId, crate::stake::PoolState)),
     LeaderParticipation((crate::certificate::PoolId, u32)),
+    StopEntry,
+}
+
+impl EntryOwned {
+    pub fn to_entry(&self) -> Option<Entry> {
+        match self {
+            EntryOwned::Globals(globals) => {
+                Some(Entry::Globals(globals.clone()))
+            },
+            EntryOwned::Pot(entry) => {
+                Some(Entry::Pot(entry.clone()))
+            },
+            EntryOwned::Utxo(entry) => {
+                let utxo_entry = utxo::Entry{
+                    fragment_id: entry.fragment_id.clone(),
+                    output_index: entry.output_index,
+                    output: &entry.output,
+                };
+                Some(Entry::Utxo(utxo_entry))
+            },
+            EntryOwned::OldUtxo(entry) => {
+                let old_utxo_entry = utxo::Entry {
+                    fragment_id: entry.fragment_id.clone(),
+                    output_index: entry.output_index,
+                    output: &entry.output,
+                };
+                Some(Entry::OldUtxo(old_utxo_entry))
+            },
+            EntryOwned::Account((identifier, account_state)) => {
+                Some(Entry::Account((identifier, account_state)))
+            },
+            EntryOwned::ConfigParam(config_param) => {
+                Some(Entry::ConfigParam(config_param.clone()))
+            },
+            EntryOwned::UpdateProposal((proposal_id, proposal_state)) => {
+                Some(Entry::UpdateProposal((proposal_id, proposal_state)))
+            },
+            EntryOwned::MultisigAccount((identifier, account_state)) => {
+                Some(Entry::MultisigAccount((identifier, account_state)))
+            },
+            EntryOwned::MultisigDeclaration((identifier, account_state)) => {
+                Some(Entry::MultisigDeclaration((identifier, account_state)))
+            },
+            EntryOwned::StakePool((pool_id, pool_state)) => {
+                Some(Entry::StakePool((pool_id, pool_state)))
+            },
+            EntryOwned::LeaderParticipation((pool_id, participation)) => {
+                Some(Entry::LeaderParticipation((pool_id, participation)))
+            },
+            EntryOwned::StopEntry => {
+                None
+            },
+        }
+    }
 }
 
 #[derive(Eq, PartialEq, Clone, Debug)]
@@ -324,6 +378,8 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         })
     }
 }
+
+
 
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {

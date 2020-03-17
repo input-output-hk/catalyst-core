@@ -4,9 +4,7 @@ use super::{
     transaction::{PageRef, PageRefMut},
     Metadata, Node, PageId,
 };
-use crate::btreeindex::page_manager::PageManager;
-
-use crate::btreeindex::node::NodeRef;
+use crate::btreeindex::node::NodePageRef;
 use crate::btreeindex::page_manager::PageManager;
 use crate::btreeindex::pages::{
     borrow::{Immutable, Mutable},

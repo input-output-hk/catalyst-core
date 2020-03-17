@@ -5,7 +5,7 @@ use crate::btreeindex::{
 use crate::Key;
 use parking_lot::lock_api;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::marker::PhantomData;
 use std::ops::Deref;
@@ -19,7 +19,7 @@ pub struct ReadTransaction<'a> {
 /// staging area for batched insertions, it will keep track of pages already shadowed and reuse them,
 /// it can be used to create a new `Version` at the end with all the insertions done atomically
 pub(crate) struct InsertTransaction<'locks, 'storage: 'locks> {
-    pub current_root: PageId,
+    pub current_root: Cell<PageId>,
     state: RefCell<State<'locks>>,
     pages: RefCell<ExtendablePages<'storage>>,
     versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
@@ -36,6 +36,7 @@ struct State<'a> {
     page_manager: MutexGuard<'a, PageManager>,
 }
 
+#[derive(Clone)]
 pub struct PageRef<'a, 'b: 'a> {
     pages: &'a RefCell<ExtendablePages<'b>>,
     page_id: PageId,
@@ -47,6 +48,7 @@ impl<'a, 'b: 'a> PageRef<'a, 'b> {
     }
 }
 
+#[derive(Clone)]
 pub struct PageRefMut<'a, 'b: 'a> {
     pages: &'a RefCell<ExtendablePages<'b>>,
     page_id: PageId,
@@ -146,7 +148,7 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
             deleted_pages: Vec::new(),
         };
         InsertTransaction {
-            current_root,
+            current_root: Cell::new(current_root),
             versions,
             current_version,
             key_buffer_size,
@@ -156,12 +158,13 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
     }
 
     pub fn root(&self) -> PageId {
+        let current_root = self.current_root.get();
         self.state
             .borrow()
             .shadows
-            .get(&self.current_root)
+            .get(&current_root)
             .map(|root| *root)
-            .unwrap_or(self.current_root)
+            .unwrap_or(current_root)
     }
 
     pub fn get_page<'this>(&'this self, id: PageId) -> Option<PageRef<'this, 'storage>> {
@@ -212,7 +215,7 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
         Ok(id)
     }
 
-    pub fn delete_node(&mut self, id: PageId) {
+    pub fn delete_node(&self, id: PageId) {
         self.state.borrow_mut().deleted_pages.push(id);
     }
 
@@ -308,10 +311,11 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
     where
         K: Key,
     {
-        let state = self.state.borrow();
-        let root = self.root();
+        // let state = self.state.borrow();
+        let new_root = self.root();
+        let state = self.state.into_inner();
         let transaction = super::WriteTransaction {
-            new_root: self.root(),
+            new_root,
             shadowed_pages: state.shadows.keys().cloned().collect(),
             // Pages allocated at the end, basically
             next_page_id: state.page_manager.next_page(),
@@ -320,7 +324,10 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
 
         let mut current_version = self.current_version.write();
 
-        *current_version = Arc::new(Version { root, transaction });
+        *current_version = Arc::new(Version {
+            root: new_root,
+            transaction,
+        });
 
         self.versions.push_back(current_version.clone());
     }
@@ -343,6 +350,27 @@ pub struct RedirectPointers<'a, 'b: 'a, 'c: 'a> {
 }
 
 impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
+    // TODO: refactor to merge with rename_parent
+    pub fn redirect_parent_in_tx<K: Key>(
+        self,
+        key_buffer_size: usize,
+        mut parent: PageRefMut,
+    ) -> PageRefMut<'a, 'c> {
+        let old_id = self.last_old_id;
+        let new_id = self.last_new_id;
+        parent.as_node_mut(key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+            let mut node = node.as_internal_mut();
+            let pos_to_update = match node.children().linear_search(old_id) {
+                Some(pos) => pos,
+                None => unreachable!(),
+            };
+
+            node.children_mut().update(pos_to_update, &new_id).unwrap();
+        });
+
+        self.finish()
+    }
+
     pub fn rename_parent<K: Key>(
         self,
         key_buffer_size: usize,

@@ -4,7 +4,7 @@ use super::{
     transaction::{PageRef, PageRefMut},
     Metadata, Node, PageId,
 };
-use crate::btreeindex::node::NodePageRef;
+use crate::btreeindex::node::NodeRef;
 use crate::btreeindex::page_manager::PageManager;
 
 use crate::mem_page::MemPage;
@@ -338,11 +338,13 @@ where
         }
     }
 
-    pub fn delete_left_sibling(&self) {
-        let id = self.left.as_ref().map(|handle| handle.id()).unwrap();
+    /// delete current node, this just adds the id to the list of free pages *after* the transaction is confirmed
+    pub fn delete_node(&self) {
+        let id = self.next.id();
         self.backtrack.delete_node(id)
     }
 
+    /// delete right sibling of current node, this just adds the id to the list of free pages *after* the transaction is confirmed
     pub fn delete_right_sibling(&self) {
         let id = self.right.as_ref().map(|handle| handle.id()).unwrap();
         self.backtrack.delete_node(dbg!(id))

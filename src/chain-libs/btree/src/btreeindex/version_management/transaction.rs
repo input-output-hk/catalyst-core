@@ -1,6 +1,9 @@
 use super::Version;
 use crate::btreeindex::{
-    borrow::Immutable, page_manager::PageManager, Node, PageHandle, PageId, Pages,
+    borrow::{Immutable, Mutable},
+    node::{NodeRef, NodeRefMut},
+    page_manager::PageManager,
+    Node, PageHandle, PageId, Pages,
 };
 use crate::Key;
 use parking_lot::lock_api;
@@ -305,8 +308,7 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
     where
         K: Key,
     {
-        // let state = self.state.borrow();
-        let new_root = dbg!(self.root());
+        let new_root = self.root();
         let state = self.state.into_inner();
         let transaction = super::WriteTransaction {
             new_root,
@@ -344,12 +346,7 @@ pub struct RedirectPointers<'a, 'b: 'a, 'c: 'a> {
 }
 
 impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
-    // TODO: refactor to merge with rename_parent
-    pub fn redirect_parent_in_tx<K: Key>(
-        self,
-        key_buffer_size: usize,
-        mut parent: PageRefMut,
-    ) -> PageRefMut<'a, 'c> {
+    fn find_and_redirect<K: Key, T: NodeRefMut>(&self, key_buffer_size: usize, parent: &mut T) {
         let old_id = self.last_old_id;
         let new_id = self.last_new_id;
         parent.as_node_mut(key_buffer_size, |mut node: Node<K, &mut [u8]>| {
@@ -361,7 +358,15 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
 
             node.children_mut().update(pos_to_update, &new_id).unwrap();
         });
+    }
 
+    // TODO: refactor to merge with rename_parent
+    pub fn redirect_parent_in_tx<K: Key>(
+        self,
+        key_buffer_size: usize,
+        mut parent: PageRefMut,
+    ) -> PageRefMut<'a, 'c> {
+        self.find_and_redirect::<K, PageRefMut>(key_buffer_size, &mut parent);
         self.finish()
     }
 
@@ -374,17 +379,18 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
         let pages = self.tx.pages.borrow();
         let mut parent = pages.mut_page(parent).unwrap();
 
-        let old_id = self.last_old_id;
-        let new_id = self.last_new_id;
-        parent.as_node_mut(key_buffer_size, |mut node: Node<K, &mut [u8]>| {
-            let mut node = node.as_internal_mut();
-            let pos_to_update = match node.children().linear_search(old_id) {
-                Some(pos) => pos,
-                None => unreachable!(),
-            };
+        // let old_id = self.last_old_id;
+        // let new_id = self.last_new_id;
+        // parent.as_node_mut(key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+        //     let mut node = node.as_internal_mut();
+        //     let pos_to_update = match node.children().linear_search(old_id) {
+        //         Some(pos) => pos,
+        //         None => unreachable!(),
+        //     };
 
-            node.children_mut().update(pos_to_update, &new_id).unwrap();
-        });
+        //     node.children_mut().update(pos_to_update, &new_id).unwrap();
+        // });
+        self.find_and_redirect::<K, PageHandle<Mutable>>(key_buffer_size, &mut parent);
 
         let parent_new_id = parent.id();
         if parent_needs_shadowing {

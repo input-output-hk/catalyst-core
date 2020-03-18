@@ -164,7 +164,7 @@ pub mod borrow {
             });
 
             match *arc {
-                BorrowGuard::Exclusive => panic!("can't borrow mutably borrowed page"),
+                BorrowGuard::Exclusive => panic!("can't borrow mutably borrowed page {}", id),
                 _ => (),
             }
 

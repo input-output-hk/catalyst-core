@@ -244,7 +244,7 @@ where
 
     pub(crate) fn insert_in_leaf<'a, 'b: 'a>(
         &self,
-        leaf: PageRefMut<'a, 'b>,
+        mut leaf: PageRefMut<'a, 'b>,
         key: K,
         value: Value,
     ) -> Result<Option<(K, Node<K, MemPage>)>, BTreeStoreError> {
@@ -283,7 +283,7 @@ where
         let mut right_id = to_insert;
         loop {
             let (current_id, new_split_key, new_node) = {
-                let node = backtrack.get_next()?.unwrap();
+                let mut node = backtrack.get_next()?.unwrap();
                 let node_id = node.id();
                 let key_size = usize::try_from(self.static_settings.key_buffer_size).unwrap();
                 let page_size = self.static_settings.page_size.try_into().unwrap();

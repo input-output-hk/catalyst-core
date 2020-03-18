@@ -129,6 +129,16 @@ where
         result
     }
 
+    pub fn delete(&self, key: K) -> Result<(), BTreeStoreError> {
+        let flatfile = self.flatfile.lock().unwrap();
+        self.index.delete(&key)?;
+
+        flatfile.sync()?;
+        self.index.checkpoint()?;
+
+        Ok(())
+    }
+
     /// insert many values in one transaction (with only one fsync)
     pub fn insert_many<B: AsRef<[u8]>>(
         &self,

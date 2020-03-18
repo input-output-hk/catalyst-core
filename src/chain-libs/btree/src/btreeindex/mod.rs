@@ -6,7 +6,7 @@ mod page_manager;
 mod pages;
 mod version_management;
 
-use version_management::transaction::{InsertTransaction, PageRef, PageRefMut, ReadTransaction};
+use version_management::transaction::{InsertTransaction, PageRefMut, ReadTransaction};
 use version_management::*;
 
 use crate::mem_page::MemPage;
@@ -15,8 +15,8 @@ use metadata::{Metadata, StaticSettings};
 use node::internal_node::InternalDeleteStatus;
 use node::leaf_node::LeafDeleteStatus;
 use node::{
-    InternalInsertStatus, LeafInsertStatus, Node, NodePageRef, NodePageRefMut, RebalanceArgs,
-    RebalanceResult, SiblingsArg,
+    InternalInsertStatus, LeafInsertStatus, Node, NodePageRef, NodePageRefMut, RebalanceResult,
+    SiblingsArg,
 };
 use pages::{borrow, PageHandle, Pages, PagesInitializationParams};
 use std::borrow::Borrow;
@@ -391,31 +391,37 @@ where
 
         current
     }
-
-    // TODO: the delete function needs a decent cleanup/refactor
     pub fn delete(&self, key: &K) -> Result<(), BTreeStoreError> {
         let key_buffer_size: u32 = self.static_settings.key_buffer_size;
+
         let mut tx = self
             .transaction_manager
             .insert_transaction(&self.pages, key_buffer_size);
 
-        let backtrack = tx.delete_backtrack();
+        let result = self.delete_async(key, &mut tx);
+
+        tx.commit::<K>();
+
+        result
+    }
+
+    // TODO: the delete function needs a decent cleanup/refactor
+    fn delete_async<'a>(
+        &'a self,
+        key: &K,
+        tx: &mut InsertTransaction<'a, 'a>,
+    ) -> Result<(), BTreeStoreError> {
+        let key_buffer_size: u32 = self.static_settings.key_buffer_size;
+
+        {
+            let mut backtrack = tx.delete_backtrack();
 
         backtrack.search_for(key);
 
-        // path loaded (cloned) in transaction
+            // path loaded (cloned) in transaction
+            let next_element = backtrack.get_next()?.unwrap();
 
-        // let (leaf, parent, anchor, left, right) = backtrack.get_next()?.unwrap();
-        let DeleteNextElement {
-            next,
-            parent,
-            anchor,
-            left,
-            right,
-        } = backtrack.get_next()?.unwrap();
-
-        let leaf = next;
-        let leaf_id = leaf.page_id;
+            let mut leaf = next_element.next.clone();
 
         let rebalance_result = {
             let delete_status = leaf.as_node_mut(key_buffer_size as usize, |mut node| {
@@ -439,7 +445,7 @@ where
             };
 
             let parent = next_element.parent.as_ref().unwrap();
-            let parent_id = parent.id();
+            let _parent_id = parent.id();
 
             let rebalance_result =
                 leaf.as_node_mut(key_buffer_size as usize, |mut node: Node<K, &mut [u8]>| {
@@ -490,18 +496,23 @@ where
                             .clone()
                             .expect("merged into left sibling, but anchor is None"),
                         &mut backtrack,
-                    );
+                    )?;
                 }
                 RebalanceResult::MergeIntoSelf => {
+                    let sibling = next_element.right.clone().unwrap();
+
+                    leaf.as_node_mut(key_buffer_size as usize, |mut node: Node<K, &mut [u8]>| {
+                        node.as_leaf_mut().merge_into_self(parent, anchor, sibling)
+                    });
+
                     next_element.delete_right_sibling();
                     self.delete_internal(
                         next_element.anchor.clone().map_or(0, |a| a + 1),
                         &mut backtrack,
-                    );
+                    )?;
                 }
             };
         }
-        tx.commit::<K>();
 
         Ok(())
     }
@@ -512,147 +523,131 @@ where
         tx: &mut DeleteBacktrack<K>,
     ) -> Result<(), BTreeStoreError> {
         let key_buffer_size = self.static_settings.key_buffer_size;
-        enum NeedsRebalance {
-            ShouldRecurse {
-                rebalance_result: RebalanceResult,
-                right_id: Option<PageId>,
-                parent_id: PageId,
-                parent_anchor: Option<usize>,
-                self_id: PageId,
+        let mut next_element = tx.get_next()?.unwrap();
+
+        let delete_status = next_element.next.as_node_mut(
+            key_buffer_size as usize,
+            |mut node: Node<K, &mut [u8]>| {
+                let mut node = node.as_internal_mut();
+                node.delete_key_children(anchor)
             },
-            DeleteRoot {
-                new_root: PageId,
-            },
-        }
+        );
 
-        let after_delete = {
-            let mut next_element = tx.get_next()?.unwrap();
-
-            let delete_status = next_element.next.as_node_mut(
-                key_buffer_size as usize,
-                |mut node: Node<K, &mut [u8]>| {
-                    let mut node = node.as_internal_mut();
-                    node.delete_key_children(anchor)
-                },
-            );
-
-            match delete_status {
-                InternalDeleteStatus::Ok => return Ok(()),
-                InternalDeleteStatus::NeedsRebalance => (),
-            };
-
-            if let None = next_element.parent {
-                // the root is not rebalanced, but if it is empty then it can
-                // be deleted
-                let is_empty = next_element
-                    .next
-                    .as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
-                        root.as_internal().keys().len() == 0
-                    });
-
-                // after deleting a key at position `anchor` and its right children, the left sibling
-                // is in position == anchor
-
-                if is_empty {
-                    assert!(anchor == 0);
-                    let new_root = next_element
-                        .next
-                        .as_node(key_buffer_size as usize, |node: Node<K, &[u8]>| {
-                            node.as_internal().children().get(anchor)
-                        });
-                    // FIXME: why do I have to search for the id here?
-                    // NeedsRebalance::DeleteRoot { new_root }
-                    next_element.set_root(new_root);
-                } else {
-                    // the root is not rebalanced
-                    return Ok(());
-                }
-            } else {
-                let parent = next_element.parent.clone().unwrap();
-                let anchor = next_element.anchor.clone();
-                let parent_id = parent.id();
-
-                let left = next_element.left.clone();
-                let right = next_element.right.clone();
-
-                let rebalance_result = next_element
-                    .next
-                    .as_node_mut(key_buffer_size as usize, |mut node: Node<K, &mut [u8]>| {
-                        let siblings = SiblingsArg::new_from_options(left, right);
-
-                        node.as_internal_mut().rebalance(siblings)
-                    })
-                    .expect("couldn't rebalance internal node");
-
-                match rebalance_result {
-                    RebalanceResult::TakeFromLeft => {
-                        let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
-                        next_element.next.as_node_mut(
-                            key_buffer_size as usize,
-                            |mut node: Node<K, &mut [u8]>| {
-                                node.as_internal_mut()
-                                    .take_key_from_left(parent, anchor, sibling)
-                            },
-                        );
-                    }
-                    RebalanceResult::TakeFromRight => {
-                        unimplemented!();
-                    }
-                    RebalanceResult::MergeIntoLeft => {
-                        let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
-
-                        next_element.next.as_node_mut(
-                            key_buffer_size as usize,
-                            |mut node: Node<K, &mut [u8]>| {
-                                node.as_internal_mut()
-                                    .merge_into_left(parent, anchor, sibling)
-                            },
-                        );
-
-                        next_element.delete_left_sibling();
-
-                        self.delete_internal(
-                            next_element
-                                .anchor
-                                .clone()
-                                .expect("merged into left sibling, but anchor is None"),
-                            tx,
-                        );
-                    }
-                    RebalanceResult::MergeIntoSelf => {
-                        let anchor = next_element.anchor.clone().map_or(0, |n| n + 1);
-                        let right_id = next_element
-                            .right
-                            .as_ref()
-                            .map(|handle| handle.id())
-                            .unwrap();
-                        tx.delete_node(right_id);
-                        self.delete_internal(anchor, tx);
-                    }
-                };
-
-                // NeedsRebalance::ShouldRecurse {
-                //     rebalance_result,
-                //     right_id: right,
-                //     parent_id,
-                //     parent_anchor,
-                //     self_id: node.page_id,
-                // }
-            }
+        match delete_status {
+            InternalDeleteStatus::Ok => return Ok(()),
+            InternalDeleteStatus::NeedsRebalance => (),
         };
 
-        // match after_delete {
-        //     NeedsRebalance::ShouldRecurse {
-        //         rebalance_result,
-        //         right_id,
-        //         parent_id,
-        //         parent_anchor,
-        //         self_id,
-        //     } => match rebalance_result {
-        //     NeedsRebalance::DeleteRoot { new_root } => {
-        //         tx.replace_root(new_root);
-        //     }
-        // }
+        if let None = next_element.parent {
+            // the root is not rebalanced, but if it is empty then it can
+            // be deleted
+            let is_empty = next_element
+                .next
+                .as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
+                    root.as_internal().keys().len() == 0
+                });
+
+            // after deleting a key at position `anchor` and its right children, the left sibling
+            // is in position == anchor
+
+            if is_empty {
+                assert!(anchor == 0);
+                let new_root = next_element
+                    .next
+                    .as_node(key_buffer_size as usize, |node: Node<K, &[u8]>| {
+                        node.as_internal().children().get(anchor)
+                    });
+                // FIXME: why do I have to search for the id here?
+                // NeedsRebalance::DeleteRoot { new_root }
+                next_element.set_root(new_root);
+            } else {
+                // the root is not rebalanced
+                return Ok(());
+            }
+        } else {
+            let parent = next_element.parent.clone().unwrap();
+            let anchor = next_element.anchor.clone();
+            let _parent_id = parent.id();
+
+            let left = next_element.left.clone();
+            let right = next_element.right.clone();
+
+            let rebalance_result = next_element
+                .next
+                .as_node_mut(key_buffer_size as usize, |mut node: Node<K, &mut [u8]>| {
+                    let siblings = SiblingsArg::new_from_options(left, right);
+
+                    node.as_internal_mut().rebalance(siblings)
+                })
+                .expect("couldn't rebalance internal node");
+
+            match rebalance_result {
+                RebalanceResult::TakeFromLeft => {
+                    let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
+                    next_element.next.as_node_mut(
+                        key_buffer_size as usize,
+                        |mut node: Node<K, &mut [u8]>| {
+                            node.as_internal_mut()
+                                .take_key_from_left(parent, anchor, sibling)
+                        },
+                    );
+                }
+                RebalanceResult::TakeFromRight => {
+                    let sibling = next_element.mut_right_sibling(key_buffer_size as usize);
+                    next_element.next.as_node_mut(
+                        key_buffer_size as usize,
+                        |mut node: Node<K, &mut [u8]>| {
+                            node.as_internal_mut()
+                                .take_key_from_right(parent, anchor, sibling)
+                        },
+                    );
+                }
+                RebalanceResult::MergeIntoLeft => {
+                    let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
+
+                    next_element.next.as_node_mut(
+                        key_buffer_size as usize,
+                        |mut node: Node<K, &mut [u8]>| {
+                            node.as_internal_mut()
+                                .merge_into_left(parent, anchor, sibling)
+                        },
+                    );
+
+                    next_element.delete_left_sibling();
+
+                    self.delete_internal(
+                        next_element
+                            .anchor
+                            .clone()
+                            .expect("merged into left sibling, but anchor is None"),
+                        tx,
+                    )?;
+                }
+                RebalanceResult::MergeIntoSelf => {
+                    // TODO: probably right sibling doesn't need to be mutated (before it will be deleted anyway)
+                    let sibling = next_element.right.clone().unwrap();
+
+                    next_element.next.as_node_mut(
+                        key_buffer_size as usize,
+                        |mut node: Node<K, &mut [u8]>| {
+                            node.as_internal_mut()
+                                .merge_into_self(parent, anchor, sibling)
+                        },
+                    );
+
+                    let right_id = next_element
+                        .right
+                        .as_ref()
+                        .map(|handle| handle.id())
+                        .unwrap();
+
+                    let new_anchor = next_element.anchor.clone().map_or(0, |n| n + 1);
+                    tx.delete_node(right_id);
+                    self.delete_internal(new_anchor, tx)?;
+                }
+            };
+        }
+
         Ok(())
     }
 }
@@ -949,12 +944,13 @@ mod tests {
     #[test]
     fn can_delete_key() {
         let tree = new_tree();
-        let n: u64 = 100;
+        let n: u64 = 2000;
+        let delete: u64 = 50;
 
         tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
             .unwrap();
 
-        let key_to_delete = U64Key(20);
+        let key_to_delete = U64Key(delete);
         assert!(tree.lookup(&key_to_delete).is_some());
 
         dbg!("tree before");
@@ -967,7 +963,7 @@ mod tests {
 
         assert!(dbg!(tree.lookup(&key_to_delete)).is_none());
 
-        for i in (0..n).into_iter().filter(|n| *n != 20u64) {
+        for i in (0..n).into_iter().filter(|n| *n != delete) {
             assert!(tree.lookup(&U64Key(dbg!(i))).is_some());
         }
     }
@@ -989,6 +985,7 @@ mod tests {
         for k in xs {
             reference.remove(&U64Key(k));
             tree.delete(&U64Key(k)).unwrap_or(());
+            assert!(tree.lookup(&U64Key(k)).is_none());
         }
 
         let prop = reference.iter().all(|(k, v)| match tree.lookup(dbg!(k)) {

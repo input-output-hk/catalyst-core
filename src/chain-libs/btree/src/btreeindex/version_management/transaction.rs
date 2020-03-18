@@ -111,12 +111,6 @@ impl<'a, 'b: 'a> NodeRefMut for PageRefMut<'a, 'b> {
 // -> drop write guard -> take read guard ourselves
 struct ExtendablePages<'storage>(Option<RwLockUpgradableReadGuard<'storage, Pages>>);
 
-pub(super) struct Neighbourhood {
-    parent: PageId,
-    left: Option<PageId>,
-    right: Option<PageId>,
-}
-
 impl<'a> ReadTransaction<'a> {
     pub(super) fn new(version: Arc<Version>, pages: RwLockReadGuard<Pages>) -> ReadTransaction {
         ReadTransaction { version, pages }
@@ -312,7 +306,7 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
         K: Key,
     {
         // let state = self.state.borrow();
-        let new_root = self.root();
+        let new_root = dbg!(self.root());
         let state = self.state.into_inner();
         let transaction = super::WriteTransaction {
             new_root,

@@ -24,6 +24,9 @@ impl<'a> Storeable<'a> for U64Key {
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
         Ok(U64Key(LittleEndian::read_u64(buf)))
     }
+    fn as_output(self) -> Self {
+        self
+    }
 }
 
 fn random_blob(rng: &mut impl rand::Rng) -> Box<[u8]> {

@@ -13,7 +13,7 @@ property-test-api = ["quickcheck"]
 bech32 = "0.7"
 chain-core = { path = "../chain-core" }
 chain-crypto = { path = "../chain-crypto" }
-cryptoxide = "0.1"
+cryptoxide = "0.2"
 cfg-if = "0.1"
 quickcheck = { version = "0.9", optional = true }
 

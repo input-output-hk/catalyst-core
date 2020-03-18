@@ -136,7 +136,7 @@ impl Arbitrary for Certificate {
 
 #[quickcheck]
 fn pool_reg_serialization_bijection(b: PoolRegistration) -> TestResult {
-    let b_got = b.serialize_into_bytearray();
+    let b_got = b.serialize();
     let mut buf = ReadBuf::from(b_got.as_ref());
     let result = PoolRegistration::read(&mut buf);
     let left = Ok(b);

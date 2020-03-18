@@ -38,36 +38,28 @@ impl LinearFee {
     }
 }
 
-impl Serialize for LinearFee {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        codec.put_u64(self.constant)?;
-        codec.put_u64(self.coefficient)?;
-        codec.put_u64(self.certificate)?;
-        self.per_certificate_fees.serialize(&mut codec)?;
-        Ok(())
-    }
+fn pack_linear_fee<W: std::io::Write>(linear_fee: &LinearFee, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    codec.put_u64(linear_fee.constant)?;
+    codec.put_u64(linear_fee.coefficient)?;
+    codec.put_u64(linear_fee.certificate)?;
+    pack_per_certificate_fee(linear_fee.per_certificate_fees, codec)?;
+    Ok(())
 }
 
-impl Deserialize for LinearFee {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let constant = codec.get_u64()?;
-        let coefficient = codec.get_u64()?;
-        let certificate = codec.get_u64()?;
-        let per_certificate_fees = PerCertificateFee::deserialize(&mut codec)?;
-        Ok(LinearFee {
-            constant,
-            coefficient,
-            certificate,
-            per_certificate_fees,
-        })
-    }
+fn unpack_linear_fee<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LinearFee, std::io::Error> {
+    let constant = codec.get_u64()?;
+    let coefficient = codec.get_u64()?;
+    let certificate = codec.get_u64()?;
+    let per_certificate_fees = unpack_per_certificate_fee(codec)?;
+    Ok(LinearFee {
+        constant,
+        coefficient,
+        certificate,
+        per_certificate_fees,
+    })
 }
+
 
 impl PerCertificateFee {
     pub fn new(
@@ -98,46 +90,39 @@ impl PerCertificateFee {
     }
 }
 
-impl Serialize for PerCertificateFee {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        codec.put_u64(
-            self.certificate_pool_registration
-                .map(|v| v.get())
-                .unwrap_or(0),
-        )?;
-        codec.put_u64(
-            self.certificate_stake_delegation
-                .map(|v| v.get())
-                .unwrap_or(0),
-        )?;
-        codec.put_u64(
-            self.certificate_owner_stake_delegation
-                .map(|v| v.get())
-                .unwrap_or(0),
-        )?;
-        Ok(())
-    }
+fn pack_per_certificate_fee<W: std::io::Write>(per_certificate_fee : &PerCertificateFee, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    codec.put_u64(
+        per_certificate_fee.certificate_pool_registration
+            .map(|v| v.get())
+            .unwrap_or(0),
+    )?;
+    codec.put_u64(
+        per_certificate_fee.certificate_stake_delegation
+            .map(|v| v.get())
+            .unwrap_or(0),
+    )?;
+    codec.put_u64(
+        per_certificate_fee.certificate_owner_stake_delegation
+            .map(|v| v.get())
+            .unwrap_or(0),
+    )?;
+    Ok(())
 }
 
-impl Deserialize for PerCertificateFee {
-    type Error = std::io::Error;
 
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let certificate_pool_registration = std::num::NonZeroU64::new(codec.get_u64()?);
-        let certificate_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
-        let certificate_owner_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
+fn unpack_per_certificate_fee<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PerCertificateFee, std::io::Error> {
+    let certificate_pool_registration = std::num::NonZeroU64::new(codec.get_u64()?);
+    let certificate_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
+    let certificate_owner_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
 
-        Ok(PerCertificateFee {
-            certificate_pool_registration,
-            certificate_stake_delegation,
-            certificate_owner_stake_delegation,
-        })
-    }
+    Ok(PerCertificateFee {
+        certificate_pool_registration,
+        certificate_stake_delegation,
+        certificate_owner_stake_delegation,
+    })
 }
+
 
 pub trait FeeAlgorithm {
     fn baseline(&self) -> Value;

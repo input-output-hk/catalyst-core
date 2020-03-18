@@ -38,34 +38,26 @@ impl PoolLastRewards {
     }
 }
 
-impl property::Serialize for PoolLastRewards {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        codec.put_u32(self.epoch)?;
-        codec.put_u64(self.value_taxed.0)?;
-        codec.put_u64(self.value_for_stakers.0)?;
-        Ok(())
-    }
+fn pack_pool_last_rewards<W: std::io::Write>(pool_last_rewards: &PoolLastRewards, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    codec.put_u32(pool_last_rewards.epoch)?;
+    codec.put_u64(pool_last_rewards.value_taxed.0)?;
+    codec.put_u64(pool_last_rewards.value_for_stakers.0)?;
+    Ok(())
 }
 
-impl property::Deserialize for PoolLastRewards {
-    type Error = std::io::Error;
+fn unpack_pool_last_rewards<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PoolLastRewards, std::io::Error> {
+    let epoch = codec.get_u32()?;
+    let value_taxed = Value(codec.get_u64()?);
+    let value_for_stakers = Value(codec.get_u64()?);
 
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let epoch = codec.get_u32()?;
-        let value_taxed = Value(codec.get_u64()?);
-        let value_for_stakers = Value(codec.get_u64()?);
-
-        Ok(PoolLastRewards {
-            epoch,
-            value_taxed,
-            value_for_stakers,
-        })
-    }
+    Ok(PoolLastRewards {
+        epoch,
+        value_taxed,
+        value_for_stakers,
+    })
 }
+
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PoolState {
@@ -99,30 +91,20 @@ impl Debug for PoolsState {
     }
 }
 
-impl property::Serialize for PoolState {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        self.last_rewards.serialize(&mut codec)?;
-        self.registration.serialize(&mut codec)?;
-        Ok(())
-    }
+fn pack_pool_state<W: std::io::Write>(pool_state: &PoolState, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    pack_pool_last_rewards(&pool_state.last_rewards, codec)?;
+    pack_registration(&pool_state.registration, codec)?;
+    Ok(())
 }
 
-impl property::Deserialize for PoolState {
-    type Error = std::io::Error;
+fn unpack_pool_state<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PoolState, std::io::Error> {
+    let last_rewards = unpack_pool_last_rewards(codec)?;
+    let registration = Arc::new(unpack_pool_registration(codec)?);
 
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let last_rewards = PoolLastRewards::deserialize(&mut codec)?;
-        let registration = Arc::new(PoolRegistration::deserialize(&mut codec)?);
-
-        Ok(PoolState {
-            last_rewards,
-            registration,
-        })
-    }
+    Ok(PoolState {
+        last_rewards,
+        registration,
+    })
 }
 
 impl std::fmt::Display for PoolError {

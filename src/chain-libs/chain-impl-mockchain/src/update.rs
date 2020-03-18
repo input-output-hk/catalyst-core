@@ -142,41 +142,34 @@ pub struct UpdateProposalState {
     pub votes: HashSet<UpdateVoterId>,
 }
 
-impl property::Serialize for UpdateProposalState {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        self.proposal.serialize(&mut codec)?;
-        self.proposal_date.serialize(&mut codec)?;
-        codec.put_u64(self.votes.len() as u64)?;
-        for e in &self.votes {
-            e.serialize(&mut codec)?;
-        }
-        Ok(())
+
+fn pack_update_proposal_state<W: std::io::Write>(update_proposal_state: &UpdateProposalState, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    pack_update_proposal(&update_proposal_state.proposal, codec)?;
+    pack_block_date(&update_proposal_state.proposal_date, codec)?;
+    codec.put_u64(update_proposal_state.votes.len() as u64)?;
+    for e in &update_proposal_state.votes {
+        e.serialize(codec)?;
     }
+    Ok(())
 }
 
-impl property::Deserialize for UpdateProposalState {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let proposal = UpdateProposal::deserialize(&mut codec)?;
-        let proposal_date = BlockDate::deserialize(&mut codec)?;
-        let total_votes = codec.get_u64()?;
-        let mut votes: HashSet<UpdateVoterId> = HashSet::new();
-        for _ in 0..total_votes {
-            let id = UpdateVoterId::deserialize(&mut codec)?;
-            votes.insert(id);
-        }
-        Ok(UpdateProposalState {
-            proposal,
-            proposal_date,
-            votes,
-        })
+fn unpack_update_proposal_state<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<UpdateProposalState, std::io::Error> {
+    let proposal = unpack_update_proposal(codec)?;
+    let proposal_date = unpack_block_date(codec)?;
+    let total_votes = codec.get_u64()?;
+    let mut votes: HashSet<UpdateVoterId> = HashSet::new();
+    for _ in 0..total_votes {
+        let id = UpdateVoterId::deserialize(codec)?;
+        votes.insert(id);
     }
+    Ok(UpdateProposalState {
+        proposal,
+        proposal_date,
+        votes,
+    })
 }
+
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Error {
@@ -292,10 +285,17 @@ impl property::Deserialize for UpdateProposal {
     type Error = std::io::Error;
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let changes = ConfigParams::deserialize(&mut codec)?;
+        let changes = ConfigParams::deserialize(reader)?;
         Ok(UpdateProposal { changes })
     }
+}
+
+fn pack_update_proposal<W: std::io::Write>(update_proposal: &UpdateProposal, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    update_proposal.serialize(codec)
+}
+
+fn unpack_update_proposal<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<UpdateProposal, std::io::Error> {
+    UpdateProposal::deserialize(codec)
 }
 
 impl Readable for UpdateProposal {

@@ -37,36 +37,30 @@ pub struct LedgerStaticParameters {
     pub kes_update_speed: u32,
 }
 
-impl Serialize for LedgerStaticParameters {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        self.block0_initial_hash.serialize(&mut codec)?;
-        codec.put_u64(self.block0_start_time.0)?;
-        self.discrimination.serialize(&mut codec)?;
-        codec.put_u32(self.kes_update_speed)?;
-        Ok(())
-    }
+
+fn pack_ledger_static_parameters<W: std::io::Write>(ledger_static_parameters: &LedgerStaticParameters, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    pack_header_id(ledger_static_parameters.block0_initial_hash, codec)?;
+    codec.put_u64(ledger_static_parameters.block0_start_time.0)?;
+    pack_discrimination(ledger_static_parameters.discrimination, codec)?;
+    codec.put_u32(ledger_static_parameters.kes_update_speed)?;
+    Ok(())
 }
 
-impl Deserialize for LedgerStaticParameters {
-    type Error = std::io::Error;
 
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let block0_initial_hash = HeaderId::deserialize(&mut codec)?;
-        let block0_start_time = config::Block0Date(codec.get_u64()?);
-        let discrimination = Discrimination::deserialize(&mut codec)?;
-        let kes_update_speed = codec.get_u32()?;
-        Ok(LedgerStaticParameters {
-            block0_initial_hash,
-            block0_start_time,
-            discrimination,
-            kes_update_speed,
-        })
-    }
+fn unpack_ledger_static_parameters<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LedgerStaticParameters, std::io::Error> {
+    let block0_initial_hash = unpack_header_id(codec)?;
+    let block0_start_time = config::Block0Date(codec.get_u64()?);
+    let discrimination = unpack_discrimination(codec)?;
+    let kes_update_speed = codec.get_u32()?;
+    Ok(LedgerStaticParameters {
+        block0_initial_hash,
+        block0_start_time,
+        discrimination,
+        kes_update_speed,
+    })
 }
+
 
 // parameters to validate ledger
 #[derive(Debug, Clone)]

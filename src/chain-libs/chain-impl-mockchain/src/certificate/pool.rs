@@ -131,12 +131,12 @@ impl PoolRegistration {
         }
     }
 
-    pub fn serialize_into_bytearray(&self) -> ByteArray<Self> {
+    pub fn serialize(&self) -> ByteArray<Self> {
         self.serialize_in(ByteBuilder::new()).finalize()
     }
 
     pub fn to_id(&self) -> PoolId {
-        let ba = self.serialize_into_bytearray();
+        let ba = self.serialize();
         DigestOf::digest_byteslice(&ba.as_byteslice())
     }
 
@@ -258,37 +258,31 @@ impl Payload for PoolRetirement {
     }
 }
 
-impl property::Serialize for PoolRegistration {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        let byte_array = self.serialize_into_bytearray();
-        let bytes = byte_array.as_slice();
-        let size = bytes.len() as u64;
-        codec.put_u64(size)?;
-        codec.put_bytes(bytes)?;
-        Ok(())
+
+fn pack_pool_registration<W: std::io::Write>(pool_registration: &PoolRegistration, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    let byte_array = pool_registration.serialize();
+    let bytes = byte_array.as_slice();
+    let size = bytes.len() as u64;
+    codec.put_u64(size)?;
+    codec.put_bytes(bytes)?;
+    Ok(())
+}
+
+
+fn unpack_pool_registrarion<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PoolRegistration, std::io::Error> {
+    let size = codec.get_u64()? as usize;
+    let bytes_buff = codec.get_bytes(size)?;
+    let mut read_buff = ReadBuf::from(&bytes_buff);
+    match PoolRegistration::read(&mut read_buff) {
+        Ok(res) => Ok(res),
+        Err(err) => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Error reading Poolregistration data: {}", err),
+        )),
     }
 }
 
-impl property::Deserialize for PoolRegistration {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let size = codec.get_u64()? as usize;
-        let bytes_buff = codec.get_bytes(size)?;
-        let mut read_buff = ReadBuf::from(&bytes_buff);
-        match PoolRegistration::read(&mut read_buff) {
-            Ok(res) => Ok(res),
-            Err(err) => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Error reading Poolregistration data: {}", err),
-            )),
-        }
-    }
-}
 
 impl Readable for PoolRegistration {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {

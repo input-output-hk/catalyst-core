@@ -184,45 +184,45 @@ impl Serialize for Ledger {
     }
 }
 
-struct LazyLedgerDeserializer<'a> {
-    reader: &'a mut dyn std::io::BufRead,
-}
-
-impl<'a> LazyLedgerDeserializer<'a> {
-    fn new<R: std::io::BufRead>(reader: &'a mut R) -> LazyLedgerDeserializer<'a> {
-        Self {
-            reader,
-        }
-    }
-
-    fn next(&mut self) -> Option<EntryOwned> {
-        // TODO: What to do with an error here?
-        EntryOwned::deserialize(&mut self.reader).ok()
-    }
-}
-
-impl<'a> IntoIterator for &'a mut LazyLedgerDeserializer<'a> {
-    type Item = EntryOwned;
-    type IntoIter = LazyLedgerDeserializerIter<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        LazyLedgerDeserializerIter {
-            inner: self,
-        }
-    }
-}
-
-struct LazyLedgerDeserializerIter<'a> {
-    inner: &'a mut LazyLedgerDeserializer<'a>
-}
-
-impl<'a> Iterator for LazyLedgerDeserializerIter<'a> {
-    type Item = EntryOwned;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.inner.next()
-    }
-}
+// struct LazyLedgerDeserializer<'a> {
+//     reader: &'a mut dyn std::io::BufRead,
+// }
+//
+// impl<'a> LazyLedgerDeserializer<'a> {
+//     fn new<R: std::io::BufRead>(reader: &'a mut R) -> LazyLedgerDeserializer<'a> {
+//         Self {
+//             reader,
+//         }
+//     }
+//
+//     fn next(&mut self) -> Option<EntryOwned> {
+//         // TODO: What to do with an error here?
+//         EntryOwned::deserialize(&mut self.reader).ok()
+//     }
+// }
+//
+// impl<'a> IntoIterator for &'a mut LazyLedgerDeserializer<'a> {
+//     type Item = EntryOwned;
+//     type IntoIter = LazyLedgerDeserializerIter<'a>;
+//
+//     fn into_iter(self) -> Self::IntoIter {
+//         LazyLedgerDeserializerIter {
+//             inner: self,
+//         }
+//     }
+// }
+//
+// struct LazyLedgerDeserializerIter<'a> {
+//     inner: &'a mut LazyLedgerDeserializer<'a>
+// }
+//
+// impl<'a> Iterator for LazyLedgerDeserializerIter<'a> {
+//     type Item = EntryOwned;
+//
+//     fn next(&mut self) -> Option<Self::Item> {
+//         self.inner.next()
+//     }
+// }
 
 
 // impl Deserialize for Ledger {

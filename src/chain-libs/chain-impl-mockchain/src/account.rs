@@ -38,30 +38,24 @@ impl AsRef<PublicKey<AccountAlg>> for Identifier {
     }
 }
 
-impl property::Serialize for Identifier {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        serialize_public_key(&self.0, writer)
+
+fn pack_identifier<W: std::io::Write>(identifier: &Identifier, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    serialize_public_key(&identifier.0, codec)
+}
+
+fn unpack_identifier<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Identifier, std::io::Error> {
+    let bytes =
+        codec.get_bytes(<AccountAlg as AsymmetricPublicKey>::PUBLIC_KEY_SIZE as usize)?;
+    let mut bytes_buff = ReadBuf::from(&bytes);
+    match Identifier::read(&mut bytes_buff) {
+        Ok(identifier) => Ok(identifier),
+        Err(e) => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Error reading Identifier: {}", e),
+        )),
     }
 }
 
-impl property::Deserialize for Identifier {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let bytes =
-            codec.get_bytes(<AccountAlg as AsymmetricPublicKey>::PUBLIC_KEY_SIZE as usize)?;
-        let mut bytes_buff = ReadBuf::from(&bytes);
-        match Identifier::read(&mut bytes_buff) {
-            Ok(identifier) => Ok(identifier),
-            Err(e) => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Error reading Identifier: {}", e),
-            )),
-        }
-    }
-}
 
 impl Readable for Identifier {
     fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
@@ -89,5 +83,10 @@ mod test {
             let kp: KeyPair<Ed25519> = Arbitrary::arbitrary(g);
             Identifier::from(kp.into_keys().1)
         }
+    }
+
+    #[quickcheck]
+    pub fn identifier_pack_unpack_bijection<G: Gen>(g: &mut G) {
+        let kp: KeyPair<Ed25519> = Arbitrary::arbitrary(g);
     }
 }

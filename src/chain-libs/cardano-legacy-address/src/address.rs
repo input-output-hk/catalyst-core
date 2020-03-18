@@ -165,31 +165,22 @@ pub enum AddressMatchXPub {
     No,
 }
 
-impl PropertySerialize for Addr {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        codec.put_u64(self.0.len() as u64)?;
-        for e in &self.0 {
-            codec.put_u8(*e)?;
-        }
-        Ok(())
+fn pack_addr<W: std::io::Write>(addr: &Addr, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    codec.put_u64(addr.0.len() as u64)?;
+    for e in &addr.0 {
+        codec.put_u8(*e)?;
     }
+    Ok(())
 }
 
-impl PropertyDeserialize for Addr {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let size = codec.get_u64()?;
-        let mut addr = Addr(Vec::with_capacity(size as usize));
-        for _ in 0..size {
-            addr.0.push(codec.get_u8()?);
-        }
-        Ok(addr)
+fn unpack_addr<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Addr, std::io::Error> {
+    let size = codec.get_u64()?;
+    let mut addr = Addr(Vec::with_capacity(size as usize));
+    for _ in 0..size {
+        addr.0.push(codec.get_u8()?);
     }
+    Ok(addr)
 }
 
 impl Addr {
@@ -554,16 +545,19 @@ mod tests {
     }
 
     #[test]
-    fn test_addr_serialize_deserialize() -> Result<(), std::io::Error> {
+    fn test_addr_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use super::*;
         use std::io::Cursor;
         // set fake buffer
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        let mut codec = Codec::new(c);
         let address : Addr = "DdzFFzCqrhsqTG4t3uq5UBqFrxhxGVM6bvF4q1QcZXqUpizFddEEip7dx5rbife2s9o2fRU3hVKhRp4higog7As8z42s4AMw6Pcu8vL4".parse().unwrap();
-        address.serialize(&mut c)?;
+        pack_addr(&address, &mut codec)?;
+        c = codec.into_inner();
         // reset fake buffer
         c.set_position(0);
-        let new_address = Addr::deserialize(&mut c)?;
+        codec = Codec::new(c);
+        let new_address = unpack_addr(&mut codec)?;
         assert_eq!(address, new_address);
         Ok(())
     }

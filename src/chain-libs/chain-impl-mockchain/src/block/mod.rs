@@ -221,38 +221,31 @@ impl ConsensusVersion {
     }
 }
 
-impl property::Serialize for ConsensusVersion {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        match self {
-            ConsensusVersion::Bft => {
-                codec.put_u8(1)?;
-            }
-            ConsensusVersion::GenesisPraos => {
-                codec.put_u8(2)?;
-            }
+
+fn pack_consensus_version<W: std::io::Write>(consensus_version: &ConsensusVersion, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    match consensus_version {
+        ConsensusVersion::Bft => {
+            codec.put_u8(1)?;
         }
-        Ok(())
+        ConsensusVersion::GenesisPraos => {
+            codec.put_u8(2)?;
+        }
+    }
+    Ok(())
+}
+
+fn unpack_consensus_version<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<ConsensusVersion, std::io::Error> {
+    match codec.get_u8()? {
+        1 => Ok(ConsensusVersion::Bft),
+        2 => Ok(ConsensusVersion::GenesisPraos),
+        code => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Unrecognized code {} for ConsensusVersion", code),
+        )),
     }
 }
 
-impl property::Deserialize for ConsensusVersion {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        match codec.get_u8()? {
-            1 => Ok(ConsensusVersion::Bft),
-            2 => Ok(ConsensusVersion::GenesisPraos),
-            code => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Unrecognized code {} for ConsensusVersion", code),
-            )),
-        }
-    }
-}
 
 #[cfg(test)]
 #[cfg(feature = "with-bench")]

@@ -28,45 +28,39 @@ pub enum EntryType {
     Rewards,
 }
 
-impl Serialize for Entry {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        match self {
-            Entry::Fees(value) => {
-                codec.put_u8(0)?;
-                codec.put_u64(value.0)?;
-            }
-            Entry::Treasury(value) => {
-                codec.put_u8(1)?;
-                codec.put_u64(value.0)?;
-            }
-            Entry::Rewards(value) => {
-                codec.put_u8(2)?;
-                codec.put_u64(value.0)?;
-            }
+
+fn pack_pot_entry<W: std::io::Write>(entry: &Entry, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    match entry {
+        Entry::Fees(value) => {
+            codec.put_u8(0)?;
+            codec.put_u64(value.0)?;
         }
-        Ok(())
+        Entry::Treasury(value) => {
+            codec.put_u8(1)?;
+            codec.put_u64(value.0)?;
+        }
+        Entry::Rewards(value) => {
+            codec.put_u8(2)?;
+            codec.put_u64(value.0)?;
+        }
+    }
+    Ok(())
+}
+
+
+fn unpack_pot_entry<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Entry, std::io::Error> {
+    match codec.get_u8()? {
+        0 => Ok(Entry::Fees(Value(codec.get_u64()?))),
+        1 => Ok(Entry::Treasury(Value(codec.get_u64()?))),
+        2 => Ok(Entry::Rewards(Value(codec.get_u64()?))),
+        code => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Invalid Entry type code {}", code),
+        )),
     }
 }
 
-impl Deserialize for Entry {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        match codec.get_u8()? {
-            0 => Ok(Entry::Fees(Value(codec.get_u64()?))),
-            1 => Ok(Entry::Treasury(Value(codec.get_u64()?))),
-            2 => Ok(Entry::Rewards(Value(codec.get_u64()?))),
-            code => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Invalid Entry type code {}", code),
-            )),
-        }
-    }
-}
 
 impl Entry {
     pub fn value(&self) -> Value {
@@ -299,7 +293,7 @@ mod tests {
     }
 
     #[test]
-    fn entry_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
+    fn entry_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use std::io::Cursor;
         for entry_value in [
             Entry::Fees(Value(10)),
@@ -309,9 +303,12 @@ mod tests {
         .iter()
         {
             let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            entry_value.serialize(&mut c)?;
+            let mut codec = Codec::new(c);
+            pack_pot_entry(entry_value, &codec)?;
+            c= codec.into_inner();
             c.set_position(0);
-            let other_value = Entry::deserialize(&mut c)?;
+            codec = Codec::new(c);
+            let other_value = unpack_pot_entry(&mut c)?;
             assert_eq!(entry_value, &other_value);
         }
         Ok(())

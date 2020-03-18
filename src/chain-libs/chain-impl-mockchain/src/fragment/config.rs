@@ -28,13 +28,12 @@ impl ConfigParams {
 
 impl property::Serialize for ConfigParams {
     type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
         // FIXME: put params in canonical order (e.g. sorted by tag)?
-        use chain_core::packer::Codec;
-        let mut codec = Codec::new(writer);
-        codec.put_u16(self.0.len() as u16)?;
+        use chain_core::packer::*;
+        Codec::new(&mut writer).put_u16(self.0.len() as u16)?;
         for config in &self.0 {
-            config.serialize(&mut codec)?
+            config.serialize(&mut writer)?
         }
         Ok(())
     }

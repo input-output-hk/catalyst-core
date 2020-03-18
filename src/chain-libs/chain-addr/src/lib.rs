@@ -63,38 +63,31 @@ pub enum Discrimination {
     Test,
 }
 
-impl PropertySerialize for Discrimination {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        match self {
-            Discrimination::Production => {
-                codec.put_u8(0)?;
-            }
-            Discrimination::Test => {
-                codec.put_u8(1)?;
-            }
-        };
-        Ok(())
-    }
-}
-
-impl PropertyDeserialize for Discrimination {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        match codec.get_u8()? {
-            0 => Ok(Discrimination::Production),
-            1 => Ok(Discrimination::Test),
-            code => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Not recognize code {}", code),
-            )),
+fn pack_discrimination<W: std::io::Write>(discrimination: &Discrimination, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    match discrimination {
+        Discrimination::Production => {
+            codec.put_u8(0)?;
         }
+        Discrimination::Test => {
+            codec.put_u8(1)?;
+        }
+    };
+    Ok(())
+}
+
+
+fn unpack_discrimination<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Discrimination, std::io::Error> {
+    match codec.get_u8()? {
+        0 => Ok(Discrimination::Production),
+        1 => Ok(Discrimination::Test),
+        code => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Not recognize code {}", code),
+        )),
     }
 }
+
 
 /// Kind of an address, which include the possible variation of scheme
 ///
@@ -686,14 +679,18 @@ mod test {
     }
 
     #[test]
-    fn test_discrimination_serialize_deserialize() -> Result<(), std::io::Error> {
+    fn test_discrimination_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use std::io::Cursor;
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        Discrimination::Test.serialize(&mut c)?;
-        Discrimination::Production.serialize(&mut c)?;
+        let mut codec = Codec::new(c);
+        pack_discrimination(&Discrimination::Test, &mut codec);
+        pack_discrimination(&Discrimination::Production, &mut codec);
+
+        c = codec.into_inner();
         c.set_position(0);
-        let test = Discrimination::deserialize(&mut c)?;
-        let production = Discrimination::deserialize(&mut c)?;
+        codec = Codec::new(c);
+        let test = unpack_discrimination(&mut codec)?;
+        let production  = unpack_discrimination(&mut codec)?;
         assert_eq!(Discrimination::Test, test);
         assert_eq!(Discrimination::Production, production);
         Ok(())

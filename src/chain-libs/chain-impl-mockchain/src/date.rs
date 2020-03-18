@@ -121,27 +121,18 @@ impl str::FromStr for BlockDate {
     }
 }
 
-impl property::Serialize for BlockDate {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        codec.put_u32(self.epoch)?;
-        codec.put_u32(self.slot_id)?;
-        Ok(())
-    }
+fn pack_block_date<W: std::io::Write>(block_date: &BlockData, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    codec.put_u32(block_date.epoch)?;
+    codec.put_u32(block_date.slot_id)?;
+    Ok(())
 }
 
-impl property::Deserialize for BlockDate {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let epoch = codec.get_u32()?;
-        let slot_id = codec.get_u32()?;
-        Ok(BlockDate { epoch, slot_id })
-    }
+fn unpack_block_date<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<BlockDate, std::io::Error> {
+    let epoch = codec.get_u32()?;
+    let slot_id = codec.get_u32()?;
+    Ok(BlockDate { epoch, slot_id })
 }
+
 
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {

@@ -108,6 +108,14 @@ impl property::Deserialize for LeaderId {
     }
 }
 
+fn pack_leader_id<W: std::io::Write>(leader_id: &LeaderId, codec: &mut Codec<R>) -> Result<(), std::io::Error> {
+    serialize_public_key(&leader_id.0, codec)
+}
+
+fn unpack_leader_id<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LeaderId, std::io::Error> {
+    LeaderId::deserialize(codec)
+}
+
 impl Readable for LeaderId {
     fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         deserialize_public_key(reader).map(LeaderId)

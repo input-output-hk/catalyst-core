@@ -138,36 +138,30 @@ pub struct Globals {
     pub era: TimeEra,
 }
 
-impl Serialize for Globals {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        self.date.serialize(&mut codec)?;
-        codec.put_u32(self.chain_length.0)?;
-        self.static_params.serialize(&mut codec)?;
-        self.era.serialize(&mut codec)?;
-        Ok(())
-    }
+fn pack_globals<W: std::io::Write>(globals: &Globals, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    pack_date(&globals.date, codec)?;
+    codec.put_u32(globals.chain_length.0)?;
+    pack_ledger_static_parameters(&globals.static_params, codec)?;
+    pack_time_era(&globals.era, codec)?;
+    Ok(())
 }
 
-impl Deserialize for Globals {
-    type Error = std::io::Error;
 
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let date = BlockDate::deserialize(&mut codec)?;
-        let chain_length = ChainLength(codec.get_u32()?);
-        let static_params = LedgerStaticParameters::deserialize(&mut codec)?;
-        let era = TimeEra::deserialize(&mut codec)?;
-        Ok(Globals {
-            date,
-            chain_length,
-            static_params,
-            era,
-        })
-    }
+
+
+fn unpack_globals<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Globals, std::io::Error> {
+    let date = unpack_blockdate(codec)?;
+    let chain_length = ChainLength(codec.get_u32()?);
+    let static_params = unpack_ledger_static_parameters(codec)?;
+    let era = unpack_timer_era(codec)?;
+    Ok(Globals {
+        date,
+        chain_length,
+        static_params,
+        era,
+    })
 }
+
 
 enum IterState<'a> {
     Initial,

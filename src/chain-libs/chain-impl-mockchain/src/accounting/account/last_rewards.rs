@@ -1,6 +1,5 @@
 use crate::header::Epoch;
 use crate::value::Value;
-use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::io::Error;
 
@@ -14,28 +13,20 @@ pub struct LastRewards {
     pub reward: Value,
 }
 
-impl Serialize for LastRewards {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        codec.put_u32(self.epoch)?;
-        codec.put_u64(self.reward.0)?;
-        Ok(())
-    }
+fn pack_last_rewards<W: std::io::Write>(last_rewards: &LastRewards, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    codec.put_u32(last_rewards.epoch)?;
+    codec.put_u64(last_rewards.reward.0)?;
+    Ok(())
 }
 
-impl Deserialize for LastRewards {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        Ok(LastRewards {
-            epoch: codec.get_u32()?,
-            reward: Value(codec.get_u64()?),
-        })
-    }
+fn unpack_last_rewards<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LastRewards, std::io::Error> {
+    Ok(LastRewards {
+        epoch: codec.get_u32()?,
+        reward: Value(codec.get_u64()?),
+    })
 }
+
 
 impl LastRewards {
     /// Create an initial value of epoch=0 reward=0
@@ -130,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    pub fn last_rewards_serialize_deserialize() -> Result<(), std::io::Error> {
+    pub fn last_rewards_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use std::io::Cursor;
 
         let last_rewards = LastRewards {
@@ -139,10 +130,12 @@ mod tests {
         };
 
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-
-        last_rewards.serialize(&mut c)?;
+        let mut codec = Codec::new(c);
+        pack_last_rewards(&last_rewards,&mut codec)?;
+        c = codec.into_inner();
         c.set_position(0);
-        let deserialize_last_rewards = LastRewards::deserialize(&mut c)?;
+        codec = Codec::new(c);
+        let deserialize_last_rewards = unpack_last_rewards(&mut codec)?;
         assert_eq!(last_rewards, deserialize_last_rewards);
         Ok(())
     }

@@ -20,50 +20,42 @@ pub enum DelegationType {
     Ratio(DelegationRatio),
 }
 
-impl Serialize for DelegationType {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        match self {
-            DelegationType::NonDelegated => {
-                codec.put_u8(0)?;
-            }
-            DelegationType::Full(pool_id) => {
-                codec.put_u8(1)?;
-                pool_id.serialize(&mut codec)?;
-            }
-            DelegationType::Ratio(delegation_ratio) => {
-                codec.put_u8(2)?;
-                delegation_ratio.serialize(&mut codec)?;
-            }
+fn pack_delegation_type<W: std::io::Write>(delegation_type: &DelegationType, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    match delegation_type {
+        DelegationType::NonDelegated => {
+            codec.put_u8(0)?;
         }
-        Ok(())
+        DelegationType::Full(pool_id) => {
+            codec.put_u8(1)?;
+            pack_poolid(pool_id, codec)?;
+        }
+        DelegationType::Ratio(delegation_ratio) => {
+            codec.put_u8(2)?;
+            pack_delegation_ration(delegation_ratio, codec)?;
+        }
+    }
+    Ok(())
+}
+
+fn unpack_delegation_type<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Self, std::io::Error> {
+    match codec.get_u8()? {
+        0 => Ok(DelegationType::NonDelegated),
+        1 => {
+            let pool_id = unpack_poolid(codec)?;
+            Ok(DelegationType::Full(pool_id))
+        }
+        2 => {
+            let delegation_ratio = unpack_delegation_ratio(codec)?;
+            Ok(DelegationType::Ratio(delegation_ratio))
+        }
+        code => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Invalid DelegationType type code {}", code),
+        )),
     }
 }
 
-impl Deserialize for DelegationType {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        match codec.get_u8()? {
-            0 => Ok(DelegationType::NonDelegated),
-            1 => {
-                let pool_id = PoolId::deserialize(&mut codec)?;
-                Ok(DelegationType::Full(pool_id))
-            }
-            2 => {
-                let delegation_ratio = DelegationRatio::deserialize(&mut codec)?;
-                Ok(DelegationType::Ratio(delegation_ratio))
-            }
-            code => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("Invalid DelegationType type code {}", code),
-            )),
-        }
-    }
-}
 
 /// Delegation Ratio type express a number of parts
 /// and a list of pools and their individual parts
@@ -81,43 +73,36 @@ pub struct DelegationRatio {
     pools: Box<[(PoolId, u8)]>,
 }
 
-impl Serialize for DelegationRatio {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        codec.put_u8(self.parts)?;
-        // len of items in pools, for later use by the deserialize method
-        codec.put_u64(self.pools.len() as u64)?;
-        for (pool_id, u) in self.pools.iter() {
-            codec.put_u8(*u)?;
-            pool_id.serialize(&mut codec)?;
-        }
-        Ok(())
+fn pack_delegation_ratio<W: std::io::Write>(delegation_ratio: &DelegationRatio, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    codec.put_u8(delegation_ratio.parts)?;
+    // len of items in pools, for later use by the deserialize method
+    codec.put_u64(delegation_ratio.pools.len() as u64)?;
+    for (pool_id, u) in delegation_ratio.pools.iter() {
+        codec.put_u8(*u)?;
+        pack_poolid(pool_id, codec)?;
+    }
+    Ok(())
+}
+
+
+fn unpack_delegation_ratio<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<DelegationRatio, std::io::Error> {
+    let parts = codec.get_u8()?;
+    let pools_size = codec.get_u64()?;
+    let mut pools: Vec<(PoolId, u8)> = Vec::with_capacity(pools_size as usize);
+    for _ in 0..pools_size {
+        let u = codec.get_u8()?;
+        pools.push((unpack_poolid(codec)?, u));
+    }
+    match DelegationRatio::new(parts, pools) {
+        Some(delegation_ratio) => Ok(delegation_ratio),
+        None => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "Error building DelegationRatio from serialized data",
+        )),
     }
 }
 
-impl Deserialize for DelegationRatio {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let parts = codec.get_u8()?;
-        let pools_size = codec.get_u64()?;
-        let mut pools: Vec<(PoolId, u8)> = Vec::with_capacity(pools_size as usize);
-        for _ in 0..pools_size {
-            let u = codec.get_u8()?;
-            pools.push((PoolId::deserialize(&mut codec)?, u));
-        }
-        match DelegationRatio::new(parts, pools) {
-            Some(delegation_ratio) => Ok(delegation_ratio),
-            None => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                "Error building DelegationRatio from serialized data",
-            )),
-        }
-    }
-}
 
 /// The maximum number of pools
 pub const DELEGATION_RATIO_MAX_DECLS: usize = 8;
@@ -170,38 +155,28 @@ pub struct AccountState<Extra> {
     pub extra: Extra,
 }
 
-impl<Extra> Serialize for AccountState<Extra> {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        codec.put_u32(self.counter.0)?;
-        self.delegation.serialize(&mut codec)?;
-        codec.put_u64(self.value.0)?;
-        self.last_rewards.serialize(&mut codec)?;
-        // TODO: For now we just use () for extra so it is not serialized. We could use an Option<Extra> instead and build with a None to indicate emptiness instead of ()
-        Ok(())
-    }
+fn pack_account_state<W: std::io::Write>(account_state: &AccountState<()>, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    codec.put_u32(account_state.counter.0)?;
+    pack_delegation_type(&account_state.delegation, codec)?;
+    codec.put_u64(account_state.value.0)?;
+    pack_last_rewards(&account_state.last_rewards, codec)?;
+    Ok(())
 }
 
-impl Deserialize for AccountState<()> {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let counter = codec.get_u32()?;
-        let delegation = DelegationType::deserialize(&mut codec)?;
-        let value = codec.get_u64()?;
-        let last_rewards = LastRewards::deserialize(&mut codec)?;
-        Ok(AccountState {
-            counter: SpendingCounter(counter),
-            delegation,
-            value: Value(value),
-            last_rewards,
-            extra: (),
-        })
-    }
+fn unpack_account_state<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<AccountState<()>, std::io::Error> {
+    let counter = codec.get_u32()?;
+    let delegation = unpack_delegation_type(codec)?;
+    let value = codec.get_u64()?;
+    let last_rewards = unpack_last_rewards(codec)?;
+    Ok(AccountState {
+        counter: SpendingCounter(counter),
+        delegation,
+        value: Value(value),
+        last_rewards,
+        extra: (),
+    })
 }
+
 
 impl<Extra> AccountState<Extra> {
     /// Create a new account state with a specific start value

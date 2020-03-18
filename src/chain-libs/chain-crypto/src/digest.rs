@@ -287,7 +287,6 @@ impl<H: DigestAlg> Digest<H> {
     }
 }
 
-use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::marker::PhantomData;
 
@@ -297,34 +296,27 @@ pub struct DigestOf<H: DigestAlg, T> {
     marker: PhantomData<T>,
 }
 
-impl<H: DigestAlg, T> Serialize for DigestOf<H, T> {
-    type Error = std::io::Error;
 
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        let inner_data = self.as_ref();
-        codec.put_u64(inner_data.len() as u64)?;
-        codec.put_bytes(inner_data)?;
-        Ok(())
+fn pack_digestof<H: DigestAlg, T, W: std::io::Write>(digestof: &DigestOf<H, T>, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    let inner_data = digestof.as_ref();
+    codec.put_u64(inner_data.len() as u64)?;
+    codec.put_bytes(inner_data)?;
+    Ok(())
+}
+
+
+fn unpack_digestof<H: DigestAlg, T, R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<DigestOf<H, T>, std::io::Error> {
+    let size = codec.get_u64()?;
+    let bytes = codec.get_bytes(size as usize)?;
+    match DigestOf::try_from(&bytes[..]) {
+        Ok(data) => Ok(data),
+        Err(e) => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("{}", e),
+        )),
     }
 }
 
-impl<H: DigestAlg, T> Deserialize for DigestOf<H, T> {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let size = codec.get_u64()?;
-        let bytes = codec.get_bytes(size as usize)?;
-        match DigestOf::try_from(&bytes[..]) {
-            Ok(data) => Ok(data),
-            Err(e) => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("{}", e),
-            )),
-        }
-    }
-}
 
 unsafe impl<H: DigestAlg, T> Send for DigestOf<H, T> {}
 
@@ -505,7 +497,7 @@ mod test {
     use typed_bytes::ByteArray;
 
     #[test]
-    fn test_digest_serialize_deserialize() -> Result<(), std::io::Error> {
+    fn test_digestof_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use std::io::Cursor;
 
         let data: [u8; 32] = [0u8; 32];
@@ -515,9 +507,13 @@ mod test {
         let digest: DigestOf<Blake2b256, u8> = DigestOf::digest_byteslice(&byte_slice);
 
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        digest.serialize(&mut c)?;
+        let mut codec = Codec::new(c);
+        pack_digestof(&digest, &mut codec)?;
+        c = codec.into_inner();
         c.set_position(0);
-        let deserialize_digest = DigestOf::deserialize(&mut c)?;
+        codec = Codec::new(c);
+
+        let deserialize_digest : DigestOf<Blake2b256, u8> = unpack_digestof(&mut codec)?;
         assert_eq!(digest, deserialize_digest);
 
         Ok(())

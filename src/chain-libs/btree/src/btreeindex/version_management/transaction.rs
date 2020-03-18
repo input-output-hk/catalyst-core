@@ -222,7 +222,7 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
                     .pages
                     .borrow()
                     .mut_page(*id)
-                    .expect("already fetched transaction was not allocated");
+                    .expect("already fetched page was not allocated");
 
                 let handle = PageRefMut {
                     pages: &self.pages,
@@ -360,9 +360,11 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
                 last_old_id: parent_id,
                 last_new_id: parent_new_id,
                 shadowed_page: self.shadowed_page,
+                // this is the parent id of shadowed_page, not of the current node in the iteration
             }))
         } else {
-            Ok(MutablePage::InTransaction(self.finish()))
+            let page = self.finish();
+            Ok(MutablePage::InTransaction(page))
         }
     }
 
@@ -408,6 +410,14 @@ impl<'txmanager, 'storage> InsertTransaction<'txmanager, 'storage> {
             phantom_key: PhantomData,
             key_buffer_size,
         }
+    }
+}
+
+impl<'storage> Deref for ExtendablePages<'storage> {
+    type Target = Pages;
+
+    fn deref(&self) -> &Self::Target {
+        self.0.as_ref().unwrap()
     }
 }
 

@@ -430,8 +430,12 @@ where
     }
 
     pub fn put_tag(&mut self, tag_name: &str, block_hash: &B::Id) -> Result<(), Error> {
-        match self
+        let tx = self
             .inner
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        match tx
             .prepare_cached("insert or replace into Tags (name, hash) values(?, ?)")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .execute(&[
@@ -445,7 +449,10 @@ where
                 Err(Error::BlockNotFound)
             }
             Err(err) => Err(Error::BackendError(Box::new(err))),
-        }
+        }?;
+
+        tx.commit()
+            .map_err(|err| Error::BackendError(Box::new(err)))
     }
 
     pub fn get_tag(&mut self, tag_name: &str) -> Result<Option<B::Id>, Error> {

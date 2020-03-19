@@ -1,6 +1,5 @@
 use super::CertificateSlice;
-use crate::key::{deserialize_public_key, deserialize_signature};
-use crate::leadership::genesis::GenesisPraosLeader;
+use crate::key::{deserialize_public_key, deserialize_signature, GenesisPraosLeader};
 use crate::rewards::TaxType;
 use crate::transaction::{
     AccountIdentifier, Payload, PayloadAuthData, PayloadData, PayloadSlice,

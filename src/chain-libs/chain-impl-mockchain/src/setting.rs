@@ -2,24 +2,26 @@
 //!
 
 use crate::fragment::{config::ConfigParams, BlockContentSize};
-use crate::leadership::genesis::ActiveSlotsCoeff;
 use crate::milli::Milli;
-use crate::update::Error;
+use crate::update;
 use crate::{
+    chaineval::PraosNonce,
     chaintypes::ConsensusType,
     config::{ConfigParam, RewardParams},
     fee::LinearFee,
-    leadership::{bft, genesis},
+    leadership::bft,
     rewards,
 };
 use std::convert::TryFrom;
+use std::error::Error;
+use std::fmt;
 use std::num::NonZeroU32;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Settings {
     pub consensus_version: ConsensusType,
-    pub consensus_nonce: genesis::Nonce,
+    pub consensus_nonce: PraosNonce,
     pub slots_per_epoch: u32,
     pub slot_duration: u8,
     pub epoch_stability_depth: u32,
@@ -37,6 +39,53 @@ pub struct Settings {
     pub fees_goes_to: FeesGoesTo,
     pub rewards_limit: rewards::Limit,
     pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ActiveSlotsCoeffError {
+    InvalidValue(Milli),
+}
+
+impl fmt::Display for ActiveSlotsCoeffError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ActiveSlotsCoeffError::InvalidValue(v) => {
+                write!(f, "Invalid value {}, should be in range (0,1]", v)
+            }
+        }
+    }
+}
+
+impl Error for ActiveSlotsCoeffError {}
+
+/// Active slots coefficient used for calculating minimum stake to become slot leader candidate
+/// Described in Ouroboros Praos paper, also referred to as parameter F of phi function
+/// Always in range (0, 1]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ActiveSlotsCoeff(Milli);
+
+impl TryFrom<Milli> for ActiveSlotsCoeff {
+    type Error = ActiveSlotsCoeffError;
+
+    fn try_from(value: Milli) -> Result<Self, Self::Error> {
+        if value > Milli::ZERO && value <= Milli::ONE {
+            Ok(ActiveSlotsCoeff(value))
+        } else {
+            Err(ActiveSlotsCoeffError::InvalidValue(value))
+        }
+    }
+}
+
+impl From<ActiveSlotsCoeff> for Milli {
+    fn from(coeff: ActiveSlotsCoeff) -> Milli {
+        coeff.0
+    }
+}
+
+impl From<ActiveSlotsCoeff> for f64 {
+    fn from(coeff: ActiveSlotsCoeff) -> f64 {
+        coeff.0.to_float()
+    }
 }
 
 /// Fees nSettings
@@ -61,7 +110,7 @@ impl Settings {
     pub fn new() -> Self {
         Self {
             consensus_version: ConsensusType::Bft,
-            consensus_nonce: genesis::Nonce::zero(),
+            consensus_nonce: PraosNonce::zero(),
             slots_per_epoch: 1,
             slot_duration: 10,         // 10 sec
             epoch_stability_depth: 10, // num of block
@@ -82,7 +131,7 @@ impl Settings {
         *self.linear_fees
     }
 
-    pub fn apply(&self, changes: &ConfigParams) -> Result<Self, Error> {
+    pub fn apply(&self, changes: &ConfigParams) -> Result<Self, update::Error> {
         let mut new_state = self.clone();
         let mut per_certificate_fees = None;
 
@@ -93,7 +142,7 @@ impl Settings {
                 | ConfigParam::TreasuryAdd(_)
                 | ConfigParam::RewardPot(_)
                 | ConfigParam::KESUpdateSpeed(_) => {
-                    return Err(Error::ReadOnlySetting);
+                    return Err(update::Error::ReadOnlySetting);
                 }
                 ConfigParam::ConsensusVersion(d) => {
                     new_state.consensus_version = *d;

@@ -12,9 +12,6 @@ use chain_time::era::TimeEra;
 pub mod bft;
 pub mod genesis;
 
-#[cfg(any(test, feature = "property-test-api"))]
-pub mod test;
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
     Failure,

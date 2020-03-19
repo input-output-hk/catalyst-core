@@ -1,6 +1,6 @@
 use crate::{
     certificate::{PoolPermissions, PoolRegistration},
-    leadership::genesis::GenesisPraosLeader,
+    key::GenesisPraosLeader,
     rewards::{Ratio, TaxType},
     testing::data::{AddressData, StakePool},
     transaction::AccountIdentifier,

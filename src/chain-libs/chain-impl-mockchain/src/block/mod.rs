@@ -179,42 +179,6 @@ impl property::HasHeader for Block {
     }
 }
 
-use strum_macros::{Display, EnumString, IntoStaticStr};
-
-#[derive(
-    Debug, Clone, Copy, Display, EnumString, IntoStaticStr, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
-pub enum ConsensusVersion {
-    #[strum(to_string = "bft")]
-    Bft = 1,
-    #[strum(to_string = "genesis")]
-    GenesisPraos = 2,
-}
-
-impl ConsensusVersion {
-    pub fn from_u16(v: u16) -> Option<Self> {
-        match v {
-            1 => Some(ConsensusVersion::Bft),
-            2 => Some(ConsensusVersion::GenesisPraos),
-            _ => None,
-        }
-    }
-    pub fn supported_block_versions(self) -> &'static [BlockVersion] {
-        match self {
-            ConsensusVersion::Bft => &[BlockVersion::Ed25519Signed],
-            ConsensusVersion::GenesisPraos => &[BlockVersion::KesVrfproof],
-        }
-    }
-
-    pub fn from_block_version(block_version: BlockVersion) -> Option<ConsensusVersion> {
-        match block_version {
-            BlockVersion::Genesis => None,
-            BlockVersion::Ed25519Signed => Some(ConsensusVersion::Bft),
-            BlockVersion::KesVrfproof => Some(ConsensusVersion::GenesisPraos),
-        }
-    }
-}
-
 #[cfg(test)]
 #[cfg(feature = "with-bench")]
 mod bench {

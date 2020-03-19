@@ -1,5 +1,5 @@
-use super::components::ChainLength;
 use crate::certificate::PoolId;
+use crate::chaintypes::ChainLength;
 use crate::date::BlockDate;
 use crate::fragment::BlockContentHash;
 use crate::leadership;

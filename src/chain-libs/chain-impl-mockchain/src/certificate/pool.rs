@@ -453,7 +453,7 @@ mod tests {
 
     use super::{PoolOwnersSigned, PoolPermissions};
     use crate::{
-        header::HeaderId,
+        chaintypes::HeaderId,
         key::EitherEd25519SecretKey,
         testing::{
             builders::{make_witness, StakePoolBuilder},

@@ -1,4 +1,4 @@
-use super::components::{ChainLength, HeaderId, VrfProof};
+use super::components::VrfProof;
 use super::cstruct;
 use super::header::{HeaderBft, HeaderGenesisPraos, HeaderUnsigned};
 use super::version::BlockVersion;
@@ -6,6 +6,7 @@ use super::version::BlockVersion;
 use crate::{
     block::{BftSignature, KESSignature},
     certificate::PoolId,
+    chaintypes::{ChainLength, HeaderId},
     date::BlockDate,
     fragment::{BlockContentHash, BlockContentSize, Contents},
     leadership,
@@ -215,7 +216,7 @@ impl HeaderGenesisPraosBuilder<HeaderSetConsensusSignature> {
 mod tests {
     use super::*;
     use crate::{
-        header::components::HeaderId,
+        chaintypes::HeaderId,
         testing::{
             data::{LeaderPair, StakePool},
             TestGen,

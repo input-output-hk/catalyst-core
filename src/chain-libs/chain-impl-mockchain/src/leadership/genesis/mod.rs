@@ -2,8 +2,8 @@ mod vrfeval;
 
 use crate::{
     certificate::PoolId,
-    date::Epoch,
-    header::{BlockDate, Header, HeaderDesc, Proof},
+    date::{BlockDate, Epoch},
+    header::{Header, HeaderDesc, Proof},
     key::deserialize_public_key,
     leadership::{Error, ErrorKind, Verification},
     ledger::Ledger,
@@ -255,7 +255,7 @@ impl Readable for GenesisPraosLeader {
 mod tests {
     use super::*;
     use crate::certificate::PoolId;
-    use crate::header::HeaderId;
+    use crate::chaintypes::HeaderId;
     use crate::ledger::Ledger;
     use crate::milli::Milli;
     use crate::stake::{PoolStakeDistribution, PoolStakeInformation};
@@ -573,7 +573,6 @@ mod tests {
 
     use crate::fragment::Contents;
     use crate::header::{BlockVersion, HeaderBuilderNew};
-    use chain_core::property::ChainLength;
 
     #[test]
     pub fn leadership_verify_different_epoch() {
@@ -622,7 +621,7 @@ mod tests {
         let rng = rand_core::OsRng;
         let sk = &SecretKey::generate(rng);
         let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
-            .set_parent(&HeaderId::zero_hash(), ledger.chain_length().next())
+            .set_parent(&HeaderId::zero_hash(), ledger.chain_length().increase())
             .set_date(date)
             .to_bft_builder()
             .unwrap()

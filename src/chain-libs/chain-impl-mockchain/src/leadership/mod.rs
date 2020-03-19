@@ -1,6 +1,7 @@
 use crate::{
-    block::{BlockDate, BlockVersion, ConsensusVersion, Header},
+    block::{BlockDate, BlockVersion, Header},
     certificate::PoolId,
+    chaintypes::ConsensusVersion,
     date::Epoch,
     ledger::{Ledger, LedgerParameters},
     stake::StakeDistribution,

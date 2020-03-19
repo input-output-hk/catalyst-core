@@ -1,4 +1,5 @@
 use super::*;
+use crate::chaintypes::ChainLength;
 use crate::header::{BftProof, BftSignature, Common, GenesisPraosProof, KESSignature};
 use crate::leadership;
 use chain_core::property;
@@ -105,11 +106,5 @@ impl Arbitrary for Header {
         };
 
         header
-    }
-}
-
-impl Arbitrary for ChainLength {
-    fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        ChainLength(Arbitrary::arbitrary(g))
     }
 }

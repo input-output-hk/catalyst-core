@@ -1,10 +1,10 @@
-use crate::header::Epoch;
+use crate::date::Epoch;
 use crate::leadership::bft::LeaderId;
 use crate::milli::Milli;
 use crate::rewards::{Ratio, TaxType};
 use crate::value::Value;
 use crate::{
-    block::ConsensusVersion,
+    chaintypes::ConsensusType,
     fee::{LinearFee, PerCertificateFee},
 };
 use chain_addr::Discrimination;
@@ -58,7 +58,7 @@ impl Into<ReadError> for Error {
 pub enum ConfigParam {
     Block0Date(Block0Date),
     Discrimination(Discrimination),
-    ConsensusVersion(ConsensusVersion),
+    ConsensusVersion(ConsensusType),
     SlotsPerEpoch(u32),
     SlotDuration(u8),
     EpochStabilityDepth(u32),
@@ -476,7 +476,7 @@ impl ConfigParamVariant for Discrimination {
     }
 }
 
-impl ConfigParamVariant for ConsensusVersion {
+impl ConfigParamVariant for ConsensusType {
     fn to_payload(&self) -> Vec<u8> {
         (*self as u16).to_be_bytes().to_vec()
     }
@@ -488,7 +488,7 @@ impl ConfigParamVariant for ConsensusVersion {
         };
         bytes.copy_from_slice(payload);
         let integer = u16::from_be_bytes(bytes);
-        ConsensusVersion::from_u16(integer).ok_or(Error::StructureInvalid)
+        ConsensusType::from_u16(integer).ok_or(Error::StructureInvalid)
     }
 }
 

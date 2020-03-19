@@ -5,12 +5,13 @@ use super::check::{self, TxVerifyError};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
-use crate::block::ConsensusVersion;
 use crate::certificate::PoolId;
+use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
+use crate::date::{BlockDate, Epoch};
 use crate::fee::{FeeAlgorithm, LinearFee};
 use crate::fragment::{BlockContentHash, BlockContentSize, Contents, Fragment, FragmentId};
-use crate::header::{BlockDate, ChainLength, Epoch, HeaderContentEvalContext, HeaderId};
+use crate::header::HeaderContentEvalContext;
 use crate::leadership::genesis::ActiveSlotsCoeffError;
 use crate::rewards;
 use crate::stake::{PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeDistribution};
@@ -1063,7 +1064,7 @@ impl Ledger {
         }
     }
 
-    pub fn consensus_version(&self) -> ConsensusVersion {
+    pub fn consensus_version(&self) -> ConsensusType {
         self.settings.consensus_version
     }
 
@@ -1442,7 +1443,6 @@ mod tests {
         transaction::Witness,
     };
     use chain_addr::Discrimination;
-    use chain_core::property::ChainLength;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::{fmt, iter};
@@ -1513,8 +1513,8 @@ mod tests {
         ledger: ArbitraryEmptyLedger,
     ) -> TestResult {
         let ledger: Ledger = ledger.into();
-        let should_succeed =
-            context.chain_length == ledger.chain_length.next() && context.block_date > ledger.date;
+        let should_succeed = context.chain_length == ledger.chain_length.increase()
+            && context.block_date > ledger.date;
 
         let contents = Contents::empty();
         context.content_hash = contents.compute_hash();

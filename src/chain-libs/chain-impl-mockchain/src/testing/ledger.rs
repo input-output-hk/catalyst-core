@@ -1,12 +1,12 @@
 use crate::{
     account::Ledger as AccountLedger,
-    block::{Block, ConsensusVersion, HeaderId},
+    block::Block,
     certificate::PoolId,
+    chaintypes::{ChainLength, ConsensusType, HeaderId},
     config::{ConfigParam, RewardParams},
     date::BlockDate,
     fee::{LinearFee, PerCertificateFee},
     fragment::{config::ConfigParams, Fragment, FragmentId},
-    header::ChainLength,
     leadership::{bft::LeaderId, genesis::LeadershipData},
     ledger::{
         Error, LeadersParticipationRecord, Ledger, LedgerParameters, Pots, RewardsInfoParameters,
@@ -150,7 +150,7 @@ impl ConfigBuilder {
     pub fn build(self) -> ConfigParams {
         let mut ie = ConfigParams::new();
         ie.push(ConfigParam::Discrimination(self.discrimination));
-        ie.push(ConfigParam::ConsensusVersion(ConsensusVersion::Bft));
+        ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
 
         for leader_id in self.leaders.iter().cloned() {
             ie.push(ConfigParam::AddBftLeader(leader_id));

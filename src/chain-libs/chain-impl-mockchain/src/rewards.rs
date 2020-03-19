@@ -1,4 +1,4 @@
-use crate::block::Epoch;
+use crate::date::Epoch;
 use crate::stake::Stake;
 use crate::value::{Value, ValueError};
 use chain_core::mempack::{ReadBuf, ReadError};

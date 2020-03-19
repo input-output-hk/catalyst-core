@@ -1,17 +1,11 @@
 #[warn(unused_imports)]
 use crate::{
-    block::{Block, BlockVersion, ConsensusVersion, Header, HeaderRaw},
+    block::{Block, BlockVersion, Header, HeaderRaw},
     fragment::{Contents, ContentsBuilder, Fragment},
     header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
 };
 use chain_core::property;
 use quickcheck::{Arbitrary, Gen, TestResult};
-
-impl Arbitrary for ConsensusVersion {
-    fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        ConsensusVersion::from_u16(u16::arbitrary(g) % 2 + 1).unwrap()
-    }
-}
 
 quickcheck! {
     fn headerraw_serialization_bijection(b: HeaderRaw) -> TestResult {

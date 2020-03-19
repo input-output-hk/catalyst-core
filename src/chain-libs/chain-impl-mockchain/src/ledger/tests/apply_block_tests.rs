@@ -1,8 +1,8 @@
 #![cfg(test)]
 use crate::{
     accounting::account::LedgerError::ValueError,
+    chaintypes::ChainLength,
     date::BlockDate,
-    header::ChainLength,
     ledger::{ledger::Error::Account, Error as LedgerError},
     testing::{
         builders::{GenesisPraosBlockBuilder, TestTxBuilder},

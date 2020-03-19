@@ -6,7 +6,7 @@ use crate::leadership::genesis::ActiveSlotsCoeff;
 use crate::milli::Milli;
 use crate::update::Error;
 use crate::{
-    block::ConsensusVersion,
+    chaintypes::ConsensusType,
     config::{ConfigParam, RewardParams},
     fee::LinearFee,
     leadership::{bft, genesis},
@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Settings {
-    pub consensus_version: ConsensusVersion,
+    pub consensus_version: ConsensusType,
     pub consensus_nonce: genesis::Nonce,
     pub slots_per_epoch: u32,
     pub slot_duration: u8,
@@ -60,7 +60,7 @@ pub const SLOTS_PERCENTAGE_RANGE: u8 = 100;
 impl Settings {
     pub fn new() -> Self {
         Self {
-            consensus_version: ConsensusVersion::Bft,
+            consensus_version: ConsensusType::Bft,
             consensus_nonce: genesis::Nonce::zero(),
             slots_per_epoch: 1,
             slot_duration: 10,         // 10 sec

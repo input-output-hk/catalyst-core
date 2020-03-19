@@ -1,6 +1,6 @@
 use crate::{
     account::{Identifier, SpendingCounter},
-    header::HeaderId,
+    chaintypes::HeaderId,
     key::EitherEd25519SecretKey,
     testing::builders::make_witness,
     transaction::{Input, Output, TransactionAuthData, Witness},

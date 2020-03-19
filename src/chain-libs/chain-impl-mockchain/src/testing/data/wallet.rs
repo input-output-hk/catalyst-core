@@ -1,5 +1,5 @@
 use crate::{
-    header::HeaderId,
+    chaintypes::HeaderId,
     key::EitherEd25519SecretKey,
     testing::data::{AddressData, AddressDataValue},
     transaction::{Input, Output, TransactionAuthData, Witness},

@@ -2,9 +2,10 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxVerifyError};
+use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
-use crate::block::{ConsensusVersion, LeadersParticipationRecord};
+use crate::block::ConsensusVersion;
 use crate::certificate::PoolId;
 use crate::config::{self, ConfigParam};
 use crate::fee::{FeeAlgorithm, LinearFee};

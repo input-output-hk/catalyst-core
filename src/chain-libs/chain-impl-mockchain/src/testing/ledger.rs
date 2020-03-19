@@ -1,6 +1,6 @@
 use crate::{
     account::Ledger as AccountLedger,
-    block::{Block, ConsensusVersion, HeaderId, LeadersParticipationRecord},
+    block::{Block, ConsensusVersion, HeaderId},
     certificate::PoolId,
     config::{ConfigParam, RewardParams},
     date::BlockDate,
@@ -8,7 +8,9 @@ use crate::{
     fragment::{config::ConfigParams, Fragment, FragmentId},
     header::ChainLength,
     leadership::{bft::LeaderId, genesis::LeadershipData},
-    ledger::{Error, Ledger, LedgerParameters, Pots, RewardsInfoParameters},
+    ledger::{
+        Error, LeadersParticipationRecord, Ledger, LedgerParameters, Pots, RewardsInfoParameters,
+    },
     milli::Milli,
     rewards::{Ratio, TaxType},
     stake::PoolsState,

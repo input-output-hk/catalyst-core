@@ -1,6 +1,6 @@
 use super::ledger::{Error, Ledger, LedgerStaticParameters};
 use super::pots::{self, Pots};
-use crate::block::LeadersParticipationRecord;
+use super::LeadersParticipationRecord;
 use crate::config::ConfigParam;
 use crate::header::{BlockDate, ChainLength};
 use crate::stake::PoolsState;

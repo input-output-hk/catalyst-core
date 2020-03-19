@@ -8,7 +8,6 @@ use std::slice;
 mod builder;
 mod header;
 mod headerraw;
-mod leaderlog;
 
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod test;
@@ -17,7 +16,6 @@ pub mod test;
 pub use crate::fragment::{BlockContentHash, BlockContentSize, Contents, ContentsBuilder};
 
 pub use self::headerraw::HeaderRaw;
-pub use self::leaderlog::LeadersParticipationRecord;
 pub use crate::header::{
     BftProof, BftSignature, Common, GenesisPraosProof, Header, HeaderContentEvalContext, HeaderId,
     KESSignature, Proof,

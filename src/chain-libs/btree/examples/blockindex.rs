@@ -58,4 +58,8 @@ impl<'a> Storeable<'a> for Key {
         buf.read_exact(&mut bytes).expect("deserialize failed");
         Ok(Key(bytes))
     }
+
+    fn as_output(self) -> Self::Output {
+        self
+    }
 }

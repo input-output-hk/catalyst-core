@@ -1,16 +1,18 @@
 mod metadata;
+// FIXME: allow dead code momentarily, because all of the delete algorithms are unused, and placing the directive with more granularity would be too troublesome
+#[allow(dead_code)]
 mod node;
 mod page_manager;
 mod pages;
 mod version_management;
 
-use version_management::transaction::{InsertTransaction, ReadTransaction};
+use version_management::transaction::{InsertTransaction, PageRefMut, ReadTransaction};
 use version_management::*;
 
 use crate::mem_page::MemPage;
 use crate::BTreeStoreError;
 use metadata::{Metadata, StaticSettings};
-use node::{InternalInsertStatus, LeafInsertStatus, Node};
+use node::{InternalInsertStatus, LeafInsertStatus, Node, NodeRef, NodeRefMut};
 use pages::{borrow, PageHandle, Pages, PagesInitializationParams};
 use std::borrow::Borrow;
 
@@ -235,9 +237,9 @@ where
         Ok(())
     }
 
-    pub(crate) fn insert_in_leaf<'a>(
+    pub(crate) fn insert_in_leaf<'a, 'b: 'a>(
         &self,
-        mut leaf: PageHandle<'a, borrow::Mutable<'a>>,
+        mut leaf: PageRefMut<'a, 'b>,
         key: K,
         value: Value,
     ) -> Result<Option<(K, Node<K, MemPage>)>, BTreeStoreError> {

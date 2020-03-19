@@ -9,6 +9,8 @@ use std::convert::TryInto;
 
 static SEED: u64 = 11;
 
+const BLOB_SIZE: usize = 1024 * 10; // 10 kb?
+
 #[derive(Debug, Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub struct U64Key(pub u64);
 
@@ -24,6 +26,12 @@ impl<'a> Storeable<'a> for U64Key {
     }
 }
 
+fn random_blob(rng: &mut impl rand::Rng) -> Box<[u8]> {
+    let mut buf = vec![0u8; BLOB_SIZE];
+    rng.fill(&mut buf[..]);
+    buf.into_boxed_slice()
+}
+
 fn single_key_insertion(c: &mut Criterion) {
     // TODO: Maybe create a temp file somehow?
     let dir_path = "benchmark_single_key_insertion";
@@ -33,32 +41,31 @@ fn single_key_insertion(c: &mut Criterion) {
     let tree: BTreeStore<U64Key> =
         BTreeStore::new(dir_path, key_size.try_into().unwrap(), page_size).unwrap();
 
-    let n: u64 = 2000000;
+    let n: u64 = 200000;
+
+    let mut rng = StdRng::seed_from_u64(SEED);
 
     tree.insert_many(
         (0..n)
             .step_by(2)
-            .map(|i| (U64Key(i.clone()), i.to_le_bytes())),
+            .map(|i| (U64Key(i.clone()), random_blob(&mut rng))),
     )
     .expect("Couldn't insert setup values");
-
-    let mut rng = StdRng::seed_from_u64(SEED);
 
     c.bench_function("insertion", |b| {
         b.iter(|| {
             let r: u64 = rng.gen();
             let key = if r % 2 == 0 { r + 1 } else { r };
 
-            tree.insert(U64Key(key), &key.to_le_bytes()).unwrap_or(());
+            let blob_to_insert = random_blob(&mut rng);
+            tree.insert(U64Key(key), &blob_to_insert[..]).unwrap_or(());
 
             assert_eq!(
-                LittleEndian::read_u64(
-                    tree.get(&U64Key(key))
-                        .unwrap()
-                        .expect("Key not found")
-                        .as_ref()
-                ),
-                key
+                tree.get(&U64Key(key))
+                    .unwrap()
+                    .expect("Key not found")
+                    .as_ref(),
+                &blob_to_insert[..]
             );
         })
     });
@@ -74,25 +81,30 @@ fn single_key_search(c: &mut Criterion) {
     let tree: BTreeStore<U64Key> =
         BTreeStore::new(dir_path, key_size.try_into().unwrap(), page_size).unwrap();
 
-    let n: u64 = 2000000;
-
-    tree.insert_many((0..n).map(|i| (U64Key(i.clone()), i.to_le_bytes())))
-        .expect("Couldn't insert setup values");
+    let n: u64 = 200000;
 
     let mut rng = StdRng::seed_from_u64(SEED);
+
+    use std::collections::HashMap;
+    let mut data = HashMap::new();
+
+    for i in 0u64..n {
+        data.insert(i, random_blob(&mut rng));
+    }
+
+    tree.insert_many(data.iter().map(|(key, value)| (U64Key(*key), value)))
+        .expect("Couldn't insert setup values");
 
     c.bench_function("search", |b| {
         b.iter(|| {
             let key: u64 = rng.gen_range(0, n);
             assert_eq!(
-                LittleEndian::read_u64(
-                    tree.get(&U64Key(key))
-                        .unwrap()
-                        .expect("Key not found")
-                        .as_ref()
-                ),
-                key
-            );
+                tree.get(&U64Key(key))
+                    .unwrap()
+                    .expect("Key not found")
+                    .as_ref(),
+                &data.get(&key).unwrap()[..]
+            )
         })
     });
 
@@ -107,7 +119,7 @@ criterion_group!(
 
 criterion_group!(
     name = search;
-    config = Criterion::default().sample_size(1000);
+    config = Criterion::default().sample_size(500);
     targets = single_key_search
 );
 

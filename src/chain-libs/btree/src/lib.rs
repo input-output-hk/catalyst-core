@@ -7,8 +7,7 @@ pub mod btreeindex;
 pub mod flatfile;
 mod mem_page;
 pub mod storage;
-use flatfile::Appender;
-use std::sync::Mutex;
+use flatfile::MmapedAppendOnlyFile;
 
 const METADATA_FILE: &'static str = "metadata";
 const TREE_FILE: &'static str = "pages";
@@ -51,7 +50,7 @@ where
     K: Key,
 {
     index: BTree<K>,
-    flatfile: Mutex<Appender>,
+    flatfile: MmapedAppendOnlyFile,
 }
 
 impl<K> BTreeStore<K>
@@ -65,8 +64,7 @@ where
     ) -> Result<BTreeStore<K>, BTreeStoreError> {
         std::fs::create_dir_all(path.as_ref())?;
 
-        let flatfile = Appender::new(path.as_ref().join(APPENDER_FILE_PATH))
-            .map_err(|e| BTreeStoreError::from(e))?;
+        let flatfile = MmapedAppendOnlyFile::new(path.as_ref().join(APPENDER_FILE_PATH))?;
 
         let tree_file = OpenOptions::new()
             .create(true)
@@ -93,10 +91,7 @@ where
             key_buffer_size,
         )?;
 
-        Ok(BTreeStore {
-            index,
-            flatfile: Mutex::new(flatfile),
-        })
+        Ok(BTreeStore { index, flatfile })
     }
 
     pub fn open(directory: impl AsRef<Path>) -> Result<BTreeStore<K>, BTreeStoreError> {
@@ -115,21 +110,20 @@ where
         let mut flatfile = directory.as_ref().to_path_buf();
         flatfile.push(APPENDER_FILE_PATH);
 
-        let appender = Appender::new(flatfile).map_err(|e| BTreeStoreError::from(e))?;
+        let appender = MmapedAppendOnlyFile::new(flatfile)?;
 
         Ok(BTreeStore {
             index,
-            flatfile: Mutex::new(appender),
+            flatfile: appender,
         })
     }
 
-    pub fn insert(&mut self, key: K, blob: &[u8]) -> Result<(), BTreeStoreError> {
-        let mut flatfile = self.flatfile.lock().unwrap();
-        let offset = flatfile.append(&blob)?;
+    pub fn insert(&self, key: K, blob: &[u8]) -> Result<(), BTreeStoreError> {
+        let offset = self.flatfile.append(&blob)?;
 
         let result = self.index.insert_one(key, offset.into());
 
-        flatfile.sync()?;
+        self.flatfile.sync()?;
         self.index.checkpoint()?;
 
         result
@@ -140,17 +134,15 @@ where
         &self,
         iter: impl IntoIterator<Item = (K, B)>,
     ) -> Result<(), BTreeStoreError> {
-        let mut flatfile = self.flatfile.lock().unwrap();
-
         let mut offsets: Vec<(K, u64)> = vec![];
         for (key, blob) in iter {
-            let offset = flatfile.append(blob.as_ref())?;
+            let offset = self.flatfile.append(blob.as_ref())?;
             offsets.push((key, offset.into()));
         }
 
         self.index.insert_many(offsets.drain(..))?;
 
-        flatfile.sync()?;
+        self.flatfile.sync()?;
         self.index.checkpoint()?;
         Ok(())
     }
@@ -158,7 +150,7 @@ where
     pub fn get(&self, key: &K) -> Result<Option<Box<[u8]>>, BTreeStoreError> {
         self.index
             .lookup(&key)
-            .map(|pos| self.flatfile.lock().unwrap().get_at((pos).into()))
+            .map(|pos| self.flatfile.get_at((pos).into()))
             .transpose()
             .map_err(|e| e.into())
     }

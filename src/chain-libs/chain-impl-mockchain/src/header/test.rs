@@ -1,7 +1,7 @@
 use super::*;
 use crate::chaintypes::ChainLength;
 use crate::header::{BftProof, BftSignature, Common, GenesisPraosProof, KESSignature};
-use crate::leadership;
+use crate::key::BftLeaderId;
 use chain_core::property;
 use chain_crypto::{
     self, AsymmetricKey, Curve25519_2HashDH, Ed25519, SecretKey, SumEd25519_12,
@@ -40,7 +40,7 @@ impl Arbitrary for BftProof {
         let pk = sk.to_public();
         let signature = sk.sign(&[0u8, 1, 2, 3]);
         BftProof {
-            leader_id: leadership::bft::LeaderId(pk),
+            leader_id: BftLeaderId(pk),
             signature: BftSignature(signature.coerce()),
         }
     }

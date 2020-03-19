@@ -1,6 +1,6 @@
 use crate::{
     config::ConfigParam,
-    leadership::bft::LeaderId,
+    key::BftLeaderId,
     update::{
         SignedUpdateProposal, SignedUpdateVote, UpdateProposal, UpdateProposalId,
         UpdateProposalWithProposer, UpdateVote,
@@ -8,7 +8,7 @@ use crate::{
 };
 
 pub fn build_proposal(
-    proposer_id: LeaderId,
+    proposer_id: BftLeaderId,
     config_params: Vec<ConfigParam>,
 ) -> SignedUpdateProposal {
     //create proposal
@@ -30,7 +30,7 @@ pub fn build_proposal(
     }
 }
 
-pub fn build_vote(proposal_id: UpdateProposalId, leader_id: LeaderId) -> SignedUpdateVote {
+pub fn build_vote(proposal_id: UpdateProposalId, leader_id: BftLeaderId) -> SignedUpdateVote {
     let update_vote = UpdateVote {
         proposal_id: proposal_id.clone(),
         voter_id: leader_id.clone(),

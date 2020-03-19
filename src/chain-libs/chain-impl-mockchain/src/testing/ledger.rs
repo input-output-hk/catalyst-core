@@ -7,7 +7,8 @@ use crate::{
     date::BlockDate,
     fee::{LinearFee, PerCertificateFee},
     fragment::{config::ConfigParams, Fragment, FragmentId},
-    leadership::{bft::LeaderId, genesis::LeadershipData},
+    key::BftLeaderId,
+    leadership::genesis::LeadershipData,
     ledger::{
         Error, LeadersParticipationRecord, Ledger, LedgerParameters, Pots, RewardsInfoParameters,
     },
@@ -38,7 +39,7 @@ pub struct ConfigBuilder {
     discrimination: Discrimination,
     linear_fee: Option<LinearFee>,
     per_certificate_fee: Option<PerCertificateFee>,
-    leaders: Vec<LeaderId>,
+    leaders: Vec<BftLeaderId>,
     seed: u64,
     rewards: Value,
     treasury: Value,
@@ -104,7 +105,7 @@ impl ConfigBuilder {
         self
     }
 
-    pub fn with_leaders(mut self, leaders: &Vec<LeaderId>) -> Self {
+    pub fn with_leaders(mut self, leaders: &Vec<BftLeaderId>) -> Self {
         self.leaders.extend(leaders.iter().cloned());
         self
     }
@@ -134,7 +135,7 @@ impl ConfigBuilder {
         self
     }
 
-    fn create_single_bft_leader() -> LeaderId {
+    fn create_single_bft_leader() -> BftLeaderId {
         let leader_prv_key: SecretKey<Ed25519Extended> = SecretKey::generate(rand_core::OsRng);
         let leader_pub_key = leader_prv_key.to_public();
         leader_pub_key.into()

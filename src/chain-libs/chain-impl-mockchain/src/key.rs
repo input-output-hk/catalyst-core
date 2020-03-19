@@ -5,7 +5,7 @@ use chain_core::mempack::{read_mut_slice, ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto as crypto;
 use chain_crypto::{
-    digest::DigestOf, AsymmetricKey, AsymmetricPublicKey, Blake2b256, Curve25519_2HashDH,
+    digest::DigestOf, AsymmetricKey, AsymmetricPublicKey, Blake2b256, Curve25519_2HashDH, Ed25519,
     PublicKey, SecretKey, SigningAlgorithm, SumEd25519_12, VerificationAlgorithm,
 };
 use rand_core::{CryptoRng, RngCore};
@@ -307,6 +307,47 @@ impl FromStr for Hash {
     type Err = crypto::hash::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Hash(crypto::Blake2b256::from_str(s)?))
+    }
+}
+
+pub type BftVerificationAlg = Ed25519;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct BftLeaderId(pub(crate) PublicKey<BftVerificationAlg>);
+
+impl From<[u8; 32]> for BftLeaderId {
+    fn from(v: [u8; 32]) -> BftLeaderId {
+        BftLeaderId(PublicKey::from_binary(&v[..]).expect("leader-id invalid format"))
+    }
+}
+
+impl BftLeaderId {
+    pub fn as_public_key(&self) -> &PublicKey<BftVerificationAlg> {
+        &self.0
+    }
+}
+
+impl property::Serialize for BftLeaderId {
+    type Error = std::io::Error;
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        serialize_public_key(&self.0, writer)
+    }
+}
+
+impl Readable for BftLeaderId {
+    fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        deserialize_public_key(reader).map(BftLeaderId)
+    }
+}
+
+impl AsRef<[u8]> for BftLeaderId {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+impl From<PublicKey<BftVerificationAlg>> for BftLeaderId {
+    fn from(v: PublicKey<BftVerificationAlg>) -> Self {
+        BftLeaderId(v)
     }
 }
 

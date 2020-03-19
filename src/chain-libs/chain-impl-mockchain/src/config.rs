@@ -1,5 +1,5 @@
 use crate::date::Epoch;
-use crate::leadership::bft::LeaderId;
+use crate::key::BftLeaderId;
 use crate::milli::Milli;
 use crate::rewards::{Ratio, TaxType};
 use crate::value::Value;
@@ -64,8 +64,8 @@ pub enum ConfigParam {
     EpochStabilityDepth(u32),
     ConsensusGenesisPraosActiveSlotsCoeff(Milli),
     BlockContentMaxSize(u32),
-    AddBftLeader(LeaderId),
-    RemoveBftLeader(LeaderId),
+    AddBftLeader(BftLeaderId),
+    RemoveBftLeader(BftLeaderId),
     LinearFee(LinearFee),
     ProposalExpiration(u32),
     KESUpdateSpeed(u32),
@@ -492,7 +492,7 @@ impl ConfigParamVariant for ConsensusType {
     }
 }
 
-impl ConfigParamVariant for LeaderId {
+impl ConfigParamVariant for BftLeaderId {
     fn to_payload(&self) -> Vec<u8> {
         self.as_ref().to_vec()
     }

@@ -1,7 +1,7 @@
 use crate::{
     config::ConfigParam,
     fragment::config::ConfigParams,
-    leadership::bft::LeaderId,
+    key::BftLeaderId,
     update::{
         SignedUpdateProposal, SignedUpdateVote, UpdateProposal, UpdateProposalId,
         UpdateProposalWithProposer, UpdateVote,
@@ -41,7 +41,7 @@ impl ProposalBuilder {
 
 pub struct SignedProposalBuilder {
     update_proposal: Option<UpdateProposal>,
-    proposer_id: Option<LeaderId>,
+    proposer_id: Option<BftLeaderId>,
 }
 
 impl SignedProposalBuilder {
@@ -52,7 +52,7 @@ impl SignedProposalBuilder {
         }
     }
 
-    pub fn with_proposer_id(&mut self, proposer_id: LeaderId) -> &mut Self {
+    pub fn with_proposer_id(&mut self, proposer_id: BftLeaderId) -> &mut Self {
         self.proposer_id = Some(proposer_id);
         self
     }
@@ -74,7 +74,7 @@ impl SignedProposalBuilder {
 
 pub struct UpdateVoteBuilder {
     proposal_id: Option<UpdateProposalId>,
-    voter_id: Option<LeaderId>,
+    voter_id: Option<BftLeaderId>,
 }
 
 impl UpdateVoteBuilder {
@@ -90,7 +90,7 @@ impl UpdateVoteBuilder {
         self
     }
 
-    pub fn with_voter_id(&mut self, voter_id: LeaderId) -> &mut Self {
+    pub fn with_voter_id(&mut self, voter_id: BftLeaderId) -> &mut Self {
         self.voter_id = Some(voter_id);
         self
     }

@@ -5,7 +5,7 @@ pub mod transaction;
 pub mod update_proposal;
 pub mod utils;
 
-use crate::{leadership::bft::LeaderId, transaction::Output, value::Value};
+use crate::{key::BftLeaderId, transaction::Output, value::Value};
 use chain_addr::Address;
 use chain_crypto::{Ed25519, SecretKey};
 use quickcheck::{Arbitrary, Gen};
@@ -65,13 +65,13 @@ impl Arbitrary for Output<Address> {
     }
 }
 
-impl Arbitrary for LeaderId {
+impl Arbitrary for BftLeaderId {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let mut seed = [0; 32];
         for byte in seed.iter_mut() {
             *byte = Arbitrary::arbitrary(g);
         }
         let sk: SecretKey<Ed25519> = Arbitrary::arbitrary(g);
-        LeaderId(sk.to_public())
+        BftLeaderId(sk.to_public())
     }
 }

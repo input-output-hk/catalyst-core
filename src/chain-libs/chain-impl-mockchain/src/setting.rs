@@ -9,7 +9,7 @@ use crate::{
     chaintypes::ConsensusType,
     config::{ConfigParam, RewardParams},
     fee::LinearFee,
-    leadership::bft,
+    key::BftLeaderId,
     rewards,
 };
 use std::convert::TryFrom;
@@ -27,7 +27,7 @@ pub struct Settings {
     pub epoch_stability_depth: u32,
     pub active_slots_coeff: ActiveSlotsCoeff,
     pub block_content_max_size: BlockContentSize,
-    pub bft_leaders: Arc<Vec<bft::LeaderId>>,
+    pub bft_leaders: Arc<Vec<BftLeaderId>>,
     pub linear_fees: Arc<LinearFee>,
     /// The number of epochs that a proposal remains valid. To be
     /// precise, if a proposal is made at date (epoch_p, slot), then

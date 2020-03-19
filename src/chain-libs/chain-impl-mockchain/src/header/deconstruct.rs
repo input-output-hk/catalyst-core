@@ -4,7 +4,7 @@ use crate::certificate::PoolId;
 use crate::chaintypes::{ChainLength, HeaderId};
 use crate::date::BlockDate;
 use crate::fragment::{BlockContentHash, BlockContentSize};
-use crate::leadership;
+use crate::key::BftLeaderId;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Common {
@@ -27,7 +27,7 @@ pub enum Proof {
 
 #[derive(Debug, Clone)]
 pub struct BftProof {
-    pub(crate) leader_id: leadership::bft::LeaderId,
+    pub(crate) leader_id: BftLeaderId,
     pub(crate) signature: BftSignature,
 }
 

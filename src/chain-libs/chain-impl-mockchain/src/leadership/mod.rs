@@ -3,6 +3,7 @@ use crate::{
     certificate::PoolId,
     chaintypes::ConsensusVersion,
     date::Epoch,
+    key::BftLeaderId,
     ledger::{Ledger, LedgerParameters},
     stake::StakeDistribution,
 };
@@ -64,7 +65,7 @@ pub struct Leader {
 
 pub enum LeaderOutput {
     None,
-    Bft(bft::LeaderId),
+    Bft(BftLeaderId),
     GenesisPraos(PoolId, genesis::Witness),
 }
 

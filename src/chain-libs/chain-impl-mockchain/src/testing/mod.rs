@@ -19,7 +19,7 @@ use crate::{
     config::ConfigParam,
     fragment::config::ConfigParams,
     header::VrfProof,
-    leadership::bft::LeaderId,
+    key::BftLeaderId,
     rewards::{Ratio, TaxType},
     setting::Settings,
     testing::data::{AddressData, LeaderPair, StakePool},
@@ -59,7 +59,7 @@ impl TestGen {
         let leader_key = AddressData::generate_key_pair::<Ed25519>()
             .private_key()
             .clone();
-        let leader_id = LeaderId(
+        let leader_id = BftLeaderId(
             AddressData::generate_key_pair::<Ed25519>()
                 .public_key()
                 .clone(),

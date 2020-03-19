@@ -13,7 +13,7 @@ use chain_core::packer::Codec;
 use chain_core::property;
 use chain_crypto::PublicKey;
 use std::fmt::{self, Display, Formatter};
-use std::io::{self, Write};
+use std::io::{self, Cursor, Write};
 use std::num::{NonZeroU32, NonZeroU64};
 use strum_macros::{AsRefStr, EnumIter, EnumString};
 use typed_bytes::ByteBuilder;
@@ -319,7 +319,34 @@ impl property::Serialize for ConfigParam {
     }
 }
 
-pub(crate) trait ConfigParamVariant: Clone + Eq + PartialEq {
+impl property::Deserialize for ConfigParam {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let tag_len = TagLen(codec.get_u16()?);
+        let len = tag_len.get_len();
+        let bytes = codec.get_bytes(len)?;
+        // we will replicate the buffer so we can reuse the reader method
+        let mut cursor = Cursor::new(Vec::with_capacity(2 + len));
+        {
+            let mut writer = Codec::new(&mut cursor);
+            writer.put_u16(tag_len.0)?;
+            writer.put_bytes(&bytes)?;
+        }
+        cursor.set_position(0);
+        let mut read_buff = ReadBuf::from(cursor.get_ref());
+        match ConfigParam::read(&mut read_buff) {
+            Ok(res) => Ok(res),
+            Err(err) => Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Error reading ConfigParam: {}", err),
+            )),
+        }
+    }
+}
+
+trait ConfigParamVariant: Clone + Eq + PartialEq {
     fn to_payload(&self) -> Vec<u8>;
     fn from_payload(payload: &[u8]) -> Result<Self, Error>;
 }

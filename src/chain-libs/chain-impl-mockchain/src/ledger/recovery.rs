@@ -6,50 +6,47 @@ use crate::accounting::account::{
 };
 use crate::block::ConsensusVersion;
 use crate::certificate::{PoolId, PoolRegistration};
-use crate::config::{ConfigParam, ConfigParamVariant, Tag};
+use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::fee::{LinearFee, PerCertificateFee};
-use crate::fragment::ConfigParams;
-use crate::header::ChainLength;
-use crate::key::serialize_public_key;
+use crate::fragment::{ConfigParams, FragmentId};
+use crate::header::{ChainLength, HeaderId};
+use crate::key::{serialize_public_key, Hash};
 use crate::leadership::bft::LeaderId;
 use crate::ledger::iter;
 use crate::ledger::pots::EntryType;
 use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
 use crate::multisig::{DeclElement, Declaration};
 use crate::stake::{PoolLastRewards, PoolState};
+use crate::transaction::Output;
 use crate::update::{UpdateProposal, UpdateProposalId, UpdateProposalState, UpdateVoterId};
 use crate::value::Value;
 use crate::{config, key, multisig, utxo};
-use cardano_legacy_address::Addr;
+use crate::legacy;
 use chain_addr::{Address, Discrimination};
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::digest::{DigestAlg, DigestOf};
 use chain_crypto::AsymmetricPublicKey;
 use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
+use chain_time::era::{pack_time_era, unpack_time_era};
 use chain_time::TimeEra;
 use std::collections::HashSet;
 use std::convert::TryFrom;
-use std::io::{Cursor, Error, Write};
+use std::io::{Cursor, Error, Read, Write};
 use std::iter::FromIterator;
 use std::sync::Arc;
+use cardano_legacy_address::Addr;
 
-fn pack_addr<W: std::io::Write>(addr: &Addr, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u64(addr.as_ref().len() as u64)?;
-    for e in &addr.as_ref() {
-        codec.put_u8(*e)?;
-    }
-    Ok(())
+fn pack_pool_id<W: std::io::Write>(
+    pool_id: &PoolId,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    pack_digestof(pool_id, codec)
 }
 
-fn unpack_addr<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Addr, std::io::Error> {
-    let size = codec.get_u64()?;
-    let mut v = Vec::with_capacity(size as usize);
-    for _ in 0..size {
-        v.push(codec.get_u8()?);
-    }
-    Ok(Addr(v))
+fn unpack_pool_id<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PoolId, std::io::Error> {
+    unpack_digestof(codec)
 }
 
 fn pack_discrimination<W: std::io::Write>(
@@ -161,7 +158,7 @@ fn pack_delegation_ratio<W: std::io::Write>(
     codec.put_u64(delegation_ratio.pools.len() as u64)?;
     for (pool_id, u) in delegation_ratio.pools.iter() {
         codec.put_u8(*u)?;
-        pack_poolid(pool_id, codec)?;
+        pack_pool_id(pool_id, codec)?;
     }
     Ok(())
 }
@@ -174,7 +171,7 @@ fn unpack_delegation_ratio<R: std::io::BufRead>(
     let mut pools: Vec<(PoolId, u8)> = Vec::with_capacity(pools_size as usize);
     for _ in 0..pools_size {
         let u = codec.get_u8()?;
-        pools.push((unpack_poolid(codec)?, u));
+        pools.push((unpack_pool_id(codec)?, u));
     }
     match DelegationRatio::new(parts, pools) {
         Some(delegation_ratio) => Ok(delegation_ratio),
@@ -195,11 +192,11 @@ fn pack_delegation_type<W: std::io::Write>(
         }
         DelegationType::Full(pool_id) => {
             codec.put_u8(1)?;
-            pack_poolid(pool_id, codec)?;
+            pack_pool_id(pool_id, codec)?;
         }
         DelegationType::Ratio(delegation_ratio) => {
             codec.put_u8(2)?;
-            pack_delegation_ration(delegation_ratio, codec)?;
+            pack_delegation_ratio(delegation_ratio, codec)?;
         }
     }
     Ok(())
@@ -207,11 +204,11 @@ fn pack_delegation_type<W: std::io::Write>(
 
 fn unpack_delegation_type<R: std::io::BufRead>(
     codec: &mut Codec<R>,
-) -> Result<Self, std::io::Error> {
+) -> Result<DelegationType, std::io::Error> {
     match codec.get_u8()? {
         0 => Ok(DelegationType::NonDelegated),
         1 => {
-            let pool_id = unpack_poolid(codec)?;
+            let pool_id = unpack_pool_id(codec)?;
             Ok(DelegationType::Full(pool_id))
         }
         2 => {
@@ -302,63 +299,13 @@ fn pack_config_param<W: Write>(
     config_param: &ConfigParam,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    let tag = Tag::from(config_param);
-    let bytes = match config_param {
-        ConfigParam::Block0Date(data) => data.to_payload(),
-        ConfigParam::Discrimination(data) => data.to_payload(),
-        ConfigParam::ConsensusVersion(data) => data.to_payload(),
-        ConfigParam::SlotsPerEpoch(data) => data.to_payload(),
-        ConfigParam::SlotDuration(data) => data.to_payload(),
-        ConfigParam::EpochStabilityDepth(data) => data.to_payload(),
-        ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(data) => data.to_payload(),
-        ConfigParam::BlockContentMaxSize(data) => data.to_payload(),
-        ConfigParam::AddBftLeader(data) => data.to_payload(),
-        ConfigParam::RemoveBftLeader(data) => data.to_payload(),
-        ConfigParam::LinearFee(data) => data.to_payload(),
-        ConfigParam::ProposalExpiration(data) => data.to_payload(),
-        ConfigParam::KESUpdateSpeed(data) => data.to_payload(),
-        ConfigParam::TreasuryAdd(data) => data.to_payload(),
-        ConfigParam::TreasuryParams(data) => data.to_payload(),
-        ConfigParam::RewardPot(data) => data.to_payload(),
-        ConfigParam::RewardParams(data) => data.to_payload(),
-        ConfigParam::PerCertificateFees(data) => data.to_payload(),
-        ConfigParam::FeesInTreasury(data) => data.to_payload(),
-        ConfigParam::RewardLimitNone => Vec::with_capacity(0),
-        ConfigParam::RewardLimitByAbsoluteStake(data) => data.to_payload(),
-        ConfigParam::PoolRewardParticipationCapping(data) => data.to_payload(),
-    };
-    let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
-        std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            "initial ent payload too big".to_string(),
-        )
-    })?;
-    codec.put_u16(taglen.0)?;
-    codec.write_all(&bytes)
+    config_param.serialize(codec)
 }
 
 fn unpack_config_param<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<ConfigParam, std::io::Error> {
-    let tag_len = TagLen(codec.get_u16()?);
-    let len = tag_len.get_len();
-    let bytes = codec.get_bytes(len)?;
-    // we will replicate the buffer so we can reuse the reader method
-    let mut cursor = Cursor::new(Vec::with_capacity(2 + len));
-    {
-        let mut writer = Codec::new(&mut cursor);
-        writer.put_u16(tag_len.0)?;
-        writer.put_bytes(&bytes)?;
-    }
-    cursor.set_position(0);
-    let mut read_buff = ReadBuf::from(cursor.get_ref());
-    match ConfigParam::read(&mut read_buff) {
-        Ok(res) => Ok(res),
-        Err(err) => Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("Error reading ConfigParam: {}", err),
-        )),
-    }
+    ConfigParam::deserialize(codec)
 }
 
 fn pack_block_date<W: std::io::Write>(
@@ -445,7 +392,7 @@ fn unpack_per_certificate_fee<R: std::io::BufRead>(
 
 fn pack_config_params<W: std::io::Write>(
     config_params: &ConfigParams,
-    codec: &mut Codec<R>,
+    codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     config_params.serialize(codec)
 }
@@ -458,7 +405,7 @@ fn unpack_config_params<R: std::io::BufRead>(
 
 fn pack_leader_id<W: std::io::Write>(
     leader_id: &LeaderId,
-    codec: &mut Codec<R>,
+    codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     serialize_public_key(&leader_id.0, codec)
 }
@@ -467,11 +414,22 @@ fn unpack_leader_id<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LeaderI
     LeaderId::deserialize(codec)
 }
 
+fn pack_header_id<W: std::io::Write>(
+    header_id: &HeaderId,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    header_id.serialize(codec)
+}
+
+fn unpack_header_id<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<HeaderId, std::io::Error> {
+    HeaderId::deserialize(codec)
+}
+
 fn pack_ledger_static_parameters<W: std::io::Write>(
     ledger_static_parameters: &LedgerStaticParameters,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    pack_header_id(ledger_static_parameters.block0_initial_hash, codec)?;
+    pack_header_id(&ledger_static_parameters.block0_initial_hash, codec)?;
     codec.put_u64(ledger_static_parameters.block0_start_time.0)?;
     pack_discrimination(&ledger_static_parameters.discrimination, codec)?;
     codec.put_u32(ledger_static_parameters.kes_update_speed)?;
@@ -497,7 +455,7 @@ fn pack_globals<W: std::io::Write>(
     globals: &Globals,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    pack_date(&globals.date, codec)?;
+    pack_block_date(&globals.date, codec)?;
     codec.put_u32(globals.chain_length.0)?;
     pack_ledger_static_parameters(&globals.static_params, codec)?;
     pack_time_era(&globals.era, codec)?;
@@ -505,10 +463,10 @@ fn pack_globals<W: std::io::Write>(
 }
 
 fn unpack_globals<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Globals, std::io::Error> {
-    let date = unpack_blockdate(codec)?;
+    let date = unpack_block_date(codec)?;
     let chain_length = ChainLength(codec.get_u32()?);
     let static_params = unpack_ledger_static_parameters(codec)?;
-    let era = unpack_timer_era(codec)?;
+    let era = unpack_time_era(codec)?;
     Ok(Globals {
         date,
         chain_length,
@@ -522,15 +480,15 @@ fn pack_pot_entry<W: std::io::Write>(
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     match entry {
-        Entry::Fees(value) => {
+        pots::Entry::Fees(value) => {
             codec.put_u8(0)?;
             codec.put_u64(value.0)?;
         }
-        Entry::Treasury(value) => {
+        pots::Entry::Treasury(value) => {
             codec.put_u8(1)?;
             codec.put_u64(value.0)?;
         }
-        Entry::Rewards(value) => {
+        pots::Entry::Rewards(value) => {
             codec.put_u8(2)?;
             codec.put_u64(value.0)?;
         }
@@ -542,9 +500,9 @@ fn unpack_pot_entry<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<pots::Entry, std::io::Error> {
     match codec.get_u8()? {
-        0 => Ok(Entry::Fees(Value(codec.get_u64()?))),
-        1 => Ok(Entry::Treasury(Value(codec.get_u64()?))),
-        2 => Ok(Entry::Rewards(Value(codec.get_u64()?))),
+        0 => Ok(pots::Entry::Fees(Value(codec.get_u64()?))),
+        1 => Ok(pots::Entry::Treasury(Value(codec.get_u64()?))),
+        2 => Ok(pots::Entry::Rewards(Value(codec.get_u64()?))),
         code => Err(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
             format!("Invalid Entry type code {}", code),
@@ -649,7 +607,7 @@ fn pack_pool_state<W: std::io::Write>(
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     pack_pool_last_rewards(&pool_state.last_rewards, codec)?;
-    pack_registration(&pool_state.registration, codec)?;
+    pack_pool_registration(&pool_state.registration, codec)?;
     Ok(())
 }
 
@@ -672,8 +630,11 @@ fn pack_update_proposal_state<W: std::io::Write>(
     pack_update_proposal(&update_proposal_state.proposal, codec)?;
     pack_block_date(&update_proposal_state.proposal_date, codec)?;
     codec.put_u64(update_proposal_state.votes.len() as u64)?;
-    for e in &update_proposal_state.votes {
-        e.serialize(codec)?;
+    {
+        let mut codec = Codec::new(codec);
+        for e in &update_proposal_state.votes {
+            e.serialize(&mut codec)?;
+        }
     }
     Ok(())
 }
@@ -685,9 +646,12 @@ fn unpack_update_proposal_state<R: std::io::BufRead>(
     let proposal_date = unpack_block_date(codec)?;
     let total_votes = codec.get_u64()?;
     let mut votes: HashSet<UpdateVoterId> = HashSet::new();
-    for _ in 0..total_votes {
-        let id = UpdateVoterId::deserialize(codec)?;
-        votes.insert(id);
+    {
+        let mut codec = Codec::new(codec);
+        for _ in 0..total_votes {
+            let id = UpdateVoterId::deserialize(&mut codec)?;
+            votes.insert(id);
+        }
     }
     Ok(UpdateProposalState {
         proposal,
@@ -722,17 +686,98 @@ fn unpack_update_proposal_id<R: std::io::BufRead>(
     UpdateProposalId::deserialize(codec)
 }
 
-fn pack_utxo_entry<'a, Address, W: std::io::Write>(
-    entry: &utxo::Entry<'a, Address>,
+fn pack_utxo_entry<OutputAddress, F, W: std::io::Write>(
+    entry: &utxo::Entry<'_, OutputAddress>,
+    output_address_packer: &mut F,
     codec: &mut Codec<W>,
-) -> Result<(), std::io::Error> {
-    entry.serialize(codec)
+) -> Result<(), std::io::Error>
+where
+    F: FnMut(&OutputAddress, &mut Codec<W>) -> Result<(), std::io::Error>,
+{
+    let fragment_id_bytes = entry.fragment_id.as_ref();
+    codec.put_bytes(fragment_id_bytes)?;
+    codec.put_u8(entry.output_index)?;
+    pack_output(entry.output, output_address_packer, codec)?;
+    Ok(())
 }
 
-fn unpack_utxo_entry_owned<Address, R: std::io::BufRead>(
+fn unpack_utxo_entry_owned<OutputAddress, F, R: std::io::BufRead>(
+    output_address_unpacker: &mut F,
     codec: &mut Codec<R>,
-) -> Result<utxo::EntryOwned<Address>, std::io::Error> {
-    utxo::EntryOwned::deserialize(codec)
+) -> Result<utxo::EntryOwned<OutputAddress>, std::io::Error>
+where
+    F: FnMut(&mut Codec<R>) -> Result<OutputAddress, std::io::Error>,
+{
+    let mut fragment_id_bytes: [u8; 32] = [0; 32];
+    codec.read_exact(&mut fragment_id_bytes)?;
+    let fragment_id = FragmentId::from_bytes(fragment_id_bytes);
+    let output_index = codec.get_u8()?;
+    let output: Output<OutputAddress> = unpack_output(output_address_unpacker, codec)?;
+    Ok(utxo::EntryOwned {
+        fragment_id,
+        output_index,
+        output,
+    })
+}
+
+fn pack_output<OutputAddress, F, W: std::io::Write>(
+    output: &Output<OutputAddress>,
+    address_packer: &mut F,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error>
+where
+    F: FnMut(&OutputAddress, &mut Codec<W>) -> Result<(), std::io::Error>,
+{
+    address_packer(&output.address, codec)?;
+    codec.put_u64(output.value.0)?;
+    Ok(())
+}
+
+fn unpack_output<OutputAddress, F, R: std::io::BufRead>(
+    address_unpacker: &mut F,
+    codec: &mut Codec<R>,
+) -> Result<Output<OutputAddress>, std::io::Error>
+where
+    F: FnMut(&mut Codec<R>) -> Result<OutputAddress, std::io::Error>,
+{
+    let address = address_unpacker(codec)?;
+    let value = Value(codec.get_u64()?);
+    Ok(Output { address, value })
+}
+
+fn pack_old_addr<W: std::io::Write>(addr: &legacy::OldAddress, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+    let bytes = addr.as_ref();
+    codec.put_u64(bytes.len() as u64)?;
+    codec.put_bytes(bytes)?;
+    Ok(())
+}
+
+fn unpack_old_addr<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<legacy::OldAddress, std::io::Error> {
+    let size = codec.get_u64()?;
+    let v = codec.get_bytes(size as usize)?;
+    Ok(legacy::OldAddress::new(v))
+}
+
+fn pack_address<W: std::io::Write>(
+    address: &Address,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    let bytes = address.to_bytes();
+    codec.put_u64(bytes.len() as u64)?;
+    codec.put_bytes(&bytes)?;
+    Ok(())
+}
+
+fn unpack_address<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Address, std::io::Error> {
+    let size = codec.get_u64()?;
+    let v = codec.get_bytes(size as usize)?;
+    match Address::from_bytes(&v) {
+        Ok(address) => Ok(address),
+        Err(e) => Err(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("Error reading address from packed bytes: {}", e),
+        )),
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -786,11 +831,11 @@ fn pack_entry<W: std::io::Write>(
         }
         Entry::Utxo(entry) => {
             codec.put_u8(EntrySerializeCode::Utxo as u8)?;
-            pack_utxo_entry(entry, codec)?;
+            pack_utxo_entry(entry, &mut pack_address, codec)?;
         }
         Entry::OldUtxo(entry) => {
             codec.put_u8(EntrySerializeCode::OldUtxo as u8)?;
-            pack_utxo_entry(entry, codec)?;
+            pack_utxo_entry(entry, &mut pack_old_addr, codec)?;
         }
         Entry::Account((identifier, account_state)) => {
             codec.put_u8(EntrySerializeCode::Account as u8)?;
@@ -818,12 +863,12 @@ fn pack_entry<W: std::io::Write>(
         }
         Entry::StakePool((pool_id, pool_state)) => {
             codec.put_u8(EntrySerializeCode::StakePool as u8)?;
-            pack_digestof(pool_id.as_ref(), codec)?;
+            pack_digestof(pool_id, codec)?;
             pack_pool_state(pool_state, codec)?;
         }
         Entry::LeaderParticipation((pool_id, participation)) => {
             codec.put_u8(EntrySerializeCode::LeaderParticipation as u8)?;
-            pack_digestof(pool_id.as_ref(), codec)?;
+            pack_digestof(pool_id, codec)?;
             codec.put_u32(**participation)?;
         }
     }
@@ -841,12 +886,14 @@ fn unpack_entry_owned<R: std::io::BufRead>(
     match code {
         EntrySerializeCode::Globals => Ok(EntryOwned::Globals(unpack_globals(codec)?)),
         EntrySerializeCode::Pot => Ok(EntryOwned::Pot(unpack_pot_entry(codec)?)),
-        EntrySerializeCode::Utxo => Ok(EntryOwned::Utxo(crate::utxo::EntryOwned::deserialize(
+        EntrySerializeCode::Utxo => Ok(EntryOwned::Utxo(unpack_utxo_entry_owned(
+            &mut unpack_address,
             codec,
         )?)),
-        EntrySerializeCode::OldUtxo => Ok(EntryOwned::OldUtxo(
-            crate::utxo::EntryOwned::deserialize(codec)?,
-        )),
+        EntrySerializeCode::OldUtxo => Ok(EntryOwned::OldUtxo(unpack_utxo_entry_owned(
+            &mut unpack_old_addr,
+            codec,
+        )?)),
         EntrySerializeCode::Account => {
             let identifier = unpack_account_identifier(codec)?;
             let account = unpack_account_state(codec)?;
@@ -965,12 +1012,12 @@ pub mod test {
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
         let mut codec = Codec::new(c);
         let address : Addr = "DdzFFzCqrhsqTG4t3uq5UBqFrxhxGVM6bvF4q1QcZXqUpizFddEEip7dx5rbife2s9o2fRU3hVKhRp4higog7As8z42s4AMw6Pcu8vL4".parse().unwrap();
-        pack_addr(&address, &mut codec)?;
+        pack_old_addr(&address, &mut codec)?;
         c = codec.into_inner();
         // reset fake buffer
         c.set_position(0);
         codec = Codec::new(c);
-        let new_address = unpack_addr(&mut codec)?;
+        let new_address = unpack_old_addr(&mut codec)?;
         assert_eq!(address, new_address);
         Ok(())
     }

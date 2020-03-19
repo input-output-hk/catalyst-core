@@ -116,34 +116,6 @@ pub struct EntryOwned<OutputAddress> {
     pub output: Output<OutputAddress>,
 }
 
-impl<OutputAddress: Serialize> Serialize for Entry<'_, OutputAddress> {
-    type Error = std::io::Error;
-
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        let mut codec = Codec::new(writer);
-        self.fragment_id.serialize(&mut codec)?;
-        codec.put_u8(self.output_index)?;
-        self.output.serialize(&mut codec)?;
-        Ok(())
-    }
-}
-
-impl<OutputAddress: Deserialize> Deserialize for EntryOwned<OutputAddress> {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let fragment_id = FragmentId::deserialize(&mut codec)?;
-        let output_index = codec.get_u8()?;
-        let output: Output<OutputAddress> = Output::deserialize(&mut codec)?;
-        Ok(EntryOwned {
-            fragment_id,
-            output_index,
-            output,
-        })
-    }
-}
-
 impl<OutAddress> Ledger<OutAddress> {
     pub fn iter<'a>(&'a self) -> Iter<'a, OutAddress> {
         Iter {

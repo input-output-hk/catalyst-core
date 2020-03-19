@@ -163,6 +163,10 @@ pub enum AddressMatchXPub {
 }
 
 impl Addr {
+    pub fn new(content: Vec<u8>) -> Self {
+        Self(content)
+    }
+
     pub fn deconstruct(&self) -> ExtendedAddr {
         let mut raw = Deserializer::from(std::io::Cursor::new(&self.0));
         cbor_event::de::Deserialize::deserialize(&mut raw).unwrap() // unwrap should never fail from addr to extended addr

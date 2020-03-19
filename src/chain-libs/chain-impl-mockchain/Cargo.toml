@@ -18,7 +18,7 @@ rand_core = "0.5"
 imhamt = { path = "../imhamt" }
 sparse-array = { path = "../sparse-array" }
 strum = "0.18.0"
-strum_macros = "0.17.1"
+strum_macros = "0.18.0"
 cfg-if = "0.1"
 quickcheck = { version = "0.9", optional = true }
 quickcheck_macros = { version = "0.9", optional = true }

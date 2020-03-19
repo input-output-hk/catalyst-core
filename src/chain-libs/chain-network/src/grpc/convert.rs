@@ -1,6 +1,6 @@
 use super::proto;
 use crate::data::{
-    block::{self, Block, BlockEvent, BlockId, Header},
+    block::{self, Block, BlockEvent, BlockId, ChainPullRequest, Header},
     fragment::Fragment,
     gossip::{Gossip, Node, Peer},
 };
@@ -281,7 +281,7 @@ impl FromProtobuf<proto::BlockEvent> for BlockEvent {
             Some(Missing(pull_req)) => {
                 let from = block::try_ids_from_iter(pull_req.from)?;
                 let to = BlockId::try_from(&pull_req.to[..])?;
-                Ok(BlockEvent::Missing { from, to })
+                Ok(BlockEvent::Missing(ChainPullRequest { from, to }))
             }
             None => Err(Error::new(
                 error::Code::InvalidArgument,
@@ -304,7 +304,7 @@ impl IntoProtobuf for BlockEvent {
                 };
                 Item::Solicit(block_ids)
             }
-            BlockEvent::Missing { from, to } => {
+            BlockEvent::Missing(ChainPullRequest { from, to }) => {
                 let request = proto::PullHeadersRequest {
                     from: ids_into_repeated_bytes(from.iter()),
                     to: to.as_bytes().into(),

@@ -18,9 +18,6 @@ use cryptoxide::ed25519::PUBLIC_KEY_LENGTH;
 use cryptoxide::sha3::Sha3;
 use ed25519_bip32::XPub;
 
-use chain_ser::deser::{Deserialize as PropertyDeserialize, Serialize as PropertySerialize};
-use chain_ser::packer::Codec;
-use std::io::Error;
 use std::{
     convert::{TryFrom, TryInto},
     fmt,
@@ -163,24 +160,6 @@ pub struct Addr(Vec<u8>);
 pub enum AddressMatchXPub {
     Yes,
     No,
-}
-
-
-fn pack_addr<W: std::io::Write>(addr: &Addr, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u64(addr.0.len() as u64)?;
-    for e in &addr.0 {
-        codec.put_u8(*e)?;
-    }
-    Ok(())
-}
-
-fn unpack_addr<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Addr, std::io::Error> {
-    let size = codec.get_u64()?;
-    let mut addr = Addr(Vec::with_capacity(size as usize));
-    for _ in 0..size {
-        addr.0.push(codec.get_u8()?);
-    }
-    Ok(addr)
 }
 
 impl Addr {
@@ -542,23 +521,5 @@ mod tests {
             0x4a, 0xe0, 0xac, 0xac, 0x0c, 0xf7, 0x9e, 0x89,
         ]);
         assert_same_address(address, public_key)
-    }
-
-    #[test]
-    fn test_addr_pack_unpack_bijection() -> Result<(), std::io::Error> {
-        use super::*;
-        use std::io::Cursor;
-        // set fake buffer
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        let mut codec = Codec::new(c);
-        let address : Addr = "DdzFFzCqrhsqTG4t3uq5UBqFrxhxGVM6bvF4q1QcZXqUpizFddEEip7dx5rbife2s9o2fRU3hVKhRp4higog7As8z42s4AMw6Pcu8vL4".parse().unwrap();
-        pack_addr(&address, &mut codec)?;
-        c = codec.into_inner();
-        // reset fake buffer
-        c.set_position(0);
-        codec = Codec::new(c);
-        let new_address = unpack_addr(&mut codec)?;
-        assert_eq!(address, new_address);
-        Ok(())
     }
 }

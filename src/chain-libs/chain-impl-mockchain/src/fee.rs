@@ -1,9 +1,6 @@
 use crate::certificate::CertificateSlice;
 use crate::transaction as tx;
 use crate::value::Value;
-use chain_ser::deser::{Deserialize, Serialize};
-use chain_ser::packer::Codec;
-use std::io::Error;
 use std::num::NonZeroU64;
 
 /// Linear fee using the basic affine formula
@@ -38,29 +35,6 @@ impl LinearFee {
     }
 }
 
-
-fn pack_linear_fee<W: std::io::Write>(linear_fee: &LinearFee, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u64(linear_fee.constant)?;
-    codec.put_u64(linear_fee.coefficient)?;
-    codec.put_u64(linear_fee.certificate)?;
-    pack_per_certificate_fee(linear_fee.per_certificate_fees, codec)?;
-    Ok(())
-}
-
-fn unpack_linear_fee<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LinearFee, std::io::Error> {
-    let constant = codec.get_u64()?;
-    let coefficient = codec.get_u64()?;
-    let certificate = codec.get_u64()?;
-    let per_certificate_fees = unpack_per_certificate_fee(codec)?;
-    Ok(LinearFee {
-        constant,
-        coefficient,
-        certificate,
-        per_certificate_fees,
-    })
-}
-
-
 impl PerCertificateFee {
     pub fn new(
         certificate_pool_registration: Option<NonZeroU64>,
@@ -89,40 +63,6 @@ impl PerCertificateFee {
         }
     }
 }
-
-
-fn pack_per_certificate_fee<W: std::io::Write>(per_certificate_fee : &PerCertificateFee, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u64(
-        per_certificate_fee.certificate_pool_registration
-            .map(|v| v.get())
-            .unwrap_or(0),
-    )?;
-    codec.put_u64(
-        per_certificate_fee.certificate_stake_delegation
-            .map(|v| v.get())
-            .unwrap_or(0),
-    )?;
-    codec.put_u64(
-        per_certificate_fee.certificate_owner_stake_delegation
-            .map(|v| v.get())
-            .unwrap_or(0),
-    )?;
-    Ok(())
-}
-
-
-fn unpack_per_certificate_fee<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PerCertificateFee, std::io::Error> {
-    let certificate_pool_registration = std::num::NonZeroU64::new(codec.get_u64()?);
-    let certificate_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
-    let certificate_owner_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
-
-    Ok(PerCertificateFee {
-        certificate_pool_registration,
-        certificate_stake_delegation,
-        certificate_owner_stake_delegation,
-    })
-}
-
 
 pub trait FeeAlgorithm {
     fn baseline(&self) -> Value;
@@ -167,7 +107,6 @@ impl FeeAlgorithm for LinearFee {
 mod test {
     use super::*;
     use crate::certificate::{Certificate, CertificatePayload};
-    use chain_core::property::testing::serialization_bijection;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
 
@@ -239,16 +178,6 @@ mod test {
                 cert_fees.certificate_owner_stake_delegation.unwrap().into()
             }
             _ => fee.certificate,
-        }
-    }
-
-    quickcheck! {
-        fn per_certificate_fee_serialize_deserialize_bijection(b: PerCertificateFee) -> TestResult {
-            serialization_bijection(b)
-        }
-
-        fn linear_fee_serialize_deserialize_bijection(b: LinearFee) -> TestResult {
-            serialization_bijection(b)
         }
     }
 }

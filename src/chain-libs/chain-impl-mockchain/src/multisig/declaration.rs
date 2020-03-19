@@ -3,13 +3,11 @@ use chain_crypto::{PublicKey, Signature};
 
 use super::index::{Index, TreeIndex, LEVEL_MAXLIMIT};
 pub use crate::transaction::WitnessMultisigData;
-use chain_core::property;
-use chain_ser::packer::Codec;
 use thiserror::Error;
 
 /// Account Identifier (also used as Public Key)
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Identifier(key::Hash);
+pub struct Identifier(pub(crate) key::Hash);
 
 impl AsRef<[u8]> for Identifier {
     fn as_ref(&self) -> &[u8] {
@@ -47,18 +45,6 @@ impl std::fmt::Display for Identifier {
     }
 }
 
-
-
-fn pack_identifier<W: std::io::Write>(identifier: &Identifier, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    pack_key_hash(identifier.0, codec)?
-}
-
-fn unpack_identifier<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-    let hash = unpack_key_hash(codec)?;
-    Ok(Identifier(hash))
-}
-
-
 /// Declaration of a multisig account parameters which is:
 ///
 /// * a threshold that need to be between 1 and the size of owners
@@ -69,7 +55,6 @@ pub struct Declaration {
     pub(crate) owners: Vec<DeclElement>,
 }
 
-
 impl Declaration {
     pub fn threshold(&self) -> usize {
         self.threshold as usize
@@ -79,29 +64,6 @@ impl Declaration {
         self.owners.len()
     }
 }
-
-
-
-fn pack_declaration<W: std::io::Write>(declaration: &Declaration, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u8(declaration.threshold)?;
-    codec.put_u64(declaration.owners.len() as u64)?;
-    for owner in &declaration.owners {
-        pack_decl_element(owner, codec)?;
-    }
-    Ok(())
-}
-
-fn unpack_declaration<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Declaration, std::io::Error> {
-    let threshold = codec.get_u8()?;
-    let size = codec.get_u64()?;
-    let mut owners: Vec<DeclElement> = Vec::with_capacity(size as usize);
-    for _ in 0..size {
-        let decl_element = unpack_decl_element(codec)?;
-        owners.push(decl_element);
-    }
-    Ok(Declaration { threshold, owners })
-}
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DeclElement {
@@ -119,34 +81,6 @@ impl DeclElement {
 
     pub fn from_publickey(key: &PublicKey<account::AccountAlg>) -> Self {
         DeclElement::Owner(key::Hash::hash_bytes(key.as_ref()))
-    }
-}
-
-
-
-fn pack_decl_element<W: std::io::Write>(decl_element: &DeclElement, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    match &decl_element {
-        DeclElement::Sub(declaration) => {
-            codec.put_u8(0)?;
-            pack_declaration(declaration, codec)?;
-        }
-        DeclElement::Owner(hash) => {
-            codec.put_u8(1)?;
-            hash.serialize(codec)?;
-        }
-    }
-    Ok(())
-}
-
-
-fn unpack_decl_element<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<DeclElement, std::io::Error> {
-    match codec.get_u8()? {
-        0 => Ok(DeclElement::Sub(unpack_declaration(codec)?)),
-        1 => Ok(DeclElement::Owner(key::Hash::deserialize(codec)?)),
-        code => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            format!("Invalid DeclElement type code {}", code),
-        )),
     }
 }
 
@@ -196,63 +130,3 @@ impl Declaration {
 
 pub type Pk = PublicKey<account::AccountAlg>;
 pub type Sig = Signature<WitnessMultisigData, account::AccountAlg>;
-
-#[cfg(test)]
-pub mod test {
-    use super::*;
-    use chain_ser::deser::{Deserialize, Serialize};
-
-    #[test]
-    fn identifier_pack_unpack_bijection() -> Result<(), std::io::Error> {
-        use std::io::Cursor;
-
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        let id_bytes: [u8; 32] = [0x1; 32];
-        let identifier = Identifier::from(id_bytes);
-        identifier.serialize(&mut c)?;
-        c.set_position(0);
-        let other_identifier = Identifier::deserialize(&mut c)?;
-        assert_eq!(identifier, other_identifier);
-
-        Ok(())
-    }
-
-    #[test]
-    fn decl_element_pack_unpack_bijection() -> Result<(), std::io::Error> {
-        use std::io::Cursor;
-
-        let id_bytes: [u8; 32] = [0x1; 32];
-
-        for decl_element in [
-            DeclElement::Sub(Declaration{owners: Vec::new(), threshold: 10}),
-            DeclElement::Owner(key::Hash::from_bytes(id_bytes)),
-        ].iter() {
-            let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            decl_element.serialize(&mut c)?;
-            c.set_position(0);
-            let other_value = DeclElement::deserialize(&mut c)?;
-            assert_eq!(decl_element, &other_value);
-        }
-        Ok(())
-    }
-
-
-    #[test]
-    fn declaration_pack_unpack_bijection() -> Result<(), std::io::Error> {
-        use std::io::Cursor;
-
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-
-        let declaration = Declaration {
-            owners: Vec::new(),
-            threshold: 0,
-        };
-
-        declaration.serialize(&mut c)?;
-        c.set_position(0);
-        let other_value = Declaration::deserialize(&mut c)?;
-        assert_eq!(declaration, other_value);
-
-        Ok(())
-    }
-}

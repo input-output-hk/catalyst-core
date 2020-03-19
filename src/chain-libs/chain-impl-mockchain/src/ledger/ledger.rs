@@ -19,8 +19,6 @@ use crate::value::*;
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
-use chain_ser::deser::{Deserialize, Serialize};
-use chain_ser::packer::Codec;
 use chain_time::Epoch as TimeEpoch;
 use chain_time::{SlotDuration, TimeEra, TimeFrame, Timeline};
 use std::mem::swap;
@@ -36,31 +34,6 @@ pub struct LedgerStaticParameters {
     pub discrimination: Discrimination,
     pub kes_update_speed: u32,
 }
-
-
-
-fn pack_ledger_static_parameters<W: std::io::Write>(ledger_static_parameters: &LedgerStaticParameters, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    pack_header_id(ledger_static_parameters.block0_initial_hash, codec)?;
-    codec.put_u64(ledger_static_parameters.block0_start_time.0)?;
-    pack_discrimination(ledger_static_parameters.discrimination, codec)?;
-    codec.put_u32(ledger_static_parameters.kes_update_speed)?;
-    Ok(())
-}
-
-
-fn unpack_ledger_static_parameters<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LedgerStaticParameters, std::io::Error> {
-    let block0_initial_hash = unpack_header_id(codec)?;
-    let block0_start_time = config::Block0Date(codec.get_u64()?);
-    let discrimination = unpack_discrimination(codec)?;
-    let kes_update_speed = codec.get_u32()?;
-    Ok(LedgerStaticParameters {
-        block0_initial_hash,
-        block0_start_time,
-        discrimination,
-        kes_update_speed,
-    })
-}
-
 
 // parameters to validate ledger
 #[derive(Debug, Clone)]
@@ -1468,7 +1441,6 @@ mod tests {
         transaction::Witness,
     };
     use chain_addr::Discrimination;
-    use chain_core::property::testing::serialization_bijection;
     use chain_core::property::ChainLength;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
@@ -1531,12 +1503,6 @@ mod tests {
     impl Into<Ledger> for ArbitraryEmptyLedger {
         fn into(self) -> Ledger {
             self.0
-        }
-    }
-
-    quickcheck! {
-        fn ledger_static_parameters_serialize_deserialize_bijection(b: LedgerStaticParameters) -> TestResult {
-            serialization_bijection(b)
         }
     }
 
@@ -2556,13 +2522,4 @@ mod tests {
             .apply_transaction(test_tx.get_fragment())
             .is_err());
     }
-
-    // #[test]
-    // fn ledger_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
-    //     let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
-    //         .faucet(&faucet)
-    //         .build()
-    //         .unwrap();
-    //     Ok(())
-    // }
 }

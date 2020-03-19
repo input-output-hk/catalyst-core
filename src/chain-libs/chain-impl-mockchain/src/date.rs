@@ -2,9 +2,6 @@ use chain_core::property;
 use chain_time::era::EpochPosition;
 use chain_time::era::TimeEra;
 
-use chain_ser::deser::Deserialize;
-use chain_ser::packer::Codec;
-use std::io::Error;
 use std::{error, fmt, num::ParseIntError, str};
 
 /// Non unique identifier of the transaction position in the
@@ -121,24 +118,10 @@ impl str::FromStr for BlockDate {
     }
 }
 
-fn pack_block_date<W: std::io::Write>(block_date: &BlockData, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u32(block_date.epoch)?;
-    codec.put_u32(block_date.slot_id)?;
-    Ok(())
-}
-
-fn unpack_block_date<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<BlockDate, std::io::Error> {
-    let epoch = codec.get_u32()?;
-    let slot_id = codec.get_u32()?;
-    Ok(BlockDate { epoch, slot_id })
-}
-
-
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-    use chain_core::property::testing::serialization_bijection;
-    use quickcheck::{Arbitrary, Gen, TestResult};
+    use quickcheck::{Arbitrary, Gen};
     use std::error::Error;
 
     #[test]
@@ -185,12 +168,6 @@ mod tests {
                 epoch: Arbitrary::arbitrary(g),
                 slot_id: Arbitrary::arbitrary(g),
             }
-        }
-    }
-
-    quickcheck! {
-        fn blockdate_serialize_deserialize_bijection(b: BlockDate) -> TestResult {
-            serialization_bijection(b)
         }
     }
 }

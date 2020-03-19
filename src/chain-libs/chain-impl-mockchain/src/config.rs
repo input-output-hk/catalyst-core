@@ -12,9 +12,8 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::packer::Codec;
 use chain_core::property;
 use chain_crypto::PublicKey;
-use chain_ser::deser::{Deserialize, Serialize};
 use std::fmt::{self, Display, Formatter};
-use std::io::{self, Cursor, Write};
+use std::io::{self, Write};
 use std::num::{NonZeroU32, NonZeroU64};
 use strum_macros::{AsRefStr, EnumIter, EnumString};
 use typed_bytes::ByteBuilder;
@@ -279,66 +278,48 @@ impl Readable for ConfigParam {
     }
 }
 
-fn serialize<W: Write>(config_param: &ConfigParam, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    let tag = Tag::from(config_param);
-    let bytes = match config_param {
-        ConfigParam::Block0Date(data) => data.to_payload(),
-        ConfigParam::Discrimination(data) => data.to_payload(),
-        ConfigParam::ConsensusVersion(data) => data.to_payload(),
-        ConfigParam::SlotsPerEpoch(data) => data.to_payload(),
-        ConfigParam::SlotDuration(data) => data.to_payload(),
-        ConfigParam::EpochStabilityDepth(data) => data.to_payload(),
-        ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(data) => data.to_payload(),
-        ConfigParam::BlockContentMaxSize(data) => data.to_payload(),
-        ConfigParam::AddBftLeader(data) => data.to_payload(),
-        ConfigParam::RemoveBftLeader(data) => data.to_payload(),
-        ConfigParam::LinearFee(data) => data.to_payload(),
-        ConfigParam::ProposalExpiration(data) => data.to_payload(),
-        ConfigParam::KESUpdateSpeed(data) => data.to_payload(),
-        ConfigParam::TreasuryAdd(data) => data.to_payload(),
-        ConfigParam::TreasuryParams(data) => data.to_payload(),
-        ConfigParam::RewardPot(data) => data.to_payload(),
-        ConfigParam::RewardParams(data) => data.to_payload(),
-        ConfigParam::PerCertificateFees(data) => data.to_payload(),
-        ConfigParam::FeesInTreasury(data) => data.to_payload(),
-        ConfigParam::RewardLimitNone => Vec::with_capacity(0),
-        ConfigParam::RewardLimitByAbsoluteStake(data) => data.to_payload(),
-        ConfigParam::PoolRewardParticipationCapping(data) => data.to_payload(),
-    };
-    let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::InvalidData,
-            "initial ent payload too big".to_string(),
-        )
-    })?;
-    codec.put_u16(taglen.0)?;
-    codec.write_all(&bytes)
-}
+impl property::Serialize for ConfigParam {
+    type Error = io::Error;
 
-fn deserialize<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<ConfigParam, std::io::Error> {
-    let tag_len = TagLen(codec.get_u16()?);
-    let len = tag_len.get_len();
-    let bytes = codec.get_bytes(len)?;
-    // we will replicate the buffer so we can reuse the reader method
-    let mut cursor = Cursor::new(Vec::with_capacity(2 + len));
-    {
-        let mut writer = Codec::new(&mut cursor);
-        writer.put_u16(tag_len.0)?;
-        writer.put_bytes(&bytes)?;
-    }
-    cursor.set_position(0);
-    let mut read_buff = ReadBuf::from(cursor.get_ref());
-    match ConfigParam::read(&mut read_buff) {
-        Ok(res) => Ok(res),
-        Err(err) => Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("Error reading ConfigParam: {}", err),
-        )),
+    fn serialize<W: Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let tag = Tag::from(self);
+        let bytes = match self {
+            ConfigParam::Block0Date(data) => data.to_payload(),
+            ConfigParam::Discrimination(data) => data.to_payload(),
+            ConfigParam::ConsensusVersion(data) => data.to_payload(),
+            ConfigParam::SlotsPerEpoch(data) => data.to_payload(),
+            ConfigParam::SlotDuration(data) => data.to_payload(),
+            ConfigParam::EpochStabilityDepth(data) => data.to_payload(),
+            ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(data) => data.to_payload(),
+            ConfigParam::BlockContentMaxSize(data) => data.to_payload(),
+            ConfigParam::AddBftLeader(data) => data.to_payload(),
+            ConfigParam::RemoveBftLeader(data) => data.to_payload(),
+            ConfigParam::LinearFee(data) => data.to_payload(),
+            ConfigParam::ProposalExpiration(data) => data.to_payload(),
+            ConfigParam::KESUpdateSpeed(data) => data.to_payload(),
+            ConfigParam::TreasuryAdd(data) => data.to_payload(),
+            ConfigParam::TreasuryParams(data) => data.to_payload(),
+            ConfigParam::RewardPot(data) => data.to_payload(),
+            ConfigParam::RewardParams(data) => data.to_payload(),
+            ConfigParam::PerCertificateFees(data) => data.to_payload(),
+            ConfigParam::FeesInTreasury(data) => data.to_payload(),
+            ConfigParam::RewardLimitNone => Vec::with_capacity(0),
+            ConfigParam::RewardLimitByAbsoluteStake(data) => data.to_payload(),
+            ConfigParam::PoolRewardParticipationCapping(data) => data.to_payload(),
+        };
+        let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "initial ent payload too big".to_string(),
+            )
+        })?;
+        let mut codec = Codec::new(writer);
+        codec.put_u16(taglen.0)?;
+        codec.write_all(&bytes)
     }
 }
 
-
-trait ConfigParamVariant: Clone + Eq + PartialEq {
+pub(crate) trait ConfigParamVariant: Clone + Eq + PartialEq {
     fn to_payload(&self) -> Vec<u8>;
     fn from_payload(payload: &[u8]) -> Result<Self, Error>;
 }
@@ -690,16 +671,10 @@ impl TagLen {
 #[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
-    use chain_core::property::testing::serialization_bijection;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use strum::IntoEnumIterator;
 
     quickcheck! {
-
-        fn config_param_serialize_deserialize_bijection(config_param: ConfigParam) -> TestResult {
-            serialization_bijection(config_param)
-        }
-
         fn tag_len_computation_correct(tag: Tag, len: usize) -> TestResult {
             let len = len % MAXIMUM_LEN;
             let tag_len = TagLen::new(tag, len).unwrap();

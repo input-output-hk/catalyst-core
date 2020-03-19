@@ -36,17 +36,19 @@ pub struct TimeEra {
     slots_per_epoch: u32,
 }
 
-
-
-fn pack_time_era<W: std::io::Write>(time_era: &TimeEra, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+pub fn pack_time_era<W: std::io::Write>(
+    time_era: &TimeEra,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
     codec.put_u32(time_era.epoch_start.0)?;
     codec.put_u64(time_era.slot_start.0)?;
     codec.put_u32(time_era.slots_per_epoch)?;
     Ok(())
 }
 
-
-fn unpack_time_era<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<TimeEra, std::io::Error> {
+pub fn unpack_time_era<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<TimeEra, std::io::Error> {
     let epoch_start = Epoch(codec.get_u32()?);
     let slot_start = Slot(codec.get_u64()?);
     let slots_per_epoch = codec.get_u32()?;
@@ -57,7 +59,6 @@ fn unpack_time_era<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<TimeEra,
         slots_per_epoch,
     })
 }
-
 
 impl TimeEra {
     /// Set a new era to start on slot_start at epoch_start for a given slots per epoch.
@@ -114,8 +115,8 @@ mod test {
     use quickcheck::{quickcheck, TestResult};
 
     quickcheck! {
-        fn time_era_serialize_deserialize_bijection(b: TimeEra) -> TestResult {
-            serialization_bijection(b)
+        fn time_era_pack_unpack_bijection(b: TimeEra) -> TestResult {
+            unimplemented!()
         }
     }
 

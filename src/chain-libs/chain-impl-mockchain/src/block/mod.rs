@@ -181,10 +181,6 @@ impl property::HasHeader for Block {
     }
 }
 
-use chain_core::property::Deserialize;
-use chain_ser::deser::Serialize;
-use chain_ser::packer::Codec;
-use std::io::Error;
 use strum_macros::{Display, EnumString, IntoStaticStr};
 
 #[derive(
@@ -220,32 +216,6 @@ impl ConsensusVersion {
         }
     }
 }
-
-
-
-fn pack_consensus_version<W: std::io::Write>(consensus_version: &ConsensusVersion, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    match consensus_version {
-        ConsensusVersion::Bft => {
-            codec.put_u8(1)?;
-        }
-        ConsensusVersion::GenesisPraos => {
-            codec.put_u8(2)?;
-        }
-    }
-    Ok(())
-}
-
-fn unpack_consensus_version<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<ConsensusVersion, std::io::Error> {
-    match codec.get_u8()? {
-        1 => Ok(ConsensusVersion::Bft),
-        2 => Ok(ConsensusVersion::GenesisPraos),
-        code => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            format!("Unrecognized code {} for ConsensusVersion", code),
-        )),
-    }
-}
-
 
 #[cfg(test)]
 #[cfg(feature = "with-bench")]

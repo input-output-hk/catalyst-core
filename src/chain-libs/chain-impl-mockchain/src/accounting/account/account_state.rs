@@ -4,9 +4,6 @@ use crate::value::*;
 use imhamt::HamtIter;
 
 use super::{LastRewards, LedgerError};
-use chain_ser::deser::{Deserialize, Serialize};
-use chain_ser::packer::Codec;
-use std::io::Error;
 
 /// Set the choice of delegation:
 ///
@@ -20,43 +17,6 @@ pub enum DelegationType {
     Ratio(DelegationRatio),
 }
 
-
-fn pack_delegation_type<W: std::io::Write>(delegation_type: &DelegationType, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    match delegation_type {
-        DelegationType::NonDelegated => {
-            codec.put_u8(0)?;
-        }
-        DelegationType::Full(pool_id) => {
-            codec.put_u8(1)?;
-            pack_poolid(pool_id, codec)?;
-        }
-        DelegationType::Ratio(delegation_ratio) => {
-            codec.put_u8(2)?;
-            pack_delegation_ration(delegation_ratio, codec)?;
-        }
-    }
-    Ok(())
-}
-
-fn unpack_delegation_type<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Self, std::io::Error> {
-    match codec.get_u8()? {
-        0 => Ok(DelegationType::NonDelegated),
-        1 => {
-            let pool_id = unpack_poolid(codec)?;
-            Ok(DelegationType::Full(pool_id))
-        }
-        2 => {
-            let delegation_ratio = unpack_delegation_ratio(codec)?;
-            Ok(DelegationType::Ratio(delegation_ratio))
-        }
-        code => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            format!("Invalid DelegationType type code {}", code),
-        )),
-    }
-}
-
-
 /// Delegation Ratio type express a number of parts
 /// and a list of pools and their individual parts
 ///
@@ -69,40 +29,9 @@ fn unpack_delegation_type<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<S
 /// pools parts.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct DelegationRatio {
-    parts: u8,
-    pools: Box<[(PoolId, u8)]>,
+    pub(crate) parts: u8,
+    pub(crate) pools: Box<[(PoolId, u8)]>,
 }
-
-
-fn pack_delegation_ratio<W: std::io::Write>(delegation_ratio: &DelegationRatio, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u8(delegation_ratio.parts)?;
-    // len of items in pools, for later use by the deserialize method
-    codec.put_u64(delegation_ratio.pools.len() as u64)?;
-    for (pool_id, u) in delegation_ratio.pools.iter() {
-        codec.put_u8(*u)?;
-        pack_poolid(pool_id, codec)?;
-    }
-    Ok(())
-}
-
-
-fn unpack_delegation_ratio<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<DelegationRatio, std::io::Error> {
-    let parts = codec.get_u8()?;
-    let pools_size = codec.get_u64()?;
-    let mut pools: Vec<(PoolId, u8)> = Vec::with_capacity(pools_size as usize);
-    for _ in 0..pools_size {
-        let u = codec.get_u8()?;
-        pools.push((unpack_poolid(codec)?, u));
-    }
-    match DelegationRatio::new(parts, pools) {
-        Some(delegation_ratio) => Ok(delegation_ratio),
-        None => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            "Error building DelegationRatio from serialized data",
-        )),
-    }
-}
-
 
 /// The maximum number of pools
 pub const DELEGATION_RATIO_MAX_DECLS: usize = 8;
@@ -154,29 +83,6 @@ pub struct AccountState<Extra> {
     pub last_rewards: LastRewards,
     pub extra: Extra,
 }
-
-fn pack_account_state<W: std::io::Write>(account_state: &AccountState<()>, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u32(account_state.counter.0)?;
-    pack_delegation_type(&account_state.delegation, codec)?;
-    codec.put_u64(account_state.value.0)?;
-    pack_last_rewards(&account_state.last_rewards, codec)?;
-    Ok(())
-}
-
-fn unpack_account_state<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<AccountState<()>, std::io::Error> {
-    let counter = codec.get_u32()?;
-    let delegation = unpack_delegation_type(codec)?;
-    let value = codec.get_u64()?;
-    let last_rewards = unpack_last_rewards(codec)?;
-    Ok(AccountState {
-        counter: SpendingCounter(counter),
-        delegation,
-        value: Value(value),
-        last_rewards,
-        extra: (),
-    })
-}
-
 
 impl<Extra> AccountState<Extra> {
     /// Create a new account state with a specific start value
@@ -284,7 +190,7 @@ impl<Extra: Clone> AccountState<Extra> {
 /// needs to be used in the spending phase to make
 /// sure we have non-replayability of a transaction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SpendingCounter(u32);
+pub struct SpendingCounter(pub(crate) u32);
 
 impl SpendingCounter {
     pub fn zero() -> Self {
@@ -332,7 +238,6 @@ mod tests {
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::iter;
-    use std::path::Component::CurDir;
 
     #[quickcheck]
     pub fn account_sub_is_consistent(
@@ -607,28 +512,6 @@ mod tests {
         assert!(DelegationRatio::new(parts, pools).is_none());
     }
 
-    #[test]
-    pub fn delegation_ratio_serialize_deserialize() -> Result<(), std::io::Error> {
-        use super::*;
-        use std::io::Cursor;
-
-        let fake_pool_id = StakePoolBuilder::new().build().id();
-        let parts = 8u8;
-        let pools: Vec<(PoolId, u8)> = vec![
-            (fake_pool_id.clone(), 2u8),
-            (fake_pool_id.clone(), 3u8),
-            (fake_pool_id.clone(), 3u8),
-        ];
-
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        let delegation_ratio = DelegationRatio::new(parts, pools).unwrap();
-        delegation_ratio.serialize(&mut c)?;
-        c.set_position(0);
-        let deserialized_delegation_ratio = DelegationRatio::deserialize(&mut c)?;
-        assert_eq!(delegation_ratio, deserialized_delegation_ratio);
-        Ok(())
-    }
-
     #[quickcheck]
     pub fn add_rewards(account_state_no_reward: AccountState<()>, value: Value) -> TestResult {
         let initial_value = account_state_no_reward.value().clone();
@@ -674,47 +557,5 @@ mod tests {
             ));
         }
         TestResult::passed()
-    }
-
-    #[test]
-    pub fn delegation_type_serialize_deserialize() -> Result<(), std::io::Error> {
-        use super::*;
-        use std::io::Cursor;
-
-        let fake_pool_id = StakePoolBuilder::new().build().id();
-
-        let non_delegated = DelegationType::NonDelegated;
-        let full = DelegationType::Full(fake_pool_id.clone());
-
-        let parts = 8u8;
-        let pools: Vec<(PoolId, u8)> = vec![
-            (fake_pool_id.clone(), 2u8),
-            (fake_pool_id.clone(), 3u8),
-            (fake_pool_id.clone(), 3u8),
-        ];
-        let ratio = DelegationType::Ratio(DelegationRatio::new(parts, pools).unwrap());
-
-        for delegation_type in [non_delegated, full, ratio].iter() {
-            let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            delegation_type.serialize(&mut c)?;
-            c.set_position(0);
-            let deserialized_delegation_type = DelegationType::deserialize(&mut c)?;
-            assert_eq!(delegation_type, &deserialized_delegation_type);
-        }
-        Ok(())
-    }
-
-    #[test]
-    pub fn account_state_serialize_deserialize() -> Result<(), std::io::Error> {
-        use super::*;
-        use std::io::Cursor;
-
-        let account_state = AccountState::new(Value(256), ());
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        account_state.serialize(&mut c)?;
-        c.set_position(0);
-        let deserialized_account_state = AccountState::deserialize(&mut c)?;
-        assert_eq!(account_state, deserialized_account_state);
-        Ok(())
     }
 }

@@ -5,12 +5,9 @@ use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
     property,
 };
-use chain_crypto::{AsymmetricPublicKey, Ed25519, PublicKey, Signature};
+use chain_crypto::{Ed25519, PublicKey, Signature};
 
 pub use account::{DelegationRatio, DelegationType, LedgerError, SpendingCounter};
-use chain_ser::deser::Deserialize;
-use chain_ser::packer::Codec;
-use std::io::Error;
 
 pub type AccountAlg = Ed25519;
 
@@ -38,24 +35,12 @@ impl AsRef<PublicKey<AccountAlg>> for Identifier {
     }
 }
 
-
-fn pack_identifier<W: std::io::Write>(identifier: &Identifier, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    serialize_public_key(&identifier.0, codec)
-}
-
-fn unpack_identifier<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Identifier, std::io::Error> {
-    let bytes =
-        codec.get_bytes(<AccountAlg as AsymmetricPublicKey>::PUBLIC_KEY_SIZE as usize)?;
-    let mut bytes_buff = ReadBuf::from(&bytes);
-    match Identifier::read(&mut bytes_buff) {
-        Ok(identifier) => Ok(identifier),
-        Err(e) => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            format!("Error reading Identifier: {}", e),
-        )),
+impl property::Serialize for Identifier {
+    type Error = std::io::Error;
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        serialize_public_key(&self.0, writer)
     }
 }
-
 
 impl Readable for Identifier {
     fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
@@ -83,10 +68,5 @@ mod test {
             let kp: KeyPair<Ed25519> = Arbitrary::arbitrary(g);
             Identifier::from(kp.into_keys().1)
         }
-    }
-
-    #[quickcheck]
-    pub fn identifier_pack_unpack_bijection<G: Gen>(g: &mut G) {
-        let kp: KeyPair<Ed25519> = Arbitrary::arbitrary(g);
     }
 }

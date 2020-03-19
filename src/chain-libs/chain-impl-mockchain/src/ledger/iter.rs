@@ -80,20 +80,16 @@ pub enum EntryOwned {
 impl EntryOwned {
     pub fn to_entry(&self) -> Option<Entry> {
         match self {
-            EntryOwned::Globals(globals) => {
-                Some(Entry::Globals(globals.clone()))
-            },
-            EntryOwned::Pot(entry) => {
-                Some(Entry::Pot(entry.clone()))
-            },
+            EntryOwned::Globals(globals) => Some(Entry::Globals(globals.clone())),
+            EntryOwned::Pot(entry) => Some(Entry::Pot(entry.clone())),
             EntryOwned::Utxo(entry) => {
-                let utxo_entry = utxo::Entry{
+                let utxo_entry = utxo::Entry {
                     fragment_id: entry.fragment_id.clone(),
                     output_index: entry.output_index,
                     output: &entry.output,
                 };
                 Some(Entry::Utxo(utxo_entry))
-            },
+            }
             EntryOwned::OldUtxo(entry) => {
                 let old_utxo_entry = utxo::Entry {
                     fragment_id: entry.fragment_id.clone(),
@@ -101,31 +97,27 @@ impl EntryOwned {
                     output: &entry.output,
                 };
                 Some(Entry::OldUtxo(old_utxo_entry))
-            },
+            }
             EntryOwned::Account((identifier, account_state)) => {
                 Some(Entry::Account((identifier, account_state)))
-            },
-            EntryOwned::ConfigParam(config_param) => {
-                Some(Entry::ConfigParam(config_param.clone()))
-            },
+            }
+            EntryOwned::ConfigParam(config_param) => Some(Entry::ConfigParam(config_param.clone())),
             EntryOwned::UpdateProposal((proposal_id, proposal_state)) => {
                 Some(Entry::UpdateProposal((proposal_id, proposal_state)))
-            },
+            }
             EntryOwned::MultisigAccount((identifier, account_state)) => {
                 Some(Entry::MultisigAccount((identifier, account_state)))
-            },
+            }
             EntryOwned::MultisigDeclaration((identifier, account_state)) => {
                 Some(Entry::MultisigDeclaration((identifier, account_state)))
-            },
+            }
             EntryOwned::StakePool((pool_id, pool_state)) => {
                 Some(Entry::StakePool((pool_id, pool_state)))
-            },
+            }
             EntryOwned::LeaderParticipation((pool_id, participation)) => {
                 Some(Entry::LeaderParticipation((pool_id, participation)))
-            },
-            EntryOwned::StopEntry => {
-                None
-            },
+            }
+            EntryOwned::StopEntry => None,
         }
     }
 }
@@ -137,31 +129,6 @@ pub struct Globals {
     pub static_params: LedgerStaticParameters,
     pub era: TimeEra,
 }
-
-fn pack_globals<W: std::io::Write>(globals: &Globals, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    pack_date(&globals.date, codec)?;
-    codec.put_u32(globals.chain_length.0)?;
-    pack_ledger_static_parameters(&globals.static_params, codec)?;
-    pack_time_era(&globals.era, codec)?;
-    Ok(())
-}
-
-
-
-
-fn unpack_globals<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Globals, std::io::Error> {
-    let date = unpack_blockdate(codec)?;
-    let chain_length = ChainLength(codec.get_u32()?);
-    let static_params = unpack_ledger_static_parameters(codec)?;
-    let era = unpack_timer_era(codec)?;
-    Ok(Globals {
-        date,
-        chain_length,
-        static_params,
-        era,
-    })
-}
-
 
 enum IterState<'a> {
     Initial,
@@ -373,8 +340,6 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
     }
 }
 
-
-
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
@@ -395,12 +360,6 @@ mod tests {
                 static_params: Arbitrary::arbitrary(g),
                 era: Arbitrary::arbitrary(g),
             }
-        }
-    }
-
-    quickcheck! {
-        fn globals_serialize_deserialize_bijection(b: Globals) -> TestResult {
-            serialization_bijection(b)
         }
     }
 

@@ -1,8 +1,6 @@
 use crate::ledger::Error;
 use crate::treasury::Treasury;
 use crate::value::{Value, ValueError};
-use chain_ser::deser::{Deserialize, Serialize};
-use chain_ser::packer::Codec;
 use std::cmp;
 use std::fmt::Debug;
 
@@ -27,40 +25,6 @@ pub enum EntryType {
     Treasury,
     Rewards,
 }
-
-
-
-fn pack_pot_entry<W: std::io::Write>(entry: &Entry, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    match entry {
-        Entry::Fees(value) => {
-            codec.put_u8(0)?;
-            codec.put_u64(value.0)?;
-        }
-        Entry::Treasury(value) => {
-            codec.put_u8(1)?;
-            codec.put_u64(value.0)?;
-        }
-        Entry::Rewards(value) => {
-            codec.put_u8(2)?;
-            codec.put_u64(value.0)?;
-        }
-    }
-    Ok(())
-}
-
-
-fn unpack_pot_entry<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Entry, std::io::Error> {
-    match codec.get_u8()? {
-        0 => Ok(Entry::Fees(Value(codec.get_u64()?))),
-        1 => Ok(Entry::Treasury(Value(codec.get_u64()?))),
-        2 => Ok(Entry::Rewards(Value(codec.get_u64()?))),
-        code => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            format!("Invalid Entry type code {}", code),
-        )),
-    }
-}
-
 
 impl Entry {
     pub fn value(&self) -> Value {
@@ -203,10 +167,8 @@ impl Pots {
 mod tests {
     use super::*;
     use crate::value::Value;
-    use chain_core::property::testing::serialization_bijection;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
-    use std::path::Component::CurDir;
 
     impl Arbitrary for Pots {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -290,27 +252,5 @@ mod tests {
         let before_add = pots.treasury.value();
         pots.treasury_add(value).unwrap();
         TestResult::from_bool(pots.treasury.value() == (before_add + value).unwrap())
-    }
-
-    #[test]
-    fn entry_pack_unpack_bijection() -> Result<(), std::io::Error> {
-        use std::io::Cursor;
-        for entry_value in [
-            Entry::Fees(Value(10)),
-            Entry::Rewards(Value(10)),
-            Entry::Treasury(Value(10)),
-        ]
-        .iter()
-        {
-            let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            let mut codec = Codec::new(c);
-            pack_pot_entry(entry_value, &codec)?;
-            c= codec.into_inner();
-            c.set_position(0);
-            codec = Codec::new(c);
-            let other_value = unpack_pot_entry(&mut c)?;
-            assert_eq!(entry_value, &other_value);
-        }
-        Ok(())
     }
 }

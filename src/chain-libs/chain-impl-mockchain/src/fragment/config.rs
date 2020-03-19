@@ -28,6 +28,7 @@ impl ConfigParams {
 
 impl property::Serialize for ConfigParams {
     type Error = std::io::Error;
+
     fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
         // FIXME: put params in canonical order (e.g. sorted by tag)?
         use chain_core::packer::*;

@@ -25,10 +25,6 @@ quickcheck! {
     fn block_serialization_bijection(b: Block) -> TestResult {
         property::testing::serialization_bijection(b)
     }
-
-    fn consensus_version_serialization_bijection(v: ConsensusVersion) -> TestResult {
-        property::testing::serialization_bijection(v)
-    }
 }
 
 impl Arbitrary for HeaderRaw {

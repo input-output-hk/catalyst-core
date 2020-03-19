@@ -11,10 +11,7 @@ use chain_core::{
     property,
 };
 use chain_crypto::{digest::DigestOf, Blake2b256, Ed25519, PublicKey, Verification};
-use chain_ser::deser::{Deserialize, Serialize};
-use chain_ser::packer::Codec;
 use chain_time::{DurationSeconds, TimeOffsetSeconds};
-use std::io::{Error, Read};
 use std::marker::PhantomData;
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -258,31 +255,13 @@ impl Payload for PoolRetirement {
     }
 }
 
-
-
-fn pack_pool_registration<W: std::io::Write>(pool_registration: &PoolRegistration, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    let byte_array = pool_registration.serialize();
-    let bytes = byte_array.as_slice();
-    let size = bytes.len() as u64;
-    codec.put_u64(size)?;
-    codec.put_bytes(bytes)?;
-    Ok(())
-}
-
-
-fn unpack_pool_registrarion<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PoolRegistration, std::io::Error> {
-    let size = codec.get_u64()? as usize;
-    let bytes_buff = codec.get_bytes(size)?;
-    let mut read_buff = ReadBuf::from(&bytes_buff);
-    match PoolRegistration::read(&mut read_buff) {
-        Ok(res) => Ok(res),
-        Err(err) => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            format!("Error reading Poolregistration data: {}", err),
-        )),
+impl property::Serialize for PoolRegistration {
+    type Error = std::io::Error;
+    fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
+        writer.write_all(self.serialize().as_slice())?;
+        Ok(())
     }
 }
-
 
 impl Readable for PoolRegistration {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
@@ -473,7 +452,7 @@ impl Readable for PoolSignature {
 #[cfg(test)]
 mod tests {
 
-    use super::{PoolOwnersSigned, PoolPermissions, PoolRegistration};
+    use super::{PoolOwnersSigned, PoolPermissions};
     use crate::{
         header::HeaderId,
         key::EitherEd25519SecretKey,
@@ -491,15 +470,6 @@ mod tests {
     use chain_addr::Discrimination;
     use chain_crypto::{Ed25519, PublicKey, Verification};
     use std::iter;
-
-    use chain_core::property::testing::serialization_bijection;
-    use quickcheck::{quickcheck, TestResult};
-
-    quickcheck! {
-        fn pool_registration_serialize_deserialize_biyection(p: PoolRegistration) -> TestResult {
-            serialization_bijection(p)
-        }
-    }
 
     #[derive(Clone, Debug)]
     pub struct PoolOwnersWithSignatures {

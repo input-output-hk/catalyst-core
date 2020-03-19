@@ -13,21 +13,6 @@ pub struct LastRewards {
     pub reward: Value,
 }
 
-
-fn pack_last_rewards<W: std::io::Write>(last_rewards: &LastRewards, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u32(last_rewards.epoch)?;
-    codec.put_u64(last_rewards.reward.0)?;
-    Ok(())
-}
-
-fn unpack_last_rewards<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LastRewards, std::io::Error> {
-    Ok(LastRewards {
-        epoch: codec.get_u32()?,
-        reward: Value(codec.get_u64()?),
-    })
-}
-
-
 impl LastRewards {
     /// Create an initial value of epoch=0 reward=0
     ///
@@ -118,25 +103,5 @@ mod tests {
             reward: Value(std::u64::MAX),
         };
         last_rewards.add_for(epoch, value_to_add);
-    }
-
-    #[test]
-    pub fn last_rewards_pack_unpack_bijection() -> Result<(), std::io::Error> {
-        use std::io::Cursor;
-
-        let last_rewards = LastRewards {
-            epoch: 0,
-            reward: Value(1),
-        };
-
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        let mut codec = Codec::new(c);
-        pack_last_rewards(&last_rewards,&mut codec)?;
-        c = codec.into_inner();
-        c.set_position(0);
-        codec = Codec::new(c);
-        let deserialize_last_rewards = unpack_last_rewards(&mut codec)?;
-        assert_eq!(last_rewards, deserialize_last_rewards);
-        Ok(())
     }
 }

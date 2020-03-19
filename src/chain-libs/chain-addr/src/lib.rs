@@ -41,10 +41,7 @@ use std::string::ToString;
 use chain_crypto::{Ed25519, PublicKey, PublicKeyError};
 
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::packer::Codec;
-use chain_core::property::{
-    self, Deserialize as PropertyDeserialize, Deserialize, Serialize as PropertySerialize,
-};
+use chain_core::property::{self, Serialize as PropertySerialize};
 
 cfg_if! {
    if #[cfg(test)] {
@@ -62,32 +59,6 @@ pub enum Discrimination {
     Production,
     Test,
 }
-
-
-fn pack_discrimination<W: std::io::Write>(discrimination: &Discrimination, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    match discrimination {
-        Discrimination::Production => {
-            codec.put_u8(0)?;
-        }
-        Discrimination::Test => {
-            codec.put_u8(1)?;
-        }
-    };
-    Ok(())
-}
-
-
-fn unpack_discrimination<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Discrimination, std::io::Error> {
-    match codec.get_u8()? {
-        0 => Ok(Discrimination::Production),
-        1 => Ok(Discrimination::Test),
-        code => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            format!("Not recognize code {}", code),
-        )),
-    }
-}
-
 
 /// Kind of an address, which include the possible variation of scheme
 ///
@@ -676,23 +647,5 @@ mod test {
                 "ca1s55j52ev95hz7vp3xgengdfkxuurjw3m8s7nu06qg9pyx3z9ger5samu4rv",
             );
         }
-    }
-
-    #[test]
-    fn test_discrimination_pack_unpack_bijection() -> Result<(), std::io::Error> {
-        use std::io::Cursor;
-        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        let mut codec = Codec::new(c);
-        pack_discrimination(&Discrimination::Test, &mut codec);
-        pack_discrimination(&Discrimination::Production, &mut codec);
-
-        c = codec.into_inner();
-        c.set_position(0);
-        codec = Codec::new(c);
-        let test = unpack_discrimination(&mut codec)?;
-        let production  = unpack_discrimination(&mut codec)?;
-        assert_eq!(Discrimination::Test, test);
-        assert_eq!(Discrimination::Production, production);
-        Ok(())
     }
 }

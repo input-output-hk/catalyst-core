@@ -1,12 +1,9 @@
 use crate::certificate::{PoolId, PoolRegistration, PoolRegistrationHash};
 use crate::header::Epoch;
 use crate::value::Value;
-use chain_core::property;
-use chain_ser::packer::Codec;
 use imhamt::Hamt;
 use std::collections::hash_map::DefaultHasher;
 use std::fmt::{self, Debug};
-use std::io::Error;
 use std::sync::Arc;
 
 /// A structure that keeps track of stake keys and stake pools.
@@ -38,27 +35,6 @@ impl PoolLastRewards {
     }
 }
 
-
-fn pack_pool_last_rewards<W: std::io::Write>(pool_last_rewards: &PoolLastRewards, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    codec.put_u32(pool_last_rewards.epoch)?;
-    codec.put_u64(pool_last_rewards.value_taxed.0)?;
-    codec.put_u64(pool_last_rewards.value_for_stakers.0)?;
-    Ok(())
-}
-
-fn unpack_pool_last_rewards<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PoolLastRewards, std::io::Error> {
-    let epoch = codec.get_u32()?;
-    let value_taxed = Value(codec.get_u64()?);
-    let value_for_stakers = Value(codec.get_u64()?);
-
-    Ok(PoolLastRewards {
-        epoch,
-        value_taxed,
-        value_for_stakers,
-    })
-}
-
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PoolState {
     pub last_rewards: PoolLastRewards,
@@ -89,22 +65,6 @@ impl Debug for PoolsState {
                 .collect::<Vec<(PoolId, PoolState)>>()
         )
     }
-}
-
-fn pack_pool_state<W: std::io::Write>(pool_state: &PoolState, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    pack_pool_last_rewards(&pool_state.last_rewards, codec)?;
-    pack_registration(&pool_state.registration, codec)?;
-    Ok(())
-}
-
-fn unpack_pool_state<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PoolState, std::io::Error> {
-    let last_rewards = unpack_pool_last_rewards(codec)?;
-    let registration = Arc::new(unpack_pool_registration(codec)?);
-
-    Ok(PoolState {
-        last_rewards,
-        registration,
-    })
 }
 
 impl std::fmt::Display for PoolError {
@@ -226,12 +186,7 @@ mod tests {
 
     use super::*;
     use crate::certificate::PoolRegistration;
-    use crate::stake::PoolLastRewards;
-    use crate::value::Value;
-    use chain_core::property::testing::serialization_bijection;
-    use chain_core::property::{Deserialize, Serialize};
-    use chain_time::Epoch;
-    use quickcheck::{quickcheck as quick_check, Arbitrary, Gen, TestResult};
+    use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::iter;
 
@@ -267,15 +222,6 @@ mod tests {
                 value_taxed: Value(u64::arbitrary(gen)),
                 epoch: u32::arbitrary(gen),
             }
-        }
-    }
-
-    quick_check! {
-        fn pool_state_serialize_deserialize_bijection(b: PoolState) -> TestResult {
-            serialization_bijection(b)
-        }
-        fn pool_last_rewards_serialize_deserialize_bijection(b: PoolLastRewards) -> TestResult {
-            serialization_bijection(b)
         }
     }
 

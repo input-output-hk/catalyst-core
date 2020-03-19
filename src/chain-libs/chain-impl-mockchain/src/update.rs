@@ -142,35 +142,6 @@ pub struct UpdateProposalState {
     pub votes: HashSet<UpdateVoterId>,
 }
 
-
-
-fn pack_update_proposal_state<W: std::io::Write>(update_proposal_state: &UpdateProposalState, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    pack_update_proposal(&update_proposal_state.proposal, codec)?;
-    pack_block_date(&update_proposal_state.proposal_date, codec)?;
-    codec.put_u64(update_proposal_state.votes.len() as u64)?;
-    for e in &update_proposal_state.votes {
-        e.serialize(codec)?;
-    }
-    Ok(())
-}
-
-fn unpack_update_proposal_state<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<UpdateProposalState, std::io::Error> {
-    let proposal = unpack_update_proposal(codec)?;
-    let proposal_date = unpack_block_date(codec)?;
-    let total_votes = codec.get_u64()?;
-    let mut votes: HashSet<UpdateVoterId> = HashSet::new();
-    for _ in 0..total_votes {
-        let id = UpdateVoterId::deserialize(codec)?;
-        votes.insert(id);
-    }
-    Ok(UpdateProposalState {
-        proposal,
-        proposal_date,
-        votes,
-    })
-}
-
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Error {
     /*
@@ -288,14 +259,6 @@ impl property::Deserialize for UpdateProposal {
         let changes = ConfigParams::deserialize(reader)?;
         Ok(UpdateProposal { changes })
     }
-}
-
-fn pack_update_proposal<W: std::io::Write>(update_proposal: &UpdateProposal, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
-    update_proposal.serialize(codec)
-}
-
-fn unpack_update_proposal<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<UpdateProposal, std::io::Error> {
-    UpdateProposal::deserialize(codec)
 }
 
 impl Readable for UpdateProposal {
@@ -535,10 +498,6 @@ mod tests {
     quickcheck! {
         fn update_proposal_serialize_deserialize_bijection(update_proposal: UpdateProposal) -> TestResult {
             serialization_bijection(update_proposal)
-        }
-
-        fn update_proposal_state_serialize_deserialize_bijection(update_proposal_state: UpdateProposalState) -> TestResult {
-            serialization_bijection(update_proposal_state)
         }
     }
 

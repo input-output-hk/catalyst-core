@@ -2,7 +2,6 @@ mod builder;
 mod components;
 mod cstruct;
 mod deconstruct;
-mod eval;
 mod header;
 mod version;
 
@@ -20,5 +19,3 @@ pub use components::{BftSignature, KESSignature, VrfProof};
 pub use deconstruct::{BftProof, Common, GenesisPraosProof, Proof};
 pub use header::{Header, HeaderBft, HeaderDesc, HeaderGenesisPraos, HeaderUnsigned};
 pub use version::{AnyBlockVersion, BlockVersion};
-
-pub use eval::HeaderContentEvalContext;

@@ -6,6 +6,7 @@ pub mod account;
 pub mod accounting;
 pub mod block;
 pub mod certificate;
+pub mod chaineval;
 pub mod chaintypes;
 pub mod config;
 mod date;

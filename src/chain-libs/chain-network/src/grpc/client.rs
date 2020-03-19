@@ -18,6 +18,15 @@ pub struct Client<T> {
     inner: proto::node_client::NodeClient<T>,
 }
 
+/// The inbound subscription stream of block events.
+pub type BlockSubscription = InboundStream<proto::BlockEvent, BlockEvent>;
+
+/// The inbound subscription stream of fragments.
+pub type FragmentSubscription = InboundStream<proto::Fragment, Fragment>;
+
+/// The inbound subscription stream of P2P gossip.
+pub type GossipSubscription = InboundStream<proto::Gossip, Gossip>;
+
 #[cfg(feature = "transport")]
 impl Client<tonic::transport::Channel> {
     pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
@@ -192,10 +201,7 @@ where
     ///
     /// The client can use the stream that the returned future resolves to
     /// as a long-lived subscription handle.
-    pub async fn block_subscription<S>(
-        &mut self,
-        outbound: S,
-    ) -> Result<InboundStream<proto::BlockEvent, BlockEvent>, Error>
+    pub async fn block_subscription<S>(&mut self, outbound: S) -> Result<BlockSubscription, Error>
     where
         S: Stream<Item = Header> + Send + Sync + 'static,
     {
@@ -212,7 +218,7 @@ where
     pub async fn fragment_subscription<S>(
         &mut self,
         outbound: S,
-    ) -> Result<InboundStream<proto::Fragment, Fragment>, Error>
+    ) -> Result<FragmentSubscription, Error>
     where
         S: Stream<Item = Fragment> + Send + Sync + 'static,
     {
@@ -229,10 +235,7 @@ where
     ///
     /// The client can use the stream that the returned future resolves to
     /// as a long-lived subscription handle.
-    pub async fn gossip_subscription<S>(
-        &mut self,
-        outbound: S,
-    ) -> Result<InboundStream<proto::Gossip, Gossip>, Error>
+    pub async fn gossip_subscription<S>(&mut self, outbound: S) -> Result<GossipSubscription, Error>
     where
         S: Stream<Item = Gossip> + Send + Sync + 'static,
     {

@@ -16,13 +16,14 @@ use crate::leadership::bft::LeaderId;
 use crate::ledger::iter;
 use crate::ledger::pots::EntryType;
 use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
+use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
 use crate::stake::{PoolLastRewards, PoolState};
 use crate::transaction::Output;
 use crate::update::{UpdateProposal, UpdateProposalId, UpdateProposalState, UpdateVoterId};
 use crate::value::Value;
 use crate::{config, key, multisig, utxo};
-use crate::legacy;
+use cardano_legacy_address::Addr;
 use chain_addr::{Address, Discrimination};
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::digest::{DigestAlg, DigestOf};
@@ -36,7 +37,6 @@ use std::convert::TryFrom;
 use std::io::{Cursor, Error, Read, Write};
 use std::iter::FromIterator;
 use std::sync::Arc;
-use cardano_legacy_address::Addr;
 
 fn pack_pool_id<W: std::io::Write>(
     pool_id: &PoolId,
@@ -510,14 +510,14 @@ fn unpack_pot_entry<R: std::io::BufRead>(
     }
 }
 
-fn pack_declaration_identifier<W: std::io::Write>(
+fn pack_multisig_identifier<W: std::io::Write>(
     identifier: &multisig::Identifier,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     identifier.0.serialize(codec)
 }
 
-fn unpack_declaration_identifier<R: std::io::BufRead>(
+fn unpack_multisig_identifier<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<multisig::Identifier, std::io::Error> {
     Ok(multisig::Identifier(key::Hash::deserialize(codec)?))
@@ -745,14 +745,19 @@ where
     Ok(Output { address, value })
 }
 
-fn pack_old_addr<W: std::io::Write>(addr: &legacy::OldAddress, codec: &mut Codec<W>) -> Result<(), std::io::Error> {
+fn pack_old_addr<W: std::io::Write>(
+    addr: &legacy::OldAddress,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
     let bytes = addr.as_ref();
     codec.put_u64(bytes.len() as u64)?;
     codec.put_bytes(bytes)?;
     Ok(())
 }
 
-fn unpack_old_addr<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<legacy::OldAddress, std::io::Error> {
+fn unpack_old_addr<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<legacy::OldAddress, std::io::Error> {
     let size = codec.get_u64()?;
     let v = codec.get_bytes(size as usize)?;
     Ok(legacy::OldAddress::new(v))
@@ -853,12 +858,12 @@ fn pack_entry<W: std::io::Write>(
         }
         Entry::MultisigAccount((identifier, account_state)) => {
             codec.put_u8(EntrySerializeCode::MultisigAccount as u8)?;
-            pack_declaration_identifier(identifier, codec)?;
+            pack_multisig_identifier(identifier, codec)?;
             pack_account_state(account_state, codec)?;
         }
         Entry::MultisigDeclaration((identifier, declaration)) => {
             codec.put_u8(EntrySerializeCode::MultisigDeclaration as u8)?;
-            pack_declaration_identifier(identifier, codec)?;
+            pack_multisig_identifier(identifier, codec)?;
             pack_declaration(declaration, codec)?;
         }
         Entry::StakePool((pool_id, pool_state)) => {
@@ -906,12 +911,12 @@ fn unpack_entry_owned<R: std::io::BufRead>(
             Ok(EntryOwned::UpdateProposal((proposal_id, proposal_state)))
         }
         EntrySerializeCode::MultisigAccount => {
-            let identifier = unpack_declaration_identifier(codec)?;
+            let identifier = unpack_multisig_identifier(codec)?;
             let account_state = unpack_account_state(codec)?;
             Ok(EntryOwned::MultisigAccount((identifier, account_state)))
         }
         EntrySerializeCode::MultisigDeclaration => {
-            let identifier = unpack_declaration_identifier(codec)?;
+            let identifier = unpack_multisig_identifier(codec)?;
             let declaration = unpack_declaration(codec)?;
             Ok(EntryOwned::MultisigDeclaration((identifier, declaration)))
         }
@@ -1001,9 +1006,10 @@ impl Serialize for Ledger {
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod test {
     use super::*;
+    use crate::testing::StakePoolBuilder;
     use chain_crypto::{Blake2b256, Ed25519, KeyPair};
     use quickcheck::{quickcheck, Arbitrary, TestResult};
-    use std::io::Cursor;
+    use std::io::{Cursor, Write, BufRead};
     use typed_bytes::{ByteArray, ByteSlice};
 
     #[test]
@@ -1071,10 +1077,13 @@ pub mod test {
         ];
 
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        let mut codec = Codec::new(c);
         let delegation_ratio = DelegationRatio::new(parts, pools).unwrap();
-        delegation_ratio.serialize(&mut c)?;
+        pack_delegation_ratio(&delegation_ratio, &mut codec)?;
+        c = codec.into_inner();
         c.set_position(0);
-        let deserialized_delegation_ratio = DelegationRatio::deserialize(&mut c)?;
+        codec = Codec::new(c);
+        let deserialized_delegation_ratio = unpack_delegation_ratio(&mut codec)?;
         assert_eq!(delegation_ratio, deserialized_delegation_ratio);
         Ok(())
     }
@@ -1096,9 +1105,12 @@ pub mod test {
 
         for delegation_type in [non_delegated, full, ratio].iter() {
             let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            delegation_type.serialize(&mut c)?;
+            let mut codec = Codec::new(c);
+            pack_delegation_type(delegation_type, &mut codec)?;
+            c = codec.into_inner();
             c.set_position(0);
-            let deserialized_delegation_type = DelegationType::deserialize(&mut c)?;
+            codec = Codec::new(c);
+            let deserialized_delegation_type = unpack_delegation_type(&mut codec)?;
             assert_eq!(delegation_type, &deserialized_delegation_type);
         }
         Ok(())
@@ -1108,9 +1120,12 @@ pub mod test {
     pub fn account_state_pack_unpack_bijection() -> Result<(), std::io::Error> {
         let account_state = AccountState::new(Value(256), ());
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        account_state.serialize(&mut c)?;
+        let mut codec = Codec::new(c);
+        pack_account_state(&account_state, &mut codec)?;
+        c = codec.into_inner();
         c.set_position(0);
-        let deserialized_account_state = AccountState::deserialize(&mut c)?;
+        codec = Codec::new(c);
+        let deserialized_account_state = unpack_account_state(&mut codec)?;
         assert_eq!(account_state, deserialized_account_state);
         Ok(())
     }
@@ -1136,44 +1151,46 @@ pub mod test {
     }
 
     #[test]
-    fn pots_entry_pack_unpack_bijection() -> Result<(), std::io::Error> {
+    pub fn pots_entry_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use std::io::Cursor;
         for entry_value in [
-            Entry::Fees(Value(10)),
-            Entry::Rewards(Value(10)),
-            Entry::Treasury(Value(10)),
+            pots::Entry::Fees(Value(10)),
+            pots::Entry::Rewards(Value(10)),
+            pots::Entry::Treasury(Value(10)),
         ]
         .iter()
         {
             let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
             let mut codec = Codec::new(c);
-            pack_pot_entry(entry_value, &codec)?;
+            pack_pot_entry(entry_value, &mut codec)?;
             c = codec.into_inner();
             c.set_position(0);
             codec = Codec::new(c);
-            let other_value = unpack_pot_entry(&mut c)?;
+            let other_value = unpack_pot_entry(&mut codec)?;
             assert_eq!(entry_value, &other_value);
         }
         Ok(())
     }
 
     #[test]
-    fn identifier_pack_unpack_bijection() -> Result<(), std::io::Error> {
+    pub fn multisig_identifier_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use std::io::Cursor;
 
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        let mut codec = Codec::new(c);
         let id_bytes: [u8; 32] = [0x1; 32];
-        let identifier = Identifier::from(id_bytes);
-        identifier.serialize(&mut c)?;
+        let identifier = crate::multisig::Identifier::from(id_bytes);
+        pack_multisig_identifier(&identifier, &mut codec)?;
+        c = codec.into_inner();
         c.set_position(0);
-        let other_identifier = Identifier::deserialize(&mut c)?;
+        codec = Codec::new(c);
+        let other_identifier = unpack_multisig_identifier(&mut codec)?;
         assert_eq!(identifier, other_identifier);
-
         Ok(())
     }
 
     #[test]
-    fn decl_element_pack_unpack_bijection() -> Result<(), std::io::Error> {
+    pub fn decl_element_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use std::io::Cursor;
 
         let id_bytes: [u8; 32] = [0x1; 32];
@@ -1188,84 +1205,183 @@ pub mod test {
         .iter()
         {
             let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            decl_element.serialize(&mut c)?;
+            let mut codec = Codec::new(c);
+            pack_decl_element(&decl_element, &mut codec)?;
+            c = codec.into_inner();
             c.set_position(0);
-            let other_value = DeclElement::deserialize(&mut c)?;
+            codec = Codec::new(c);
+            let other_value = unpack_decl_element(&mut codec)?;
             assert_eq!(decl_element, &other_value);
         }
         Ok(())
     }
 
     #[test]
-    fn declaration_pack_unpack_bijection() -> Result<(), std::io::Error> {
+    pub fn declaration_pack_unpack_bijection() -> Result<(), std::io::Error> {
         use std::io::Cursor;
 
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-
+        let mut codec = Codec::new(c);
         let declaration = Declaration {
             owners: Vec::new(),
             threshold: 0,
         };
-
-        declaration.serialize(&mut c)?;
+        pack_declaration(&declaration, &mut codec)?;
+        c = codec.into_inner();
         c.set_position(0);
-        let other_value = Declaration::deserialize(&mut c)?;
+        codec = Codec::new(c);
+        let other_value = unpack_declaration(&mut codec)?;
         assert_eq!(declaration, other_value);
-
         Ok(())
     }
 
+    #[test]
+    pub fn output_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
+        let output: Output<()> = Output {
+            address: (),
+            value: Value(1000),
+        };
+
+        let mut c = std::io::Cursor::new(Vec::new());
+        let mut codec = Codec::new(c);
+        pack_output(&output, &mut |_, _| Ok(()), &mut codec)?;
+        c = codec.into_inner();
+        c.set_position(0);
+        codec = Codec::new(c);
+        let other_output = unpack_output(&mut |_| Ok(()), &mut codec)?;
+        assert_eq!(output, other_output);
+        Ok(())
+    }
+
+    fn pack_unpack_bijection<T, Pack, Unpack>(
+        pack_method: &mut Pack,
+        unpack_method: &mut Unpack,
+        value: &T,
+    ) -> TestResult
+    where
+        Pack: FnMut(&T, &mut Codec<Cursor<Vec<u8>>>) -> Result<(), std::io::Error>,
+        Unpack: FnMut(&mut Codec<Cursor<Vec<u8>>>) -> Result<T, std::io::Error>,
+        T: Eq,
+    {
+        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        let mut codec= Codec::new(c);
+        match pack_method(value, &mut codec) {
+            Ok(_) => (),
+            Err(e) => return TestResult::error(format!("{}", e)),
+        };
+        c = codec.into_inner();
+        c.set_position(0);
+        let mut codec = Codec::new(c);
+        return match unpack_method(&mut codec) {
+            Ok(other_value) => TestResult::from_bool(value == &other_value),
+            Err(e) => TestResult::error(format!("{}", e)),
+        }
+    }
+
     quickcheck! {
-        fn identifier_pack_unpack_bijection<i: Identifier>(id: Identifier) -> TestResult {
-            unimplemented!()
+        fn account_identifier_pack_unpack_bijection(id: crate::account::Identifier) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_account_identifier,
+                &mut unpack_account_identifier,
+                &id
+            )
         }
 
-        fn consensus_version_serialization_bijection(v: ConsensusVersion) -> TestResult {
-            unimplemented!()
+
+        fn consensus_version_serialization_bijection(consensus_version: ConsensusVersion) -> TestResult {
+           pack_unpack_bijection(
+                &mut pack_consensus_version,
+                &mut unpack_consensus_version,
+                &consensus_version
+            )
         }
 
-        fn pool_registration_serialize_deserialize_biyection(p: PoolRegistration) -> TestResult {
-            unimplemented!()
+        fn pool_registration_serialize_deserialize_biyection(pool_registration: PoolRegistration) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_pool_registration,
+                &mut unpack_pool_registration,
+                &pool_registration
+            )
         }
 
         fn config_param_pack_unpack_bijection(config_param: ConfigParam) -> TestResult {
-            unimplemented!()
+            pack_unpack_bijection(
+                &mut pack_config_param,
+                &mut unpack_config_param,
+                &config_param
+            )
         }
 
-        fn blockdate_pack_unpack_bijection(b: BlockDate) -> TestResult {
-            unimplemented!()
+        fn blockdate_pack_unpack_bijection(block_date: BlockDate) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_block_date,
+                &mut unpack_block_date,
+                &block_date
+            )
         }
 
-        fn per_certificate_fee_pack_unpack_bijection(b: PerCertificateFee) -> TestResult {
-            unimplemented!()
+        fn per_certificate_fee_pack_unpack_bijection(per_certificate_fee: PerCertificateFee) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_per_certificate_fee,
+                &mut unpack_per_certificate_fee,
+                &per_certificate_fee
+            )
         }
 
-        fn linear_fee_pack_unpack_bijection(b: LinearFee) -> TestResult {
-            unimplemented!()
+        fn linear_fee_pack_unpack_bijection(linear_fee: LinearFee) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_linear_fee,
+                &mut unpack_linear_fee,
+                &linear_fee
+            )
         }
 
         fn leader_id_pack_unpack_biyection(leader_id: LeaderId) -> TestResult {
-            unimplemented!()
+            pack_unpack_bijection(
+                &mut pack_leader_id,
+                &mut unpack_leader_id,
+                &leader_id
+            )
         }
 
-        fn globals_pack_unpack_bijection(b: Globals) -> TestResult {
-            unimplemented!()
+        fn globals_pack_unpack_bijection(globals: Globals) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_globals,
+                &mut unpack_globals,
+                &globals
+            )
         }
 
-        fn ledger_static_parameters_pack_unpack_bijection(b: LedgerStaticParameters) -> TestResult {
-            unimplemented!()
+        fn ledger_static_parameters_pack_unpack_bijection(ledger_static_parameters: LedgerStaticParameters) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_ledger_static_parameters,
+                &mut unpack_ledger_static_parameters,
+                &ledger_static_parameters
+            )
         }
 
-        fn pool_state_pack_unpack_bijection(b: PoolState) -> TestResult {
-            unimplemented!()
+        fn pool_state_pack_unpack_bijection(pool_state: PoolState) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_pool_state,
+                &mut unpack_pool_state,
+                &pool_state
+            )
         }
 
-        fn pool_last_rewards_pack_unpack_bijection(b: PoolLastRewards) -> TestResult {
-            unimplemented!()
+        fn pool_last_rewards_pack_unpack_bijection(pool_last_rewards: PoolLastRewards) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_pool_last_rewards,
+                &mut unpack_pool_last_rewards,
+                &pool_last_rewards
+            )
         }
 
         fn update_proposal_state_pack_unpack_bijection(update_proposal_state: UpdateProposalState) -> TestResult {
-            unimplemented!()
+            pack_unpack_bijection(
+                &mut pack_update_proposal_state,
+                &mut unpack_update_proposal_state,
+                &update_proposal_state
+            )
         }
     }
 

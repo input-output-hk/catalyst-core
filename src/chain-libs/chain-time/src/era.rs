@@ -109,14 +109,29 @@ mod test {
     use crate::timeframe::*;
     use crate::timeline::Timeline;
 
+    use chain_ser::packer::Codec;
+    use quickcheck::{quickcheck, TestResult};
+    use std::io::Cursor;
     use std::time::{Duration, SystemTime};
 
-    use chain_core::property::testing::serialization_bijection;
-    use quickcheck::{quickcheck, TestResult};
 
     quickcheck! {
-        fn time_era_pack_unpack_bijection(b: TimeEra) -> TestResult {
-            unimplemented!()
+        fn time_era_pack_unpack_bijection(time_era: TimeEra) -> TestResult {
+            let mut c : Cursor<Vec<u8>> = Cursor::new(Vec::new());
+            let mut codec = Codec::new(c);
+            match pack_time_era(&time_era, &mut codec) {
+                Ok(_) => (),
+                Err(e) => return TestResult::error(format!("{}", e)),
+            }
+            c = codec.into_inner();
+            c.set_position(0);
+            codec = Codec::new(c);
+            return match unpack_time_era(&mut codec) {
+                Ok(other_time_era) => {
+                    TestResult::from_bool(time_era == other_time_era)
+                },
+                Err(e) => TestResult::error(format!("{}", e)),
+            }
         }
     }
 

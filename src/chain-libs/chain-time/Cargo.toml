@@ -19,4 +19,3 @@ property-test-api = ["quickcheck", "quickcheck_macros"]
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-chain-core = { path = "../chain-core", features=["property-test-api"]}

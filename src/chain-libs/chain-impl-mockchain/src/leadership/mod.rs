@@ -1,7 +1,7 @@
 use crate::{
     block::{BlockDate, BlockVersion, Header},
     certificate::PoolId,
-    chaintypes::ConsensusVersion,
+    chaintypes::ConsensusType,
     date::Epoch,
     key::BftLeaderId,
     ledger::{Ledger, LedgerParameters},
@@ -141,10 +141,10 @@ impl LeadershipConsensus {
 impl Leadership {
     pub fn new(epoch: Epoch, ledger: &Ledger) -> Self {
         let inner = match ledger.settings.consensus_version {
-            ConsensusVersion::Bft => {
+            ConsensusType::Bft => {
                 LeadershipConsensus::Bft(bft::LeadershipData::new(ledger).unwrap())
             }
-            ConsensusVersion::GenesisPraos => {
+            ConsensusType::GenesisPraos => {
                 LeadershipConsensus::GenesisPraos(genesis::LeadershipData::new(epoch, ledger))
             }
         };

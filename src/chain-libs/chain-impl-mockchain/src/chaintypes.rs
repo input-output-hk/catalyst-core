@@ -72,9 +72,9 @@ mod tests {
     use super::*;
     use quickcheck::{Arbitrary, Gen};
 
-    impl Arbitrary for ConsensusVersion {
+    impl Arbitrary for ConsensusType {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            ConsensusVersion::from_u16(u16::arbitrary(g) % 2 + 1).unwrap()
+            ConsensusType::from_u16(u16::arbitrary(g) % 2 + 1).unwrap()
         }
     }
 

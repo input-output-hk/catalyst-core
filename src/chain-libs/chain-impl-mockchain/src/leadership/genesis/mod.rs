@@ -2,49 +2,24 @@ mod vrfeval;
 
 use crate::{
     certificate::PoolId,
-    date::Epoch,
-    header::{BlockDate, Header, HeaderDesc, Proof},
-    key::deserialize_public_key,
+    chaineval::PraosNonce,
+    date::{BlockDate, Epoch},
+    header::{Header, HeaderDesc, Proof},
     leadership::{Error, ErrorKind, Verification},
     ledger::Ledger,
+    setting::ActiveSlotsCoeff,
     stake::{PercentStake, PoolsState, Stake, StakeDistribution},
 };
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_crypto::Verification as SigningVerification;
-use chain_crypto::{
-    digest::DigestOf, Blake2b256, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12,
-};
+use chain_crypto::{Curve25519_2HashDH, SecretKey};
 use thiserror::Error;
-use typed_bytes::ByteBuilder;
 pub(crate) use vrfeval::witness_to_nonce;
 use vrfeval::VrfEvaluator;
-pub use vrfeval::{
-    ActiveSlotsCoeff, ActiveSlotsCoeffError, Nonce, Threshold, VrfEvalFailure, Witness,
-    WitnessOutput,
-};
-
-/// Praos Leader consisting of the KES public key and VRF public key
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct GenesisPraosLeader {
-    pub kes_public_key: PublicKey<SumEd25519_12>,
-    pub vrf_public_key: PublicKey<Curve25519_2HashDH>,
-}
-
-impl GenesisPraosLeader {
-    pub fn digest(&self) -> DigestOf<Blake2b256, Self> {
-        DigestOf::digest_byteslice(
-            &ByteBuilder::new()
-                .bytes(self.vrf_public_key.as_ref())
-                .bytes(self.kes_public_key.as_ref())
-                .finalize()
-                .as_byteslice(),
-        )
-    }
-}
+pub use vrfeval::{Threshold, VrfEvalFailure, Witness, WitnessOutput};
 
 /// Genesis Praos leadership data for a specific epoch
 pub struct LeadershipData {
-    epoch_nonce: Nonce,
+    epoch_nonce: PraosNonce,
     nodes: PoolsState,
     distribution: StakeDistribution,
     // the epoch this leader selection is valid for
@@ -240,22 +215,11 @@ impl LeadershipData {
     }
 }
 
-impl Readable for GenesisPraosLeader {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        let vrf_public_key = deserialize_public_key(buf)?;
-        let kes_public_key = deserialize_public_key(buf)?;
-        Ok(GenesisPraosLeader {
-            vrf_public_key,
-            kes_public_key,
-        })
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::certificate::PoolId;
-    use crate::header::HeaderId;
+    use crate::chaintypes::HeaderId;
     use crate::ledger::Ledger;
     use crate::milli::Milli;
     use crate::stake::{PoolStakeDistribution, PoolStakeInformation};
@@ -573,7 +537,6 @@ mod tests {
 
     use crate::fragment::Contents;
     use crate::header::{BlockVersion, HeaderBuilderNew};
-    use chain_core::property::ChainLength;
 
     #[test]
     pub fn leadership_verify_different_epoch() {
@@ -622,7 +585,7 @@ mod tests {
         let rng = rand_core::OsRng;
         let sk = &SecretKey::generate(rng);
         let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
-            .set_parent(&HeaderId::zero_hash(), ledger.chain_length().next())
+            .set_parent(&HeaderId::zero_hash(), ledger.chain_length().increase())
             .set_date(date)
             .to_bft_builder()
             .unwrap()

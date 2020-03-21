@@ -1,4 +1,4 @@
-use crate::header::Epoch;
+use crate::date::Epoch;
 use crate::value::Value;
 
 /// Last rewards associated with a state

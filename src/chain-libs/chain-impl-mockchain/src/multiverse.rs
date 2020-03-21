@@ -6,8 +6,7 @@
 //! For now this only track block at the headerhash level, and doesn't order them
 //! temporaly, leaving no way to do garbage collection
 
-use crate::block::ChainLength;
-use crate::header::HeaderId;
+use crate::chaintypes::{ChainLength, HeaderId};
 use crate::ledger::Ledger;
 use chain_storage::store::BlockStore;
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -251,11 +250,12 @@ impl Multiverse<Ledger> {
 mod test {
     use super::{Multiverse, SUFFIX_TO_KEEP};
     use crate::{
-        block::{Block, ConsensusVersion, Contents, ContentsBuilder},
+        block::{Block, Contents, ContentsBuilder},
+        chaintypes::{ChainLength, ConsensusType},
         config::{Block0Date, ConfigParam},
         date::BlockDate,
         fragment::{ConfigParams, Fragment},
-        header::{BlockVersion, ChainLength, HeaderBuilderNew},
+        header::{BlockVersion, HeaderBuilderNew},
         key::Hash,
         ledger::Ledger,
         milli::Milli,
@@ -263,7 +263,7 @@ mod test {
     };
 
     use chain_addr::Discrimination;
-    use chain_core::property::{Block as _, ChainLength as _};
+    use chain_core::property::Block as _;
     use chain_storage::store::BlockStore;
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
     use std::mem;
@@ -298,7 +298,7 @@ mod test {
     fn genesis_block(leader: &LeaderPair, slot_duration: u8, block_per_epoch: u32) -> Block {
         let mut ents = ConfigParams::new();
         ents.push(ConfigParam::Discrimination(Discrimination::Test));
-        ents.push(ConfigParam::ConsensusVersion(ConsensusVersion::Bft));
+        ents.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
         ents.push(ConfigParam::AddBftLeader(leader.id()));
         ents.push(ConfigParam::Block0Date(Block0Date(0)));
         ents.push(ConfigParam::SlotDuration(slot_duration));
@@ -362,7 +362,12 @@ mod test {
         let mut ids = vec![];
         for i in 1..10001 {
             date = date.next(&era);
-            let block = build_bft_block(&parent, date.clone(), state.chain_length.next(), &leader);
+            let block = build_bft_block(
+                &parent,
+                date.clone(),
+                state.chain_length.increase(),
+                &leader,
+            );
             state = apply_block(&state, &block);
             assert_eq!(state.chain_length().0, i);
             assert_eq!(state.date, block.date());
@@ -430,7 +435,12 @@ mod test {
         let first_fork_length = 100;
         for _ in 0..first_fork_length {
             date = date.next(&era);
-            let block = build_bft_block(&parent, date.clone(), state.chain_length.next(), &leader);
+            let block = build_bft_block(
+                &parent,
+                date.clone(),
+                state.chain_length.increase(),
+                &leader,
+            );
             state = apply_block(&state, &block);
 
             store.put_block(&block).unwrap();
@@ -451,7 +461,12 @@ mod test {
         let second_fork_length = 102;
         for _ in 0..second_fork_length {
             date = date.next(&era);
-            let block = build_bft_block(&parent, date.clone(), state.chain_length.next(), &leader);
+            let block = build_bft_block(
+                &parent,
+                date.clone(),
+                state.chain_length.increase(),
+                &leader,
+            );
             state = apply_block(&state, &block);
 
             store.put_block(&block).unwrap();

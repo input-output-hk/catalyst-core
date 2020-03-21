@@ -3,7 +3,7 @@ use crate::{
     config::ConfigParam,
     fee::LinearFee,
     fragment::config::ConfigParams,
-    leadership::bft::LeaderId,
+    key::BftLeaderId,
     testing::builders::SignedProposalBuilder,
     testing::{arbitrary::utils as arbitrary_utils, builders::update_builder::ProposalBuilder},
     update::{SignedUpdateProposal, SignedUpdateVote, UpdateVote},
@@ -15,7 +15,7 @@ use std::{collections::HashMap, iter};
 
 #[derive(Clone)]
 pub struct UpdateProposalData {
-    pub leaders: HashMap<LeaderId, SecretKey<Ed25519Extended>>,
+    pub leaders: HashMap<BftLeaderId, SecretKey<Ed25519Extended>>,
     pub proposal: SignedUpdateProposal,
     pub proposal_id: Hash,
     pub votes: Vec<SignedUpdateVote>,
@@ -25,7 +25,7 @@ pub struct UpdateProposalData {
 
 impl Debug for UpdateProposalData {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let leaders: Vec<LeaderId> = self.leaders.keys().cloned().collect();
+        let leaders: Vec<BftLeaderId> = self.leaders.keys().cloned().collect();
         f.debug_struct("UpdateProposalData")
             .field("leaders", &leaders)
             .field("proposal", &self.proposal)
@@ -36,7 +36,7 @@ impl Debug for UpdateProposalData {
 }
 
 impl UpdateProposalData {
-    pub fn leaders_ids(&self) -> Vec<LeaderId> {
+    pub fn leaders_ids(&self) -> Vec<BftLeaderId> {
         self.leaders.keys().cloned().collect()
     }
 
@@ -48,17 +48,17 @@ impl UpdateProposalData {
 impl Arbitrary for UpdateProposalData {
     fn arbitrary<G: Gen>(gen: &mut G) -> Self {
         let leader_size = 1; //usize::arbitrary(gen) % 20 + 1;
-        let leaders: HashMap<LeaderId, SecretKey<Ed25519Extended>> = iter::from_fn(|| {
+        let leaders: HashMap<BftLeaderId, SecretKey<Ed25519Extended>> = iter::from_fn(|| {
             let sk: SecretKey<Ed25519Extended> = Arbitrary::arbitrary(gen);
-            let leader_id = LeaderId(sk.to_public());
+            let leader_id = BftLeaderId(sk.to_public());
             Some((leader_id, sk))
         })
         .take(leader_size)
         .collect();
 
-        let voters: HashMap<LeaderId, SecretKey<Ed25519Extended>> =
+        let voters: HashMap<BftLeaderId, SecretKey<Ed25519Extended>> =
             arbitrary_utils::choose_random_map_subset(&leaders, gen);
-        let leaders_ids: Vec<LeaderId> = leaders.keys().cloned().collect();
+        let leaders_ids: Vec<BftLeaderId> = leaders.keys().cloned().collect();
         let proposer_id = arbitrary_utils::choose_random_item(&leaders_ids, gen);
 
         //create proposal

@@ -1,4 +1,6 @@
-use crate::{header::HeaderId, testing::data::AddressData, transaction::TransactionSignDataHash};
+use crate::{
+    chaintypes::HeaderId, testing::data::AddressData, transaction::TransactionSignDataHash,
+};
 use chain_addr::Kind;
 
 pub use crate::transaction::Witness;

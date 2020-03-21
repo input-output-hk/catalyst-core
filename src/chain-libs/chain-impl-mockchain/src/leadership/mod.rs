@@ -1,7 +1,9 @@
 use crate::{
-    block::{BlockDate, BlockVersion, ConsensusVersion, Header},
+    block::{BlockDate, BlockVersion, Header},
     certificate::PoolId,
+    chaintypes::ConsensusType,
     date::Epoch,
+    key::BftLeaderId,
     ledger::{Ledger, LedgerParameters},
     stake::StakeDistribution,
 };
@@ -10,9 +12,6 @@ use chain_time::era::TimeEra;
 
 pub mod bft;
 pub mod genesis;
-
-#[cfg(any(test, feature = "property-test-api"))]
-pub mod test;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
@@ -66,7 +65,7 @@ pub struct Leader {
 
 pub enum LeaderOutput {
     None,
-    Bft(bft::LeaderId),
+    Bft(BftLeaderId),
     GenesisPraos(PoolId, genesis::Witness),
 }
 
@@ -142,10 +141,10 @@ impl LeadershipConsensus {
 impl Leadership {
     pub fn new(epoch: Epoch, ledger: &Ledger) -> Self {
         let inner = match ledger.settings.consensus_version {
-            ConsensusVersion::Bft => {
+            ConsensusType::Bft => {
                 LeadershipConsensus::Bft(bft::LeadershipData::new(ledger).unwrap())
             }
-            ConsensusVersion::GenesisPraos => {
+            ConsensusType::GenesisPraos => {
                 LeadershipConsensus::GenesisPraos(genesis::LeadershipData::new(epoch, ledger))
             }
         };

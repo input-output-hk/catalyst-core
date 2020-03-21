@@ -1,5 +1,5 @@
 use crate::certificate::{PoolId, PoolRegistration, PoolRegistrationHash};
-use crate::header::Epoch;
+use crate::date::Epoch;
 use crate::value::Value;
 use imhamt::Hamt;
 use std::collections::hash_map::DefaultHasher;

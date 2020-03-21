@@ -1,8 +1,9 @@
 use crate::{
     block::Block,
+    chaintypes::ChainLength,
     date::BlockDate,
     fragment::{Contents, ContentsBuilder, Fragment},
-    header::{BlockVersion, ChainLength, Header, HeaderBuilderNew},
+    header::{BlockVersion, Header, HeaderBuilderNew},
     key::Hash,
     testing::{data::StakePool, TestGen},
 };

@@ -1,24 +1,10 @@
 use crate::block::{BlockDate, Header, Proof};
-use crate::key::{deserialize_public_key, serialize_public_key};
 use crate::{
+    key::BftLeaderId,
     leadership::{Error, ErrorKind, Verification},
     ledger::Ledger,
 };
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property;
-use chain_crypto::{Ed25519, PublicKey};
 use std::sync::Arc;
-
-pub type BftVerificationAlg = Ed25519;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct LeaderId(pub(crate) PublicKey<BftVerificationAlg>);
-
-impl From<[u8; 32]> for LeaderId {
-    fn from(v: [u8; 32]) -> LeaderId {
-        LeaderId(PublicKey::from_binary(&v[..]).expect("leader-id invalid format"))
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BftRoundRobinIndex(u64);
@@ -26,7 +12,7 @@ pub struct BftRoundRobinIndex(u64);
 /// The BFT Leader selection is based on a round robin of the expected leaders
 #[derive(Debug)]
 pub struct LeadershipData {
-    pub(crate) leaders: Arc<Vec<LeaderId>>,
+    pub(crate) leaders: Arc<Vec<BftLeaderId>>,
 }
 
 impl LeadershipData {
@@ -69,38 +55,8 @@ impl LeadershipData {
     }
 
     #[inline]
-    pub(crate) fn get_leader_at(&self, date: BlockDate) -> Result<LeaderId, Error> {
+    pub(crate) fn get_leader_at(&self, date: BlockDate) -> Result<BftLeaderId, Error> {
         let BftRoundRobinIndex(ofs) = self.offset(date.slot_id as u64);
         Ok(self.leaders[ofs as usize].clone())
-    }
-}
-
-impl LeaderId {
-    pub fn as_public_key(&self) -> &PublicKey<BftVerificationAlg> {
-        &self.0
-    }
-}
-
-impl property::Serialize for LeaderId {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        serialize_public_key(&self.0, writer)
-    }
-}
-
-impl Readable for LeaderId {
-    fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        deserialize_public_key(reader).map(LeaderId)
-    }
-}
-
-impl AsRef<[u8]> for LeaderId {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_ref()
-    }
-}
-impl From<PublicKey<BftVerificationAlg>> for LeaderId {
-    fn from(v: PublicKey<BftVerificationAlg>) -> Self {
-        LeaderId(v)
     }
 }

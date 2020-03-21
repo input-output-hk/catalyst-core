@@ -1,10 +1,11 @@
-use super::components::{ChainLength, HeaderId, VrfProof};
+use super::components::VrfProof;
 use super::cstruct;
 use super::deconstruct::{BftProof, Common, GenesisPraosProof, Proof};
-use super::eval::{HeaderContentEvalContext, HeaderGPContentEvalContext};
 use super::version::BlockVersion;
 
 use crate::certificate::PoolId;
+use crate::chaineval::{HeaderContentEvalContext, HeaderGPContentEvalContext};
+use crate::chaintypes::{ChainLength, HeaderId};
 use crate::date::BlockDate;
 use crate::fragment::{BlockContentHash, BlockContentSize};
 use crate::leadership;

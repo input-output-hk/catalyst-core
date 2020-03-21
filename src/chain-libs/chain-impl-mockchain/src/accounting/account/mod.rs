@@ -7,7 +7,7 @@
 pub mod account_state;
 pub mod last_rewards;
 
-use crate::header::Epoch;
+use crate::date::Epoch;
 use crate::value::*;
 use imhamt::{Hamt, InsertError, UpdateError};
 use std::collections::hash_map::DefaultHasher;

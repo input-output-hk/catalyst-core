@@ -1,6 +1,6 @@
 use super::element::TransactionSignDataHash;
 use crate::account;
-use crate::header::HeaderId;
+use crate::chaintypes::HeaderId;
 use crate::key::{
     deserialize_public_key, deserialize_signature, serialize_public_key, serialize_signature,
     SpendingSignature,

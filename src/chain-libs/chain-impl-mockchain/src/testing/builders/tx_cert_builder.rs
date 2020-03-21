@@ -1,9 +1,9 @@
 use crate::{
     certificate::{Certificate, CertificatePayload, PoolOwnersSigned, PoolSignature},
+    chaintypes::HeaderId,
     fee::FeeAlgorithm,
     fee::LinearFee,
     fragment::Fragment,
-    header::HeaderId,
     key::EitherEd25519SecretKey,
     testing::{builders::make_witness, data::Wallet},
     transaction::{

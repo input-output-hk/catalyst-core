@@ -1,4 +1,4 @@
-use super::components::{ChainLength, HeaderId, VrfProof};
+use super::components::VrfProof;
 use super::cstruct;
 use super::header::{HeaderBft, HeaderGenesisPraos, HeaderUnsigned};
 use super::version::BlockVersion;
@@ -6,9 +6,10 @@ use super::version::BlockVersion;
 use crate::{
     block::{BftSignature, KESSignature},
     certificate::PoolId,
+    chaintypes::{ChainLength, HeaderId},
     date::BlockDate,
     fragment::{BlockContentHash, BlockContentSize, Contents},
-    leadership,
+    key::BftLeaderId,
 };
 
 use chain_crypto::{Ed25519, SecretKey, SumEd25519_12};
@@ -146,7 +147,7 @@ impl HeaderBuilder<HeaderCommonDone> {
 impl HeaderBftBuilder<HeaderSetConsensusData> {
     pub fn sign_using(self, sk: &SecretKey<Ed25519>) -> HeaderBft {
         let pk = sk.to_public();
-        let sret = self.set_consensus_data(&leadership::bft::LeaderId(pk));
+        let sret = self.set_consensus_data(&BftLeaderId(pk));
         let sig = sk.sign_slice(sret.get_authenticated_data());
 
         sret.set_signature(BftSignature(sig))
@@ -154,7 +155,7 @@ impl HeaderBftBuilder<HeaderSetConsensusData> {
 
     pub fn set_consensus_data(
         self,
-        bft_leaderid: &leadership::bft::LeaderId,
+        bft_leaderid: &BftLeaderId,
     ) -> HeaderBftBuilder<HeaderSetConsensusSignature> {
         let mut hdr = self.0;
         hdr.set_bft_leader_id_slice(bft_leaderid.0.as_ref());
@@ -215,7 +216,7 @@ impl HeaderGenesisPraosBuilder<HeaderSetConsensusSignature> {
 mod tests {
     use super::*;
     use crate::{
-        header::components::HeaderId,
+        chaintypes::HeaderId,
         testing::{
             data::{LeaderPair, StakePool},
             TestGen,

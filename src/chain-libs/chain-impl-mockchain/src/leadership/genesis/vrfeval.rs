@@ -1,85 +1,14 @@
 /// This contains the current evaluation methods for the VRF and its link to
 /// the stake distribution
+use crate::chaineval::PraosNonce;
 use crate::date::SlotId;
-use crate::key::Hash;
-use crate::milli::Milli;
+use crate::setting::ActiveSlotsCoeff;
 use crate::stake::PercentStake;
 use chain_crypto::{
     vrf_evaluate_and_prove, vrf_verified_get_output, vrf_verify, Curve25519_2HashDH, PublicKey,
     SecretKey, VRFVerification, VerifiableRandomFunction,
 };
 use rand_core::OsRng;
-use std::convert::TryFrom;
-use std::error::Error;
-use std::fmt::{self, Display, Formatter};
-
-/// Nonce gathered per block
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Nonce([u8; 32]);
-
-impl Nonce {
-    pub fn zero() -> Self {
-        Nonce([0u8; 32])
-    }
-
-    /// Change the nonce to be the result of the hash of the current nonce
-    /// and the new supplied nonce.
-    ///
-    /// Effectively: Self = H(Self, Supplied-Hash)
-    pub fn hash_with(&mut self, other: &Self) {
-        let mut buf = [0; 64];
-        buf[0..32].copy_from_slice(&self.0);
-        buf[32..64].copy_from_slice(&other.0);
-        self.0.copy_from_slice(Hash::hash_bytes(&buf).as_ref())
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ActiveSlotsCoeffError {
-    InvalidValue(Milli),
-}
-
-impl Display for ActiveSlotsCoeffError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            ActiveSlotsCoeffError::InvalidValue(v) => {
-                write!(f, "Invalid value {}, should be in range (0,1]", v)
-            }
-        }
-    }
-}
-
-impl Error for ActiveSlotsCoeffError {}
-
-/// Active slots coefficient used for calculating minimum stake to become slot leader candidate
-/// Described in Ouroboros Praos paper, also referred to as parameter F of phi function
-/// Always in range (0, 1]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct ActiveSlotsCoeff(Milli);
-
-impl TryFrom<Milli> for ActiveSlotsCoeff {
-    type Error = ActiveSlotsCoeffError;
-
-    fn try_from(value: Milli) -> Result<Self, Self::Error> {
-        if value > Milli::ZERO && value <= Milli::ONE {
-            Ok(ActiveSlotsCoeff(value))
-        } else {
-            Err(ActiveSlotsCoeffError::InvalidValue(value))
-        }
-    }
-}
-
-impl From<ActiveSlotsCoeff> for Milli {
-    fn from(coeff: ActiveSlotsCoeff) -> Milli {
-        coeff.0
-    }
-}
-
-impl From<ActiveSlotsCoeff> for f64 {
-    fn from(coeff: ActiveSlotsCoeff) -> f64 {
-        coeff.0.to_float()
-    }
-}
 
 /// Threshold between 0.0 and 1.0
 #[derive(Clone, Copy, PartialEq, PartialOrd)]
@@ -106,9 +35,9 @@ struct Input([u8; 36]);
 
 impl Input {
     /// Create an Input from previous epoch nonce and the current slotid
-    fn create(epoch_nonce: &Nonce, slotid: SlotId) -> Self {
+    fn create(epoch_nonce: &PraosNonce, slotid: SlotId) -> Self {
         let mut input = [0u8; 36];
-        input[0..32].copy_from_slice(&epoch_nonce.0[..]);
+        input[0..32].copy_from_slice(epoch_nonce.as_ref());
         input[32..].copy_from_slice(&slotid.to_le_bytes());
         Input(input)
     }
@@ -120,12 +49,12 @@ pub type WitnessOutput = <Curve25519_2HashDH as VerifiableRandomFunction>::Rando
 
 pub struct VrfEvaluator<'a> {
     pub stake: PercentStake,
-    pub nonce: &'a Nonce,
+    pub nonce: &'a PraosNonce,
     pub slot_id: SlotId,
     pub active_slots_coeff: ActiveSlotsCoeff,
 }
 
-pub(crate) fn witness_to_nonce(witness: &Witness) -> Nonce {
+pub(crate) fn witness_to_nonce(witness: &Witness) -> PraosNonce {
     let r = vrf_verified_get_output::<Curve25519_2HashDH>(&witness);
     get_nonce(&r)
 }
@@ -164,7 +93,7 @@ impl<'a> VrfEvaluator<'a> {
         &self,
         key: &PublicKey<Curve25519_2HashDH>,
         witness: &'a Witness,
-    ) -> Result<Nonce, VrfEvalFailure> {
+    ) -> Result<PraosNonce, VrfEvalFailure> {
         let input = Input::create(&self.nonce, self.slot_id);
         if vrf_verify(key, &input.0, witness) == VRFVerification::Success {
             let r = vrf_verified_get_output::<Curve25519_2HashDH>(witness);
@@ -208,25 +137,9 @@ fn get_threshold(input: &Input, os: &WitnessOutput) -> Threshold {
     Threshold::from_u256(out.as_ref())
 }
 
-fn get_nonce(os: &WitnessOutput) -> Nonce {
+fn get_nonce(os: &WitnessOutput) -> PraosNonce {
     let mut nonce = [0u8; 32];
     let out = os.to_output(&[], DOMAIN_NONCE);
     nonce.copy_from_slice(out.as_ref());
-    Nonce(nonce)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::Nonce;
-    use quickcheck::{Arbitrary, Gen};
-    use std::iter;
-
-    impl Arbitrary for Nonce {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let mut nonce = [0; 32];
-            let nonce_vec: Vec<u8> = iter::from_fn(|| Some(u8::arbitrary(g))).take(32).collect();
-            nonce.copy_from_slice(&nonce_vec);
-            Nonce(nonce)
-        }
-    }
+    PraosNonce::from_output_array(nonce)
 }

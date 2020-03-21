@@ -1,14 +1,17 @@
 use crate::{
     account::Ledger as AccountLedger,
-    block::{Block, ConsensusVersion, HeaderId, LeadersParticipationRecord},
+    block::Block,
     certificate::PoolId,
+    chaintypes::{ChainLength, ConsensusType, HeaderId},
     config::{ConfigParam, RewardParams},
     date::BlockDate,
     fee::{LinearFee, PerCertificateFee},
     fragment::{config::ConfigParams, Fragment, FragmentId},
-    header::ChainLength,
-    leadership::{bft::LeaderId, genesis::LeadershipData},
-    ledger::{Error, Ledger, LedgerParameters, Pots, RewardsInfoParameters},
+    key::BftLeaderId,
+    leadership::genesis::LeadershipData,
+    ledger::{
+        Error, LeadersParticipationRecord, Ledger, LedgerParameters, Pots, RewardsInfoParameters,
+    },
     milli::Milli,
     rewards::{Ratio, TaxType},
     stake::PoolsState,
@@ -36,7 +39,7 @@ pub struct ConfigBuilder {
     discrimination: Discrimination,
     linear_fee: Option<LinearFee>,
     per_certificate_fee: Option<PerCertificateFee>,
-    leaders: Vec<LeaderId>,
+    leaders: Vec<BftLeaderId>,
     seed: u64,
     rewards: Value,
     treasury: Value,
@@ -102,7 +105,7 @@ impl ConfigBuilder {
         self
     }
 
-    pub fn with_leaders(mut self, leaders: &Vec<LeaderId>) -> Self {
+    pub fn with_leaders(mut self, leaders: &Vec<BftLeaderId>) -> Self {
         self.leaders.extend(leaders.iter().cloned());
         self
     }
@@ -132,7 +135,7 @@ impl ConfigBuilder {
         self
     }
 
-    fn create_single_bft_leader() -> LeaderId {
+    fn create_single_bft_leader() -> BftLeaderId {
         let leader_prv_key: SecretKey<Ed25519Extended> = SecretKey::generate(rand_core::OsRng);
         let leader_pub_key = leader_prv_key.to_public();
         leader_pub_key.into()
@@ -148,7 +151,7 @@ impl ConfigBuilder {
     pub fn build(self) -> ConfigParams {
         let mut ie = ConfigParams::new();
         ie.push(ConfigParam::Discrimination(self.discrimination));
-        ie.push(ConfigParam::ConsensusVersion(ConsensusVersion::Bft));
+        ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
 
         for leader_id in self.leaders.iter().cloned() {
             ie.push(ConfigParam::AddBftLeader(leader_id));

@@ -114,7 +114,6 @@ mod test {
     use std::io::Cursor;
     use std::time::{Duration, SystemTime};
 
-
     quickcheck! {
         fn time_era_pack_unpack_bijection(time_era: TimeEra) -> TestResult {
             let mut c : Cursor<Vec<u8>> = Cursor::new(Vec::new());

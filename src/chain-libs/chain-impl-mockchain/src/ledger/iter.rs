@@ -47,6 +47,7 @@ pub enum Entry<'a> {
     LeaderParticipation((&'a crate::certificate::PoolId, &'a u32)),
 }
 
+#[derive(Clone)]
 pub enum EntryOwned {
     Globals(Globals),
     Pot(pots::Entry),

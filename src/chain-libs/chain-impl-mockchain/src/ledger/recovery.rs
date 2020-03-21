@@ -14,6 +14,7 @@ use crate::header::{ChainLength, HeaderId};
 use crate::key::{serialize_public_key, Hash};
 use crate::leadership::bft::LeaderId;
 use crate::ledger::iter;
+use crate::ledger::iter::*;
 use crate::ledger::pots::EntryType;
 use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
 use crate::legacy;
@@ -948,60 +949,123 @@ impl Serialize for Ledger {
     }
 }
 
-// struct LazyLedgerDeserializer<'a> {
-//     reader: &'a mut dyn std::io::BufRead,
+// struct LazyLedgerDeserializer<R: std::io::BufRead> {
+//     reader: Codec<R>,
+//     cache: Vec<EntryOwned>,
+//     read: usize,
+//     full_read: bool,
 // }
 //
-// impl<'a> LazyLedgerDeserializer<'a> {
-//     fn new<R: std::io::BufRead>(reader: &'a mut R) -> LazyLedgerDeserializer<'a> {
+// impl<'a, R: std::io::BufRead> LazyLedgerDeserializer<R> {
+//     fn new(reader: R) -> LazyLedgerDeserializer<R> {
 //         Self {
-//             reader,
+//             reader: Codec::new(reader),
+//             cache: Vec::new(),
+//             read: 0,
+//             full_read: false,
 //         }
 //     }
 //
-//     fn next(&mut self) -> Option<EntryOwned> {
+//     fn next(&'a mut self) -> bool {
+//         if self.full_read {
+//             return !self.full_read;
+//         }
 //         // TODO: What to do with an error here?
-//         EntryOwned::deserialize(&mut self.reader).ok()
+//         match unpack_entry_owned(&mut self.reader).ok() {
+//             Some(EntryOwned::StopEntry) => {
+//                 self.full_read = true;
+//             },
+//             Some(entry) => {
+//                 self.read += 1;
+//                 self.cache.push(entry.clone());
+//             },
+//             None => {
+//                 self.full_read = true;
+//             }
+//         };
+//         !self.full_read
+//     }
+//
+//     fn get_entry(&'a self, index: usize) -> Option<Entry<'a>> {
+//         match self.cache.get(index) {
+//             Some(entry_owned) => entry_owned.to_entry(),
+//             None => None,
+//         }
 //     }
 // }
-//
-// impl<'a> IntoIterator for &'a mut LazyLedgerDeserializer<'a> {
-//     type Item = EntryOwned;
-//     type IntoIter = LazyLedgerDeserializerIter<'a>;
+
+// impl<'a, R: std::io::BufRead> IntoIterator for &'a mut LazyLedgerDeserializer<R> {
+//     type Item = Entry<'a>;
+//     type IntoIter = LazyLedgerDeserializerIter<'a, R>;
 //
 //     fn into_iter(self) -> Self::IntoIter {
 //         LazyLedgerDeserializerIter {
 //             inner: self,
+//             current_index: 0,
 //         }
-//     }
-// }
-//
-// struct LazyLedgerDeserializerIter<'a> {
-//     inner: &'a mut LazyLedgerDeserializer<'a>
-// }
-//
-// impl<'a> Iterator for LazyLedgerDeserializerIter<'a> {
-//     type Item = EntryOwned;
-//
-//     fn next(&mut self) -> Option<Self::Item> {
-//         self.inner.next()
 //     }
 // }
 
-// impl Deserialize for Ledger {
-//     type Error = std::io::Error;
+// struct LazyLedgerDeserializerIter<'a, R: std::io::BufRead> {
+//     inner: &'a mut LazyLedgerDeserializer<R>,
+//     current_index: usize,
+// }
 //
-//     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-//         let mut codec = Codec::new(reader);
-//         let res = Ok(Ledger::empty())::from_iter(
-//             LazyLedgerDeserializer::new(&mut codec).into_iter().map(|entry| entry.to_entry())
-//         );
-//         match res {
-//             Ok(ledger) => Ok(ledger),
-//             Err(e) => Err(std::io::Error::new(std::io::ErrorKind::InvalidData, format!("{:?}", e))),
+// impl<'a, R: std::io::BufRead> LazyLedgerDeserializerIter<'a, R> {
+//     fn next_item(&'a mut self) -> Option<Entry<'a>> {
+//         if self.current_index < self.inner.read {
+//             let entry = self.inner.get_entry(self.current_index);
+//             self.current_index += 1;
+//             return entry;
 //         }
+//         if self.inner.next() {
+//             let entry= self.inner.get_entry(self.current_index);
+//             self.current_index += 1;
+//             return entry;
+//         }
+//         self.current_index += 1;
+//         None
 //     }
 // }
+
+// impl<'a, R: std::io::BufRead> Iterator for LazyLedgerDeserializerIter<'a, R> {
+//     type Item = Entry<'a>;
+//
+//     fn next(&mut self) -> Option<Self::Item> {
+//         self.next_item()
+//     }
+// }
+//
+
+fn unpack_entries<R: std::io::BufRead>(reader: R) -> Vec<EntryOwned> {
+    let mut codec = Codec::new(reader);
+    let mut res = Vec::new();
+    while let Ok(entry) = unpack_entry_owned(&mut codec) {
+        match entry {
+            EntryOwned::StopEntry => {break;}
+            entry => {res.push(entry);}
+        };
+    }
+    res
+}
+
+impl Deserialize for Ledger {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let owned_entries =unpack_entries(reader);
+        let entries = owned_entries.iter().map(|entry_owned| entry_owned.to_entry().unwrap());
+        let ledger: Result<Ledger, crate::ledger::Error> =
+            Result::from_iter(entries);
+        match ledger {
+            Ok(l) => Ok(l),
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("{}", e),
+            )),
+        }
+    }
+}
 
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod test {
@@ -1009,7 +1073,7 @@ pub mod test {
     use crate::testing::StakePoolBuilder;
     use chain_crypto::{Blake2b256, Ed25519, KeyPair};
     use quickcheck::{quickcheck, Arbitrary, TestResult};
-    use std::io::{Cursor, Write, BufRead};
+    use std::io::{BufRead, Cursor, Write};
     use typed_bytes::{ByteArray, ByteSlice};
 
     #[test]
@@ -1264,7 +1328,7 @@ pub mod test {
         T: Eq,
     {
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        let mut codec= Codec::new(c);
+        let mut codec = Codec::new(c);
         match pack_method(value, &mut codec) {
             Ok(_) => (),
             Err(e) => return TestResult::error(format!("{}", e)),
@@ -1275,7 +1339,7 @@ pub mod test {
         return match unpack_method(&mut codec) {
             Ok(other_value) => TestResult::from_bool(value == &other_value),
             Err(e) => TestResult::error(format!("{}", e)),
-        }
+        };
     }
 
     quickcheck! {

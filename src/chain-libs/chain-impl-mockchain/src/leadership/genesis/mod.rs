@@ -228,6 +228,7 @@ mod tests {
         ConfigBuilder, LedgerBuilder,
     };
     use crate::value::Value;
+    use chain_core::property::ChainLength;
     use chain_crypto::{Curve25519_2HashDH, SecretKey};
 
     use std::collections::HashMap;
@@ -661,5 +662,35 @@ mod tests {
             .build(&stake_pool, ledger.era());
 
         assert!(selection.verify(&block.header).failure());
+    }
+
+    #[test]
+    pub fn leadership_not_in_the_current_epoch() {
+        let date = BlockDate {
+            epoch: 2,
+            slot_id: 0,
+        };
+        let ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+            .build()
+            .expect("cannot build test ledger")
+            .ledger;
+
+        let stake_pool = StakePoolBuilder::new().build();
+        ledger
+            .delegation()
+            .register_stake_pool(stake_pool.info())
+            .expect("cannot register stake pool");
+        let selection = LeadershipData::new(date.epoch, &ledger);
+        let rng = rand_core::OsRng;
+        let sk = &SecretKey::generate(rng);
+        let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
+            .set_parent(&HeaderId::zero_hash(), ledger.chain_length().next())
+            .set_date(date)
+            .to_bft_builder()
+            .unwrap()
+            .sign_using(sk)
+            .generalize();
+
+        assert!(selection.verify(&header).failure());
     }
 }

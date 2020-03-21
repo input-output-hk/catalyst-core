@@ -1,8 +1,9 @@
 use crate::value::Value;
 use std::ops::{Add, AddAssign};
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Stake(u64);
+#[cfg_attr(feature = "generic-serialization", derive(serde_derive::Serialize))]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Stake(pub u64);
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct StakeUnit(Stake);
@@ -48,6 +49,12 @@ impl Stake {
 impl From<Stake> for u64 {
     fn from(s: Stake) -> u64 {
         s.0
+    }
+}
+
+impl AsRef<u64> for Stake {
+    fn as_ref(&self) -> &u64 {
+        &self.0
     }
 }
 

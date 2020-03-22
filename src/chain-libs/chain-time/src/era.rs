@@ -1,10 +1,8 @@
 //! Split timeframe in eras
 
 use crate::timeframe::Slot;
-use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use std::fmt;
-use std::io::Error;
 
 /// Epoch number
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

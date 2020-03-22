@@ -7,7 +7,6 @@ use crate::{
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::{Ed25519, PublicKey};
-use chain_ser::deser::Deserialize;
 use chain_ser::packer::Codec;
 use std::sync::Arc;
 

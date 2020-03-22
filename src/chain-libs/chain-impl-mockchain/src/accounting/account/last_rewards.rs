@@ -1,7 +1,5 @@
 use crate::header::Epoch;
 use crate::value::Value;
-use chain_ser::packer::Codec;
-use std::io::Error;
 
 /// Last rewards associated with a state
 ///

@@ -1,8 +1,6 @@
 use crate::config::ConfigParam;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
-use chain_ser::deser::Deserialize;
-use std::io::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(

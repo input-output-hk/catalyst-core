@@ -7,8 +7,6 @@ use crate::ledger::Error::Block0;
 use crate::stake::PoolsState;
 use crate::{account, legacy, multisig, setting, update, utxo};
 use chain_addr::Address;
-use chain_ser::deser::{Deserialize, Serialize};
-use chain_ser::packer::Codec;
 use chain_time::TimeEra;
 use std::io::Chain;
 use std::sync::Arc;

@@ -935,6 +935,22 @@ fn unpack_entry_owned<R: std::io::BufRead>(
     }
 }
 
+fn unpack_entries<R: std::io::BufRead>(reader: R) -> Vec<EntryOwned> {
+    let mut codec = Codec::new(reader);
+    let mut res = Vec::new();
+    while let Ok(entry) = unpack_entry_owned(&mut codec) {
+        match entry {
+            EntryOwned::StopEntry => {
+                break;
+            }
+            entry => {
+                res.push(entry);
+            }
+        };
+    }
+    res
+}
+
 impl Serialize for Ledger {
     type Error = std::io::Error;
 
@@ -949,26 +965,15 @@ impl Serialize for Ledger {
     }
 }
 
-fn unpack_entries<R: std::io::BufRead>(reader: R) -> Vec<EntryOwned> {
-    let mut codec = Codec::new(reader);
-    let mut res = Vec::new();
-    while let Ok(entry) = unpack_entry_owned(&mut codec) {
-        match entry {
-            EntryOwned::StopEntry => {break;}
-            entry => {res.push(entry);}
-        };
-    }
-    res
-}
-
 impl Deserialize for Ledger {
     type Error = std::io::Error;
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let owned_entries =unpack_entries(reader);
-        let entries = owned_entries.iter().map(|entry_owned| entry_owned.to_entry().unwrap());
-        let ledger: Result<Ledger, crate::ledger::Error> =
-            Result::from_iter(entries);
+        let owned_entries = unpack_entries(reader);
+        let entries = owned_entries
+            .iter()
+            .map(|entry_owned| entry_owned.to_entry().unwrap());
+        let ledger: Result<Ledger, crate::ledger::Error> = Result::from_iter(entries);
         match ledger {
             Ok(l) => Ok(l),
             Err(e) => Err(std::io::Error::new(
@@ -1212,7 +1217,7 @@ pub mod test {
     }
 
     #[test]
-    pub fn output_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
+    pub fn output_pack_unpack_bijection() -> Result<(), std::io::Error> {
         let output: Output<()> = Output {
             address: (),
             value: Value(1000),
@@ -1226,6 +1231,32 @@ pub mod test {
         codec = Codec::new(c);
         let other_output = unpack_output(&mut |_| Ok(()), &mut codec)?;
         assert_eq!(output, other_output);
+        Ok(())
+    }
+
+    use crate::testing::{
+        scenario::{prepare_scenario, wallet},
+        verifiers::LedgerStateVerifier,
+    };
+
+    #[test]
+    pub fn ledger_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
+        let (test_ledger, _)  = prepare_scenario()
+            .with_initials(vec![
+                wallet("Alice").with(1_000).owns("stake_pool"),
+                wallet("Bob").with(1_000).owns("stake_pool"),
+                wallet("Clarice").with(1_000).owns("stake_pool"),
+                wallet("David").with(1_000).owns("stake_pool"),
+            ])
+            .build()
+            .unwrap();
+
+        let ledger : Ledger = test_ledger.into();
+        let mut c = std::io::Cursor::new(Vec::new());
+        ledger.serialize(&mut c)?;
+        c.set_position(0);
+        let other_ledger = Ledger::deserialize(&mut c)?;
+        assert_eq!(ledger, other_ledger);
         Ok(())
     }
 

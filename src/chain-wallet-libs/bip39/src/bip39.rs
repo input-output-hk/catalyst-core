@@ -50,74 +50,44 @@
 use cryptoxide::hmac::Hmac;
 use cryptoxide::pbkdf2::pbkdf2;
 use cryptoxide::sha2::Sha512;
-use std::{error, fmt, ops::Deref, result, str};
+use std::{fmt, ops::Deref, result, str};
+use thiserror::Error;
 
 /// Error regarding BIP39 operations
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Error, PartialEq, Eq)]
 pub enum Error {
     /// Received an unsupported number of mnemonic words. The parameter
     /// contains the unsupported number. Supported values are
     /// described as part of the [`Type`](./enum.Type.html).
+    #[error("Unsupported number of mnemonic words: {0}")]
     WrongNumberOfWords(usize),
 
     /// The entropy is of invalid size. The parameter contains the invalid size,
     /// the list of supported entropy size are described as part of the
     /// [`Type`](./enum.Type.html).
+    #[error("Unsupported mnemonic entropy size: {0}")]
     WrongKeySize(usize),
 
     /// The given mnemonic is out of bound, i.e. its index is above 2048 and
     /// is invalid within BIP39 specifications.
+    #[error("The given mnemonic is out of bound, {0}")]
     MnemonicOutOfBound(u16),
 
     /// Forward error regarding dictionary operations.
-    LanguageError(dictionary::Error),
+    #[error("Unknown mnemonic word")]
+    LanguageError(#[source] #[from] dictionary::Error),
 
     /// the Seed is of invalid size. The parameter is the given seed size,
     /// the expected seed size is [`SEED_SIZE`](./constant.SEED_SIZE.html).
+    #[error("Invalid Seed Size, expected 64 bytes, but received {0} bytes.")]
     InvalidSeedSize(usize),
 
     /// checksum is invalid. The first parameter is the expected checksum,
     /// the second id the computed checksum. This error means that the given
     /// mnemonics are invalid to retrieve the original entropy. The user might
     /// have given an invalid mnemonic phrase.
+    #[error("Invalid Entropy's Checksum, expected {0:08b} but found {1:08b}")]
     InvalidChecksum(u8, u8),
-}
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            &Error::InvalidSeedSize(sz) => write!(
-                f,
-                "Invalid Seed Size, expected {} bytes, but received {} bytes.",
-                SEED_SIZE, sz
-            ),
-            &Error::WrongNumberOfWords(sz) => {
-                write!(f, "Unsupported number of mnemonic words: {}", sz)
-            }
-            &Error::WrongKeySize(sz) => write!(f, "Unsupported mnemonic entropy size: {}", sz),
-            &Error::MnemonicOutOfBound(val) => {
-                write!(f, "The given mnemonic is out of bound, {}", val)
-            }
-            &Error::LanguageError(_) => write!(f, "Unknown mnemonic word"),
-            &Error::InvalidChecksum(cs1, cs2) => write!(
-                f,
-                "Invalid Entropy's Checksum, expected {:08b} but found {:08b}",
-                cs1, cs2
-            ),
-        }
-    }
-}
-impl From<dictionary::Error> for Error {
-    fn from(e: dictionary::Error) -> Self {
-        Error::LanguageError(e)
-    }
-}
-impl error::Error for Error {
-    fn cause(&self) -> Option<&error::Error> {
-        match self {
-            Error::LanguageError(ref error) => Some(error),
-            _ => None,
-        }
-    }
 }
 
 /// convenient Alias to wrap up BIP39 operations that may return

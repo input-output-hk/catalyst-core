@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 cryptoxide = "0.1"
+thiserror = { version = "1.0.13", default-features = false }
 
 [dev-dependencies]
 unicode-normalization = "*"

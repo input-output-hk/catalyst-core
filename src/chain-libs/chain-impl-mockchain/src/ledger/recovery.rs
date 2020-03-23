@@ -935,11 +935,11 @@ fn unpack_entry_owned<R: std::io::BufRead>(
     }
 }
 
-fn unpack_entries<R: std::io::BufRead>(reader: R) -> Vec<EntryOwned> {
+fn unpack_entries<R: std::io::BufRead>(reader: R) -> Result<Vec<EntryOwned>, std::io::Error> {
     let mut codec = Codec::new(reader);
     let mut res = Vec::new();
-    while let Ok(entry) = unpack_entry_owned(&mut codec) {
-        match entry {
+    loop {
+        match unpack_entry_owned(&mut codec)? {
             EntryOwned::StopEntry => {
                 break;
             }
@@ -948,7 +948,7 @@ fn unpack_entries<R: std::io::BufRead>(reader: R) -> Vec<EntryOwned> {
             }
         };
     }
-    res
+    Ok(res)
 }
 
 impl Serialize for Ledger {
@@ -969,7 +969,7 @@ impl Deserialize for Ledger {
     type Error = std::io::Error;
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let owned_entries = unpack_entries(reader);
+        let owned_entries = unpack_entries(reader)?;
         let entries = owned_entries
             .iter()
             .map(|entry_owned| entry_owned.to_entry().unwrap());
@@ -1256,7 +1256,9 @@ pub mod test {
         ledger.serialize(&mut c)?;
         c.set_position(0);
         let other_ledger = Ledger::deserialize(&mut c)?;
-        assert_eq!(ledger, other_ledger);
+        let other_ledger2 = ledger.iter().collect::<Result<Ledger, _>>().unwrap();
+        assert_eq!(other_ledger, other_ledger2);
+
         Ok(())
     }
 
@@ -1390,11 +1392,5 @@ pub mod test {
                 &update_proposal_state
             )
         }
-    }
-
-    #[test]
-    #[ignore]
-    fn ledger_serialize_deserialize_bijection() {
-        unimplemented!()
     }
 }

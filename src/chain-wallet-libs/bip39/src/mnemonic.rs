@@ -216,3 +216,17 @@ impl fmt::Display for MnemonicString {
         write!(f, "{}", self.0)
     }
 }
+
+impl Drop for Mnemonics {
+    fn drop(&mut self) {
+        for byte in self.0.iter_mut() {
+            *byte = MnemonicIndex(0);
+        }
+    }
+}
+
+impl Drop for MnemonicString {
+    fn drop(&mut self) {
+        unsafe { cryptoxide::util::secure_memset(&mut self.0.as_mut_vec(), 0) }
+    }
+}

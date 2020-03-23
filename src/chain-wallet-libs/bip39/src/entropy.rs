@@ -245,19 +245,16 @@ impl Deref for Entropy {
         self.as_ref()
     }
 }
-/*
-TODO
 
 impl Drop for Entropy {
     fn drop(&mut self) {
         match self {
-            Entropy::Entropy9(b) => securemem::zero(b),
-            Entropy::Entropy12(b) => securemem::zero(b),
-            Entropy::Entropy15(b) => securemem::zero(b),
-            Entropy::Entropy18(b) => securemem::zero(b),
-            Entropy::Entropy21(b) => securemem::zero(b),
-            Entropy::Entropy24(b) => securemem::zero(b),
+            Entropy::Entropy9(b) => cryptoxide::util::secure_memset(b, 0),
+            Entropy::Entropy12(b) => cryptoxide::util::secure_memset(b, 0),
+            Entropy::Entropy15(b) => cryptoxide::util::secure_memset(b, 0),
+            Entropy::Entropy18(b) => cryptoxide::util::secure_memset(b, 0),
+            Entropy::Entropy21(b) => cryptoxide::util::secure_memset(b, 0),
+            Entropy::Entropy24(b) => cryptoxide::util::secure_memset(b, 0),
         }
     }
 }
-*/

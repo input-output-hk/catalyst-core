@@ -114,6 +114,6 @@ impl Deref for Seed {
 
 impl Drop for Seed {
     fn drop(&mut self) {
-        self.0.copy_from_slice(&[0; SEED_SIZE][..]);
+        cryptoxide::util::secure_memset(&mut self.0, 0)
     }
 }

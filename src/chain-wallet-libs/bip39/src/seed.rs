@@ -13,6 +13,7 @@ pub const SEED_SIZE: usize = 64;
 /// See the module documentation for more details about how to use it
 /// within the `chain_wallet` library.
 pub struct Seed([u8; SEED_SIZE]);
+
 impl Seed {
     /// create a Seed by taking ownership of the given array
     ///
@@ -91,34 +92,26 @@ impl Seed {
         Self::from_bytes(result)
     }
 }
+
 impl PartialEq for Seed {
     fn eq(&self, other: &Self) -> bool {
         self.0.as_ref() == other.0.as_ref()
     }
 }
-/*
-impl fmt::Debug for Seed {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.as_ref()))
-    }
-}
-impl fmt::Display for Seed {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.as_ref()))
-    }
-}
-*/
+
 impl AsRef<[u8]> for Seed {
     fn as_ref(&self) -> &[u8] {
         &self.0
     }
 }
+
 impl Deref for Seed {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
         self.as_ref()
     }
 }
+
 impl Drop for Seed {
     fn drop(&mut self) {
         self.0.copy_from_slice(&[0; SEED_SIZE][..]);

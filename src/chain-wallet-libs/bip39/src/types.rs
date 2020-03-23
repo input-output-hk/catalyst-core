@@ -16,7 +16,6 @@ use std::{fmt, result, str};
 /// | 24              | 256                 | 8                     |
 ///
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-#[cfg_attr(feature = "generic-serialization", derive(Serialize, Deserialize))]
 pub enum Type {
     Type9Words,
     Type12Words,

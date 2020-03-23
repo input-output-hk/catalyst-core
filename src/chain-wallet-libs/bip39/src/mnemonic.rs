@@ -1,14 +1,41 @@
 use crate::{dictionary, Error, Result, Type};
 use std::{fmt, ops::Deref, str};
 
-/// RAII for validated mnemonic words. This guarantee a given mnemonic phrase
+/// the maximum authorized value for a mnemonic. i.e. 2047
+pub const MAX_MNEMONIC_VALUE: u16 = 2047;
+
+/// Safe representation of a valid mnemonic index (see
+/// [`MAX_MNEMONIC_VALUE`](./constant.MAX_MNEMONIC_VALUE.html)).
+///
+/// See [`dictionary module documentation`](./dictionary/index.html) for
+/// more details about how to use this.
+///
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
+pub struct MnemonicIndex(pub u16);
+
+/// Language agnostic mnemonic phrase representation.
+///
+/// This is an handy intermediate representation of a given mnemonic
+/// phrase. One can use this intermediate representation to translate
+/// mnemonic from one [`Language`](./dictionary/trait.Language.html)
+/// to another. **However** keep in mind that the [`Seed`](./struct.Seed.html)
+/// is linked to the mnemonic string in a specific language, in a specific
+/// dictionary. The [`Entropy`](./struct.Entropy.html) will be the same
+/// but the resulted [`Seed`](./struct.Seed.html) will differ and all
+/// the derived key of a HDWallet using the [`Seed`](./struct.Seed.html)
+/// as a source to generate the root key.
+///
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Mnemonics(Vec<MnemonicIndex>);
+
+/// Validated mnemonic words. This guarantee a given mnemonic phrase
 /// has been safely validated against a dictionary.
 ///
 /// See the module documentation for more details about how to use it
 /// within the `chain_wallet` library.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
-#[cfg_attr(feature = "generic-serialization", derive(Serialize, Deserialize))]
 pub struct MnemonicString(String);
+
 impl MnemonicString {
     /// create a `MnemonicString` from the given `String`. This function
     /// will validate the mnemonic phrase against the given [`Language`]
@@ -39,29 +66,6 @@ impl MnemonicString {
         Ok(MnemonicString(s))
     }
 }
-impl Deref for MnemonicString {
-    type Target = str;
-    fn deref(&self) -> &Self::Target {
-        self.0.deref()
-    }
-}
-impl fmt::Display for MnemonicString {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-/// the maximum authorized value for a mnemonic. i.e. 2047
-pub const MAX_MNEMONIC_VALUE: u16 = 2047;
-
-/// Safe representation of a valid mnemonic index (see
-/// [`MAX_MNEMONIC_VALUE`](./constant.MAX_MNEMONIC_VALUE.html)).
-///
-/// See [`dictionary module documentation`](./dictionary/index.html) for
-/// more details about how to use this.
-///
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
-pub struct MnemonicIndex(pub u16);
 
 impl MnemonicIndex {
     /// smart constructor, validate the given value fits the mnemonic index
@@ -122,27 +126,6 @@ impl MnemonicIndex {
     {
         let v = dic.lookup_mnemonic(word)?;
         Ok(v)
-    }
-}
-
-/// Language agnostic mnemonic phrase representation.
-///
-/// This is an handy intermediate representation of a given mnemonic
-/// phrase. One can use this intermediate representation to translate
-/// mnemonic from one [`Language`](./dictionary/trait.Language.html)
-/// to another. **However** keep in mind that the [`Seed`](./struct.Seed.html)
-/// is linked to the mnemonic string in a specific language, in a specific
-/// dictionary. The [`Entropy`](./struct.Entropy.html) will be the same
-/// but the resulted [`Seed`](./struct.Seed.html) will differ and all
-/// the derived key of a HDWallet using the [`Seed`](./struct.Seed.html)
-/// as a source to generate the root key.
-///
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Mnemonics(Vec<MnemonicIndex>);
-
-impl AsRef<[MnemonicIndex]> for Mnemonics {
-    fn as_ref(&self) -> &[MnemonicIndex] {
-        &self.0[..]
     }
 }
 
@@ -212,5 +195,24 @@ impl Mnemonics {
 
     pub(crate) fn iter(&self) -> impl Iterator<Item = &MnemonicIndex> {
         self.0.iter()
+    }
+}
+
+impl AsRef<[MnemonicIndex]> for Mnemonics {
+    fn as_ref(&self) -> &[MnemonicIndex] {
+        &self.0[..]
+    }
+}
+
+impl Deref for MnemonicString {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        self.0.deref()
+    }
+}
+
+impl fmt::Display for MnemonicString {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }

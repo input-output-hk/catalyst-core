@@ -44,6 +44,7 @@ pub struct DefaultDictionary {
     pub words: [&'static str; 2048],
     pub name: &'static str,
 }
+
 impl Language for DefaultDictionary {
     fn name(&self) -> &'static str {
         self.name

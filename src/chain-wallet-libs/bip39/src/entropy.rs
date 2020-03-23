@@ -15,6 +15,7 @@ pub enum Entropy {
     Entropy21([u8; 28]),
     Entropy24([u8; 32]),
 }
+
 impl Entropy {
     /// Retrieve an `Entropy` from the given slice.
     ///
@@ -237,6 +238,7 @@ impl AsRef<[u8]> for Entropy {
         }
     }
 }
+
 impl Deref for Entropy {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {

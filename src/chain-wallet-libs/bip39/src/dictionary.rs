@@ -10,30 +10,17 @@
 //! our output (or input) UTF8 strings.
 //!
 
-use std::{error, fmt, result};
+use thiserror::Error;
 
 use crate::MnemonicIndex;
 
 /// Errors associated to a given language/dictionary
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
-#[cfg_attr(feature = "generic-serialization", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Error)]
 pub enum Error {
     /// this means the given word is not in the Dictionary of the Language.
+    #[error("Mnemonic word not found in dictionary \"{0}\"")]
     MnemonicWordNotFoundInDictionary(String),
 }
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            &Error::MnemonicWordNotFoundInDictionary(ref s) => {
-                write!(f, "Mnemonic word not found in dictionary \"{}\"", s)
-            }
-        }
-    }
-}
-impl error::Error for Error {}
-
-/// wrapper for `dictionary` operations that may return an error
-pub type Result<T> = result::Result<T, Error>;
 
 /// trait to represent the the properties that needs to be associated to
 /// a given language and its dictionary of known mnemonic words.
@@ -41,8 +28,8 @@ pub type Result<T> = result::Result<T, Error>;
 pub trait Language {
     fn name(&self) -> &'static str;
     fn separator(&self) -> &'static str;
-    fn lookup_mnemonic(&self, word: &str) -> Result<MnemonicIndex>;
-    fn lookup_word(&self, mnemonic: MnemonicIndex) -> Result<String>;
+    fn lookup_mnemonic(&self, word: &str) -> Result<MnemonicIndex, Error>;
+    fn lookup_word(&self, mnemonic: MnemonicIndex) -> Result<String, Error>;
 }
 
 /// Default Dictionary basic support for the different main languages.
@@ -64,7 +51,7 @@ impl Language for DefaultDictionary {
     fn separator(&self) -> &'static str {
         " "
     }
-    fn lookup_mnemonic(&self, word: &str) -> Result<MnemonicIndex> {
+    fn lookup_mnemonic(&self, word: &str) -> Result<MnemonicIndex, Error> {
         match self.words.iter().position(|x| x == &word) {
             None => Err(Error::MnemonicWordNotFoundInDictionary(word.to_string())),
             Some(v) => {
@@ -77,7 +64,7 @@ impl Language for DefaultDictionary {
             }
         }
     }
-    fn lookup_word(&self, mnemonic: MnemonicIndex) -> Result<String> {
+    fn lookup_word(&self, mnemonic: MnemonicIndex) -> Result<String, Error> {
         Ok(unsafe { self.words.get_unchecked(mnemonic.0 as usize) }).map(|s| String::from(*s))
     }
 }

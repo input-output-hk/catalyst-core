@@ -50,36 +50,36 @@ impl Type {
         }
     }
 
-    pub fn to_key_size(&self) -> usize {
+    pub fn to_key_size(self) -> usize {
         match self {
-            &Type::Type9Words => 96,
-            &Type::Type12Words => 128,
-            &Type::Type15Words => 160,
-            &Type::Type18Words => 192,
-            &Type::Type21Words => 224,
-            &Type::Type24Words => 256,
+            Type::Type9Words => 96,
+            Type::Type12Words => 128,
+            Type::Type15Words => 160,
+            Type::Type18Words => 192,
+            Type::Type21Words => 224,
+            Type::Type24Words => 256,
         }
     }
 
-    pub fn checksum_size_bits(&self) -> usize {
+    pub fn checksum_size_bits(self) -> usize {
         match self {
-            &Type::Type9Words => 3,
-            &Type::Type12Words => 4,
-            &Type::Type15Words => 5,
-            &Type::Type18Words => 6,
-            &Type::Type21Words => 7,
-            &Type::Type24Words => 8,
+            Type::Type9Words => 3,
+            Type::Type12Words => 4,
+            Type::Type15Words => 5,
+            Type::Type18Words => 6,
+            Type::Type21Words => 7,
+            Type::Type24Words => 8,
         }
     }
 
-    pub fn mnemonic_count(&self) -> usize {
+    pub fn mnemonic_count(self) -> usize {
         match self {
-            &Type::Type9Words => 9,
-            &Type::Type12Words => 12,
-            &Type::Type15Words => 15,
-            &Type::Type18Words => 18,
-            &Type::Type21Words => 21,
-            &Type::Type24Words => 24,
+            Type::Type9Words => 9,
+            Type::Type12Words => 12,
+            Type::Type15Words => 15,
+            Type::Type18Words => 18,
+            Type::Type21Words => 21,
+            Type::Type24Words => 24,
         }
     }
 }
@@ -91,12 +91,12 @@ impl Default for Type {
 impl fmt::Display for Type {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            &Type::Type9Words => write!(f, "9"),
-            &Type::Type12Words => write!(f, "12"),
-            &Type::Type15Words => write!(f, "15"),
-            &Type::Type18Words => write!(f, "18"),
-            &Type::Type21Words => write!(f, "21"),
-            &Type::Type24Words => write!(f, "24"),
+            Type::Type9Words => write!(f, "9"),
+            Type::Type12Words => write!(f, "12"),
+            Type::Type15Words => write!(f, "15"),
+            Type::Type18Words => write!(f, "18"),
+            Type::Type21Words => write!(f, "21"),
+            Type::Type24Words => write!(f, "24"),
         }
     }
 }

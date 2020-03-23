@@ -72,23 +72,23 @@ impl Entropy {
     #[inline]
     pub fn get_type(&self) -> Type {
         match self {
-            &Entropy::Entropy9(_) => Type::Type9Words,
-            &Entropy::Entropy12(_) => Type::Type12Words,
-            &Entropy::Entropy15(_) => Type::Type15Words,
-            &Entropy::Entropy18(_) => Type::Type18Words,
-            &Entropy::Entropy21(_) => Type::Type21Words,
-            &Entropy::Entropy24(_) => Type::Type24Words,
+            Entropy::Entropy9(_) => Type::Type9Words,
+            Entropy::Entropy12(_) => Type::Type12Words,
+            Entropy::Entropy15(_) => Type::Type15Words,
+            Entropy::Entropy18(_) => Type::Type18Words,
+            Entropy::Entropy21(_) => Type::Type21Words,
+            Entropy::Entropy24(_) => Type::Type24Words,
         }
     }
 
     fn as_mut(&mut self) -> &mut [u8] {
         match self {
-            &mut Entropy::Entropy9(ref mut b) => b.as_mut(),
-            &mut Entropy::Entropy12(ref mut b) => b.as_mut(),
-            &mut Entropy::Entropy15(ref mut b) => b.as_mut(),
-            &mut Entropy::Entropy18(ref mut b) => b.as_mut(),
-            &mut Entropy::Entropy21(ref mut b) => b.as_mut(),
-            &mut Entropy::Entropy24(ref mut b) => b.as_mut(),
+            Entropy::Entropy9(ref mut b) => b.as_mut(),
+            Entropy::Entropy12(ref mut b) => b.as_mut(),
+            Entropy::Entropy15(ref mut b) => b.as_mut(),
+            Entropy::Entropy18(ref mut b) => b.as_mut(),
+            Entropy::Entropy21(ref mut b) => b.as_mut(),
+            Entropy::Entropy24(ref mut b) => b.as_mut(),
         }
     }
 
@@ -229,12 +229,12 @@ impl Entropy {
 impl AsRef<[u8]> for Entropy {
     fn as_ref(&self) -> &[u8] {
         match self {
-            &Entropy::Entropy9(ref b) => b.as_ref(),
-            &Entropy::Entropy12(ref b) => b.as_ref(),
-            &Entropy::Entropy15(ref b) => b.as_ref(),
-            &Entropy::Entropy18(ref b) => b.as_ref(),
-            &Entropy::Entropy21(ref b) => b.as_ref(),
-            &Entropy::Entropy24(ref b) => b.as_ref(),
+            Entropy::Entropy9(ref b) => b.as_ref(),
+            Entropy::Entropy12(ref b) => b.as_ref(),
+            Entropy::Entropy15(ref b) => b.as_ref(),
+            Entropy::Entropy18(ref b) => b.as_ref(),
+            Entropy::Entropy21(ref b) => b.as_ref(),
+            Entropy::Entropy24(ref b) => b.as_ref(),
         }
     }
 }

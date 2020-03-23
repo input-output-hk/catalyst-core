@@ -219,21 +219,21 @@ impl Addressing {
             return Err(Error::InvalidLength(len));
         }
 
-        let p = path.0[0];
-        if p != BIP44_PURPOSE {
-            return Err(Error::InvalidPurpose(p));
+        let purpose = path.0[0];
+        if purpose != BIP44_PURPOSE {
+            return Err(Error::InvalidPurpose(purpose));
         }
-        let t = path.0[1];
-        if t != BIP44_COIN_TYPE {
-            return Err(Error::InvalidType(t));
+        let coin_type = path.0[1];
+        if coin_type != BIP44_COIN_TYPE {
+            return Err(Error::InvalidType(coin_type));
         }
-        let a = path.0[2];
-        let c = path.0[3];
-        let i = path.0[4];
+        let account = path.0[2];
+        let change = path.0[3];
+        let index = path.0[4];
 
-        Account::new(a)
-            .and_then(|account| Change::new(account, c))
-            .and_then(|change| Addressing::new_from_change(change, i))
+        Account::new(account)
+            .and_then(|account| Change::new(account, change))
+            .and_then(|change| Addressing::new_from_change(change, index))
     }
 
     /// try to generate a new `Addressing` starting from the given

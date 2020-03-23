@@ -61,9 +61,8 @@ impl Entropy {
             Type::Type21Words => Entropy::Entropy21([0u8; 28]),
             Type::Type24Words => Entropy::Entropy24([0u8; 32]),
         };
-        for i in 0..e.as_ref().len() {
-            e.as_mut()[i] = bytes[i]
-        }
+        let len = e.as_ref().len();
+        e.as_mut()[..len].copy_from_slice(&bytes[..len]);
         e
     }
 

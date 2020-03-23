@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use std::{fmt, str, result};
+use std::{fmt, result, str};
 
 /// The support type of `Mnemonics`, i.e. the number of words supported in a
 /// mnemonic phrase.
@@ -114,4 +114,3 @@ impl str::FromStr for Type {
         }
     }
 }
-

@@ -1,5 +1,5 @@
-use thiserror::Error;
 use std::result;
+use thiserror::Error;
 
 /// Error regarding BIP39 operations
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -23,7 +23,11 @@ pub enum Error {
 
     /// Forward error regarding dictionary operations.
     #[error("Unknown mnemonic word")]
-    LanguageError(#[source] #[from] crate::dictionary::Error),
+    LanguageError(
+        #[source]
+        #[from]
+        crate::dictionary::Error,
+    ),
 
     /// the Seed is of invalid size. The parameter is the given seed size,
     /// the expected seed size is [`SEED_SIZE`](./constant.SEED_SIZE.html).

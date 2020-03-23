@@ -48,20 +48,20 @@
 //!
 
 mod bits;
-mod error;
 mod entropy;
+mod error;
+mod mnemonic;
 mod seed;
 mod types;
-mod mnemonic;
 
 pub mod dictionary;
 
 pub use self::{
-    error::{Error, Result},
     entropy::Entropy,
+    error::{Error, Result},
+    mnemonic::{MnemonicIndex, MnemonicString, Mnemonics, MAX_MNEMONIC_VALUE},
     seed::{Seed, SEED_SIZE},
     types::Type,
-    mnemonic::{MnemonicIndex, Mnemonics, MnemonicString, MAX_MNEMONIC_VALUE},
 };
 
 #[cfg(test)]

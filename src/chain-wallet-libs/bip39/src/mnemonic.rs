@@ -1,4 +1,4 @@
-use crate::{Error, Result, Type, dictionary};
+use crate::{dictionary, Error, Result, Type};
 use std::{fmt, ops::Deref, str};
 
 /// RAII for validated mnemonic words. This guarantee a given mnemonic phrase

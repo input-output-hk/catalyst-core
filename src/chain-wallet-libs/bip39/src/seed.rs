@@ -1,8 +1,8 @@
-use crate::{Error, Result, MnemonicString};
+use crate::{Error, MnemonicString, Result};
 use cryptoxide::hmac::Hmac;
 use cryptoxide::pbkdf2::pbkdf2;
 use cryptoxide::sha2::Sha512;
-use std::{ops::Deref};
+use std::ops::Deref;
 
 /// the expected size of a seed, in bytes.
 pub const SEED_SIZE: usize = 64;

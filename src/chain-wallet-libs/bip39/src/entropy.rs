@@ -1,5 +1,5 @@
-use crate::{Error, Result, Type, Mnemonics, MAX_MNEMONIC_VALUE, MnemonicIndex};
-use std::{ops::Deref};
+use crate::{Error, MnemonicIndex, Mnemonics, Result, Type, MAX_MNEMONIC_VALUE};
+use std::ops::Deref;
 
 /// BIP39 entropy is used as root entropy for the HDWallet PRG
 /// to generate the HDWallet root keys.
@@ -260,4 +260,3 @@ impl Drop for Entropy {
     }
 }
 */
-

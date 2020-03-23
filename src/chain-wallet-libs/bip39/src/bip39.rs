@@ -12,10 +12,9 @@
 //! ## To create a new HDWallet
 //!
 //! ```
-//! extern crate chain_wallet;
-//! extern crate rand;
-//!
-//! use chain_wallet::textual::bip39::*;
+//! # extern crate rand;
+//! #
+//! # use bip39::*;
 //!
 //! // first, you need to generate the original entropy
 //! let entropy = Entropy::generate(Type::Type18Words, rand::random);
@@ -32,7 +31,7 @@
 //! ## To recover a HDWallet
 //!
 //! ```
-//! use chain_wallet::textual::bip39::*;
+//! # use bip39::*;
 //!
 //! let mnemonics = "mimic left ask vacant toast follow bitter join diamond gate attend obey";
 //!
@@ -158,9 +157,8 @@ impl Entropy {
     /// # Example
     ///
     /// ```
-    /// extern crate rand;
-    /// # extern chain_wallet;
-    /// # use chain_wallet::textual::bip39::*;
+    /// # extern crate rand;
+    /// # use bip39::*;
     ///
     /// let entropy = Entropy::generate(Type::Type15Words, rand::random);
     /// ```
@@ -244,8 +242,7 @@ impl Entropy {
     ///
     /// ```
     /// # extern crate rand;
-    /// # extern crate chain_wallet;
-    /// # use chain_wallet::textual::bip39::*;
+    /// # use bip39::*;
     ///
     /// let entropy = Entropy::generate(Type::Type15Words, rand::random);
     ///
@@ -269,7 +266,7 @@ impl Entropy {
     /// # Example
     ///
     /// ```
-    /// # use chain_wallet::textual::bip39::*;
+    /// # use bip39::*;
     ///
     /// const MNEMONICS : &'static str = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
     /// let mnemonics = Mnemonics::from_string(&dictionary::ENGLISH, MNEMONICS)
@@ -314,7 +311,7 @@ impl Entropy {
     /// # Example
     ///
     /// ```
-    /// # use chain_wallet::textual::bip39::*;
+    /// # use bip39::*;
     ///
     /// let entropy = Entropy::Entropy12([0;16]);
     ///
@@ -351,18 +348,7 @@ impl Entropy {
         Mnemonics::from_mnemonics(words).unwrap()
     }
 }
-/*
-impl fmt::Display for Entropy {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.as_ref()))
-    }
-}
-impl fmt::Debug for Entropy {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", hex::encode(self.as_ref()))
-    }
-}
-*/
+
 impl AsRef<[u8]> for Entropy {
     fn as_ref(&self) -> &[u8] {
         match self {
@@ -382,6 +368,8 @@ impl Deref for Entropy {
     }
 }
 /*
+TODO
+
 impl Drop for Entropy {
     fn drop(&mut self) {
         match self {
@@ -411,7 +399,7 @@ impl Seed {
     /// # Example
     ///
     /// ```
-    /// use chain_wallet::textual::bip39::*;
+    /// use bip39::*;
     ///
     /// let bytes = [0u8;SEED_SIZE];
     /// let seed  = Seed::from_bytes(bytes);
@@ -427,7 +415,7 @@ impl Seed {
     /// # Example
     ///
     /// ```
-    /// use chain_wallet::textual::bip39::*;
+    /// use bip39::*;
     ///
     /// let bytes = [0u8;SEED_SIZE];
     /// let wrong = [0u8;31];
@@ -465,7 +453,7 @@ impl Seed {
     /// # Example
     ///
     /// ```
-    /// # use chain_wallet::textual::bip39::*;
+    /// # use bip39::*;
     ///
     /// const MNEMONICS : &'static str = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
     /// let mnemonics = MnemonicString::new(&dictionary::ENGLISH, MNEMONICS.to_owned())
@@ -534,7 +522,7 @@ impl MnemonicString {
     /// # Example
     ///
     /// ```
-    /// # use chain_wallet::textual::bip39::*;
+    /// # use bip39::*;
     ///
     /// const MNEMONICS : &'static str = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
     /// let mnemonics = MnemonicString::new(&dictionary::ENGLISH, MNEMONICS.to_owned())
@@ -700,7 +688,7 @@ impl MnemonicIndex {
     /// # Example
     ///
     /// ```
-    /// # use chain_wallet::textual::bip39::*;
+    /// # use bip39::*;
     /// #
     /// let index = MnemonicIndex::new(1029);
     /// assert!(index.is_ok());
@@ -995,10 +983,9 @@ mod test {
     use super::*;
     use rand::random;
 
-    extern crate unicode_normalization;
-    use self::unicode_normalization::UnicodeNormalization;
+    use unicode_normalization::UnicodeNormalization;
 
-    use bip::bip39::dictionary::Language;
+    use crate::dictionary::Language;
 
     #[test]
     fn english_dic() {
@@ -1023,7 +1010,7 @@ mod test {
         let entropy = Entropy::Entropy12([0; 16]);
         let mnemonics = entropy.to_mnemonics();
         let entropy2 = Entropy::from_mnemonics(&mnemonics).unwrap();
-        assert_eq!(entropy, entropy2);
+        assert_eq!(entropy.as_ref(), entropy2.as_ref());
     }
 
     #[test]
@@ -1031,7 +1018,7 @@ mod test {
         let entropy = Entropy::Entropy12([0x7f; 16]);
         let mnemonics = entropy.to_mnemonics();
         let entropy2 = Entropy::from_mnemonics(&mnemonics).unwrap();
-        assert_eq!(entropy, entropy2);
+        assert_eq!(entropy.as_ref(), entropy2.as_ref());
     }
 
     #[test]
@@ -1039,7 +1026,7 @@ mod test {
         let entropy = Entropy::generate(Type::Type12Words, random);
         let mnemonics = entropy.to_mnemonics();
         let entropy2 = Entropy::from_mnemonics(&mnemonics).unwrap();
-        assert_eq!(entropy, entropy2);
+        assert_eq!(entropy.as_ref(), entropy2.as_ref());
     }
 
     #[derive(Debug)]
@@ -1072,8 +1059,8 @@ mod test {
         );
 
         assert_eq!(
-            seed_ref,
-            Seed::from_mnemonic_string(&mnemonics_str, passphrase.as_bytes())
+            seed_ref.as_ref(),
+            Seed::from_mnemonic_string(&mnemonics_str, passphrase.as_bytes()).as_ref()
         );
     }
 

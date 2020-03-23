@@ -1,5 +1,3 @@
-const NUM_BITS_PER_BLOCK: usize = 11;
-
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 enum State {
     S0,
@@ -10,20 +8,6 @@ enum State {
     S5,
     S6,
     S7,
-}
-impl State {
-    fn index(&self) -> usize {
-        match self {
-            State::S0 => 0,
-            State::S1 => 3,
-            State::S2 => 6,
-            State::S3 => 1,
-            State::S4 => 4,
-            State::S5 => 7,
-            State::S6 => 2,
-            State::S7 => 5,
-        }
-    }
 }
 
 pub struct BitWriterBy11 {
@@ -148,10 +132,6 @@ impl<'a> BitReaderBy11<'a> {
             buffer: bytes,
             state: State::S0,
         }
-    }
-
-    pub fn size(&self) -> usize {
-        ((self.buffer.len() * 8) - self.state.index()) / NUM_BITS_PER_BLOCK
     }
 
     pub fn read(&mut self) -> u16 {

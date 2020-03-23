@@ -11,11 +11,8 @@ use crate::date::BlockDate;
 use crate::fee::{LinearFee, PerCertificateFee};
 use crate::fragment::{ConfigParams, FragmentId};
 use crate::header::{ChainLength, HeaderId};
-use crate::key::{serialize_public_key, Hash};
+use crate::key::{serialize_public_key};
 use crate::leadership::bft::LeaderId;
-use crate::ledger::iter;
-use crate::ledger::iter::*;
-use crate::ledger::pots::EntryType;
 use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
 use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
@@ -24,7 +21,6 @@ use crate::transaction::Output;
 use crate::update::{UpdateProposal, UpdateProposalId, UpdateProposalState, UpdateVoterId};
 use crate::value::Value;
 use crate::{config, key, multisig, utxo};
-use cardano_legacy_address::Addr;
 use chain_addr::{Address, Discrimination};
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::digest::{DigestAlg, DigestOf};
@@ -32,10 +28,9 @@ use chain_crypto::AsymmetricPublicKey;
 use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use chain_time::era::{pack_time_era, unpack_time_era};
-use chain_time::TimeEra;
 use std::collections::HashSet;
 use std::convert::TryFrom;
-use std::io::{Cursor, Error, Read, Write};
+use std::io::{Read, Write};
 use std::iter::FromIterator;
 use std::sync::Arc;
 
@@ -988,9 +983,9 @@ impl Deserialize for Ledger {
 pub mod test {
     use super::*;
     use crate::testing::StakePoolBuilder;
-    use chain_crypto::{Blake2b256, Ed25519, KeyPair};
-    use quickcheck::{quickcheck, Arbitrary, TestResult};
-    use std::io::{BufRead, Cursor, Write};
+    use chain_crypto::{Blake2b256};
+    use quickcheck::{quickcheck, TestResult};
+    use std::io::{Cursor};
     use typed_bytes::{ByteArray, ByteSlice};
 
     #[test]
@@ -1013,8 +1008,8 @@ pub mod test {
     pub fn discrimination_pack_unpack_bijection() -> Result<(), std::io::Error> {
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
         let mut codec = Codec::new(c);
-        pack_discrimination(&Discrimination::Test, &mut codec);
-        pack_discrimination(&Discrimination::Production, &mut codec);
+        pack_discrimination(&Discrimination::Test, &mut codec)?;
+        pack_discrimination(&Discrimination::Production, &mut codec)?;
 
         c = codec.into_inner();
         c.set_position(0);
@@ -1236,8 +1231,8 @@ pub mod test {
 
     use crate::testing::{
         scenario::{prepare_scenario, wallet},
-        verifiers::LedgerStateVerifier,
     };
+    use cardano_legacy_address::Addr;
 
     #[test]
     pub fn ledger_serialize_deserialize_bijection() -> Result<(), std::io::Error> {

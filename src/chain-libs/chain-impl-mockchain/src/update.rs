@@ -1,5 +1,4 @@
 //use crate::certificate::{verify_certificate, HasPublicKeys, SignatureRaw};
-use crate::config::Tag::Block0Date;
 use crate::date::BlockDate;
 use crate::fragment::config::ConfigParams;
 use crate::leadership::{bft, genesis::ActiveSlotsCoeffError};
@@ -7,7 +6,6 @@ use crate::setting::Settings;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::Verification;
-use chain_ser::packer::Codec;
 use std::collections::{BTreeMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -400,7 +398,7 @@ mod tests {
     };
     use chain_addr::Discrimination;
     use chain_core::property::testing::serialization_bijection;
-    use quickcheck::{quickcheck as quick_check, Arbitrary, Gen, TestResult};
+    use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::iter;
 

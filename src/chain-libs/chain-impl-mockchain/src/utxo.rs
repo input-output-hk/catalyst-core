@@ -12,9 +12,6 @@ use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use thiserror::Error;
 
-use crate::ledger::OutputAddress;
-use chain_ser::deser::{Deserialize, Serialize};
-use chain_ser::packer::Codec;
 use imhamt::{Hamt, HamtIter, InsertError, RemoveError, ReplaceError, UpdateError};
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]

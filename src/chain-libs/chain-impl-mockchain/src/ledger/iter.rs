@@ -3,12 +3,10 @@ use super::pots::{self, Pots};
 use crate::block::LeadersParticipationRecord;
 use crate::config::ConfigParam;
 use crate::header::{BlockDate, ChainLength};
-use crate::ledger::Error::Block0;
 use crate::stake::PoolsState;
 use crate::{account, legacy, multisig, setting, update, utxo};
 use chain_addr::Address;
 use chain_time::TimeEra;
-use std::io::Chain;
 use std::sync::Arc;
 
 pub enum Entry<'a> {
@@ -348,8 +346,7 @@ mod tests {
         value::Value,
     };
 
-    use chain_core::property::testing::serialization_bijection;
-    use quickcheck::{quickcheck, Arbitrary, Gen, TestResult};
+    use quickcheck::{Arbitrary, Gen};
 
     impl Arbitrary for Globals {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {

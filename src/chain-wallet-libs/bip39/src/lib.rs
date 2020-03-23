@@ -165,7 +165,6 @@ mod test {
         mk_tests(TEST_VECTORS_JAPANESE, &dictionary::JAPANESE)
     }
 
-    const TEST_VECTORS_ENGLISH: &'static [TestVector] = &include!("test_vectors/bip39_english.txt");
-    const TEST_VECTORS_JAPANESE: &'static [TestVector] =
-        &include!("test_vectors/bip39_japanese.txt");
+    const TEST_VECTORS_ENGLISH: &[TestVector] = &include!("test_vectors/bip39_english.txt");
+    const TEST_VECTORS_JAPANESE: &[TestVector] = &include!("test_vectors/bip39_japanese.txt");
 }

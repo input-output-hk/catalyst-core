@@ -212,7 +212,7 @@ mod test {
 
     #[test]
     fn bit_read_by_11() {
-        const BYTES: &'static [u8] = &[
+        const BYTES: &[u8] = &[
             0b0000_0000,
             0b0010_0000,
             0b0000_0100,

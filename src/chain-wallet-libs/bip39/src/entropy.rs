@@ -168,7 +168,7 @@ impl Entropy {
             to_validate.write(mnemonic.0);
         }
 
-        let mut r = to_validate.to_bytes();
+        let mut r = to_validate.into_vec();
 
         let entropy_bytes = Vec::from(&r[..t.to_key_size() / 8]);
         let entropy = Self::new(t, &entropy_bytes[..]);

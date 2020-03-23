@@ -9,6 +9,8 @@ cryptoxide = "0.1"
 thiserror = { version = "1.0.13", default-features = false }
 
 [dev-dependencies]
+quickcheck = "0.9"
+quickcheck_macros = "0.9"
 unicode-normalization = "*"
 rand = "*"
 hex = "*"

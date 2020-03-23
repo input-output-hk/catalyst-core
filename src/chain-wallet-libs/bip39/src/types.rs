@@ -1,5 +1,18 @@
 use crate::{Error, Result};
 use std::{fmt, result, str};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ParseTypeError {
+    #[error("Expecting a number")]
+    NaN(
+        #[source]
+        #[from]
+        std::num::ParseIntError,
+    ),
+    #[error("Not a valid number of mnemonic, expected one of [9, 12, 15, 18, 21, 24]")]
+    InvalidNumber,
+}
 
 /// The support type of `Mnemonics`, i.e. the number of words supported in a
 /// mnemonic phrase.
@@ -82,34 +95,78 @@ impl Type {
         }
     }
 }
+
 impl Default for Type {
     fn default() -> Type {
-        Type::Type18Words
+        Type::Type24Words
     }
 }
+
 impl fmt::Display for Type {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Type::Type9Words => write!(f, "9"),
-            Type::Type12Words => write!(f, "12"),
-            Type::Type15Words => write!(f, "15"),
-            Type::Type18Words => write!(f, "18"),
-            Type::Type21Words => write!(f, "21"),
-            Type::Type24Words => write!(f, "24"),
+            Type::Type9Words => 9.fmt(f),
+            Type::Type12Words => 12.fmt(f),
+            Type::Type15Words => 15.fmt(f),
+            Type::Type18Words => 18.fmt(f),
+            Type::Type21Words => 21.fmt(f),
+            Type::Type24Words => 24.fmt(f),
         }
     }
 }
+
 impl str::FromStr for Type {
-    type Err = &'static str;
+    type Err = ParseTypeError;
     fn from_str(s: &str) -> result::Result<Self, Self::Err> {
-        match s {
-            "9" => Ok(Type::Type9Words),
-            "12" => Ok(Type::Type12Words),
-            "15" => Ok(Type::Type15Words),
-            "18" => Ok(Type::Type18Words),
-            "21" => Ok(Type::Type21Words),
-            "24" => Ok(Type::Type24Words),
-            _ => Err("Unknown bip39 mnemonic size"),
+        let i = s.parse()?;
+        match i {
+            9 => Ok(Type::Type9Words),
+            12 => Ok(Type::Type12Words),
+            15 => Ok(Type::Type15Words),
+            18 => Ok(Type::Type18Words),
+            21 => Ok(Type::Type21Words),
+            24 => Ok(Type::Type24Words),
+            _ => Err(ParseTypeError::InvalidNumber),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use quickcheck::{Arbitrary, Gen};
+
+    impl Arbitrary for Type {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            use Type::*;
+            const VALUES: &[Type] = &[
+                Type9Words,
+                Type12Words,
+                Type15Words,
+                Type18Words,
+                Type21Words,
+                Type24Words,
+            ];
+            let v = usize::arbitrary(g) % VALUES.len();
+            VALUES[v]
+        }
+    }
+
+    #[test]
+    fn to_string() {
+        assert_eq!(Type::Type9Words.to_string(), "9");
+        assert_eq!(Type::Type12Words.to_string(), "12");
+        assert_eq!(Type::Type15Words.to_string(), "15");
+        assert_eq!(Type::Type18Words.to_string(), "18");
+        assert_eq!(Type::Type21Words.to_string(), "21");
+        assert_eq!(Type::Type24Words.to_string(), "24");
+    }
+
+    #[quickcheck]
+    fn fmt_parse(t: Type) -> bool {
+        let s = t.to_string();
+        let v = s.parse::<Type>().unwrap();
+
+        v == t
     }
 }

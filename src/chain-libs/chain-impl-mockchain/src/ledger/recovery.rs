@@ -4,15 +4,14 @@ use crate::account::AccountAlg;
 use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
 };
-use crate::block::ConsensusVersion;
+use crate::chaintypes::ConsensusVersion;
 use crate::certificate::{PoolId, PoolRegistration};
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::fee::{LinearFee, PerCertificateFee};
 use crate::fragment::{ConfigParams, FragmentId};
 use crate::header::{ChainLength, HeaderId};
-use crate::key::{serialize_public_key};
-use crate::leadership::bft::LeaderId;
+use crate::key::{serialize_public_key, BftLeaderId};
 use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
 use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
@@ -400,14 +399,14 @@ fn unpack_config_params<R: std::io::BufRead>(
 }
 
 fn pack_leader_id<W: std::io::Write>(
-    leader_id: &LeaderId,
+    leader_id: &BftLeaderId,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     serialize_public_key(&leader_id.0, codec)
 }
 
-fn unpack_leader_id<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<LeaderId, std::io::Error> {
-    LeaderId::deserialize(codec)
+fn unpack_leader_id<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<BftLeaderId, std::io::Error> {
+    BftLeaderId::deserialize(codec)
 }
 
 fn pack_header_id<W: std::io::Write>(
@@ -1340,7 +1339,7 @@ pub mod test {
             )
         }
 
-        fn leader_id_pack_unpack_biyection(leader_id: LeaderId) -> TestResult {
+        fn leader_id_pack_unpack_biyection(leader_id: BftLeaderId) -> TestResult {
             pack_unpack_bijection(
                 &mut pack_leader_id,
                 &mut unpack_leader_id,

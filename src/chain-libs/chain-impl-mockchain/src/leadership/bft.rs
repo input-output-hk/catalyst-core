@@ -4,10 +4,6 @@ use crate::{
     leadership::{Error, ErrorKind, Verification},
     ledger::Ledger,
 };
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property;
-use chain_crypto::{Ed25519, PublicKey};
-use chain_ser::packer::Codec;
 use std::sync::Arc;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -62,53 +58,5 @@ impl LeadershipData {
     pub(crate) fn get_leader_at(&self, date: BlockDate) -> Result<BftLeaderId, Error> {
         let BftRoundRobinIndex(ofs) = self.offset(date.slot_id as u64);
         Ok(self.leaders[ofs as usize].clone())
-    }
-}
-
-impl LeaderId {
-    pub fn as_public_key(&self) -> &PublicKey<BftVerificationAlg> {
-        &self.0
-    }
-}
-
-impl property::Serialize for LeaderId {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        serialize_public_key(&self.0, writer)
-    }
-}
-
-impl property::Deserialize for LeaderId {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let mut codec = Codec::new(reader);
-        let size: usize = 32;
-        let bytes = codec.get_bytes(size)?;
-        let mut buff = ReadBuf::from(&bytes);
-        match deserialize_public_key(&mut buff) {
-            Ok(pk) => Ok(LeaderId(pk)),
-            Err(e) => Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("Error reading LeaderId public key: {}", e),
-            )),
-        }
-    }
-}
-
-impl Readable for LeaderId {
-    fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        deserialize_public_key(reader).map(LeaderId)
-    }
-}
-
-impl AsRef<[u8]> for LeaderId {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_ref()
-    }
-}
-impl From<PublicKey<BftVerificationAlg>> for LeaderId {
-    fn from(v: PublicKey<BftVerificationAlg>) -> Self {
-        LeaderId(v)
     }
 }

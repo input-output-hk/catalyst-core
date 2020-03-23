@@ -12,6 +12,7 @@ use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
 
 use std::str::FromStr;
+use chain_core::packer::Codec;
 
 #[derive(Clone)]
 pub enum EitherEd25519SecretKey {
@@ -334,6 +335,25 @@ impl property::Serialize for BftLeaderId {
     }
 }
 
+
+impl property::Deserialize for BftLeaderId {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let mut codec = Codec::new(reader);
+        let size: usize = 32;
+        let bytes = codec.get_bytes(size)?;
+        let mut buff = ReadBuf::from(&bytes);
+        match deserialize_public_key(&mut buff) {
+            Ok(pk) => Ok(BftLeaderId(pk)),
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Error reading LeaderId public key: {}", e),
+            )),
+        }
+    }
+}
+
 impl Readable for BftLeaderId {
     fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         deserialize_public_key(reader).map(BftLeaderId)
@@ -386,7 +406,9 @@ mod tests {
     use super::*;
     use chain_crypto::{testing, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12};
     use lazy_static::lazy_static;
-    use quickcheck::{Arbitrary, Gen};
+    use chain_core::property::testing::serialization_bijection;
+    use quickcheck::{quickcheck, Arbitrary, Gen, TestResult};
+
 
     impl Arbitrary for Hash {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -416,6 +438,12 @@ mod tests {
                 vrf_public_key: vrf_sk.to_public(),
                 kes_public_key: PK_KES.clone(),
             }
+        }
+    }
+
+    quickcheck! {
+        fn leader_id_serialize_deserialize_biyection(leader_id: BftLeaderId) -> TestResult {
+            serialization_bijection(leader_id)
         }
     }
 }

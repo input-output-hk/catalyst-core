@@ -983,7 +983,8 @@ impl Deserialize for Ledger {
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod test {
     use super::*;
-    use crate::testing::StakePoolBuilder;
+    use crate::testing::{ConfigBuilder, LedgerBuilder, StakePoolBuilder};
+    use cardano_legacy_address::Addr;
     use chain_crypto::Blake2b256;
     use quickcheck::{quickcheck, TestResult};
     use std::io::Cursor;
@@ -1230,29 +1231,19 @@ pub mod test {
         Ok(())
     }
 
-    use crate::testing::scenario::{prepare_scenario, wallet};
-    use cardano_legacy_address::Addr;
-
     #[test]
     pub fn ledger_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
-        let (test_ledger, _) = prepare_scenario()
-            .with_initials(vec![
-                wallet("Alice").with(1_000).owns("stake_pool"),
-                wallet("Bob").with(1_000).owns("stake_pool"),
-                wallet("Clarice").with(1_000).owns("stake_pool"),
-                wallet("David").with(1_000).owns("stake_pool"),
-            ])
+        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+            .faucet_value(Value(42000))
             .build()
-            .unwrap();
+            .expect("cannot build test ledger");
 
         let ledger: Ledger = test_ledger.into();
         let mut c = std::io::Cursor::new(Vec::new());
         ledger.serialize(&mut c)?;
         c.set_position(0);
         let other_ledger = Ledger::deserialize(&mut c)?;
-        let other_ledger2 = ledger.iter().collect::<Result<Ledger, _>>().unwrap();
-        assert_eq!(other_ledger, other_ledger2);
-
+        assert_eq!(ledger, other_ledger);
         Ok(())
     }
 

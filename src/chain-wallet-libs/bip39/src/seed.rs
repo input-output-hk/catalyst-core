@@ -83,7 +83,7 @@ impl Seed {
     /// ```
     ///
     pub fn from_mnemonic_string(mnemonics: &MnemonicString, password: &[u8]) -> Self {
-        let mut salt = Vec::from("mnemonic".as_bytes());
+        let mut salt = Vec::from("mnemonic");
         salt.extend_from_slice(password);
         let mut mac = Hmac::new(Sha512::new(), mnemonics.as_bytes());
         let mut result = [0; SEED_SIZE];

@@ -11,8 +11,8 @@ use chain_crypto::{
 use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
 
-use std::str::FromStr;
 use chain_core::packer::Codec;
+use std::str::FromStr;
 
 #[derive(Clone)]
 pub enum EitherEd25519SecretKey {
@@ -335,7 +335,6 @@ impl property::Serialize for BftLeaderId {
     }
 }
 
-
 impl property::Deserialize for BftLeaderId {
     type Error = std::io::Error;
 
@@ -404,11 +403,10 @@ impl Readable for GenesisPraosLeader {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
+    use chain_core::property::testing::serialization_bijection;
     use chain_crypto::{testing, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12};
     use lazy_static::lazy_static;
-    use chain_core::property::testing::serialization_bijection;
     use quickcheck::{quickcheck, Arbitrary, Gen, TestResult};
-
 
     impl Arbitrary for Hash {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {

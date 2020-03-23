@@ -4,8 +4,8 @@ use crate::account::AccountAlg;
 use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
 };
-use crate::chaintypes::ConsensusVersion;
 use crate::certificate::{PoolId, PoolRegistration};
+use crate::chaintypes::ConsensusVersion;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::fee::{LinearFee, PerCertificateFee};
@@ -405,7 +405,9 @@ fn pack_leader_id<W: std::io::Write>(
     serialize_public_key(&leader_id.0, codec)
 }
 
-fn unpack_leader_id<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<BftLeaderId, std::io::Error> {
+fn unpack_leader_id<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<BftLeaderId, std::io::Error> {
     BftLeaderId::deserialize(codec)
 }
 
@@ -982,9 +984,9 @@ impl Deserialize for Ledger {
 pub mod test {
     use super::*;
     use crate::testing::StakePoolBuilder;
-    use chain_crypto::{Blake2b256};
+    use chain_crypto::Blake2b256;
     use quickcheck::{quickcheck, TestResult};
-    use std::io::{Cursor};
+    use std::io::Cursor;
     use typed_bytes::{ByteArray, ByteSlice};
 
     #[test]
@@ -1228,14 +1230,12 @@ pub mod test {
         Ok(())
     }
 
-    use crate::testing::{
-        scenario::{prepare_scenario, wallet},
-    };
+    use crate::testing::scenario::{prepare_scenario, wallet};
     use cardano_legacy_address::Addr;
 
     #[test]
     pub fn ledger_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
-        let (test_ledger, _)  = prepare_scenario()
+        let (test_ledger, _) = prepare_scenario()
             .with_initials(vec![
                 wallet("Alice").with(1_000).owns("stake_pool"),
                 wallet("Bob").with(1_000).owns("stake_pool"),
@@ -1245,7 +1245,7 @@ pub mod test {
             .build()
             .unwrap();
 
-        let ledger : Ledger = test_ledger.into();
+        let ledger: Ledger = test_ledger.into();
         let mut c = std::io::Cursor::new(Vec::new());
         ledger.serialize(&mut c)?;
         c.set_position(0);

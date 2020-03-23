@@ -1,10 +1,9 @@
 pub mod transaction;
 use super::pages::*;
-use super::Metadata;
-use super::Node;
-use super::PageId;
+use super::{transaction::PageRefMut, Metadata, Node, PageId};
 use crate::btreeindex::page_manager::PageManager;
-use crate::btreeindex::pages::{borrow::Mutable, PageHandle};
+
+use crate::btreeindex::node::NodeRef;
 use crate::mem_page::MemPage;
 use crate::Key;
 use std::collections::VecDeque;
@@ -59,7 +58,6 @@ where
     backtrack: Vec<PageId>,
     new_root: Option<PageId>,
     phantom_key: PhantomData<[K]>,
-    page_size: u64,
     key_buffer_size: u32,
 }
 
@@ -97,7 +95,6 @@ impl TransactionManager {
         &'me self,
         pages: &'index RwLock<Pages>,
         key_buffer_size: u32,
-        page_size: u64,
     ) -> InsertTransaction<'me, 'index> {
         let page_manager = self.page_manager.lock().unwrap();
         let versions = self.versions.lock().unwrap();
@@ -109,7 +106,6 @@ impl TransactionManager {
             versions,
             self.latest_version.clone(),
             key_buffer_size,
-            page_size,
         )
     }
 
@@ -172,17 +168,16 @@ where
     K: Key,
 {
     /// traverse the tree while storing the path, so we can then backtrack while splitting
-    pub fn search_for(&mut self, key: &K) {
+    pub fn search_for<'a>(&'a mut self, key: &K) {
         let mut current = self.tx.root();
 
         loop {
             let page = self.tx.get_page(current).unwrap();
 
             let found_leaf = page.as_node(
-                self.page_size,
                 self.key_buffer_size.try_into().unwrap(),
                 |node: Node<K, &[u8]>| {
-                    if let Some(inode) = node.as_internal() {
+                    if let Some(inode) = node.try_as_internal() {
                         let upper_pivot = match inode.keys().binary_search(key) {
                             Ok(pos) => Some(pos + 1),
                             Err(pos) => Some(pos),
@@ -190,10 +185,10 @@ where
                         .filter(|pos| pos < &inode.children().len());
 
                         if let Some(upper_pivot) = upper_pivot {
-                            current = inode.children().get(upper_pivot).unwrap().clone();
+                            current = inode.children().get(upper_pivot);
                         } else {
                             let last = inode.children().len().checked_sub(1).unwrap();
-                            current = inode.children().get(last).unwrap().clone();
+                            current = inode.children().get(last);
                         }
                         false
                     } else {
@@ -210,7 +205,7 @@ where
         }
     }
 
-    pub fn get_next(&mut self) -> Result<Option<PageHandle<Mutable>>, std::io::Error> {
+    pub fn get_next<'a>(&'a mut self) -> Result<Option<PageRefMut<'a, 'index>>, std::io::Error> {
         let id = match self.backtrack.pop() {
             Some(id) => id,
             None => return Ok(None),
@@ -221,7 +216,6 @@ where
             self.new_root = Some(id);
         }
 
-        let page_size = self.page_size;
         let key_buffer_size = usize::try_from(self.key_buffer_size).unwrap();
 
         match self.tx.mut_page(id)? {
@@ -233,8 +227,7 @@ where
                 // rest of the insertion algorithm)
                 let mut rename_in_parents = rename_in_parents;
                 for id in self.backtrack.iter().rev() {
-                    let result =
-                        rename_in_parents.rename_parent::<K>(page_size, key_buffer_size, *id)?;
+                    let result = rename_in_parents.rename_parent::<K>(key_buffer_size, *id)?;
 
                     match result {
                         MutablePage::NeedsParentRedirect(rename) => rename_in_parents = rename,

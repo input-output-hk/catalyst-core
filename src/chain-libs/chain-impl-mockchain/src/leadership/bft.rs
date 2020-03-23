@@ -1,6 +1,6 @@
 use crate::block::{BlockDate, Header, Proof};
-use crate::key::{deserialize_public_key, serialize_public_key};
 use crate::{
+    key::BftLeaderId,
     leadership::{Error, ErrorKind, Verification},
     ledger::Ledger,
 };
@@ -10,24 +10,13 @@ use chain_crypto::{Ed25519, PublicKey};
 use chain_ser::packer::Codec;
 use std::sync::Arc;
 
-pub type BftVerificationAlg = Ed25519;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct LeaderId(pub(crate) PublicKey<BftVerificationAlg>);
-
-impl From<[u8; 32]> for LeaderId {
-    fn from(v: [u8; 32]) -> LeaderId {
-        LeaderId(PublicKey::from_binary(&v[..]).expect("leader-id invalid format"))
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct BftRoundRobinIndex(u64);
 
 /// The BFT Leader selection is based on a round robin of the expected leaders
 #[derive(Debug)]
 pub struct LeadershipData {
-    pub(crate) leaders: Arc<Vec<LeaderId>>,
+    pub(crate) leaders: Arc<Vec<BftLeaderId>>,
 }
 
 impl LeadershipData {
@@ -70,7 +59,7 @@ impl LeadershipData {
     }
 
     #[inline]
-    pub(crate) fn get_leader_at(&self, date: BlockDate) -> Result<LeaderId, Error> {
+    pub(crate) fn get_leader_at(&self, date: BlockDate) -> Result<BftLeaderId, Error> {
         let BftRoundRobinIndex(ofs) = self.offset(date.slot_id as u64);
         Ok(self.leaders[ofs as usize].clone())
     }

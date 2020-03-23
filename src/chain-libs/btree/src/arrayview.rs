@@ -114,7 +114,11 @@ where
         self.len
     }
 
-    pub(crate) fn get<'me>(&'me self, pos: usize) -> Option<<E as Storeable<'_>>::Output> {
+    pub(crate) fn get<'me>(&'me self, pos: usize) -> <E as Storeable<'_>>::Output {
+        self.try_get(pos).unwrap()
+    }
+
+    pub(crate) fn try_get<'me>(&'me self, pos: usize) -> Option<<E as Storeable<'_>>::Output> {
         if pos < self.len() {
             Some(
                 E::read(
@@ -199,7 +203,6 @@ where
         }
     }
 
-    #[allow(dead_code)]
     pub(crate) fn delete(&mut self, pos: usize) -> Result<(), ()> {
         if pos < self.len() {
             unsafe {
@@ -277,7 +280,7 @@ where
     type Item = <E as Storeable<'elements>>::Output;
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos < self.view.len() {
-            let e = self.view.get(self.pos);
+            let e = self.view.try_get(self.pos);
             self.pos += 1;
             e
         } else {
@@ -302,8 +305,13 @@ impl<'a> Storeable<'a> for u32 {
     fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error> {
         Ok(LittleEndian::write_u32(buf, *self))
     }
+
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
         Ok(LittleEndian::read_u32(buf))
+    }
+
+    fn as_output(self) -> Self::Output {
+        self
     }
 }
 
@@ -314,8 +322,13 @@ impl<'a> Storeable<'a> for u64 {
     fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error> {
         Ok(LittleEndian::write_u64(buf, *self))
     }
+
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
         Ok(LittleEndian::read_u64(buf))
+    }
+
+    fn as_output(self) -> Self::Output {
+        self
     }
 }
 

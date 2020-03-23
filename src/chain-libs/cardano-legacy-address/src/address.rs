@@ -15,7 +15,7 @@ use cbor_event::{self, de::Deserializer, se::Serializer};
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 use cryptoxide::ed25519::PUBLIC_KEY_LENGTH;
-use cryptoxide::sha3::Sha3;
+use cryptoxide::sha3::Sha3_256;
 use ed25519_bip32::XPub;
 
 use std::{
@@ -134,7 +134,7 @@ impl cbor_event::de::Deserialize for Attributes {
 
 // calculate the hash of the data using SHA3 digest then using Blake2b224
 fn sha3_then_blake2b224(data: &[u8]) -> [u8; 28] {
-    let mut sh3 = Sha3::sha3_256();
+    let mut sh3 = Sha3_256::new();
     let mut sh3_out = [0; 32];
     sh3.input(data.as_ref());
     sh3.result(&mut sh3_out);

@@ -1,12 +1,14 @@
 pub mod check;
 mod info;
 pub mod iter;
+mod leaderlog;
 pub mod ledger;
 mod pots;
 pub mod recovery;
 mod reward_info;
 
 pub use iter::*;
+pub use leaderlog::LeadersParticipationRecord;
 pub use ledger::*;
 pub use pots::Pots;
 pub use reward_info::{EpochRewardsInfo, RewardsInfoParameters};

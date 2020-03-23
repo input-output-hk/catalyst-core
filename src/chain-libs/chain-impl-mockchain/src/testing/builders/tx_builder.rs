@@ -1,7 +1,7 @@
 use crate::{
+    chaintypes::HeaderId,
     fee::FeeAlgorithm,
     fragment::{Fragment, FragmentId},
-    header::HeaderId,
     testing::{
         builders::witness_builder::make_witness, data::AddressDataValue, ledger::TestLedger, KeysDb,
     },

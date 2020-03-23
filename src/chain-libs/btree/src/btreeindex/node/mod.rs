@@ -1,6 +1,7 @@
 pub mod internal_node;
 pub mod leaf_node;
 
+use marker::*;
 use std::marker::PhantomData;
 
 use crate::Key;
@@ -16,9 +17,84 @@ pub struct Node<K, T> {
     phantom: PhantomData<[K]>,
 }
 
+/// Trait used to abstract over the input for the rebalance algorithm, taking a Node<K, &[u8]> could be enough in normal cases, but this allows things like RAIIGuards
+pub trait NodeRef {
+    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key;
+}
+
+/// Trait used to abstract over the input for the rebalance algorithm, taking a Node<K, &mut [u8]> could be enough in normal cases, but this allows things like RAIIGuards
+pub trait NodeRefMut: NodeRef {
+    fn as_node_mut<K, R>(
+        &mut self,
+        key_buffer_size: usize,
+        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
+    ) -> R
+    where
+        K: Key;
+}
+
 pub(crate) enum NodeTag {
     Internal = 0,
     Leaf = 1,
+}
+
+/// Demultiplexer for the
+pub enum RebalanceResult<NodeType> {
+    TakeFromLeft(RebalanceSiblingArg<TakeFromLeft, NodeType>),
+    TakeFromRight(RebalanceSiblingArg<TakeFromRight, NodeType>),
+    MergeIntoLeft(RebalanceSiblingArg<MergeIntoLeft, NodeType>),
+    MergeIntoSelf(RebalanceSiblingArg<MergeIntoSelf, NodeType>),
+}
+
+/// Auxiliary type for the rebalance process. After calling rebalance, an instance of this if returned with the proper bounds and only one function for providing the
+/// required arguments for the given strategy. Note: This is not enforced by anything, is just a convention.
+
+// The type is necessary in order to only clone/shadow nodes only when it's certain they will be used. For example, if both siblings of the rebalancing node have spare keys,
+// then the selected strategy will always be to take from the left, this means that only the left sibling needs to be mutated/cloned. Doing the cloning lazily with closures
+// would be probably more natural, but I find this approach simpler from a borrowing/state/generic bounds management perspective.
+pub struct RebalanceSiblingArg<Strategy, NodeType> {
+    // in practice, this would be a type that somehow borrows a Node, in order to operate on it, but there is no Node trait, so it is unbounded
+    node: NodeType,
+    phantom: PhantomData<Strategy>,
+}
+
+impl<Strategy, NodeType> RebalanceSiblingArg<Strategy, NodeType> {
+    fn new(node: NodeType) -> Self {
+        Self {
+            node,
+            phantom: PhantomData,
+        }
+    }
+}
+
+mod marker {
+    pub struct TakeFromLeft;
+    pub struct TakeFromRight;
+    pub struct MergeIntoLeft;
+    pub struct MergeIntoSelf;
+}
+
+/// input for the rebalance algorithms, this is used to define which of the strategies is used
+/// in both cases (leaf and internal) these are:
+/// steal key from left sibling, steal a key from right sibling, merge current into left sibling, merge right sibling into current.
+// the generic is bound only on NodeRef (immutable) because this is only used to ask the sibling if it has keys to borrow
+pub enum SiblingsArg<N: NodeRef> {
+    Left(N),
+    Right(N),
+    Both(N, N),
+}
+
+impl<N: NodeRef> SiblingsArg<N> {
+    pub fn new_from_options(left_sibling: Option<N>, right_sibling: Option<N>) -> Self {
+        match (left_sibling, right_sibling) {
+            (Some(left), Some(right)) => SiblingsArg::Both(left, right),
+            (Some(left), None) => SiblingsArg::Left(left),
+            (None, Some(right)) => SiblingsArg::Right(right),
+            (None, None) => unreachable!(),
+        }
+    }
 }
 
 impl<'b, K, T> Node<K, T>
@@ -48,24 +124,40 @@ where
         }
     }
 
-    pub(crate) fn as_internal_mut<'i: 'b>(&'i mut self) -> Option<InternalNode<'b, K, &mut [u8]>> {
+    pub(crate) fn try_as_internal_mut<'i: 'b>(
+        &'i mut self,
+    ) -> Option<InternalNode<'b, K, &mut [u8]>> {
+        // the unsafe part is actually in Node::from_raw, so at this point we don't care that much
         match self.get_tag() {
-            NodeTag::Internal => Some(InternalNode::from_raw(
-                self.key_buffer_size,
-                &mut self.data.as_mut()[TAG_SIZE..],
-            )),
+            NodeTag::Internal => unsafe {
+                Some(InternalNode::from_raw(
+                    self.key_buffer_size,
+                    &mut self.data.as_mut()[TAG_SIZE..],
+                ))
+            },
             NodeTag::Leaf => None,
         }
     }
 
-    pub(crate) fn as_leaf_mut<'i: 'b>(&'i mut self) -> Option<LeafNode<'b, K, &mut [u8]>> {
+    pub(crate) fn try_as_leaf_mut<'i: 'b>(&'i mut self) -> Option<LeafNode<'b, K, &mut [u8]>> {
+        // the unsafe part is actually in Node::from_raw, so at this point we don't care that much
         match self.get_tag() {
-            NodeTag::Leaf => Some(LeafNode::from_raw(
-                self.key_buffer_size,
-                &mut self.data.as_mut()[TAG_SIZE..],
-            )),
+            NodeTag::Leaf => unsafe {
+                Some(LeafNode::from_raw(
+                    self.key_buffer_size,
+                    &mut self.data.as_mut()[TAG_SIZE..],
+                ))
+            },
             NodeTag::Internal => None,
         }
+    }
+
+    pub(crate) fn as_internal_mut(&mut self) -> InternalNode<K, &mut [u8]> {
+        self.try_as_internal_mut().unwrap()
+    }
+
+    pub(crate) fn as_leaf_mut(&mut self) -> LeafNode<K, &mut [u8]> {
+        self.try_as_leaf_mut().unwrap()
     }
 }
 
@@ -74,7 +166,7 @@ where
     K: Key,
     T: AsRef<[u8]> + 'b,
 {
-    pub(crate) fn from_raw(data: T, key_buffer_size: usize) -> Node<K, T> {
+    pub(crate) unsafe fn from_raw(data: T, key_buffer_size: usize) -> Node<K, T> {
         Node {
             data,
             key_buffer_size,
@@ -92,7 +184,7 @@ where
         }
     }
 
-    pub(crate) fn as_internal<'i: 'b>(&'i self) -> Option<InternalNode<'b, K, &[u8]>> {
+    pub(crate) fn try_as_internal<'i: 'b>(&'i self) -> Option<InternalNode<'b, K, &[u8]>> {
         match self.get_tag() {
             NodeTag::Internal => Some(InternalNode::view(
                 self.key_buffer_size,
@@ -102,7 +194,7 @@ where
         }
     }
 
-    pub(crate) fn as_leaf<'i: 'b>(&'i self) -> Option<LeafNode<'b, K, &[u8]>> {
+    pub(crate) fn try_as_leaf<'i: 'b>(&'i self) -> Option<LeafNode<'b, K, &[u8]>> {
         match self.get_tag() {
             NodeTag::Leaf => Some(LeafNode::view(
                 self.key_buffer_size,
@@ -110,6 +202,14 @@ where
             )),
             NodeTag::Internal => None,
         }
+    }
+
+    pub(crate) fn as_leaf(&self) -> LeafNode<K, &[u8]> {
+        self.try_as_leaf().unwrap()
+    }
+
+    pub(crate) fn as_internal(&self) -> InternalNode<K, &[u8]> {
+        self.try_as_internal().unwrap()
     }
 }
 
@@ -125,10 +225,88 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::btreeindex::pages::{
+        borrow::{Immutable, Mutable},
+        PageHandle, Pages, PagesInitializationParams,
+    };
     use crate::btreeindex::PageId;
     use crate::mem_page::MemPage;
+    use crate::storage::MmapStorage;
     use crate::tests::U64Key;
     use std::mem::size_of;
+    use tempfile::tempfile;
+
+    pub fn pages() -> Pages {
+        let page_size = 8 + 8 + 3 * size_of::<U64Key>() + 5 * size_of::<PageId>() + 4 + 8;
+        let storage = MmapStorage::new(tempfile().unwrap()).unwrap();
+        let params = PagesInitializationParams {
+            storage,
+            page_size: page_size as u16,
+            key_buffer_size: size_of::<U64Key>() as u32,
+        };
+
+        let mut pages = Pages::new(params);
+        pages.extend(300).unwrap();
+        pages
+    }
+
+    pub fn allocate_internal() -> Node<U64Key, MemPage> {
+        let page_size = 8 + 8 + 3 * size_of::<U64Key>() + 4 * size_of::<PageId>();
+        let page = MemPage::new(page_size);
+        Node::new_internal(std::mem::size_of::<U64Key>(), page)
+    }
+
+    pub fn internal_page_mut(
+        pages: &Pages,
+        page_id: PageId,
+        keys: Vec<U64Key>,
+        children: Vec<u32>,
+    ) -> PageHandle<Mutable> {
+        assert_eq!(keys.len() + 1, children.len());
+
+        let mut page = pages.mut_page(page_id).unwrap();
+
+        let key_buffer_size = size_of::<U64Key>();
+        page.as_slice(|slice| {
+            InternalNode::<U64Key, &mut [u8]>::init(key_buffer_size, slice);
+        });
+
+        page.as_node_mut(key_buffer_size, |mut node| {
+            let mut iter = keys.iter();
+
+            if let Some(first_key) = iter.next() {
+                node.as_internal_mut()
+                    .insert_first((*first_key).clone(), children[0], children[1]);
+            }
+
+            for (k, c) in iter.zip(children[2..].iter()) {
+                match node
+                    .as_internal_mut()
+                    .insert((*k).clone(), *c, &mut allocate_internal)
+                {
+                    InternalInsertStatus::Ok => (),
+                    _ => panic!("insertion shouldn't split"),
+                };
+            }
+        });
+
+        page
+    }
+
+    pub fn internal_page(
+        pages: &Pages,
+        page_id: PageId,
+        keys: Vec<U64Key>,
+        children: Vec<u32>,
+    ) -> PageHandle<Immutable> {
+        assert_eq!(keys.len() + 1, children.len());
+
+        {
+            internal_page_mut(pages, page_id, keys, children);
+        }
+
+        pages.get_page(page_id).unwrap()
+    }
 
     #[test]
     fn insert_internal_with_split_at_first() {
@@ -167,11 +345,9 @@ mod tests {
         };
 
         node.as_internal_mut()
-            .unwrap()
             .insert_first(U64Key(i1 as u64), 0u32, i1);
         match node
             .as_internal_mut()
-            .unwrap()
             .insert(U64Key(i2 as u64), i2, &mut allocate)
         {
             InternalInsertStatus::Ok => (),
@@ -180,53 +356,25 @@ mod tests {
 
         match node
             .as_internal_mut()
-            .unwrap()
             .insert(U64Key(i3 as u64), i3, &mut allocate)
         {
             InternalInsertStatus::Split(U64Key(2), new_node) => {
-                assert_eq!(new_node.as_internal().unwrap().keys().len(), 1);
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .unwrap()
-                        .keys()
-                        .get(0)
-                        .expect("Couldn't get first key"),
-                    U64Key(3)
-                );
-                assert_eq!(new_node.as_internal().unwrap().children().len(), 2);
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .unwrap()
-                        .children()
-                        .get(0)
-                        .expect("Couldn't get first key"),
-                    2
-                );
-                assert_eq!(
-                    new_node
-                        .as_internal()
-                        .unwrap()
-                        .children()
-                        .get(1)
-                        .expect("Couldn't get second key"),
-                    3
-                );
+                assert_eq!(new_node.as_internal().keys().len(), 1);
+                assert_eq!(new_node.as_internal().keys().get(0), U64Key(3));
+                assert_eq!(new_node.as_internal().children().len(), 2);
+                assert_eq!(new_node.as_internal().children().get(0), 2);
+                assert_eq!(new_node.as_internal().children().get(1), 3);
             }
             _ => {
                 panic!("third insertion should split");
             }
         };
 
-        assert_eq!(node.as_internal().unwrap().keys().len(), 1);
-        assert_eq!(
-            node.as_internal().unwrap().keys().get(0).unwrap(),
-            U64Key(1)
-        );
-        assert_eq!(node.as_internal().unwrap().children().len(), 2);
-        assert_eq!(node.as_internal().unwrap().children().get(0).unwrap(), 0u32);
-        assert_eq!(node.as_internal().unwrap().children().get(1).unwrap(), 1u32);
+        assert_eq!(node.as_internal().keys().len(), 1);
+        assert_eq!(node.as_internal().keys().get(0), U64Key(1));
+        assert_eq!(node.as_internal().children().len(), 2);
+        assert_eq!(node.as_internal().children().get(0), 0u32);
+        assert_eq!(node.as_internal().children().get(1), 1u32);
     }
 
     #[test]
@@ -263,44 +411,32 @@ mod tests {
             Node::new_leaf(std::mem::size_of::<U64Key>(), page)
         };
 
-        match node
-            .as_leaf_mut()
-            .unwrap()
-            .insert(U64Key(i1), i1, &mut allocate)
-        {
+        match node.as_leaf_mut().insert(U64Key(i1), i1, &mut allocate) {
             LeafInsertStatus::Ok => (),
             _ => panic!("second insertion shouldn't split"),
         };
-        match node
-            .as_leaf_mut()
-            .unwrap()
-            .insert(U64Key(i2), i2, &mut allocate)
-        {
+        match node.as_leaf_mut().insert(U64Key(i2), i2, &mut allocate) {
             LeafInsertStatus::Ok => (),
             _ => panic!("second insertion shouldn't split"),
         };
-        match node
-            .as_leaf_mut()
-            .unwrap()
-            .insert(U64Key(i3), i3, &mut allocate)
-        {
+        match node.as_leaf_mut().insert(U64Key(i3), i3, &mut allocate) {
             LeafInsertStatus::Split(U64Key(2), new_node) => {
-                let new_leaf = new_node.as_leaf().unwrap();
+                let new_leaf = new_node.as_leaf();
                 assert_eq!(new_leaf.keys().len(), 2);
-                assert_eq!(new_leaf.keys().get(0).unwrap(), U64Key(2));
-                assert_eq!(new_leaf.keys().get(1).unwrap(), U64Key(3));
+                assert_eq!(new_leaf.keys().get(0), U64Key(2));
+                assert_eq!(new_leaf.keys().get(1), U64Key(3));
                 assert_eq!(new_leaf.values().len(), 2);
-                assert_eq!(new_leaf.values().get(0).unwrap(), 2);
-                assert_eq!(new_leaf.values().get(1).unwrap(), 3);
+                assert_eq!(new_leaf.values().get(0), 2);
+                assert_eq!(new_leaf.values().get(1), 3);
             }
             _ => {
                 panic!("third insertion should split");
             }
         };
 
-        assert_eq!(node.as_leaf().unwrap().keys().len(), 1);
-        assert_eq!(node.as_leaf().unwrap().keys().get(0).unwrap(), U64Key(1));
-        assert_eq!(node.as_leaf().unwrap().values().len(), 1);
-        assert_eq!(node.as_leaf().unwrap().values().get(0).unwrap(), 1);
+        assert_eq!(node.as_leaf().keys().len(), 1);
+        assert_eq!(node.as_leaf().keys().get(0), U64Key(1));
+        assert_eq!(node.as_leaf().values().len(), 1);
+        assert_eq!(node.as_leaf().values().get(0), 1);
     }
 }

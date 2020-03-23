@@ -7,7 +7,7 @@ use std::io::BufRead;
 struct Key([u8; 32]);
 
 fn main() -> io::Result<()> {
-    let mut db: BTreeStore<Key> = BTreeStore::open("blocksdb")
+    let db: BTreeStore<Key> = BTreeStore::open("blocksdb")
         .or_else(|_| BTreeStore::new("blocksdb", 32, 4096))
         .unwrap();
 
@@ -57,5 +57,9 @@ impl<'a> Storeable<'a> for Key {
         let mut bytes = [0u8; 32];
         buf.read_exact(&mut bytes).expect("deserialize failed");
         Ok(Key(bytes))
+    }
+
+    fn as_output(self) -> Self::Output {
+        self
     }
 }

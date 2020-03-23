@@ -52,4 +52,4 @@ pub use vrf::{
 };
 
 pub use algorithms::*;
-pub use hash::{Blake2b256, Sha3_256};
+pub use hash::Blake2b256;

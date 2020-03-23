@@ -6,8 +6,7 @@
 //! For now this only track block at the headerhash level, and doesn't order them
 //! temporaly, leaving no way to do garbage collection
 
-use crate::block::ChainLength;
-use crate::header::HeaderId;
+use crate::chaintypes::{ChainLength, HeaderId};
 use crate::ledger::Ledger;
 use chain_storage::store::BlockStore;
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -249,18 +248,22 @@ impl Multiverse<Ledger> {
 
 #[cfg(test)]
 mod test {
-    use super::Multiverse;
-    use crate::block::{Block, ConsensusVersion, Contents, ContentsBuilder};
-    use crate::config::{Block0Date, ConfigParam};
-    use crate::date::BlockDate;
-    use crate::fragment::{ConfigParams, Fragment};
-    use crate::header::{BlockVersion, HeaderBuilderNew};
-    use crate::leadership::bft::LeaderId;
-    use crate::ledger::Ledger;
-    use crate::milli::Milli;
+    use super::{Multiverse, SUFFIX_TO_KEEP};
+    use crate::{
+        block::{Block, Contents, ContentsBuilder},
+        chaintypes::{ChainLength, ConsensusType},
+        config::{Block0Date, ConfigParam},
+        date::BlockDate,
+        fragment::{ConfigParams, Fragment},
+        header::{BlockVersion, HeaderBuilderNew},
+        key::Hash,
+        ledger::Ledger,
+        milli::Milli,
+        testing::{data::LeaderPair, TestGen},
+    };
+
     use chain_addr::Discrimination;
-    use chain_core::property::{Block as _, ChainLength as _};
-    use chain_crypto::{Ed25519, SecretKey};
+    use chain_core::property::Block as _;
     use chain_storage::store::BlockStore;
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
     use std::mem;
@@ -279,52 +282,75 @@ mod test {
             .unwrap()
     }
 
-    #[test]
-    pub fn multiverse() {
-        const NUM_BLOCK_PER_EPOCH: u32 = 1000;
-        let mut multiverse = Multiverse::new();
-
+    fn era(slot_duration: u8, block_per_epoch: u32) -> TimeEra {
         let system_time = SystemTime::UNIX_EPOCH;
         let timeline = Timeline::new(system_time);
-        let tf = TimeFrame::new(timeline, SlotDuration::from_secs(10));
+        let tf = TimeFrame::new(timeline, SlotDuration::from_secs(slot_duration.into()));
 
         let slot0 = tf.slot0();
-        let era = TimeEra::new(slot0, Epoch(0), NUM_BLOCK_PER_EPOCH);
+        TimeEra::new(slot0, Epoch(0), block_per_epoch)
+    }
 
-        let leader_key: SecretKey<Ed25519> = SecretKey::generate(rand_core::OsRng);
-        let leader_pub_key = leader_key.to_public();
+    fn leader() -> LeaderPair {
+        TestGen::leader_pair()
+    }
 
-        let mut store = chain_storage::memory::MemoryBlockStore::new();
-
-        let block_ver = BlockVersion::Ed25519Signed;
-
+    fn genesis_block(leader: &LeaderPair, slot_duration: u8, block_per_epoch: u32) -> Block {
         let mut ents = ConfigParams::new();
         ents.push(ConfigParam::Discrimination(Discrimination::Test));
-        ents.push(ConfigParam::ConsensusVersion(ConsensusVersion::Bft));
-        ents.push(ConfigParam::AddBftLeader(LeaderId::from(leader_pub_key)));
+        ents.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
+        ents.push(ConfigParam::AddBftLeader(leader.id()));
         ents.push(ConfigParam::Block0Date(Block0Date(0)));
-        ents.push(ConfigParam::SlotDuration(10));
+        ents.push(ConfigParam::SlotDuration(slot_duration));
         ents.push(ConfigParam::KESUpdateSpeed(12 * 3600));
         ents.push(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(
             Milli::HALF,
         ));
-        ents.push(ConfigParam::SlotsPerEpoch(NUM_BLOCK_PER_EPOCH));
+        ents.push(ConfigParam::SlotsPerEpoch(block_per_epoch));
 
         let mut genesis_content = ContentsBuilder::new();
         genesis_content.push(Fragment::Initial(ents));
         let genesis_content = genesis_content.into();
-
-        let mut date = BlockDate::first();
         let genesis_header = HeaderBuilderNew::new(BlockVersion::Genesis, &genesis_content)
             .set_genesis()
-            .set_date(date)
+            .set_date(BlockDate::first())
             .to_unsigned_header()
             .unwrap()
             .generalize();
-        let genesis_block = Block {
+        Block {
             header: genesis_header,
             contents: genesis_content,
-        };
+        }
+    }
+
+    fn build_bft_block(
+        parent: &Hash,
+        date: BlockDate,
+        chain_length: ChainLength,
+        leader: &LeaderPair,
+    ) -> Block {
+        let block_ver = BlockVersion::Ed25519Signed;
+        let contents = Contents::empty();
+        let header = HeaderBuilderNew::new(block_ver, &contents)
+            .set_parent(&parent, chain_length)
+            .set_date(date)
+            .to_bft_builder()
+            .unwrap()
+            .sign_using(&leader.key())
+            .generalize();
+        Block { header, contents }
+    }
+
+    #[test]
+    pub fn multiverse() {
+        const NUM_BLOCK_PER_EPOCH: u32 = 1000;
+        let mut multiverse = Multiverse::new();
+        let slot_duration = 10u8;
+        let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
+        let mut store = chain_storage::memory::MemoryBlockStore::new();
+        let leader = leader();
+        let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
+        let mut date = BlockDate::first();
         let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
         store.put_block(&genesis_block).unwrap();
@@ -336,15 +362,12 @@ mod test {
         let mut ids = vec![];
         for i in 1..10001 {
             date = date.next(&era);
-            let contents = Contents::empty();
-            let header = HeaderBuilderNew::new(block_ver, &contents)
-                .set_parent(&parent, state.chain_length.next())
-                .set_date(date)
-                .to_bft_builder()
-                .unwrap()
-                .sign_using(&leader_key)
-                .generalize();
-            let block = Block { header, contents };
+            let block = build_bft_block(
+                &parent,
+                date.clone(),
+                state.chain_length.increase(),
+                &leader,
+            );
             state = apply_block(&state, &block);
             assert_eq!(state.chain_length().0, i);
             assert_eq!(state.date, block.date());
@@ -387,5 +410,77 @@ mod test {
             let after = multiverse.nr_states();
             assert_eq!(before, after + 2);
         }
+    }
+
+    #[test]
+    pub fn remove_shorter_chain() {
+        const NUM_BLOCK_PER_EPOCH: u32 = 1000;
+        let mut multiverse = Multiverse::new();
+        let slot_duration = 10u8;
+        let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
+        let mut store = chain_storage::memory::MemoryBlockStore::new();
+        let leader = leader();
+        let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
+        let mut date = BlockDate::first();
+        let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
+        assert_eq!(genesis_state.chain_length().0, 0);
+        store.put_block(&genesis_block).unwrap();
+        let _root = multiverse.add(genesis_block.header.id(), genesis_state.clone());
+
+        let mut state = genesis_state;
+        let mut _ref = None;
+        let mut parent = genesis_block.id();
+        let mut ids = vec![];
+
+        let first_fork_length = 100;
+        for _ in 0..first_fork_length {
+            date = date.next(&era);
+            let block = build_bft_block(
+                &parent,
+                date.clone(),
+                state.chain_length.increase(),
+                &leader,
+            );
+            state = apply_block(&state, &block);
+
+            store.put_block(&block).unwrap();
+            _ref = Some(multiverse.add(block.id(), state.clone()));
+            ids.push(block.header.id());
+            parent = block.header.id();
+        }
+
+        multiverse.gc();
+        // we added 1, beacuse genesis state adds up
+        assert_eq!(
+            multiverse.nr_states() as u32,
+            (first_fork_length + 1) - SUFFIX_TO_KEEP + 1,
+            "first fork length incorrect"
+        );
+
+        let mut parent = genesis_block.id();
+        let second_fork_length = 102;
+        for _ in 0..second_fork_length {
+            date = date.next(&era);
+            let block = build_bft_block(
+                &parent,
+                date.clone(),
+                state.chain_length.increase(),
+                &leader,
+            );
+            state = apply_block(&state, &block);
+
+            store.put_block(&block).unwrap();
+            _ref = Some(multiverse.add(block.id(), state.clone()));
+            ids.push(block.header.id());
+            parent = block.header.id();
+        }
+
+        multiverse.gc();
+        // we added 1, beacuse genesis state adds up and
+        assert_eq!(
+            multiverse.nr_states() as u32,
+            (second_fork_length + 1) - SUFFIX_TO_KEEP + 1,
+            "second fork length incorrect"
+        );
     }
 }

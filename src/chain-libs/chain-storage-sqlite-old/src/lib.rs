@@ -1,6 +1,9 @@
 use chain_core::property::{Block, BlockId, Serialize};
-use rusqlite::{types::Value, Connection};
-use std::path::{Path, PathBuf};
+use rusqlite::{types::Value, Connection, TransactionBehavior};
+use std::{
+    path::{Path, PathBuf},
+    time::Duration,
+};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -59,12 +62,45 @@ enum StoreType {
     File(PathBuf),
 }
 
+pub struct BlockStoreBuilder {
+    store_type: StoreType,
+    busy_timeout: Option<u64>,
+}
+
 pub struct BlockStore {
     store_type: StoreType,
     // An optional connection to be always held open. This is a workaround to
     // prevent an in-memory storage from resetting, because it is getting reset
     // once the last open connection was removed.
     persistent_connection: Option<Connection>,
+    busy_timeout: Option<u64>,
+}
+
+impl BlockStoreBuilder {
+    pub fn memory() -> Self {
+        BlockStoreBuilder {
+            store_type: StoreType::Memory,
+            busy_timeout: None,
+        }
+    }
+
+    pub fn file<P: AsRef<Path>>(path: P) -> Self {
+        BlockStoreBuilder {
+            store_type: StoreType::File(path.as_ref().to_path_buf()),
+            busy_timeout: None,
+        }
+    }
+
+    pub fn busy_timeout(self, busy_timeout: u64) -> Self {
+        BlockStoreBuilder {
+            busy_timeout: Some(busy_timeout),
+            ..self
+        }
+    }
+
+    pub fn build(self) -> BlockStore {
+        BlockStore::init(self.store_type, self.busy_timeout)
+    }
 }
 
 // persistent_connection does not implement Sync but is never actually used
@@ -80,18 +116,11 @@ where
 }
 
 impl BlockStore {
-    pub fn memory() -> Self {
-        Self::init(StoreType::Memory)
-    }
-
-    pub fn file<P: AsRef<Path>>(path: P) -> Self {
-        Self::init(StoreType::File(path.as_ref().to_path_buf()))
-    }
-
-    fn init(store_type: StoreType) -> Self {
+    fn init(store_type: StoreType, busy_timeout: Option<u64>) -> Self {
         let mut store = Self {
             store_type,
             persistent_connection: None,
+            busy_timeout,
         };
 
         let connection = store.connect_internal().unwrap();
@@ -122,6 +151,8 @@ impl BlockStore {
                     foreign key(hash) references BlockInfo(hash)
                   );
 
+                  create index if not exists ChainLengthIndex on BlockInfo(depth);
+
                   commit;
                 "#,
             )
@@ -141,11 +172,17 @@ impl BlockStore {
         // all connections in a pool access the same database. Otherwise each
         // connection has its own database which leads to bugs, because only one
         // of those databases will have a schema set.
-        match &self.store_type {
+        let connection = match &self.store_type {
             StoreType::Memory => Connection::open("file::memory:?cache=shared"),
             StoreType::File(path) => Connection::open(path),
         }
-        .map_err(|err| Error::BackendError(Box::new(err)))
+        .map_err(|err| Error::BackendError(Box::new(err)))?;
+        if let Some(busy_timeout) = self.busy_timeout {
+            connection
+                .busy_timeout(Duration::from_millis(busy_timeout))
+                .map_err(|err| Error::BackendError(Box::new(err)))?;
+        }
+        Ok(connection)
     }
 
     pub fn connect<B>(&self) -> Result<BlockStoreConnection<B>, Error>
@@ -181,10 +218,10 @@ where
 
         let tx = self
             .inner
-            .transaction()
+            .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        if Self::block_exists_internal(&tx, &block_hash)? {
+        if block_exists_internal(&tx, &block_hash)? {
             return Ok(());
         }
 
@@ -199,21 +236,17 @@ where
         let chain_length = if parent_hash == B::Id::zero() {
             1
         } else {
-            let parent_info =
-                Self::get_block_info_internal(&tx, &parent_hash).map_err(|e| match e {
-                    Error::BlockNotFound => Error::MissingParent,
-                    e => e,
-                })?;
+            let parent_info = get_block_info_internal(&tx, &parent_hash).map_err(|e| match e {
+                Error::BlockNotFound => Error::MissingParent,
+                e => e,
+            })?;
             assert!(parent_info.chain_length > 0);
             let chain_length = 1 + parent_info.chain_length;
             let fast_link = compute_fast_link(chain_length);
             let distance = chain_length - fast_link;
             if distance != 1 && fast_link > 0 {
-                let far_block_info = Self::get_nth_ancestor_internal(
-                    &tx,
-                    &parent_hash,
-                    chain_length - 1 - fast_link,
-                )?;
+                let far_block_info =
+                    get_nth_ancestor_internal(&tx, &parent_hash, chain_length - 1 - fast_link)?;
                 back_links.push(BackLink {
                     distance,
                     block_hash: far_block_info.block_hash,
@@ -303,7 +336,7 @@ where
                 err => Error::BackendError(Box::new(err)),
             })?;
 
-        let info = Self::get_block_info_internal(&tx, block_hash)?;
+        let info = get_block_info_internal(&tx, block_hash)?;
 
         Ok((blk, info))
     }
@@ -314,36 +347,76 @@ where
             .transaction()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        Self::get_block_info_internal(&tx, block_hash)
+        get_block_info_internal(&tx, block_hash)
     }
 
-    fn get_block_info_internal(
-        connection: &Connection,
-        block_hash: &B::Id,
-    ) -> Result<BlockInfo<B::Id>, Error> {
-        connection
+    pub fn get_blocks_by_chain_length(
+        &mut self,
+        chain_length: u64,
+    ) -> Result<Vec<(B, BlockInfo<B::Id>)>, Error> {
+        let tx = self
+            .inner
+            .transaction()
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let blocks = tx
             .prepare_cached(
-                "select depth, parent, fast_distance, fast_hash from BlockInfo where hash = ?",
+                "select block from Blocks
+                  inner join BlockInfo
+                  on Blocks.hash = BlockInfo.hash
+                  where BlockInfo.depth = ?",
             )
             .map_err(|err| Error::BackendError(Box::new(err)))?
-            .query_row(&[&block_hash.serialize_as_vec().unwrap()[..]], |row| {
+            .query_map(&[Value::from(chain_length as i64)], |row| {
+                let x: Vec<u8> = row.get(0)?;
+                Ok(B::deserialize(&x[..]).unwrap())
+            })
+            .map_err(|err| match err {
+                rusqlite::Error::QueryReturnedNoRows => Error::BlockNotFound,
+                err => Error::BackendError(Box::new(err)),
+            })?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| Error::BackendError(Box::new(e)))?;
+
+        let block_infos = Self::get_block_infos_by_chain_length_internal(&tx, chain_length)?;
+
+        Ok(blocks.into_iter().zip(block_infos).collect())
+    }
+
+    pub fn get_block_infos_by_chain_length(
+        &mut self,
+        chain_length: u64,
+    ) -> Result<Vec<BlockInfo<B::Id>>, Error> {
+        Self::get_block_infos_by_chain_length_internal(&self.inner, chain_length)
+    }
+
+    fn get_block_infos_by_chain_length_internal(
+        connection: &Connection,
+        chain_length: u64,
+    ) -> Result<Vec<BlockInfo<B::Id>>, Error> {
+        connection
+            .prepare_cached(
+                "select hash, depth, parent, fast_distance, fast_hash from BlockInfo where depth = ?",
+            )
+            .map_err(|err| Error::BackendError(Box::new(err)))?
+            .query_map(&[Value::from(chain_length as i64)], |row| {
                 let mut back_links = vec![BackLink {
                     distance: 1,
-                    block_hash: blob_to_hash(row.get(1)?),
+                    block_hash: blob_to_hash(row.get(2)?),
                 }];
 
-                let fast_distance: Option<i64> = row.get(2)?;
+                let fast_distance: Option<i64> = row.get(3)?;
                 if let Some(fast_distance) = fast_distance {
                     back_links.push(BackLink {
                         distance: fast_distance as u64,
-                        block_hash: blob_to_hash(row.get(3)?),
+                        block_hash: blob_to_hash(row.get(4)?),
                     });
                 }
 
-                let chain_length: i64 = row.get(0)?;
+                let chain_length: i64 = row.get(1)?;
 
                 Ok(BlockInfo {
-                    block_hash: block_hash.clone(),
+                    block_hash: blob_to_hash(row.get(0)?),
                     chain_length: chain_length as u64,
                     back_links,
                 })
@@ -351,12 +424,18 @@ where
             .map_err(|err| match err {
                 rusqlite::Error::QueryReturnedNoRows => Error::BlockNotFound,
                 err => Error::BackendError(Box::new(err)),
-            })
+            })?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| Error::BackendError(Box::new(e)))
     }
 
     pub fn put_tag(&mut self, tag_name: &str, block_hash: &B::Id) -> Result<(), Error> {
-        match self
+        let tx = self
             .inner
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        match tx
             .prepare_cached("insert or replace into Tags (name, hash) values(?, ?)")
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .execute(&[
@@ -370,7 +449,10 @@ where
                 Err(Error::BlockNotFound)
             }
             Err(err) => Err(Error::BackendError(Box::new(err))),
-        }
+        }?;
+
+        tx.commit()
+            .map_err(|err| Error::BackendError(Box::new(err)))
     }
 
     pub fn get_tag(&mut self, tag_name: &str) -> Result<Option<B::Id>, Error> {
@@ -388,15 +470,7 @@ where
 
     /// Check whether a block exists.
     pub fn block_exists(&mut self, block_hash: &B::Id) -> Result<bool, Error> {
-        Self::block_exists_internal(&self.inner, block_hash)
-    }
-
-    fn block_exists_internal(connection: &Connection, block_hash: &B::Id) -> Result<bool, Error> {
-        match Self::get_block_info_internal(connection, block_hash) {
-            Ok(_) => Ok(true),
-            Err(Error::BlockNotFound) => Ok(false),
-            Err(err) => Err(err),
-        }
+        block_exists_internal(&self.inner, block_hash)
     }
 
     // Determine whether block 'ancestor' is an ancestor of block 'descendent'
@@ -421,13 +495,13 @@ where
             .transaction()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        let descendent = Self::get_block_info_internal(&tx, &descendent)?;
+        let descendent = get_block_info_internal(&tx, descendent)?;
 
         if ancestor == &B::Id::zero() {
             return Ok(Some(descendent.chain_length));
         }
 
-        let ancestor = Self::get_block_info_internal(&tx, &ancestor)?;
+        let ancestor = get_block_info_internal(&tx, ancestor)?;
 
         // Bail out right away if the "descendent" does not have a
         // higher chain_length.
@@ -437,7 +511,7 @@ where
 
         // Seek back from the descendent to check whether it has the
         // ancestor at the expected place.
-        let info = Self::get_nth_ancestor_internal(
+        let info = get_nth_ancestor_internal(
             &tx,
             &descendent.block_hash,
             descendent.chain_length - ancestor.chain_length,
@@ -460,16 +534,70 @@ where
             .transaction()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        Self::get_nth_ancestor_internal(&tx, block_hash, distance)
+        get_nth_ancestor_internal(&tx, block_hash, distance)
     }
+}
 
-    fn get_nth_ancestor_internal(
-        connection: &Connection,
-        block_hash: &B::Id,
-        distance: u64,
-    ) -> Result<BlockInfo<B::Id>, Error> {
-        for_path_to_nth_ancestor_internal::<B, _>(connection, block_hash, distance, |_| {})
+fn get_block_info_internal<Id>(
+    connection: &Connection,
+    block_hash: &Id,
+) -> Result<BlockInfo<Id>, Error>
+where
+    Id: BlockId,
+{
+    connection
+        .prepare_cached(
+            "select depth, parent, fast_distance, fast_hash from BlockInfo where hash = ?",
+        )
+        .map_err(|err| Error::BackendError(Box::new(err)))?
+        .query_row(&[&block_hash.serialize_as_vec().unwrap()[..]], |row| {
+            let mut back_links = vec![BackLink {
+                distance: 1,
+                block_hash: blob_to_hash(row.get(1)?),
+            }];
+
+            let fast_distance: Option<i64> = row.get(2)?;
+            if let Some(fast_distance) = fast_distance {
+                back_links.push(BackLink {
+                    distance: fast_distance as u64,
+                    block_hash: blob_to_hash(row.get(3)?),
+                });
+            }
+
+            let chain_length: i64 = row.get(0)?;
+
+            Ok(BlockInfo {
+                block_hash: block_hash.clone(),
+                chain_length: chain_length as u64,
+                back_links,
+            })
+        })
+        .map_err(|err| match err {
+            rusqlite::Error::QueryReturnedNoRows => Error::BlockNotFound,
+            err => Error::BackendError(Box::new(err)),
+        })
+}
+
+fn block_exists_internal<Id>(connection: &Connection, block_hash: &Id) -> Result<bool, Error>
+where
+    Id: BlockId,
+{
+    match get_block_info_internal(connection, block_hash) {
+        Ok(_) => Ok(true),
+        Err(Error::BlockNotFound) => Ok(false),
+        Err(err) => Err(err),
     }
+}
+
+fn get_nth_ancestor_internal<Id>(
+    connection: &Connection,
+    block_hash: &Id,
+    distance: u64,
+) -> Result<BlockInfo<Id>, Error>
+where
+    Id: BlockId,
+{
+    for_path_to_nth_ancestor_internal(connection, block_hash, distance, |_| {})
 }
 
 fn blob_to_hash<Id: BlockId>(blob: Vec<u8>) -> Id {
@@ -497,21 +625,20 @@ where
         .transaction()
         .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-    for_path_to_nth_ancestor_internal::<B, F>(&tx, block_hash, distance, callback)
+    for_path_to_nth_ancestor_internal(&tx, block_hash, distance, callback)
 }
 
-fn for_path_to_nth_ancestor_internal<B, F>(
+fn for_path_to_nth_ancestor_internal<Id, F>(
     connection: &Connection,
-    block_hash: &B::Id,
+    block_hash: &Id,
     distance: u64,
     mut callback: F,
-) -> Result<BlockInfo<B::Id>, Error>
+) -> Result<BlockInfo<Id>, Error>
 where
-    B: Block,
-    F: FnMut(&BlockInfo<B::Id>),
+    Id: BlockId,
+    F: FnMut(&BlockInfo<Id>),
 {
-    let mut cur_block_info =
-        BlockStoreConnection::<B>::get_block_info_internal(connection, block_hash)?;
+    let mut cur_block_info = get_block_info_internal(connection, block_hash)?;
 
     if distance >= cur_block_info.chain_length {
         // FIXME: return error
@@ -537,8 +664,7 @@ where
             .unwrap()
             .clone();
         callback(&cur_block_info);
-        cur_block_info =
-            BlockStoreConnection::<B>::get_block_info_internal(connection, &best_link.block_hash)?;
+        cur_block_info = get_block_info_internal(connection, &best_link.block_hash)?;
     }
 
     assert_eq!(target, cur_block_info.chain_length);
@@ -752,7 +878,8 @@ pub mod tests {
 
     #[test]
     pub fn test_put_get() {
-        let mut store = BlockStore::file("file:test_put_get?mode=memory&cache=shared")
+        let mut store = BlockStoreBuilder::file("file:test_put_get?mode=memory&cache=shared")
+            .build()
             .connect()
             .unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
@@ -771,6 +898,14 @@ pub mod tests {
         assert_eq!(block_info.back_links.len(), 1);
         assert_eq!(block_info.parent_id(), BlockId::zero());
 
+        let blocks = store.get_blocks_by_chain_length(1).unwrap();
+        println!("{:?}", blocks);
+        assert_eq!(genesis_block, blocks[0].0);
+        assert_eq!(blocks[0].1.block_hash, genesis_block.id());
+        assert_eq!(blocks[0].1.chain_length, genesis_block.chain_length().0);
+        assert_eq!(blocks[0].1.back_links.len(), 1);
+        assert_eq!(blocks[0].1.parent_id(), BlockId::zero());
+
         store.put_tag("tip", &genesis_block.id()).unwrap();
         assert_eq!(store.get_tag("tip").unwrap().unwrap(), genesis_block.id());
     }
@@ -778,7 +913,8 @@ pub mod tests {
     #[test]
     pub fn test_nth_ancestor() {
         let mut rng = OsRng;
-        let mut store = BlockStore::file("file:test_nth_ancestor?mode=memory&cache=shared")
+        let mut store = BlockStoreBuilder::file("file:test_nth_ancestor?mode=memory&cache=shared")
+            .build()
             .connect()
             .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
@@ -822,9 +958,11 @@ pub mod tests {
     #[test]
     fn simultaneous_read_write() {
         let mut rng = OsRng;
-        let store = BlockStore::file("file:test_simultaneous_read_write?mode=memory&cache=shared");
+        let store =
+            BlockStoreBuilder::file("file:simultaneous_read_write?mode=memory&cache=shared")
+                .build();
 
-        let mut conn = store.connect::<Block>().unwrap();
+        let mut conn = store.connect().unwrap();
 
         let genesis_block = Block::genesis(None);
         conn.put_block(&genesis_block).unwrap();
@@ -837,7 +975,7 @@ pub mod tests {
             conn.put_block(&block).unwrap()
         }
 
-        let mut conn_1 = store.connect::<Block>().unwrap();
+        let mut conn_1 = store.connect().unwrap();
         let blocks_1 = blocks.clone();
 
         let thread_1 = std::thread::spawn(move || {
@@ -846,7 +984,7 @@ pub mod tests {
                     .get(rng.next_u32() as usize % blocks_1.len())
                     .unwrap()
                     .id();
-                conn_1.get_block(&block_id).unwrap();
+                let _: (Block, _) = conn_1.get_block(&block_id).unwrap();
             }
         });
 

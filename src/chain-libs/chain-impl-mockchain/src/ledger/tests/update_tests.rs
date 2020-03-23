@@ -1,13 +1,13 @@
 use crate::{
     block::Block,
+    chaintypes::HeaderId,
     date::BlockDate,
     fragment::Contents,
-    header::{BlockVersion, HeaderBuilderNew, HeaderId},
+    header::{BlockVersion, HeaderBuilderNew},
     ledger::ledger::Ledger,
     testing::arbitrary::update_proposal::UpdateProposalData,
     testing::{ConfigBuilder, LedgerBuilder},
 };
-use chain_core::property::ChainLength as ChainLengthProperty;
 use chain_crypto::{Ed25519, SecretKey};
 use quickcheck::TestResult;
 use quickcheck_macros::quickcheck;
@@ -88,7 +88,7 @@ fn build_block(
 ) -> Block {
     let contents = Contents::empty();
     let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents)
-        .set_parent(&block0_hash, ledger.chain_length.next())
+        .set_parent(&block0_hash, ledger.chain_length.increase())
         .set_date(date.next_epoch())
         .to_bft_builder()
         .unwrap()

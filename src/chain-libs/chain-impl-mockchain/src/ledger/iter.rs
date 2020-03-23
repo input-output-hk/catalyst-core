@@ -1,8 +1,9 @@
 use super::ledger::{Error, Ledger, LedgerStaticParameters};
 use super::pots::{self, Pots};
-use crate::block::LeadersParticipationRecord;
+use super::LeadersParticipationRecord;
+use crate::chaintypes::ChainLength;
 use crate::config::ConfigParam;
-use crate::header::{BlockDate, ChainLength};
+use crate::date::BlockDate;
 use crate::stake::PoolsState;
 use crate::{account, legacy, multisig, setting, update, utxo};
 use chain_addr::Address;

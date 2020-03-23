@@ -1,4 +1,4 @@
-use crate::block::Epoch;
+use crate::date::Epoch;
 use crate::stake::Stake;
 use crate::value::{Value, ValueError};
 use chain_core::mempack::{ReadBuf, ReadError};
@@ -317,6 +317,30 @@ mod tests {
         let mut params = Parameters::zero();
         params.epoch_start = 1;
         let epoch = 0;
+        let system_info = SystemInformation {
+            declared_stake: Stake::from_value(Value(100)),
+        };
+        assert_eq!(
+            rewards_contribution_calculation(epoch, &params, &system_info),
+            Value::zero()
+        );
+    }
+
+    #[test]
+    fn rewards_contribution_calculation_initial_value_smaller_than_reduce_by() {
+        let params = Parameters {
+            initial_value: 9,
+            compounding_ratio: Ratio {
+                numerator: 100,
+                denominator: NonZeroU64::new(10).unwrap(),
+            },
+            compounding_type: CompoundingType::Linear,
+            epoch_rate: NonZeroU32::new(1).unwrap(),
+            epoch_start: 0,
+            reward_drawing_limit_max: Limit::None,
+            pool_participation_capping: None,
+        };
+        let epoch = 1;
         let system_info = SystemInformation {
             declared_stake: Stake::from_value(Value(100)),
         };

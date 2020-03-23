@@ -1,4 +1,5 @@
 use super::cstruct;
+use crate::chaintypes::ConsensusType;
 use std::num::NonZeroUsize;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -90,5 +91,13 @@ impl BlockVersion {
             unsafe { NonZeroUsize::new_unchecked(cstruct::HEADER_GP_AUTHED_SIZE) },
         ];
         SIZE[self as usize]
+    }
+
+    pub fn to_consensus_type(self) -> Option<ConsensusType> {
+        match self {
+            BlockVersion::Genesis => None,
+            BlockVersion::Ed25519Signed => Some(ConsensusType::Bft),
+            BlockVersion::KesVrfproof => Some(ConsensusType::GenesisPraos),
+        }
     }
 }

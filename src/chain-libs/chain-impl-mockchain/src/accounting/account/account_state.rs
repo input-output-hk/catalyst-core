@@ -1,5 +1,5 @@
 use crate::certificate::PoolId;
-use crate::header::Epoch;
+use crate::date::Epoch;
 use crate::value::*;
 use imhamt::HamtIter;
 

@@ -9,6 +9,6 @@ edition = "2018"
 [dependencies]
 ed25519-bip32 = "^0.1.4"
 bip39 = { path = "../bip39" }
-bip44 = { path = "../bip44" }
+chain-path-derivation = { path = "../chain-path-derivation" }
 cryptoxide = "0.1.2"
 cbor_event = "2.1"

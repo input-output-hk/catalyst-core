@@ -1,5 +1,5 @@
 [package]
-name = "bip44"
+name = "chain-path-derivation"
 version = "0.1.0"
 authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
 edition = "2018"
@@ -8,3 +8,7 @@ edition = "2018"
 
 [dependencies]
 thiserror = { version = "1.0.13", default-features = false }
+
+[dev-dependencies]
+quickcheck = "0.9"
+quickcheck_macros = "0.9"

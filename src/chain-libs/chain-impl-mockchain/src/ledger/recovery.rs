@@ -1,3 +1,42 @@
+/// This module holds all the necessary methods to be able to serialize the ledger.
+/// There are 2 methods for each type that needs to be serialize `pack_*` and `unpack_*`.
+///
+/// The pack methods takes a mutable `chain-core::packer::Codec<std::io::Write>` reference
+/// and a reference to the type and writes the selected serialize format to the writer, it returns
+/// an `std::io::Error` wrapped in a Result if something goes wrong:
+///
+/// ```
+/// fn pack_*<W: std::io::Write>(
+///     type: &T,
+///     codec: &mut Codec<W>,
+/// ) -> Result<(), std::io::Error> { ... }
+/// ```
+///
+/// The unpack method takes a mutable `chain-core::packer::Codec<std::io::BufRead>` reference
+/// and returns an instance of a type wrapped in a `Result`:
+///
+/// ```
+/// fn unpack_*<R: std::io::BufRead>(
+///     codec: &mut Codec<R>,
+/// ) -> Result<T, std::io::Error> { ... }
+/// ```
+///
+///
+/// For serializing the Ledger the approach is simple:
+/// * Iterate the Ledger
+/// * Pack each entry
+/// * Flag the end of packing
+///
+/// For deserializing:
+/// * Load all serialized `Entry` into a `Vec`
+/// * Use the `from_iter` ledger method to load it from the newly created vector.
+///
+/// Notice that the `ledger::iter::Entry` type holds references to the data types but when loading
+/// them from the serialized object we need to hold them. That is why we use the `EntryOwned` type
+/// instead for deserializing. This data is then cloned as necessary into the final deserialized ledger.
+
+
+
 use super::pots;
 use super::{Entry, EntryOwned};
 use crate::account::AccountAlg;

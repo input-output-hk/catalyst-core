@@ -34,9 +34,6 @@
 /// Notice that the `ledger::iter::Entry` type holds references to the data types but when loading
 /// them from the serialized object we need to hold them. That is why we use the `EntryOwned` type
 /// instead for deserializing. This data is then cloned as necessary into the final deserialized ledger.
-
-
-
 use super::pots;
 use super::{Entry, EntryOwned};
 use crate::account::AccountAlg;

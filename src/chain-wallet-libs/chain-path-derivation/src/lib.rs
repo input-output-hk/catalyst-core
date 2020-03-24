@@ -19,5 +19,5 @@ pub use self::{
         Derivation, DerivationError, DerivationRange, HardDerivation, HardDerivationRange,
         ParseDerivationError, SoftDerivation, SoftDerivationRange,
     },
-    derivation_path::{AnyScheme, DerivationPath, DerivationPathRange},
+    derivation_path::{AnyScheme, DerivationPath, DerivationPathRange, ParseDerivationPathError},
 };

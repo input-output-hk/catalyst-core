@@ -45,9 +45,10 @@
 //! ```
 
 use crate::{
-    Derivation, DerivationPath, DerivationPathRange, HardDerivation, SoftDerivation,
-    SoftDerivationRange,
+    AnyScheme, Derivation, DerivationPath, DerivationPathRange, HardDerivation,
+    ParseDerivationPathError, SoftDerivation, SoftDerivationRange,
 };
+use std::str::{self, FromStr};
 
 /// scheme for the Bip44 chain path derivation
 ///
@@ -199,7 +200,7 @@ impl DerivationPath<Bip44<Change>> {
 impl DerivationPath<Bip44<Address>> {
     #[inline]
     fn get_unchecked(&self, index: usize) -> Derivation {
-        if let Some(v) = self.get(index) {
+        if let Some(v) = self.get(index).copied() {
             v
         } else {
             unsafe { std::hint::unreachable_unchecked() }
@@ -230,4 +231,79 @@ impl DerivationPath<Bip44<Address>> {
     pub fn address(&self) -> Derivation {
         self.get_unchecked(INDEX_ADDRESS)
     }
+}
+
+/* FromStr ***************************************************************** */
+
+macro_rules! mk_from_str_dp_bip44 {
+    ($t:ty, $len:expr) => {
+        impl FromStr for DerivationPath<$t> {
+            type Err = ParseDerivationPathError;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                let dp = s.parse::<DerivationPath<AnyScheme>>()?;
+
+                if dp.len() == $len {
+                    Ok(dp.coerce_unchecked())
+                } else {
+                    Err(ParseDerivationPathError::InvalidNumberOfDerivations {
+                        actual: dp.len(),
+                        expected: $len,
+                    })
+                }
+            }
+        }
+    };
+}
+
+mk_from_str_dp_bip44!(Bip44<Purpose>, 1);
+mk_from_str_dp_bip44!(Bip44<CoinType>, 2);
+mk_from_str_dp_bip44!(Bip44<Account>, 3);
+mk_from_str_dp_bip44!(Bip44<Change>, 4);
+mk_from_str_dp_bip44!(Bip44<Address>, 5);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use quickcheck::{Arbitrary, Gen};
+
+    macro_rules! mk_arbitrary_dp_bip44 {
+        ($t:ty, $len:expr) => {
+            impl Arbitrary for DerivationPath<$t> {
+                fn arbitrary<G: Gen>(g: &mut G) -> Self {
+                    let dp = std::iter::repeat_with(|| Derivation::arbitrary(g))
+                        .take($len)
+                        .collect::<DerivationPath<AnyScheme>>();
+                    dp.coerce_unchecked()
+                }
+            }
+        };
+    }
+
+    mk_arbitrary_dp_bip44!(Bip44<Purpose>, 1);
+    mk_arbitrary_dp_bip44!(Bip44<CoinType>, 2);
+    mk_arbitrary_dp_bip44!(Bip44<Account>, 3);
+    mk_arbitrary_dp_bip44!(Bip44<Change>, 4);
+    mk_arbitrary_dp_bip44!(Bip44<Address>, 5);
+
+    macro_rules! mk_quickcheck_dp_bip44 {
+        ($t:ty) => {
+            paste::item! {
+                #[quickcheck]
+                #[allow(non_snake_case)]
+                fn [< fmt_parse $t>](derivation_path: DerivationPath<Bip44<$t>>) -> bool {
+                    let s = derivation_path.to_string();
+                    let v = s.parse::<DerivationPath<Bip44<$t>>>().unwrap();
+
+                    v == derivation_path
+                }
+            }
+        };
+    }
+
+    mk_quickcheck_dp_bip44!(Purpose);
+    mk_quickcheck_dp_bip44!(CoinType);
+    mk_quickcheck_dp_bip44!(Account);
+    mk_quickcheck_dp_bip44!(Change);
+    mk_quickcheck_dp_bip44!(Address);
 }

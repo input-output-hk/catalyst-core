@@ -1,9 +1,11 @@
+use quickcheck::{Arbitrary, Gen};
+
 use crate::{
     account::Ledger as AccountLedger,
     block::Block,
     certificate::PoolId,
-    chaintypes::{ChainLength, ConsensusType, HeaderId},
-    config::{ConfigParam, RewardParams},
+    chaintypes::{ChainLength, ConsensusType, ConsensusVersion, HeaderId},
+    config::{Block0Date, ConfigParam, RewardParams},
     date::BlockDate,
     fee::{LinearFee, PerCertificateFee},
     fragment::{config::ConfigParams, Fragment, FragmentId},
@@ -46,6 +48,9 @@ pub struct ConfigBuilder {
     treasury_params: TaxType,
     reward_params: RewardParams,
     block_content_max_size: Option<u32>,
+    kes_update_speed: u32,
+    block0_date: Block0Date,
+    consensus_version: ConsensusVersion,
 }
 
 impl ConfigBuilder {
@@ -72,6 +77,9 @@ impl ConfigBuilder {
             treasury_params: TaxType::zero(),
             treasury: Value(1_000),
             block_content_max_size: None,
+            kes_update_speed: 3600 * 12,
+            block0_date: Block0Date(0),
+            consensus_version: ConsensusVersion::Bft,
         }
     }
 
@@ -135,6 +143,21 @@ impl ConfigBuilder {
         self
     }
 
+    pub fn with_kes_update_speed(mut self, kes_update_speed: u32) -> Self {
+        self.kes_update_speed = kes_update_speed;
+        self
+    }
+
+    pub fn with_block0_date(mut self, block0_date: Block0Date) -> Self {
+        self.block0_date = block0_date;
+        self
+    }
+
+    pub fn with_consensus_version(mut self, consensus_version: ConsensusType) -> Self {
+        self.consensus_version = consensus_version;
+        self
+    }
+
     fn create_single_bft_leader() -> BftLeaderId {
         let leader_prv_key: SecretKey<Ed25519Extended> = SecretKey::generate(rand_core::OsRng);
         let leader_pub_key = leader_prv_key.to_public();
@@ -151,7 +174,7 @@ impl ConfigBuilder {
     pub fn build(self) -> ConfigParams {
         let mut ie = ConfigParams::new();
         ie.push(ConfigParam::Discrimination(self.discrimination));
-        ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
+        ie.push(ConfigParam::ConsensusVersion(self.consensus_version));
 
         for leader_id in self.leaders.iter().cloned() {
             ie.push(ConfigParam::AddBftLeader(leader_id));
@@ -176,17 +199,18 @@ impl ConfigBuilder {
             ));
         }
 
-        ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+        ie.push(ConfigParam::Block0Date(self.block0_date));
         ie.push(ConfigParam::SlotDuration(self.slot_duration));
         ie.push(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(
             self.active_slots_coeff,
         ));
         ie.push(ConfigParam::SlotsPerEpoch(self.slots_per_epoch));
-        ie.push(ConfigParam::KESUpdateSpeed(3600 * 12));
+        ie.push(ConfigParam::KESUpdateSpeed(self.kes_update_speed));
         ie
     }
 }
 
+#[derive(Clone)]
 pub struct LedgerBuilder {
     cfg_builder: ConfigBuilder,
     cfg_params: ConfigParams,
@@ -198,7 +222,7 @@ pub struct LedgerBuilder {
 
 pub type UtxoDeclaration = Output<Address>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct UtxoDb {
     db: HashMap<(FragmentId, u8), UtxoDeclaration>,
 }
@@ -367,7 +391,7 @@ impl LedgerBuilder {
         })
     }
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TestLedger {
     pub block0_hash: HeaderId,
     pub cfg: ConfigParams,
@@ -435,6 +459,14 @@ impl TestLedger {
 
     pub fn accounts(&self) -> &AccountLedger {
         &self.ledger.accounts()
+    }
+
+    pub fn block0_hash(&self) -> &HeaderId {
+        &self.block0_hash
+    }
+
+    pub fn faucets(&self) -> Vec<AddressDataValue> {
+        self.faucets.clone()
     }
 
     pub fn utxos<'a>(&'a self) -> Iter<'a, Address> {
@@ -567,5 +599,17 @@ impl TestLedger {
 impl Into<Ledger> for TestLedger {
     fn into(self) -> Ledger {
         self.ledger
+    }
+}
+
+impl Arbitrary for TestLedger {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        LedgerBuilder::arbitrary(g).build().unwrap()
+    }
+}
+
+impl Arbitrary for Ledger {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        TestLedger::arbitrary(g).into()
     }
 }

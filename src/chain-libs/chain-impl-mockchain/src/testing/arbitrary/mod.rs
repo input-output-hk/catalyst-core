@@ -1,9 +1,12 @@
 pub mod address;
+pub mod config_builder;
 pub mod kind_type;
+pub mod ledger_builder;
 pub mod output;
 pub mod transaction;
 pub mod update_proposal;
 pub mod utils;
+pub mod wallet;
 
 use crate::{key::BftLeaderId, transaction::Output, value::Value};
 use chain_addr::Address;
@@ -16,6 +19,7 @@ pub use output::*;
 use std::cmp;
 pub use transaction::*;
 pub use update_proposal::*;
+pub use wallet::WalletCollection;
 
 impl Arbitrary for Value {
     fn arbitrary<G: Gen>(gen: &mut G) -> Self {

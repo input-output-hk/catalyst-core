@@ -7,7 +7,7 @@ use thiserror::Error;
 
 /// Account Identifier (also used as Public Key)
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Identifier(key::Hash);
+pub struct Identifier(pub(crate) key::Hash);
 
 impl AsRef<[u8]> for Identifier {
     fn as_ref(&self) -> &[u8] {

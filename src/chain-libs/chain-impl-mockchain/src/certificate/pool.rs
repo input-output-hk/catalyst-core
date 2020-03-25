@@ -126,6 +126,7 @@ impl PoolRegistration {
             Some(AccountIdentifier::Multi(pk)) => bb.u8(2).bytes(pk.as_ref()),
         }
     }
+
     pub fn serialize(&self) -> ByteArray<Self> {
         self.serialize_in(ByteBuilder::new()).finalize()
     }

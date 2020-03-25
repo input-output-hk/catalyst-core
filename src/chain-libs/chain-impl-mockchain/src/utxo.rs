@@ -104,6 +104,15 @@ pub struct Entry<'a, OutputAddress> {
     pub output: &'a Output<OutputAddress>,
 }
 
+/// structure used by the iterator or the getter of the UTxO `Ledger`
+///
+#[derive(Debug, PartialEq, Clone)]
+pub struct EntryOwned<OutputAddress> {
+    pub fragment_id: FragmentId,
+    pub output_index: u8,
+    pub output: Output<OutputAddress>,
+}
+
 impl<OutAddress> Ledger<OutAddress> {
     pub fn iter<'a>(&'a self) -> Iter<'a, OutAddress> {
         Iter {

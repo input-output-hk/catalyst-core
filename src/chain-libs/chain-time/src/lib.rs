@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate cfg_if;
+extern crate quickcheck_macros;
+
 pub mod era;
 pub mod timeframe;
 pub mod timeline;
@@ -7,9 +11,6 @@ pub use era::{Epoch, TimeEra};
 pub use timeframe::{Slot, SlotDuration, TimeFrame};
 pub use timeline::{TimeOffsetSeconds, Timeline};
 pub use units::DurationSeconds;
-
-#[macro_use]
-extern crate cfg_if;
 
 cfg_if! {
    if #[cfg(test)] {

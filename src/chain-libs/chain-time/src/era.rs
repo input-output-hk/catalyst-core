@@ -1,6 +1,7 @@
 //! Split timeframe in eras
 
 use crate::timeframe::Slot;
+use chain_ser::packer::Codec;
 use std::fmt;
 
 /// Epoch number
@@ -31,6 +32,30 @@ pub struct TimeEra {
     epoch_start: Epoch,
     slot_start: Slot,
     slots_per_epoch: u32,
+}
+
+pub fn pack_time_era<W: std::io::Write>(
+    time_era: &TimeEra,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    codec.put_u32(time_era.epoch_start.0)?;
+    codec.put_u64(time_era.slot_start.0)?;
+    codec.put_u32(time_era.slots_per_epoch)?;
+    Ok(())
+}
+
+pub fn unpack_time_era<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<TimeEra, std::io::Error> {
+    let epoch_start = Epoch(codec.get_u32()?);
+    let slot_start = Slot(codec.get_u64()?);
+    let slots_per_epoch = codec.get_u32()?;
+
+    Ok(TimeEra {
+        epoch_start,
+        slot_start,
+        slots_per_epoch,
+    })
 }
 
 impl TimeEra {
@@ -76,12 +101,36 @@ impl TimeEra {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test))]
 mod test {
     use super::*;
     use crate::timeframe::*;
     use crate::timeline::Timeline;
+
+    use chain_ser::packer::Codec;
+    use quickcheck::{quickcheck, TestResult};
+    use std::io::Cursor;
     use std::time::{Duration, SystemTime};
+
+    quickcheck! {
+        fn time_era_pack_unpack_bijection(time_era: TimeEra) -> TestResult {
+            let mut c : Cursor<Vec<u8>> = Cursor::new(Vec::new());
+            let mut codec = Codec::new(c);
+            match pack_time_era(&time_era, &mut codec) {
+                Ok(_) => (),
+                Err(e) => return TestResult::error(format!("{}", e)),
+            }
+            c = codec.into_inner();
+            c.set_position(0);
+            codec = Codec::new(c);
+            return match unpack_time_era(&mut codec) {
+                Ok(other_time_era) => {
+                    TestResult::from_bool(time_era == other_time_era)
+                },
+                Err(e) => TestResult::error(format!("{}", e)),
+            }
+        }
+    }
 
     #[test]
     pub fn it_works() {

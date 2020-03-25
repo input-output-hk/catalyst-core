@@ -12,7 +12,7 @@ pub struct Pots {
     pub(crate) rewards: Value,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Entry {
     Fees(Value),
     Treasury(Value),

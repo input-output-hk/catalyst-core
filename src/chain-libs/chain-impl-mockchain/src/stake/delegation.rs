@@ -184,7 +184,7 @@ impl PoolsState {
 #[cfg(test)]
 mod tests {
 
-    use super::PoolsState;
+    use super::*;
     use crate::certificate::PoolRegistration;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
@@ -193,14 +193,35 @@ mod tests {
     impl Arbitrary for PoolsState {
         fn arbitrary<G: Gen>(gen: &mut G) -> Self {
             let size = usize::arbitrary(gen);
-            let arbitrary_stake_pools = iter::from_fn(|| Some(PoolRegistration::arbitrary(gen)))
-                .take(size)
-                .collect::<Vec<PoolRegistration>>();
+            let arbitrary_stake_pools: Vec<PoolRegistration> =
+                iter::from_fn(|| Some(PoolRegistration::arbitrary(gen)))
+                    .take(size)
+                    .collect();
             let mut delegation_state = PoolsState::new();
             for stake_pool in arbitrary_stake_pools {
                 delegation_state = delegation_state.register_stake_pool(stake_pool).unwrap();
             }
             delegation_state
+        }
+    }
+
+    impl Arbitrary for PoolState {
+        fn arbitrary<G: Gen>(gen: &mut G) -> Self {
+            let registration = Arc::new(PoolRegistration::arbitrary(gen));
+            PoolState {
+                last_rewards: PoolLastRewards::arbitrary(gen),
+                registration,
+            }
+        }
+    }
+
+    impl Arbitrary for PoolLastRewards {
+        fn arbitrary<G: Gen>(gen: &mut G) -> Self {
+            PoolLastRewards {
+                value_for_stakers: Value(u64::arbitrary(gen)),
+                value_taxed: Value(u64::arbitrary(gen)),
+                epoch: u32::arbitrary(gen),
+            }
         }
     }
 

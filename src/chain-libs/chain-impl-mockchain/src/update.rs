@@ -250,6 +250,15 @@ impl property::Serialize for UpdateProposal {
     }
 }
 
+impl property::Deserialize for UpdateProposal {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        let changes = ConfigParams::deserialize(reader)?;
+        Ok(UpdateProposal { changes })
+    }
+}
+
 impl Readable for UpdateProposal {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         Ok(Self {
@@ -388,9 +397,10 @@ mod tests {
         },
     };
     use chain_addr::Discrimination;
-
+    use chain_core::property::testing::serialization_bijection;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
+    use std::iter;
 
     impl Arbitrary for UpdateProposal {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -436,6 +446,19 @@ mod tests {
         }
     }
 
+    impl Arbitrary for UpdateProposalState {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let size = usize::arbitrary(g);
+            Self {
+                proposal: UpdateProposal::arbitrary(g),
+                proposal_date: BlockDate::arbitrary(g),
+                votes: iter::from_fn(|| Some(UpdateVoterId::arbitrary(g)))
+                    .take(size)
+                    .collect(),
+            }
+        }
+    }
+
     fn apply_update_proposal(
         update_state: UpdateState,
         proposal_id: UpdateProposalId,
@@ -468,6 +491,12 @@ mod tests {
             .build();
 
         update_state.apply_vote(&signed_update_vote, &settings)
+    }
+
+    quickcheck! {
+        fn update_proposal_serialize_deserialize_bijection(update_proposal: UpdateProposal) -> TestResult {
+            serialization_bijection(update_proposal)
+        }
     }
 
     #[test]

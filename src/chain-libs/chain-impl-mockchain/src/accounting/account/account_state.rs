@@ -29,8 +29,8 @@ pub enum DelegationType {
 /// pools parts.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct DelegationRatio {
-    parts: u8,
-    pools: Box<[(PoolId, u8)]>,
+    pub(crate) parts: u8,
+    pub(crate) pools: Box<[(PoolId, u8)]>,
 }
 
 /// The maximum number of pools
@@ -190,7 +190,7 @@ impl<Extra: Clone> AccountState<Extra> {
 /// needs to be used in the spending phase to make
 /// sure we have non-replayability of a transaction.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SpendingCounter(u32);
+pub struct SpendingCounter(pub(crate) u32);
 
 impl SpendingCounter {
     pub fn zero() -> Self {

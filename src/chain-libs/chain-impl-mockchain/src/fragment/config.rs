@@ -26,6 +26,7 @@ impl ConfigParams {
 
 impl property::Serialize for ConfigParams {
     type Error = std::io::Error;
+
     fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
         // FIXME: put params in canonical order (e.g. sorted by tag)?
         use chain_core::packer::*;
@@ -34,6 +35,21 @@ impl property::Serialize for ConfigParams {
             config.serialize(&mut writer)?
         }
         Ok(())
+    }
+}
+
+impl property::Deserialize for ConfigParams {
+    type Error = std::io::Error;
+
+    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
+        use chain_core::packer::Codec;
+        let mut codec = Codec::new(reader);
+        let size = codec.get_u16()? as usize;
+        let mut config_params: Vec<ConfigParam> = Vec::with_capacity(size);
+        for _ in 0..size {
+            config_params.push(ConfigParam::deserialize(&mut codec)?);
+        }
+        Ok(ConfigParams(config_params))
     }
 }
 

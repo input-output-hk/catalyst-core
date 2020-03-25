@@ -28,8 +28,8 @@ fn fragment_serialization_bijection(b: Fragment) -> TestResult {
 }
 
 quickcheck! {
-    fn initial_ents_serialization_bijection(b: ConfigParams) -> TestResult {
-        property::testing::serialization_bijection_r(b)
+    fn initial_ents_serialization_bijection(config_params: ConfigParams) -> TestResult {
+        property::testing::serialization_bijection_r(config_params)
     }
 }
 

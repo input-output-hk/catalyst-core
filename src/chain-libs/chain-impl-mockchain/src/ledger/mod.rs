@@ -4,6 +4,7 @@ pub mod iter;
 mod leaderlog;
 pub mod ledger;
 mod pots;
+pub mod recovery;
 mod reward_info;
 
 pub use iter::*;

@@ -234,6 +234,11 @@ impl Hash {
     pub fn from_bytes(bytes: [u8; 32]) -> Self {
         Hash(crypto::Blake2b256::from(bytes))
     }
+
+    #[inline]
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_ref()
+    }
 }
 
 impl From<[u8; 32]> for Hash {

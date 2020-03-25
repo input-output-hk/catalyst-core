@@ -60,14 +60,11 @@ fn single_key_insertion(c: &mut Criterion) {
             let r: u64 = rng.gen();
             let key = if r % 2 == 0 { r + 1 } else { r };
 
-            let blob_to_insert = random_blob(&mut rng);
+            let blob_to_insert: Box<[u8]> = random_blob(&mut rng);
             tree.insert(U64Key(key), &blob_to_insert[..]).unwrap_or(());
 
             assert_eq!(
-                tree.get(&U64Key(key))
-                    .unwrap()
-                    .expect("Key not found")
-                    .as_ref(),
+                tree.get(&U64Key(key)).unwrap().expect("Key not found"),
                 &blob_to_insert[..]
             );
         })
@@ -102,10 +99,7 @@ fn single_key_search(c: &mut Criterion) {
         b.iter(|| {
             let key: u64 = rng.gen_range(0, n);
             assert_eq!(
-                tree.get(&U64Key(key))
-                    .unwrap()
-                    .expect("Key not found")
-                    .as_ref(),
+                tree.get(&U64Key(key)).unwrap().expect("Key not found"),
                 &data.get(&key).unwrap()[..]
             )
         })

@@ -156,10 +156,10 @@ where
         Ok(())
     }
 
-    pub fn get(&self, key: &K) -> Result<Option<Box<[u8]>>, BTreeStoreError> {
+    pub fn get(&self, key: &K) -> Result<Option<&[u8]>, BTreeStoreError> {
         self.index
             .lookup(&key)
-            .map(|pos| self.flatfile.get_at((pos).into()))
+            .and_then(|pos| self.flatfile.get_at((pos).into()).transpose())
             .transpose()
             .map_err(|e| e.into())
     }

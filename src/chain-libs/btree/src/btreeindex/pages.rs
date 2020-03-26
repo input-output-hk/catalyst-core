@@ -100,8 +100,8 @@ impl Pages {
         Ok(())
     }
 
-    pub fn extend(&mut self, to: PageId) -> Result<(), std::io::Error> {
-        let storage = &mut self.storage;
+    pub fn extend(&self, to: PageId) -> Result<(), std::io::Error> {
+        let storage = &self.storage;
 
         let from = u64::from(to.checked_sub(1).expect("0 page is used as a null ptr"))
             * u64::from(self.page_size);

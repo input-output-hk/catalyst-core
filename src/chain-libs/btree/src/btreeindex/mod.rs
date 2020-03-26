@@ -24,7 +24,6 @@ use std::borrow::Borrow;
 use crate::{Key, Value};
 
 use backtrack::{DeleteBacktrack, InsertBacktrack};
-use parking_lot::RwLock;
 use std::convert::{TryFrom, TryInto};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, SeekFrom};
@@ -39,7 +38,7 @@ pub struct BTree<K> {
     // this is, the root node, and the list of free pages
     metadata: Mutex<(Metadata, File)>,
     static_settings: StaticSettings,
-    pages: RwLock<Pages>,
+    pages: Pages,
     transaction_manager: TransactionManager,
     phantom_keys: PhantomData<[K]>,
 }
@@ -70,7 +69,7 @@ where
 
         let pages_storage = crate::storage::MmapStorage::new(tree_file, None)?;
 
-        let mut pages = Pages::new(PagesInitializationParams {
+        let pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,
             page_size: page_size.try_into().unwrap(),
             key_buffer_size,
@@ -104,7 +103,7 @@ where
 
         Ok(BTree {
             metadata: Mutex::new((metadata, metadata_file)),
-            pages: RwLock::new(pages),
+            pages,
             static_settings,
             transaction_manager,
             phantom_keys: PhantomData,
@@ -133,11 +132,11 @@ where
 
         let static_settings = StaticSettings::read(&mut static_settings_file)?;
 
-        let pages = RwLock::new(Pages::new(PagesInitializationParams {
+        let pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,
             page_size: static_settings.page_size,
             key_buffer_size: static_settings.key_buffer_size,
-        }));
+        });
 
         let transaction_manager = TransactionManager::new(&metadata);
 
@@ -155,7 +154,7 @@ where
         if let Some(checkpoint) = self.transaction_manager.collect_pending() {
             let new_metadata = checkpoint.new_metadata;
 
-            self.pages.read().sync_file()?;
+            self.pages.sync_file()?;
 
             let mut guard = self.metadata.lock().unwrap();
             let (_metadata, metadata_file) = &mut *guard;
@@ -603,10 +602,7 @@ impl<K> Drop for BTree<K> {
         metadata_file.seek(SeekFrom::Start(0)).unwrap();
         metadata.write(metadata_file).unwrap();
 
-        self.pages
-            .read()
-            .sync_file()
-            .expect("tree file sync failed");
+        self.pages.sync_file().expect("tree file sync failed");
     }
 }
 
@@ -638,7 +634,7 @@ mod tests {
 
             // TODO: get the next page but IN the read transaction
             for n in 1..self.metadata.lock().unwrap().0.page_manager.next_page() {
-                let pages = self.pages.read();
+                let pages = &self.pages;
                 let page_ref = pages.get_page(n).unwrap();
 
                 println!("-----------------------");

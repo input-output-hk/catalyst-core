@@ -209,10 +209,10 @@ mod test {
 
         let appender = MmapedAppendOnlyFile::new(path).unwrap();
 
-        let mut rng = StdRng::seed_from_u64(SEED);
+        let rng = StdRng::seed_from_u64(SEED);
 
         for _ in 0..(MAP_PAGE_SIZE - 1) / MAX_BLOB_SIZE as u64 {
-            let mut buf = vec![0u8; MAX_BLOB_SIZE];
+            let buf = vec![0u8; MAX_BLOB_SIZE];
             appender.append(&buf).unwrap();
         }
 

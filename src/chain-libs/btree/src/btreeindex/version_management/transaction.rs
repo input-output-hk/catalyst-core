@@ -6,17 +6,14 @@ use crate::btreeindex::{
     Node, PageHandle, PageId, Pages,
 };
 use crate::Key;
-use parking_lot::lock_api;
-use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard};
+use parking_lot::RwLock;
 use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet, VecDeque};
-
-use std::ops::Deref;
 use std::sync::{Arc, MutexGuard};
 
 pub struct ReadTransaction<'a> {
     version: Arc<Version>,
-    pages: RwLockReadGuard<'a, Pages>,
+    pages: &'a Pages,
 }
 
 /// staging area for batched insertions, it will keep track of pages already shadowed and reuse them,
@@ -24,7 +21,7 @@ pub struct ReadTransaction<'a> {
 pub(crate) struct WriteTransaction<'locks, 'storage: 'locks> {
     pub current_root: Cell<PageId>,
     state: RefCell<State<'locks>>,
-    pages: RefCell<ExtendablePages<'storage>>,
+    pages: RefCell<&'storage Pages>,
     versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
     current_version: Arc<RwLock<Arc<Version>>>,
     pub key_buffer_size: u32,
@@ -41,7 +38,7 @@ struct State<'a> {
 
 #[derive(Clone)]
 pub struct PageRef<'a, 'b: 'a> {
-    pages: &'a RefCell<ExtendablePages<'b>>,
+    pages: &'a RefCell<&'b Pages>,
     page_id: PageId,
 }
 
@@ -53,7 +50,7 @@ impl<'a, 'b: 'a> PageRef<'a, 'b> {
 
 #[derive(Clone)]
 pub struct PageRefMut<'a, 'b: 'a> {
-    pages: &'a RefCell<ExtendablePages<'b>>,
+    pages: &'a RefCell<&'b Pages>,
     page_id: PageId,
 }
 
@@ -107,15 +104,8 @@ impl<'a, 'b: 'a> NodeRefMut for PageRefMut<'a, 'b> {
     }
 }
 
-// in most cases, we can access the storage with read only access, but in the (rare) cases
-// where we need to extend the underlying mmaped file, we need to get exclusive access to the storage
-// it is actually not needed for the guard to be atomically upgraded, as there can only be one write
-// transaction at a time, but it's useful to not have to implement the drop read guard -> take write guard
-// -> drop write guard -> take read guard ourselves
-struct ExtendablePages<'storage>(Option<RwLockUpgradableReadGuard<'storage, Pages>>);
-
 impl<'a> ReadTransaction<'a> {
-    pub(super) fn new(version: Arc<Version>, pages: RwLockReadGuard<Pages>) -> ReadTransaction {
+    pub(super) fn new(version: Arc<Version>, pages: &'a Pages) -> ReadTransaction {
         ReadTransaction { version, pages }
     }
 
@@ -131,7 +121,7 @@ impl<'a> ReadTransaction<'a> {
 impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
     pub fn new(
         root: PageId,
-        pages: &'storage RwLock<Pages>,
+        pages: &'storage Pages,
         page_manager: MutexGuard<'locks, PageManager>,
         versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
         current_version: Arc<RwLock<Arc<Version>>>,
@@ -149,7 +139,7 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             versions,
             current_version,
             key_buffer_size,
-            pages: RefCell::new(ExtendablePages::new(pages)),
+            pages: RefCell::new(pages),
             state: RefCell::new(state),
         }
     }
@@ -399,30 +389,5 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
             MutablePage::InTransaction(handle) => handle,
             _ => unreachable!(),
         }
-    }
-}
-
-impl<'storage> Deref for ExtendablePages<'storage> {
-    type Target = Pages;
-
-    fn deref(&self) -> &Self::Target {
-        self.0.as_ref().unwrap()
-    }
-}
-
-impl<'storage> ExtendablePages<'storage> {
-    fn new(pages: &'storage RwLock<Pages>) -> ExtendablePages<'storage> {
-        Self(Some(pages.upgradable_read()))
-    }
-
-    fn extend(&mut self, to: PageId) -> Result<(), std::io::Error> {
-        let mut write_guard = lock_api::RwLockUpgradableReadGuard::upgrade(self.0.take().unwrap());
-
-        (*write_guard).extend(to)?;
-
-        let new_guard = lock_api::RwLockWriteGuard::downgrade_to_upgradable(write_guard);
-        self.0 = Some(new_guard);
-
-        Ok(())
     }
 }

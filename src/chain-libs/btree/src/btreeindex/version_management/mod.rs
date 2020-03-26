@@ -73,14 +73,13 @@ impl TransactionManager {
         self.latest_version.read().clone()
     }
 
-    pub fn read_transaction<'a>(&self, pages: &'a RwLock<Pages>) -> ReadTransaction<'a> {
-        let guard = pages.read();
-        ReadTransaction::new(self.latest_version(), guard)
+    pub fn read_transaction<'a>(&self, pages: &'a Pages) -> ReadTransaction<'a> {
+        ReadTransaction::new(self.latest_version(), pages)
     }
 
     pub fn insert_transaction<'me, 'index: 'me>(
         &'me self,
-        pages: &'index RwLock<Pages>,
+        pages: &'index Pages,
         key_buffer_size: u32,
     ) -> WriteTransaction<'me, 'index> {
         let page_manager = self.page_manager.lock().unwrap();

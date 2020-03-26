@@ -68,7 +68,7 @@ where
     ) -> Result<BTree<K>, BTreeStoreError> {
         let mut metadata = Metadata::new();
 
-        let pages_storage = crate::storage::MmapStorage::new(tree_file)?;
+        let pages_storage = crate::storage::MmapStorage::new(tree_file, None)?;
 
         let mut pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,
@@ -117,7 +117,7 @@ where
         static_settings_file: impl AsRef<Path>,
     ) -> Result<BTree<K>, BTreeStoreError> {
         let tree_file = OpenOptions::new().write(true).read(true).open(tree_file)?;
-        let pages_storage = crate::storage::MmapStorage::new(tree_file)?;
+        let pages_storage = crate::storage::MmapStorage::new(tree_file, None)?;
 
         let mut static_settings_file = OpenOptions::new()
             .write(true)

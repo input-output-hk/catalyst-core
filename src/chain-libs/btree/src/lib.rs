@@ -130,10 +130,9 @@ where
     }
 
     pub fn delete(&self, key: K) -> Result<(), BTreeStoreError> {
-        let mut flatfile = self.flatfile.lock().unwrap();
         self.index.delete(&key)?;
 
-        flatfile.sync()?;
+        self.flatfile.sync()?;
         self.index.checkpoint()?;
 
         Ok(())

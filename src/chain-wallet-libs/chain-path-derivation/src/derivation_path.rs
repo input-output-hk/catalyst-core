@@ -6,9 +6,18 @@ use std::{
 };
 use thiserror::Error;
 
+/// any derivation path scheme
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy, Default)]
 pub struct AnyScheme;
 
+/// a derivation path with a tagged scheme (for example [`Bip44`]).
+///
+/// This allows following the specific set of rules for a derivation
+/// path, preventing some errors. For example, the Bip44 scheme enforce
+/// the 3 first derivation to be hard derivation indices and the 2 last
+/// ones to be soft derivation indices.
+///
+/// [`Bip44`]: ./struct.Bip44.html
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct DerivationPath<S> {
     path: Vec<Derivation>,
@@ -26,16 +35,31 @@ where
 }
 
 impl<S> DerivationPath<S> {
+    /// Iterate through every derivation indices of the given derivation path
+    ///
     pub fn iter(&self) -> std::slice::Iter<'_, Derivation> {
         self.path.iter()
     }
 
-    pub fn append(&self, derivation: Derivation) -> Self {
+    /// create a new derivation path with appending the new derivation
+    /// index to the current derivation path
+    ///
+    #[must_use = "this returns the result of the operation, without modifying the original"]
+    pub fn append_unchecked(&self, derivation: Derivation) -> Self {
         let mut cloned = self.clone();
         cloned.path.push(derivation);
         cloned
     }
 
+    /// create a range of derivation path with the given derivation range
+    ///
+    /// this will create an iterator of DerivationPath with the first derivation
+    /// indices being the one fo the given derivation path and the append indices
+    /// the one from the range.
+    ///
+    /// i.e. if the derivation path is `m/'1/42` and the range is `..20` it will
+    /// create an iterator of derivation path for all: `m/'1/42/0` `m/'1/42/1`
+    /// `m/'1/42/2` ...  `m/'1/42/19`.
     pub fn sub_range<R, T>(&self, range: R) -> DerivationPathRange<S, R, T>
     where
         R: Iterator<Item = T>,
@@ -57,7 +81,7 @@ impl<S> DerivationPath<S> {
         self.path.push(derivation)
     }
 
-    pub(crate) fn coerce_unchecked<T>(self) -> DerivationPath<T> {
+    pub fn coerce_unchecked<T>(self) -> DerivationPath<T> {
         DerivationPath {
             path: self.path,
             _marker: std::marker::PhantomData,
@@ -65,10 +89,24 @@ impl<S> DerivationPath<S> {
     }
 }
 
+impl DerivationPath<AnyScheme> {
+    pub fn new() -> Self {
+        DerivationPath::new_empty()
+    }
+}
+
 impl<S> Deref for DerivationPath<S> {
     type Target = [Derivation];
     fn deref(&self) -> &Self::Target {
         self.path.deref()
+    }
+}
+
+/* Default ***************************************************************** */
+
+impl Default for DerivationPath<AnyScheme> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -83,7 +121,7 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         let next = self.range.next()?.into();
-        let path = self.root.append(next);
+        let path = self.root.append_unchecked(next);
         Some(path)
     }
 }
@@ -105,7 +143,7 @@ where
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         let next = self.range.next_back()?.into();
-        let path = self.root.append(next);
+        let path = self.root.append_unchecked(next);
         Some(path)
     }
 }

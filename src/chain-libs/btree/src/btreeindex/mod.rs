@@ -391,6 +391,8 @@ where
 
         current
     }
+
+    /// delete given key from the tree, this doesn't sync the file to disk
     pub fn delete(&self, key: &K) -> Result<(), BTreeStoreError> {
         let key_buffer_size: u32 = self.static_settings.key_buffer_size;
 
@@ -405,7 +407,6 @@ where
         result
     }
 
-    // TODO: the delete function needs a decent cleanup/refactor
     fn delete_async<'a>(
         &'a self,
         key: &K,
@@ -415,32 +416,28 @@ where
 
         let mut backtrack = DeleteBacktrack::new_search_for(tx, key);
 
-        // path loaded (cloned) in transaction
+        // we can unwrap safely because there is always a leaf in the path
+        // delete will return Ok if the key is not in the given leaf
         let next_element = backtrack.get_next()?.unwrap();
-
         let mut leaf = next_element.next.clone();
 
-        let delete_status = leaf.as_node_mut(key_buffer_size as usize, |mut node| {
+        let delete_result = leaf.as_node_mut(key_buffer_size as usize, |mut node| {
             node.as_leaf_mut().delete(key)
         })?;
 
-        match delete_status {
+        match delete_result {
             LeafDeleteStatus::Ok => return Ok(()),
             LeafDeleteStatus::NeedsRebalance => (),
         };
 
-        let is_empty = leaf.as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
-            root.as_leaf().keys().len() == 0
-        });
-
         if let None = next_element.parent {
-            if is_empty {
-                // do something?
-            }
+            // this means we are processing the root node, it is not possible to do any rebalancing because we don't have siblings
+            // I think we don't need to do anything here, in theory, we could change the tree height to 0, but we are not tracking the height
             return Ok(());
         };
 
-        let go_up = leaf.as_node_mut(
+        // the value in the Option is the 'anchor' (pointer) to the deleted node, which can be either the next node on the stack, or it's right sibling
+        let should_recurse_on_parent: Option<usize> = leaf.as_node_mut(
             key_buffer_size as usize,
             |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
                 let siblings = SiblingsArg::new_from_options(
@@ -465,6 +462,8 @@ where
                         let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
                         add_sibling.merge_into_left(sibling);
                         next_element.delete_node();
+                        // the anchor is the the index of the key that splits the left sibling and the node, it's only None if the current node
+                        // it's the leftmost (and thus has no left sibling)
                         Ok(Some(
                             next_element
                                 .anchor
@@ -480,9 +479,9 @@ where
                     }
                 }
             },
-        );
+        )?;
 
-        if let Some(anchor) = go_up? {
+        if let Some(anchor) = should_recurse_on_parent {
             self.delete_internal(anchor, &mut backtrack)?;
         }
 
@@ -511,7 +510,7 @@ where
             if let None = next_element.parent {
                 // here we are dealing with the root
                 // the root is not rebalanced, but if it is empty then it can
-                // be deleted
+                // be deleted, and unlike the leaf case, we need to promote it's only remainining child as the new root
                 let is_empty = next_element
                     .next
                     .as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
@@ -522,7 +521,7 @@ where
                 // is in position == anchor
 
                 if is_empty {
-                    assert!(anchor == 0);
+                    debug_assert!(anchor == 0);
                     let new_root = next_element
                         .next
                         .as_node(key_buffer_size as usize, |node: Node<K, &[u8]>| {
@@ -530,9 +529,6 @@ where
                         });
 
                     next_element.set_root(new_root);
-                } else {
-                    // the root is not rebalanced
-                    return Ok(());
                 }
             } else {
                 // non-root node
@@ -541,7 +537,8 @@ where
                 let left = next_element.left.clone();
                 let right = next_element.right.clone();
 
-                let go_up = next_element.next.clone().as_node_mut(
+                // as in the leaf case, the value in the Option is the 'anchor' (pointer) to the deleted node
+                let recurse_on_parent: Option<usize> = next_element.next.clone().as_node_mut(
                     key_buffer_size as usize,
                     |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
                         let siblings = SiblingsArg::new_from_options(left, right);
@@ -552,7 +549,7 @@ where
                                     next_element.mut_left_sibling(key_buffer_size as usize);
                                 add_params.take_key_from_left(
                                     parent,
-                                    anchor.expect("left sibling seems to exist but anchor is null"),
+                                    anchor.expect("left sibling seems to exist but anchor is none"),
                                     sibling,
                                 );
                                 Ok(None)
@@ -586,7 +583,7 @@ where
                     },
                 )?;
 
-                if let Some(anchor) = go_up {
+                if let Some(anchor) = recurse_on_parent {
                     anchor_to_delete = anchor;
                 } else {
                     break;

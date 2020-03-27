@@ -8,7 +8,7 @@ use crate::Key;
 use std::convert::{TryFrom, TryInto};
 use std::marker::PhantomData;
 
-/// this is basically a stack, but it will rename pointers and interact with the builder in order to reuse
+/// this is basically a stack, but it will rename pointers and interact with the transaction in order to reuse
 /// already cloned pages
 pub struct InsertBacktrack<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K>
 where
@@ -18,10 +18,9 @@ where
     backtrack: Vec<PageId>,
     new_root: Option<PageId>,
     phantom_key: PhantomData<[K]>,
-    key_buffer_size: u32,
 }
 
-/// this is basically a stack, but it will rename pointers and interact with the builder in order to reuse
+/// this is basically a stack, but it will rename pointers and interact with the transaction in order to reuse
 /// already cloned pages
 pub struct DeleteBacktrack<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K>
 where
@@ -29,13 +28,17 @@ where
 {
     tx: &'txbuilder transaction::WriteTransaction<'txmanager, 'storage>,
     backtrack: Vec<PageId>,
+    // The first parameter is the anchor used to get from the parent to the node in the top of the stack
+    // the other two are both its siblings. The parent id can be found after the top of the stack, of course.
     parent_info: Vec<(Option<usize>, Option<PageId>, Option<PageId>)>,
     new_root: Option<PageId>,
     phantom_key: PhantomData<[K]>,
-    key_buffer_size: u32,
 }
 
+// lifetimes on this are a bit bothersome with four 'linear' (re) borrows, there may be some way of refactoring this things, but that would probably need to be done higher in
+// the hierarchy
 /// type to operate on the current element in the stack (branch) of nodes. This borrows the backtrack and acts as a proxy, in order to make borrowing simpler, because
+// XXX: having a left sibling means anchor is not None, and having a sibling in general means parent is not None also, maybe this invariants could be expressed in the type structure
 pub struct DeleteNextElement<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
 where
     K: Key,
@@ -100,19 +103,18 @@ where
         tx: &'txbuilder mut WriteTransaction<'txmanager, 'storage>,
         key: &K,
     ) -> Self {
-        let key_buffer_size = tx.key_buffer_size.clone();
         let mut backtrack = DeleteBacktrack {
             tx,
             backtrack: vec![],
             parent_info: vec![],
             new_root: None,
             phantom_key: PhantomData,
-            key_buffer_size,
         };
         backtrack.search_for(key);
         backtrack
     }
     /// traverse the tree while storing the path, so we can then backtrack while splitting
+    // TODO: there are already 3 traverse (2 in this file) in the codebase, all really similar. It may be good to refactor them into only one
     pub fn search_for(&mut self, key: &K) {
         enum Step {
             Internal(Option<usize>, Option<PageId>, Option<PageId>),
@@ -125,7 +127,7 @@ where
             let page = self.tx.get_page(current).unwrap();
 
             let found_leaf = page.as_node(
-                self.key_buffer_size.try_into().unwrap(),
+                self.tx.key_buffer_size.try_into().unwrap(),
                 |node: Node<K, &[u8]>| {
                     if let Some(inode) = node.try_as_internal() {
                         let upper_pivot = match inode.keys().binary_search(key) {
@@ -172,7 +174,7 @@ where
         &'this mut self,
     ) -> Result<Option<DeleteNextElement<'this, 'txbuilder, 'txmanager, 'storage, K>>, std::io::Error>
     {
-        let id = match dbg!(&mut self.backtrack).pop() {
+        let id = match self.backtrack.pop() {
             Some(id) => id,
             None => return Ok(None),
         };
@@ -182,24 +184,22 @@ where
             self.new_root = Some(id);
         }
 
-        let key_buffer_size = usize::try_from(self.key_buffer_size).unwrap();
+        let key_buffer_size = usize::try_from(self.tx.key_buffer_size).unwrap();
 
-        let (parent, anchor, left, right) = if self.backtrack.is_empty() {
-            (None, None, None, None)
-        } else {
-            let parent = self.backtrack.last().unwrap();
-
-            let (anchor, left, right) = self.parent_info.pop().unwrap();
-            (Some(parent), anchor, left, right)
+        let parent_info = match self.backtrack.last() {
+            Some(parent) => {
+                // we need the parent id, which is the next node in the stack, but we should not pop, because it would be the next node to process
+                let (anchor, left, right) = self.parent_info.pop().expect("missing parent info");
+                Some((parent, anchor, left, right))
+            }
+            None => None,
         };
 
         let next = match self.tx.mut_page(id)? {
             transaction::MutablePage::NeedsParentRedirect(rename_in_parents) => {
-                // this part may be tricky, we need to recursively clone and redirect all the path
-                // from the root to the node we are writing to. We need the backtrack stack, because
-                // that's the only way to get the parent of a node (because there are no parent pointers)
-                // so we iterate it in reverse but without consuming the stack (as we still need it for the
-                // rest of the insertion algorithm)
+                // recursively clone(if they are not already used for some operation in the same transaction)
+                // and redirect the whole path to this node.
+                // Here redirect means clone the nodes and point the parents to the clone of its child
                 let mut rename_in_parents = Some(rename_in_parents);
                 let mut finished = None;
                 for id in self.backtrack.iter().rev() {
@@ -220,18 +220,27 @@ where
                 }
                 match finished {
                     Some(handle) => handle,
+                    // None means we got to the root of the tree
                     None => rename_in_parents.unwrap().finish(),
                 }
             }
             transaction::MutablePage::InTransaction(handle) => handle,
         };
 
-        let left = left.and_then(|id| self.tx.get_page(id));
-        let right = right.and_then(|id| self.tx.get_page(id));
-        let parent = parent.map(|id| match self.tx.mut_page(*id).unwrap() {
-            MutablePage::InTransaction(handle) => handle,
-            _ => unreachable!(),
-        });
+        let (parent, left, right) = if let Some((parent, _anchor, left, right)) = parent_info {
+            let left = left.and_then(|id| self.tx.get_page(id));
+            let right = right.and_then(|id| self.tx.get_page(id));
+            let parent = match self.tx.mut_page(*parent).unwrap() {
+                MutablePage::InTransaction(handle) => handle,
+                _ => unreachable!(),
+            };
+
+            (Some(parent), left, right)
+        } else {
+            (None, None, None)
+        };
+
+        let anchor = parent_info.and_then(|(_, anchor, _, _)| anchor);
 
         Ok(Some(DeleteNextElement {
             next,
@@ -257,13 +266,11 @@ where
         tx: &'txbuilder mut WriteTransaction<'txmanager, 'index>,
         key: &K,
     ) -> Self {
-        let key_buffer_size = tx.key_buffer_size.clone();
         let mut backtrack = InsertBacktrack {
             tx,
             backtrack: vec![],
             new_root: None,
             phantom_key: PhantomData,
-            key_buffer_size,
         };
 
         backtrack.search_for(key);
@@ -277,7 +284,7 @@ where
             let page = self.tx.get_page(current).unwrap();
 
             let found_leaf = page.as_node(
-                self.key_buffer_size.try_into().unwrap(),
+                self.tx.key_buffer_size.try_into().unwrap(),
                 |node: Node<K, &[u8]>| {
                     if let Some(inode) = node.try_as_internal() {
                         let upper_pivot = match inode.keys().binary_search(key) {
@@ -318,7 +325,7 @@ where
             self.new_root = Some(id);
         }
 
-        let key_buffer_size = usize::try_from(self.key_buffer_size).unwrap();
+        let key_buffer_size = usize::try_from(self.tx.key_buffer_size).unwrap();
 
         match self.tx.mut_page(id)? {
             transaction::MutablePage::NeedsParentRedirect(rename_in_parents) => {

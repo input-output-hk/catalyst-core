@@ -108,6 +108,7 @@ impl MmapedAppendOnlyFile {
                 region
             } else {
                 // if we can't, then we just skip that part and write in the next page and hope it fits
+                // we don't write in two different pages in order to just be able to return slices to the mmaped region
                 next_pos = next_pos + mapped_len;
                 self.next_pos
                     .store(next_pos + region_len, Ordering::Release);

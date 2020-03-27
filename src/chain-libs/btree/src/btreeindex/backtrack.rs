@@ -43,13 +43,13 @@ pub struct DeleteNextElement<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
 where
     K: Key,
 {
-    pub next: PageRefMut<'a, 'd>,
-    pub parent: Option<PageRefMut<'a, 'd>>,
+    pub next: PageRefMut<'a>,
+    pub parent: Option<PageRefMut<'a>>,
     // anchor is an index into the keys array of a node used to find the current node in the parent without searching. The leftmost(lowest) child has None as anchor
     // this means it's inmediate right sibling would have anchor of 0, and so on.
     pub anchor: Option<usize>,
-    pub left: Option<PageRef<'a, 'd>>,
-    pub right: Option<PageRef<'a, 'd>>,
+    pub left: Option<PageRef<'a>>,
+    pub right: Option<PageRef<'a>>,
     backtrack: &'a mut DeleteBacktrack<'b, 'c, 'd, K>,
 }
 
@@ -57,7 +57,7 @@ impl<'a, 'b: 'a, 'c: 'b, 'd: 'c, K> DeleteNextElement<'a, 'b, 'c, 'd, K>
 where
     K: Key,
 {
-    pub fn mut_left_sibling(&self, key_size: usize) -> PageRefMut<'a, 'd> {
+    pub fn mut_left_sibling(&self, key_size: usize) -> PageRefMut<'a> {
         let left_id = self.left.as_ref().unwrap().id();
         match self.backtrack.tx.mut_page(dbg!(left_id)).unwrap() {
             MutablePage::InTransaction(handle) => handle,
@@ -67,7 +67,7 @@ where
         }
     }
 
-    pub fn mut_right_sibling(&self, key_size: usize) -> PageRefMut<'a, 'd> {
+    pub fn mut_right_sibling(&self, key_size: usize) -> PageRefMut<'a> {
         let right_id = self.right.as_ref().unwrap().id();
         match self.backtrack.tx.mut_page(dbg!(right_id)).unwrap() {
             MutablePage::InTransaction(handle) => handle,
@@ -113,6 +113,7 @@ where
         backtrack.search_for(key);
         backtrack
     }
+
     /// traverse the tree while storing the path, so we can then backtrack while splitting
     // TODO: there are already 3 traverse (2 in this file) in the codebase, all really similar. It may be good to refactor them into only one
     pub fn search_for(&mut self, key: &K) {
@@ -276,8 +277,9 @@ where
         backtrack.search_for(key);
         backtrack
     }
+
     /// traverse the tree while storing the path, so we can then backtrack while splitting
-    fn search_for<'a>(&'a mut self, key: &K) {
+    pub fn search_for<'a>(&'a mut self, key: &K) {
         let mut current = self.tx.root();
 
         loop {
@@ -314,7 +316,7 @@ where
         }
     }
 
-    pub fn get_next<'a>(&'a mut self) -> Result<Option<PageRefMut<'a, 'index>>, std::io::Error> {
+    pub fn get_next<'a>(&'a mut self) -> Result<Option<PageRefMut<'a>>, std::io::Error> {
         let id = match self.backtrack.pop() {
             Some(id) => id,
             None => return Ok(None),
@@ -344,8 +346,7 @@ where
                         MutablePage::InTransaction(handle) => return Ok(Some(handle)),
                     }
                 }
-                let page = rename_in_parents.finish();
-                Ok(Some(page))
+                Ok(Some(rename_in_parents.finish()))
             }
             transaction::MutablePage::InTransaction(handle) => Ok(Some(handle)),
         }

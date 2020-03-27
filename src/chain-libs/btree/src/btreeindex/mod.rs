@@ -77,14 +77,7 @@ where
 
         let first_page_id = metadata.page_manager.new_id();
 
-        let mut root_page = match pages.mut_page(first_page_id) {
-            Ok(page) => page,
-            Err(_) => {
-                pages.extend(first_page_id)?;
-                // this is infallible now
-                pages.mut_page(first_page_id).unwrap()
-            }
-        };
+        let mut root_page = pages.mut_page(first_page_id)?;
 
         root_page.as_slice(|page| {
             Node::<K, &mut [u8]>::new_leaf(key_buffer_size.try_into().unwrap(), page);
@@ -243,7 +236,7 @@ where
 
     pub(crate) fn insert_in_leaf<'a, 'b: 'a>(
         &self,
-        mut leaf: PageRefMut<'a, 'b>,
+        mut leaf: PageRefMut<'a>,
         key: K,
         value: Value,
     ) -> Result<Option<(K, Node<K, MemPage>)>, BTreeStoreError> {

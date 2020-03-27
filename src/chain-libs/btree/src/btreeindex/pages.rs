@@ -65,7 +65,10 @@ impl Pages {
     }
 
     /// this call is safe, which means that it will panic if the given id is already borrowed
-    pub fn mut_page<'a>(&'a self, id: PageId) -> Result<PageHandle<'a, borrow::Mutable>, ()> {
+    pub fn mut_page<'a>(
+        &'a self,
+        id: PageId,
+    ) -> Result<PageHandle<'a, borrow::Mutable>, std::io::Error> {
         let borrow_guard = self.borrows.lock().unwrap().borrow_mut(id);
 
         let storage = &self.storage;
@@ -73,21 +76,19 @@ impl Pages {
             * u64::from(self.page_size);
 
         // Make sure there is a mapped area for this page
-        match unsafe { storage.get_mut(from, u64::from(self.page_size)) } {
-            Ok(page) => Ok(PageHandle {
-                id,
-                borrow: borrow::Mutable {
-                    borrow: page,
-                    borrow_guard,
-                },
-                page_marker: PhantomData,
-            }),
-            Err(_) => Err(()),
-        }
+        let page = unsafe { storage.get_mut(from, u64::from(self.page_size))? };
+        Ok(PageHandle {
+            id,
+            borrow: borrow::Mutable {
+                borrow: page,
+                borrow_guard,
+            },
+            page_marker: PhantomData,
+        })
     }
 
     /// raw clone page old_id to new_id
-    pub fn make_shadow(&self, old_id: PageId, new_id: PageId) -> Result<(), ()> {
+    pub fn make_shadow(&self, old_id: PageId, new_id: PageId) -> Result<(), std::io::Error> {
         assert!(old_id != new_id);
         let page_old = self
             .get_page(old_id)
@@ -100,14 +101,14 @@ impl Pages {
         Ok(())
     }
 
-    pub fn extend(&self, to: PageId) -> Result<(), std::io::Error> {
-        let storage = &self.storage;
+    // pub fn extend(&self, to: PageId) -> Result<(), std::io::Error> {
+    //     let storage = &self.storage;
 
-        let from = u64::from(to.checked_sub(1).expect("0 page is used as a null ptr"))
-            * u64::from(self.page_size);
+    //     let from = u64::from(to.checked_sub(1).expect("0 page is used as a null ptr"))
+    //         * u64::from(self.page_size);
 
-        storage.extend(from + u64::from(self.page_size))
-    }
+    //     storage.extend(from + u64::from(self.page_size))
+    // }
 
     pub(crate) fn sync_file(&self) -> Result<(), std::io::Error> {
         self.storage.sync()

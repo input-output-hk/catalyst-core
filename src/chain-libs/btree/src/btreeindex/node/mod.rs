@@ -246,7 +246,7 @@ mod tests {
         };
 
         let pages = Pages::new(params);
-        pages.extend(300).unwrap();
+        pages.mut_page(300).unwrap();
         pages
     }
 

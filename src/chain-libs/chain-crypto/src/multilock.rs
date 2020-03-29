@@ -241,11 +241,6 @@ pub fn participants(data: &[u8]) -> Result<Vec<RistrettoPoint>, DecryptionError>
 
     for i in 0..nb {
         let point = recipient_public_key_nth_point(data, i)?;
-        /*
-        let pk_slice = recipient_public_key_nth(data, i);
-        let pk = CompressedRistretto::from_slice(pk_slice);
-        let point = pk.decompress().ok_or(DecryptionError::PointInvalid)?;
-        */
         parts.push(point)
     }
     Ok(parts)

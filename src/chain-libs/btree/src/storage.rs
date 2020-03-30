@@ -11,7 +11,7 @@ use std::mem::ManuallyDrop;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 /// Wrapper over an mmaped file with extension capabilities
-/// The underlying file is split into multiple pages, this makes way the pointers(slices) are never invalidated, at the expense of not being to able to 
+/// The underlying file is split into multiple pages, this makes way the pointers(slices) are never invalidated, at the expense of not being to able to
 /// operate on chunks spanning multiple pages as contiguous data.
 /// The API provided is mostly unsafe, as there is no aliasing checks, it's expected to be done at a higher level.
 pub struct MmapStorage {

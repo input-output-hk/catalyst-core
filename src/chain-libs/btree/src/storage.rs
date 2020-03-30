@@ -138,8 +138,6 @@ impl MmapStorage {
     }
 
     pub fn sync(&self) -> Result<(), io::Error> {
-        // there is nothing really unsafe here, we need the .read() only because of unsafe cell (at least nothing that is not already present in the memmap api)
-        // unsafe { &*self.mmap.get() }.flush()
         self.pages.sync()
     }
 

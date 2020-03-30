@@ -1,6 +1,7 @@
 use memmap::MmapMut;
 use std::cell::UnsafeCell;
 
+use parking_lot::RwLock;
 use std::cmp::min;
 use std::collections::HashMap;
 use std::convert::TryInto;
@@ -8,10 +9,11 @@ use std::fs::File;
 use std::io;
 use std::mem::ManuallyDrop;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Mutex;
 
-pub const DEFAULT_PAGE_SIZE: u64 = (1 << 20) * 128; // 128mb
-
+/// Wrapper over an mmaped file with extension capabilities
+/// The underlying file is split into multiple pages, this makes way the pointers(slices) are never invalidated, at the expense of not being to able to 
+/// operate on chunks spanning multiple pages as contiguous data.
+/// The API provided is mostly unsafe, as there is no aliasing checks, it's expected to be done at a higher level.
 pub struct MmapStorage {
     pages: ManuallyDrop<PageTable>,
     file_len: AtomicU64,
@@ -23,8 +25,9 @@ pub struct MmapStorage {
 type PageId = u64;
 
 struct PageTable {
-    // TODO: A vector would be probably be a decent choice too
-    lookup: Mutex<HashMap<PageId, Page>>,
+    // XXX: A vector may be a decent choice too
+    // It may be possible to reduce locking here
+    lookup: RwLock<HashMap<PageId, Page>>,
     page_size: u64,
 }
 struct Page {
@@ -32,10 +35,9 @@ struct Page {
 }
 
 impl MmapStorage {
-    pub fn new(file: File, page_size: Option<u64>) -> Result<Self, io::Error> {
+    pub fn new(file: File, page_size: u64) -> Result<Self, io::Error> {
         let file_len = file.metadata()?.len();
 
-        let page_size = page_size.unwrap_or(DEFAULT_PAGE_SIZE);
         let (page_id, _offset) = absolute_offset_to_relative(page_size, file_len);
         let allocated_size = (page_id + 1) * page_size;
 
@@ -45,7 +47,7 @@ impl MmapStorage {
         let file = Box::into_raw(boxed_file);
 
         let pages = ManuallyDrop::new(PageTable {
-            lookup: Mutex::new(HashMap::new()),
+            lookup: RwLock::new(HashMap::new()),
             page_size,
         });
 
@@ -58,8 +60,10 @@ impl MmapStorage {
         })
     }
 
+    // TODO: Create a better abstraction for chunks that overlap multiple pages?
     /// this call is unsafe because get_mut is &self and not &mut self, so this could lead to mutable aliasing
-    /// this panics if the location (+ count) is out of range, though
+    /// this panics if the location (+ count) is out of range
+    /// the size of the returning slice should be checked as the underlying file is split in multiple pages, it may not be possible to return a slice with the entire range
     pub unsafe fn get(&self, location: u64, count: u64) -> &[u8] {
         let (page_id, offset) = absolute_offset_to_relative(self.page_size, location);
         match self.pages.get_page(page_id as PageId) {
@@ -83,6 +87,7 @@ impl MmapStorage {
     }
 
     /// caller must enforce that there is no aliasing here
+    /// the size of the returning slice should be checked as the underlying file is split in multiple pages, it may not be possible to return a slice with the entire range
     pub unsafe fn get_mut(&self, location: u64, count: u64) -> Result<&mut [u8], io::Error> {
         if location + count > self.allocated_size.load(Ordering::SeqCst) {
             self.extend(location + count)?;
@@ -100,8 +105,7 @@ impl MmapStorage {
 
         match self.pages.get_page_mut(page_id) {
             Some(page) => {
-                Ok(&mut page
-                    [offset..min(offset + count as usize, self.page_size.try_into().unwrap())])
+                Ok(&mut page[offset..min(offset + count, self.page_size.try_into().unwrap())])
             }
             None => {
                 let page = memmap::MmapOptions::new()
@@ -117,7 +121,7 @@ impl MmapStorage {
         }
     }
 
-    pub fn extend(&self, minimum_required_size: u64) -> Result<(), io::Error> {
+    fn extend(&self, minimum_required_size: u64) -> Result<(), io::Error> {
         if minimum_required_size > self.allocated_size.load(Ordering::Acquire) {
             let (page_id, _offset) =
                 absolute_offset_to_relative(self.page_size, minimum_required_size);
@@ -134,7 +138,7 @@ impl MmapStorage {
     }
 
     pub fn sync(&self) -> Result<(), io::Error> {
-        // there is nothing really unsafe here, we need the block only because of unsafe cell (at least nothing that is not already present in the memmap api)
+        // there is nothing really unsafe here, we need the .read() only because of unsafe cell (at least nothing that is not already present in the memmap api)
         // unsafe { &*self.mmap.get() }.flush()
         self.pages.sync()
     }
@@ -151,8 +155,8 @@ impl Page {
         }
     }
 
-    unsafe fn read(&self) -> *const u8 {
-        (*self.map.get()).as_ref().as_ptr()
+    fn read(&self) -> *const u8 {
+        unsafe { (*self.map.get()).as_ref().as_ptr() }
     }
 
     unsafe fn write(&self) -> *mut u8 {
@@ -165,22 +169,23 @@ impl Page {
 }
 
 impl PageTable {
+    // the caller should ensure to not get a page mutably borrowed
     unsafe fn get_page(&self, id: PageId) -> Option<&[u8]> {
         self.lookup
-            .lock()
-            .unwrap()
+            .read()
             .get(&id)
             .map(|page| std::slice::from_raw_parts(page.read(), self.page_size.try_into().unwrap()))
     }
 
+    // the caller should ensure to not get a page already borrowed
     unsafe fn get_page_mut(&self, id: PageId) -> Option<&mut [u8]> {
-        self.lookup.lock().unwrap().get(&id).map(|page| {
+        self.lookup.read().get(&id).map(|page| {
             std::slice::from_raw_parts_mut(page.write(), self.page_size.try_into().unwrap())
         })
     }
 
     fn sync(&self) -> Result<(), io::Error> {
-        for page in self.lookup.lock().unwrap().values() {
+        for page in self.lookup.read().values() {
             page.sync()?;
         }
 
@@ -188,7 +193,7 @@ impl PageTable {
     }
 
     pub fn add_page(&self, id: PageId, page: Page) {
-        self.lookup.lock().unwrap().insert(id, page);
+        self.lookup.write().insert(id, page);
     }
 }
 
@@ -215,30 +220,30 @@ mod tests {
     use super::*;
     use tempfile::tempfile;
 
+    pub const PAGE_SIZE: u64 = (1 << 20) * 128; // 128mb
+
     #[test]
-    fn mmap_pagination() {
+    fn map_disjoint_pages() {
         let file = tempfile().unwrap();
-        let storage = MmapStorage::new(file, None).unwrap();
+        let storage = MmapStorage::new(file, PAGE_SIZE).unwrap();
 
         let pages = [1u8, 5, 9];
         let mut results = vec![];
 
         for page in pages.iter() {
             {
-                for byte in
-                    unsafe { storage.get_mut(*page as u64 * DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE) }
-                        .expect("Couldn't expand file")
+                for byte in unsafe { storage.get_mut(*page as u64 * PAGE_SIZE, PAGE_SIZE) }
+                    .expect("Couldn't expand file")
                 {
                     *byte = *page;
                 }
             }
-            let result =
-                unsafe { storage.get(*page as u64 * DEFAULT_PAGE_SIZE, DEFAULT_PAGE_SIZE) };
+            let result = unsafe { storage.get(*page as u64 * PAGE_SIZE, PAGE_SIZE) };
             results.push((page, result));
         }
 
         for (page, result) in results {
-            assert_eq!(result.len(), DEFAULT_PAGE_SIZE as usize);
+            assert_eq!(result.len(), PAGE_SIZE as usize);
             // check the first and last elements to make sure that the ranges are mapped correctly
             for b in result.iter().take(10).chain(result.iter().rev().take(10)) {
                 assert_eq!(b, page);
@@ -249,21 +254,17 @@ mod tests {
     #[test]
     fn non_contiguous_chunk() {
         let file = tempfile().unwrap();
-        let storage = MmapStorage::new(file, None).unwrap();
+        let storage = MmapStorage::new(file, PAGE_SIZE).unwrap();
 
+        // a chunk of page size starting at page size / 2 should span two pages, so it must be requested in two parts (this means the first part should have page_size / 2 len)
         assert_eq!(
-            unsafe { storage.get(DEFAULT_PAGE_SIZE / 2, DEFAULT_PAGE_SIZE).len() },
-            DEFAULT_PAGE_SIZE as usize / 2
+            unsafe { storage.get(PAGE_SIZE / 2, PAGE_SIZE).len() },
+            PAGE_SIZE as usize / 2
         );
 
         assert_eq!(
-            unsafe {
-                storage
-                    .get_mut(DEFAULT_PAGE_SIZE / 2, DEFAULT_PAGE_SIZE)
-                    .unwrap()
-                    .len()
-            },
-            DEFAULT_PAGE_SIZE as usize / 2
+            unsafe { storage.get_mut(PAGE_SIZE / 2, PAGE_SIZE).unwrap().len() },
+            PAGE_SIZE as usize / 2
         );
     }
 }

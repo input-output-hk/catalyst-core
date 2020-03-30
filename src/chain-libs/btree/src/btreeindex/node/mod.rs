@@ -236,9 +236,11 @@ mod tests {
     use std::mem::size_of;
     use tempfile::tempfile;
 
+    pub const PAGE_SIZE: u64 = (1 << 20) * 128; // 128mb
+
     pub fn pages() -> Pages {
         let page_size = 8 + 8 + 3 * size_of::<U64Key>() + 5 * size_of::<PageId>() + 4 + 8;
-        let storage = MmapStorage::new(tempfile().unwrap(), None).unwrap();
+        let storage = MmapStorage::new(tempfile().unwrap(), PAGE_SIZE).unwrap();
         let params = PagesInitializationParams {
             storage,
             page_size: page_size as u16,
@@ -246,7 +248,6 @@ mod tests {
         };
 
         let pages = Pages::new(params);
-        pages.mut_page(300).unwrap();
         pages
     }
 

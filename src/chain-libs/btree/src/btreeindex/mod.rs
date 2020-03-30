@@ -32,6 +32,7 @@ use std::path::Path;
 use std::sync::Mutex;
 
 pub type PageId = u32;
+const NODES_PER_PAGE: u64 = 2000;
 
 pub struct BTree<K> {
     // The metadata file contains the latests confirmed version of the tree
@@ -67,7 +68,8 @@ where
     ) -> Result<BTree<K>, BTreeStoreError> {
         let mut metadata = Metadata::new();
 
-        let pages_storage = crate::storage::MmapStorage::new(tree_file, None)?;
+        let pages_storage =
+            crate::storage::MmapStorage::new(tree_file, page_size as u64 * NODES_PER_PAGE)?;
 
         let pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,
@@ -108,9 +110,6 @@ where
         tree_file: impl AsRef<Path>,
         static_settings_file: impl AsRef<Path>,
     ) -> Result<BTree<K>, BTreeStoreError> {
-        let tree_file = OpenOptions::new().write(true).read(true).open(tree_file)?;
-        let pages_storage = crate::storage::MmapStorage::new(tree_file, None)?;
-
         let mut static_settings_file = OpenOptions::new()
             .write(true)
             .read(true)
@@ -124,6 +123,12 @@ where
         let metadata = Metadata::read(&mut metadata_file)?;
 
         let static_settings = StaticSettings::read(&mut static_settings_file)?;
+
+        let tree_file = OpenOptions::new().write(true).read(true).open(tree_file)?;
+        let pages_storage = crate::storage::MmapStorage::new(
+            tree_file,
+            static_settings.page_size as u64 * NODES_PER_PAGE,
+        )?;
 
         let pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,

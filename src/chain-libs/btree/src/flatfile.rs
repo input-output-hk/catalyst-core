@@ -21,7 +21,9 @@ const MAGIC_SIZE: usize = 8;
 const MAGIC: [u8; MAGIC_SIZE] = [0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88];
 const DATA_START: u64 = 4096;
 
-const MAP_PAGE_SIZE: u64 = crate::storage::DEFAULT_PAGE_SIZE;
+/// Page size of underlying storage. If a blob can't be stored in the current page, we write it at the beginning of the next page.
+/// As this may lead to wasted space, is important to choose the page size accordingly with the expected blob sizes
+const MAP_PAGE_SIZE: u64 = (1 << 20) * 128; // 128mb, this allows 8 max size blobs
 
 /// Appender store blob of data (each of maximum size of 16 Mb) offering
 /// also a direct access to known index whilst it is appended
@@ -49,7 +51,7 @@ impl MmapedAppendOnlyFile {
             .write(true)
             .open(&filename)?;
 
-        let storage = MmapStorage::new(file, Some(MAP_PAGE_SIZE))?;
+        let storage = MmapStorage::new(file, MAP_PAGE_SIZE)?;
         let next_pos = storage.len();
 
         unsafe {

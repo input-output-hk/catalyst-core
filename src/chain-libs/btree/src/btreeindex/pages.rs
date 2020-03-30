@@ -101,15 +101,6 @@ impl Pages {
         Ok(())
     }
 
-    // pub fn extend(&self, to: PageId) -> Result<(), std::io::Error> {
-    //     let storage = &self.storage;
-
-    //     let from = u64::from(to.checked_sub(1).expect("0 page is used as a null ptr"))
-    //         * u64::from(self.page_size);
-
-    //     storage.extend(from + u64::from(self.page_size))
-    // }
-
     pub(crate) fn sync_file(&self) -> Result<(), std::io::Error> {
         self.storage.sync()
     }

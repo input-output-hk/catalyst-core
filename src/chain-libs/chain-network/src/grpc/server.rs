@@ -175,8 +175,9 @@ where
         req: tonic::Request<tonic::Streaming<proto::Header>>,
     ) -> Result<tonic::Response<Self::BlockSubscriptionStream>, tonic::Status> {
         let service = self.block_service()?;
+        let peer = convert::decode_peer(req.metadata())?;
         let inbound = InboundStream::new(req.into_inner());
-        let outbound = service.block_subscription(Box::pin(inbound)).await?;
+        let outbound = service.block_subscription(peer, Box::pin(inbound)).await?;
         let res = OutboundTryStream::new(outbound);
         Ok(tonic::Response::new(res))
     }
@@ -189,8 +190,11 @@ where
         req: tonic::Request<tonic::Streaming<proto::Fragment>>,
     ) -> Result<tonic::Response<Self::FragmentSubscriptionStream>, tonic::Status> {
         let service = self.fragment_service()?;
+        let peer = convert::decode_peer(req.metadata())?;
         let inbound = InboundStream::new(req.into_inner());
-        let outbound = service.fragment_subscription(Box::pin(inbound)).await?;
+        let outbound = service
+            .fragment_subscription(peer, Box::pin(inbound))
+            .await?;
         let res = OutboundTryStream::new(outbound);
         Ok(tonic::Response::new(res))
     }
@@ -203,8 +207,9 @@ where
         req: tonic::Request<tonic::Streaming<proto::Gossip>>,
     ) -> Result<tonic::Response<Self::GossipSubscriptionStream>, tonic::Status> {
         let service = self.gossip_service()?;
+        let peer = convert::decode_peer(req.metadata())?;
         let inbound = InboundStream::new(req.into_inner());
-        let outbound = service.gossip_subscription(Box::pin(inbound)).await?;
+        let outbound = service.gossip_subscription(peer, Box::pin(inbound)).await?;
         let res = OutboundTryStream::new(outbound);
         Ok(tonic::Response::new(res))
     }

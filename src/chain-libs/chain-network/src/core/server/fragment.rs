@@ -1,5 +1,5 @@
 use super::PushStream;
-use crate::data::{Fragment, FragmentIds};
+use crate::data::{Fragment, FragmentIds, Peer};
 use crate::error::Error;
 use async_trait::async_trait;
 use futures::prelude::*;
@@ -26,6 +26,7 @@ pub trait FragmentService {
     /// which resolves to the outbound stream.
     async fn fragment_subscription(
         &self,
+        subscriber: Peer,
         stream: PushStream<Fragment>,
     ) -> Result<Self::SubscriptionStream, Error>;
 }

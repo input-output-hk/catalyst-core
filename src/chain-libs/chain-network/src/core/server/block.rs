@@ -1,5 +1,5 @@
 use super::PushStream;
-use crate::data::{Block, BlockEvent, BlockId, BlockIds, Header};
+use crate::data::{Block, BlockEvent, BlockId, BlockIds, Header, Peer};
 use crate::error::Error;
 use async_trait::async_trait;
 use futures::prelude::*;
@@ -75,6 +75,7 @@ pub trait BlockService {
     /// which resolves to the outbound stream.
     async fn block_subscription(
         &self,
+        subscriber: Peer,
         stream: PushStream<Header>,
     ) -> Result<Self::SubscriptionStream, Error>;
 }

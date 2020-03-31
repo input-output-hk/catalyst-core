@@ -1,5 +1,5 @@
 use super::PushStream;
-use crate::data::{Gossip, Peers};
+use crate::data::{Gossip, Peer, Peers};
 use crate::error::Error;
 use async_trait::async_trait;
 use futures::stream::Stream;
@@ -20,6 +20,7 @@ pub trait GossipService {
     /// which resolves to the outbound stream.
     async fn gossip_subscription(
         &self,
+        subscriber: Peer,
         stream: PushStream<Gossip>,
     ) -> Result<Self::SubscriptionStream, Error>;
 }

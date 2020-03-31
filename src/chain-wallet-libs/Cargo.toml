@@ -4,3 +4,7 @@ members = [
     "chain-path-derivation",
     "hdwallet",
 ]
+
+exclude = [
+    "chain-deps",
+]

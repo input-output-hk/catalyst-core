@@ -23,6 +23,12 @@ pub struct WalletRecoverer {
     account: Option<account::Account>,
 }
 
+impl Wallet {
+    pub fn account(&self) -> &account::Account {
+        &self.account
+    }
+}
+
 impl WalletRecoverer {
     /// start recovering funds
     pub fn new() -> Self {
@@ -30,17 +36,17 @@ impl WalletRecoverer {
     }
 
     /// recover the ethereum style account from the the given mnemonics and mnemonics password
-    /// 
+    ///
     /// this is the recommended method and is mandatory action to do.
     /// the bip39 mechanism is stronger as it provide brute force protections
     /// using HMAC SHA512 4096 iterations.
-    /// 
+    ///
     /// also it allows plausible deniability via the mnemonic password.
     pub fn account<D>(
         &mut self,
         dic: &D,
         mnemonics_phrase: &str,
-        password: &[u8]
+        password: &[u8],
     ) -> Result<&mut Self, RecoveringError>
     where
         D: bip39::dictionary::Language,
@@ -57,10 +63,10 @@ impl WalletRecoverer {
     /// recover a wallet from reboot byron era. This is compatible with legacy byron
     /// era yoroi wallet too. This is interesting to recover funds from legacy byron yoroi
     /// wallet or from the byron reboot (daedalus or yoroi) wallets
-    /// 
+    ///
     /// However no new addresses will be generated from this wallet. This is mainly
     /// for security considerations.
-    /// 
+    ///
     /// TODO: find how the byron reboot wallets generated group keys (if needed at all)
     pub fn daedalus_utxo_wallet<D>(
         &mut self,
@@ -74,7 +80,7 @@ impl WalletRecoverer {
             ed25519_bip32::DerivationScheme::V2,
             dic,
             mnemonics_phrase,
-            &[]
+            &[],
         )?;
         let root = bip44::Root::from_root_key(modern_key);
 
@@ -84,13 +90,13 @@ impl WalletRecoverer {
 
         Ok(self)
     }
-   
+
     /// recover a legacy built wallet. This is interesting to recover funds from the
     /// legacy byron.
-    /// 
+    ///
     /// However no new addresses will be generated from this wallet. This is mainly
     /// for security considerations.
-    /// 
+    ///
     pub fn legacy_wallet<D>(
         &mut self,
         dic: &D,
@@ -102,7 +108,7 @@ impl WalletRecoverer {
         let legacy_key = recovering::from_daedalus_mnemonics(
             ed25519_bip32::DerivationScheme::V1,
             dic,
-            mnemonics_phrase
+            mnemonics_phrase,
         )?;
 
         let legacy_wallet = rindex::Wallet::from_root_key(legacy_key);

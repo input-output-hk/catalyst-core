@@ -101,7 +101,7 @@ where
 /// for some unknown design reasons Daedalus seeds are encoded in cbor
 /// We then expect the input here to be cbor encoded before hand.
 ///
-fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
+pub(crate) fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
     use cryptoxide::{hmac::Hmac, mac::Mac, sha2::Sha512};
 
     let mut mac = Hmac::new(Sha512::new(), bytes);

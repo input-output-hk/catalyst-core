@@ -1,3 +1,5 @@
+use chain_addr::{Address, Discrimination, Kind};
+use chain_crypto::PublicKey;
 use cryptoxide::ed25519::{self, PUBLIC_KEY_LENGTH, SEED_LENGTH};
 
 pub struct Account {
@@ -19,6 +21,17 @@ impl Account {
         let (_, pk) = ed25519::keypair(&self.seed);
         pk
     }
+
+    pub fn address(&self, discrimination: Discrimination) -> Address {
+        let pk = if let Ok(pk) = PublicKey::from_binary(&self.public()) {
+            pk
+        } else {
+            unsafe { std::hint::unreachable_unchecked() }
+        };
+        let kind = Kind::Account(pk);
+
+        Address(discrimination, kind)
+    }
 }
 
 impl Drop for Account {
@@ -28,5 +41,7 @@ impl Drop for Account {
 }
 
 impl From<[u8; SEED_LENGTH]> for Account {
-    fn from(seed: [u8; SEED_LENGTH]) -> Self { Self { seed } }
+    fn from(seed: [u8; SEED_LENGTH]) -> Self {
+        Self { seed }
+    }
 }

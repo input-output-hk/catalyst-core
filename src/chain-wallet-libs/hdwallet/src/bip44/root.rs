@@ -39,7 +39,7 @@ impl Root<XPrv> {
     pub fn from_root_key(root_key: Key<XPrv, AnyScheme>) -> Self {
         let path = bip44::new().coin_type(COIN_TYPE);
 
-        let cached_key = root_key.derive_path_unchecked(path);
+        let cached_key = root_key.derive_path_unchecked(path.iter());
 
         Self { cached_key }
     }

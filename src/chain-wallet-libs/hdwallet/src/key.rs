@@ -83,18 +83,18 @@ impl<P> Key<XPrv, P> {
     /// derive the private key against the given derivation index and scheme
     ///
     #[must_use = "this returns the result of the operation, without modifying the original"]
-    pub(crate) fn derive_path_unchecked<Q>(
-        &self,
-        derivation_path: impl IntoIterator<Item = Derivation>,
-    ) -> Key<XPrv, Q> {
+    pub(crate) fn derive_path_unchecked<'a, Q, I>(&'a self, derivation_path: I) -> Key<XPrv, Q>
+    where
+        I: IntoIterator<Item = &'a Derivation>,
+    {
         let derivation_scheme = self.derivation_scheme;
 
         let mut key = self.key.clone();
         let mut path = self.path.clone().coerce_unchecked::<Q>();
 
         for derivation in derivation_path {
-            key = key.derive(derivation_scheme, *derivation);
-            path = path.append_unchecked(derivation);
+            key = key.derive(derivation_scheme, **derivation);
+            path = path.append_unchecked(*derivation);
         }
 
         Key {
@@ -119,6 +119,10 @@ impl<P> Key<XPub, P> {
     #[inline]
     pub fn public_key_slice(&self) -> &[u8] {
         self.key.public_key_slice()
+    }
+
+    pub fn public_key(&self) -> &XPub {
+        &self.key
     }
 
     /// derive the private key against the given derivation index and scheme

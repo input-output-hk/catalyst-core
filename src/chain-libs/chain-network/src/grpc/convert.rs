@@ -2,7 +2,8 @@ use super::proto;
 use crate::data::{
     block::{self, Block, BlockEvent, BlockId, ChainPullRequest, Header},
     fragment::Fragment,
-    gossip::{Gossip, Node, Peer},
+    gossip::{Gossip, Node},
+    p2p::Peer,
 };
 use crate::error::{self, Error};
 use tonic::{Code, Status};

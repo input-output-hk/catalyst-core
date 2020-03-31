@@ -3,7 +3,7 @@ use super::proto;
 use super::streaming::{InboundStream, OutboundStream};
 use crate::data::block::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::data::fragment::{Fragment, FragmentIds};
-use crate::data::gossip::{Gossip, Peers};
+use crate::data::{Gossip, Peers};
 use crate::error::{Error, HandshakeError};
 use crate::PROTOCOL_VERSION;
 use futures::prelude::*;

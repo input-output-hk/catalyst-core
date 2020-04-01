@@ -248,7 +248,6 @@ mod tests {
 
         let mut page = pages.mut_page(page_id).unwrap();
 
-        let key_buffer_size = size_of::<U64Key>();
         page.as_slice(|slice| {
             InternalNode::<U64Key, &mut [u8]>::init(slice);
         });

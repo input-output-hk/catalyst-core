@@ -531,12 +531,12 @@ where
     K: FixedSize,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub fn merge_into_left<'siblings>(
+    pub fn merge_into_left<'parent: 'b>(
         mut self,
-        parent: impl NodeRefMut,
+        parent: impl NodeRefMut + 'parent,
         anchor: Option<usize>,
         mut sibling: impl NodeRefMut,
-    ) -> InternalNode<'b, K, T> {
+    ) -> Result<InternalNode<'b, K, T>, BTreeStoreError> {
         //merge this into left
         let anchor_key = parent.as_node(|node: Node<K, &[u8]>| {
             node.as_internal()
@@ -547,12 +547,22 @@ where
         });
 
         let mut anchor_key_buf = vec![0; K::max_size()];
-        anchor_key.write(&mut anchor_key_buf);
+        let borrowed_key = match anchor_key
+            .write(&mut anchor_key_buf)
+            .and_then(|_| K::read(&anchor_key_buf[..]))
+        {
+            Ok(key) => key,
+            Err(_) => return Err(BTreeStoreError::InconsistentWriteRead),
+        };
+
+        let keys = self.node.keys();
+        let children = self.node.children();
+
         sibling.as_node_mut(|mut node| {
-            for (k, v) in Some(K::read(&anchor_key_buf[..]).unwrap())
+            for (k, v) in Some(borrowed_key)
                 .into_iter()
-                .chain(self.node.keys().into_iter())
-                .zip(self.node.children().into_iter())
+                .chain(keys.into_iter())
+                .zip(children.into_iter())
             {
                 let mut merge_target = node.as_internal_mut();
                 let insert_pos = merge_target.keys().len();
@@ -569,7 +579,7 @@ where
         });
 
         self.node.set_len(0);
-        self.node
+        Ok(self.node)
     }
 }
 
@@ -585,7 +595,7 @@ where
         parent: impl NodeRefMut,
         anchor: Option<usize>,
         sibling: impl NodeRef,
-    ) -> InternalNode<'b, K, T> {
+    ) -> Result<InternalNode<'b, K, T>, BTreeStoreError> {
         //merge right into this
         let anchor_key = parent.as_node(|node: Node<K, &[u8]>| {
             node.as_internal()
@@ -595,10 +605,17 @@ where
                 .clone()
         });
 
-        let mut anchor_key_buf = vec![0; K::max_size()];
-        anchor_key.write(&mut anchor_key_buf);
         sibling.as_node(|node: Node<K, &[u8]>| {
-            for (k, v) in Some(K::read(&anchor_key_buf[..]).unwrap())
+            let mut anchor_key_buf = vec![0; K::max_size()];
+            let borrowed_key = match anchor_key
+                .write(&mut anchor_key_buf)
+                .and_then(|_| K::read(&anchor_key_buf[..]))
+            {
+                Ok(key) => key,
+                Err(_) => return Err(BTreeStoreError::InconsistentWriteRead),
+            };
+
+            for (k, v) in Some(borrowed_key)
                 .into_iter()
                 .chain(node.as_internal().keys().into_iter())
                 .zip(node.as_internal().children().into_iter())
@@ -614,9 +631,11 @@ where
                     .expect("Couldn't append child");
                 self.node.set_len(insert_pos + 1);
             }
-        });
 
-        self.node
+            Ok(())
+        })?;
+
+        Ok(self.node)
     }
 }
 
@@ -883,7 +902,9 @@ mod tests {
             match node.rebalance(SiblingsArg::Left(left_sibling)).unwrap() {
                 RebalanceResult::MergeIntoLeft(add_params) => {
                     before_pages.make_shadow(11, 31).unwrap();
-                    add_params.merge_into_left(parent, Some(0), before_pages.mut_page(31).unwrap());
+                    add_params
+                        .merge_into_left(parent, Some(0), before_pages.mut_page(31).unwrap())
+                        .unwrap();
                 }
                 _ => panic!(),
             }
@@ -957,7 +978,9 @@ mod tests {
             match node.rebalance(SiblingsArg::Right(right_sibling)).unwrap() {
                 RebalanceResult::MergeIntoSelf(add_params) => {
                     before_pages.make_shadow(13, 33).unwrap();
-                    add_params.merge_into_self(parent, Some(0), before_pages.mut_page(33).unwrap());
+                    add_params
+                        .merge_into_self(parent, Some(0), before_pages.mut_page(33).unwrap())
+                        .unwrap();
                 }
                 _ => panic!(),
             };

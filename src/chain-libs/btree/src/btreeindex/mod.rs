@@ -543,7 +543,7 @@ where
                                 }
                                 RebalanceResult::MergeIntoLeft(add_params) => {
                                     let (sibling, parent) = mut_context.mut_left_sibling();
-                                    add_params.merge_into_left(parent, anchor, sibling);
+                                    add_params.merge_into_left(parent, anchor, sibling)?;
                                     mut_context.delete_node();
                                     Ok(Some(
                                         anchor
@@ -553,7 +553,7 @@ where
                                 }
                                 RebalanceResult::MergeIntoSelf(add_params) => {
                                     let (sibling, parent) = mut_context.mut_right_sibling();
-                                    add_params.merge_into_self(parent, anchor, sibling);
+                                    add_params.merge_into_self(parent, anchor, sibling)?;
                                     let new_anchor = anchor.map_or(0, |n| n + 1);
                                     mut_context
                                         .delete_right_sibling()

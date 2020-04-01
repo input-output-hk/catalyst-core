@@ -42,6 +42,8 @@ pub enum BTreeStoreError {
     KeyNotFound,
     #[error("wrong magic number")]
     WrongMagicNumber,
+    #[error("write implementation not compatible with read")]
+    InconsistentWriteRead,
 }
 
 pub struct BTreeStore<K>

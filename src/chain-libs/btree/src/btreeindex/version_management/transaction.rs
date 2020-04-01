@@ -5,7 +5,7 @@ use crate::btreeindex::{
     page_manager::PageManager,
     Node, PageHandle, PageId, Pages,
 };
-use crate::Key;
+use crate::FixedSize;
 use parking_lot::RwLock;
 use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -24,7 +24,6 @@ pub(crate) struct WriteTransaction<'locks, 'storage: 'locks> {
     pages: &'storage Pages,
     versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
     current_version: Arc<RwLock<Arc<Version>>>,
-    pub key_buffer_size: u32,
 }
 
 struct State<'a> {
@@ -60,7 +59,6 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
         page_manager: MutexGuard<'locks, PageManager>,
         versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
         current_version: Arc<RwLock<Arc<Version>>>,
-        key_buffer_size: u32,
     ) -> WriteTransaction<'locks, 'storage> {
         let current_root = root;
         let state = State {
@@ -73,7 +71,6 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             current_root: Cell::new(current_root),
             versions,
             current_version,
-            key_buffer_size,
             pages,
             state: RefCell::new(state),
         }
@@ -103,7 +100,6 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
     pub fn add_new_node(
         &self,
         mem_page: crate::mem_page::MemPage,
-        _key_buffer_size: u32,
     ) -> Result<PageId, std::io::Error> {
         let id = self.state.borrow_mut().page_manager.new_id();
 
@@ -185,7 +181,7 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
     /// available to new readers
     pub fn commit<K>(mut self)
     where
-        K: Key,
+        K: FixedSize,
     {
         let new_root = self.root();
         let state = self.state.into_inner();
@@ -225,10 +221,10 @@ pub struct RedirectPointers<'a, 'b: 'a, 'c: 'a> {
 }
 
 impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
-    fn find_and_redirect<K: Key, T: NodeRefMut>(&self, key_buffer_size: usize, parent: &mut T) {
+    fn find_and_redirect<K: FixedSize, T: NodeRefMut>(&self, parent: &mut T) {
         let old_id = self.last_old_id;
         let new_id = self.last_new_id;
-        parent.as_node_mut(key_buffer_size, |mut node: Node<K, &mut [u8]>| {
+        parent.as_node_mut(|mut node: Node<K, &mut [u8]>| {
             let mut node = node.as_internal_mut();
             let pos_to_update = match node.children().linear_search(old_id) {
                 Some(pos) => pos,
@@ -239,24 +235,19 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
         });
     }
 
-    pub fn redirect_parent_in_tx<K: Key>(
-        self,
-        key_buffer_size: usize,
-        parent: &mut PageRefMut,
-    ) -> PageRefMut<'a> {
-        self.find_and_redirect::<K, PageRefMut>(key_buffer_size, parent);
+    pub fn redirect_parent_in_tx<K: FixedSize>(self, parent: &mut PageRefMut) -> PageRefMut<'a> {
+        self.find_and_redirect::<K, PageRefMut>(parent);
         self.finish()
     }
 
-    pub fn redirect_parent_pointer<K: Key>(
+    pub fn redirect_parent_pointer<K: FixedSize>(
         self,
-        key_buffer_size: usize,
         parent_id: PageId,
     ) -> Result<MutablePage<'a, 'b, 'c>, std::io::Error> {
         let (parent_needs_shadowing, parent) = self.tx.mut_page_internal(parent_id)?;
         let mut parent = self.tx.pages.mut_page(parent).unwrap();
 
-        self.find_and_redirect::<K, PageHandle<Mutable>>(key_buffer_size, &mut parent);
+        self.find_and_redirect::<K, PageHandle<Mutable>>(&mut parent);
 
         let parent_new_id = parent.id();
         if parent_needs_shadowing {

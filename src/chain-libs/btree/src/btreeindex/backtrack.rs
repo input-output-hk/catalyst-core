@@ -3,16 +3,15 @@ use super::transaction;
 use super::transaction::{MutablePage, PageRef, PageRefMut, WriteTransaction};
 use crate::btreeindex::{node::NodeRef, Node, PageId};
 use crate::mem_page::MemPage;
-use crate::Key;
+use crate::FixedSize;
 
-use std::convert::{TryFrom, TryInto};
 use std::marker::PhantomData;
 
 /// this is basically a stack, but it will rename pointers and interact with the transaction in order to reuse
 /// already cloned pages
 pub struct InsertBacktrack<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     tx: &'txbuilder mut transaction::WriteTransaction<'txmanager, 'storage>,
     backtrack: Vec<PageId>,
@@ -24,7 +23,7 @@ where
 /// already cloned pages
 pub struct DeleteBacktrack<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     tx: &'txbuilder transaction::WriteTransaction<'txmanager, 'storage>,
     backtrack: Vec<PageId>,
@@ -37,7 +36,7 @@ where
 
 pub struct DeleteNextElement<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     pub next_element: NextElement<'a, 'b, 'c, 'd, K>,
     pub mut_context: Option<MutableContext<'a, 'b, 'c, 'd, K>>,
@@ -49,7 +48,7 @@ where
 // XXX: having a left sibling means anchor is not None, and having a sibling in general means parent is not None also, maybe this invariants could be expressed in the type structure
 pub struct NextElement<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     pub next: PageRefMut<'a>,
     // anchor is an index into the keys array of a node used to find the current node in the parent without searching. The leftmost(lowest) child has None as anchor
@@ -62,7 +61,7 @@ where
 
 pub struct MutableContext<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     parent: PageRefMut<'a>,
     // anchor is an index into the keys array of a node used to find the current node in the parent without searching. The leftmost(lowest) child has None as anchor
@@ -75,24 +74,24 @@ where
 
 impl<'a, 'b: 'a, 'c: 'b, 'd: 'c, K> MutableContext<'a, 'b, 'c, 'd, K>
 where
-    K: Key,
+    K: FixedSize,
 {
-    pub fn mut_left_sibling(&mut self, key_size: usize) -> (PageRefMut<'a>, &mut PageRefMut<'a>) {
+    pub fn mut_left_sibling(&mut self) -> (PageRefMut<'a>, &mut PageRefMut<'a>) {
         let sibling = match self.backtrack.tx.mut_page(self.left_id.unwrap()).unwrap() {
             MutablePage::InTransaction(handle) => handle,
             MutablePage::NeedsParentRedirect(redirect_pointers) => {
-                redirect_pointers.redirect_parent_in_tx::<K>(key_size, &mut self.parent)
+                redirect_pointers.redirect_parent_in_tx::<K>(&mut self.parent)
             }
         };
 
         (sibling, &mut self.parent)
     }
 
-    pub fn mut_right_sibling(&mut self, key_size: usize) -> (PageRefMut<'a>, &mut PageRefMut<'a>) {
+    pub fn mut_right_sibling(&mut self) -> (PageRefMut<'a>, &mut PageRefMut<'a>) {
         let sibling = match self.backtrack.tx.mut_page(self.right_id.unwrap()).unwrap() {
             MutablePage::InTransaction(handle) => handle,
             MutablePage::NeedsParentRedirect(redirect_pointers) => {
-                redirect_pointers.redirect_parent_in_tx::<K>(key_size, &mut self.parent)
+                redirect_pointers.redirect_parent_in_tx::<K>(&mut self.parent)
             }
         };
 
@@ -115,7 +114,7 @@ where
 
 impl<'a, 'b: 'a, 'c: 'b, 'd: 'c, K> NextElement<'a, 'b, 'c, 'd, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     pub fn set_root(&self, id: PageId) {
         self.backtrack.tx.current_root.set(id)
@@ -125,7 +124,7 @@ where
 impl<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K>
     DeleteBacktrack<'txbuilder, 'txmanager, 'storage, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     pub(crate) fn new_search_for(
         tx: &'txbuilder mut WriteTransaction<'txmanager, 'storage>,
@@ -155,40 +154,37 @@ where
         loop {
             let page = self.tx.get_page(current).unwrap();
 
-            let found_leaf = page.as_node(
-                self.tx.key_buffer_size.try_into().unwrap(),
-                |node: Node<K, &[u8]>| {
-                    if let Some(inode) = node.try_as_internal() {
-                        let upper_pivot = match inode.keys().binary_search(key) {
-                            Ok(pos) => Some(pos + 1),
-                            Err(pos) => Some(pos),
-                        }
-                        .filter(|pos| pos < &inode.children().len());
-
-                        let anchor = upper_pivot
-                            .or_else(|| inode.keys().len().checked_sub(1))
-                            .and_then(|up| up.checked_sub(1));
-
-                        let left_sibling_id = anchor.and_then(|pos| inode.children().try_get(pos));
-
-                        let right_sibling_id = anchor
-                            .map(|pos| pos + 2)
-                            .or(Some(1))
-                            .and_then(|pos| inode.children().try_get(pos));
-
-                        if let Some(upper_pivot) = upper_pivot {
-                            current = inode.children().get(upper_pivot);
-                        } else {
-                            let last = inode.children().len().checked_sub(1).unwrap();
-                            current = inode.children().get(last);
-                        }
-
-                        Step::Internal(anchor, left_sibling_id, right_sibling_id)
-                    } else {
-                        Step::Leaf
+            let found_leaf = page.as_node(|node: Node<K, &[u8]>| {
+                if let Some(inode) = node.try_as_internal() {
+                    let upper_pivot = match inode.keys().binary_search(key) {
+                        Ok(pos) => Some(pos + 1),
+                        Err(pos) => Some(pos),
                     }
-                },
-            );
+                    .filter(|pos| pos < &inode.children().len());
+
+                    let anchor = upper_pivot
+                        .or_else(|| inode.keys().len().checked_sub(1))
+                        .and_then(|up| up.checked_sub(1));
+
+                    let left_sibling_id = anchor.and_then(|pos| inode.children().try_get(pos));
+
+                    let right_sibling_id = anchor
+                        .map(|pos| pos + 2)
+                        .or(Some(1))
+                        .and_then(|pos| inode.children().try_get(pos));
+
+                    if let Some(upper_pivot) = upper_pivot {
+                        current = inode.children().get(upper_pivot);
+                    } else {
+                        let last = inode.children().len().checked_sub(1).unwrap();
+                        current = inode.children().get(last);
+                    }
+
+                    Step::Internal(anchor, left_sibling_id, right_sibling_id)
+                } else {
+                    Step::Leaf
+                }
+            });
 
             self.backtrack.push(page.id());
 
@@ -213,8 +209,6 @@ where
             self.new_root = Some(id);
         }
 
-        let key_buffer_size = usize::try_from(self.tx.key_buffer_size).unwrap();
-
         let parent_info = match self.backtrack.last() {
             Some(parent) => {
                 // we need the parent id, which is the next node in the stack, but we should not pop, because it would be the next node to process
@@ -235,7 +229,7 @@ where
                     let result = rename_in_parents
                         .take()
                         .unwrap()
-                        .redirect_parent_pointer::<K>(key_buffer_size, *id)?;
+                        .redirect_parent_pointer::<K>(*id)?;
 
                     match result {
                         MutablePage::NeedsParentRedirect(rename) => {
@@ -308,7 +302,7 @@ where
 impl<'txbuilder, 'txmanager: 'txbuilder, 'index: 'txmanager, K>
     InsertBacktrack<'txbuilder, 'txmanager, 'index, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     pub(crate) fn new_search_for(
         tx: &'txbuilder mut WriteTransaction<'txmanager, 'index>,
@@ -332,28 +326,25 @@ where
         loop {
             let page = self.tx.get_page(current).unwrap();
 
-            let found_leaf = page.as_node(
-                self.tx.key_buffer_size.try_into().unwrap(),
-                |node: Node<K, &[u8]>| {
-                    if let Some(inode) = node.try_as_internal() {
-                        let upper_pivot = match inode.keys().binary_search(key) {
-                            Ok(pos) => Some(pos + 1),
-                            Err(pos) => Some(pos),
-                        }
-                        .filter(|pos| pos < &inode.children().len());
-
-                        if let Some(upper_pivot) = upper_pivot {
-                            current = inode.children().get(upper_pivot);
-                        } else {
-                            let last = inode.children().len().checked_sub(1).unwrap();
-                            current = inode.children().get(last);
-                        }
-                        false
-                    } else {
-                        true
+            let found_leaf = page.as_node(|node: Node<K, &[u8]>| {
+                if let Some(inode) = node.try_as_internal() {
+                    let upper_pivot = match inode.keys().binary_search(key) {
+                        Ok(pos) => Some(pos + 1),
+                        Err(pos) => Some(pos),
                     }
-                },
-            );
+                    .filter(|pos| pos < &inode.children().len());
+
+                    if let Some(upper_pivot) = upper_pivot {
+                        current = inode.children().get(upper_pivot);
+                    } else {
+                        let last = inode.children().len().checked_sub(1).unwrap();
+                        current = inode.children().get(last);
+                    }
+                    false
+                } else {
+                    true
+                }
+            });
 
             self.backtrack.push(page.id());
 
@@ -374,8 +365,6 @@ where
             self.new_root = Some(id);
         }
 
-        let key_buffer_size = usize::try_from(self.tx.key_buffer_size).unwrap();
-
         match self.tx.mut_page(dbg!(id))? {
             transaction::MutablePage::NeedsParentRedirect(rename_in_parents) => {
                 // this part may be tricky, we need to recursively clone and redirect all the path
@@ -385,8 +374,7 @@ where
                 // rest of the insertion algorithm)
                 let mut rename_in_parents = rename_in_parents;
                 for id in self.backtrack.iter().rev() {
-                    let result =
-                        rename_in_parents.redirect_parent_pointer::<K>(key_buffer_size, *id)?;
+                    let result = rename_in_parents.redirect_parent_pointer::<K>(*id)?;
 
                     match result {
                         MutablePage::NeedsParentRedirect(rename) => rename_in_parents = rename,
@@ -403,20 +391,12 @@ where
         self.backtrack.last().is_some()
     }
 
-    pub fn add_new_node(
-        &mut self,
-        mem_page: MemPage,
-        key_buffer_size: u32,
-    ) -> Result<PageId, std::io::Error> {
-        self.tx.add_new_node(mem_page, key_buffer_size)
+    pub fn add_new_node(&mut self, mem_page: MemPage) -> Result<PageId, std::io::Error> {
+        self.tx.add_new_node(mem_page)
     }
 
-    pub fn new_root(
-        &mut self,
-        mem_page: MemPage,
-        key_buffer_size: u32,
-    ) -> Result<(), std::io::Error> {
-        let id = self.tx.add_new_node(mem_page, key_buffer_size)?;
+    pub fn new_root(&mut self, mem_page: MemPage) -> Result<(), std::io::Error> {
+        let id = self.tx.add_new_node(mem_page)?;
         self.new_root = Some(id);
 
         Ok(())
@@ -426,7 +406,7 @@ where
 impl<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K> Drop
     for InsertBacktrack<'txbuilder, 'txmanager, 'storage, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     fn drop(&mut self) {
         if let Some(new_root) = self.new_root {
@@ -440,7 +420,7 @@ where
 impl<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K> Drop
     for DeleteBacktrack<'txbuilder, 'txmanager, 'storage, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     fn drop(&mut self) {
         if let Some(new_root) = self.new_root {

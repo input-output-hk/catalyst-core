@@ -80,7 +80,6 @@ impl TransactionManager {
     pub fn insert_transaction<'me, 'index: 'me>(
         &'me self,
         pages: &'index Pages,
-        key_buffer_size: u32,
     ) -> WriteTransaction<'me, 'index> {
         let page_manager = self.page_manager.lock().unwrap();
         let versions = self.versions.lock().unwrap();
@@ -91,7 +90,6 @@ impl TransactionManager {
             page_manager,
             versions,
             self.latest_version.clone(),
-            key_buffer_size,
         )
     }
 

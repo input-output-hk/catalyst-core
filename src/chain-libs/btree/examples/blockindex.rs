@@ -1,4 +1,4 @@
-use btree::{BTreeStore, Storeable};
+use btree::{BTreeStore, FixedSize, Storeable};
 use hex;
 use std::io;
 use std::io::BufRead;
@@ -58,8 +58,10 @@ impl<'a> Storeable<'a> for Key {
         buf.read_exact(&mut bytes).expect("deserialize failed");
         Ok(Key(bytes))
     }
+}
 
-    fn as_output(self) -> Self::Output {
-        self
+impl FixedSize for Key {
+    fn max_size() -> usize {
+        std::mem::size_of::<Self>()
     }
 }

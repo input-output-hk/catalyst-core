@@ -2,7 +2,6 @@ mod backtrack;
 mod metadata;
 // FIXME: allow dead code momentarily, because all of the delete algorithms are unused, and placing the directive with more granularity would be too troublesome
 mod iter;
-#[allow(dead_code)]
 mod node;
 mod page_manager;
 mod pages;
@@ -24,7 +23,7 @@ use std::borrow::Borrow;
 
 use crate::FixedSize;
 
-use backtrack::{DeleteBacktrack, InsertBacktrack};
+use backtrack::{DeleteBacktrack, InsertBacktrack, UpdateBacktrack};
 use std::convert::{TryFrom, TryInto};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, SeekFrom};
@@ -399,6 +398,15 @@ where
         }
 
         current
+    }
+
+    pub fn update(&self, key: &K, value: V) -> Result<(), BTreeStoreError> {
+        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
+
+        UpdateBacktrack::new_search_for(&mut tx, key).update(value)?;
+
+        tx.commit::<K>();
+        Ok(())
     }
 
     /// delete given key from the tree, this doesn't sync the file to disk
@@ -914,9 +922,6 @@ mod tests {
         let key_to_delete = U64Key(delete);
         assert!(tree.get(&key_to_delete, |v| v.cloned()).is_some());
 
-        dbg!("tree before");
-        tree.debug_print();
-
         tree.delete(&key_to_delete).unwrap();
 
         dbg!("tree after");
@@ -957,6 +962,22 @@ mod tests {
             });
 
         prop
+    }
+
+    #[test]
+    fn test_update() {
+        let tree = new_tree();
+
+        let n: u64 = 2000;
+
+        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
+            .unwrap();
+
+        assert_eq!(tree.get(&U64Key(100), |v| v.cloned()), Some(100));
+
+        tree.update(&U64Key(100), 120).unwrap();
+
+        assert_eq!(tree.get(&U64Key(100), |v| v.cloned()), Some(120));
     }
 
     #[test]

@@ -298,7 +298,7 @@ where
         Ok(())
     }
 
-    fn values_mut(&mut self) -> ValuesMut<V> {
+    pub(crate) fn values_mut(&mut self) -> ValuesMut<V> {
         let len = self.keys().len();
 
         let base = KEYS_START + (self.max_keys * K::max_size());

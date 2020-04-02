@@ -1,10 +1,10 @@
 /// Helpers to keep track of parent pointers and siblings when traversing the tree.
 use super::transaction;
 use super::transaction::{MutablePage, PageRef, PageRefMut, WriteTransaction};
+use crate::btreeindex::node::NodeRefMut;
 use crate::btreeindex::{node::NodeRef, Node, PageId};
 use crate::mem_page::MemPage;
 use crate::FixedSize;
-
 use std::marker::PhantomData;
 
 /// this is basically a stack, but it will rename pointers and interact with the transaction in order to reuse
@@ -40,6 +40,19 @@ where
 {
     pub next_element: NextElement<'a, 'b, 'c, 'd, K>,
     pub mut_context: Option<MutableContext<'a, 'b, 'c, 'd, K>>,
+}
+
+/// this is basically a stack, but it will rename pointers and interact with the transaction in order to reuse
+/// already cloned pages
+pub struct UpdateBacktrack<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K>
+where
+    K: FixedSize,
+{
+    tx: &'txbuilder mut transaction::WriteTransaction<'txmanager, 'storage>,
+    backtrack: Vec<PageId>,
+    key_to_update: K,
+    new_root: Option<PageId>,
+    phantom_key: PhantomData<[K]>,
 }
 
 // lifetimes on this are a bit bothersome with four 'linear' (re) borrows, there may be some way of refactoring this things, but that would probably need to be done higher in
@@ -398,6 +411,126 @@ where
     pub fn new_root(&mut self, mem_page: MemPage) -> Result<(), std::io::Error> {
         let id = self.tx.add_new_node(mem_page)?;
         self.new_root = Some(id);
+
+        Ok(())
+    }
+}
+
+impl<'txbuilder, 'txmanager: 'txbuilder, 'index: 'txmanager, K>
+    UpdateBacktrack<'txbuilder, 'txmanager, 'index, K>
+where
+    K: FixedSize,
+{
+    pub(crate) fn new_search_for(
+        tx: &'txbuilder mut WriteTransaction<'txmanager, 'index>,
+        key: &K,
+    ) -> Self {
+        let mut backtrack = UpdateBacktrack {
+            tx,
+            backtrack: vec![],
+            new_root: None,
+            key_to_update: key.clone(),
+            phantom_key: PhantomData,
+        };
+
+        backtrack.search_for(key);
+        backtrack
+    }
+    /// traverse the tree while storing the path, so we can then backtrack while splitting
+    fn search_for<'a>(&'a mut self, key: &K) {
+        let mut current = self.tx.root();
+
+        loop {
+            let page = self.tx.get_page(current).unwrap();
+
+            let found_leaf = page.as_node(|node: Node<K, &[u8]>| {
+                if let Some(inode) = node.try_as_internal() {
+                    let upper_pivot = match inode.keys().binary_search(key) {
+                        Ok(pos) => Some(pos + 1),
+                        Err(pos) => Some(pos),
+                    }
+                    .filter(|pos| pos < &inode.children().len());
+
+                    if let Some(upper_pivot) = upper_pivot {
+                        current = inode.children().get(upper_pivot);
+                    } else {
+                        let last = inode.children().len().checked_sub(1).unwrap();
+                        current = inode.children().get(last);
+                    }
+                    false
+                } else {
+                    true
+                }
+            });
+
+            self.backtrack.push(page.id());
+
+            if found_leaf {
+                break;
+            }
+        }
+    }
+
+    pub fn update<'a, V: FixedSize>(&'a mut self, new_value: V) -> Result<(), std::io::Error> {
+        let leaf = match self.backtrack.pop() {
+            Some(id) => id,
+            None => return Ok(()),
+        };
+
+        let position_to_update =
+            match self
+                .tx
+                .get_page(leaf)
+                .unwrap()
+                .as_node(|node: Node<K, &[u8]>| {
+                    node.as_leaf::<V>()
+                        .keys()
+                        .binary_search(&self.key_to_update)
+                }) {
+                Ok(pos) => pos,
+                Err(_) => return Ok(()),
+            };
+
+        let mut page_handle = match self.tx.mut_page(leaf)? {
+            transaction::MutablePage::NeedsParentRedirect(rename_in_parents) => {
+                let mut rename_in_parents = Some(rename_in_parents);
+                let handle = loop {
+                    let id = match self.backtrack.pop() {
+                        Some(id) => id,
+                        None => {
+                            break None;
+                        }
+                    };
+
+                    if self.backtrack.is_empty() {
+                        self.new_root = Some(id);
+                    }
+
+                    let result = rename_in_parents
+                        .take()
+                        .unwrap()
+                        .redirect_parent_pointer::<K>(id)?;
+
+                    match result {
+                        MutablePage::NeedsParentRedirect(rename) => {
+                            rename_in_parents = Some(rename)
+                        }
+                        MutablePage::InTransaction(handle) => break Some(handle),
+                    };
+                };
+
+                let page = handle.unwrap_or_else(|| rename_in_parents.take().unwrap().finish());
+                page
+            }
+            transaction::MutablePage::InTransaction(handle) => handle,
+        };
+
+        page_handle.as_node_mut(|mut node: Node<K, &mut [u8]>| {
+            node.as_leaf_mut()
+                .values_mut()
+                .update(position_to_update, &new_value)
+                .expect("position to update was not in range")
+        });
 
         Ok(())
     }

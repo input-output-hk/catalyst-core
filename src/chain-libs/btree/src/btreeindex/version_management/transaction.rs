@@ -1,9 +1,12 @@
 use super::Version;
 use crate::btreeindex::{
-    borrow::{Immutable, Mutable},
     node::NodeRefMut,
     page_manager::PageManager,
-    Node, PageHandle, PageId, Pages,
+    pages::{
+        borrow::{Immutable, Mutable},
+        PageHandle,
+    },
+    Node, PageId, Pages,
 };
 use crate::FixedSize;
 use parking_lot::RwLock;
@@ -47,7 +50,7 @@ impl<'a> ReadTransaction<'a> {
         self.version.root
     }
 
-    pub fn get_page(&self, id: PageId) -> Option<PageHandle<Immutable>> {
+    pub fn get_page(&self, id: PageId) -> Option<PageRef<'a>> {
         self.pages.get_page(id)
     }
 }

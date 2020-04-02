@@ -166,6 +166,7 @@ pub mod borrow {
 
     pub struct BorrowRAIIGuard(Arc<BorrowGuard>);
 
+    // TODO: There is nothing to stop anyone from creating an Immutable instance with a Exclusive borrow guard
     pub struct Immutable<'a> {
         pub borrow: &'a [u8],
         pub borrow_guard: BorrowRAIIGuard,
@@ -173,6 +174,15 @@ pub mod borrow {
     pub struct Mutable<'a> {
         pub borrow: &'a mut [u8],
         pub borrow_guard: BorrowRAIIGuard,
+    }
+
+    impl<'a> Clone for Immutable<'a> {
+        fn clone(&self) -> Immutable<'a> {
+            Immutable {
+                borrow: self.borrow,
+                borrow_guard: BorrowRAIIGuard(self.borrow_guard.0.clone()),
+            }
+        }
     }
 }
 
@@ -185,6 +195,17 @@ pub struct PageHandle<'a, Borrow: 'a> {
 impl<'a, T> PageHandle<'a, T> {
     pub fn id(&self) -> PageId {
         self.id
+    }
+}
+
+use std::clone::Clone;
+impl<'a> Clone for PageHandle<'a, borrow::Immutable<'a>> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            borrow: self.borrow.clone(),
+            page_marker: PhantomData,
+        }
     }
 }
 

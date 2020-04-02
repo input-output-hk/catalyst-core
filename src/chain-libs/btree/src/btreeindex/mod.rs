@@ -7,7 +7,7 @@ mod page_manager;
 mod pages;
 mod version_management;
 
-use version_management::transaction::{PageRefMut, ReadTransaction, WriteTransaction};
+use version_management::transaction::{PageRef, PageRefMut, ReadTransaction, WriteTransaction};
 use version_management::*;
 
 use crate::mem_page::MemPage;
@@ -18,7 +18,7 @@ use node::leaf_node::LeafDeleteStatus;
 use node::{
     InternalInsertStatus, LeafInsertStatus, Node, NodeRef, NodeRefMut, RebalanceResult, SiblingsArg,
 };
-use pages::{borrow, PageHandle, Pages, PagesInitializationParams};
+use pages::{Pages, PagesInitializationParams};
 use std::borrow::Borrow;
 
 use crate::FixedSize;
@@ -338,7 +338,14 @@ where
         })
     }
 
-    fn search<'a>(&'a self, tx: &'a ReadTransaction, key: &K) -> PageHandle<'a, borrow::Immutable> {
+    // TODO: Consider other kind of ranges.
+    pub fn range(&self, range: std::ops::Range<K>) -> BTreeIterator<K, V> {
+        let read_transaction = self.transaction_manager.read_transaction(&self.pages);
+
+        BTreeIterator::new(read_transaction, range)
+    }
+
+    fn search<'a>(&'a self, tx: &'a ReadTransaction, key: &K) -> PageRef<'a> {
         let mut current = tx.get_page(tx.root()).unwrap();
 
         loop {
@@ -590,6 +597,145 @@ impl<K, V> Drop for BTree<K, V> {
     }
 }
 
+pub struct BTreeIterator<'a, K, V> {
+    range: std::ops::Range<K>,
+    tx: ReadTransaction<'a>,
+    phantom_data: PhantomData<V>,
+    // usually b+trees have pointers between leaves, but doing this in a copy on write tree is not possible (or at least it requires cloning all the leaves at each operation),
+    // so we use a stack to keep track of parents
+    // the second parameter is used to keep track of what's the next descendant of that node
+    stack: Vec<(PageRef<'a>, usize)>,
+    current_position: usize,
+    current_leaf: PageRef<'a>,
+}
+
+impl<'a, K: FixedSize, V: FixedSize> BTreeIterator<'a, K, V> {
+    fn new(tx: ReadTransaction<'a>, range: std::ops::Range<K>) -> Self {
+        let mut stack = vec![];
+        let mut current = tx.get_page(tx.root()).unwrap();
+
+        // find the starting leaf, and populate the stack with the path leading to it
+        // this is the only search needed, as afterwards we just go in-order
+        let (leaf, starting_pos) = loop {
+            let is_internal = current.as_node(|node: Node<K, &[u8]>| {
+                node.try_as_internal().map(|inode| {
+                    let upper_pivot = match inode.keys().binary_search(&range.start) {
+                        Ok(pos) => pos + 1,
+                        Err(pos) => pos,
+                    };
+
+                    let children_len = inode.children().len();
+
+                    let pivot = if upper_pivot < children_len {
+                        upper_pivot
+                    } else {
+                        children_len.checked_sub(1).unwrap()
+                    };
+
+                    let new_current_id = inode.children().get(pivot);
+                    (new_current_id, pivot)
+                })
+            });
+
+            if let Some((new_current_id, upper_pivot)) = is_internal {
+                stack.push((current, upper_pivot));
+                current = tx.get_page(new_current_id).unwrap();
+            } else {
+                break current.as_node(|node: Node<K, &[u8]>| {
+                    match node.as_leaf::<V>().keys().binary_search(&range.start) {
+                        Ok(pos) => (current.clone(), pos),
+                        Err(pos) => (current.clone(), pos + 1),
+                    }
+                });
+            }
+        };
+
+        BTreeIterator {
+            tx,
+            range,
+            stack,
+            phantom_data: PhantomData,
+            current_position: starting_pos,
+            current_leaf: leaf,
+        }
+    }
+
+    fn descend_leftmost(&mut self, starting_node: PageRef<'a>) {
+        let mut current = starting_node;
+        loop {
+            let next = current.as_node(|node: Node<K, &[u8]>| {
+                node.try_as_internal().map(|inode| {
+                    self.stack.push((current.clone(), 0));
+                    inode.children().get(0)
+                })
+            });
+
+            if let Some(new_current_id) = next {
+                current = self.tx.get_page(new_current_id).unwrap();
+            } else {
+                self.current_leaf = current;
+                self.current_position = 0;
+                return;
+            }
+        }
+    }
+}
+
+impl<'a, K: FixedSize, V: FixedSize> Iterator for BTreeIterator<'a, K, V> {
+    type Item = V;
+    fn next(&mut self) -> Option<V> {
+        let current_position = self.current_position;
+        let stop = self.range.end.clone();
+
+        enum NextStep<T> {
+            EndReached,
+            InLeaf(T),
+            MoveToRightSibling,
+        }
+
+        let next = self.current_leaf.as_node(|node: Node<K, &[u8]>| {
+            match node.as_leaf::<V>().keys().try_get(current_position) {
+                None => NextStep::MoveToRightSibling,
+                Some(key) => {
+                    if key.borrow() < &stop {
+                        NextStep::InLeaf(
+                            node.as_leaf::<V>()
+                                .values()
+                                .try_get(current_position)
+                                .map(|v| v.borrow().clone())
+                                .unwrap(),
+                        )
+                    } else {
+                        NextStep::EndReached
+                    }
+                }
+            }
+        });
+
+        match next {
+            NextStep::InLeaf(v) => {
+                self.current_position += 1;
+                Some(v)
+            }
+            NextStep::EndReached => None,
+            NextStep::MoveToRightSibling => {
+                while let Some((internal_node, last_position)) = self.stack.pop() {
+                    let next = last_position + 1;
+                    if let Some(child) = internal_node
+                        .as_node(|node: Node<K, &[u8]>| node.as_internal().children().try_get(next))
+                    {
+                        self.stack.push((internal_node, next));
+                        self.descend_leftmost(self.tx.get_page(child).unwrap());
+                        return self.next();
+                    }
+                }
+
+                None
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     extern crate rand;
@@ -691,6 +837,29 @@ mod tests {
         for i in 0..n {
             assert_eq!(tree.lookup(&U64Key(dbg!(i))).expect("Key not found"), i);
         }
+    }
+
+    #[test]
+    fn range_query_empty_tree() {
+        let tree = new_tree();
+
+        let a = 10u64;
+        let b = 11u64;
+        let mut found = tree.range(U64Key(a)..U64Key(b));
+        assert!(found.next().is_none());
+    }
+
+    #[quickcheck]
+    fn qc_range_query(a: u64, b: u64) -> bool {
+        let tree = new_tree();
+        let n: u64 = 2000;
+
+        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
+            .unwrap();
+
+        let found: Vec<_> = tree.range(U64Key(a)..U64Key(b)).collect();
+        let expected: Vec<_> = (a..std::cmp::min(b, n)).into_iter().collect();
+        found == expected
     }
 
     #[quickcheck]

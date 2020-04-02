@@ -576,7 +576,7 @@ mod tests {
     use super::*;
     use crate::btreeindex::node::tests::{internal_page, internal_page_mut, pages};
     use crate::btreeindex::pages::borrow::{Immutable, Mutable};
-    use crate::btreeindex::pages::Pages;
+    use crate::btreeindex::pages::{PageHandle, Pages};
     use crate::btreeindex::*;
     use crate::tests::U64Key;
     use std::mem::size_of;

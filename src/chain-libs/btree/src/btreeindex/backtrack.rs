@@ -1,7 +1,7 @@
 /// Helpers to keep track of parent pointers and siblings when traversing the tree.
 use super::transaction;
 use super::transaction::{MutablePage, PageRef, PageRefMut, WriteTransaction};
-use crate::btreeindex::node::NodeRefMut;
+use crate::btreeindex::node::{InternalNode, NodeRefMut};
 use crate::btreeindex::{node::NodeRef, Node, PageId};
 use crate::mem_page::MemPage;
 use crate::FixedSize;
@@ -134,6 +134,53 @@ where
     }
 }
 
+enum Step<'a, K> {
+    Leaf(PageId),
+    Internal(PageId, &'a InternalNode<'a, K, &'a [u8]>, Option<usize>),
+}
+
+fn search<F, K>(key: &K, tx: &WriteTransaction, mut f: F)
+where
+    F: FnMut(Step<K>),
+    K: Key,
+{
+    let mut current = tx.root();
+
+    loop {
+        let page = tx.get_page(current).unwrap();
+
+        let found_leaf = page.as_node(
+            tx.key_buffer_size.try_into().unwrap(),
+            |node: Node<K, &[u8]>| {
+                if let Some(inode) = node.try_as_internal() {
+                    let upper_pivot = match inode.keys().binary_search(key) {
+                        Ok(pos) => Some(pos + 1),
+                        Err(pos) => Some(pos),
+                    }
+                    .filter(|pos| pos < &inode.children().len());
+
+                    f(Step::Internal(page.id(), &inode, upper_pivot));
+
+                    if let Some(upper_pivot) = upper_pivot {
+                        current = inode.children().get(upper_pivot);
+                    } else {
+                        let last = inode.children().len().checked_sub(1).unwrap();
+                        current = inode.children().get(last);
+                    }
+                    false
+                } else {
+                    f(Step::Leaf(page.id()));
+                    true
+                }
+            },
+        );
+
+        if found_leaf {
+            return;
+        }
+    }
+}
+
 impl<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K>
     DeleteBacktrack<'txbuilder, 'txmanager, 'storage, K>
 where
@@ -143,68 +190,34 @@ where
         tx: &'txbuilder mut WriteTransaction<'txmanager, 'storage>,
         key: &K,
     ) -> Self {
-        let mut backtrack = DeleteBacktrack {
+        let mut backtrack = vec![];
+        let mut parent_info = vec![];
+
+        search(key, tx, |step| match step {
+            Step::Leaf(page_id) => backtrack.push(page_id),
+            Step::Internal(page_id, inode, upper_pivot) => {
+                backtrack.push(page_id);
+                let anchor = upper_pivot
+                    .or_else(|| inode.keys().len().checked_sub(1))
+                    .and_then(|up| up.checked_sub(1));
+
+                let left_sibling_id = anchor.and_then(|pos| inode.children().try_get(pos));
+
+                let right_sibling_id = anchor
+                    .map(|pos| pos + 2)
+                    .or(Some(1))
+                    .and_then(|pos| inode.children().try_get(pos));
+
+                parent_info.push((anchor, left_sibling_id, right_sibling_id));
+            }
+        });
+
+        DeleteBacktrack {
             tx,
-            backtrack: vec![],
-            parent_info: vec![],
+            backtrack,
+            parent_info,
             new_root: None,
             phantom_key: PhantomData,
-        };
-        backtrack.search_for(key);
-        backtrack
-    }
-
-    /// traverse the tree while storing the path, so we can then backtrack while splitting
-    // TODO: there are already 3 traverse (2 in this file) in the codebase, all really similar. It may be good to refactor them into only one
-    pub fn search_for(&mut self, key: &K) {
-        enum Step {
-            Internal(Option<usize>, Option<PageId>, Option<PageId>),
-            Leaf,
-        }
-
-        let mut current = self.tx.root();
-
-        loop {
-            let page = self.tx.get_page(current).unwrap();
-
-            let found_leaf = page.as_node(|node: Node<K, &[u8]>| {
-                if let Some(inode) = node.try_as_internal() {
-                    let upper_pivot = match inode.keys().binary_search(key) {
-                        Ok(pos) => Some(pos + 1),
-                        Err(pos) => Some(pos),
-                    }
-                    .filter(|pos| pos < &inode.children().len());
-
-                    let anchor = upper_pivot
-                        .or_else(|| inode.keys().len().checked_sub(1))
-                        .and_then(|up| up.checked_sub(1));
-
-                    let left_sibling_id = anchor.and_then(|pos| inode.children().try_get(pos));
-
-                    let right_sibling_id = anchor
-                        .map(|pos| pos + 2)
-                        .or(Some(1))
-                        .and_then(|pos| inode.children().try_get(pos));
-
-                    if let Some(upper_pivot) = upper_pivot {
-                        current = inode.children().get(upper_pivot);
-                    } else {
-                        let last = inode.children().len().checked_sub(1).unwrap();
-                        current = inode.children().get(last);
-                    }
-
-                    Step::Internal(anchor, left_sibling_id, right_sibling_id)
-                } else {
-                    Step::Leaf
-                }
-            });
-
-            self.backtrack.push(page.id());
-
-            match found_leaf {
-                Step::Internal(anchor, left, right) => self.parent_info.push((anchor, left, right)),
-                Step::Leaf => break,
-            }
         }
     }
 
@@ -321,49 +334,17 @@ where
         tx: &'txbuilder mut WriteTransaction<'txmanager, 'index>,
         key: &K,
     ) -> Self {
-        let mut backtrack = InsertBacktrack {
+        let mut backtrack = vec![];
+        search(key, tx, |step| match step {
+            Step::Leaf(page_id) => backtrack.push(page_id),
+            Step::Internal(page_id, _, _) => backtrack.push(page_id),
+        });
+
+        InsertBacktrack {
             tx,
-            backtrack: vec![],
+            backtrack,
             new_root: None,
             phantom_key: PhantomData,
-        };
-
-        backtrack.search_for(key);
-        backtrack
-    }
-
-    /// traverse the tree while storing the path, so we can then backtrack while splitting
-    pub fn search_for<'a>(&'a mut self, key: &K) {
-        let mut current = self.tx.root();
-
-        loop {
-            let page = self.tx.get_page(current).unwrap();
-
-            let found_leaf = page.as_node(|node: Node<K, &[u8]>| {
-                if let Some(inode) = node.try_as_internal() {
-                    let upper_pivot = match inode.keys().binary_search(key) {
-                        Ok(pos) => Some(pos + 1),
-                        Err(pos) => Some(pos),
-                    }
-                    .filter(|pos| pos < &inode.children().len());
-
-                    if let Some(upper_pivot) = upper_pivot {
-                        current = inode.children().get(upper_pivot);
-                    } else {
-                        let last = inode.children().len().checked_sub(1).unwrap();
-                        current = inode.children().get(last);
-                    }
-                    false
-                } else {
-                    true
-                }
-            });
-
-            self.backtrack.push(page.id());
-
-            if found_leaf {
-                break;
-            }
         }
     }
 
@@ -425,49 +406,18 @@ where
         tx: &'txbuilder mut WriteTransaction<'txmanager, 'index>,
         key: &K,
     ) -> Self {
-        let mut backtrack = UpdateBacktrack {
+        let mut backtrack = vec![];
+        search(key, tx, |step| match step {
+            Step::Leaf(page_id) => backtrack.push(page_id),
+            Step::Internal(page_id, _, _) => backtrack.push(page_id),
+        });
+
+        UpdateBacktrack {
             tx,
-            backtrack: vec![],
-            new_root: None,
+            backtrack,
             key_to_update: key.clone(),
+            new_root: None,
             phantom_key: PhantomData,
-        };
-
-        backtrack.search_for(key);
-        backtrack
-    }
-    /// traverse the tree while storing the path, so we can then backtrack while splitting
-    fn search_for<'a>(&'a mut self, key: &K) {
-        let mut current = self.tx.root();
-
-        loop {
-            let page = self.tx.get_page(current).unwrap();
-
-            let found_leaf = page.as_node(|node: Node<K, &[u8]>| {
-                if let Some(inode) = node.try_as_internal() {
-                    let upper_pivot = match inode.keys().binary_search(key) {
-                        Ok(pos) => Some(pos + 1),
-                        Err(pos) => Some(pos),
-                    }
-                    .filter(|pos| pos < &inode.children().len());
-
-                    if let Some(upper_pivot) = upper_pivot {
-                        current = inode.children().get(upper_pivot);
-                    } else {
-                        let last = inode.children().len().checked_sub(1).unwrap();
-                        current = inode.children().get(last);
-                    }
-                    false
-                } else {
-                    true
-                }
-            });
-
-            self.backtrack.push(page.id());
-
-            if found_leaf {
-                break;
-            }
         }
     }
 
@@ -554,6 +504,20 @@ impl<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K> Drop
     for DeleteBacktrack<'txbuilder, 'txmanager, 'storage, K>
 where
     K: FixedSize,
+{
+    fn drop(&mut self) {
+        if let Some(new_root) = self.new_root {
+            self.tx.current_root.set(new_root);
+        } else {
+            self.tx.current_root.set(*self.backtrack.first().unwrap());
+        }
+    }
+}
+
+impl<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K> Drop
+    for UpdateBacktrack<'txbuilder, 'txmanager, 'storage, K>
+where
+    K: Key,
 {
     fn drop(&mut self) {
         if let Some(new_root) = self.new_root {

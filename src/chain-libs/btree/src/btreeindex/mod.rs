@@ -174,7 +174,7 @@ where
     }
 
     pub fn insert_async(&self, key: K, value: V) -> Result<(), BTreeStoreError> {
-        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
+        let mut tx = self.transaction_manager.write_transaction(&self.pages);
 
         self.insert(&mut tx, key, value)?;
 
@@ -195,7 +195,7 @@ where
         &self,
         iter: impl IntoIterator<Item = (K, V)>,
     ) -> Result<(), BTreeStoreError> {
-        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
+        let mut tx = self.transaction_manager.write_transaction(&self.pages);
 
         for (key, value) in iter {
             self.insert(&mut tx, key, value)?;
@@ -401,7 +401,7 @@ where
     }
 
     pub fn update(&self, key: &K, value: V) -> Result<(), BTreeStoreError> {
-        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
+        let mut tx = self.transaction_manager.write_transaction(&self.pages);
 
         UpdateBacktrack::new_search_for(&mut tx, key).update(value)?;
 
@@ -411,7 +411,7 @@ where
 
     /// delete given key from the tree, this doesn't sync the file to disk
     pub fn delete(&self, key: &K) -> Result<(), BTreeStoreError> {
-        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
+        let mut tx = self.transaction_manager.write_transaction(&self.pages);
 
         let result = self.delete_async(key, &mut tx);
 

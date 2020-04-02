@@ -142,38 +142,35 @@ enum Step<'a, K> {
 fn search<F, K>(key: &K, tx: &WriteTransaction, mut f: F)
 where
     F: FnMut(Step<K>),
-    K: Key,
+    K: FixedSize,
 {
     let mut current = tx.root();
 
     loop {
         let page = tx.get_page(current).unwrap();
 
-        let found_leaf = page.as_node(
-            tx.key_buffer_size.try_into().unwrap(),
-            |node: Node<K, &[u8]>| {
-                if let Some(inode) = node.try_as_internal() {
-                    let upper_pivot = match inode.keys().binary_search(key) {
-                        Ok(pos) => Some(pos + 1),
-                        Err(pos) => Some(pos),
-                    }
-                    .filter(|pos| pos < &inode.children().len());
-
-                    f(Step::Internal(page.id(), &inode, upper_pivot));
-
-                    if let Some(upper_pivot) = upper_pivot {
-                        current = inode.children().get(upper_pivot);
-                    } else {
-                        let last = inode.children().len().checked_sub(1).unwrap();
-                        current = inode.children().get(last);
-                    }
-                    false
-                } else {
-                    f(Step::Leaf(page.id()));
-                    true
+        let found_leaf = page.as_node(|node: Node<K, &[u8]>| {
+            if let Some(inode) = node.try_as_internal() {
+                let upper_pivot = match inode.keys().binary_search(key) {
+                    Ok(pos) => Some(pos + 1),
+                    Err(pos) => Some(pos),
                 }
-            },
-        );
+                .filter(|pos| pos < &inode.children().len());
+
+                f(Step::Internal(page.id(), &inode, upper_pivot));
+
+                if let Some(upper_pivot) = upper_pivot {
+                    current = inode.children().get(upper_pivot);
+                } else {
+                    let last = inode.children().len().checked_sub(1).unwrap();
+                    current = inode.children().get(last);
+                }
+                false
+            } else {
+                f(Step::Leaf(page.id()));
+                true
+            }
+        });
 
         if found_leaf {
             return;
@@ -517,7 +514,7 @@ where
 impl<'txbuilder, 'txmanager: 'txbuilder, 'storage: 'txmanager, K> Drop
     for UpdateBacktrack<'txbuilder, 'txmanager, 'storage, K>
 where
-    K: Key,
+    K: FixedSize,
 {
     fn drop(&mut self) {
         if let Some(new_root) = self.new_root {

@@ -122,7 +122,7 @@ pub mod borrow {
 
             if self
                 .borrows
-                .get(dbg!(&id))
+                .get(&id)
                 .and_then(|weak| weak.upgrade())
                 .is_some()
             {

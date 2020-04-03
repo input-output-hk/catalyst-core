@@ -1,6 +1,7 @@
 mod backtrack;
 mod metadata;
 // FIXME: allow dead code momentarily, because all of the delete algorithms are unused, and placing the directive with more granularity would be too troublesome
+mod iter;
 #[allow(dead_code)]
 mod node;
 mod page_manager;
@@ -28,8 +29,11 @@ use std::convert::{TryFrom, TryInto};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, SeekFrom};
 use std::marker::PhantomData;
+use std::ops::RangeBounds;
 use std::path::Path;
 use std::sync::Mutex;
+
+use iter::BTreeIterator;
 
 pub type PageId = u32;
 const NODES_PER_PAGE: u64 = 2000;
@@ -325,10 +329,13 @@ where
         node
     }
 
-    pub fn get<Q>(&self, key: &Q) -> Option<V>
+    // we use a function for the return value in order to avoid cloning the value, returning a direct reference is not possible because we need
+    // the ReadTransaction to exist in order to keep the page from being reused.
+    pub fn get<Q, F, R>(&self, key: &Q, f: F) -> R
     where
         Q: Ord,
         K: Borrow<Q>,
+        F: FnOnce(Option<&V>) -> R,
     {
         let read_transaction = self.transaction_manager.read_transaction(&self.pages);
 
@@ -337,14 +344,19 @@ where
         page_ref.as_node(|node: Node<K, &[u8]>| {
             match node.as_leaf::<V>().keys().binary_search::<Q>(key) {
                 // TODO: Find if it is possible to avoid this clone (although it's only important if V is a big type, which should be avoided anyway)
-                Ok(pos) => Some(node.as_leaf::<V>().values().get(pos).borrow().clone()),
-                Err(_) => None,
+                Ok(pos) => f(Some(node.as_leaf::<V>().values().get(pos).borrow())),
+                Err(_) => f(None),
             }
         })
     }
 
     // TODO: Consider other kind of ranges.
-    pub fn range(&self, range: std::ops::Range<K>) -> BTreeIterator<K, V> {
+    pub fn range<R, Q>(&self, range: R) -> BTreeIterator<R, Q, K, V>
+    where
+        K: Borrow<Q>,
+        R: RangeBounds<Q>,
+        Q: Ord,
+    {
         let read_transaction = self.transaction_manager.read_transaction(&self.pages);
 
         BTreeIterator::new(read_transaction, range)
@@ -606,145 +618,6 @@ impl<K, V> Drop for BTree<K, V> {
     }
 }
 
-pub struct BTreeIterator<'a, K, V> {
-    range: std::ops::Range<K>,
-    tx: ReadTransaction<'a>,
-    phantom_data: PhantomData<V>,
-    // usually b+trees have pointers between leaves, but doing this in a copy on write tree is not possible (or at least it requires cloning all the leaves at each operation),
-    // so we use a stack to keep track of parents
-    // the second parameter is used to keep track of what's the next descendant of that node
-    stack: Vec<(PageRef<'a>, usize)>,
-    current_position: usize,
-    current_leaf: PageRef<'a>,
-}
-
-impl<'a, K: FixedSize, V: FixedSize> BTreeIterator<'a, K, V> {
-    fn new(tx: ReadTransaction<'a>, range: std::ops::Range<K>) -> Self {
-        let mut stack = vec![];
-        let mut current = tx.get_page(tx.root()).unwrap();
-
-        // find the starting leaf, and populate the stack with the path leading to it
-        // this is the only search needed, as afterwards we just go in-order
-        let (leaf, starting_pos) = loop {
-            let is_internal = current.as_node(|node: Node<K, &[u8]>| {
-                node.try_as_internal().map(|inode| {
-                    let upper_pivot = match inode.keys().binary_search(&range.start) {
-                        Ok(pos) => pos + 1,
-                        Err(pos) => pos,
-                    };
-
-                    let children_len = inode.children().len();
-
-                    let pivot = if upper_pivot < children_len {
-                        upper_pivot
-                    } else {
-                        children_len.checked_sub(1).unwrap()
-                    };
-
-                    let new_current_id = inode.children().get(pivot);
-                    (new_current_id, pivot)
-                })
-            });
-
-            if let Some((new_current_id, upper_pivot)) = is_internal {
-                stack.push((current, upper_pivot));
-                current = tx.get_page(new_current_id).unwrap();
-            } else {
-                break current.as_node(|node: Node<K, &[u8]>| {
-                    match node.as_leaf::<V>().keys().binary_search(&range.start) {
-                        Ok(pos) => (current.clone(), pos),
-                        Err(pos) => (current.clone(), pos + 1),
-                    }
-                });
-            }
-        };
-
-        BTreeIterator {
-            tx,
-            range,
-            stack,
-            phantom_data: PhantomData,
-            current_position: starting_pos,
-            current_leaf: leaf,
-        }
-    }
-
-    fn descend_leftmost(&mut self, starting_node: PageRef<'a>) {
-        let mut current = starting_node;
-        loop {
-            let next = current.as_node(|node: Node<K, &[u8]>| {
-                node.try_as_internal().map(|inode| {
-                    self.stack.push((current.clone(), 0));
-                    inode.children().get(0)
-                })
-            });
-
-            if let Some(new_current_id) = next {
-                current = self.tx.get_page(new_current_id).unwrap();
-            } else {
-                self.current_leaf = current;
-                self.current_position = 0;
-                return;
-            }
-        }
-    }
-}
-
-impl<'a, K: FixedSize, V: FixedSize> Iterator for BTreeIterator<'a, K, V> {
-    type Item = V;
-    fn next(&mut self) -> Option<V> {
-        let current_position = self.current_position;
-        let stop = self.range.end.clone();
-
-        enum NextStep<T> {
-            EndReached,
-            InLeaf(T),
-            MoveToRightSibling,
-        }
-
-        let next = self.current_leaf.as_node(|node: Node<K, &[u8]>| {
-            match node.as_leaf::<V>().keys().try_get(current_position) {
-                None => NextStep::MoveToRightSibling,
-                Some(key) => {
-                    if key.borrow() < &stop {
-                        NextStep::InLeaf(
-                            node.as_leaf::<V>()
-                                .values()
-                                .try_get(current_position)
-                                .map(|v| v.borrow().clone())
-                                .unwrap(),
-                        )
-                    } else {
-                        NextStep::EndReached
-                    }
-                }
-            }
-        });
-
-        match next {
-            NextStep::InLeaf(v) => {
-                self.current_position += 1;
-                Some(v)
-            }
-            NextStep::EndReached => None,
-            NextStep::MoveToRightSibling => {
-                while let Some((internal_node, last_position)) = self.stack.pop() {
-                    let next = last_position + 1;
-                    if let Some(child) = internal_node
-                        .as_node(|node: Node<K, &[u8]>| node.as_internal().children().try_get(next))
-                    {
-                        self.stack.push((internal_node, next));
-                        self.descend_leftmost(self.tx.get_page(child).unwrap());
-                        return self.next();
-                    }
-                }
-
-                None
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     extern crate rand;
@@ -812,7 +685,7 @@ mod tests {
         }
     }
 
-    fn new_tree() -> BTree<U64Key, u64> {
+    pub fn new_tree() -> BTree<U64Key, u64> {
         let metadata_file = tempfile().unwrap();
         let tree_file = tempfile().unwrap();
         let static_file = tempfile().unwrap();
@@ -844,31 +717,12 @@ mod tests {
         tree.debug_print();
 
         for i in 0..n {
-            assert_eq!(tree.get(&U64Key(dbg!(i))).expect("Key not found"), i);
+            assert_eq!(
+                tree.get(&U64Key(i), |key| key.cloned())
+                    .expect("Key not found"),
+                i
+            );
         }
-    }
-
-    #[test]
-    fn range_query_empty_tree() {
-        let tree = new_tree();
-
-        let a = 10u64;
-        let b = 11u64;
-        let mut found = tree.range(U64Key(a)..U64Key(b));
-        assert!(found.next().is_none());
-    }
-
-    #[quickcheck]
-    fn qc_range_query(a: u64, b: u64) -> bool {
-        let tree = new_tree();
-        let n: u64 = 2000;
-
-        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
-            .unwrap();
-
-        let found: Vec<_> = tree.range(U64Key(a)..U64Key(b)).collect();
-        let expected: Vec<_> = (a..std::cmp::min(b, n)).into_iter().collect();
-        found == expected
     }
 
     #[quickcheck]
@@ -888,7 +742,7 @@ mod tests {
 
         let prop = reference
             .iter()
-            .all(|(k, v)| match tree.get(&U64Key(*dbg!(k))) {
+            .all(|(k, v)| match tree.get(&U64Key(*k), |v| v.cloned()) {
                 Some(l) => *v == l,
                 None => false,
             });
@@ -953,7 +807,11 @@ mod tests {
             .unwrap();
 
         for i in 0..n {
-            assert_eq!(tree.get(&U64Key(i)).expect("Key not found"), i);
+            assert_eq!(
+                tree.get(&U64Key(i), |value| value.cloned())
+                    .expect("Key not found"),
+                i
+            );
         }
 
         use rand::seq::SliceRandom;
@@ -976,7 +834,12 @@ mod tests {
                 queries.shuffle(&mut rng);
                 c.wait();
                 for i in queries {
-                    assert_eq!(index.get(&U64Key(i)).expect("Key not found"), i);
+                    assert_eq!(
+                        index
+                            .get(&U64Key(i), |v| v.cloned())
+                            .expect("Key not found"),
+                        i
+                    );
                 }
             }));
         }
@@ -1025,7 +888,7 @@ mod tests {
 
             read_handles.push(thread::spawn(move || {
                 // just to make some noise
-                while let None = index.get(&U64Key(thread_num * n + 500)) {
+                while let None = index.get(&U64Key(thread_num * n + 500), |v| v.cloned()) {
                     ()
                 }
             }));

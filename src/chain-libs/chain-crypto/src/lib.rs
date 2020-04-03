@@ -31,6 +31,7 @@ mod evolving;
 pub mod hash;
 mod kes;
 mod key;
+pub mod multilock;
 mod sign;
 mod vrf;
 

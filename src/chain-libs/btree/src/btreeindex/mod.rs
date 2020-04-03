@@ -325,13 +325,18 @@ where
         node
     }
 
-    pub fn lookup(&self, key: &K) -> Option<V> {
+    pub fn get<Q>(&self, key: &Q) -> Option<V>
+    where
+        Q: Ord,
+        K: Borrow<Q>,
+    {
         let read_transaction = self.transaction_manager.read_transaction(&self.pages);
 
         let page_ref = self.search(&read_transaction, key);
 
         page_ref.as_node(|node: Node<K, &[u8]>| {
-            match node.as_leaf::<V>().keys().binary_search(key) {
+            match node.as_leaf::<V>().keys().binary_search::<Q>(key) {
+                // TODO: Find if it is possible to avoid this clone (although it's only important if V is a big type, which should be avoided anyway)
                 Ok(pos) => Some(node.as_leaf::<V>().values().get(pos).borrow().clone()),
                 Err(_) => None,
             }
@@ -345,7 +350,11 @@ where
         BTreeIterator::new(read_transaction, range)
     }
 
-    fn search<'a>(&'a self, tx: &'a ReadTransaction, key: &K) -> PageRef<'a> {
+    fn search<'a, Q>(&'a self, tx: &'a ReadTransaction, key: &Q) -> PageRef<'a>
+    where
+        Q: Ord,
+        K: Borrow<Q>,
+    {
         let mut current = tx.get_page(tx.root()).unwrap();
 
         loop {
@@ -835,7 +844,7 @@ mod tests {
         tree.debug_print();
 
         for i in 0..n {
-            assert_eq!(tree.lookup(&U64Key(dbg!(i))).expect("Key not found"), i);
+            assert_eq!(tree.get(&U64Key(dbg!(i))).expect("Key not found"), i);
         }
     }
 
@@ -879,7 +888,7 @@ mod tests {
 
         let prop = reference
             .iter()
-            .all(|(k, v)| match tree.lookup(&U64Key(*dbg!(k))) {
+            .all(|(k, v)| match tree.get(&U64Key(*dbg!(k))) {
                 Some(l) => *v == l,
                 None => false,
             });
@@ -944,7 +953,7 @@ mod tests {
             .unwrap();
 
         for i in 0..n {
-            assert_eq!(tree.lookup(&U64Key(i)).expect("Key not found"), i);
+            assert_eq!(tree.get(&U64Key(i)).expect("Key not found"), i);
         }
 
         use rand::seq::SliceRandom;
@@ -967,7 +976,7 @@ mod tests {
                 queries.shuffle(&mut rng);
                 c.wait();
                 for i in queries {
-                    assert_eq!(index.lookup(&U64Key(i)).expect("Key not found"), i);
+                    assert_eq!(index.get(&U64Key(i)).expect("Key not found"), i);
                 }
             }));
         }
@@ -1016,7 +1025,7 @@ mod tests {
 
             read_handles.push(thread::spawn(move || {
                 // just to make some noise
-                while let None = index.lookup(&U64Key(thread_num * n + 500)) {
+                while let None = index.get(&U64Key(thread_num * n + 500)) {
                     ()
                 }
             }));

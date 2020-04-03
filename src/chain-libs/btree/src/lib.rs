@@ -159,7 +159,7 @@ where
 
     pub fn get(&self, key: &K) -> Result<Option<&[u8]>, BTreeStoreError> {
         self.index
-            .lookup(&key)
+            .get(&key)
             .and_then(|pos| {
                 self.flatfile
                     .get_at(pos.borrow().clone().into())

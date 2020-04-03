@@ -72,9 +72,10 @@ where
     }
 
     // TODO: add a marker type so this only can be used on sorted views?
-    pub(crate) fn binary_search<'me, Q: 'me>(&'me self, element: Q) -> Result<usize, usize>
+    pub(crate) fn binary_search<'me, Q: 'me>(&'me self, element: &Q) -> Result<usize, usize>
     where
-        Q: Borrow<E> + Eq + PartialEq,
+        Q: Ord,
+        E: Borrow<Q>,
     {
         let stride = usize::from(&self.element_size);
         let data: &'me [u8] = self.data.as_ref();
@@ -87,7 +88,7 @@ where
             .map(|slice| E::read(&slice[..]).unwrap())
             .collect();
 
-        de.binary_search_by_key(&element.borrow(), |s| s.borrow())
+        de.binary_search_by_key(&element.borrow(), |s| s.borrow().borrow())
     }
 
     pub(crate) fn linear_search<'me, Q: 'me>(&'me self, element: Q) -> Option<usize>

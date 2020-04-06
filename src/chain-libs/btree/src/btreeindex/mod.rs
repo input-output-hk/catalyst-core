@@ -350,7 +350,8 @@ where
         })
     }
 
-    // TODO: Consider other kind of ranges.
+    /// perform a range query. The returned iterator holds a read-only transaction for it's entire lifetime.
+    /// This avoids pages to be collected, so it may better for it to not be long-lived.
     pub fn range<R, Q>(&self, range: R) -> BTreeIterator<R, Q, K, V>
     where
         K: Borrow<Q>,

@@ -1,62 +1,112 @@
-## Coverage Status
+# Tests Collection
 
-| Modules     | Feature             | Number of test cases | Automated | Coverage         |
-|:------------|:--------------------|:---------------------|:----------|:-----------------|
-| JCLI        |                     |                      |           |                  |
-|             | address             | 17                   | 8         | 47 %             |
-|             | certificate         | 12                   | 0         | 0 %              |
-|             | debug               | 3                    | 0         | 0 %              |
-|             | genesis             | 34                   | 1         | 3 %              |
-|             | key                 | 14                   | 14        | 100 %            |
-|             | rest                | 20                   | 2         | 1 %              |
-|             | transaction         | 6                    | 1         | 17 %             |
-| Jormungandr |                     |                      |           |                  |
-|             | startup             | 7                    | 1         | 14  %            |
-|             | transaction         | 14                   | 3         | 21  %            |
-|             | configuration       | 21                   | 1         | 5   %            |
-|             | node communications | 8                    | 0         | 0   %            |
-| Summary     |                     | 156                  | 31        | **19 %**         |
+## Api tests
+Api and unit tests in `chain-impl-mockchain`.
+Tests are covering internals of ledger library, validating particular modules (stake distribution).
+There are also scenarios for testing ledger in a 'turn-based' aproach. For example:
 
-### Coverage History 
+```
+    /// Prepare blockchain settings and actors
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_discrimination(Discrimination::Test)
+                .with_fee(LinearFee::new(1, 1, 1)),
+        )
+        .with_initials(vec![
+            wallet("Alice").with(1_000).owns("alice_stake_pool"),
+            wallet("Bob").with(1_000).owns("bob_stake_pool"),
+            wallet("Clarice").with(1_000).owns("clarice_stake_pool"),
+            wallet("David").with(1_003),
+        ])
+        .build()
+        .unwrap();
 
-![Alt text](images/automation_coverage.PNG?raw=true "Coverage History")
+    /// Retrieve actors
+    let alice_stake_pool = controller.stake_pool("alice_stake_pool").unwrap();
+    let bob_stake_pool = controller.stake_pool("bob_stake_pool").unwrap();
+    let clarice_stake_pool = controller.stake_pool("clarice_stake_pool").unwrap();
 
-## Automation Status
+    let david = controller.wallet("David").unwrap();
 
-### Automation Report
-| Test                                                                  | Status | Desc         | Bug ID |
-|:----------------------------------------------------------------------|:-------|:-------------|:-------|
-| test_delegation_address_is_the_same_as_public                         | ok     |              |        |
-| test_account_address_made_of_ed25519_extended_key                     | failed | Sev 4        | #306   |
-| test_utxo_address_made_of_ed25519_extended_key                        | ok     |              |        |
-| test_account_address_made_of_incorrect_ed25519_extended_key           | ok     |              |        |
-| test_utxo_address_made_of_incorrect_ed25519_extended_key              | failed | Sev 4        | #306   |
-| test_delegation_address_made_of_random_string                         | failed | Sev 4        | #306   |
-| test_delegation_address_made_of_ed25519_extended_seed_key             | ok     |              |        |
-| test_delegation_address_made_of_incorrect_public_ed25519_extended_key | failed | Sev 4        | #306   |
-| test_genesis_block_is_built_from_corect_yaml                          | ok     |              |        |
-| test_ed25510bip32_key_generation                                      | ok     |              |        |
-| test_ed25519_key_generation                                           | ok     |              |        |
-| test_ed25519extended_key_generation                                   | ok     |              |        |
-| test_curve25519_2hashdh_key_generation                                | ok     |              |        |
-| test_fake_mm_key_generation                                           | ok     |              |        |
-| test_key_to_public                                                    | ok     |              |        |
-| test_key_to_public_invalid_key                                        | ok     |              |        |
-| test_key_with_seed_generation                                         | ok     |              |        |
-| test_key_with_seed_with_unknown_symbol_generation                     | ok     |              |        |
-| test_key_with_too_long_seed_generation                                | ok     |              |        |
-| test_key_with_too_short_seed_generation                               | ok     |              |        |
-| test_unknown_key_type_generation                                      | ok     |              |        |
-| test_private_key_to_public_key                                        | ok     |              |        |
-| test_key_from_and_to_bytes                                            | ok     |              |        |
-| test_correct_utxos_are_read_from_node                                 | ok     |              |        |
-| test_unbalanced_output_utxo_transation_is_rejected                    | ok     |              |        |
-| test_utxo_transation_with_more_than_one_witness_per_input_is_rejected | ok     |              |        |
-| test_correct_utxo_transaction_is_accepted_by_node                     | ok     |              |        |
-| test_jormungandr_node_starts_successfully                             | ok     |              |        |
+    // prepare delegation ratio
+    let delegation_ratio = vec![
+        (&alice_stake_pool, 2u8),
+        (&bob_stake_pool, 3u8),
+        (&clarice_stake_pool, 5u8),
+    ];
+    
+    /// post delegation certificates
+    controller
+        .delegates_to_many(&david, &delegation_ratio, &mut ledger)
+        .unwrap();
 
-### Automation Passrate 
+    /// verify distribution is correct
+    let expected_distribution = vec![
+        (alice_stake_pool.id(), Value(200)),
+        (bob_stake_pool.id(), Value(300)),
+        (clarice_stake_pool.id(), Value(500)),
+    ];
 
-![Alt text](images/automation_passrate.PNG?raw=true "Automation Passrate")
+    LedgerStateVerifier::new(ledger.clone().into())
+        .info("after delegation to many stake pools")
+        .distribution()
+        .pools_distribution_is(expected_distribution);
 
+```
+
+
+### How to run tests
+```
+cd chain-deps
+cargo test
+```
+
+### Frequency
+Tests are run on each PR
+
+
+## Integration tests
+End to end tests for self-node and jcli. Using rest api and jcli tests are validating node correctness, stability and interaction with database/rest api. Also there are non-functional tests which verify node durability and reliability
+
+### How to run tests functional tests
+```
+cd jormungandr-integration-tests
+cargo test
+```
+
+### How to run performance tests
+```
+cd jormungandr-integration-tests
+cargo test non_functional --feature sanity-non-functional
+```
+
+### How to run testnet soak tests
+```
+cd jormungandr-integration-tests
+cargo test non_unctional --feature soak-non-functional
+```
+
+### Frequency
+Functional tests are run on each PR. Performance and testnet integration tests are run nightly
+
+## Scenario tests
+Multi node scenarios, whcich aim to test nodes behaviour in presence of other nodes or within given network topologies for particular network settings or in occurence on some node disruption
+
+
+### How to run functional tests
+```
+cd jormungandr-scenarios-tests
+cargo run -- --tag short
+```
+
+### How to run real network tests
+```
+cd jormungandr-scenarios-tests
+cargo run -- --scenario real_network
+```
+
+# Performance tests dashboard
+
+https://cardano-rust-testrun-logs.s3.eu-central-1.amazonaws.com/performance_dashboard.html
 

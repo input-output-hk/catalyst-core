@@ -125,7 +125,7 @@ pub mod borrow {
         pub fn borrow_mut(&mut self, id: PageId) -> BorrowRAIIGuard {
             let guard = Arc::new(BorrowGuard::Exclusive);
 
-            if let Some(_) = self.borrows.get(&id).and_then(|weak| weak.upgrade()) {
+            if let Some(_) = self.borrows.get(dbg!(&id)).and_then(|weak| weak.upgrade()) {
                 panic!("tried to exclusively borrow already borrowed page");
             }
 
@@ -164,7 +164,6 @@ pub mod borrow {
         }
     }
 
-    #[derive(Debug)]
     enum BorrowGuard {
         Shared,
         Exclusive,
@@ -213,6 +212,19 @@ impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Immutable<'a>> {
     }
 }
 
+impl<'a> super::node::NodeRef for &PageHandle<'a, borrow::Immutable<'a>> {
+    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key,
+    {
+        let page = self.borrow.borrow;
+
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size) };
+
+        f(node)
+    }
+}
+
 impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Mutable<'a>> {
     fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
@@ -225,7 +237,33 @@ impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Mutable<'a>> {
     }
 }
 
+impl<'a> super::node::NodeRef for &mut PageHandle<'a, borrow::Mutable<'a>> {
+    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key,
+    {
+        let node =
+            unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow.as_ref(), key_buffer_size) };
+
+        f(node)
+    }
+}
+
 impl<'a> super::node::NodeRefMut for PageHandle<'a, borrow::Mutable<'a>> {
+    fn as_node_mut<K, R>(
+        &mut self,
+        key_buffer_size: usize,
+        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
+    ) -> R
+    where
+        K: Key,
+    {
+        let node = unsafe { Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size) };
+        f(node)
+    }
+}
+
+impl<'a> super::node::NodeRefMut for &mut PageHandle<'a, borrow::Mutable<'a>> {
     fn as_node_mut<K, R>(
         &mut self,
         key_buffer_size: usize,

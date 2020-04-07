@@ -415,68 +415,80 @@ where
 
         // we can unwrap safely because there is always a leaf in the path
         // delete will return Ok if the key is not in the given leaf
-        let next_element = backtrack.get_next()?.unwrap();
-        let mut leaf = next_element.next.clone();
+        use backtrack::DeleteNextElement;
+        let DeleteNextElement {
+            mut next_element,
+            mut_context,
+        } = backtrack.get_next()?.unwrap();
 
-        let delete_result = leaf.as_node_mut(key_buffer_size as usize, |mut node| {
-            node.as_leaf_mut().delete(key)
-        })?;
+        let delete_result = next_element
+            .next
+            .as_node_mut(key_buffer_size as usize, |mut node| {
+                node.as_leaf_mut().delete(key)
+            })?;
 
         match delete_result {
             LeafDeleteStatus::Ok => return Ok(()),
             LeafDeleteStatus::NeedsRebalance => (),
         };
 
-        if let None = next_element.parent {
+        // this allows us to get mutable references to out parent and siblings, we only need those when we need to rebalance
+        let mut mut_context = match mut_context {
+            Some(mut_context) => mut_context,
             // this means we are processing the root node, it is not possible to do any rebalancing because we don't have siblings
             // I think we don't need to do anything here, in theory, we could change the tree height to 0, but we are not tracking the height
-            return Ok(());
+            None => return Ok(()),
         };
 
-        // the value in the Option is the 'anchor' (pointer) to the deleted node, which can be either the next node on the stack, or it's right sibling
-        let should_recurse_on_parent: Option<usize> = leaf.as_node_mut(
+        let next = &mut next_element.next;
+        let left = next_element.left.as_ref();
+        let right = next_element.right.as_ref();
+        // we need this to know which child we are (what position does this node have in the parent)
+        let anchor = next_element.anchor.clone();
+
+        let should_recurse_on_parent: Option<usize> = next.as_node_mut(
             key_buffer_size as usize,
             |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
-                let siblings = SiblingsArg::new_from_options(
-                    next_element.left.clone(),
-                    next_element.right.clone(),
-                );
+                let siblings = SiblingsArg::new_from_options(left, right);
 
-                let parent = next_element.parent.clone().unwrap();
-                let anchor = next_element.anchor.clone();
                 match node.as_leaf_mut().rebalance(siblings)? {
                     RebalanceResult::TakeFromLeft(add_sibling) => {
-                        let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
+                        let (sibling, parent) =
+                            mut_context.mut_left_sibling(key_buffer_size as usize);
                         add_sibling.take_key_from_left(parent, anchor, sibling);
                         Ok(None)
                     }
                     RebalanceResult::TakeFromRight(add_sibling) => {
-                        let sibling = next_element.mut_right_sibling(key_buffer_size as usize);
+                        let (sibling, parent) =
+                            mut_context.mut_right_sibling(key_buffer_size as usize);
                         add_sibling.take_key_from_right(parent, anchor, sibling);
                         Ok(None)
                     }
                     RebalanceResult::MergeIntoLeft(add_sibling) => {
-                        let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
+                        let (sibling, _) = mut_context.mut_left_sibling(key_buffer_size as usize);
                         add_sibling.merge_into_left(sibling);
-                        next_element.delete_node();
+                        mut_context.delete_node();
                         // the anchor is the the index of the key that splits the left sibling and the node, it's only None if the current node
                         // it's the leftmost (and thus has no left sibling)
                         Ok(Some(
-                            next_element
-                                .anchor
-                                .clone()
-                                .expect("merged into left sibling, but anchor is None"),
+                            anchor.expect("merged into left sibling, but anchor is None"),
                         ))
                     }
                     RebalanceResult::MergeIntoSelf(add_sibling) => {
-                        let sibling = next_element.right.clone().unwrap();
+                        let (sibling, _) = mut_context.mut_right_sibling(key_buffer_size as usize);
                         add_sibling.merge_into_self(sibling);
-                        next_element.delete_right_sibling();
-                        Ok(Some(next_element.anchor.clone().map_or(0, |a| a + 1)))
+                        mut_context
+                            .delete_right_sibling()
+                            .expect("can't mutate right sibling");
+                        Ok(Some(anchor.map_or(0, |a| a + 1)))
                     }
                 }
             },
         )?;
+
+        // we need to do this because `mut_context` has a mutable borrow of the parent, which is the next node to process
+        // I don't think adding an additional scope and indentation level is worth it in that case. Geting rid of the closure above may be a better solution
+        drop(mut_context);
 
         if let Some(anchor) = should_recurse_on_parent {
             self.delete_internal(anchor, &mut backtrack)?;
@@ -492,7 +504,12 @@ where
     ) -> Result<(), BTreeStoreError> {
         let key_buffer_size = self.static_settings.key_buffer_size;
         let mut anchor_to_delete = anchor;
-        while let Some(mut next_element) = tx.get_next()? {
+        while let Some(next_element) = tx.get_next()? {
+            let backtrack::DeleteNextElement {
+                mut next_element,
+                mut_context,
+            } = next_element;
+
             match next_element.next.as_node_mut(
                 key_buffer_size as usize,
                 |mut node: Node<K, &mut [u8]>| {
@@ -504,86 +521,94 @@ where
                 InternalDeleteStatus::NeedsRebalance => (),
             };
 
-            if let None = next_element.parent {
-                // here we are dealing with the root
-                // the root is not rebalanced, but if it is empty then it can
-                // be deleted, and unlike the leaf case, we need to promote it's only remainining child as the new root
-                let is_empty = next_element
-                    .next
-                    .as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
-                        root.as_internal().keys().len() == 0
-                    });
-
-                // after deleting a key at position `anchor` and its right children, the left sibling
-                // is in position == anchor
-
-                if is_empty {
-                    debug_assert!(anchor == 0);
-                    let new_root = next_element
+            match mut_context {
+                None => {
+                    // here we are dealing with the root
+                    // the root is not rebalanced, but if it is empty then it can
+                    // be deleted, and unlike the leaf case, we need to promote it's only remainining child as the new root
+                    let is_empty = next_element
                         .next
-                        .as_node(key_buffer_size as usize, |node: Node<K, &[u8]>| {
-                            node.as_internal().children().get(anchor)
+                        .as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
+                            root.as_internal().keys().len() == 0
                         });
 
-                    next_element.set_root(new_root);
+                    // after deleting a key at position `anchor` and its right children, the left sibling
+                    // is in position == anchor
+
+                    if is_empty {
+                        debug_assert!(anchor == 0);
+                        let new_root = next_element
+                            .next
+                            .as_node(key_buffer_size as usize, |node: Node<K, &[u8]>| {
+                                node.as_internal().children().get(anchor)
+                            });
+
+                        next_element.set_root(new_root);
+                    }
                 }
-            } else {
-                // non-root node
-                let parent = next_element.parent.clone().unwrap();
-                let anchor = next_element.anchor.clone();
-                let left = next_element.left.clone();
-                let right = next_element.right.clone();
+                Some(mut mut_context) => {
+                    // non-root node
+                    // let parent = next_element.parent.unwrap();
+                    let anchor = next_element.anchor.clone();
+                    let left = next_element.left;
+                    let right = next_element.right;
 
-                // as in the leaf case, the value in the Option is the 'anchor' (pointer) to the deleted node
-                let recurse_on_parent: Option<usize> = next_element.next.clone().as_node_mut(
-                    key_buffer_size as usize,
-                    |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
-                        let siblings = SiblingsArg::new_from_options(left, right);
+                    // as in the leaf case, the value in the Option is the 'anchor' (pointer) to the deleted node
+                    let recurse_on_parent: Option<usize> = next_element.next.as_node_mut(
+                        key_buffer_size as usize,
+                        |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
+                            let siblings = SiblingsArg::new_from_options(left, right);
 
-                        match node.as_internal_mut().rebalance(siblings)? {
-                            RebalanceResult::TakeFromLeft(add_params) => {
-                                let sibling =
-                                    next_element.mut_left_sibling(key_buffer_size as usize);
-                                add_params.take_key_from_left(
-                                    parent,
-                                    anchor.expect("left sibling seems to exist but anchor is none"),
-                                    sibling,
-                                );
-                                Ok(None)
+                            match node.as_internal_mut().rebalance(siblings)? {
+                                RebalanceResult::TakeFromLeft(add_params) => {
+                                    let (sibling, parent) =
+                                        mut_context.mut_left_sibling(key_buffer_size as usize);
+                                    add_params.take_key_from_left(
+                                        parent,
+                                        anchor.expect(
+                                            "left sibling seems to exist but anchor is none",
+                                        ),
+                                        sibling,
+                                    );
+                                    Ok(None)
+                                }
+                                RebalanceResult::TakeFromRight(add_params) => {
+                                    let (sibling, parent) =
+                                        mut_context.mut_right_sibling(key_buffer_size as usize);
+                                    add_params.take_key_from_right(parent, anchor, sibling);
+                                    Ok(None)
+                                }
+                                RebalanceResult::MergeIntoLeft(add_params) => {
+                                    let (sibling, parent) =
+                                        mut_context.mut_left_sibling(key_buffer_size as usize);
+                                    add_params.merge_into_left(parent, anchor, sibling);
+                                    mut_context.delete_node();
+                                    Ok(Some(
+                                        anchor
+                                            .clone()
+                                            .expect("merged into left sibling, but anchor is none"),
+                                    ))
+                                }
+                                RebalanceResult::MergeIntoSelf(add_params) => {
+                                    let (sibling, parent) =
+                                        mut_context.mut_right_sibling(key_buffer_size as usize);
+                                    add_params.merge_into_self(parent, anchor, sibling);
+                                    let new_anchor = anchor.map_or(0, |n| n + 1);
+                                    mut_context
+                                        .delete_right_sibling()
+                                        .expect("right sibling doesn't exist");
+                                    Ok(Some(new_anchor))
+                                }
                             }
-                            RebalanceResult::TakeFromRight(add_params) => {
-                                let sibling =
-                                    next_element.mut_right_sibling(key_buffer_size as usize);
-                                add_params.take_key_from_right(parent, anchor, sibling);
-                                Ok(None)
-                            }
-                            RebalanceResult::MergeIntoLeft(add_params) => {
-                                let sibling =
-                                    next_element.mut_left_sibling(key_buffer_size as usize);
-                                add_params.merge_into_left(parent, anchor, sibling);
-                                next_element.delete_node();
-                                Ok(Some(
-                                    next_element
-                                        .anchor
-                                        .clone()
-                                        .expect("merged into left sibling, but anchor is none"),
-                                ))
-                            }
-                            RebalanceResult::MergeIntoSelf(add_params) => {
-                                let sibling = next_element.right.clone().unwrap();
-                                add_params.merge_into_self(parent, anchor, sibling);
-                                let new_anchor = next_element.anchor.clone().map_or(0, |n| n + 1);
-                                next_element.delete_right_sibling();
-                                Ok(Some(new_anchor))
-                            }
-                        }
-                    },
-                )?;
+                        },
+                    )?;
 
-                if let Some(anchor) = recurse_on_parent {
-                    anchor_to_delete = anchor;
-                } else {
-                    break;
+                    // (there is no recursive call, we just go the next loop iteration)
+                    if let Some(anchor) = recurse_on_parent {
+                        anchor_to_delete = anchor;
+                    } else {
+                        break;
+                    }
                 }
             }
         }

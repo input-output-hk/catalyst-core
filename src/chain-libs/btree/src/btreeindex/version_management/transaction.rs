@@ -1,7 +1,7 @@
 use super::Version;
 use crate::btreeindex::{
     borrow::{Immutable, Mutable},
-    node::{NodeRef, NodeRefMut},
+    node::NodeRefMut,
     page_manager::PageManager,
     Node, PageHandle, PageId, Pages,
 };
@@ -36,70 +36,8 @@ struct State<'a> {
     page_manager: MutexGuard<'a, PageManager>,
 }
 
-#[derive(Clone)]
-pub struct PageRef<'a> {
-    pages: &'a Pages,
-    page_id: PageId,
-}
-
-impl<'a> PageRef<'a> {
-    pub fn id(&self) -> PageId {
-        self.page_id
-    }
-}
-
-#[derive(Clone)]
-pub struct PageRefMut<'a> {
-    pages: &'a Pages,
-    page_id: PageId,
-}
-
-impl<'a> PageRefMut<'a> {
-    pub fn id(&self) -> PageId {
-        self.page_id
-    }
-}
-
-impl<'a> NodeRef for PageRef<'a> {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        self.pages
-            .get_page(self.page_id)
-            .expect("page should be already checked")
-            .as_node(key_buffer_size, f)
-    }
-}
-
-impl<'a> NodeRef for PageRefMut<'a> {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        self.pages
-            .get_page(self.page_id)
-            .expect("page should be already checked")
-            .as_node(key_buffer_size, f)
-    }
-}
-
-impl<'a> NodeRefMut for PageRefMut<'a> {
-    fn as_node_mut<K, R>(
-        &mut self,
-        key_buffer_size: usize,
-        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
-    ) -> R
-    where
-        K: Key,
-    {
-        self.pages
-            .mut_page(self.page_id)
-            // FIXME: this unwrap
-            .unwrap()
-            .as_node_mut(key_buffer_size, f)
-    }
-}
+pub type PageRef<'a> = PageHandle<'a, Immutable<'a>>;
+pub type PageRefMut<'a> = PageHandle<'a, Mutable<'a>>;
 
 impl<'a> ReadTransaction<'a> {
     pub(super) fn new(version: Arc<Version>, pages: &'a Pages) -> ReadTransaction {
@@ -159,16 +97,7 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             .or_else(|| state.shadows.get(&id))
             .unwrap_or_else(|| &id);
 
-        let exists = self.pages.get_page(*id).is_some();
-
-        if exists {
-            Some(PageRef {
-                pages: &self.pages,
-                page_id: *id,
-            })
-        } else {
-            None
-        }
+        self.pages.get_page(*id)
     }
 
     pub fn add_new_node(
@@ -203,17 +132,12 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             .or_else(|| state.shadows.get(&id))
         {
             Some(id) => {
-                let _pre_check = self
+                let page = self
                     .pages
                     .mut_page(*id)
                     .expect("already fetched page was not allocated");
 
-                let handle = PageRefMut {
-                    pages: &self.pages,
-                    page_id: *id,
-                };
-
-                Ok(MutablePage::InTransaction(handle))
+                Ok(MutablePage::InTransaction(page))
             }
             None => {
                 let old_id = id;
@@ -318,9 +242,9 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
     pub fn redirect_parent_in_tx<K: Key>(
         self,
         key_buffer_size: usize,
-        mut parent: PageRefMut,
+        parent: &mut PageRefMut,
     ) -> PageRefMut<'a> {
-        self.find_and_redirect::<K, PageRefMut>(key_buffer_size, &mut parent);
+        self.find_and_redirect::<K, PageRefMut>(key_buffer_size, parent);
         self.finish()
     }
 

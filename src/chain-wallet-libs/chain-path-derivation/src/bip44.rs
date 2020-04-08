@@ -23,7 +23,7 @@
 //! #
 //! use chain_path_derivation::bip44;
 //!
-//! let account = bip44::new().coin_type(BITCOIN).account(ACCOUNT_01);
+//! let account = bip44::new().purpose().coin_type(BITCOIN).account(ACCOUNT_01);
 //! assert_eq!(account.to_string(), "m/'44/'0/'0")
 //! ```
 //!
@@ -36,7 +36,7 @@
 //! #
 //! # use chain_path_derivation::bip44;
 //! #
-//! # let account = bip44::new().coin_type(BITCOIN).account(ACCOUNT_01);
+//! # let account = bip44::new().purpose().coin_type(BITCOIN).account(ACCOUNT_01);
 //! let change = account.external();
 //! let first_address = change.address(SoftDerivation::min_value().wrapping_add(0));
 //! let second_address = change.address(SoftDerivation::min_value().wrapping_add(1));
@@ -55,6 +55,8 @@ use std::str::{self, FromStr};
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Bip44<P>(std::marker::PhantomData<P>);
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Root;
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Purpose;
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -85,10 +87,16 @@ const PURPOSE: HardDerivation = HardDerivation::new_unchecked(Derivation::new(0x
 ///
 /// [module documentation]: ./index.html
 #[inline]
-pub fn new() -> DerivationPath<Bip44<Purpose>> {
-    let mut dp = DerivationPath::new_empty();
-    dp.push(PURPOSE.into());
-    dp
+pub fn new() -> DerivationPath<Bip44<Root>> {
+    DerivationPath::new_empty()
+}
+
+impl DerivationPath<Bip44<Root>> {
+    pub fn purpose(&self) -> DerivationPath<Bip44<Purpose>> {
+        let mut p = self.clone();
+        p.push(PURPOSE.into());
+        p.coerce_unchecked()
+    }
 }
 
 impl DerivationPath<Bip44<Purpose>> {
@@ -171,7 +179,7 @@ impl DerivationPath<Bip44<Change>> {
     /// #
     /// # use chain_path_derivation::bip44;
     /// #
-    /// let account = bip44::new().coin_type(BITCOIN).account(ACCOUNT_01);
+    /// let account = bip44::new().purpose().coin_type(BITCOIN).account(ACCOUNT_01);
     /// let change = account.external();
     /// let end = SoftDerivation::min_value().saturating_add(20);
     ///
@@ -256,6 +264,7 @@ macro_rules! mk_from_str_dp_bip44 {
     };
 }
 
+mk_from_str_dp_bip44!(Bip44<Root>, 0);
 mk_from_str_dp_bip44!(Bip44<Purpose>, 1);
 mk_from_str_dp_bip44!(Bip44<CoinType>, 2);
 mk_from_str_dp_bip44!(Bip44<Account>, 3);
@@ -280,6 +289,7 @@ mod tests {
         };
     }
 
+    mk_arbitrary_dp_bip44!(Bip44<Root>, 0);
     mk_arbitrary_dp_bip44!(Bip44<Purpose>, 1);
     mk_arbitrary_dp_bip44!(Bip44<CoinType>, 2);
     mk_arbitrary_dp_bip44!(Bip44<Account>, 3);
@@ -301,6 +311,7 @@ mod tests {
         };
     }
 
+    mk_quickcheck_dp_bip44!(Root);
     mk_quickcheck_dp_bip44!(Purpose);
     mk_quickcheck_dp_bip44!(CoinType);
     mk_quickcheck_dp_bip44!(Account);

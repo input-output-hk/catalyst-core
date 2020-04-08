@@ -164,6 +164,15 @@ impl<S> IntoIterator for DerivationPath<S> {
     }
 }
 
+impl<'a, S> IntoIterator for &'a DerivationPath<S> {
+    type Item = &'a Derivation;
+    type IntoIter = std::slice::Iter<'a, Derivation>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 /* FromIterator ************************************************************ */
 
 impl std::iter::FromIterator<Derivation> for DerivationPath<AnyScheme> {

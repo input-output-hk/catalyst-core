@@ -16,7 +16,7 @@ impl<K, P> Key<K, P> {
     /// does not guarantee that the derivation path is actually the one
     /// that lead to this key derivation.
     #[inline]
-    pub(crate) fn new_unchecked(
+    pub fn new_unchecked(
         key: K,
         path: DerivationPath<P>,
         derivation_scheme: DerivationScheme,
@@ -31,6 +31,14 @@ impl<K, P> Key<K, P> {
     /// get the derivation path that lead to this key
     pub fn path(&self) -> &DerivationPath<P> {
         &self.path
+    }
+
+    pub fn coerce_unchecked<Q>(self) -> Key<K, Q> {
+        Key {
+            path: self.path.coerce_unchecked(),
+            key: self.key,
+            derivation_scheme: self.derivation_scheme,
+        }
     }
 }
 
@@ -145,6 +153,12 @@ impl<P> Key<XPub, P> {
             path,
             derivation_scheme,
         }
+    }
+}
+
+impl<K, P> AsRef<K> for Key<K, P> {
+    fn as_ref(&self) -> &K {
+        &self.key
     }
 }
 

@@ -1,7 +1,7 @@
 [package]
-name = "hdwallet"
+name = "hdkeygen"
 version = "0.1.0"
-authors = ["Vincent Hanquez <vincent@typed.io>"]
+authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
@@ -17,3 +17,7 @@ hex = "0.4.2"
 chain-crypto = { path = "../chain-deps/chain-crypto" }
 chain-addr = { path = "../chain-deps/chain-addr" }
 cardano-legacy-address = { path = "../chain-deps/cardano-legacy-address" }
+
+[dev-dependencies]
+quickcheck = "0.9"
+quickcheck_macros = "0.9"

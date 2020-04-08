@@ -10,11 +10,8 @@
 //!
 use chain_path_derivation::{AnyScheme, Derivation, DerivationPath};
 use cryptoxide::{
-    chacha20poly1305::ChaCha20Poly1305,
-    hmac::Hmac,
-    pbkdf2::pbkdf2,
-    sha2::Sha512,
-    util::secure_memset
+    chacha20poly1305::ChaCha20Poly1305, hmac::Hmac, pbkdf2::pbkdf2, sha2::Sha512,
+    util::secure_memset,
 };
 use ed25519_bip32::XPub;
 use thiserror::Error;
@@ -91,9 +88,7 @@ fn decode_derivation(reader: &mut &[u8]) -> Option<Derivation> {
     dbg!(b);
     let v = match b {
         0x00..=0x17 => b as u32,
-        0x18 => {
-            cursor_read(reader)? as u32
-        }
+        0x18 => cursor_read(reader)? as u32,
         0x19 => {
             let b1 = cursor_read(reader)?;
             let b2 = cursor_read(reader)?;
@@ -205,9 +200,37 @@ impl Drop for HDKey {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::recovering::generate_from_daedalus_seed;
     use bip39::SEED_SIZE;
     use ed25519_bip32::XPrv;
+
+    fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
+        use cryptoxide::mac::Mac;
+
+        let mut mac = Hmac::new(Sha512::new(), bytes);
+
+        let mut iter = 1;
+
+        loop {
+            let s = format!("Root Seed Chain {}", iter);
+            mac.reset();
+            mac.input(s.as_bytes());
+            let mut block = [0u8; 64];
+            mac.raw_result(&mut block);
+
+            let mut sk = [0; 32];
+            sk.clone_from_slice(&block.as_ref()[0..32]);
+            let mut cc = [0; 32];
+            cc.clone_from_slice(&block.as_ref()[32..64]);
+            let xprv = XPrv::from_nonextended_force(&sk, &cc);
+
+            // check if we find a good candidate
+            if xprv.as_ref()[31] & 0x20 == 0 {
+                return xprv;
+            }
+
+            iter += 1;
+        }
+    }
 
     #[test]
     fn encrypt() {
@@ -248,7 +271,7 @@ mod tests {
         match key.decrypt(&bytes).unwrap_err() {
             Error::PayloadIsTooLarge(len, _too_large) => {
                 assert_eq!(len, TOO_LARGE_PAYLOAD - TAG_LEN)
-            },
+            }
             err => assert!(
                 false,
                 "expecting Error::PayloadIsTooLarge({}) but got {:#?}",

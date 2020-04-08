@@ -62,7 +62,10 @@ impl<K> Account<K> {
     ) -> Self {
         let key = Key::new_unchecked(
             key,
-            bip44::new().coin_type(COIN_TYPE).account(derivation),
+            bip44::new()
+                .purpose()
+                .coin_type(COIN_TYPE)
+                .account(derivation),
             derivation_scheme,
         );
         Self::new(key)

@@ -2,7 +2,7 @@ use crate::stake::Stake;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use std::convert::TryFrom;
-use std::ops;
+use std::{iter::Sum, ops};
 use thiserror::Error;
 
 /// Unspent transaction value.
@@ -82,6 +82,15 @@ pub enum ValueError {
     FromSliceTooSmall,
     #[error("Value from too big slice")]
     FromSliceTooBig,
+}
+
+impl Sum for Value {
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Self>,
+    {
+        iter.fold(Value::zero(), Self::saturating_add)
+    }
 }
 
 impl ops::Add for Value {

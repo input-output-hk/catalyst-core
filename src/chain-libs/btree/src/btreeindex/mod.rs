@@ -914,7 +914,7 @@ mod tests {
             .unwrap();
 
         let key_to_delete = U64Key(delete);
-        assert!(tree.lookup(&key_to_delete).is_some());
+        assert!(tree.get(&key_to_delete, |v| v.cloned()).is_some());
 
         dbg!("tree before");
         tree.debug_print();
@@ -924,10 +924,10 @@ mod tests {
         dbg!("tree after");
         tree.debug_print();
 
-        assert!(dbg!(tree.lookup(&key_to_delete)).is_none());
+        assert!(dbg!(tree.get(&key_to_delete, |v| v.cloned())).is_none());
 
         for i in (0..n).into_iter().filter(|n| *n != delete) {
-            assert!(tree.lookup(&U64Key(dbg!(i))).is_some());
+            assert!(tree.get(&U64Key(i), |v| v.cloned()).is_some());
         }
     }
 
@@ -948,13 +948,15 @@ mod tests {
         for k in xs {
             reference.remove(&U64Key(k));
             tree.delete(&U64Key(k)).unwrap_or(());
-            assert!(tree.lookup(&U64Key(k)).is_none());
+            assert!(tree.get(&U64Key(k), |v| v.cloned()).is_none());
         }
 
-        let prop = reference.iter().all(|(k, v)| match tree.lookup(dbg!(k)) {
-            Some(l) => *v == l,
-            None => false,
-        });
+        let prop = reference
+            .iter()
+            .all(|(k, v)| match tree.get(k, |v| v.cloned()) {
+                Some(l) => *v == l,
+                None => false,
+            });
 
         prop
     }

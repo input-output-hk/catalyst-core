@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate cfg_if;
-extern crate quickcheck_macros;
 
 pub mod era;
 pub mod timeframe;
@@ -14,6 +13,8 @@ pub use units::DurationSeconds;
 
 cfg_if! {
    if #[cfg(test)] {
+        extern crate quickcheck_macros;
+
         pub mod testing;
     } else if #[cfg(feature = "property-test-api")] {
         pub mod testing;

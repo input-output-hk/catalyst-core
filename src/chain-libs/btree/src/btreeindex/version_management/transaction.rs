@@ -1,6 +1,6 @@
 use super::Version;
 use crate::btreeindex::{
-    borrow::Immutable,
+    borrow::{Immutable, Mutable},
     node::{NodeRef, NodeRefMut},
     page_manager::PageManager,
     Node, PageHandle, PageId, Pages,
@@ -8,9 +8,9 @@ use crate::btreeindex::{
 use crate::Key;
 use parking_lot::lock_api;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::marker::PhantomData;
+
 use std::ops::Deref;
 use std::sync::{Arc, MutexGuard};
 
@@ -21,13 +21,13 @@ pub struct ReadTransaction<'a> {
 
 /// staging area for batched insertions, it will keep track of pages already shadowed and reuse them,
 /// it can be used to create a new `Version` at the end with all the insertions done atomically
-pub(crate) struct InsertTransaction<'locks, 'storage: 'locks> {
-    pub current_root: PageId,
+pub(crate) struct WriteTransaction<'locks, 'storage: 'locks> {
+    pub current_root: Cell<PageId>,
     state: RefCell<State<'locks>>,
     pages: RefCell<ExtendablePages<'storage>>,
     versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
     current_version: Arc<RwLock<Arc<Version>>>,
-    key_buffer_size: u32,
+    pub key_buffer_size: u32,
 }
 
 struct State<'a> {
@@ -35,9 +35,11 @@ struct State<'a> {
     shadows: HashMap<PageId, PageId>,
     /// in order to find shadows by the new_id (as we already redirected pointers to this)
     shadows_image: HashSet<PageId>,
+    deleted_pages: Vec<PageId>,
     page_manager: MutexGuard<'a, PageManager>,
 }
 
+#[derive(Clone)]
 pub struct PageRef<'a, 'b: 'a> {
     pages: &'a RefCell<ExtendablePages<'b>>,
     page_id: PageId,
@@ -49,6 +51,7 @@ impl<'a, 'b: 'a> PageRef<'a, 'b> {
     }
 }
 
+#[derive(Clone)]
 pub struct PageRefMut<'a, 'b: 'a> {
     pages: &'a RefCell<ExtendablePages<'b>>,
     page_id: PageId,
@@ -125,7 +128,7 @@ impl<'a> ReadTransaction<'a> {
     }
 }
 
-impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
+impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
     pub fn new(
         root: PageId,
         pages: &'storage RwLock<Pages>,
@@ -133,15 +136,16 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
         versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
         current_version: Arc<RwLock<Arc<Version>>>,
         key_buffer_size: u32,
-    ) -> InsertTransaction<'locks, 'storage> {
+    ) -> WriteTransaction<'locks, 'storage> {
         let current_root = root;
         let state = State {
             shadows: HashMap::new(),
             shadows_image: HashSet::new(),
             page_manager,
+            deleted_pages: Vec::new(),
         };
-        InsertTransaction {
-            current_root,
+        WriteTransaction {
+            current_root: Cell::new(current_root),
             versions,
             current_version,
             key_buffer_size,
@@ -151,12 +155,13 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
     }
 
     pub fn root(&self) -> PageId {
+        let current_root = self.current_root.get();
         self.state
             .borrow()
             .shadows
-            .get(&self.current_root)
+            .get(&current_root)
             .map(|root| *root)
-            .unwrap_or(self.current_root)
+            .unwrap_or(current_root)
     }
 
     pub fn get_page<'this>(&'this self, id: PageId) -> Option<PageRef<'this, 'storage>> {
@@ -207,6 +212,10 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
         Ok(id)
     }
 
+    pub fn delete_node(&self, id: PageId) {
+        self.state.borrow_mut().deleted_pages.push(id);
+    }
+
     // TODO: mut_page and mut_page_internal are basically the same thing, but I can't find
     // a straight forward way of reusing the code because of borrowing rules, so I will ignore it for now
     pub fn mut_page<'this>(
@@ -225,7 +234,7 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
                     .pages
                     .borrow()
                     .mut_page(*id)
-                    .expect("already fetched transaction was not allocated");
+                    .expect("already fetched page was not allocated");
 
                 let handle = PageRefMut {
                     pages: &self.pages,
@@ -299,18 +308,20 @@ impl<'locks, 'storage: 'locks> InsertTransaction<'locks, 'storage> {
     where
         K: Key,
     {
-        let state = self.state.borrow();
-        let transaction = super::WriteTransaction {
-            new_root: self.root(),
+        let new_root = self.root();
+        let state = self.state.into_inner();
+        let transaction = super::WriteTransactionDelta {
+            new_root,
             shadowed_pages: state.shadows.keys().cloned().collect(),
             // Pages allocated at the end, basically
             next_page_id: state.page_manager.next_page(),
+            deleted_pages: state.deleted_pages,
         };
 
         let mut current_version = self.current_version.write();
 
         *current_version = Arc::new(Version {
-            root: self.root(),
+            root: new_root,
             transaction,
         });
 
@@ -325,7 +336,7 @@ pub enum MutablePage<'a, 'b: 'a, 'c: 'b> {
 
 /// recursive helper for the shadowing process when we need to clone and redirect pointers
 pub struct RedirectPointers<'a, 'b: 'a, 'c: 'a> {
-    tx: &'a InsertTransaction<'b, 'c>,
+    tx: &'a WriteTransaction<'b, 'c>,
     /// id that we need to change in the next step, at some point, we could optimize this to be
     /// an index instead of the id (so we don't need to perform the search)
     last_old_id: PageId,
@@ -335,15 +346,7 @@ pub struct RedirectPointers<'a, 'b: 'a, 'c: 'a> {
 }
 
 impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
-    pub fn rename_parent<K: Key>(
-        self,
-        key_buffer_size: usize,
-        parent_id: PageId,
-    ) -> Result<MutablePage<'a, 'b, 'c>, std::io::Error> {
-        let (parent_needs_shadowing, parent) = self.tx.mut_page_internal(parent_id)?;
-        let pages = self.tx.pages.borrow();
-        let mut parent = pages.mut_page(parent).unwrap();
-
+    fn find_and_redirect<K: Key, T: NodeRefMut>(&self, key_buffer_size: usize, parent: &mut T) {
         let old_id = self.last_old_id;
         let new_id = self.last_new_id;
         parent.as_node_mut(key_buffer_size, |mut node: Node<K, &mut [u8]>| {
@@ -355,6 +358,27 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
 
             node.children_mut().update(pos_to_update, &new_id).unwrap();
         });
+    }
+
+    pub fn redirect_parent_in_tx<K: Key>(
+        self,
+        key_buffer_size: usize,
+        mut parent: PageRefMut,
+    ) -> PageRefMut<'a, 'c> {
+        self.find_and_redirect::<K, PageRefMut>(key_buffer_size, &mut parent);
+        self.finish()
+    }
+
+    pub fn redirect_parent_pointer<K: Key>(
+        self,
+        key_buffer_size: usize,
+        parent_id: PageId,
+    ) -> Result<MutablePage<'a, 'b, 'c>, std::io::Error> {
+        let (parent_needs_shadowing, parent) = self.tx.mut_page_internal(parent_id)?;
+        let pages = self.tx.pages.borrow();
+        let mut parent = pages.mut_page(parent).unwrap();
+
+        self.find_and_redirect::<K, PageHandle<Mutable>>(key_buffer_size, &mut parent);
 
         let parent_new_id = parent.id();
         if parent_needs_shadowing {
@@ -365,7 +389,8 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
                 shadowed_page: self.shadowed_page,
             }))
         } else {
-            Ok(MutablePage::InTransaction(self.finish()))
+            let page = self.finish();
+            Ok(MutablePage::InTransaction(page))
         }
     }
 
@@ -373,25 +398,6 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
         match self.tx.mut_page(self.shadowed_page).unwrap() {
             MutablePage::InTransaction(handle) => handle,
             _ => unreachable!(),
-        }
-    }
-}
-
-impl<'txmanager, 'storage> InsertTransaction<'txmanager, 'storage> {
-    /// create a staging area for a single insert
-    pub(crate) fn backtrack<'me, K>(
-        &'me mut self,
-    ) -> super::InsertBacktrack<'me, 'txmanager, 'storage, K>
-    where
-        K: Key,
-    {
-        let key_buffer_size = self.key_buffer_size.clone();
-        super::InsertBacktrack {
-            tx: self,
-            backtrack: vec![],
-            new_root: None,
-            phantom_key: PhantomData,
-            key_buffer_size,
         }
     }
 }

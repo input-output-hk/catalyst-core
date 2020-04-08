@@ -1,3 +1,4 @@
+mod backtrack;
 mod metadata;
 // FIXME: allow dead code momentarily, because all of the delete algorithms are unused, and placing the directive with more granularity would be too troublesome
 #[allow(dead_code)]
@@ -6,18 +7,23 @@ mod page_manager;
 mod pages;
 mod version_management;
 
-use version_management::transaction::{InsertTransaction, PageRefMut, ReadTransaction};
+use version_management::transaction::{PageRefMut, ReadTransaction, WriteTransaction};
 use version_management::*;
 
 use crate::mem_page::MemPage;
 use crate::BTreeStoreError;
 use metadata::{Metadata, StaticSettings};
-use node::{InternalInsertStatus, LeafInsertStatus, Node, NodeRef, NodeRefMut};
+use node::internal_node::InternalDeleteStatus;
+use node::leaf_node::LeafDeleteStatus;
+use node::{
+    InternalInsertStatus, LeafInsertStatus, Node, NodeRef, NodeRefMut, RebalanceResult, SiblingsArg,
+};
 use pages::{borrow, PageHandle, Pages, PagesInitializationParams};
 use std::borrow::Borrow;
 
 use crate::{Key, Value};
 
+use backtrack::{DeleteBacktrack, InsertBacktrack};
 use parking_lot::RwLock;
 use std::convert::{TryFrom, TryInto};
 use std::fs::{File, OpenOptions};
@@ -208,12 +214,11 @@ where
 
     fn insert<'a>(
         &self,
-        tx: &mut InsertTransaction<'a, 'a>,
+        tx: &mut WriteTransaction<'a, 'a>,
         key: K,
         value: Value,
     ) -> Result<(), BTreeStoreError> {
-        let mut backtrack = tx.backtrack();
-        backtrack.search_for(&key);
+        let mut backtrack = InsertBacktrack::new_search_for(tx, &key);
 
         let needs_recurse = {
             let leaf = backtrack.get_next()?.unwrap();
@@ -385,6 +390,208 @@ where
         }
 
         current
+    }
+
+    /// delete given key from the tree, this doesn't sync the file to disk
+    pub fn delete(&self, key: &K) -> Result<(), BTreeStoreError> {
+        let key_buffer_size: u32 = self.static_settings.key_buffer_size;
+
+        let mut tx = self
+            .transaction_manager
+            .insert_transaction(&self.pages, key_buffer_size);
+
+        let result = self.delete_async(key, &mut tx);
+
+        tx.commit::<K>();
+
+        result
+    }
+
+    fn delete_async<'a>(
+        &'a self,
+        key: &K,
+        tx: &mut WriteTransaction<'a, 'a>,
+    ) -> Result<(), BTreeStoreError> {
+        let key_buffer_size: u32 = self.static_settings.key_buffer_size;
+
+        let mut backtrack = DeleteBacktrack::new_search_for(tx, key);
+
+        // we can unwrap safely because there is always a leaf in the path
+        // delete will return Ok if the key is not in the given leaf
+        let next_element = backtrack.get_next()?.unwrap();
+        let mut leaf = next_element.next.clone();
+
+        let delete_result = leaf.as_node_mut(key_buffer_size as usize, |mut node| {
+            node.as_leaf_mut().delete(key)
+        })?;
+
+        match delete_result {
+            LeafDeleteStatus::Ok => return Ok(()),
+            LeafDeleteStatus::NeedsRebalance => (),
+        };
+
+        if let None = next_element.parent {
+            // this means we are processing the root node, it is not possible to do any rebalancing because we don't have siblings
+            // I think we don't need to do anything here, in theory, we could change the tree height to 0, but we are not tracking the height
+            return Ok(());
+        };
+
+        // the value in the Option is the 'anchor' (pointer) to the deleted node, which can be either the next node on the stack, or it's right sibling
+        let should_recurse_on_parent: Option<usize> = leaf.as_node_mut(
+            key_buffer_size as usize,
+            |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
+                let siblings = SiblingsArg::new_from_options(
+                    next_element.left.clone(),
+                    next_element.right.clone(),
+                );
+
+                let parent = next_element.parent.clone().unwrap();
+                let anchor = next_element.anchor.clone();
+                match node.as_leaf_mut().rebalance(siblings)? {
+                    RebalanceResult::TakeFromLeft(add_sibling) => {
+                        let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
+                        add_sibling.take_key_from_left(parent, anchor, sibling);
+                        Ok(None)
+                    }
+                    RebalanceResult::TakeFromRight(add_sibling) => {
+                        let sibling = next_element.mut_right_sibling(key_buffer_size as usize);
+                        add_sibling.take_key_from_right(parent, anchor, sibling);
+                        Ok(None)
+                    }
+                    RebalanceResult::MergeIntoLeft(add_sibling) => {
+                        let sibling = next_element.mut_left_sibling(key_buffer_size as usize);
+                        add_sibling.merge_into_left(sibling);
+                        next_element.delete_node();
+                        // the anchor is the the index of the key that splits the left sibling and the node, it's only None if the current node
+                        // it's the leftmost (and thus has no left sibling)
+                        Ok(Some(
+                            next_element
+                                .anchor
+                                .clone()
+                                .expect("merged into left sibling, but anchor is None"),
+                        ))
+                    }
+                    RebalanceResult::MergeIntoSelf(add_sibling) => {
+                        let sibling = next_element.right.clone().unwrap();
+                        add_sibling.merge_into_self(sibling);
+                        next_element.delete_right_sibling();
+                        Ok(Some(next_element.anchor.clone().map_or(0, |a| a + 1)))
+                    }
+                }
+            },
+        )?;
+
+        if let Some(anchor) = should_recurse_on_parent {
+            self.delete_internal(anchor, &mut backtrack)?;
+        }
+
+        Ok(())
+    }
+
+    fn delete_internal(
+        &self,
+        anchor: usize,
+        tx: &mut DeleteBacktrack<K>,
+    ) -> Result<(), BTreeStoreError> {
+        let key_buffer_size = self.static_settings.key_buffer_size;
+        let mut anchor_to_delete = anchor;
+        while let Some(mut next_element) = tx.get_next()? {
+            match next_element.next.as_node_mut(
+                key_buffer_size as usize,
+                |mut node: Node<K, &mut [u8]>| {
+                    let mut node = node.as_internal_mut();
+                    node.delete_key_children(anchor_to_delete)
+                },
+            ) {
+                InternalDeleteStatus::Ok => return Ok(()),
+                InternalDeleteStatus::NeedsRebalance => (),
+            };
+
+            if let None = next_element.parent {
+                // here we are dealing with the root
+                // the root is not rebalanced, but if it is empty then it can
+                // be deleted, and unlike the leaf case, we need to promote it's only remainining child as the new root
+                let is_empty = next_element
+                    .next
+                    .as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
+                        root.as_internal().keys().len() == 0
+                    });
+
+                // after deleting a key at position `anchor` and its right children, the left sibling
+                // is in position == anchor
+
+                if is_empty {
+                    debug_assert!(anchor == 0);
+                    let new_root = next_element
+                        .next
+                        .as_node(key_buffer_size as usize, |node: Node<K, &[u8]>| {
+                            node.as_internal().children().get(anchor)
+                        });
+
+                    next_element.set_root(new_root);
+                }
+            } else {
+                // non-root node
+                let parent = next_element.parent.clone().unwrap();
+                let anchor = next_element.anchor.clone();
+                let left = next_element.left.clone();
+                let right = next_element.right.clone();
+
+                // as in the leaf case, the value in the Option is the 'anchor' (pointer) to the deleted node
+                let recurse_on_parent: Option<usize> = next_element.next.clone().as_node_mut(
+                    key_buffer_size as usize,
+                    |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
+                        let siblings = SiblingsArg::new_from_options(left, right);
+
+                        match node.as_internal_mut().rebalance(siblings)? {
+                            RebalanceResult::TakeFromLeft(add_params) => {
+                                let sibling =
+                                    next_element.mut_left_sibling(key_buffer_size as usize);
+                                add_params.take_key_from_left(
+                                    parent,
+                                    anchor.expect("left sibling seems to exist but anchor is none"),
+                                    sibling,
+                                );
+                                Ok(None)
+                            }
+                            RebalanceResult::TakeFromRight(add_params) => {
+                                let sibling =
+                                    next_element.mut_right_sibling(key_buffer_size as usize);
+                                add_params.take_key_from_right(parent, anchor, sibling);
+                                Ok(None)
+                            }
+                            RebalanceResult::MergeIntoLeft(add_params) => {
+                                let sibling =
+                                    next_element.mut_left_sibling(key_buffer_size as usize);
+                                add_params.merge_into_left(parent, anchor, sibling);
+                                next_element.delete_node();
+                                Ok(Some(
+                                    next_element
+                                        .anchor
+                                        .clone()
+                                        .expect("merged into left sibling, but anchor is none"),
+                                ))
+                            }
+                            RebalanceResult::MergeIntoSelf(add_params) => {
+                                let sibling = next_element.right.clone().unwrap();
+                                add_params.merge_into_self(parent, anchor, sibling);
+                                let new_anchor = next_element.anchor.clone().map_or(0, |n| n + 1);
+                                next_element.delete_right_sibling();
+                                Ok(Some(new_anchor))
+                            }
+                        }
+                    },
+                )?;
+
+                if let Some(anchor) = recurse_on_parent {
+                    anchor_to_delete = anchor;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -675,6 +882,61 @@ mod tests {
         for handle in read_handles {
             handle.join().unwrap();
         }
+    }
+
+    #[test]
+    fn can_delete_key() {
+        let tree = new_tree();
+        let n: u64 = 2000;
+        let delete: u64 = 50;
+
+        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
+            .unwrap();
+
+        let key_to_delete = U64Key(delete);
+        assert!(tree.lookup(&key_to_delete).is_some());
+
+        dbg!("tree before");
+        tree.debug_print();
+
+        tree.delete(&key_to_delete).unwrap();
+
+        dbg!("tree after");
+        tree.debug_print();
+
+        assert!(dbg!(tree.lookup(&key_to_delete)).is_none());
+
+        for i in (0..n).into_iter().filter(|n| *n != delete) {
+            assert!(tree.lookup(&U64Key(dbg!(i))).is_some());
+        }
+    }
+
+    #[quickcheck]
+    #[ignore]
+    fn qc_arbitrary_deletes(xs: Vec<u64>) -> bool {
+        let mut reference = std::collections::BTreeMap::new();
+
+        let tree = new_tree();
+        let n: u64 = 2000;
+        for i in 0..n {
+            reference.entry(U64Key(i)).or_insert(i);
+        }
+
+        tree.insert_many(reference.iter().map(|(k, v)| (k.clone(), *v)))
+            .unwrap();
+
+        for k in xs {
+            reference.remove(&U64Key(k));
+            tree.delete(&U64Key(k)).unwrap_or(());
+            assert!(tree.lookup(&U64Key(k)).is_none());
+        }
+
+        let prop = reference.iter().all(|(k, v)| match tree.lookup(dbg!(k)) {
+            Some(l) => *v == l,
+            None => false,
+        });
+
+        prop
     }
 
     #[test]

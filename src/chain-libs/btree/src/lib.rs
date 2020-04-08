@@ -129,6 +129,15 @@ where
         result
     }
 
+    pub fn delete(&self, key: K) -> Result<(), BTreeStoreError> {
+        self.index.delete(&key)?;
+
+        self.flatfile.sync()?;
+        self.index.checkpoint()?;
+
+        Ok(())
+    }
+
     /// insert many values in one transaction (with only one fsync)
     pub fn insert_many<B: AsRef<[u8]>>(
         &self,

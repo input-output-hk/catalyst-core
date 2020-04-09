@@ -153,7 +153,7 @@ fn hash_spending_data(xpub: &XPub, attrs: &Attributes) -> [u8; 28] {
 }
 
 /// A valid cardano Address that is displayed in base58
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 pub struct Addr(Vec<u8>);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

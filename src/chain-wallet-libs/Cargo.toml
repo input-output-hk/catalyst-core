@@ -4,6 +4,7 @@ members = [
     "chain-path-derivation",
     "hdkeygen",
     "wallet",
+    "wallet-c",
 ]
 
 exclude = [

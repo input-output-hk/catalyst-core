@@ -139,8 +139,8 @@ impl DerivationPath<Bip44<CoinType>> {
 }
 
 impl DerivationPath<Bip44<Account>> {
-    const EXTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(0));
-    const INTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(1));
+    pub const EXTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(0));
+    pub const INTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(1));
 
     /// See [module documentation] for more details
     ///

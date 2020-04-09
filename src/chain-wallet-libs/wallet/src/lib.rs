@@ -6,7 +6,7 @@ mod recovering;
 pub use self::{
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
-    recovering::{RecoveryBuilder, RecoveryError},
+    recovering::{Dump, RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
 };
 use hdkeygen::account::{Account, AccountId};
 

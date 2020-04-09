@@ -1,5 +1,6 @@
 use crate::recovering::{dump::WitnessBuilder, Dump};
 use chain_impl_mockchain::{
+    fragment::Fragment,
     legacy::OldAddress,
     transaction::{Input, UtxoPointer},
     value::Value,
@@ -38,6 +39,23 @@ impl RecoveringDaedalus {
         self.value_total
     }
 
+    pub fn check_blocks<'a>(&mut self, fragments: impl Iterator<Item = &'a Fragment>) {
+        for fragment in fragments {
+            let fragment_id = fragment.hash();
+            if let Fragment::OldUtxoDeclaration(utxos) = fragment {
+                for (output_index, (address, value)) in utxos.addrs.iter().enumerate() {
+                    let pointer = UtxoPointer {
+                        transaction_id: fragment_id.clone(),
+                        output_index: output_index as u8,
+                        value: *value,
+                    };
+
+                    self.check(pointer, address);
+                }
+            }
+        }
+    }
+
     pub fn check(&mut self, pointer: UtxoPointer, address: &OldAddress) {
         if let Some(derivation_path) = self.address_recovering.check_address(address) {
             self.value_total = self.value_total.saturating_add(pointer.value);
@@ -51,7 +69,7 @@ impl RecoveringDaedalus {
             dump.push(
                 Input::from_utxo(utxo.pointer),
                 WitnessBuilder::OldUtxo {
-                    xprv: utxo.key.clone(),
+                    xprv: utxo.key.as_ref().clone(),
                 },
             )
         }

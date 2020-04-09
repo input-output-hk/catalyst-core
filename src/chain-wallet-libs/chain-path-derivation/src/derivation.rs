@@ -59,7 +59,7 @@ pub struct DerivationRange {
 ///     );
 /// }
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SoftDerivationRange {
     range: std::ops::Range<SoftDerivation>,
 }
@@ -78,7 +78,7 @@ pub struct SoftDerivationRange {
 ///     );
 /// }
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HardDerivationRange {
     range: std::ops::Range<HardDerivation>,
 }

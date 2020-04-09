@@ -4,7 +4,7 @@ use crate::{
 };
 use chain_path_derivation::{
     bip44::{self, Bip44},
-    HardDerivation, SoftDerivation, SoftDerivationRange,
+    DerivationPath, HardDerivation, SoftDerivation, SoftDerivationRange,
 };
 use ed25519_bip32::{DerivationScheme, XPrv, XPub};
 
@@ -48,6 +48,14 @@ impl Account<XPub> {
 impl<K> Account<K> {
     pub fn new(key: Key<K, Bip44<bip44::Account>>) -> Self {
         Self { key }
+    }
+
+    pub fn path(&self) -> &DerivationPath<Bip44<bip44::Account>> {
+        self.key.path()
+    }
+
+    pub fn id(&self) -> HardDerivation {
+        self.path().account()
     }
 
     /// load the account key from the given Key, DerivationScheme and index

@@ -148,7 +148,10 @@ impl RecoveringIcarus {
             }
         }
 
-        if accounts.next().is_none() {
+        // this is true if we found an address in the last account
+        //
+        // so we always have 1 account with UTxO ahead
+        if result.is_some() && accounts.next().is_none() {
             self.populate_new_account();
         }
 

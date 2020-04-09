@@ -81,6 +81,15 @@ impl<S> DerivationPath<S> {
         self.path.push(derivation)
     }
 
+    #[inline]
+    pub(crate) fn get_unchecked(&self, index: usize) -> Derivation {
+        if let Some(v) = self.get(index).copied() {
+            v
+        } else {
+            unsafe { std::hint::unreachable_unchecked() }
+        }
+    }
+
     pub fn coerce_unchecked<T>(self) -> DerivationPath<T> {
         DerivationPath {
             path: self.path,

@@ -46,15 +46,6 @@ impl DerivationPath<Rindex<Account>> {
 
 impl DerivationPath<Rindex<Address>> {
     #[inline]
-    fn get_unchecked(&self, index: usize) -> Derivation {
-        if let Some(v) = self.get(index).copied() {
-            v
-        } else {
-            unsafe { std::hint::unreachable_unchecked() }
-        }
-    }
-
-    #[inline]
     pub fn account(&self) -> Derivation {
         self.get_unchecked(INDEX_ACCOUNT)
     }

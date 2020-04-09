@@ -110,6 +110,11 @@ impl DerivationPath<Bip44<Purpose>> {
         ct.push(coin_type.into());
         ct.coerce_unchecked()
     }
+
+    #[inline]
+    pub fn purpose(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_PURPOSE))
+    }
 }
 
 impl DerivationPath<Bip44<CoinType>> {
@@ -120,6 +125,16 @@ impl DerivationPath<Bip44<CoinType>> {
         let mut a = self.clone();
         a.push(account.into());
         a.coerce_unchecked()
+    }
+
+    #[inline]
+    pub fn purpose(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_PURPOSE))
+    }
+
+    #[inline]
+    pub fn coin_type(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_COIN_TYPE))
     }
 }
 
@@ -148,6 +163,21 @@ impl DerivationPath<Bip44<Account>> {
     /// [module documentation]: ./index.html
     pub fn internal(&self) -> DerivationPath<Bip44<Change>> {
         self.change(Self::INTERNAL)
+    }
+
+    #[inline]
+    pub fn purpose(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_PURPOSE))
+    }
+
+    #[inline]
+    pub fn coin_type(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_COIN_TYPE))
+    }
+
+    #[inline]
+    pub fn account(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_ACCOUNT))
     }
 }
 
@@ -203,41 +233,52 @@ impl DerivationPath<Bip44<Change>> {
 
         self.clone().coerce_unchecked().sub_range(range)
     }
+
+    #[inline]
+    pub fn purpose(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_PURPOSE))
+    }
+
+    #[inline]
+    pub fn coin_type(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_COIN_TYPE))
+    }
+
+    #[inline]
+    pub fn account(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_ACCOUNT))
+    }
+
+    #[inline]
+    pub fn change(&self) -> SoftDerivation {
+        SoftDerivation::new_unchecked(self.get_unchecked(INDEX_CHANGE))
+    }
 }
 
 impl DerivationPath<Bip44<Address>> {
     #[inline]
-    fn get_unchecked(&self, index: usize) -> Derivation {
-        if let Some(v) = self.get(index).copied() {
-            v
-        } else {
-            unsafe { std::hint::unreachable_unchecked() }
-        }
+    pub fn purpose(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_PURPOSE))
     }
 
     #[inline]
-    pub fn purpose(&self) -> Derivation {
-        self.get_unchecked(INDEX_PURPOSE)
+    pub fn coin_type(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_COIN_TYPE))
     }
 
     #[inline]
-    pub fn coin_type(&self) -> Derivation {
-        self.get_unchecked(INDEX_COIN_TYPE)
+    pub fn account(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_ACCOUNT))
     }
 
     #[inline]
-    pub fn account(&self) -> Derivation {
-        self.get_unchecked(INDEX_ACCOUNT)
+    pub fn change(&self) -> SoftDerivation {
+        SoftDerivation::new_unchecked(self.get_unchecked(INDEX_CHANGE))
     }
 
     #[inline]
-    pub fn change(&self) -> Derivation {
-        self.get_unchecked(INDEX_CHANGE)
-    }
-
-    #[inline]
-    pub fn address(&self) -> Derivation {
-        self.get_unchecked(INDEX_ADDRESS)
+    pub fn address(&self) -> SoftDerivation {
+        SoftDerivation::new_unchecked(self.get_unchecked(INDEX_ADDRESS))
     }
 }
 

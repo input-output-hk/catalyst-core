@@ -105,6 +105,10 @@ impl RecoveringIcarus {
         wallet
     }
 
+    pub fn value_total(&self) -> Value {
+        self.value_total
+    }
+
     fn populate_first_account(&mut self) {
         let account_id = HardDerivation::min_value();
         let account = self.wallet.create_account(account_id).clone();

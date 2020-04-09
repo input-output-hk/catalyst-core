@@ -75,7 +75,7 @@ pub enum RecoveringResult {
 /// * the `wallet_out` is null pointer
 ///
 #[no_mangle]
-pub extern "C" fn recover(
+pub extern "C" fn iohk_jormungandr_wallet_recover(
     mnemonics: *const c_char,
     password: *const u8,
     password_length: usize,
@@ -151,7 +151,7 @@ pub extern "C" fn recover(
 /// * the block is not valid (cannot be decoded)
 ///
 #[no_mangle]
-pub extern "C" fn retrieve_funds(
+pub extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
     wallet: WalletPtr,
     block0: *const u8,
     block0_length: usize,
@@ -199,7 +199,7 @@ pub extern "C" fn retrieve_funds(
 /// 
 /// If the `total_out` pointer is null, this function does nothing
 #[no_mangle]
-pub extern "C" fn total_value(wallet: WalletPtr, total_out: *mut u64) -> RecoveringResult
+pub extern "C" fn iohk_jormungandr_wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> RecoveringResult
 {
     let wallet : &Wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
         wallet
@@ -218,7 +218,7 @@ pub extern "C" fn total_value(wallet: WalletPtr, total_out: *mut u64) -> Recover
 
 /// delete the pointer and free the allocated memory
 #[no_mangle]
-pub extern "C" fn delete_settings(settings: SettingsPtr) {
+pub extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr) {
     if !settings.is_null() {
         let boxed = unsafe { Box::from_raw(settings) };
 
@@ -228,7 +228,7 @@ pub extern "C" fn delete_settings(settings: SettingsPtr) {
 
 /// delete the pointer, zero all the keys and free the allocated memory
 #[no_mangle]
-pub extern "C" fn delete_wallet(wallet: WalletPtr) {
+pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
     if !wallet.is_null() {
         let boxed = unsafe { Box::from_raw(wallet) };
 

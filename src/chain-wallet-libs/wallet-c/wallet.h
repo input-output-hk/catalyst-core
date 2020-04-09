@@ -76,12 +76,12 @@ typedef Wallet *WalletPtr;
 /**
  * delete the pointer and free the allocated memory
  */
-iohk_jormungandr_wallet_ void delete_settings(SettingsPtr settings);
+void iohk_jormungandr_wallet_delete_settings(SettingsPtr settings);
 
 /**
  * delete the pointer, zero all the keys and free the allocated memory
  */
-iohk_jormungandr_wallet_ void delete_wallet(WalletPtr wallet);
+void iohk_jormungandr_wallet_delete_wallet(WalletPtr wallet);
 
 /**
  * retrieve a wallet from the given mnemonics, password and protocol magic
@@ -112,12 +112,11 @@ iohk_jormungandr_wallet_ void delete_wallet(WalletPtr wallet);
  * * the `wallet_out` is null pointer
  *
  */
-iohk_jormungandr_wallet_
-RecoveringResult recover(const char *mnemonics,
-                         const uint8_t *password,
-                         uintptr_t password_length,
-                         uint32_t protocol_magic,
-                         WalletPtr *wallet_out);
+RecoveringResult iohk_jormungandr_wallet_recover(const char *mnemonics,
+                                                 const uint8_t *password,
+                                                 uintptr_t password_length,
+                                                 uint32_t protocol_magic,
+                                                 WalletPtr *wallet_out);
 
 /**
  * retrieve funds from daedalus or yoroi wallet in the given block0 (or
@@ -143,11 +142,10 @@ RecoveringResult recover(const char *mnemonics,
  * * the block is not valid (cannot be decoded)
  *
  */
-iohk_jormungandr_wallet_
-RecoveringResult retrieve_funds(WalletPtr wallet,
-                                const uint8_t *block0,
-                                uintptr_t block0_length,
-                                SettingsPtr *settings_out);
+RecoveringResult iohk_jormungandr_wallet_retrieve_funds(WalletPtr wallet,
+                                                        const uint8_t *block0,
+                                                        uintptr_t block0_length,
+                                                        SettingsPtr *settings_out);
 
 /**
  * get the total value in the wallet
@@ -163,8 +161,7 @@ RecoveringResult retrieve_funds(WalletPtr wallet,
  *
  * If the `total_out` pointer is null, this function does nothing
  */
-iohk_jormungandr_wallet_
-RecoveringResult total_value(WalletPtr wallet,
-                             uint64_t *total_out);
+RecoveringResult iohk_jormungandr_wallet_total_value(WalletPtr wallet,
+                                                     uint64_t *total_out);
 
 #endif /* IOHK_CHAIN_WALLET_LIBC_ */

@@ -48,6 +48,7 @@ impl WitnessBuilder {
 }
 
 impl Dump {
+    /// dump all the associated input to the given address
     pub fn new(settings: Settings, address: Address) -> Self {
         Self {
             settings,
@@ -57,6 +58,24 @@ impl Dump {
             outputs: Vec::new(),
             ignored: Vec::new(),
         }
+    }
+
+    /// return the list of ignored inputs and the list of built transactions
+    ///
+    /// the transactions are ready to send
+    pub fn finalize(mut self) -> (Vec<Input>, Vec<Transaction<NoExtra>>) {
+        self.build_tx_and_clear();
+
+        assert!(
+            self.inputs.is_empty(),
+            "we should not have any more pending inputs to spend"
+        );
+        assert!(
+            self.witness_builders.is_empty(),
+            "we should not have any more pending inputs to spend"
+        );
+
+        (self.ignored, self.outputs)
     }
 
     fn inputs_value(&self) -> Value {

@@ -151,6 +151,7 @@ impl RecoveringIcarus {
         result
     }
 
+    /// convenient function to parse a block and check for owned token
     pub fn check_blocks<'a>(&mut self, fragments: impl Iterator<Item = &'a Fragment>) {
         for fragment in fragments {
             let fragment_id = fragment.hash();
@@ -175,6 +176,7 @@ impl RecoveringIcarus {
         }
     }
 
+    /// dump all the inputs
     pub fn dump_in(&self, dump: &mut Dump) {
         for utxo in self.utxos.iter() {
             dump.push(

@@ -69,6 +69,13 @@ impl RecoveryBuilder {
         }
     }
 
+    pub fn protocol_magic(self, protocol_magic: u32) -> Self {
+        Self {
+            protocol_magic: Some(protocol_magic),
+            ..self
+        }
+    }
+
     pub fn build_daedalus(&self) -> Result<RecoveringDaedalus, RecoveryError> {
         if self.password.is_some() {
             return Err(RecoveryError::SchemeDoesNotRequirePassword);

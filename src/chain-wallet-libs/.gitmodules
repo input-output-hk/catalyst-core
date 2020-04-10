@@ -1,3 +1,3 @@
 [submodule "chain-deps"]
 	path = chain-deps
-	url = git@github.com:input-output-hk/chain-libs
+	url = https://github.com/input-output-hk/chain-libs

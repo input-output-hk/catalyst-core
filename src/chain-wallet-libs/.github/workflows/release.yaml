@@ -32,30 +32,29 @@ jobs:
       matrix:
         config:
           # Linux
-          - {os: ubuntu-latest, cross: false, toolchain: stable, target: x86_64-unknown-linux-gnu }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: aarch64-unknown-linux-gnu }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: arm-unknown-linux-gnueabi }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: armv7-unknown-linux-gnueabihf }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: mips64el-unknown-linux-gnuabi64 }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: powerpc64le-unknown-linux-gnu }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: x86_64-unknown-linux-musl }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: aarch64-linux-android }
+          - { os: ubuntu-latest, cross: false, toolchain: stable, target: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: aarch64-unknown-linux-gnu }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: arm-unknown-linux-gnueabi }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: armv7-unknown-linux-gnueabihf }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: mips64el-unknown-linux-gnuabi64 }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: powerpc64le-unknown-linux-gnu }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: x86_64-unknown-linux-musl }
           # Android
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: aarch64-linux-android }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: arm-linux-androideabi }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: armv7-linux-androideabi }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: i686-linux-android }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: thumbv7neon-linux-androideabi }
-          - {os: ubuntu-latest, cross: true, toolchain: stable, target: x86_64-linux-android }
-          - { os: macos-latest, cross: true, toolchain: stable, target: aarch64-apple-ios }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: aarch64-linux-android }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: arm-linux-androideabi }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: armv7-linux-androideabi }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: i686-linux-android }
+          - { os: ubuntu-latest, cross: true, toolchain: stable, target: x86_64-linux-android }
+          # tumbv7neon not yet supported
+          # - { os: ubuntu-latest, cross: true, toolchain: stable, target: thumbv7neon-linux-androideabi }
           # Macos
-          - {os: macos-latest, cross: false, toolchain: stable, target: x86_64-apple-darwin }
+          - { os: macos-latest, cross: false, toolchain: stable, target: x86_64-apple-darwin }
           # iOS
           - { os: macos-latest, cross: false, toolchain: stable, target: aarch64-apple-ios }
           - { os: macos-latest, cross: false, toolchain: stable, target: x86_64-apple-ios }
           # Windows
-          - {os: windows-latest, cross: false, toolchain: stable-x86_64-pc-windows-gnu, target: x86_64-pc-windows-gnu }
-          - {os: windows-latest, cross: false, toolchain: stable-x86_64-pc-windows-msvc, target: x86_64-pc-windows-msvc }
+          - { os: windows-latest, cross: false, toolchain: stable-x86_64-pc-windows-gnu, target: x86_64-pc-windows-gnu }
+          - { os: windows-latest, cross: false, toolchain: stable-x86_64-pc-windows-msvc, target: x86_64-pc-windows-msvc }
 
     steps:
       - uses: actions-rs/toolchain@v1
@@ -95,7 +94,7 @@ jobs:
         run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.a dist/iohk_wallet/lib/
       - name: copy binary if windows
         if: matrix.config.os == 'windows-latest'
-        run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.a dist/iohk_wallet/lib/
+        run: cp ./target/${{ matrix.config.target }}/release/jormungandrwallet.lib dist/iohk_wallet/lib/
       
       - name: Get tag version
         id: get_version

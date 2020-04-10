@@ -20,6 +20,8 @@ Chain Wallet libs is a set of library, written in [rust-lang], to use to build a
 
 Currently we provide support for many platforms of the high level wallet library.
 
+**Releases can be found there: [link][release-latest]**
+
 ### Android
 
 | Target                               | released binaries |
@@ -65,3 +67,4 @@ Currently we provide support for many platforms of the high level wallet library
 
 [rust-lang]: https://www.rust-lang.org/
 [Jörmungandr]: https://input-output-hk.github.io/jormungandr
+[release-latest]: https://github.com/input-output-hk/chain-wallet-libs/releases/latest

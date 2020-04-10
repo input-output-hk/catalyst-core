@@ -90,16 +90,16 @@ fn decode_derivation(reader: &mut &[u8]) -> Option<Derivation> {
         0x00..=0x17 => b as u32,
         0x18 => cursor_read(reader)? as u32,
         0x19 => {
-            let b1 = cursor_read(reader)?;
-            let b2 = cursor_read(reader)?;
-            (b1 << 8 | b2) as u32
+            let b1 = cursor_read(reader)? as u32;
+            let b2 = cursor_read(reader)? as u32;
+            b1 << 8 | b2
         }
         0x1a => {
-            let b1 = cursor_read(reader)?;
-            let b2 = cursor_read(reader)?;
-            let b3 = cursor_read(reader)?;
-            let b4 = cursor_read(reader)?;
-            (b1 << 24 | b2 << 16 | b3 << 8 | b4) as u32
+            let b1 = cursor_read(reader)? as u32;
+            let b2 = cursor_read(reader)? as u32;
+            let b3 = cursor_read(reader)? as u32;
+            let b4 = cursor_read(reader)? as u32;
+            b1 << 24 | b2 << 16 | b3 << 8 | b4
         }
         _ => return None,
     };

@@ -79,9 +79,17 @@ jobs:
           args: --release --target ${{ matrix.config.target }} -p wallet-c -- -C lto
 
       - name: prepare package
-        run: mkdir -p dist/iohk_wallet/lib
-        run: mkdir -p dist/iohk_wallet/include
+        run: mkdir -p dist/iohk_wallet/lib && mkdir -p dist/iohk_wallet/include
+
+      - name: copy header file
         run: cp ./wallet-c/wallet.h dist/iohk_wallet/include/wallet.h
+
+      - name: copy binary if unix
+        if: matrix.config.os != 'windows-latest'
+        run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.a dist/iohk_wallet/lib/
+      - name: copy binary if windows
+        if: matrix.config.os == 'windows-latest'
+        run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.a dist/iohk_wallet/lib/
       
       - name: Get tag version
         id: get_version
@@ -90,7 +98,6 @@ jobs:
 
       - name: Pack binaries if unix
         if: matrix.config.os != 'windows-latest'
-        run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.a dist/iohk_wallet/lib/
         run: tar -C dist -czvf chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.tar.gz iohk_wallet
 
       - name: Pack binaries if windows

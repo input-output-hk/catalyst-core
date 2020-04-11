@@ -100,8 +100,6 @@ void iohk_jormungandr_wallet_delete_wallet(WalletPtr wallet);
  * * password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
  *   this value is optional and passing a null pointer will result in no password;
  * * password_length: the length of the password;
- * * protocol_magic: the legacy cardano haskell protocol magic of the blockchain, mandatory
- *   for Icarus (yoroi) wallets;
  * * wallet_out: a pointer to a pointer. The recovered wallet will be allocated on this pointer;
  *
  * # errors

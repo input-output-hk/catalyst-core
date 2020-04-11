@@ -1,0 +1,13 @@
+{
+    "mnemonics": "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone",
+    "addresses": [
+        {
+            "derivation_path": [0, 0],
+            "address": "Ae2tdPwUPEZ8og5u4WF5rmSyme5Gvp8RYiLM2u7Vm8CyDQzLN3VYTN895Wk"
+        },
+        {
+            "derivation_path": [0, 1],
+            "address": "Ae2tdPwUPEZEAjEsQsCtBMkLKANxQUEvzLkumPWWYugLeXcgkeMCDH1gnuL"
+        }
+    ]
+}

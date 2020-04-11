@@ -1,0 +1,17 @@
+{
+    "mnemonics": "place help owner giggle record office lucky high canyon own spring cluster",
+    "addresses": [
+        {
+            "derivation_path": [0, 0],
+            "address": "DdzFFzCqrhst7qSjx1nyxfEvT6fxCZkxVceFFozqvXSNkJKCwdJdmFMZSiCthoCvB5DhLhfzXJjM9S4hJqVxUdhigXY6RAd5YtCqvAbJ"
+        },
+        {
+            "derivation_path": [1, 1],
+            "address": "DdzFFzCqrhtAnjNJMRwyTvp6cAjM7sLD1w3WL4cNaXZCBF4iuxbX1MqkCxUebcPTbXpS2XnhzbCRfTWXrZn17rw1a5zBecfzxyCdUhMT"
+        },
+        {
+            "derivation_path": [9209, 92928],
+            "address": "DdzFFzCqrhsxA9zhQvw3GPiy8avZzHfF22ydzYeVrZKoYxJUrK6Fm5V4psDzErvrFSW84aW6XC9ZrLNFNob4yZz89vh2r5y5BLYC6zTp"
+        }
+    ]
+}

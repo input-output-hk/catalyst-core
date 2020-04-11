@@ -1,6 +1,6 @@
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 const WALLET_VALUE: u64 = 1000000 + 1 + 100;
-use wallet_c::*;
+use jormungandrwallet::*;
 
 /// test to recover a daedalus style address in the test-vectors block0
 ///

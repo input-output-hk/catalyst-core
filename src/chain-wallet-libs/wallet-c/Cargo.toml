@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 
 [lib]
 name = "jormungandrwallet"
-crate-type = [ "staticlib" ]
+crate-type = [ "staticlib", "lib" ]
 
 [dependencies]
 bip39 = { path = "../bip39" }

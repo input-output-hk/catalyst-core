@@ -115,7 +115,6 @@ void iohk_jormungandr_wallet_delete_wallet(WalletPtr wallet);
 RecoveringResult iohk_jormungandr_wallet_recover(const char *mnemonics,
                                                  const uint8_t *password,
                                                  uintptr_t password_length,
-                                                 uint32_t protocol_magic,
                                                  WalletPtr *wallet_out);
 
 /**

@@ -19,7 +19,6 @@ const DEFAULT_GAG_LIMIT: u32 = 20;
 
 pub struct RecoveringIcarus {
     wallet: Wallet,
-    protocol_magic: u32, // lol
     accounts: Vec<RecoveringAccount>,
     value_total: Value,
     utxos: Vec<RecoveredUtxo>,
@@ -28,7 +27,6 @@ pub struct RecoveringIcarus {
 struct RecoveringAccount {
     id: HardDerivation,
     account: Account<XPrv>,
-    protocol_magic: u32, // lol
     next_index: SoftDerivation,
     soft_derivation_range_length: u32,
     addresses: HashMap<OldAddress, Address<XPrv>>,
@@ -40,11 +38,10 @@ struct RecoveredUtxo {
 }
 
 impl RecoveringAccount {
-    fn new(id: HardDerivation, account: Account<XPrv>, protocol_magic: u32) -> Self {
+    fn new(id: HardDerivation, account: Account<XPrv>) -> Self {
         let mut ra = Self {
             id,
             account,
-            protocol_magic,
             next_index: SoftDerivation::min_value(),
             soft_derivation_range_length: DEFAULT_GAG_LIMIT,
             addresses: HashMap::with_capacity(128),
@@ -83,18 +80,18 @@ impl RecoveringAccount {
         for address in addresses {
             let xpub = address.key().as_ref().public();
             let old_address =
-                cardano_legacy_address::ExtendedAddr::new_simple(&xpub, Some(self.protocol_magic));
+                cardano_legacy_address::ExtendedAddr::new_simple(&xpub, None);
             let old_address = old_address.to_address();
+            dbg!(old_address.to_string());
             self.addresses.insert(old_address, address);
         }
     }
 }
 
 impl RecoveringIcarus {
-    pub(crate) fn new(wallet: Wallet, protocol_magic: u32) -> Self {
+    pub(crate) fn new(wallet: Wallet) -> Self {
         let mut wallet = Self {
             wallet,
-            protocol_magic,
             accounts: Vec::new(),
             value_total: Value::zero(),
             utxos: Vec::with_capacity(128),
@@ -113,7 +110,7 @@ impl RecoveringIcarus {
         let account_id = HardDerivation::min_value();
         let account = self.wallet.create_account(account_id).clone();
 
-        let account = RecoveringAccount::new(account_id, account, self.protocol_magic);
+        let account = RecoveringAccount::new(account_id, account);
         self.accounts.push(account);
     }
 
@@ -126,7 +123,7 @@ impl RecoveringIcarus {
 
         if let Some(id) = last_id.checked_add(1) {
             let account = self.wallet.create_account(id).clone();
-            let account = RecoveringAccount::new(id, account, self.protocol_magic);
+            let account = RecoveringAccount::new(id, account);
             self.accounts.push(account);
         } else {
             // DO NOTHING... we have reached 2^31 accounts already

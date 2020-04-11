@@ -23,18 +23,12 @@ pub enum RecoveryError {
 
     #[error("Missing entropy, either missing the mnemonics or need to generate a new wallet")]
     MissingEntropy,
-
-    #[error(
-        "Missing the protocol magic, this is needed if you are using cardano protocol wallets..."
-    )]
-    MissingProtocolMagic,
 }
 
 #[derive(Default)]
 pub struct RecoveryBuilder {
     entropy: Option<bip39::Entropy>,
     password: Option<Password>,
-    protocol_magic: Option<u32>,
 }
 
 impl RecoveryBuilder {
@@ -69,13 +63,6 @@ impl RecoveryBuilder {
         }
     }
 
-    pub fn protocol_magic(self, protocol_magic: u32) -> Self {
-        Self {
-            protocol_magic: Some(protocol_magic),
-            ..self
-        }
-    }
-
     pub fn build_daedalus(&self) -> Result<RecoveringDaedalus, RecoveryError> {
         if self.password.is_some() {
             return Err(RecoveryError::SchemeDoesNotRequirePassword);
@@ -93,9 +80,6 @@ impl RecoveryBuilder {
 
     pub fn build_yoroi(&self) -> Result<RecoveringIcarus, RecoveryError> {
         let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
-        let protocol_magic = self
-            .protocol_magic
-            .ok_or(RecoveryError::MissingProtocolMagic)?;
         let password = self.password.clone().unwrap_or_default();
 
         let key = from_bip39_entropy(entropy, password, ed25519_bip32::DerivationScheme::V2);
@@ -104,7 +88,7 @@ impl RecoveryBuilder {
 
         let wallet = hdkeygen::bip44::Wallet::new(root);
 
-        Ok(RecoveringIcarus::new(wallet, protocol_magic))
+        Ok(RecoveringIcarus::new(wallet))
     }
 
     pub fn build_wallet(&self) -> Result<Wallet, RecoveryError> {

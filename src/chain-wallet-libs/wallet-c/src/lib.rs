@@ -28,11 +28,12 @@ pub struct Wallet {
 /// (including transferring legacy wallets into a new secure wallet).
 pub struct Settings(wallet::Settings);
 
-type WalletPtr = *mut Wallet;
-type SettingsPtr = *mut Settings;
+pub type WalletPtr = *mut Wallet;
+pub type SettingsPtr = *mut Settings;
 
 /// result error code
 #[repr(u8)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Hash)]
 pub enum RecoveringResult {
     /// returned if the function succeed
     Success = 0,
@@ -60,8 +61,6 @@ pub enum RecoveringResult {
 /// * password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
 ///   this value is optional and passing a null pointer will result in no password;
 /// * password_length: the length of the password;
-/// * protocol_magic: the legacy cardano haskell protocol magic of the blockchain, mandatory
-///   for Icarus (yoroi) wallets;
 /// * wallet_out: a pointer to a pointer. The recovered wallet will be allocated on this pointer;
 ///
 /// # errors
@@ -76,7 +75,6 @@ pub extern "C" fn iohk_jormungandr_wallet_recover(
     mnemonics: *const c_char,
     password: *const u8,
     password_length: usize,
-    protocol_magic: u32,
     wallet_out: *mut WalletPtr,
 ) -> RecoveringResult {
     let wallet_out: &mut WalletPtr = if let Some(wallet_out) = unsafe { wallet_out.as_mut() } {
@@ -89,7 +87,6 @@ pub extern "C" fn iohk_jormungandr_wallet_recover(
     let mnemonics = mnemonics.to_string_lossy();
 
     let builder = wallet::RecoveryBuilder::new();
-    let builder = builder.protocol_magic(protocol_magic);
     let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics) {
         builder
     } else {

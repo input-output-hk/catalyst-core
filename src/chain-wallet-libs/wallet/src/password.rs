@@ -1,4 +1,5 @@
 use std::ops::{Deref, DerefMut};
+use cryptoxide::util::secure_memset;
 
 #[derive(Debug, Default, Clone)]
 pub struct ScrubbedBytes(Vec<u8>);
@@ -31,6 +32,6 @@ impl DerefMut for ScrubbedBytes {
 
 impl Drop for ScrubbedBytes {
     fn drop(&mut self) {
-        todo!("add secure zeroing of the scrubbed bytes")
+        secure_memset(&mut self.0, 0)
     }
 }

@@ -81,7 +81,7 @@ jobs:
         with:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
-          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto
+          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet
 
       - name: prepare package
         run: mkdir -p dist/iohk_wallet/lib && mkdir -p dist/iohk_wallet/include

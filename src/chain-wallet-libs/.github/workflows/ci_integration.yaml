@@ -55,16 +55,9 @@ jobs:
         with:
           submodules: true
 
-      - name: Build library (debug)
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: ${{ matrix.config.cross }}
-          command: rustc
-          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet
-
       - name: Build library (release)
         uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
-          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet
+          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto

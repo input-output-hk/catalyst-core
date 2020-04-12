@@ -81,7 +81,7 @@ jobs:
         with:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
-          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet
+          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto
 
       - name: prepare package
         run: mkdir -p dist/iohk_wallet/lib && mkdir -p dist/iohk_wallet/include
@@ -91,10 +91,10 @@ jobs:
 
       - name: copy binary if unix
         if: matrix.config.os != 'windows-latest'
-        run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.a dist/iohk_wallet/lib/
+        run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.(a|so) dist/iohk_wallet/lib/
       - name: copy binary if windows
         if: matrix.config.os == 'windows-latest'
-        run: cp ./target/${{ matrix.config.target }}/release/jormungandrwallet.lib dist/iohk_wallet/lib/
+        run: cp ./target/${{ matrix.config.target }}/release/jormungandrwallet.lib ./target/${{ matrix.config.target }}/release/jormungandrwallet.dll dist/iohk_wallet/lib/
       
       - name: Get tag version
         id: get_version

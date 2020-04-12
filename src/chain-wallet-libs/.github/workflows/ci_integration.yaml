@@ -60,11 +60,11 @@ jobs:
         with:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
-          args: --release --target ${{ matrix.config.target }} -p wallet-c -- -C lto
+          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto
 
       - name: Build library (release)
         uses: actions-rs/cargo@v1
         with:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
-          args: --release --target ${{ matrix.config.target }} -p wallet-c -- -C lto
+          args: --release --target ${{ matrix.config.target }} -p jormungandrwallet-c -- -C lto

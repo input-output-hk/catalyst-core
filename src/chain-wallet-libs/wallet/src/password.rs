@@ -1,5 +1,5 @@
-use std::ops::{Deref, DerefMut};
 use cryptoxide::util::secure_memset;
+use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Default, Clone)]
 pub struct ScrubbedBytes(Vec<u8>);

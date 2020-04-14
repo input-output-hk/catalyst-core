@@ -91,7 +91,7 @@ jobs:
 
       - name: copy binary if unix
         if: matrix.config.os != 'windows-latest'
-        run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.(a|so) dist/iohk_wallet/lib/
+        run: find ./target/${{ matrix.config.target }}/release -maxdepth 1 '(' -name "libjormungandrwallet.so" -o -name "libjormungandrwallet.a" ')' -exec cp {} dist/iohk_wallet/lib \;
       - name: copy binary if windows
         if: matrix.config.os == 'windows-latest'
         run: cp ./target/${{ matrix.config.target }}/release/jormungandrwallet.lib ./target/${{ matrix.config.target }}/release/jormungandrwallet.dll dist/iohk_wallet/lib/

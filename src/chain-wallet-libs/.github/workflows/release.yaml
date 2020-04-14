@@ -94,7 +94,7 @@ jobs:
         run: cp ./target/${{ matrix.config.target }}/release/libjormungandrwallet.(a|so) dist/iohk_wallet/lib/
       - name: copy binary if windows
         if: matrix.config.os == 'windows-latest'
-        run: cp ./target/${{ matrix.config.target }}/release/jormungandrwallet.lib ./target/${{ matrix.config.target }}/release/jormungandrwallet.dll dist/iohk_wallet/lib/
+        run: Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.lib -Destination dist\iohk_wallet; Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.dll -Destination dist\iohk_wallet
       
       - name: Get tag version
         id: get_version

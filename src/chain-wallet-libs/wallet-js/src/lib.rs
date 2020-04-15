@@ -22,8 +22,19 @@ pub struct Settings(wallet::Settings);
 
 #[wasm_bindgen]
 impl Wallet {
+    /// retrieve a wallet from the given mnemonics and password
+    ///
+    /// this function will work for all yoroi, daedalus and other wallets
+    /// as it will try every kind of wallet anyway
+    ///
+    /// You can also use this function to recover a wallet even after you have
+    /// transferred all the funds to the new format (see the _convert_ function)
+    ///
+    ///
+    /// the mnemonics should be in english
     pub fn recover(mnemonics: &str, password: &str) -> Result<Wallet, JsValue> {
         let builder = wallet::RecoveryBuilder::new();
+        // TODO: recover from more languages?
         let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics)
         {
             builder
@@ -58,6 +69,16 @@ impl Wallet {
         })
     }
 
+    /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
+    /// any other blocks).
+    ///
+    /// Execute this function then you can check who much funds you have
+    /// retrieved from the given block.
+    ///
+    /// this function may take sometimes so it is better to only call this
+    /// function if needed.
+    ///
+    /// also, this function should not be called twice with the same block.
     pub fn retrieve_funds(&mut self, block0: &[u8]) -> Result<Settings, JsValue> {
         let mut bufreader = chain_ser::mempack::ReadBuf::from(block0);
         let block0 = if let Ok(block) = Block::read(&mut bufreader) {
@@ -74,6 +95,10 @@ impl Wallet {
         Ok(settings)
     }
 
+    /// get the total value in the wallet
+    ///
+    /// make sure to call `retrieve_funds` prior to calling this function
+    /// otherwise you will always have `0`
     pub fn total_value(&self) -> u64 {
         self.icarus
             .value_total()

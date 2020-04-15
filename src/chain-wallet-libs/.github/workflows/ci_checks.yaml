@@ -49,6 +49,15 @@ jobs:
         with:
           command: test
 
+      - name: Install wasm pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      
+      - name: Test in chrome
+        run: wasm-pack test --headless --chrome wallet-js
+      
+      - name: Test in firefox
+        run: wasm-pack test --headless --firefox wallet-js
+
   lints:
     name: Lints
     runs-on: ubuntu-latest

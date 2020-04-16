@@ -14,7 +14,7 @@ impl Arbitrary for Fragment {
             4 => Fragment::StakeDelegation(Arbitrary::arbitrary(g)),
             5 => Fragment::PoolRegistration(Arbitrary::arbitrary(g)),
             6 => Fragment::PoolRetirement(Arbitrary::arbitrary(g)),
-            //7 => Fragment::PoolUpdate(Arbitrary::arbitrary(g)),
+            7 => Fragment::PoolUpdate(Arbitrary::arbitrary(g)),
             8 => Fragment::UpdateProposal(Arbitrary::arbitrary(g)),
             _ => Fragment::UpdateVote(Arbitrary::arbitrary(g)),
         }

@@ -23,3 +23,4 @@ cardano-legacy-address = { path = "../chain-deps/cardano-legacy-address" }
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
+chain-ser = { path = "../chain-deps/chain-ser" }

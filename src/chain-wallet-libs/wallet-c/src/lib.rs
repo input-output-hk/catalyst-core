@@ -1,4 +1,8 @@
-use chain_impl_mockchain::block::Block;
+use chain_impl_mockchain::{
+    block::Block,
+    transaction::{Input, NoExtra, Transaction},
+    value::Value,
+};
 use chain_ser::mempack::{ReadBuf, Readable as _};
 use std::{ffi::CStr, os::raw::c_char};
 
@@ -28,8 +32,14 @@ pub struct Wallet {
 /// (including transferring legacy wallets into a new secure wallet).
 pub struct Settings(wallet::Settings);
 
+pub struct Conversion {
+    ignored: Vec<Input>,
+    transactions: Vec<Transaction<NoExtra>>,
+}
+
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
+pub type ConversionPtr = *mut Conversion;
 
 /// result error code
 #[repr(u8)]
@@ -41,6 +51,8 @@ pub enum RecoveringResult {
     InvalidMnemonics,
     /// happens if the block is not valid
     InvalidBlockFormat,
+    /// index is out of bound
+    IndexOutOfBound,
     /// a pointer was null where it was expected it to be non null
     PtrIsNull,
 }
@@ -183,6 +195,144 @@ pub extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
     RecoveringResult::Success
 }
 
+/// once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
+/// it is possible to convert all existing funds to the new wallet.
+///
+/// The returned arrays are transactions to send to the network in order to do the
+/// funds conversion.
+///
+/// Don't forget to call `iohk_jormungandr_wallet_delete_conversion` to
+/// properly free the memory
+///
+#[no_mangle]
+pub extern "C" fn iohk_jormungandr_wallet_convert(
+    wallet: WalletPtr,
+    settings: SettingsPtr,
+    conversion_out: *mut ConversionPtr,
+) -> RecoveringResult {
+    let wallet: &mut Wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
+        wallet
+    } else {
+        return RecoveringResult::PtrIsNull;
+    };
+    let settings = if let Some(settings) = unsafe { settings.as_ref() } {
+        settings.0.clone()
+    } else {
+        return RecoveringResult::PtrIsNull;
+    };
+    let conversion_out: &mut ConversionPtr =
+        if let Some(conversion_out) = unsafe { conversion_out.as_mut() } {
+            conversion_out
+        } else {
+            return RecoveringResult::PtrIsNull;
+        };
+
+    let address = wallet
+        .account
+        .account_id()
+        .address(chain_addr::Discrimination::Production);
+
+    let mut dump = wallet::transaction::Dump::new(settings, address);
+
+    wallet.daedalus.dump_in(&mut dump);
+    wallet.icarus.dump_in(&mut dump);
+
+    let (ignored, transactions) = dump.finalize();
+
+    let conversion = Conversion {
+        ignored,
+        transactions,
+    };
+
+    *conversion_out = Box::into_raw(Box::new(conversion));
+
+    RecoveringResult::Success
+}
+
+/// get the number of transactions built to convert the retrieved wallet
+pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
+    conversion: ConversionPtr,
+) -> usize {
+    unsafe {
+        conversion
+            .as_ref()
+            .map(|c| c.transactions.len())
+            .unwrap_or_default()
+    }
+}
+
+/// retrieve the index-nth transactions in the conversions starting from 0
+/// and finishing at `size-1` where size is retrieved from
+/// `iohk_jormungandr_wallet_convert_transactions_size`.
+///
+/// the memory allocated returned is not owned and should not be kept
+/// for longer than potential call to `iohk_jormungandr_wallet_delete_conversion`
+pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
+    conversion: ConversionPtr,
+    index: usize,
+    transaction_out: *mut *const u8,
+    transaction_size: *mut usize,
+) -> RecoveringResult {
+    let conversion = if let Some(conversion) = unsafe { conversion.as_ref() } {
+        conversion
+    } else {
+        return RecoveringResult::PtrIsNull;
+    };
+    let transaction_out = if let Some(t) = unsafe { transaction_out.as_mut() } {
+        t
+    } else {
+        return RecoveringResult::PtrIsNull;
+    };
+    let transaction_size = if let Some(t) = unsafe { transaction_size.as_mut() } {
+        t
+    } else {
+        return RecoveringResult::PtrIsNull;
+    };
+
+    if let Some(t) = conversion.transactions.get(index) {
+        *transaction_out = t.as_ref().as_ptr();
+        *transaction_size = t.as_ref().len();
+        RecoveringResult::Success
+    } else {
+        RecoveringResult::IndexOutOfBound
+    }
+}
+
+/// get the total value ignored in the conversion
+///
+/// value_out: will returns the total value lost into dust inputs
+/// ignored_out: will returns the number of dust utxos
+///
+/// these returned values are informational only and this show that
+/// there are UTxOs entries that are unusable because of the way they
+/// are populated with dusts.
+pub extern "C" fn iohk_jormungandr_wallet_convert_ignored_value(
+    conversion: ConversionPtr,
+    value_out: *mut u64,
+    ignored_out: *mut usize,
+) -> RecoveringResult {
+    if let Some(c) = unsafe { conversion.as_ref() } {
+        let v = *c
+            .ignored
+            .iter()
+            .map(|i: &Input| i.value())
+            .sum::<Value>()
+            .as_ref();
+        let l = c.ignored.len();
+
+        if let Some(value_out) = unsafe { value_out.as_mut() } {
+            *value_out = v
+        }
+        if let Some(ignored_out) = unsafe { ignored_out.as_mut() } {
+            *ignored_out = l
+        };
+
+        RecoveringResult::Success
+    } else {
+        RecoveringResult::PtrIsNull
+    }
+}
+
 /// get the total value in the wallet
 ///
 /// make sure to call `retrieve_funds` prior to calling this function
@@ -233,6 +383,16 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr)
 pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
     if !wallet.is_null() {
         let boxed = unsafe { Box::from_raw(wallet) };
+
+        std::mem::drop(boxed);
+    }
+}
+
+/// delete the pointer
+#[no_mangle]
+pub extern "C" fn iohk_jormungandr_wallet_delete_conversion(conversion: ConversionPtr) {
+    if !conversion.is_null() {
+        let boxed = unsafe { Box::from_raw(conversion) };
 
         std::mem::drop(boxed);
     }

@@ -107,7 +107,7 @@ impl RecoveringIcarus {
 
     fn populate_first_account(&mut self) {
         let account_id = HardDerivation::min_value();
-        let account = self.wallet.create_account(account_id).clone();
+        let account = self.wallet.create_account(account_id);
 
         let account = RecoveringAccount::new(account_id, account);
         self.accounts.push(account);
@@ -121,7 +121,7 @@ impl RecoveringIcarus {
             .id;
 
         if let Some(id) = last_id.checked_add(1) {
-            let account = self.wallet.create_account(id).clone();
+            let account = self.wallet.create_account(id);
             let account = RecoveringAccount::new(id, account);
             self.accounts.push(account);
         } else {
@@ -161,7 +161,7 @@ impl RecoveringIcarus {
             if let Fragment::OldUtxoDeclaration(utxos) = fragment {
                 for (output_index, (address, value)) in utxos.addrs.iter().enumerate() {
                     let pointer = UtxoPointer {
-                        transaction_id: fragment_id.clone(),
+                        transaction_id: fragment_id,
                         output_index: output_index as u8,
                         value: *value,
                     };

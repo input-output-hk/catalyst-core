@@ -3,6 +3,7 @@
 mod daedalus;
 mod dump;
 mod icarus;
+mod paperwallet;
 
 use crate::{keygen, Password, Wallet};
 use chain_path_derivation::{
@@ -34,6 +35,20 @@ pub struct RecoveryBuilder {
 impl RecoveryBuilder {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// instead of recovering from mnemonics, here we recover from the Daedalus paperwallet
+    ///
+    pub fn paperwallet(
+        self,
+        password: impl AsRef<[u8]>,
+        input: impl AsRef<[u8]>,
+    ) -> Result<Self, bip39::Error> {
+        let entropy = paperwallet::unscramble(password.as_ref(), input.as_ref());
+
+        let entropy = bip39::Entropy::from_slice(&entropy)?;
+
+        Ok(self.entropy(entropy))
     }
 
     pub fn mnemonics<D>(self, dic: &D, mnemonics: impl AsRef<str>) -> Result<Self, bip39::Error>

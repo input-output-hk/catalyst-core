@@ -3,6 +3,7 @@
 mod daedalus;
 mod dump;
 mod icarus;
+mod paperwallet;
 
 use crate::{keygen, Password, Wallet};
 use chain_path_derivation::{
@@ -36,6 +37,20 @@ impl RecoveryBuilder {
         Self::default()
     }
 
+    /// instead of recovering from mnemonics, here we recover from the Daedalus paperwallet
+    ///
+    pub fn paperwallet(
+        self,
+        password: impl AsRef<[u8]>,
+        input: impl AsRef<[u8]>,
+    ) -> Result<Self, bip39::Error> {
+        let entropy = paperwallet::unscramble(password.as_ref(), input.as_ref());
+
+        let entropy = bip39::Entropy::from_slice(&entropy)?;
+
+        Ok(self.entropy(entropy))
+    }
+
     pub fn mnemonics<D>(self, dic: &D, mnemonics: impl AsRef<str>) -> Result<Self, bip39::Error>
     where
         D: bip39::dictionary::Language,
@@ -43,10 +58,7 @@ impl RecoveryBuilder {
         let mnemonics = bip39::Mnemonics::from_string(dic, mnemonics.as_ref())?;
         let entropy = bip39::Entropy::from_mnemonics(&mnemonics)?;
 
-        Ok(Self {
-            entropy: Some(entropy),
-            ..self
-        })
+        Ok(self.entropy(entropy))
     }
 
     pub fn entropy(self, entropy: bip39::Entropy) -> Self {
@@ -162,8 +174,7 @@ fn from_bip39_entropy(
     keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
     let xprv = XPrv::normalize_bytes_force3rd(seed);
 
-    let key = Key::new_unchecked(xprv, Default::default(), derivation_scheme);
-    key
+    Key::new_unchecked(xprv, Default::default(), derivation_scheme)
 }
 
 /// for some unknown design reasons Daedalus seeds are encoded in cbor

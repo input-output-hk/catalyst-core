@@ -14,7 +14,7 @@ impl Settings {
         let ledger = Ledger::new(header_id, block.contents.iter())?;
 
         let static_parameters = ledger.get_static_parameters().clone();
-        let parameters = ledger.get_ledger_parameters().clone();
+        let parameters = ledger.get_ledger_parameters();
 
         Ok(Self {
             static_parameters,

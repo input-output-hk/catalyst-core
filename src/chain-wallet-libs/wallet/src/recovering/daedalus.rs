@@ -46,7 +46,7 @@ impl RecoveringDaedalus {
             if let Fragment::OldUtxoDeclaration(utxos) = fragment {
                 for (output_index, (address, value)) in utxos.addrs.iter().enumerate() {
                     let pointer = UtxoPointer {
-                        transaction_id: fragment_id.clone(),
+                        transaction_id: fragment_id,
                         output_index: output_index as u8,
                         value: *value,
                     };

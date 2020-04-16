@@ -30,9 +30,8 @@ impl Wallet {
     /// You can also use this function to recover a wallet even after you have
     /// transferred all the funds to the new format (see the _convert_ function)
     ///
-    ///
     /// the mnemonics should be in english
-    pub fn recover(mnemonics: &str, password: &str) -> Result<Wallet, JsValue> {
+    pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Wallet, JsValue> {
         let builder = wallet::RecoveryBuilder::new();
         // TODO: recover from more languages?
         let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics)

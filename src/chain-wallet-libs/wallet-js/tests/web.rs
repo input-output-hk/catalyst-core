@@ -15,7 +15,7 @@ const WALLET_VALUE: u64 = 1000000 + 10000 + 10000 + 1 + 100;
 ///
 #[wasm_bindgen_test]
 fn yoroi1() {
-    let mut wallet = Wallet::recover("neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone", "").expect("couldn't recover wallet fully");
+    let mut wallet = Wallet::recover("neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone", &[]).expect("couldn't recover wallet fully");
     let _settings = wallet.retrieve_funds(BLOCK0).unwrap();
     assert_eq!(wallet.total_value(), WALLET_VALUE);
 }

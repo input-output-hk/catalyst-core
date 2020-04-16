@@ -2,6 +2,7 @@ mod blockchain;
 mod keygen;
 mod password;
 mod recovering;
+mod transaction;
 
 pub use self::{
     blockchain::Settings,

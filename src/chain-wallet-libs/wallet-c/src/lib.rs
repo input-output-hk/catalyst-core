@@ -250,6 +250,7 @@ pub extern "C" fn iohk_jormungandr_wallet_convert(
 }
 
 /// get the number of transactions built to convert the retrieved wallet
+#[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
     conversion: ConversionPtr,
 ) -> usize {
@@ -267,6 +268,7 @@ pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
 ///
 /// the memory allocated returned is not owned and should not be kept
 /// for longer than potential call to `iohk_jormungandr_wallet_delete_conversion`
+#[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
     conversion: ConversionPtr,
     index: usize,
@@ -306,7 +308,8 @@ pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
 /// these returned values are informational only and this show that
 /// there are UTxOs entries that are unusable because of the way they
 /// are populated with dusts.
-pub extern "C" fn iohk_jormungandr_wallet_convert_ignored_value(
+#[no_mangle]
+pub extern "C" fn iohk_jormungandr_wallet_convert_ignored(
     conversion: ConversionPtr,
     value_out: *mut u64,
     ignored_out: *mut usize,

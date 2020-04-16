@@ -13,17 +13,15 @@ prost = "0.6"
 thiserror = "1.0"
 
 [dependencies.tonic]
-version = "0.1"
+version = "0.2"
 default-features = false
-features = ["codegen", "transport"]
-# The "transport" feature has to be enabled unconditionally
-# due to https://github.com/hyperium/tonic/issues/281
+features = ["codegen"]
 
 [build-dependencies.tonic-build]
-version = "0.1"
+version = "0.2"
 default-features = false
-features = ["rustfmt"]
+features = ["prost", "rustfmt"]
 
 [features]
 default = ["transport"]
-transport = ["tonic-build/transport"]
+transport = ["tonic/transport", "tonic-build/transport"]

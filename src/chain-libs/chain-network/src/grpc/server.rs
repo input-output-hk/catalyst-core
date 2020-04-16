@@ -18,6 +18,10 @@ impl<T> NodeService<T>
 where
     T: Node,
 {
+    pub fn new(inner: T) -> Self {
+        NodeService { inner }
+    }
+
     fn block_service(&self) -> Result<&T::BlockService, Status> {
         self.inner
             .block_service()

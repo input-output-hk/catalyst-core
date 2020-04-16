@@ -76,3 +76,21 @@ jobs:
         with:
           command: clippy
           args: -- -D warnings
+
+  test-wasm:
+    name: Wasm-pack test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Install wasm pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Test in chrome
+        run: wasm-pack test --headless --chrome wallet-js
+
+      - name: Test in firefox
+        run: wasm-pack test --headless --firefox wallet-js

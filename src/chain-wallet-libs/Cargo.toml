@@ -5,6 +5,7 @@ members = [
     "hdkeygen",
     "wallet",
     "wallet-c",
+    "wallet-js",
 ]
 
 exclude = [

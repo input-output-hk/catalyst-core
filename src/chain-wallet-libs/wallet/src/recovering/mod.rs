@@ -1,7 +1,6 @@
 //! module for all the recovering mechanism around the cardano blockchains
 
 mod daedalus;
-mod dump;
 mod icarus;
 mod paperwallet;
 
@@ -15,7 +14,7 @@ use ed25519_bip32::{self, DerivationScheme, XPrv, XPRV_SIZE};
 use hdkeygen::Key;
 use thiserror::Error;
 
-pub use self::{daedalus::RecoveringDaedalus, dump::Dump, icarus::RecoveringIcarus};
+pub use self::{daedalus::RecoveringDaedalus, icarus::RecoveringIcarus};
 
 #[derive(Debug, Error)]
 pub enum RecoveryError {

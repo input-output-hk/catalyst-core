@@ -1,4 +1,4 @@
-use crate::{recovering::Dump, transaction::WitnessBuilder};
+use crate::transaction::{Dump, WitnessBuilder};
 use chain_impl_mockchain::{
     fragment::Fragment,
     legacy::OldAddress,

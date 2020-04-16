@@ -177,8 +177,7 @@ fn from_bip39_entropy(
     keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
     let xprv = XPrv::normalize_bytes_force3rd(seed);
 
-    let key = Key::new_unchecked(xprv, Default::default(), derivation_scheme);
-    key
+    Key::new_unchecked(xprv, Default::default(), derivation_scheme)
 }
 
 /// for some unknown design reasons Daedalus seeds are encoded in cbor

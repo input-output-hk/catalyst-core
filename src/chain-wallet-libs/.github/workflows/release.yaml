@@ -118,3 +118,43 @@ jobs:
           tag: ${{ github.ref }}
           file_glob: true
           overwrite: true
+
+  release_wasm:
+    name: Release wasm assets
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [nodejs, web]
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Install wasm pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: build
+        run: wasm-pack build --release --target ${{ matrix.target }} wallet-js
+
+      - name: pack
+        run: wasm-pack pack ./wallet-js
+
+      - name: Get tag version
+        id: get_version
+        run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
+        shell: bash
+
+      - name: rename-tarball
+        run: find ./wallet-js/pkg -name wallet-js*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.*
+          asset_name: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
+          tag: ${{ github.ref }}
+          file_glob: true
+          overwrite: true

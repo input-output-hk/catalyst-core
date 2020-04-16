@@ -58,10 +58,7 @@ impl RecoveryBuilder {
         let mnemonics = bip39::Mnemonics::from_string(dic, mnemonics.as_ref())?;
         let entropy = bip39::Entropy::from_mnemonics(&mnemonics)?;
 
-        Ok(Self {
-            entropy: Some(entropy),
-            ..self
-        })
+        Ok(self.entropy(entropy))
     }
 
     pub fn entropy(self, entropy: bip39::Entropy) -> Self {

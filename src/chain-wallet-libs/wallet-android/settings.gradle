@@ -1,0 +1,2 @@
+rootProject.name='JormungandrWallet'
+include ':app'

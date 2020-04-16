@@ -4,6 +4,12 @@ version = "0.2.0"
 authors = ["Enzo Cioppettini <ecioppettini@atixlabs.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/input-output-hk/chain-wallet-libs"
+description = """Wallet functionalities to interact with Jörmungandr
+
+This package profiles all that is needed to have an healthy and secure
+interaction with Jörmungandr blockchain technology.
+"""
 
 [lib]
 crate-type = ["cdylib", "rlib"]

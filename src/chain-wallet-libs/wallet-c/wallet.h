@@ -37,11 +37,17 @@ enum RecoveringResult
    */
   RecoveringResult_InvalidBlockFormat,
   /**
+   * index is out of bound
+   */
+  RecoveringResult_IndexOutOfBound,
+  /**
    * a pointer was null where it was expected it to be non null
    */
   RecoveringResult_PtrIsNull,
 };
 typedef uint8_t RecoveringResult;
+
+typedef struct Conversion Conversion;
 
 /**
  * the blockchain settings
@@ -69,9 +75,63 @@ typedef struct Settings Settings;
  */
 typedef struct Wallet Wallet;
 
+typedef Wallet *WalletPtr;
+
 typedef Settings *SettingsPtr;
 
-typedef Wallet *WalletPtr;
+typedef Conversion *ConversionPtr;
+
+/**
+ * once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
+ * it is possible to convert all existing funds to the new wallet.
+ *
+ * The returned arrays are transactions to send to the network in order to do the
+ * funds conversion.
+ *
+ * Don't forget to call `iohk_jormungandr_wallet_delete_conversion` to
+ * properly free the memory
+ *
+ */
+RecoveringResult iohk_jormungandr_wallet_convert(WalletPtr wallet,
+                                                 SettingsPtr settings,
+                                                 ConversionPtr *conversion_out);
+
+/**
+ * get the total value ignored in the conversion
+ *
+ * value_out: will returns the total value lost into dust inputs
+ * ignored_out: will returns the number of dust utxos
+ *
+ * these returned values are informational only and this show that
+ * there are UTxOs entries that are unusable because of the way they
+ * are populated with dusts.
+ */
+RecoveringResult iohk_jormungandr_wallet_convert_ignored(ConversionPtr conversion,
+                                                         uint64_t *value_out,
+                                                         uintptr_t *ignored_out);
+
+/**
+ * retrieve the index-nth transactions in the conversions starting from 0
+ * and finishing at `size-1` where size is retrieved from
+ * `iohk_jormungandr_wallet_convert_transactions_size`.
+ *
+ * the memory allocated returned is not owned and should not be kept
+ * for longer than potential call to `iohk_jormungandr_wallet_delete_conversion`
+ */
+RecoveringResult iohk_jormungandr_wallet_convert_transactions_get(ConversionPtr conversion,
+                                                                  uintptr_t index,
+                                                                  const uint8_t **transaction_out,
+                                                                  uintptr_t *transaction_size);
+
+/**
+ * get the number of transactions built to convert the retrieved wallet
+ */
+uintptr_t iohk_jormungandr_wallet_convert_transactions_size(ConversionPtr conversion);
+
+/**
+ * delete the pointer
+ */
+void iohk_jormungandr_wallet_delete_conversion(ConversionPtr conversion);
 
 /**
  * delete the pointer and free the allocated memory

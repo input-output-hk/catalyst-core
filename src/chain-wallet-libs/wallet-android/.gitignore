@@ -12,3 +12,8 @@
 /captures
 .externalNativeBuild
 .cxx
+app/src/main/cpp/vendors/aarch64-linux-android/
+app/src/main/cpp/vendors/arm-linux-androideabi/
+app/src/main/cpp/vendors/armv7-linux-androideabi/
+app/src/main/cpp/vendors/i686-linux-android/
+app/src/main/cpp/vendors/x86_64-linux-android/

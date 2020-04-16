@@ -1,6 +1,9 @@
 mod utils;
 
-use chain_impl_mockchain::block::Block;
+use chain_impl_mockchain::{
+    block::Block,
+    transaction::{Input, NoExtra, Transaction},
+};
 use chain_ser::mempack::Readable;
 use wasm_bindgen::prelude::*;
 
@@ -19,6 +22,12 @@ pub struct Wallet {
 
 #[wasm_bindgen]
 pub struct Settings(wallet::Settings);
+
+#[wasm_bindgen]
+pub struct Conversion {
+    transactions: Vec<Transaction<NoExtra>>,
+    ignored: Vec<Input>,
+}
 
 #[wasm_bindgen]
 impl Wallet {
@@ -68,6 +77,25 @@ impl Wallet {
         })
     }
 
+    pub fn convert(&mut self, settings: &Settings) -> Conversion {
+        let mut dump = wallet::transaction::Dump::new(
+            settings.0.clone(),
+            self.account
+                .account_id()
+                .address(chain_addr::Discrimination::Production),
+        );
+
+        self.icarus.dump_in(&mut dump);
+        self.daedalus.dump_in(&mut dump);
+
+        let (ignored, transactions) = dump.finalize();
+
+        Conversion {
+            transactions,
+            ignored,
+        }
+    }
+
     /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
     /// any other blocks).
     ///
@@ -103,5 +131,41 @@ impl Wallet {
             .value_total()
             .saturating_add(self.daedalus.value_total())
             .0
+    }
+}
+
+#[wasm_bindgen]
+impl Conversion {
+    /// retrieve the total number of ignored UTxOs in the conversion
+    /// transactions
+    ///
+    /// this is the number of utxos that are not included in the conversions
+    /// because it is more expensive to use them than to ignore them. This is
+    /// called dust.
+    pub fn num_ignored(&self) -> usize {
+        self.ignored.len()
+    }
+
+    /// retrieve the total value lost in dust utxos
+    ///
+    /// this is the total value of all the ignored UTxOs because
+    /// they are too expensive to use in any transactions.
+    ///
+    /// I.e. their individual fee to add as an input is higher
+    /// than the value they individually holds
+    pub fn total_value_ignored(&self) -> u64 {
+        self.ignored
+            .iter()
+            .map(|i| *i.value().as_ref())
+            .sum::<u64>()
+    }
+
+    /// the number of transactions built for the conversion
+    pub fn transactions_len(&self) -> usize {
+        self.transactions.len()
+    }
+
+    pub fn transactions_get(&self, index: usize) -> Option<Vec<u8>> {
+        self.transactions.get(index).map(|t| t.as_ref().to_owned())
     }
 }

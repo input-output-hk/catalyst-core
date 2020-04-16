@@ -2,11 +2,12 @@ mod blockchain;
 mod keygen;
 mod password;
 mod recovering;
+pub mod transaction;
 
 pub use self::{
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
-    recovering::{Dump, RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
+    recovering::{RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
 };
 use hdkeygen::account::{Account, AccountId};
 

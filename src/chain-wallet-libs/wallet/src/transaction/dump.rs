@@ -1,19 +1,10 @@
-use crate::Settings;
+use crate::{transaction::WitnessBuilder, Settings};
 use chain_addr::Address;
-use chain_crypto::{PublicKey, Signature};
 use chain_impl_mockchain::{
-    chaintypes::HeaderId,
     fee::FeeAlgorithm as _,
-    transaction::{
-        Input, NoExtra, Output, Transaction, TransactionSignDataHash, TxBuilderState, Witness,
-    },
+    transaction::{Input, NoExtra, Output, Transaction, TxBuilderState},
     value::Value,
 };
-use ed25519_bip32::XPrv;
-
-pub(crate) enum WitnessBuilder {
-    OldUtxo { xprv: XPrv },
-}
 
 /// Dump all the values into transactions to fill one address
 pub struct Dump {
@@ -23,28 +14,6 @@ pub struct Dump {
     witness_builders: Vec<WitnessBuilder>,
     outputs: Vec<Transaction<NoExtra>>,
     ignored: Vec<Input>,
-}
-
-impl WitnessBuilder {
-    fn mk_witness(&self, block0: &HeaderId, sign_data_hash: &TransactionSignDataHash) -> Witness {
-        match self {
-            Self::OldUtxo { xprv } => {
-                let some_bytes = xprv.chain_code();
-                let pk = PublicKey::from_binary(&xprv.public().public_key())
-                    .expect("cannot have an invalid public key here");
-                Witness::new_old_utxo(
-                    block0,
-                    sign_data_hash,
-                    |data| {
-                        let sig = Signature::from_binary(xprv.sign::<()>(data.as_ref()).to_bytes())
-                            .expect("cannot have invalid signature here");
-                        (pk, sig)
-                    },
-                    &some_bytes,
-                )
-            }
-        }
-    }
 }
 
 impl Dump {

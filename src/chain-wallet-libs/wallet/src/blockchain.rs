@@ -3,6 +3,7 @@ use chain_impl_mockchain::{
     ledger::{Error, Ledger, LedgerParameters, LedgerStaticParameters},
 };
 
+#[derive(Clone)]
 pub struct Settings {
     pub static_parameters: LedgerStaticParameters,
     pub parameters: LedgerParameters,

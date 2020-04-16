@@ -1,7 +1,6 @@
 use crate::{
     accounting::account::{DelegationRatio, DelegationType},
-    certificate::Certificate,
-    certificate::PoolId,
+    certificate::{Certificate, PoolId, PoolUpdate},
     fee::LinearFee,
     fragment::Fragment,
     key::Hash,
@@ -9,8 +8,8 @@ use crate::{
         builders::{
             build_no_stake_delegation, build_owner_stake_delegation,
             build_owner_stake_full_delegation, build_stake_delegation_cert,
-            build_stake_pool_registration_cert, build_stake_pool_retirement_cert, TestTxBuilder,
-            TestTxCertBuilder,
+            build_stake_pool_registration_cert, build_stake_pool_retirement_cert,
+            build_stake_pool_update_cert, TestTxBuilder, TestTxCertBuilder,
         },
         data::{StakePool, Wallet},
         ledger::TestLedger,
@@ -95,6 +94,21 @@ impl FragmentFactory {
 
     pub fn stake_pool_retire(&self, owners: &[&Wallet], stake_pool: &StakePool) -> Fragment {
         let certificate = build_stake_pool_retirement_cert(stake_pool.id(), 0);
+        self.transaction_with_cert(&owners, certificate)
+    }
+
+    pub fn stake_pool_update(
+        &self,
+        owners: Vec<&Wallet>,
+        stake_pool: &StakePool,
+        update: StakePool,
+    ) -> Fragment {
+        let pool_update = PoolUpdate {
+            pool_id: stake_pool.id(),
+            last_pool_reg_hash: stake_pool.info().to_id(),
+            new_pool_reg: update.info(),
+        };
+        let certificate = build_stake_pool_update_cert(&pool_update);
         self.transaction_with_cert(&owners, certificate)
     }
 

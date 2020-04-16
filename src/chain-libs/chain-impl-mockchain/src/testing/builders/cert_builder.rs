@@ -1,7 +1,7 @@
 use crate::{
     account::{DelegationType, Identifier},
     certificate::{
-        Certificate, OwnerStakeDelegation, PoolId, PoolRegistration, PoolRetirement,
+        Certificate, OwnerStakeDelegation, PoolId, PoolRegistration, PoolRetirement, PoolUpdate,
         StakeDelegation,
     },
     testing::data::AddressData,
@@ -24,6 +24,10 @@ pub fn build_stake_delegation_cert(
 
 pub fn build_stake_pool_registration_cert(stake_pool: &PoolRegistration) -> Certificate {
     Certificate::PoolRegistration(stake_pool.clone())
+}
+
+pub fn build_stake_pool_update_cert(stake_pool: &PoolUpdate) -> Certificate {
+    Certificate::PoolUpdate(stake_pool.clone())
 }
 
 pub fn build_owner_stake_full_delegation(stake_pool: PoolId) -> Certificate {

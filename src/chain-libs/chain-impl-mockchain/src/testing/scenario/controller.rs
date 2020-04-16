@@ -170,6 +170,19 @@ impl Controller {
         let fragment = self.fragment_factory.stake_pool_retire(owners, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
+
+    pub fn update(
+        &self,
+        stake_pool: &StakePool,
+        update: StakePool,
+        owners: Vec<&Wallet>,
+        test_ledger: &mut TestLedger,
+    ) -> Result<(), LedgerError> {
+        let fragment = self
+            .fragment_factory
+            .stake_pool_update(owners, stake_pool, update);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
+    }
 }
 
 #[cfg(test)]

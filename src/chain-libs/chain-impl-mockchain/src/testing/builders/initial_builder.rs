@@ -1,5 +1,5 @@
 use crate::{
-    certificate::Certificate,
+    certificate::{Certificate, PoolUpdate},
     fragment::Fragment,
     key::EitherEd25519SecretKey,
     testing::{
@@ -9,6 +9,20 @@ use crate::{
     transaction::*,
 };
 use std::vec::Vec;
+
+///Below method should be used only for negative testing
+pub fn create_initial_stake_pool_update(
+    stake_pool_update: &PoolUpdate,
+    owners: &[Wallet],
+) -> Fragment {
+    let cert = build_stake_pool_update_cert(&stake_pool_update);
+    let keys: Vec<EitherEd25519SecretKey> = owners
+        .iter()
+        .cloned()
+        .map(|owner| owner.private_key())
+        .collect();
+    fragment(cert, keys)
+}
 
 pub fn create_initial_stake_pool_registration(
     stake_pool: &StakePool,
@@ -59,6 +73,12 @@ fn fragment(cert: Certificate, keys: Vec<EitherEd25519SecretKey>) -> Fragment {
             let signature = pool_owner_sign(&keys, &builder);
             let tx = builder.set_payload_auth(&signature);
             Fragment::PoolRegistration(tx)
+        }
+        Certificate::PoolUpdate(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s));
+            let signature = pool_owner_sign(&keys, &builder);
+            let tx = builder.set_payload_auth(&signature);
+            Fragment::PoolUpdate(tx)
         }
         _ => unreachable!(),
     }

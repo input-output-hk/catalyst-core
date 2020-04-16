@@ -16,6 +16,16 @@ const WALLET_VALUE: u64 = 1000000 + 10000 + 10000 + 1 + 100;
 #[wasm_bindgen_test]
 fn yoroi1() {
     let mut wallet = Wallet::recover("neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone", &[]).expect("couldn't recover wallet fully");
-    let _settings = wallet.retrieve_funds(BLOCK0).unwrap();
+    let settings = wallet.retrieve_funds(BLOCK0).unwrap();
     assert_eq!(wallet.total_value(), WALLET_VALUE);
+
+    let conversion = wallet.convert(&settings);
+
+    assert_eq!(conversion.num_ignored(), 1);
+    assert_eq!(conversion.total_value_ignored(), 1);
+    assert_eq!(conversion.transactions_len(), 1);
+
+    let transaction_bytes = conversion
+        .transactions_get(0)
+        .expect("to get the only transaction present in the conversion");
 }

@@ -47,6 +47,49 @@ pub fn unscramble(password: &[u8], input: &[u8]) -> Vec<u8> {
     out
 }
 
+const PAPERWALLET_CERTIFICATE_MNEMONIC_LENGTH: usize = 27;
+const SCRAMBLED_INPUT_WORD_COUNT: usize = 18;
+
+struct InputPassphrase<'a> {
+    input: &'a str,
+    passphrase: &'a str,
+}
+
+// helper function for get_scrambled_input
+fn split_scrambled_input_passphrase(mnemonics: &str) -> Option<InputPassphrase> {
+    use bip39::dictionary::Language;
+    let dic = bip39::dictionary::ENGLISH;
+
+    if mnemonics.split(dic.separator()).count() == PAPERWALLET_CERTIFICATE_MNEMONIC_LENGTH {
+        let scrambled_input_end_position = mnemonics
+            .match_indices(dic.separator())
+            .nth(SCRAMBLED_INPUT_WORD_COUNT - 1)
+            .map(|(idx, _sep)| idx)
+            .unwrap();
+
+        Some(InputPassphrase {
+            input: &mnemonics[..scrambled_input_end_position],
+            passphrase: &mnemonics[scrambled_input_end_position + 1..],
+        })
+    } else {
+        None
+    }
+}
+
+pub fn get_scrambled_input(
+    mnemonics: &str,
+) -> Result<Option<(bip39::Entropy, &str)>, bip39::Error> {
+    let InputPassphrase { input, passphrase } = match split_scrambled_input_passphrase(mnemonics) {
+        Some(input_passphrase) => input_passphrase,
+        None => return Ok(None),
+    };
+    let dic = bip39::dictionary::ENGLISH;
+    let mnemonics = bip39::Mnemonics::from_string(&dic, input)?;
+    let entropy = bip39::Entropy::from_mnemonics(&mnemonics)?;
+
+    Ok(Some((entropy, passphrase)))
+}
+
 #[cfg(test)]
 mod tests {
     //use paperwallet::{scramble,unscramble};

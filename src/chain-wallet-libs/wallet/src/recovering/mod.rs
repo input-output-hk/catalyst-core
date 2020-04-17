@@ -14,7 +14,9 @@ use ed25519_bip32::{self, DerivationScheme, XPrv, XPRV_SIZE};
 use hdkeygen::Key;
 use thiserror::Error;
 
-pub use self::{daedalus::RecoveringDaedalus, icarus::RecoveringIcarus};
+pub use self::{
+    daedalus::RecoveringDaedalus, icarus::RecoveringIcarus, paperwallet::get_scrambled_input,
+};
 
 #[derive(Debug, Error)]
 pub enum RecoveryError {

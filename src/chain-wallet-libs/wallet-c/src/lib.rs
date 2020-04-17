@@ -99,15 +99,28 @@ pub extern "C" fn iohk_jormungandr_wallet_recover(
     let mnemonics = mnemonics.to_string_lossy();
 
     let builder = wallet::RecoveryBuilder::new();
-    let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics) {
-        builder
-    } else {
-        return RecoveringResult::InvalidMnemonics;
+
+    let paperwallet: Option<(bip39::Entropy, &str)> = match wallet::get_scrambled_input(&mnemonics)
+    {
+        Ok(paperwallet_builder) => paperwallet_builder,
+        Err(_) => return RecoveringResult::InvalidMnemonics,
     };
-    let builder = if !password.is_null() && password_length > 0 {
-        todo!()
-    } else {
-        builder
+
+    let builder = match paperwallet {
+        Some((entropy, pass)) => match builder.paperwallet(pass, entropy) {
+            Ok(builder) => builder,
+            Err(_) => return RecoveringResult::InvalidMnemonics,
+        },
+        None => {
+            if !password.is_null() && password_length == 0 {
+                match builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics) {
+                    Ok(builder) => builder,
+                    Err(_) => return RecoveringResult::InvalidMnemonics,
+                }
+            } else {
+                todo!()
+            }
+        }
     };
 
     // calling this function cannot fail, we already

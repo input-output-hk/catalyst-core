@@ -7,7 +7,9 @@ pub mod transaction;
 pub use self::{
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
-    recovering::{RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
+    recovering::{
+        get_scrambled_input, RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError,
+    },
 };
 use hdkeygen::account::{Account, AccountId};
 

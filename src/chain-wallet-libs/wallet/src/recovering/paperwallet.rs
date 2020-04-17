@@ -78,7 +78,7 @@ fn split_scrambled_input_passphrase(mnemonics: &str) -> Option<InputPassphrase> 
 
 pub fn get_scrambled_input(
     mnemonics: &str,
-) -> Result<Option<(bip39::Entropy, &str)>, bip39::Error> {
+) -> Result<Option<(&str, bip39::Entropy)>, bip39::Error> {
     let InputPassphrase { input, passphrase } = match split_scrambled_input_passphrase(mnemonics) {
         Some(input_passphrase) => input_passphrase,
         None => return Ok(None),
@@ -87,7 +87,7 @@ pub fn get_scrambled_input(
     let mnemonics = bip39::Mnemonics::from_string(&dic, input)?;
     let entropy = bip39::Entropy::from_mnemonics(&mnemonics)?;
 
-    Ok(Some((entropy, passphrase)))
+    Ok(Some((passphrase, entropy)))
 }
 
 #[cfg(test)]

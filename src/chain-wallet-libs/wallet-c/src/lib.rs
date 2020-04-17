@@ -100,14 +100,14 @@ pub extern "C" fn iohk_jormungandr_wallet_recover(
 
     let builder = wallet::RecoveryBuilder::new();
 
-    let paperwallet: Option<(bip39::Entropy, &str)> = match wallet::get_scrambled_input(&mnemonics)
+    let paperwallet: Option<(&str, bip39::Entropy)> = match wallet::get_scrambled_input(&mnemonics)
     {
         Ok(paperwallet_builder) => paperwallet_builder,
         Err(_) => return RecoveringResult::InvalidMnemonics,
     };
 
     let builder = match paperwallet {
-        Some((entropy, pass)) => match builder.paperwallet(pass, entropy) {
+        Some((pass, entropy)) => match builder.paperwallet(pass, entropy) {
             Ok(builder) => builder,
             Err(_) => return RecoveringResult::InvalidMnemonics,
         },

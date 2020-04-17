@@ -50,7 +50,7 @@ impl Wallet {
             };
 
         let builder = match paperwallet {
-            Some((entropy, pass)) => match builder.paperwallet(pass, entropy) {
+            Some((pass, entropy)) => match builder.paperwallet(pass, entropy) {
                 Ok(builder) => builder,
                 Err(_) => return Err(JsValue::from("invalid mnemonics")),
             },

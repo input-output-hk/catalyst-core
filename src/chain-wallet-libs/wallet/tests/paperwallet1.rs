@@ -7,7 +7,7 @@ use std::str::FromStr;
 const MNEMONICS: &'static str = "town lift more follow chronic lunch weird uniform earth census proof cave gap fancy topic year leader phrase state circle cloth reward dish survey act punch bounce";
 #[test]
 fn restore_daedalus_paperwallet() {
-    let (entropy, pass) = get_scrambled_input(MNEMONICS)
+    let (pass, entropy) = get_scrambled_input(MNEMONICS)
         .expect("invalid mnemonics")
         .expect("words should be 27");
 

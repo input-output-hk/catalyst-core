@@ -197,10 +197,8 @@ fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
         sk.clone_from_slice(&block.as_ref()[0..32]);
         let mut cc = [0; 32];
         cc.clone_from_slice(&block.as_ref()[32..64]);
-        let xprv = XPrv::from_nonextended_force(&sk, &cc);
 
-        // check if we find a good candidate
-        if xprv.as_ref()[31] & 0x20 == 0 {
+        if let Ok(xprv) = XPrv::from_nonextended_noforce(&sk, &cc) {
             return xprv;
         }
 

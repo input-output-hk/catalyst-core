@@ -171,14 +171,6 @@ impl HDKey {
     }
 
     pub fn decrypt(&self, input: &[u8]) -> Result<Vec<u8>, Error> {
-        // REMOVE the first 2 CBOR tag of the HD Payload...
-        //        Because the payload is CBOR encoded in CBOR encoded in a CBOR address...
-        //        it's monadic... don't ask...
-        let input = if input[0] == 0x54 {
-            &input[1..]
-        } else {
-            &input[2..]
-        };
         if input.len() <= TAG_LEN {
             return Err(Error::NotEnoughEncryptedData);
         };

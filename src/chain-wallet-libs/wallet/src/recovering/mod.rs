@@ -205,3 +205,54 @@ fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
         iter += 1;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const MNEMONICS1: &str =
+        "place help owner giggle record office lucky high canyon own spring cluster";
+    const ADDRESSES1: &[&str] = &[
+        "DdzFFzCqrhst7qSjx1nyxfEvT6fxCZkxVceFFozqvXSNkJKCwdJdmFMZSiCthoCvB5DhLhfzXJjM9S4hJqVxUdhigXY6RAd5YtCqvAbJ",
+        "DdzFFzCqrhtAnjNJMRwyTvp6cAjM7sLD1w3WL4cNaXZCBF4iuxbX1MqkCxUebcPTbXpS2XnhzbCRfTWXrZn17rw1a5zBecfzxyCdUhMT",
+        "DdzFFzCqrhsxA9zhQvw3GPiy8avZzHfF22ydzYeVrZKoYxJUrK6Fm5V4psDzErvrFSW84aW6XC9ZrLNFNob4yZz89vh2r5y5BLYC6zTp",
+    ];
+
+    const MNEMONICS2: &str =
+        "edge club wrap where juice nephew whip entry cover bullet cause jeans";
+    const ADDRESSES2: &[&str] = &[
+        "sxtitePxjp5r4GxbM6EtS1EEe45zGoR4XDYnXYb9MuoE1HnoqDtKpRpdx4WjayaR72p2MKHFExAyDL89mJMoJ22WQR",
+        "sxtitePxjp5WJkHH5L6YWA5ZTRc8yEpLd9NYu3rMAFrVzfzWjAtkRPZ8UZHYzDjsigGijsFJ2iB6PFDvWdRYfCra66",
+        "sxtitePxjp5txDrVJU8cqwjDkAqx5odRt7kpMzVyXUQmEZL7wCA5fs29MJLCdux1Uz41xX1KTG5vqCHHXegidwnfFL",
+    ];
+
+    #[test]
+    fn recover_daedalus1() {
+        let wallet = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS1)
+            .unwrap()
+            .build_daedalus()
+            .unwrap();
+
+        for address in ADDRESSES1 {
+            use std::str::FromStr as _;
+            let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
+            wallet.check_address(&addr);
+        }
+    }
+
+    #[test]
+    fn recover_daedalus2() {
+        let wallet = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS2)
+            .unwrap()
+            .build_daedalus()
+            .unwrap();
+
+        for address in ADDRESSES2 {
+            use std::str::FromStr as _;
+            let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
+            wallet.check_address(&addr);
+        }
+    }
+}

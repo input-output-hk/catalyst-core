@@ -57,6 +57,10 @@ impl RecoveringDaedalus {
         }
     }
 
+    pub fn check_address(&self, address: &OldAddress) -> bool {
+        self.address_recovering.check_address(address).is_some()
+    }
+
     pub fn check(&mut self, pointer: UtxoPointer, address: &OldAddress) {
         if let Some(derivation_path) = self.address_recovering.check_address(address) {
             self.value_total = self.value_total.saturating_add(pointer.value);

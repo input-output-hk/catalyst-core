@@ -79,9 +79,10 @@ impl cbor_event::se::Serialize for Attributes {
         let serializer = serializer.write_map(cbor_event::Len::Len(len))?;
         let serializer = match &self.derivation_path {
             &None => serializer,
-            &Some(ref dp) => serializer
-                .write_unsigned_integer(ATTRIBUTE_NAME_TAG_DERIVATION)?
-                .write_bytes(&dp)?,
+            &Some(ref dp) => {
+                let s = serializer.write_unsigned_integer(ATTRIBUTE_NAME_TAG_DERIVATION)?;
+                cbor_event::se::serialize_cbor_in_cbor(dp.as_slice(), s)?
+            }
         };
         let serializer = match &self.network_magic {
             &None => serializer,
@@ -109,7 +110,12 @@ impl cbor_event::de::Deserialize for Attributes {
         while len > 0 {
             let key = reader.unsigned_integer()?;
             match key {
-                ATTRIBUTE_NAME_TAG_DERIVATION => derivation_path = Some(reader.bytes()?),
+                ATTRIBUTE_NAME_TAG_DERIVATION => {
+                    let inner_cbor = reader.bytes()?;
+                    let inner_cbor = std::io::Cursor::new(inner_cbor);
+                    let mut inner_cbor = Deserializer::from(inner_cbor);
+                    derivation_path = Some(inner_cbor.bytes()?)
+                }
                 ATTRIBUTE_NAME_TAG_NETWORK_MAGIC => {
                     // Yes, this is an integer encoded as CBOR encoded as Bytes in CBOR.
                     let bytes = reader.bytes()?;

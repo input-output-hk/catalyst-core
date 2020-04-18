@@ -83,6 +83,8 @@ fn split_scrambled_input_passphrase(mnemonics: &str) -> Option<InputPassphrase> 
 /// * 9 words of "password"
 ///
 pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, bip39::Error> {
+    let dic = &bip39::dictionary::ENGLISH;
+
     let InputPassphrase { input, passphrase } = match split_scrambled_input_passphrase(mnemonics) {
         Some(input_passphrase) => input_passphrase,
         None => return Ok(None),
@@ -91,17 +93,28 @@ pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, b
     dbg!(input);
     dbg!(passphrase);
 
-    let dic = bip39::dictionary::ENGLISH;
-    let mnemonics = bip39::Mnemonics::from_string(&dic, input)?;
-    let entropy1 = bip39::Entropy::from_mnemonics(&mnemonics)?;
+    let pwd = bip39::MnemonicString::new(dic, passphrase.to_owned()).unwrap();
+    let password = from_mnemonic_string(&pwd, &[]);
 
-    let pwd = bip39::MnemonicString::new(&dic, passphrase.to_owned()).unwrap();
-    let key = bip39::Seed::from_mnemonic_string(&pwd, &[]);
+    let mnemonics = bip39::Mnemonics::from_string(dic, input)?;
+    let input = bip39::Entropy::from_mnemonics(&mnemonics)?;
 
-    let entropy = unscramble(&key, &entropy1);
+    let entropy = unscramble(&password, &input);
     let entropy = bip39::Entropy::from_slice(&entropy)?;
 
     Ok(Some(entropy))
+}
+
+/// variation from the bip39
+///
+/// uses 32bytes instead of 64 bytes output
+fn from_mnemonic_string(mnemonics: &bip39::MnemonicString, password: &[u8]) -> [u8; 32] {
+    let mut salt = Vec::from("mnemonic");
+    salt.extend_from_slice(password);
+    let mut mac = Hmac::new(Sha512::new(), mnemonics.as_bytes());
+    let mut result = [0; 32];
+    pbkdf2(&mut mac, &salt, 2048, &mut result);
+    result
 }
 
 #[cfg(test)]

@@ -1,6 +1,7 @@
 use cryptoxide::hmac::Hmac;
 use cryptoxide::pbkdf2::pbkdf2;
 use cryptoxide::sha2::Sha512;
+use unicode_normalization::UnicodeNormalization as _;
 
 const ITERS: u32 = 10000;
 pub const IV_SIZE: usize = 8;
@@ -87,14 +88,16 @@ pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, b
         Some(input_passphrase) => input_passphrase,
         None => return Ok(None),
     };
+
+    dbg!(input);
+    dbg!(passphrase);
+
     let dic = bip39::dictionary::ENGLISH;
     let mnemonics = bip39::Mnemonics::from_string(&dic, input)?;
     let entropy1 = bip39::Entropy::from_mnemonics(&mnemonics)?;
 
-    let mnemonics = bip39::Mnemonics::from_string(&dic, passphrase)?;
-    let entropy2 = bip39::Entropy::from_mnemonics(&mnemonics)?;
-
-    let entropy = unscramble(&entropy2, &entropy1);
+    let key = password_to_key(passphrase);
+    let entropy = unscramble(&key, &entropy1);
     let entropy = bip39::Entropy::from_slice(&entropy)?;
 
     /*
@@ -109,6 +112,20 @@ pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, b
 
     // XXX: Ok(Some(key))
     Ok(Some(entropy))
+}
+
+fn password_to_key(pwd: &str) -> [u8; 32] {
+    const ITER: u32 = 2048;
+
+    let mut out = [0; 32];
+    let mut mac = Hmac::new(Sha512::new(), &[]);
+    pbkdf2(
+        &mut mac,
+        pwd.nfkd().collect::<String>().as_bytes(),
+        ITER,
+        &mut out,
+    );
+    out
 }
 
 #[cfg(test)]

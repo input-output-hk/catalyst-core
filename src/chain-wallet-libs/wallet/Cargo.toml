@@ -13,6 +13,7 @@ thiserror = { version = "1.0.13", default-features = false }
 bip39 = { path = "../bip39" }
 chain-path-derivation = { path = "../chain-path-derivation" }
 hdkeygen = { path = "../hdkeygen" }
+unicode-normalization = "0.1.12"
 hex = "0.4.2"
 
 chain-crypto = { path = "../chain-deps/chain-crypto" }

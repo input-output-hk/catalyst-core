@@ -1,6 +1,5 @@
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
-const MNEMONICS: &str =
-    "place help owner giggle record office lucky high canyon own spring cluster";
+const MNEMONICS: &str = "edge club wrap where juice nephew whip entry cover bullet cause jeans";
 const WALLET_VALUE: u64 = 1000000 + 1 + 100;
 use chain_impl_mockchain::block::Block;
 use chain_ser::mempack::{ReadBuf, Readable as _};
@@ -8,7 +7,6 @@ use wallet::*;
 
 /// test to recover a daedalus style address in the test-vectors block0
 ///
-#[ignore]
 #[test]
 fn daedalus1() {
     let mut wallet = RecoveryBuilder::new()

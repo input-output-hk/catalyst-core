@@ -1,7 +1,6 @@
 use cryptoxide::hmac::Hmac;
 use cryptoxide::pbkdf2::pbkdf2;
 use cryptoxide::sha2::Sha512;
-use unicode_normalization::UnicodeNormalization as _;
 
 const ITERS: u32 = 10000;
 pub const IV_SIZE: usize = 8;
@@ -96,36 +95,13 @@ pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, b
     let mnemonics = bip39::Mnemonics::from_string(&dic, input)?;
     let entropy1 = bip39::Entropy::from_mnemonics(&mnemonics)?;
 
-    let key = password_to_key(passphrase);
+    let pwd = bip39::MnemonicString::new(&dic, passphrase.to_owned()).unwrap();
+    let key = bip39::Seed::from_mnemonic_string(&pwd, &[]);
+
     let entropy = unscramble(&key, &entropy1);
     let entropy = bip39::Entropy::from_slice(&entropy)?;
 
-    /*
-    // TODO: Not sure if the recovered root key is actually an address or a wallet
-    let key = super::from_daedalus_entropy(
-        entropy,
-        ed25519_bip32::DerivationScheme::V1,
-    ).expect("encoding in memory to work")
-    // XXX: .coerce_unchecked::<Rindex<Address>>()
-    ;
-    */
-
-    // XXX: Ok(Some(key))
     Ok(Some(entropy))
-}
-
-fn password_to_key(pwd: &str) -> [u8; 32] {
-    const ITER: u32 = 2048;
-
-    let mut out = [0; 32];
-    let mut mac = Hmac::new(Sha512::new(), &[]);
-    pbkdf2(
-        &mut mac,
-        pwd.nfkd().collect::<String>().as_bytes(),
-        ITER,
-        &mut out,
-    );
-    out
 }
 
 #[cfg(test)]

@@ -9,7 +9,7 @@ fn restore_daedalus_paperwallet() {
     let wallet = RecoveryBuilder::new()
         .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
         .expect("couldn't recover entropy")
-        .build_daedalus_paperwallet()
+        .build_daedalus()
         .expect("couldn't build daedalus");
 
     assert!(wallet.check_address(&address));

@@ -211,11 +211,11 @@ mod tests {
     use super::*;
 
     const MNEMONICS1: &str =
-        "place help owner giggle record office lucky high canyon own spring cluster";
+        "tired owner misery large dream glad upset welcome shuffle eagle pulp time";
     const ADDRESSES1: &[&str] = &[
-        "DdzFFzCqrhst7qSjx1nyxfEvT6fxCZkxVceFFozqvXSNkJKCwdJdmFMZSiCthoCvB5DhLhfzXJjM9S4hJqVxUdhigXY6RAd5YtCqvAbJ",
-        "DdzFFzCqrhtAnjNJMRwyTvp6cAjM7sLD1w3WL4cNaXZCBF4iuxbX1MqkCxUebcPTbXpS2XnhzbCRfTWXrZn17rw1a5zBecfzxyCdUhMT",
-        "DdzFFzCqrhsxA9zhQvw3GPiy8avZzHfF22ydzYeVrZKoYxJUrK6Fm5V4psDzErvrFSW84aW6XC9ZrLNFNob4yZz89vh2r5y5BLYC6zTp",
+        "DdzFFzCqrhsktawSMCWJJy3Dpp9BCjYPVecgsMb5U2G7d1ErUUmwSZvfSY3Yjn5njNadfwvebpVNS5cD4acEKSQih2sR76wx2kF4oLXT",
+        "DdzFFzCqrhsg7eQHEfFE7cH7bKzyyUEKSoSiTmQtxAGnAeCW3pC2LXyxaT8T5sWH4zUjfjffik6p9VdXvRfwJgipU3tgzXhKkMDLt1hR",
+        "DdzFFzCqrhsw7G6njwb8FTBxVCh9GtB7RFvvz7KPNkHxeHtDwAPT2Y6QLDLxVCu7NNUQmwpAfgG5ZeGQkoWjrkbHPUeU9wzG3YFpohse",
     ];
 
     const MNEMONICS2: &str =
@@ -233,7 +233,6 @@ mod tests {
     ///
     /// the mnemonics may not be correct?
     #[test]
-    #[ignore]
     fn recover_daedalus1() {
         let wallet = RecoveryBuilder::new()
             .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS1)

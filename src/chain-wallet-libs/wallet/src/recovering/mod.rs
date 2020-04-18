@@ -94,21 +94,6 @@ impl RecoveryBuilder {
         Ok(RecoveringDaedalus::new(wallet))
     }
 
-    pub fn build_daedalus_paperwallet(&self) -> Result<RecoveringDaedalus, RecoveryError> {
-        if self.password.is_some() {
-            return Err(RecoveryError::SchemeDoesNotRequirePassword);
-        }
-
-        let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
-
-        let key = from_daedalus_paperwallet_entropy(entropy, ed25519_bip32::DerivationScheme::V1)
-            .expect("Cannot fail to serialize some bytes...");
-
-        let wallet = hdkeygen::rindex::Wallet::from_root_key(key);
-
-        Ok(RecoveringDaedalus::new(wallet))
-    }
-
     pub fn build_yoroi(&self) -> Result<RecoveringIcarus, RecoveryError> {
         let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
         let password = self.password.clone().unwrap_or_default();
@@ -179,22 +164,6 @@ fn from_daedalus_entropy(
     let xprv = generate_from_daedalus_seed(&seed);
     let key = Key::new_unchecked(xprv, rindex::new(), derivation_scheme);
     Ok(key)
-}
-
-fn from_daedalus_paperwallet_entropy(
-    entropy: bip39::Entropy,
-    derivation_scheme: DerivationScheme,
-) -> Result<Key<XPrv, Rindex<rindex::Root>>, cbor_event::Error> {
-    let mut seed = [0; 32];
-    {
-        let mut blake2b = cryptoxide::blake2b::Blake2b::new(32);
-        blake2b.input(&entropy);
-        blake2b.result(&mut seed);
-    }
-
-    let xprv = generate_from_daedalus_seed(&seed);
-    let key = Key::new_unchecked(xprv, rindex::new(), derivation_scheme);
-    Ok(key.coerce_unchecked())
 }
 
 /// method to recover the private key from bip39 mnemonics

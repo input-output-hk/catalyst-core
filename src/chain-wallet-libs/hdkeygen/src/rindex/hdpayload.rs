@@ -85,7 +85,6 @@ fn cursor_read(reader: &mut &[u8]) -> Option<u8> {
 
 fn decode_derivation(reader: &mut &[u8]) -> Option<Derivation> {
     let b: u8 = cursor_read(reader)?;
-    dbg!(b);
     let v = match b {
         0x00..=0x17 => b as u32,
         0x18 => cursor_read(reader)? as u32,

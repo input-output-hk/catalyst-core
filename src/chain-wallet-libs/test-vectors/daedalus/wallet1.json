@@ -1,17 +1,14 @@
 {
-    "mnemonics": "place help owner giggle record office lucky high canyon own spring cluster",
+    "mnemonics": "tired owner misery large dream glad upset welcome shuffle eagle pulp time",
     "addresses": [
         {
-            "derivation_path": [0, 0],
-            "address": "DdzFFzCqrhst7qSjx1nyxfEvT6fxCZkxVceFFozqvXSNkJKCwdJdmFMZSiCthoCvB5DhLhfzXJjM9S4hJqVxUdhigXY6RAd5YtCqvAbJ"
+            "address": "DdzFFzCqrhsktawSMCWJJy3Dpp9BCjYPVecgsMb5U2G7d1ErUUmwSZvfSY3Yjn5njNadfwvebpVNS5cD4acEKSQih2sR76wx2kF4oLXT"
         },
         {
-            "derivation_path": [1, 1],
-            "address": "DdzFFzCqrhtAnjNJMRwyTvp6cAjM7sLD1w3WL4cNaXZCBF4iuxbX1MqkCxUebcPTbXpS2XnhzbCRfTWXrZn17rw1a5zBecfzxyCdUhMT"
+            "address": "DdzFFzCqrhsg7eQHEfFE7cH7bKzyyUEKSoSiTmQtxAGnAeCW3pC2LXyxaT8T5sWH4zUjfjffik6p9VdXvRfwJgipU3tgzXhKkMDLt1hR"
         },
         {
-            "derivation_path": [9209, 92928],
-            "address": "DdzFFzCqrhsxA9zhQvw3GPiy8avZzHfF22ydzYeVrZKoYxJUrK6Fm5V4psDzErvrFSW84aW6XC9ZrLNFNob4yZz89vh2r5y5BLYC6zTp"
+            "address": "DdzFFzCqrhsw7G6njwb8FTBxVCh9GtB7RFvvz7KPNkHxeHtDwAPT2Y6QLDLxVCu7NNUQmwpAfgG5ZeGQkoWjrkbHPUeU9wzG3YFpohse"
         }
     ]
 }

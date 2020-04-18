@@ -197,13 +197,68 @@ fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
         sk.clone_from_slice(&block.as_ref()[0..32]);
         let mut cc = [0; 32];
         cc.clone_from_slice(&block.as_ref()[32..64]);
-        let xprv = XPrv::from_nonextended_force(&sk, &cc);
 
-        // check if we find a good candidate
-        if xprv.as_ref()[31] & 0x20 == 0 {
+        if let Ok(xprv) = XPrv::from_nonextended_noforce(&sk, &cc) {
             return xprv;
         }
 
         iter += 1;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const MNEMONICS1: &str =
+        "tired owner misery large dream glad upset welcome shuffle eagle pulp time";
+    const ADDRESSES1: &[&str] = &[
+        "DdzFFzCqrhsktawSMCWJJy3Dpp9BCjYPVecgsMb5U2G7d1ErUUmwSZvfSY3Yjn5njNadfwvebpVNS5cD4acEKSQih2sR76wx2kF4oLXT",
+        "DdzFFzCqrhsg7eQHEfFE7cH7bKzyyUEKSoSiTmQtxAGnAeCW3pC2LXyxaT8T5sWH4zUjfjffik6p9VdXvRfwJgipU3tgzXhKkMDLt1hR",
+        "DdzFFzCqrhsw7G6njwb8FTBxVCh9GtB7RFvvz7KPNkHxeHtDwAPT2Y6QLDLxVCu7NNUQmwpAfgG5ZeGQkoWjrkbHPUeU9wzG3YFpohse",
+    ];
+
+    const MNEMONICS2: &str =
+        "edge club wrap where juice nephew whip entry cover bullet cause jeans";
+    const ADDRESSES2: &[&str] = &[
+        "DdzFFzCqrhsf2sWcZLzXhyLoLZcmw3Zf3UcJ2ozG1EKTwQ6wBY1wMG1tkXtPvEgvE5PKUFmoyzkP8BL4BwLmXuehjRHJtnPj73E5RPMx",
+        "DdzFFzCqrhsogWSfcp4Dq9W1bcMzt86276PbDfzAKZxDhi3g6w6fRu6zYMT36uG8p3j8bCgsx4frkB3QH8m8ubUhAKRG5c8SLnGVTBh9",
+        "DdzFFzCqrhtDFbFvtrm3hhHuWUPY9ozkCW5JzuL4TcrXKMruWCrCSRzpc4mkWBUugPAGLesJv3ert9BH1cQJqXq2f4UN83WP5AZZN4jQ",
+        "sxtitePxjp57M5Vf1uXXvYzTBn3AXrLriV1AXUvEwAdbQckZyh9erD1fBMy7168gkoqWq9jgMHjgW62ZrAcxqxP8Y5",
+        "sxtitePxjp5ewhRtrqYCu1h8BnWz2GCRbT26FFuvhetcaWfw1rZNX4vpQpXqiygvJBGAWsjLzrTp3EzCZ6cYK6A2YT",
+        "sxtitePxjp5Y7GQre2hj7LPAnZp7F49KxE6Cg1huwTzjWbfW2Jd7hSgSqsbMzESs8aQC44ng1LJdnLKqiou4m4gGy8",
+    ];
+
+    /// not sure yet, but it appears this test is not valid
+    ///
+    /// the mnemonics may not be correct?
+    #[test]
+    fn recover_daedalus1() {
+        let wallet = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS1)
+            .unwrap()
+            .build_daedalus()
+            .unwrap();
+
+        for address in ADDRESSES1 {
+            use std::str::FromStr as _;
+            let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
+            assert!(wallet.check_address(&addr));
+        }
+    }
+
+    #[test]
+    fn recover_daedalus2() {
+        let wallet = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS2)
+            .unwrap()
+            .build_daedalus()
+            .unwrap();
+
+        for address in ADDRESSES2 {
+            use std::str::FromStr as _;
+            let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
+            assert!(wallet.check_address(&addr));
+        }
     }
 }

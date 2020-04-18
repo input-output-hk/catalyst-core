@@ -14,9 +14,7 @@ use ed25519_bip32::{self, DerivationScheme, XPrv, XPRV_SIZE};
 use hdkeygen::Key;
 use thiserror::Error;
 
-pub use self::{
-    daedalus::RecoveringDaedalus, icarus::RecoveringIcarus, paperwallet::get_scrambled_input,
-};
+pub use self::{daedalus::RecoveringDaedalus, icarus::RecoveringIcarus};
 
 #[derive(Debug, Error)]
 pub enum RecoveryError {
@@ -38,7 +36,7 @@ impl RecoveryBuilder {
         Self::default()
     }
 
-    /// instead of recovering from mnemonics, here we recover from the Daedalus paperwallet
+    /// instead of recovering from mnemonics recover from a paperwallet
     ///
     pub fn paperwallet(
         self,
@@ -56,8 +54,13 @@ impl RecoveryBuilder {
     where
         D: bip39::dictionary::Language,
     {
-        let mnemonics = bip39::Mnemonics::from_string(dic, mnemonics.as_ref())?;
-        let entropy = bip39::Entropy::from_mnemonics(&mnemonics)?;
+        let entropy = if let Some(entropy) = paperwallet::daedalus_paperwallet(mnemonics.as_ref())?
+        {
+            entropy
+        } else {
+            let mnemonics = bip39::Mnemonics::from_string(dic, mnemonics.as_ref())?;
+            bip39::Entropy::from_mnemonics(&mnemonics)?
+        };
 
         Ok(self.entropy(entropy))
     }

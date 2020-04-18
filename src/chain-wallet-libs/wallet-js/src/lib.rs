@@ -43,28 +43,14 @@ impl Wallet {
     pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Wallet, JsValue> {
         let builder = wallet::RecoveryBuilder::new();
 
-        let paperwallet: Option<(bip39::Entropy, &str)> =
-            match wallet::get_scrambled_input(&mnemonics) {
-                Ok(paperwallet_builder) => paperwallet_builder,
-                Err(_) => return Err(JsValue::from("invalid mnemonics")),
-            };
-
-        let builder = match paperwallet {
-            Some((pass, entropy)) => match builder.paperwallet(pass, entropy) {
-                Ok(builder) => builder,
-                Err(_) => return Err(JsValue::from("invalid mnemonics")),
-            },
-            None => {
-                if password.is_empty() {
-                    match builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics) {
-                        Ok(builder) => builder,
-                        Err(_) => return Err(JsValue::from("invalid mnemonics")),
-                    }
-                } else {
-                    todo!()
-                }
-            }
+        let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics)
+        {
+            builder
+        } else {
+            return Err(JsValue::from("invalid mnemonics"));
         };
+
+        let builder = if password.len() > 0 { todo!() } else { builder };
 
         // calling this function cannot fail, we already
         // have the mnemonics set in the builder, and there is no password set

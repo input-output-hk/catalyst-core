@@ -1,24 +1,16 @@
-use bip39;
-use cardano_legacy_address;
-use chain_impl_mockchain::legacy::OldAddress;
 use wallet::*;
 
-use std::str::FromStr;
-const MNEMONICS: &'static str = "town lift more follow chronic lunch weird uniform earth census proof cave gap fancy topic year leader phrase state circle cloth reward dish survey act punch bounce";
+const MNEMONICS: &str = "town lift more follow chronic lunch weird uniform earth census proof cave gap fancy topic year leader phrase state circle cloth reward dish survey act punch bounce";
+const ADDRESS: &str = "DdzFFzCqrhtCvPjBLTJKJdNWzfhnJx3967QEcuhhm1PQ2ca13fNNMh5KZentH5aWLysjEBc1rKDYMS3noNKNyxdCL8NHUZznZj9gofQJ";
+
 #[test]
 fn restore_daedalus_paperwallet() {
-    let (pass, entropy) = get_scrambled_input(MNEMONICS)
-        .expect("invalid mnemonics")
-        .expect("words should be 27");
-
-    let expected_address = "DdzFFzCqrhtCvPjBLTJKJdNWzfhnJx3967QEcuhhm1PQ2ca13fNNMh5KZentH5aWLysjEBc1rKDYMS3noNKNyxdCL8NHUZznZj9gofQJ";
-
-    let recovering_daedalus = RecoveryBuilder::new()
-        .paperwallet(pass, entropy)
+    let address = ADDRESS.parse().unwrap();
+    let wallet = RecoveryBuilder::new()
+        .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
         .expect("couldn't recover entropy")
         .build_daedalus()
         .expect("couldn't build daedalus");
 
-    // TODO: assert something? But I still don't know how
-    assert!(false);
+    assert!(wallet.check_address(&address));
 }

@@ -76,18 +76,39 @@ fn split_scrambled_input_passphrase(mnemonics: &str) -> Option<InputPassphrase> 
     }
 }
 
-pub fn get_scrambled_input(
-    mnemonics: &str,
-) -> Result<Option<(&str, bip39::Entropy)>, bip39::Error> {
+/// daedalus paperwallet is expected to be split from
+/// 27 mnemonic words:
+///
+/// * 18 words of "input"
+/// * 9 words of "password"
+///
+pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, bip39::Error> {
     let InputPassphrase { input, passphrase } = match split_scrambled_input_passphrase(mnemonics) {
         Some(input_passphrase) => input_passphrase,
         None => return Ok(None),
     };
     let dic = bip39::dictionary::ENGLISH;
     let mnemonics = bip39::Mnemonics::from_string(&dic, input)?;
-    let entropy = bip39::Entropy::from_mnemonics(&mnemonics)?;
+    let entropy1 = bip39::Entropy::from_mnemonics(&mnemonics)?;
 
-    Ok(Some((passphrase, entropy)))
+    let mnemonics = bip39::Mnemonics::from_string(&dic, passphrase)?;
+    let entropy2 = bip39::Entropy::from_mnemonics(&mnemonics)?;
+
+    let entropy = unscramble(&entropy2, &entropy1);
+    let entropy = bip39::Entropy::from_slice(&entropy)?;
+
+    /*
+    // TODO: Not sure if the recovered root key is actually an address or a wallet
+    let key = super::from_daedalus_entropy(
+        entropy,
+        ed25519_bip32::DerivationScheme::V1,
+    ).expect("encoding in memory to work")
+    // XXX: .coerce_unchecked::<Rindex<Address>>()
+    ;
+    */
+
+    // XXX: Ok(Some(key))
+    Ok(Some(entropy))
 }
 
 #[cfg(test)]

@@ -118,6 +118,14 @@ impl RecoveryBuilder {
 
         Ok(Wallet { account })
     }
+
+    #[cfg(test)]
+    fn to_mnemonics_string(&self) -> Option<String> {
+        let s = self.entropy.as_ref()?;
+        let mnemonics = s.to_mnemonics();
+        let mnemonics = mnemonics.to_string(&bip39::dictionary::ENGLISH);
+        Some(mnemonics.to_string())
+    }
 }
 
 /// Compatibility with daedalus mnemonic addresses

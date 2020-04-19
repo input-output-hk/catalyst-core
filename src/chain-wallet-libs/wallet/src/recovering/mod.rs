@@ -266,4 +266,18 @@ mod tests {
             assert!(wallet.check_address(&addr));
         }
     }
+
+    #[test]
+    #[ignore]
+    fn recover_yoroi_paperwallet() {
+        const WALLET: &str = "attend wink add online sample oyster guard glass host gap business music faith riot tortoise";
+        const PWD: &str = "PaperWalletPaperWallet";
+        const PAPERWALLET: &str = "weasel use dynamic shock food bleak swarm owner trick also flight flower uncover slim fuel crisp hockey reunion lemon badge orient";
+
+        let builder = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, WALLET)
+            .unwrap()
+            .password(Password::from(PWD.to_owned()))
+            .build_yoroi();
+    }
 }

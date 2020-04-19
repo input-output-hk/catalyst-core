@@ -12,6 +12,12 @@ impl From<Vec<u8>> for ScrubbedBytes {
     }
 }
 
+impl From<String> for ScrubbedBytes {
+    fn from(v: String) -> Self {
+        Self(v.into_bytes())
+    }
+}
+
 impl AsRef<[u8]> for ScrubbedBytes {
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()

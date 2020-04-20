@@ -99,7 +99,7 @@ pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, b
     let mnemonics = bip39::Mnemonics::from_string(dic, input)?;
     let input = bip39::Entropy::from_mnemonics(&mnemonics)?;
 
-    let entropy = unscramble(&password, &input);
+    let entropy = unscramble(hex::encode(password).as_bytes(), &input);
     let entropy = bip39::Entropy::from_slice(&entropy)?;
 
     Ok(Some(entropy))

@@ -3,6 +3,7 @@ mod utils;
 use chain_impl_mockchain::{
     block::Block,
     transaction::{Input, NoExtra, Transaction},
+    value::Value,
 };
 use chain_ser::mempack::Readable;
 use wasm_bindgen::prelude::*;
@@ -131,6 +132,20 @@ impl Wallet {
             .value_total()
             .saturating_add(self.daedalus.value_total())
             .0
+    }
+
+    /// update the wallet account state
+    ///
+    /// this is the value retrieved from any jormungandr endpoint that allows to query
+    /// for the account state. It gives the value associated to the account as well as
+    /// the counter.
+    ///
+    /// It is important to be sure to have an updated wallet state before doing any
+    /// transactions otherwise future transactions may fail to be accepted by any
+    /// nodes of the blockchain because of invalid signature state.
+    ///
+    pub fn set_state(&mut self, value: u64, counter: u32) {
+        self.account.update_state(Value(value), counter);
     }
 }
 

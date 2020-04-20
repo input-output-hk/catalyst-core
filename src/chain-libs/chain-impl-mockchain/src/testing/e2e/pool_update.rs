@@ -3,7 +3,7 @@ use crate::{
     stake::Stake,
     testing::{
         ledger::ConfigBuilder,
-        scenario::{prepare_scenario, wallet},
+        scenario::{prepare_scenario, stake_pool, wallet},
         verifiers::LedgerStateVerifier,
     },
     value::Value,
@@ -96,6 +96,9 @@ pub fn pool_update_wrong_signature_too_few() {
             wallet("Clarice")
                 .with(1_000)
                 .owns_and_delegates_to("stake_pool"),
+        ])
+        .with_stake_pools(vec![
+            stake_pool("stake_pool").with_permissions_threshold(2u8)
         ])
         .build()
         .unwrap();

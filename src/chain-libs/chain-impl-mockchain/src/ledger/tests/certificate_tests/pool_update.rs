@@ -153,8 +153,10 @@ pub fn pool_update_wrong_pool_id() {
     let mut new_pool_registration = stake_pool.clone();
     new_pool_registration.info_mut().serial = 1231u128;
 
+    let wrong_pool_id = new_pool_registration.info().to_id();
+
     let pool_update = PoolUpdate {
-        pool_id: new_pool_registration.id(),
+        pool_id: wrong_pool_id.clone(),
         last_pool_reg_hash: stake_pool.info().to_id(),
         new_pool_reg: new_pool_registration.info(),
     };
@@ -168,7 +170,7 @@ pub fn pool_update_wrong_pool_id() {
             .apply_fragment(&fragment, BlockDate::first())
             .err()
             .unwrap(),
-        Error::Delegation(NotFound(new_pool_registration.id()))
+        Error::Delegation(NotFound(wrong_pool_id))
     );
 }
 

@@ -355,7 +355,7 @@ pub extern "C" fn iohk_jormungandr_wallet_total_value(
     wallet: WalletPtr,
     total_out: *mut u64,
 ) -> RecoveringResult {
-    let wallet: &Wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
+    let wallet = if let Some(wallet) = unsafe { wallet.as_ref() } {
         wallet
     } else {
         return RecoveringResult::PtrIsNull;

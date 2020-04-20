@@ -6,7 +6,7 @@
 //! and cannot be be controlled without having an account to group them
 
 use chain_addr::{Address, Discrimination, Kind};
-use chain_crypto::PublicKey;
+use chain_crypto::{Ed25519, PublicKey};
 use cryptoxide::ed25519::{self, PUBLIC_KEY_LENGTH};
 use std::{
     fmt::{self, Display},
@@ -91,6 +91,16 @@ impl From<[u8; SEED_LENGTH]> for Account {
 impl From<[u8; PUBLIC_KEY_LENGTH]> for AccountId {
     fn from(id: [u8; PUBLIC_KEY_LENGTH]) -> Self {
         Self { id }
+    }
+}
+
+impl Into<PublicKey<Ed25519>> for AccountId {
+    fn into(self) -> PublicKey<Ed25519> {
+        if let Ok(pk) = PublicKey::from_binary(&self.id) {
+            pk
+        } else {
+            unsafe { std::hint::unreachable_unchecked() }
+        }
     }
 }
 

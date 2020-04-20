@@ -1,7 +1,7 @@
 use crate::{
     account::{Identifier, Ledger as AccountLedger},
-    accounting::account::account_state::AccountState,
-    certificate::PoolId,
+    accounting::account::{account_state::AccountState, DelegationType},
+    certificate::{PoolId, PoolRegistration},
     ledger::{ledger::Ledger, Pots},
     stake::PoolsState,
     stake::{Stake, StakeDistribution},
@@ -10,6 +10,7 @@ use crate::{
     value::Value,
 };
 use chain_addr::Address;
+use chain_crypto::{Ed25519, PublicKey};
 use std::fmt;
 
 #[derive(Clone)]
@@ -122,6 +123,19 @@ impl LedgerStateVerifier {
         StakePoolsVerifier::new(self.ledger.delegation.clone(), self.info.clone())
     }
 
+    pub fn stake_pool(&self, stake_pool_id: &PoolId) -> StakePoolVerifier {
+        let stake_pool_reg = self
+            .ledger
+            .delegation
+            .lookup_reg(stake_pool_id)
+            .expect("stake pool does not exists");
+        StakePoolVerifier::new(
+            stake_pool_id.clone(),
+            stake_pool_reg.clone(),
+            self.info.clone(),
+        )
+    }
+
     pub fn total_value_is(&self, value: &Value) -> &Self {
         let actual_value = self.ledger.get_total_value().expect("total amount too big");
         assert_eq!(
@@ -218,6 +232,14 @@ impl AccountVerifier {
         self
     }
 
+    pub fn delegation(&self) -> DelegationVerifier {
+        let account_state = self
+            .accounts
+            .get_state(&self.address.to_id())
+            .expect("account does not exists");
+        DelegationVerifier::new(account_state.delegation().clone(), self.info.clone())
+    }
+
     pub fn has_value(&self, value: &Value) -> &Self {
         let actual_value = self
             .accounts
@@ -230,6 +252,39 @@ impl AccountVerifier {
             "incorrect account value {} vs {} {}",
             actual_value, expected_value, self.info
         );
+        self
+    }
+}
+
+pub struct DelegationVerifier {
+    delegation_type: DelegationType,
+    info: Info,
+}
+
+impl DelegationVerifier {
+    pub fn new(delegation_type: DelegationType, info: Info) -> Self {
+        Self {
+            delegation_type,
+            info,
+        }
+    }
+
+    pub fn is_fully_delegated_to(&self, expected_pool_id: PoolId) -> &Self {
+        match &self.delegation_type {
+            DelegationType::NonDelegated => panic!(format!(
+                "{}: wrong wrong delegation type NonDelegated, Expected: Full",
+                self.info
+            )),
+            DelegationType::Full(pool_id) => assert_eq!(
+                *pool_id, expected_pool_id,
+                "{}: wrong pool id. Expected: {}, but got: {}",
+                self.info, expected_pool_id, pool_id
+            ),
+            DelegationType::Ratio(_) => panic!(format!(
+                "{}: wrong delegation type: Ratio, , Expected: Full",
+                self.info
+            )),
+        };
         self
     }
 }
@@ -303,6 +358,40 @@ impl StakePoolsVerifier {
             stake_pool.alias(),
             self.info
         );
+    }
+}
+
+pub struct StakePoolVerifier {
+    stake_pool_id: PoolId,
+    stake_pool_reg: PoolRegistration,
+    info: Info,
+}
+
+impl StakePoolVerifier {
+    pub fn new(stake_pool_id: PoolId, stake_pool_reg: PoolRegistration, info: Info) -> Self {
+        Self {
+            stake_pool_id,
+            stake_pool_reg,
+            info,
+        }
+    }
+
+    pub fn serial_eq(&self, serial: u128) -> &Self {
+        assert_eq!(
+            self.stake_pool_reg.serial, serial,
+            "{}: stake pool ({}) has incorrect serial, expected '{}', but got '{}'",
+            self.info, self.stake_pool_id, serial, self.stake_pool_reg.serial
+        );
+        self
+    }
+
+    pub fn owners_eq(&self, public_keys: Vec<PublicKey<Ed25519>>) -> &Self {
+        assert_eq!(
+            self.stake_pool_reg.owners, public_keys,
+            "{}: stake pool ({}) has incorrect owners list, expected '{:?}', but got '{:?}'",
+            self.info, self.stake_pool_id, public_keys, self.stake_pool_reg.owners
+        );
+        self
     }
 }
 

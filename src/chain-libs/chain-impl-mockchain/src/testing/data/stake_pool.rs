@@ -48,6 +48,10 @@ impl StakePool {
         self.kes.clone()
     }
 
+    pub fn info_mut(&mut self) -> &mut PoolRegistration {
+        &mut self.pool_info
+    }
+
     pub fn info(&self) -> PoolRegistration {
         self.pool_info.clone()
     }

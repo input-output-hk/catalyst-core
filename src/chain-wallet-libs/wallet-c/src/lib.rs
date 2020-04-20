@@ -373,6 +373,38 @@ pub extern "C" fn iohk_jormungandr_wallet_total_value(
     RecoveringResult::Success
 }
 
+/// update the wallet account state
+///
+/// this is the value retrieved from any jormungandr endpoint that allows to query
+/// for the account state. It gives the value associated to the account as well as
+/// the counter.
+///
+/// It is important to be sure to have an updated wallet state before doing any
+/// transactions otherwise future transactions may fail to be accepted by any
+/// nodes of the blockchain because of invalid signature state.
+///
+/// # Errors
+///
+/// * this function may fail if the wallet pointer is null;
+///
+#[no_mangle]
+pub extern "C" fn iohk_jormungandr_wallet_set_state(
+    wallet: WalletPtr,
+    value: u64,
+    counter: u32,
+) -> RecoveringResult {
+    let wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
+        wallet
+    } else {
+        return RecoveringResult::PtrIsNull;
+    };
+    let value = Value(value);
+
+    wallet.account.update_state(value, counter);
+
+    RecoveringResult::Success
+}
+
 /// delete the pointer and free the allocated memory
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr) {

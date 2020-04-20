@@ -36,3 +36,24 @@ impl Wallet {
         (self.value() - self.committed_amount()).unwrap_or(Value::zero())
     }
 }
+
+impl transaction::InputGenerator for Wallet {
+    fn input_to_cover(&mut self, value: Value) -> Option<transaction::GeneratedInput> {
+        if self.current_value() < value {
+            None
+        } else {
+            let input = Input::from_account_public_key(self.account_id().into(), value);
+            let witness_builder = transaction::WitnessBuilder::Account {
+                account: self.account.clone(),
+            };
+
+            self.committed_amount = self.committed_amount.saturating_add(value);
+            self.account.increase_counter(1);
+
+            Some(transaction::GeneratedInput {
+                input,
+                witness_builder,
+            })
+        }
+    }
+}

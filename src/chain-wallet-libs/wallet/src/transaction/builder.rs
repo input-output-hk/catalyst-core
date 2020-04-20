@@ -1,4 +1,7 @@
-use crate::{transaction::WitnessBuilder, Settings};
+use crate::{
+    transaction::{InputGenerator, WitnessBuilder},
+    Settings,
+};
 use chain_addr::Address;
 use chain_impl_mockchain::{
     fee::FeeAlgorithm as _,
@@ -18,24 +21,60 @@ pub struct TransactionBuilder {
 }
 
 impl TransactionBuilder {
-    /// dump all the associated input to the given address
-    pub fn new(settings: Settings) -> Self {
+    /// create a new transaction builder with the given settings and outputs
+    pub fn new(settings: Settings, outputs: Vec<Output<Address>>) -> Self {
         Self {
             settings,
-            outputs: Vec::new(),
+            outputs,
             inputs: Vec::with_capacity(255),
             witness_builders: Vec::with_capacity(255),
         }
     }
 
+    /// select inputs from the given wallet (InputGenerator)
+    ///
+    ///
+    pub fn select_from<G>(&mut self, input_generator: &mut G) -> bool
+    where
+        G: InputGenerator,
+    {
+        let estimate_fee = self.settings.parameters.fees.calculate(
+            None,
+            self.inputs().len() as u8,
+            self.outputs().len() as u8,
+        );
+        let input_needed = self.outputs_value().saturating_add(estimate_fee);
+
+        if let Some(input) = input_generator.input_to_cover(input_needed) {
+            self.inputs.push(input.input);
+            self.witness_builders.push(input.witness_builder);
+            true
+        } else {
+            false
+        }
+    }
+
+    #[inline]
+    pub fn inputs(&self) -> &[Input] {
+        &self.inputs
+    }
+
+    #[inline]
+    pub fn outputs(&self) -> &[Output<Address>] {
+        &self.outputs
+    }
+
+    #[inline]
     pub fn inputs_value(&self) -> Value {
-        self.inputs.iter().map(|i| i.value()).sum()
+        self.inputs().iter().map(|i| i.value()).sum()
     }
 
+    #[inline]
     pub fn outputs_value(&self) -> Value {
-        self.outputs.iter().map(|i| i.value).sum()
+        self.outputs().iter().map(|i| i.value).sum()
     }
 
+    #[inline]
     fn estimate_fee(&self) -> Value {
         self.settings.parameters.fees.calculate(
             None,

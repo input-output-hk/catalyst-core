@@ -24,6 +24,20 @@ impl Wallet {
         self.account.account_id()
     }
 
+    /// set the state counter so we can sync with the blockchain and the
+    /// local state
+    ///
+    /// TODO: some handling to provide information if needed:
+    ///
+    /// - [ ] check the counter is not regressing?
+    /// - [ ] check that there is continuity?
+    ///
+    pub fn update_state(&mut self, value: Value, counter: u32) {
+        self.value = value;
+        self.committed_amount = Value::zero();
+        self.account.set_counter(counter);
+    }
+
     pub fn value(&self) -> Value {
         self.value.clone()
     }

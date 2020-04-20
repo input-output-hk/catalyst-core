@@ -50,6 +50,10 @@ impl Account {
         self.counter
     }
 
+    pub fn set_counter(&mut self, counter: u32) {
+        self.counter = counter;
+    }
+
     /// increase the counter with the given amount
     pub fn increase_counter(&mut self, atm: u32) {
         self.counter += atm

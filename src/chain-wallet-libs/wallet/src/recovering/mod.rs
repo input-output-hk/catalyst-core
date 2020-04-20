@@ -36,7 +36,7 @@ impl RecoveryBuilder {
         Self::default()
     }
 
-    /// instead of recovering from mnemonics, here we recover from the Daedalus paperwallet
+    /// instead of recovering from mnemonics recover from a paperwallet
     ///
     pub fn paperwallet(
         self,
@@ -54,8 +54,13 @@ impl RecoveryBuilder {
     where
         D: bip39::dictionary::Language,
     {
-        let mnemonics = bip39::Mnemonics::from_string(dic, mnemonics.as_ref())?;
-        let entropy = bip39::Entropy::from_mnemonics(&mnemonics)?;
+        let entropy = if let Some(entropy) = paperwallet::daedalus_paperwallet(mnemonics.as_ref())?
+        {
+            entropy
+        } else {
+            let mnemonics = bip39::Mnemonics::from_string(dic, mnemonics.as_ref())?;
+            bip39::Entropy::from_mnemonics(&mnemonics)?
+        };
 
         Ok(self.entropy(entropy))
     }
@@ -112,6 +117,14 @@ impl RecoveryBuilder {
         let account = hdkeygen::account::Account::from_seed(seed);
 
         Ok(Wallet { account })
+    }
+
+    #[cfg(test)]
+    fn to_mnemonics_string(&self) -> Option<String> {
+        let s = self.entropy.as_ref()?;
+        let mnemonics = s.to_mnemonics();
+        let mnemonics = mnemonics.to_string(&bip39::dictionary::ENGLISH);
+        Some(mnemonics.to_string())
     }
 }
 
@@ -260,5 +273,42 @@ mod tests {
             let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
             assert!(wallet.check_address(&addr));
         }
+    }
+
+    #[test]
+    fn recover_daedalus_paperwallet() {
+        const WALLET: &str =
+            "claim treat volume twin crumble surprise symbol survey wise access room avoid";
+        const PAPERWALLET: &str = "town lift more follow chronic lunch weird uniform earth census proof cave gap fancy topic year leader phrase state circle cloth reward dish survey act punch bounce";
+        const ADDRESS: &str = "DdzFFzCqrhtCvPjBLTJKJdNWzfhnJx3967QEcuhhm1PQ2ca13fNNMh5KZentH5aWLysjEBc1rKDYMS3noNKNyxdCL8NHUZznZj9gofQJ";
+
+        let builder = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, PAPERWALLET)
+            .unwrap();
+
+        let original_wallet = builder
+            .to_mnemonics_string()
+            .expect("mnemonics were given already")
+            .to_string();
+        assert_eq!(WALLET, original_wallet);
+
+        let wallet = builder.build_daedalus().unwrap();
+        let address = ADDRESS.parse().unwrap();
+
+        assert!(wallet.check_address(&address));
+    }
+
+    #[test]
+    #[ignore]
+    fn recover_yoroi_paperwallet() {
+        const WALLET: &str = "attend wink add online sample oyster guard glass host gap business music faith riot tortoise";
+        const PWD: &str = "PaperWalletPaperWallet";
+        const PAPERWALLET: &str = "weasel use dynamic shock food bleak swarm owner trick also flight flower uncover slim fuel crisp hockey reunion lemon badge orient";
+
+        let builder = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, PAPERWALLET)
+            .unwrap()
+            .password(Password::from(PWD.to_owned()))
+            .build_yoroi();
     }
 }

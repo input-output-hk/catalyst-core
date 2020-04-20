@@ -99,11 +99,13 @@ pub extern "C" fn iohk_jormungandr_wallet_recover(
     let mnemonics = mnemonics.to_string_lossy();
 
     let builder = wallet::RecoveryBuilder::new();
+
     let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics) {
         builder
     } else {
         return RecoveringResult::InvalidMnemonics;
     };
+
     let builder = if !password.is_null() && password_length > 0 {
         todo!()
     } else {

@@ -47,6 +47,73 @@ pub fn unscramble(password: &[u8], input: &[u8]) -> Vec<u8> {
     out
 }
 
+const PAPERWALLET_CERTIFICATE_MNEMONIC_LENGTH: usize = 27;
+const SCRAMBLED_INPUT_WORD_COUNT: usize = 18;
+
+struct InputPassphrase<'a> {
+    input: &'a str,
+    passphrase: &'a str,
+}
+
+// helper function for get_scrambled_input
+fn split_scrambled_input_passphrase(mnemonics: &str) -> Option<InputPassphrase> {
+    use bip39::dictionary::Language;
+    let dic = bip39::dictionary::ENGLISH;
+
+    if mnemonics.split(dic.separator()).count() == PAPERWALLET_CERTIFICATE_MNEMONIC_LENGTH {
+        let scrambled_input_end_position = mnemonics
+            .match_indices(dic.separator())
+            .nth(SCRAMBLED_INPUT_WORD_COUNT - 1)
+            .map(|(idx, _sep)| idx)
+            .unwrap();
+
+        Some(InputPassphrase {
+            input: &mnemonics[..scrambled_input_end_position],
+            passphrase: &mnemonics[scrambled_input_end_position + 1..],
+        })
+    } else {
+        None
+    }
+}
+
+/// daedalus paperwallet is expected to be split from
+/// 27 mnemonic words:
+///
+/// * 18 words of "input"
+/// * 9 words of "password"
+///
+pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, bip39::Error> {
+    let dic = &bip39::dictionary::ENGLISH;
+
+    let InputPassphrase { input, passphrase } = match split_scrambled_input_passphrase(mnemonics) {
+        Some(input_passphrase) => input_passphrase,
+        None => return Ok(None),
+    };
+
+    let pwd = bip39::MnemonicString::new(dic, passphrase.to_owned()).unwrap();
+    let password = from_mnemonic_string(&pwd, &[]);
+
+    let mnemonics = bip39::Mnemonics::from_string(dic, input)?;
+    let input = bip39::Entropy::from_mnemonics(&mnemonics)?;
+
+    let entropy = unscramble(hex::encode(password).as_bytes(), &input);
+    let entropy = bip39::Entropy::from_slice(&entropy)?;
+
+    Ok(Some(entropy))
+}
+
+/// variation from the bip39
+///
+/// uses 32bytes instead of 64 bytes output
+fn from_mnemonic_string(mnemonics: &bip39::MnemonicString, password: &[u8]) -> [u8; 32] {
+    let mut salt = Vec::from("mnemonic");
+    salt.extend_from_slice(password);
+    let mut mac = Hmac::new(Sha512::new(), mnemonics.as_bytes());
+    let mut result = [0; 32];
+    pbkdf2(&mut mac, &salt, 2048, &mut result);
+    result
+}
+
 #[cfg(test)]
 mod tests {
     //use paperwallet::{scramble,unscramble};

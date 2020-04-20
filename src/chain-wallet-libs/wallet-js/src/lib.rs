@@ -42,7 +42,7 @@ impl Wallet {
     /// the mnemonics should be in english
     pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Wallet, JsValue> {
         let builder = wallet::RecoveryBuilder::new();
-        // TODO: recover from more languages?
+
         let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics)
         {
             builder

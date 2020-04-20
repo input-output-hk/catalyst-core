@@ -90,9 +90,6 @@ pub fn daedalus_paperwallet(mnemonics: &str) -> Result<Option<bip39::Entropy>, b
         None => return Ok(None),
     };
 
-    dbg!(input);
-    dbg!(passphrase);
-
     let pwd = bip39::MnemonicString::new(dic, passphrase.to_owned()).unwrap();
     let password = from_mnemonic_string(&pwd, &[]);
 

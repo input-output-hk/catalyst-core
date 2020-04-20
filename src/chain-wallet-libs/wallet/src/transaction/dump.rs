@@ -51,13 +51,6 @@ impl Dump {
         self.inputs.iter().map(|i| i.value()).sum()
     }
 
-    fn is_input_worth(&self, input: &Input) -> bool {
-        let value = input.value();
-        let minimal_value = self.settings.parameters.fees.fees_for_inputs_outputs(1, 0);
-
-        value > minimal_value
-    }
-
     fn estimate_fee(&self) -> Value {
         self.settings
             .parameters
@@ -102,7 +95,7 @@ impl Dump {
             self.build_tx_and_clear()
         }
 
-        if self.is_input_worth(&input) {
+        if self.settings.is_input_worth(&input) {
             self.inputs.push(input);
             self.witness_builders.push(witness_builder);
         } else {

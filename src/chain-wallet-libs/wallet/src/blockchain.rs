@@ -1,6 +1,8 @@
 use chain_impl_mockchain::{
     block::Block,
+    fee::FeeAlgorithm as _,
     ledger::{Error, Ledger, LedgerParameters, LedgerStaticParameters},
+    transaction::Input,
 };
 
 #[derive(Clone)]
@@ -21,5 +23,14 @@ impl Settings {
             static_parameters,
             parameters,
         })
+    }
+
+    /// convenient function to check if a given input
+    /// is covering at least its own input fees for a given transaction
+    pub fn is_input_worth(&self, input: &Input) -> bool {
+        let value = input.value();
+        let minimal_value = self.parameters.fees.fees_for_inputs_outputs(1, 0);
+
+        value > minimal_value
     }
 }

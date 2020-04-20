@@ -5,6 +5,7 @@ mod icarus;
 mod paperwallet;
 
 use crate::{keygen, Password, Wallet};
+use chain_impl_mockchain::value::Value;
 use chain_path_derivation::{
     rindex::{self, Rindex},
     AnyScheme,
@@ -116,7 +117,11 @@ impl RecoveryBuilder {
 
         let account = hdkeygen::account::Account::from_seed(seed);
 
-        Ok(Wallet { account })
+        Ok(Wallet {
+            account,
+            committed_amount: Value::zero(),
+            value: Value::zero(),
+        })
     }
 
     #[cfg(test)]

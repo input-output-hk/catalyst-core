@@ -54,6 +54,10 @@ impl Account {
     pub fn increase_counter(&mut self, atm: u32) {
         self.counter += atm
     }
+
+    pub fn seed(&self) -> &SEED {
+        &self.seed
+    }
 }
 
 impl AccountId {

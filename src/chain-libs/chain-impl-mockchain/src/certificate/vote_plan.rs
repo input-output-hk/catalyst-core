@@ -226,7 +226,7 @@ impl VotePlan {
 /* Auth/Payload ************************************************************* */
 
 impl Payload for VotePlan {
-    const HAS_DATA: bool = false;
+    const HAS_DATA: bool = true;
     const HAS_AUTH: bool = false;
     type Auth = ();
 
@@ -240,7 +240,7 @@ impl Payload for VotePlan {
     }
 
     fn payload_auth_data(_: &Self::Auth) -> PayloadAuthData<Self> {
-        todo!()
+        PayloadAuthData(Vec::with_capacity(0).into(), std::marker::PhantomData)
     }
 
     fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {

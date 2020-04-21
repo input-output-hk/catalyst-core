@@ -6,7 +6,7 @@ use quickcheck_macros::quickcheck;
 
 impl Arbitrary for Fragment {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        match g.next_u32() % 10 {
+        match g.next_u32() % 11 {
             0 => Fragment::Initial(Arbitrary::arbitrary(g)),
             1 => Fragment::OldUtxoDeclaration(Arbitrary::arbitrary(g)),
             2 => Fragment::Transaction(Arbitrary::arbitrary(g)),
@@ -16,7 +16,9 @@ impl Arbitrary for Fragment {
             6 => Fragment::PoolRetirement(Arbitrary::arbitrary(g)),
             7 => Fragment::PoolUpdate(Arbitrary::arbitrary(g)),
             8 => Fragment::UpdateProposal(Arbitrary::arbitrary(g)),
-            _ => Fragment::UpdateVote(Arbitrary::arbitrary(g)),
+            9 => Fragment::UpdateVote(Arbitrary::arbitrary(g)),
+            10 => Fragment::VotePlan(Arbitrary::arbitrary(g)),
+            _ => unreachable!(),
         }
     }
 }

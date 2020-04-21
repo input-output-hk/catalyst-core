@@ -1,5 +1,6 @@
 mod delegation;
 mod pool;
+mod vote_cast;
 mod vote_plan;
 
 #[cfg(any(test, feature = "property-test-api"))]
@@ -7,6 +8,7 @@ mod test;
 
 use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
+pub use self::vote_cast::{VoteCast, VoteCastPayload};
 pub use self::vote_plan::{
     ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VoteOptions,
     VotePlan, VotePlanId,
@@ -25,6 +27,7 @@ pub enum CertificateSlice<'a> {
     PoolRetirement(PayloadSlice<'a, PoolRetirement>),
     PoolUpdate(PayloadSlice<'a, PoolUpdate>),
     VotePlan(PayloadSlice<'a, VotePlan>),
+    VoteCast(PayloadSlice<'a, VoteCast>),
 }
 
 impl<'a> From<PayloadSlice<'a, StakeDelegation>> for CertificateSlice<'a> {
@@ -62,6 +65,12 @@ impl<'a> From<PayloadSlice<'a, VotePlan>> for CertificateSlice<'a> {
     }
 }
 
+impl<'a> From<PayloadSlice<'a, VoteCast>> for CertificateSlice<'a> {
+    fn from(payload: PayloadSlice<'a, VoteCast>) -> CertificateSlice<'a> {
+        CertificateSlice::VoteCast(payload)
+    }
+}
+
 impl<'a> CertificateSlice<'a> {
     pub fn into_owned(self) -> Certificate {
         match self {
@@ -75,6 +84,7 @@ impl<'a> CertificateSlice<'a> {
                 Certificate::OwnerStakeDelegation(c.into_payload())
             }
             CertificateSlice::VotePlan(c) => Certificate::VotePlan(c.into_payload()),
+            CertificateSlice::VoteCast(c) => Certificate::VoteCast(c.into_payload()),
         }
     }
 }
@@ -87,6 +97,7 @@ pub enum CertificatePayload {
     PoolRetirement(PayloadData<PoolRetirement>),
     PoolUpdate(PayloadData<PoolUpdate>),
     VotePlan(PayloadData<VotePlan>),
+    VoteCast(PayloadData<VoteCast>),
 }
 
 impl CertificatePayload {
@@ -98,6 +109,7 @@ impl CertificatePayload {
             CertificatePayload::PoolRetirement(payload) => payload.borrow().into(),
             CertificatePayload::PoolUpdate(payload) => payload.borrow().into(),
             CertificatePayload::VotePlan(payload) => payload.borrow().into(),
+            CertificatePayload::VoteCast(payload) => payload.borrow().into(),
         }
     }
 }
@@ -121,6 +133,7 @@ impl<'a> From<&'a Certificate> for CertificatePayload {
                 CertificatePayload::PoolUpdate(payload.payload_data())
             }
             Certificate::VotePlan(payload) => CertificatePayload::VotePlan(payload.payload_data()),
+            Certificate::VoteCast(payload) => CertificatePayload::VoteCast(payload.payload_data()),
         }
     }
 }
@@ -133,6 +146,7 @@ pub enum Certificate {
     PoolRetirement(PoolRetirement),
     PoolUpdate(PoolUpdate),
     VotePlan(VotePlan),
+    VoteCast(VoteCast),
 }
 
 impl From<StakeDelegation> for Certificate {
@@ -171,6 +185,12 @@ impl From<VotePlan> for Certificate {
     }
 }
 
+impl From<VoteCast> for Certificate {
+    fn from(vote_plan: VoteCast) -> Self {
+        Self::VoteCast(vote_plan)
+    }
+}
+
 impl Certificate {
     pub fn need_auth(&self) -> bool {
         match self {
@@ -180,6 +200,7 @@ impl Certificate {
             Certificate::StakeDelegation(_) => <StakeDelegation as Payload>::HAS_AUTH,
             Certificate::OwnerStakeDelegation(_) => <OwnerStakeDelegation as Payload>::HAS_AUTH,
             Certificate::VotePlan(_) => <VotePlan as Payload>::HAS_AUTH,
+            Certificate::VoteCast(_) => <VoteCast as Payload>::HAS_AUTH,
         }
     }
 }
@@ -195,6 +216,7 @@ pub enum SignedCertificate {
     PoolRetirement(PoolRetirement, <PoolRetirement as Payload>::Auth),
     PoolUpdate(PoolUpdate, <PoolUpdate as Payload>::Auth),
     VotePlan(VotePlan, <VotePlan as Payload>::Auth),
+    VoteCast(VoteCast, <VoteCast as Payload>::Auth),
 }
 
 #[cfg(test)]
@@ -211,7 +233,8 @@ mod tests {
             Certificate::PoolRetirement(_) => true,
             Certificate::StakeDelegation(_) => true,
             Certificate::OwnerStakeDelegation(_) => false,
-            Certificate::VotePlan(_) => todo!(),
+            Certificate::VotePlan(_) => false,
+            Certificate::VoteCast(_) => false,
         };
         TestResult::from_bool(certificate.need_auth() == expected_result)
     }

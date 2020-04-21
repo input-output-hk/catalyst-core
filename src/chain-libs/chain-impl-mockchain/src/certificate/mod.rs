@@ -1,11 +1,16 @@
 mod delegation;
 mod pool;
+mod vote_plan;
 
 #[cfg(any(test, feature = "property-test-api"))]
 mod test;
 
 use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
+pub use self::vote_plan::{
+    ExternalProposalDocument, ExternalProposalId, FundingPlan, Proposal, Proposals, PushProposal,
+    VotePlan,
+};
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
 pub use pool::{
     GenesisPraosLeaderHash, IndexSignatures, ManagementThreshold, PoolId, PoolOwnersSigned,

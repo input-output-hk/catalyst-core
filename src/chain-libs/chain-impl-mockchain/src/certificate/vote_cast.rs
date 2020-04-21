@@ -53,6 +53,7 @@ impl VoteCast {
 }
 
 impl VoteCastPayload {
+    #[cfg(any(test, feature = "property-test-api"))]
     pub(crate) fn empty() -> Self {
         Self {
             cryptographic_data: Vec::new(),

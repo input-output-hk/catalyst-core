@@ -1,4 +1,5 @@
 use crate::{
+    block::BlockDate,
     certificate::CertificateSlice,
     transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
 };
@@ -7,7 +8,6 @@ use chain_core::{
     property,
 };
 use chain_crypto::{digest::DigestOf, Blake2b256};
-use chain_time::{DurationSeconds, TimeOffsetSeconds};
 use std::ops::Deref;
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -30,13 +30,13 @@ pub type VotePlanId = DigestOf<Blake2b256, VotePlan>;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VotePlan {
     /// the vote start validity
-    vote_start: TimeOffsetSeconds,
+    vote_start: BlockDate,
     /// the duration within which it is possible to vote for one of the proposals
     /// of this voting plan.
-    vote_duration: DurationSeconds,
+    vote_end: BlockDate,
     /// the committee duration is the time allocated to the committee to open
     /// the ballots and publish the results on chain
-    committee_duration: DurationSeconds,
+    committee_end: BlockDate,
     /// the proposals to vote for
     proposals: Proposals,
 }
@@ -134,15 +134,15 @@ impl Proposals {
 
 impl VotePlan {
     pub fn new(
-        vote_start: TimeOffsetSeconds,
-        vote_duration: DurationSeconds,
-        committee_duration: DurationSeconds,
+        vote_start: BlockDate,
+        vote_end: BlockDate,
+        committee_end: BlockDate,
         proposals: Proposals,
     ) -> Self {
         Self {
             vote_start,
-            vote_duration,
-            committee_duration,
+            vote_end,
+            committee_end,
             proposals,
         }
     }
@@ -154,24 +154,6 @@ impl VotePlan {
 
     pub fn proposals_mut(&mut self) -> &mut Proposals {
         &mut self.proposals
-    }
-
-    #[inline]
-    fn vote_end_offset(&self) -> TimeOffsetSeconds {
-        let start: u64 = self.vote_start.into();
-        let duration: u64 = self.vote_duration.into();
-        let end = start + duration;
-        let end: DurationSeconds = end.into();
-        end.into()
-    }
-
-    #[inline]
-    fn committee_end_offset(&self) -> TimeOffsetSeconds {
-        let start: u64 = self.vote_end_offset().into();
-        let duration: u64 = self.committee_duration.into();
-        let end = start + duration;
-        let end: DurationSeconds = end.into();
-        end.into()
     }
 
     #[inline]
@@ -200,9 +182,12 @@ impl VotePlan {
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         let bb = bb
-            .u64(self.vote_start.into())
-            .u64(self.vote_duration.into())
-            .u64(self.committee_duration.into())
+            .u32(self.vote_start.epoch)
+            .u32(self.vote_start.slot_id)
+            .u32(self.vote_end.epoch)
+            .u32(self.vote_end.slot_id)
+            .u32(self.committee_end.epoch)
+            .u32(self.committee_end.slot_id)
             .iter8(&mut self.proposals.iter(), |bb, proposal| {
                 proposal.serialize_in(bb)
             });
@@ -269,9 +254,18 @@ impl property::Serialize for VotePlan {
 
 impl Readable for VotePlan {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        let vote_start = DurationSeconds(buf.get_u64()?).into();
-        let vote_duration = DurationSeconds(buf.get_u64()?);
-        let committee_duration = DurationSeconds(buf.get_u64()?);
+        let vote_start = BlockDate {
+            epoch: buf.get_u32()?,
+            slot_id: buf.get_u32()?,
+        };
+        let vote_end = BlockDate {
+            epoch: buf.get_u32()?,
+            slot_id: buf.get_u32()?,
+        };
+        let committee_end = BlockDate {
+            epoch: buf.get_u32()?,
+            slot_id: buf.get_u32()?,
+        };
 
         let proposal_size = buf.get_u8()? as usize;
         let mut proposals = Proposals {
@@ -291,8 +285,8 @@ impl Readable for VotePlan {
 
         Ok(Self {
             vote_start,
-            vote_duration,
-            committee_duration,
+            vote_end,
+            committee_end,
             proposals,
         })
     }

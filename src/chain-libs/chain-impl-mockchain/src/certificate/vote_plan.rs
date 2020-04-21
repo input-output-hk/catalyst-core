@@ -1,9 +1,7 @@
 use crate::{
     certificate::CertificateSlice,
     transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
-    value::Value,
 };
-use chain_addr::Address;
 use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
     property,
@@ -51,6 +49,15 @@ pub struct Proposals {
     proposals: Vec<Proposal>,
 }
 
+/// options for the vote
+///
+/// currently this is a 4bits structure, allowing up to 16 choices
+/// however we may allow more complex object to be set in
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VoteOptions {
+    num_choices: u8,
+}
+
 /// a proposal with the associated external proposal identifier
 /// which leads to retrieving data from outside of the blockchain
 /// with its unique identifier and the funding plan required
@@ -59,19 +66,7 @@ pub struct Proposals {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Proposal {
     external_id: ExternalProposalId,
-    funding_plan: FundingPlan,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FundingPlan {
-    /// may the associated proposal be voted for, the funding
-    /// will be paid upfront to the given address.
-    UpFront {
-        /// the value required to pay upfront
-        value: Value,
-        /// the address to deposit the funds to
-        address: Address,
-    },
+    options: VoteOptions,
 }
 
 #[must_use = "Adding a proposal may fail"]
@@ -80,11 +75,21 @@ pub enum PushProposal {
     Full { proposal: Proposal },
 }
 
+impl VoteOptions {
+    const NUM_CHOICES_MAX: u8 = 0b0000_1111;
+
+    pub fn new_length(num_choices: u8) -> Self {
+        Self {
+            num_choices: num_choices & Self::NUM_CHOICES_MAX,
+        }
+    }
+}
+
 impl Proposal {
-    pub fn new(external_id: ExternalProposalId, funding_plan: FundingPlan) -> Self {
+    pub fn new(external_id: ExternalProposalId, options: VoteOptions) -> Self {
         Self {
             external_id,
-            funding_plan,
+            options,
         }
     }
 
@@ -92,23 +97,11 @@ impl Proposal {
         &self.external_id
     }
 
-    pub fn funding_plan(&self) -> &FundingPlan {
-        &self.funding_plan
-    }
-
     fn serialize_in(&self, bb: ByteBuilder<VotePlan>) -> ByteBuilder<VotePlan> {
         let bb = bb
             .bytes(self.external_id.as_ref())
-            .sub(|sbb| self.funding_plan.serialize_in(sbb));
+            .u8(self.options.num_choices);
         bb
-    }
-}
-
-impl FundingPlan {
-    fn serialize_in(&self, bb: ByteBuilder<VotePlan>) -> ByteBuilder<VotePlan> {
-        match self {
-            Self::UpFront { value, address } => bb.u8(0).bytes(&address.to_bytes()).u64(value.0),
-        }
     }
 }
 
@@ -284,28 +277,13 @@ impl Readable for VotePlan {
         let mut proposals = Proposals {
             proposals: Vec::with_capacity(proposal_size),
         };
-        for i in 0..proposal_size {
+        for _ in 0..proposal_size {
             let external_id = <[u8; 32]>::read(buf)?.into();
-
-            let funding_plan_type = buf.get_u8()?;
-            let funding_plan = match funding_plan_type {
-                0 => {
-                    let address = Address::read(buf)?;
-                    let value = Value::read(buf)?;
-                    FundingPlan::UpFront { address, value }
-                }
-                _ => {
-                    return Err(ReadError::StructureInvalid(format!(
-                        "Proposal {index} does not have a known funding plan type: {t}",
-                        t = funding_plan_type,
-                        index = i,
-                    )))
-                }
-            };
+            let options = buf.get_u8().map(VoteOptions::new_length)?;
 
             let proposal = Proposal {
                 external_id,
-                funding_plan,
+                options,
             };
 
             proposals.proposals.push(proposal);

@@ -120,22 +120,16 @@ impl Arbitrary for PoolRegistration {
     }
 }
 
-impl Arbitrary for FundingPlan {
+impl Arbitrary for VoteOptions {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        match u8::arbitrary(g) % 1 {
-            0 => Self::UpFront {
-                address: Arbitrary::arbitrary(g),
-                value: Arbitrary::arbitrary(g),
-            },
-            _ => unimplemented!(),
-        }
+        Self::new_length(u8::arbitrary(g))
     }
 }
 
 impl Arbitrary for Proposal {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let external_id = ExternalProposalId::arbitrary(g);
-        let funding_plan = FundingPlan::arbitrary(g);
+        let funding_plan = VoteOptions::arbitrary(g);
 
         Self::new(external_id, funding_plan)
     }

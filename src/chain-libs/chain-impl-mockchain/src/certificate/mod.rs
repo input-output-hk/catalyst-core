@@ -8,7 +8,7 @@ mod test;
 use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
 pub use self::vote_plan::{
-    ExternalProposalDocument, ExternalProposalId, FundingPlan, Proposal, Proposals, PushProposal,
+    ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VoteOptions,
     VotePlan, VotePlanId,
 };
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};

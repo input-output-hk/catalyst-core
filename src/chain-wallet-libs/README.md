@@ -32,12 +32,20 @@ Currently we provide support for many platforms of the high level wallet library
 | `i686-linux-android`                 |   ✓    |
 | `x86_64-linux-android`               |   ✓    |
 
+This includes bindings for Android Kotlin already packaged in a AAR package.
+
+### Cordova plugin
+
+_under construction_
+
 ### iOS
 
 | Target                               | released binaries |
 |--------------------------------------|:------:|
 | `aarch64-apple-ios`                  |   ✓    |
 | `x86_64-apple-ios`                   |   ✓    |
+
+_Swift package in development..._
 
 ### Linux
 

@@ -140,6 +140,8 @@ pub enum Block0Error {
     HasUpdateVote,
     #[error("Pool management are not valid in the block0")]
     HasPoolManagement,
+    #[error("Vote casting are not valid in the block0")]
+    HasVoteCast,
 }
 
 pub type OutputOldAddress = Output<legacy::OldAddress>;
@@ -268,6 +270,8 @@ pub enum Error {
     UpdateNotAllowedYet,
     #[error("Vote plans are not allowed outside of the genesis block yet")]
     VotePlanNotAllowedYet,
+    #[error("Vote castings are not allowed outside of the genesis block yet")]
+    VoteCastNotAllowedYet,
 }
 
 impl LedgerParameters {
@@ -426,6 +430,9 @@ impl Ledger {
                 }
                 Fragment::VotePlan(vote_plan) => {
                     // TODO: Vote plans are not yet supported in the ledger
+                }
+                Fragment::VoteCast(_) => {
+                    return Err(Error::Block0(Block0Error::HasVoteCast));
                 }
             }
         }
@@ -845,6 +852,18 @@ impl Ledger {
                 if true {
                     // TODO: vote plans are not yet allowed outside of the initial block0
                     return Err(Error::VotePlanNotAllowedYet);
+                }
+
+                // TODO: handle the ledger change of with the new vote plan
+            }
+            Fragment::VoteCast(_vote_cast) => {
+                // TODO: voting is not allowed on some blockchain already
+                // operating with jormungandr nodes (ITN)
+                // see to have a setting to prevent anyone from submitting
+                // a vote when not allowed
+                if true {
+                    // TODO: vote plans are not yet allowed outside of the initial block0
+                    return Err(Error::VoteCastNotAllowedYet);
                 }
 
                 // TODO: handle the ledger change of with the new vote plan

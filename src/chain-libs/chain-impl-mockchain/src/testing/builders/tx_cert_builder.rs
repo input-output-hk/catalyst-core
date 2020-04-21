@@ -91,7 +91,12 @@ impl TestTxCertBuilder {
             Certificate::VotePlan(vp) => {
                 let builder = self.set_initial_ios(TxBuilder::new().set_payload(vp), &funder, cert);
                 let tx = builder.set_payload_auth(&());
-                todo!()
+                Fragment::VotePlan(tx)
+            }
+            Certificate::VoteCast(vp) => {
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(vp), &funder, cert);
+                let tx = builder.set_payload_auth(&());
+                Fragment::VoteCast(tx)
             }
         }
     }

@@ -18,6 +18,7 @@ pub struct PerCertificateFee {
     pub certificate_pool_registration: Option<NonZeroU64>,
     pub certificate_stake_delegation: Option<NonZeroU64>,
     pub certificate_owner_stake_delegation: Option<NonZeroU64>,
+    pub certificate_vote_plan: Option<NonZeroU64>,
 }
 
 impl LinearFee {
@@ -40,11 +41,13 @@ impl PerCertificateFee {
         certificate_pool_registration: Option<NonZeroU64>,
         certificate_stake_delegation: Option<NonZeroU64>,
         certificate_owner_stake_delegation: Option<NonZeroU64>,
+        certificate_vote_plan: Option<NonZeroU64>,
     ) -> Self {
         Self {
             certificate_pool_registration,
             certificate_stake_delegation,
             certificate_owner_stake_delegation,
+            certificate_vote_plan,
         }
     }
 
@@ -59,6 +62,7 @@ impl PerCertificateFee {
             CertificateSlice::OwnerStakeDelegation(_) => self
                 .certificate_owner_stake_delegation
                 .map(|v| Value(v.get())),
+            CertificateSlice::VotePlan(_) => self.certificate_vote_plan.map(|v| Value(v.get())),
             _ => None,
         }
     }
@@ -116,6 +120,7 @@ mod test {
                 NonZeroU64::new(u64::arbitrary(g)),
                 NonZeroU64::new(u64::arbitrary(g)),
                 NonZeroU64::new(u64::arbitrary(g)),
+                NonZeroU64::new(u64::arbitrary(g)),
             )
         }
     }
@@ -126,7 +131,7 @@ mod test {
                 constant: Arbitrary::arbitrary(g),
                 coefficient: Arbitrary::arbitrary(g),
                 certificate: Arbitrary::arbitrary(g),
-                per_certificate_fees: PerCertificateFee::new(None, None, None),
+                per_certificate_fees: PerCertificateFee::new(None, None, None, None),
             }
         }
     }

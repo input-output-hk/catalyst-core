@@ -405,6 +405,12 @@ fn pack_per_certificate_fee<W: std::io::Write>(
             .map(|v| v.get())
             .unwrap_or(0),
     )?;
+    codec.put_u64(
+        per_certificate_fee
+            .certificate_vote_plan
+            .map(|v| v.get())
+            .unwrap_or(0),
+    )?;
     Ok(())
 }
 
@@ -414,11 +420,13 @@ fn unpack_per_certificate_fee<R: std::io::BufRead>(
     let certificate_pool_registration = std::num::NonZeroU64::new(codec.get_u64()?);
     let certificate_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
     let certificate_owner_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
+    let certificate_vote_plan = std::num::NonZeroU64::new(codec.get_u64()?);
 
     Ok(PerCertificateFee {
         certificate_pool_registration,
         certificate_stake_delegation,
         certificate_owner_stake_delegation,
+        certificate_vote_plan,
     })
 }
 

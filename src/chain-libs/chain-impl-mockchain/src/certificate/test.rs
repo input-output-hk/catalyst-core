@@ -120,6 +120,54 @@ impl Arbitrary for PoolRegistration {
     }
 }
 
+impl Arbitrary for FundingPlan {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        match u8::arbitrary(g) % 1 {
+            0 => Self::UpFront {
+                address: Arbitrary::arbitrary(g),
+                value: Arbitrary::arbitrary(g),
+            },
+            _ => unimplemented!(),
+        }
+    }
+}
+
+impl Arbitrary for Proposal {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let external_id = ExternalProposalId::arbitrary(g);
+        let funding_plan = FundingPlan::arbitrary(g);
+
+        Self::new(external_id, funding_plan)
+    }
+}
+
+impl Arbitrary for Proposals {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let len = usize::arbitrary(g) % Proposals::MAX_LEN;
+        let mut proposals = Proposals::new();
+        for _ in 0..len {
+            if let PushProposal::Success = proposals.push(Proposal::arbitrary(g)) {
+                ()
+            } else {
+                unreachable!("only generates what is needed")
+            }
+        }
+
+        proposals
+    }
+}
+
+impl Arbitrary for VotePlan {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let vote_start = DurationSeconds(u64::arbitrary(g)).into();
+        let vote_duration = DurationSeconds(u64::arbitrary(g));
+        let committee_duration = DurationSeconds(u64::arbitrary(g));
+        let proposals = Proposals::arbitrary(g);
+
+        Self::new(vote_start, vote_duration, committee_duration, proposals)
+    }
+}
+
 impl Arbitrary for Certificate {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let option = u8::arbitrary(g) % 5;

@@ -9,7 +9,7 @@ use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
 pub use self::vote_plan::{
     ExternalProposalDocument, ExternalProposalId, FundingPlan, Proposal, Proposals, PushProposal,
-    VotePlan,
+    VotePlan, VotePlanId,
 };
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
 pub use pool::{

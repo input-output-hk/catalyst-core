@@ -57,6 +57,15 @@ Currently we provide support for many platforms of the high level wallet library
 |--------------------------------------|:------:|
 | `x86_64-apple-darwin`                |   ✓    |
 
+### Wasm (and JavaScript)
+
+| Target                                  | released binaries |
+|-----------------------------------------|:------:|
+| `wasm32-unknown-unknown`                |   ✓    |
+
+This include Javascript generated binaries (with typescript annotations)
+for webjs and nodejs.
+
 ### Windows
 
 | Target                               | released binaries |

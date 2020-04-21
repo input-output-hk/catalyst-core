@@ -88,6 +88,11 @@ impl TestTxCertBuilder {
                 let tx = builder.set_payload_auth(&());
                 Fragment::OwnerStakeDelegation(tx)
             }
+            Certificate::VotePlan(vp) => {
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(vp), &funder, cert);
+                let tx = builder.set_payload_auth(&());
+                todo!()
+            }
         }
     }
 

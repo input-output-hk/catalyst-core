@@ -1,4 +1,8 @@
-use crate::value::Value;
+use crate::{
+    certificate::CertificateSlice,
+    transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
+    value::Value,
+};
 use chain_addr::Address;
 use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
@@ -223,6 +227,31 @@ impl VotePlan {
     pub fn to_id(&self) -> VotePlanId {
         let ba = self.serialize();
         DigestOf::digest_byteslice(&ba.as_byteslice())
+    }
+}
+
+/* Auth/Payload ************************************************************* */
+
+impl Payload for VotePlan {
+    const HAS_DATA: bool = false;
+    const HAS_AUTH: bool = false;
+    type Auth = ();
+
+    fn payload_data(&self) -> PayloadData<Self> {
+        PayloadData(
+            self.serialize_in(ByteBuilder::new())
+                .finalize_as_vec()
+                .into(),
+            std::marker::PhantomData,
+        )
+    }
+
+    fn payload_auth_data(_: &Self::Auth) -> PayloadAuthData<Self> {
+        todo!()
+    }
+
+    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+        Some(CertificateSlice::from(p))
     }
 }
 

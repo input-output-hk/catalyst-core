@@ -24,6 +24,7 @@ pub enum CertificateSlice<'a> {
     PoolRegistration(PayloadSlice<'a, PoolRegistration>),
     PoolRetirement(PayloadSlice<'a, PoolRetirement>),
     PoolUpdate(PayloadSlice<'a, PoolUpdate>),
+    VotePlan(PayloadSlice<'a, VotePlan>),
 }
 
 impl<'a> From<PayloadSlice<'a, StakeDelegation>> for CertificateSlice<'a> {
@@ -55,6 +56,12 @@ impl<'a> From<PayloadSlice<'a, PoolUpdate>> for CertificateSlice<'a> {
     }
 }
 
+impl<'a> From<PayloadSlice<'a, VotePlan>> for CertificateSlice<'a> {
+    fn from(payload: PayloadSlice<'a, VotePlan>) -> CertificateSlice<'a> {
+        CertificateSlice::VotePlan(payload)
+    }
+}
+
 impl<'a> CertificateSlice<'a> {
     pub fn into_owned(self) -> Certificate {
         match self {
@@ -67,6 +74,7 @@ impl<'a> CertificateSlice<'a> {
             CertificateSlice::OwnerStakeDelegation(c) => {
                 Certificate::OwnerStakeDelegation(c.into_payload())
             }
+            CertificateSlice::VotePlan(c) => Certificate::VotePlan(c.into_payload()),
         }
     }
 }
@@ -78,6 +86,7 @@ pub enum CertificatePayload {
     PoolRegistration(PayloadData<PoolRegistration>),
     PoolRetirement(PayloadData<PoolRetirement>),
     PoolUpdate(PayloadData<PoolUpdate>),
+    VotePlan(PayloadData<VotePlan>),
 }
 
 impl CertificatePayload {
@@ -88,6 +97,7 @@ impl CertificatePayload {
             CertificatePayload::PoolRegistration(payload) => payload.borrow().into(),
             CertificatePayload::PoolRetirement(payload) => payload.borrow().into(),
             CertificatePayload::PoolUpdate(payload) => payload.borrow().into(),
+            CertificatePayload::VotePlan(payload) => payload.borrow().into(),
         }
     }
 }
@@ -110,6 +120,7 @@ impl<'a> From<&'a Certificate> for CertificatePayload {
             Certificate::PoolUpdate(payload) => {
                 CertificatePayload::PoolUpdate(payload.payload_data())
             }
+            Certificate::VotePlan(payload) => CertificatePayload::VotePlan(payload.payload_data()),
         }
     }
 }
@@ -121,6 +132,7 @@ pub enum Certificate {
     PoolRegistration(PoolRegistration),
     PoolRetirement(PoolRetirement),
     PoolUpdate(PoolUpdate),
+    VotePlan(VotePlan),
 }
 
 impl From<StakeDelegation> for Certificate {
@@ -153,6 +165,12 @@ impl From<PoolUpdate> for Certificate {
     }
 }
 
+impl From<VotePlan> for Certificate {
+    fn from(vote_plan: VotePlan) -> Self {
+        Self::VotePlan(vote_plan)
+    }
+}
+
 impl Certificate {
     pub fn need_auth(&self) -> bool {
         match self {
@@ -161,6 +179,7 @@ impl Certificate {
             Certificate::PoolRetirement(_) => <PoolRetirement as Payload>::HAS_AUTH,
             Certificate::StakeDelegation(_) => <StakeDelegation as Payload>::HAS_AUTH,
             Certificate::OwnerStakeDelegation(_) => <OwnerStakeDelegation as Payload>::HAS_AUTH,
+            Certificate::VotePlan(_) => <VotePlan as Payload>::HAS_AUTH,
         }
     }
 }
@@ -175,6 +194,7 @@ pub enum SignedCertificate {
     PoolRegistration(PoolRegistration, <PoolRegistration as Payload>::Auth),
     PoolRetirement(PoolRetirement, <PoolRetirement as Payload>::Auth),
     PoolUpdate(PoolUpdate, <PoolUpdate as Payload>::Auth),
+    VotePlan(VotePlan, <VotePlan as Payload>::Auth),
 }
 
 #[cfg(test)]
@@ -191,6 +211,7 @@ mod tests {
             Certificate::PoolRetirement(_) => true,
             Certificate::StakeDelegation(_) => true,
             Certificate::OwnerStakeDelegation(_) => false,
+            Certificate::VotePlan(_) => todo!(),
         };
         TestResult::from_bool(certificate.need_auth() == expected_result)
     }

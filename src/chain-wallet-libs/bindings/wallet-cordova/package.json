@@ -1,0 +1,48 @@
+{
+  "name": "wallet-cordova-plugin",
+  "version": "2.0.0",
+  "description": "Jormungandr wallet Cordova Plugin",
+  "cordova": {
+    "id": "wallet-cordova-plugin",
+    "platforms": [
+      "android",
+      "ios",
+      "windows",
+      "browser",
+      "osx"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/input-output-hk/chain-wallet-libs"
+  },
+  "bugs": {
+    "url": "https://github.com/input-output-hk/chain-wallet-libs/issues"
+  },
+  "keywords": [
+    "cordova",
+    "device",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios",
+    "cordova-windows",
+    "cordova-browser",
+    "cordova-osx"
+  ],
+  "scripts": {
+    "test": "npm run lint",
+    "lint": "eslint ."
+  },
+  "author": "Apache Software Foundation",
+  "license": "Apache-2.0",
+  "engines": {
+    "cordovaDependencies": {
+      "3.0.0": {
+        "cordova": ">100"
+      }
+    }
+  },
+  "devDependencies": {
+    "@cordova/eslint-config": "^3.0.0"
+  }
+}

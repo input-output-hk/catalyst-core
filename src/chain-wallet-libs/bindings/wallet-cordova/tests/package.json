@@ -1,0 +1,14 @@
+{
+  "name": "wallet-cordova-plugin-tests",
+  "version": "2.0.0",
+  "description": "",
+  "cordova": {
+    "id": "wallet-cordova-plugin-tests",
+    "platforms": []
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "ecioppettini@atixlabs.com",
+  "license": "MIT OR Apache-2.0"
+}

@@ -338,7 +338,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
     }
 }
 
-#[cfg(any(test, feature = "property-test-api"))]
+#[cfg(any(test))]
 mod tests {
     use super::*;
     use crate::{

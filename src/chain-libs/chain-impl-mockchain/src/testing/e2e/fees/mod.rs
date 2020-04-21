@@ -21,6 +21,7 @@ pub fn per_certificate_fees() {
     let certificate_stake_delegation = 20;
     let certificate_owner_stake_delegation = 300;
     let certificate_vote_plan_fee = 10_000;
+    let certificate_vote_cast_fee = 50;
 
     let mut fee_amount = 0;
     let mut alice_funds = 1_000;
@@ -46,6 +47,7 @@ pub fn per_certificate_fees() {
                     NonZeroU64::new(certificate_stake_delegation),
                     NonZeroU64::new(certificate_owner_stake_delegation),
                     NonZeroU64::new(certificate_vote_plan_fee),
+                    NonZeroU64::new(certificate_vote_cast_fee),
                 )),
         )
         .with_initials(vec![

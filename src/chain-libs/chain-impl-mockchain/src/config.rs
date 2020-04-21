@@ -661,6 +661,12 @@ impl ConfigParamVariant for PerCertificateFee {
                 .unwrap_or(0)
                 .to_payload(),
         );
+        v.extend(
+            self.certificate_vote_cast
+                .map(|v| v.get())
+                .unwrap_or(0)
+                .to_payload(),
+        );
         v
     }
 
@@ -673,8 +679,9 @@ impl ConfigParamVariant for PerCertificateFee {
                     &payload[16..24],
                 )?),
                 certificate_vote_plan: None,
+                certificate_vote_cast: None,
             })
-        } else if payload.len() == 4 * 8 {
+        } else if payload.len() == 5 * 8 {
             Ok(PerCertificateFee {
                 certificate_pool_registration: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
                 certificate_stake_delegation: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
@@ -682,6 +689,7 @@ impl ConfigParamVariant for PerCertificateFee {
                     &payload[16..24],
                 )?),
                 certificate_vote_plan: NonZeroU64::new(u64::from_payload(&payload[24..32])?),
+                certificate_vote_cast: NonZeroU64::new(u64::from_payload(&payload[32..40])?),
             })
         } else {
             Err(Error::SizeInvalid)

@@ -1,6 +1,7 @@
 #[warn(unused_imports)]
 use super::*;
 use crate::accounting::account::DelegationType;
+use crate::block::BlockDate;
 use crate::rewards::TaxType;
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::{testing, Ed25519};
@@ -153,12 +154,12 @@ impl Arbitrary for Proposals {
 
 impl Arbitrary for VotePlan {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let vote_start = DurationSeconds(u64::arbitrary(g)).into();
-        let vote_duration = DurationSeconds(u64::arbitrary(g));
-        let committee_duration = DurationSeconds(u64::arbitrary(g));
+        let vote_start = BlockDate::arbitrary(g);
+        let vote_end = BlockDate::arbitrary(g);
+        let committee_end = BlockDate::arbitrary(g);
         let proposals = Proposals::arbitrary(g);
 
-        Self::new(vote_start, vote_duration, committee_duration, proposals)
+        Self::new(vote_start, vote_end, committee_end, proposals)
     }
 }
 

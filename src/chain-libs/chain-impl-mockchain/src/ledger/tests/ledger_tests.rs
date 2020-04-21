@@ -240,6 +240,7 @@ pub fn wrong_fragment_at_block0(fragment: Fragment) -> TestResult {
         Fragment::Transaction(_) => return TestResult::discard(),
         Fragment::StakeDelegation(_) => return TestResult::discard(),
         Fragment::PoolRegistration(_) => return TestResult::discard(),
+        Fragment::VotePlan(_) => return TestResult::discard(),
         _ => (),
     };
 

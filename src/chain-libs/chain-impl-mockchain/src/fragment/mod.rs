@@ -39,6 +39,7 @@ pub enum Fragment {
     PoolUpdate(Transaction<certificate::PoolUpdate>),
     UpdateProposal(SignedUpdateProposal),
     UpdateVote(SignedUpdateVote),
+    VotePlan(Transaction<certificate::VotePlan>),
 }
 
 impl PartialEq for Fragment {
@@ -61,6 +62,7 @@ pub(super) enum FragmentTag {
     PoolUpdate = 7,
     UpdateProposal = 8,
     UpdateVote = 9,
+    VotePlan = 10,
 }
 
 impl FragmentTag {
@@ -76,6 +78,7 @@ impl FragmentTag {
             7 => Some(FragmentTag::PoolUpdate),
             8 => Some(FragmentTag::UpdateProposal),
             9 => Some(FragmentTag::UpdateVote),
+            10 => Some(FragmentTag::VotePlan),
             _ => None,
         }
     }
@@ -95,6 +98,7 @@ impl Fragment {
             Fragment::PoolUpdate(_) => FragmentTag::PoolUpdate,
             Fragment::UpdateProposal(_) => FragmentTag::UpdateProposal,
             Fragment::UpdateVote(_) => FragmentTag::UpdateVote,
+            Fragment::VotePlan(_) => FragmentTag::VotePlan,
         }
     }
 
@@ -117,6 +121,7 @@ impl Fragment {
             Fragment::PoolUpdate(pm) => pm.serialize(&mut codec).unwrap(),
             Fragment::UpdateProposal(proposal) => proposal.serialize(&mut codec).unwrap(),
             Fragment::UpdateVote(vote) => vote.serialize(&mut codec).unwrap(),
+            Fragment::VotePlan(vote_plan) => vote_plan.serialize(&mut codec).unwrap(),
         }
         FragmentRaw(codec.into_inner())
     }
@@ -166,6 +171,7 @@ impl Readable for Fragment {
                 SignedUpdateProposal::read(buf).map(Fragment::UpdateProposal)
             }
             Some(FragmentTag::UpdateVote) => SignedUpdateVote::read(buf).map(Fragment::UpdateVote),
+            Some(FragmentTag::VotePlan) => Transaction::read(buf).map(Fragment::VotePlan),
             None => Err(ReadError::UnknownTag(tag as u32)),
         }
     }

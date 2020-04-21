@@ -1,6 +1,7 @@
 #[warn(unused_imports)]
 use super::*;
 use crate::accounting::account::DelegationType;
+use crate::block::BlockDate;
 use crate::rewards::TaxType;
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::{testing, Ed25519};
@@ -117,6 +118,48 @@ impl Arbitrary for PoolRegistration {
             reward_account: None,
             keys,
         }
+    }
+}
+
+impl Arbitrary for VoteOptions {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        Self::new_length(u8::arbitrary(g))
+    }
+}
+
+impl Arbitrary for Proposal {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let external_id = ExternalProposalId::arbitrary(g);
+        let funding_plan = VoteOptions::arbitrary(g);
+
+        Self::new(external_id, funding_plan)
+    }
+}
+
+impl Arbitrary for Proposals {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let len = usize::arbitrary(g) % Proposals::MAX_LEN;
+        let mut proposals = Proposals::new();
+        for _ in 0..len {
+            if let PushProposal::Success = proposals.push(Proposal::arbitrary(g)) {
+                ()
+            } else {
+                unreachable!("only generates what is needed")
+            }
+        }
+
+        proposals
+    }
+}
+
+impl Arbitrary for VotePlan {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let vote_start = BlockDate::arbitrary(g);
+        let vote_end = BlockDate::arbitrary(g);
+        let committee_end = BlockDate::arbitrary(g);
+        let proposals = Proposals::arbitrary(g);
+
+        Self::new(vote_start, vote_end, committee_end, proposals)
     }
 }
 

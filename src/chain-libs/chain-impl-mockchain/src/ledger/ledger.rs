@@ -838,8 +838,16 @@ impl Ledger {
                 new_ledger = new_ledger.apply_update_vote(&vote)?;
             }
             Fragment::VotePlan(_vote_plan) => {
-                // TODO: vote plans are not yet allowed outside of the initial block0
-                return Err(Error::VotePlanNotAllowedYet);
+                // TODO: voting is not allowed on some blockchain already
+                // operating with jormungandr nodes (ITN)
+                // see to have a setting to prevent anyone from submitting
+                // a vote when not allowed
+                if true {
+                    // TODO: vote plans are not yet allowed outside of the initial block0
+                    return Err(Error::VotePlanNotAllowedYet);
+                }
+
+                // TODO: handle the ledger change of with the new vote plan
             }
         }
 

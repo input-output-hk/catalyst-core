@@ -19,6 +19,7 @@ pub struct PerCertificateFee {
     pub certificate_stake_delegation: Option<NonZeroU64>,
     pub certificate_owner_stake_delegation: Option<NonZeroU64>,
     pub certificate_vote_plan: Option<NonZeroU64>,
+    pub certificate_vote_cast: Option<NonZeroU64>,
 }
 
 impl LinearFee {
@@ -42,12 +43,14 @@ impl PerCertificateFee {
         certificate_stake_delegation: Option<NonZeroU64>,
         certificate_owner_stake_delegation: Option<NonZeroU64>,
         certificate_vote_plan: Option<NonZeroU64>,
+        certificate_vote_cast: Option<NonZeroU64>,
     ) -> Self {
         Self {
             certificate_pool_registration,
             certificate_stake_delegation,
             certificate_owner_stake_delegation,
             certificate_vote_plan,
+            certificate_vote_cast,
         }
     }
 
@@ -63,6 +66,7 @@ impl PerCertificateFee {
                 .certificate_owner_stake_delegation
                 .map(|v| Value(v.get())),
             CertificateSlice::VotePlan(_) => self.certificate_vote_plan.map(|v| Value(v.get())),
+            CertificateSlice::VoteCast(_) => self.certificate_vote_cast.map(|v| Value(v.get())),
             _ => None,
         }
     }
@@ -121,6 +125,7 @@ mod test {
                 NonZeroU64::new(u64::arbitrary(g)),
                 NonZeroU64::new(u64::arbitrary(g)),
                 NonZeroU64::new(u64::arbitrary(g)),
+                NonZeroU64::new(u64::arbitrary(g)),
             )
         }
     }
@@ -131,7 +136,7 @@ mod test {
                 constant: Arbitrary::arbitrary(g),
                 coefficient: Arbitrary::arbitrary(g),
                 certificate: Arbitrary::arbitrary(g),
-                per_certificate_fees: PerCertificateFee::new(None, None, None, None),
+                per_certificate_fees: PerCertificateFee::new(None, None, None, None, None),
             }
         }
     }
@@ -151,6 +156,8 @@ mod test {
             || per_certificate_fees
                 .certificate_owner_stake_delegation
                 .is_none()
+            || per_certificate_fees.certificate_vote_plan.is_none()
+            || per_certificate_fees.certificate_vote_cast.is_none()
         {
             return TestResult::discard();
         }
@@ -182,6 +189,8 @@ mod test {
             Certificate::OwnerStakeDelegation { .. } => {
                 cert_fees.certificate_owner_stake_delegation.unwrap().into()
             }
+            Certificate::VotePlan { .. } => cert_fees.certificate_vote_plan.unwrap().into(),
+            Certificate::VoteCast { .. } => cert_fees.certificate_vote_cast.unwrap().into(),
             _ => fee.certificate,
         }
     }

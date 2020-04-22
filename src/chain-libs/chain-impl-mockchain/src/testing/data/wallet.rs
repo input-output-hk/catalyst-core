@@ -16,6 +16,14 @@ pub struct Wallet {
 }
 
 impl Wallet {
+    pub fn from_address_data_value(account: AddressDataValue) -> Self {
+        Wallet {
+            alias: "".to_owned(),
+            account: account,
+            related_utxos: None,
+        }
+    }
+
     pub fn from_value(initial_value: Value) -> Self {
         Wallet::new("", initial_value)
     }

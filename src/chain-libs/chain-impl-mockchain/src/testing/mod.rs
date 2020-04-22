@@ -10,8 +10,6 @@ pub use builders::*;
 pub use data::KeysDb;
 pub use ledger::{ConfigBuilder, LedgerBuilder, TestLedger, UtxoDb};
 
-pub use chain_crypto::testing::TestCryptoGen;
-
 use crate::key::Hash;
 use crate::{
     account::Identifier,
@@ -25,6 +23,8 @@ use crate::{
     testing::data::{AddressData, LeaderPair, StakePool},
     value::Value,
 };
+pub use chain_crypto::testing::TestCryptoGen;
+pub use scenario::FragmentFactory;
 
 use chain_crypto::{vrf_evaluate_and_prove, Ed25519, KeyPair, PublicKey};
 use rand_core::RngCore;

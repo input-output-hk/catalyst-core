@@ -106,7 +106,7 @@ impl StakePoolBuilder {
         };
 
         let pool_info = PoolRegistration {
-            serial: 1234,
+            serial: 0,
             owners: self.owners.iter().cloned().collect(),
             operators: self.operators.iter().cloned().collect(),
             start_validity: DurationSeconds::from(0).into(),

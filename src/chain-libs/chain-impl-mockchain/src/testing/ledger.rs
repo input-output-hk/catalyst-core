@@ -7,7 +7,7 @@ use crate::{
     chaintypes::{ChainLength, ConsensusType, ConsensusVersion, HeaderId},
     config::{Block0Date, ConfigParam, RewardParams},
     date::BlockDate,
-    fee::{LinearFee, PerCertificateFee},
+    fee::{LinearFee, PerCertificateFee, PerVoteCertificateFee},
     fragment::{config::ConfigParams, Fragment, FragmentId},
     key::BftLeaderId,
     leadership::genesis::LeadershipData,
@@ -41,6 +41,7 @@ pub struct ConfigBuilder {
     discrimination: Discrimination,
     linear_fee: Option<LinearFee>,
     per_certificate_fee: Option<PerCertificateFee>,
+    per_vote_certificate_fee: Option<PerVoteCertificateFee>,
     leaders: Vec<BftLeaderId>,
     seed: u64,
     rewards: Value,
@@ -63,6 +64,7 @@ impl ConfigBuilder {
             leaders: Vec::new(),
             linear_fee: None,
             per_certificate_fee: None,
+            per_vote_certificate_fee: None,
             seed,
             rewards: Value(1_000_000),
             reward_params: RewardParams::Linear {
@@ -125,6 +127,14 @@ impl ConfigBuilder {
 
     pub fn with_per_certificate_fee(mut self, per_certificate_fee: PerCertificateFee) -> Self {
         self.per_certificate_fee = Some(per_certificate_fee);
+        self
+    }
+
+    pub fn with_per_vote_certificate_fee(
+        mut self,
+        per_vote_certificate_fee: PerVoteCertificateFee,
+    ) -> Self {
+        self.per_vote_certificate_fee = Some(per_vote_certificate_fee);
         self
     }
 
@@ -196,6 +206,12 @@ impl ConfigBuilder {
         if self.per_certificate_fee.is_some() {
             ie.push(ConfigParam::PerCertificateFees(
                 self.per_certificate_fee.clone().unwrap(),
+            ));
+        }
+
+        if self.per_vote_certificate_fee.is_some() {
+            ie.push(ConfigParam::PerVoteCertificateFees(
+                self.per_vote_certificate_fee.clone().unwrap(),
             ));
         }
 

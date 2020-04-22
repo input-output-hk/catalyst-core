@@ -45,7 +45,7 @@ use crate::certificate::{PoolId, PoolRegistration};
 use crate::chaintypes::ConsensusVersion;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
-use crate::fee::{LinearFee, PerCertificateFee};
+use crate::fee::{LinearFee, PerCertificateFee, PerVoteCertificateFee};
 use crate::fragment::{ConfigParams, FragmentId};
 use crate::header::{ChainLength, HeaderId};
 use crate::key::{serialize_public_key, BftLeaderId};
@@ -365,6 +365,7 @@ fn pack_linear_fee<W: std::io::Write>(
     codec.put_u64(linear_fee.coefficient)?;
     codec.put_u64(linear_fee.certificate)?;
     pack_per_certificate_fee(&linear_fee.per_certificate_fees, codec)?;
+    pack_per_vote_certificate_fee(&linear_fee.per_vote_certificate_fees, codec)?;
     Ok(())
 }
 
@@ -375,11 +376,13 @@ fn unpack_linear_fee<R: std::io::BufRead>(
     let coefficient = codec.get_u64()?;
     let certificate = codec.get_u64()?;
     let per_certificate_fees = unpack_per_certificate_fee(codec)?;
+    let per_vote_certificate_fees = unpack_per_vote_certificate_fee(codec)?;
     Ok(LinearFee {
         constant,
         coefficient,
         certificate,
         per_certificate_fees,
+        per_vote_certificate_fees,
     })
 }
 
@@ -405,14 +408,21 @@ fn pack_per_certificate_fee<W: std::io::Write>(
             .map(|v| v.get())
             .unwrap_or(0),
     )?;
+    Ok(())
+}
+
+fn pack_per_vote_certificate_fee<W: std::io::Write>(
+    per_vote_certificate_fee: &PerVoteCertificateFee,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
     codec.put_u64(
-        per_certificate_fee
+        per_vote_certificate_fee
             .certificate_vote_plan
             .map(|v| v.get())
             .unwrap_or(0),
     )?;
     codec.put_u64(
-        per_certificate_fee
+        per_vote_certificate_fee
             .certificate_vote_cast
             .map(|v| v.get())
             .unwrap_or(0),
@@ -426,13 +436,21 @@ fn unpack_per_certificate_fee<R: std::io::BufRead>(
     let certificate_pool_registration = std::num::NonZeroU64::new(codec.get_u64()?);
     let certificate_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
     let certificate_owner_stake_delegation = std::num::NonZeroU64::new(codec.get_u64()?);
-    let certificate_vote_plan = std::num::NonZeroU64::new(codec.get_u64()?);
-    let certificate_vote_cast = std::num::NonZeroU64::new(codec.get_u64()?);
 
     Ok(PerCertificateFee {
         certificate_pool_registration,
         certificate_stake_delegation,
         certificate_owner_stake_delegation,
+    })
+}
+
+fn unpack_per_vote_certificate_fee<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<PerVoteCertificateFee, std::io::Error> {
+    let certificate_vote_plan = std::num::NonZeroU64::new(codec.get_u64()?);
+    let certificate_vote_cast = std::num::NonZeroU64::new(codec.get_u64()?);
+
+    Ok(PerVoteCertificateFee {
         certificate_vote_plan,
         certificate_vote_cast,
     })
@@ -1372,6 +1390,14 @@ pub mod test {
                 &mut pack_per_certificate_fee,
                 &mut unpack_per_certificate_fee,
                 &per_certificate_fee
+            )
+        }
+
+        fn per_vote_certificate_fee_pack_unpack_bijection(per_vote_certificate_fee: PerVoteCertificateFee) -> TestResult {
+            pack_unpack_bijection(
+                &mut pack_per_vote_certificate_fee,
+                &mut unpack_per_vote_certificate_fee,
+                &per_vote_certificate_fee
             )
         }
 

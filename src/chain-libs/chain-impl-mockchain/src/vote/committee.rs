@@ -41,6 +41,12 @@ impl From<[u8; Self::COMMITTEE_ID_SIZE]> for CommitteeId {
     }
 }
 
+impl From<CommitteeId> for [u8; CommitteeId::COMMITTEE_ID_SIZE] {
+    fn from(id: CommitteeId) -> Self {
+        id.0
+    }
+}
+
 /// error that can be received when converting a slice into a
 /// [`CommitteeId`].
 ///

@@ -46,8 +46,6 @@ pub fn per_certificate_fees() {
                     NonZeroU64::new(certificate_pool_registration_fee),
                     NonZeroU64::new(certificate_stake_delegation),
                     NonZeroU64::new(certificate_owner_stake_delegation),
-                    NonZeroU64::new(certificate_vote_plan_fee),
-                    NonZeroU64::new(certificate_vote_cast_fee),
                 )),
         )
         .with_initials(vec![

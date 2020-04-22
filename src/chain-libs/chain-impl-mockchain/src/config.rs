@@ -6,6 +6,7 @@ use crate::value::Value;
 use crate::{
     chaintypes::ConsensusType,
     fee::{LinearFee, PerCertificateFee},
+    vote::CommitteeId,
 };
 use chain_addr::Discrimination;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
@@ -78,6 +79,8 @@ pub enum ConfigParam {
     RewardLimitNone,
     RewardLimitByAbsoluteStake(Ratio),
     PoolRewardParticipationCapping((NonZeroU32, NonZeroU32)),
+    AddCommitteeId(CommitteeId),
+    RemoveCommitteeId(CommitteeId),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -143,6 +146,10 @@ pub enum Tag {
     RewardLimitByAbsoluteStake = 24,
     #[strum(to_string = "pool-reward-participation-capping")]
     PoolRewardParticipationCapping = 25,
+    #[strum(to_string = "add-committee-id")]
+    AddCommitteeId = 26,
+    #[strum(to_string = "remove-committee-id")]
+    RemoveCommitteeId = 27,
 }
 
 impl Tag {
@@ -170,6 +177,8 @@ impl Tag {
             23 => Some(Tag::RewardLimitNone),
             24 => Some(Tag::RewardLimitByAbsoluteStake),
             25 => Some(Tag::PoolRewardParticipationCapping),
+            26 => Some(Tag::AddCommitteeId),
+            27 => Some(Tag::RemoveCommitteeId),
             _ => None,
         }
     }
@@ -202,6 +211,8 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::RewardLimitNone => Tag::RewardLimitNone,
             ConfigParam::RewardLimitByAbsoluteStake(_) => Tag::RewardLimitByAbsoluteStake,
             ConfigParam::PoolRewardParticipationCapping(..) => Tag::PoolRewardParticipationCapping,
+            ConfigParam::AddCommitteeId(..) => Tag::AddCommitteeId,
+            ConfigParam::RemoveCommitteeId(..) => Tag::RemoveCommitteeId,
         }
     }
 }
@@ -273,6 +284,12 @@ impl Readable for ConfigParam {
             }
             Tag::PoolRewardParticipationCapping => ConfigParamVariant::from_payload(bytes)
                 .map(ConfigParam::PoolRewardParticipationCapping),
+            Tag::AddCommitteeId => {
+                ConfigParamVariant::from_payload(bytes).map(ConfigParam::AddCommitteeId)
+            }
+            Tag::RemoveCommitteeId => {
+                ConfigParamVariant::from_payload(bytes).map(ConfigParam::RemoveCommitteeId)
+            }
         }
         .map_err(Into::into)
     }
@@ -306,6 +323,8 @@ impl property::Serialize for ConfigParam {
             ConfigParam::RewardLimitNone => Vec::with_capacity(0),
             ConfigParam::RewardLimitByAbsoluteStake(data) => data.to_payload(),
             ConfigParam::PoolRewardParticipationCapping(data) => data.to_payload(),
+            ConfigParam::AddCommitteeId(data) => data.to_payload(),
+            ConfigParam::RemoveCommitteeId(data) => data.to_payload(),
         };
         let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
             io::Error::new(
@@ -697,6 +716,17 @@ impl ConfigParamVariant for PerCertificateFee {
     }
 }
 
+impl ConfigParamVariant for CommitteeId {
+    fn to_payload(&self) -> Vec<u8> {
+        self.as_ref().to_vec()
+    }
+
+    fn from_payload(payload: &[u8]) -> Result<Self, Error> {
+        use std::convert::TryFrom as _;
+        Self::try_from(payload).map_err(|err| Error::UnknownString(err.to_string()))
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 struct TagLen(u16);
 
@@ -795,7 +825,7 @@ mod test {
 
     impl Arbitrary for ConfigParam {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            match u8::arbitrary(g) % 16 {
+            match u8::arbitrary(g) % 18 {
                 0 => ConfigParam::Block0Date(Arbitrary::arbitrary(g)),
                 1 => ConfigParam::Discrimination(Arbitrary::arbitrary(g)),
                 2 => ConfigParam::ConsensusVersion(Arbitrary::arbitrary(g)),
@@ -812,6 +842,8 @@ mod test {
                 13 => ConfigParam::RewardParams(Arbitrary::arbitrary(g)),
                 14 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)),
                 15 => ConfigParam::FeesInTreasury(Arbitrary::arbitrary(g)),
+                16 => ConfigParam::AddCommitteeId(Arbitrary::arbitrary(g)),
+                17 => ConfigParam::RemoveCommitteeId(Arbitrary::arbitrary(g)),
                 _ => unreachable!(),
             }
         }

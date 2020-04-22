@@ -11,6 +11,7 @@ use crate::{
     fee::LinearFee,
     key::BftLeaderId,
     rewards,
+    vote::CommitteeId,
 };
 use std::convert::TryFrom;
 use std::error::Error;
@@ -39,6 +40,8 @@ pub struct Settings {
     pub fees_goes_to: FeesGoesTo,
     pub rewards_limit: rewards::Limit,
     pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
+
+    pub committees: Arc<Vec<CommitteeId>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -124,6 +127,7 @@ impl Settings {
             fees_goes_to: FeesGoesTo::Rewards,
             rewards_limit: rewards::Limit::None,
             pool_participation_capping: None,
+            committees: Arc::new(Vec::new()),
         }
     }
 
@@ -206,6 +210,22 @@ impl Settings {
                 }
                 ConfigParam::PoolRewardParticipationCapping(r) => {
                     new_state.pool_participation_capping = Some(r.clone())
+                }
+                ConfigParam::AddCommitteeId(committee_id) => {
+                    // FIXME: O(n)
+                    let mut v = new_state.committees.to_vec();
+                    v.push(committee_id.clone());
+                    new_state.committees = Arc::new(v);
+                }
+                ConfigParam::RemoveCommitteeId(committee_id) => {
+                    new_state.committees = Arc::new(
+                        new_state
+                            .committees
+                            .iter()
+                            .filter(|cid| *cid != committee_id)
+                            .cloned()
+                            .collect(),
+                    );
                 }
             }
         }

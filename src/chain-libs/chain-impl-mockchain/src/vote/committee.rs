@@ -116,7 +116,7 @@ impl Readable for CommitteeId {
     }
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
     use chain_core::property::Serialize as _;

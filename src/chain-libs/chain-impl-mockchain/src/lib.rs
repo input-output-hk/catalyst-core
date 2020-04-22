@@ -31,6 +31,7 @@ pub mod treasury;
 pub mod update;
 pub mod utxo;
 pub mod value;
+pub mod vote;
 
 #[macro_use]
 extern crate cfg_if;

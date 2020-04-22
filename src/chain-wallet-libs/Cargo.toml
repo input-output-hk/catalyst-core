@@ -4,8 +4,9 @@ members = [
     "chain-path-derivation",
     "hdkeygen",
     "wallet",
-    "wallet-c",
-    "wallet-js",
+    "bindings/wallet-c",
+    "bindings/wallet-jni",
+    "bindings/wallet-js",
 ]
 
 exclude = [

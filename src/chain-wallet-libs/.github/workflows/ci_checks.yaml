@@ -90,7 +90,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Test in chrome
-        run: wasm-pack test --headless --chrome wallet-js
+        run: wasm-pack test --headless --chrome ./bindings/wallet-js
 
       - name: Test in firefox
-        run: wasm-pack test --headless --firefox wallet-js
+        run: wasm-pack test --headless --firefox ./bindings/wallet-js

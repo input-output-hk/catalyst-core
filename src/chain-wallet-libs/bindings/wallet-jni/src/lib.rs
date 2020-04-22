@@ -77,7 +77,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFunds(
     let len = env
         .get_array_length(block0)
         .expect("Couldn't get block0 array length") as usize;
-    let mut bytes = Vec::with_capacity(len as usize);
+    let mut bytes = vec![0i8; len as usize];
     env.get_byte_array_region(block0, 0, &mut bytes);
     if wallet_ptr != null_mut() {
         wallet_retrieve_funds(wallet_ptr, bytes.as_ptr() as *const u8, len, settings_ptr);

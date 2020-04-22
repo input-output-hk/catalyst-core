@@ -136,10 +136,10 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: build
-        run: wasm-pack build --release --target ${{ matrix.target }} wallet-js
+        run: wasm-pack build --release --target ${{ matrix.target }} bindings/wallet-js
 
       - name: pack
-        run: wasm-pack pack ./wallet-js
+        run: wasm-pack pack bindings/wallet-js
 
       - name: Get tag version
         id: get_version
@@ -147,7 +147,7 @@ jobs:
         shell: bash
 
       - name: rename-tarball
-        run: find ./wallet-js/pkg -name wallet-js*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
+        run: find ./bindings/wallet-js/pkg -name wallet-js*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
@@ -220,6 +220,11 @@ jobs:
         uses: actions/checkout@v1
         with:
           submodules: true
+
+      - name: Get tag version
+        id: get_version
+        run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
+        shell: bash
 
       - name: Download builded libs
         uses: actions/download-artifact@v1

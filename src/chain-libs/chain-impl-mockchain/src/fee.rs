@@ -11,6 +11,7 @@ pub struct LinearFee {
     pub coefficient: u64,
     pub certificate: u64,
     pub per_certificate_fees: PerCertificateFee,
+    pub per_vote_certificate_fees: PerVoteCertificateFee,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone, Copy, Default)]
@@ -18,6 +19,10 @@ pub struct PerCertificateFee {
     pub certificate_pool_registration: Option<NonZeroU64>,
     pub certificate_stake_delegation: Option<NonZeroU64>,
     pub certificate_owner_stake_delegation: Option<NonZeroU64>,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone, Copy, Default)]
+pub struct PerVoteCertificateFee {
     pub certificate_vote_plan: Option<NonZeroU64>,
     pub certificate_vote_cast: Option<NonZeroU64>,
 }
@@ -29,11 +34,16 @@ impl LinearFee {
             coefficient,
             certificate,
             per_certificate_fees: PerCertificateFee::default(),
+            per_vote_certificate_fees: PerVoteCertificateFee::default(),
         }
     }
 
     pub fn per_certificate_fees(&mut self, per_certificate_fees: PerCertificateFee) {
         self.per_certificate_fees = per_certificate_fees;
+    }
+
+    pub fn per_vote_certificate_fees(&mut self, per_vote_certificate_fees: PerVoteCertificateFee) {
+        self.per_vote_certificate_fees = per_vote_certificate_fees;
     }
 }
 
@@ -42,19 +52,15 @@ impl PerCertificateFee {
         certificate_pool_registration: Option<NonZeroU64>,
         certificate_stake_delegation: Option<NonZeroU64>,
         certificate_owner_stake_delegation: Option<NonZeroU64>,
-        certificate_vote_plan: Option<NonZeroU64>,
-        certificate_vote_cast: Option<NonZeroU64>,
     ) -> Self {
         Self {
             certificate_pool_registration,
             certificate_stake_delegation,
             certificate_owner_stake_delegation,
-            certificate_vote_plan,
-            certificate_vote_cast,
         }
     }
 
-    fn fees_for_certificate<'a>(&self, cert: CertificateSlice<'a>) -> Option<Value> {
+    fn fees_for_certificate<'a>(&self, cert: &CertificateSlice<'a>) -> Option<Value> {
         match cert {
             CertificateSlice::PoolRegistration(_) => {
                 self.certificate_pool_registration.map(|v| Value(v.get()))
@@ -65,6 +71,24 @@ impl PerCertificateFee {
             CertificateSlice::OwnerStakeDelegation(_) => self
                 .certificate_owner_stake_delegation
                 .map(|v| Value(v.get())),
+            _ => None,
+        }
+    }
+}
+
+impl PerVoteCertificateFee {
+    pub fn new(
+        certificate_vote_plan: Option<NonZeroU64>,
+        certificate_vote_cast: Option<NonZeroU64>,
+    ) -> Self {
+        Self {
+            certificate_vote_plan,
+            certificate_vote_cast,
+        }
+    }
+
+    fn fees_for_certificate<'a>(&self, cert: &CertificateSlice<'a>) -> Option<Value> {
+        match cert {
             CertificateSlice::VotePlan(_) => self.certificate_vote_plan.map(|v| Value(v.get())),
             CertificateSlice::VoteCast(_) => self.certificate_vote_cast.map(|v| Value(v.get())),
             _ => None,
@@ -105,9 +129,11 @@ impl FeeAlgorithm for LinearFee {
     }
 
     fn fees_for_certificate<'a>(&self, cert_slice: CertificateSlice<'a>) -> Value {
-        self.per_certificate_fees
-            .fees_for_certificate(cert_slice)
-            .unwrap_or(Value(self.certificate))
+        let f1 = self.per_certificate_fees.fees_for_certificate(&cert_slice);
+        let f2 = self
+            .per_vote_certificate_fees
+            .fees_for_certificate(&cert_slice);
+        f1.or(f2).unwrap_or(Value(self.certificate))
     }
 }
 
@@ -124,6 +150,13 @@ mod test {
                 NonZeroU64::new(u64::arbitrary(g)),
                 NonZeroU64::new(u64::arbitrary(g)),
                 NonZeroU64::new(u64::arbitrary(g)),
+            )
+        }
+    }
+
+    impl Arbitrary for PerVoteCertificateFee {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            Self::new(
                 NonZeroU64::new(u64::arbitrary(g)),
                 NonZeroU64::new(u64::arbitrary(g)),
             )
@@ -136,7 +169,8 @@ mod test {
                 constant: Arbitrary::arbitrary(g),
                 coefficient: Arbitrary::arbitrary(g),
                 certificate: Arbitrary::arbitrary(g),
-                per_certificate_fees: PerCertificateFee::new(None, None, None, None, None),
+                per_certificate_fees: PerCertificateFee::new(None, None, None),
+                per_vote_certificate_fees: PerVoteCertificateFee::new(None, None),
             }
         }
     }
@@ -148,16 +182,18 @@ mod test {
         outputs: u8,
         mut fee: LinearFee,
         per_certificate_fees: PerCertificateFee,
+        per_vote_certificate_fees: PerVoteCertificateFee,
     ) -> TestResult {
         fee.per_certificate_fees(per_certificate_fees);
+        fee.per_vote_certificate_fees(per_vote_certificate_fees);
         let per_certificate_fees = fee.per_certificate_fees;
         if per_certificate_fees.certificate_pool_registration.is_none()
             || per_certificate_fees.certificate_stake_delegation.is_none()
             || per_certificate_fees
                 .certificate_owner_stake_delegation
                 .is_none()
-            || per_certificate_fees.certificate_vote_plan.is_none()
-            || per_certificate_fees.certificate_vote_cast.is_none()
+            || per_vote_certificate_fees.certificate_vote_plan.is_none()
+            || per_vote_certificate_fees.certificate_vote_cast.is_none()
         {
             return TestResult::discard();
         }
@@ -179,6 +215,7 @@ mod test {
 
     fn calculate_expected_cert_fee_value(certificate: &Certificate, fee: &LinearFee) -> u64 {
         let cert_fees = fee.per_certificate_fees;
+        let vote_cert_fees = fee.per_vote_certificate_fees;
         match certificate {
             Certificate::PoolRegistration { .. } => {
                 cert_fees.certificate_pool_registration.unwrap().into()
@@ -189,8 +226,8 @@ mod test {
             Certificate::OwnerStakeDelegation { .. } => {
                 cert_fees.certificate_owner_stake_delegation.unwrap().into()
             }
-            Certificate::VotePlan { .. } => cert_fees.certificate_vote_plan.unwrap().into(),
-            Certificate::VoteCast { .. } => cert_fees.certificate_vote_cast.unwrap().into(),
+            Certificate::VotePlan { .. } => vote_cert_fees.certificate_vote_plan.unwrap().into(),
+            Certificate::VoteCast { .. } => vote_cert_fees.certificate_vote_cast.unwrap().into(),
             _ => fee.certificate,
         }
     }

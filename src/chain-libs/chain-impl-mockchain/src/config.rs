@@ -5,7 +5,7 @@ use crate::rewards::{Ratio, TaxType};
 use crate::value::Value;
 use crate::{
     chaintypes::ConsensusType,
-    fee::{LinearFee, PerCertificateFee},
+    fee::{LinearFee, PerCertificateFee, PerVoteCertificateFee},
     vote::CommitteeId,
 };
 use chain_addr::Discrimination;
@@ -81,6 +81,7 @@ pub enum ConfigParam {
     PoolRewardParticipationCapping((NonZeroU32, NonZeroU32)),
     AddCommitteeId(CommitteeId),
     RemoveCommitteeId(CommitteeId),
+    PerVoteCertificateFees(PerVoteCertificateFee),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -150,6 +151,8 @@ pub enum Tag {
     AddCommitteeId = 26,
     #[strum(to_string = "remove-committee-id")]
     RemoveCommitteeId = 27,
+    #[strum(to_string = "per-vote-certificate-fees")]
+    PerVoteCertificateFees = 28,
 }
 
 impl Tag {
@@ -179,6 +182,7 @@ impl Tag {
             25 => Some(Tag::PoolRewardParticipationCapping),
             26 => Some(Tag::AddCommitteeId),
             27 => Some(Tag::RemoveCommitteeId),
+            28 => Some(Tag::PerVoteCertificateFees),
             _ => None,
         }
     }
@@ -213,6 +217,7 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::PoolRewardParticipationCapping(..) => Tag::PoolRewardParticipationCapping,
             ConfigParam::AddCommitteeId(..) => Tag::AddCommitteeId,
             ConfigParam::RemoveCommitteeId(..) => Tag::RemoveCommitteeId,
+            ConfigParam::PerVoteCertificateFees(..) => Tag::PerVoteCertificateFees,
         }
     }
 }
@@ -290,6 +295,9 @@ impl Readable for ConfigParam {
             Tag::RemoveCommitteeId => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::RemoveCommitteeId)
             }
+            Tag::PerVoteCertificateFees => {
+                ConfigParamVariant::from_payload(bytes).map(ConfigParam::PerVoteCertificateFees)
+            }
         }
         .map_err(Into::into)
     }
@@ -325,6 +333,7 @@ impl property::Serialize for ConfigParam {
             ConfigParam::PoolRewardParticipationCapping(data) => data.to_payload(),
             ConfigParam::AddCommitteeId(data) => data.to_payload(),
             ConfigParam::RemoveCommitteeId(data) => data.to_payload(),
+            ConfigParam::PerVoteCertificateFees(data) => data.to_payload(),
         };
         let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
             io::Error::new(
@@ -651,6 +660,7 @@ impl ConfigParamVariant for LinearFee {
             coefficient: u64::from_payload(&payload[8..16])?,
             certificate: u64::from_payload(&payload[16..24])?,
             per_certificate_fees: PerCertificateFee::default(),
+            per_vote_certificate_fees: PerVoteCertificateFee::default(),
         })
     }
 }
@@ -674,12 +684,30 @@ impl ConfigParamVariant for PerCertificateFee {
                 .unwrap_or(0)
                 .to_payload(),
         );
-        v.extend(
-            self.certificate_vote_plan
-                .map(|v| v.get())
-                .unwrap_or(0)
-                .to_payload(),
-        );
+        v
+    }
+
+    fn from_payload(payload: &[u8]) -> Result<Self, Error> {
+        if payload.len() != 3 * 8 {
+            return Err(Error::SizeInvalid);
+        }
+        Ok(PerCertificateFee {
+            certificate_pool_registration: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
+            certificate_stake_delegation: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
+            certificate_owner_stake_delegation: NonZeroU64::new(u64::from_payload(
+                &payload[16..24],
+            )?),
+        })
+    }
+}
+
+impl ConfigParamVariant for PerVoteCertificateFee {
+    fn to_payload(&self) -> Vec<u8> {
+        let mut v = self
+            .certificate_vote_plan
+            .map(|v| v.get())
+            .unwrap_or(0)
+            .to_payload();
         v.extend(
             self.certificate_vote_cast
                 .map(|v| v.get())
@@ -690,29 +718,13 @@ impl ConfigParamVariant for PerCertificateFee {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        if payload.len() == 3 * 8 {
-            Ok(PerCertificateFee {
-                certificate_pool_registration: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
-                certificate_stake_delegation: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
-                certificate_owner_stake_delegation: NonZeroU64::new(u64::from_payload(
-                    &payload[16..24],
-                )?),
-                certificate_vote_plan: None,
-                certificate_vote_cast: None,
-            })
-        } else if payload.len() == 5 * 8 {
-            Ok(PerCertificateFee {
-                certificate_pool_registration: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
-                certificate_stake_delegation: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
-                certificate_owner_stake_delegation: NonZeroU64::new(u64::from_payload(
-                    &payload[16..24],
-                )?),
-                certificate_vote_plan: NonZeroU64::new(u64::from_payload(&payload[24..32])?),
-                certificate_vote_cast: NonZeroU64::new(u64::from_payload(&payload[32..40])?),
-            })
-        } else {
-            Err(Error::SizeInvalid)
+        if payload.len() != 2 * 8 {
+            return Err(Error::SizeInvalid);
         }
+        Ok(Self {
+            certificate_vote_plan: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
+            certificate_vote_cast: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
+        })
     }
 }
 
@@ -825,7 +837,7 @@ mod test {
 
     impl Arbitrary for ConfigParam {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            match u8::arbitrary(g) % 18 {
+            match u8::arbitrary(g) % 19 {
                 0 => ConfigParam::Block0Date(Arbitrary::arbitrary(g)),
                 1 => ConfigParam::Discrimination(Arbitrary::arbitrary(g)),
                 2 => ConfigParam::ConsensusVersion(Arbitrary::arbitrary(g)),
@@ -844,6 +856,7 @@ mod test {
                 15 => ConfigParam::FeesInTreasury(Arbitrary::arbitrary(g)),
                 16 => ConfigParam::AddCommitteeId(Arbitrary::arbitrary(g)),
                 17 => ConfigParam::RemoveCommitteeId(Arbitrary::arbitrary(g)),
+                18 => ConfigParam::PerVoteCertificateFees(Arbitrary::arbitrary(g)),
                 _ => unreachable!(),
             }
         }

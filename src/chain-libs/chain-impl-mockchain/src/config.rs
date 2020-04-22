@@ -688,17 +688,16 @@ impl ConfigParamVariant for PerCertificateFee {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        if payload.len() == 3 * 8 {
-            Ok(PerCertificateFee {
-                certificate_pool_registration: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
-                certificate_stake_delegation: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
-                certificate_owner_stake_delegation: NonZeroU64::new(u64::from_payload(
-                    &payload[16..24],
-                )?),
-            })
-        } else {
-            Err(Error::SizeInvalid)
+        if payload.len() != 3 * 8 {
+            return Err(Error::SizeInvalid);
         }
+        Ok(PerCertificateFee {
+            certificate_pool_registration: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
+            certificate_stake_delegation: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
+            certificate_owner_stake_delegation: NonZeroU64::new(u64::from_payload(
+                &payload[16..24],
+            )?),
+        })
     }
 }
 
@@ -719,14 +718,13 @@ impl ConfigParamVariant for PerVoteCertificateFee {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        if payload.len() == 2 * 8 {
-            Ok(Self {
-                certificate_vote_plan: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
-                certificate_vote_cast: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
-            })
-        } else {
-            Err(Error::SizeInvalid)
+        if payload.len() != 2 * 8 {
+            return Err(Error::SizeInvalid);
         }
+        Ok(Self {
+            certificate_vote_plan: NonZeroU64::new(u64::from_payload(&payload[0..8])?),
+            certificate_vote_cast: NonZeroU64::new(u64::from_payload(&payload[8..16])?),
+        })
     }
 }
 

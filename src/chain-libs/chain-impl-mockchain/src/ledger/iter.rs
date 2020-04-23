@@ -5,6 +5,7 @@ use crate::chaintypes::ChainLength;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::stake::PoolsState;
+use crate::vote::VotePlanLedger;
 use crate::{account, legacy, multisig, setting, update, utxo};
 use chain_addr::Address;
 use chain_time::TimeEra;
@@ -269,6 +270,8 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         let mut globals = None;
         let mut pots = Pots::zero();
         let mut leaders_log = LeadersParticipationRecord::new();
+        // TODO: votes don't have their entry
+        let mut votes = VotePlanLedger::new();
 
         for entry in iter {
             match entry {
@@ -334,6 +337,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             era: globals.era,
             pots: pots,
             leaders_log,
+            votes,
         })
     }
 }

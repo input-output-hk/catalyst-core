@@ -5,7 +5,7 @@ use super::check::{self, TxVerifyError};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
-use crate::certificate::PoolId;
+use crate::certificate::{PoolId, VotePlan};
 use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
@@ -18,7 +18,7 @@ use crate::stake::{PercentStake, PoolError, PoolStakeInformation, PoolsState, St
 use crate::transaction::*;
 use crate::treasury::Treasury;
 use crate::value::*;
-use crate::vote::CommitteeId;
+use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
@@ -82,6 +82,7 @@ pub struct Ledger {
     pub(crate) era: TimeEra,
     pub(crate) pots: Pots,
     pub(crate) leaders_log: LeadersParticipationRecord,
+    pub(crate) votes: VotePlanLedger,
 }
 
 // Dummy implementation of Debug for Ledger
@@ -275,6 +276,12 @@ pub enum Error {
     VotePlanNotAllowedYet,
     #[error("Vote castings are not allowed outside of the genesis block yet")]
     VoteCastNotAllowedYet,
+    #[error("Cannot add the vote plan")]
+    CannotAddVotePlan(
+        #[from]
+        #[source]
+        VotePlanLedgerError,
+    ),
 }
 
 impl LedgerParameters {
@@ -304,6 +311,7 @@ impl Ledger {
             era,
             pots,
             leaders_log: LeadersParticipationRecord::new(),
+            votes: VotePlanLedger::new(),
         }
     }
 
@@ -431,8 +439,10 @@ impl Ledger {
                 Fragment::PoolUpdate(_) => {
                     return Err(Error::Block0(Block0Error::HasPoolManagement));
                 }
-                Fragment::VotePlan(vote_plan) => {
-                    // TODO: Vote plans are not yet supported in the ledger
+                Fragment::VotePlan(tx) => {
+                    let tx = tx.as_slice();
+                    check::valid_block0_cert_transaction(&tx)?;
+                    ledger = ledger.apply_vote_plan(tx.payload().into_payload())?;
                 }
                 Fragment::VoteCast(_) => {
                     return Err(Error::Block0(Block0Error::HasVoteCast));
@@ -914,6 +924,11 @@ impl Ledger {
 
     pub fn apply_update_vote(mut self, vote: &update::SignedUpdateVote) -> Result<Self, Error> {
         self.updates = self.updates.apply_vote(vote, &self.settings)?;
+        Ok(self)
+    }
+
+    pub fn apply_vote_plan(mut self, vote_plan: VotePlan) -> Result<Self, Error> {
+        self.votes = self.votes.add_vote_plan(vote_plan)?;
         Ok(self)
     }
 

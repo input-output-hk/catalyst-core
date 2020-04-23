@@ -157,27 +157,42 @@ impl VotePlan {
     }
 
     #[inline]
-    pub fn vote_started(&self) -> bool {
-        todo!()
+    pub fn vote_started(&self, date: &BlockDate) -> bool {
+        &self.vote_start <= date
     }
 
     #[inline]
-    pub fn vote_finished(&self) -> bool {
-        todo!()
+    pub fn vote_finished(&self, date: &BlockDate) -> bool {
+        &self.vote_end < date
     }
 
-    pub fn can_vote(&self) -> bool {
-        self.vote_started() && !self.vote_finished()
+    /// tells if it is possible to vote at the given date
+    ///
+    /// `[vote_start..vote_end[`: from the start date (included) to
+    /// the end (not included).
+    #[inline]
+    pub fn can_vote(&self, date: &BlockDate) -> bool {
+        self.vote_started(date) && !self.vote_finished(date)
     }
 
     #[inline]
-    pub fn committee_started(&self) -> bool {
-        todo!()
+    pub fn committee_started(&self, date: &BlockDate) -> bool {
+        &self.vote_end <= date
     }
 
     #[inline]
-    pub fn committee_finished(&self) -> bool {
-        todo!()
+    pub fn committee_finished(&self, date: &BlockDate) -> bool {
+        &self.committee_end < date
+    }
+
+    /// tells if it is possible to do the committee operations at the given date
+    ///
+    /// `[vote_end..committee_end[` from the end of the vote date (included) to the
+    /// end of the committee (not included).
+    ///
+    #[inline]
+    pub fn committee_time(&self, date: &BlockDate) -> bool {
+        self.committee_started(date) && !self.committee_finished(date)
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {

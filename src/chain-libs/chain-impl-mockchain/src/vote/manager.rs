@@ -11,7 +11,7 @@ use thiserror::Error;
 ///
 /// this structure manage the lifespan of the vote plan, the votes
 /// casted and the associated parameters
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct VotePlanManager {
     id: VotePlanId,
     plan: Arc<VotePlan>,
@@ -19,15 +19,15 @@ pub struct VotePlanManager {
     proposal_managers: ProposalManagers,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct ProposalManagers(Vec<ProposalManager>);
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct ProposalManager {
     votes_by_voters: Hamt<DefaultHasher, Identifier, VoteCastPayload>,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum VoteError {
     #[error("Invalid vote plan, expected {expected}")]
     InvalidVotePlan {

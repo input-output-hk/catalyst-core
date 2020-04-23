@@ -8,13 +8,13 @@ use imhamt::{Hamt, InsertError, UpdateError};
 use std::collections::{hash_map::DefaultHasher, BTreeMap};
 use thiserror::Error;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct VotePlanLedger {
     plans: Hamt<DefaultHasher, VotePlanId, VotePlanManager>,
     plans_by_end_date: BTreeMap<BlockDate, Vec<VotePlanId>>,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum VotePlanLedgerError {
     #[error("cannot insert the vote plan {id}: {reason:?}")]
     VotePlanInsertionError { id: VotePlanId, reason: InsertError },

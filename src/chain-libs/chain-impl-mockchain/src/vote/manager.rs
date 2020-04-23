@@ -1,7 +1,7 @@
 use crate::{
-    account::Identifier,
     certificate::{Proposal, VoteCast, VoteCastPayload, VotePlan, VotePlanId},
     date::BlockDate,
+    transaction::UnspecifiedAccountIdentifier,
 };
 use imhamt::Hamt;
 use std::{collections::hash_map::DefaultHasher, sync::Arc};
@@ -24,7 +24,7 @@ struct ProposalManagers(Vec<ProposalManager>);
 
 #[derive(Clone, PartialEq, Eq)]
 struct ProposalManager {
-    votes_by_voters: Hamt<DefaultHasher, Identifier, VoteCastPayload>,
+    votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, VoteCastPayload>,
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -69,7 +69,11 @@ impl ProposalManager {
     /// simply replace the previously set one
     ///
     #[must_use = "Add the vote in a new ProposalManager, does not modify self"]
-    pub fn vote(&self, identifier: Identifier, cast: VoteCast) -> Result<Self, VoteError> {
+    pub fn vote(
+        &self,
+        identifier: UnspecifiedAccountIdentifier,
+        cast: VoteCast,
+    ) -> Result<Self, VoteError> {
         let payload = cast.into_payload();
 
         // we don't mind if we are replacing a vote
@@ -97,7 +101,11 @@ impl ProposalManagers {
     /// otherwise it will apply the vote. If the given identifier
     /// already had a vote, the previous vote will be discarded
     /// and only the new one will be kept
-    pub fn vote(&self, identifier: Identifier, cast: VoteCast) -> Result<Self, VoteError> {
+    pub fn vote(
+        &self,
+        identifier: UnspecifiedAccountIdentifier,
+        cast: VoteCast,
+    ) -> Result<Self, VoteError> {
         let proposal_index = cast.proposal_index() as usize;
         if let Some(manager) = self.0.get(proposal_index) {
             let updated_manager = manager.vote(identifier, cast)?;
@@ -172,7 +180,7 @@ impl VotePlanManager {
     pub fn vote(
         &self,
         block_date: &BlockDate,
-        identifier: Identifier,
+        identifier: UnspecifiedAccountIdentifier,
         cast: VoteCast,
     ) -> Result<Self, VoteError> {
         if cast.vote_plan() != self.id() {

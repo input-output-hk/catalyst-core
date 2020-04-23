@@ -1,7 +1,7 @@
 use crate::{
-    account::Identifier,
     certificate::{VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
+    transaction::UnspecifiedAccountIdentifier,
     vote::{VoteError, VotePlanManager},
 };
 use imhamt::{Hamt, InsertError, UpdateError};
@@ -99,7 +99,7 @@ impl VotePlanLedger {
     pub fn apply_vote(
         &self,
         block_date: &BlockDate,
-        identifier: Identifier,
+        identifier: UnspecifiedAccountIdentifier,
         vote: VoteCast,
     ) -> Result<Self, VotePlanLedgerError> {
         let id = vote.vote_plan().clone();

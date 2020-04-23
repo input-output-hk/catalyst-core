@@ -75,6 +75,18 @@ pub(super) fn valid_stake_owner_delegation_transaction<'a>(
     )
 }
 
+/// check that the transaction input/outputs/witnesses is valid for stake_owner_delegation
+///
+/// * Only 1 input (subsequently 1 witness), no output
+pub(super) fn valid_vote_cast<'a>(tx: &TransactionSlice<'a, certificate::VoteCast>) -> LedgerCheck {
+    if_cond_fail_with!(
+        tx.inputs().nb_inputs() != 1
+            || tx.witnesses().nb_witnesses() != 1
+            || tx.outputs().nb_outputs() != 0,
+        Error::VoteCastInvalidTransaction
+    )
+}
+
 /// check that the pool registration certificate is valid
 ///
 /// * management threshold T is valid: 0 < T <= #owners

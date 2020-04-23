@@ -227,6 +227,8 @@ pub enum Error {
     Update(#[from] update::Error),
     #[error("Transaction for OwnerStakeDelegation is invalid. expecting 1 input, 1 witness and 0 output")]
     OwnerStakeDelegationInvalidTransaction,
+    #[error("Transaction for VoteCast is invalid. expecting 1 input, 1 witness and 0 output")]
+    VoteCastInvalidTransaction,
     #[error("Wrong chain length, expected {expected} but received {actual}")]
     WrongChainLength {
         actual: ChainLength,

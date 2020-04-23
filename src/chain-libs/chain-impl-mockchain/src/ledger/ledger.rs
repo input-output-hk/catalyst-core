@@ -857,7 +857,7 @@ impl Ledger {
                 }
                 new_ledger = new_ledger.apply_update_vote(&vote)?;
             }
-            Fragment::VotePlan(_vote_plan) => {
+            Fragment::VotePlan(tx) => {
                 // TODO: voting is not allowed on some blockchain already
                 // operating with jormungandr nodes (ITN)
                 // see to have a setting to prevent anyone from submitting
@@ -867,7 +867,10 @@ impl Ledger {
                     return Err(Error::VotePlanNotAllowedYet);
                 }
 
-                // TODO: handle the ledger change of with the new vote plan
+                let tx = tx.as_slice();
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                new_ledger = new_ledger_.apply_vote_plan(tx.payload().into_payload())?;
             }
             Fragment::VoteCast(_vote_cast) => {
                 // TODO: voting is not allowed on some blockchain already

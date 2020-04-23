@@ -4,9 +4,11 @@
 //!
 
 mod committee;
+mod ledger;
 mod manager;
 
 pub use self::{
     committee::CommitteeId,
+    ledger::{VotePlanLedger, VotePlanLedgerError},
     manager::{VoteError, VotePlanManager},
 };

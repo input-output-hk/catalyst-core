@@ -4,5 +4,6 @@
 //!
 
 mod committee;
+mod manager;
 
-pub use self::committee::CommitteeId;
+pub use self::{committee::CommitteeId, manager::VotePlanManager};

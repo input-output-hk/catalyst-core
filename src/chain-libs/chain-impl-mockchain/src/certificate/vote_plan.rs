@@ -151,6 +151,22 @@ impl VotePlan {
         }
     }
 
+    pub fn vote_start(&self) -> BlockDate {
+        self.vote_start.clone()
+    }
+
+    pub fn vote_end(&self) -> BlockDate {
+        self.vote_end.clone()
+    }
+
+    pub fn committee_start(&self) -> BlockDate {
+        self.vote_end.clone()
+    }
+
+    pub fn committee_end(&self) -> BlockDate {
+        self.committee_end.clone()
+    }
+
     /// access the proposals associated to this voting plan
     pub fn proposals(&self) -> &Proposals {
         &self.proposals

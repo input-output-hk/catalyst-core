@@ -6,4 +6,7 @@
 mod committee;
 mod manager;
 
-pub use self::{committee::CommitteeId, manager::VotePlanManager};
+pub use self::{
+    committee::CommitteeId,
+    manager::{VoteError, VotePlanManager},
+};

@@ -17,9 +17,9 @@ pub struct VotePlanManager {
     proposal_managers: ProposalManagers,
 }
 
-pub struct ProposalManagers(Vec<ProposalManager>);
+struct ProposalManagers(Vec<ProposalManager>);
 
-pub struct ProposalManager {
+struct ProposalManager {
     votes_by_voters: HashMap<Identifier, VoteCastPayload>,
 }
 
@@ -39,6 +39,13 @@ pub enum VoteError {
 }
 
 impl ProposalManager {
+    /// construct a `ProposalManager` to track down the votes associated to this
+    /// proposal.
+    ///
+    /// the proposal is passed on as parameter so we could add some form
+    /// of verification in the future about the content of the vote (if
+    /// possible : ZK is not necessarily allowing this).
+    ///
     fn new(_proposal: &Proposal) -> Self {
         Self {
             votes_by_voters: HashMap::new(),

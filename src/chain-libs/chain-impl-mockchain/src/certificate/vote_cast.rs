@@ -42,6 +42,10 @@ impl VoteCast {
         &self.payload
     }
 
+    pub(crate) fn into_payload(self) -> VoteCastPayload {
+        self.payload
+    }
+
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         bb.bytes(self.vote_plan.as_ref()).u8(self.proposal_index)
         // .bytes(self.payload.as_ref())

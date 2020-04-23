@@ -41,7 +41,7 @@ use crate::account::AccountAlg;
 use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
 };
-use crate::certificate::{PoolId, PoolRegistration};
+use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VoteOptions, VotePlan};
 use crate::chaintypes::ConsensusVersion;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
@@ -50,12 +50,12 @@ use crate::fragment::{ConfigParams, FragmentId};
 use crate::header::{ChainLength, HeaderId};
 use crate::key::{serialize_public_key, BftLeaderId};
 use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
-use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
 use crate::stake::{PoolLastRewards, PoolState};
 use crate::transaction::Output;
 use crate::update::{UpdateProposal, UpdateProposalId, UpdateProposalState, UpdateVoterId};
 use crate::value::Value;
+use crate::{certificate, legacy};
 use crate::{config, key, multisig, utxo};
 use chain_addr::{Address, Discrimination};
 use chain_core::mempack::{ReadBuf, Readable};
@@ -853,6 +853,62 @@ fn unpack_address<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Address, 
     }
 }
 
+fn pack_vote_proposal<W: std::io::Write>(
+    proposal: &Proposal,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    pack_digestof(proposal.external_id(), codec)?;
+    codec.put_u8(proposal.options().choices())?;
+    Ok(())
+}
+
+fn unpack_proposal<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Proposal, std::io::Error> {
+    let external_id = unpack_digestof(codec)?;
+    let options = VoteOptions::new_length(codec.get_u8()?);
+    Ok(Proposal::new(external_id, options))
+}
+
+fn pack_vote_proposals<W: std::io::Write>(
+    proposals: &Proposals,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    codec.put_u64(proposals.len() as u64)?;
+    for proposal in proposals.iter() {
+        pack_vote_proposal(proposal, codec)?;
+    }
+    Ok(())
+}
+
+fn unpack_proposals<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<Proposals, std::io::Error> {
+    let mut proposals = Proposals::new();
+    let size = codec.get_u64()?;
+    for _ in 0..size {
+        proposals.push(unpack_proposal(codec)?);
+    }
+    Ok(proposals)
+}
+
+fn pack_vote_plan<W: std::io::Write>(
+    vote_plan: &VotePlan,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    pack_block_date(&vote_plan.vote_start(), codec)?;
+    pack_block_date(&vote_plan.vote_end(), codec)?;
+    pack_block_date(&vote_plan.committee_end(), codec)?;
+    pack_vote_proposals(vote_plan.proposals(), codec)?;
+    Ok(())
+}
+
+fn unpack_vote_plan<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<VotePlan, std::io::Error> {
+    let vote_start = unpack_block_date(codec)?;
+    let vote_end = unpack_block_date(codec)?;
+    let commitee_end = unpack_block_date(codec)?;
+    let proposals = unpack_proposals(codec)?;
+    Ok(VotePlan::new(vote_start, vote_end, commitee_end, proposals))
+}
+
 #[derive(Debug, Eq, PartialEq)]
 enum EntrySerializeCode {
     Globals = 0,
@@ -866,7 +922,8 @@ enum EntrySerializeCode {
     MultisigDeclaration = 8,
     StakePool = 9,
     LeaderParticipation = 10,
-    SerializationEnd = 11,
+    VotePlan = 11,
+    SerializationEnd = 99,
 }
 
 impl EntrySerializeCode {
@@ -883,7 +940,8 @@ impl EntrySerializeCode {
             8 => Some(EntrySerializeCode::MultisigDeclaration),
             9 => Some(EntrySerializeCode::StakePool),
             10 => Some(EntrySerializeCode::LeaderParticipation),
-            11 => Some(EntrySerializeCode::SerializationEnd),
+            11 => Some(EntrySerializeCode::VotePlan),
+            99 => Some(EntrySerializeCode::SerializationEnd),
             _ => None,
         }
     }
@@ -944,6 +1002,11 @@ fn pack_entry<W: std::io::Write>(
             pack_digestof(pool_id, codec)?;
             codec.put_u32(**participation)?;
         }
+        Entry::VotePlan((vote_plan, block_date)) => {
+            codec.put_u8(EntrySerializeCode::VotePlan as u8)?;
+            pack_vote_plan(vote_plan, codec)?;
+            pack_block_date(block_date, codec)?;
+        }
     }
     Ok(())
 }
@@ -997,6 +1060,11 @@ fn unpack_entry_owned<R: std::io::BufRead>(
             let pool_id = unpack_digestof(codec)?;
             let v = codec.get_u32()?;
             Ok(EntryOwned::LeaderParticipation((pool_id, v)))
+        }
+        EntrySerializeCode::VotePlan => {
+            let vote_plan = unpack_vote_plan(codec)?;
+            let block_date = unpack_block_date(codec)?;
+            Ok(EntryOwned::VotePlan((vote_plan, block_date)))
         }
         EntrySerializeCode::SerializationEnd => Ok(EntryOwned::StopEntry),
     }

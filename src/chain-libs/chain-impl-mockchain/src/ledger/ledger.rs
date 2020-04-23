@@ -18,6 +18,7 @@ use crate::stake::{PercentStake, PoolError, PoolStakeInformation, PoolsState, St
 use crate::transaction::*;
 use crate::treasury::Treasury;
 use crate::value::*;
+use crate::vote::CommitteeId;
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
@@ -55,6 +56,8 @@ pub struct LedgerParameters {
     pub epoch_stability_depth: u32,
     /// Where the fees get transfered to during the rewards
     pub fees_goes_to: setting::FeesGoesTo,
+    /// List of committee members
+    pub committees: Arc<Vec<CommitteeId>>,
 }
 
 /// Overall ledger structure.
@@ -1097,6 +1100,7 @@ impl Ledger {
             block_content_max_size: self.settings.block_content_max_size,
             epoch_stability_depth: self.settings.epoch_stability_depth,
             fees_goes_to: self.settings.fees_goes_to,
+            committees: Arc::clone(&self.settings.committees),
         }
     }
 
@@ -1503,6 +1507,7 @@ mod tests {
                 block_content_max_size: Arbitrary::arbitrary(g),
                 epoch_stability_depth: Arbitrary::arbitrary(g),
                 fees_goes_to: Arbitrary::arbitrary(g),
+                committees: Arbitrary::arbitrary(g),
             }
         }
     }
@@ -1951,6 +1956,7 @@ mod tests {
                 block_content_max_size: 10_240,
                 epoch_stability_depth: 1000,
                 fees_goes_to: FeesGoesTo::Rewards,
+                committees: Arc::new(Vec::new()),
             };
             InternalApplyTransactionTestParams {
                 dyn_params: dyn_params,

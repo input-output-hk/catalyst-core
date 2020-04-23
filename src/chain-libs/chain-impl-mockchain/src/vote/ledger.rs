@@ -51,6 +51,13 @@ impl VotePlanLedger {
     ///
     /// the block_date is supposed to be the current block date for the
     /// new state.
+    ///
+    /// This function is not to use lightly as this will remove VotePlans
+    /// that are still interesting to track down:
+    ///
+    /// * we still need to publish the vote result;
+    /// * we still need to distribute the rewards?
+    ///
     pub fn gc(&self, block_date: &BlockDate) -> Self {
         let mut to_remove = self.plans_by_end_date.clone();
         let to_keep = to_remove.split_off(block_date);
@@ -158,6 +165,13 @@ impl VotePlanLedger {
                 })
             }
         }
+    }
+
+    /// apply the committee result for the associated vote plan
+    ///
+    /// TODO: this function is not implemented
+    pub fn apply_committee_result(&self) -> Self {
+        todo!()
     }
 }
 

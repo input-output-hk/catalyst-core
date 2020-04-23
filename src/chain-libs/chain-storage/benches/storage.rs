@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use rand_core::{OsRng, RngCore};
 
 use chain_core::property::Block as _;
-use chain_storage_sqlite_old::{test_utils::Block, BlockStoreBuilder};
+use chain_storage::{test_utils::Block, BlockStoreBuilder};
 
 const BLOCK_DATA_LENGTH: usize = 1024;
 

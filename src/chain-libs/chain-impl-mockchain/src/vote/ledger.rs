@@ -24,6 +24,18 @@ pub enum VotePlanLedgerError {
         id: VotePlanId,
         reason: UpdateError<VoteError>,
     },
+
+    #[error("Vote plan is set to finish in the passed ({vote_end}), current date {current_date}")]
+    VotePlanVoteEndPassed {
+        current_date: BlockDate,
+        vote_end: BlockDate,
+    },
+
+    #[error("Vote plan already started ({vote_start}), current date {current_date}")]
+    VotePlanVoteStartStartedAlready {
+        current_date: BlockDate,
+        vote_start: BlockDate,
+    },
 }
 
 impl VotePlanLedger {
@@ -103,8 +115,31 @@ impl VotePlanLedger {
     /// the given `VotePlanLedger` is not modified and instead a new `VotePlanLedger` is
     /// returned. They share read-only memory.
     ///
+    /// # errors if
+    ///
+    /// * the vote_plan is set to finished votes in the past
+    /// * the vote_plan has already started
+    ///
     #[must_use = "This function does not modify the object, the result contains the resulted new version of the vote plan ledger"]
-    pub fn add_vote_plan(&self, vote_plan: VotePlan) -> Result<Self, VotePlanLedgerError> {
+    pub fn add_vote_plan(
+        &self,
+        current_date: BlockDate,
+        vote_plan: VotePlan,
+    ) -> Result<Self, VotePlanLedgerError> {
+        if current_date > vote_plan.vote_end() {
+            return Err(VotePlanLedgerError::VotePlanVoteEndPassed {
+                current_date,
+                vote_end: vote_plan.vote_end(),
+            });
+        }
+
+        if current_date > vote_plan.vote_start() {
+            return Err(VotePlanLedgerError::VotePlanVoteStartStartedAlready {
+                current_date,
+                vote_start: vote_plan.vote_start(),
+            });
+        }
+
         let id = vote_plan.to_id();
         let end_date = vote_plan.committee_end();
         let manager = VotePlanManager::new(vote_plan);

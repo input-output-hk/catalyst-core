@@ -442,7 +442,10 @@ impl Ledger {
                 Fragment::VotePlan(tx) => {
                     let tx = tx.as_slice();
                     check::valid_block0_cert_transaction(&tx)?;
-                    ledger = ledger.apply_vote_plan(tx.payload().into_payload())?;
+                    // here current date is the date of the previous state of the
+                    // ledger. It makes sense only because we are creating the block0
+                    let cur_date = ledger.date();
+                    ledger = ledger.apply_vote_plan(cur_date, tx.payload().into_payload())?;
                 }
                 Fragment::VoteCast(_) => {
                     return Err(Error::Block0(Block0Error::HasVoteCast));
@@ -870,7 +873,8 @@ impl Ledger {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
                     new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
-                new_ledger = new_ledger_.apply_vote_plan(tx.payload().into_payload())?;
+                new_ledger =
+                    new_ledger_.apply_vote_plan(block_date, tx.payload().into_payload())?;
             }
             Fragment::VoteCast(_vote_cast) => {
                 // TODO: voting is not allowed on some blockchain already
@@ -930,8 +934,12 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_vote_plan(mut self, vote_plan: VotePlan) -> Result<Self, Error> {
-        self.votes = self.votes.add_vote_plan(vote_plan)?;
+    pub fn apply_vote_plan(
+        mut self,
+        cur_date: BlockDate,
+        vote_plan: VotePlan,
+    ) -> Result<Self, Error> {
+        self.votes = self.votes.add_vote_plan(cur_date, vote_plan)?;
         Ok(self)
     }
 

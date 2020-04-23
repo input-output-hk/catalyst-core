@@ -53,7 +53,7 @@ pub struct Proposals {
 ///
 /// currently this is a 4bits structure, allowing up to 16 choices
 /// however we may allow more complex object to be set in
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct VoteOptions {
     num_choices: u8,
 }
@@ -95,6 +95,10 @@ impl Proposal {
 
     pub fn external_id(&self) -> &ExternalProposalId {
         &self.external_id
+    }
+
+    pub fn options(&self) -> &VoteOptions {
+        &self.options
     }
 
     fn serialize_in(&self, bb: ByteBuilder<VotePlan>) -> ByteBuilder<VotePlan> {

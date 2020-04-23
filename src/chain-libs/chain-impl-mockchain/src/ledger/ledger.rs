@@ -878,7 +878,7 @@ impl Ledger {
                 new_ledger =
                     new_ledger_.apply_vote_plan(block_date, tx.payload().into_payload())?;
             }
-            Fragment::VoteCast(_vote_cast) => {
+            Fragment::VoteCast(tx) => {
                 // TODO: voting is not allowed on some blockchain already
                 // operating with jormungandr nodes (ITN)
                 // see to have a setting to prevent anyone from submitting
@@ -888,7 +888,9 @@ impl Ledger {
                     return Err(Error::VoteCastNotAllowedYet);
                 }
 
-                // TODO: handle the ledger change of with the new vote plan
+                let tx = tx.as_slice();
+                let (new_ledger_, _fee) = new_ledger.apply_vote_cast(&tx, &ledger_params)?;
+                new_ledger = new_ledger_;
             }
         }
 
@@ -943,6 +945,66 @@ impl Ledger {
     ) -> Result<Self, Error> {
         self.votes = self.votes.add_vote_plan(cur_date, vote_plan)?;
         Ok(self)
+    }
+
+    pub fn apply_vote_cast<'a>(
+        mut self,
+        tx: &TransactionSlice<'a, certificate::VoteCast>,
+        dyn_params: &LedgerParameters,
+    ) -> Result<(Self, Value), Error> {
+        let sign_data_hash = tx.transaction_sign_data_hash();
+
+        let (account_id, value, witness) = {
+            check::valid_vote_cast(tx)?;
+
+            let input = tx.inputs().iter().nth(0).unwrap();
+            match input.to_enum() {
+                InputEnum::UtxoInput(_) => {
+                    return Err(Error::VoteCastInvalidTransaction);
+                }
+                InputEnum::AccountInput(account_id, value) => {
+                    let witness = tx.witnesses().iter().nth(0).unwrap();
+                    (account_id, value, witness)
+                }
+            }
+        };
+
+        let fee = dyn_params.fees.calculate_tx(tx);
+        if fee != value {
+            return Err(Error::NotBalanced {
+                inputs: value,
+                outputs: fee,
+            });
+        }
+
+        match match_identifier_witness(&account_id, &witness)? {
+            MatchingIdentifierWitness::Single(account_id, witness) => {
+                self.accounts = input_single_account_verify(
+                    self.accounts,
+                    &self.static_params.block0_initial_hash,
+                    &sign_data_hash,
+                    &account_id,
+                    witness,
+                    value,
+                )?;
+            }
+            MatchingIdentifierWitness::Multi(account_id, witness) => {
+                self.multisig = input_multi_account_verify(
+                    self.multisig,
+                    &self.static_params.block0_initial_hash,
+                    &sign_data_hash,
+                    &account_id,
+                    witness,
+                    value,
+                )?;
+            }
+        };
+        self = self.apply_tx_fee(fee)?;
+
+        let vote = tx.payload().into_payload();
+        self.votes = self.votes.apply_vote(&self.date(), account_id, vote)?;
+
+        Ok((self, fee))
     }
 
     pub fn apply_pool_registration_signcheck<'a>(

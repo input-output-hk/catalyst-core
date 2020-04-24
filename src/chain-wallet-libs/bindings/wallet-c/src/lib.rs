@@ -1,9 +1,3 @@
-use chain_impl_mockchain::{
-    block::Block,
-    transaction::{Input, NoExtra, Transaction},
-    value::Value,
-};
-use chain_ser::mempack::{ReadBuf, Readable as _};
 use std::{ffi::CStr, os::raw::c_char};
 use wallet_core::*;
 
@@ -32,14 +26,20 @@ use wallet_core::*;
 /// * the mnemonics are not valid (invalid length or checksum);
 /// * the `wallet_out` is null pointer
 ///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_recover(
+pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
     mnemonics: *const c_char,
     password: *const u8,
     password_length: usize,
     wallet_out: *mut WalletPtr,
 ) -> RecoveringResult {
-    let mnemonics = unsafe { CStr::from_ptr(mnemonics) };
+    let mnemonics = CStr::from_ptr(mnemonics);
 
     let mnemonics = mnemonics.to_string_lossy();
     wallet_recover(&mnemonics, password, password_length, wallet_out)
@@ -67,8 +67,14 @@ pub extern "C" fn iohk_jormungandr_wallet_recover(
 /// * this function may fail if the wallet pointer is null;
 /// * the block is not valid (cannot be decoded)
 ///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
+pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
     wallet: WalletPtr,
     block0: *const u8,
     block0_length: usize,
@@ -86,8 +92,14 @@ pub extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
 /// Don't forget to call `iohk_jormungandr_wallet_delete_conversion` to
 /// properly free the memory
 ///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_convert(
+pub unsafe extern "C" fn iohk_jormungandr_wallet_convert(
     wallet: WalletPtr,
     settings: SettingsPtr,
     conversion_out: *mut ConversionPtr,
@@ -96,8 +108,15 @@ pub extern "C" fn iohk_jormungandr_wallet_convert(
 }
 
 /// get the number of transactions built to convert the retrieved wallet
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
+pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
     conversion: ConversionPtr,
 ) -> usize {
     wallet_convert_transactions_size(conversion)
@@ -109,8 +128,15 @@ pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
 ///
 /// the memory allocated returned is not owned and should not be kept
 /// for longer than potential call to `iohk_jormungandr_wallet_delete_conversion`
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
+pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
     conversion: ConversionPtr,
     index: usize,
     transaction_out: *mut *const u8,
@@ -127,8 +153,15 @@ pub extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
 /// these returned values are informational only and this show that
 /// there are UTxOs entries that are unusable because of the way they
 /// are populated with dusts.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_convert_ignored(
+pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
     conversion: ConversionPtr,
     value_out: *mut u64,
     ignored_out: *mut usize,
@@ -148,8 +181,15 @@ pub extern "C" fn iohk_jormungandr_wallet_convert_ignored(
 /// * this function may fail if the wallet pointer is null;
 ///
 /// If the `total_out` pointer is null, this function does nothing
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_total_value(
+pub unsafe extern "C" fn iohk_jormungandr_wallet_total_value(
     wallet: WalletPtr,
     total_out: *mut u64,
 ) -> RecoveringResult {
@@ -170,6 +210,12 @@ pub extern "C" fn iohk_jormungandr_wallet_total_value(
 ///
 /// * this function may fail if the wallet pointer is null;
 ///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_set_state(
     wallet: WalletPtr,
@@ -180,18 +226,39 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
 }
 
 /// delete the pointer and free the allocated memory
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr) {
     wallet_delete_settings(settings)
 }
 
 /// delete the pointer, zero all the keys and free the allocated memory
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
     wallet_delete_wallet(wallet)
 }
 
 /// delete the pointer
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_conversion(conversion: ConversionPtr) {
     wallet_delete_conversion(conversion)

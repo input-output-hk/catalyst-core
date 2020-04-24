@@ -81,6 +81,22 @@ for webjs and nodejs.
 | `x86_64-pc-windows-gnu`              |   ✓    |
 | `x86_64-pc-windows-msvc`             |   ✓    |
 
+# Development
+
+You can find the main rust libraries at the top level of this repository. These
+are the core elements and offer prime support for all the different `bindings`
+implemented in the `bindings` directory.
+
+## Code formatting
+
+In order to avoid long lasting discussions and arguments about how code should
+be formatted for better readability all must be formatted with `rustfmt`.
+
+## Clippy
+
+Cargo clippy is ran on this repository at every PRs. This will come in handy to
+prevent some readability issues but also potential mistakes in the C bindings
+when manipulating raw pointers.
 
 [rust-lang]: https://www.rust-lang.org/
 [Jörmungandr]: https://input-output-hk.github.io/jormungandr

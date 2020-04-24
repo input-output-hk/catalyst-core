@@ -80,11 +80,7 @@ impl AddressRecovering {
         &self,
         address: &ExtendedAddr,
     ) -> Option<DerivationPath<Rindex<rindex::Address>>> {
-        let payload = address
-            .attributes
-            .derivation_path
-            .as_ref()
-            .map(|p| p.as_slice())?;
+        let payload = address.attributes.derivation_path.as_deref()?;
         self.decode_payload(payload)
     }
 

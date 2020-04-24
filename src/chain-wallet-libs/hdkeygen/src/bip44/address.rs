@@ -39,7 +39,7 @@ impl<K> Address<K> {
     ) -> Self {
         assert_eq!(
             path.coin_type(),
-            COIN_TYPE.into(),
+            COIN_TYPE,
             "Expecting Cardano ADA coin type"
         );
 

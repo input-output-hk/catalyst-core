@@ -51,7 +51,11 @@ impl Wallet {
             return Err(JsValue::from("invalid mnemonics"));
         };
 
-        let builder = if password.len() > 0 { todo!() } else { builder };
+        let builder = if !password.is_empty() {
+            todo!()
+        } else {
+            builder
+        };
 
         // calling this function cannot fail, we already
         // have the mnemonics set in the builder, and there is no password set

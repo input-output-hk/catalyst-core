@@ -293,8 +293,7 @@ mod tests {
 
         let original_wallet = builder
             .to_mnemonics_string()
-            .expect("mnemonics were given already")
-            .to_string();
+            .expect("mnemonics were given already");
         assert_eq!(WALLET, original_wallet);
 
         let wallet = builder.build_daedalus().unwrap();
@@ -306,6 +305,9 @@ mod tests {
     #[test]
     #[ignore]
     fn recover_yoroi_paperwallet() {
+        /*
+            XXX: yoroi paper wallet are excluded for now
+
         const WALLET: &str = "attend wink add online sample oyster guard glass host gap business music faith riot tortoise";
         const PWD: &str = "PaperWalletPaperWallet";
         const PAPERWALLET: &str = "weasel use dynamic shock food bleak swarm owner trick also flight flower uncover slim fuel crisp hockey reunion lemon badge orient";
@@ -315,5 +317,6 @@ mod tests {
             .unwrap()
             .password(Password::from(PWD.to_owned()))
             .build_yoroi();
+        */
     }
 }

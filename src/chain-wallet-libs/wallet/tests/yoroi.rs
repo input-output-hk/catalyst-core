@@ -1,7 +1,7 @@
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 const MNEMONICS: &str =
     "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone";
-const WALLET_VALUE: u64 = 1000000 + 10000 + 10000 + 1 + 100;
+const WALLET_VALUE: u64 = 1_000_000 + 10_000 + 10_000 + 1 + 100;
 use chain_impl_mockchain::block::Block;
 use chain_ser::mempack::{ReadBuf, Readable as _};
 use wallet::*;

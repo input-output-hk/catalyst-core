@@ -1,13 +1,18 @@
-use jni;
 use jni::objects::{JClass, JString};
-use jni::sys::{jbyte, jbyteArray, jint, jlong};
+use jni::sys::{jbyteArray, jint, jlong};
 use jni::JNIEnv;
 use std::ptr::{null, null_mut};
-use std::{ffi::CStr, os::raw::c_char};
 use wallet_core::*;
 
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
     env: JNIEnv,
     _: JClass,
     mnemonics: JString,
@@ -17,15 +22,24 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
         .expect("Couldn't get mnemonics String");
 
     let mut wallet: WalletPtr = null_mut();
-    let walletptr: *mut *mut Wallet = &mut wallet;
-    let result = wallet_recover(&mnemonics_j.to_string_lossy(), null(), 0, walletptr);
-    env.release_string_utf_chars(mnemonics, mnemonics_j.as_ptr());
-    return match result {
+    let wallet_ptr: *mut *mut Wallet = &mut wallet;
+    let result = wallet_recover(&mnemonics_j.to_string_lossy(), null(), 0, wallet_ptr);
+
+    let _r = env.release_string_utf_chars(mnemonics, mnemonics_j.as_ptr());
+
+    match result {
         RecoveringResult::Success => wallet as jlong,
         _ => 0,
-    };
+    }
 }
 
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
 pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_delete(
     _: JNIEnv,
@@ -33,7 +47,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_delete(
     wallet: jlong,
 ) {
     let wallet_ptr: WalletPtr = wallet as WalletPtr;
-    if wallet_ptr != null_mut() {
+    if !wallet_ptr.is_null() {
         wallet_delete_wallet(wallet_ptr);
     }
 }
@@ -45,27 +59,41 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_delete(
     settings: jlong,
 ) {
     let settings_ptr: SettingsPtr = settings as SettingsPtr;
-    if settings_ptr != null_mut() {
+    if !settings_ptr.is_null() {
         wallet_delete_settings(settings_ptr);
     }
 }
 
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_totalValue(
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_totalValue(
     _: JNIEnv,
     _: JClass,
     wallet: jlong,
 ) -> jint {
     let wallet_ptr: WalletPtr = wallet as WalletPtr;
     let mut value: u64 = 0;
-    if wallet_ptr != null_mut() {
+    if !wallet_ptr.is_null() {
         wallet_total_value(wallet_ptr, &mut value);
     }
     value as jint
 }
 
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
-pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFunds(
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFunds(
     env: JNIEnv,
     _: JClass,
     wallet: jlong,
@@ -78,8 +106,9 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFunds(
         .get_array_length(block0)
         .expect("Couldn't get block0 array length") as usize;
     let mut bytes = vec![0i8; len as usize];
-    env.get_byte_array_region(block0, 0, &mut bytes);
-    if wallet_ptr != null_mut() {
+    let _r = env.get_byte_array_region(block0, 0, &mut bytes);
+
+    if !wallet_ptr.is_null() {
         wallet_retrieve_funds(wallet_ptr, bytes.as_ptr() as *const u8, len, settings_ptr);
     }
     settings as jlong

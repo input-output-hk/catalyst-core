@@ -16,8 +16,8 @@ use cryptoxide::{
 use ed25519_bip32::XPub;
 use thiserror::Error;
 
-const NONCE: &'static [u8] = b"serokellfore";
-const SALT: &'static [u8] = b"address-hashing";
+const NONCE: &[u8] = b"serokellfore";
+const SALT: &[u8] = b"address-hashing";
 const TAG_LEN: usize = 16;
 pub const HDKEY_SIZE: usize = 32;
 /// This is the max size we accept to try to decrypt a HDPayload.
@@ -51,8 +51,8 @@ const CBOR_PAYLOAD_LENGTH_U16: u8 = 25;
 const CBOR_PAYLOAD_LENGTH_U32: u8 = 26;
 
 #[cfg(test)]
-fn encode_derivation(buf: &mut Vec<u8>, derivation: &Derivation) {
-    let value: u32 = **derivation;
+fn encode_derivation(buf: &mut Vec<u8>, derivation: Derivation) {
+    let value: u32 = *derivation;
 
     if value <= CBOR_MAX_INLINE_ENCODING {
         buf.push(value as u8);
@@ -111,7 +111,7 @@ fn encode_derivation_path<S>(derivation_path: &DerivationPath<S>) -> Vec<u8> {
     let mut buf = Vec::with_capacity(32);
 
     buf.push(CBOR_INDEFINITE_ARRAY);
-    for derivation in derivation_path.iter() {
+    for derivation in derivation_path.iter().copied() {
         encode_derivation(&mut buf, derivation);
     }
     buf.push(CBOR_BREAK);
@@ -328,7 +328,7 @@ mod tests {
         addressing: [Derivation; 2],
     }
 
-    const GOLDEN_TESTS: &'static [GoldenTest] = &[
+    const GOLDEN_TESTS: &[GoldenTest] = &[
         GoldenTest {
             xprv_key: [
                 32, 15, 90, 64, 107, 113, 208, 132, 181, 199, 158, 192, 82, 246, 119, 189, 80, 23,
@@ -365,7 +365,7 @@ mod tests {
                 0x33, 0x06, 0x56, 0x3c, 0x02, 0xd0, 0x2f, 0x38, 0x1e, 0x78, 0xdf, 0x84, 0x04, 0xc3,
                 0x50, 0x56, 0x76, 0xd5, 0x5e, 0x45, 0x71, 0x93, 0xe7, 0x4a, 0x34, 0xb6, 0x90, 0xec,
             ],
-            addressing: [Derivation::new(0x80000000), Derivation::new(0x80000000)],
+            addressing: [Derivation::new(0x8000_0000), Derivation::new(0x8000_0000)],
         },
     ];
 

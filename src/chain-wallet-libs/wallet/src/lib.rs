@@ -39,15 +39,15 @@ impl Wallet {
     }
 
     pub fn value(&self) -> Value {
-        self.value.clone()
+        self.value
     }
 
     pub fn committed_amount(&self) -> Value {
-        self.committed_amount.clone()
+        self.committed_amount
     }
 
     fn current_value(&self) -> Value {
-        (self.value() - self.committed_amount()).unwrap_or(Value::zero())
+        (self.value() - self.committed_amount()).unwrap_or_else(|_| Value::zero())
     }
 }
 

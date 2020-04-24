@@ -74,6 +74,12 @@ pub enum RecoveringResult {
 /// * password_length: the length of the password;
 /// * wallet_out: a pointer to a pointer. The recovered wallet will be allocated on this pointer;
 ///
+/// # Safety
+///
+/// This function dereference raw pointers (password and wallet_out). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 /// # errors
 ///
 /// The function may fail if:
@@ -81,13 +87,13 @@ pub enum RecoveringResult {
 /// * the mnemonics are not valid (invalid length or checksum);
 /// * the `wallet_out` is null pointer
 ///
-pub fn wallet_recover(
+pub unsafe fn wallet_recover(
     mnemonics: &str,
     password: *const u8,
     password_length: usize,
     wallet_out: *mut WalletPtr,
 ) -> RecoveringResult {
-    let wallet_out: &mut WalletPtr = if let Some(wallet_out) = unsafe { wallet_out.as_mut() } {
+    let wallet_out: &mut WalletPtr = if let Some(wallet_out) = wallet_out.as_mut() {
         wallet_out
     } else {
         return RecoveringResult::PtrIsNull;
@@ -142,6 +148,12 @@ pub fn wallet_recover(
 /// this function may take sometimes so it is better to only call this
 /// function if needed.
 ///
+/// # Safety
+///
+/// This function dereference raw pointers (wallet, block0 and settings_out). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 /// # Parameters
 ///
 /// * wallet: the recovered wallet (see recover function);
@@ -155,26 +167,24 @@ pub fn wallet_recover(
 /// * this function may fail if the wallet pointer is null;
 /// * the block is not valid (cannot be decoded)
 ///
-
-pub fn wallet_retrieve_funds(
+pub unsafe fn wallet_retrieve_funds(
     wallet: WalletPtr,
     block0: *const u8,
     block0_length: usize,
     settings_out: *mut SettingsPtr,
 ) -> RecoveringResult {
-    let wallet: &mut Wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
+    let wallet: &mut Wallet = if let Some(wallet) = wallet.as_mut() {
         wallet
     } else {
         return RecoveringResult::PtrIsNull;
     };
-    let settings_out: &mut SettingsPtr =
-        if let Some(settings_out) = unsafe { settings_out.as_mut() } {
-            settings_out
-        } else {
-            return RecoveringResult::PtrIsNull;
-        };
+    let settings_out: &mut SettingsPtr = if let Some(settings_out) = settings_out.as_mut() {
+        settings_out
+    } else {
+        return RecoveringResult::PtrIsNull;
+    };
 
-    let block0_bytes = unsafe { std::slice::from_raw_parts(block0, block0_length) };
+    let block0_bytes = std::slice::from_raw_parts(block0, block0_length);
 
     let mut block0_bytes = ReadBuf::from(block0_bytes);
     let block0 = if let Ok(block) = Block::read(&mut block0_bytes) {
@@ -201,27 +211,32 @@ pub fn wallet_retrieve_funds(
 /// Don't forget to call `iohk_jormungandr_wallet_delete_conversion` to
 /// properly free the memory
 ///
-pub fn wallet_convert(
+/// # Safety
+///
+/// This function dereference raw pointers (wallet, settings and conversion_out). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+pub unsafe fn wallet_convert(
     wallet: WalletPtr,
     settings: SettingsPtr,
     conversion_out: *mut ConversionPtr,
 ) -> RecoveringResult {
-    let wallet: &mut Wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
+    let wallet: &mut Wallet = if let Some(wallet) = wallet.as_mut() {
         wallet
     } else {
         return RecoveringResult::PtrIsNull;
     };
-    let settings = if let Some(settings) = unsafe { settings.as_ref() } {
+    let settings = if let Some(settings) = settings.as_ref() {
         settings.0.clone()
     } else {
         return RecoveringResult::PtrIsNull;
     };
-    let conversion_out: &mut ConversionPtr =
-        if let Some(conversion_out) = unsafe { conversion_out.as_mut() } {
-            conversion_out
-        } else {
-            return RecoveringResult::PtrIsNull;
-        };
+    let conversion_out: &mut ConversionPtr = if let Some(conversion_out) = conversion_out.as_mut() {
+        conversion_out
+    } else {
+        return RecoveringResult::PtrIsNull;
+    };
 
     let address = wallet
         .account
@@ -246,13 +261,18 @@ pub fn wallet_convert(
 }
 
 /// get the number of transactions built to convert the retrieved wallet
-pub fn wallet_convert_transactions_size(conversion: ConversionPtr) -> usize {
-    unsafe {
-        conversion
-            .as_ref()
-            .map(|c| c.transactions.len())
-            .unwrap_or_default()
-    }
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+pub unsafe fn wallet_convert_transactions_size(conversion: ConversionPtr) -> usize {
+    conversion
+        .as_ref()
+        .map(|c| c.transactions.len())
+        .unwrap_or_default()
 }
 
 /// retrieve the index-nth transactions in the conversions starting from 0
@@ -261,23 +281,30 @@ pub fn wallet_convert_transactions_size(conversion: ConversionPtr) -> usize {
 ///
 /// the memory allocated returned is not owned and should not be kept
 /// for longer than potential call to `iohk_jormungandr_wallet_delete_conversion`
-pub fn wallet_convert_transactions_get(
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+pub unsafe fn wallet_convert_transactions_get(
     conversion: ConversionPtr,
     index: usize,
     transaction_out: *mut *const u8,
     transaction_size: *mut usize,
 ) -> RecoveringResult {
-    let conversion = if let Some(conversion) = unsafe { conversion.as_ref() } {
+    let conversion = if let Some(conversion) = conversion.as_ref() {
         conversion
     } else {
         return RecoveringResult::PtrIsNull;
     };
-    let transaction_out = if let Some(t) = unsafe { transaction_out.as_mut() } {
+    let transaction_out = if let Some(t) = transaction_out.as_mut() {
         t
     } else {
         return RecoveringResult::PtrIsNull;
     };
-    let transaction_size = if let Some(t) = unsafe { transaction_size.as_mut() } {
+    let transaction_size = if let Some(t) = transaction_size.as_mut() {
         t
     } else {
         return RecoveringResult::PtrIsNull;
@@ -300,12 +327,19 @@ pub fn wallet_convert_transactions_get(
 /// these returned values are informational only and this show that
 /// there are UTxOs entries that are unusable because of the way they
 /// are populated with dusts.
-pub fn wallet_convert_ignored(
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+pub unsafe fn wallet_convert_ignored(
     conversion: ConversionPtr,
     value_out: *mut u64,
     ignored_out: *mut usize,
 ) -> RecoveringResult {
-    if let Some(c) = unsafe { conversion.as_ref() } {
+    if let Some(c) = conversion.as_ref() {
         let v = *c
             .ignored
             .iter()
@@ -314,10 +348,10 @@ pub fn wallet_convert_ignored(
             .as_ref();
         let l = c.ignored.len();
 
-        if let Some(value_out) = unsafe { value_out.as_mut() } {
+        if let Some(value_out) = value_out.as_mut() {
             *value_out = v
         }
-        if let Some(ignored_out) = unsafe { ignored_out.as_mut() } {
+        if let Some(ignored_out) = ignored_out.as_mut() {
             *ignored_out = l
         };
 
@@ -339,14 +373,21 @@ pub fn wallet_convert_ignored(
 /// * this function may fail if the wallet pointer is null;
 ///
 /// If the `total_out` pointer is null, this function does nothing
-pub fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> RecoveringResult {
-    let wallet = if let Some(wallet) = unsafe { wallet.as_ref() } {
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+pub unsafe fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> RecoveringResult {
+    let wallet = if let Some(wallet) = wallet.as_ref() {
         wallet
     } else {
         return RecoveringResult::PtrIsNull;
     };
 
-    if let Some(total_out) = unsafe { total_out.as_mut() } {
+    if let Some(total_out) = total_out.as_mut() {
         let total = wallet
             .icarus
             .value_total()

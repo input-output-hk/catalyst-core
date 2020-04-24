@@ -9,7 +9,7 @@ use wallet::*;
 fn daedalus_wallet1() {
     const MNEMONICS: &str =
         "tired owner misery large dream glad upset welcome shuffle eagle pulp time";
-    const WALLET_VALUE: u64 = 100000 + 1010;
+    const WALLET_VALUE: u64 = 100_000 + 1010;
 
     let mut wallet = RecoveryBuilder::new()
         .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
@@ -32,7 +32,7 @@ fn daedalus_wallet1() {
 #[test]
 fn daedalus_wallet2() {
     const MNEMONICS: &str = "edge club wrap where juice nephew whip entry cover bullet cause jeans";
-    const WALLET_VALUE: u64 = 1000000 + 1 + 100;
+    const WALLET_VALUE: u64 = 1_000_000 + 1 + 100;
 
     let mut wallet = RecoveryBuilder::new()
         .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)

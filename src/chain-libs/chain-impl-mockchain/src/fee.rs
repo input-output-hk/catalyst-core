@@ -207,9 +207,10 @@ mod test {
                 + fee.constant,
         );
 
-        match fee_value == expected_value {
-            true => TestResult::passed(),
-            false => TestResult::error(format!("Wrong fee: {} vs {}", fee_value, expected_value)),
+        if fee_value == expected_value {
+            TestResult::passed()
+        } else {
+            TestResult::error(format!("Wrong fee: {} vs {}", fee_value, expected_value))
         }
     }
 

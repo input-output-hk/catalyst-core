@@ -22,7 +22,7 @@ impl Treasury {
     }
 
     /// Get value in the treasury
-    pub fn value(&self) -> Value {
+    pub fn value(self) -> Value {
         self.0
     }
 }

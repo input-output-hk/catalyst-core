@@ -193,7 +193,7 @@ impl Settings {
                     new_state.reward_params = Some(rp.clone());
                 }
                 ConfigParam::TreasuryParams(rp) => {
-                    new_state.treasury_params = Some(rp.clone());
+                    new_state.treasury_params = Some(*rp);
                 }
                 ConfigParam::PerCertificateFees(pcf) => {
                     per_certificate_fees = Some(pcf);
@@ -210,10 +210,10 @@ impl Settings {
                 }
                 ConfigParam::RewardLimitNone => new_state.rewards_limit = rewards::Limit::None,
                 ConfigParam::RewardLimitByAbsoluteStake(ratio) => {
-                    new_state.rewards_limit = rewards::Limit::ByStakeAbsolute(ratio.clone())
+                    new_state.rewards_limit = rewards::Limit::ByStakeAbsolute(*ratio)
                 }
                 ConfigParam::PoolRewardParticipationCapping(r) => {
-                    new_state.pool_participation_capping = Some(r.clone())
+                    new_state.pool_participation_capping = Some(*r)
                 }
                 ConfigParam::AddCommitteeId(committee_id) => {
                     // FIXME: O(n)
@@ -273,7 +273,7 @@ impl Settings {
             None => (),
         };
         match &self.treasury_params {
-            Some(p) => params.push(ConfigParam::TreasuryParams(p.clone())),
+            Some(p) => params.push(ConfigParam::TreasuryParams(*p)),
             None => (),
         };
 
@@ -284,7 +284,7 @@ impl Settings {
 
     pub fn to_reward_params(&self) -> rewards::Parameters {
         let reward_drawing_limit_max = self.rewards_limit.clone();
-        let pool_participation_capping = self.pool_participation_capping.clone();
+        let pool_participation_capping = self.pool_participation_capping;
 
         match self.reward_params {
             None => rewards::Parameters::zero(),
@@ -317,6 +317,12 @@ impl Settings {
                 pool_participation_capping,
             },
         }
+    }
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

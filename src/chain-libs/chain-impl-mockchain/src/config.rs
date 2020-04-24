@@ -278,7 +278,7 @@ impl Readable for ConfigParam {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::FeesInTreasury)
             }
             Tag::RewardLimitNone => {
-                if bytes.len() != 0 {
+                if !bytes.is_empty() {
                     Err(Error::SizeInvalid)
                 } else {
                     Ok(ConfigParam::RewardLimitNone)
@@ -818,19 +818,20 @@ mod test {
 
     impl Arbitrary for RewardParams {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            match bool::arbitrary(g) {
-                false => RewardParams::Linear {
+            if bool::arbitrary(g) {
+                RewardParams::Linear {
                     constant: Arbitrary::arbitrary(g),
                     ratio: Arbitrary::arbitrary(g),
                     epoch_start: Arbitrary::arbitrary(g),
                     epoch_rate: NonZeroU32::new(20).unwrap(),
-                },
-                true => RewardParams::Halving {
+                }
+            } else {
+                RewardParams::Halving {
                     constant: Arbitrary::arbitrary(g),
                     ratio: Arbitrary::arbitrary(g),
                     epoch_start: Arbitrary::arbitrary(g),
                     epoch_rate: NonZeroU32::new(20).unwrap(),
-                },
+                }
             }
         }
     }

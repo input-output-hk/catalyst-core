@@ -70,13 +70,13 @@ impl Arbitrary for Block {
                 hdrbuilder
                     .to_genesis_praos_builder()
                     .unwrap()
-                    .set_consensus_data(&gp_proof.node_id, &gp_proof.vrf_proof.into())
+                    .set_consensus_data(&gp_proof.node_id, &gp_proof.vrf_proof)
                     .set_signature(gp_proof.kes_proof)
                     .generalize()
             }
         };
         Block {
-            header: header,
+            header,
             contents: content,
         }
     }

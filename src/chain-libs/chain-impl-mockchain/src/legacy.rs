@@ -39,7 +39,7 @@ impl Readable for UtxoDeclaration {
             addrs.push((addr, value))
         }
 
-        Ok(UtxoDeclaration { addrs: addrs })
+        Ok(UtxoDeclaration { addrs })
     }
 }
 
@@ -73,7 +73,7 @@ mod tests {
     impl Arbitrary for UtxoDeclaration {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let mut nb: usize = Arbitrary::arbitrary(g);
-            nb = nb % 255;
+            nb %= 255;
             let mut addrs = Vec::with_capacity(nb);
             for _ in 0..nb {
                 let value = Arbitrary::arbitrary(g);
@@ -85,7 +85,7 @@ mod tests {
                     }
                     match XPub::from_slice(&buf) {
                         Ok(xpub) => xpub,
-                        Err(_) => panic!("xpub not built correctly"),
+                        Err(err) => panic!("xpub not built correctly, {:?}", err),
                     }
                 };
                 let ea = ExtendedAddr::new_simple(&xpub, None);

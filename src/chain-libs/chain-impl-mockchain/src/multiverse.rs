@@ -100,7 +100,7 @@ impl<State> Multiverse<State> {
     }
 
     pub fn get_ref(&self, k: &HeaderId) -> Option<Ref<State>> {
-        self.get(k).map(|state| Ref::new(k.clone(), state))
+        self.get(k).map(|state| Ref::new(*k, state))
     }
 
     /// Return the number of states stored in memory.
@@ -113,7 +113,7 @@ impl<State> Multiverse<State> {
     pub fn insert(&mut self, chain_length: ChainLength, k: HeaderId, st: State) -> Ref<State> {
         self.states_by_chain_length
             .entry(chain_length)
-            .or_insert_with(|| HashSet::new())
+            .or_insert_with(HashSet::new)
             .insert(k.clone());
         let state = Arc::new(st);
         self.states_by_hash
@@ -185,6 +185,12 @@ impl Multiverse<Ledger> {
     }
 }
 
+impl<S> Default for Multiverse<S> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{Multiverse, Ref, SUFFIX_TO_KEEP};
@@ -227,7 +233,7 @@ mod test {
         // O(n) blocks anyway.
 
         let mut blocks_to_apply = vec![];
-        let mut cur_hash = k.clone();
+        let mut cur_hash = k;
 
         let mut state_ref = loop {
             if cur_hash == HeaderId::zero_hash() {
@@ -364,12 +370,7 @@ mod test {
         let mut ids = vec![];
         for i in 1..10001 {
             date = date.next(&era);
-            let block = build_bft_block(
-                &parent,
-                date.clone(),
-                state.chain_length.increase(),
-                &leader,
-            );
+            let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
             assert_eq!(state.chain_length().0, i);
             assert_eq!(state.date, block.date());
@@ -384,15 +385,15 @@ mod test {
             );
         }
 
-        let ref1 = get_from_storage(&mut multiverse, ids[1234].clone(), &mut store).unwrap();
+        let ref1 = get_from_storage(&mut multiverse, ids[1234], &mut store).unwrap();
         let state = ref1.state();
         assert_eq!(state.chain_length().0, 1235);
 
-        let ref2 = get_from_storage(&mut multiverse, ids[9999].clone(), &mut store).unwrap();
+        let ref2 = get_from_storage(&mut multiverse, ids[9999], &mut store).unwrap();
         let state = ref2.state();
         assert_eq!(state.chain_length().0, 10000);
 
-        let ref3 = get_from_storage(&mut multiverse, ids[9500].clone(), &mut store).unwrap();
+        let ref3 = get_from_storage(&mut multiverse, ids[9500], &mut store).unwrap();
         let state = ref3.state();
         assert_eq!(state.chain_length().0, 9501);
 
@@ -435,12 +436,7 @@ mod test {
         let first_fork_length = 100;
         for _ in 0..first_fork_length {
             date = date.next(&era);
-            let block = build_bft_block(
-                &parent,
-                date.clone(),
-                state.chain_length.increase(),
-                &leader,
-            );
+            let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
             store.put_block(&block).unwrap();
@@ -461,12 +457,7 @@ mod test {
         let second_fork_length = 102;
         for _ in 0..second_fork_length {
             date = date.next(&era);
-            let block = build_bft_block(
-                &parent,
-                date.clone(),
-                state.chain_length.increase(),
-                &leader,
-            );
+            let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
             store.put_block(&block).unwrap();

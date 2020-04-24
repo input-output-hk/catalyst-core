@@ -52,7 +52,7 @@ impl Metadata {
 
     pub(crate) fn read(reader: &mut impl Read) -> Result<Metadata, BTreeStoreError> {
         let mut magic = [0u8; MAGIC_SIZE];
-        reader.read(&mut magic)?;
+        reader.read_exact(&mut magic)?;
 
         if magic != MAGIC {
             return Err(BTreeStoreError::WrongMagicNumber);
@@ -65,7 +65,7 @@ impl Metadata {
     }
 
     pub(crate) fn write(&self, writer: &mut impl Write) -> Result<(), BTreeStoreError> {
-        writer.write(&MAGIC)?;
+        writer.write_all(&MAGIC)?;
         writer.write_u32::<LittleEndian>(self.root)?;
 
         self.page_manager.write(writer)?;

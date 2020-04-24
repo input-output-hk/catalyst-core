@@ -17,11 +17,6 @@ const YOROI_WALLET = 'neck bulb teach illegal soul cry monitor claw amount borin
 
 exports.defineAutoTests = function () {
     describe('primitive mappings', function () {
-        beforeEach(function () {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 120000;
-        });
-
         it('should exist', function () {
             expect(window.wallet).toBeDefined();
         });
@@ -45,17 +40,15 @@ exports.defineAutoTests = function () {
                 done.fail(new Error(`could not create wallet ${err}`));
             });
         });
-
-        afterEach(function () {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-        });
     });
 };
 
 // TODO: untangle this nesting hell. I still don't know if I can use promises/async here
 function restoreWallet(mnemonics, hexBlock, callBack) {
     window.wallet.walletRestore(mnemonics, wallet => {
+        console.log(wallet);
         window.wallet.walletRetrieveFunds(wallet, hexStringToBytes(hexBlock), settings => {
+            console.log(settings);
             window.wallet.walletTotalFunds(wallet, retrievedFunds => {
                 window.wallet.settingsDelete(settings, () => {
                     window.wallet.walletDelete(wallet, () => {
@@ -65,9 +58,9 @@ function restoreWallet(mnemonics, hexBlock, callBack) {
             }, err => { callBack(new Error(`couldn't get total funds ${err}`)) });
         }, err => {
             callBack(new Error(`could not retrieve funds ${err}`))
-        }, err => {
-            callBack(new Error(`could not create wallet ${err}`));
         });
+    }, err => {
+        callBack(new Error(`could not create wallet ${err}`));
     });
 }
 
@@ -88,8 +81,8 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     };
 
     const form =
-        '<div> <label> mnemonics </label> <textarea id="mnemonics" rows="1"> </textarea> </div>' +
-        '<div> <label> block(hex) </label> <textarea id="block" rows="1"> </textarea> </div>' +
+        '<div> <label> mnemonics </label> <textarea id="mnemonics" rows="1"></textarea> </div>' +
+        '<div> <label> block(hex) </label> <textarea id="block" rows="1"></textarea> </div>' +
         '<div id="get_funds"> </div>';
 
     contentEl.innerHTML = '<div id="info"></div>' + form;

@@ -25,12 +25,14 @@ impl From<ChainLength> for u32 {
 
 impl ChainLength {
     #[inline]
-    pub fn increase(&self) -> Self {
+    #[must_use = "this returns the result of the operation, without modifying the original"]
+    pub fn increase(self) -> Self {
         ChainLength(self.0.checked_add(1).unwrap())
     }
 
     #[inline]
-    pub fn nth_ancestor(&self, depth: u32) -> Option<ChainLength> {
+    #[must_use = "this returns the result of the operation, without modifying the original"]
+    pub fn nth_ancestor(self, depth: u32) -> Option<ChainLength> {
         self.0.checked_sub(depth).map(ChainLength)
     }
 }
@@ -62,9 +64,6 @@ impl ConsensusType {
             _ => None,
         }
     }
-
-    // replaced by BlockVersion::to_consensus_type()
-    // pub fn from_block_version(block_version: BlockVersion) -> Option<ConsensusVersion> {
 }
 
 #[cfg(any(test, feature = "property-test-api"))]

@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/input-output-hk/chain-wallet-libs"
+    "url": "git+https://github.com/input-output-hk/chain-wallet-libs.git"
   },
   "bugs": {
     "url": "https://github.com/input-output-hk/chain-wallet-libs/issues"
@@ -33,8 +33,8 @@
     "test": "npm run lint",
     "lint": "eslint ."
   },
-  "author": "Apache Software Foundation",
-  "license": "Apache-2.0",
+  "author": "ecioppettini@atixlabs.com",
+  "license": "Apache-2.0 OR MIT",
   "engines": {
     "cordovaDependencies": {
       "3.0.0": {
@@ -44,5 +44,10 @@
   },
   "devDependencies": {
     "@cordova/eslint-config": "^3.0.0"
+  },
+  "homepage": "https://github.com/input-output-hk/chain-wallet-libs#readme",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
   }
 }

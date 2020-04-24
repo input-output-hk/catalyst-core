@@ -8,7 +8,6 @@
 
 use crate::chaintypes::{ChainLength, HeaderId};
 use crate::ledger::Ledger;
-use chain_storage::BlockStoreConnection;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::hint::unreachable_unchecked;
 use std::sync::{Arc, Weak};
@@ -188,10 +187,11 @@ impl Multiverse<Ledger> {
     /// Get the chain state at block 'k' from memory if present;
     /// otherwise reconstruct it by reading blocks from storage and
     /// applying them to the nearest ancestor state that we do have.
+    #[cfg(test)]
     pub fn get_from_storage(
         &mut self,
         k: HeaderId,
-        store: &mut BlockStoreConnection<crate::block::Block>,
+        store: &mut chain_storage::BlockStoreConnection<crate::block::Block>,
     ) -> Result<Ref<Ledger>, chain_storage::Error> {
         if let Some(r) = self.get_ref(&k) {
             return Ok(r);

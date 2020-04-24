@@ -10,7 +10,7 @@ use thiserror::Error;
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct VotePlanLedger {
-    plans: Hamt<DefaultHasher, VotePlanId, VotePlanManager>,
+    pub(crate) plans: Hamt<DefaultHasher, VotePlanId, (VotePlanManager, BlockDate)>,
     plans_by_end_date: BTreeMap<BlockDate, Vec<VotePlanId>>,
 }
 
@@ -104,9 +104,10 @@ impl VotePlanLedger {
     ) -> Result<Self, VotePlanLedgerError> {
         let id = vote.vote_plan().clone();
 
-        let r = self
-            .plans
-            .update(&id, move |v| v.vote(block_date, identifier, vote).map(Some));
+        let r = self.plans.update(&id, move |(v, _)| {
+            v.vote(block_date, identifier, vote)
+                .map(|v| Some((v, block_date.clone())))
+        });
 
         match r {
             Err(reason) => Err(VotePlanLedgerError::VoteError { reason, id }),
@@ -151,7 +152,7 @@ impl VotePlanLedger {
         let end_date = vote_plan.committee_end();
         let manager = VotePlanManager::new(vote_plan);
 
-        match self.plans.insert(id.clone(), manager) {
+        match self.plans.insert(id.clone(), (manager, end_date.clone())) {
             Err(reason) => Err(VotePlanLedgerError::VotePlanInsertionError { id, reason }),
             Ok(plans) => {
                 let mut plans_by_end_date = self.plans_by_end_date.clone();

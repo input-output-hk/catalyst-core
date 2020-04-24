@@ -1,11 +1,12 @@
 use super::ledger::{Error, Ledger, LedgerStaticParameters};
 use super::pots::{self, Pots};
 use super::LeadersParticipationRecord;
+use crate::certificate::{VotePlan, VotePlanId};
 use crate::chaintypes::ChainLength;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::stake::PoolsState;
-use crate::vote::VotePlanLedger;
+use crate::vote::{VotePlanLedger, VotePlanManager};
 use crate::{account, legacy, multisig, setting, update, utxo};
 use chain_addr::Address;
 use chain_time::TimeEra;
@@ -43,6 +44,7 @@ pub enum Entry<'a> {
     ),
     StakePool((&'a crate::certificate::PoolId, &'a crate::stake::PoolState)),
     LeaderParticipation((&'a crate::certificate::PoolId, &'a u32)),
+    VotePlan((&'a VotePlan, &'a BlockDate)),
 }
 
 #[derive(Clone)]
@@ -73,6 +75,7 @@ pub enum EntryOwned {
     MultisigDeclaration((crate::multisig::Identifier, crate::multisig::Declaration)),
     StakePool((crate::certificate::PoolId, crate::stake::PoolState)),
     LeaderParticipation((crate::certificate::PoolId, u32)),
+    VotePlan((VotePlan, BlockDate)),
     StopEntry,
 }
 
@@ -116,6 +119,9 @@ impl EntryOwned {
             EntryOwned::LeaderParticipation((pool_id, participation)) => {
                 Some(Entry::LeaderParticipation((pool_id, participation)))
             }
+            EntryOwned::VotePlan((vote_plan, block_date)) => {
+                Some(Entry::VotePlan((vote_plan, block_date)))
+            }
             EntryOwned::StopEntry => None,
         }
     }
@@ -149,6 +155,7 @@ enum IterState<'a> {
     StakePools(imhamt::HamtIter<'a, crate::certificate::PoolId, crate::stake::PoolState>),
     Pots(pots::Entries<'a>),
     LeaderParticipations(imhamt::HamtIter<'a, crate::certificate::PoolId, u32>),
+    VotePlan(imhamt::HamtIter<'a, VotePlanId, (VotePlanManager, BlockDate)>),
     Done,
 }
 
@@ -238,10 +245,19 @@ impl<'a> Iterator for LedgerIterator<'a> {
             },
             IterState::LeaderParticipations(iter) => match iter.next() {
                 None => {
-                    self.state = IterState::Done;
+                    self.state = IterState::VotePlan(self.ledger.votes.plans.iter());
                     self.next()
                 }
                 Some(x) => Some(Entry::LeaderParticipation(x)),
+            },
+            IterState::VotePlan(iter) => match iter.next() {
+                None => {
+                    self.state = IterState::Done;
+                    self.next()
+                }
+                Some((_, (plan_manager, block_date))) => {
+                    Some(Entry::VotePlan((plan_manager.plan(), block_date)))
+                }
             },
             IterState::Done => None,
         }
@@ -271,7 +287,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         let mut pots = Pots::zero();
         let mut leaders_log = LeadersParticipationRecord::new();
         // TODO: votes don't have their entry
-        let mut votes = VotePlanLedger::new();
+        let votes = VotePlanLedger::new();
 
         for entry in iter {
             match entry {
@@ -318,6 +334,9 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                 Entry::LeaderParticipation((pool_id, pool_participation)) => leaders_log
                     .set_for(pool_id.clone(), *pool_participation)
                     .unwrap(),
+                Entry::VotePlan((vote_plan, block_date)) => {
+                    votes.add_vote_plan(block_date.clone(), vote_plan.clone());
+                }
             }
         }
 
@@ -441,6 +460,9 @@ mod tests {
                 }
                 Entry::LeaderParticipation((pool_id, pool_record)) => {
                     println!("LeaderParticipation {} {}", pool_id, pool_record);
+                }
+                Entry::VotePlan((plan, block_date)) => {
+                    println!("VotePlan {} {}", plan.to_id(), block_date);
                 }
             }
         }

@@ -83,6 +83,10 @@ impl VoteOptions {
             num_choices: num_choices & Self::NUM_CHOICES_MAX,
         }
     }
+
+    pub fn as_byte(&self) -> u8 {
+        self.num_choices
+    }
 }
 
 impl Proposal {

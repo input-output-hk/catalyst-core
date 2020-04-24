@@ -37,6 +37,7 @@ pub const FRAGMENT_OVERHEAD: usize = 0;
 
 impl TxBuilder {
     /// Create a new Tx builder
+    #[allow(clippy::reverse_range_loop)]
     pub fn new() -> Self {
         let mut data = Vec::new();
         // push empty hole for fragment overhead space

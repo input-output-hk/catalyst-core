@@ -4,8 +4,9 @@ pub use builders::*;
 
 use crate::{certificate::PoolPermissions, rewards::TaxType, value::Value};
 use chain_crypto::{Ed25519, PublicKey};
+use std::hash::{Hash, Hasher};
 
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct WalletTemplate {
     pub alias: String,
     pub stake_pool_delegate_alias: Option<String>,
@@ -16,6 +17,12 @@ pub struct WalletTemplate {
 impl PartialEq for WalletTemplate {
     fn eq(&self, other: &WalletTemplate) -> bool {
         self.alias == other.alias
+    }
+}
+
+impl Hash for WalletTemplate {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.alias.hash(state)
     }
 }
 

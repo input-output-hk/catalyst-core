@@ -151,6 +151,7 @@ pub enum TxVerifyError {
     TooManyOutputs { expected: u8, actual: u8 },
 }
 
+#[allow(clippy::absurd_extreme_comparisons)]
 pub(super) fn valid_transaction_ios_number<'a, P>(
     tx: &TransactionSlice<'a, P>,
 ) -> Result<(), TxVerifyError> {

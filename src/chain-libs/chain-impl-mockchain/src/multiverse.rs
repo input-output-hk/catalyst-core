@@ -183,17 +183,40 @@ impl Multiverse<Ledger> {
             }
         }
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::{Multiverse, Ref, SUFFIX_TO_KEEP};
+    use crate::{
+        block::{Block, Contents, ContentsBuilder},
+        chaintypes::{ChainLength, ConsensusType, HeaderId},
+        config::{Block0Date, ConfigParam},
+        date::BlockDate,
+        fragment::{ConfigParams, Fragment},
+        header::{BlockVersion, HeaderBuilderNew},
+        key::Hash,
+        ledger::Ledger,
+        milli::Milli,
+        testing::{data::LeaderPair, TestGen},
+    };
+
+    use chain_addr::Discrimination;
+    use chain_core::property::Block as _;
+    use chain_storage::BlockStoreBuilder;
+    use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
+    use std::mem;
+    use std::time::SystemTime;
 
     /// Get the chain state at block 'k' from memory if present;
     /// otherwise reconstruct it by reading blocks from storage and
     /// applying them to the nearest ancestor state that we do have.
-    #[cfg(test)]
     pub fn get_from_storage(
-        &mut self,
+        multiverse: &mut Multiverse<Ledger>,
         k: HeaderId,
         store: &mut chain_storage::BlockStoreConnection<crate::block::Block>,
     ) -> Result<Ref<Ledger>, chain_storage::Error> {
-        if let Some(r) = self.get_ref(&k) {
+        if let Some(r) = multiverse.get_ref(&k) {
             return Ok(r);
         }
 
@@ -211,7 +234,7 @@ impl Multiverse<Ledger> {
                 panic!("don't know how to reconstruct initial chain state");
             }
 
-            if let Some(state_ref) = self.get_ref(&cur_hash) {
+            if let Some(state_ref) = multiverse.get_ref(&cur_hash) {
                 break state_ref;
             }
 
@@ -239,35 +262,11 @@ impl Multiverse<Ledger> {
                     &header_meta,
                 )
                 .unwrap();
-            state_ref = self.add(hash.clone(), state);
+            state_ref = multiverse.add(hash.clone(), state);
         }
 
         Ok(state_ref)
     }
-}
-
-#[cfg(test)]
-mod test {
-    use super::{Multiverse, SUFFIX_TO_KEEP};
-    use crate::{
-        block::{Block, Contents, ContentsBuilder},
-        chaintypes::{ChainLength, ConsensusType},
-        config::{Block0Date, ConfigParam},
-        date::BlockDate,
-        fragment::{ConfigParams, Fragment},
-        header::{BlockVersion, HeaderBuilderNew},
-        key::Hash,
-        ledger::Ledger,
-        milli::Milli,
-        testing::{data::LeaderPair, TestGen},
-    };
-
-    use chain_addr::Discrimination;
-    use chain_core::property::Block as _;
-    use chain_storage::BlockStoreBuilder;
-    use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
-    use std::mem;
-    use std::time::SystemTime;
 
     fn apply_block(state: &Ledger, block: &Block) -> Ledger {
         if state.chain_length().0 != 0 {
@@ -385,21 +384,15 @@ mod test {
             );
         }
 
-        let ref1 = multiverse
-            .get_from_storage(ids[1234].clone(), &mut store)
-            .unwrap();
+        let ref1 = get_from_storage(&mut multiverse, ids[1234].clone(), &mut store).unwrap();
         let state = ref1.state();
         assert_eq!(state.chain_length().0, 1235);
 
-        let ref2 = multiverse
-            .get_from_storage(ids[9999].clone(), &mut store)
-            .unwrap();
+        let ref2 = get_from_storage(&mut multiverse, ids[9999].clone(), &mut store).unwrap();
         let state = ref2.state();
         assert_eq!(state.chain_length().0, 10000);
 
-        let ref3 = multiverse
-            .get_from_storage(ids[9500].clone(), &mut store)
-            .unwrap();
+        let ref3 = get_from_storage(&mut multiverse, ids[9500].clone(), &mut store).unwrap();
         let state = ref3.state();
         assert_eq!(state.chain_length().0, 9501);
 

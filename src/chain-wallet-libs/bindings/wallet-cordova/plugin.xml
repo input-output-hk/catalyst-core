@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="wallet-cordova-plugin"
+    version="2.0.0">
+    <name>Wallet Cordova Plugin</name>
+    <description>Wallet Cordova Plugin</description>
+    <license>MIT OR Apache-2.0 </license>
+    <keywords>cordova,wallet</keywords>
+    <repo></repo>
+
+    <js-module src="www/wallet.js" name="wallet">
+        <!-- this means we would use window.wallet to reference the plugin -->
+        <clobbers target="wallet" />
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="WalletPlugin" >
+                <param name="android-package" value="com.iohk.jormungandrwallet.WalletPlugin"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/WalletPlugin.java" target-dir="src/com/iohk/jormungandrwallet" />
+        <source-file src="src/android/jormungandrwallet/Settings.java" target-dir="src/com/iohk/jormungandrwallet" />
+        <source-file src="src/android/jormungandrwallet/Wallet.java" target-dir="src/com/iohk/jormungandrwallet" />
+
+        <source-file src="src/android/libs/x86/libwallet_jni.so" target-dir="libs/x86" />
+        <source-file src="src/android/libs/x86_64/libwallet_jni.so" target-dir="libs/x86_64" />
+        <source-file src="src/android/libs/amd64-v8a/libwallet_jni.so" target-dir="libs/amd64-v8a" />
+        <source-file src="src/android/libs/armeabi-v7a/libwallet_jni.so" target-dir="libs/armeabi-v7a" />
+    </platform>
+
+    <!-- ios -->
+    <!-- just as example -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="wallet">
+                <param name="ios-package" value="Wallet"/>
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/Wallet.h" />
+        <source-file src="src/ios/Wallet.m" />
+    </platform>
+</plugin>

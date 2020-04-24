@@ -1,7 +1,6 @@
 //! module to provide some handy interfaces atop the hashes so we have
 //! the common interfaces for the project to work with.
 
-use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 use std::{error, fmt, result};
 
@@ -98,11 +97,6 @@ macro_rules! define_hash_object {
                 $constructor(bytes)
             }
         }
-        impl Hash for $hash_ty {
-            fn hash<H: Hasher>(&self, state: &mut H) {
-                self.0.hash(state)
-            }
-        }
         impl FromStr for $hash_ty {
             type Err = Error;
             fn from_str(s: &str) -> result::Result<Self, Self::Err> {
@@ -140,7 +134,7 @@ macro_rules! define_hash_object {
 pub const HASH_SIZE_256: usize = 32;
 
 /// Blake2b 256 bits
-#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Hash)]
 pub struct Blake2b256([u8; HASH_SIZE_256]);
 define_hash_object!(Blake2b256, Blake2b256, HASH_SIZE_256, "blake2b256");
 define_blake2b_new!(Blake2b256);

@@ -25,7 +25,8 @@ impl BlockDate {
     }
 
     /// Get the slot following this one.
-    pub fn next(&self, era: &TimeEra) -> BlockDate {
+    #[must_use = "this returns the result of the operation, without modifying the original"]
+    pub fn next(self, era: &TimeEra) -> BlockDate {
         let epoch_duration = era.slots_per_epoch();
         assert!(self.slot_id < epoch_duration);
         if self.slot_id + 1 == epoch_duration {
@@ -41,7 +42,8 @@ impl BlockDate {
         }
     }
 
-    pub fn next_epoch(&self) -> BlockDate {
+    #[must_use = "this returns the result of the operation, without modifying the original"]
+    pub fn next_epoch(self) -> BlockDate {
         BlockDate {
             epoch: self.epoch + 1,
             slot_id: 0,
@@ -60,10 +62,7 @@ impl From<EpochPosition> for BlockDate {
 
 impl property::BlockDate for BlockDate {
     fn from_epoch_slot_id(epoch: Epoch, slot_id: SlotId) -> Self {
-        BlockDate {
-            epoch: epoch,
-            slot_id: slot_id,
-        }
+        BlockDate { epoch, slot_id }
     }
 }
 
@@ -80,7 +79,7 @@ pub enum BlockDateParseError {
     BadSlotId(ParseIntError),
 }
 
-const EXPECT_FORMAT_MESSAGE: &'static str = "expected block date format EPOCH.SLOT";
+const EXPECT_FORMAT_MESSAGE: &str = "expected block date format EPOCH.SLOT";
 
 impl fmt::Display for BlockDateParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

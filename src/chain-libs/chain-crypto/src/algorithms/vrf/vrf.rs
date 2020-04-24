@@ -34,6 +34,7 @@ impl AsRef<[u8]> for SecretKey {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PublicKey(Point, CompressedRistretto);
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for PublicKey {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.as_bytes().hash(state)

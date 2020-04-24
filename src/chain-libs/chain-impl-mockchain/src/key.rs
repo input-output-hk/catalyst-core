@@ -148,7 +148,7 @@ where
     A: VerificationAlgorithm,
     T: property::Serialize,
 {
-    assert!(public_key.len() > 0);
+    assert!(!public_key.is_empty());
     let bytes = data.serialize_as_vec().unwrap();
     signature.clone().coerce().verify(&public_key[0], &bytes)
 }
@@ -169,7 +169,7 @@ where
     let bytes = data.serialize_as_vec().unwrap();
     let signature = secret_key.sign(&bytes).coerce();
     Signed {
-        data: data,
+        data,
         sig: signature,
     }
 }

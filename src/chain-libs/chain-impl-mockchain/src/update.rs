@@ -44,7 +44,7 @@ impl UpdateState {
 
         let proposal = &proposal.proposal.proposal;
 
-        if let Some(_) = self.proposals.get_mut(&proposal_id) {
+        if self.proposals.contains_key(&proposal_id) {
             Err(Error::DuplicateProposal(proposal_id))
         } else {
             self.proposals.insert(
@@ -66,7 +66,7 @@ impl UpdateState {
     ) -> Result<Self, Error> {
         if vote.verify() == Verification::Failed {
             return Err(Error::BadVoteSignature(
-                vote.vote.proposal_id.clone(),
+                vote.vote.proposal_id,
                 vote.vote.voter_id.clone(),
             ));
         }
@@ -74,23 +74,20 @@ impl UpdateState {
         let vote = &vote.vote;
 
         if !settings.bft_leaders.contains(&vote.voter_id) {
-            return Err(Error::BadVoter(
-                vote.proposal_id.clone(),
-                vote.voter_id.clone(),
-            ));
+            return Err(Error::BadVoter(vote.proposal_id, vote.voter_id.clone()));
         }
 
         if let Some(proposal) = self.proposals.get_mut(&vote.proposal_id) {
             if !proposal.votes.insert(vote.voter_id.clone()) {
                 return Err(Error::DuplicateVote(
-                    vote.proposal_id.clone(),
+                    vote.proposal_id,
                     vote.voter_id.clone(),
                 ));
             }
 
             Ok(self)
         } else {
-            Err(Error::VoteForMissingProposal(vote.proposal_id.clone()))
+            Err(Error::VoteForMissingProposal(vote.proposal_id))
         }
     }
 
@@ -130,6 +127,12 @@ impl UpdateState {
         }
 
         Ok((self, settings))
+    }
+}
+
+impl Default for UpdateState {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -232,6 +235,12 @@ pub type UpdateVoterId = BftLeaderId;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateProposal {
     pub changes: ConfigParams,
+}
+
+impl Default for UpdateProposal {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl UpdateProposal {
@@ -756,13 +765,10 @@ mod tests {
             .process_proposals(settings, block_date, block_date.next_epoch())
             .expect("error while processing proposal");
 
-        match first_proposal_id == last_proposal_id {
-            true => {
-                assert_eq!(settings.slots_per_epoch, 100);
-            }
-            false => {
-                assert_eq!(settings.slots_per_epoch, 200);
-            }
+        if first_proposal_id == last_proposal_id {
+            assert_eq!(settings.slots_per_epoch, 100);
+        } else {
+            assert_eq!(settings.slots_per_epoch, 200);
         }
 
         assert_eq!(update_state.proposals.len(), 0);
@@ -776,7 +782,7 @@ mod tests {
 
     impl ExpiryBlockDate {
         pub fn block_date(&self) -> BlockDate {
-            self.block_date.clone()
+            self.block_date
         }
 
         pub fn proposal_expiration(&self) -> u32 {
@@ -791,7 +797,7 @@ mod tests {
     impl Arbitrary for ExpiryBlockDate {
         fn arbitrary<G: Gen>(gen: &mut G) -> Self {
             let mut block_date = BlockDate::arbitrary(gen);
-            block_date.epoch = block_date.epoch % 10;
+            block_date.epoch %= 10;
             let proposal_expiration = u32::arbitrary(gen) % 10;
             ExpiryBlockDate {
                 block_date,
@@ -841,13 +847,10 @@ mod tests {
                 )
                 .expect("error while processing proposal");
 
-            match proposal_date.epoch + proposal_expiration <= current_block_date.epoch {
-                true => {
-                    assert_eq!(update_state.proposals.len(), 0);
-                }
-                false => {
-                    assert_eq!(update_state.proposals.len(), 1);
-                }
+            if proposal_date.epoch + proposal_expiration <= current_block_date.epoch {
+                assert_eq!(update_state.proposals.len(), 0);
+            } else {
+                assert_eq!(update_state.proposals.len(), 1);
             }
             current_block_date = current_block_date.next_epoch()
         }

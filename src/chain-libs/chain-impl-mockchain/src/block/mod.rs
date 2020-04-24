@@ -46,11 +46,11 @@ impl Block {
     pub fn is_consistent(&self) -> bool {
         let (content_hash, content_size) = self.contents.compute_hash_size();
 
-        &content_hash == &self.header.block_content_hash()
+        content_hash == self.header.block_content_hash()
             && content_size == self.header.block_content_size()
     }
 
-    pub fn fragments<'a>(&'a self) -> impl Iterator<Item = &'a Fragment> {
+    pub fn fragments(&self) -> impl Iterator<Item = &Fragment> {
         self.contents.iter()
     }
 }
@@ -129,7 +129,7 @@ impl property::Deserialize for Block {
         }
 
         Ok(Block {
-            header: header,
+            header,
             contents: contents.into(),
         })
     }
@@ -157,7 +157,7 @@ impl Readable for Block {
         }
 
         Ok(Block {
-            header: header,
+            header,
             contents: contents.into(),
         })
     }
@@ -176,21 +176,4 @@ impl property::HasHeader for Block {
     fn header(&self) -> Self::Header {
         self.header.clone()
     }
-}
-
-#[cfg(test)]
-#[cfg(feature = "with-bench")]
-mod bench {
-    use test::Bencher;
-
-    /*
-    #[bench]
-    pub fn serialization(&b: &mut Bencher) -> Self {
-        let bc = BlockContent::new();
-
-        b.iter(|| {
-
-        })
-    }
-    */
 }

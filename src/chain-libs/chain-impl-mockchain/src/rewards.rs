@@ -383,7 +383,7 @@ mod tests {
             let epoch_rate = {
                 let mut number = u32::arbitrary(g);
                 if number == 0 {
-                    number = number + 1;
+                    number += 1;
                 }
                 NonZeroU32::new(number).unwrap()
             };
@@ -392,7 +392,7 @@ mod tests {
                 initial_value: u64::arbitrary(g),
                 compounding_ratio: Ratio::arbitrary(g),
                 compounding_type: CompoundingType::arbitrary(g),
-                epoch_rate: epoch_rate,
+                epoch_rate,
                 epoch_start: Arbitrary::arbitrary(g),
                 reward_drawing_limit_max: Limit::arbitrary(g),
                 pool_participation_capping: None,

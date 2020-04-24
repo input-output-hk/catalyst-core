@@ -61,6 +61,7 @@ pub fn keygen(log_depth: Depth, r: &Seed) -> (SecretKey, PublicKey) {
 }
 
 #[allow(dead_code)]
+#[allow(clippy::if_same_then_else)]
 pub fn sign(enum_sk: &SecretKey, m: &[u8]) -> Signature {
     match enum_sk {
         SecretKey::Leaf(s) => {

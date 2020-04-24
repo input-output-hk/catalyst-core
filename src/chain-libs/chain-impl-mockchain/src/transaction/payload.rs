@@ -56,13 +56,13 @@ impl<P: ?Sized> PayloadAuthData<P> {
 
 impl<'a, P: ?Sized> Clone for PayloadSlice<'a, P> {
     fn clone(&self) -> PayloadSlice<'a, P> {
-        PayloadSlice(self.0.clone(), self.1.clone())
+        PayloadSlice(self.0, self.1.clone())
     }
 }
 
 impl<'a, P: ?Sized> Clone for PayloadAuthSlice<'a, P> {
     fn clone(&self) -> PayloadAuthSlice<'a, P> {
-        PayloadAuthSlice(self.0.clone(), self.1.clone())
+        PayloadAuthSlice(self.0, self.1.clone())
     }
 }
 

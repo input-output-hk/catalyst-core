@@ -80,21 +80,21 @@ public class WalletPlugin extends CordovaPlugin {
 
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-                long wallet_ptr = Wallet.recover(mnemonics);
+                long walletPtr = Wallet.recover(mnemonics);
 
-                if (wallet_ptr == 0) {
+                if (walletPtr == 0) {
                     callbackContext.error("Invalid mnemonics");
                 } else {
-                    callbackContext.success(Long.toString(wallet_ptr));
+                    callbackContext.success(Long.toString(walletPtr));
                 }
             }
         });
     }
 
     private void walletRetrieveFunds(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Long wallet_ptr = args.getLong(0);
+        Long walletPtr = args.getLong(0);
 
-        if (wallet_ptr == 0) {
+        if (walletPtr == 0) {
             callbackContext.error("received nullptr");
             return;
         }
@@ -106,51 +106,51 @@ public class WalletPlugin extends CordovaPlugin {
                 byte[] block0_decoded = Base64.decode(block0.getBytes(java.nio.charset.StandardCharsets.UTF_16LE),
                         Base64.DEFAULT);
 
-                long settings_ptr = Wallet.initialFunds(wallet_ptr, block0_decoded);
+                long settingsPtr = Wallet.initialFunds(walletPtr, block0_decoded);
 
-                if (settings_ptr == 0) {
+                if (settingsPtr == 0) {
                     callbackContext.error("invalid block");
                 } else {
-                    callbackContext.success(Long.toString(settings_ptr));
+                    callbackContext.success(Long.toString(settingsPtr));
                 }
             }
         });
     }
 
     private void walletTotalFunds(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Long wallet_ptr = args.getLong(0);
+        Long walletPtr = args.getLong(0);
 
-        if (wallet_ptr == 0) {
+        if (walletPtr == 0) {
             callbackContext.error("received nullptr");
             return;
         }
 
-        int value = Wallet.totalValue(wallet_ptr);
+        int value = Wallet.totalValue(walletPtr);
 
         callbackContext.success(Integer.toString(value));
     }
 
     private void walletDelete(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Long wallet_ptr = args.getLong(0);
+        Long walletPtr = args.getLong(0);
 
-        if (wallet_ptr == 0) {
+        if (walletPtr == 0) {
             callbackContext.error("received nullptr");
             return;
         }
 
-        Wallet.delete(wallet_ptr);
+        Wallet.delete(walletPtr);
         callbackContext.success("");
     }
 
     private void settingsDelete(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Long settings_ptr = args.getLong(0);
+        Long settingsPtr = args.getLong(0);
 
-        if (settings_ptr == 0) {
+        if (settingsPtr == 0) {
             callbackContext.error("received nullptr");
             return;
         }
 
-        Settings.delete(settings_ptr);
+        Settings.delete(settingsPtr);
         callbackContext.success("");
     }
 }

@@ -5,7 +5,7 @@ use crate::{
     vote::{VoteError, VotePlanManager},
 };
 use imhamt::{Hamt, InsertError, UpdateError};
-use std::collections::{hash_map::DefaultHasher, BTreeMap, HashMap};
+use std::collections::{hash_map::DefaultHasher, BTreeMap};
 use thiserror::Error;
 
 #[derive(Clone, PartialEq, Eq)]
@@ -105,8 +105,8 @@ impl VotePlanLedger {
         let id = vote.vote_plan().clone();
 
         let r = self.plans.update(&id, move |(v, _)| {
-            (v.vote(block_date, identifier, vote)
-                .map(|v| Some((v, block_date.clone()))))
+            v.vote(block_date, identifier, vote)
+                .map(|v| Some((v, block_date.clone())))
         });
 
         match r {

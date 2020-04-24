@@ -84,7 +84,7 @@ impl VoteOptions {
         }
     }
 
-    pub fn choices(&self) -> u8 {
+    pub fn as_byte(&self) -> u8 {
         self.num_choices
     }
 }

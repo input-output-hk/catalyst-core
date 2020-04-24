@@ -287,7 +287,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         let mut pots = Pots::zero();
         let mut leaders_log = LeadersParticipationRecord::new();
         // TODO: votes don't have their entry
-        let mut votes = VotePlanLedger::new();
+        let votes = VotePlanLedger::new();
 
         for entry in iter {
             match entry {

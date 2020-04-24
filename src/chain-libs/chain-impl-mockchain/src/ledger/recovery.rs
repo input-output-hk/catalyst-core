@@ -50,12 +50,12 @@ use crate::fragment::{ConfigParams, FragmentId};
 use crate::header::{ChainLength, HeaderId};
 use crate::key::{serialize_public_key, BftLeaderId};
 use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
+use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
 use crate::stake::{PoolLastRewards, PoolState};
 use crate::transaction::Output;
 use crate::update::{UpdateProposal, UpdateProposalId, UpdateProposalState, UpdateVoterId};
 use crate::value::Value;
-use crate::{certificate, legacy};
 use crate::{config, key, multisig, utxo};
 use chain_addr::{Address, Discrimination};
 use chain_core::mempack::{ReadBuf, Readable};
@@ -858,7 +858,7 @@ fn pack_vote_proposal<W: std::io::Write>(
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     pack_digestof(proposal.external_id(), codec)?;
-    codec.put_u8(proposal.options().choices())?;
+    codec.put_u8(proposal.options().as_byte())?;
     Ok(())
 }
 

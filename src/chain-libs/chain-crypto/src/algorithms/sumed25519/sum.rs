@@ -67,7 +67,7 @@ impl<'a> Iterator for MerklePublicKeys<'a> {
     type Item = (PublicKey, PublicKey);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let mut datl = [0u8; PUBLIC_KEY_SIZE];
@@ -82,7 +82,7 @@ impl<'a> Iterator for MerklePublicKeys<'a> {
 
 impl<'a> DoubleEndedIterator for MerklePublicKeys<'a> {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let mut datl = [0u8; PUBLIC_KEY_SIZE];
@@ -110,7 +110,7 @@ impl<'a> Iterator for Seeds<'a> {
     type Item = Seed;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let seed = Seed::from_slice(&self.0[0..Seed::SIZE]);
@@ -345,7 +345,7 @@ impl<'a> Iterator for MerkleSignaturePublicKeys<'a> {
     type Item = PublicKey;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let mut dat = [0u8; PUBLIC_KEY_SIZE];
@@ -358,7 +358,7 @@ impl<'a> Iterator for MerkleSignaturePublicKeys<'a> {
 
 impl<'a> DoubleEndedIterator for MerkleSignaturePublicKeys<'a> {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let mut dat = [0u8; PUBLIC_KEY_SIZE];
@@ -630,7 +630,7 @@ pub fn sign(secret: &SecretKey, m: &[u8]) -> Signature {
 
 pub fn verify(pk: &PublicKey, m: &[u8], sig: &Signature) -> bool {
     // verify the signature of the leaf
-    if !sig.pk().verify(m, &sig.sigma()).is_ok() {
+    if sig.pk().verify(m, &sig.sigma()).is_err() {
         return false;
     }
 

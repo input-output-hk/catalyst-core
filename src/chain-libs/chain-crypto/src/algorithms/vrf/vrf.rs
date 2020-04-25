@@ -118,12 +118,10 @@ impl SecretKey {
             h2: &output.0,
         };
         let dleq_proof = dleq::generate(&r, &self.secret, &dleq);
-        let proof = ProvenOutputSeed {
+        ProvenOutputSeed {
             u: output.clone(),
-            dleq_proof: dleq_proof,
-        };
-
-        proof
+            dleq_proof,
+        }
     }
 
     pub fn proove_simple<T: RngCore + CryptoRng>(

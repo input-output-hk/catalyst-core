@@ -34,7 +34,7 @@ impl Proof {
 
         let proof = Proof {
             c: Challenge(c),
-            z: z,
+            z,
         };
         Some(proof)
     }

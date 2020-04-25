@@ -225,7 +225,7 @@ impl SecretKey {
         }
 
         SecretKey {
-            depth: depth,
+            depth,
             data: out,
         }
     }
@@ -292,7 +292,7 @@ impl SecretKey {
         out.extend_from_slice(bytes);
 
         Ok(SecretKey {
-            depth: depth,
+            depth,
             data: out,
         })
     }

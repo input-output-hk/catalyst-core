@@ -1,4 +1,5 @@
 mod dleq;
+#[allow(clippy::module_inception)]
 pub mod vrf;
 
 use crate::key::{

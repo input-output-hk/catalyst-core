@@ -46,7 +46,7 @@ pub fn keygen(log_depth: Depth, r: &Seed) -> (SecretKey, PublicKey) {
     assert!(log_depth.0 < 32);
     if log_depth.0 == 0 {
         let sk = common::keygen_1(r);
-        let pk = sk.public.clone();
+        let pk = sk.public;
         (SecretKey::Leaf(sk), PublicKey::Leaf(pk))
     } else {
         let (r0, r1) = common::split_seed(r);

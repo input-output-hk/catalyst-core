@@ -266,7 +266,7 @@ impl<H: DigestAlg, T> Clone for DigestOf<H, T> {
     fn clone(&self) -> Self {
         DigestOf {
             inner: self.inner.clone(),
-            marker: self.marker.clone(),
+            marker: self.marker,
         }
     }
 }

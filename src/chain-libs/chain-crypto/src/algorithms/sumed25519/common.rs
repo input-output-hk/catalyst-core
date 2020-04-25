@@ -39,20 +39,20 @@ impl Seed {
 pub struct Depth(pub usize);
 
 impl Depth {
-    pub fn total(&self) -> usize {
+    pub fn total(self) -> usize {
         usize::pow(2, self.0 as u32)
     }
 
-    pub fn half(&self) -> usize {
+    pub fn half(self) -> usize {
         assert!(self.0 > 0);
         usize::pow(2, (self.0 - 1) as u32)
     }
 
-    pub fn decr(&self) -> Self {
+    pub fn decr(self) -> Self {
         assert!(self.0 > 0);
         Depth(self.0 - 1)
     }
-    pub fn incr(&self) -> Self {
+    pub fn incr(self) -> Self {
         Depth(self.0 + 1)
     }
 }

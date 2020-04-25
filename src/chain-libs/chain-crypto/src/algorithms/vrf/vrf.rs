@@ -154,7 +154,7 @@ impl SecretKey {
 
     /// Get the public key associated with a secret key
     pub fn public(&self) -> PublicKey {
-        PublicKey(self.public.clone(), self.public.compress())
+        PublicKey(self.public, self.public.compress())
     }
 }
 

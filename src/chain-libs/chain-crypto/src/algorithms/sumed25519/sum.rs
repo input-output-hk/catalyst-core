@@ -603,7 +603,7 @@ pub fn sign(secret: &SecretKey, m: &[u8]) -> Signature {
     for (i, (pk0, pk1)) in secret.merkle_pks().enumerate() {
         let d = Depth(secret.depth().0 - i);
         if t >= d.half() {
-            t = t - d.half();
+            t -= d.half();
             pks.push(pk0.clone());
         } else {
             pks.push(pk1.clone());

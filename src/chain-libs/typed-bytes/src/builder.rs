@@ -93,6 +93,7 @@ impl<T> ByteBuilder<T> {
         l.fold(bb, f)
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn sub<F, U>(self, f: F) -> Self
     where
         F: Fn(ByteBuilder<U>) -> ByteBuilder<U>,

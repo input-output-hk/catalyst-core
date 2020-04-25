@@ -35,7 +35,8 @@ impl Readable for UtxoDeclaration {
         for _ in 0..nb_entries {
             let value = Value::read(buf)?;
             let addr_size = buf.get_u16()? as usize;
-            let addr = OldAddress::try_from(buf.get_slice(addr_size)?).unwrap();
+            let addr = OldAddress::try_from(buf.get_slice(addr_size)?)
+                .map_err(|err| ReadError::StructureInvalid(format!("{}", err)))?;
             addrs.push((addr, value))
         }
 

@@ -801,8 +801,7 @@ mod tests {
         let m = b"Arbitrary message";
 
         let sig = sign(&sk, m);
-        let v = verify(&pk, m, &sig);
-        v
+        verify(&pk, m, &sig)
     }
 
     #[quickcheck]

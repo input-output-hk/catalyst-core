@@ -44,8 +44,7 @@ fn shared_key_to_symmetric_key(app_level_info: &[u8], prk: &[u8]) -> ChaCha20Pol
     assert_eq!(prk.len(), 16);
     let mut symkey = [0u8; 16 + 12];
     hkdf_expand(sha2::Sha256::new(), prk, app_level_info, &mut symkey);
-    let ctx = ChaCha20Poly1305::new(&symkey[0..16], &symkey[16..], &[]);
-    ctx
+    ChaCha20Poly1305::new(&symkey[0..16], &symkey[16..], &[])
 }
 
 const HEADER_SIZE: usize = 4;

@@ -114,6 +114,12 @@ impl<H: DigestAlg> Clone for Context<H> {
     }
 }
 
+impl<H: DigestAlg> Default for Context<H> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<H: DigestAlg> Context<H> {
     /// Create a new digest context
     pub fn new() -> Self {

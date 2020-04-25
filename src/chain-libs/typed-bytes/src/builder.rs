@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use std::num::NonZeroUsize;
 
 /// A dynamically created buffer for T
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct ByteBuilder<T> {
     buffer: Vec<u8>,
     phantom: PhantomData<T>,

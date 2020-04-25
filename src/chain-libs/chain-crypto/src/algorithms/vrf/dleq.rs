@@ -32,10 +32,7 @@ impl Proof {
         z_array.copy_from_slice(&slice[32..64]);
         let z = Scalar::from_canonical_bytes(z_array)?;
 
-        let proof = Proof {
-            c: Challenge(c),
-            z,
-        };
+        let proof = Proof { c: Challenge(c), z };
         Some(proof)
     }
 }

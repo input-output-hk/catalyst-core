@@ -224,10 +224,7 @@ impl SecretKey {
             out.extend_from_slice(&r.as_ref());
         }
 
-        SecretKey {
-            depth,
-            data: out,
-        }
+        SecretKey { depth, data: out }
     }
 
     // Get the latest seed and drop it from the buffer
@@ -291,10 +288,7 @@ impl SecretKey {
         let mut out = Vec::with_capacity(bytes.len());
         out.extend_from_slice(bytes);
 
-        Ok(SecretKey {
-            depth,
-            data: out,
-        })
+        Ok(SecretKey { depth, data: out })
     }
 }
 

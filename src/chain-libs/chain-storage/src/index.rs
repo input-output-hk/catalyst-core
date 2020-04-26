@@ -51,8 +51,8 @@ where
         self.blocks_index.get(key)
     }
 
-    pub fn get_block_by_chain_length(&self, key: &u64) -> Option<&Vec<B::Id>> {
-        self.blocks_by_chain_length_index.get(key)
+    pub fn get_block_by_chain_length(&self, key: u64) -> Option<&Vec<B::Id>> {
+        self.blocks_by_chain_length_index.get(&key)
     }
 
     pub fn add_block_check(&self, block_id: &B::Id) -> IndexResult {
@@ -96,7 +96,7 @@ where
         Ok(())
     }
 
-    pub fn get_tag(&self, tag: &String) -> Option<&RowId> {
+    pub fn get_tag(&self, tag: &str) -> Option<&RowId> {
         self.tags_index.get(tag)
     }
 
@@ -122,7 +122,11 @@ where
         Self(HashMap::new())
     }
 
-    pub fn get(&self, key: &K) -> Option<&V> {
+    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
+    where
+        K: std::borrow::Borrow<Q>,
+        Q: std::hash::Hash + Eq,
+    {
         self.0.get(key)
     }
 

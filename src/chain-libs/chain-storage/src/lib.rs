@@ -327,7 +327,7 @@ where
         };
 
         let block_info = BlockInfo {
-            block_hash: block_hash.clone(),
+            block_hash,
             chain_length,
             back_links,
         };
@@ -450,7 +450,7 @@ where
             .transaction()
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        let hashes = match index.get_block_by_chain_length(&chain_length) {
+        let hashes = match index.get_block_by_chain_length(chain_length) {
             Some(hashes) => hashes,
             None => return Ok(Vec::new()),
         };
@@ -461,6 +461,7 @@ where
             .collect()
     }
 
+    #[allow(clippy::type_complexity)]
     pub fn get_blocks_by_chain_length(
         &mut self,
         chain_length: u64,
@@ -934,7 +935,7 @@ pub mod tests {
 
     const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
 
-    pub fn pick_from_vector<'a, A, R: RngCore>(rng: &mut R, v: &'a Vec<A>) -> &'a A {
+    pub fn pick_from_vector<'a, A, R: RngCore>(rng: &mut R, v: &'a [A]) -> &'a A {
         let s = rng.next_u32() as usize;
         // this doesn't need to be uniform
         &v[s % v.len()]

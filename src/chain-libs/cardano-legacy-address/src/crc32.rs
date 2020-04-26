@@ -1,3 +1,5 @@
+#![allow(clippy::unreadable_literal)]
+
 const CRC_TABLE: [u32; 256] = [
     0x00000000u32,
     0x77073096u32,

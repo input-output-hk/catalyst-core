@@ -103,7 +103,7 @@ pub const ADDR_KIND_MULTISIG: u8 = 0x6;
 const ADDR_KIND_SENTINEL: u8 = 0x7; /* anything above or equal to this is invalid */
 
 impl KindType {
-    pub fn to_value(&self) -> u8 {
+    pub fn to_value(self) -> u8 {
         match self {
             KindType::Single => ADDR_KIND_SINGLE,
             KindType::Group => ADDR_KIND_GROUP,
@@ -262,7 +262,7 @@ fn get_discrimination_value(first_byte: u8) -> Discrimination {
 }
 
 fn is_valid_data(bytes: &[u8]) -> Result<(Discrimination, KindType), Error> {
-    if bytes.len() == 0 {
+    if bytes.is_empty() {
         return Err(Error::EmptyAddress);
     }
     let kind_type = get_kind_value(bytes[0]);
@@ -533,7 +533,7 @@ impl std::str::FromStr for Discrimination {
 mod test {
     use super::*;
 
-    const TEST_PREFIX: &'static str = "ca";
+    const TEST_PREFIX: &str = "ca";
 
     fn property_serialize_deserialize(addr: &Address) {
         let data = addr.to_bytes();
@@ -626,7 +626,7 @@ mod test {
         {
             let addr = Address(
                 Discrimination::Test,
-                Kind::Group(fake_spendingkey.clone(), fake_groupkey.clone()),
+                Kind::Group(fake_spendingkey, fake_groupkey),
             );
             property_serialize_deserialize(&addr);
             property_readable(&addr);

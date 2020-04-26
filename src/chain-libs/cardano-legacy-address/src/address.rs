@@ -40,7 +40,9 @@ impl cbor_event::de::Deserialize for PubKeyTag {
     fn deserialize<R: BufRead>(reader: &mut Deserializer<R>) -> cbor_event::Result<Self> {
         match reader.unsigned_integer()? {
             0 => Ok(PubKeyTag()),
-            _ => Err(cbor_event::Error::CustomError(format!("Invalid AddrType"))),
+            _ => Err(cbor_event::Error::CustomError(
+                "Invalid AddrType".to_owned(),
+            )),
         }
     }
 }
@@ -70,23 +72,23 @@ impl cbor_event::se::Serialize for Attributes {
         serializer: &'se mut Serializer<W>,
     ) -> cbor_event::Result<&'se mut Serializer<W>> {
         let mut len = 0;
-        if let Some(_) = &self.derivation_path {
+        if self.derivation_path.is_some() {
             len += 1
         };
-        if let Some(_) = &self.network_magic {
+        if self.network_magic.is_some() {
             len += 1
         };
         let serializer = serializer.write_map(cbor_event::Len::Len(len))?;
         let serializer = match &self.derivation_path {
-            &None => serializer,
-            &Some(ref dp) => {
+            None => serializer,
+            Some(ref dp) => {
                 let s = serializer.write_unsigned_integer(ATTRIBUTE_NAME_TAG_DERIVATION)?;
                 cbor_event::se::serialize_cbor_in_cbor(dp.as_slice(), s)?
             }
         };
         let serializer = match &self.network_magic {
-            &None => serializer,
-            &Some(network_magic) => serializer
+            None => serializer,
+            Some(network_magic) => serializer
                 .write_unsigned_integer(ATTRIBUTE_NAME_TAG_NETWORK_MAGIC)?
                 .write_bytes(cbor!(&network_magic)?)?,
         };

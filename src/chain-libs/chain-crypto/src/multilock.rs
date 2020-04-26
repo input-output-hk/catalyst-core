@@ -44,8 +44,7 @@ fn shared_key_to_symmetric_key(app_level_info: &[u8], prk: &[u8]) -> ChaCha20Pol
     assert_eq!(prk.len(), 16);
     let mut symkey = [0u8; 16 + 12];
     hkdf_expand(sha2::Sha256::new(), prk, app_level_info, &mut symkey);
-    let ctx = ChaCha20Poly1305::new(&symkey[0..16], &symkey[16..], &[]);
-    ctx
+    ChaCha20Poly1305::new(&symkey[0..16], &symkey[16..], &[])
 }
 
 const HEADER_SIZE: usize = 4;
@@ -98,7 +97,7 @@ pub fn encrypt<R: RngCore + CryptoRng>(
     receiver_pks: &[RistrettoPoint],
     data: &[u8],
 ) -> Vec<u8> {
-    assert!(receiver_pks.len() > 0 && receiver_pks.len() < 256);
+    assert!(!receiver_pks.is_empty() && receiver_pks.len() < 256);
     // create a new ephemeral key and throw away the secret key keeping only the public key
     // and the shared key
     let r = Scalar::random(rng);
@@ -178,7 +177,7 @@ pub fn decrypt(
         let pk_bytes = pk.compress().to_bytes();
         let mut found = None;
         for i in 0..participants {
-            if recipient_public_key_nth(data, i) == &pk_bytes {
+            if recipient_public_key_nth(data, i) == pk_bytes {
                 found = Some(recipient_session_key_nth(data, i))
             }
         }

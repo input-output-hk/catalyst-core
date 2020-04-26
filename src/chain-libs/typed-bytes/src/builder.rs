@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use std::num::NonZeroUsize;
 
 /// A dynamically created buffer for T
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct ByteBuilder<T> {
     buffer: Vec<u8>,
     phantom: PhantomData<T>,
@@ -93,6 +93,7 @@ impl<T> ByteBuilder<T> {
         l.fold(bb, f)
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn sub<F, U>(self, f: F) -> Self
     where
         F: Fn(ByteBuilder<U>) -> ByteBuilder<U>,

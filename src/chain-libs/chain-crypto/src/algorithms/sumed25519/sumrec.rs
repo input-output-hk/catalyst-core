@@ -1,3 +1,4 @@
+#![allow(clippy::large_enum_variant)]
 // this is only a test module that use only recursive functions calls
 // to compute the trees, and its use to compare to the more imperative fnuctions
 // is sum. this module should never be used for anything but testing.
@@ -46,7 +47,7 @@ pub fn keygen(log_depth: Depth, r: &Seed) -> (SecretKey, PublicKey) {
     assert!(log_depth.0 < 32);
     if log_depth.0 == 0 {
         let sk = common::keygen_1(r);
-        let pk = sk.public.clone();
+        let pk = sk.public;
         (SecretKey::Leaf(sk), PublicKey::Leaf(pk))
     } else {
         let (r0, r1) = common::split_seed(r);
@@ -106,6 +107,7 @@ pub fn verify(pk: &PublicKey, m: &[u8], sig: &Signature) -> bool {
 }
 
 #[allow(dead_code)]
+#[allow(clippy::comparison_chain)]
 pub fn update(sk: &mut SecretKey) {
     match sk {
         SecretKey::Leaf(_) => panic!("who you gonna call ?!"),
@@ -114,16 +116,14 @@ pub fn update(sk: &mut SecretKey) {
             let t0 = depth.half();
             if *t + 1 < t0 {
                 update(skbox)
+            } else if *t + 1 == t0 {
+                let (newsk, _) = keygen(depth.decr(), &r1);
+                *skbox = Box::new(newsk);
+                *r1 = Seed::zero()
             } else {
-                if *t + 1 == t0 {
-                    let (newsk, _) = keygen(depth.decr(), &r1);
-                    *skbox = Box::new(newsk);
-                    *r1 = Seed::zero()
-                } else {
-                    update(skbox)
-                }
+                update(skbox)
             }
-            *t = *t + 1
+            *t += 1
         }
     }
 }

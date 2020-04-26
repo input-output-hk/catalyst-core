@@ -118,12 +118,10 @@ impl SecretKey {
             h2: &output.0,
         };
         let dleq_proof = dleq::generate(&r, &self.secret, &dleq);
-        let proof = ProvenOutputSeed {
+        ProvenOutputSeed {
             u: output.clone(),
-            dleq_proof: dleq_proof,
-        };
-
-        proof
+            dleq_proof,
+        }
     }
 
     pub fn proove_simple<T: RngCore + CryptoRng>(
@@ -156,7 +154,7 @@ impl SecretKey {
 
     /// Get the public key associated with a secret key
     pub fn public(&self) -> PublicKey {
-        PublicKey(self.public.clone(), self.public.compress())
+        PublicKey(self.public, self.public.compress())
     }
 }
 

@@ -25,8 +25,7 @@ fn shared_key_to_symmetric_key(app_level_info: &[u8], p: &RistrettoPoint) -> Cha
     let prk = p.compress().to_bytes();
     let mut symkey = [0u8; 32 + 12];
     hkdf_expand(sha2::Sha256::new(), &prk, app_level_info, &mut symkey);
-    let ctx = ChaCha20Poly1305::new(&symkey[0..32], &symkey[32..], &[]);
-    ctx
+    ChaCha20Poly1305::new(&symkey[0..32], &symkey[32..], &[])
 }
 
 const SCHEME_OVERHEAD: usize = 48; // 32 bytes of public key + 16 bytes of tag

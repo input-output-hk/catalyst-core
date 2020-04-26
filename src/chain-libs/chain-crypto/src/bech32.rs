@@ -18,7 +18,6 @@ pub trait Bech32 {
 pub fn to_bech32_from_bytes<B: Bech32>(bytes: &[u8]) -> String {
     bech32::encode(B::BECH32_HRP, bytes.to_base32())
         .unwrap_or_else(|e| panic!("Failed to build bech32: {}", e))
-        .to_string()
 }
 
 pub fn try_from_bech32_to_bytes<B: Bech32>(bech32_str: &str) -> Result<Vec<u8>> {
@@ -26,7 +25,7 @@ pub fn try_from_bech32_to_bytes<B: Bech32>(bech32_str: &str) -> Result<Vec<u8>> 
     if hrp != B::BECH32_HRP {
         return Err(Error::HrpInvalid {
             expected: B::BECH32_HRP,
-            actual: hrp.to_string(),
+            actual: hrp,
         });
     }
     Vec::<u8>::from_base32(&data).map_err(Into::into)

@@ -67,7 +67,7 @@ impl<'a> Iterator for MerklePublicKeys<'a> {
     type Item = (PublicKey, PublicKey);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let mut datl = [0u8; PUBLIC_KEY_SIZE];
@@ -82,7 +82,7 @@ impl<'a> Iterator for MerklePublicKeys<'a> {
 
 impl<'a> DoubleEndedIterator for MerklePublicKeys<'a> {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let mut datl = [0u8; PUBLIC_KEY_SIZE];
@@ -110,7 +110,7 @@ impl<'a> Iterator for Seeds<'a> {
     type Item = Seed;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let seed = Seed::from_slice(&self.0[0..Seed::SIZE]);
@@ -224,10 +224,7 @@ impl SecretKey {
             out.extend_from_slice(&r.as_ref());
         }
 
-        SecretKey {
-            depth: depth,
-            data: out,
-        }
+        SecretKey { depth, data: out }
     }
 
     // Get the latest seed and drop it from the buffer
@@ -291,10 +288,7 @@ impl SecretKey {
         let mut out = Vec::with_capacity(bytes.len());
         out.extend_from_slice(bytes);
 
-        Ok(SecretKey {
-            depth: depth,
-            data: out,
-        })
+        Ok(SecretKey { depth, data: out })
     }
 }
 
@@ -345,7 +339,7 @@ impl<'a> Iterator for MerkleSignaturePublicKeys<'a> {
     type Item = PublicKey;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let mut dat = [0u8; PUBLIC_KEY_SIZE];
@@ -358,7 +352,7 @@ impl<'a> Iterator for MerkleSignaturePublicKeys<'a> {
 
 impl<'a> DoubleEndedIterator for MerkleSignaturePublicKeys<'a> {
     fn next_back(&mut self) -> Option<Self::Item> {
-        if self.0.len() == 0 {
+        if self.0.is_empty() {
             None
         } else {
             let mut dat = [0u8; PUBLIC_KEY_SIZE];
@@ -603,7 +597,7 @@ pub fn sign(secret: &SecretKey, m: &[u8]) -> Signature {
     for (i, (pk0, pk1)) in secret.merkle_pks().enumerate() {
         let d = Depth(secret.depth().0 - i);
         if t >= d.half() {
-            t = t - d.half();
+            t -= d.half();
             pks.push(pk0.clone());
         } else {
             pks.push(pk1.clone());
@@ -630,7 +624,7 @@ pub fn sign(secret: &SecretKey, m: &[u8]) -> Signature {
 
 pub fn verify(pk: &PublicKey, m: &[u8], sig: &Signature) -> bool {
     // verify the signature of the leaf
-    if !sig.pk().verify(m, &sig.sigma()).is_ok() {
+    if sig.pk().verify(m, &sig.sigma()).is_err() {
         return false;
     }
 
@@ -801,8 +795,7 @@ mod tests {
         let m = b"Arbitrary message";
 
         let sig = sign(&sk, m);
-        let v = verify(&pk, m, &sig);
-        v
+        verify(&pk, m, &sig)
     }
 
     #[quickcheck]

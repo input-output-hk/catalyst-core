@@ -51,7 +51,7 @@ impl<R, A: key::AsymmetricKey> Clone for SecretKey<R, A> {
     fn clone(&self) -> Self {
         SecretKey {
             inner: self.inner.clone(),
-            marker: self.marker.clone(),
+            marker: self.marker,
         }
     }
 }

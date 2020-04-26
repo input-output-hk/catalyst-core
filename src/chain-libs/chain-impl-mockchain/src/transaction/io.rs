@@ -135,12 +135,11 @@ impl InputOutputBuilder {
         let inputs = Value::sum(self.inputs.iter().map(|i| i.value()))?;
         let outputs = Value::sum(self.outputs.iter().map(|o| o.value))?;
         let z = (outputs + fee)?;
-        if inputs > z {
-            Ok(Balance::Positive((inputs - z)?))
-        } else if inputs < z {
-            Ok(Balance::Negative((z - inputs)?))
-        } else {
-            Ok(Balance::Zero)
+
+        match inputs.cmp(&z) {
+            std::cmp::Ordering::Greater => Ok(Balance::Positive((inputs - z)?)),
+            std::cmp::Ordering::Less => Ok(Balance::Negative((z - inputs)?)),
+            std::cmp::Ordering::Equal => Ok(Balance::Zero),
         }
     }
 

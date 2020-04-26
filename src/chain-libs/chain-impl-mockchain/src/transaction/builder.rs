@@ -139,7 +139,7 @@ impl<P> TxBuilderState<SetIOs<P>> {
 
 impl<P> TxBuilderState<SetWitnesses<P>> {
     /// Get the authenticated data consisting of the payload and the input/outputs
-    pub fn get_auth_data_for_witness<'a>(&'a self) -> TransactionAuthData<'a> {
+    pub fn get_auth_data_for_witness(&self) -> TransactionAuthData<'_> {
         TransactionAuthData(&self.data[FRAGMENT_OVERHEAD..])
     }
 
@@ -167,7 +167,7 @@ impl<P> TxBuilderState<SetWitnesses<P>> {
 
 impl<P: Payload> TxBuilderState<SetAuthData<P>> {
     /// Get the authenticated data related to possible overall data for transaction and payload binding
-    pub fn get_auth_data<'a>(&'a self) -> TransactionBindingAuthData<'a> {
+    pub fn get_auth_data(&self) -> TransactionBindingAuthData<'_> {
         TransactionBindingAuthData(&self.data[FRAGMENT_OVERHEAD..])
     }
 

@@ -70,7 +70,7 @@ mod test {
         let msg = WitnessMultisigData::new(
             &fake_block0_hash,
             &fake_sign_data_hash,
-            &fake_spending_counter,
+            fake_spending_counter,
         );
 
         // test participant 1 and 3

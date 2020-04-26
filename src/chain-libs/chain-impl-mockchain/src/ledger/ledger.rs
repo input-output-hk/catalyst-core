@@ -1521,7 +1521,7 @@ fn input_single_account_verify<'a>(
     let (new_ledger, spending_counter) = ledger.remove_value(&account, value)?;
     ledger = new_ledger;
 
-    let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, &spending_counter);
+    let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
     let verified = witness.verify(&account.clone().into(), &tidsc);
     if verified == chain_crypto::Verification::Failed {
         return Err(Error::AccountInvalidSignature {
@@ -1543,7 +1543,7 @@ fn input_multi_account_verify<'a>(
     // .remove_value() check if there's enough value and if not, returns a Err.
     let (new_ledger, declaration, spending_counter) = ledger.remove_value(&account, value)?;
 
-    let data_to_verify = WitnessMultisigData::new(&block0_hash, sign_data_hash, &spending_counter);
+    let data_to_verify = WitnessMultisigData::new(&block0_hash, sign_data_hash, spending_counter);
     if !witness.verify(declaration, &data_to_verify) {
         return Err(Error::MultisigInvalidSignature {
             multisig: account.clone(),
@@ -2543,7 +2543,7 @@ mod tests {
         let witness = Witness::new_account(
             &test_ledger.block0_hash,
             &tx_builder.get_auth_data_for_witness().hash(),
-            &SpendingCounter::zero(),
+            SpendingCounter::zero(),
             |d| faucet.private_key().sign(d),
         );
 

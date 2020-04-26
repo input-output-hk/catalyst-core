@@ -3,6 +3,7 @@ mod element;
 mod input;
 mod io;
 mod payload;
+#[allow(clippy::module_inception)]
 mod transaction;
 mod transfer;
 mod utxo;

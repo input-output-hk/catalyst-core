@@ -28,7 +28,7 @@ impl LeadersParticipationRecord {
 
     /// Add one count to a pool. if the pool doesn't exist, then set it to 1
     pub fn increase_for(&mut self, pool: &PoolId) {
-        self.total = self.total + 1;
+        self.total += 1;
         self.log = self
             .log
             .insert_or_update_simple(pool.clone(), 1, |v| Some(v + 1));

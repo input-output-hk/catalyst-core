@@ -379,9 +379,9 @@ impl Ledger {
 
             let static_params = LedgerStaticParameters {
                 block0_initial_hash,
-                block0_start_time: block0_start_time,
-                discrimination: discrimination,
-                kes_update_speed: kes_update_speed,
+                block0_start_time,
+                discrimination,
+                kes_update_speed,
             };
 
             let system_time = SystemTime::UNIX_EPOCH + Duration::from_secs(block0_start_time.0);
@@ -723,10 +723,8 @@ impl Ledger {
         }
 
         // double check that if we had an epoch transition, distribute_rewards has been called
-        if metadata.block_date.epoch > new_ledger.date.epoch {
-            if self.leaders_log.total() > 0 {
-                panic!("internal error: apply_block called after epoch transition, but distribute_rewards has not been called")
-            }
+        if metadata.block_date.epoch > new_ledger.date.epoch && self.leaders_log.total() > 0 {
+            panic!("internal error: apply_block called after epoch transition, but distribute_rewards has not been called")
         }
 
         // Process Update proposals if needed
@@ -957,13 +955,13 @@ impl Ledger {
         let (account_id, value, witness) = {
             check::valid_vote_cast(tx)?;
 
-            let input = tx.inputs().iter().nth(0).unwrap();
+            let input = tx.inputs().iter().next().unwrap();
             match input.to_enum() {
                 InputEnum::UtxoInput(_) => {
                     return Err(Error::VoteCastInvalidTransaction);
                 }
                 InputEnum::AccountInput(account_id, value) => {
-                    let witness = tx.witnesses().iter().nth(0).unwrap();
+                    let witness = tx.witnesses().iter().next().unwrap();
                     (account_id, value, witness)
                 }
             }
@@ -1121,13 +1119,13 @@ impl Ledger {
         let (account_id, value, witness) = {
             check::valid_stake_owner_delegation_transaction(tx)?;
 
-            let input = tx.inputs().iter().nth(0).unwrap();
+            let input = tx.inputs().iter().next().unwrap();
             match input.to_enum() {
                 InputEnum::UtxoInput(_) => {
                     return Err(Error::OwnerStakeDelegationInvalidTransaction);
                 }
                 InputEnum::AccountInput(account_id, value) => {
-                    let witness = tx.witnesses().iter().nth(0).unwrap();
+                    let witness = tx.witnesses().iter().next().unwrap();
                     (account_id, value, witness)
                 }
             }
@@ -1194,7 +1192,7 @@ impl Ledger {
             treasury_tax: self
                 .settings
                 .treasury_params
-                .unwrap_or_else(|| rewards::TaxType::zero()),
+                .unwrap_or_else(rewards::TaxType::zero),
             reward_params: self.settings.to_reward_params(),
             block_content_max_size: self.settings.block_content_max_size,
             epoch_stability_depth: self.settings.epoch_stability_depth,
@@ -1344,7 +1342,7 @@ impl Ledger {
                 }
             }
         }
-        if new_utxos.len() > 0 {
+        if !new_utxos.is_empty() {
             self.utxos = self.utxos.add(&fragment_id, &new_utxos)?;
         }
         Ok(self)
@@ -1397,7 +1395,7 @@ impl Ledger {
                 {
                     return Err(Error::OldUtxoInvalidPublicKey {
                         utxo: utxo.clone(),
-                        output: associated_output.clone(),
+                        output: associated_output,
                         witness: witness.clone(),
                     });
                 };
@@ -1411,7 +1409,7 @@ impl Ledger {
                 if verified == chain_crypto::Verification::Failed {
                     return Err(Error::OldUtxoInvalidSignature {
                         utxo: utxo.clone(),
-                        output: associated_output.clone(),
+                        output: associated_output,
                         witness: witness.clone(),
                     });
                 };
@@ -1441,7 +1439,7 @@ impl Ledger {
                 if verified == chain_crypto::Verification::Failed {
                     return Err(Error::UtxoInvalidSignature {
                         utxo: utxo.clone(),
-                        output: associated_output.clone(),
+                        output: associated_output,
                         witness: witness.clone(),
                     });
                 };
@@ -1546,7 +1544,7 @@ fn input_multi_account_verify<'a>(
     let (new_ledger, declaration, spending_counter) = ledger.remove_value(&account, value)?;
 
     let data_to_verify = WitnessMultisigData::new(&block0_hash, sign_data_hash, &spending_counter);
-    if witness.verify(declaration, &data_to_verify) != true {
+    if !witness.verify(declaration, &data_to_verify) {
         return Err(Error::MultisigInvalidSignature {
             multisig: account.clone(),
             witness: Witness::Multisig(witness.clone()),
@@ -2049,7 +2047,7 @@ mod tests {
             };
 
             let dyn_params = LedgerParameters {
-                fees: fees,
+                fees,
                 treasury_tax: rewards::TaxType::zero(),
                 reward_params: rewards::Parameters::zero(),
                 block_content_max_size: 10_240,
@@ -2058,8 +2056,8 @@ mod tests {
                 committees: Arc::new(Vec::new()),
             };
             InternalApplyTransactionTestParams {
-                dyn_params: dyn_params,
-                static_params: static_params,
+                dyn_params,
+                static_params,
                 transaction_id: TestGen::hash(),
             }
         }
@@ -2083,7 +2081,7 @@ mod tests {
             let utxo = utxo::Entry {
                 fragment_id: self.transaction_id(),
                 output_index: 0 as u8,
-                output: output,
+                output,
             };
             utxo
         }

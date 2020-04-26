@@ -314,7 +314,7 @@ impl<'a, P: Payload> UnverifiedTransactionSlice<'a, P> {
         let tstruct = get_spine::<P>(&self.data)?;
         Ok(TransactionSlice {
             data: self.data,
-            tstruct: tstruct,
+            tstruct,
             phantom: self.phantom,
         })
     }
@@ -398,7 +398,7 @@ impl<P> Transaction<P> {
             .and_then(|out| out + fee)
             .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs != outputs {
-            Err(BalanceError::NotBalanced { inputs, outputs })?;
+            return Err(BalanceError::NotBalanced { inputs, outputs });
         };
         Ok(())
     }
@@ -411,7 +411,7 @@ impl<P> Transaction<P> {
             .total_output()
             .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs < outputs {
-            Err(BalanceError::NotBalanced { inputs, outputs })?;
+            return Err(BalanceError::NotBalanced { inputs, outputs });
         };
         Ok(())
     }
@@ -507,7 +507,7 @@ impl<'a, P> TransactionSlice<'a, P> {
             .and_then(|out| out + fee)
             .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs != outputs {
-            Err(BalanceError::NotBalanced { inputs, outputs })?;
+            return Err(BalanceError::NotBalanced { inputs, outputs });
         };
         Ok(())
     }

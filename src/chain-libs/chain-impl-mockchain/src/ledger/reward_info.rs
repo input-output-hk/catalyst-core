@@ -48,7 +48,7 @@ pub struct EpochRewardsInfo {
 impl EpochRewardsInfo {
     pub fn new(params: RewardsInfoParameters) -> EpochRewardsInfo {
         EpochRewardsInfo {
-            params: params,
+            params,
             drawn: Value::zero(),
             fees: Value::zero(),
             treasury: Value::zero(),

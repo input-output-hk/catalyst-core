@@ -295,7 +295,7 @@ impl Readable for PoolRegistration {
                 buf.into_slice_mut(&mut pk)?;
                 Some(AccountIdentifier::Multi(pk.into()))
             }
-            n => Err(ReadError::UnknownTag(n as u32))?,
+            n => return Err(ReadError::UnknownTag(n as u32)),
         };
 
         let info = Self {
@@ -344,7 +344,7 @@ impl PoolSignature {
         match self {
             PoolSignature::Operator(op) => bb.u8(0).bytes(op.0.as_ref()),
             PoolSignature::Owners(owners) => {
-                assert!(owners.signatures.len() > 0);
+                assert!(!owners.signatures.is_empty());
                 assert!(owners.signatures.len() < 256);
                 bb.iter8(&mut owners.signatures.iter(), |bb, (i, s)| {
                     bb.u8(*i).bytes(s.as_ref())
@@ -421,9 +421,9 @@ impl Readable for PoolOwnersSigned {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let sigs_nb = buf.get_u8()? as usize;
         if sigs_nb == 0 {
-            Err(ReadError::StructureInvalid(
+            return Err(ReadError::StructureInvalid(
                 "pool owner signature with 0 signatures".to_string(),
-            ))?
+            ));
         }
         let mut signatures = Vec::new();
         for _ in 0..sigs_nb {

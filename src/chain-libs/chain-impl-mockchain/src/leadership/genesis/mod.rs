@@ -103,7 +103,7 @@ impl LeadershipData {
                 }
 
                 let percent_stake = PercentStake {
-                    stake: stake,
+                    stake,
                     total: total_stake,
                 };
 
@@ -188,8 +188,8 @@ impl LeadershipData {
                                         bdesc: block_header.description(),
                                         poolid: node_id.to_string(),
                                         pool_stake: stake,
-                                        total_stake: total_stake,
-                                        vrf_value: vrf_value,
+                                        total_stake,
+                                        vrf_value,
                                         threshold: stake_threshold,
                                     },
                                 ));
@@ -259,8 +259,8 @@ mod tests {
 
             LeaderElectionParameters {
                 slots_per_epoch: 1700,
-                active_slots_coeff: active_slots_coeff,
-                pools_count: pools_count,
+                active_slots_coeff,
+                pools_count,
                 value: Stake::from_value(Value(100)),
             }
         }

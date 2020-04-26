@@ -139,7 +139,7 @@ impl<OutAddress> Ledger<OutAddress> {
             .map(|output| Entry {
                 fragment_id: tid.clone(),
                 output_index: *index,
-                output: output,
+                output,
             })
     }
 
@@ -206,7 +206,7 @@ impl<OutAddress: Clone> Ledger<OutAddress> {
         tid: &FragmentId,
         outs: &[(TransactionIndex, Output<OutAddress>)],
     ) -> Result<Self, Error> {
-        assert!(outs.len() > 0);
+        assert!(!outs.is_empty());
         assert!(outs.len() < 255);
         let b = TransactionUnspents::from_outputs(outs);
         let next = self.0.insert(tid.clone(), b)?;

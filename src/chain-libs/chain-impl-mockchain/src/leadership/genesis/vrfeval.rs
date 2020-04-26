@@ -128,8 +128,8 @@ fn phi(active_slots_coeff: ActiveSlotsCoeff, rs: &PercentStake) -> Threshold {
     Threshold(1.0 - (1.0 - f).powf(t))
 }
 
-const DOMAIN_NONCE: &'static [u8] = b"NONCE";
-const DOMAIN_THRESHOLD: &'static [u8] = b"TEST";
+const DOMAIN_NONCE: &[u8] = b"NONCE";
+const DOMAIN_THRESHOLD: &[u8] = b"TEST";
 
 fn get_threshold(input: &Input, os: &WitnessOutput) -> Threshold {
     let out = os.to_output(&input.0, DOMAIN_THRESHOLD);

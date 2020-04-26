@@ -354,7 +354,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             date: globals.date,
             chain_length: globals.chain_length,
             era: globals.era,
-            pots: pots,
+            pots,
             leaders_log,
             votes,
         })

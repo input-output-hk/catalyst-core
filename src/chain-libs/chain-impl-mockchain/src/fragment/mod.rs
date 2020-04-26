@@ -146,10 +146,10 @@ impl Readable for Fragment {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let padding_tag = buf.get_u8()?;
         if padding_tag != 0 {
-            Err(ReadError::StructureInvalid(format!(
+            return Err(ReadError::StructureInvalid(format!(
                 "fragment padding tag expected at 0 but got {}",
                 padding_tag
-            )))?
+            )));
         }
 
         let tag = buf.get_u8()?;

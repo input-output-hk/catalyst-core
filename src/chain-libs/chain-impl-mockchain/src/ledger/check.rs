@@ -103,7 +103,7 @@ pub(super) fn valid_pool_registration_certificate(
         Error::PoolRegistrationManagementThresholdAbove
     )?;
     if_cond_fail_with!(
-        auth_cert.owners.len() == 0,
+        auth_cert.owners.is_empty(),
         Error::PoolRegistrationHasNoOwner
     )?;
     if_cond_fail_with!(
@@ -119,7 +119,7 @@ pub(super) fn valid_pool_registration_certificate(
 
 pub(super) fn valid_pool_owner_signature(pos: &certificate::PoolOwnersSigned) -> LedgerCheck {
     if_cond_fail_with!(
-        pos.signatures.len() == 0,
+        pos.signatures.is_empty(),
         Error::CertificateInvalidSignature
     )?;
     if_cond_fail_with!(

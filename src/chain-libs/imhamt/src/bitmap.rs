@@ -64,12 +64,12 @@ impl SmallBitmap {
     }
 
     #[inline]
-    pub fn is_empty(&self) -> bool {
+    pub fn is_empty(self) -> bool {
         self.0 == 0
     }
 
     #[inline]
-    pub fn present(&self) -> usize {
+    pub fn present(self) -> usize {
         self.0.count_ones() as usize
     }
 
@@ -81,7 +81,7 @@ impl SmallBitmap {
 
     /// Get the sparse array index from a level index
     #[inline]
-    pub fn get_index_sparse(&self, b: LevelIndex) -> ArrayIndex {
+    pub fn get_index_sparse(self, b: LevelIndex) -> ArrayIndex {
         let mask = b.mask();
         if self.0 & mask == 0 {
             ArrayIndex::not_found()
@@ -92,22 +92,22 @@ impl SmallBitmap {
 
     /// Get the position of a level index in the sparse array for insertion
     #[inline]
-    pub fn get_sparse_pos(&self, b: LevelIndex) -> ArrayIndex {
+    pub fn get_sparse_pos(self, b: LevelIndex) -> ArrayIndex {
         let mask = b.mask();
         ArrayIndex::create((self.0 & (mask - 1)).count_ones() as usize)
     }
 
     /// Check if the element exist
-    pub fn is_set(&self, b: LevelIndex) -> bool {
+    pub fn is_set(self, b: LevelIndex) -> bool {
         (self.0 & b.mask()) != 0
     }
 
     #[inline]
-    pub fn set_index(&self, b: LevelIndex) -> Self {
+    pub fn set_index(self, b: LevelIndex) -> Self {
         SmallBitmap(self.0 | b.mask())
     }
     #[inline]
-    pub fn clear_index(&self, b: LevelIndex) -> Self {
+    pub fn clear_index(self, b: LevelIndex) -> Self {
         SmallBitmap(self.0 & !b.mask())
     }
 }

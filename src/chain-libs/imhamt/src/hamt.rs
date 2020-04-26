@@ -20,6 +20,12 @@ pub struct HamtIter<'a, K, V> {
     content: Option<slice::Iter<'a, (K, V)>>,
 }
 
+impl<H: Hasher + Default, K: Eq + Hash, V> Default for Hamt<H, K, V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<H: Hasher + Default, K: Eq + Hash, V> Hamt<H, K, V> {
     pub fn new() -> Self {
         Hamt {
@@ -215,14 +221,14 @@ impl<'a, K, V> Iterator for HamtIter<'a, K, V> {
                 },
                 None => match self.stack.last_mut() {
                     None => return None,
-                    Some(l) => match l.next() {
+                    Some(last) => match last.next() {
                         None => {
                             self.stack.pop();
                         }
-                        Some(o) => match o.as_ref() {
-                            &Entry::SubNode(ref sub) => self.stack.push(sub.iter()),
-                            &Entry::Leaf(_, ref k, ref v) => return Some((&k, &v)),
-                            &Entry::LeafMany(_, ref col) => self.content = Some(col.iter()),
+                        Some(next) => match next.as_ref() {
+                            Entry::SubNode(ref sub) => self.stack.push(sub.iter()),
+                            Entry::Leaf(_, ref k, ref v) => return Some((&k, &v)),
+                            Entry::LeafMany(_, ref col) => self.content = Some(col.iter()),
                         },
                     },
                 },

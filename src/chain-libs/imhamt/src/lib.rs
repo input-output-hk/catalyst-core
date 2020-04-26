@@ -142,6 +142,7 @@ mod tests {
         )
     }
 
+    #[allow(clippy::trivially_copy_pass_by_ref)]
     fn next_u32(x: &u32) -> Result<Option<u32>, ()> {
         Ok(Some(*x + 1))
     }
@@ -179,7 +180,7 @@ mod tests {
         let v3 = 42u32;
 
         for (k, v) in keys.iter() {
-            h = h.insert(k.to_string().clone(), *v).unwrap();
+            h = h.insert((*k).to_owned(), *v).unwrap();
         }
 
         h = h.insert(k1.clone(), v1).unwrap();
@@ -207,10 +208,7 @@ mod tests {
             h.remove_match(&k1, &v2).and(Ok(())),
             Err(RemoveError::ValueNotMatching),
         );
-        assert_eq!(
-            h2.insert(k2.clone(), v3).and(Ok(())),
-            Err(InsertError::EntryExists)
-        );
+        assert_eq!(h2.insert(k2, v3).and(Ok(())), Err(InsertError::EntryExists));
 
         assert_eq!(
             h2.update(&"ZZZ".to_string(), next_u32).and(Ok(())),
@@ -435,7 +433,7 @@ mod tests {
     fn iter_equivalent(xs: Plan<String, u32>) -> bool {
         use std::iter::FromIterator;
         let (h, reference) = arbitrary_hamt_and_btree(xs, next_u32, |v| v.wrapping_mul(2));
-        let after_iter = BTreeMap::from_iter(h.iter().map(|(k, v)| (k.clone(), v.clone())));
+        let after_iter = BTreeMap::from_iter(h.iter().map(|(k, v)| (k.clone(), *v)));
         reference == after_iter
     }
 }

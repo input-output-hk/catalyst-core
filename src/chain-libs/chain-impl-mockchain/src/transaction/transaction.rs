@@ -245,7 +245,7 @@ pub(super) struct TransactionStruct {
 }
 
 /// Verify the structure of the transaction and return all the offsets
-fn get_spine<'a, P: Payload>(slice: &'a [u8]) -> Result<TransactionStruct, TransactionStructError> {
+fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionStructError> {
     let sz = slice.len();
     let mut rb = ReadBuf::from(slice);
 
@@ -321,7 +321,7 @@ impl<'a, P: Payload> UnverifiedTransactionSlice<'a, P> {
 }
 
 impl<P> Transaction<P> {
-    pub fn as_slice<'a>(&'a self) -> TransactionSlice<'a, P> {
+    pub fn as_slice(&self) -> TransactionSlice<'_, P> {
         TransactionSlice {
             data: &self.data,
             tstruct: self.tstruct.clone(),

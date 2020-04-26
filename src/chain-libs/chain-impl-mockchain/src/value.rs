@@ -148,14 +148,16 @@ impl std::fmt::Display for Value {
 impl TryFrom<&[u8]> for Value {
     type Error = ValueError;
     fn try_from(slice: &[u8]) -> Result<Value, ValueError> {
-        if slice.len() < VALUE_SERIALIZED_SIZE {
-            Err(ValueError::FromSliceTooSmall)
-        } else if slice.len() > VALUE_SERIALIZED_SIZE {
-            Err(ValueError::FromSliceTooBig)
-        } else {
-            let mut buf = [0u8; VALUE_SERIALIZED_SIZE];
-            buf.copy_from_slice(slice);
-            Ok(Value(u64::from_be_bytes(buf)))
+        use std::cmp::Ordering::*;
+
+        match slice.len().cmp(&VALUE_SERIALIZED_SIZE) {
+            Less => Err(ValueError::FromSliceTooSmall),
+            Greater => Err(ValueError::FromSliceTooBig),
+            Equal => {
+                let mut buf = [0u8; VALUE_SERIALIZED_SIZE];
+                buf.copy_from_slice(slice);
+                Ok(Value(u64::from_be_bytes(buf)))
+            }
         }
     }
 }

@@ -123,7 +123,7 @@ mod test {
             c = codec.into_inner();
             c.set_position(0);
             codec = Codec::new(c);
-            return match unpack_time_era(&mut codec) {
+            match unpack_time_era(&mut codec) {
                 Ok(other_time_era) => {
                     TestResult::from_bool(time_era == other_time_era)
                 },

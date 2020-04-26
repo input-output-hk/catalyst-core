@@ -48,7 +48,7 @@ impl SlotDuration {
         SlotDuration(seconds as u64)
     }
 
-    pub fn to_duration(&self) -> Duration {
+    pub fn to_duration(self) -> Duration {
         Duration::from_secs(self.0)
     }
 }

@@ -3,6 +3,7 @@ use std::fmt;
 use std::num::{NonZeroU32, NonZeroU64};
 
 /// A local memory buffer to serialize data to
+#[derive(Default)]
 pub struct WriteBuf(Vec<u8>);
 
 impl WriteBuf {
@@ -182,7 +183,8 @@ impl<'a> ReadBuf<'a> {
 
     pub fn get_nz_u32(&mut self) -> Result<NonZeroU32, ReadError> {
         let v = self.get_u32()?;
-        NonZeroU32::new(v).ok_or(ReadError::StructureInvalid("received zero u32".to_string()))
+        NonZeroU32::new(v)
+            .ok_or_else(|| ReadError::StructureInvalid("received zero u32".to_string()))
     }
 
     /// Return the next u64 from the buffer
@@ -195,7 +197,8 @@ impl<'a> ReadBuf<'a> {
 
     pub fn get_nz_u64(&mut self) -> Result<NonZeroU64, ReadError> {
         let v = self.get_u64()?;
-        NonZeroU64::new(v).ok_or(ReadError::StructureInvalid("received zero u64".to_string()))
+        NonZeroU64::new(v)
+            .ok_or_else(|| ReadError::StructureInvalid("received zero u64".to_string()))
     }
 
     /// Return the next u128 from the buffer
@@ -292,9 +295,8 @@ pub fn read_mut_slice<'a, T: Readable>(
     readbuf: &mut ReadBuf<'a>,
     v: &mut [T],
 ) -> Result<(), ReadError> {
-    for i in 0..v.len() {
-        let t = T::read(readbuf)?;
-        v[i] = t
+    for t in v.iter_mut() {
+        *t = T::read(readbuf)?;
     }
     Ok(())
 }
@@ -303,19 +305,15 @@ pub fn read_mut_slice<'a, T: Readable>(
 pub fn read_from_raw<T: Readable>(raw: &[u8]) -> Result<T, std::io::Error> {
     let mut rbuf = ReadBuf::from(raw);
     match T::read(&mut rbuf) {
-        Err(e) => {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                format!("invalid data {:?} {:?}", e, raw).to_owned(),
-            ));
-        }
+        Err(e) => Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("invalid data {:?} {:?}", e, raw),
+        )),
         Ok(h) => match rbuf.expect_end() {
-            Err(e) => {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    format!("end of data {:?}", e).to_owned(),
-                ));
-            }
+            Err(e) => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("end of data {:?}", e),
+            )),
             Ok(()) => Ok(h),
         },
     }

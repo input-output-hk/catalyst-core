@@ -1,4 +1,5 @@
 /// ABOR Encoder
+#[derive(Default)]
 pub struct Encoder {
     data: Vec<u8>,
     hole: Vec<(usize, usize)>,
@@ -172,7 +173,7 @@ impl<'a> Decoder<'a> {
 
     #[must_use]
     fn pop(&mut self) -> Result<u8, DecodeError> {
-        if self.slice.len() > 0 {
+        if !self.slice.is_empty() {
             let v = self.slice[0];
             self.slice = &self.slice[1..];
             Ok(v)
@@ -284,7 +285,7 @@ impl<'a> Decoder<'a> {
 
     #[must_use]
     pub fn end(self) -> Result<(), DecodeError> {
-        if self.slice.len() == 0 {
+        if self.slice.is_empty() {
             Ok(())
         } else {
             Err(DecodeError::StreamPending {
@@ -300,7 +301,7 @@ mod tests {
 
     #[test]
     pub fn serialize_unit1() {
-        let v = 0xf1235_fc;
+        let v = 0x0f12_35fc;
         let e = Encoder::new().u32(v).finalize();
         let mut d = Decoder::new(&e);
         let ev = d.u32().unwrap();
@@ -312,8 +313,8 @@ mod tests {
     pub fn serialize_unit2() {
         let v1 = 10;
         let v2 = 0x12345;
-        let v3 = 0xffeeddcc00112233;
-        let v4 = 0xffeeddcc0011223321490219480912;
+        let v3 = 0xffee_ddcc_0011_2233;
+        let v4 = 0xff_eedd_cc00_1122_3321_4902_1948_0912;
         let bs1 = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
         let e = Encoder::new()
             .u16(v1)

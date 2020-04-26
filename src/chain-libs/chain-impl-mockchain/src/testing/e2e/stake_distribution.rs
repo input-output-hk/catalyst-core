@@ -52,7 +52,7 @@ pub fn stake_distribution_to_many_stake_pools() {
         (clarice_stake_pool.id(), Value(500)),
     ];
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("after delegation to many stake pools")
         .distribution()
         .pools_distribution_is(expected_distribution);
@@ -100,7 +100,7 @@ pub fn stake_distribution_changes_after_rewards_are_collected() {
     assert!(ledger.produce_empty_block(&alice_stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("after rewards collection")
         .distribution()
         .unassigned_is(Stake::from_value(Value(2000)))

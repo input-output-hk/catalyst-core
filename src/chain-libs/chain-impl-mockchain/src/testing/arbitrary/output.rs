@@ -24,7 +24,7 @@ impl Arbitrary for OutputsWithoutMultisig {
 impl OutputsWithoutMultisig {
     pub fn set_discrimination(&mut self, discrimination: Discrimination) {
         for output in &mut self.0 {
-            output.address.0 = discrimination.clone();
+            output.address.0 = discrimination
         }
     }
 }

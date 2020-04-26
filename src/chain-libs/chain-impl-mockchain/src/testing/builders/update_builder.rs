@@ -12,6 +12,12 @@ pub struct ProposalBuilder {
     config_params: ConfigParams,
 }
 
+impl Default for ProposalBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ProposalBuilder {
     pub fn new() -> Self {
         ProposalBuilder {
@@ -39,6 +45,7 @@ impl ProposalBuilder {
     }
 }
 
+#[derive(Default)]
 pub struct SignedProposalBuilder {
     update_proposal: Option<UpdateProposal>,
     proposer_id: Option<BftLeaderId>,
@@ -72,6 +79,7 @@ impl SignedProposalBuilder {
     }
 }
 
+#[derive(Default)]
 pub struct UpdateVoteBuilder {
     proposal_id: Option<UpdateProposalId>,
     voter_id: Option<BftLeaderId>,
@@ -97,7 +105,7 @@ impl UpdateVoteBuilder {
 
     pub fn build(&self) -> SignedUpdateVote {
         let update_vote = UpdateVote {
-            proposal_id: self.proposal_id.unwrap().clone(),
+            proposal_id: self.proposal_id.unwrap(),
             voter_id: self.voter_id.clone().unwrap(),
         };
         SignedUpdateVote { vote: update_vote }

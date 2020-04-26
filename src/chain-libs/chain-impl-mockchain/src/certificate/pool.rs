@@ -514,7 +514,7 @@ mod tests {
         pub fn inputs(&self) -> Vec<Input> {
             self.signatories
                 .iter()
-                .map(|(_, x)| x.make_input(&Value::zero(), None))
+                .map(|(_, x)| x.make_input(Value::zero(), None))
                 .collect()
         }
     }

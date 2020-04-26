@@ -9,6 +9,12 @@ pub struct LeadersParticipationRecord {
     log: Hamt<DefaultHasher, PoolId, u32>,
 }
 
+impl Default for LeadersParticipationRecord {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LeadersParticipationRecord {
     pub fn total(&self) -> u32 {
         self.total
@@ -45,7 +51,7 @@ impl LeadersParticipationRecord {
     }
 
     /// Iterate over all known pool record
-    pub fn iter<'a>(&'a self) -> HamtIter<'a, PoolId, u32> {
+    pub fn iter(&self) -> HamtIter<'_, PoolId, u32> {
         self.log.iter()
     }
 }

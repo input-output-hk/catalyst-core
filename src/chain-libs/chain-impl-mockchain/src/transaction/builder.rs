@@ -237,7 +237,7 @@ mod tests {
         let block0_hash = TestGen::hash();
         let tx_builder = TxBuilder::new().set_payload(&NoExtra).set_ios(
             &[faucets[0].make_input(None), faucets[1].make_input(None)],
-            &[reciever.make_output(&Value(2))],
+            &[reciever.make_output(Value(2))],
         );
 
         let witness = make_witness(

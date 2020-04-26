@@ -151,12 +151,12 @@ pub fn apply_block_incorrect_fragment() {
         slot_id: 0,
     };
 
-    let fragment = TestTxBuilder::new(&ledger.block0_hash)
+    let fragment = TestTxBuilder::new(ledger.block0_hash)
         .move_funds(
             &mut ledger,
             &bob.as_account(),
             &alice.as_account(),
-            &Value(10_000),
+            Value(10_000),
         )
         .get_fragment();
 

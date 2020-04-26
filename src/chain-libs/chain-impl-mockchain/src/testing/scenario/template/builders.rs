@@ -61,7 +61,7 @@ impl WalletTemplateBuilder {
             alias: self.alias.clone(),
             stake_pool_delegate_alias: self.delagate_alias.clone(),
             stake_pool_owner_alias: self.ownership_alias.clone(),
-            initial_value: value.clone(),
+            initial_value: value,
         })
     }
 }
@@ -72,7 +72,7 @@ pub struct StakePoolTemplateBuilder {
 }
 
 impl StakePoolTemplateBuilder {
-    pub fn new(initials: &Vec<WalletTemplate>) -> Self {
+    pub fn new(initials: &[WalletTemplate]) -> Self {
         StakePoolTemplateBuilder {
             ownership_map: Self::build_ownersip_map(initials),
             delegation_map: Self::build_delegation_map(initials),
@@ -116,30 +116,24 @@ impl StakePoolTemplateBuilder {
     }
 
     fn build_ownersip_map(
-        initials: &Vec<WalletTemplate>,
+        initials: &[WalletTemplate],
     ) -> HashMap<String, HashSet<WalletTemplate>> {
         let mut output: HashMap<String, HashSet<WalletTemplate>> = HashMap::new();
         for wallet_template in initials.iter().filter(|w| w.owns_stake_pool().is_some()) {
             let delegate_alias = wallet_template.owns_stake_pool().unwrap();
-            match output.contains_key(&delegate_alias) {
-                true => {
-                    output
-                        .get_mut(&delegate_alias)
-                        .unwrap()
-                        .insert(wallet_template.clone());
-                }
-                false => {
-                    let mut delegation_aliases = HashSet::new();
-                    delegation_aliases.insert(wallet_template.clone());
-                    output.insert(delegate_alias, delegation_aliases);
-                }
-            }
+
+            output
+                .entry(delegate_alias)
+                .or_default()
+                .insert(
+                    wallet_template.clone()
+                );
         }
         output
     }
 
     fn build_delegation_map(
-        initials: &Vec<WalletTemplate>,
+        initials: &[WalletTemplate],
     ) -> HashMap<String, HashSet<WalletTemplate>> {
         let mut output: HashMap<String, HashSet<WalletTemplate>> = HashMap::new();
         for wallet_template in initials
@@ -147,19 +141,13 @@ impl StakePoolTemplateBuilder {
             .filter(|w| w.delegates_stake_pool().is_some())
         {
             let stake_pool_alias = wallet_template.delegates_stake_pool().unwrap();
-            match output.contains_key(&stake_pool_alias) {
-                true => {
-                    output
-                        .get_mut(&stake_pool_alias)
-                        .unwrap()
-                        .insert(wallet_template.clone());
-                }
-                false => {
-                    let mut ownership_aliases = HashSet::new();
-                    ownership_aliases.insert(wallet_template.clone());
-                    output.insert(stake_pool_alias.to_string(), ownership_aliases);
-                }
-            }
+
+            output
+                .entry(stake_pool_alias)
+                .or_default()
+                .insert(
+                    wallet_template.clone()
+                );
         }
         output
     }

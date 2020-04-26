@@ -100,8 +100,8 @@ impl ScenarioBuilder {
             .certs(&messages)
             .build()
             .expect("cannot build test ledger");
-        let block0_hash = test_ledger.block0_hash.clone();
-        let fee = test_ledger.fee().clone();
+        let block0_hash = test_ledger.block0_hash;
+        let fee = test_ledger.fee();
 
         Ok((
             test_ledger,
@@ -111,8 +111,8 @@ impl ScenarioBuilder {
 
     fn build_stake_pools_fragments(
         &self,
-        stake_pools: &Vec<StakePool>,
-        wallets: &Vec<Wallet>,
+        stake_pools: &[StakePool],
+        wallets: &[Wallet],
     ) -> Vec<Fragment> {
         stake_pools
             .iter()
@@ -137,9 +137,9 @@ impl ScenarioBuilder {
 
     fn build_delegation_fragments(
         &self,
-        initials: &Vec<WalletTemplate>,
-        stake_pools: &Vec<StakePool>,
-        wallets: &Vec<Wallet>,
+        initials: &[WalletTemplate],
+        stake_pools: &[StakePool],
+        wallets: &[Wallet],
     ) -> Vec<Fragment> {
         initials
             .iter()

@@ -31,7 +31,7 @@ pub fn transaction_fail_when_255_outputs() {
     };
     let outputs: Vec<_> = std::iter::repeat(output).take(255).collect();
 
-    let fragment = TestTxBuilder::new(&test_ledger.block0_hash)
+    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
         .move_to_outputs_from_faucet(&mut test_ledger, &outputs)
         .get_fragment();
 
@@ -53,8 +53,8 @@ pub fn duplicated_account_transaction() {
 
     let receiver = AddressData::utxo(Discrimination::Test);
 
-    let fragment = TestTxBuilder::new(&test_ledger.block0_hash)
-        .move_from_faucet(&mut test_ledger, &receiver.address, &Value(100))
+    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
+        .move_from_faucet(&mut test_ledger, &receiver.address, Value(100))
         .get_fragment();
     let fragment2 = fragment.clone();
     let result = test_ledger.apply_transaction(fragment);
@@ -80,7 +80,7 @@ pub fn transaction_nonexisting_account_input() {
         .build()
         .expect("cannot build test ledger");
 
-    let fragment = TestTxBuilder::new(&test_ledger.block0_hash)
+    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
         .move_all_funds(&mut test_ledger, &unregistered_account, &receiver)
         .get_fragment();
 
@@ -101,8 +101,8 @@ pub fn transaction_with_incorrect_account_spending_counter() {
         .build()
         .expect("cannot build test ledger");
 
-    let fragment = TestTxBuilder::new(&test_ledger.block0_hash)
-        .move_from_faucet(&mut test_ledger, &receiver.into(), &Value(1000))
+    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
+        .move_from_faucet(&mut test_ledger, &receiver.into(), Value(1000))
         .get_fragment();
     assert!(
         test_ledger.apply_transaction(fragment).is_err(),
@@ -120,12 +120,12 @@ pub fn repeated_account_transaction() {
         .build()
         .expect("cannot build test ledger");
 
-    let fragment = TestTxBuilder::new(&test_ledger.block0_hash)
+    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
         .move_all_funds(&mut test_ledger, &faucet, &receiver)
         .get_fragment();
     assert!(test_ledger.apply_transaction(fragment).is_ok());
     faucet.confirm_transaction();
-    let fragment = TestTxBuilder::new(&test_ledger.block0_hash)
+    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
         .move_all_funds(&mut test_ledger, &faucet, &receiver)
         .get_fragment();
     assert!(test_ledger.apply_transaction(fragment).is_err());

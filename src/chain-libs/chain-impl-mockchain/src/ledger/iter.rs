@@ -5,6 +5,7 @@ use crate::certificate::{VotePlan, VotePlanId};
 use crate::chaintypes::ChainLength;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
+use crate::key::Hash;
 use crate::stake::PoolsState;
 use crate::vote::{VotePlanLedger, VotePlanManager};
 use crate::{account, legacy, multisig, setting, update, utxo};
@@ -83,10 +84,10 @@ impl EntryOwned {
     pub fn to_entry(&self) -> Option<Entry> {
         match self {
             EntryOwned::Globals(globals) => Some(Entry::Globals(globals.clone())),
-            EntryOwned::Pot(entry) => Some(Entry::Pot(entry.clone())),
+            EntryOwned::Pot(entry) => Some(Entry::Pot(*entry)),
             EntryOwned::Utxo(entry) => {
                 let utxo_entry = utxo::Entry {
-                    fragment_id: entry.fragment_id.clone(),
+                    fragment_id: entry.fragment_id,
                     output_index: entry.output_index,
                     output: &entry.output,
                 };
@@ -94,7 +95,7 @@ impl EntryOwned {
             }
             EntryOwned::OldUtxo(entry) => {
                 let old_utxo_entry = utxo::Entry {
-                    fragment_id: entry.fragment_id.clone(),
+                    fragment_id: entry.fragment_id,
                     output_index: entry.output_index,
                     output: &entry.output,
                 };
@@ -265,7 +266,7 @@ impl<'a> Iterator for LedgerIterator<'a> {
 }
 
 impl Ledger {
-    pub fn iter<'a>(&'a self) -> LedgerIterator<'a> {
+    pub fn iter(&self) -> LedgerIterator<'_> {
         LedgerIterator {
             ledger: self,
             state: IterState::Initial,
@@ -275,8 +276,9 @@ impl Ledger {
 
 impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
     fn from_iter<I: IntoIterator<Item = Entry<'a>>>(iter: I) -> Self {
-        let mut utxos = std::collections::HashMap::new();
-        let mut oldutxos = std::collections::HashMap::new();
+        use std::collections::HashMap;
+        let mut utxos: HashMap<Hash, Vec<_>> = HashMap::new();
+        let mut oldutxos: HashMap<Hash, Vec<_>> = HashMap::new();
         let mut accounts = vec![];
         let mut config_params = crate::fragment::ConfigParams::new();
         let mut updates = update::UpdateState::new();
@@ -298,13 +300,13 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                 Entry::Utxo(entry) => {
                     utxos
                         .entry(entry.fragment_id)
-                        .or_insert(vec![])
+                        .or_default()
                         .push((entry.output_index, entry.output.clone()));
                 }
                 Entry::OldUtxo(entry) => {
                     oldutxos
                         .entry(entry.fragment_id)
-                        .or_insert(vec![])
+                        .or_default()
                         .push((entry.output_index, entry.output.clone()));
                 }
                 Entry::Account((account_id, account_state)) => {
@@ -335,7 +337,9 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                     .set_for(pool_id.clone(), *pool_participation)
                     .unwrap(),
                 Entry::VotePlan((vote_plan, block_date)) => {
-                    votes.add_vote_plan(block_date.clone(), vote_plan.clone());
+                    votes
+                        .add_vote_plan(block_date.clone(), vote_plan.clone())
+                        .unwrap();
                 }
             }
         }

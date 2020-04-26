@@ -80,7 +80,7 @@ impl Arbitrary for UpdateProposalData {
 
         let signed_update_proposal = SignedProposalBuilder::new()
             .with_proposal_update(update_proposal)
-            .with_proposer_id(proposer_id.clone())
+            .with_proposer_id(proposer_id)
             .build();
 
         //generate proposal header
@@ -91,7 +91,7 @@ impl Arbitrary for UpdateProposalData {
             .iter()
             .map(|(id, _)| {
                 let update_vote = UpdateVote {
-                    proposal_id: proposal_id.clone(),
+                    proposal_id,
                     voter_id: id.clone(),
                 };
                 SignedUpdateVote { vote: update_vote }

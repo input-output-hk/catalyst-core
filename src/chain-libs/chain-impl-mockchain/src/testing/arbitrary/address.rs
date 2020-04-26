@@ -76,7 +76,7 @@ impl Arbitrary for AddressData {
         let kind_without_multisig = KindTypeWithoutMultisig::arbitrary(gen);
         AddressData::from_discrimination_and_kind_type(
             Discrimination::Test,
-            &kind_without_multisig.kind_type(),
+            kind_without_multisig.kind_type(),
         )
     }
 }

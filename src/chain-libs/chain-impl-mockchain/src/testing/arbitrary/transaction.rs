@@ -69,7 +69,7 @@ impl ArbitraryValidTransactionData {
     }
 
     fn zip_addresses_and_values(
-        addresses: &Vec<AddressData>,
+        addresses: &[AddressData],
         values: Vec<Value>,
     ) -> Vec<AddressDataValue> {
         addresses
@@ -81,7 +81,7 @@ impl ArbitraryValidTransactionData {
     }
 
     fn choose_random_output_subset<G: Gen>(
-        source: &Vec<AddressDataValue>,
+        source: &[AddressDataValue],
         total_input_funds: u64,
         gen: &mut G,
     ) -> (Vec<AddressDataValue>, LinearFee) {
@@ -213,8 +213,8 @@ impl AccountStatesVerifier {
                     if state.value != address_data_value.value {
                         return Err(Error::WrongValue {
                             element: address_data_value.address_data.public_key(),
-                            actual: state.value.clone(),
-                            expected: address_data_value.value.clone(),
+                            actual: state.value,
+                            expected: address_data_value.value,
                         });
                     }
                 }
@@ -229,24 +229,24 @@ impl AccountStatesVerifier {
     }
 }
 
-fn find_equal_and_sub(x: AddressDataValue, collection: &Vec<AddressDataValue>) -> AddressDataValue {
+fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
         .iter()
         .cloned()
         .find(|y| y.address_data == x.address_data)
     {
-        Some(y) => AddressDataValue::new(x.address_data, (x.value - y.value).unwrap().clone()),
+        Some(y) => AddressDataValue::new(x.address_data, (x.value - y.value).unwrap()),
         None => x,
     }
 }
 
-fn find_equal_and_add(x: AddressDataValue, collection: &Vec<AddressDataValue>) -> AddressDataValue {
+fn find_equal_and_add(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
         .iter()
         .cloned()
         .find(|y| y.address_data == x.address_data)
     {
-        Some(y) => AddressDataValue::new(x.address_data, (x.value + y.value).unwrap().clone()),
+        Some(y) => AddressDataValue::new(x.address_data, (x.value + y.value).unwrap()),
         None => x,
     }
 }
@@ -295,13 +295,14 @@ impl UtxoVerifier {
     pub fn verify(&self, ledger: &TestLedger) -> Result<(), Error> {
         let expected_utxo_snapshots = &self.calculate_current_utxo();
         for utxo_snapshot in expected_utxo_snapshots {
-            if !ledger.utxos().any(|x| {
+            let condition =  !ledger.utxos().any(|x| {
                 x.output.address.clone() == utxo_snapshot.address_data.address.clone()
                     && x.output.value.0 == utxo_snapshot.value.0
-            }) {
+            });
+            if condition {
                 return Err(Error::UtxoNotFound {
                     output: utxo_snapshot.address_data.public_key(),
-                    value: utxo_snapshot.value.clone(),
+                    value: utxo_snapshot.value,
                 });
             }
         }

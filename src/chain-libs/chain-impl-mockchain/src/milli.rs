@@ -69,7 +69,8 @@ mod tests {
 
         let result = Milli::from_str(input);
 
-        let actual = result.expect(&format!("Failed to parse for input {}", input));
+        let actual =
+            result.unwrap_or_else(|err| panic!("Failed to parse for input {}: {:?}", input, err));
         assert_eq!(actual, expected, "Invalid result for input {}", input);
     }
 

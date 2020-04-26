@@ -1,5 +1,5 @@
 use quickcheck::{Arbitrary, Gen, TestResult};
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, hash_map, HashSet};
 use std::fmt::Debug;
 use std::{
     cmp::{self, Eq, PartialEq},
@@ -13,12 +13,12 @@ pub fn factorize<G: Gen>(number: u32, gen: &mut G) -> Vec<u32> {
     while current_remainder > 0 {
         let part = cmp::max(u32::arbitrary(gen) % current_remainder, 1);
         output.push(part);
-        current_remainder = current_remainder - part;
+        current_remainder -= part;
     }
     output
 }
 
-pub fn split_vec<G: Gen, T>(source: &Vec<T>, gen: &mut G, number_of_splits: usize) -> Vec<Vec<T>>
+pub fn split_vec<G: Gen, T>(source: &[T], gen: &mut G, number_of_splits: usize) -> Vec<Vec<T>>
 where
     T: std::clone::Clone,
 {
@@ -32,7 +32,7 @@ where
     matrix
 }
 
-pub fn choose_random_vec_subset<G: Gen, T>(source: &Vec<T>, gen: &mut G) -> Vec<T>
+pub fn choose_random_vec_subset<G: Gen, T>(source: &[T], gen: &mut G) -> Vec<T>
 where
     T: std::clone::Clone,
 {
@@ -47,7 +47,7 @@ where
         .collect()
 }
 
-pub fn choose_random_set_subset<G: Gen, T>(source: &HashSet<T>, gen: &mut G) -> HashSet<T>
+pub fn choose_random_set_subset<G: Gen, T>(source: &HashSet<T, hash_map::RandomState>, gen: &mut G) -> HashSet<T>
 where
     T: std::clone::Clone + Eq + Hash,
 {
@@ -62,7 +62,7 @@ where
         .collect()
 }
 
-pub fn choose_random_item<G: Gen, T>(source: &Vec<T>, gen: &mut G) -> T
+pub fn choose_random_item<G: Gen, T>(source: &[T], gen: &mut G) -> T
 where
     T: std::clone::Clone,
 {
@@ -70,7 +70,7 @@ where
     source.iter().cloned().nth(index).unwrap()
 }
 
-pub fn choose_random_map_subset<G: Gen, T, U>(source: &HashMap<T, U>, gen: &mut G) -> HashMap<T, U>
+pub fn choose_random_map_subset<G: Gen, T, U>(source: &HashMap<T, U, hash_map::RandomState>, gen: &mut G) -> HashMap<T, U>
 where
     T: Clone + PartialEq + Eq + Hash,
     U: std::clone::Clone,
@@ -101,6 +101,7 @@ pub fn choose_random_indexes<G: Gen>(gen: &mut G, upper_bound: usize) -> HashSet
 
 /// Struct helps gather all verifications and then decide if test if failed or not. Currently it's tightly coupled
 /// with quickcheck crate
+#[derive(Default)]
 pub struct Verify(Vec<TestResult>);
 
 impl Verify {
@@ -109,20 +110,22 @@ impl Verify {
     }
 
     pub fn verify_eq<A: PartialEq + Debug>(&mut self, expected: A, actual: A, desc: &str) {
-        let result = match expected == actual {
-            false => TestResult::error(format!(
+        let result = if expected == actual {
+            TestResult::error(format!(
                 "expected {} {:?}, but got {:?}",
                 desc, expected, actual
-            )),
-            true => TestResult::passed(),
+            ))
+        } else {
+            TestResult::passed()
         };
         self.0.push(result);
     }
 
     pub fn verify(&mut self, is_true: bool, desc: &str) {
-        let result = match is_true {
-            false => TestResult::error(format!("expected {} to be true, but got false", desc)),
-            true => TestResult::passed(),
+        let result = if is_true {
+            TestResult::error(format!("expected {} to be true, but got false", desc))
+        } else {
+            TestResult::passed()
         };
         self.0.push(result);
     }

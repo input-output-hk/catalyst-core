@@ -32,7 +32,7 @@ pub fn management_threshold() {
         .retire(&[&alice, &bob], &stake_pool, &mut ledger)
         .is_ok());
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("after owner delegation")
         .stake_pools()
         .is_retired(&stake_pool);

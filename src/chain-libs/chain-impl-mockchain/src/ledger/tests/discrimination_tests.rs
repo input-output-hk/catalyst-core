@@ -23,7 +23,7 @@ pub fn ledger_verifies_faucet_discrimination(
 
     let faucet = AddressDataValue::from_discrimination_and_kind_type(
         arbitrary_faucet_disc,
-        &arbitrary_faucet_address_kind.0,
+        arbitrary_faucet_address_kind.0,
         Value(1000),
     );
 
@@ -53,12 +53,12 @@ pub fn ledger_verifies_transaction_discrimination(
 ) -> TestResult {
     let faucet = AddressDataValue::from_discrimination_and_kind_type(
         arbitrary_input_disc,
-        &arbitrary_input_address_kind.kind_type(),
+        arbitrary_input_address_kind.kind_type(),
         Value(100),
     );
     let receiver = AddressDataValue::from_discrimination_and_kind_type(
         arbitrary_output_disc,
-        &arbitrary_output_address_kind.kind_type(),
+        arbitrary_output_address_kind.kind_type(),
         Value(100),
     );
 
@@ -68,7 +68,7 @@ pub fn ledger_verifies_transaction_discrimination(
         .initial_fund(&faucet)
         .build()
         .unwrap();
-    let fragment = TestTxBuilder::new(&ledger.block0_hash)
+    let fragment = TestTxBuilder::new(ledger.block0_hash)
         .move_all_funds(&mut ledger, &faucet, &receiver)
         .get_fragment();
 

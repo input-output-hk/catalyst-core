@@ -20,8 +20,6 @@ pub fn per_certificate_fees() {
     let certificate_pool_registration_fee = 1;
     let certificate_stake_delegation = 20;
     let certificate_owner_stake_delegation = 300;
-    let certificate_vote_plan_fee = 10_000;
-    let certificate_vote_cast_fee = 50;
 
     let mut fee_amount = 0;
     let mut alice_funds = 1_000;
@@ -67,8 +65,8 @@ pub fn per_certificate_fees() {
         .unwrap();
     alice.confirm_transaction();
 
-    fee_amount = fee_amount + expected_pool_registration_fee;
-    alice_funds = alice_funds - expected_pool_registration_fee;
+    fee_amount += expected_pool_registration_fee;
+    alice_funds -= expected_pool_registration_fee;
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
     ledger_verifier
@@ -86,8 +84,8 @@ pub fn per_certificate_fees() {
         .unwrap();
     alice.confirm_transaction();
 
-    fee_amount = fee_amount + expected_owner_delegation_fee;
-    alice_funds = alice_funds - expected_owner_delegation_fee;
+    fee_amount += expected_owner_delegation_fee;
+    alice_funds -= expected_owner_delegation_fee;
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
 
@@ -107,8 +105,8 @@ pub fn per_certificate_fees() {
         .unwrap();
     bob.confirm_transaction();
 
-    fee_amount = fee_amount + expected_delegation_fee;
-    bob_funds = bob_funds - expected_delegation_fee;
+    fee_amount += expected_delegation_fee;
+    bob_funds -= expected_delegation_fee;
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
     ledger_verifier
@@ -126,10 +124,10 @@ pub fn per_certificate_fees() {
         .unwrap();
     alice.confirm_transaction();
 
-    fee_amount = fee_amount + expected_retirement_fee;
-    alice_funds = alice_funds - expected_retirement_fee;
+    fee_amount += expected_retirement_fee;
+    alice_funds -= expected_retirement_fee;
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier
         .info("after retire")
         .pots()
@@ -175,7 +173,7 @@ pub fn owner_delegates_fee() {
         .unwrap();
     alice.confirm_transaction();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
 
     ledger_verifier
         .info("after owner_delegates")

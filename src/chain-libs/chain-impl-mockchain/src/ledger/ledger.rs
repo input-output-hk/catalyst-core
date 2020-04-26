@@ -1757,7 +1757,7 @@ mod tests {
 
         let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
         let signed_tx = single_transaction_sign_by(
-            account.make_input(&initial_value, None),
+            account.make_input(initial_value, None),
             &block0_hash,
             &account,
         );
@@ -1795,7 +1795,7 @@ mod tests {
 
         let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
         let signed_tx = single_transaction_sign_by(
-            account.make_input(&initial_value, None),
+            account.make_input(initial_value, None),
             &block0_hash,
             &account,
         );
@@ -1830,7 +1830,7 @@ mod tests {
 
         let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
         let signed_tx = single_transaction_sign_by(
-            account.make_input(&initial_value, None),
+            account.make_input(initial_value, None),
             &block0_hash,
             &account,
         );
@@ -1859,7 +1859,7 @@ mod tests {
 
         let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
         let signed_tx = single_transaction_sign_by(
-            account.make_input(&initial_value, None),
+            account.make_input(initial_value, None),
             &block0_hash,
             &account,
         );
@@ -1966,7 +1966,7 @@ mod tests {
         let outputs: Vec<Output<Address>> = arbitrary_outputs
             .0
             .iter()
-            .map(|x| x.address_data.make_output(&x.value))
+            .map(|x| x.address_data.make_output(x.value))
             .collect();
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, static_params.clone());
@@ -2101,12 +2101,12 @@ mod tests {
             .unwrap();
 
         let delegation = AddressData::delegation_for(&account);
-        let delegation_output = delegation.make_output(&Value(100));
+        let delegation_output = delegation.make_output(Value(100));
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());
         let auth_tx = transaction_from_ios_only(
             &[],
-            &[delegation_output.clone(), account.make_output(&Value(1))],
+            &[delegation_output.clone(), account.make_output(Value(1))],
         );
 
         let ledger = ledger
@@ -2137,7 +2137,7 @@ mod tests {
         let accounts = account::Ledger::new();
 
         let delegation_address = AddressData::delegation(Discrimination::Test);
-        let delegation_output = delegation_address.make_output(&Value(100));
+        let delegation_output = delegation_address.make_output(Value(100));
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());
 
@@ -2176,7 +2176,7 @@ mod tests {
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());
 
-        let auth_tx = transaction_from_ios_only(&[], &[account.make_output(&Value(200))]);
+        let auth_tx = transaction_from_ios_only(&[], &[account.make_output(Value(200))]);
         let ledger = ledger
             .apply_tx_outputs(params.transaction_id(), auth_tx.get_tx_outputs())
             .expect("Unexpected error while applying transaction output");
@@ -2204,7 +2204,7 @@ mod tests {
         let account = AddressData::account(Discrimination::Test);
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());
-        let auth_tx = transaction_from_ios_only(&[], &[account.make_output(&Value(200))]);
+        let auth_tx = transaction_from_ios_only(&[], &[account.make_output(Value(200))]);
         let ledger = ledger
             .apply_tx_outputs(params.transaction_id(), auth_tx.get_tx_outputs())
             .expect("Unexpected error while applying transaction output");
@@ -2264,7 +2264,7 @@ mod tests {
 
         let builder_tx = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_ios(&inputs, &[reciever.make_output(&Value(100))]);
+            .set_ios(&inputs, &[reciever.make_output(Value(100))]);
 
         let witnesses: Vec<Witness> = faucets
             .iter()
@@ -2298,9 +2298,9 @@ mod tests {
         let receivers =
             iter::from_fn(|| Some(AddressDataValue::account(Discrimination::Test, Value(100))))
                 .take(check::CHECK_TX_MAXIMUM_INPUTS as usize)
-                .collect();
+                .collect::<Vec<_>>();
 
-        let test_tx = TestTxBuilder::new(&test_ledger.block0_hash).move_funds_multiple(
+        let test_tx = TestTxBuilder::new(test_ledger.block0_hash).move_funds_multiple(
             &mut test_ledger,
             &vec![faucet],
             &receivers,
@@ -2328,7 +2328,7 @@ mod tests {
             .build()
             .unwrap();
 
-        let test_tx = TestTxBuilder::new(&test_ledger.block0_hash).move_funds_multiple(
+        let test_tx = TestTxBuilder::new(test_ledger.block0_hash).move_funds_multiple(
             &mut test_ledger,
             &faucets,
             &vec![receiver],
@@ -2353,7 +2353,7 @@ mod tests {
         let inputs: Vec<Input> = faucets.iter().map(|x| x.make_input(None)).collect();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_ios(&inputs, &[reciever.make_output(&Value(2))]);
+            .set_ios(&inputs, &[reciever.make_output(Value(2))]);
 
         let witness = make_witness(
             &test_ledger.block0_hash,
@@ -2382,7 +2382,7 @@ mod tests {
                 .build()
                 .unwrap();
 
-        let test_tx = TestTxBuilder::new(&test_ledger.block0_hash).move_all_funds(
+        let test_tx = TestTxBuilder::new(test_ledger.block0_hash).move_all_funds(
             &mut test_ledger,
             &faucet,
             &reciever,
@@ -2462,7 +2462,7 @@ mod tests {
         let inputs = [faucets[0].make_input(None), faucets[1].make_input(None)];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_ios(&inputs, &[reciever.make_output(&Value(2))]);
+            .set_ios(&inputs, &[reciever.make_output(Value(2))]);
         let auth_data = tx_builder.get_auth_data_for_witness().hash();
         let witnesses = make_witnesses(
             &test_ledger.block0_hash,
@@ -2512,7 +2512,7 @@ mod tests {
             .build()
             .unwrap();
 
-        let fragment = TestTxBuilder::new(&test_ledger.block0_hash)
+        let fragment = TestTxBuilder::new(test_ledger.block0_hash)
             .move_all_funds(&mut test_ledger, &faucet, &reciever)
             .get_fragment();
         assert!(test_ledger.apply_transaction(fragment).is_ok());

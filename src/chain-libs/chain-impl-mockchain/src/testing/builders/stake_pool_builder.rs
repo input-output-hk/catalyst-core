@@ -20,6 +20,12 @@ pub struct StakePoolBuilder {
     alias: String,
 }
 
+impl Default for StakePoolBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StakePoolBuilder {
     pub fn new() -> Self {
         StakePoolBuilder {
@@ -91,27 +97,26 @@ impl StakePoolBuilder {
         let pool_vrf: KeyPair<Curve25519_2HashDH> = KeyPair::generate(&mut rng);
         let pool_kes: KeyPair<SumEd25519_12> = KeyPair::generate(&mut rng);
 
-        let permissions = match &self.pool_permissions {
-            Some(pool_permissions) => pool_permissions.clone(),
+        let permissions = match self.pool_permissions {
+            Some(pool_permissions) => pool_permissions,
             None => PoolPermissions::new(std::cmp::max(self.owners.len() as u8 / 2, 1)),
         };
 
-        let (reward_account, reward_identifier) = match self.reward_account {
-            true => {
-                let account = AddressData::account(Discrimination::Test);
-                let transaction_account = AccountIdentifier::Single(account.to_id());
-                (Some(account), Some(transaction_account))
-            }
-            false => (None, None),
+        let (reward_account, reward_identifier) = if self.reward_account {
+            let account = AddressData::account(Discrimination::Test);
+            let transaction_account = AccountIdentifier::Single(account.to_id());
+            (Some(account), Some(transaction_account))
+        } else {
+            (None, None)
         };
 
         let pool_info = PoolRegistration {
             serial: 0,
-            owners: self.owners.iter().cloned().collect(),
+            owners: self.owners.clone(),
             operators: self.operators.iter().cloned().collect(),
             start_validity: DurationSeconds::from(0).into(),
             permissions: permissions,
-            rewards: self.tax_type.clone(),
+            rewards: self.tax_type,
             reward_account: reward_identifier,
             keys: GenesisPraosLeader {
                 vrf_public_key: pool_vrf.public_key().clone(),

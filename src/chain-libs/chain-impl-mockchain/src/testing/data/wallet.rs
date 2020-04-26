@@ -56,11 +56,11 @@ impl Wallet {
         self.account.make_output()
     }
 
-    pub fn make_output_with_value(&self, value: &Value) -> Output<Address> {
-        self.account.make_output_with_value(&value)
+    pub fn make_output_with_value(&self, value: Value) -> Output<Address> {
+        self.account.make_output_with_value(value)
     }
 
-    pub fn make_input_with_value(&self, value: &Value) -> Input {
+    pub fn make_input_with_value(&self, value: Value) -> Input {
         self.account.make_input_with_value(None, value)
     }
 
@@ -73,7 +73,7 @@ impl Wallet {
     }
 
     pub fn as_address(&self) -> Address {
-        self.as_account_data().address.clone()
+        self.as_account_data().address
     }
 
     pub fn confirm_transaction(&mut self) {

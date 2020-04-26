@@ -43,23 +43,23 @@ impl TestTx {
         self.tx
     }
 
-    pub fn witnesses<'a>(&'a self) -> WitnessesSlice<'a> {
+    pub fn witnesses(&self) -> WitnessesSlice<'_> {
         self.as_slice().witnesses()
     }
 
-    pub fn as_slice<'a>(&'a self) -> TransactionSlice<'a, NoExtra> {
+    pub fn as_slice(&self) -> TransactionSlice<'_, NoExtra> {
         self.tx.as_slice()
     }
 
-    pub fn get_tx_outputs<'a>(&'a self) -> OutputsSlice<'a> {
+    pub fn get_tx_outputs(&self) -> OutputsSlice<'_> {
         self.as_slice().outputs()
     }
 }
 
 impl TestTxBuilder {
-    pub fn new(block0_hash: &HeaderId) -> Self {
+    pub fn new(block0_hash: HeaderId) -> Self {
         Self {
-            block0_hash: block0_hash.clone(),
+            block0_hash: block0_hash,
         }
     }
 
@@ -67,7 +67,7 @@ impl TestTxBuilder {
         &self,
         test_ledger: &mut TestLedger,
         destination: &Address,
-        value: &Value,
+        value: Value,
     ) -> TestTx {
         assert_eq!(
             test_ledger.faucets.len(),
@@ -83,10 +83,10 @@ impl TestTxBuilder {
             .expect("test ledger with no faucet configured")
             .clone();
         let fee = test_ledger.fee().fees_for_inputs_outputs(1u8, 1u8);
-        let output_value = (*value - fee).expect("input value is smaller than fee");
+        let output_value = (value - fee).expect("input value is smaller than fee");
         let inputs = vec![faucet.clone().make_input_with_value(
             test_ledger.find_utxo_for_address(&faucet.clone().into()),
-            &value,
+            value,
         )];
         let outputs = vec![Output {
             address: destination.clone(),
@@ -124,7 +124,7 @@ impl TestTxBuilder {
         let input_val = Value::sum(destination.iter().map(|o| o.value)).unwrap();
         let inputs = vec![faucet.clone().make_input_with_value(
             test_ledger.find_utxo_for_address(&faucet.clone().into()),
-            &input_val,
+            input_val,
         )];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
@@ -147,7 +147,7 @@ impl TestTxBuilder {
         let mut keys_db = KeysDb::empty();
         keys_db.add_key(source.private_key());
         keys_db.add_key(destination.private_key());
-        self.move_funds(test_ledger, &source, &destination, &source.value)
+        self.move_funds(test_ledger, &source, &destination, source.value)
     }
 
     pub fn move_funds(
@@ -155,12 +155,12 @@ impl TestTxBuilder {
         test_ledger: &mut TestLedger,
         source: &AddressDataValue,
         destination: &AddressDataValue,
-        value: &Value,
+        value: Value,
     ) -> TestTx {
         let fee = test_ledger.fee();
         let fee_value = (fee.fees_for_inputs_outputs(1u8, 1u8) + Value(fee.constant)).unwrap();
-        let output_value = (*value - fee_value).expect("input value is smaller than fee");
-        let sources = vec![AddressDataValue::new(source.address_data(), value.clone())];
+        let output_value = (value - fee_value).expect("input value is smaller than fee");
+        let sources = vec![AddressDataValue::new(source.address_data(), value)];
         let destinations = vec![AddressDataValue::new(
             destination.address_data(),
             output_value,
@@ -171,8 +171,8 @@ impl TestTxBuilder {
     pub fn move_funds_multiple(
         &self,
         test_ledger: &mut TestLedger,
-        sources: &Vec<AddressDataValue>,
-        destinations: &Vec<AddressDataValue>,
+        sources: &[AddressDataValue],
+        destinations: &[AddressDataValue],
     ) -> TestTx {
         let inputs: Vec<Input> = sources
             .iter()

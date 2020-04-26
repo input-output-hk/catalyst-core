@@ -158,7 +158,7 @@ impl Witness {
     {
         let wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Legacy);
         let (pk, sig) = sign(&wud);
-        Witness::OldUtxo(pk, some_bytes.clone(), sig)
+        Witness::OldUtxo(pk, *some_bytes, sig)
     }
 
     pub fn new_account<F>(

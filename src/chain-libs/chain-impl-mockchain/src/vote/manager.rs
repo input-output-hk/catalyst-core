@@ -162,7 +162,7 @@ impl VotePlanManager {
     /// no longer interesting to track in the ledger and it can be
     /// GCed.
     pub fn vote_plan_elapsed(&self, date: BlockDate) -> bool {
-        &self.plan().committee_end() < &date
+        self.plan().committee_end() < date
     }
 
     /// attempt to apply the vote to one of the proposals

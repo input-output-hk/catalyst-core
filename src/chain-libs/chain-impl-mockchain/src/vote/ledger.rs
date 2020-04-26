@@ -106,7 +106,7 @@ impl VotePlanLedger {
 
         let r = self.plans.update(&id, move |(v, _)| {
             v.vote(block_date, identifier, vote)
-                .map(|v| Some((v, block_date.clone())))
+                .map(|v| Some((v, block_date)))
         });
 
         match r {
@@ -152,14 +152,11 @@ impl VotePlanLedger {
         let end_date = vote_plan.committee_end();
         let manager = VotePlanManager::new(vote_plan);
 
-        match self.plans.insert(id.clone(), (manager, end_date.clone())) {
+        match self.plans.insert(id.clone(), (manager, end_date)) {
             Err(reason) => Err(VotePlanLedgerError::VotePlanInsertionError { id, reason }),
             Ok(plans) => {
                 let mut plans_by_end_date = self.plans_by_end_date.clone();
-                plans_by_end_date
-                    .entry(end_date)
-                    .or_insert(Vec::default())
-                    .push(id);
+                plans_by_end_date.entry(end_date).or_default().push(id);
                 Ok(Self {
                     plans,
                     plans_by_end_date,

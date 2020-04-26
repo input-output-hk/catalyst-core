@@ -19,7 +19,8 @@ impl HashedKey {
 impl HashedKey {
     /// get the index associated with a specific level
     #[inline]
-    pub fn level_index(&self, level: usize) -> LevelIndex {
+    #[must_use = "operation does not modify the state"]
+    pub fn level_index(self, level: usize) -> LevelIndex {
         // group of 5 bits
         let shift = level as u32 * 5;
         let idx = (self.0.wrapping_shr(shift) & 0b11111) as usize;
@@ -37,7 +38,8 @@ pub struct LevelIndex(pub usize);
 
 impl LevelIndex {
     #[inline]
-    pub const fn mask(&self) -> u32 {
+    #[must_use = "operation does not modify the state"]
+    pub const fn mask(self) -> u32 {
         1u32.wrapping_shl(self.0 as u32)
     }
 }

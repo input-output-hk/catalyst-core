@@ -32,14 +32,14 @@ impl<K, V> Collision<K, V> {
     pub fn len(&self) -> usize {
         self.0.len()
     }
-    pub fn iter<'a>(&'a self) -> slice::Iter<'a, (K, V)> {
+    pub fn iter(&self) -> slice::Iter<'_, (K, V)> {
         self.0.iter()
     }
 }
 
 impl<K: Clone + PartialEq, V: Clone> Collision<K, V> {
     pub fn insert(&self, k: K, v: V) -> Result<Self, InsertError> {
-        if self.0.iter().find(|(lk, _)| lk == &k).is_some() {
+        if self.0.iter().any(|(lk, _)| lk == &k) {
             Err(InsertError::EntryExists)
         } else {
             Ok(Collision::from_box(helper::clone_array_and_extend(
@@ -85,7 +85,7 @@ impl<K: Clone + PartialEq, V: Clone> Collision<K, V> {
         F: FnOnce(&V) -> Result<Option<V>, U>,
     {
         let (pos, (_, v)) = self.get_record_and_pos(k).ok_or(UpdateError::KeyNotFound)?;
-        match f(v).map_err(|u| UpdateError::ValueCallbackError(u))? {
+        match f(v).map_err(UpdateError::ValueCallbackError)? {
             None => {
                 if self.0.len() == 2 {
                     let to_keep = if pos == 0 { &self.0[1] } else { &self.0[0] };
@@ -207,7 +207,7 @@ impl<K, V> Node<K, V> {
         v[idx.get_found()] = child;
 
         Node {
-            bitmap: self.bitmap.clone(),
+            bitmap: self.bitmap,
             children: v,
         }
     }
@@ -239,56 +239,58 @@ impl<K, V> Node<K, V> {
 // creating Leaf and Collision node instead of Subnode.
 pub fn insert_rec<K: Clone + PartialEq, V: Clone>(
     node: &Node<K, V>,
-    h: HashedKey,
+    hash: HashedKey,
     lvl: usize,
-    k: K,
-    v: V,
+    key: K,
+    value: V,
 ) -> Result<Node<K, V>, InsertError> {
-    let level_hash = h.level_index(lvl);
+    let level_hash = hash.level_index(lvl);
     let idx = node.bitmap.get_index_sparse(level_hash);
     if idx.is_not_found() {
-        let e = SharedRef::new(Entry::Leaf(h, k, v));
+        let e = SharedRef::new(Entry::Leaf(hash, key, value));
         Ok(node.set_at(level_hash, e))
     } else {
         match &(node.get_child(idx)).as_ref() {
-            &Entry::Leaf(lh, lk, lv) => {
+            Entry::Leaf(lh, lk, lv) => {
                 // in case of same hash, then we append to the collision type
                 // otherwise we create a new subnode
-                if *lh == h {
-                    if lk == &k {
+                if *lh == hash {
+                    if lk == &key {
                         return Err(InsertError::EntryExists);
                     }
-                    let dat = vec![(lk.clone(), lv.clone()), (k, v)];
+                    let dat = vec![(lk.clone(), lv.clone()), (key, value)];
                     let e = SharedRef::new(Entry::LeafMany(*lh, Collision::from_vec(dat)));
                     Ok(node.replace_at(idx, e))
                 } else {
                     let leaf_idx = lh.level_index(lvl + 1);
-                    let entry_next_idx = h.level_index(lvl + 1);
+                    let entry_next_idx = hash.level_index(lvl + 1);
                     let subnode = Node::singleton(leaf_idx, SharedRef::clone(node.get_child(idx)));
 
                     if entry_next_idx != leaf_idx {
-                        let subnode =
-                            subnode.set_at(entry_next_idx, SharedRef::new(Entry::Leaf(h, k, v)));
+                        let subnode = subnode.set_at(
+                            entry_next_idx,
+                            SharedRef::new(Entry::Leaf(hash, key, value)),
+                        );
                         Ok(node.replace_at(idx, SharedRef::new(Entry::SubNode(subnode))))
                     } else {
-                        let r = insert_rec(&subnode, h, lvl + 1, k, v)?;
+                        let r = insert_rec(&subnode, hash, lvl + 1, key, value)?;
                         let e = SharedRef::new(Entry::SubNode(r));
                         Ok(node.replace_at(idx, e))
                     }
                 }
             }
-            &Entry::LeafMany(lh, col) => {
-                assert_eq!(*lh, h);
-                let col = col.insert(k, v)?;
+            Entry::LeafMany(lh, col) => {
+                assert_eq!(*lh, hash);
+                let col = col.insert(key, value)?;
                 Ok(node.replace_at(idx, SharedRef::new(Entry::LeafMany(*lh, col))))
             }
-            &Entry::SubNode(sub) => {
+            Entry::SubNode(sub) => {
                 if lvl > 13 {
                     // this is to appease the compiler for now, but globally an impossible
                     // state.
                     unreachable!()
                 } else {
-                    let r = insert_rec(sub, h, lvl + 1, k, v)?;
+                    let r = insert_rec(sub, hash, lvl + 1, key, value)?;
                     let e = SharedRef::new(Entry::SubNode(r));
                     Ok(node.replace_at(idx, e))
                 }
@@ -315,14 +317,14 @@ pub fn lookup_one<'a, K: PartialEq, V>(
         LookupRet::NotFound
     } else {
         match &(node.get_child(idx)).as_ref() {
-            &Entry::Leaf(lh, lk, lv) => {
+            Entry::Leaf(lh, lk, lv) => {
                 if lh == h && lk == k {
                     LookupRet::Found(lv)
                 } else {
                     LookupRet::NotFound
                 }
             }
-            &Entry::LeafMany(lh, col) => {
+            Entry::LeafMany(lh, col) => {
                 if lh != h {
                     LookupRet::NotFound
                 } else {
@@ -332,7 +334,7 @@ pub fn lookup_one<'a, K: PartialEq, V>(
                     }
                 }
             }
-            &Entry::SubNode(sub) => LookupRet::ContinueIn(sub),
+            Entry::SubNode(sub) => LookupRet::ContinueIn(sub),
         }
     }
 }
@@ -348,10 +350,10 @@ pub fn remove_eq_rec<K: PartialEq + Clone, V: PartialEq + Clone>(
     let level_hash = h.level_index(lvl);
     let idx = node.bitmap.get_index_sparse(level_hash);
     if idx.is_not_found() {
-        return Err(RemoveError::KeyNotFound);
+        Err(RemoveError::KeyNotFound)
     } else {
         match &(node.get_child(idx)).as_ref() {
-            &Entry::Leaf(lh, lk, lv) => {
+            Entry::Leaf(lh, lk, lv) => {
                 if *lh == h && lk == k {
                     if lv == v {
                         Ok(node.clear_at(level_hash))
@@ -362,12 +364,12 @@ pub fn remove_eq_rec<K: PartialEq + Clone, V: PartialEq + Clone>(
                     Err(RemoveError::KeyNotFound)
                 }
             }
-            &Entry::LeafMany(lh, col) => {
+            Entry::LeafMany(lh, col) => {
                 assert_eq!(*lh, h);
                 let replacement = col.remove_match(h, k, v)?;
                 Ok(Some(node.replace_at(idx, SharedRef::new(replacement))))
             }
-            &Entry::SubNode(sub) => match remove_eq_rec(sub, h, lvl + 1, k, v)? {
+            Entry::SubNode(sub) => match remove_eq_rec(sub, h, lvl + 1, k, v)? {
                 None => Ok(node.clear_at(level_hash)),
                 Some(newsub) => {
                     let e = Entry::SubNode(newsub);
@@ -388,22 +390,22 @@ pub fn remove_rec<K: Clone + PartialEq, V: Clone>(
     let level_hash = h.level_index(lvl);
     let idx = node.bitmap.get_index_sparse(level_hash);
     if idx.is_not_found() {
-        return Err(RemoveError::KeyNotFound);
+        Err(RemoveError::KeyNotFound)
     } else {
         match &(node.get_child(idx)).as_ref() {
-            &Entry::Leaf(lh, lk, _) => {
+            Entry::Leaf(lh, lk, _) => {
                 if *lh == h && lk == k {
                     Ok(node.clear_at(level_hash))
                 } else {
                     Err(RemoveError::KeyNotFound)
                 }
             }
-            &Entry::LeafMany(lh, col) => {
+            Entry::LeafMany(lh, col) => {
                 assert_eq!(*lh, h);
                 let replacement = col.remove(h, k)?;
                 Ok(Some(node.replace_at(idx, SharedRef::new(replacement))))
             }
-            &Entry::SubNode(sub) => match remove_rec(sub, h, lvl + 1, k)? {
+            Entry::SubNode(sub) => match remove_rec(sub, h, lvl + 1, k)? {
                 None => Ok(node.clear_at(level_hash)),
                 Some(newsub) => {
                     let e = Entry::SubNode(newsub);
@@ -433,7 +435,7 @@ where
         Err(UpdateError::KeyNotFound)
     } else {
         match &(node.get_child(idx)).as_ref() {
-            &Entry::Leaf(lh, lk, lv) => {
+            Entry::Leaf(lh, lk, lv) => {
                 if *lh == h && lk == k {
                     let newv = f(lv).map_err(UpdateError::ValueCallbackError)?;
                     Ok(node.clear_or_replace_at(
@@ -444,12 +446,12 @@ where
                     Err(UpdateError::KeyNotFound)
                 }
             }
-            &Entry::LeafMany(lh, col) => {
+            Entry::LeafMany(lh, col) => {
                 assert_eq!(*lh, h);
                 let replacement = col.update(h, k, f)?;
                 Ok(Some(node.replace_at(idx, SharedRef::new(replacement))))
             }
-            &Entry::SubNode(sub) => match update_rec(sub, h, lvl + 1, k, f)? {
+            Entry::SubNode(sub) => match update_rec(sub, h, lvl + 1, k, f)? {
                 None => Ok(node.clear_at(level_hash)),
                 Some(newsub) => {
                     let e = Entry::SubNode(newsub);
@@ -474,7 +476,7 @@ pub fn replace_rec<K: PartialEq + Clone, V: Clone>(
         Err(ReplaceError::KeyNotFound)
     } else {
         match &(node.get_child(idx)).as_ref() {
-            &Entry::Leaf(lh, lk, lv) => {
+            Entry::Leaf(lh, lk, lv) => {
                 if *lh == h && lk == k {
                     let new_ent = SharedRef::new(Entry::Leaf(*lh, lk.clone(), v));
                     Ok((node.replace_at(idx, new_ent), lv.clone()))
@@ -482,7 +484,7 @@ pub fn replace_rec<K: PartialEq + Clone, V: Clone>(
                     Err(ReplaceError::KeyNotFound)
                 }
             }
-            &Entry::LeafMany(lh, col) => {
+            Entry::LeafMany(lh, col) => {
                 assert_eq!(*lh, h);
                 let (replacement, old_value) = col.replace(k, v)?;
                 Ok((
@@ -490,7 +492,7 @@ pub fn replace_rec<K: PartialEq + Clone, V: Clone>(
                     old_value,
                 ))
             }
-            &Entry::SubNode(sub) => {
+            Entry::SubNode(sub) => {
                 let (newsub, oldv) = replace_rec(sub, h, lvl + 1, k, v)?;
                 let e = Entry::SubNode(newsub);
                 Ok((node.replace_at(idx, SharedRef::new(e)), oldv))
@@ -516,7 +518,7 @@ where
         Err(ReplaceError::KeyNotFound)
     } else {
         match &(node.get_child(idx)).as_ref() {
-            &Entry::Leaf(lh, lk, lv) => {
+            Entry::Leaf(lh, lk, lv) => {
                 if *lh == h && lk == k {
                     let new_ent = SharedRef::new(Entry::Leaf(*lh, lk.clone(), f(lv)));
                     Ok(node.replace_at(idx, new_ent))
@@ -524,12 +526,12 @@ where
                     Err(ReplaceError::KeyNotFound)
                 }
             }
-            &Entry::LeafMany(lh, col) => {
+            Entry::LeafMany(lh, col) => {
                 assert_eq!(*lh, h);
                 let replacement = col.replace_with(k, f)?;
                 Ok(node.replace_at(idx, SharedRef::new(Entry::LeafMany(*lh, replacement))))
             }
-            &Entry::SubNode(sub) => {
+            Entry::SubNode(sub) => {
                 let newsub = replace_with_rec(sub, h, lvl + 1, k, f)?;
                 let e = Entry::SubNode(newsub);
                 Ok(node.replace_at(idx, SharedRef::new(e)))
@@ -542,9 +544,9 @@ pub fn size_rec<K, V>(node: &Node<K, V>) -> usize {
     let mut sum = 0;
     for c in node.children.iter() {
         match &c.as_ref() {
-            &Entry::Leaf(_, _, _) => sum += 1,
-            &Entry::LeafMany(_, col) => sum += col.len(),
-            &Entry::SubNode(sub) => sum += size_rec(&sub),
+            Entry::Leaf(_, _, _) => sum += 1,
+            Entry::LeafMany(_, col) => sum += col.len(),
+            Entry::SubNode(sub) => sum += size_rec(&sub),
         }
     }
     sum
@@ -559,9 +561,9 @@ pub mod debug {
         let mut max_depth = 0;
         for c in node.children.iter() {
             match &c.as_ref() {
-                &Entry::Leaf(_, _, _) => {}
-                &Entry::LeafMany(_, _) => {}
-                &Entry::SubNode(sub) => {
+                Entry::Leaf(_, _, _) => {}
+                Entry::LeafMany(_, _) => {}
+                Entry::SubNode(sub) => {
                     let child_depth = depth_rec(&sub);
                     max_depth = cmp::max(max_depth, child_depth)
                 }

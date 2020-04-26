@@ -1211,7 +1211,7 @@ impl Ledger {
         index: TransactionIndex,
     ) -> Option<&Output<Address>> {
         self.utxos
-            .get(&fragment_id, &index)
+            .get(&fragment_id, index)
             .map(|entry| entry.output)
     }
 

@@ -23,7 +23,7 @@ impl UnspecifiedAccountIdentifier {
         PublicKey::from_binary(&self.0).map(|x| x.into()).ok()
     }
     pub fn to_multi_account(&self) -> multisig::Identifier {
-        multisig::Identifier::from(self.0.clone())
+        multisig::Identifier::from(self.0)
     }
 
     pub fn from_single_account(identifier: account::Identifier) -> Self {
@@ -175,12 +175,12 @@ impl Input {
     pub fn to_enum(&self) -> InputEnum {
         match self.get_type() {
             InputType::Account => {
-                let account_identifier = self.input_ptr.clone();
+                let account_identifier = self.input_ptr;
                 let id = UnspecifiedAccountIdentifier(account_identifier);
                 InputEnum::AccountInput(id, self.value)
             }
             InputType::Utxo => InputEnum::UtxoInput(UtxoPointer::new(
-                FragmentId::from(self.input_ptr.clone()),
+                FragmentId::from(self.input_ptr),
                 self.index_or_account,
                 self.value,
             )),

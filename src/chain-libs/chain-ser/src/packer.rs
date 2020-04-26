@@ -104,8 +104,8 @@ impl<W: std::io::Write> Buffered<W> {
         self.write_all(&buf)?;
         Ok(Hole {
             _marker: std::marker::PhantomData,
-            start: start,
-            end: end,
+            start,
+            end,
         })
     }
 

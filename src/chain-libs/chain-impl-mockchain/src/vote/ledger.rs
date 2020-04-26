@@ -58,9 +58,9 @@ impl VotePlanLedger {
     /// * we still need to publish the vote result;
     /// * we still need to distribute the rewards?
     ///
-    pub fn gc(&self, block_date: &BlockDate) -> Self {
+    pub fn gc(&self, block_date: BlockDate) -> Self {
         let mut to_remove = self.plans_by_end_date.clone();
-        let to_keep = to_remove.split_off(block_date);
+        let to_keep = to_remove.split_off(&block_date);
 
         let mut plans = self.plans.clone();
         for ids in to_remove.values() {
@@ -98,7 +98,7 @@ impl VotePlanLedger {
     ///
     pub fn apply_vote(
         &self,
-        block_date: &BlockDate,
+        block_date: BlockDate,
         identifier: UnspecifiedAccountIdentifier,
         vote: VoteCast,
     ) -> Result<Self, VotePlanLedgerError> {

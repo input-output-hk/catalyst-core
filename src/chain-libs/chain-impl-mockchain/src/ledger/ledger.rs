@@ -1000,7 +1000,7 @@ impl Ledger {
         self = self.apply_tx_fee(fee)?;
 
         let vote = tx.payload().into_payload();
-        self.votes = self.votes.apply_vote(&self.date(), account_id, vote)?;
+        self.votes = self.votes.apply_vote(self.date(), account_id, vote)?;
 
         Ok((self, fee))
     }

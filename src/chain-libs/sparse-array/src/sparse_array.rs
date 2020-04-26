@@ -6,6 +6,12 @@ pub struct SparseArray<V> {
     data: Box<[V]>,
 }
 
+impl<V> Default for SparseArray<V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<V> SparseArray<V> {
     pub fn new() -> Self {
         Self {
@@ -72,6 +78,12 @@ impl<V> SparseArray<V> {
 pub struct SparseArrayBuilder<V> {
     index: BitmapIndex,
     data: Vec<V>,
+}
+
+impl<V> Default for SparseArrayBuilder<V> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<V> SparseArrayBuilder<V> {

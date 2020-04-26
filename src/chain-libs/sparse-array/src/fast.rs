@@ -9,6 +9,12 @@ pub struct FastSparseArray<V> {
     data: Arc<SparseArray<V>>,
 }
 
+impl<V> Default for FastSparseArray<V> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<V> FastSparseArray<V> {
     pub fn new() -> Self {
         Self {
@@ -72,6 +78,12 @@ impl<V> FastSparseArray<V> {
 pub struct FastSparseArrayBuilder<V> {
     index: BitmapIndex,
     data: SparseArrayBuilder<V>,
+}
+
+impl<V> Default for FastSparseArrayBuilder<V> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<V> FastSparseArrayBuilder<V> {

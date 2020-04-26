@@ -100,7 +100,7 @@ mod tests {
             bitmap.set_index(*idx);
         }
         indices.iter().all(|idx| bitmap.get_index(*idx))
-            && !(bitmap.is_empty() && indices.len() > 0)
+            && (!bitmap.is_empty() || indices.is_empty())
     }
 
     #[quickcheck]

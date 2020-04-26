@@ -377,15 +377,16 @@ impl<P> Transaction<P> {
     }
 
     pub fn balance(&self, fee: Value) -> Result<Balance, ValueError> {
+        use std::cmp::Ordering::*;
+
         let inputs = self.total_input()?;
         let outputs = self.total_output()?;
         let z = (outputs + fee)?;
-        if inputs > z {
-            Ok(Balance::Positive((inputs - z)?))
-        } else if inputs < z {
-            Ok(Balance::Negative((z - inputs)?))
-        } else {
-            Ok(Balance::Zero)
+
+        match inputs.cmp(&z) {
+            Greater => Ok(Balance::Positive((inputs - z)?)),
+            Less => Ok(Balance::Negative((z - inputs)?)),
+            Equal => Ok(Balance::Zero),
         }
     }
 

@@ -35,6 +35,12 @@ pub type TxBuilder = TxBuilderState<SetPayload>;
 // TODO not supported yet
 pub const FRAGMENT_OVERHEAD: usize = 0;
 
+impl Default for TxBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TxBuilder {
     /// Create a new Tx builder
     #[allow(clippy::reverse_range_loop)]

@@ -419,7 +419,7 @@ impl<P> Transaction<P> {
 }
 
 impl<'a, P> TransactionSlice<'a, P> {
-    pub fn into_owned(&self) -> Transaction<P> {
+    pub fn to_owned(&self) -> Transaction<P> {
         let mut data = Vec::with_capacity(self.data.len());
         data.extend_from_slice(self.data);
         Transaction {

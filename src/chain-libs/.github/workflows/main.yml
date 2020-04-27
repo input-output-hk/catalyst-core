@@ -39,7 +39,7 @@ jobs:
           command: test
 
   lints:
-    name: Rustfmt
+    name: Rust lints
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1

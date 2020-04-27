@@ -47,34 +47,34 @@ const TREEINDEX_TAG_DEPTH1: u16 = 1;
 const TREEINDEX_TAG_DEPTH2: u16 = 2;
 
 impl TreeIndex {
-    pub fn indices(&self) -> Vec<Index> {
+    pub fn indices(self) -> Vec<Index> {
         match self {
-            TreeIndex::D1(a) => vec![*a],
-            TreeIndex::D2(a, b) => vec![*a, *b],
+            TreeIndex::D1(a) => vec![a],
+            TreeIndex::D2(a, b) => vec![a, b],
         }
     }
-    pub fn depth(&self) -> usize {
+    pub fn depth(self) -> usize {
         match self {
             TreeIndex::D1(_) => 0,
             TreeIndex::D2(_, _) => 1,
         }
     }
 
-    pub fn pack(&self) -> u16 {
+    pub fn pack(self) -> u16 {
         match self {
-            TreeIndex::D1(Index(a)) => (TREEINDEX_TAG_DEPTH1 << 12) + ((*a as u16) << 9),
+            TreeIndex::D1(Index(a)) => (TREEINDEX_TAG_DEPTH1 << 12) + ((a as u16) << 9),
             TreeIndex::D2(Index(a), Index(b)) => {
-                (TREEINDEX_TAG_DEPTH2 << 12) + ((*a as u16) << 9) + ((*b as u16) << 6)
+                (TREEINDEX_TAG_DEPTH2 << 12) + ((a as u16) << 9) + ((b as u16) << 6)
             }
         }
     }
 
-    pub fn unpack(v: u16) -> Option<Self> {
-        let tag = (v >> 12) & 0b1111;
-        let a = (v >> 9) & 0b111;
-        let b = (v >> 6) & 0b111;
-        let c = (v >> 3) & 0b111;
-        let d = v & 0b111;
+    pub fn unpack(value: u16) -> Option<Self> {
+        let tag = (value >> 12) & 0b1111;
+        let a = (value >> 9) & 0b111;
+        let b = (value >> 6) & 0b111;
+        let c = (value >> 3) & 0b111;
+        let d = value & 0b111;
 
         if c != 0 || d != 0 {
             return None;

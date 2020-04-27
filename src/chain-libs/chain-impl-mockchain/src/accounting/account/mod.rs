@@ -56,6 +56,12 @@ impl From<InsertError> for LedgerError {
 #[derive(Clone, PartialEq, Eq)]
 pub struct Ledger<ID: Hash + Eq, Extra>(Hamt<DefaultHasher, ID, AccountState<Extra>>);
 
+impl<ID: Clone + Eq + Hash, Extra: Clone> Default for Ledger<ID, Extra> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
     /// Create a new empty account ledger
     pub fn new() -> Self {

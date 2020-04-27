@@ -292,7 +292,7 @@ impl Readable for PoolRegistration {
             }
             2 => {
                 let mut pk = [0u8; 32];
-                buf.into_slice_mut(&mut pk)?;
+                buf.copy_to_slice_mut(&mut pk)?;
                 Some(AccountIdentifier::Multi(pk.into()))
             }
             n => return Err(ReadError::UnknownTag(n as u32)),

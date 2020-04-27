@@ -56,7 +56,7 @@ pub struct PoolPermissions(u64);
 
 pub type ManagementThreshold = u8;
 
-const MANAGEMENT_THRESHOLD_BITMASK: u64 = 0b111111; // only support 32, reserved one for later extension if needed
+const MANAGEMENT_THRESHOLD_BITMASK: u64 = 0b11_1111; // only support 32, reserved one for later extension if needed
 const ALL_USED_BITMASK: u64 =
     0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00111111;
 
@@ -224,7 +224,7 @@ impl Payload for PoolUpdate {
             PhantomData,
         )
     }
-    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         Some(CertificateSlice::from(p))
     }
 }
@@ -249,7 +249,7 @@ impl Payload for PoolRetirement {
             PhantomData,
         )
     }
-    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         Some(CertificateSlice::from(p))
     }
 }
@@ -266,9 +266,9 @@ impl Readable for PoolRegistration {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let serial = buf.get_u128()?;
         let start_validity = DurationSeconds::from(buf.get_u64()?).into();
-        let permissions = PoolPermissions::from_u64(buf.get_u64()?).ok_or(
-            ReadError::StructureInvalid("permission value not correct".to_string()),
-        )?;
+        let permissions = PoolPermissions::from_u64(buf.get_u64()?).ok_or_else(|| {
+            ReadError::StructureInvalid("permission value not correct".to_string())
+        })?;
         let keys = GenesisPraosLeader::read(buf)?;
 
         let owners_nb = buf.get_u8()?;
@@ -334,7 +334,7 @@ impl Payload for PoolRegistration {
         )
     }
 
-    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         Some(CertificateSlice::from(p))
     }
 }
@@ -749,9 +749,10 @@ mod tests {
             sigs.push((i as u8, sig))
         }
         let pool_owner_signed = PoolOwnersSigned { signatures: sigs };
-        let verification = match should_pass {
-            true => Verification::Success,
-            false => Verification::Failed,
+        let verification = if should_pass {
+            Verification::Success
+        } else {
+            Verification::Failed
         };
         assert_eq!(
             pool_owner_signed.verify(&stake_pool.info(), &builder.get_auth_data()),

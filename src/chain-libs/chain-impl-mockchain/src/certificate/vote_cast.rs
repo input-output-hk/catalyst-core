@@ -91,7 +91,7 @@ impl Payload for VoteCast {
         PayloadAuthData(Vec::with_capacity(0).into(), std::marker::PhantomData)
     }
 
-    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         Some(CertificateSlice::from(p))
     }
 }

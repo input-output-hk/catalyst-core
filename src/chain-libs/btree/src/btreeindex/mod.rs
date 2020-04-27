@@ -1,13 +1,14 @@
 mod backtrack;
 mod metadata;
 // FIXME: allow dead code momentarily, because all of the delete algorithms are unused, and placing the directive with more granularity would be too troublesome
+mod iter;
 #[allow(dead_code)]
 mod node;
 mod page_manager;
 mod pages;
 mod version_management;
 
-use version_management::transaction::{PageRefMut, ReadTransaction, WriteTransaction};
+use version_management::transaction::{PageRef, PageRefMut, ReadTransaction, WriteTransaction};
 use version_management::*;
 
 use crate::mem_page::MemPage;
@@ -18,23 +19,26 @@ use node::leaf_node::LeafDeleteStatus;
 use node::{
     InternalInsertStatus, LeafInsertStatus, Node, NodeRef, NodeRefMut, RebalanceResult, SiblingsArg,
 };
-use pages::{borrow, PageHandle, Pages, PagesInitializationParams};
+use pages::{Pages, PagesInitializationParams};
 use std::borrow::Borrow;
 
-use crate::{Key, Value};
+use crate::FixedSize;
 
 use backtrack::{DeleteBacktrack, InsertBacktrack};
 use std::convert::{TryFrom, TryInto};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, SeekFrom};
 use std::marker::PhantomData;
+use std::ops::RangeBounds;
 use std::path::Path;
 use std::sync::Mutex;
+
+use iter::BTreeIterator;
 
 pub type PageId = u32;
 const NODES_PER_PAGE: u64 = 2000;
 
-pub struct BTree<K> {
+pub struct BTree<K, V> {
     // The metadata file contains the latests confirmed version of the tree
     // this is, the root node, and the list of free pages
     metadata: Mutex<(Metadata, File)>,
@@ -42,6 +46,7 @@ pub struct BTree<K> {
     pages: Pages,
     transaction_manager: TransactionManager,
     phantom_keys: PhantomData<[K]>,
+    phantom_values: PhantomData<[V]>,
 }
 
 /// Views over continous arrays of data. The buffer represents the total capacity
@@ -49,14 +54,15 @@ pub struct BTree<K> {
 use crate::arrayview::ArrayView;
 pub(crate) type Children<'a> = ArrayView<'a, &'a [u8], PageId>;
 pub(crate) type ChildrenMut<'a> = ArrayView<'a, &'a mut [u8], PageId>;
-pub(crate) type Values<'a> = ArrayView<'a, &'a [u8], Value>;
-pub(crate) type ValuesMut<'a> = ArrayView<'a, &'a mut [u8], Value>;
+pub(crate) type Values<'a, V> = ArrayView<'a, &'a [u8], V>;
+pub(crate) type ValuesMut<'a, V> = ArrayView<'a, &'a mut [u8], V>;
 pub(crate) type Keys<'a, K> = ArrayView<'a, &'a [u8], K>;
 pub(crate) type KeysMut<'a, K> = ArrayView<'a, &'a mut [u8], K>;
 
-impl<'me, K: 'me> BTree<K>
+impl<'me, K: 'me, V> BTree<K, V>
 where
-    K: Key,
+    K: FixedSize,
+    V: FixedSize,
 {
     // TODO: add a builder with defaults?
     pub fn new(
@@ -65,7 +71,7 @@ where
         mut static_settings_file: File,
         page_size: u16,
         key_buffer_size: u32,
-    ) -> Result<BTree<K>, BTreeStoreError> {
+    ) -> Result<BTree<K, V>, BTreeStoreError> {
         let mut metadata = Metadata::new();
 
         let pages_storage =
@@ -74,7 +80,6 @@ where
         let pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,
             page_size: page_size.try_into().unwrap(),
-            key_buffer_size,
         });
 
         let first_page_id = metadata.page_manager.new_id();
@@ -82,7 +87,7 @@ where
         let mut root_page = pages.mut_page(first_page_id)?;
 
         root_page.as_slice(|page| {
-            Node::<K, &mut [u8]>::new_leaf(key_buffer_size.try_into().unwrap(), page);
+            Node::<K, &mut [u8]>::new_leaf::<V>(page);
         });
 
         metadata.set_root(first_page_id);
@@ -102,6 +107,7 @@ where
             static_settings,
             transaction_manager,
             phantom_keys: PhantomData,
+            phantom_values: PhantomData,
         })
     }
 
@@ -109,7 +115,7 @@ where
         metadata_file: impl AsRef<Path>,
         tree_file: impl AsRef<Path>,
         static_settings_file: impl AsRef<Path>,
-    ) -> Result<BTree<K>, BTreeStoreError> {
+    ) -> Result<BTree<K, V>, BTreeStoreError> {
         let mut static_settings_file = OpenOptions::new()
             .write(true)
             .read(true)
@@ -133,7 +139,6 @@ where
         let pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,
             page_size: static_settings.page_size,
-            key_buffer_size: static_settings.key_buffer_size,
         });
 
         let transaction_manager = TransactionManager::new(&metadata);
@@ -144,6 +149,7 @@ where
             static_settings,
             transaction_manager,
             phantom_keys: PhantomData,
+            phantom_values: PhantomData,
         })
     }
 
@@ -168,12 +174,8 @@ where
         Ok(())
     }
 
-    pub fn insert_async(&self, key: K, value: Value) -> Result<(), BTreeStoreError> {
-        let key_buffer_size: u32 = self.static_settings.key_buffer_size.try_into().unwrap();
-
-        let mut tx = self
-            .transaction_manager
-            .insert_transaction(&self.pages, key_buffer_size);
+    pub fn insert_async(&self, key: K, value: V) -> Result<(), BTreeStoreError> {
+        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
 
         self.insert(&mut tx, key, value)?;
 
@@ -182,7 +184,7 @@ where
         Ok(())
     }
 
-    pub fn insert_one(&self, key: K, value: Value) -> Result<(), BTreeStoreError> {
+    pub fn insert_one(&self, key: K, value: V) -> Result<(), BTreeStoreError> {
         self.insert_async(key, value)?;
 
         self.checkpoint()?;
@@ -192,13 +194,9 @@ where
 
     pub fn insert_many(
         &self,
-        iter: impl IntoIterator<Item = (K, Value)>,
+        iter: impl IntoIterator<Item = (K, V)>,
     ) -> Result<(), BTreeStoreError> {
-        let key_buffer_size: u32 = self.static_settings.key_buffer_size.try_into().unwrap();
-
-        let mut tx = self
-            .transaction_manager
-            .insert_transaction(&self.pages, key_buffer_size);
+        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
 
         for (key, value) in iter {
             self.insert(&mut tx, key, value)?;
@@ -213,7 +211,7 @@ where
         &self,
         tx: &mut WriteTransaction<'a, 'a>,
         key: K,
-        value: Value,
+        value: V,
     ) -> Result<(), BTreeStoreError> {
         let mut backtrack = InsertBacktrack::new_search_for(tx, &key);
 
@@ -225,14 +223,13 @@ where
         };
 
         if let Some((leaf_id, split_key, new_node)) = needs_recurse {
-            let id =
-                backtrack.add_new_node(new_node.to_page(), self.static_settings.key_buffer_size)?;
+            let id = backtrack.add_new_node(new_node.to_page())?;
 
             if backtrack.has_next() {
                 self.insert_in_internals(split_key, id, &mut backtrack)?;
             } else {
                 let new_root = self.create_internal_node(leaf_id, id, split_key);
-                backtrack.new_root(new_root.to_page(), self.static_settings.key_buffer_size)?;
+                backtrack.new_root(new_root.to_page())?;
             }
         }
 
@@ -243,17 +240,16 @@ where
         &self,
         mut leaf: PageRefMut<'a>,
         key: K,
-        value: Value,
+        value: V,
     ) -> Result<Option<(K, Node<K, MemPage>)>, BTreeStoreError> {
         let update = {
-            let key_size = usize::try_from(self.static_settings.key_buffer_size).unwrap();
             let page_size = usize::try_from(self.static_settings.page_size).unwrap();
             let mut allocate = || {
                 let uninit = MemPage::new(page_size);
-                Node::<K, MemPage>::new_leaf(key_size, uninit)
+                Node::<K, MemPage>::new_leaf::<V>(uninit)
             };
 
-            let insert_status = leaf.as_node_mut(key_size, move |mut node: Node<K, &mut [u8]>| {
+            let insert_status = leaf.as_node_mut(move |mut node: Node<K, &mut [u8]>| {
                 node.as_leaf_mut().insert(key, value, &mut allocate)
             });
 
@@ -282,14 +278,13 @@ where
             let (current_id, new_split_key, new_node) = {
                 let mut node = backtrack.get_next()?.unwrap();
                 let node_id = node.id();
-                let key_size = usize::try_from(self.static_settings.key_buffer_size).unwrap();
                 let page_size = self.static_settings.page_size.try_into().unwrap();
                 let mut allocate = || {
                     let uninit = MemPage::new(page_size);
-                    Node::new_internal(key_size, uninit)
+                    Node::new_internal(uninit)
                 };
 
-                match node.as_node_mut(key_size, |mut node| {
+                match node.as_node_mut(|mut node| {
                     node.as_internal_mut()
                         .insert(split_key, right_id, &mut allocate)
                 }) {
@@ -301,8 +296,7 @@ where
                 }
             };
 
-            let new_id =
-                backtrack.add_new_node(new_node.to_page(), self.static_settings.key_buffer_size)?;
+            let new_id = backtrack.add_new_node(new_node.to_page())?;
 
             if backtrack.has_next() {
                 // set values to insert in next iteration (recurse on parent)
@@ -313,7 +307,7 @@ where
                 let right_id = new_id;
                 let new_root = self.create_internal_node(left_id, right_id, new_split_key);
 
-                backtrack.new_root(new_root.to_page(), self.static_settings.key_buffer_size)?;
+                backtrack.new_root(new_root.to_page())?;
                 return Ok(());
             }
         }
@@ -327,10 +321,7 @@ where
         key: K,
     ) -> Node<K, MemPage> {
         let page = MemPage::new(self.static_settings.page_size.try_into().unwrap());
-        let mut node = Node::new_internal(
-            self.static_settings.key_buffer_size.try_into().unwrap(),
-            page,
-        );
+        let mut node = Node::new_internal(page);
 
         node.as_internal_mut()
             .insert_first(key, left_child, right_child);
@@ -338,28 +329,49 @@ where
         node
     }
 
-    pub fn lookup(&self, key: &K) -> Option<Value> {
+    // we use a function for the return value in order to avoid cloning the value, returning a direct reference is not possible because we need
+    // the ReadTransaction to exist in order to keep the page from being reused.
+    pub fn get<Q, F, R>(&self, key: &Q, f: F) -> R
+    where
+        Q: Ord,
+        K: Borrow<Q>,
+        F: FnOnce(Option<&V>) -> R,
+    {
         let read_transaction = self.transaction_manager.read_transaction(&self.pages);
 
         let page_ref = self.search(&read_transaction, key);
 
-        let key_buffer_size = self.static_settings.key_buffer_size.try_into().unwrap();
-
-        page_ref.as_node(key_buffer_size, |node: Node<K, &[u8]>| {
-            match node.as_leaf().keys().binary_search(key) {
-                Ok(pos) => Some(*node.as_leaf().values().get(pos).borrow()),
-                Err(_) => None,
+        page_ref.as_node(|node: Node<K, &[u8]>| {
+            match node.as_leaf::<V>().keys().binary_search::<Q>(key) {
+                // TODO: Find if it is possible to avoid this clone (although it's only important if V is a big type, which should be avoided anyway)
+                Ok(pos) => f(Some(node.as_leaf::<V>().values().get(pos).borrow())),
+                Err(_) => f(None),
             }
         })
     }
 
-    fn search<'a>(&'a self, tx: &'a ReadTransaction, key: &K) -> PageHandle<'a, borrow::Immutable> {
+    /// perform a range query. The returned iterator holds a read-only transaction for it's entire lifetime.
+    /// This avoids pages to be collected, so it may better for it to not be long-lived.
+    pub fn range<R, Q>(&self, range: R) -> BTreeIterator<R, Q, K, V>
+    where
+        K: Borrow<Q>,
+        R: RangeBounds<Q>,
+        Q: Ord,
+    {
+        let read_transaction = self.transaction_manager.read_transaction(&self.pages);
+
+        BTreeIterator::new(read_transaction, range)
+    }
+
+    fn search<'a, Q>(&'a self, tx: &'a ReadTransaction, key: &Q) -> PageRef<'a>
+    where
+        Q: Ord,
+        K: Borrow<Q>,
+    {
         let mut current = tx.get_page(tx.root()).unwrap();
 
-        let key_buffer_size = self.static_settings.key_buffer_size.try_into().unwrap();
-
         loop {
-            let new_current = current.as_node(key_buffer_size, |node: Node<K, &[u8]>| {
+            let new_current = current.as_node(|node: Node<K, &[u8]>| {
                 node.try_as_internal().map(|inode| {
                     let upper_pivot = match inode.keys().binary_search(key) {
                         Ok(pos) => Some(pos + 1),
@@ -391,11 +403,7 @@ where
 
     /// delete given key from the tree, this doesn't sync the file to disk
     pub fn delete(&self, key: &K) -> Result<(), BTreeStoreError> {
-        let key_buffer_size: u32 = self.static_settings.key_buffer_size;
-
-        let mut tx = self
-            .transaction_manager
-            .insert_transaction(&self.pages, key_buffer_size);
+        let mut tx = self.transaction_manager.insert_transaction(&self.pages);
 
         let result = self.delete_async(key, &mut tx);
 
@@ -409,8 +417,6 @@ where
         key: &K,
         tx: &mut WriteTransaction<'a, 'a>,
     ) -> Result<(), BTreeStoreError> {
-        let key_buffer_size: u32 = self.static_settings.key_buffer_size;
-
         let mut backtrack = DeleteBacktrack::new_search_for(tx, key);
 
         // we can unwrap safely because there is always a leaf in the path
@@ -423,9 +429,7 @@ where
 
         let delete_result = next_element
             .next
-            .as_node_mut(key_buffer_size as usize, |mut node| {
-                node.as_leaf_mut().delete(key)
-            })?;
+            .as_node_mut(|mut node| node.as_leaf_mut::<V>().delete(key))?;
 
         match delete_result {
             LeafDeleteStatus::Ok => return Ok(()),
@@ -447,25 +451,22 @@ where
         let anchor = next_element.anchor.clone();
 
         let should_recurse_on_parent: Option<usize> = next.as_node_mut(
-            key_buffer_size as usize,
             |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
                 let siblings = SiblingsArg::new_from_options(left, right);
 
-                match node.as_leaf_mut().rebalance(siblings)? {
+                match node.as_leaf_mut::<V>().rebalance(siblings)? {
                     RebalanceResult::TakeFromLeft(add_sibling) => {
-                        let (sibling, parent) =
-                            mut_context.mut_left_sibling(key_buffer_size as usize);
+                        let (sibling, parent) = mut_context.mut_left_sibling();
                         add_sibling.take_key_from_left(parent, anchor, sibling);
                         Ok(None)
                     }
                     RebalanceResult::TakeFromRight(add_sibling) => {
-                        let (sibling, parent) =
-                            mut_context.mut_right_sibling(key_buffer_size as usize);
+                        let (sibling, parent) = mut_context.mut_right_sibling();
                         add_sibling.take_key_from_right(parent, anchor, sibling);
                         Ok(None)
                     }
                     RebalanceResult::MergeIntoLeft(add_sibling) => {
-                        let (sibling, _) = mut_context.mut_left_sibling(key_buffer_size as usize);
+                        let (sibling, _) = mut_context.mut_left_sibling();
                         add_sibling.merge_into_left(sibling);
                         mut_context.delete_node();
                         // the anchor is the the index of the key that splits the left sibling and the node, it's only None if the current node
@@ -475,7 +476,7 @@ where
                         ))
                     }
                     RebalanceResult::MergeIntoSelf(add_sibling) => {
-                        let (sibling, _) = mut_context.mut_right_sibling(key_buffer_size as usize);
+                        let (sibling, _) = mut_context.mut_right_sibling();
                         add_sibling.merge_into_self(sibling);
                         mut_context
                             .delete_right_sibling()
@@ -502,7 +503,6 @@ where
         anchor: usize,
         tx: &mut DeleteBacktrack<K>,
     ) -> Result<(), BTreeStoreError> {
-        let key_buffer_size = self.static_settings.key_buffer_size;
         let mut anchor_to_delete = anchor;
         while let Some(next_element) = tx.get_next()? {
             let backtrack::DeleteNextElement {
@@ -510,13 +510,12 @@ where
                 mut_context,
             } = next_element;
 
-            match next_element.next.as_node_mut(
-                key_buffer_size as usize,
-                |mut node: Node<K, &mut [u8]>| {
+            match next_element
+                .next
+                .as_node_mut(|mut node: Node<K, &mut [u8]>| {
                     let mut node = node.as_internal_mut();
                     node.delete_key_children(anchor_to_delete)
-                },
-            ) {
+                }) {
                 InternalDeleteStatus::Ok => return Ok(()),
                 InternalDeleteStatus::NeedsRebalance => (),
             };
@@ -528,20 +527,16 @@ where
                     // be deleted, and unlike the leaf case, we need to promote it's only remainining child as the new root
                     let is_empty = next_element
                         .next
-                        .as_node(key_buffer_size as usize, |root: Node<K, &[u8]>| {
-                            root.as_internal().keys().len() == 0
-                        });
+                        .as_node(|root: Node<K, &[u8]>| root.as_internal().keys().len() == 0);
 
                     // after deleting a key at position `anchor` and its right children, the left sibling
                     // is in position == anchor
 
                     if is_empty {
                         debug_assert!(anchor == 0);
-                        let new_root = next_element
-                            .next
-                            .as_node(key_buffer_size as usize, |node: Node<K, &[u8]>| {
-                                node.as_internal().children().get(anchor)
-                            });
+                        let new_root = next_element.next.as_node(|node: Node<K, &[u8]>| {
+                            node.as_internal().children().get(anchor)
+                        });
 
                         next_element.set_root(new_root);
                     }
@@ -555,14 +550,12 @@ where
 
                     // as in the leaf case, the value in the Option is the 'anchor' (pointer) to the deleted node
                     let recurse_on_parent: Option<usize> = next_element.next.as_node_mut(
-                        key_buffer_size as usize,
                         |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
                             let siblings = SiblingsArg::new_from_options(left, right);
 
                             match node.as_internal_mut().rebalance(siblings)? {
                                 RebalanceResult::TakeFromLeft(add_params) => {
-                                    let (sibling, parent) =
-                                        mut_context.mut_left_sibling(key_buffer_size as usize);
+                                    let (sibling, parent) = mut_context.mut_left_sibling();
                                     add_params.take_key_from_left(
                                         parent,
                                         anchor.expect(
@@ -573,15 +566,13 @@ where
                                     Ok(None)
                                 }
                                 RebalanceResult::TakeFromRight(add_params) => {
-                                    let (sibling, parent) =
-                                        mut_context.mut_right_sibling(key_buffer_size as usize);
+                                    let (sibling, parent) = mut_context.mut_right_sibling();
                                     add_params.take_key_from_right(parent, anchor, sibling);
                                     Ok(None)
                                 }
                                 RebalanceResult::MergeIntoLeft(add_params) => {
-                                    let (sibling, parent) =
-                                        mut_context.mut_left_sibling(key_buffer_size as usize);
-                                    add_params.merge_into_left(parent, anchor, sibling);
+                                    let (sibling, parent) = mut_context.mut_left_sibling();
+                                    add_params.merge_into_left(parent, anchor, sibling)?;
                                     mut_context.delete_node();
                                     Ok(Some(
                                         anchor
@@ -590,9 +581,8 @@ where
                                     ))
                                 }
                                 RebalanceResult::MergeIntoSelf(add_params) => {
-                                    let (sibling, parent) =
-                                        mut_context.mut_right_sibling(key_buffer_size as usize);
-                                    add_params.merge_into_self(parent, anchor, sibling);
+                                    let (sibling, parent) = mut_context.mut_right_sibling();
+                                    add_params.merge_into_self(parent, anchor, sibling)?;
                                     let new_anchor = anchor.map_or(0, |n| n + 1);
                                     mut_context
                                         .delete_right_sibling()
@@ -617,7 +607,7 @@ where
     }
 }
 
-impl<K> Drop for BTree<K> {
+impl<K, V> Drop for BTree<K, V> {
     fn drop(&mut self) {
         let mut guard = self.metadata.lock().unwrap();
         let (metadata, metadata_file) = &mut *guard;
@@ -635,13 +625,13 @@ mod tests {
     extern crate tempfile;
     use super::*;
     use crate::tests::U64Key;
-    use crate::Key;
+    use crate::FixedSize;
     use std::sync::Arc;
     use tempfile::tempfile;
 
-    impl<K> BTree<K>
+    impl<K> BTree<K, u64>
     where
-        K: Key,
+        K: FixedSize,
     {
         fn key_buffer_size(&self) -> u32 {
             self.static_settings.key_buffer_size
@@ -667,9 +657,7 @@ mod tests {
                     println!("ROOT");
                 }
 
-                let key_size = self.key_buffer_size().try_into().unwrap();
-
-                page_ref.as_node(key_size, |node: Node<K, &[u8]>| match node.get_tag() {
+                page_ref.as_node(|node: Node<K, &[u8]>| match node.get_tag() {
                     node::NodeTag::Internal => {
                         println!("Internal Node");
                         println!("keys: ");
@@ -684,11 +672,11 @@ mod tests {
                     node::NodeTag::Leaf => {
                         println!("Leaf Node");
                         println!("keys: ");
-                        for k in node.as_leaf().keys().into_iter() {
+                        for k in node.as_leaf::<u64>().keys().into_iter() {
                             println!("{:?}", k.borrow());
                         }
                         println!("values: ");
-                        for v in node.as_leaf().values().into_iter() {
+                        for v in node.as_leaf::<u64>().values().into_iter() {
                             println!("{:?}", v.borrow());
                         }
                     }
@@ -698,14 +686,14 @@ mod tests {
         }
     }
 
-    fn new_tree() -> BTree<U64Key> {
+    pub fn new_tree() -> BTree<U64Key, u64> {
         let metadata_file = tempfile().unwrap();
         let tree_file = tempfile().unwrap();
         let static_file = tempfile().unwrap();
 
         let page_size = 88;
 
-        let tree: BTree<U64Key> = BTree::new(
+        let tree: BTree<U64Key, u64> = BTree::new(
             metadata_file,
             tree_file,
             static_file,
@@ -730,7 +718,11 @@ mod tests {
         tree.debug_print();
 
         for i in 0..n {
-            assert_eq!(tree.lookup(&U64Key(dbg!(i))).expect("Key not found"), i);
+            assert_eq!(
+                tree.get(&U64Key(i), |key| key.cloned())
+                    .expect("Key not found"),
+                i
+            );
         }
     }
 
@@ -751,7 +743,7 @@ mod tests {
 
         let prop = reference
             .iter()
-            .all(|(k, v)| match tree.lookup(&U64Key(*dbg!(k))) {
+            .all(|(k, v)| match tree.get(&U64Key(*k), |v| v.cloned()) {
                 Some(l) => *v == l,
                 None => false,
             });
@@ -785,7 +777,7 @@ mod tests {
                 .open("static")
                 .expect("Couldn't create pages file");
 
-            BTree::<U64Key>::new(
+            BTree::<U64Key, u64>::new(
                 metadata_file,
                 tree_file,
                 static_file,
@@ -797,7 +789,7 @@ mod tests {
 
         {
             let restored_tree =
-                BTree::<U64Key>::open("metadata", "tree", "static").expect("restore to work");
+                BTree::<U64Key, u64>::open("metadata", "tree", "static").expect("restore to work");
             assert_eq!(restored_tree.key_buffer_size(), key_buffer_size);
             assert_eq!(restored_tree.page_size(), page_size);
         }
@@ -816,7 +808,11 @@ mod tests {
             .unwrap();
 
         for i in 0..n {
-            assert_eq!(tree.lookup(&U64Key(i)).expect("Key not found"), i);
+            assert_eq!(
+                tree.get(&U64Key(i), |value| value.cloned())
+                    .expect("Key not found"),
+                i
+            );
         }
 
         use rand::seq::SliceRandom;
@@ -839,7 +835,12 @@ mod tests {
                 queries.shuffle(&mut rng);
                 c.wait();
                 for i in queries {
-                    assert_eq!(index.lookup(&U64Key(i)).expect("Key not found"), i);
+                    assert_eq!(
+                        index
+                            .get(&U64Key(i), |v| v.cloned())
+                            .expect("Key not found"),
+                        i
+                    );
                 }
             }));
         }
@@ -888,7 +889,7 @@ mod tests {
 
             read_handles.push(thread::spawn(move || {
                 // just to make some noise
-                while let None = index.lookup(&U64Key(thread_num * n + 500)) {
+                while let None = index.get(&U64Key(thread_num * n + 500), |v| v.cloned()) {
                     ()
                 }
             }));
@@ -913,7 +914,7 @@ mod tests {
             .unwrap();
 
         let key_to_delete = U64Key(delete);
-        assert!(tree.lookup(&key_to_delete).is_some());
+        assert!(tree.get(&key_to_delete, |v| v.cloned()).is_some());
 
         dbg!("tree before");
         tree.debug_print();
@@ -923,10 +924,10 @@ mod tests {
         dbg!("tree after");
         tree.debug_print();
 
-        assert!(dbg!(tree.lookup(&key_to_delete)).is_none());
+        assert!(dbg!(tree.get(&key_to_delete, |v| v.cloned())).is_none());
 
         for i in (0..n).into_iter().filter(|n| *n != delete) {
-            assert!(tree.lookup(&U64Key(dbg!(i))).is_some());
+            assert!(tree.get(&U64Key(i), |v| v.cloned()).is_some());
         }
     }
 
@@ -947,13 +948,15 @@ mod tests {
         for k in xs {
             reference.remove(&U64Key(k));
             tree.delete(&U64Key(k)).unwrap_or(());
-            assert!(tree.lookup(&U64Key(k)).is_none());
+            assert!(tree.get(&U64Key(k), |v| v.cloned()).is_none());
         }
 
-        let prop = reference.iter().all(|(k, v)| match tree.lookup(dbg!(k)) {
-            Some(l) => *v == l,
-            None => false,
-        });
+        let prop = reference
+            .iter()
+            .all(|(k, v)| match tree.get(k, |v| v.cloned()) {
+                Some(l) => *v == l,
+                None => false,
+            });
 
         prop
     }
@@ -967,7 +970,7 @@ mod tests {
             // dummy function just used for its parameterized type bound
         }
 
-        is_send::<BTree<U64Key>>();
+        is_send::<BTree<U64Key, u64>>();
     }
     #[test]
     fn is_sync() {
@@ -977,6 +980,6 @@ mod tests {
             // dummy function just used for its parameterized type bound
         }
 
-        is_sync::<BTree<U64Key>>();
+        is_sync::<BTree<U64Key, u64>>();
     }
 }

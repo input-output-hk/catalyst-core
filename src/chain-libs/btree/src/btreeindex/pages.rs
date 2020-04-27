@@ -1,7 +1,7 @@
 use crate::btreeindex::node::Node;
 use crate::btreeindex::PageId;
 use crate::storage::MmapStorage;
-use crate::Key;
+use crate::FixedSize;
 use std::marker::PhantomData;
 use std::sync::Mutex;
 
@@ -24,16 +24,11 @@ unsafe impl Sync for Pages {}
 pub struct PagesInitializationParams {
     pub storage: MmapStorage,
     pub page_size: u16,
-    pub key_buffer_size: u32,
 }
 
 impl Pages {
     pub fn new(params: PagesInitializationParams) -> Self {
-        let PagesInitializationParams {
-            storage,
-            page_size,
-            key_buffer_size: _,
-        } = params;
+        let PagesInitializationParams { storage, page_size } = params;
 
         Pages {
             storage,
@@ -171,6 +166,7 @@ pub mod borrow {
 
     pub struct BorrowRAIIGuard(Arc<BorrowGuard>);
 
+    // TODO: There is nothing to stop anyone from creating an Immutable instance with a Exclusive borrow guard
     pub struct Immutable<'a> {
         pub borrow: &'a [u8],
         pub borrow_guard: BorrowRAIIGuard,
@@ -178,6 +174,15 @@ pub mod borrow {
     pub struct Mutable<'a> {
         pub borrow: &'a mut [u8],
         pub borrow_guard: BorrowRAIIGuard,
+    }
+
+    impl<'a> Clone for Immutable<'a> {
+        fn clone(&self) -> Immutable<'a> {
+            Immutable {
+                borrow: self.borrow,
+                borrow_guard: BorrowRAIIGuard(self.borrow_guard.0.clone()),
+            }
+        }
     }
 }
 
@@ -193,6 +198,17 @@ impl<'a, T> PageHandle<'a, T> {
     }
 }
 
+use std::clone::Clone;
+impl<'a> Clone for PageHandle<'a, borrow::Immutable<'a>> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            borrow: self.borrow.clone(),
+            page_marker: PhantomData,
+        }
+    }
+}
+
 impl<'a> PageHandle<'a, borrow::Mutable<'a>> {
     pub fn as_slice(&mut self, f: impl FnOnce(&mut [u8])) {
         f(self.borrow.borrow);
@@ -200,79 +216,69 @@ impl<'a> PageHandle<'a, borrow::Mutable<'a>> {
 }
 
 impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Immutable<'a>> {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    fn as_node<K, R>(&self, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
-        K: Key,
+        K: FixedSize,
     {
         let page = self.borrow.borrow;
 
-        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size) };
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref()) };
 
         f(node)
     }
 }
 
 impl<'a> super::node::NodeRef for &PageHandle<'a, borrow::Immutable<'a>> {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    fn as_node<K, R>(&self, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
-        K: Key,
+        K: FixedSize,
     {
         let page = self.borrow.borrow;
 
-        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size) };
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref()) };
 
         f(node)
     }
 }
 
 impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Mutable<'a>> {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    fn as_node<K, R>(&self, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
-        K: Key,
+        K: FixedSize,
     {
-        let node =
-            unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow.as_ref(), key_buffer_size) };
+        let node = unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow.as_ref()) };
 
         f(node)
     }
 }
 
 impl<'a> super::node::NodeRef for &mut PageHandle<'a, borrow::Mutable<'a>> {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    fn as_node<K, R>(&self, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
-        K: Key,
+        K: FixedSize,
     {
-        let node =
-            unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow.as_ref(), key_buffer_size) };
+        let node = unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow.as_ref()) };
 
         f(node)
     }
 }
 
 impl<'a> super::node::NodeRefMut for PageHandle<'a, borrow::Mutable<'a>> {
-    fn as_node_mut<K, R>(
-        &mut self,
-        key_buffer_size: usize,
-        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
-    ) -> R
+    fn as_node_mut<K, R>(&mut self, f: impl FnOnce(Node<K, &mut [u8]>) -> R) -> R
     where
-        K: Key,
+        K: FixedSize,
     {
-        let node = unsafe { Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size) };
+        let node = unsafe { Node::<K, &mut [u8]>::from_raw(self.borrow.borrow) };
         f(node)
     }
 }
 
 impl<'a> super::node::NodeRefMut for &mut PageHandle<'a, borrow::Mutable<'a>> {
-    fn as_node_mut<K, R>(
-        &mut self,
-        key_buffer_size: usize,
-        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
-    ) -> R
+    fn as_node_mut<K, R>(&mut self, f: impl FnOnce(Node<K, &mut [u8]>) -> R) -> R
     where
-        K: Key,
+        K: FixedSize,
     {
-        let node = unsafe { Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size) };
+        let node = unsafe { Node::<K, &mut [u8]>::from_raw(self.borrow.borrow) };
         f(node)
     }
 }

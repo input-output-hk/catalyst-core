@@ -26,8 +26,7 @@ use std::path::Path;
 
 use thiserror::Error;
 
-// TODO: rename to file offset or something?
-type Value = u64;
+type Offset = u64;
 
 #[derive(Error, Debug)]
 pub enum BTreeStoreError {
@@ -43,19 +42,21 @@ pub enum BTreeStoreError {
     KeyNotFound,
     #[error("wrong magic number")]
     WrongMagicNumber,
+    #[error("write implementation not compatible with read")]
+    InconsistentWriteRead,
 }
 
 pub struct BTreeStore<K>
 where
-    K: Key,
+    K: FixedSize,
 {
-    index: BTree<K>,
+    index: BTree<K, Offset>,
     flatfile: MmapedAppendOnlyFile,
 }
 
 impl<K> BTreeStore<K>
 where
-    K: Key,
+    K: FixedSize,
 {
     pub fn new(
         path: impl AsRef<Path>,
@@ -83,7 +84,7 @@ where
             .write(true)
             .open(path.as_ref().join(METADATA_FILE))?;
 
-        let index = BTree::<K>::new(
+        let index = BTree::<K, Offset>::new(
             metadata_file,
             tree_file,
             static_settings_file,
@@ -158,8 +159,12 @@ where
 
     pub fn get(&self, key: &K) -> Result<Option<&[u8]>, BTreeStoreError> {
         self.index
-            .lookup(&key)
-            .and_then(|pos| self.flatfile.get_at((pos).into()).transpose())
+            .get(&key, |offset| offset.cloned())
+            .and_then(|pos| {
+                self.flatfile
+                    .get_at(pos.borrow().clone().into())
+                    .transpose()
+            })
             .transpose()
             .map_err(|e| e.into())
     }
@@ -173,20 +178,22 @@ pub trait Storeable<'a>: Sized {
     type Output: Borrow<Self> + 'a;
     fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error>;
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error>;
-    fn as_output(self) -> Self::Output;
 }
 
-pub trait Key: for<'a> Storeable<'a> + Ord + Clone + Debug {}
-impl<T> Key for T
-where
-    T: for<'a> Storeable<'a> + Ord + Clone + Debug,
-    for<'a> <Self as Storeable<'a>>::Output: Borrow<T>,
-{
+pub trait FixedSize: for<'a> Storeable<'a> + Ord + Clone + Debug {
+    /// max size for an element of this type
+    fn max_size() -> usize;
+}
+
+impl FixedSize for Offset {
+    fn max_size() -> usize {
+        std::mem::size_of::<Offset>()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Storeable;
+    use super::{FixedSize, Storeable};
     use crate::BTreeStore;
     use byteorder::{ByteOrder, LittleEndian};
     #[derive(Debug, Clone, Ord, Eq, PartialEq, PartialOrd)]
@@ -203,9 +210,11 @@ mod tests {
         fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
             Ok(U64Key(LittleEndian::read_u64(buf)))
         }
+    }
 
-        fn as_output(self) -> Self::Output {
-            self
+    impl FixedSize for U64Key {
+        fn max_size() -> usize {
+            std::mem::size_of::<U64Key>()
         }
     }
 

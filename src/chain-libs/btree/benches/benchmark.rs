@@ -1,4 +1,4 @@
-use btree::{BTreeStore, Storeable};
+use btree::{BTreeStore, FixedSize, Storeable};
 use criterion::{criterion_group, criterion_main, Criterion};
 extern crate rand;
 use crate::rand::rngs::StdRng;
@@ -24,8 +24,11 @@ impl<'a> Storeable<'a> for U64Key {
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
         Ok(U64Key(LittleEndian::read_u64(buf)))
     }
-    fn as_output(self) -> Self {
-        self
+}
+
+impl FixedSize for U64Key {
+    fn max_size() -> usize {
+        std::mem::size_of::<Self>()
     }
 }
 

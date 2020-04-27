@@ -4,7 +4,7 @@ pub mod leaf_node;
 use marker::*;
 use std::marker::PhantomData;
 
-use crate::Key;
+use crate::FixedSize;
 pub(crate) use internal_node::{InternalInsertStatus, InternalNode};
 pub(crate) use leaf_node::{LeafInsertStatus, LeafNode};
 
@@ -13,26 +13,21 @@ const TAG_SIZE: usize = 8;
 
 pub struct Node<K, T> {
     data: T,
-    key_buffer_size: usize,
     phantom: PhantomData<[K]>,
 }
 
 /// Trait used to abstract over the input for the rebalance algorithm, taking a Node<K, &[u8]> could be enough in normal cases, but this allows things like RAIIGuards
 pub trait NodeRef {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    fn as_node<K, R>(&self, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
-        K: Key;
+        K: FixedSize;
 }
 
 /// Trait used to abstract over the input for the rebalance algorithm, taking a Node<K, &mut [u8]> could be enough in normal cases, but this allows things like RAIIGuards
 pub trait NodeRefMut: NodeRef {
-    fn as_node_mut<K, R>(
-        &mut self,
-        key_buffer_size: usize,
-        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
-    ) -> R
+    fn as_node_mut<K, R>(&mut self, f: impl FnOnce(Node<K, &mut [u8]>) -> R) -> R
     where
-        K: Key;
+        K: FixedSize;
 }
 
 pub(crate) enum NodeTag {
@@ -99,27 +94,25 @@ impl<N: NodeRef> SiblingsArg<N> {
 
 impl<'b, K, T> Node<K, T>
 where
-    K: Key,
+    K: FixedSize,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub(crate) fn new_internal(key_buffer_size: usize, buffer: T) -> Node<K, T> {
+    pub(crate) fn new_internal(buffer: T) -> Node<K, T> {
         let mut buffer = buffer;
         buffer.as_mut()[0..TAG_SIZE].copy_from_slice(&0u64.to_le_bytes());
-        InternalNode::<K, &mut [u8]>::init(key_buffer_size, &mut buffer.as_mut()[8..]);
+        InternalNode::<K, &mut [u8]>::init(&mut buffer.as_mut()[8..]);
         Node {
             data: buffer,
-            key_buffer_size,
             phantom: PhantomData,
         }
     }
 
-    pub(crate) fn new_leaf(key_buffer_size: usize, buffer: T) -> Node<K, T> {
+    pub(crate) fn new_leaf<V: FixedSize>(buffer: T) -> Node<K, T> {
         let mut buffer = buffer;
         buffer.as_mut()[0..TAG_SIZE].copy_from_slice(&1u64.to_le_bytes());
-        LeafNode::<K, &mut [u8]>::init(key_buffer_size, &mut buffer.as_mut()[8..]);
+        LeafNode::<K, V, &mut [u8]>::init(&mut buffer.as_mut()[8..]);
         Node {
             data: buffer,
-            key_buffer_size,
             phantom: PhantomData,
         }
     }
@@ -130,23 +123,19 @@ where
         // the unsafe part is actually in Node::from_raw, so at this point we don't care that much
         match self.get_tag() {
             NodeTag::Internal => unsafe {
-                Some(InternalNode::from_raw(
-                    self.key_buffer_size,
-                    &mut self.data.as_mut()[TAG_SIZE..],
-                ))
+                Some(InternalNode::from_raw(&mut self.data.as_mut()[TAG_SIZE..]))
             },
             NodeTag::Leaf => None,
         }
     }
 
-    pub(crate) fn try_as_leaf_mut<'i: 'b>(&'i mut self) -> Option<LeafNode<'b, K, &mut [u8]>> {
+    pub(crate) fn try_as_leaf_mut<'i: 'b, V: FixedSize>(
+        &'i mut self,
+    ) -> Option<LeafNode<'b, K, V, &mut [u8]>> {
         // the unsafe part is actually in Node::from_raw, so at this point we don't care that much
         match self.get_tag() {
             NodeTag::Leaf => unsafe {
-                Some(LeafNode::from_raw(
-                    self.key_buffer_size,
-                    &mut self.data.as_mut()[TAG_SIZE..],
-                ))
+                Some(LeafNode::from_raw(&mut self.data.as_mut()[TAG_SIZE..]))
             },
             NodeTag::Internal => None,
         }
@@ -156,20 +145,19 @@ where
         self.try_as_internal_mut().unwrap()
     }
 
-    pub(crate) fn as_leaf_mut(&mut self) -> LeafNode<K, &mut [u8]> {
+    pub(crate) fn as_leaf_mut<V: FixedSize>(&mut self) -> LeafNode<K, V, &mut [u8]> {
         self.try_as_leaf_mut().unwrap()
     }
 }
 
 impl<'b, K, T> Node<K, T>
 where
-    K: Key,
+    K: FixedSize,
     T: AsRef<[u8]> + 'b,
 {
-    pub(crate) unsafe fn from_raw(data: T, key_buffer_size: usize) -> Node<K, T> {
+    pub(crate) unsafe fn from_raw(data: T) -> Node<K, T> {
         Node {
             data,
-            key_buffer_size,
             phantom: PhantomData,
         }
     }
@@ -186,25 +174,19 @@ where
 
     pub(crate) fn try_as_internal<'i: 'b>(&'i self) -> Option<InternalNode<'b, K, &[u8]>> {
         match self.get_tag() {
-            NodeTag::Internal => Some(InternalNode::view(
-                self.key_buffer_size,
-                &self.data.as_ref()[LEN_SIZE..],
-            )),
+            NodeTag::Internal => Some(InternalNode::view(&self.data.as_ref()[LEN_SIZE..])),
             NodeTag::Leaf => None,
         }
     }
 
-    pub(crate) fn try_as_leaf<'i: 'b>(&'i self) -> Option<LeafNode<'b, K, &[u8]>> {
+    pub(crate) fn try_as_leaf<'i: 'b, V: FixedSize>(&'i self) -> Option<LeafNode<'b, K, V, &[u8]>> {
         match self.get_tag() {
-            NodeTag::Leaf => Some(LeafNode::view(
-                self.key_buffer_size,
-                &self.data.as_ref()[LEN_SIZE..],
-            )),
+            NodeTag::Leaf => Some(LeafNode::view(&self.data.as_ref()[LEN_SIZE..])),
             NodeTag::Internal => None,
         }
     }
 
-    pub(crate) fn as_leaf(&self) -> LeafNode<K, &[u8]> {
+    pub(crate) fn as_leaf<V: FixedSize>(&self) -> LeafNode<K, V, &[u8]> {
         self.try_as_leaf().unwrap()
     }
 
@@ -215,7 +197,7 @@ where
 
 impl<'b, K> Node<K, crate::mem_page::MemPage>
 where
-    K: Key,
+    K: FixedSize,
 {
     pub(crate) fn to_page(self) -> crate::mem_page::MemPage {
         self.data
@@ -244,7 +226,6 @@ mod tests {
         let params = PagesInitializationParams {
             storage,
             page_size: page_size as u16,
-            key_buffer_size: size_of::<U64Key>() as u32,
         };
 
         let pages = Pages::new(params);
@@ -254,7 +235,7 @@ mod tests {
     pub fn allocate_internal() -> Node<U64Key, MemPage> {
         let page_size = 8 + 8 + 3 * size_of::<U64Key>() + 4 * size_of::<PageId>();
         let page = MemPage::new(page_size);
-        Node::new_internal(std::mem::size_of::<U64Key>(), page)
+        Node::new_internal(page)
     }
 
     pub fn internal_page_mut(
@@ -267,12 +248,11 @@ mod tests {
 
         let mut page = pages.mut_page(page_id).unwrap();
 
-        let key_buffer_size = size_of::<U64Key>();
         page.as_slice(|slice| {
-            InternalNode::<U64Key, &mut [u8]>::init(key_buffer_size, slice);
+            InternalNode::<U64Key, &mut [u8]>::init(slice);
         });
 
-        page.as_node_mut(key_buffer_size, |mut node| {
+        page.as_node_mut(|mut node| {
             let mut iter = keys.iter();
 
             if let Some(first_key) = iter.next() {
@@ -337,12 +317,11 @@ mod tests {
 
         let buffer = MemPage::new(mem_size);
         buffer.as_ref().len();
-        let mut node: Node<U64Key, MemPage> =
-            Node::new_internal(std::mem::size_of::<U64Key>(), buffer);
+        let mut node: Node<U64Key, MemPage> = Node::new_internal(buffer);
 
         let mut allocate = || {
             let page = MemPage::new(mem_size);
-            Node::new_internal(std::mem::size_of::<U64Key>(), page)
+            Node::new_internal(page)
         };
 
         node.as_internal_mut()
@@ -405,11 +384,11 @@ mod tests {
         let i3 = insertions[2];
 
         let buffer = MemPage::new(mem_size);
-        let mut node: Node<U64Key, MemPage> = Node::new_leaf(std::mem::size_of::<U64Key>(), buffer);
+        let mut node: Node<U64Key, MemPage> = Node::new_leaf::<u64>(buffer);
 
         let mut allocate = || {
             let page = MemPage::new(mem_size);
-            Node::new_leaf(std::mem::size_of::<U64Key>(), page)
+            Node::new_leaf::<u64>(page)
         };
 
         match node.as_leaf_mut().insert(U64Key(i1), i1, &mut allocate) {
@@ -422,7 +401,7 @@ mod tests {
         };
         match node.as_leaf_mut().insert(U64Key(i3), i3, &mut allocate) {
             LeafInsertStatus::Split(U64Key(2), new_node) => {
-                let new_leaf = new_node.as_leaf();
+                let new_leaf = new_node.as_leaf::<u64>();
                 assert_eq!(new_leaf.keys().len(), 2);
                 assert_eq!(new_leaf.keys().get(0), U64Key(2));
                 assert_eq!(new_leaf.keys().get(1), U64Key(3));
@@ -435,9 +414,9 @@ mod tests {
             }
         };
 
-        assert_eq!(node.as_leaf().keys().len(), 1);
-        assert_eq!(node.as_leaf().keys().get(0), U64Key(1));
-        assert_eq!(node.as_leaf().values().len(), 1);
-        assert_eq!(node.as_leaf().values().get(0), 1);
+        assert_eq!(node.as_leaf::<u64>().keys().len(), 1);
+        assert_eq!(node.as_leaf::<u64>().keys().get(0), U64Key(1));
+        assert_eq!(node.as_leaf::<u64>().values().len(), 1);
+        assert_eq!(node.as_leaf::<u64>().values().get(0), 1);
     }
 }

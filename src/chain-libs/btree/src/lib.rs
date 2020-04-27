@@ -9,11 +9,11 @@ mod mem_page;
 pub mod storage;
 use flatfile::MmapedAppendOnlyFile;
 
-const METADATA_FILE: &'static str = "metadata";
-const TREE_FILE: &'static str = "pages";
-const TREE_SETTINGS_FILE: &'static str = "settings";
+const METADATA_FILE: &str = "metadata";
+const TREE_FILE: &str = "pages";
+const TREE_SETTINGS_FILE: &str = "settings";
 // const BACKUP_FILE: &'static str = "commit_backup";
-const APPENDER_FILE_PATH: &'static str = "flatfile";
+const APPENDER_FILE_PATH: &str = "flatfile";
 
 use mem_page::MemPage;
 

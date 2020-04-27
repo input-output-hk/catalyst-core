@@ -712,8 +712,7 @@ mod tests {
 
         let n: u64 = 2000;
 
-        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
-            .unwrap();
+        tree.insert_many((0..n).map(|i| (U64Key(i), i))).unwrap();
 
         tree.debug_print();
 
@@ -804,8 +803,7 @@ mod tests {
         let tree = new_tree();
         let n: u64 = 2000;
 
-        tree.insert_many((0u64..n).into_iter().map(|i| (U64Key(i), i)))
-            .unwrap();
+        tree.insert_many((0u64..n).map(|i| (U64Key(i), i))).unwrap();
 
         for i in 0..n {
             assert_eq!(
@@ -889,9 +887,10 @@ mod tests {
 
             read_handles.push(thread::spawn(move || {
                 // just to make some noise
-                while let None = index.get(&U64Key(thread_num * n + 500), |v| v.cloned()) {
-                    ()
-                }
+                while index
+                    .get(&U64Key(thread_num * n + 500), |v| v.cloned())
+                    .is_none()
+                {}
             }));
         }
 
@@ -910,8 +909,7 @@ mod tests {
         let n: u64 = 2000;
         let delete: u64 = 50;
 
-        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
-            .unwrap();
+        tree.insert_many((0..n).map(|i| (U64Key(i), i))).unwrap();
 
         let key_to_delete = U64Key(delete);
         assert!(tree.get(&key_to_delete, |v| v.cloned()).is_some());
@@ -926,7 +924,7 @@ mod tests {
 
         assert!(dbg!(tree.get(&key_to_delete, |v| v.cloned())).is_none());
 
-        for i in (0..n).into_iter().filter(|n| *n != delete) {
+        for i in (0..n).filter(|n| *n != delete) {
             assert!(tree.get(&U64Key(i), |v| v.cloned()).is_some());
         }
     }

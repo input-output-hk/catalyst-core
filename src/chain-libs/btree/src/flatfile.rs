@@ -9,7 +9,7 @@ use std::{fs, path};
 pub const SZ_BITS: usize = 24;
 pub const POS_BITS: u64 = 40;
 pub const MAX_BLOB_SIZE: usize = 1 << SZ_BITS; // 16MB blob
-pub const MAX_POS_OFFSET: u64 = 1 << POS_BITS - 1; // last possible position 1byte below 1TB
+pub const MAX_POS_OFFSET: u64 = 1 << (POS_BITS - 1); // last possible position 1byte below 1TB
 
 /// Position of a blob in an appender
 ///
@@ -111,7 +111,7 @@ impl MmapedAppendOnlyFile {
             } else {
                 // if we can't, then we just skip that part and write in the next page and hope it fits
                 // we don't write in two different pages in order to just be able to return slices to the mmaped region
-                next_pos = next_pos + mapped_len;
+                next_pos += mapped_len;
                 self.next_pos
                     .store(next_pos + region_len, Ordering::Release);
                 self.storage.get_mut(next_pos, region_len)?

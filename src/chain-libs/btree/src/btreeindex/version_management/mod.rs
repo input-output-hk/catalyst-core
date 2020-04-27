@@ -124,11 +124,7 @@ impl TransactionManager {
             new_root = Some(version.transaction.new_root);
         }
 
-        let next_page: PageId = if let Some(next_page) = next_page_at_end {
-            next_page
-        } else {
-            return None;
-        };
+        let next_page: PageId = next_page_at_end?;
 
         for page in pages_to_release {
             page_manager.remove_page(page);

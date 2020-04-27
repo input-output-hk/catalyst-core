@@ -2,6 +2,7 @@ pub mod check;
 mod info;
 pub mod iter;
 mod leaderlog;
+#[allow(clippy::module_inception)]
 pub mod ledger;
 mod pots;
 pub mod recovery;

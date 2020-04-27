@@ -42,13 +42,11 @@ use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
 };
 use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VoteOptions, VotePlan};
-use crate::chaintypes::ConsensusVersion;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
-use crate::fee::{LinearFee, PerCertificateFee, PerVoteCertificateFee};
-use crate::fragment::{ConfigParams, FragmentId};
+use crate::fragment::FragmentId;
 use crate::header::{ChainLength, HeaderId};
-use crate::key::{serialize_public_key, BftLeaderId};
+use crate::key::serialize_public_key;
 use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
 use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
@@ -70,6 +68,14 @@ use std::io::{Read, Write};
 use std::iter::FromIterator;
 use std::sync::Arc;
 
+#[cfg(test)]
+use crate::{
+    chaintypes::ConsensusVersion,
+    fee::{LinearFee, PerCertificateFee, PerVoteCertificateFee},
+    fragment::ConfigParams,
+    key::BftLeaderId,
+};
+
 fn pack_pool_id<W: std::io::Write>(
     pool_id: &PoolId,
     codec: &mut Codec<W>,
@@ -82,7 +88,7 @@ fn unpack_pool_id<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<PoolId, s
 }
 
 fn pack_discrimination<W: std::io::Write>(
-    discrimination: &Discrimination,
+    discrimination: Discrimination,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     match discrimination {
@@ -272,8 +278,9 @@ fn unpack_last_rewards<R: std::io::BufRead>(
     })
 }
 
+#[cfg(test)]
 fn pack_consensus_version<W: std::io::Write>(
-    consensus_version: &ConsensusVersion,
+    consensus_version: ConsensusVersion,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     match consensus_version {
@@ -287,6 +294,7 @@ fn pack_consensus_version<W: std::io::Write>(
     Ok(())
 }
 
+#[cfg(test)]
 fn unpack_consensus_version<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<ConsensusVersion, std::io::Error> {
@@ -341,7 +349,7 @@ fn unpack_config_param<R: std::io::BufRead>(
 }
 
 fn pack_block_date<W: std::io::Write>(
-    block_date: &BlockDate,
+    block_date: BlockDate,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     codec.put_u32(block_date.epoch)?;
@@ -357,6 +365,7 @@ fn unpack_block_date<R: std::io::BufRead>(
     Ok(BlockDate { epoch, slot_id })
 }
 
+#[cfg(test)]
 fn pack_linear_fee<W: std::io::Write>(
     linear_fee: &LinearFee,
     codec: &mut Codec<W>,
@@ -369,6 +378,7 @@ fn pack_linear_fee<W: std::io::Write>(
     Ok(())
 }
 
+#[cfg(test)]
 fn unpack_linear_fee<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<LinearFee, std::io::Error> {
@@ -386,6 +396,7 @@ fn unpack_linear_fee<R: std::io::BufRead>(
     })
 }
 
+#[cfg(test)]
 fn pack_per_certificate_fee<W: std::io::Write>(
     per_certificate_fee: &PerCertificateFee,
     codec: &mut Codec<W>,
@@ -411,6 +422,7 @@ fn pack_per_certificate_fee<W: std::io::Write>(
     Ok(())
 }
 
+#[cfg(test)]
 fn pack_per_vote_certificate_fee<W: std::io::Write>(
     per_vote_certificate_fee: &PerVoteCertificateFee,
     codec: &mut Codec<W>,
@@ -430,6 +442,7 @@ fn pack_per_vote_certificate_fee<W: std::io::Write>(
     Ok(())
 }
 
+#[cfg(test)]
 fn unpack_per_certificate_fee<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<PerCertificateFee, std::io::Error> {
@@ -444,6 +457,7 @@ fn unpack_per_certificate_fee<R: std::io::BufRead>(
     })
 }
 
+#[cfg(test)]
 fn unpack_per_vote_certificate_fee<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<PerVoteCertificateFee, std::io::Error> {
@@ -456,6 +470,8 @@ fn unpack_per_vote_certificate_fee<R: std::io::BufRead>(
     })
 }
 
+#[allow(dead_code)]
+#[cfg(test)]
 fn pack_config_params<W: std::io::Write>(
     config_params: &ConfigParams,
     codec: &mut Codec<W>,
@@ -463,12 +479,15 @@ fn pack_config_params<W: std::io::Write>(
     config_params.serialize(codec)
 }
 
+#[allow(dead_code)]
+#[cfg(test)]
 fn unpack_config_params<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<ConfigParams, std::io::Error> {
     ConfigParams::deserialize(codec)
 }
 
+#[cfg(test)]
 fn pack_leader_id<W: std::io::Write>(
     leader_id: &BftLeaderId,
     codec: &mut Codec<W>,
@@ -476,6 +495,7 @@ fn pack_leader_id<W: std::io::Write>(
     serialize_public_key(&leader_id.0, codec)
 }
 
+#[cfg(test)]
 fn unpack_leader_id<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<BftLeaderId, std::io::Error> {
@@ -499,7 +519,7 @@ fn pack_ledger_static_parameters<W: std::io::Write>(
 ) -> Result<(), std::io::Error> {
     pack_header_id(&ledger_static_parameters.block0_initial_hash, codec)?;
     codec.put_u64(ledger_static_parameters.block0_start_time.0)?;
-    pack_discrimination(&ledger_static_parameters.discrimination, codec)?;
+    pack_discrimination(ledger_static_parameters.discrimination, codec)?;
     codec.put_u32(ledger_static_parameters.kes_update_speed)?;
     Ok(())
 }
@@ -523,7 +543,7 @@ fn pack_globals<W: std::io::Write>(
     globals: &Globals,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    pack_block_date(&globals.date, codec)?;
+    pack_block_date(globals.date, codec)?;
     codec.put_u32(globals.chain_length.0)?;
     pack_ledger_static_parameters(&globals.static_params, codec)?;
     pack_time_era(&globals.era, codec)?;
@@ -696,7 +716,7 @@ fn pack_update_proposal_state<W: std::io::Write>(
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
     pack_update_proposal(&update_proposal_state.proposal, codec)?;
-    pack_block_date(&update_proposal_state.proposal_date, codec)?;
+    pack_block_date(update_proposal_state.proposal_date, codec)?;
     codec.put_u64(update_proposal_state.votes.len() as u64)?;
     {
         let mut codec = Codec::new(codec);
@@ -885,7 +905,7 @@ fn unpack_proposals<R: std::io::BufRead>(
     let mut proposals = Proposals::new();
     let size = codec.get_u64()?;
     for _ in 0..size {
-        proposals.push(unpack_proposal(codec)?);
+        let _ = proposals.push(unpack_proposal(codec)?);
     }
     Ok(proposals)
 }
@@ -894,9 +914,9 @@ fn pack_vote_plan<W: std::io::Write>(
     vote_plan: &VotePlan,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    pack_block_date(&vote_plan.vote_start(), codec)?;
-    pack_block_date(&vote_plan.vote_end(), codec)?;
-    pack_block_date(&vote_plan.committee_end(), codec)?;
+    pack_block_date(vote_plan.vote_start(), codec)?;
+    pack_block_date(vote_plan.vote_end(), codec)?;
+    pack_block_date(vote_plan.committee_end(), codec)?;
     pack_vote_proposals(vote_plan.proposals(), codec)?;
     Ok(())
 }
@@ -1005,7 +1025,7 @@ fn pack_entry<W: std::io::Write>(
         Entry::VotePlan((vote_plan, block_date)) => {
             codec.put_u8(EntrySerializeCode::VotePlan as u8)?;
             pack_vote_plan(vote_plan, codec)?;
-            pack_block_date(block_date, codec)?;
+            pack_block_date(**block_date, codec)?;
         }
     }
     Ok(())
@@ -1015,10 +1035,12 @@ fn unpack_entry_owned<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<EntryOwned, std::io::Error> {
     let code_u8 = codec.get_u8()?;
-    let code = EntrySerializeCode::from_u8(code_u8).ok_or(std::io::Error::new(
-        std::io::ErrorKind::InvalidData,
-        format!("Error reading Entry, not recognized type code {}", code_u8),
-    ))?;
+    let code = EntrySerializeCode::from_u8(code_u8).ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Error reading Entry, not recognized type code {}", code_u8),
+        )
+    })?;
     match code {
         EntrySerializeCode::Globals => Ok(EntryOwned::Globals(unpack_globals(codec)?)),
         EntrySerializeCode::Pot => Ok(EntryOwned::Pot(unpack_pot_entry(codec)?)),
@@ -1149,8 +1171,8 @@ pub mod test {
     pub fn discrimination_pack_unpack_bijection() -> Result<(), std::io::Error> {
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
         let mut codec = Codec::new(c);
-        pack_discrimination(&Discrimination::Test, &mut codec)?;
-        pack_discrimination(&Discrimination::Production, &mut codec)?;
+        pack_discrimination(Discrimination::Test, &mut codec)?;
+        pack_discrimination(Discrimination::Production, &mut codec)?;
 
         c = codec.into_inner();
         c.set_position(0);
@@ -1190,7 +1212,7 @@ pub mod test {
         let pools: Vec<(PoolId, u8)> = vec![
             (fake_pool_id.clone(), 2u8),
             (fake_pool_id.clone(), 3u8),
-            (fake_pool_id.clone(), 3u8),
+            (fake_pool_id, 3u8),
         ];
 
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
@@ -1216,7 +1238,7 @@ pub mod test {
         let pools: Vec<(PoolId, u8)> = vec![
             (fake_pool_id.clone(), 2u8),
             (fake_pool_id.clone(), 3u8),
-            (fake_pool_id.clone(), 3u8),
+            (fake_pool_id, 3u8),
         ];
         let ratio = DelegationType::Ratio(DelegationRatio::new(parts, pools).unwrap());
 
@@ -1387,141 +1409,141 @@ pub mod test {
     }
 
     fn pack_unpack_bijection<T, Pack, Unpack>(
-        pack_method: &mut Pack,
-        unpack_method: &mut Unpack,
-        value: &T,
+        pack_method: &Pack,
+        unpack_method: &Unpack,
+        value: T,
     ) -> TestResult
     where
-        Pack: FnMut(&T, &mut Codec<Cursor<Vec<u8>>>) -> Result<(), std::io::Error>,
-        Unpack: FnMut(&mut Codec<Cursor<Vec<u8>>>) -> Result<T, std::io::Error>,
+        Pack: Fn(&T, &mut Codec<Cursor<Vec<u8>>>) -> Result<(), std::io::Error>,
+        Unpack: Fn(&mut Codec<Cursor<Vec<u8>>>) -> Result<T, std::io::Error>,
         T: Eq,
     {
         let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
         let mut codec = Codec::new(c);
-        match pack_method(value, &mut codec) {
+        match pack_method(&value, &mut codec) {
             Ok(_) => (),
             Err(e) => return TestResult::error(format!("{}", e)),
         };
         c = codec.into_inner();
         c.set_position(0);
         let mut codec = Codec::new(c);
-        return match unpack_method(&mut codec) {
-            Ok(other_value) => TestResult::from_bool(value == &other_value),
+        match unpack_method(&mut codec) {
+            Ok(other_value) => TestResult::from_bool(value == other_value),
             Err(e) => TestResult::error(format!("{}", e)),
-        };
+        }
     }
 
     quickcheck! {
         fn account_identifier_pack_unpack_bijection(id: crate::account::Identifier) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_account_identifier,
-                &mut unpack_account_identifier,
-                &id
+                &pack_account_identifier,
+                &unpack_account_identifier,
+                id
             )
         }
 
 
         fn consensus_version_serialization_bijection(consensus_version: ConsensusVersion) -> TestResult {
            pack_unpack_bijection(
-                &mut pack_consensus_version,
-                &mut unpack_consensus_version,
-                &consensus_version
+                &|v, p| pack_consensus_version(*v, p),
+                &unpack_consensus_version,
+                consensus_version
             )
         }
 
         fn pool_registration_serialize_deserialize_biyection(pool_registration: PoolRegistration) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_pool_registration,
-                &mut unpack_pool_registration,
-                &pool_registration
+                &pack_pool_registration,
+                &unpack_pool_registration,
+                pool_registration
             )
         }
 
         fn config_param_pack_unpack_bijection(config_param: ConfigParam) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_config_param,
-                &mut unpack_config_param,
-                &config_param
+                &pack_config_param,
+                &unpack_config_param,
+                config_param
             )
         }
 
         fn blockdate_pack_unpack_bijection(block_date: BlockDate) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_block_date,
-                &mut unpack_block_date,
-                &block_date
+                &|v, p| pack_block_date(*v, p),
+                &unpack_block_date,
+                block_date
             )
         }
 
         fn per_certificate_fee_pack_unpack_bijection(per_certificate_fee: PerCertificateFee) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_per_certificate_fee,
-                &mut unpack_per_certificate_fee,
-                &per_certificate_fee
+                &pack_per_certificate_fee,
+                &unpack_per_certificate_fee,
+                per_certificate_fee
             )
         }
 
         fn per_vote_certificate_fee_pack_unpack_bijection(per_vote_certificate_fee: PerVoteCertificateFee) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_per_vote_certificate_fee,
-                &mut unpack_per_vote_certificate_fee,
-                &per_vote_certificate_fee
+                &pack_per_vote_certificate_fee,
+                &unpack_per_vote_certificate_fee,
+                per_vote_certificate_fee
             )
         }
 
         fn linear_fee_pack_unpack_bijection(linear_fee: LinearFee) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_linear_fee,
-                &mut unpack_linear_fee,
-                &linear_fee
+                &pack_linear_fee,
+                &unpack_linear_fee,
+                linear_fee
             )
         }
 
         fn leader_id_pack_unpack_biyection(leader_id: BftLeaderId) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_leader_id,
-                &mut unpack_leader_id,
-                &leader_id
+                &pack_leader_id,
+                &unpack_leader_id,
+                leader_id
             )
         }
 
         fn globals_pack_unpack_bijection(globals: Globals) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_globals,
-                &mut unpack_globals,
-                &globals
+                &pack_globals,
+                &unpack_globals,
+                globals
             )
         }
 
         fn ledger_static_parameters_pack_unpack_bijection(ledger_static_parameters: LedgerStaticParameters) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_ledger_static_parameters,
-                &mut unpack_ledger_static_parameters,
-                &ledger_static_parameters
+                &pack_ledger_static_parameters,
+                &unpack_ledger_static_parameters,
+                ledger_static_parameters
             )
         }
 
         fn pool_state_pack_unpack_bijection(pool_state: PoolState) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_pool_state,
-                &mut unpack_pool_state,
-                &pool_state
+                &pack_pool_state,
+                &unpack_pool_state,
+                pool_state
             )
         }
 
         fn pool_last_rewards_pack_unpack_bijection(pool_last_rewards: PoolLastRewards) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_pool_last_rewards,
-                &mut unpack_pool_last_rewards,
-                &pool_last_rewards
+                &pack_pool_last_rewards,
+                &unpack_pool_last_rewards,
+                pool_last_rewards
             )
         }
 
         fn update_proposal_state_pack_unpack_bijection(update_proposal_state: UpdateProposalState) -> TestResult {
             pack_unpack_bijection(
-                &mut pack_update_proposal_state,
-                &mut unpack_update_proposal_state,
-                &update_proposal_state
+                &pack_update_proposal_state,
+                &unpack_update_proposal_state,
+                update_proposal_state
             )
         }
     }

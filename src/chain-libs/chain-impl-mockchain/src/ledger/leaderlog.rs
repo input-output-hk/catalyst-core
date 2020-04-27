@@ -147,7 +147,7 @@ mod tests {
         assert_eq!(
             InsertError::EntryExists,
             leaders_participation_record
-                .set_for(first_stake_pool_id.clone(), 1)
+                .set_for(first_stake_pool_id, 1)
                 .err()
                 .unwrap()
         );

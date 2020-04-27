@@ -1215,7 +1215,7 @@ impl Ledger {
             .map(|entry| entry.output)
     }
 
-    pub fn utxos<'a>(&'a self) -> utxo::Iter<'a, Address> {
+    pub fn utxos(&self) -> utxo::Iter<'_, Address> {
         self.utxos.iter()
     }
 
@@ -1306,10 +1306,10 @@ impl Ledger {
         Ok(self)
     }
 
-    fn apply_tx_outputs<'a>(
+    fn apply_tx_outputs(
         mut self,
         fragment_id: FragmentId,
-        outputs: OutputsSlice<'a>,
+        outputs: OutputsSlice<'_>,
     ) -> Result<Self, Error> {
         let mut new_utxos = Vec::new();
         for (index, output) in outputs.iter().enumerate() {
@@ -1337,7 +1337,7 @@ impl Ledger {
                     self.add_value_or_create_account(&account, output.value)?;
                 }
                 Kind::Multisig(identifier) => {
-                    let identifier = multisig::Identifier::from(identifier.clone());
+                    let identifier = multisig::Identifier::from(*identifier);
                     self.multisig = self.multisig.add_value(&identifier, output.value)?;
                 }
             }
@@ -1394,7 +1394,7 @@ impl Ledger {
                     == legacy::OldAddressMatchXPub::No
                 {
                     return Err(Error::OldUtxoInvalidPublicKey {
-                        utxo: utxo.clone(),
+                        utxo: *utxo,
                         output: associated_output,
                         witness: witness.clone(),
                     });
@@ -1408,7 +1408,7 @@ impl Ledger {
                 let verified = signature.verify(&pk, &data_to_verify);
                 if verified == chain_crypto::Verification::Failed {
                     return Err(Error::OldUtxoInvalidSignature {
-                        utxo: utxo.clone(),
+                        utxo: *utxo,
                         output: associated_output,
                         witness: witness.clone(),
                     });
@@ -1438,7 +1438,7 @@ impl Ledger {
                 );
                 if verified == chain_crypto::Verification::Failed {
                     return Err(Error::UtxoInvalidSignature {
-                        utxo: utxo.clone(),
+                        utxo: *utxo,
                         output: associated_output,
                         witness: witness.clone(),
                     });
@@ -1857,7 +1857,7 @@ mod tests {
         let wrong_block0_hash = TestGen::hash();
         let id: Identifier = account.public_key().into();
 
-        let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
+        let account_ledger = account_ledger_with_initials(&[(id, initial_value)]);
         let signed_tx = single_transaction_sign_by(
             account.make_input(initial_value, None),
             &block0_hash,
@@ -1913,11 +1913,7 @@ mod tests {
         let ledger: Ledger = test_ledger.into();
 
         let utxo = ledger.utxos().next().unwrap();
-        let utxo_pointer = UtxoPointer::new(
-            utxo.fragment_id,
-            utxo.output_index,
-            utxo.output.value.clone(),
-        );
+        let utxo_pointer = UtxoPointer::new(utxo.fragment_id, utxo.output_index, utxo.output.value);
 
         let signed_tx =
             single_transaction_sign_by(faucet.make_input(Some(utxo)), &block0_hash, &faucet.into());
@@ -2063,7 +2059,7 @@ mod tests {
         }
 
         pub fn transaction_id(&self) -> Hash {
-            self.transaction_id.clone()
+            self.transaction_id
         }
 
         pub fn static_params(&self) -> LedgerStaticParameters {
@@ -2078,12 +2074,11 @@ mod tests {
             &self,
             output: &'a OutputAddress,
         ) -> utxo::Entry<'a, Address> {
-            let utxo = utxo::Entry {
+            utxo::Entry {
                 fragment_id: self.transaction_id(),
                 output_index: 0 as u8,
                 output,
-            };
-            utxo
+            }
         }
     }
 
@@ -2302,7 +2297,7 @@ mod tests {
 
         let test_tx = TestTxBuilder::new(test_ledger.block0_hash).move_funds_multiple(
             &mut test_ledger,
-            &vec![faucet],
+            &[faucet],
             &receivers,
         );
         println!(
@@ -2331,7 +2326,7 @@ mod tests {
         let test_tx = TestTxBuilder::new(test_ledger.block0_hash).move_funds_multiple(
             &mut test_ledger,
             &faucets,
-            &vec![receiver],
+            &[receiver],
         );
         assert!(test_ledger
             .apply_transaction(test_tx.get_fragment())
@@ -2362,7 +2357,7 @@ mod tests {
         );
         let test_tx = TestTx::new(
             tx_builder
-                .set_witnesses(&vec![witness.clone(), witness.clone()])
+                .set_witnesses(&[witness.clone(), witness])
                 .set_payload_auth(&()),
         );
 

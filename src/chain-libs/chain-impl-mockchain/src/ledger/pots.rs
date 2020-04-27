@@ -101,14 +101,14 @@ impl Pots {
         }
     }
 
-    pub fn entries<'a>(&'a self) -> Entries<'a> {
+    pub fn entries(&self) -> Entries<'_> {
         Entries {
             pots: self,
             it: IterState::Fees,
         }
     }
 
-    pub fn values<'a>(&'a self) -> Values<'a> {
+    pub fn values(&self) -> Values<'_> {
         Values(self.entries())
     }
 

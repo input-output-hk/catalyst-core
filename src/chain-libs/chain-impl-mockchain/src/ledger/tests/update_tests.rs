@@ -73,11 +73,12 @@ pub fn ledger_adopt_settings_from_update_proposal(
         ));
     }
 
-    match all_settings_equal {
-            false => TestResult::error(format!("Error: proposed update reached required votes, but proposal was NOT updated, Expected: {:?} vs Actual: {:?}",
-                                expected_params,actual_params)),
-            true => TestResult::passed(),
-        }
+    if all_settings_equal {
+        TestResult::passed()
+    } else {
+        TestResult::error(format!("Error: proposed update reached required votes, but proposal was NOT updated, Expected: {:?} vs Actual: {:?}",
+                                expected_params,actual_params))
+    }
 }
 
 fn build_block(

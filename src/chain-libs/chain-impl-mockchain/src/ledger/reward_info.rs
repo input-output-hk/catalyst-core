@@ -71,10 +71,7 @@ impl EpochRewardsInfo {
 
     pub fn add_to_account(&mut self, account: &account::Identifier, value: Value) {
         if self.params.report_accounts {
-            let ent = self
-                .accounts
-                .entry(account.clone())
-                .or_insert(Value::zero());
+            let ent = self.accounts.entry(account.clone()).or_default();
             *ent = (*ent + value).unwrap()
         }
     }

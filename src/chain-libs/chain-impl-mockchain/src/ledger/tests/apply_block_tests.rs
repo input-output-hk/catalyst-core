@@ -37,11 +37,7 @@ pub fn apply_block_increases_leaders_log() {
         "record should be increased by 1"
     );
     assert!(
-        ledger
-            .leaders_log()
-            .iter()
-            .find(|x| *x.0 == stake_pool.id())
-            .is_some(),
+        ledger.leaders_log().iter().any(|x| *x.0 == stake_pool.id()),
         "pool should appear in record"
     );
 }
@@ -103,7 +99,7 @@ pub fn apply_block_wrong_date() {
                 epoch: 0,
                 slot_id: 1,
             },
-            chain_date: ledger.date().clone(),
+            chain_date: ledger.date(),
         },
         ledger.apply_block(block)
     );

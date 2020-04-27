@@ -139,7 +139,7 @@ where
                         _ => unreachable!(),
                     };
 
-                    LeafInsertStatus::Split(split_key.clone(), right_node)
+                    LeafInsertStatus::Split(split_key, right_node)
                 } else if pos > m.try_into().unwrap() {
                     let split_key = self.keys().get(m as usize).borrow().clone();
 
@@ -159,12 +159,9 @@ where
                         position += 1;
                     }
 
-                    right_node.as_leaf_mut().insert_key_value::<F>(
-                        position,
-                        key.clone(),
-                        value.clone(),
-                        None,
-                    );
+                    right_node
+                        .as_leaf_mut()
+                        .insert_key_value::<F>(position, key, value, None);
                     position += 1;
 
                     for (k, v) in self
@@ -184,18 +181,15 @@ where
 
                     self.set_len(m as usize);
 
-                    LeafInsertStatus::Split(split_key.clone(), right_node)
+                    LeafInsertStatus::Split(split_key, right_node)
                 } else {
                     // pos == m
 
                     let split_key = key.clone();
 
-                    right_node.as_leaf_mut::<V>().insert_key_value::<F>(
-                        0,
-                        key.clone(),
-                        value,
-                        None,
-                    );
+                    right_node
+                        .as_leaf_mut::<V>()
+                        .insert_key_value::<F>(0, key, value, None);
 
                     let mut position = 1;
 
@@ -291,7 +285,7 @@ where
                     Ok(LeafDeleteStatus::Ok)
                 }
             }
-            Err(_) => return Err(BTreeStoreError::KeyNotFound),
+            Err(_) => Err(BTreeStoreError::KeyNotFound),
         }
     }
 

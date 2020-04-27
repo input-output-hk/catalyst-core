@@ -56,7 +56,7 @@ where
     pub unsafe fn from_raw(data: T) -> InternalNode<'b, K, T> {
         assert_eq!(data.as_ref().as_ptr().align_offset(size_of::<PageId>()), 0);
         assert_eq!(data.as_ref().as_ptr().align_offset(size_of::<u64>()), 0);
-        assert!(data.as_ref().len() > 0);
+        assert!(!data.as_ref().is_empty());
 
         let size_per_key = K::max_size() + size_of::<PageId>();
         let extra_size = LEN_SIZE - LEN_START;
@@ -231,7 +231,7 @@ where
 
                     // Truncate node to have m elements
                     self.set_len(m as usize);
-                    InternalInsertStatus::Split(split_key.clone(), right_node)
+                    InternalInsertStatus::Split(split_key, right_node)
                 } else {
                     // pos == m
                     let mut right_internal_node = right_node.as_internal_mut();
@@ -348,7 +348,7 @@ where
     pub fn view(data: T) -> InternalNode<'b, K, T> {
         assert_eq!(data.as_ref().as_ptr().align_offset(size_of::<PageId>()), 0);
         assert_eq!(data.as_ref().as_ptr().align_offset(size_of::<u64>()), 0);
-        assert!(data.as_ref().len() > 0);
+        assert!(!data.as_ref().is_empty());
 
         let size_per_key = K::max_size() + size_of::<PageId>();
         let extra_size = LEN_SIZE - LEN_START;
@@ -651,7 +651,7 @@ mod tests {
         fn delete(&mut self, key: &U64Key) -> Result<InternalDeleteStatus, BTreeStoreError> {
             match self.keys().binary_search(key) {
                 Ok(pos) => Ok(self.delete_key_children(pos)),
-                Err(_pos) => return Err(BTreeStoreError::KeyNotFound),
+                Err(_pos) => Err(BTreeStoreError::KeyNotFound),
             }
         }
     }

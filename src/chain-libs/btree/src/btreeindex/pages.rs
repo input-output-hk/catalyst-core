@@ -120,7 +120,12 @@ pub mod borrow {
         pub fn borrow_mut(&mut self, id: PageId) -> BorrowRAIIGuard {
             let guard = Arc::new(BorrowGuard::Exclusive);
 
-            if let Some(_) = self.borrows.get(dbg!(&id)).and_then(|weak| weak.upgrade()) {
+            if self
+                .borrows
+                .get(dbg!(&id))
+                .and_then(|weak| weak.upgrade())
+                .is_some()
+            {
                 panic!("tried to exclusively borrow already borrowed page");
             }
 
@@ -222,7 +227,7 @@ impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Immutable<'a>> {
     {
         let page = self.borrow.borrow;
 
-        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref()) };
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page) };
 
         f(node)
     }
@@ -235,7 +240,7 @@ impl<'a> super::node::NodeRef for &PageHandle<'a, borrow::Immutable<'a>> {
     {
         let page = self.borrow.borrow;
 
-        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref()) };
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page) };
 
         f(node)
     }
@@ -246,7 +251,7 @@ impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Mutable<'a>> {
     where
         K: FixedSize,
     {
-        let node = unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow.as_ref()) };
+        let node = unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow) };
 
         f(node)
     }
@@ -257,7 +262,7 @@ impl<'a> super::node::NodeRef for &mut PageHandle<'a, borrow::Mutable<'a>> {
     where
         K: FixedSize,
     {
-        let node = unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow.as_ref()) };
+        let node = unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow) };
 
         f(node)
     }

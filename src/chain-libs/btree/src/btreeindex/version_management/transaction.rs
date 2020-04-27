@@ -85,7 +85,7 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             .borrow()
             .shadows
             .get(&current_root)
-            .map(|root| *root)
+            .copied()
             .unwrap_or(current_root)
     }
 

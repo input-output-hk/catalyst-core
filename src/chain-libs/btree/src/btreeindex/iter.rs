@@ -241,11 +241,10 @@ mod tests {
         let tree = new_tree();
         let n: u64 = 2000;
 
-        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
-            .unwrap();
+        tree.insert_many((0..n).map(|i| (U64Key(i), i))).unwrap();
 
         let found: Vec<_> = tree.range(U64Key(a)..U64Key(b)).collect();
-        let expected: Vec<_> = (a..std::cmp::min(b, n)).into_iter().collect();
+        let expected: Vec<_> = (a..std::cmp::min(b, n)).collect();
 
         found == expected
     }
@@ -255,11 +254,10 @@ mod tests {
         let tree = new_tree();
         let n: u64 = 2000;
 
-        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
-            .unwrap();
+        tree.insert_many((0..n).map(|i| (U64Key(i), i))).unwrap();
 
         let found: Vec<_> = tree.range(U64Key(a)..=U64Key(b)).collect();
-        let expected: Vec<_> = (a..=std::cmp::min(b, n)).into_iter().collect();
+        let expected: Vec<_> = (a..=std::cmp::min(b, n)).collect();
 
         found == expected
     }
@@ -269,11 +267,10 @@ mod tests {
         let tree = new_tree();
         let n: u64 = 2000;
 
-        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
-            .unwrap();
+        tree.insert_many((0..n).map(|i| (U64Key(i), i))).unwrap();
 
         let found: Vec<_> = tree.range(..).collect();
 
-        assert_eq!(found, (0..n).into_iter().collect::<Vec<_>>());
+        assert_eq!(found, (0..n).collect::<Vec<_>>());
     }
 }

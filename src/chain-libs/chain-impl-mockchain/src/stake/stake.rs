@@ -1,7 +1,6 @@
 use crate::value::Value;
 use std::ops::{Add, AddAssign};
 
-#[cfg_attr(feature = "generic-serialization", derive(serde_derive::Serialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Stake(pub u64);
 

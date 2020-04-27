@@ -3,11 +3,6 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
-#[cfg_attr(
-    feature = "generic-serialization",
-    derive(serde_derive::Serialize, serde_derive::Deserialize),
-    serde(transparent)
-)]
 pub struct ConfigParams(pub(crate) Vec<ConfigParam>);
 
 impl ConfigParams {

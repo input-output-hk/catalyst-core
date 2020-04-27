@@ -121,7 +121,7 @@ impl Header {
         }
     }
 
-    fn get_cstruct<'a>(&'a self) -> cstruct::HeaderSlice<'a> {
+    fn get_cstruct(&self) -> cstruct::HeaderSlice<'_> {
         match self {
             Header::Unsigned(h) => h.0.as_slice(),
             Header::GenesisPraos(h) => h.0.as_slice(),
@@ -129,11 +129,11 @@ impl Header {
         }
     }
 
-    pub fn as_slice<'a>(&'a self) -> &'a [u8] {
+    pub fn as_slice(&self) -> &[u8] {
         self.get_cstruct().as_slice()
     }
 
-    pub fn as_auth_slice<'a>(&'a self) -> &'a [u8] {
+    pub fn as_auth_slice(&self) -> &[u8] {
         match self {
             Header::Unsigned(_) => self.get_cstruct().as_slice(),
             Header::BFT(_) => self.get_cstruct().slice_bft_auth(),
@@ -180,7 +180,7 @@ impl Header {
 
     pub fn from_slice(slice: &[u8]) -> Result<Header, HeaderError> {
         let hdr_slice = cstruct::HeaderSlice::from_slice(slice)?;
-        let hdr = hdr_slice.into_owned();
+        let hdr = hdr_slice.to_owned();
         match BlockVersion::from_u16(hdr.version()).expect("header slice only know version") {
             BlockVersion::Genesis => Ok(Header::Unsigned(HeaderUnsigned(hdr))),
             BlockVersion::Ed25519Signed => Ok(Header::BFT(HeaderBft(hdr))),

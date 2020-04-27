@@ -77,7 +77,7 @@ impl Clone for Header {
 
 impl PartialEq for Header {
     fn eq(&self, other: &Self) -> bool {
-        unsafe { &self.gp[..] == &other.gp[..] }
+        unsafe { self.gp[..] == other.gp[..] }
     }
 }
 impl Eq for Header {}
@@ -96,7 +96,7 @@ impl Header {
         Version::from_be_bytes(buf)
     }
 
-    pub fn as_slice<'a>(&'a self) -> HeaderSlice<'a> {
+    pub fn as_slice(&self) -> HeaderSlice<'_> {
         match self.version() {
             VERSION_UNSIGNED => unsafe { HeaderSlice(&self.unsigned[..]) },
             VERSION_BFT => unsafe { HeaderSlice(&self.bft[..]) },
@@ -105,7 +105,7 @@ impl Header {
         }
     }
 
-    pub(self) fn as_slice_mut<'a>(&'a mut self) -> &mut [u8] {
+    pub(self) fn as_slice_mut(&mut self) -> &mut [u8] {
         match self.version() {
             VERSION_UNSIGNED => unsafe { &mut self.unsigned[..] },
             VERSION_BFT => unsafe { &mut self.bft[..] },
@@ -292,11 +292,11 @@ impl<'a> HeaderSlice<'a> {
         }
     }
 
-    pub fn as_slice(self) -> &'a [u8] {
+    pub fn as_slice(&self) -> &'a [u8] {
         &self.0[..]
     }
 
-    pub(super) fn into_owned(&self) -> Header {
+    pub(super) fn to_owned(&self) -> Header {
         let mut new = Header::new(self.version());
         new.as_slice_mut().copy_from_slice(&self.0);
         new

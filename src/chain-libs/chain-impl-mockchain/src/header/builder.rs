@@ -118,7 +118,7 @@ impl HeaderBuilder<HeaderSetDate> {
 
 impl HeaderBuilder<HeaderCommonDone> {
     /// Finalized to an unsigned header
-    pub fn to_unsigned_header(self) -> Option<HeaderUnsigned> {
+    pub fn into_unsigned_header(self) -> Option<HeaderUnsigned> {
         match self.0.version() {
             cstruct::VERSION_UNSIGNED => Some(HeaderUnsigned(self.0)),
             _ => None,
@@ -126,7 +126,7 @@ impl HeaderBuilder<HeaderCommonDone> {
     }
 
     /// Tentatively transition to a BFT Header builder
-    pub fn to_bft_builder(self) -> Option<HeaderBftBuilder<HeaderSetConsensusData>> {
+    pub fn into_bft_builder(self) -> Option<HeaderBftBuilder<HeaderSetConsensusData>> {
         match self.0.version() {
             cstruct::VERSION_BFT => Some(HeaderBftBuilder(self.0, PhantomData)),
             _ => None,
@@ -134,7 +134,7 @@ impl HeaderBuilder<HeaderCommonDone> {
     }
 
     /// Tentatively transition to a Genesis-Praos Header builder
-    pub fn to_genesis_praos_builder(
+    pub fn into_genesis_praos_builder(
         self,
     ) -> Option<HeaderGenesisPraosBuilder<HeaderSetConsensusData>> {
         match self.0.version() {
@@ -193,7 +193,7 @@ impl HeaderBftBuilder<HeaderSetConsensusSignature> {
 }
 
 impl HeaderGenesisPraosBuilder<HeaderSetConsensusSignature> {
-    pub fn get_authenticated_data<'a>(&'a self) -> &'a [u8] {
+    pub fn get_authenticated_data(&self) -> &[u8] {
         self.0.as_slice().slice_gp_auth()
     }
 
@@ -256,12 +256,9 @@ mod tests {
         let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
             .set_parent(&parent_id, chain_length())
             .set_date(block_date())
-            .to_genesis_praos_builder()
+            .into_genesis_praos_builder()
             .unwrap()
-            .set_consensus_data(
-                &stake_pool().id(),
-                &TestGen::vrf_proof(&stake_pool()).into(),
-            )
+            .set_consensus_data(&stake_pool().id(), &TestGen::vrf_proof(&stake_pool()))
             .sign_using(stake_pool().kes().private_key())
             .generalize();
 
@@ -284,12 +281,9 @@ mod tests {
         let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
             .set_genesis()
             .set_date(block_date())
-            .to_genesis_praos_builder()
+            .into_genesis_praos_builder()
             .unwrap()
-            .set_consensus_data(
-                &stake_pool().id(),
-                &TestGen::vrf_proof(&stake_pool()).into(),
-            )
+            .set_consensus_data(&stake_pool().id(), &TestGen::vrf_proof(&stake_pool()))
             .sign_using(stake_pool().kes().private_key())
             .generalize();
 
@@ -313,7 +307,7 @@ mod tests {
         let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
             .set_parent(&parent_id, chain_length())
             .set_date(block_date())
-            .to_bft_builder()
+            .into_bft_builder()
             .unwrap()
             .sign_using(&leader().key())
             .generalize();
@@ -339,7 +333,7 @@ mod tests {
         let header = HeaderBuilderNew::new(BlockVersion::Genesis, &contents())
             .set_parent(&parent_id, chain_length())
             .set_date(block_date())
-            .to_unsigned_header()
+            .into_unsigned_header()
             .unwrap()
             .generalize();
 
@@ -363,7 +357,7 @@ mod tests {
         HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
             .set_parent(&parent_id(), chain_length())
             .set_date(block_date())
-            .to_bft_builder()
+            .into_bft_builder()
             .unwrap();
     }
 
@@ -373,7 +367,7 @@ mod tests {
         HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
             .set_genesis()
             .set_date(block_date())
-            .to_unsigned_header()
+            .into_unsigned_header()
             .unwrap();
     }
 
@@ -383,7 +377,7 @@ mod tests {
         HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
             .set_parent(&parent_id(), chain_length())
             .set_date(block_date())
-            .to_genesis_praos_builder()
+            .into_genesis_praos_builder()
             .unwrap();
     }
 }

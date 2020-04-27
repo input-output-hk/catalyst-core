@@ -90,7 +90,7 @@ fn build_block(
     let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents)
         .set_parent(&block0_hash, ledger.chain_length.increase())
         .set_date(date.next_epoch())
-        .to_bft_builder()
+        .into_bft_builder()
         .unwrap()
         .sign_using(block_signing_key)
         .generalize();

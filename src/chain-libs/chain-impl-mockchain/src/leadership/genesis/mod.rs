@@ -588,7 +588,7 @@ mod tests {
         let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
             .set_parent(&HeaderId::zero_hash(), ledger.chain_length().increase())
             .set_date(date)
-            .to_bft_builder()
+            .into_bft_builder()
             .unwrap()
             .sign_using(sk)
             .generalize();
@@ -686,7 +686,7 @@ mod tests {
         let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
             .set_parent(&HeaderId::zero_hash(), ledger.chain_length().next())
             .set_date(date)
-            .to_bft_builder()
+            .into_bft_builder()
             .unwrap()
             .sign_using(sk)
             .generalize();

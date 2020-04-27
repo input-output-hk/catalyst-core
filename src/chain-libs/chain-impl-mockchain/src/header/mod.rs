@@ -2,6 +2,7 @@ mod builder;
 mod components;
 mod cstruct;
 mod deconstruct;
+#[allow(clippy::module_inception)]
 mod header;
 mod version;
 

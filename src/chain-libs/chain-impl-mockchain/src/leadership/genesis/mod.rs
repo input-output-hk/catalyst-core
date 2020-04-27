@@ -377,7 +377,7 @@ mod tests {
     #[test]
     #[ignore]
     pub fn test_phi() {
-        let slots_per_epoch = 200000;
+        let slots_per_epoch = 200_000;
         let active_slots_coeff = 0.1;
         let active_slots_coeff_as_milli = Milli::from_millis((active_slots_coeff * 1000.0) as u64);
         let cb = ConfigBuilder::new(0)

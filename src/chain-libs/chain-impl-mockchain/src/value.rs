@@ -6,8 +6,7 @@ use std::{iter::Sum, ops};
 use thiserror::Error;
 
 /// Unspent transaction value.
-#[cfg_attr(feature = "generic-serialization", derive(serde_derive::Serialize))]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Value(pub u64);
 
 const VALUE_SERIALIZED_SIZE: usize = 8;

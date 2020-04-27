@@ -23,11 +23,11 @@ pub fn run() {
 
     println!("adding 100000 entries");
 
-    for i in 0..100000 {
+    for i in 0..100_000 {
         h = h.insert(i, i).unwrap();
     }
 
-    let mut h2 = h.clone();
+    let mut h2 = h;
 
     epoch::advance().unwrap();
 
@@ -36,7 +36,7 @@ pub fn run() {
 
     println!("adding 100000 entries");
 
-    for i in 100000..200000 {
+    for i in 100_000..200_000 {
         h2 = h2.insert(i, i).unwrap();
     }
 

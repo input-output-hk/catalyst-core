@@ -66,9 +66,9 @@ impl Arbitrary for GenesisPraosProof {
             KESSignature(signature.coerce())
         };
         GenesisPraosProof {
-            node_id: node_id,
+            node_id,
             vrf_proof: vrf_proof.into(),
-            kes_proof: kes_proof,
+            kes_proof,
         }
     }
 }
@@ -83,12 +83,12 @@ impl Arbitrary for Header {
         )
         .set_parent(&common.block_parent_hash, common.chain_length)
         .set_date(common.block_date);
-        let header = match common.block_version {
-            BlockVersion::Genesis => hdrbuilder.to_unsigned_header().unwrap().generalize(),
+        match common.block_version {
+            BlockVersion::Genesis => hdrbuilder.into_unsigned_header().unwrap().generalize(),
             BlockVersion::Ed25519Signed => {
                 let bft_proof: BftProof = Arbitrary::arbitrary(g);
                 hdrbuilder
-                    .to_bft_builder()
+                    .into_bft_builder()
                     .unwrap()
                     .set_consensus_data(&bft_proof.leader_id)
                     .set_signature(bft_proof.signature)
@@ -97,14 +97,12 @@ impl Arbitrary for Header {
             BlockVersion::KesVrfproof => {
                 let gp_proof: GenesisPraosProof = Arbitrary::arbitrary(g);
                 hdrbuilder
-                    .to_genesis_praos_builder()
+                    .into_genesis_praos_builder()
                     .unwrap()
-                    .set_consensus_data(&gp_proof.node_id, &gp_proof.vrf_proof.into())
+                    .set_consensus_data(&gp_proof.node_id, &gp_proof.vrf_proof)
                     .set_signature(gp_proof.kes_proof)
                     .generalize()
             }
-        };
-
-        header
+        }
     }
 }

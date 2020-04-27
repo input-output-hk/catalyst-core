@@ -44,7 +44,7 @@ impl PoolStakeInformation {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct PoolStakeDistribution {
     pub total: Stake,
     pub accounts: HashMap<account::Identifier, Stake>,
@@ -199,7 +199,10 @@ pub fn get_distribution(
                 let identifier = account_key.clone().into();
                 // is there an account linked to this
                 match accounts.get_state(&identifier) {
-                    Err(_) => panic!("internal error: group's account should always be created"),
+                    Err(err) => panic!(
+                        "internal error: group's account should always be created: {:?}",
+                        err
+                    ),
                     Ok(st) => assign_account_value(
                         &mut distribution,
                         &identifier,
@@ -322,7 +325,7 @@ mod tests {
                             x.address_data.clone(),
                             single_account.0.clone().into(),
                         ),
-                        x.value.clone(),
+                        x.value,
                     )
                 })
                 .map(|x| {
@@ -370,12 +373,12 @@ mod tests {
 
         fn get_sum_from_utxo_type(
             &self,
-            utxos: &Vec<(FragmentId, TransactionIndex, Output<Address>)>,
+            utxos: &[(FragmentId, TransactionIndex, Output<Address>)],
         ) -> Stake {
             Stake::sum(utxos.iter().map(|(_, _, x)| Stake::from_value(x.value)))
         }
 
-        fn get_sum_from_account_type(&self, accounts: &Vec<(Identifier, Value)>) -> Stake {
+        fn get_sum_from_account_type(&self, accounts: &[(Identifier, Value)]) -> Stake {
             Stake::sum(accounts.iter().map(|(_, x)| Stake::from_value(*x)))
         }
     }
@@ -452,10 +455,7 @@ mod tests {
             .add_account(&single_account.0.clone(), single_account.1, ())
             .unwrap();
         accounts = accounts
-            .set_delegation(
-                &single_account.0.clone(),
-                &DelegationType::Full(id_active_pool.clone()),
-            )
+            .set_delegation(&single_account.0, &DelegationType::Full(id_active_pool))
             .unwrap();
 
         // add accounts with retired stake pool
@@ -614,7 +614,7 @@ mod tests {
     pub fn dangling_stake_multiplied() {
         let mut stake_distribution = StakeDistribution::empty();
         let value = Value(10);
-        let stake = Stake::from_value(value.clone());
+        let stake = Stake::from_value(value);
         let account_identifier = TestGen::identifier();
         let no_of_parts = 8u8;
         let parts = [1, 2, 2, 3];

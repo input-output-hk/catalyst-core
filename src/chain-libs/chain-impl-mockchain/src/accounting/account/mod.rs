@@ -56,6 +56,12 @@ impl From<InsertError> for LedgerError {
 #[derive(Clone, PartialEq, Eq)]
 pub struct Ledger<ID: Hash + Eq, Extra>(Hamt<DefaultHasher, ID, AccountState<Extra>>);
 
+impl<ID: Clone + Eq + Hash, Extra: Clone> Default for Ledger<ID, Extra> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
     /// Create a new empty account ledger
     pub fn new() -> Self {
@@ -192,7 +198,7 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
         Value::sum(values)
     }
 
-    pub fn iter<'a>(&'a self) -> Iter<'a, ID, Extra> {
+    pub fn iter(&self) -> Iter<'_, ID, Extra> {
         Iter(self.0.iter())
     }
 }
@@ -399,14 +405,11 @@ mod tests {
                     extra: (),
                 };
 
-                match *account_state == expected_account_state {
-                    true => (),
-                    false => {
-                        return TestResult::error(format!(
-                            "Account state is incorrect expected {:?} but got {:?}",
-                            expected_account_state, account_state
-                        ))
-                    }
+                if *account_state != expected_account_state {
+                    return TestResult::error(format!(
+                        "Account state is incorrect expected {:?} but got {:?}",
+                        expected_account_state, account_state
+                    ));
                 }
             }
             Err(err) => {
@@ -484,12 +487,13 @@ mod tests {
     }
 
     fn test_total_value(expected: Value, actual: Value) -> TestResult {
-        match actual == expected {
-            true => TestResult::passed(),
-            false => TestResult::error(format!(
+        if actual == expected {
+            TestResult::passed()
+        } else {
+            TestResult::error(format!(
                 "Wrong total value expected {} but got {}",
                 expected, actual
-            )),
+            ))
         }
     }
 
@@ -514,13 +518,14 @@ mod tests {
     }
 
     fn verify_total_value(ledger: Ledger, value: Value) -> TestResult {
-        match ledger.get_total_value().unwrap() == value {
-            true => TestResult::passed(),
-            false => TestResult::error(format!(
+        if ledger.get_total_value().unwrap() == value {
+            TestResult::passed()
+        } else {
+            TestResult::error(format!(
                 "Wrong total value got {:?}, while expecting {:?}",
                 ledger.get_total_value(),
                 value
-            )),
+            ))
         }
     }
 
@@ -544,19 +549,21 @@ mod tests {
     }
 
     fn verify_account_exists(ledger: &Ledger, id: &Identifier) -> TestResult {
-        match ledger.exists(&id) {
-            true => TestResult::passed(),
-            false => TestResult::error(format!(
+        if ledger.exists(&id) {
+            TestResult::passed()
+        } else {
+            TestResult::error(format!(
                 "Account ({:?}) does not exist, while it should",
                 &id
-            )),
+            ))
         }
     }
 
     fn verify_account_does_not_exist(ledger: &Ledger, id: &Identifier) -> TestResult {
-        match ledger.exists(&id) {
-            true => TestResult::error(format!("Account ({:?}) exists, while it should not", &id)),
-            false => TestResult::passed(),
+        if ledger.exists(&id) {
+            TestResult::error(format!("Account ({:?}) exists, while it should not", &id))
+        } else {
+            TestResult::passed()
         }
     }
 }

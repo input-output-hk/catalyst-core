@@ -7,7 +7,7 @@ use std::fmt::{self, Debug};
 use std::sync::Arc;
 
 /// A structure that keeps track of stake keys and stake pools.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Default)]
 pub struct PoolsState {
     pub(crate) stake_pools: Hamt<DefaultHasher, PoolId, PoolState>,
 }
@@ -114,7 +114,7 @@ impl PoolsState {
     pub fn stake_pool_get_state(&self, pool_id: &PoolId) -> Result<&PoolState, PoolError> {
         self.stake_pools
             .lookup(pool_id)
-            .ok_or(PoolError::NotFound(pool_id.clone()))
+            .ok_or_else(|| PoolError::NotFound(pool_id.clone()))
     }
 
     pub fn stake_pool_set_state(
@@ -133,7 +133,7 @@ impl PoolsState {
     pub fn stake_pool_get(&self, pool_id: &PoolId) -> Result<&PoolRegistration, PoolError> {
         self.stake_pools
             .lookup(pool_id)
-            .ok_or(PoolError::NotFound(pool_id.clone()))
+            .ok_or_else(|| PoolError::NotFound(pool_id.clone()))
             .map(|s| s.registration.as_ref())
     }
 

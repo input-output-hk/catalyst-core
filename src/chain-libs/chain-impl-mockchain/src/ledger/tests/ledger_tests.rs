@@ -41,12 +41,13 @@ pub fn ledger_accepts_correct_transaction(
         return TestResult::error(format!("Error from ledger: {}", result.err().unwrap()));
     }
     let total_funds_after = ledger.total_funds();
-    match total_funds_before == total_funds_after {
-        false => TestResult::error(format!(
+    if total_funds_before == total_funds_after {
+        TestResult::passed()
+    } else {
+        TestResult::error(format!(
             "Total funds in ledger before and after transaction is not equal {} <> {} ",
             total_funds_before, total_funds_after
-        )),
-        true => TestResult::passed(),
+        ))
     }
 }
 
@@ -68,7 +69,7 @@ pub fn total_funds_are_const_in_ledger(
         &transaction_data.output_addresses,
     );
     let total_funds_before = ledger.total_funds();
-    let result = ledger.apply_transaction(signed_tx.clone().get_fragment());
+    let result = ledger.apply_transaction(signed_tx.get_fragment());
 
     if result.is_err() {
         return TestResult::error(format!("Error from ledger: {:?}", result.err()));
@@ -89,7 +90,7 @@ pub fn total_funds_are_const_in_ledger(
         return TestResult::error(format!("{}", utxo_verification_result.err().unwrap()));
     }
 
-    let account_state_verifier = AccountStatesVerifier::new(transaction_data.clone());
+    let account_state_verifier = AccountStatesVerifier::new(transaction_data);
     let account_state_verification_result = account_state_verifier.verify(ledger.accounts());
     if account_state_verification_result.is_err() {
         return TestResult::error(format!(

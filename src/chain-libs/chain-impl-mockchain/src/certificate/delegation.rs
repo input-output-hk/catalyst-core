@@ -85,7 +85,7 @@ impl Payload for OwnerStakeDelegation {
     fn payload_auth_data(_: &Self::Auth) -> PayloadAuthData<Self> {
         PayloadAuthData(Vec::with_capacity(0).into(), PhantomData)
     }
-    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         Some(CertificateSlice::from(p))
     }
 }
@@ -133,7 +133,7 @@ impl Payload for StakeDelegation {
         let bb = auth.serialize_in(ByteBuilder::new()).finalize_as_vec();
         PayloadAuthData(bb.into(), PhantomData)
     }
-    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         Some(CertificateSlice::from(p))
     }
 }

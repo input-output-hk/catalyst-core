@@ -75,7 +75,7 @@ impl DeclElement {
     pub fn to_hash(&self) -> key::Hash {
         match self {
             DeclElement::Sub(d) => d.to_identifier().0,
-            DeclElement::Owner(hash) => hash.clone(),
+            DeclElement::Owner(hash) => *hash,
         }
     }
 

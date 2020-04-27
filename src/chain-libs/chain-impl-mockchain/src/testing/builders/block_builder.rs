@@ -78,7 +78,7 @@ impl GenesisPraosBlockBuilder {
                 self.chain_length.unwrap().increase(),
             )
             .set_date(self.date.unwrap().next(time_era))
-            .to_genesis_praos_builder()
+            .into_genesis_praos_builder()
             .unwrap()
             .set_consensus_data(&stake_pool.id(), &vrf_proof)
             .sign_using(stake_pool.kes().private_key())

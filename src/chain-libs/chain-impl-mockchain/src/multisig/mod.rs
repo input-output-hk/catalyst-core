@@ -92,7 +92,7 @@ mod test {
         {
             let mut witness_builder = WitnessBuilder::new();
             witness_builder.append(TreeIndex::D1(i3), pk3.clone(), sk3.sign(&msg).coerce());
-            witness_builder.append(TreeIndex::D1(i2), pk2.clone(), sk2.sign(&msg).coerce());
+            witness_builder.append(TreeIndex::D1(i2), pk2, sk2.sign(&msg).coerce());
             let witness = witness_builder.finalize();
 
             assert_eq!(
@@ -110,7 +110,7 @@ mod test {
                 pk1.clone(),
                 sk1.sign(&msg).coerce(),
             );
-            witness_builder.append(TreeIndex::D1(i3), pk3.clone(), sk3.sign(&msg).coerce());
+            witness_builder.append(TreeIndex::D1(i3), pk3, sk3.sign(&msg).coerce());
             let witness = witness_builder.finalize();
 
             assert_eq!(
@@ -123,7 +123,7 @@ mod test {
         // test threshold not met
         {
             let mut witness_builder = WitnessBuilder::new();
-            witness_builder.append(TreeIndex::D1(i1), pk1.clone(), sk1.sign(&msg).coerce());
+            witness_builder.append(TreeIndex::D1(i1), pk1, sk1.sign(&msg).coerce());
             let witness = witness_builder.finalize();
 
             assert_eq!(

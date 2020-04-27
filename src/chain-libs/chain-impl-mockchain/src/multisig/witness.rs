@@ -116,6 +116,7 @@ impl Readable for Witness {
     }
 }
 
+#[derive(Default)]
 pub struct WitnessBuilder(BTreeMap<TreeIndex, (Pk, Sig)>);
 
 impl WitnessBuilder {

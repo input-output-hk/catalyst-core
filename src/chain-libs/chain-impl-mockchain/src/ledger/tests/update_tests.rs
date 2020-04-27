@@ -73,11 +73,12 @@ pub fn ledger_adopt_settings_from_update_proposal(
         ));
     }
 
-    match all_settings_equal {
-            false => TestResult::error(format!("Error: proposed update reached required votes, but proposal was NOT updated, Expected: {:?} vs Actual: {:?}",
-                                expected_params,actual_params)),
-            true => TestResult::passed(),
-        }
+    if all_settings_equal {
+        TestResult::passed()
+    } else {
+        TestResult::error(format!("Error: proposed update reached required votes, but proposal was NOT updated, Expected: {:?} vs Actual: {:?}",
+                                expected_params,actual_params))
+    }
 }
 
 fn build_block(
@@ -90,7 +91,7 @@ fn build_block(
     let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents)
         .set_parent(&block0_hash, ledger.chain_length.increase())
         .set_date(date.next_epoch())
-        .to_bft_builder()
+        .into_bft_builder()
         .unwrap()
         .sign_using(block_signing_key)
         .generalize();

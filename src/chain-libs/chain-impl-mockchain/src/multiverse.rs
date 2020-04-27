@@ -319,7 +319,7 @@ mod test {
         let genesis_header = HeaderBuilderNew::new(BlockVersion::Genesis, &genesis_content)
             .set_genesis()
             .set_date(BlockDate::first())
-            .to_unsigned_header()
+            .into_unsigned_header()
             .unwrap()
             .generalize();
         Block {
@@ -339,7 +339,7 @@ mod test {
         let header = HeaderBuilderNew::new(block_ver, &contents)
             .set_parent(&parent, chain_length)
             .set_date(date)
-            .to_bft_builder()
+            .into_bft_builder()
             .unwrap()
             .sign_using(&leader.key())
             .generalize();

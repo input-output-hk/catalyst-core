@@ -44,7 +44,7 @@ pub struct VotePlan {
 /// a collection of proposals
 ///
 /// there may not be more than 255 proposal
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Proposals {
     proposals: Vec<Proposal>,
 }
@@ -84,7 +84,7 @@ impl VoteOptions {
         }
     }
 
-    pub fn as_byte(&self) -> u8 {
+    pub fn as_byte(self) -> u8 {
         self.num_choices
     }
 }
@@ -154,19 +154,19 @@ impl VotePlan {
     }
 
     pub fn vote_start(&self) -> BlockDate {
-        self.vote_start.clone()
+        self.vote_start
     }
 
     pub fn vote_end(&self) -> BlockDate {
-        self.vote_end.clone()
+        self.vote_end
     }
 
     pub fn committee_start(&self) -> BlockDate {
-        self.vote_end.clone()
+        self.vote_end
     }
 
     pub fn committee_end(&self) -> BlockDate {
-        self.committee_end.clone()
+        self.committee_end
     }
 
     /// access the proposals associated to this voting plan
@@ -263,7 +263,7 @@ impl Payload for VotePlan {
         PayloadAuthData(Vec::with_capacity(0).into(), std::marker::PhantomData)
     }
 
-    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         Some(CertificateSlice::from(p))
     }
 }

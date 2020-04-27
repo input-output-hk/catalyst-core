@@ -6,7 +6,7 @@ use super::declaration::{Declaration, DeclarationError, Identifier};
 use crate::accounting::account::{self, DelegationType, Iter, SpendingCounter};
 use crate::value::{Value, ValueError};
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Default)]
 pub struct Ledger {
     // TODO : investigate about merging the declarations and the accounts in
     // one with an extension on the account::Ledger
@@ -99,11 +99,11 @@ impl Ledger {
         })
     }
 
-    pub fn iter_accounts<'a>(&'a self) -> Iter<'a, Identifier, ()> {
+    pub fn iter_accounts(&self) -> Iter<'_, Identifier, ()> {
         self.accounts.iter()
     }
 
-    pub fn iter_declarations<'a>(&'a self) -> HamtIter<'a, Identifier, Declaration> {
+    pub fn iter_declarations(&self) -> HamtIter<'_, Identifier, Declaration> {
         self.declarations.iter()
     }
 

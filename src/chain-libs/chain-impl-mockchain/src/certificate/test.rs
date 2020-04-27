@@ -112,7 +112,7 @@ impl Arbitrary for PoolRegistration {
             serial: Arbitrary::arbitrary(g),
             permissions: PoolPermissions::new(1),
             start_validity: start_validity.into(),
-            owners: owners,
+            owners,
             operators: operators.into(),
             rewards: TaxType::zero(),
             reward_account: None,
@@ -142,7 +142,7 @@ impl Arbitrary for Proposals {
         let mut proposals = Proposals::new();
         for _ in 0..len {
             if let PushProposal::Success = proposals.push(Proposal::arbitrary(g)) {
-                ()
+                // pushed successfully
             } else {
                 unreachable!("only generates what is needed")
             }

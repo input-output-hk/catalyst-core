@@ -115,7 +115,7 @@ impl ConfigBuilder {
         self
     }
 
-    pub fn with_leaders(mut self, leaders: &Vec<BftLeaderId>) -> Self {
+    pub fn with_leaders(mut self, leaders: &[BftLeaderId]) -> Self {
         self.leaders.extend(leaders.iter().cloned());
         self
     }
@@ -190,13 +190,13 @@ impl ConfigBuilder {
             ie.push(ConfigParam::AddBftLeader(leader_id));
         }
 
-        ie.push(ConfigParam::RewardPot(self.rewards.clone()));
-        ie.push(ConfigParam::TreasuryAdd(self.treasury.clone()));
-        ie.push(ConfigParam::TreasuryParams(self.treasury_params.clone()));
+        ie.push(ConfigParam::RewardPot(self.rewards));
+        ie.push(ConfigParam::TreasuryAdd(self.treasury));
+        ie.push(ConfigParam::TreasuryParams(self.treasury_params));
         ie.push(ConfigParam::RewardParams(self.reward_params.clone()));
 
         if let Some(linear_fee) = self.linear_fee {
-            ie.push(ConfigParam::LinearFee(linear_fee.clone()));
+            ie.push(ConfigParam::LinearFee(linear_fee));
         }
 
         if let Some(block_content_max_size) = self.block_content_max_size {
@@ -247,7 +247,8 @@ impl UtxoDb {
     pub fn find_fragments(&self, decl: &UtxoDeclaration) -> Vec<(FragmentId, u8)> {
         self.db
             .iter()
-            .filter_map(|(k, v)| if v == decl { Some(k.clone()) } else { None })
+            .filter_map(|(k, v)| if v == decl { Some(k) } else { None })
+            .copied()
             .collect()
     }
 
@@ -325,7 +326,7 @@ impl LedgerBuilder {
         self
     }
 
-    pub fn initial_funds(mut self, funds: &Vec<AddressDataValue>) -> Self {
+    pub fn initial_funds(mut self, funds: &[AddressDataValue]) -> Self {
         for fund in funds {
             self = self.initial_fund(fund);
         }
@@ -343,7 +344,7 @@ impl LedgerBuilder {
         self
     }
 
-    pub fn faucets(mut self, faucets: &Vec<AddressDataValue>) -> Self {
+    pub fn faucets(mut self, faucets: &[AddressDataValue]) -> Self {
         self.faucets.extend(faucets.iter().cloned());
         self
     }
@@ -358,7 +359,7 @@ impl LedgerBuilder {
         let outputs: Vec<Output<Address>> = self.faucets.iter().map(|x| x.make_output()).collect();
         self = self.prefill_outputs(&outputs);
 
-        let utxodb = if self.utxo_declaration.len() > 0 {
+        let utxodb = if !self.utxo_declaration.is_empty() {
             let mut db = HashMap::new();
 
             // TODO subdivide utxo_declaration in group of 254 elements
@@ -375,7 +376,7 @@ impl LedgerBuilder {
                 let fragment_id = fragment.hash();
 
                 for (idx, o) in group.iter().enumerate() {
-                    let m = db.insert((fragment_id.clone(), idx as u8), o.clone());
+                    let m = db.insert((fragment_id, idx as u8), o.clone());
                     assert!(m.is_none());
                 }
 
@@ -484,7 +485,7 @@ impl TestLedger {
         self.faucets.clone()
     }
 
-    pub fn utxos<'a>(&'a self) -> Iter<'a, Address> {
+    pub fn utxos(&self) -> Iter<'_, Address> {
         self.ledger.utxos()
     }
 
@@ -590,15 +591,16 @@ impl TestLedger {
     ) -> Result<bool, Error> {
         let selection = LeadershipData::new(self.date().epoch, &self.ledger);
         for stake_pool in stake_pools {
-            if let Some(_) = selection
+            if selection
                 .leader(
                     &stake_pool.id(),
                     &stake_pool.vrf().private_key(),
                     self.ledger.date().clone(),
                 )
                 .expect("cannot calculate leader")
+                .is_some()
             {
-                self.produce_block(&stake_pool, fragments.clone())?;
+                self.produce_block(&stake_pool, fragments)?;
                 return Ok(true);
             }
         }

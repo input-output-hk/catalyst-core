@@ -2,7 +2,7 @@ use crate::value::Value;
 use std::ops::{Add, AddAssign};
 
 #[cfg_attr(feature = "generic-serialization", derive(serde_derive::Serialize))]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Stake(pub u64);
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -59,7 +59,8 @@ impl AsRef<u64> for Stake {
 }
 
 impl StakeUnit {
-    pub fn scale(&self, n: u32) -> Stake {
+    #[must_use = "operation does not change the value state"]
+    pub fn scale(self, n: u32) -> Stake {
         Stake((self.0).0.checked_mul(n as u64).unwrap())
     }
 }

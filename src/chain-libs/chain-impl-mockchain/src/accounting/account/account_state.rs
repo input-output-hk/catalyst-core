@@ -197,11 +197,12 @@ impl SpendingCounter {
         SpendingCounter(0)
     }
 
-    pub fn increment(&self) -> Option<Self> {
+    #[must_use = "this function does not modify the state"]
+    pub fn increment(self) -> Option<Self> {
         self.0.checked_add(1).map(SpendingCounter)
     }
 
-    pub fn to_bytes(&self) -> [u8; 4] {
+    pub fn to_bytes(self) -> [u8; 4] {
         self.0.to_le_bytes()
     }
 }
@@ -297,7 +298,7 @@ mod tests {
         ) -> AccountState<()> {
             let n_ops: Vec<ArbitraryAccountStateOp> =
                 self.0.iter().cloned().take(counter).collect();
-            self.calculate_account_state(initial_account_state.clone(), n_ops.iter(), subs)
+            self.calculate_account_state(initial_account_state, n_ops.iter(), subs)
         }
 
         pub fn get_account_state(
@@ -305,7 +306,7 @@ mod tests {
             initial_account_state: AccountState<()>,
             subs: u32,
         ) -> AccountState<()> {
-            self.calculate_account_state(initial_account_state.clone(), self.0.iter(), subs)
+            self.calculate_account_state(initial_account_state, self.0.iter(), subs)
         }
 
         fn calculate_account_state(
@@ -364,42 +365,36 @@ mod tests {
         mut account_state: AccountState<()>,
         operations: ArbitraryOperationChain,
     ) -> TestResult {
-        // for reporting which operation failed
-        let mut counter = 0;
-
         // to count spending counter
         let mut successful_subs = 0;
 
         let initial_account_state = account_state.clone();
-        for operation in operations.clone() {
-            counter = counter + 1;
+        for (counter, operation) in operations.clone().into_iter().enumerate() {
             account_state = match operation {
                 ArbitraryAccountStateOp::Add(value) => {
                     let should_fail = should_add_fail(account_state.clone(), value);
-                    let new_account_state = match (should_fail, account_state.add(value)) {
+                    match (should_fail, account_state.add(value)) {
                         (false, Ok(account_state)) => account_state,
                         (true, Err(_)) => account_state,
                         (false,  Err(err)) => return TestResult::error(format!("Operation {}: unexpected add operation failure. Expected success but got: {:?}",counter,err)),
                         (true, Ok(account_state)) => return TestResult::error(format!("Operation {}: unexpected add operation success. Expected failure but got: success. AccountState: {:?}",counter, &account_state)),
-                    };
-                    new_account_state
+                    }
                 }
                 ArbitraryAccountStateOp::Sub(value) => {
                     let should_fail = should_sub_fail(account_state.clone(), value);
-                    let new_account_state = match (should_fail, account_state.sub(value)) {
+                    match (should_fail, account_state.sub(value)) {
                         (false, Ok(account_state)) => {
-                            successful_subs = successful_subs + 1;
+                            successful_subs += 1;
                             // check if account has any funds left
                             match account_state {
                                 Some(account_state) => account_state,
-                                None => return verify_account_lost_all_funds(initial_account_state.clone(),operations.clone(),counter,successful_subs,account_state.unwrap())
+                                None => return verify_account_lost_all_funds(initial_account_state,operations,counter,successful_subs,account_state.unwrap())
                             }
                         }
                         (true, Err(_)) => account_state,
                         (false,  Err(err)) => return TestResult::error(format!("Operation {}: unexpected sub operation failure. Expected success but got: {:?}",counter,err)),
                         (true, Ok(account_state)) => return TestResult::error(format!("Operation {}: unexpected sub operation success. Expected failure but got: success. AccountState: {:?}",counter, &account_state)),
-                    };
-                    new_account_state
+                    }
                 }
                 ArbitraryAccountStateOp::Delegate(stake_pool_id) => {
                     account_state.set_delegation(DelegationType::Full(stake_pool_id))
@@ -410,13 +405,14 @@ mod tests {
             };
         }
         let expected_account_state =
-            operations.get_account_state(initial_account_state.clone(), successful_subs);
-        match expected_account_state == account_state {
-            true => TestResult::passed(),
-            false => TestResult::error(format!(
+            operations.get_account_state(initial_account_state, successful_subs);
+        if expected_account_state == account_state {
+            TestResult::passed()
+        } else {
+            TestResult::error(format!(
                 "Actual AccountState is not equal to expected one. Expected {:?}, but got {:?}",
                 expected_account_state, account_state
-            )),
+            ))
         }
     }
 
@@ -429,10 +425,11 @@ mod tests {
     ) -> TestResult {
         let expected_account =
             operations.get_account_state_after_n_ops(initial_account_state, counter, subs);
-        match expected_account.value == Value::zero() {
-              true => TestResult::passed(),
-              false => TestResult::error(format!("Account is dry out from funds after {} operations, while expectation was different. Expected: {:?}, Actual {:?}",counter,expected_account,actual_account_state))
-          }
+        if expected_account.value == Value::zero() {
+            TestResult::passed()
+        } else {
+            TestResult::error(format!("Account is dry out from funds after {} operations, while expectation was different. Expected: {:?}, Actual {:?}",counter,expected_account,actual_account_state))
+        }
     }
 
     fn should_add_fail(account_state: AccountState<()>, value: Value) -> bool {
@@ -454,7 +451,7 @@ mod tests {
         let pools: Vec<(PoolId, u8)> = vec![
             (fake_pool_id.clone(), 2u8),
             (fake_pool_id.clone(), 3u8),
-            (fake_pool_id.clone(), 3u8),
+            (fake_pool_id, 3u8),
         ];
         assert!(DelegationRatio::new(parts, pools).is_some());
     }
@@ -466,7 +463,7 @@ mod tests {
         let pools: Vec<(PoolId, u8)> = vec![
             (fake_pool_id.clone(), 2u8),
             (fake_pool_id.clone(), 3u8),
-            (fake_pool_id.clone(), 3u8),
+            (fake_pool_id, 3u8),
         ];
         assert!(DelegationRatio::new(parts, pools).is_none());
     }
@@ -478,7 +475,7 @@ mod tests {
         let pools: Vec<(PoolId, u8)> = vec![
             (fake_pool_id.clone(), 0u8),
             (fake_pool_id.clone(), 3u8),
-            (fake_pool_id.clone(), 3u8),
+            (fake_pool_id, 3u8),
         ];
         assert!(DelegationRatio::new(parts, pools).is_none());
     }
@@ -507,14 +504,14 @@ mod tests {
         let pools: Vec<(PoolId, u8)> = vec![
             (fake_pool_id.clone(), 3u8),
             (fake_pool_id.clone(), 3u8),
-            (fake_pool_id.clone(), 3u8),
+            (fake_pool_id, 3u8),
         ];
         assert!(DelegationRatio::new(parts, pools).is_none());
     }
 
     #[quickcheck]
     pub fn add_rewards(account_state_no_reward: AccountState<()>, value: Value) -> TestResult {
-        let initial_value = account_state_no_reward.value().clone();
+        let initial_value = account_state_no_reward.value();
         let account_state_reward = account_state_no_reward.clone();
 
         let account_state_no_reward = account_state_no_reward
@@ -529,8 +526,8 @@ mod tests {
 
     #[quickcheck]
     pub fn new_account_rewards(value: Value) -> TestResult {
-        let account_state = AccountState::new(value.clone(), ());
-        let account_with_reward = AccountState::new_reward(1, value.clone(), ());
+        let account_state = AccountState::new(value, ());
+        let account_with_reward = AccountState::new_reward(1, value, ());
         accounts_are_the_same(account_state, account_with_reward, Value::zero())
     }
 

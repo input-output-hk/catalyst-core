@@ -64,4 +64,4 @@ jobs:
         continue-on-error: false
         with:
           command: clippy
-          args: -- -D warnings
+          # args: -- -D warnings # TODO: uncomment when ready to enforce all warning lints

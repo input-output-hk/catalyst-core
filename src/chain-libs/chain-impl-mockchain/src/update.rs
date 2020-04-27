@@ -44,17 +44,20 @@ impl UpdateState {
 
         let proposal = &proposal.proposal.proposal;
 
-        if self.proposals.contains_key(&proposal_id) {
-            Err(Error::DuplicateProposal(proposal_id))
-        } else {
-            self.proposals.insert(
+        if self
+            .proposals
+            .insert(
                 proposal_id,
                 UpdateProposalState {
                     proposal: proposal.clone(),
                     proposal_date: cur_date,
                     votes: HashSet::new(),
                 },
-            );
+            )
+            .is_some()
+        {
+            Err(Error::DuplicateProposal(proposal_id))
+        } else {
             Ok(self)
         }
     }

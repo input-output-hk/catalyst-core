@@ -39,7 +39,7 @@ impl WitnessBuilder {
                 let key = SecretKey::<Ed25519>::from_binary(key)
                     .expect("an account key should already be the right size and format");
 
-                Witness::new_account(block0, sign_data_hash, &spending_counter, |data| {
+                Witness::new_account(block0, sign_data_hash, spending_counter, |data| {
                     key.sign(data)
                 })
             }

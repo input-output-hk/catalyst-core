@@ -31,12 +31,12 @@ impl Contents {
     }
 
     #[inline]
-    pub fn iter<'a>(&'a self) -> impl Iterator<Item = &'a Fragment> {
+    pub fn iter(&self) -> impl Iterator<Item = &'_ Fragment> {
         self.0.iter()
     }
 
     #[inline]
-    pub fn iter_slice<'a>(&'a self) -> slice::Iter<'a, Fragment> {
+    pub fn iter_slice(&self) -> slice::Iter<'_, Fragment> {
         self.0.iter()
     }
 
@@ -56,7 +56,7 @@ impl Contents {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct ContentsBuilder {
     fragments: Vec<Fragment>,
 }

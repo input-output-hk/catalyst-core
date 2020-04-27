@@ -171,10 +171,10 @@ fn deserialize_delegation_type<'a>(buf: &mut ReadBuf<'a>) -> Result<DelegationTy
         _ => {
             let sz = buf.get_u8()?;
             if sz as usize > DELEGATION_RATIO_MAX_DECLS {
-                Err(ReadError::SizeTooBig(
+                return Err(ReadError::SizeTooBig(
                     sz as usize,
                     DELEGATION_RATIO_MAX_DECLS,
-                ))?
+                ));
             }
             let mut pools = Vec::with_capacity(sz as usize);
             for _ in 0..sz {

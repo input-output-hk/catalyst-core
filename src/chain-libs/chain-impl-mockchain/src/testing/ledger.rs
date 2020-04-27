@@ -467,10 +467,9 @@ impl TestLedger {
         &'a self,
         address_data: &AddressData,
     ) -> Option<Entry<'a, Address>> {
-        let entry = self
+        self
             .utxos()
-            .find(|x| x.output.address == address_data.address);
-        entry
+            .find(|x| x.output.address == address_data.address)
     }
 
     pub fn accounts(&self) -> &AccountLedger {

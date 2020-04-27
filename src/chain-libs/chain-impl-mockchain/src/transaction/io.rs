@@ -135,12 +135,11 @@ impl InputOutputBuilder {
         let inputs = Value::sum(self.inputs.iter().map(|i| i.value()))?;
         let outputs = Value::sum(self.outputs.iter().map(|o| o.value))?;
         let z = (outputs + fee)?;
-        if inputs > z {
-            Ok(Balance::Positive((inputs - z)?))
-        } else if inputs < z {
-            Ok(Balance::Negative((z - inputs)?))
-        } else {
-            Ok(Balance::Zero)
+
+        match inputs.cmp(&z) {
+            std::cmp::Ordering::Greater => Ok(Balance::Positive((inputs - z)?)),
+            std::cmp::Ordering::Less => Ok(Balance::Negative((z - inputs)?)),
+            std::cmp::Ordering::Equal => Ok(Balance::Zero),
         }
     }
 
@@ -151,7 +150,7 @@ impl InputOutputBuilder {
         fee_algorithm: &F,
     ) -> Value {
         fee_algorithm.calculate(
-            payload.to_certificate_slice(),
+            payload.into_certificate_slice(),
             self.inputs.len() as u8,
             self.outputs.len() as u8,
         )
@@ -185,7 +184,7 @@ impl InputOutputBuilder {
         let nb_inputs = self.inputs.len() as u8 + inputs_placeholders;
         let nb_outputs = self.outputs.len() as u8 + outputs_placeholders;
 
-        let fee = fee_algorithm.calculate(payload.to_certificate_slice(), nb_inputs, nb_outputs);
+        let fee = fee_algorithm.calculate(payload.into_certificate_slice(), nb_inputs, nb_outputs);
         self.balance(fee).map_err(Error::MathErr)
     }
 

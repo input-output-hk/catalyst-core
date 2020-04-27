@@ -379,9 +379,9 @@ impl Ledger {
 
             let static_params = LedgerStaticParameters {
                 block0_initial_hash,
-                block0_start_time: block0_start_time,
-                discrimination: discrimination,
-                kes_update_speed: kes_update_speed,
+                block0_start_time,
+                discrimination,
+                kes_update_speed,
             };
 
             let system_time = SystemTime::UNIX_EPOCH + Duration::from_secs(block0_start_time.0);
@@ -723,10 +723,8 @@ impl Ledger {
         }
 
         // double check that if we had an epoch transition, distribute_rewards has been called
-        if metadata.block_date.epoch > new_ledger.date.epoch {
-            if self.leaders_log.total() > 0 {
-                panic!("internal error: apply_block called after epoch transition, but distribute_rewards has not been called")
-            }
+        if metadata.block_date.epoch > new_ledger.date.epoch && self.leaders_log.total() > 0 {
+            panic!("internal error: apply_block called after epoch transition, but distribute_rewards has not been called")
         }
 
         // Process Update proposals if needed
@@ -957,13 +955,13 @@ impl Ledger {
         let (account_id, value, witness) = {
             check::valid_vote_cast(tx)?;
 
-            let input = tx.inputs().iter().nth(0).unwrap();
+            let input = tx.inputs().iter().next().unwrap();
             match input.to_enum() {
                 InputEnum::UtxoInput(_) => {
                     return Err(Error::VoteCastInvalidTransaction);
                 }
                 InputEnum::AccountInput(account_id, value) => {
-                    let witness = tx.witnesses().iter().nth(0).unwrap();
+                    let witness = tx.witnesses().iter().next().unwrap();
                     (account_id, value, witness)
                 }
             }
@@ -1002,7 +1000,7 @@ impl Ledger {
         self = self.apply_tx_fee(fee)?;
 
         let vote = tx.payload().into_payload();
-        self.votes = self.votes.apply_vote(&self.date(), account_id, vote)?;
+        self.votes = self.votes.apply_vote(self.date(), account_id, vote)?;
 
         Ok((self, fee))
     }
@@ -1121,13 +1119,13 @@ impl Ledger {
         let (account_id, value, witness) = {
             check::valid_stake_owner_delegation_transaction(tx)?;
 
-            let input = tx.inputs().iter().nth(0).unwrap();
+            let input = tx.inputs().iter().next().unwrap();
             match input.to_enum() {
                 InputEnum::UtxoInput(_) => {
                     return Err(Error::OwnerStakeDelegationInvalidTransaction);
                 }
                 InputEnum::AccountInput(account_id, value) => {
-                    let witness = tx.witnesses().iter().nth(0).unwrap();
+                    let witness = tx.witnesses().iter().next().unwrap();
                     (account_id, value, witness)
                 }
             }
@@ -1194,7 +1192,7 @@ impl Ledger {
             treasury_tax: self
                 .settings
                 .treasury_params
-                .unwrap_or_else(|| rewards::TaxType::zero()),
+                .unwrap_or_else(rewards::TaxType::zero),
             reward_params: self.settings.to_reward_params(),
             block_content_max_size: self.settings.block_content_max_size,
             epoch_stability_depth: self.settings.epoch_stability_depth,
@@ -1213,7 +1211,7 @@ impl Ledger {
         index: TransactionIndex,
     ) -> Option<&Output<Address>> {
         self.utxos
-            .get(&fragment_id, &index)
+            .get(&fragment_id, index)
             .map(|entry| entry.output)
     }
 
@@ -1344,7 +1342,7 @@ impl Ledger {
                 }
             }
         }
-        if new_utxos.len() > 0 {
+        if !new_utxos.is_empty() {
             self.utxos = self.utxos.add(&fragment_id, &new_utxos)?;
         }
         Ok(self)
@@ -1397,7 +1395,7 @@ impl Ledger {
                 {
                     return Err(Error::OldUtxoInvalidPublicKey {
                         utxo: utxo.clone(),
-                        output: associated_output.clone(),
+                        output: associated_output,
                         witness: witness.clone(),
                     });
                 };
@@ -1411,7 +1409,7 @@ impl Ledger {
                 if verified == chain_crypto::Verification::Failed {
                     return Err(Error::OldUtxoInvalidSignature {
                         utxo: utxo.clone(),
-                        output: associated_output.clone(),
+                        output: associated_output,
                         witness: witness.clone(),
                     });
                 };
@@ -1441,7 +1439,7 @@ impl Ledger {
                 if verified == chain_crypto::Verification::Failed {
                     return Err(Error::UtxoInvalidSignature {
                         utxo: utxo.clone(),
-                        output: associated_output.clone(),
+                        output: associated_output,
                         witness: witness.clone(),
                     });
                 };
@@ -1523,7 +1521,7 @@ fn input_single_account_verify<'a>(
     let (new_ledger, spending_counter) = ledger.remove_value(&account, value)?;
     ledger = new_ledger;
 
-    let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, &spending_counter);
+    let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
     let verified = witness.verify(&account.clone().into(), &tidsc);
     if verified == chain_crypto::Verification::Failed {
         return Err(Error::AccountInvalidSignature {
@@ -1545,8 +1543,8 @@ fn input_multi_account_verify<'a>(
     // .remove_value() check if there's enough value and if not, returns a Err.
     let (new_ledger, declaration, spending_counter) = ledger.remove_value(&account, value)?;
 
-    let data_to_verify = WitnessMultisigData::new(&block0_hash, sign_data_hash, &spending_counter);
-    if witness.verify(declaration, &data_to_verify) != true {
+    let data_to_verify = WitnessMultisigData::new(&block0_hash, sign_data_hash, spending_counter);
+    if !witness.verify(declaration, &data_to_verify) {
         return Err(Error::MultisigInvalidSignature {
             multisig: account.clone(),
             witness: Witness::Multisig(witness.clone()),
@@ -1759,7 +1757,7 @@ mod tests {
 
         let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
         let signed_tx = single_transaction_sign_by(
-            account.make_input(&initial_value, None),
+            account.make_input(initial_value, None),
             &block0_hash,
             &account,
         );
@@ -1797,7 +1795,7 @@ mod tests {
 
         let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
         let signed_tx = single_transaction_sign_by(
-            account.make_input(&initial_value, None),
+            account.make_input(initial_value, None),
             &block0_hash,
             &account,
         );
@@ -1832,7 +1830,7 @@ mod tests {
 
         let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
         let signed_tx = single_transaction_sign_by(
-            account.make_input(&initial_value, None),
+            account.make_input(initial_value, None),
             &block0_hash,
             &account,
         );
@@ -1861,7 +1859,7 @@ mod tests {
 
         let account_ledger = account_ledger_with_initials(&[(id.clone(), initial_value)]);
         let signed_tx = single_transaction_sign_by(
-            account.make_input(&initial_value, None),
+            account.make_input(initial_value, None),
             &block0_hash,
             &account,
         );
@@ -1968,7 +1966,7 @@ mod tests {
         let outputs: Vec<Output<Address>> = arbitrary_outputs
             .0
             .iter()
-            .map(|x| x.address_data.make_output(&x.value))
+            .map(|x| x.address_data.make_output(x.value))
             .collect();
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, static_params.clone());
@@ -2049,7 +2047,7 @@ mod tests {
             };
 
             let dyn_params = LedgerParameters {
-                fees: fees,
+                fees,
                 treasury_tax: rewards::TaxType::zero(),
                 reward_params: rewards::Parameters::zero(),
                 block_content_max_size: 10_240,
@@ -2058,8 +2056,8 @@ mod tests {
                 committees: Arc::new(Vec::new()),
             };
             InternalApplyTransactionTestParams {
-                dyn_params: dyn_params,
-                static_params: static_params,
+                dyn_params,
+                static_params,
                 transaction_id: TestGen::hash(),
             }
         }
@@ -2083,7 +2081,7 @@ mod tests {
             let utxo = utxo::Entry {
                 fragment_id: self.transaction_id(),
                 output_index: 0 as u8,
-                output: output,
+                output,
             };
             utxo
         }
@@ -2103,12 +2101,12 @@ mod tests {
             .unwrap();
 
         let delegation = AddressData::delegation_for(&account);
-        let delegation_output = delegation.make_output(&Value(100));
+        let delegation_output = delegation.make_output(Value(100));
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());
         let auth_tx = transaction_from_ios_only(
             &[],
-            &[delegation_output.clone(), account.make_output(&Value(1))],
+            &[delegation_output.clone(), account.make_output(Value(1))],
         );
 
         let ledger = ledger
@@ -2139,7 +2137,7 @@ mod tests {
         let accounts = account::Ledger::new();
 
         let delegation_address = AddressData::delegation(Discrimination::Test);
-        let delegation_output = delegation_address.make_output(&Value(100));
+        let delegation_output = delegation_address.make_output(Value(100));
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());
 
@@ -2178,7 +2176,7 @@ mod tests {
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());
 
-        let auth_tx = transaction_from_ios_only(&[], &[account.make_output(&Value(200))]);
+        let auth_tx = transaction_from_ios_only(&[], &[account.make_output(Value(200))]);
         let ledger = ledger
             .apply_tx_outputs(params.transaction_id(), auth_tx.get_tx_outputs())
             .expect("Unexpected error while applying transaction output");
@@ -2206,7 +2204,7 @@ mod tests {
         let account = AddressData::account(Discrimination::Test);
 
         let ledger = build_ledger(utxos, accounts, multisig_ledger, params.static_params());
-        let auth_tx = transaction_from_ios_only(&[], &[account.make_output(&Value(200))]);
+        let auth_tx = transaction_from_ios_only(&[], &[account.make_output(Value(200))]);
         let ledger = ledger
             .apply_tx_outputs(params.transaction_id(), auth_tx.get_tx_outputs())
             .expect("Unexpected error while applying transaction output");
@@ -2266,7 +2264,7 @@ mod tests {
 
         let builder_tx = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_ios(&inputs, &[reciever.make_output(&Value(100))]);
+            .set_ios(&inputs, &[reciever.make_output(Value(100))]);
 
         let witnesses: Vec<Witness> = faucets
             .iter()
@@ -2300,9 +2298,9 @@ mod tests {
         let receivers =
             iter::from_fn(|| Some(AddressDataValue::account(Discrimination::Test, Value(100))))
                 .take(check::CHECK_TX_MAXIMUM_INPUTS as usize)
-                .collect();
+                .collect::<Vec<_>>();
 
-        let test_tx = TestTxBuilder::new(&test_ledger.block0_hash).move_funds_multiple(
+        let test_tx = TestTxBuilder::new(test_ledger.block0_hash).move_funds_multiple(
             &mut test_ledger,
             &vec![faucet],
             &receivers,
@@ -2330,7 +2328,7 @@ mod tests {
             .build()
             .unwrap();
 
-        let test_tx = TestTxBuilder::new(&test_ledger.block0_hash).move_funds_multiple(
+        let test_tx = TestTxBuilder::new(test_ledger.block0_hash).move_funds_multiple(
             &mut test_ledger,
             &faucets,
             &vec![receiver],
@@ -2355,7 +2353,7 @@ mod tests {
         let inputs: Vec<Input> = faucets.iter().map(|x| x.make_input(None)).collect();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_ios(&inputs, &[reciever.make_output(&Value(2))]);
+            .set_ios(&inputs, &[reciever.make_output(Value(2))]);
 
         let witness = make_witness(
             &test_ledger.block0_hash,
@@ -2384,7 +2382,7 @@ mod tests {
                 .build()
                 .unwrap();
 
-        let test_tx = TestTxBuilder::new(&test_ledger.block0_hash).move_all_funds(
+        let test_tx = TestTxBuilder::new(test_ledger.block0_hash).move_all_funds(
             &mut test_ledger,
             &faucet,
             &reciever,
@@ -2464,7 +2462,7 @@ mod tests {
         let inputs = [faucets[0].make_input(None), faucets[1].make_input(None)];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_ios(&inputs, &[reciever.make_output(&Value(2))]);
+            .set_ios(&inputs, &[reciever.make_output(Value(2))]);
         let auth_data = tx_builder.get_auth_data_for_witness().hash();
         let witnesses = make_witnesses(
             &test_ledger.block0_hash,
@@ -2514,7 +2512,7 @@ mod tests {
             .build()
             .unwrap();
 
-        let fragment = TestTxBuilder::new(&test_ledger.block0_hash)
+        let fragment = TestTxBuilder::new(test_ledger.block0_hash)
             .move_all_funds(&mut test_ledger, &faucet, &reciever)
             .get_fragment();
         assert!(test_ledger.apply_transaction(fragment).is_ok());
@@ -2545,7 +2543,7 @@ mod tests {
         let witness = Witness::new_account(
             &test_ledger.block0_hash,
             &tx_builder.get_auth_data_for_witness().hash(),
-            &SpendingCounter::zero(),
+            SpendingCounter::zero(),
             |d| faucet.private_key().sign(d),
         );
 

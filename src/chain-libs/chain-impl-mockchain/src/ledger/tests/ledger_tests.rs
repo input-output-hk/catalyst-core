@@ -31,8 +31,8 @@ pub fn ledger_accepts_correct_transaction(
         .initial_fund(&faucet)
         .build()
         .unwrap();
-    let fragment = TestTxBuilder::new(&ledger.block0_hash)
-        .move_funds(&mut ledger, &faucet, &receiver, &faucet.value)
+    let fragment = TestTxBuilder::new(ledger.block0_hash)
+        .move_funds(&mut ledger, &faucet, &receiver, faucet.value)
         .get_fragment();
     let total_funds_before = ledger.total_funds();
     let result = ledger.apply_transaction(fragment);
@@ -62,7 +62,7 @@ pub fn total_funds_are_const_in_ledger(
         .initial_funds(&transaction_data.addresses)
         .build()
         .unwrap();
-    let signed_tx = TestTxBuilder::new(&ledger.block0_hash).move_funds_multiple(
+    let signed_tx = TestTxBuilder::new(ledger.block0_hash).move_funds_multiple(
         &mut ledger,
         &transaction_data.input_addresses,
         &transaction_data.output_addresses,

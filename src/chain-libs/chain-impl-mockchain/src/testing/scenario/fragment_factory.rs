@@ -25,7 +25,7 @@ pub struct FragmentFactory {
 
 impl FragmentFactory {
     pub fn from_ledger(test_ledger: &TestLedger) -> Self {
-        Self::new(test_ledger.block0_hash.clone(), test_ledger.fee().clone())
+        Self::new(test_ledger.block0_hash, test_ledger.fee())
     }
 
     pub fn new(block0_hash: Hash, fee: LinearFee) -> Self {
@@ -39,12 +39,12 @@ impl FragmentFactory {
         mut test_ledger: &mut TestLedger,
         funds: u64,
     ) -> Fragment {
-        TestTxBuilder::new(&test_ledger.block0_hash)
+        TestTxBuilder::new(test_ledger.block0_hash)
             .move_funds(
                 &mut test_ledger,
                 &from.as_account(),
                 &to.as_account(),
-                &Value(funds),
+                Value(funds),
             )
             .get_fragment()
     }
@@ -78,7 +78,7 @@ impl FragmentFactory {
         let pools_ratio_sum: u8 = distribution.iter().map(|(_st, ratio)| *ratio as u8).sum();
         let pools: Vec<(PoolId, u8)> = distribution
             .iter()
-            .map(|(st, ratio)| (st.info().to_id().clone(), *ratio))
+            .map(|(st, ratio)| (st.info().to_id(), *ratio))
             .collect();
 
         let delegation_ratio = DelegationRatio::new(pools_ratio_sum, pools);
@@ -113,7 +113,7 @@ impl FragmentFactory {
     }
 
     fn transaction_with_cert(&self, wallets: &[&Wallet], certificate: Certificate) -> Fragment {
-        TestTxCertBuilder::new(self.block0_hash.clone(), self.fee.clone())
+        TestTxCertBuilder::new(self.block0_hash, self.fee)
             .make_transaction(wallets, &certificate)
     }
 }

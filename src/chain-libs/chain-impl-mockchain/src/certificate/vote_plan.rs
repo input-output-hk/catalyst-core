@@ -106,10 +106,8 @@ impl Proposal {
     }
 
     fn serialize_in(&self, bb: ByteBuilder<VotePlan>) -> ByteBuilder<VotePlan> {
-        let bb = bb
-            .bytes(self.external_id.as_ref())
-            .u8(self.options.num_choices);
-        bb
+        bb.bytes(self.external_id.as_ref())
+            .u8(self.options.num_choices)
     }
 }
 
@@ -181,13 +179,13 @@ impl VotePlan {
     }
 
     #[inline]
-    pub fn vote_started(&self, date: &BlockDate) -> bool {
-        &self.vote_start <= date
+    pub fn vote_started(&self, date: BlockDate) -> bool {
+        self.vote_start <= date
     }
 
     #[inline]
-    pub fn vote_finished(&self, date: &BlockDate) -> bool {
-        &self.vote_end < date
+    pub fn vote_finished(&self, date: BlockDate) -> bool {
+        self.vote_end < date
     }
 
     /// tells if it is possible to vote at the given date
@@ -195,18 +193,18 @@ impl VotePlan {
     /// `[vote_start..vote_end[`: from the start date (included) to
     /// the end (not included).
     #[inline]
-    pub fn can_vote(&self, date: &BlockDate) -> bool {
+    pub fn can_vote(&self, date: BlockDate) -> bool {
         self.vote_started(date) && !self.vote_finished(date)
     }
 
     #[inline]
-    pub fn committee_started(&self, date: &BlockDate) -> bool {
-        &self.vote_end <= date
+    pub fn committee_started(&self, date: BlockDate) -> bool {
+        self.vote_end <= date
     }
 
     #[inline]
-    pub fn committee_finished(&self, date: &BlockDate) -> bool {
-        &self.committee_end < date
+    pub fn committee_finished(&self, date: BlockDate) -> bool {
+        self.committee_end < date
     }
 
     /// tells if it is possible to do the committee operations at the given date
@@ -215,13 +213,12 @@ impl VotePlan {
     /// end of the committee (not included).
     ///
     #[inline]
-    pub fn committee_time(&self, date: &BlockDate) -> bool {
+    pub fn committee_time(&self, date: BlockDate) -> bool {
         self.committee_started(date) && !self.committee_finished(date)
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        let bb = bb
-            .u32(self.vote_start.epoch)
+        bb.u32(self.vote_start.epoch)
             .u32(self.vote_start.slot_id)
             .u32(self.vote_end.epoch)
             .u32(self.vote_end.slot_id)
@@ -229,8 +226,7 @@ impl VotePlan {
             .u32(self.committee_end.slot_id)
             .iter8(&mut self.proposals.iter(), |bb, proposal| {
                 proposal.serialize_in(bb)
-            });
-        bb
+            })
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {

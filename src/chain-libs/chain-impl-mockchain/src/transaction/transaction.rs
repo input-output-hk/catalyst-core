@@ -245,7 +245,7 @@ pub(super) struct TransactionStruct {
 }
 
 /// Verify the structure of the transaction and return all the offsets
-fn get_spine<'a, P: Payload>(slice: &'a [u8]) -> Result<TransactionStruct, TransactionStructError> {
+fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionStructError> {
     let sz = slice.len();
     let mut rb = ReadBuf::from(slice);
 
@@ -314,14 +314,14 @@ impl<'a, P: Payload> UnverifiedTransactionSlice<'a, P> {
         let tstruct = get_spine::<P>(&self.data)?;
         Ok(TransactionSlice {
             data: self.data,
-            tstruct: tstruct,
+            tstruct,
             phantom: self.phantom,
         })
     }
 }
 
 impl<P> Transaction<P> {
-    pub fn as_slice<'a>(&'a self) -> TransactionSlice<'a, P> {
+    pub fn as_slice(&self) -> TransactionSlice<'_, P> {
         TransactionSlice {
             data: &self.data,
             tstruct: self.tstruct.clone(),
@@ -377,15 +377,16 @@ impl<P> Transaction<P> {
     }
 
     pub fn balance(&self, fee: Value) -> Result<Balance, ValueError> {
+        use std::cmp::Ordering::*;
+
         let inputs = self.total_input()?;
         let outputs = self.total_output()?;
         let z = (outputs + fee)?;
-        if inputs > z {
-            Ok(Balance::Positive((inputs - z)?))
-        } else if inputs < z {
-            Ok(Balance::Negative((z - inputs)?))
-        } else {
-            Ok(Balance::Zero)
+
+        match inputs.cmp(&z) {
+            Greater => Ok(Balance::Positive((inputs - z)?)),
+            Less => Ok(Balance::Negative((z - inputs)?)),
+            Equal => Ok(Balance::Zero),
         }
     }
 
@@ -398,7 +399,7 @@ impl<P> Transaction<P> {
             .and_then(|out| out + fee)
             .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs != outputs {
-            Err(BalanceError::NotBalanced { inputs, outputs })?;
+            return Err(BalanceError::NotBalanced { inputs, outputs });
         };
         Ok(())
     }
@@ -411,14 +412,14 @@ impl<P> Transaction<P> {
             .total_output()
             .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs < outputs {
-            Err(BalanceError::NotBalanced { inputs, outputs })?;
+            return Err(BalanceError::NotBalanced { inputs, outputs });
         };
         Ok(())
     }
 }
 
 impl<'a, P> TransactionSlice<'a, P> {
-    pub fn into_owned(&self) -> Transaction<P> {
+    pub fn to_owned(&self) -> Transaction<P> {
         let mut data = Vec::with_capacity(self.data.len());
         data.extend_from_slice(self.data);
         Transaction {
@@ -507,7 +508,7 @@ impl<'a, P> TransactionSlice<'a, P> {
             .and_then(|out| out + fee)
             .map_err(BalanceError::OutputsTotalFailed)?;
         if inputs != outputs {
-            Err(BalanceError::NotBalanced { inputs, outputs })?;
+            return Err(BalanceError::NotBalanced { inputs, outputs });
         };
         Ok(())
     }

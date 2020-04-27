@@ -121,7 +121,7 @@ fn verify_distribute_rewards(
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after rewards distribution to single owner");
 
     ledger_verifier

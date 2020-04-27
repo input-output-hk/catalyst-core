@@ -811,7 +811,7 @@ mod test {
             Ratio {
                 numerator: Arbitrary::arbitrary(g),
                 denominator: NonZeroU64::new(Arbitrary::arbitrary(g))
-                    .unwrap_or(NonZeroU64::new(1).unwrap()),
+                    .unwrap_or_else(|| NonZeroU64::new(1).unwrap()),
             }
         }
     }

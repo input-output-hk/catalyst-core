@@ -101,7 +101,7 @@ impl WitnessAccountData {
     pub fn new(
         block0: &HeaderId,
         transaction_id: &TransactionSignDataHash,
-        spending_counter: &account::SpendingCounter,
+        spending_counter: account::SpendingCounter,
     ) -> Self {
         let mut v = Vec::with_capacity(69);
         witness_data_common(&mut v, WITNESS_TAG_ACCOUNT, block0, transaction_id);
@@ -122,7 +122,7 @@ impl WitnessMultisigData {
     pub fn new(
         block0: &HeaderId,
         transaction_id: &TransactionSignDataHash,
-        spending_counter: &account::SpendingCounter,
+        spending_counter: account::SpendingCounter,
     ) -> Self {
         let mut v = Vec::with_capacity(69);
         witness_data_common(&mut v, WITNESS_TAG_MULTISIG, block0, transaction_id);
@@ -158,13 +158,13 @@ impl Witness {
     {
         let wud = WitnessUtxoData::new(block0, sign_data_hash, WitnessUtxoVersion::Legacy);
         let (pk, sig) = sign(&wud);
-        Witness::OldUtxo(pk, some_bytes.clone(), sig)
+        Witness::OldUtxo(pk, *some_bytes, sig)
     }
 
     pub fn new_account<F>(
         block0: &HeaderId,
         sign_data_hash: &TransactionSignDataHash,
-        spending_counter: &account::SpendingCounter,
+        spending_counter: account::SpendingCounter,
         sign: F,
     ) -> Self
     where

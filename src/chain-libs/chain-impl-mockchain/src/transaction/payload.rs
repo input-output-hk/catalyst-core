@@ -15,7 +15,7 @@ pub trait Payload: Readable {
 
     fn payload_auth_data(auth: &Self::Auth) -> PayloadAuthData<Self>;
 
-    fn to_certificate_slice<'a>(p: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>>;
+    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>>;
 }
 
 /// Owned binary representation of a payload
@@ -32,37 +32,37 @@ pub struct PayloadAuthSlice<'a, P: ?Sized>(pub(crate) &'a [u8], pub(crate) Phant
 
 impl<P: ?Sized> Clone for PayloadData<P> {
     fn clone(&self) -> Self {
-        PayloadData(self.0.clone(), self.1.clone())
+        PayloadData(self.0.clone(), self.1)
     }
 }
 
 impl<P: ?Sized> Clone for PayloadAuthData<P> {
     fn clone(&self) -> Self {
-        PayloadAuthData(self.0.clone(), self.1.clone())
+        PayloadAuthData(self.0.clone(), self.1)
     }
 }
 
 impl<P: ?Sized> PayloadData<P> {
-    pub fn borrow<'a>(&'a self) -> PayloadSlice<'a, P> {
-        PayloadSlice(&self.0[..], self.1.clone())
+    pub fn borrow(&self) -> PayloadSlice<'_, P> {
+        PayloadSlice(&self.0[..], self.1)
     }
 }
 
 impl<P: ?Sized> PayloadAuthData<P> {
-    pub fn borrow<'a>(&'a self) -> PayloadAuthSlice<'a, P> {
-        PayloadAuthSlice(&self.0[..], self.1.clone())
+    pub fn borrow(&self) -> PayloadAuthSlice<'_, P> {
+        PayloadAuthSlice(&self.0[..], self.1)
     }
 }
 
 impl<'a, P: ?Sized> Clone for PayloadSlice<'a, P> {
     fn clone(&self) -> PayloadSlice<'a, P> {
-        PayloadSlice(self.0, self.1.clone())
+        PayloadSlice(self.0, self.1)
     }
 }
 
 impl<'a, P: ?Sized> Clone for PayloadAuthSlice<'a, P> {
     fn clone(&self) -> PayloadAuthSlice<'a, P> {
-        PayloadAuthSlice(self.0, self.1.clone())
+        PayloadAuthSlice(self.0, self.1)
     }
 }
 
@@ -80,18 +80,18 @@ impl<'a, P: Payload> PayloadAuthSlice<'a, P> {
 
 impl<'a, P: Payload> PayloadSlice<'a, P> {
     pub fn to_owned(&self) -> PayloadData<P> {
-        PayloadData(self.0.to_owned().into(), self.1.clone())
+        PayloadData(self.0.to_owned().into(), self.1)
     }
 }
 
 impl<'a, P: Payload> PayloadAuthSlice<'a, P> {
     pub fn to_owned(&self) -> PayloadAuthData<P> {
-        PayloadAuthData(self.0.to_owned().into(), self.1.clone())
+        PayloadAuthData(self.0.to_owned().into(), self.1)
     }
 }
 
 impl<'a, P: Payload> PayloadSlice<'a, P> {
-    pub fn to_certificate_slice(self) -> Option<CertificateSlice<'a>> {
+    pub fn into_certificate_slice(self) -> Option<CertificateSlice<'a>> {
         <P as Payload>::to_certificate_slice(self)
     }
 }
@@ -154,7 +154,7 @@ impl Payload for NoExtra {
         PayloadAuthData(Vec::with_capacity(0).into(), PhantomData)
     }
 
-    fn to_certificate_slice<'a>(_: PayloadSlice<'a, Self>) -> Option<CertificateSlice<'a>> {
+    fn to_certificate_slice(_: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         None
     }
 }

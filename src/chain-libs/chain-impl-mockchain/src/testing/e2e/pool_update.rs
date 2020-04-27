@@ -66,7 +66,7 @@ pub fn pool_update_after_pool_retirement() {
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
 
     assert!(controller
-        .retire(&vec![&alice], &stake_pool, &mut ledger)
+        .retire(&[&alice], &stake_pool, &mut ledger)
         .is_ok());
 
     let mut new_stake_pool = stake_pool.clone();
@@ -75,7 +75,7 @@ pub fn pool_update_after_pool_retirement() {
     assert!(controller
         .update(
             &stake_pool,
-            new_stake_pool.clone(),
+            new_stake_pool,
             vec![&alice],
             &mut ledger
         )
@@ -159,7 +159,7 @@ pub fn pool_update_wrong_signature_incorrect_owner() {
     new_stake_pool.info_mut().serial = 111u128;
 
     assert!(controller
-        .update(&stake_pool, new_stake_pool.clone(), vec![&bob], &mut ledger)
+        .update(&stake_pool, new_stake_pool, vec![&bob], &mut ledger)
         .is_err());
 }
 
@@ -198,7 +198,7 @@ pub fn pool_update_changes_owner() {
         .owners_eq(vec![bob.public_key()]);
 
     assert!(controller
-        .retire(&vec![&bob], &new_stake_pool, &mut ledger)
+        .retire(&[&bob], &new_stake_pool, &mut ledger)
         .is_ok());
 
     LedgerStateVerifier::new(ledger.into())
@@ -247,7 +247,7 @@ pub fn pool_update_revert_changes() {
     assert!(controller
         .update(
             &new_stake_pool,
-            reverted_stake_pool.clone(),
+            reverted_stake_pool,
             vec![&bob],
             &mut ledger
         )
@@ -260,7 +260,7 @@ pub fn pool_update_revert_changes() {
 
     println!(
         "{:?}",
-        controller.retire(&vec![&alice], &new_stake_pool, &mut ledger)
+        controller.retire(&[&alice], &new_stake_pool, &mut ledger)
     );
 
     //assert!(controller.retire(&vec![&alice],&new_stake_pool,&mut ledger).is_ok());

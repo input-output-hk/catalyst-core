@@ -16,6 +16,12 @@ pub struct GenesisPraosBlockBuilder {
     contents_builder: ContentsBuilder,
 }
 
+impl Default for GenesisPraosBlockBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GenesisPraosBlockBuilder {
     pub fn new() -> Self {
         GenesisPraosBlockBuilder {
@@ -74,7 +80,7 @@ impl GenesisPraosBlockBuilder {
             .set_date(self.date.unwrap().next(time_era))
             .to_genesis_praos_builder()
             .unwrap()
-            .set_consensus_data(&stake_pool.id(), &vrf_proof.into())
+            .set_consensus_data(&stake_pool.id(), &vrf_proof)
             .sign_using(stake_pool.kes().private_key())
             .generalize();
 

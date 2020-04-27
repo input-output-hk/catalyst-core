@@ -35,6 +35,12 @@ pub type TxBuilder = TxBuilderState<SetPayload>;
 // TODO not supported yet
 pub const FRAGMENT_OVERHEAD: usize = 0;
 
+impl Default for TxBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TxBuilder {
     /// Create a new Tx builder
     #[allow(clippy::reverse_range_loop)]
@@ -133,7 +139,7 @@ impl<P> TxBuilderState<SetIOs<P>> {
 
 impl<P> TxBuilderState<SetWitnesses<P>> {
     /// Get the authenticated data consisting of the payload and the input/outputs
-    pub fn get_auth_data_for_witness<'a>(&'a self) -> TransactionAuthData<'a> {
+    pub fn get_auth_data_for_witness(&self) -> TransactionAuthData<'_> {
         TransactionAuthData(&self.data[FRAGMENT_OVERHEAD..])
     }
 
@@ -161,7 +167,7 @@ impl<P> TxBuilderState<SetWitnesses<P>> {
 
 impl<P: Payload> TxBuilderState<SetAuthData<P>> {
     /// Get the authenticated data related to possible overall data for transaction and payload binding
-    pub fn get_auth_data<'a>(&'a self) -> TransactionBindingAuthData<'a> {
+    pub fn get_auth_data(&self) -> TransactionBindingAuthData<'_> {
         TransactionBindingAuthData(&self.data[FRAGMENT_OVERHEAD..])
     }
 
@@ -231,7 +237,7 @@ mod tests {
         let block0_hash = TestGen::hash();
         let tx_builder = TxBuilder::new().set_payload(&NoExtra).set_ios(
             &[faucets[0].make_input(None), faucets[1].make_input(None)],
-            &[reciever.make_output(&Value(2))],
+            &[reciever.make_output(Value(2))],
         );
 
         let witness = make_witness(

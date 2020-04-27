@@ -57,7 +57,7 @@ impl AddressData {
 
     pub fn from_discrimination_and_kind_type(
         discrimination: Discrimination,
-        kind: &KindType,
+        kind: KindType,
     ) -> Self {
         match kind {
             KindType::Account => AddressData::account(discrimination),
@@ -70,7 +70,7 @@ impl AddressData {
     pub fn utxo(discrimination: Discrimination) -> Self {
         let (sk, pk) = AddressData::generate_key_pair::<Ed25519Extended>().into_keys();
         let sk = EitherEd25519SecretKey::Extended(sk);
-        let user_address = Address(discrimination.clone(), Kind::Single(pk.clone()));
+        let user_address = Address(discrimination, Kind::Single(pk));
         AddressData::new(sk, None, user_address)
     }
 
@@ -84,7 +84,7 @@ impl AddressData {
     ) -> Self {
         let (sk, pk) = AddressData::generate_key_pair::<Ed25519Extended>().into_keys();
         let sk = EitherEd25519SecretKey::Extended(sk);
-        let user_address = Address(discrimination.clone(), Kind::Account(pk.clone()));
+        let user_address = Address(discrimination, Kind::Account(pk));
         AddressData::new(sk, Some(spending_counter.into()), user_address)
     }
 
@@ -95,8 +95,8 @@ impl AddressData {
             AddressData::generate_key_pair::<Ed25519Extended>().into_keys();
 
         let user_address = Address(
-            discrimination.clone(),
-            Kind::Group(single_pk.clone(), delegation_pk.clone()),
+            discrimination,
+            Kind::Group(single_pk, delegation_pk),
         );
         let single_sk = EitherEd25519SecretKey::Extended(single_sk);
         AddressData::new(single_sk, None, user_address)
@@ -109,8 +109,8 @@ impl AddressData {
         let single_sk = primary_address.private_key.clone();
         let single_pk = primary_address.public_key();
         let user_address = Address(
-            primary_address.discrimination().clone(),
-            Kind::Group(single_pk.clone(), delegation_address.public_key().clone()),
+            primary_address.discrimination(),
+            Kind::Group(single_pk, delegation_address.public_key()),
         );
         AddressData::new(single_sk, None, user_address)
     }
@@ -119,13 +119,13 @@ impl AddressData {
         AddressData::delegation_from(&AddressData::delegation(address.discrimination()), address)
     }
 
-    pub fn make_input(&self, value: &Value, utxo: Option<Entry<Address>>) -> Input {
+    pub fn make_input(&self, value: Value, utxo: Option<Entry<Address>>) -> Input {
         match self.address.kind() {
             Kind::Account { .. } => {
-                Input::from_account_public_key(self.public_key(), value.clone())
+                Input::from_account_public_key(self.public_key(), value)
             }
             Kind::Single { .. } | Kind::Group { .. } => {
-                Input::from_utxo_entry(utxo.expect(&format!(
+                Input::from_utxo_entry(utxo.unwrap_or_else(|| panic!(
                     "invalid state, utxo should be Some if Kind not Account {:?}",
                     &self.address
                 )))
@@ -142,8 +142,8 @@ impl AddressData {
         Identifier::from(self.public_key())
     }
 
-    pub fn make_output(&self, value: &Value) -> Output<Address> {
-        Output::from_address(self.address.clone(), value.clone())
+    pub fn make_output(&self, value: Value) -> Output<Address> {
+        Output::from_address(self.address.clone(), value)
     }
 
     pub fn public_key(&self) -> PublicKey<Ed25519> {
@@ -180,7 +180,7 @@ impl AddressData {
     }
 
     pub fn discrimination(&self) -> Discrimination {
-        self.address.discrimination().clone()
+        self.address.discrimination()
     }
 
     pub fn to_bech32_str(&self) -> String {
@@ -200,8 +200,8 @@ impl AddressData {
         delegation_public_key: PublicKey<Ed25519>,
     ) -> Self {
         let user_address = Address(
-            other.address.discrimination().clone(),
-            Kind::Group(other.public_key().clone(), delegation_public_key.clone()),
+            other.address.discrimination(),
+            Kind::Group(other.public_key(), delegation_public_key),
         );
         AddressData::new(other.private_key, other.spending_counter, user_address)
     }
@@ -265,7 +265,7 @@ impl AddressDataValue {
 
     pub fn from_discrimination_and_kind_type(
         discrimination: Discrimination,
-        kind: &KindType,
+        kind: KindType,
         value: Value,
     ) -> Self {
         AddressDataValue::new(
@@ -287,18 +287,18 @@ impl AddressDataValue {
     }
 
     pub fn make_input(&self, utxo: Option<Entry<Address>>) -> Input {
-        self.make_input_with_value(utxo, &self.value)
+        self.make_input_with_value(utxo, self.value)
     }
 
-    pub fn make_input_with_value(&self, utxo: Option<Entry<Address>>, value: &Value) -> Input {
+    pub fn make_input_with_value(&self, utxo: Option<Entry<Address>>, value: Value) -> Input {
         self.address_data.make_input(value, utxo)
     }
 
     pub fn make_output(&self) -> Output<Address> {
-        self.make_output_with_value(&self.value)
+        self.make_output_with_value(self.value)
     }
 
-    pub fn make_output_with_value(&self, value: &Value) -> Output<Address> {
+    pub fn make_output_with_value(&self, value: Value) -> Output<Address> {
         self.address_data.make_output(value)
     }
 

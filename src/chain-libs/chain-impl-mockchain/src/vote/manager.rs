@@ -150,19 +150,19 @@ impl VotePlanManager {
         &self.plan
     }
 
-    pub fn can_vote(&self, date: &BlockDate) -> bool {
+    pub fn can_vote(&self, date: BlockDate) -> bool {
         self.plan().can_vote(date)
     }
 
-    pub fn can_committee(&self, date: &BlockDate) -> bool {
+    pub fn can_committee(&self, date: BlockDate) -> bool {
         self.plan().committee_time(date)
     }
 
     /// return true if the vote plan has elapsed i.e. the vote is
     /// no longer interesting to track in the ledger and it can be
     /// GCed.
-    pub fn vote_plan_elapsed(&self, date: &BlockDate) -> bool {
-        &self.plan().committee_end() < date
+    pub fn vote_plan_elapsed(&self, date: BlockDate) -> bool {
+        self.plan().committee_end() < date
     }
 
     /// attempt to apply the vote to one of the proposals
@@ -179,7 +179,7 @@ impl VotePlanManager {
     ///
     pub fn vote(
         &self,
-        block_date: &BlockDate,
+        block_date: BlockDate,
         identifier: UnspecifiedAccountIdentifier,
         cast: VoteCast,
     ) -> Result<Self, VoteError> {

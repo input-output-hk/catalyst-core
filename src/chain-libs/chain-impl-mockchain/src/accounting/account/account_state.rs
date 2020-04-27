@@ -342,7 +342,7 @@ mod tests {
             }
             AccountState {
                 counter: SpendingCounter(result_spending_counter),
-                delegation: delegation,
+                delegation,
                 value: result_value,
                 last_rewards: LastRewards::default(),
                 extra: (),

@@ -23,7 +23,7 @@ impl UnspecifiedAccountIdentifier {
         PublicKey::from_binary(&self.0).map(|x| x.into()).ok()
     }
     pub fn to_multi_account(&self) -> multisig::Identifier {
-        multisig::Identifier::from(self.0.clone())
+        multisig::Identifier::from(self.0)
     }
 
     pub fn from_single_account(identifier: account::Identifier) -> Self {
@@ -131,7 +131,7 @@ impl Input {
         Input {
             index_or_account: utxo_pointer.output_index,
             value: utxo_pointer.value,
-            input_ptr: input_ptr,
+            input_ptr,
         }
     }
 
@@ -141,7 +141,7 @@ impl Input {
         Input {
             index_or_account: utxo_entry.output_index,
             value: utxo_entry.output.value,
-            input_ptr: input_ptr,
+            input_ptr,
         }
     }
 
@@ -157,8 +157,8 @@ impl Input {
         input_ptr.copy_from_slice(&id.0);
         Input {
             index_or_account: 0xff,
-            value: value,
-            input_ptr: input_ptr,
+            value,
+            input_ptr,
         }
     }
 
@@ -175,12 +175,12 @@ impl Input {
     pub fn to_enum(&self) -> InputEnum {
         match self.get_type() {
             InputType::Account => {
-                let account_identifier = self.input_ptr.clone();
+                let account_identifier = self.input_ptr;
                 let id = UnspecifiedAccountIdentifier(account_identifier);
                 InputEnum::AccountInput(id, self.value)
             }
             InputType::Utxo => InputEnum::UtxoInput(UtxoPointer::new(
-                FragmentId::from(self.input_ptr.clone()),
+                FragmentId::from(self.input_ptr),
                 self.index_or_account,
                 self.value,
             )),
@@ -221,9 +221,9 @@ impl property::Deserialize for Input {
         let mut input_ptr = [0; INPUT_PTR_SIZE];
         codec.into_inner().read_exact(&mut input_ptr)?;
         Ok(Input {
-            index_or_account: index_or_account,
-            value: value,
-            input_ptr: input_ptr,
+            index_or_account,
+            value,
+            input_ptr,
         })
     }
 }
@@ -234,9 +234,9 @@ impl Readable for Input {
         let value = Value::read(buf)?;
         let input_ptr = <[u8; INPUT_PTR_SIZE]>::read(buf)?;
         Ok(Input {
-            index_or_account: index_or_account,
-            value: value,
-            input_ptr: input_ptr,
+            index_or_account,
+            value,
+            input_ptr,
         })
     }
 }

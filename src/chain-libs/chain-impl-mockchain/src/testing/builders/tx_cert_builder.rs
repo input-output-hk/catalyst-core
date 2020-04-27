@@ -39,7 +39,7 @@ impl TestTxCertBuilder {
         cert: &Certificate,
     ) -> TxBuilderState<SetAuthData<P>> {
         //utxo not supported yet
-        let input = funder.make_input_with_value(&self.fee(cert));
+        let input = funder.make_input_with_value(self.fee(cert));
         let builder = builder.set_ios(&[input], &[]);
         let witness = make_witness(
             self.block0_hash(),

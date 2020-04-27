@@ -30,7 +30,7 @@ pub fn rewards_no_block() {
 
     ledger.distribute_rewards().unwrap();
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("after empty rewards distribution")
         .pots()
         .has_fee_equals_to(&Value::zero())
@@ -59,7 +59,7 @@ pub fn rewards_empty_pots() {
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after empty rewards distribution");
 
     ledger_verifier
@@ -111,7 +111,7 @@ pub fn rewards_owners_split() {
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("tets after reward distribution splitted into 3 accounts");
 
     ledger_verifier
@@ -167,7 +167,7 @@ pub fn rewards_owners_uneven_split() {
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("tets after reward distribution splitted into 3 accounts");
 
     ledger_verifier
@@ -216,7 +216,7 @@ pub fn rewards_single_owner() {
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after rewards distribution to single owner");
 
     ledger_verifier
@@ -260,7 +260,7 @@ pub fn rewards_reward_account() {
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after rewards distribution to reward account");
 
     ledger_verifier
@@ -314,7 +314,7 @@ pub fn rewards_goes_to_treasury_if_stake_pool_is_retired() {
         .unwrap();
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after rewards distribution to retired stake pool");
 
     ledger_verifier
@@ -362,11 +362,11 @@ pub fn rewards_from_fees() {
         .unwrap();
 
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
-    let mut bob = controller.wallet("Bob").unwrap();
+    let bob = controller.wallet("Bob").unwrap();
     let clarice = controller.wallet("Clarice").unwrap();
 
     let fragment_factory = controller.fragment_factory();
-    let fragment = fragment_factory.transaction(&mut bob, &clarice, &mut ledger, 100);
+    let fragment = fragment_factory.transaction(&bob, &clarice, &mut ledger, 100);
     assert!(ledger.produce_block(&stake_pool, vec![fragment]).is_ok());
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
@@ -382,7 +382,7 @@ pub fn rewards_from_fees() {
 
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after rewards distribution with single transaction");
 
     ledger_verifier
@@ -433,7 +433,7 @@ pub fn rewards_stake_pool_with_delegation() {
 
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after rewards distribution with delegation");
 
     ledger_verifier
@@ -479,11 +479,11 @@ pub fn rewards_total_amount_is_constant_after_reward_distribution() {
         .unwrap();
 
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
-    let mut bob = controller.wallet("Bob").unwrap();
+    let bob = controller.wallet("Bob").unwrap();
     let clarice = controller.wallet("Clarice").unwrap();
 
     let fragment_factory = controller.fragment_factory();
-    let fragment = fragment_factory.transaction(&mut bob, &clarice, &mut ledger, 100);
+    let fragment = fragment_factory.transaction(&bob, &clarice, &mut ledger, 100);
     assert!(ledger.produce_block(&stake_pool, vec![fragment]).is_ok());
 
     LedgerStateVerifier::new(ledger.clone().into())
@@ -492,7 +492,7 @@ pub fn rewards_total_amount_is_constant_after_reward_distribution() {
 
     ledger.distribute_rewards().unwrap();
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("after rewards distribution")
         .total_value_is(&Value(4100));
 }
@@ -555,7 +555,7 @@ pub fn rewards_are_propotional_to_stake_pool_effectivness_in_building_blocks() {
     let fragment_factory = controller.fragment_factory();
 
     while ledger.date().slot_id < 99 {
-        let fragment = fragment_factory.transaction(&mut carol, &david, &mut ledger, 100);
+        let fragment = fragment_factory.transaction(&carol, &david, &mut ledger, 100);
         let block_was_created = ledger
             .fire_leadership_event(controller.initial_stake_pools(), vec![fragment])
             .unwrap();
@@ -565,19 +565,19 @@ pub fn rewards_are_propotional_to_stake_pool_effectivness_in_building_blocks() {
     }
 
     let expected_alice_reward =
-        (calculate_reward(&expected_total_reward, &alice_stake_pool.id(), &ledger) + alice.value())
+        (calculate_reward(expected_total_reward, &alice_stake_pool.id(), &ledger) + alice.value())
             .unwrap();
     let expected_bob_reward =
-        (calculate_reward(&expected_total_reward, &bob_stake_pool.id(), &ledger) + bob.value())
+        (calculate_reward(expected_total_reward, &bob_stake_pool.id(), &ledger) + bob.value())
             .unwrap();
     let expected_clarice_reward =
-        (calculate_reward(&expected_total_reward, &clarice_stake_pool.id(), &ledger)
+        (calculate_reward(expected_total_reward, &clarice_stake_pool.id(), &ledger)
             + clarice.value())
         .unwrap();
 
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier
         .info("after rewards distribution for alice")
         .account(alice.as_account_data())
@@ -592,7 +592,7 @@ pub fn rewards_are_propotional_to_stake_pool_effectivness_in_building_blocks() {
         .has_value(&expected_clarice_reward);
 }
 
-fn calculate_reward(expected_total_reward: &Value, pool_id: &PoolId, ledger: &TestLedger) -> Value {
+fn calculate_reward(expected_total_reward: Value, pool_id: &PoolId, ledger: &TestLedger) -> Value {
     let reward_unit = expected_total_reward.split_in(ledger.leaders_log().total());
     let block_count = ledger.leaders_log_for(pool_id);
     reward_unit.parts.scale(block_count).unwrap()
@@ -627,8 +627,8 @@ pub fn rewards_owner_of_many_stake_pool() {
 
     let first_alice_stake_pool = controller.stake_pool("stake_pool").unwrap();
     let alice = controller.wallet("Alice").unwrap();
-    let mut bob = controller.wallet("Bob").unwrap();
-    let mut clarice = controller.wallet("Clarice").unwrap();
+    let bob = controller.wallet("Bob").unwrap();
+    let clarice = controller.wallet("Clarice").unwrap();
 
     let total_ada_before = ledger.total_funds();
 
@@ -644,19 +644,19 @@ pub fn rewards_owner_of_many_stake_pool() {
     // produce 2 blocks for each stake pool
     let fragment_factory = controller.fragment_factory();
 
-    let fragment = fragment_factory.transaction(&mut bob, &clarice, &mut ledger, 100);
+    let fragment = fragment_factory.transaction(&bob, &clarice, &mut ledger, 100);
     assert!(ledger
         .produce_block(&first_alice_stake_pool, vec![fragment])
         .is_ok());
 
-    let fragment = fragment_factory.transaction(&mut clarice, &bob, &mut ledger, 100);
+    let fragment = fragment_factory.transaction(&clarice, &bob, &mut ledger, 100);
     assert!(ledger
         .produce_block(&second_alice_stake_pool, vec![fragment])
         .is_ok());
 
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after rewards distribution with two transactions");
 
     ledger_verifier
@@ -710,8 +710,8 @@ pub fn rewards_delegators_of_many_stake_pool() {
     let alice_stake_pool = controller.stake_pool("alice_stake_pool").unwrap();
     let bob_stake_pool = controller.stake_pool("bob_stake_pool").unwrap();
 
-    let mut clarice = controller.wallet("Clarice").unwrap();
-    let mut david = controller.wallet("David").unwrap();
+    let clarice = controller.wallet("Clarice").unwrap();
+    let david = controller.wallet("David").unwrap();
     let eve = controller.wallet("Eve").unwrap();
 
     let total_ada_before = ledger.total_funds();
@@ -727,19 +727,19 @@ pub fn rewards_delegators_of_many_stake_pool() {
     // produce 2 blocks for each stake pool
     let fragment_factory = controller.fragment_factory();
 
-    let fragment = fragment_factory.transaction(&mut david, &clarice, &mut ledger, 100);
+    let fragment = fragment_factory.transaction(&david, &clarice, &mut ledger, 100);
     assert!(ledger
         .produce_block(&alice_stake_pool, vec![fragment])
         .is_ok());
 
-    let fragment = fragment_factory.transaction(&mut clarice, &david, &mut ledger, 100);
+    let fragment = fragment_factory.transaction(&clarice, &david, &mut ledger, 100);
     assert!(ledger
         .produce_block(&bob_stake_pool, vec![fragment])
         .is_ok());
 
     ledger.distribute_rewards().unwrap();
 
-    let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
+    let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
     ledger_verifier.info("after rewards distribution with two transactions");
 
     ledger_verifier

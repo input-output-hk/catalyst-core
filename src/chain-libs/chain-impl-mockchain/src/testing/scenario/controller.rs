@@ -39,9 +39,9 @@ impl Controller {
         declared_stake_pools: Vec<StakePool>,
     ) -> Self {
         Controller {
-            block0_hash: block0_hash.clone(),
-            declared_wallets: declared_wallets,
-            declared_stake_pools: declared_stake_pools,
+            block0_hash,
+            declared_wallets,
+            declared_stake_pools,
             fragment_factory: FragmentFactory::new(block0_hash, fee),
         }
     }

@@ -114,14 +114,14 @@ pub struct EntryOwned<OutputAddress> {
 }
 
 impl<OutAddress> Ledger<OutAddress> {
-    pub fn iter<'a>(&'a self) -> Iter<'a, OutAddress> {
+    pub fn iter(&self) -> Iter<'_, OutAddress> {
         Iter {
             hamt_iter: self.0.iter(),
             unspents_iter: None,
         }
     }
 
-    pub fn values<'a>(&'a self) -> Values<'a, OutAddress> {
+    pub fn values(&self) -> Values<'_, OutAddress> {
         Values {
             hamt_iter: self.0.iter(),
             unspents_iter: None,
@@ -131,15 +131,15 @@ impl<OutAddress> Ledger<OutAddress> {
     pub fn get<'a>(
         &'a self,
         tid: &FragmentId,
-        index: &TransactionIndex,
+        index: TransactionIndex,
     ) -> Option<Entry<'a, OutAddress>> {
         self.0
             .lookup(tid)
-            .and_then(|unspent| unspent.0.get(*index))
+            .and_then(|unspent| unspent.0.get(index))
             .map(|output| Entry {
-                fragment_id: tid.clone(),
-                output_index: *index,
-                output: output,
+                fragment_id: *tid,
+                output_index: index,
+                output,
             })
     }
 
@@ -181,7 +181,7 @@ impl<'a, V> Iterator for Iter<'a, V> {
                     None => self.unspents_iter = None,
                     Some(x) => {
                         return Some(Entry {
-                            fragment_id: id.clone(),
+                            fragment_id: **id,
                             output_index: x.0,
                             output: x.1,
                         });
@@ -189,6 +189,12 @@ impl<'a, V> Iterator for Iter<'a, V> {
                 },
             }
         }
+    }
+}
+
+impl<OutAddress: Clone> Default for Ledger<OutAddress> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -206,7 +212,7 @@ impl<OutAddress: Clone> Ledger<OutAddress> {
         tid: &FragmentId,
         outs: &[(TransactionIndex, Output<OutAddress>)],
     ) -> Result<Self, Error> {
-        assert!(outs.len() > 0);
+        assert!(!outs.is_empty());
         assert!(outs.len() < 255);
         let b = TransactionUnspents::from_outputs(outs);
         let next = self.0.insert(tid.clone(), b)?;
@@ -330,7 +336,7 @@ mod tests {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let size = usize::arbitrary(g) % 50 + 1;
             let iter = iter::from_fn(|| {
-                Some(AddressData::arbitrary(g).make_output(&AverageValue::arbitrary(g).into()))
+                Some(AddressData::arbitrary(g).make_output(AverageValue::arbitrary(g).into()))
             })
             .enumerate()
             .take(size);
@@ -386,7 +392,7 @@ mod tests {
                 }
 
                 assert_eq!(
-                    output.clone(),
+                    output,
                     outputs.utxos.get(&outputs.idx_to_remove).unwrap().clone(),
                     "Outputs are different"
                 );
@@ -406,9 +412,10 @@ mod tests {
         // use iter
         for (key, value) in initial_utxos.0 {
             for (id, output) in value.to_vec() {
-                if !ledger.iter().any(|x| {
+                let condition = !ledger.iter().any(|x| {
                     x.fragment_id == key && x.output_index == id && x.output.clone() == output
-                }) {
+                });
+                if condition {
                     return TestResult::error(format!(
                         "Cannot find item using iter: {:?},{:?}",
                         key, id
@@ -424,8 +431,8 @@ mod tests {
         let mut ledger = Ledger::new();
         let first_fragment_id = TestGen::hash();
         let second_fragment_id = TestGen::hash();
-        let first_address_data = AddressData::utxo(Discrimination::Test).make_output(&Value(100));
-        let second_address_data = AddressData::utxo(Discrimination::Test).make_output(&Value(100));
+        let first_address_data = AddressData::utxo(Discrimination::Test).make_output(Value(100));
+        let second_address_data = AddressData::utxo(Discrimination::Test).make_output(Value(100));
         let first_index = 0 as u8;
         let second_index = 1 as u8;
 
@@ -454,8 +461,8 @@ mod tests {
             .remove(&first_fragment_id, first_index)
             .expect("Unable to remove single output (first output)");
         assert_eq!(output_address, first_address_data.clone());
-        assert!(ledger.get(&first_fragment_id, &first_index).is_none());
-        assert!(ledger.get(&first_fragment_id, &second_index).is_some());
+        assert!(ledger.get(&first_fragment_id, first_index).is_none());
+        assert!(ledger.get(&first_fragment_id, second_index).is_some());
         assert_eq!(ledger.iter().count(), 3);
 
         //remove single output, which is last output in fragment. This should lead to removal of fragment
@@ -463,7 +470,7 @@ mod tests {
             .remove(&first_fragment_id, second_index)
             .expect("Unable to remove single output (second output)");
         assert_eq!(output_address, second_address_data.clone());
-        assert!(ledger.get(&first_fragment_id, &second_index).is_none());
+        assert!(ledger.get(&first_fragment_id, second_index).is_none());
 
         assert_eq!(ledger.iter().count(), 2);
 
@@ -472,8 +479,7 @@ mod tests {
             .remove_multiple(&second_fragment_id, &[first_index, second_index])
             .expect("Unable to remove multiple output");
 
-        let expected_output_addresses =
-            vec![first_address_data.clone(), second_address_data.clone()];
+        let expected_output_addresses = vec![first_address_data, second_address_data];
         assert_eq!(output_addresses, expected_output_addresses);
         assert_eq!(ledger.iter().count(), 0);
     }

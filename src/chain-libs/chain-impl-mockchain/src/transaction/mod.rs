@@ -3,6 +3,7 @@ mod element;
 mod input;
 mod io;
 mod payload;
+#[allow(clippy::module_inception)]
 mod transaction;
 mod transfer;
 mod utxo;
@@ -36,7 +37,7 @@ impl<Extra: Payload> Readable for Transaction<Extra> {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let utx = UnverifiedTransactionSlice::from(buf.get_slice_end());
         match utx.check() {
-            Ok(tx) => Ok(tx.into_owned()),
+            Ok(tx) => Ok(tx.to_owned()),
             Err(_) => Err(ReadError::StructureInvalid("transaction".to_string())),
         }
     }

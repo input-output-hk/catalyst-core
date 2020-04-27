@@ -148,9 +148,10 @@ impl LedgerStateVerifier {
 
     // Does not cover situation in which we have two identical utxos
     pub fn address_has_expected_balance(&self, address: AddressData, value: Value) -> &Self {
-        match self.ledger.accounts.exists(&address.to_id()) {
-            true => self.account_has_expected_balance(address, value),
-            false => self.utxo_has_expected_balance(address, value),
+        if self.ledger.accounts.exists(&address.to_id()) {
+            self.account_has_expected_balance(address, value)
+        } else {
+            self.utxo_has_expected_balance(address, value)
         }
     }
 
@@ -169,17 +170,14 @@ impl LedgerStateVerifier {
             .ledger
             .utxos
             .iter()
-            .find(|x| *x.output == address_data.make_output(&value));
-        match value == Value::zero() {
-            true => {
-                assert!(utxo.is_none());
-                return self;
-            }
-            false => {
-                let utxo = utxo.unwrap();
-                assert_eq!(utxo.output.value, value);
-                return self;
-            }
+            .find(|x| *x.output == address_data.make_output(value));
+        if value == Value::zero() {
+            assert!(utxo.is_none());
+            self
+        } else {
+            let utxo = utxo.unwrap();
+            assert_eq!(utxo.output.value, value);
+            self
         }
     }
 

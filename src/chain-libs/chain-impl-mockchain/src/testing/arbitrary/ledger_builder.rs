@@ -29,7 +29,7 @@ impl Arbitrary for LedgerBuilder {
             .cloned()
             .map(|faucet| {
                 StakePoolBuilder::new()
-                    .with_owners(vec![faucet.public_key().clone()])
+                    .with_owners(vec![faucet.public_key()])
                     .with_pool_permissions(PoolPermissions::new(1))
                     .with_reward_account(Arbitrary::arbitrary(g))
                     .with_tax_type(Arbitrary::arbitrary(g))
@@ -64,7 +64,7 @@ impl Arbitrary for LedgerBuilder {
 
         let config_builder = ConfigBuilder::arbitrary(g).with_discrimination(Discrimination::Test);
 
-        LedgerBuilder::from_config(config_builder.clone())
+        LedgerBuilder::from_config(config_builder)
             .faucets_wallets(faucets.0.iter().collect())
             .certs(&fragments)
             .utxos(&utxo_declarations)

@@ -149,7 +149,7 @@ impl Leadership {
             }
         };
         Leadership {
-            epoch: epoch,
+            epoch,
             era: ledger.era.clone(),
             inner,
             ledger_parameters: ledger.get_ledger_parameters(),
@@ -178,7 +178,7 @@ impl Leadership {
         assert!(slot_id < self.era.slots_per_epoch());
         BlockDate {
             epoch: self.epoch(),
-            slot_id: slot_id,
+            slot_id,
         }
     }
 
@@ -242,10 +242,7 @@ impl Verification {
 
 impl Error {
     pub fn new(kind: ErrorKind) -> Self {
-        Error {
-            kind: kind,
-            cause: None,
-        }
+        Error { kind, cause: None }
     }
 
     pub fn new_<E>(kind: ErrorKind, cause: E) -> Self
@@ -253,7 +250,7 @@ impl Error {
         E: std::error::Error + 'static,
     {
         Error {
-            kind: kind,
+            kind,
             cause: Some(Box::new(cause)),
         }
     }

@@ -21,7 +21,7 @@ pub fn build_proposal(
     //add proposer
     let update_proposal_with_proposer = UpdateProposalWithProposer {
         proposal: update_proposal,
-        proposer_id: proposer_id.clone(),
+        proposer_id,
     };
 
     //sign proposal
@@ -32,8 +32,8 @@ pub fn build_proposal(
 
 pub fn build_vote(proposal_id: UpdateProposalId, leader_id: BftLeaderId) -> SignedUpdateVote {
     let update_vote = UpdateVote {
-        proposal_id: proposal_id.clone(),
-        voter_id: leader_id.clone(),
+        proposal_id,
+        voter_id: leader_id,
     };
     SignedUpdateVote { vote: update_vote }
 }

@@ -9,11 +9,10 @@ impl Arbitrary for KindTypeWithoutMultisig {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         KindTypeWithoutMultisig(
             iter::from_fn(|| Some(KindType::arbitrary(g)))
-                .filter(|x| match x {
+                .find(|x| match x {
                     KindType::Multisig => false,
                     _ => true,
                 })
-                .next()
                 .unwrap(),
         )
     }
@@ -38,11 +37,10 @@ impl Arbitrary for KindWithoutMultisig {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         KindWithoutMultisig(
             iter::from_fn(|| Some(Kind::arbitrary(g)))
-                .filter(|x| match x {
+                .find(|x| match x {
                     Kind::Multisig { .. } => false,
                     _ => true,
                 })
-                .next()
                 .unwrap(),
         )
     }

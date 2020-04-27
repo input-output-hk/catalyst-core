@@ -35,60 +35,88 @@ where
     phantom_key: PhantomData<[K]>,
 }
 
-// lifetimes on this are a bit bothersome with four 'linear' (re) borrows, there may be some way of refactoring this things, but that would probably need to be done higher in
-// the hierarchy
-/// type to operate on the current element in the stack (branch) of nodes. This borrows the backtrack and acts as a proxy, in order to make borrowing simpler, because
-// XXX: having a left sibling means anchor is not None, and having a sibling in general means parent is not None also, maybe this invariants could be expressed in the type structure
 pub struct DeleteNextElement<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
 where
     K: Key,
 {
-    pub next: PageRefMut<'a, 'd>,
-    pub parent: Option<PageRefMut<'a, 'd>>,
-    // anchor is an index into the keys array of a node used to find the current node in the parent without searching. The leftmost(lowest) child has None as anchor
-    // this means it's inmediate right sibling would have anchor of 0, and so on.
-    pub anchor: Option<usize>,
-    pub left: Option<PageRef<'a, 'd>>,
-    pub right: Option<PageRef<'a, 'd>>,
-    backtrack: &'a mut DeleteBacktrack<'b, 'c, 'd, K>,
+    pub next_element: NextElement<'a, 'b, 'c, 'd, K>,
+    pub mut_context: Option<MutableContext<'a, 'b, 'c, 'd, K>>,
 }
 
-impl<'a, 'b: 'a, 'c: 'b, 'd: 'c, K> DeleteNextElement<'a, 'b, 'c, 'd, K>
+// lifetimes on this are a bit bothersome with four 'linear' (re) borrows, there may be some way of refactoring this things, but that would probably need to be done higher in
+// the hierarchy
+/// type to operate on the current element in the stack (branch) of nodes. This borrows the backtrack and acts as a proxy, in order to make borrowing simpler, because
+// XXX: having a left sibling means anchor is not None, and having a sibling in general means parent is not None also, maybe this invariants could be expressed in the type structure
+pub struct NextElement<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
 where
     K: Key,
 {
-    pub fn mut_left_sibling(&self, key_size: usize) -> PageRefMut<'a, 'd> {
-        let left_id = self.left.as_ref().unwrap().id();
-        match self.backtrack.tx.mut_page(dbg!(left_id)).unwrap() {
+    pub next: PageRefMut<'a>,
+    // anchor is an index into the keys array of a node used to find the current node in the parent without searching. The leftmost(lowest) child has None as anchor
+    // this means it's inmediate right sibling would have anchor of 0, and so on.
+    pub anchor: Option<usize>,
+    pub left: Option<PageRef<'a>>,
+    pub right: Option<PageRef<'a>>,
+    backtrack: &'a DeleteBacktrack<'b, 'c, 'd, K>,
+}
+
+pub struct MutableContext<'a, 'b: 'a, 'c: 'b, 'd: 'c, K>
+where
+    K: Key,
+{
+    parent: PageRefMut<'a>,
+    // anchor is an index into the keys array of a node used to find the current node in the parent without searching. The leftmost(lowest) child has None as anchor
+    // this means it's inmediate right sibling would have anchor of 0, and so on.
+    current_id: PageId,
+    left_id: Option<PageId>,
+    right_id: Option<PageId>,
+    backtrack: &'a DeleteBacktrack<'b, 'c, 'd, K>,
+}
+
+impl<'a, 'b: 'a, 'c: 'b, 'd: 'c, K> MutableContext<'a, 'b, 'c, 'd, K>
+where
+    K: Key,
+{
+    pub fn mut_left_sibling(&mut self, key_size: usize) -> (PageRefMut<'a>, &mut PageRefMut<'a>) {
+        let sibling = match self.backtrack.tx.mut_page(self.left_id.unwrap()).unwrap() {
             MutablePage::InTransaction(handle) => handle,
             MutablePage::NeedsParentRedirect(redirect_pointers) => {
-                redirect_pointers.redirect_parent_in_tx::<K>(key_size, self.parent.clone().unwrap())
+                redirect_pointers.redirect_parent_in_tx::<K>(key_size, &mut self.parent)
             }
-        }
+        };
+
+        (sibling, &mut self.parent)
     }
 
-    pub fn mut_right_sibling(&self, key_size: usize) -> PageRefMut<'a, 'd> {
-        let right_id = self.right.as_ref().unwrap().id();
-        match self.backtrack.tx.mut_page(dbg!(right_id)).unwrap() {
+    pub fn mut_right_sibling(&mut self, key_size: usize) -> (PageRefMut<'a>, &mut PageRefMut<'a>) {
+        let sibling = match self.backtrack.tx.mut_page(self.right_id.unwrap()).unwrap() {
             MutablePage::InTransaction(handle) => handle,
             MutablePage::NeedsParentRedirect(redirect_pointers) => {
-                redirect_pointers.redirect_parent_in_tx::<K>(key_size, self.parent.clone().unwrap())
+                redirect_pointers.redirect_parent_in_tx::<K>(key_size, &mut self.parent)
             }
+        };
+
+        (sibling, &mut self.parent)
+    }
+
+    /// delete right sibling of current node, this just adds the id to the list of free pages *after* the transaction is confirmed
+    pub fn delete_right_sibling(&self) -> Result<(), ()> {
+        match self.right_id {
+            None => Err(()),
+            Some(right_id) => Ok(self.backtrack.delete_node(right_id)),
         }
     }
 
     /// delete current node, this just adds the id to the list of free pages *after* the transaction is confirmed
     pub fn delete_node(&self) {
-        let id = self.next.id();
-        self.backtrack.delete_node(id)
+        self.backtrack.delete_node(self.current_id)
     }
+}
 
-    /// delete right sibling of current node, this just adds the id to the list of free pages *after* the transaction is confirmed
-    pub fn delete_right_sibling(&self) {
-        let id = self.right.as_ref().map(|handle| handle.id()).unwrap();
-        self.backtrack.delete_node(dbg!(id))
-    }
-
+impl<'a, 'b: 'a, 'c: 'b, 'd: 'c, K> NextElement<'a, 'b, 'c, 'd, K>
+where
+    K: Key,
+{
     pub fn set_root(&self, id: PageId) {
         self.backtrack.tx.current_root.set(id)
     }
@@ -113,6 +141,7 @@ where
         backtrack.search_for(key);
         backtrack
     }
+
     /// traverse the tree while storing the path, so we can then backtrack while splitting
     // TODO: there are already 3 traverse (2 in this file) in the codebase, all really similar. It may be good to refactor them into only one
     pub fn search_for(&mut self, key: &K) {
@@ -227,28 +256,47 @@ where
             transaction::MutablePage::InTransaction(handle) => handle,
         };
 
-        let (parent, left, right) = if let Some((parent, _anchor, left, right)) = parent_info {
-            let left = left.and_then(|id| self.tx.get_page(id));
-            let right = right.and_then(|id| self.tx.get_page(id));
-            let parent = match self.tx.mut_page(*parent).unwrap() {
-                MutablePage::InTransaction(handle) => handle,
-                _ => unreachable!(),
-            };
+        let mut_context = match parent_info {
+            Some((parent, _anchor, left_id, right_id)) => {
+                let parent = match self.tx.mut_page(*parent)? {
+                    MutablePage::InTransaction(handle) => handle,
+                    _ => unreachable!(),
+                };
+                Some(MutableContext {
+                    parent,
+                    // anchor is an index into the keys array of a node used to find the current node in the parent without searching. The leftmost(lowest) child has None as anchor
+                    // this means it's inmediate right sibling would have anchor of 0, and so on.
+                    left_id,
+                    right_id,
+                    current_id: id,
+                    backtrack: self,
+                })
+            }
+            None => None,
+        };
 
-            (Some(parent), left, right)
-        } else {
-            (None, None, None)
+        let (left, right) = match parent_info {
+            Some((_parent, _anchor, left, right)) => {
+                let left = left.and_then(|id| self.tx.get_page(id));
+                let right = right.and_then(|id| self.tx.get_page(id));
+
+                (left, right)
+            }
+            None => (None, None),
         };
 
         let anchor = parent_info.and_then(|(_, anchor, _, _)| anchor);
-
-        Ok(Some(DeleteNextElement {
+        let next_element = NextElement {
             next,
-            parent,
             anchor,
             left,
             right,
             backtrack: self,
+        };
+
+        Ok(Some(DeleteNextElement {
+            next_element,
+            mut_context,
         }))
     }
 
@@ -276,8 +324,9 @@ where
         backtrack.search_for(key);
         backtrack
     }
+
     /// traverse the tree while storing the path, so we can then backtrack while splitting
-    fn search_for<'a>(&'a mut self, key: &K) {
+    pub fn search_for<'a>(&'a mut self, key: &K) {
         let mut current = self.tx.root();
 
         loop {
@@ -314,7 +363,7 @@ where
         }
     }
 
-    pub fn get_next<'a>(&'a mut self) -> Result<Option<PageRefMut<'a, 'index>>, std::io::Error> {
+    pub fn get_next<'a>(&'a mut self) -> Result<Option<PageRefMut<'a>>, std::io::Error> {
         let id = match self.backtrack.pop() {
             Some(id) => id,
             None => return Ok(None),
@@ -327,7 +376,7 @@ where
 
         let key_buffer_size = usize::try_from(self.tx.key_buffer_size).unwrap();
 
-        match self.tx.mut_page(id)? {
+        match self.tx.mut_page(dbg!(id))? {
             transaction::MutablePage::NeedsParentRedirect(rename_in_parents) => {
                 // this part may be tricky, we need to recursively clone and redirect all the path
                 // from the root to the node we are writing to. We need the backtrack stack, because
@@ -344,8 +393,7 @@ where
                         MutablePage::InTransaction(handle) => return Ok(Some(handle)),
                     }
                 }
-                let page = rename_in_parents.finish();
-                Ok(Some(page))
+                Ok(Some(rename_in_parents.finish()))
             }
             transaction::MutablePage::InTransaction(handle) => Ok(Some(handle)),
         }

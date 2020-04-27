@@ -1,22 +1,19 @@
 use super::Version;
 use crate::btreeindex::{
     borrow::{Immutable, Mutable},
-    node::{NodeRef, NodeRefMut},
+    node::NodeRefMut,
     page_manager::PageManager,
     Node, PageHandle, PageId, Pages,
 };
 use crate::Key;
-use parking_lot::lock_api;
-use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard};
+use parking_lot::RwLock;
 use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet, VecDeque};
-
-use std::ops::Deref;
 use std::sync::{Arc, MutexGuard};
 
 pub struct ReadTransaction<'a> {
     version: Arc<Version>,
-    pages: RwLockReadGuard<'a, Pages>,
+    pages: &'a Pages,
 }
 
 /// staging area for batched insertions, it will keep track of pages already shadowed and reuse them,
@@ -24,7 +21,7 @@ pub struct ReadTransaction<'a> {
 pub(crate) struct WriteTransaction<'locks, 'storage: 'locks> {
     pub current_root: Cell<PageId>,
     state: RefCell<State<'locks>>,
-    pages: RefCell<ExtendablePages<'storage>>,
+    pages: &'storage Pages,
     versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
     current_version: Arc<RwLock<Arc<Version>>>,
     pub key_buffer_size: u32,
@@ -39,83 +36,11 @@ struct State<'a> {
     page_manager: MutexGuard<'a, PageManager>,
 }
 
-#[derive(Clone)]
-pub struct PageRef<'a, 'b: 'a> {
-    pages: &'a RefCell<ExtendablePages<'b>>,
-    page_id: PageId,
-}
-
-impl<'a, 'b: 'a> PageRef<'a, 'b> {
-    pub fn id(&self) -> PageId {
-        self.page_id
-    }
-}
-
-#[derive(Clone)]
-pub struct PageRefMut<'a, 'b: 'a> {
-    pages: &'a RefCell<ExtendablePages<'b>>,
-    page_id: PageId,
-}
-
-impl<'a, 'b: 'a> PageRefMut<'a, 'b> {
-    pub fn id(&self) -> PageId {
-        self.page_id
-    }
-}
-
-impl<'a, 'b: 'a> NodeRef for PageRef<'a, 'b> {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        self.pages
-            .borrow()
-            .get_page(self.page_id)
-            .expect("page should be already checked")
-            .as_node(key_buffer_size, f)
-    }
-}
-
-impl<'a, 'b: 'a> NodeRef for PageRefMut<'a, 'b> {
-    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
-    where
-        K: Key,
-    {
-        self.pages
-            .borrow()
-            .get_page(self.page_id)
-            .expect("page should be already checked")
-            .as_node(key_buffer_size, f)
-    }
-}
-
-impl<'a, 'b: 'a> NodeRefMut for PageRefMut<'a, 'b> {
-    fn as_node_mut<K, R>(
-        &mut self,
-        key_buffer_size: usize,
-        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
-    ) -> R
-    where
-        K: Key,
-    {
-        self.pages
-            .borrow()
-            .mut_page(self.page_id)
-            // FIXME: this unwrap
-            .unwrap()
-            .as_node_mut(key_buffer_size, f)
-    }
-}
-
-// in most cases, we can access the storage with read only access, but in the (rare) cases
-// where we need to extend the underlying mmaped file, we need to get exclusive access to the storage
-// it is actually not needed for the guard to be atomically upgraded, as there can only be one write
-// transaction at a time, but it's useful to not have to implement the drop read guard -> take write guard
-// -> drop write guard -> take read guard ourselves
-struct ExtendablePages<'storage>(Option<RwLockUpgradableReadGuard<'storage, Pages>>);
+pub type PageRef<'a> = PageHandle<'a, Immutable<'a>>;
+pub type PageRefMut<'a> = PageHandle<'a, Mutable<'a>>;
 
 impl<'a> ReadTransaction<'a> {
-    pub(super) fn new(version: Arc<Version>, pages: RwLockReadGuard<Pages>) -> ReadTransaction {
+    pub(super) fn new(version: Arc<Version>, pages: &'a Pages) -> ReadTransaction {
         ReadTransaction { version, pages }
     }
 
@@ -131,7 +56,7 @@ impl<'a> ReadTransaction<'a> {
 impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
     pub fn new(
         root: PageId,
-        pages: &'storage RwLock<Pages>,
+        pages: &'storage Pages,
         page_manager: MutexGuard<'locks, PageManager>,
         versions: MutexGuard<'locks, VecDeque<Arc<Version>>>,
         current_version: Arc<RwLock<Arc<Version>>>,
@@ -149,7 +74,7 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             versions,
             current_version,
             key_buffer_size,
-            pages: RefCell::new(ExtendablePages::new(pages)),
+            pages,
             state: RefCell::new(state),
         }
     }
@@ -164,7 +89,7 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             .unwrap_or(current_root)
     }
 
-    pub fn get_page<'this>(&'this self, id: PageId) -> Option<PageRef<'this, 'storage>> {
+    pub fn get_page<'this>(&'this self, id: PageId) -> Option<PageRef<'storage>> {
         let state = self.state.borrow();
         let id = state
             .shadows_image
@@ -172,16 +97,7 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             .or_else(|| state.shadows.get(&id))
             .unwrap_or_else(|| &id);
 
-        let exists = self.pages.borrow().get_page(*id).is_some();
-
-        if exists {
-            Some(PageRef {
-                pages: &self.pages,
-                page_id: *id,
-            })
-        } else {
-            None
-        }
+        self.pages.get_page(*id)
     }
 
     pub fn add_new_node(
@@ -191,23 +107,9 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
     ) -> Result<PageId, std::io::Error> {
         let id = self.state.borrow_mut().page_manager.new_id();
 
-        let pages = self.pages.borrow();
-        let result = pages.mut_page(id);
+        let mut page_handle = self.pages.mut_page(id)?;
 
-        match result {
-            Ok(mut page_handle) => {
-                page_handle.as_slice(|page| page.copy_from_slice(mem_page.as_ref()));
-            }
-            Err(()) => {
-                drop(pages);
-                self.pages.borrow_mut().extend(id)?;
-
-                let pages = self.pages.borrow();
-                // infallible now, after extending the storage
-                let mut page_handle = pages.mut_page(id).unwrap();
-                page_handle.as_slice(|page| page.copy_from_slice(mem_page.as_ref()));
-            }
-        };
+        page_handle.as_slice(|page| page.copy_from_slice(mem_page.as_ref()));
 
         Ok(id)
     }
@@ -230,35 +132,21 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
             .or_else(|| state.shadows.get(&id))
         {
             Some(id) => {
-                let _pre_check = self
+                let page = self
                     .pages
-                    .borrow()
                     .mut_page(*id)
                     .expect("already fetched page was not allocated");
 
-                let handle = PageRefMut {
-                    pages: &self.pages,
-                    page_id: *id,
-                };
-
-                Ok(MutablePage::InTransaction(handle))
+                Ok(MutablePage::InTransaction(page))
             }
             None => {
                 let old_id = id;
                 let new_id = state.page_manager.new_id();
 
-                let result = self.pages.borrow().make_shadow(old_id, new_id);
+                self.pages.make_shadow(old_id, new_id)?;
 
                 state.shadows.insert(old_id, new_id);
                 state.shadows_image.insert(new_id);
-
-                match result {
-                    Ok(()) => (),
-                    Err(()) => {
-                        self.pages.borrow_mut().extend(new_id)?;
-                        self.pages.borrow().make_shadow(old_id, new_id).unwrap();
-                    }
-                }
 
                 Ok(MutablePage::NeedsParentRedirect(RedirectPointers {
                     tx: self,
@@ -283,19 +171,10 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
                 let old_id = id;
                 let new_id = state.page_manager.new_id();
 
-                let result = self.pages.borrow().make_shadow(old_id, new_id);
+                self.pages.make_shadow(old_id, new_id)?;
 
                 state.shadows.insert(old_id, new_id);
                 state.shadows_image.insert(new_id);
-
-                match result {
-                    Ok(()) => (),
-                    Err(()) => {
-                        self.pages.borrow_mut().extend(new_id)?;
-                        // Infallible after extending
-                        self.pages.borrow_mut().make_shadow(old_id, new_id).unwrap();
-                    }
-                }
 
                 Ok((true, new_id))
             }
@@ -331,7 +210,7 @@ impl<'locks, 'storage: 'locks> WriteTransaction<'locks, 'storage> {
 
 pub enum MutablePage<'a, 'b: 'a, 'c: 'b> {
     NeedsParentRedirect(RedirectPointers<'a, 'b, 'c>),
-    InTransaction(PageRefMut<'a, 'c>),
+    InTransaction(PageRefMut<'c>),
 }
 
 /// recursive helper for the shadowing process when we need to clone and redirect pointers
@@ -363,9 +242,9 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
     pub fn redirect_parent_in_tx<K: Key>(
         self,
         key_buffer_size: usize,
-        mut parent: PageRefMut,
-    ) -> PageRefMut<'a, 'c> {
-        self.find_and_redirect::<K, PageRefMut>(key_buffer_size, &mut parent);
+        parent: &mut PageRefMut,
+    ) -> PageRefMut<'a> {
+        self.find_and_redirect::<K, PageRefMut>(key_buffer_size, parent);
         self.finish()
     }
 
@@ -375,8 +254,7 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
         parent_id: PageId,
     ) -> Result<MutablePage<'a, 'b, 'c>, std::io::Error> {
         let (parent_needs_shadowing, parent) = self.tx.mut_page_internal(parent_id)?;
-        let pages = self.tx.pages.borrow();
-        let mut parent = pages.mut_page(parent).unwrap();
+        let mut parent = self.tx.pages.mut_page(parent).unwrap();
 
         self.find_and_redirect::<K, PageHandle<Mutable>>(key_buffer_size, &mut parent);
 
@@ -394,35 +272,10 @@ impl<'a, 'b: 'a, 'c: 'b> RedirectPointers<'a, 'b, 'c> {
         }
     }
 
-    pub fn finish(self) -> PageRefMut<'a, 'c> {
+    pub fn finish(self) -> PageRefMut<'c> {
         match self.tx.mut_page(self.shadowed_page).unwrap() {
             MutablePage::InTransaction(handle) => handle,
             _ => unreachable!(),
         }
-    }
-}
-
-impl<'storage> Deref for ExtendablePages<'storage> {
-    type Target = Pages;
-
-    fn deref(&self) -> &Self::Target {
-        self.0.as_ref().unwrap()
-    }
-}
-
-impl<'storage> ExtendablePages<'storage> {
-    fn new(pages: &'storage RwLock<Pages>) -> ExtendablePages<'storage> {
-        Self(Some(pages.upgradable_read()))
-    }
-
-    fn extend(&mut self, to: PageId) -> Result<(), std::io::Error> {
-        let mut write_guard = lock_api::RwLockUpgradableReadGuard::upgrade(self.0.take().unwrap());
-
-        (*write_guard).extend(to)?;
-
-        let new_guard = lock_api::RwLockWriteGuard::downgrade_to_upgradable(write_guard);
-        self.0 = Some(new_guard);
-
-        Ok(())
     }
 }

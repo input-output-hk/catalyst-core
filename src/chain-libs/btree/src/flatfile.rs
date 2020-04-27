@@ -1,14 +1,15 @@
 use crate::storage::MmapStorage;
-use parking_lot::{RwLock, RwLockUpgradableReadGuard, RwLockWriteGuard};
+
 use std::convert::TryInto;
 use std::io::{self, Error, ErrorKind, Write};
+
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::{fs, path};
 
 pub const SZ_BITS: usize = 24;
 pub const POS_BITS: u64 = 40;
-pub const MAX_BLOB_SIZE: usize = 2 << SZ_BITS; // 16MB blob
-pub const MAX_POS_OFFSET: u64 = 2 << POS_BITS - 1; // last possible position 1byte below 1TB
+pub const MAX_BLOB_SIZE: usize = 1 << SZ_BITS; // 16MB blob
+pub const MAX_POS_OFFSET: u64 = 1 << POS_BITS - 1; // last possible position 1byte below 1TB
 
 /// Position of a blob in an appender
 ///
@@ -20,10 +21,14 @@ const MAGIC_SIZE: usize = 8;
 const MAGIC: [u8; MAGIC_SIZE] = [0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88];
 const DATA_START: u64 = 4096;
 
+/// Page size of underlying storage. If a blob can't be stored in the current page, we write it at the beginning of the next page.
+/// As this may lead to wasted space, is important to choose the page size accordingly with the expected blob sizes
+const MAP_PAGE_SIZE: u64 = (1 << 20) * 128; // 128mb, this allows 8 max size blobs
+
 /// Appender store blob of data (each of maximum size of 16 Mb) offering
 /// also a direct access to known index whilst it is appended
 pub struct MmapedAppendOnlyFile {
-    storage: RwLock<MmapStorage>,
+    storage: MmapStorage,
     next_pos: AtomicU64,
 }
 
@@ -46,7 +51,7 @@ impl MmapedAppendOnlyFile {
             .write(true)
             .open(&filename)?;
 
-        let storage = MmapStorage::new(file)?;
+        let storage = MmapStorage::new(file, MAP_PAGE_SIZE)?;
         let next_pos = storage.len();
 
         unsafe {
@@ -56,7 +61,7 @@ impl MmapedAppendOnlyFile {
         }
 
         Ok(Self {
-            storage: RwLock::new(storage),
+            storage,
             next_pos: AtomicU64::new(next_pos),
         })
     }
@@ -82,8 +87,8 @@ impl MmapedAppendOnlyFile {
         //     ));
         // }
 
-        let next_pos = self.next_pos.load(Ordering::Acquire);
-        let mut storage = self.storage.upgradable_read();
+        // next_pos is the return value, the mut part is because if there is no space in the current underlying page, we need to move this to the next page boundary
+        let mut next_pos = self.next_pos.load(Ordering::Acquire);
 
         if next_pos > MAX_POS_OFFSET {
             return Err(Error::new(ErrorKind::Other, "offset position too big"));
@@ -95,55 +100,52 @@ impl MmapedAppendOnlyFile {
         let region_len = szbuf.len() as u64 + buf.len() as u64;
 
         let mmaped_region = unsafe {
-            match storage.get_mut(next_pos, region_len) {
-                Ok(slice) => slice,
-                Err(including) => {
-                    {
-                        let mut new_guard = RwLockUpgradableReadGuard::upgrade(storage);
-                        new_guard.extend(including)?;
-                        // the upgradable part here is only so we can assign to the storage variable again
-                        // we won't upgrade again
-                        storage = RwLockWriteGuard::downgrade_to_upgradable(new_guard);
-                    }
-                    storage.get_mut(next_pos, region_len).unwrap()
-                }
+            let region = self.storage.get_mut(next_pos, region_len)?;
+            let mapped_len = region.len() as u64;
+
+            // check if we could write everything in a contiguous chunk
+            if mapped_len == region_len {
+                self.next_pos
+                    .store(next_pos + region_len, Ordering::Release);
+                region
+            } else {
+                // if we can't, then we just skip that part and write in the next page and hope it fits
+                // we don't write in two different pages in order to just be able to return slices to the mmaped region
+                next_pos = next_pos + mapped_len;
+                self.next_pos
+                    .store(next_pos + region_len, Ordering::Release);
+                self.storage.get_mut(next_pos, region_len)?
             }
         };
 
-        self.next_pos
-            .store(next_pos + region_len, Ordering::Release);
+        if (mmaped_region.len() as u64) < region_len {
+            return Err(Error::new(
+                ErrorKind::Other,
+                "Couldn't map contiguous region, page size is smaller than blob size",
+            ));
+        }
 
         mmaped_region[0..szbuf.len()].copy_from_slice(&szbuf[..]);
         mmaped_region[szbuf.len()..].copy_from_slice(&buf[..]);
 
-        // self.ahandle.sync_data()?;
         Ok(Pos(next_pos))
     }
 
     /// Get the blob stored at position @pos
-    pub fn get_at(&self, pos: Pos) -> Result<Box<[u8]>, io::Error> {
+    pub fn get_at(&self, pos: Pos) -> Result<Option<&[u8]>, io::Error> {
         if pos.0 >= self.next_pos.load(Ordering::SeqCst) {
-            // it could also be an option, but it shouldn't happen in our usecase anyway
-            // and so, adding an option just for that may be bothersome
-            return Ok(vec![].into_boxed_slice());
+            return Ok(None);
         }
 
-        let storage = self.storage.read();
-        let szbuf = unsafe { storage.get(pos.into(), 4) };
+        let szbuf = unsafe { self.storage.get(pos.into(), 4) };
 
         let len = u32::from_le_bytes(szbuf.try_into().unwrap());
 
-        let mut v = vec![0u8; len as usize];
-
-        unsafe {
-            v.copy_from_slice(storage.get(pos.0 + 4, len as u64));
-        }
-
-        Ok(v.into())
+        Ok(Some(unsafe { self.storage.get(pos.0 + 4, len as u64) }))
     }
 
     pub fn sync(&self) -> Result<(), io::Error> {
-        self.storage.read().sync()?;
+        self.storage.sync()?;
         Ok(())
     }
 }
@@ -195,7 +197,29 @@ mod test {
         }
 
         for (pos, value) in reference.iter() {
-            assert_eq!(appender.get_at(*pos).unwrap()[..], value[..])
+            assert_eq!(appender.get_at(*pos).unwrap().unwrap()[..], value[..])
         }
+    }
+
+    #[test]
+    fn test_need_to_skip_space() {
+        // the appender does need to create the file, as it applies the initial formatting. This means
+        // we can't create a temp file directly, so instead we create a temporal directory and then the
+        // appender can create a file inside
+        let dir = tempdir().unwrap();
+        let mut path = dir.path().to_path_buf();
+        path.push("appender_skip_space");
+
+        let appender = MmapedAppendOnlyFile::new(path).unwrap();
+
+        for _ in 0..(MAP_PAGE_SIZE - 1) / MAX_BLOB_SIZE as u64 {
+            let buf = vec![0u8; MAX_BLOB_SIZE];
+            appender.append(&buf).unwrap();
+        }
+
+        let buf = vec![0u8; MAX_BLOB_SIZE];
+        let pos = appender.append(&buf[..]).unwrap();
+
+        assert_eq!(pos.0, MAP_PAGE_SIZE)
     }
 }

@@ -65,7 +65,10 @@ impl Pages {
     }
 
     /// this call is safe, which means that it will panic if the given id is already borrowed
-    pub fn mut_page<'a>(&'a self, id: PageId) -> Result<PageHandle<'a, borrow::Mutable>, ()> {
+    pub fn mut_page<'a>(
+        &'a self,
+        id: PageId,
+    ) -> Result<PageHandle<'a, borrow::Mutable>, std::io::Error> {
         let borrow_guard = self.borrows.lock().unwrap().borrow_mut(id);
 
         let storage = &self.storage;
@@ -73,21 +76,19 @@ impl Pages {
             * u64::from(self.page_size);
 
         // Make sure there is a mapped area for this page
-        match unsafe { storage.get_mut(from, u64::from(self.page_size)) } {
-            Ok(page) => Ok(PageHandle {
-                id,
-                borrow: borrow::Mutable {
-                    borrow: page,
-                    borrow_guard,
-                },
-                page_marker: PhantomData,
-            }),
-            Err(_) => Err(()),
-        }
+        let page = unsafe { storage.get_mut(from, u64::from(self.page_size))? };
+        Ok(PageHandle {
+            id,
+            borrow: borrow::Mutable {
+                borrow: page,
+                borrow_guard,
+            },
+            page_marker: PhantomData,
+        })
     }
 
     /// raw clone page old_id to new_id
-    pub fn make_shadow(&self, old_id: PageId, new_id: PageId) -> Result<(), ()> {
+    pub fn make_shadow(&self, old_id: PageId, new_id: PageId) -> Result<(), std::io::Error> {
         assert!(old_id != new_id);
         let page_old = self
             .get_page(old_id)
@@ -98,15 +99,6 @@ impl Pages {
         page_new.as_slice(|slice| slice.copy_from_slice(page_old.borrow.borrow));
 
         Ok(())
-    }
-
-    pub fn extend(&mut self, to: PageId) -> Result<(), std::io::Error> {
-        let storage = &mut self.storage;
-
-        let from = u64::from(to.checked_sub(1).expect("0 page is used as a null ptr"))
-            * u64::from(self.page_size);
-
-        storage.extend(from + u64::from(self.page_size))
     }
 
     pub(crate) fn sync_file(&self) -> Result<(), std::io::Error> {
@@ -133,7 +125,7 @@ pub mod borrow {
         pub fn borrow_mut(&mut self, id: PageId) -> BorrowRAIIGuard {
             let guard = Arc::new(BorrowGuard::Exclusive);
 
-            if let Some(_) = self.borrows.get(&id).and_then(|weak| weak.upgrade()) {
+            if let Some(_) = self.borrows.get(dbg!(&id)).and_then(|weak| weak.upgrade()) {
                 panic!("tried to exclusively borrow already borrowed page");
             }
 
@@ -172,7 +164,6 @@ pub mod borrow {
         }
     }
 
-    #[derive(Debug)]
     enum BorrowGuard {
         Shared,
         Exclusive,
@@ -221,6 +212,19 @@ impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Immutable<'a>> {
     }
 }
 
+impl<'a> super::node::NodeRef for &PageHandle<'a, borrow::Immutable<'a>> {
+    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key,
+    {
+        let page = self.borrow.borrow;
+
+        let node = unsafe { Node::<K, &[u8]>::from_raw(page.as_ref(), key_buffer_size) };
+
+        f(node)
+    }
+}
+
 impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Mutable<'a>> {
     fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
     where
@@ -233,7 +237,33 @@ impl<'a> super::node::NodeRef for PageHandle<'a, borrow::Mutable<'a>> {
     }
 }
 
+impl<'a> super::node::NodeRef for &mut PageHandle<'a, borrow::Mutable<'a>> {
+    fn as_node<K, R>(&self, key_buffer_size: usize, f: impl FnOnce(Node<K, &[u8]>) -> R) -> R
+    where
+        K: Key,
+    {
+        let node =
+            unsafe { Node::<K, &[u8]>::from_raw(self.borrow.borrow.as_ref(), key_buffer_size) };
+
+        f(node)
+    }
+}
+
 impl<'a> super::node::NodeRefMut for PageHandle<'a, borrow::Mutable<'a>> {
+    fn as_node_mut<K, R>(
+        &mut self,
+        key_buffer_size: usize,
+        f: impl FnOnce(Node<K, &mut [u8]>) -> R,
+    ) -> R
+    where
+        K: Key,
+    {
+        let node = unsafe { Node::<K, &mut [u8]>::from_raw(self.borrow.borrow, key_buffer_size) };
+        f(node)
+    }
+}
+
+impl<'a> super::node::NodeRefMut for &mut PageHandle<'a, borrow::Mutable<'a>> {
     fn as_node_mut<K, R>(
         &mut self,
         key_buffer_size: usize,

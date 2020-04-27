@@ -18,6 +18,7 @@ jobs:
           toolchain: stable
           override: true
       - uses: actions-rs/cargo@v1
+        continue-on-error: false
         with:
           command: check
 
@@ -35,6 +36,7 @@ jobs:
           toolchain: stable
           override: true
       - uses: actions-rs/cargo@v1
+        continue-on-error: false
         with:
           command: test
 
@@ -52,13 +54,14 @@ jobs:
 
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1
+        continue-on-error: false
         with:
           command: fmt
           args: --all -- --check
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
-        continue-on-error: true  # WARNING: only for this example, remove it!
+        continue-on-error: false
         with:
           command: clippy
           args: -- -D warnings

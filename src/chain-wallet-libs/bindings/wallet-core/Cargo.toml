@@ -11,6 +11,7 @@ license = "MIT OR Apache-2.0"
 crate-type = ["lib"]
 
 [dependencies]
+thiserror = { version = "1.0.13", default-features = false }
 bip39 = { path = "../../bip39" }
 wallet = { path = "../../wallet" }
 chain-ser = { path = "../../chain-deps/chain-ser" }

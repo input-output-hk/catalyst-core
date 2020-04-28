@@ -27,9 +27,10 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
 
     let _r = env.release_string_utf_chars(mnemonics, mnemonics_j.as_ptr());
 
-    match result {
-        RecoveringResult::Success => wallet as jlong,
-        _ => 0,
+    if result.is_ok() {
+        wallet as jlong
+    } else {
+        0
     }
 }
 

@@ -4,6 +4,11 @@ use chain_impl_mockchain::{
     value::Value,
 };
 use chain_ser::mempack::{ReadBuf, Readable as _};
+use thiserror::Error;
+
+mod error;
+
+pub use self::error::{Error, ErrorCode, ErrorKind, Result};
 
 /// the wallet
 ///
@@ -39,22 +44,15 @@ pub struct Conversion {
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
+pub type ResultPtr = *mut Result;
 
-/// result error code
-#[repr(u8)]
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Hash)]
-pub enum RecoveringResult {
-    /// returned if the function succeed
-    Success = 0,
-    /// this error is returned if the users mnemonics are invalid
-    InvalidMnemonics,
-    /// happens if the block is not valid
-    InvalidBlockFormat,
-    /// index is out of bound
-    IndexOutOfBound,
-    /// a pointer was null where it was expected it to be non null
-    PtrIsNull,
-}
+#[derive(Debug, Error)]
+#[error("null pointer")]
+struct NulPtr;
+
+#[derive(Debug, Error)]
+#[error("access out of bound")]
+struct OutOfBound;
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
 ///
@@ -92,19 +90,18 @@ pub unsafe fn wallet_recover(
     password: *const u8,
     password_length: usize,
     wallet_out: *mut WalletPtr,
-) -> RecoveringResult {
+) -> Result {
     let wallet_out: &mut WalletPtr = if let Some(wallet_out) = wallet_out.as_mut() {
         wallet_out
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("wallet_out").details(NulPtr);
     };
 
     let builder = wallet::RecoveryBuilder::new();
 
-    let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics) {
-        builder
-    } else {
-        return RecoveringResult::InvalidMnemonics;
+    let builder = match builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics) {
+        Ok(builder) => builder,
+        Err(error) => return Result::invalid_input("mnemonics").details(error),
     };
 
     let builder = if !password.is_null() && password_length > 0 {
@@ -136,7 +133,7 @@ pub unsafe fn wallet_recover(
     };
 
     *wallet_out = Box::into_raw(Box::new(recovering));
-    RecoveringResult::Success
+    Result::success()
 }
 
 /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
@@ -172,25 +169,27 @@ pub unsafe fn wallet_retrieve_funds(
     block0: *const u8,
     block0_length: usize,
     settings_out: *mut SettingsPtr,
-) -> RecoveringResult {
+) -> Result {
     let wallet: &mut Wallet = if let Some(wallet) = wallet.as_mut() {
         wallet
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("wallet").details(NulPtr);
     };
+    if block0.is_null() {
+        return Result::invalid_input("block0").details(NulPtr);
+    }
     let settings_out: &mut SettingsPtr = if let Some(settings_out) = settings_out.as_mut() {
         settings_out
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("settings_out").details(NulPtr);
     };
 
     let block0_bytes = std::slice::from_raw_parts(block0, block0_length);
 
     let mut block0_bytes = ReadBuf::from(block0_bytes);
-    let block0 = if let Ok(block) = Block::read(&mut block0_bytes) {
-        block
-    } else {
-        return RecoveringResult::InvalidBlockFormat;
+    let block0 = match Block::read(&mut block0_bytes) {
+        Ok(block) => block,
+        Err(error) => return Result::invalid_input("block0").details(error),
     };
 
     let settings = Settings(wallet::Settings::new(&block0).unwrap());
@@ -199,7 +198,7 @@ pub unsafe fn wallet_retrieve_funds(
 
     *settings_out = Box::into_raw(Box::new(settings));
 
-    RecoveringResult::Success
+    Result::success()
 }
 
 /// once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
@@ -221,21 +220,21 @@ pub unsafe fn wallet_convert(
     wallet: WalletPtr,
     settings: SettingsPtr,
     conversion_out: *mut ConversionPtr,
-) -> RecoveringResult {
+) -> Result {
     let wallet: &mut Wallet = if let Some(wallet) = wallet.as_mut() {
         wallet
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("wallet").details(NulPtr);
     };
     let settings = if let Some(settings) = settings.as_ref() {
         settings.0.clone()
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("settings").details(NulPtr);
     };
     let conversion_out: &mut ConversionPtr = if let Some(conversion_out) = conversion_out.as_mut() {
         conversion_out
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("conversion_out").details(NulPtr);
     };
 
     let address = wallet
@@ -257,7 +256,7 @@ pub unsafe fn wallet_convert(
 
     *conversion_out = Box::into_raw(Box::new(conversion));
 
-    RecoveringResult::Success
+    Result::success()
 }
 
 /// get the number of transactions built to convert the retrieved wallet
@@ -293,29 +292,29 @@ pub unsafe fn wallet_convert_transactions_get(
     index: usize,
     transaction_out: *mut *const u8,
     transaction_size: *mut usize,
-) -> RecoveringResult {
+) -> Result {
     let conversion = if let Some(conversion) = conversion.as_ref() {
         conversion
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("conversion").details(NulPtr);
     };
     let transaction_out = if let Some(t) = transaction_out.as_mut() {
         t
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("transaction_out").details(NulPtr);
     };
     let transaction_size = if let Some(t) = transaction_size.as_mut() {
         t
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("transaction_size").details(NulPtr);
     };
 
     if let Some(t) = conversion.transactions.get(index) {
         *transaction_out = t.as_ref().as_ptr();
         *transaction_size = t.as_ref().len();
-        RecoveringResult::Success
+        Result::success()
     } else {
-        RecoveringResult::IndexOutOfBound
+        Result::wallet_conversion().details(OutOfBound)
     }
 }
 
@@ -338,7 +337,7 @@ pub unsafe fn wallet_convert_ignored(
     conversion: ConversionPtr,
     value_out: *mut u64,
     ignored_out: *mut usize,
-) -> RecoveringResult {
+) -> Result {
     if let Some(c) = conversion.as_ref() {
         let v = *c
             .ignored
@@ -355,9 +354,9 @@ pub unsafe fn wallet_convert_ignored(
             *ignored_out = l
         };
 
-        RecoveringResult::Success
+        Result::success()
     } else {
-        RecoveringResult::PtrIsNull
+        Result::invalid_input("conversion").details(NulPtr)
     }
 }
 
@@ -380,11 +379,11 @@ pub unsafe fn wallet_convert_ignored(
 /// the function checks if the pointers are null. Mind not to put random values
 /// in or you may see unexpected behaviors
 ///
-pub unsafe fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> RecoveringResult {
+pub unsafe fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> Result {
     let wallet = if let Some(wallet) = wallet.as_ref() {
         wallet
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("wallet").details(NulPtr);
     };
 
     if let Some(total_out) = total_out.as_mut() {
@@ -396,7 +395,7 @@ pub unsafe fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> Reco
         *total_out = *total.as_ref();
     }
 
-    RecoveringResult::Success
+    Result::success()
 }
 
 /// update the wallet account state
@@ -413,17 +412,26 @@ pub unsafe fn wallet_total_value(wallet: WalletPtr, total_out: *mut u64) -> Reco
 ///
 /// * this function may fail if the wallet pointer is null;
 ///
-pub fn wallet_set_state(wallet: WalletPtr, value: u64, counter: u32) -> RecoveringResult {
+pub fn wallet_set_state(wallet: WalletPtr, value: u64, counter: u32) -> Result {
     let wallet = if let Some(wallet) = unsafe { wallet.as_mut() } {
         wallet
     } else {
-        return RecoveringResult::PtrIsNull;
+        return Result::invalid_input("wallet").details(NulPtr);
     };
     let value = Value(value);
 
     wallet.account.update_state(value, counter);
 
-    RecoveringResult::Success
+    Result::success()
+}
+
+/// delete the pointer and free the allocated memory
+pub fn wallet_delete_result(result: ResultPtr) {
+    if !result.is_null() {
+        let boxed = unsafe { Box::from_raw(result) };
+
+        std::mem::drop(boxed);
+    }
 }
 
 /// delete the pointer and free the allocated memory

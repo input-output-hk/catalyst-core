@@ -38,11 +38,17 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
     password: *const u8,
     password_length: usize,
     wallet_out: *mut WalletPtr,
-) -> RecoveringResult {
+) -> ResultPtr {
     let mnemonics = CStr::from_ptr(mnemonics);
 
     let mnemonics = mnemonics.to_string_lossy();
-    wallet_recover(&mnemonics, password, password_length, wallet_out)
+    let r = wallet_recover(&mnemonics, password, password_length, wallet_out);
+
+    if r.is_ok() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(Box::new(r))
+    }
 }
 
 /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
@@ -79,8 +85,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
     block0: *const u8,
     block0_length: usize,
     settings_out: *mut SettingsPtr,
-) -> RecoveringResult {
-    wallet_retrieve_funds(wallet, block0, block0_length, settings_out)
+) -> ResultPtr {
+    let r = wallet_retrieve_funds(wallet, block0, block0_length, settings_out);
+
+    if r.is_ok() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(Box::new(r))
+    }
 }
 
 /// once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
@@ -103,8 +115,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert(
     wallet: WalletPtr,
     settings: SettingsPtr,
     conversion_out: *mut ConversionPtr,
-) -> RecoveringResult {
-    wallet_convert(wallet, settings, conversion_out)
+) -> ResultPtr {
+    let r = wallet_convert(wallet, settings, conversion_out);
+
+    if r.is_ok() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(Box::new(r))
+    }
 }
 
 /// get the number of transactions built to convert the retrieved wallet
@@ -141,8 +159,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
     index: usize,
     transaction_out: *mut *const u8,
     transaction_size: *mut usize,
-) -> RecoveringResult {
-    wallet_convert_transactions_get(conversion, index, transaction_out, transaction_size)
+) -> ResultPtr {
+    let r = wallet_convert_transactions_get(conversion, index, transaction_out, transaction_size);
+
+    if r.is_ok() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(Box::new(r))
+    }
 }
 
 /// get the total value ignored in the conversion
@@ -165,8 +189,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
     conversion: ConversionPtr,
     value_out: *mut u64,
     ignored_out: *mut usize,
-) -> RecoveringResult {
-    wallet_convert_ignored(conversion, value_out, ignored_out)
+) -> ResultPtr {
+    let r = wallet_convert_ignored(conversion, value_out, ignored_out);
+
+    if r.is_ok() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(Box::new(r))
+    }
 }
 
 /// get the total value in the wallet
@@ -192,8 +222,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
 pub unsafe extern "C" fn iohk_jormungandr_wallet_total_value(
     wallet: WalletPtr,
     total_out: *mut u64,
-) -> RecoveringResult {
-    wallet_total_value(wallet, total_out)
+) -> ResultPtr {
+    let r = wallet_total_value(wallet, total_out);
+
+    if r.is_ok() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(Box::new(r))
+    }
 }
 
 /// update the wallet account state
@@ -221,8 +257,27 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
     wallet: WalletPtr,
     value: u64,
     counter: u32,
-) -> RecoveringResult {
-    wallet_set_state(wallet, value, counter)
+) -> ResultPtr {
+    let r = wallet_set_state(wallet, value, counter);
+
+    if r.is_ok() {
+        std::ptr::null_mut()
+    } else {
+        Box::into_raw(Box::new(r))
+    }
+}
+
+/// delete the pointer and free the allocated memory
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub extern "C" fn iohk_jormungandr_wallet_delete_result(result: ResultPtr) {
+    wallet_delete_result(result)
 }
 
 /// delete the pointer and free the allocated memory

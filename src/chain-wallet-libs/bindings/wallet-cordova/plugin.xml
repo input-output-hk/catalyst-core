@@ -33,6 +33,19 @@
         <source-file src="src/android/libs/armeabi-v7a/libwallet_jni.so" target-dir="libs/armeabi-v7a" />
     </platform>
 
+    <platform name="electron">
+        <config-file target="config.xml" parent="/*">
+            <feature name="WalletPlugin">
+                <param name="electron-package" value="WalletPlugin" />
+            </feature>
+        </config-file>
+
+
+        <js-module src="src/electron/walletProxy.js" name="WalletProxy">
+            <runs />
+        </js-module>
+    </platform>
+
     <!-- ios -->
     <!-- just as example -->
     <platform name="ios">

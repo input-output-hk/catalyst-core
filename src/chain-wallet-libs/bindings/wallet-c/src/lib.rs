@@ -1,4 +1,7 @@
-use std::{ffi::CStr, os::raw::c_char};
+use std::{
+    ffi::{CStr, CString},
+    os::raw::c_char,
+};
 pub use wallet::Settings;
 use wallet_core::c::{
     wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
@@ -299,6 +302,80 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
     r.into_c_api()
 }
 
+/// Get a string describing the error, this will return an allocated
+/// null terminated string describing the error.
+///
+/// If the given error is a `NULL` pointer, the string is and always
+/// is `"success"`. This string still need to be deleted with the
+/// `iohk_jormungandr_wallet_delete_string` function.
+///
+/// This function returns an allocated null terminated pointer. Don't
+/// forget to free the memory with: `iohk_jormungandr_wallet_delete_string`.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_error_to_string(error: ErrorPtr) -> *mut c_char {
+    if let Some(error) = error.as_ref() {
+        CString::new(error.to_string()).unwrap().into_raw()
+    } else {
+        CString::new(b"success".to_vec()).unwrap().into_raw()
+    }
+}
+
+/// Get a string describing the error, this will return an allocated
+/// null terminated string providing extra details regarding the source
+/// of the error.
+///
+/// If the given error is a `NULL` pointer, the string is and always
+/// is `"success"`. If no details are available the function will return
+/// `"no more details"`. This string still need to be deleted with the
+/// `iohk_jormungandr_wallet_delete_string` function.
+///
+/// This function returns an allocated null terminated pointer. Don't
+/// forget to free the memory with: `iohk_jormungandr_wallet_delete_string`.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_error_details(error: ErrorPtr) -> *mut c_char {
+    if let Some(error) = error.as_ref() {
+        if let Some(details) = error.details() {
+            CString::new(details.to_string()).unwrap().into_raw()
+        } else {
+            CString::new(b"no more details".to_vec())
+                .unwrap()
+                .into_raw()
+        }
+    } else {
+        CString::new(b"success".to_vec()).unwrap().into_raw()
+    }
+}
+
+/// Delete a null terminated string that was allocated by this library
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_string(ptr: *mut c_char) {
+    if !ptr.is_null() {
+        let cstring = CString::from_raw(ptr);
+        std::mem::drop(cstring)
+    }
+}
+
 /// delete the pointer and free the allocated memory
 ///
 /// # Safety
@@ -308,7 +385,7 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_delete_result(error: ErrorPtr) {
+pub extern "C" fn iohk_jormungandr_wallet_delete_error(error: ErrorPtr) {
     wallet_delete_error(error)
 }
 

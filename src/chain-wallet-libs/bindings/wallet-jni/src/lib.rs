@@ -2,7 +2,7 @@ use jni::objects::{JClass, JString};
 use jni::sys::{jbyteArray, jint, jlong};
 use jni::JNIEnv;
 use std::ptr::{null, null_mut};
-use wallet_core::*;
+use wallet_core::c::*;
 
 ///
 /// # Safety
@@ -22,7 +22,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
         .expect("Couldn't get mnemonics String");
 
     let mut wallet: WalletPtr = null_mut();
-    let wallet_ptr: *mut *mut Wallet = &mut wallet;
+    let wallet_ptr: *mut WalletPtr = &mut wallet;
     let result = wallet_recover(&mnemonics_j.to_string_lossy(), null(), 0, wallet_ptr);
 
     let _r = env.release_string_utf_chars(mnemonics, mnemonics_j.as_ptr());

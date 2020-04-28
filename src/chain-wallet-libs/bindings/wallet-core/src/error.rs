@@ -1,6 +1,7 @@
 use std::{
     error,
     fmt::{self, Display},
+    result,
 };
 
 /// result returned by a call, this allows to check if an error
@@ -10,7 +11,7 @@ use std::{
 /// about the kind of error as well as details from the underlying libraries
 /// that may be useful in case of bug reports or to figure out why the inputs
 /// were not valid and resulted in the function to return with error
-pub struct Result(std::result::Result<(), Error>);
+pub struct Result(result::Result<(), Error>);
 
 /// The error structure, contains details of what may have gone wrong
 ///
@@ -35,10 +36,13 @@ pub enum ErrorCode {
     /// details.
     InvalidInput = 1,
 
+    /// an error occurred while recovering a wallet
+    WalletRecovering = 2,
+
     /// the operation on the wallet conversion object fail, it may be
     /// an out of bound operation when attempting to access the `nth`
     /// transaction of the conversion.
-    WalletConversion = 2,
+    WalletConversion = 3,
 }
 
 #[derive(Debug)]
@@ -48,6 +52,9 @@ pub enum ErrorKind {
     ///
     /// The `details` should provide more info on what caused the error.
     InvalidInput { argument_name: &'static str },
+
+    /// an error occurred while recovering a wallet
+    WalletRecovering,
 
     /// This is the kind of error that may happen when operating
     /// the transactions of the wallet conversion. For example,
@@ -63,6 +70,7 @@ impl ErrorKind {
     pub fn code(&self) -> ErrorCode {
         match self {
             Self::InvalidInput { .. } => ErrorCode::InvalidInput,
+            Self::WalletRecovering => ErrorCode::WalletRecovering,
             Self::WalletConversion => ErrorCode::WalletConversion,
         }
     }
@@ -80,6 +88,93 @@ impl Error {
     /// this is useful to display more details as to why an error occurred.
     pub fn details(&self) -> Option<&(dyn error::Error + 'static)> {
         self.details.as_ref().map(|boxed| boxed.as_ref())
+    }
+
+    /// construct a Result which is an error with invalid inputs
+    ///
+    /// `argument_name` is expected to be a pointer to the parameter name.
+    ///
+    /// # example
+    ///
+    /// ```
+    /// # use wallet_core::{Result, Error};
+    /// # use thiserror::Error;
+    /// # #[derive(Error, Debug)]
+    /// # #[error("Unexpected null pointer")]
+    /// # struct NulPointer;
+    /// fn example(pointer: *mut u8) -> Result {
+    ///   if pointer.is_null() {
+    ///     Error::invalid_input("pointer")
+    ///         .with(NulPointer)
+    ///         .into()
+    ///   } else {
+    ///     Result::success()
+    ///   }
+    /// }
+    ///
+    /// let result = example(std::ptr::null_mut());
+    ///
+    /// assert!(result.is_err());
+    /// # assert!(!result.is_ok());
+    /// ```
+    pub fn invalid_input(argument_name: &'static str) -> Self {
+        Self {
+            kind: ErrorKind::InvalidInput { argument_name },
+            details: None,
+        }
+    }
+
+    pub fn wallet_recovering() -> Self {
+        Self {
+            kind: ErrorKind::WalletRecovering,
+            details: None,
+        }
+    }
+
+    pub fn wallet_conversion() -> Self {
+        Self {
+            kind: ErrorKind::WalletConversion,
+            details: None,
+        }
+    }
+
+    /// set some details to the `Result` object if the `Result` is of
+    /// error kind
+    ///
+    /// If the `Result` means success, then nothing is returned.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use wallet_core::{Result, Error};
+    /// # use thiserror::Error;
+    /// # #[derive(Error, Debug)]
+    /// # #[error("Unexpected null pointer")]
+    /// # struct NulPointer;
+    /// fn example(pointer: *mut u8) -> Result {
+    ///   if pointer.is_null() {
+    ///     Error::invalid_input("pointer").into()
+    ///   } else {
+    ///     Result::success()
+    ///   }
+    /// }
+    ///
+    /// let mut input = 2;
+    /// let input: *mut u8 = &mut 2;
+    /// let result = example(input).with(NulPointer);
+    ///
+    /// # assert!(!result.is_err());
+    /// assert!(result.is_ok());
+    /// ```
+    ///
+    pub fn with<E>(self, details: E) -> Self
+    where
+        E: error::Error + 'static,
+    {
+        Self {
+            details: Some(Box::new(details)),
+            ..self
+        }
     }
 }
 
@@ -124,14 +219,14 @@ impl Result {
     /// # Example
     ///
     /// ```
-    /// # use wallet_core::Result;
+    /// # use wallet_core::{Result, Error};
     /// # use thiserror::Error;
     /// # #[derive(Error, Debug)]
     /// # #[error("Unexpected null pointer")]
     /// # struct NulPointer;
     /// fn example(pointer: *mut u8) -> Result {
     ///   if pointer.is_null() {
-    ///     Result::invalid_input("pointer")
+    ///     Error::invalid_input("pointer").into()
     ///   } else {
     ///     Result::success()
     ///   }
@@ -139,13 +234,13 @@ impl Result {
     ///
     /// let mut input = 2;
     /// let input: *mut u8 = &mut 2;
-    /// let result = example(input).details(NulPointer);
+    /// let result = example(input).with(NulPointer);
     ///
     /// # assert!(!result.is_err());
     /// assert!(result.is_ok());
     /// ```
     ///
-    pub fn details<E>(self, details: E) -> Self
+    pub fn with<E>(self, details: E) -> Self
     where
         E: error::Error + 'static,
     {
@@ -157,46 +252,6 @@ impl Result {
             }
         }
     }
-
-    /// construct a Result which is an error with invalid inputs
-    ///
-    /// `argument_name` is expected to be a pointer to the parameter name.
-    ///
-    /// # example
-    ///
-    /// ```
-    /// # use wallet_core::Result;
-    /// # use thiserror::Error;
-    /// # #[derive(Error, Debug)]
-    /// # #[error("Unexpected null pointer")]
-    /// # struct NulPointer;
-    /// fn example(pointer: *mut u8) -> Result {
-    ///   if pointer.is_null() {
-    ///     Result::invalid_input("pointer")
-    ///         .details(NulPointer)
-    ///   } else {
-    ///     Result::success()
-    ///   }
-    /// }
-    ///
-    /// let result = example(std::ptr::null_mut());
-    ///
-    /// assert!(result.is_err());
-    /// # assert!(!result.is_ok());
-    /// ```
-    pub fn invalid_input(argument_name: &'static str) -> Self {
-        Self(Err(Error {
-            kind: ErrorKind::InvalidInput { argument_name },
-            details: None,
-        }))
-    }
-
-    pub fn wallet_conversion() -> Self {
-        Self(Err(Error {
-            kind: ErrorKind::WalletConversion,
-            details: None,
-        }))
-    }
 }
 
 impl Display for ErrorKind {
@@ -205,6 +260,7 @@ impl Display for ErrorKind {
             Self::InvalidInput { argument_name } => {
                 write!(f, "The argument '{}' is invalid.", argument_name)
             }
+            Self::WalletRecovering => f.write_str("Error while recovering a wallet"),
             Self::WalletConversion => {
                 f.write_str("Error while performing operation on the wallet conversion object")
             }
@@ -221,5 +277,17 @@ impl Display for Error {
 impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         self.details()
+    }
+}
+
+impl From<Error> for Result {
+    fn from(error: Error) -> Self {
+        Self(Err(error))
+    }
+}
+
+impl From<result::Result<(), Error>> for Result {
+    fn from(result: result::Result<(), Error>) -> Self {
+        Self(result)
     }
 }

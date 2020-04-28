@@ -1,5 +1,5 @@
 use std::{ffi::CStr, os::raw::c_char};
-use wallet_core::*;
+use wallet_core::c::*;
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
 ///

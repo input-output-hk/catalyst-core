@@ -19,67 +19,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-/**
- * result error code
- */
-enum RecoveringResult
-{
-  /**
-   * returned if the function succeed
-   */
-  RecoveringResult_Success = 0,
-  /**
-   * this error is returned if the users mnemonics are invalid
-   */
-  RecoveringResult_InvalidMnemonics,
-  /**
-   * happens if the block is not valid
-   */
-  RecoveringResult_InvalidBlockFormat,
-  /**
-   * index is out of bound
-   */
-  RecoveringResult_IndexOutOfBound,
-  /**
-   * a pointer was null where it was expected it to be non null
-   */
-  RecoveringResult_PtrIsNull,
-};
-typedef uint8_t RecoveringResult;
+typedef struct Result *ResultPtr;
 
-typedef struct Conversion Conversion;
+typedef struct Wallet *WalletPtr;
 
-/**
- * the blockchain settings
- *
- * this can be retrieved when parsing the block0
- *
- * It contains all the necessary information to make valid transactions
- * (including transferring legacy wallets into a new secure wallet).
- */
-typedef struct Settings Settings;
+typedef struct Settings *SettingsPtr;
 
-/**
- * the wallet
- *
- * * use the `recover` function to recover the wallet from the mnemonics/password;
- * * use the `retrieve_funds` to retrieve initial funds (if necessary) from the block0;
- *   then you can use `total_value` to see how much was recovered from the initial block0;
- *
- * DO NOT FORGET:
- *
- * to delete with `delete_wallet` once you do not need the wallet as there are
- * cryptographic material and forgetting to delete it properly will result
- * in risking leaking your wallet private keys
- *
- */
-typedef struct Wallet Wallet;
-
-typedef Wallet *WalletPtr;
-
-typedef Settings *SettingsPtr;
-
-typedef Conversion *ConversionPtr;
+typedef struct Conversion *ConversionPtr;
 
 /**
  * once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
@@ -91,10 +37,16 @@ typedef Conversion *ConversionPtr;
  * Don't forget to call `iohk_jormungandr_wallet_delete_conversion` to
  * properly free the memory
  *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
-RecoveringResult iohk_jormungandr_wallet_convert(WalletPtr wallet,
-                                                 SettingsPtr settings,
-                                                 ConversionPtr *conversion_out);
+ResultPtr iohk_jormungandr_wallet_convert(WalletPtr wallet,
+                                          SettingsPtr settings,
+                                          ConversionPtr *conversion_out);
 
 /**
  * get the total value ignored in the conversion
@@ -105,10 +57,17 @@ RecoveringResult iohk_jormungandr_wallet_convert(WalletPtr wallet,
  * these returned values are informational only and this show that
  * there are UTxOs entries that are unusable because of the way they
  * are populated with dusts.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
-RecoveringResult iohk_jormungandr_wallet_convert_ignored(ConversionPtr conversion,
-                                                         uint64_t *value_out,
-                                                         uintptr_t *ignored_out);
+ResultPtr iohk_jormungandr_wallet_convert_ignored(ConversionPtr conversion,
+                                                  uint64_t *value_out,
+                                                  uintptr_t *ignored_out);
 
 /**
  * retrieve the index-nth transactions in the conversions starting from 0
@@ -117,29 +76,76 @@ RecoveringResult iohk_jormungandr_wallet_convert_ignored(ConversionPtr conversio
  *
  * the memory allocated returned is not owned and should not be kept
  * for longer than potential call to `iohk_jormungandr_wallet_delete_conversion`
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
-RecoveringResult iohk_jormungandr_wallet_convert_transactions_get(ConversionPtr conversion,
-                                                                  uintptr_t index,
-                                                                  const uint8_t **transaction_out,
-                                                                  uintptr_t *transaction_size);
+ResultPtr iohk_jormungandr_wallet_convert_transactions_get(ConversionPtr conversion,
+                                                           uintptr_t index,
+                                                           const uint8_t **transaction_out,
+                                                           uintptr_t *transaction_size);
 
 /**
  * get the number of transactions built to convert the retrieved wallet
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
 uintptr_t iohk_jormungandr_wallet_convert_transactions_size(ConversionPtr conversion);
 
 /**
  * delete the pointer
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
 void iohk_jormungandr_wallet_delete_conversion(ConversionPtr conversion);
 
 /**
  * delete the pointer and free the allocated memory
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
+ */
+void iohk_jormungandr_wallet_delete_result(ResultPtr result);
+
+/**
+ * delete the pointer and free the allocated memory
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
 void iohk_jormungandr_wallet_delete_settings(SettingsPtr settings);
 
 /**
  * delete the pointer, zero all the keys and free the allocated memory
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
 void iohk_jormungandr_wallet_delete_wallet(WalletPtr wallet);
 
@@ -169,11 +175,17 @@ void iohk_jormungandr_wallet_delete_wallet(WalletPtr wallet);
  * * the mnemonics are not valid (invalid length or checksum);
  * * the `wallet_out` is null pointer
  *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
-RecoveringResult iohk_jormungandr_wallet_recover(const char *mnemonics,
-                                                 const uint8_t *password,
-                                                 uintptr_t password_length,
-                                                 WalletPtr *wallet_out);
+ResultPtr iohk_jormungandr_wallet_recover(const char *mnemonics,
+                                          const uint8_t *password,
+                                          uintptr_t password_length,
+                                          WalletPtr *wallet_out);
 
 /**
  * retrieve funds from daedalus or yoroi wallet in the given block0 (or
@@ -198,11 +210,43 @@ RecoveringResult iohk_jormungandr_wallet_recover(const char *mnemonics,
  * * this function may fail if the wallet pointer is null;
  * * the block is not valid (cannot be decoded)
  *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
-RecoveringResult iohk_jormungandr_wallet_retrieve_funds(WalletPtr wallet,
-                                                        const uint8_t *block0,
-                                                        uintptr_t block0_length,
-                                                        SettingsPtr *settings_out);
+ResultPtr iohk_jormungandr_wallet_retrieve_funds(WalletPtr wallet,
+                                                 const uint8_t *block0,
+                                                 uintptr_t block0_length,
+                                                 SettingsPtr *settings_out);
+
+/**
+ * update the wallet account state
+ *
+ * this is the value retrieved from any jormungandr endpoint that allows to query
+ * for the account state. It gives the value associated to the account as well as
+ * the counter.
+ *
+ * It is important to be sure to have an updated wallet state before doing any
+ * transactions otherwise future transactions may fail to be accepted by any
+ * nodes of the blockchain because of invalid signature state.
+ *
+ * # Errors
+ *
+ * * this function may fail if the wallet pointer is null;
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
+ */
+ResultPtr iohk_jormungandr_wallet_set_state(WalletPtr wallet,
+                                            uint64_t value,
+                                            uint32_t counter);
 
 /**
  * get the total value in the wallet
@@ -217,8 +261,15 @@ RecoveringResult iohk_jormungandr_wallet_retrieve_funds(WalletPtr wallet,
  * * this function may fail if the wallet pointer is null;
  *
  * If the `total_out` pointer is null, this function does nothing
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
  */
-RecoveringResult iohk_jormungandr_wallet_total_value(WalletPtr wallet,
-                                                     uint64_t *total_out);
+ResultPtr iohk_jormungandr_wallet_total_value(WalletPtr wallet,
+                                              uint64_t *total_out);
 
 #endif /* IOHK_CHAIN_WALLET_LIBC_ */

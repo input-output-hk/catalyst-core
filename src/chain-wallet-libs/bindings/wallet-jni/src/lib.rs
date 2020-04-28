@@ -27,12 +27,11 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
 
     let _r = env.release_string_utf_chars(mnemonics, mnemonics_j.as_ptr());
 
-    if result.is_ok() {
-        wallet as jlong
-    } else {
-        // TODO, the error is completely dismissed here... this is a shame as we could
-        // provide more details about what happened
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
         0
+    } else {
+        wallet as jlong
     }
 }
 
@@ -76,14 +75,18 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_delete(
 ///
 #[no_mangle]
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_totalValue(
-    _: JNIEnv,
+    env: JNIEnv,
     _: JClass,
     wallet: jlong,
 ) -> jint {
     let wallet_ptr: WalletPtr = wallet as WalletPtr;
     let mut value: u64 = 0;
     if !wallet_ptr.is_null() {
-        wallet_total_value(wallet_ptr, &mut value);
+        let result = wallet_total_value(wallet_ptr, &mut value);
+
+        if let Some(error) = result.error() {
+            let _ = env.throw(error.to_string());
+        }
     }
     value as jint
 }
@@ -112,7 +115,11 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFund
     let _r = env.get_byte_array_region(block0, 0, &mut bytes);
 
     if !wallet_ptr.is_null() {
-        wallet_retrieve_funds(wallet_ptr, bytes.as_ptr() as *const u8, len, settings_ptr);
+        let result =
+            wallet_retrieve_funds(wallet_ptr, bytes.as_ptr() as *const u8, len, settings_ptr);
+        if let Some(error) = result.error() {
+            let _ = env.throw(error.to_string());
+        }
     }
     settings as jlong
 }

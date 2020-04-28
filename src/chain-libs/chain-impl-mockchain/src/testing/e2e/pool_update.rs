@@ -73,12 +73,7 @@ pub fn pool_update_after_pool_retirement() {
     new_stake_pool.info_mut().serial = 111u128;
 
     assert!(controller
-        .update(
-            &stake_pool,
-            new_stake_pool,
-            vec![&alice],
-            &mut ledger
-        )
+        .update(&stake_pool, new_stake_pool, vec![&alice], &mut ledger)
         .is_err());
 }
 

@@ -468,8 +468,7 @@ impl TestLedger {
         &'a self,
         address_data: &AddressData,
     ) -> Option<Entry<'a, Address>> {
-        self
-            .utxos()
+        self.utxos()
             .find(|x| x.output.address == address_data.address)
     }
 

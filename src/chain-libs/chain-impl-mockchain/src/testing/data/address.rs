@@ -94,10 +94,7 @@ impl AddressData {
         let (_delegation_sk, delegation_pk) =
             AddressData::generate_key_pair::<Ed25519Extended>().into_keys();
 
-        let user_address = Address(
-            discrimination,
-            Kind::Group(single_pk, delegation_pk),
-        );
+        let user_address = Address(discrimination, Kind::Group(single_pk, delegation_pk));
         let single_sk = EitherEd25519SecretKey::Extended(single_sk);
         AddressData::new(single_sk, None, user_address)
     }
@@ -121,14 +118,14 @@ impl AddressData {
 
     pub fn make_input(&self, value: Value, utxo: Option<Entry<Address>>) -> Input {
         match self.address.kind() {
-            Kind::Account { .. } => {
-                Input::from_account_public_key(self.public_key(), value)
-            }
+            Kind::Account { .. } => Input::from_account_public_key(self.public_key(), value),
             Kind::Single { .. } | Kind::Group { .. } => {
-                Input::from_utxo_entry(utxo.unwrap_or_else(|| panic!(
-                    "invalid state, utxo should be Some if Kind not Account {:?}",
-                    &self.address
-                )))
+                Input::from_utxo_entry(utxo.unwrap_or_else(|| {
+                    panic!(
+                        "invalid state, utxo should be Some if Kind not Account {:?}",
+                        &self.address
+                    )
+                }))
             }
             Kind::Multisig { .. } => unimplemented!(),
         }

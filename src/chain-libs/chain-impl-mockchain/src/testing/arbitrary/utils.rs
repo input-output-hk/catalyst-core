@@ -1,5 +1,5 @@
 use quickcheck::{Arbitrary, Gen, TestResult};
-use std::collections::{HashMap, hash_map, HashSet};
+use std::collections::{hash_map, HashMap, HashSet};
 use std::fmt::Debug;
 use std::{
     cmp::{self, Eq, PartialEq},
@@ -47,7 +47,10 @@ where
         .collect()
 }
 
-pub fn choose_random_set_subset<G: Gen, T>(source: &HashSet<T, hash_map::RandomState>, gen: &mut G) -> HashSet<T>
+pub fn choose_random_set_subset<G: Gen, T>(
+    source: &HashSet<T, hash_map::RandomState>,
+    gen: &mut G,
+) -> HashSet<T>
 where
     T: std::clone::Clone + Eq + Hash,
 {
@@ -70,7 +73,10 @@ where
     source.iter().cloned().nth(index).unwrap()
 }
 
-pub fn choose_random_map_subset<G: Gen, T, U>(source: &HashMap<T, U, hash_map::RandomState>, gen: &mut G) -> HashMap<T, U>
+pub fn choose_random_map_subset<G: Gen, T, U>(
+    source: &HashMap<T, U, hash_map::RandomState>,
+    gen: &mut G,
+) -> HashMap<T, U>
 where
     T: Clone + PartialEq + Eq + Hash,
     U: std::clone::Clone,

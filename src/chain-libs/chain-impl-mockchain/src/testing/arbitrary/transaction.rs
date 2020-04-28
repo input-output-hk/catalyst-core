@@ -295,7 +295,7 @@ impl UtxoVerifier {
     pub fn verify(&self, ledger: &TestLedger) -> Result<(), Error> {
         let expected_utxo_snapshots = &self.calculate_current_utxo();
         for utxo_snapshot in expected_utxo_snapshots {
-            let condition =  !ledger.utxos().any(|x| {
+            let condition = !ledger.utxos().any(|x| {
                 x.output.address.clone() == utxo_snapshot.address_data.address.clone()
                     && x.output.value.0 == utxo_snapshot.value.0
             });

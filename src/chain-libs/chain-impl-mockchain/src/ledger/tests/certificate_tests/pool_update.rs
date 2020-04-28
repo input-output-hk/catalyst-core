@@ -286,3 +286,33 @@ pub fn pool_update_update_fee_is_not_allowed() {
         Error::PoolUpdateFeesNotAllowedYet
     );
 }
+
+#[test]
+pub fn pool_update_without_any_change() {
+    let alice = Wallet::from_value(Value(100));
+
+    let stake_pool = StakePoolBuilder::new()
+        .with_owners(vec![alice.public_key()])
+        .build();
+
+    let registration_certificate =
+        create_initial_stake_pool_registration(&stake_pool, &[alice.clone()]);
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        .faucets_wallets(vec![&alice])
+        .certs(&[registration_certificate])
+        .build()
+        .unwrap();
+
+    let pool_update = PoolUpdate {
+        pool_id: stake_pool.info().to_id(),
+        last_pool_reg_hash: stake_pool.info().to_id(),
+        new_pool_reg: stake_pool.info(),
+    };
+    let certificate = build_stake_pool_update_cert(&pool_update);
+    let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
+        .make_transaction(&[&alice], &certificate);
+
+    assert!(test_ledger
+        .apply_fragment(&fragment, BlockDate::first())
+        .is_ok());
+}

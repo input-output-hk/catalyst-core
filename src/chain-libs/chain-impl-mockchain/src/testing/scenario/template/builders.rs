@@ -115,9 +115,7 @@ impl StakePoolTemplateBuilder {
             .collect()
     }
 
-    fn build_ownersip_map(
-        initials: &[WalletTemplate],
-    ) -> HashMap<String, HashSet<WalletTemplate>> {
+    fn build_ownersip_map(initials: &[WalletTemplate]) -> HashMap<String, HashSet<WalletTemplate>> {
         let mut output: HashMap<String, HashSet<WalletTemplate>> = HashMap::new();
         for wallet_template in initials.iter().filter(|w| w.owns_stake_pool().is_some()) {
             let delegate_alias = wallet_template.owns_stake_pool().unwrap();
@@ -125,9 +123,7 @@ impl StakePoolTemplateBuilder {
             output
                 .entry(delegate_alias)
                 .or_default()
-                .insert(
-                    wallet_template.clone()
-                );
+                .insert(wallet_template.clone());
         }
         output
     }
@@ -145,9 +141,7 @@ impl StakePoolTemplateBuilder {
             output
                 .entry(stake_pool_alias)
                 .or_default()
-                .insert(
-                    wallet_template.clone()
-                );
+                .insert(wallet_template.clone());
         }
         output
     }

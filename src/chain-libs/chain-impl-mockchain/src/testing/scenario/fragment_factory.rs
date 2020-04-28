@@ -113,7 +113,6 @@ impl FragmentFactory {
     }
 
     fn transaction_with_cert(&self, wallets: &[&Wallet], certificate: Certificate) -> Fragment {
-        TestTxCertBuilder::new(self.block0_hash, self.fee)
-            .make_transaction(wallets, &certificate)
+        TestTxCertBuilder::new(self.block0_hash, self.fee).make_transaction(wallets, &certificate)
     }
 }

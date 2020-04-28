@@ -1,12 +1,6 @@
-mod utils;
-
-use chain_impl_mockchain::{
-    block::Block,
-    transaction::{Input, NoExtra, Transaction},
-    value::Value,
-};
-use chain_ser::mempack::Readable;
 use wasm_bindgen::prelude::*;
+
+mod utils;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -15,20 +9,13 @@ use wasm_bindgen::prelude::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub struct Wallet {
-    daedalus: wallet::RecoveringDaedalus,
-    icarus: wallet::RecoveringIcarus,
-    account: wallet::Wallet,
-}
+pub struct Wallet(wallet_core::Wallet);
 
 #[wasm_bindgen]
-pub struct Settings(wallet::Settings);
+pub struct Settings(wallet_core::Settings);
 
 #[wasm_bindgen]
-pub struct Conversion {
-    transactions: Vec<Transaction<NoExtra>>,
-    ignored: Vec<Input>,
-}
+pub struct Conversion(wallet_core::Conversion);
 
 #[wasm_bindgen]
 impl Wallet {
@@ -42,63 +29,13 @@ impl Wallet {
     ///
     /// the mnemonics should be in english
     pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Wallet, JsValue> {
-        let builder = wallet::RecoveryBuilder::new();
-
-        let builder = if let Ok(builder) = builder.mnemonics(&bip39::dictionary::ENGLISH, mnemonics)
-        {
-            builder
-        } else {
-            return Err(JsValue::from("invalid mnemonics"));
-        };
-
-        let builder = if !password.is_empty() {
-            todo!()
-        } else {
-            builder
-        };
-
-        // calling this function cannot fail, we already
-        // have the mnemonics set in the builder, and there is no password set
-        let daedalus = builder
-            .build_daedalus()
-            .expect("build the daedalus wallet as expected");
-
-        // calling this function cannot fail, we already
-        // have the mnemonics set in the builder, and there is no password set
-        let icarus = builder
-            .build_yoroi()
-            .expect("build the daedalus wallet as expected");
-
-        // calling this function cannot fail as we have set the mnemonics already
-        // and no password is valid (though it is weak security from daedalus wallet PoV)
-        let account = builder
-            .build_wallet()
-            .expect("build the account cannot fail as expected");
-
-        Ok(Wallet {
-            account,
-            daedalus,
-            icarus,
-        })
+        wallet_core::Wallet::recover(mnemonics, password)
+            .map_err(|e| JsValue::from(e.to_string()))
+            .map(Wallet)
     }
 
     pub fn convert(&mut self, settings: &Settings) -> Conversion {
-        let mut dump = wallet::transaction::Dump::new(
-            settings.0.clone(),
-            self.account
-                .account_id()
-                .address(chain_addr::Discrimination::Production),
-        );
-
-        self.icarus.dump_in(&mut dump);
-        self.daedalus.dump_in(&mut dump);
-
-        let (ignored, transactions) = dump.finalize();
-
-        Conversion {
-            transactions,
-            ignored,
-        }
+        Conversion(self.0.convert(settings.0.clone()))
     }
 
     /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
@@ -112,19 +49,10 @@ impl Wallet {
     ///
     /// also, this function should not be called twice with the same block.
     pub fn retrieve_funds(&mut self, block0: &[u8]) -> Result<Settings, JsValue> {
-        let mut bufreader = chain_ser::mempack::ReadBuf::from(block0);
-        let block0 = if let Ok(block) = Block::read(&mut bufreader) {
-            block
-        } else {
-            return Err(JsValue::from("invalid block0 format"));
-        };
-
-        let settings = Settings(wallet::Settings::new(&block0).unwrap());
-
-        self.daedalus.check_blocks(block0.contents.iter());
-        self.icarus.check_blocks(block0.contents.iter());
-
-        Ok(settings)
+        self.0
+            .retrieve_funds(block0)
+            .map_err(|e| JsValue::from(e.to_string()))
+            .map(Settings)
     }
 
     /// get the total value in the wallet
@@ -132,10 +60,7 @@ impl Wallet {
     /// make sure to call `retrieve_funds` prior to calling this function
     /// otherwise you will always have `0`
     pub fn total_value(&self) -> u64 {
-        self.icarus
-            .value_total()
-            .saturating_add(self.daedalus.value_total())
-            .0
+        self.0.total_value().0
     }
 
     /// update the wallet account state
@@ -149,7 +74,7 @@ impl Wallet {
     /// nodes of the blockchain because of invalid signature state.
     ///
     pub fn set_state(&mut self, value: u64, counter: u32) {
-        self.account.update_state(Value(value), counter);
+        self.0.set_state(wallet_core::Value(value), counter);
     }
 }
 
@@ -162,7 +87,7 @@ impl Conversion {
     /// because it is more expensive to use them than to ignore them. This is
     /// called dust.
     pub fn num_ignored(&self) -> usize {
-        self.ignored.len()
+        self.0.ignored().len()
     }
 
     /// retrieve the total value lost in dust utxos
@@ -173,7 +98,8 @@ impl Conversion {
     /// I.e. their individual fee to add as an input is higher
     /// than the value they individually holds
     pub fn total_value_ignored(&self) -> u64 {
-        self.ignored
+        self.0
+            .ignored()
             .iter()
             .map(|i| *i.value().as_ref())
             .sum::<u64>()
@@ -181,10 +107,13 @@ impl Conversion {
 
     /// the number of transactions built for the conversion
     pub fn transactions_len(&self) -> usize {
-        self.transactions.len()
+        self.0.transactions().len()
     }
 
     pub fn transactions_get(&self, index: usize) -> Option<Vec<u8>> {
-        self.transactions.get(index).map(|t| t.as_ref().to_owned())
+        self.0
+            .transactions()
+            .get(index)
+            .map(|t| t.as_ref().to_owned())
     }
 }

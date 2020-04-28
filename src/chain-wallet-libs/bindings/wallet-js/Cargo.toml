@@ -19,11 +19,7 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 wasm-bindgen = "0.2"
-bip39 = { path = "../../bip39" }
-wallet = { path = "../../wallet" }
-chain-impl-mockchain = { path = "../../chain-deps/chain-impl-mockchain" }
-chain-ser = { path = "../../chain-deps/chain-ser" }
-chain-addr = { path = "../../chain-deps/chain-addr" }
+wallet-core = { path = "../wallet-core" }
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires

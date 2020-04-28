@@ -144,7 +144,7 @@ void iohk_jormungandr_wallet_delete_conversion(ConversionPtr conversion);
  * in or you may see unexpected behaviors
  *
  */
-void iohk_jormungandr_wallet_delete_result(ErrorPtr error);
+void iohk_jormungandr_wallet_delete_error(ErrorPtr error);
 
 /**
  * delete the pointer and free the allocated memory
@@ -159,6 +159,18 @@ void iohk_jormungandr_wallet_delete_result(ErrorPtr error);
 void iohk_jormungandr_wallet_delete_settings(SettingsPtr settings);
 
 /**
+ * Delete a null terminated string that was allocated by this library
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
+ */
+void iohk_jormungandr_wallet_delete_string(char *ptr);
+
+/**
  * delete the pointer, zero all the keys and free the allocated memory
  *
  * # Safety
@@ -169,6 +181,48 @@ void iohk_jormungandr_wallet_delete_settings(SettingsPtr settings);
  *
  */
 void iohk_jormungandr_wallet_delete_wallet(WalletPtr wallet);
+
+/**
+ * Get a string describing the error, this will return an allocated
+ * null terminated string providing extra details regarding the source
+ * of the error.
+ *
+ * If the given error is a `NULL` pointer, the string is and always
+ * is `"success"`. If no details are available the function will return
+ * `"no more details"`. This string still need to be deleted with the
+ * `iohk_jormungandr_wallet_delete_string` function.
+ *
+ * This function returns an allocated null terminated pointer. Don't
+ * forget to free the memory with: `iohk_jormungandr_wallet_delete_string`.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
+ */
+char *iohk_jormungandr_wallet_error_details(ErrorPtr error);
+
+/**
+ * Get a string describing the error, this will return an allocated
+ * null terminated string describing the error.
+ *
+ * If the given error is a `NULL` pointer, the string is and always
+ * is `"success"`. This string still need to be deleted with the
+ * `iohk_jormungandr_wallet_delete_string` function.
+ *
+ * This function returns an allocated null terminated pointer. Don't
+ * forget to free the memory with: `iohk_jormungandr_wallet_delete_string`.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
+ */
+char *iohk_jormungandr_wallet_error_to_string(ErrorPtr error);
 
 /**
  * retrieve a wallet from the given mnemonics, password and protocol magic

@@ -145,7 +145,7 @@ impl Wallet {
         self.icarus
             .value_total()
             .saturating_add(self.daedalus.value_total())
-        // todo add wallet account's value
+            .saturating_add(self.account.value())
     }
 
     /// update the wallet account state

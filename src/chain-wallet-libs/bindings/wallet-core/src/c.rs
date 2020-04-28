@@ -12,7 +12,7 @@ pub use wallet::Settings;
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
-pub type ResultPtr = *mut Result;
+pub type ErrorPtr = *mut Error;
 
 pub struct Conversion {
     pub(crate) ignored: Vec<Input>,
@@ -351,9 +351,9 @@ pub fn wallet_set_state(wallet: WalletPtr, value: u64, counter: u32) -> Result {
 }
 
 /// delete the pointer and free the allocated memory
-pub fn wallet_delete_result(result: ResultPtr) {
-    if !result.is_null() {
-        let boxed = unsafe { Box::from_raw(result) };
+pub fn wallet_delete_error(error: ErrorPtr) {
+    if !error.is_null() {
+        let boxed = unsafe { Box::from_raw(error) };
 
         std::mem::drop(boxed);
     }

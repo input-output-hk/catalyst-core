@@ -2,21 +2,23 @@ use std::{ffi::CStr, os::raw::c_char};
 pub use wallet::Settings;
 use wallet_core::c::{
     wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
-    wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_result,
+    wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_error,
     wallet_delete_settings, wallet_delete_wallet, wallet_recover, wallet_retrieve_funds,
     wallet_set_state, wallet_total_value,
 };
 pub use wallet_core::{
-    // c::{ConversionPtr, ResultPtr, SettingsPtr, WalletPtr},
+    // c::{ConversionPtr, ErrorPtr, SettingsPtr, WalletPtr},
     Conversion,
-    Result,
+    Error,
+    ErrorCode,
+    ErrorKind,
     Wallet,
 };
 
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
-pub type ResultPtr = *mut Result;
+pub type ErrorPtr = *mut Error;
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
 ///
@@ -43,10 +45,10 @@ pub type ResultPtr = *mut Result;
 /// * the mnemonics are not valid (invalid length or checksum);
 /// * the `wallet_out` is null pointer
 ///
-/// On error the function returns a `ResultPtr`. On success `NULL` is returned.
-/// The `ResultPtr` can then be observed to gathered details of the error.
+/// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+/// The `ErrorPtr` can then be observed to gathered details of the error.
 /// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
-/// the `ResultPtr` from memory and avoid memory leaks.
+/// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
 ///
@@ -60,17 +62,13 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
     password: *const u8,
     password_length: usize,
     wallet_out: *mut WalletPtr,
-) -> ResultPtr {
+) -> ErrorPtr {
     let mnemonics = CStr::from_ptr(mnemonics);
 
     let mnemonics = mnemonics.to_string_lossy();
     let r = wallet_recover(&mnemonics, password, password_length, wallet_out);
 
-    if r.is_ok() {
-        std::ptr::null_mut()
-    } else {
-        Box::into_raw(Box::new(r))
-    }
+    r.into_c_api()
 }
 
 /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
@@ -95,10 +93,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
 /// * this function may fail if the wallet pointer is null;
 /// * the block is not valid (cannot be decoded)
 ///
-/// On error the function returns a `ResultPtr`. On success `NULL` is returned.
-/// The `ResultPtr` can then be observed to gathered details of the error.
+/// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+/// The `ErrorPtr` can then be observed to gathered details of the error.
 /// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
-/// the `ResultPtr` from memory and avoid memory leaks.
+/// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
 ///
@@ -112,14 +110,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
     block0: *const u8,
     block0_length: usize,
     settings_out: *mut SettingsPtr,
-) -> ResultPtr {
+) -> ErrorPtr {
     let r = wallet_retrieve_funds(wallet, block0, block0_length, settings_out);
 
-    if r.is_ok() {
-        std::ptr::null_mut()
-    } else {
-        Box::into_raw(Box::new(r))
-    }
+    r.into_c_api()
 }
 
 /// once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
@@ -133,10 +127,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
 ///
 /// # Errors
 ///
-/// On error the function returns a `ResultPtr`. On success `NULL` is returned.
-/// The `ResultPtr` can then be observed to gathered details of the error.
+/// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+/// The `ErrorPtr` can then be observed to gathered details of the error.
 /// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
-/// the `ResultPtr` from memory and avoid memory leaks.
+/// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
 ///
@@ -149,14 +143,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert(
     wallet: WalletPtr,
     settings: SettingsPtr,
     conversion_out: *mut ConversionPtr,
-) -> ResultPtr {
+) -> ErrorPtr {
     let r = wallet_convert(wallet, settings, conversion_out);
 
-    if r.is_ok() {
-        std::ptr::null_mut()
-    } else {
-        Box::into_raw(Box::new(r))
-    }
+    r.into_c_api()
 }
 
 /// get the number of transactions built to convert the retrieved wallet
@@ -183,10 +173,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
 ///
 /// # Errors
 ///
-/// On error the function returns a `ResultPtr`. On success `NULL` is returned.
-/// The `ResultPtr` can then be observed to gathered details of the error.
+/// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+/// The `ErrorPtr` can then be observed to gathered details of the error.
 /// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
-/// the `ResultPtr` from memory and avoid memory leaks.
+/// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
 ///
@@ -200,14 +190,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
     index: usize,
     transaction_out: *mut *const u8,
     transaction_size: *mut usize,
-) -> ResultPtr {
+) -> ErrorPtr {
     let r = wallet_convert_transactions_get(conversion, index, transaction_out, transaction_size);
 
-    if r.is_ok() {
-        std::ptr::null_mut()
-    } else {
-        Box::into_raw(Box::new(r))
-    }
+    r.into_c_api()
 }
 
 /// get the total value ignored in the conversion
@@ -221,10 +207,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
 ///
 /// # Errors
 ///
-/// On error the function returns a `ResultPtr`. On success `NULL` is returned.
-/// The `ResultPtr` can then be observed to gathered details of the error.
+/// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+/// The `ErrorPtr` can then be observed to gathered details of the error.
 /// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
-/// the `ResultPtr` from memory and avoid memory leaks.
+/// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
 ///
@@ -237,14 +223,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
     conversion: ConversionPtr,
     value_out: *mut u64,
     ignored_out: *mut usize,
-) -> ResultPtr {
+) -> ErrorPtr {
     let r = wallet_convert_ignored(conversion, value_out, ignored_out);
 
-    if r.is_ok() {
-        std::ptr::null_mut()
-    } else {
-        Box::into_raw(Box::new(r))
-    }
+    r.into_c_api()
 }
 
 /// get the total value in the wallet
@@ -258,10 +240,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
 ///
 /// * this function may fail if the wallet pointer is null;
 ///
-/// On error the function returns a `ResultPtr`. On success `NULL` is returned.
-/// The `ResultPtr` can then be observed to gathered details of the error.
+/// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+/// The `ErrorPtr` can then be observed to gathered details of the error.
 /// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
-/// the `ResultPtr` from memory and avoid memory leaks.
+/// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// If the `total_out` pointer is null, this function does nothing
 ///
@@ -275,14 +257,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
 pub unsafe extern "C" fn iohk_jormungandr_wallet_total_value(
     wallet: WalletPtr,
     total_out: *mut u64,
-) -> ResultPtr {
+) -> ErrorPtr {
     let r = wallet_total_value(wallet, total_out);
 
-    if r.is_ok() {
-        std::ptr::null_mut()
-    } else {
-        Box::into_raw(Box::new(r))
-    }
+    r.into_c_api()
 }
 
 /// update the wallet account state
@@ -299,10 +277,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_total_value(
 ///
 /// * this function may fail if the wallet pointer is null;
 ///
-/// On error the function returns a `ResultPtr`. On success `NULL` is returned.
-/// The `ResultPtr` can then be observed to gathered details of the error.
+/// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+/// The `ErrorPtr` can then be observed to gathered details of the error.
 /// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
-/// the `ResultPtr` from memory and avoid memory leaks.
+/// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
 ///
@@ -315,14 +293,10 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
     wallet: WalletPtr,
     value: u64,
     counter: u32,
-) -> ResultPtr {
+) -> ErrorPtr {
     let r = wallet_set_state(wallet, value, counter);
 
-    if r.is_ok() {
-        std::ptr::null_mut()
-    } else {
-        Box::into_raw(Box::new(r))
-    }
+    r.into_c_api()
 }
 
 /// delete the pointer and free the allocated memory
@@ -334,8 +308,8 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
-pub extern "C" fn iohk_jormungandr_wallet_delete_result(result: ResultPtr) {
-    wallet_delete_result(result)
+pub extern "C" fn iohk_jormungandr_wallet_delete_result(error: ErrorPtr) {
+    wallet_delete_error(error)
 }
 
 /// delete the pointer and free the allocated memory

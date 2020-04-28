@@ -253,6 +253,13 @@ impl Result {
             }
         }
     }
+
+    pub fn into_c_api(self) -> *mut Error {
+        match self.0 {
+            Ok(()) => std::ptr::null_mut(),
+            Err(err) => Box::into_raw(Box::new(err)),
+        }
+    }
 }
 
 impl Display for ErrorKind {

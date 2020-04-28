@@ -114,7 +114,7 @@ impl Wallet {
     /// the function checks if the pointers are null. Mind not to put random values
     /// in or you may see unexpected behaviors
     ///
-    pub unsafe fn convert(&mut self, settings: Settings) -> Conversion {
+    pub fn convert(&mut self, settings: Settings) -> Conversion {
         let address = self
             .account
             .account_id()

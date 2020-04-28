@@ -1,11 +1,8 @@
 //! This module expose handy C compatible functions to reuse in the different
 //! C style bindings that we have (wallet-c, wallet-jni...)
 
-use crate::{Error, Result, Wallet};
-use chain_impl_mockchain::{
-    transaction::{Input, NoExtra, Transaction},
-    value::Value,
-};
+use crate::{Conversion, Error, Result, Wallet};
+use chain_impl_mockchain::{transaction::Input, value::Value};
 use thiserror::Error;
 pub use wallet::Settings;
 
@@ -13,11 +10,6 @@ pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
 pub type ErrorPtr = *mut Error;
-
-pub struct Conversion {
-    pub(crate) ignored: Vec<Input>,
-    pub(crate) transactions: Vec<Transaction<NoExtra>>,
-}
 
 #[derive(Debug, Error)]
 #[error("null pointer")]

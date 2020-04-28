@@ -30,6 +30,8 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
     if result.is_ok() {
         wallet as jlong
     } else {
+        // TODO, the error is completely dismissed here... this is a shame as we could
+        // provide more details about what happened
         0
     }
 }

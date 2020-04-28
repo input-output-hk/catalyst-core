@@ -11,6 +11,7 @@ use std::{
 /// about the kind of error as well as details from the underlying libraries
 /// that may be useful in case of bug reports or to figure out why the inputs
 /// were not valid and resulted in the function to return with error
+#[must_use = "ignoring this may result in ignoring an error"]
 pub struct Result(result::Result<(), Error>);
 
 /// The error structure, contains details of what may have gone wrong

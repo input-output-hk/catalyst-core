@@ -20,7 +20,7 @@ fn yoroi1() {
     let block0 = Block::read(&mut block0_bytes).expect("valid block0");
 
     let _settings = wallet::Settings::new(&block0).expect("valid settings recovering");
-    wallet.check_blocks(block0.contents.iter());
+    wallet.check_fragments(block0.contents.iter());
 
     let total_value = wallet.value_total();
     assert_eq!(total_value.as_ref(), &WALLET_VALUE);

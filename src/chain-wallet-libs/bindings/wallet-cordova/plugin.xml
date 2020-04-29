@@ -44,6 +44,11 @@
         <js-module src="src/electron/walletProxy.js" name="WalletProxy">
             <runs />
         </js-module>
+
+        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule">
+        </js-module>
+
+        <asset src="src/electron/pkg/wallet_js_bg.wasm" target="wallet_js_bg.wasm" />
     </platform>
 
     <!-- ios -->

@@ -195,6 +195,10 @@ pub fn get_distribution(
                 // single or multisig account are not present in utxos
                 panic!("internal error: accounts in utxo")
             }
+            Kind::Script(_) => {
+                // scripts are not present in utxo
+                panic!("internal error: script in utxo")
+            }
             Kind::Group(_spending_key, account_key) => {
                 let identifier = account_key.clone().into();
                 // is there an account linked to this

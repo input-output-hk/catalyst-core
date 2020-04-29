@@ -284,6 +284,8 @@ pub enum Error {
         #[source]
         VotePlanLedgerError,
     ),
+    #[error("Scripts addresses are not yet supported by the system")]
+    ScriptsAddressNotAllowedYet,
 }
 
 impl LedgerParameters {
@@ -1339,6 +1341,10 @@ impl Ledger {
                 Kind::Multisig(identifier) => {
                     let identifier = multisig::Identifier::from(*identifier);
                     self.multisig = self.multisig.add_value(&identifier, output.value)?;
+                }
+                Kind::Script(_identifier) => {
+                    // TODO: scripts address kinds are not yet supported
+                    return Err(Error::ScriptsAddressNotAllowedYet);
                 }
             }
         }

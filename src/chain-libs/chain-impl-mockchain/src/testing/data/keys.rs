@@ -64,6 +64,7 @@ impl KeysDb {
             Kind::Group(pk, _) => self.find_ed25519_secret_key(pk),
             Kind::Account(pk) => self.find_ed25519_secret_key(pk),
             Kind::Multisig(_) => unimplemented!(),
+            Kind::Script(_) => unimplemented!(),
         }
     }
 }

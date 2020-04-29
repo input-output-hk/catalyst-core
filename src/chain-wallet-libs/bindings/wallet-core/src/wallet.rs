@@ -93,9 +93,10 @@ impl Wallet {
             Block::read(&mut block0_bytes).map_err(|e| Error::invalid_input("block0").with(e))?;
 
         let settings = wallet::Settings::new(&block0).unwrap();
-        self.daedalus.check_blocks(block0.contents.iter());
-        self.icarus.check_blocks(block0.contents.iter());
-
+        for fragment in block0.contents.iter() {
+            self.daedalus.check_single_block(fragment);
+            self.icarus.check_single_block(fragment);
+        }
         Ok(settings)
     }
 

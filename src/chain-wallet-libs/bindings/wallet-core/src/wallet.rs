@@ -116,11 +116,7 @@ impl Wallet {
     /// in or you may see unexpected behaviors
     ///
     pub fn convert(&mut self, settings: Settings) -> Conversion {
-        let address = self
-            .account
-            .account_id()
-            // TODO: get this from the settings
-            .address(chain_addr::Discrimination::Production);
+        let address = self.account.account_id().address(settings.discrimination());
 
         let mut dump = wallet::transaction::Dump::new(settings, address);
 

@@ -17,3 +17,11 @@ export CC_x86_64_linux_android=$NDK/toolchains/llvm/prebuilt/$BUILDING_PLATFORM/
 ```
 
 Where $NDK is your * Android NDK * installation directory, and $BUILDING_PLATFORM is your current platform (not the target).
+
+# Electron
+
+## Requirements
+
+wasm-pack (TODO: Add some link)
+
+run `build_wasm.py` in the plugin's root directory.

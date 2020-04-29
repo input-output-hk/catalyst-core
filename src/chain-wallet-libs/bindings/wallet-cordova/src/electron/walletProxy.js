@@ -1,45 +1,61 @@
-const MOCKED_WALLET_PTR = 1000;
-const MOCKED_SETTINGS_PTR = 2000;
+const wasm = require('wallet-cordova-plugin.wasmModule');
 
-const BLOCK0 = 'AFIAAAAAA2kAAAAAAAAAAAAAAAD9i29cnYJNuv/jwQQ120w1IjI6I4/L0XRXVp6J3W381AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKYAAAAOAIgAAAAAXpIscABBAQDCAAEDmAAAAAAAAAAKAAAAAAAAAAIAAAAAAAAAZAEEAAAAtAFBFAQEAACowAIIAAAAAAAAAGQCRAABkAABhAAAAGQFgQEEyAAAWvMQekAABSECAAAAAAAAAGQAAAAAAAAADQAAAAAAAAATAAAAAQAAAAMC4OV86zsoMvB+LvBR53K2KoN/ekhsNeOPUb9Va9OrzY7KAW8AAQUAAAAAAA9CQABMgtgYWEKDWBwJkubjlw3QEFW6kZz/W2cKaBP0HFiOtwEjHjzwoQFYHlgcS/9R5uG88kXHvLYQQV+tQnwti4f6yoRSIVlw9gAaZgoUdwAAAAAAAYagAEyC2BhYQoNYHDZX7ZGtLyWtPrxPrsQEd5+Nr6/AP6GBdDx2qmGhAVgeWBzXyZz6E+gcpV0Cb+A5USRkbjmxiMR1+ydlJZddABq3WXfyAAAAAAAAJxAAK4LYGFghg1gcrf9nixGxJ67wwpboi/tHackFKEcWwj5dYyeHh6AAGmP2eccAAAAAAAAAAQBMgtgYWEKDWBxLrr9gAR0FGwIUOjQXUU/tbyXIwD0iUwJaou1foQFYHlgcS/9R5uG88kXHvLUQTHyp7SAeGxpsbfvpPq3uzgAaMYlycAAAAAAAAABkACuC2BhYIYNYHK3/Z4sRsSeu8MKW6Iv7R2nJBShHFsI+XWMnh4egABpj9nnHAU4AAQUAAAAAAA9CQAArgtgYWCGDWBx4P9MAjQ2PtFMohUgTYMtul9x4AciEPzAO1ppWoAAafYOiHQAAAAAAACcQACuC2BhYIYNYHK3/Z4sRsSeu8MKW6Iv7R2nJBShHFsI+XWMnh4egABpj9nnHAAAAAAAAAAEAK4LYGFghg1gceD/TAI0Nj7RTKIVIE2DLbpfceAHIhD8wDtaaVqAAGn2Doh0AAAAAAAAAZABMgtgYWEKDWBz/2F8gzz8on9CR4LAzKF7K1yVJa8VwNaUEuEoQoQFYHlgcS/9R5uG88kXHvLQQUpmlmMUOq6zdD3KBXAFtpwAaV/kGjwAAAAAAAAPyAEyC2BhYQoNYHIRzKQlzhvJjEhUg/Jw2QEe0NimLN8kUihXv3bShAVgeWBzXyZz6E+gc4X9CIeCu1UwIYloKjGh9l0j0YqayABr4Zri5';
-const WALLET_VALUE = 1000000 + 10000 + 10000 + 1 + 100;
-const YOROI_WALLET = 'neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone';
+function base64ToUint8Array(base64) {
+    var binary_string = window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes;
+}
 
 function walletRestore(successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'string') {
-        if (opts[0] === YOROI_WALLET) {
-            successCallback(MOCKED_WALLET_PTR);
+        const mnemonics = opts[0];
+        const password = '';
+        try {
+            const wallet = wasm.Wallet.recover(mnemonics, password);
+            successCallback(wallet.ptr);
         }
-        else {
-            errorCallback('invalid mnemonics');
+        catch (err) {
+            errorCallback(`couldn't recover wallet ${err}`);
         }
     }
     else {
-        errorCallback('no mnemonics');
+        errorCallback('no mnemonics provided');
     }
 }
 
 function walletRetrieveFunds(successCallback, errorCallback, opts) {
-    if (opts && typeof (opts[1]) === 'string') {
-        if (opts[1] === BLOCK0) {
-            successCallback(MOCKED_SETTINGS_PTR);
-        }
-        else {
-            errorCallback('invalid block');
+    if (opts && typeof (opts[0]) === 'number' && typeof (opts[1]) === 'string') {
+        const walletPtr = opts[0];
+        const base64Block = opts[1];
+
+        const wallet = wasm.Wallet.__wrap(walletPtr);
+        const block = base64ToUint8Array(base64Block);
+
+        try {
+            const settings = wallet.retrieve_funds(block);
+            successCallback(settings.ptr);
+        } catch (err) {
+            errorCallback(`couldn't retrieve funds ${err}`);
         }
     }
     else {
-        errorCallback('no block');
+        errorCallback('missing walletPtr or block');
     }
 }
 
 function walletTotalFunds(successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'number') {
-        if (opts[0] === MOCKED_WALLET_PTR) {
-            successCallback(WALLET_VALUE);
-        }
-        else {
-            successCallback(0);
+        const walletPtr = opts[0];
+        const wallet = wasm.Wallet.__wrap(walletPtr);
+
+        try {
+            successCallback(wallet.total_value());
+        } catch (err) {
+            errorCallback(`couldn't get funds ${err}`);
         }
     }
     else {
@@ -50,6 +66,8 @@ function walletTotalFunds(successCallback, errorCallback, opts) {
 
 function walletDelete(successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'number') {
+        const walletPtr = opts[0];
+        wasm.Wallet.__wrap(walletPtr).free();
         successCallback();
     }
     else {
@@ -59,6 +77,8 @@ function walletDelete(successCallback, errorCallback, opts) {
 
 function settingsDelete(successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'number') {
+        const settingsPtr = opts[0];
+        wasm.Settings.__wrap(settingsPtr).free();
         successCallback();
     }
     else {
@@ -74,4 +94,11 @@ bindings = {
     SETTINGS_DELETE: settingsDelete,
 };
 
-require('cordova/exec/proxy').add('WalletPlugin', bindings);
+// this is in done in order to make it work regardless of where the html file is located
+const appPath = global.require('electron').remote.app.getAppPath();
+const binaryPath = global.require('path').join(appPath, 'wallet_js_bg.wasm');
+// TODO: we could probably do this async
+const bytes = global.require('fs').readFileSync(binaryPath);
+
+wasm(bytes)
+    .then(() => { require('cordova/exec/proxy').add('WalletPlugin', bindings); });

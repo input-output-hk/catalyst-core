@@ -10,4 +10,7 @@ Thumbs.db
 *.swp
 *.user
 
+src/electron/pkg
+src/android/libs
+
 node_modules

@@ -157,11 +157,11 @@ impl RecoveringIcarus {
     /// convenient function to parse a block and check for owned token
     pub fn check_blocks<'a>(&mut self, fragments: impl Iterator<Item = &'a Fragment>) {
         for fragment in fragments {
-            self.check_single_block(fragment)
+            self.check_fragment(fragment)
         }
     }
 
-    pub fn check_single_block(&mut self, fragment: &Fragment) {
+    pub fn check_fragment(&mut self, fragment: &Fragment) {
         let fragment_id = fragment.hash();
         if let Fragment::OldUtxoDeclaration(utxos) = fragment {
             for (output_index, (address, value)) in utxos.addrs.iter().enumerate() {

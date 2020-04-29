@@ -155,7 +155,7 @@ impl RecoveringIcarus {
     }
 
     /// convenient function to parse a block and check for owned token
-    pub fn check_blocks<'a>(&mut self, fragments: impl Iterator<Item = &'a Fragment>) {
+    pub fn check_fragments<'a>(&mut self, fragments: impl Iterator<Item = &'a Fragment>) {
         for fragment in fragments {
             self.check_fragment(fragment)
         }

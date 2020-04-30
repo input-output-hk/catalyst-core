@@ -84,6 +84,8 @@ impl Dump {
             let builder = builder.set_witnesses(&witnesses);
             let tx = builder.set_payload_auth(&());
             self.outputs.push(tx);
+        } else {
+            self.ignored.extend_from_slice(self.inputs.as_slice());
         }
 
         self.witness_builders.clear();

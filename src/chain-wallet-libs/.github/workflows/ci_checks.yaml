@@ -94,3 +94,14 @@ jobs:
 
       - name: Test in firefox
         run: wasm-pack test --headless --firefox ./bindings/wallet-js
+
+  eslint-cordova-plugin:
+    steps:
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: eslint
+        working-directory: ./bindings/wallet-cordova
+        run: npm run eslint 

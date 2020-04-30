@@ -293,6 +293,10 @@ jobs:
         working-directory: ./bindings/wallet-cordova/src/android/libs
         run: mv x86_64-linux-android x86_64 
 
+      - name: build wasm for electron 
+        working-directory: ./bindings/wallet-cordova
+        run: python3 ./build_wasm.py 
+
       - name: setup node
         uses: actions/setup-node@v1
         with:

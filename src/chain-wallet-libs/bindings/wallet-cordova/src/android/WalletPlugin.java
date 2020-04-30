@@ -118,27 +118,16 @@ public class WalletPlugin extends CordovaPlugin {
     private void walletTotalFunds(JSONArray args, CallbackContext callbackContext) throws JSONException {
         Long walletPtr = args.getLong(0);
 
-        if (walletPtr == 0) {
-            callbackContext.error("received nullptr");
-            return;
-        }
-
         try {
             int value = Wallet.totalValue(walletPtr);
             callbackContext.success(Integer.toString(value));
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }
-
     }
 
     private void walletDelete(JSONArray args, CallbackContext callbackContext) throws JSONException {
         Long walletPtr = args.getLong(0);
-
-        if (walletPtr == 0) {
-            callbackContext.error("received nullptr");
-            return;
-        }
 
         Wallet.delete(walletPtr);
         callbackContext.success("");
@@ -146,11 +135,6 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void settingsDelete(JSONArray args, CallbackContext callbackContext) throws JSONException {
         Long settingsPtr = args.getLong(0);
-
-        if (settingsPtr == 0) {
-            callbackContext.error("received nullptr");
-            return;
-        }
 
         Settings.delete(settingsPtr);
         callbackContext.success("");

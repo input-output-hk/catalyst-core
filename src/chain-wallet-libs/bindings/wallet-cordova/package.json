@@ -30,8 +30,10 @@
     "cordova-osx"
   ],
   "scripts": {
-    "test": "npm run lint",
-    "lint": "eslint ."
+    "eslint": "npm run lint",
+    "eslint:fix": "npm run fix",
+    "lint": "eslint .",
+    "fix": "eslint --fix ."
   },
   "author": "ecioppettini@atixlabs.com",
   "license": "Apache-2.0 OR MIT",

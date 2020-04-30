@@ -96,6 +96,8 @@ jobs:
         run: wasm-pack test --headless --firefox ./bindings/wallet-js
 
   eslint-cordova-plugin:
+    name: check eslint for cordova plugin
+    runs-on: ubuntu-latest
     steps:
       - name: setup node
         uses: actions/setup-node@v1

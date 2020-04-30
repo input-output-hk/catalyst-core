@@ -1,6 +1,6 @@
 const wasm = require('wallet-cordova-plugin.wasmModule');
 
-function base64ToUint8Array(base64) {
+function base64ToUint8Array (base64) {
     var binary_string = window.atob(base64);
     var len = binary_string.length;
     var bytes = new Uint8Array(len);
@@ -10,24 +10,22 @@ function base64ToUint8Array(base64) {
     return bytes;
 }
 
-function walletRestore(successCallback, errorCallback, opts) {
+function walletRestore (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'string') {
         const mnemonics = opts[0];
         const password = '';
         try {
             const wallet = wasm.Wallet.recover(mnemonics, password);
             successCallback(wallet.ptr);
-        }
-        catch (err) {
+        } catch (err) {
             errorCallback(`couldn't recover wallet ${err}`);
         }
-    }
-    else {
+    } else {
         errorCallback('no mnemonics provided');
     }
 }
 
-function walletRetrieveFunds(successCallback, errorCallback, opts) {
+function walletRetrieveFunds (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'number' && typeof (opts[1]) === 'string') {
         const walletPtr = opts[0];
         const base64Block = opts[1];
@@ -41,13 +39,12 @@ function walletRetrieveFunds(successCallback, errorCallback, opts) {
         } catch (err) {
             errorCallback(`couldn't retrieve funds ${err}`);
         }
-    }
-    else {
+    } else {
         errorCallback('missing walletPtr or block');
     }
 }
 
-function walletTotalFunds(successCallback, errorCallback, opts) {
+function walletTotalFunds (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'number') {
         const walletPtr = opts[0];
         const wallet = wasm.Wallet.__wrap(walletPtr);
@@ -57,41 +54,37 @@ function walletTotalFunds(successCallback, errorCallback, opts) {
         } catch (err) {
             errorCallback(`couldn't get funds ${err}`);
         }
-    }
-    else {
+    } else {
         errorCallback('no pointer');
     }
-
 }
 
-function walletDelete(successCallback, errorCallback, opts) {
+function walletDelete (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'number') {
         const walletPtr = opts[0];
         wasm.Wallet.__wrap(walletPtr).free();
         successCallback();
-    }
-    else {
+    } else {
         errorCallback();
     }
 }
 
-function settingsDelete(successCallback, errorCallback, opts) {
+function settingsDelete (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'number') {
         const settingsPtr = opts[0];
         wasm.Settings.__wrap(settingsPtr).free();
         successCallback();
-    }
-    else {
+    } else {
         errorCallback();
     }
 }
 
-bindings = {
+const bindings = {
     WALLET_RESTORE: walletRestore,
     WALLET_RETRIEVE_FUNDS: walletRetrieveFunds,
     WALLET_TOTAL_FUNDS: walletTotalFunds,
     WALLET_DELETE: walletDelete,
-    SETTINGS_DELETE: settingsDelete,
+    SETTINGS_DELETE: settingsDelete
 };
 
 // this is in done in order to make it work regardless of where the html file is located

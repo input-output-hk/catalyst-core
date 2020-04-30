@@ -80,12 +80,11 @@ public class WalletPlugin extends CordovaPlugin {
 
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-                long walletPtr = Wallet.recover(mnemonics);
-
-                if (walletPtr == 0) {
-                    callbackContext.error("Invalid mnemonics");
-                } else {
+                try {
+                    long walletPtr = Wallet.recover(mnemonics);
                     callbackContext.success(Long.toString(walletPtr));
+                } catch (Exception e) {
+                    callbackContext.error(e.getMessage());
                 }
             }
         });
@@ -106,12 +105,11 @@ public class WalletPlugin extends CordovaPlugin {
                 byte[] block0_decoded = Base64.decode(block0.getBytes(java.nio.charset.StandardCharsets.UTF_16LE),
                         Base64.DEFAULT);
 
-                long settingsPtr = Wallet.initialFunds(walletPtr, block0_decoded);
-
-                if (settingsPtr == 0) {
-                    callbackContext.error("invalid block");
-                } else {
+                try {
+                    long settingsPtr = Wallet.initialFunds(walletPtr, block0_decoded);
                     callbackContext.success(Long.toString(settingsPtr));
+                } catch (Exception e) {
+                    callbackContext.error(e.getMessage());
                 }
             }
         });
@@ -125,9 +123,13 @@ public class WalletPlugin extends CordovaPlugin {
             return;
         }
 
-        int value = Wallet.totalValue(walletPtr);
+        try {
+            int value = Wallet.totalValue(walletPtr);
+            callbackContext.success(Integer.toString(value));
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
 
-        callbackContext.success(Integer.toString(value));
     }
 
     private void walletDelete(JSONArray args, CallbackContext callbackContext) throws JSONException {

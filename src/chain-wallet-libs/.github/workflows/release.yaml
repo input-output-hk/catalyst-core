@@ -293,6 +293,9 @@ jobs:
         working-directory: ./bindings/wallet-cordova/src/android/libs
         run: mv x86_64-linux-android x86_64 
 
+      - name: Install wasm pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: build wasm for electron 
         working-directory: ./bindings/wallet-cordova
         run: python3 ./build_wasm.py 

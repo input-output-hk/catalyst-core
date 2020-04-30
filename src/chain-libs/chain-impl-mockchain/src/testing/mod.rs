@@ -13,7 +13,7 @@ pub use ledger::{ConfigBuilder, LedgerBuilder, TestLedger, UtxoDb};
 use crate::key::Hash;
 use crate::{
     account::Identifier,
-    certificate::PoolPermissions,
+    certificate::{ExternalProposalId, PoolPermissions},
     config::ConfigParam,
     fragment::config::ConfigParams,
     header::VrfProof,
@@ -23,12 +23,14 @@ use crate::{
     testing::data::{AddressData, LeaderPair, StakePool},
     value::Value,
 };
+
 pub use chain_crypto::testing::TestCryptoGen;
 pub use scenario::FragmentFactory;
 
-use chain_crypto::{vrf_evaluate_and_prove, Ed25519, KeyPair, PublicKey};
+use chain_crypto::{digest::DigestOf, vrf_evaluate_and_prove, Ed25519, KeyPair, PublicKey};
 use rand_core::RngCore;
 use std::{iter, num::NonZeroU64};
+use typed_bytes::ByteBuilder;
 
 pub struct TestGen;
 
@@ -42,6 +44,15 @@ impl TestGen {
         let mut rng = rand_core::OsRng;
         rng.fill_bytes(&mut random_bytes);
         random_bytes
+    }
+
+    pub fn external_proposal_id() -> ExternalProposalId {
+        DigestOf::digest_byteslice(
+            &ByteBuilder::new()
+                .bytes(&TestGen::bytes())
+                .finalize()
+                .as_byteslice(),
+        )
     }
 
     pub fn identifier() -> Identifier {

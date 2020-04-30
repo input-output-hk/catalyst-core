@@ -70,6 +70,7 @@ pub struct Proposal {
 }
 
 #[must_use = "Adding a proposal may fail"]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PushProposal {
     Success,
     Full { proposal: Proposal },
@@ -330,6 +331,10 @@ impl Readable for VotePlan {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::block::BlockDate;
+    use crate::testing::TestGen;
+    use chain_core::property::BlockDate as BlockDateProp;
+    use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
 
     #[quickcheck]
@@ -342,5 +347,118 @@ mod tests {
         let decoded = result.expect("can decode encoded vote plan");
 
         decoded == vote_plan
+    }
+
+    #[quickcheck]
+    pub fn vote_options_max(count: u8) -> TestResult {
+        TestResult::from_bool(VoteOptions::new_length(count).as_byte() == count % 16)
+    }
+
+    #[test]
+    pub fn proposals_are_full() {
+        let mut proposals = generate_proposals(Proposals::MAX_LEN);
+        assert!(proposals.full());
+        let proposal = generate_unique_proposal();
+        let expected = PushProposal::Full {
+            proposal: proposal.clone(),
+        };
+        assert_eq!(expected, proposals.push(proposal));
+    }
+
+    fn generate_unique_proposal() -> Proposal {
+        Proposal {
+            external_id: TestGen::external_proposal_id(),
+            options: VoteOptions::new_length(4),
+        }
+    }
+
+    fn generate_proposals(count: usize) -> Proposals {
+        let mut proposals = Proposals::new();
+        for _ in 0..count {
+            assert_eq!(
+                PushProposal::Success,
+                proposals.push(generate_unique_proposal()),
+                "generate_proposal method is only for correct data preparation"
+            );
+        }
+        proposals
+    }
+
+    #[test]
+    pub fn vote_and_committee_dates_are_left_inclusive() {
+        let vote_start = BlockDate::first();
+        let vote_end = vote_start.next_epoch();
+        let committee_finished = vote_end.next_epoch();
+        let vote_plan = VotePlan::new(
+            vote_start,
+            vote_end,
+            committee_finished,
+            generate_proposals(1),
+        );
+
+        assert!(vote_plan.vote_started(vote_start));
+        assert!(!vote_plan.vote_finished(vote_end));
+        assert!(vote_plan.committee_started(vote_end));
+        assert!(!vote_plan.committee_finished(committee_finished));
+    }
+
+    #[test]
+    pub fn correct_vote_plan_timeline() {
+        let vote_start = BlockDate::from_epoch_slot_id(1, 0);
+        let vote_end = vote_start.next_epoch();
+        let committee_finished = vote_end.next_epoch();
+        let vote_plan = VotePlan::new(
+            vote_start,
+            vote_end,
+            committee_finished,
+            generate_proposals(1),
+        );
+
+        let before_voting = BlockDate::from_epoch_slot_id(0, 10);
+        let voting_date = BlockDate::from_epoch_slot_id(1, 10);
+        let committe_time = BlockDate::from_epoch_slot_id(2, 10);
+        let after_committe_time = BlockDate::from_epoch_slot_id(3, 10);
+
+        assert!(!vote_plan.can_vote(before_voting));
+        assert!(!vote_plan.committee_time(before_voting));
+
+        assert!(vote_plan.can_vote(voting_date));
+        assert!(!vote_plan.committee_time(voting_date));
+
+        assert!(!vote_plan.can_vote(committe_time));
+        assert!(vote_plan.committee_time(committe_time));
+
+        assert!(!vote_plan.can_vote(after_committe_time));
+        assert!(!vote_plan.committee_time(after_committe_time));
+    }
+
+    #[test]
+    pub fn inverted_vote_plan_timeline() {
+        let vote_start = BlockDate::from_epoch_slot_id(1, 0);
+        let vote_end = vote_start.next_epoch();
+        let committee_finished = vote_end.next_epoch();
+        let vote_plan = VotePlan::new(
+            committee_finished,
+            vote_end,
+            vote_start,
+            generate_proposals(1),
+        );
+
+        let before_voting = BlockDate::from_epoch_slot_id(0, 10);
+        let voting_date = BlockDate::from_epoch_slot_id(1, 10);
+        let committe_time = BlockDate::from_epoch_slot_id(2, 10);
+        let after_committe_time = BlockDate::from_epoch_slot_id(3, 10);
+
+        assert!(!vote_plan.can_vote(before_voting));
+        assert!(!vote_plan.committee_time(before_voting));
+
+        assert!(!vote_plan.can_vote(voting_date));
+        assert!(!vote_plan.committee_time(voting_date));
+
+        assert!(!vote_plan.can_vote(committe_time));
+        assert!(!vote_plan.committee_time(committe_time));
+
+        assert!(!vote_plan.can_vote(after_committe_time));
+        assert!(!vote_plan.committee_time(after_committe_time));
     }
 }

@@ -33,6 +33,24 @@
         <source-file src="src/android/libs/armeabi-v7a/libwallet_jni.so" target-dir="libs/armeabi-v7a" />
     </platform>
 
+    <platform name="electron">
+        <config-file target="config.xml" parent="/*">
+            <feature name="WalletPlugin">
+                <param name="electron-package" value="WalletPlugin" />
+            </feature>
+        </config-file>
+
+
+        <js-module src="src/electron/walletProxy.js" name="WalletProxy">
+            <runs />
+        </js-module>
+
+        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule">
+        </js-module>
+
+        <asset src="src/electron/pkg/wallet_js_bg.wasm" target="wallet_js_bg.wasm" />
+    </platform>
+
     <!-- ios -->
     <!-- just as example -->
     <platform name="ios">

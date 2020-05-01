@@ -23,7 +23,10 @@
 //!     DISCRIMINATION_BIT || ACCOUNT_KIND_TYPE (7 bits) || ACCOUNT_KEY
 //!
 //! Multisig key:
-//!     DISCRIMINATION_BIT || MULTISIG_KING_TYPE (7 bits) || MULTISIG_MERKLE_ROOT_PUBLIC_KEY
+//!     DISCRIMINATION_BIT || MULTISIG_KIND_TYPE (7 bits) || MULTISIG_MERKLE_ROOT_PUBLIC_KEY
+//!
+//! Script identifier:
+//!     DISCRIMINATION_BIT || SCRIPT_KIND_TYPE (7 bits) || SCRIPT_IDENTIFIER
 //!
 //! Address human format is bech32 encoded
 //!
@@ -72,6 +75,7 @@ pub enum Kind {
     Group(PublicKey<Ed25519>, PublicKey<Ed25519>),
     Account(PublicKey<Ed25519>),
     Multisig([u8; 32]),
+    Script([u8; 32]),
 }
 
 /// Kind Type of an address
@@ -81,6 +85,7 @@ pub enum KindType {
     Group,
     Account,
     Multisig,
+    Script,
 }
 
 /// Size of a Single address
@@ -95,12 +100,16 @@ pub const ADDR_SIZE_ACCOUNT: usize = 33;
 /// Size of an Multisig Account address
 pub const ADDR_SIZE_MULTISIG: usize = 33;
 
+/// Size of a script address
+pub const ADDR_SIZE_SCRIPT: usize = 33;
+
 const ADDR_KIND_LOW_SENTINEL: u8 = 0x2; /* anything under or equal to this is invalid */
 pub const ADDR_KIND_SINGLE: u8 = 0x3;
 pub const ADDR_KIND_GROUP: u8 = 0x4;
 pub const ADDR_KIND_ACCOUNT: u8 = 0x5;
 pub const ADDR_KIND_MULTISIG: u8 = 0x6;
-const ADDR_KIND_SENTINEL: u8 = 0x7; /* anything above or equal to this is invalid */
+pub const ADDR_KIND_SCRIPT: u8 = 0x7;
+const ADDR_KIND_SENTINEL: u8 = 0x8; /* anything above or equal to this is invalid */
 
 impl KindType {
     pub fn to_value(self) -> u8 {
@@ -109,6 +118,7 @@ impl KindType {
             KindType::Group => ADDR_KIND_GROUP,
             KindType::Account => ADDR_KIND_ACCOUNT,
             KindType::Multisig => ADDR_KIND_MULTISIG,
+            KindType::Script => ADDR_KIND_SCRIPT,
         }
     }
 }
@@ -190,6 +200,11 @@ impl Address {
                 hash.copy_from_slice(&bytes[1..33]);
                 Kind::Multisig(hash)
             }
+            ADDR_KIND_SCRIPT => {
+                let mut hash = [0u8; 32];
+                hash.copy_from_slice(&bytes[1..33]);
+                Kind::Script(hash)
+            }
             _ => unreachable!(),
         };
         Ok(Address(discr, kind))
@@ -202,6 +217,7 @@ impl Address {
             Kind::Group(_, _) => ADDR_SIZE_GROUP,
             Kind::Account(_) => ADDR_SIZE_ACCOUNT,
             Kind::Multisig(_) => ADDR_SIZE_MULTISIG,
+            Kind::Script(_) => ADDR_SIZE_SCRIPT,
         }
     }
 
@@ -212,6 +228,7 @@ impl Address {
             Kind::Group(_, _) => KindType::Group,
             Kind::Account(_) => KindType::Account,
             Kind::Multisig(_) => KindType::Multisig,
+            Kind::Script(_) => KindType::Script,
         }
     }
 
@@ -245,6 +262,7 @@ impl Address {
             Kind::Group(ref pk, _) => Some(pk),
             Kind::Account(ref pk) => Some(pk),
             Kind::Multisig(_) => None,
+            Kind::Script(_) => None,
         }
     }
 }
@@ -293,6 +311,12 @@ fn is_valid_data(bytes: &[u8]) -> Result<(Discrimination, KindType), Error> {
                 return Err(Error::InvalidAddress);
             }
             KindType::Multisig
+        }
+        ADDR_KIND_SCRIPT => {
+            if bytes.len() != ADDR_SIZE_SCRIPT {
+                return Err(Error::InvalidAddress);
+            }
+            KindType::Script
         }
         _ => return Err(Error::InvalidKind),
     };
@@ -388,6 +412,7 @@ impl PropertySerialize for Address {
             }
             Kind::Account(stake_key) => codec.write_all(stake_key.as_ref())?,
             Kind::Multisig(hash) => codec.write_all(&hash[..])?,
+            Kind::Script(hash) => codec.write_all(&hash[..])?,
         };
 
         Ok(())
@@ -488,6 +513,10 @@ impl Readable for Address {
             ADDR_KIND_MULTISIG => {
                 let bytes = <[u8; 32]>::read(buf)?;
                 Kind::Multisig(bytes)
+            }
+            ADDR_KIND_SCRIPT => {
+                let bytes = <[u8; 32]>::read(buf)?;
+                Kind::Script(bytes)
             }
             n => return Err(ReadError::UnknownTag(n as u32)),
         };

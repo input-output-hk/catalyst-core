@@ -11,6 +11,7 @@ impl Arbitrary for KindTypeWithoutMultisig {
             iter::from_fn(|| Some(KindType::arbitrary(g)))
                 .find(|x| match x {
                     KindType::Multisig => false,
+                    KindType::Script => false,
                     _ => true,
                 })
                 .unwrap(),

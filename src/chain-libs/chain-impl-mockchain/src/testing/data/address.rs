@@ -128,6 +128,7 @@ impl AddressData {
                 }))
             }
             Kind::Multisig { .. } => unimplemented!(),
+            Kind::Script { .. } => unimplemented!(),
         }
     }
 
@@ -149,6 +150,7 @@ impl AddressData {
             Kind::Group(key, _) => key,
             Kind::Single(key) => key,
             Kind::Multisig(_) => panic!("not yet implemented"),
+            Kind::Script(_) => panic!("No public key for a script address"),
         }
     }
 

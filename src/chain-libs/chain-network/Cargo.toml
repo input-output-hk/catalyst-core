@@ -1,0 +1,27 @@
+[package]
+name = "chain-network"
+version = "0.1.0"
+authors = ["Mikhail Zabaluev <mikhail.zabaluev@iohk.io>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+async-trait = "0.1"
+futures = "0.3"
+pin-project = "0.4"
+prost = "0.6"
+thiserror = "1.0"
+
+[dependencies.tonic]
+version = "0.2"
+default-features = false
+features = ["codegen", "prost"]
+
+[build-dependencies.tonic-build]
+version = "0.2"
+default-features = false
+features = ["prost", "rustfmt"]
+
+[features]
+default = ["transport"]
+transport = ["tonic/transport", "tonic-build/transport"]

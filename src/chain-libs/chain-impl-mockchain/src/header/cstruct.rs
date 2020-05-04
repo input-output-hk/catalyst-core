@@ -242,10 +242,13 @@ impl Header {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum HeaderError {
+    #[error("invalid payload size for block header")]
     InvalidSize,
+    #[error("unknown version of the block header payload")]
     UnknownVersion,
+    #[error("block header payload size {got} does not match the expected {expected} bytes")]
     SizeMismatch { expected: usize, got: usize },
 }
 

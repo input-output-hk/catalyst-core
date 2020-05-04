@@ -63,6 +63,12 @@ impl VoteCastPayload {
             cryptographic_data: Vec::new(),
         }
     }
+    #[cfg(any(test, feature = "property-test-api"))]
+    pub(crate) fn new(data: Vec<u8>) -> Self {
+        Self {
+            cryptographic_data: data,
+        }
+    }
 }
 
 impl AsRef<[u8]> for VoteCastPayload {

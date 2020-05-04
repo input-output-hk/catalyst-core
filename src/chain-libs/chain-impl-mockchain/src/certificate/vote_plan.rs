@@ -332,7 +332,7 @@ impl Readable for VotePlan {
 mod tests {
     use super::*;
     use crate::block::BlockDate;
-    use crate::testing::TestGen;
+    use crate::testing::VoteTestGen;
     use chain_core::property::BlockDate as BlockDateProp;
     use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
@@ -356,32 +356,13 @@ mod tests {
 
     #[test]
     pub fn proposals_are_full() {
-        let mut proposals = generate_proposals(Proposals::MAX_LEN);
+        let mut proposals = VoteTestGen::proposals(Proposals::MAX_LEN);
         assert!(proposals.full());
-        let proposal = generate_unique_proposal();
+        let proposal = VoteTestGen::proposal();
         let expected = PushProposal::Full {
             proposal: proposal.clone(),
         };
         assert_eq!(expected, proposals.push(proposal));
-    }
-
-    fn generate_unique_proposal() -> Proposal {
-        Proposal {
-            external_id: TestGen::external_proposal_id(),
-            options: VoteOptions::new_length(4),
-        }
-    }
-
-    fn generate_proposals(count: usize) -> Proposals {
-        let mut proposals = Proposals::new();
-        for _ in 0..count {
-            assert_eq!(
-                PushProposal::Success,
-                proposals.push(generate_unique_proposal()),
-                "generate_proposal method is only for correct data preparation"
-            );
-        }
-        proposals
     }
 
     #[test]
@@ -393,7 +374,7 @@ mod tests {
             vote_start,
             vote_end,
             committee_finished,
-            generate_proposals(1),
+            VoteTestGen::proposals(1),
         );
 
         assert!(vote_plan.vote_started(vote_start));
@@ -411,7 +392,7 @@ mod tests {
             vote_start,
             vote_end,
             committee_finished,
-            generate_proposals(1),
+            VoteTestGen::proposals(1),
         );
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);
@@ -441,7 +422,7 @@ mod tests {
             committee_finished,
             vote_end,
             vote_start,
-            generate_proposals(1),
+            VoteTestGen::proposals(1),
         );
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);

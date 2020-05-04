@@ -97,7 +97,7 @@ exports.defineAutoTests = function () {
                     return deleteWallet(walletPtr);
                 })
                 .catch(function (err) {
-                    done.fail('could not delete wallet' + err);
+                    done.fail('could not restore wallet' + err);
                 })
                 .then(function () {
                     done();

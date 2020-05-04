@@ -5,6 +5,8 @@ package com.iohk.jormungandrwallet;
 
 import java.io.UnsupportedEncodingException;
 import java.util.TimeZone;
+import java.util.concurrent.Future;
+import java.util.concurrent.Callable;
 
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CallbackContext;
@@ -52,6 +54,7 @@ public class WalletPlugin extends CordovaPlugin {
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         Log.d(TAG, "action: " + action);
+        Log.d(TAG, "arguments: " + args.toString());
         switch (action) {
             case "WALLET_RESTORE":
                 walletRestore(args, callbackContext);
@@ -92,20 +95,18 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void walletRetrieveFunds(JSONArray args, CallbackContext callbackContext) throws JSONException {
         Long walletPtr = args.getLong(0);
-
-        if (walletPtr == 0) {
-            callbackContext.error("received nullptr");
-            return;
-        }
-
         String block0 = args.getString(1);
+
+        Future<byte[]> future = cordova.getThreadPool().submit(new Callable<byte[]>() {
+            public byte[] call() throws IllegalArgumentException {
+                return Base64.decode(block0.getBytes(java.nio.charset.StandardCharsets.UTF_16LE), Base64.DEFAULT);
+            }
+        });
 
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-                byte[] block0_decoded = Base64.decode(block0.getBytes(java.nio.charset.StandardCharsets.UTF_16LE),
-                        Base64.DEFAULT);
-
                 try {
+                    byte[] block0_decoded = future.get();
                     long settingsPtr = Wallet.initialFunds(walletPtr, block0_decoded);
                     callbackContext.success(Long.toString(settingsPtr));
                 } catch (Exception e) {

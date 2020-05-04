@@ -99,10 +99,19 @@ jobs:
     name: check eslint for cordova plugin
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
       - name: setup node
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+
+      - name: install dependencies
+        working-directory: ./bindings/wallet-cordova
+        run: npm install 
 
       - name: eslint
         working-directory: ./bindings/wallet-cordova

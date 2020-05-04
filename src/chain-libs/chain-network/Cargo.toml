@@ -20,8 +20,9 @@ features = ["codegen", "prost"]
 [build-dependencies.tonic-build]
 version = "0.2"
 default-features = false
-features = ["prost", "rustfmt"]
+features = ["prost"]
 
 [features]
 default = ["transport"]
 transport = ["tonic/transport", "tonic-build/transport"]
+codegen-rustfmt = ["tonic-build/rustfmt"]

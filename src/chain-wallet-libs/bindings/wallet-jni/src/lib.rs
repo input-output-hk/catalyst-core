@@ -25,8 +25,6 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
     let wallet_ptr: *mut WalletPtr = &mut wallet;
     let result = wallet_recover(&mnemonics_j.to_string_lossy(), null(), 0, wallet_ptr);
 
-    let _r = env.release_string_utf_chars(mnemonics, mnemonics_j.as_ptr());
-
     if let Some(error) = result.error() {
         let _ = env.throw(error.to_string());
         0

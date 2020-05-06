@@ -10,6 +10,7 @@ use std::convert::TryFrom;
 
 pub type Server<T> = proto::node_server::NodeServer<NodeService<T>>;
 
+#[derive(Debug)]
 pub struct NodeService<T> {
     inner: T,
 }

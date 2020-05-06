@@ -186,7 +186,7 @@ impl VotePlan {
 
     #[inline]
     pub fn vote_finished(&self, date: BlockDate) -> bool {
-        self.vote_end < date
+        self.vote_end <= date
     }
 
     /// tells if it is possible to vote at the given date

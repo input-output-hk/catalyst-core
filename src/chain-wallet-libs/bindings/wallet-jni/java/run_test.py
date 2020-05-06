@@ -16,10 +16,10 @@ javafilesdir = Path("com/iohk/jormungandrwallet")
 
 
 def compile():
-    packageFiles = map(lambda path: str(path), (scriptdirectory /
-                                                Path("com/iohk/jormungandrwallet")).glob("*.java"))
+    packageFiles = map(str, (scriptdirectory /
+                             Path("com/iohk/jormungandrwallet")).glob("*.java"))
     out = subprocess.run([
-        "javac", "-cp", classpath, "WalletTest.java"] + list(packageFiles), cwd=scriptdirectory)
+        "javac", "-cp", classpath, "WalletTest.java", *packageFiles], cwd=scriptdirectory)
 
     if out.returncode != 0:
         print("couldn't compile java files")

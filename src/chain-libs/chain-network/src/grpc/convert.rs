@@ -6,7 +6,7 @@ use crate::data::{
     p2p::Peer,
 };
 use crate::error::{self, Error};
-use tonic::metadata::MetadataMap;
+use tonic::metadata::{MetadataMap, MetadataValue};
 use tonic::{Code, Status};
 
 use std::convert::TryFrom;
@@ -90,6 +90,11 @@ pub(super) fn decode_peer(meta: &MetadataMap) -> Result<Peer, Error> {
         )
     })?;
     Ok(address.into())
+}
+
+pub(super) fn encode_peer(peer: &Peer, meta: &mut MetadataMap) {
+    let addr = peer.addr().to_string();
+    meta.insert(PEER_ADDRESS_HEADER, MetadataValue::from_str(&addr).unwrap());
 }
 
 pub trait FromProtobuf<R>: Sized {

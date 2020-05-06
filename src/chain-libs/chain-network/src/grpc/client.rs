@@ -3,19 +3,21 @@ use super::proto;
 use super::streaming::{InboundStream, OutboundStream};
 use crate::data::block::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::data::fragment::{Fragment, FragmentIds};
-use crate::data::{Gossip, Peers};
+use crate::data::{Gossip, Peer, Peers};
 use crate::error::{Error, HandshakeError};
 use crate::PROTOCOL_VERSION;
 use futures::prelude::*;
 use tonic::body::{Body, BoxBody};
 use tonic::client::GrpcService;
 use tonic::codegen::{HttpBody, StdError};
+use tonic::Request;
 
 use std::convert::TryFrom;
 
 #[derive(Clone)]
 pub struct Client<T> {
     inner: proto::node_client::NodeClient<T>,
+    public_peer: Option<Peer>,
 }
 
 /// The inbound subscription stream of block events.
@@ -35,7 +37,10 @@ impl Client<tonic::transport::Channel> {
         D::Error: Into<StdError>,
     {
         let inner = proto::node_client::NodeClient::connect(dst).await?;
-        Ok(Client { inner })
+        Ok(Client {
+            inner,
+            public_peer: None,
+        })
     }
 }
 
@@ -49,7 +54,22 @@ where
     pub fn new(service: T) -> Self {
         Client {
             inner: proto::node_client::NodeClient::new(service),
+            public_peer: None,
         }
+    }
+
+    /// Sets public peer address advertized to the remote peer
+    /// in subscription requests.
+    pub fn set_public_peer(&mut self, peer: Peer) {
+        self.public_peer = Some(peer);
+    }
+
+    fn new_subscription_request<S>(&self, outbound: S) -> Request<OutboundStream<S>> {
+        let mut req = Request::new(OutboundStream::new(outbound));
+        if let Some(peer) = &self.public_peer {
+            convert::encode_peer(peer, req.metadata_mut());
+        }
+        req
     }
 }
 
@@ -205,8 +225,8 @@ where
     where
         S: Stream<Item = Header> + Send + Sync + 'static,
     {
-        let outbound = OutboundStream::new(outbound);
-        let inbound = self.inner.block_subscription(outbound).await?.into_inner();
+        let req = self.new_subscription_request(outbound);
+        let inbound = self.inner.block_subscription(req).await?.into_inner();
         Ok(InboundStream::new(inbound))
     }
 
@@ -222,12 +242,8 @@ where
     where
         S: Stream<Item = Fragment> + Send + Sync + 'static,
     {
-        let outbound = OutboundStream::new(outbound);
-        let inbound = self
-            .inner
-            .fragment_subscription(outbound)
-            .await?
-            .into_inner();
+        let req = self.new_subscription_request(outbound);
+        let inbound = self.inner.fragment_subscription(req).await?.into_inner();
         Ok(InboundStream::new(inbound))
     }
 
@@ -239,8 +255,8 @@ where
     where
         S: Stream<Item = Gossip> + Send + Sync + 'static,
     {
-        let outbound = OutboundStream::new(outbound);
-        let inbound = self.inner.gossip_subscription(outbound).await?.into_inner();
+        let req = self.new_subscription_request(outbound);
+        let inbound = self.inner.gossip_subscription(req).await?.into_inner();
         Ok(InboundStream::new(inbound))
     }
 }

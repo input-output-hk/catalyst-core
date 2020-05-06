@@ -44,7 +44,7 @@ where
 #[tonic::async_trait]
 impl<T> proto::node_server::Node for NodeService<T>
 where
-    T: Node + Send + Sync + 'static,
+    T: Node,
 {
     async fn handshake(
         &self,

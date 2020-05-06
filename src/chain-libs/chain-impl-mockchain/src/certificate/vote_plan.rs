@@ -205,7 +205,7 @@ impl VotePlan {
 
     #[inline]
     pub fn committee_finished(&self, date: BlockDate) -> bool {
-        self.committee_end < date
+        self.committee_end <= date
     }
 
     /// tells if it is possible to do the committee operations at the given date
@@ -378,9 +378,9 @@ mod tests {
         );
 
         assert!(vote_plan.vote_started(vote_start));
-        assert!(!vote_plan.vote_finished(vote_end));
+        assert!(vote_plan.vote_finished(vote_end));
         assert!(vote_plan.committee_started(vote_end));
-        assert!(!vote_plan.committee_finished(committee_finished));
+        assert!(vote_plan.committee_finished(committee_finished));
     }
 
     #[test]

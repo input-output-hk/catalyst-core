@@ -93,7 +93,7 @@ pub(super) fn decode_peer(meta: &MetadataMap) -> Result<Peer, Error> {
 }
 
 pub(super) fn encode_peer(peer: &Peer, meta: &mut MetadataMap) {
-    let addr = format!("{}", peer.addr());
+    let addr = peer.addr().to_string();
     meta.insert(PEER_ADDRESS_HEADER, MetadataValue::from_str(&addr).unwrap());
 }
 

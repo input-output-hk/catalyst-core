@@ -139,7 +139,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
     );
 
     if let Some(error) = result.error() {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 
     conversion_out as jlong
@@ -178,14 +178,19 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transac
 
     // TODO: maybe we can use a ByteBuffer or something here to avoid the copy
     // (especially considering that there is already a requirement to call conversion's delete)
-    let array = env.new_byte_array(transaction_size as jint).expect("");
+    let array = env
+        .new_byte_array(transaction_size as jint)
+        .expect("Failed to create new byte array");
     match result.error() {
         None => {
             let slice =
                 std::slice::from_raw_parts(transaction_out as *const jbyte, transaction_size);
             env.set_byte_array_region(array, 0, slice)
+                .expect("Couldn't copy array to jvm");
         }
-        Some(error) => env.throw(error.to_string()),
+        Some(error) => {
+            let _ = env.throw(error.to_string());
+        }
     };
 
     array
@@ -216,6 +221,6 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_setState(
     let r = wallet_set_state(wallet, value as u64, counter as u32);
 
     if let Some(error) = r.error() {
-        env.throw(error.to_string());
+        let _ = env.throw(error.to_string());
     }
 }

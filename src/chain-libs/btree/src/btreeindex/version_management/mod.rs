@@ -77,7 +77,7 @@ impl TransactionManager {
         ReadTransaction::new(self.latest_version(), pages)
     }
 
-    pub fn insert_transaction<'me, 'index: 'me>(
+    pub fn write_transaction<'me, 'index: 'me>(
         &'me self,
         pages: &'index Pages,
     ) -> WriteTransaction<'me, 'index> {

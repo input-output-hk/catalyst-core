@@ -2,11 +2,12 @@ use super::convert;
 use super::proto;
 use super::streaming::{InboundStream, OutboundTryStream};
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
-use crate::data::{block, fragment, BlockId};
+use crate::data::{block, fragment, BlockId, Peer};
 use crate::PROTOCOL_VERSION;
 use tonic::{Code, Status};
 
 use std::convert::TryFrom;
+use std::net::SocketAddr;
 
 pub type Server<T> = proto::node_server::NodeServer<NodeService<T>>;
 
@@ -38,6 +39,15 @@ where
         self.inner
             .gossip_service()
             .ok_or_else(|| Status::new(Code::Unimplemented, "not implemented"))
+    }
+}
+
+fn remote_addr_to_peer(maybe_addr: Option<SocketAddr>) -> Result<Peer, Status> {
+    match maybe_addr {
+        Some(addr) => Ok(addr.into()),
+        None => Err(Status::internal(
+            "transport does not provide the remote address",
+        )),
     }
 }
 
@@ -179,7 +189,7 @@ where
         req: tonic::Request<tonic::Streaming<proto::Header>>,
     ) -> Result<tonic::Response<Self::BlockSubscriptionStream>, tonic::Status> {
         let service = self.block_service()?;
-        let peer = convert::decode_peer(req.metadata())?;
+        let peer = remote_addr_to_peer(req.remote_addr())?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.block_subscription(peer, Box::pin(inbound)).await?;
         let res = OutboundTryStream::new(outbound);
@@ -194,7 +204,7 @@ where
         req: tonic::Request<tonic::Streaming<proto::Fragment>>,
     ) -> Result<tonic::Response<Self::FragmentSubscriptionStream>, tonic::Status> {
         let service = self.fragment_service()?;
-        let peer = convert::decode_peer(req.metadata())?;
+        let peer = remote_addr_to_peer(req.remote_addr())?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service
             .fragment_subscription(peer, Box::pin(inbound))
@@ -211,7 +221,7 @@ where
         req: tonic::Request<tonic::Streaming<proto::Gossip>>,
     ) -> Result<tonic::Response<Self::GossipSubscriptionStream>, tonic::Status> {
         let service = self.gossip_service()?;
-        let peer = convert::decode_peer(req.metadata())?;
+        let peer = remote_addr_to_peer(req.remote_addr())?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.gossip_subscription(peer, Box::pin(inbound)).await?;
         let res = OutboundTryStream::new(outbound);

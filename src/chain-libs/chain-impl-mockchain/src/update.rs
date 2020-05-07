@@ -409,7 +409,7 @@ mod tests {
         },
     };
     use chain_addr::Discrimination;
-    use chain_core::property::testing::serialization_bijection;
+    use chain_test_utils::property::serialization_bijection;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::iter;

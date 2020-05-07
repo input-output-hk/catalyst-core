@@ -8,6 +8,7 @@ members = [
     "chain-crypto",
     "chain-network",
     "chain-storage",
+    "chain-test-utils",
     "chain-impl-mockchain",
     "cardano-legacy-address",
     "sparse-array",

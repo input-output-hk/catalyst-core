@@ -4,20 +4,20 @@ use crate::{
     fragment::{Contents, ContentsBuilder, Fragment},
     header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
 };
-use chain_core::property;
+use chain_test_utils::property;
 use quickcheck::{Arbitrary, Gen, TestResult};
 
 quickcheck! {
     fn headerraw_serialization_bijection(b: HeaderRaw) -> TestResult {
-        property::testing::serialization_bijection(b)
+        property::serialization_bijection(b)
     }
 
     fn header_serialization_bijection(b: Header) -> TestResult {
-        property::testing::serialization_bijection_r(b)
+        property::serialization_bijection_r(b)
     }
 
     fn block_serialization_bijection(b: Block) -> TestResult {
-        property::testing::serialization_bijection(b)
+        property::serialization_bijection(b)
     }
 }
 

@@ -15,7 +15,7 @@ classpath = f".:{junit}:{hamcrest}"
 javafilesdir = Path("com/iohk/jormungandrwallet")
 
 
-def compile():
+def compile_java_classes():
     packageFiles = map(str, (scriptdirectory /
                              Path("com/iohk/jormungandrwallet")).glob("*.java"))
     out = subprocess.run([
@@ -27,14 +27,24 @@ def compile():
         sys.exit(1)
 
 
+def compile_jni():
+    build_jni = subprocess.run(
+        ["cargo", "rustc", "-p" "wallet-jni", "--", "-C", "lto"])
+
+    if build_jni.returncode != 0:
+        print(f"failed to build jni, command:\n {' '.join(build_jni.args) }")
+        sys.exit(1)
+
+
 def run():
-    compile()
+    compile_java_classes()
+    compile_jni()
+
     out = subprocess.run([
         "java", f"-Djava.library.path={dynlibdirectory}", "-cp", classpath, "org.junit.runner.JUnitCore", "WalletTest"
     ], cwd=scriptdirectory)
 
     if out.returncode != 0:
-        print("couldn't run java files")
         print(f"command: {' '.join(out.args) }")
         sys.exit(1)
 

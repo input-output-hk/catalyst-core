@@ -7,8 +7,8 @@ on:
 name: Continuous integration
 
 jobs:
-  check:
-    name: Check
+  test:
+    name: Build and test
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -20,25 +20,13 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
+      - name: Check build
+        uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: check
-
-  test:
-    name: Test Suite
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - uses: actions-rs/cargo@v1
+      - name: Run test suite
+        uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: test

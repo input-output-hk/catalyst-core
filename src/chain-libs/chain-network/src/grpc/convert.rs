@@ -6,16 +6,10 @@ use crate::data::{
     p2p::Peer,
 };
 use crate::error::{self, Error};
-use tonic::metadata::{MetadataMap, MetadataValue};
 use tonic::{Code, Status};
 
 use std::convert::TryFrom;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
-
-// Name of the binary metadata key used to pass the peer address in subscription requests.
-// TODO: replace with a custom transport that passes the peer identification
-// to the service instance.
-const PEER_ADDRESS_HEADER: &'static str = "peer-address";
 
 pub(super) fn error_into_grpc(err: Error) -> Status {
     use error::Code::*;
@@ -68,33 +62,6 @@ impl From<Status> for Error {
     fn from(status: Status) -> Self {
         error_from_grpc(status)
     }
-}
-
-pub(super) fn decode_peer(meta: &MetadataMap) -> Result<Peer, Error> {
-    let address = meta.get(PEER_ADDRESS_HEADER).ok_or_else(|| {
-        Error::new(
-            error::Code::Internal,
-            format!("missing metadata {}", PEER_ADDRESS_HEADER),
-        )
-    })?;
-    let address = address.to_str().map_err(|e| {
-        Error::new(
-            error::Code::Internal,
-            format!("invalid metadata value in {}: {}", PEER_ADDRESS_HEADER, e),
-        )
-    })?;
-    let address: SocketAddr = address.parse().map_err(|e| {
-        Error::new(
-            error::Code::Internal,
-            format!("invalid socket address in {}: {}", PEER_ADDRESS_HEADER, e),
-        )
-    })?;
-    Ok(address.into())
-}
-
-pub(super) fn encode_peer(peer: &Peer, meta: &mut MetadataMap) {
-    let addr = peer.addr().to_string();
-    meta.insert(PEER_ADDRESS_HEADER, MetadataValue::from_str(&addr).unwrap());
 }
 
 pub trait FromProtobuf<R>: Sized {

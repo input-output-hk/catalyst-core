@@ -164,7 +164,15 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transac
     index: jint,
 ) -> jbyteArray {
     let conversion = conversion as ConversionPtr;
-    // TODO: check here that index is non-negative? or maybe just do it in java code...
+
+    if index.is_negative() {
+        let _ = env.throw_new(
+            "java/lang/IndexOutOfBoundsException",
+            "Conversion transaction index should be a positive number",
+        );
+        return null_mut();
+    }
+
     let index = index as usize;
     let mut transaction_out: *const u8 = null();
     let mut transaction_size: usize = 0; // XXX: unitialized?
@@ -197,6 +205,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transac
 }
 
 // TODO: get convert ignored values
+
 #[no_mangle]
 pub extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_delete(
     _: JNIEnv,

@@ -10,10 +10,10 @@ use quickcheck_macros::quickcheck;
 
 quickcheck! {
     fn transaction_encode_decode(transaction: Transaction<NoExtra>) -> TestResult {
-        chain_core::property::testing::serialization_bijection_r(transaction)
+        chain_test_utils::property::serialization_bijection_r(transaction)
     }
     fn stake_owner_delegation_tx_encode_decode(transaction: Transaction<OwnerStakeDelegation>) -> TestResult {
-        chain_core::property::testing::serialization_bijection_r(transaction)
+        chain_test_utils::property::serialization_bijection_r(transaction)
     }
     /*
     fn certificate_tx_encode_decode(transaction: Transaction<Address, Certificate>) -> TestResult {
@@ -21,7 +21,7 @@ quickcheck! {
     }
     */
     fn signed_transaction_encode_decode(transaction: Transaction<NoExtra>) -> TestResult {
-        chain_core::property::testing::serialization_bijection_r(transaction)
+        chain_test_utils::property::serialization_bijection_r(transaction)
     }
 }
 

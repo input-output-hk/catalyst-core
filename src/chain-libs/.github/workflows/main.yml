@@ -8,13 +8,15 @@ name: Continuous integration
 
 jobs:
   test:
-    name: Build and test
+    name: Test
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
+
       - uses: actions/checkout@v1
+
       - name: Cache cargo registry
         uses: actions/cache@v1
         with:
@@ -23,42 +25,35 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}-
             ${{ runner.os }}-cargo-registry-
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Check build
-        uses: actions-rs/cargo@v1
-        continue-on-error: false
-        with:
-          command: check
-      - name: Run test suite
-        uses: actions-rs/cargo@v1
-        continue-on-error: false
-        with:
-          command: test
 
-  lints:
-    name: Rust lints
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
           components: rustfmt, clippy
 
-      - name: Run cargo fmt
+      - name: Check code formatting
         uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: fmt
           args: --all -- --check
 
-      - name: Run cargo clippy
+      - name: Check build
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: check
+
+      - name: Run test suite
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: test
+
+      - name: Check clippy lints
         uses: actions-rs/cargo@v1
         continue-on-error: false
         with:

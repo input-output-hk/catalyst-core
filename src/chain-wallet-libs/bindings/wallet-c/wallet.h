@@ -225,6 +225,40 @@ char *iohk_jormungandr_wallet_error_details(ErrorPtr error);
 char *iohk_jormungandr_wallet_error_to_string(ErrorPtr error);
 
 /**
+ * get the wallet id
+ *
+ * This ID is the identifier to use against the blockchain/explorer to retrieve
+ * the state of the wallet (counter, total value etc...)
+ *
+ * # Parameters
+ *
+ * * wallet: the recovered wallet (see recover function);
+ * * id_out: a ready allocated pointer to an array of 32bytes. If this array is not
+ *   32bytes this may result in a buffer overflow.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers (wallet, block0 and settings_out). Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
+ * the `id_out` needs to be ready allocated 32bytes memory. If not this will result
+ * in an undefined behavior, in the best scenario it will be a buffer overflow.
+ *
+ * # Errors
+ *
+ * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+ * The `ErrorPtr` can then be observed to gathered details of the error.
+ * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * the `ErrorPtr` from memory and avoid memory leaks.
+ *
+ * * this function may fail if the wallet pointer is null;
+ *
+ */
+ErrorPtr iohk_jormungandr_wallet_id(WalletPtr wallet,
+                                    uint8_t *id_out);
+
+/**
  * retrieve a wallet from the given mnemonics, password and protocol magic
  *
  * this function will work for all yoroi, daedalus and other wallets

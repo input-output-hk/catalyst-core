@@ -38,6 +38,14 @@ impl Wallet {
         Conversion(self.0.convert(settings.0.clone()))
     }
 
+    /// get the account ID bytes
+    ///
+    /// This ID is also the account public key, it can be used to retrieve the
+    /// account state (the value, transaction counter etc...).
+    pub fn id(&self) -> Vec<u8> {
+        self.0.id().as_ref().to_vec()
+    }
+
     /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
     /// any other blocks).
     ///

@@ -81,7 +81,6 @@ impl RecoveringAccount {
             let xpub = address.key().as_ref().public();
             let old_address = cardano_legacy_address::ExtendedAddr::new_simple(&xpub, None);
             let old_address = old_address.to_address();
-            dbg!(old_address.to_string());
             self.addresses.insert(old_address, address);
         }
     }

@@ -14,4 +14,6 @@ public class Wallet {
     public native static long initialFunds(long wallet, byte[] block0);
 
     public native static long convert(long wallet, long settings);
+
+    public native static byte[] id(long wallet);
 }

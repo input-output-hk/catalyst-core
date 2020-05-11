@@ -130,6 +130,39 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFund
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_id(
+    env: JNIEnv,
+    _: JClass,
+    wallet: jlong,
+) -> jbyteArray {
+    let wallet_ptr = wallet as WalletPtr;
+
+    let array = env
+        .new_byte_array(32 as jint)
+        .expect("Failed to create new byte array");
+
+    let mut id_out = [0i8; 32];
+
+    let result = wallet_id(wallet_ptr, id_out.as_mut_ptr() as *mut u8);
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+    } else {
+        env.set_byte_array_region(array, 0, &id_out)
+            .expect("Couldn't copy array to jvm");
+    }
+
+    array
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
     env: JNIEnv,
     _: JClass,

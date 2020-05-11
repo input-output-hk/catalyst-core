@@ -2,6 +2,7 @@ use crate::{transaction::WitnessBuilder, Settings};
 use chain_addr::Address;
 use chain_impl_mockchain::{
     fee::FeeAlgorithm as _,
+    fragment::{Fragment, FragmentRaw},
     transaction::{Input, NoExtra, Output, Transaction, TxBuilderState},
     value::Value,
 };
@@ -32,7 +33,7 @@ impl Dump {
     /// return the list of ignored inputs and the list of built transactions
     ///
     /// the transactions are ready to send
-    pub fn finalize(mut self) -> (Vec<Input>, Vec<Transaction<NoExtra>>) {
+    pub fn finalize(mut self) -> (Vec<Input>, Vec<FragmentRaw>) {
         self.build_tx_and_clear();
 
         assert!(
@@ -44,7 +45,14 @@ impl Dump {
             "we should not have any more pending inputs to spend"
         );
 
-        (self.ignored, self.outputs)
+        let outputs = self
+            .outputs
+            .into_iter()
+            .map(Fragment::Transaction)
+            .map(|f| Fragment::to_raw(&f))
+            .collect();
+
+        (self.ignored, outputs)
     }
 
     fn inputs_value(&self) -> Value {

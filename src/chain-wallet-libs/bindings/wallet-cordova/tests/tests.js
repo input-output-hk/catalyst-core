@@ -151,6 +151,18 @@ function restoreManualInputWallet (mnemonics, hexBlock, callBack) {
     });
 }
 
+function getAccountId (mnemonics, callBack) {
+    primitives.walletRestore(mnemonics, wallet => {
+        primitives.walletId(wallet, function (id) {
+            callBack(undefined, hex(id));
+        }, function (err) {
+            callBack(new Error(`could not get account id ${err}`));
+        });
+    }, err => {
+        callBack(new Error(`could not create wallet ${err}`));
+    });
+}
+
 exports.defineManualTests = function (contentEl, createActionButton) {
     var logMessage = function (message, color) {
         var log = document.getElementById('info');
@@ -170,7 +182,8 @@ exports.defineManualTests = function (contentEl, createActionButton) {
     const form =
         '<div> <label> mnemonics </label> <textarea id="mnemonics" rows="1"></textarea> </div>' +
         '<div> <label> block(hex) </label> <textarea id="block" rows="1"></textarea> </div>' +
-        '<div id="get_funds"> </div>';
+        '<div id="get_funds"> </div>' +
+        '<div id="account"> </div>';
 
     contentEl.innerHTML = '<div id="info"></div>' + form;
 
@@ -182,12 +195,45 @@ exports.defineManualTests = function (contentEl, createActionButton) {
             const block = document.getElementById('block').value;
             restoreManualInputWallet(mnemonics, block, (error, value) => {
                 if (error) {
-                    logMessage(`Error: ${error}`, null, '\t');
+                    logMessage(`Error: ${error}`, null);
                 } else {
-                    logMessage(`Funds: ${value}`, null, '\t');
+                    logMessage(`Funds: ${value}`, null);
                 }
             });
         },
         'get_funds'
     );
+
+    createActionButton(
+        'get account id',
+        function () {
+            clearLog();
+            const mnemonics = document.getElementById('mnemonics').value;
+            getAccountId(mnemonics, (error, value) => {
+                if (error) {
+                    logMessage(`Error: ${error}`, null);
+                } else {
+                    logMessage(`account id: ${value}`, null);
+                }
+            });
+        },
+        'account'
+    );
 };
+
+// copypasted ArrayBuffer to Hex string function
+const byteToHex = [];
+
+for (let n = 0; n <= 0xff; ++n) {
+    const hexOctet = ('0' + n.toString(16)).slice(-2);
+    byteToHex.push(hexOctet);
+}
+
+function hex (arrayBuffer) {
+    const buff = new Uint8Array(arrayBuffer);
+    const hexOctets = [];
+
+    for (let i = 0; i < buff.length; ++i) { hexOctets.push(byteToHex[buff[i]]); }
+
+    return hexOctets.join('');
+}

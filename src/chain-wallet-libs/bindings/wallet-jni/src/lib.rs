@@ -196,7 +196,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transac
 
     let index = index as usize;
     let mut transaction_out: *const u8 = null();
-    let mut transaction_size: usize = 0; // XXX: unitialized?
+    let mut transaction_size: usize = 0;
 
     let result = wallet_convert_transactions_get(
         conversion,

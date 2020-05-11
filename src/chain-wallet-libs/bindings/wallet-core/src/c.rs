@@ -90,7 +90,7 @@ pub unsafe fn wallet_recover(
 ///
 /// # Safety
 ///
-/// This function dereference raw pointers (wallet, block0 and settings_out). Even though
+/// This function dereference raw pointers (wallet and id_out). Even though
 /// the function checks if the pointers are null. Mind not to put random values
 /// in or you may see unexpected behaviors
 ///

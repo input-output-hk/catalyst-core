@@ -12,4 +12,6 @@ public class Wallet {
     public native static int totalValue(long wallet);
 
     public native static long initialFunds(long wallet, byte[] block0);
+
+    public native static byte[] id(long wallet);
 }

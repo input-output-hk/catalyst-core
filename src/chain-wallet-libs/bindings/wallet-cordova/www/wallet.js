@@ -9,6 +9,7 @@ const NATIVE_CLASS_NAME = 'WalletPlugin';
 const WALLET_RESTORE_ACTION_TAG = 'WALLET_RESTORE';
 const WALLET_RETRIEVE_FUNDS_ACTION_TAG = 'WALLET_RETRIEVE_FUNDS';
 const WALLET_TOTAL_FUNDS_ACTION_TAG = 'WALLET_TOTAL_FUNDS';
+const WALLET_ID_TAG = 'WALLET_ID';
 const WALLET_DELETE_ACTION_TAG = 'WALLET_DELETE';
 const SETTINGS_DELETE_ACTION_TAG = 'SETTINGS_DELETE';
 
@@ -56,6 +57,15 @@ var plugin = {
      */
     walletTotalFunds: function (ptr, successCallback, errorCallback) {
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_TOTAL_FUNDS_ACTION_TAG, [ptr]);
+    },
+
+    /**
+     * @param {string} native_id description (TODO)
+     * @param {string} successCallback description (TODO)
+     * @param {string} errorCallback description (TODO)
+     */
+    walletId: function (ptr, successCallback, errorCallback) {
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_ID_TAG, [ptr]);
     },
 
     /**

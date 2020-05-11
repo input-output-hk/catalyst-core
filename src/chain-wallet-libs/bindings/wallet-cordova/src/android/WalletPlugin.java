@@ -65,6 +65,9 @@ public class WalletPlugin extends CordovaPlugin {
             case "WALLET_TOTAL_FUNDS":
                 walletTotalFunds(args, callbackContext);
                 break;
+            case "WALLET_ID":
+                walletId(args, callbackContext);
+                break;
             case "WALLET_DELETE":
                 walletDelete(args, callbackContext);
                 break;
@@ -122,6 +125,17 @@ public class WalletPlugin extends CordovaPlugin {
         try {
             int value = Wallet.totalValue(walletPtr);
             callbackContext.success(Integer.toString(value));
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void walletId(JSONArray args, CallbackContext callbackContext) throws JSONException {
+        Long walletPtr = args.getLong(0);
+
+        try {
+            byte[] id = Wallet.id(walletPtr);
+            // TODO
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }

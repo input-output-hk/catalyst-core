@@ -122,6 +122,13 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFund
     settings as jlong
 }
 
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
     env: JNIEnv,
@@ -145,6 +152,13 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
     conversion_out as jlong
 }
 
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transactionsSize(
     _env: JNIEnv,
@@ -156,6 +170,13 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transac
     wallet_convert_transactions_size(conversion) as i32
 }
 
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
 #[no_mangle]
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transactionsGet(
     env: JNIEnv,

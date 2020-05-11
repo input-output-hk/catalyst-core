@@ -6,7 +6,7 @@ pub use wallet::Settings;
 use wallet_core::c::{
     wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
     wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_error,
-    wallet_delete_settings, wallet_delete_wallet, wallet_recover, wallet_retrieve_funds,
+    wallet_delete_settings, wallet_delete_wallet, wallet_id, wallet_recover, wallet_retrieve_funds,
     wallet_set_state, wallet_total_value,
 };
 pub use wallet_core::{
@@ -72,6 +72,43 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
     let r = wallet_recover(&mnemonics, password, password_length, wallet_out);
 
     r.into_c_api()
+}
+
+/// get the wallet id
+///
+/// This ID is the identifier to use against the blockchain/explorer to retrieve
+/// the state of the wallet (counter, total value etc...)
+///
+/// # Parameters
+///
+/// * wallet: the recovered wallet (see recover function);
+/// * id_out: a ready allocated pointer to an array of 32bytes. If this array is not
+///   32bytes this may result in a buffer overflow.
+///
+/// # Safety
+///
+/// This function dereference raw pointers (wallet, block0 and settings_out). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+/// the `id_out` needs to be ready allocated 32bytes memory. If not this will result
+/// in an undefined behavior, in the best scenario it will be a buffer overflow.
+///
+/// # Errors
+///
+/// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
+/// The `ErrorPtr` can then be observed to gathered details of the error.
+/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// the `ErrorPtr` from memory and avoid memory leaks.
+///
+/// * this function may fail if the wallet pointer is null;
+///
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_id(
+    wallet: WalletPtr,
+    id_out: *mut u8,
+) -> ErrorPtr {
+    wallet_id(wallet, id_out).into_c_api()
 }
 
 /// retrieve funds from daedalus or yoroi wallet in the given block0 (or

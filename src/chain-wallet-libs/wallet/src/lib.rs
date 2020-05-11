@@ -10,7 +10,8 @@ pub use self::{
     recovering::{RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
 };
 use chain_impl_mockchain::{transaction::Input, value::Value};
-use hdkeygen::account::{Account, AccountId};
+use hdkeygen::account::Account;
+pub use hdkeygen::account::AccountId;
 
 pub struct Wallet {
     account: Account,

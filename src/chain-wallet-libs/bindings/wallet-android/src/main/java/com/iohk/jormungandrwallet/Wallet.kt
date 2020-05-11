@@ -8,6 +8,8 @@ class Wallet {
     private external fun delete(wallet: Long)
     private external fun totalValue(wallet: Long) : Int
     private external fun initialFunds(wallet: Long, block0: ByteArray) : Long
+    private external fun id(wallet: Long) : ByteArray
+
     companion object {
         init {
             System.loadLibrary("wallet_jni")
@@ -29,5 +31,9 @@ class Wallet {
 
     fun value() : Int {
         return totalValue(this.walletPtr)
+    }
+
+    fun identifier() : ByteArray {
+        return id(this.walletPtr)
     }
 }

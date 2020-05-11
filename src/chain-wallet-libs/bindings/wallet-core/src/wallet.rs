@@ -2,7 +2,7 @@ use crate::{Conversion, Error};
 use chain_core::property::Serialize as _;
 use chain_impl_mockchain::{block::Block, value::Value};
 use chain_ser::mempack::{ReadBuf, Readable as _};
-use wallet::Settings;
+use wallet::{AccountId, Settings};
 
 /// the wallet
 ///
@@ -19,6 +19,10 @@ pub struct Wallet {
 impl Wallet {
     pub fn account(&self, discrimination: chain_addr::Discrimination) -> chain_addr::Address {
         self.account.account_id().address(discrimination)
+    }
+
+    pub fn id(&self) -> AccountId {
+        self.account.account_id()
     }
 
     /// retrieve a wallet from the given mnemonics, password and protocol magic

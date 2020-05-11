@@ -59,6 +59,21 @@ function walletTotalFunds (successCallback, errorCallback, opts) {
     }
 }
 
+function walletId (successCallback, errorCallback, opts) {
+    if (opts && typeof (opts[0]) === 'number') {
+        const walletPtr = opts[0];
+        const wallet = wasm.Wallet.__wrap(walletPtr);
+
+        try {
+            successCallback(wallet.id());
+        } catch (err) {
+            errorCallback(`couldn't get funds ${err}`);
+        }
+    } else {
+        errorCallback('no pointer');
+    }
+}
+
 function walletDelete (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'number') {
         const walletPtr = opts[0];
@@ -83,6 +98,7 @@ const bindings = {
     WALLET_RESTORE: walletRestore,
     WALLET_RETRIEVE_FUNDS: walletRetrieveFunds,
     WALLET_TOTAL_FUNDS: walletTotalFunds,
+    WALLET_ID: walletId,
     WALLET_DELETE: walletDelete,
     SETTINGS_DELETE: settingsDelete
 };

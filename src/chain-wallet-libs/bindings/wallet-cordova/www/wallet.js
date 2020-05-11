@@ -9,6 +9,7 @@ const NATIVE_CLASS_NAME = 'WalletPlugin';
 const WALLET_RESTORE_ACTION_TAG = 'WALLET_RESTORE';
 const WALLET_RETRIEVE_FUNDS_ACTION_TAG = 'WALLET_RETRIEVE_FUNDS';
 const WALLET_TOTAL_FUNDS_ACTION_TAG = 'WALLET_TOTAL_FUNDS';
+const WALLET_ID_TAG = 'WALLET_ID';
 const WALLET_DELETE_ACTION_TAG = 'WALLET_DELETE';
 const SETTINGS_DELETE_ACTION_TAG = 'SETTINGS_DELETE';
 
@@ -56,6 +57,26 @@ var plugin = {
      */
     walletTotalFunds: function (ptr, successCallback, errorCallback) {
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_TOTAL_FUNDS_ACTION_TAG, [ptr]);
+    },
+
+    /**
+     * get the wallet id
+
+     * This ID is the identifier to use against the blockchain/explorer to retrieve
+     * the state of the wallet (counter, total value etc...)
+     *
+     * # Safety
+     *
+     * This function dereference raw pointers (wallet). Even though
+     * the function checks if the pointers are null. Mind not to put random values
+     * in or you may see unexpected behaviors
+     *
+     * @param {number} ptr a pointer to a Wallet object obtained with WalletRestore
+     * @param {function} successCallback the return value is an ArrayBuffer, which has the binary representation of the account id.
+     * @param {function} errorCallback this function may fail if the wallet pointer is null
+     */
+    walletId: function (ptr, successCallback, errorCallback) {
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_ID_TAG, [ptr]);
     },
 
     /**

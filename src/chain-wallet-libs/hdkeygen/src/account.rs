@@ -7,7 +7,7 @@
 
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::{Ed25519, PublicKey};
-use cryptoxide::ed25519::{self, PUBLIC_KEY_LENGTH};
+use cryptoxide::ed25519;
 use std::{
     fmt::{self, Display},
     str::FromStr,
@@ -24,7 +24,7 @@ pub struct Account {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct AccountId {
-    id: [u8; PUBLIC_KEY_LENGTH],
+    id: [u8; AccountId::SIZE],
 }
 
 impl Account {
@@ -36,7 +36,7 @@ impl Account {
         Account { seed, counter: 0 }
     }
 
-    pub fn public(&self) -> [u8; PUBLIC_KEY_LENGTH] {
+    pub fn public(&self) -> [u8; AccountId::SIZE] {
         let (_, pk) = ed25519::keypair(&self.seed);
         pk
     }
@@ -65,6 +65,9 @@ impl Account {
 }
 
 impl AccountId {
+    /// the total size of an account ID
+    pub const SIZE: usize = ed25519::PUBLIC_KEY_LENGTH;
+
     /// get the public address associated to this account identifier
     pub fn address(&self, discrimination: Discrimination) -> Address {
         let pk = if let Ok(pk) = PublicKey::from_binary(&self.id) {
@@ -92,8 +95,8 @@ impl From<[u8; SEED_LENGTH]> for Account {
     }
 }
 
-impl From<[u8; PUBLIC_KEY_LENGTH]> for AccountId {
-    fn from(id: [u8; PUBLIC_KEY_LENGTH]) -> Self {
+impl From<[u8; Self::SIZE]> for AccountId {
+    fn from(id: [u8; Self::SIZE]) -> Self {
         Self { id }
     }
 }
@@ -108,6 +111,12 @@ impl Into<PublicKey<Ed25519>> for AccountId {
     }
 }
 
+impl AsRef<[u8]> for AccountId {
+    fn as_ref(&self) -> &[u8] {
+        self.id.as_ref()
+    }
+}
+
 /* Display ***************************************************************** */
 
 impl Display for AccountId {
@@ -119,7 +128,7 @@ impl Display for AccountId {
 impl FromStr for AccountId {
     type Err = hex::FromHexError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut id = [0; PUBLIC_KEY_LENGTH];
+        let mut id = [0; Self::SIZE];
 
         hex::decode_to_slice(s, &mut id)?;
 
@@ -142,7 +151,7 @@ mod tests {
 
     impl Arbitrary for AccountId {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let mut id = [0; PUBLIC_KEY_LENGTH];
+            let mut id = [0; Self::SIZE];
             g.fill_bytes(&mut id);
             Self { id }
         }

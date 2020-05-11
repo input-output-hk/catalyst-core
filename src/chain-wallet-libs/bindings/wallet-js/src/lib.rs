@@ -111,9 +111,6 @@ impl Conversion {
     }
 
     pub fn transactions_get(&self, index: usize) -> Option<Vec<u8>> {
-        self.0
-            .transactions()
-            .get(index)
-            .map(|t| t.as_ref().to_owned())
+        self.0.transactions().get(index).map(|t| t.to_owned())
     }
 }

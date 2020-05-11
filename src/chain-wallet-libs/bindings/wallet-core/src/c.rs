@@ -230,8 +230,8 @@ pub unsafe fn wallet_convert_transactions_get(
     };
 
     if let Some(t) = conversion.transactions.get(index) {
-        *transaction_out = t.as_ref().as_ptr();
-        *transaction_size = t.as_ref().len();
+        *transaction_out = t.as_ptr();
+        *transaction_size = t.len();
         Result::success()
     } else {
         Error::wallet_conversion().with(OutOfBound).into()

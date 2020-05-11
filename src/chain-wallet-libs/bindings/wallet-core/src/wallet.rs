@@ -1,4 +1,5 @@
 use crate::{Conversion, Error};
+use chain_core::property::Serialize as _;
 use chain_impl_mockchain::{block::Block, value::Value};
 use chain_ser::mempack::{ReadBuf, Readable as _};
 use wallet::Settings;
@@ -124,6 +125,11 @@ impl Wallet {
         self.icarus.dump_in(&mut dump);
 
         let (ignored, transactions) = dump.finalize();
+
+        let transactions = transactions
+            .into_iter()
+            .map(|t| t.serialize_as_vec().unwrap())
+            .collect();
 
         Conversion {
             ignored,

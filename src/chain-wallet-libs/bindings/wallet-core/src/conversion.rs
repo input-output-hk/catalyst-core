@@ -1,8 +1,8 @@
-use chain_impl_mockchain::{fragment::FragmentRaw, transaction::Input};
+use chain_impl_mockchain::transaction::Input;
 
 pub struct Conversion {
     pub(crate) ignored: Vec<Input>,
-    pub(crate) transactions: Vec<FragmentRaw>,
+    pub(crate) transactions: Vec<Vec<u8>>,
 }
 
 impl Conversion {
@@ -10,7 +10,7 @@ impl Conversion {
         &self.ignored
     }
 
-    pub fn transactions(&self) -> &[FragmentRaw] {
+    pub fn transactions(&self) -> &[Vec<u8>] {
         &self.transactions
     }
 }

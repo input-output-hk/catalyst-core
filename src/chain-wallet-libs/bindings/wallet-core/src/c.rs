@@ -77,6 +77,46 @@ pub unsafe fn wallet_recover(
     }
 }
 
+/// get the wallet id
+///
+/// This ID is the identifier to use against the blockchain/explorer to retrieve
+/// the state of the wallet (counter, total value etc...)
+///
+/// # Parameters
+///
+/// * wallet: the recovered wallet (see recover function);
+/// * id_out: a ready allocated pointer to an array of 32bytes. If this array is not
+///   32bytes this may result in a buffer overflow.
+///
+/// # Safety
+///
+/// This function dereference raw pointers (wallet, block0 and settings_out). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+/// the `id_out` needs to be ready allocated 32bytes memory. If not this will result
+/// in an undefined behavior, in the best scenario it will be a buffer overflow.
+///
+/// # Errors
+///
+/// * this function may fail if the wallet pointer is null;
+///
+pub unsafe fn wallet_id(wallet: WalletPtr, id_out: *mut u8) -> Result {
+    let wallet: &Wallet = if let Some(wallet) = wallet.as_ref() {
+        wallet
+    } else {
+        return Error::invalid_input("wallet").with(NulPtr).into();
+    };
+
+    let id = wallet.id();
+
+    let id_out = std::slice::from_raw_parts_mut(id_out, wallet::AccountId::SIZE);
+
+    id_out.copy_from_slice(id.as_ref());
+
+    Result::success()
+}
+
 /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
 /// any other blocks).
 ///

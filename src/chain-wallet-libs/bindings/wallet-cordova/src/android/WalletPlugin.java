@@ -135,7 +135,7 @@ public class WalletPlugin extends CordovaPlugin {
 
         try {
             byte[] id = Wallet.id(walletPtr);
-            // TODO
+            callbackContext.success(id);
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }

@@ -60,9 +60,20 @@ var plugin = {
     },
 
     /**
-     * @param {string} native_id description (TODO)
-     * @param {string} successCallback description (TODO)
-     * @param {string} errorCallback description (TODO)
+     * get the wallet id
+
+     * This ID is the identifier to use against the blockchain/explorer to retrieve
+     * the state of the wallet (counter, total value etc...)
+     *
+     * # Safety
+     *
+     * This function dereference raw pointers (wallet). Even though
+     * the function checks if the pointers are null. Mind not to put random values
+     * in or you may see unexpected behaviors
+     *
+     * @param {number} ptr a pointer to a Wallet object obtained with WalletRestore
+     * @param {function} successCallback the return value is an ArrayBuffer, which has the binary representation of the account id.
+     * @param {function} errorCallback this function may fail if the wallet pointer is null
      */
     walletId: function (ptr, successCallback, errorCallback) {
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_ID_TAG, [ptr]);

@@ -66,6 +66,7 @@ public class WalletPlugin extends CordovaPlugin {
                 break;
             case "WALLET_ID":
                 walletId(args, callbackContext);
+                break;
             case "WALLET_CONVERT":
                 walletConvert(args, callbackContext);
                 break;
@@ -176,7 +177,7 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
-    private void walletId(JSONArray args, CallbackContext callbackContext) throws JSONException {
+    private void walletId(final CordovaArgs args, CallbackContext callbackContext) throws JSONException {
         final Long walletPtr = args.getLong(0);
 
         try {

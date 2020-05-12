@@ -35,8 +35,8 @@ var plugin = {
      */
 
     /**
-     * @param {string} mnemonics description (TODO)
-     * @param {pointerCallback} successCallback description (TODO)
+     * @param {string} mnemonics a string with the mnemonic phrase
+     * @param {pointerCallback} successCallback on success returns a pointer to a Wallet object
      * @param {errorCallback} errorCallback this function can fail if the mnemonics are invalid
      */
     walletRestore: function (mnemonics, successCallback, errorCallback) {
@@ -112,7 +112,7 @@ var plugin = {
 
     /**
      * @param {number} walletPtr a pointer to a Wallet obtained with walletRestore
-     * @param successCallback  indicates success. Does not return anything.
+     * @param {function} successCallback  indicates success. Does not return anything.
      * @param {errorCallback} errorCallback
      */
     walletDelete: function (ptr, successCallback, errorCallback) {
@@ -120,8 +120,8 @@ var plugin = {
     },
 
     /**
-     * @param {number} ptr description (TODO)
-     * @param successCallback  indicates success. Does not return anything.
+     * @param {number} ptr a pointer to a Settings object obtained with walletRetrieveFunds
+     * @param {function} successCallback  indicates success. Does not return anything.
      * @param {errorCallback} errorCallback
      */
     settingsDelete: function (ptr, successCallback, errorCallback) {
@@ -130,7 +130,7 @@ var plugin = {
 
     /**
      * @param {number} ptr a pointer to a Conversion object obtained with walletConvert
-     * @param successCallback  indicates success. Does not return anything.
+     * @param {function} successCallback  indicates success. Does not return anything.
      * @param {errorCallback} errorCallback
      */
     conversionDelete: function (ptr, successCallback, errorCallback) {

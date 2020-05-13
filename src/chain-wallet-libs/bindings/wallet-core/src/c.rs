@@ -107,6 +107,9 @@ pub unsafe fn wallet_id(wallet: WalletPtr, id_out: *mut u8) -> Result {
     } else {
         return Error::invalid_input("wallet").with(NulPtr).into();
     };
+    if id_out.is_null() {
+        return Error::invalid_input("id_out").with(NulPtr).into();
+    }
 
     let id = wallet.id();
 

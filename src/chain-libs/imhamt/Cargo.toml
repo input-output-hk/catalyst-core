@@ -18,7 +18,6 @@ jemallocator = "*"
 [features]
 default = []
 with-bench = []
-optimized-node = []
 
 [[example]]
 name = "memdump"

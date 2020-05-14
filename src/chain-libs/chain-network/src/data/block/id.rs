@@ -1,14 +1,25 @@
 use crate::error::{Code, Error};
 
 use std::convert::TryFrom;
+use std::fmt;
 
 const BLOCK_ID_LEN: usize = 32;
 
 /// Network representation of a block ID.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct BlockId([u8; BLOCK_ID_LEN]);
 
 pub type BlockIds = Box<[BlockId]>;
+
+impl fmt::Debug for BlockId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("BlockId(0x")?;
+        for byte in self.0.iter() {
+            write!(f, "{:02x}", byte)?;
+        }
+        f.write_str(")")
+    }
+}
 
 impl BlockId {
     #[inline]

@@ -1,14 +1,25 @@
 use crate::error::{Code, Error};
 
 use std::convert::TryFrom;
+use std::fmt;
 
 const FRAGMENT_ID_LEN: usize = 32;
 
 /// Network representation of a fragment ID.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct FragmentId([u8; FRAGMENT_ID_LEN]);
 
 pub type FragmentIds = Box<[FragmentId]>;
+
+impl fmt::Debug for FragmentId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("FragmentId(0x")?;
+        for byte in self.0.iter() {
+            write!(f, "{:02x}", byte)?;
+        }
+        f.write_str(")")
+    }
+}
 
 impl FragmentId {
     #[inline]

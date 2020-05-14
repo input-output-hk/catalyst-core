@@ -1,11 +1,5 @@
-#![cfg_attr(feature = "with-bench", feature(test))]
-
 #[macro_use]
 extern crate cfg_if;
-
-#[cfg(test)]
-#[cfg(feature = "with-bench")]
-extern crate test;
 
 #[cfg(test)]
 extern crate quickcheck;

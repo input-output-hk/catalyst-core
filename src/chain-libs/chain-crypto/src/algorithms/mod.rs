@@ -1,8 +1,12 @@
 mod ed25519;
 mod ed25519_derive;
 mod ed25519_extended;
-mod sumed25519;
 pub mod vrf;
+
+#[cfg(not(feature = "with-bench"))]
+mod sumed25519;
+#[cfg(feature = "with-bench")]
+pub mod sumed25519;
 
 pub use ed25519::Ed25519;
 pub use ed25519_derive::Ed25519Bip32;

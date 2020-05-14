@@ -6,6 +6,7 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+criterion = { version = "0.3.0", optional = true }
 
 [dev-dependencies]
 quickcheck = "0.9"
@@ -17,8 +18,13 @@ jemallocator = "*"
 
 [features]
 default = []
-with-bench = []
+with-bench = ["criterion"]
 
 [[example]]
 name = "memdump"
 path = "examples/memdump/main.rs"
+
+[[bench]]
+harness = false
+name = "imhamt"
+required-features = ["with-bench"]

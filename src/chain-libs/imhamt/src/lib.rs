@@ -1,13 +1,9 @@
 #![allow(dead_code)]
-#![cfg_attr(feature = "with-bench", feature(test))]
 #[cfg(test)]
 extern crate quickcheck;
 #[cfg(test)]
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
-#[cfg(test)]
-#[cfg(feature = "with-bench")]
-extern crate test;
 
 mod bitmap;
 mod hamt;
@@ -435,74 +431,5 @@ mod tests {
         let (h, reference) = arbitrary_hamt_and_btree(xs, next_u32, |v| v.wrapping_mul(2));
         let after_iter = BTreeMap::from_iter(h.iter().map(|(k, v)| (k.clone(), *v)));
         reference == after_iter
-    }
-}
-
-#[cfg(test)]
-#[cfg(feature = "with-bench")]
-mod bench {
-    use super::*;
-
-    use std::collections::hash_map::DefaultHasher;
-    use std::collections::BTreeMap;
-
-    type Key = String;
-
-    const NB: usize = 1000;
-
-    fn keys() -> Vec<Key> {
-        let mut v = Vec::with_capacity(NB);
-        for i in 0..NB {
-            v.push(format!("key {}", i))
-        }
-        v
-    }
-
-    #[bench]
-    fn bench_btreemap_insert(b: &mut test::Bencher) {
-        b.iter(|| {
-            let mut h: BTreeMap<Key, u32> = BTreeMap::new();
-            for k in keys() {
-                h.insert(k, 2);
-            }
-        });
-    }
-
-    #[bench]
-    fn bench_hamt_insert(b: &mut test::Bencher) {
-        b.iter(|| {
-            let mut h: Hamt<DefaultHasher, Key, u32> = Hamt::new();
-            for k in keys() {
-                h = h.insert(k, 2).unwrap()
-            }
-        });
-    }
-
-    #[bench]
-    fn bench_btreemap_remove(b: &mut test::Bencher) {
-        let mut h: BTreeMap<Key, u32> = BTreeMap::new();
-        for k in keys() {
-            h.insert(k, 2);
-        }
-        b.iter(|| {
-            let mut h2 = h.clone();
-            for k in keys() {
-                h2.remove(&k);
-            }
-        });
-    }
-
-    #[bench]
-    fn bench_hamt_remove(b: &mut test::Bencher) {
-        let mut h: Hamt<DefaultHasher, Key, u32> = Hamt::new();
-        for k in keys() {
-            h = h.insert(k, 2).unwrap()
-        }
-        b.iter(|| {
-            let mut h2 = h.clone();
-            for k in keys() {
-                h2 = h2.remove_match(&k, &2).unwrap()
-            }
-        });
     }
 }

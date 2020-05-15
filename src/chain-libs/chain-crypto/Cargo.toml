@@ -22,11 +22,23 @@ cfg-if = "0.1"
 hex = "0.4.0"
 typed-bytes = { path = "../typed-bytes" }
 
+criterion = { version = "0.3.0", optional = true }
+
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
 rand_chacha = "0.2"
 
 [features]
-with-bench = [ 'curve25519-dalek/simd_backend']
+with-bench = ["criterion"]
 property-test-api = [ "quickcheck", "rand_chacha" ]
+
+[[bench]]
+harness = false
+name = "vrf"
+required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "sumed25519"
+required-features = ["with-bench"]

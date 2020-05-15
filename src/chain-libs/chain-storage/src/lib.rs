@@ -16,12 +16,8 @@ pub enum Error {
     #[error("block not found")]
     BlockNotFound,
     // FIXME: add BlockId
-    #[error("cannot iterate between the 2 given blocks")]
-    CannotIterate,
     #[error("database backend error")]
     BackendError(#[from] Box<dyn std::error::Error + Send + Sync>),
-    #[error("block0 is in the future")]
-    Block0InFuture,
     #[error("Block already present in DB")]
     BlockAlreadyPresent,
     #[error("the parent block is missing for the required write")]

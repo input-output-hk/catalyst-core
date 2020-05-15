@@ -1,8 +1,15 @@
-mod common;
-mod sum;
-
 #[cfg(test)]
 mod sumrec;
+
+#[cfg(not(feature = "with-bench"))]
+mod common;
+#[cfg(not(feature = "with-bench"))]
+mod sum;
+
+#[cfg(feature = "with-bench")]
+pub mod common;
+#[cfg(feature = "with-bench")]
+pub mod sum;
 
 use crate::evolving::{EvolvingStatus, KeyEvolvingAlgorithm};
 use crate::kes::KeyEvolvingSignatureAlgorithm;

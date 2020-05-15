@@ -33,7 +33,8 @@
     "eslint": "npm run lint",
     "eslint:fix": "npm run fix",
     "lint": "eslint .",
-    "fix": "eslint --fix ."
+    "fix": "eslint --fix .",
+    "doc": "jsdoc www/wallet.js --readme ./README.md -d docs"
   },
   "author": "ecioppettini@atixlabs.com",
   "license": "Apache-2.0 OR MIT",
@@ -45,7 +46,8 @@
     }
   },
   "devDependencies": {
-    "@cordova/eslint-config": "^3.0.0"
+    "@cordova/eslint-config": "^3.0.0",
+    "jsdoc": "^3.6.4"
   },
   "homepage": "https://github.com/input-output-hk/chain-wallet-libs#readme",
   "main": "index.js",

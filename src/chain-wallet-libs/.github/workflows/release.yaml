@@ -300,6 +300,9 @@ jobs:
         working-directory: ./bindings/wallet-cordova
         run: python3 ./build_wasm.py 
 
+      - name: copy java definitions from jni
+        run: python3 ./bindings/wallet-cordova/copy_jni_definitions.py
+
       - name: setup node
         uses: actions/setup-node@v1
         with:

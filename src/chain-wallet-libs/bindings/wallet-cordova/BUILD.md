@@ -18,6 +18,18 @@ export CC_x86_64_linux_android=$NDK/toolchains/llvm/prebuilt/$BUILDING_PLATFORM/
 
 Where $NDK is your * Android NDK * installation directory, and $BUILDING_PLATFORM is your current platform (not the target).
 
+## iOS
+
+Prerequisites:
+
+* XCode
+* `rustup target add x86_64-apple-ios` - for testing.
+* `rustup target add aarch64-apple-ios` - for devices.
+* `cargo install cargo-lipo` - for building universal iOS libraries.
+
+Run `./build_ios.py`. This will build the library and copy headers and the
+library file to the Cordova plugin directory.
+
 # Electron
 
 ## Requirements

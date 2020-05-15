@@ -52,16 +52,16 @@
         <asset src="src/electron/pkg/wallet_js_bg.wasm" target="wallet_js_bg.wasm" />
     </platform>
 
-    <!-- ios -->
-    <!-- just as example -->
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
-            <feature name="wallet">
-                <param name="ios-package" value="Wallet"/>
+            <feature name="WalletPlugin">
+                <param name="ios-package" value="WalletPlugin"/>
             </feature>
         </config-file>
 
-        <header-file src="src/ios/Wallet.h" />
-        <source-file src="src/ios/Wallet.m" />
+        <header-file src="src/ios/LibWallet.h" />
+        <header-file src="src/ios/WalletPlugin.h" />
+        <source-file src="src/ios/WalletPlugin.m" />
+        <source-file src="src/ios/libjormungandrwallet.a" framework="true" />
     </platform>
 </plugin>

@@ -19,10 +19,10 @@
         if (result != nil) {
             char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);
             NSString* error_desc = [NSString stringWithCString:error_desc_raw encoding:NSUTF8StringEncoding];
-            free(error_desc_raw);
 
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error_desc];
 
+            free(error_desc_raw);
             iohk_jormungandr_wallet_delete_error(result);
         } else {
             NSString* returnValue = [NSString stringWithFormat:@"%ld", (uintptr_t)wallet_ptr];
@@ -50,10 +50,10 @@
         if (result != nil) {
             char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);
             NSString* error_desc = [NSString stringWithCString:error_desc_raw encoding:NSUTF8StringEncoding];
-            free(error_desc_raw);
 
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error_desc];
 
+            free(error_desc_raw);
             iohk_jormungandr_wallet_delete_error(result);
         } else {
             NSString* returnValue = [NSString stringWithFormat:@"%ld", (uintptr_t)settings_ptr];
@@ -75,10 +75,10 @@
     if (result != nil) {
         char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);
         NSString* error_desc = [NSString stringWithCString:error_desc_raw encoding:NSUTF8StringEncoding];
-        free(error_desc_raw);
 
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error_desc];
 
+        free(error_desc_raw);
         iohk_jormungandr_wallet_delete_error(result);
     } else {
         NSString* returnValue = [NSString stringWithFormat:@"%lld", value];
@@ -99,10 +99,10 @@
     if (result != nil) {
         char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);
         NSString* error_desc = [NSString stringWithCString:error_desc_raw encoding:NSUTF8StringEncoding];
-        free(error_desc_raw);
 
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error_desc];
 
+        free(error_desc_raw);
         iohk_jormungandr_wallet_delete_error(result);
     } else {
         NSData* returnValue = [NSData dataWithBytes:id_ptr length:32];

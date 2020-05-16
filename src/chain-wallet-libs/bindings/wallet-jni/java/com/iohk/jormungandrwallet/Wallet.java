@@ -16,4 +16,6 @@ public class Wallet {
     public native static long convert(long wallet, long settings);
 
     public native static byte[] id(long wallet);
+
+    public native static void setState(long wallet, long value, long counter);
 }

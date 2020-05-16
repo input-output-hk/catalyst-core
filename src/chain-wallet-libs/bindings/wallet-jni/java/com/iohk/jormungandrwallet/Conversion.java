@@ -10,4 +10,10 @@ public class Conversion {
     public native static int transactionsSize(long conversion);
 
     public native static byte[] transactionsGet(long conversion, int index);
+
+    public native static void ignored(long conversion, IgnoredCallback callback);
+
+    public interface IgnoredCallback {
+        void call(long value, long ignored);
+    }
 }

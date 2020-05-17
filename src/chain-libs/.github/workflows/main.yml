@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - github-ci-improvements
   pull_request:
 
 jobs:
@@ -21,29 +22,15 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Get top commit hash of cargo registry index
-        run: |
-          commit=$(git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master | cut -f1)
-          echo "$commit"
-          echo "::set-env name=CRATES_IO_SHA::$commit"
-
-      - name: Cache cargo registry index
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/registry/index
-          key: cargo-registry-index-v1-${{ env.CRATES_IO_SHA }}
-          restore-keys: |
-            cargo-registry-index-v1-
-
       - name: Generate Cargo.lock
         run: cargo generate-lockfile
 
-      - name: Cache cargo registry with dependencies
+      - name: Cache cargo dependencies
         id: cache-deps
         uses: actions/cache@v1
         with:
-          path: ~/.cargo/registry
-          key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
+          path: ~/.cargo/registry/cache
+          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
 
       - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
         name: Fetch dependencies
@@ -86,12 +73,15 @@ jobs:
           command: fmt
           args: --all -- --check
 
-      - name: Restore cargo registry from cache
+      - name: Restore dependency crates from cache
         id: cache-deps
         uses: actions/cache@v1
         with:
-          path: ~/.cargo/registry
-          key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
+          path: ~/.cargo/registry/cache
+          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
+
+      - name: Restore Cargo state
+        run: cargo fetch --locked
 
       - name: Build
         uses: actions-rs/cargo@v1

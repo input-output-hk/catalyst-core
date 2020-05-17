@@ -43,7 +43,7 @@ jobs:
           path: Cargo.lock
 
   test:
-    name: Test
+    name: Build and test
     needs: update_deps
     strategy:
       matrix:
@@ -64,17 +64,8 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-          components: rustfmt, clippy
-
-      - name: Check code formatting
-        uses: actions-rs/cargo@v1
-        continue-on-error: false
-        with:
-          command: fmt
-          args: --all -- --check
 
       - name: Restore dependency crates from cache
-        id: cache-deps
         uses: actions/cache@v1
         with:
           path: ~/.cargo/registry/cache
@@ -97,7 +88,40 @@ jobs:
           command: test
           args: --frozen --offline
 
-      - name: Check clippy lints
+  lints:
+    name: Code quality checks
+    runs-on: ubuntu-latest
+    needs: update_deps
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Download Cargo.lock
+        uses: actions/download-artifact@v2
+        with:
+          name: lockfile
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Restore dependency crates from cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry/cache
+          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
+
+      - name: Run cargo clippy
         uses: actions-rs/cargo@v1
         continue-on-error: false
         with:

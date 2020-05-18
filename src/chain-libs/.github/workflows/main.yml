@@ -48,6 +48,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        toolchain: [stable]
+        mode: ['', '--release']
+        include:
+          - os: ubuntu-latest
+            toolchain: nightly
     runs-on: ${{ matrix.os }}
     steps:
 
@@ -61,8 +66,8 @@ jobs:
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: ${{ matrix.toolchain }}
           profile: minimal
-          toolchain: stable
           override: true
 
       - name: Restore dependency crates from cache
@@ -79,14 +84,14 @@ jobs:
         continue-on-error: false
         with:
           command: build
-          args: --frozen --offline
+          args: ${{ matrix.mode }} --frozen --offline
 
       - name: Run tests
         uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: test
-          args: --frozen --offline
+          args: ${{ matrix.mode }} --frozen --offline
 
   lints:
     name: Code quality checks
@@ -103,10 +108,10 @@ jobs:
 
       - uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
-          override: true
+          profile: minimal
           components: rustfmt, clippy
+          override: true
 
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1

@@ -79,22 +79,19 @@ jobs:
           path: ~/.cargo/registry
           key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
 
-      - name: Unpack dependency crates
-        run: cargo fetch --locked --offline
-
       - name: Build
         uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: build
-          args: --all-targets ${{ matrix.mode }} --frozen --offline
+          args: --all-targets ${{ matrix.mode }} --locked --offline
 
       - name: Run tests
         uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: test
-          args: ${{ matrix.mode }} --frozen --offline
+          args: ${{ matrix.mode }} --locked --offline
 
   lints:
     name: Lints

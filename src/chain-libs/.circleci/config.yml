@@ -75,6 +75,9 @@ commands:
       mode:
         type: string
         default: ''
+      cargo_behavior:
+        type: string
+        default: --verbose --frozen --offline
     steps:
       - checkout
       - attach_workspace:
@@ -88,18 +91,21 @@ commands:
           keys:
             - cargo-deps-v1-{{ checksum "Cargo.lock" }}
       - run:
+          name: Unpack dependency crates
+          command: cargo fetch --locked --offline
+      - run:
           name: Print version information
           command: rustc --version; cargo --version
       - run:
           name: Build
           command: |
-            cargo build << parameters.mode >> --all-targets --verbose --frozen
+            cargo build --all-targets << parameters.mode >> << parameters.cargo_behavior >>
       - run:
           name: Test
           environment:
             RUST_BACKTRACE: 1
           command: |
-            cargo test << parameters.mode >> --verbose --frozen
+            cargo test << parameters.mode >> << parameters.cargo_behavior >>
 
 workflows:
   version: 2

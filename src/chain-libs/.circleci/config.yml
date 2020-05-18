@@ -51,59 +51,30 @@ jobs:
       - image: rust:latest
     working_directory: /mnt/crate
     steps:
-      - checkout
-      - attach_workspace:
-          at: /mnt/crate
-      - restore_cache:
-          name: Restore cargo registry index from cache
-          keys:
-            - cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
-      - restore_cache:
-          name: Restore dependency crates from cache
-          keys:
-            - cargo-deps-v1-{{ checksum "Cargo.lock" }}
-      - run:
-          name: Print version information
-          command: rustc --version; cargo --version
-      - run:
-          name: Build
-          command: cargo build --tests --verbose --frozen
-      - run:
-          name: Test
-          environment:
-            RUST_BACKTRACE: 1
-          command: cargo test --verbose --frozen
+      - test
 
   test_release:
     docker:
       - image: rust:latest
     working_directory: /mnt/crate
     steps:
-      - checkout
-      - attach_workspace:
-          at: /mnt/crate
-      - restore_cache:
-          name: Restore cargo registry index from cache
-          keys:
-            - cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
-      - restore_cache:
-          name: Restore dependency crates from cache
-          keys:
-            - cargo-deps-v1-{{ checksum "Cargo.lock" }}
-      - run:
-          name: Print version information
-          command: rustc --version; cargo --version
-      - run:
-          name: Build
-          command: cargo build --tests --verbose --frozen --release
-      - run:
-          name: Test
-          command: cargo test --verbose --frozen --release
+      - test:
+          mode: --release
 
   test_nightly:
     docker:
       - image: rustlang/rust:nightly
     working_directory: /mnt/crate
+    steps:
+      - test
+
+commands:
+  test:
+    description: "Steps for the test jobs"
+    parameters:
+      mode:
+        type: string
+        default: ''
     steps:
       - checkout
       - attach_workspace:
@@ -121,12 +92,14 @@ jobs:
           command: rustc --version; cargo --version
       - run:
           name: Build
-          command: cargo build --tests --verbose --frozen
+          command: |
+            cargo build << parameters.mode >> --all-targets --verbose --frozen
       - run:
           name: Test
           environment:
             RUST_BACKTRACE: 1
-          command: cargo test --verbose --frozen
+          command: |
+            cargo test << parameters.mode >> --verbose --frozen
 
 workflows:
   version: 2

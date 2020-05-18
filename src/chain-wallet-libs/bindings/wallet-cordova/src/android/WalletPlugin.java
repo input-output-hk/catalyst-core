@@ -14,7 +14,7 @@ import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CordovaArgs;
-import org.json.JSONArray;
+import org.json.JSONObject;
 import org.json.JSONException;
 
 import android.util.Base64;
@@ -67,6 +67,9 @@ public class WalletPlugin extends CordovaPlugin {
             case "WALLET_ID":
                 walletId(args, callbackContext);
                 break;
+            case "WALLET_SET_STATE":
+                walletSetState(args, callbackContext);
+                break;
             case "WALLET_CONVERT":
                 walletConvert(args, callbackContext);
                 break;
@@ -75,6 +78,9 @@ public class WalletPlugin extends CordovaPlugin {
                 break;
             case "CONVERSION_TRANSACTIONS_GET":
                 conversionTransactionsGet(args, callbackContext);
+                break;
+            case "CONVERSION_IGNORED":
+                conversionIgnored(args, callbackContext);
                 break;
             case "WALLET_DELETE":
                 walletDelete(args, callbackContext);
@@ -136,6 +142,19 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
+    private void walletSetState(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long walletPtr = args.getLong(0);
+        final Long value = args.getLong(1);
+        final Long counter = args.getLong(2);
+
+        try {
+            Wallet.setState(walletPtr, value, counter);
+            callbackContext.success();
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
     private void walletConvert(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
         final Long walletPtr = args.getLong(0);
         final Long settingsPtr = args.getLong(1);
@@ -177,13 +196,33 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
-    private void walletId(final CordovaArgs args, CallbackContext callbackContext) throws JSONException {
+    private void conversionIgnored(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long conversionPtr = args.getLong(0);
+
+        try {
+            Conversion.ignored(conversionPtr, new Conversion.IgnoredCallback() {
+                @Override
+                public void call(final long value, final long ignored) {
+                    try {
+                        final JSONObject json = new JSONObject().put("value", value).put("ignored", ignored);
+                        callbackContext.success(json);
+                    } catch (final JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void walletId(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
         final Long walletPtr = args.getLong(0);
 
         try {
-            byte[] id = Wallet.id(walletPtr);
+            final byte[] id = Wallet.id(walletPtr);
             callbackContext.success(id);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             callbackContext.error(e.getMessage());
         }
     }

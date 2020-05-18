@@ -18,7 +18,7 @@ jobs:
             - cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
             - cargo-index-v1-
       - run:
-          name: Generate Cargo.lock
+          name: Generate Cargo.lock and update cargo registry index
           command: |
             cargo generate-lockfile
             git -C /usr/local/cargo/registry/index/github.com-1ecc6299db9ec823 \
@@ -45,22 +45,6 @@ jobs:
           paths:
             - Cargo.lock
             - .circleci/crates.io-index.head
-
-  #rustfmt:
-  #  docker:
-  #    - image: rust:latest
-  #  working_directory: /mnt/crate
-  #  steps:
-  #    - checkout
-  #    - run:
-  #        name: Install rustfmt
-  #        command: rustup component add rustfmt
-  #    - run:
-  #        name: Print version information
-  #        command: cargo fmt -- --version
-  #    - run:
-  #        name: Check rustfmt
-  #        command: cargo fmt -- --check
 
   test_debug:
     docker:
@@ -149,16 +133,12 @@ workflows:
   test_all:
     jobs:
       - cargo_fetch
-      #- rustfmt
       - test_debug:
           requires:
-            #- rustfmt
             - cargo_fetch
       - test_release:
           requires:
-            #- rustfmt
             - cargo_fetch
       - test_nightly:
           requires:
-            #- rustfmt
             - cargo_fetch

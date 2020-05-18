@@ -25,16 +25,20 @@ jobs:
       - name: Generate Cargo.lock
         run: cargo generate-lockfile
 
-      - name: Cache cargo dependencies
+      - name: Cargo registry cache
         id: cache-deps
         uses: actions/cache@v1
         with:
-          path: ~/.cargo/registry/cache
-          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
+          path: ~/.cargo/registry
+          key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
 
       - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
         name: Fetch dependencies
         run: cargo fetch --locked
+
+      - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
+        name: Prune crate sources from cache
+        run: rm -rf ~/.cargo/registry/src
 
       - name: Upload Cargo.lock
         uses: actions/upload-artifact@v2
@@ -70,14 +74,14 @@ jobs:
           profile: minimal
           override: true
 
-      - name: Restore dependency crates from cache
+      - name: Restore cargo registry cache
         uses: actions/cache@v1
         with:
-          path: ~/.cargo/registry/cache
-          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
+          path: ~/.cargo/registry
+          key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
 
-      - name: Restore Cargo state
-        run: cargo fetch --locked
+      - name: Unpack dependency crates
+        run: cargo fetch --locked --offline
 
       - name: Build
         uses: actions-rs/cargo@v1
@@ -123,8 +127,8 @@ jobs:
       - name: Restore dependency crates from cache
         uses: actions/cache@v1
         with:
-          path: ~/.cargo/registry/cache
-          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
+          path: ~/.cargo/registry
+          key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1

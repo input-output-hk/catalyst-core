@@ -87,7 +87,7 @@ jobs:
         continue-on-error: false
         with:
           command: build
-          args: ${{ matrix.mode }} --frozen --offline
+          args: --all-targets ${{ matrix.mode }} --frozen --offline
 
       - name: Run tests
         uses: actions-rs/cargo@v1

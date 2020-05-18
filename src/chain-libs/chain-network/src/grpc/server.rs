@@ -11,6 +11,7 @@ use std::net::SocketAddr;
 
 pub type Server<T> = proto::node_server::NodeServer<NodeService<T>>;
 
+#[derive(Debug)]
 pub struct NodeService<T> {
     inner: T,
 }
@@ -54,7 +55,7 @@ fn remote_addr_to_peer(maybe_addr: Option<SocketAddr>) -> Result<Peer, Status> {
 #[tonic::async_trait]
 impl<T> proto::node_server::Node for NodeService<T>
 where
-    T: Node + Send + Sync + 'static,
+    T: Node,
 {
     async fn handshake(
         &self,

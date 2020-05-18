@@ -5,7 +5,7 @@ use super::{BlockService, FragmentService, GossipService};
 /// An implementation of a blockchain node implements this trait to
 /// serve the network protocols using node's subsystems such as
 /// block storage and fragment processor.
-pub trait Node {
+pub trait Node: Send + Sync + 'static {
     /// The implementation of the block service.
     type BlockService: BlockService + Send + Sync;
 

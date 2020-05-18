@@ -1,10 +1,18 @@
 version: 2.1
 
+executors:
+  rust-stable:
+    docker:
+      - image: circleci/rust:latest
+    working_directory: /home/circleci/build
+  rust-nightly:
+    docker:
+      - image: rustlang/rust:nightly
+    working_directory: /home/build
+
 jobs:
   cargo_fetch:
-    docker:
-      - image: rust:latest
-    working_directory: /mnt/crate
+    executor: rust-stable
     steps:
       - checkout
       - run:
@@ -41,30 +49,24 @@ jobs:
           paths:
             - /usr/local/cargo/registry/cache
       - persist_to_workspace:
-          root: /mnt/crate
+          root: .
           paths:
             - Cargo.lock
             - .circleci/crates.io-index.head
 
   test_debug:
-    docker:
-      - image: rust:latest
-    working_directory: /mnt/crate
+    executor: rust-stable
     steps:
       - test
 
   test_release:
-    docker:
-      - image: rust:latest
-    working_directory: /mnt/crate
+    executor: rust-stable
     steps:
       - test:
           mode: --release
 
   test_nightly:
-    docker:
-      - image: rustlang/rust:nightly
-    working_directory: /mnt/crate
+    executor: rust-nightly
     steps:
       - test
 
@@ -81,7 +83,7 @@ commands:
     steps:
       - checkout
       - attach_workspace:
-          at: /mnt/crate
+          at: .
       - restore_cache:
           name: Restore cargo registry index from cache
           keys:

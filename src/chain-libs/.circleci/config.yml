@@ -79,7 +79,7 @@ commands:
         default: ''
       cargo_behavior:
         type: string
-        default: --verbose --frozen --offline
+        default: --locked --offline --verbose
     steps:
       - checkout
       - attach_workspace:
@@ -92,9 +92,6 @@ commands:
           name: Restore dependency crates from cache
           keys:
             - cargo-deps-v1-{{ checksum "Cargo.lock" }}
-      - run:
-          name: Unpack dependency crates
-          command: cargo fetch --locked --offline
       - run:
           name: Print version information
           command: rustc --version; cargo --version

@@ -216,4 +216,6 @@ const loaded = new Promise(function (resolve, reject) {
 
         resolve(bytes);
     });
-}).then(bytes => wasm(bytes));
+}).then(function (bytes) { return wasm(bytes); }).then(function () {
+    wasm.set_panic_hook();
+});

@@ -143,7 +143,7 @@ var plugin = {
      * @param {function} successCallback returns an object with ignored, and value properties
      * @param {errorCallback} errorCallback
      */
-    conversionTransactionsGetIgnored: function (ptr, successCallback, errorCallback) {
+    conversionGetIgnored: function (ptr, successCallback, errorCallback) {
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_IGNORED_GET_ACTION_TAG, [ptr]);
     },
 

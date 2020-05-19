@@ -8,6 +8,7 @@ use crate::chaineval::{HeaderContentEvalContext, HeaderGPContentEvalContext};
 use crate::chaintypes::{ChainLength, HeaderId};
 use crate::date::BlockDate;
 use crate::fragment::{BlockContentHash, BlockContentSize};
+use crate::key::BftLeaderId;
 use crate::leadership;
 
 use std::fmt::{self, Debug};
@@ -224,6 +225,14 @@ impl Header {
     pub fn get_stakepool_id(&self) -> Option<PoolId> {
         match self.block_version() {
             BlockVersion::KesVrfproof => Some(self.get_cstruct().gp_node_id().into()),
+            _ => None,
+        }
+    }
+
+    #[inline]
+    pub fn get_bft_leader_id(&self) -> Option<BftLeaderId> {
+        match self.block_version() {
+            BlockVersion::Ed25519Signed => Some(self.get_cstruct().bft_leader_id().into()),
             _ => None,
         }
     }

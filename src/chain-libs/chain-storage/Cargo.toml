@@ -8,6 +8,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 chain-core = { path = "../chain-core" }
 rusqlite = { version = "0.23.1", features = ["bundled", "unlock_notify"] }
+sled = "0.31.0"
 thiserror = "1.0"
 
 criterion = { version = "0.3.0", optional = true }
@@ -23,4 +24,9 @@ rand_core = { version = "0.5", features = ["getrandom"] }
 [[bench]]
 harness = false
 name = "storage"
+required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "sled"
 required-features = ["with-bench"]

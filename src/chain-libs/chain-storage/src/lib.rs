@@ -10,6 +10,7 @@ use std::{
 use thiserror::Error;
 
 mod index;
+pub mod sled;
 
 #[derive(Debug, Error)]
 pub enum Error {

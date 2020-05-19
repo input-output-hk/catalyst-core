@@ -74,8 +74,8 @@ where
                 let ids_old = height_to_block_ids
                     .get(height_index)?
                     .unwrap_or(sled::IVec::default());
-                ids_new.write(&ids_old).unwrap();
-                ids_new.write(&block_hash).unwrap();
+                ids_new.write_all(&ids_old).unwrap();
+                ids_new.write_all(&block_hash).unwrap();
                 height_to_block_ids.insert(&height_index, ids_new)?;
 
                 blocks.insert(block_hash, block.serialize_as_vec().unwrap())?;

@@ -74,12 +74,12 @@ impl RecoveringDaedalus {
         address: &OldAddress,
     ) -> Result<(), RecoveryError> {
         if let Some(derivation_path) = self.address_recovering.check_address(address) {
-            self.value_total = self.value_total.saturating_add(pointer.value);
             let key = self.wallet.key(&derivation_path);
             match self.utxos.entry(pointer) {
                 Entry::Occupied(_entry) => return Err(RecoveryError::DuplicatedUtxo),
                 Entry::Vacant(entry) => entry.insert(key),
             };
+            self.value_total = self.value_total.saturating_add(pointer.value);
         }
         Ok(())
     }

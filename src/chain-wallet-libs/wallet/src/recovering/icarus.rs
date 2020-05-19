@@ -184,12 +184,11 @@ impl RecoveringIcarus {
         address: &OldAddress,
     ) -> Result<(), RecoveryError> {
         if let Some(key) = self.check_address(address) {
-            self.value_total = self.value_total.saturating_add(pointer.value);
-
             match self.utxos.entry(pointer) {
                 Entry::Occupied(_entry) => return Err(RecoveryError::DuplicatedUtxo),
                 Entry::Vacant(entry) => entry.insert(key),
             };
+            self.value_total = self.value_total.saturating_add(pointer.value);
         }
         Ok(())
     }

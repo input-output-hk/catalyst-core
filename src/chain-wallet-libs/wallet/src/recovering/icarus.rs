@@ -126,7 +126,7 @@ impl RecoveringIcarus {
         }
     }
 
-    fn check_address(&mut self, address: &OldAddress) -> Option<Address<XPrv>> {
+    pub(super) fn check_address(&mut self, address: &OldAddress) -> Option<Address<XPrv>> {
         let mut accounts = self.accounts.iter_mut();
         let mut result = None;
 

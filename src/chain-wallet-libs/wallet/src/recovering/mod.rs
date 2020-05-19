@@ -249,6 +249,12 @@ mod tests {
         "sxtitePxjp5Y7GQre2hj7LPAnZp7F49KxE6Cg1huwTzjWbfW2Jd7hSgSqsbMzESs8aQC44ng1LJdnLKqiou4m4gGy8",
     ];
 
+    const MNEMONICS3: &str = "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone";
+    const ADDRESSES3: &[&str] = &[
+        "Ae2tdPwUPEZ8og5u4WF5rmSyme5Gvp8RYiLM2u7Vm8CyDQzLN3VYTN895Wk",
+        "Ae2tdPwUPEZEAjEsQsCtBMkLKANxQUEvzLkumPWWYugLeXcgkeMCDH1gnuL",
+    ];
+
     /// not sure yet, but it appears this test is not valid
     ///
     /// the mnemonics may not be correct?
@@ -305,11 +311,10 @@ mod tests {
     }
 
     #[test]
-    fn recover_utxo_twice_fails() {
+    fn recover_daedalus_utxo_twice_fails() {
         use chain_impl_mockchain::{
             fragment::Fragment,
             legacy::{OldAddress, UtxoDeclaration},
-            transaction::UtxoPointer,
             value::Value,
         };
 
@@ -319,14 +324,37 @@ mod tests {
             .build_daedalus()
             .unwrap();
 
-        for address in ADDRESSES1 {
-            use std::str::FromStr as _;
-            let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
-            assert!(wallet.check_address(&addr));
-        }
-
         let address: OldAddress = ADDRESSES1[0].parse().unwrap();
         assert!(wallet.check_address(&address));
+
+        let fragment_value = Value(10);
+        let fragment = Fragment::OldUtxoDeclaration(UtxoDeclaration {
+            addrs: vec![(address, fragment_value)],
+        });
+
+        assert_eq!(wallet.value_total(), Value(0));
+        assert!(wallet.check_fragment(&fragment).is_ok());
+        assert_eq!(wallet.value_total(), fragment_value);
+        assert!(wallet.check_fragment(&fragment).is_err());
+        assert_eq!(wallet.value_total(), fragment_value);
+    }
+
+    #[test]
+    fn recover_yoroi_utxo_twice_fails() {
+        use chain_impl_mockchain::{
+            fragment::Fragment,
+            legacy::{OldAddress, UtxoDeclaration},
+            value::Value,
+        };
+
+        let mut wallet = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS3)
+            .unwrap()
+            .build_yoroi()
+            .unwrap();
+
+        let address: OldAddress = ADDRESSES3[0].parse().unwrap();
+        assert!(wallet.check_address(&address).is_some());
 
         let fragment_value = Value(10);
         let fragment = Fragment::OldUtxoDeclaration(UtxoDeclaration {

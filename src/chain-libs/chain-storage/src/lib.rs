@@ -253,44 +253,7 @@ where
     }
 
     pub fn get_nth_ancestor(&mut self, block_hash: &B::Id, distance: u32) -> Result<B, Error> {
-        let block_hash = block_hash.serialize_as_vec().unwrap();
-
-        let blocks = self
-            .inner
-            .open_tree("blocks")
-            .map_err(|err| Error::BackendError(Box::new(err)))?;
-
-        let descendent = blocks
-            .get(block_hash)
-            .map_err(|err| Error::BackendError(Box::new(err)))
-            .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
-            .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())?;
-
-        if distance == 0 {
-            return Ok(descendent);
-        }
-
-        if distance >= descendent.chain_length() {
-            return Err(Error::BlockNotFound);
-        }
-
-        let mut ancestor_id_bin = descendent.parent_id().serialize_as_vec().unwrap();
-
-        let mut actual_distance = 0;
-
-        while let Some(ancestor) = blocks
-            .get(ancestor_id_bin)
-            .map_err(|err| Error::BackendError(Box::new(err)))?
-            .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())
-        {
-            actual_distance += 1;
-            if actual_distance == distance {
-                return Ok(ancestor);
-            }
-            ancestor_id_bin = ancestor.parent_id().serialize_as_vec().unwrap();
-        }
-
-        Err(Error::BlockNotFound)
+        for_path_to_nth_ancestor(self, block_hash, distance, |_| {})
     }
 }
 

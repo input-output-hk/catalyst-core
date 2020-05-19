@@ -214,6 +214,22 @@ mod test {
     use std::mem;
     use std::time::SystemTime;
 
+    impl chain_storage::Block for Block {
+        type Id = HeaderId;
+
+        fn id(&self) -> Self::Id {
+            self.header.id()
+        }
+
+        fn parent_id(&self) -> Self::Id {
+            self.header.block_parent_hash()
+        }
+
+        fn chain_length(&self) -> u32 {
+            self.header.chain_length().into()
+        }
+    }
+
     /// Get the chain state at block 'k' from memory if present;
     /// otherwise reconstruct it by reading blocks from storage and
     /// applying them to the nearest ancestor state that we do have.

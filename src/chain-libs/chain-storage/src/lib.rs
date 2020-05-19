@@ -1,4 +1,4 @@
-use chain_core::property::{Block, BlockId, Deserialize, Serialize};
+use chain_core::property::{BlockId, Deserialize, Serialize};
 use sled::{TransactionError, Transactional};
 use std::{marker::PhantomData, path::Path};
 use thiserror::Error;
@@ -13,6 +13,14 @@ pub enum Error {
     BlockAlreadyPresent,
     #[error("the parent block is missing for the required write")]
     MissingParent,
+}
+
+pub trait Block: Serialize + Deserialize {
+    type Id: BlockId;
+
+    fn id(&self) -> Self::Id;
+    fn parent_id(&self) -> Self::Id;
+    fn chain_length(&self) -> u32;
 }
 
 #[derive(Clone)]
@@ -93,7 +101,7 @@ where
             .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())
     }
 
-    pub fn get_blocks_by_chain_length(&mut self, _chain_length: u64) -> Result<Vec<B>, Error> {
+    pub fn get_blocks_by_chain_length(&mut self, _chain_length: u32) -> Result<Vec<B>, Error> {
         todo!()
     }
 
@@ -207,7 +215,7 @@ where
         Ok(None)
     }
 
-    pub fn get_nth_ancestor(&mut self, block_hash: &B::Id, distance: u64) -> Result<B, Error> {
+    pub fn get_nth_ancestor(&mut self, block_hash: &B::Id, distance: u32) -> Result<B, Error> {
         let block_hash = block_hash.serialize_as_vec().unwrap();
 
         let blocks = self
@@ -259,7 +267,7 @@ where
 pub fn for_path_to_nth_ancestor<B, F>(
     _store: &mut BlockStore<B>,
     _block_hash: &B::Id,
-    _distance: u64,
+    _distance: u32,
     _callback: F,
 ) -> Result<B, Error>
 where
@@ -324,7 +332,7 @@ pub mod test_utils {
         id: BlockId,
         parent: BlockId,
         date: BlockDate,
-        chain_length: ChainLength,
+        chain_length: u32,
         data: Box<[u8]>,
     }
 
@@ -334,7 +342,7 @@ pub mod test_utils {
                 id: BlockId::generate(),
                 parent: BlockId::zero(),
                 date: BlockDate::from_epoch_slot_id(0, 0),
-                chain_length: ChainLength(1),
+                chain_length: 1,
                 data: data.unwrap_or_default(),
             }
         }
@@ -344,26 +352,14 @@ pub mod test_utils {
                 id: BlockId::generate(),
                 parent: self.id,
                 date: BlockDate::from_epoch_slot_id(self.date.0, self.date.1 + 1),
-                chain_length: ChainLength(self.chain_length.0 + 1),
+                chain_length: self.chain_length,
                 data: data.unwrap_or_default(),
             }
         }
     }
 
-    #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Copy)]
-    pub struct ChainLength(pub u64);
-
-    impl chain_core::property::ChainLength for ChainLength {
-        fn next(&self) -> Self {
-            Self(self.0 + 1)
-        }
-    }
-
-    impl chain_core::property::Block for Block {
+    impl super::Block for Block {
         type Id = BlockId;
-        type Date = BlockDate;
-        type ChainLength = ChainLength;
-        type Version = u8;
 
         fn id(&self) -> Self::Id {
             self.id
@@ -373,15 +369,7 @@ pub mod test_utils {
             self.parent
         }
 
-        fn date(&self) -> Self::Date {
-            self.date
-        }
-
-        fn version(&self) -> Self::Version {
-            0
-        }
-
-        fn chain_length(&self) -> Self::ChainLength {
+        fn chain_length(&self) -> u32 {
             self.chain_length
         }
     }
@@ -395,7 +383,7 @@ pub mod test_utils {
             codec.put_u64(self.parent.0)?;
             codec.put_u32(self.date.0)?;
             codec.put_u32(self.date.1)?;
-            codec.put_u64(self.chain_length.0)?;
+            codec.put_u32(self.chain_length)?;
             codec.put_u64(self.data.len() as u64)?;
             codec.put_bytes(&self.data)?;
             Ok(())
@@ -411,7 +399,7 @@ pub mod test_utils {
                 id: BlockId(codec.get_u64()?),
                 parent: BlockId(codec.get_u64()?),
                 date: BlockDate(codec.get_u32()?, codec.get_u32()?),
-                chain_length: ChainLength(codec.get_u64()?),
+                chain_length: codec.get_u32()?,
                 data: {
                     let length = codec.get_u64()?;
                     codec.get_bytes(length as usize)?.into_boxed_slice()
@@ -424,8 +412,9 @@ pub mod test_utils {
 #[cfg(test)]
 pub mod tests {
     use super::test_utils::{Block, BlockId};
+    use super::Block as _;
     use super::*;
-    use chain_core::property::{Block as _, BlockId as _};
+    use chain_core::property::BlockId as _;
     use rand_core::{OsRng, RngCore};
 
     const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
@@ -492,7 +481,7 @@ pub mod tests {
             let block = pick_from_vector(&mut rng, &blocks);
             assert_eq!(&store.get_block(&block.id()).unwrap(), block);
 
-            let distance = rng.next_u64() % block.chain_length().0;
+            let distance = rng.next_u32() % block.chain_length();
             total_distance += distance;
 
             let ancestor_info = for_path_to_nth_ancestor(&mut store, &block.id(), distance, |_| {
@@ -501,13 +490,13 @@ pub mod tests {
             .unwrap();
 
             assert_eq!(
-                ancestor_info.chain_length().0 + distance,
-                block.chain_length().0
+                ancestor_info.chain_length() + distance,
+                block.chain_length()
             );
 
             let ancestor = store.get_block(&ancestor_info.id()).unwrap();
 
-            assert_eq!(ancestor.chain_length().0 + distance, block.chain_length().0);
+            assert_eq!(ancestor.chain_length() + distance, block.chain_length());
         }
 
         let blocks_per_test = blocks_fetched as f64 / nr_tests as f64;

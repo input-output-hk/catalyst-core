@@ -1,0 +1,12 @@
+openapi: 3.0.3
+
+info:
+  title: VIT as a Service Rest API
+  description: VaaS Rest API v0
+  version: 0.0.1
+  contact:
+    url: ''
+
+servers:
+  - url: 'http://localhost'
+  

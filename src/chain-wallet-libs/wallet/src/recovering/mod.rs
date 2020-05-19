@@ -24,6 +24,8 @@ pub enum RecoveryError {
 
     #[error("Missing entropy, either missing the mnemonics or need to generate a new wallet")]
     MissingEntropy,
+    #[error("Tried to recover same utxo more than once, either the function was called twice or the block is malformed")]
+    DuplicatedUtxo,
 }
 
 #[derive(Default)]

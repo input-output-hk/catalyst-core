@@ -26,7 +26,9 @@ fn daedalus_wallet1() {
     let settings = state.settings().expect("valid initial settings");
     let address = account.account_id().address(settings.discrimination());
 
-    daedalus.check_fragments(state.initial_contents());
+    daedalus
+        .check_fragments(state.initial_contents())
+        .expect("failed to check fragments");
 
     assert_eq!(daedalus.value_total().as_ref(), &WALLET_VALUE);
 
@@ -60,7 +62,9 @@ fn daedalus_wallet2() {
     let settings = state.settings().expect("valid initial settings");
     let address = account.account_id().address(settings.discrimination());
 
-    daedalus.check_fragments(state.initial_contents());
+    daedalus
+        .check_fragments(state.initial_contents())
+        .expect("failed to check fragments");
 
     assert_eq!(daedalus.value_total().as_ref(), &WALLET_VALUE);
 

@@ -305,6 +305,42 @@ mod tests {
     }
 
     #[test]
+    fn recover_utxo_twice_fails() {
+        use chain_impl_mockchain::{
+            fragment::Fragment,
+            legacy::{OldAddress, UtxoDeclaration},
+            transaction::UtxoPointer,
+            value::Value,
+        };
+
+        let mut wallet = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS1)
+            .unwrap()
+            .build_daedalus()
+            .unwrap();
+
+        for address in ADDRESSES1 {
+            use std::str::FromStr as _;
+            let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
+            assert!(wallet.check_address(&addr));
+        }
+
+        let address: OldAddress = ADDRESSES1[0].parse().unwrap();
+        assert!(wallet.check_address(&address));
+
+        let fragment_value = Value(10);
+        let fragment = Fragment::OldUtxoDeclaration(UtxoDeclaration {
+            addrs: vec![(address, fragment_value)],
+        });
+
+        assert_eq!(wallet.value_total(), Value(0));
+        assert!(wallet.check_fragment(&fragment).is_ok());
+        assert_eq!(wallet.value_total(), fragment_value);
+        assert!(wallet.check_fragment(&fragment).is_err());
+        assert_eq!(wallet.value_total(), fragment_value);
+    }
+
+    #[test]
     #[ignore]
     fn recover_yoroi_paperwallet() {
         /*

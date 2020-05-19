@@ -209,7 +209,7 @@ mod test {
 
     use chain_addr::Discrimination;
     use chain_core::property::Block as _;
-    use chain_storage::{BlockStore, StoreType};
+    use chain_storage::BlockStore;
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
     use std::mem;
     use std::time::SystemTime;
@@ -352,7 +352,8 @@ mod test {
         let mut multiverse = Multiverse::new();
         let slot_duration = 10u8;
         let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
-        let mut store = BlockStore::new(StoreType::Memory).unwrap();
+        let file = tempfile::TempDir::new().unwrap();
+        let mut store = BlockStore::new(file.path()).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();
@@ -412,7 +413,8 @@ mod test {
         let mut multiverse = Multiverse::new();
         let slot_duration = 10u8;
         let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
-        let mut store = BlockStore::new(StoreType::Memory).unwrap();
+        let file = tempfile::TempDir::new().unwrap();
+        let mut store = BlockStore::new(file.path()).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();

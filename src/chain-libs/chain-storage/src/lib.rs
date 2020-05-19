@@ -1,6 +1,6 @@
 use chain_core::property::{Block, BlockId, Deserialize, Serialize};
 use sled::{TransactionError, Transactional};
-use std::{marker::PhantomData, path::PathBuf};
+use std::{marker::PhantomData, path::Path};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -21,23 +21,12 @@ pub struct BlockStore<B> {
     dummy: PhantomData<B>,
 }
 
-pub enum StoreType {
-    Memory,
-    File(PathBuf),
-}
-
 impl<B> BlockStore<B>
 where
     B: Block,
 {
-    pub fn new(store_type: StoreType) -> Result<Self, Error> {
-        let inner = match store_type {
-            StoreType::Memory => todo!("in-memory storage is not implemented yet"),
-            StoreType::File(filename) => {
-                sled::open(filename).map_err(|e| Error::BackendError(Box::new(e)))
-            }
-        }?;
-
+    pub fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+        let inner = sled::open(path).map_err(|e| Error::BackendError(Box::new(e)))?;
         Ok(Self {
             inner,
             dummy: PhantomData,
@@ -470,7 +459,8 @@ pub mod tests {
 
     #[test]
     pub fn test_put_get() {
-        let mut store = BlockStore::new(StoreType::Memory).unwrap();
+        let file = tempfile::TempDir::new().unwrap();
+        let mut store = BlockStore::new(file.path()).unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
 
         match store.put_tag("tip", &BlockId::zero()) {
@@ -490,7 +480,8 @@ pub mod tests {
     #[test]
     pub fn test_nth_ancestor() {
         let mut rng = OsRng;
-        let mut store = BlockStore::new(StoreType::Memory).unwrap();
+        let file = tempfile::TempDir::new().unwrap();
+        let mut store = BlockStore::new(file.path()).unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
 
         let mut blocks_fetched = 0;
@@ -532,7 +523,8 @@ pub mod tests {
     #[test]
     fn simultaneous_read_write() {
         let mut rng = OsRng;
-        let mut conn = BlockStore::new(StoreType::Memory).unwrap();
+        let file = tempfile::TempDir::new().unwrap();
+        let mut conn = BlockStore::new(file.path()).unwrap();
 
         let genesis_block = Block::genesis(None);
         conn.put_block(&genesis_block).unwrap();

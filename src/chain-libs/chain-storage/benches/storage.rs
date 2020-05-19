@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use rand_core::{OsRng, RngCore};
 
 use chain_core::property::Block as _;
-use chain_storage::{test_utils::Block, BlockStore, StoreType};
+use chain_storage::{test_utils::Block, BlockStore};
 
 const BLOCK_DATA_LENGTH: usize = 1024;
 
@@ -19,7 +19,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         path.push("test.sled");
         path
     };
-    let mut store = BlockStore::new(StoreType::File(path)).unwrap();
+    let mut store = BlockStore::new(path).unwrap();
     store.put_block(&genesis_block).unwrap();
 
     let mut blocks = vec![genesis_block];

@@ -209,7 +209,7 @@ mod test {
 
     use chain_addr::Discrimination;
     use chain_core::property::Block as _;
-    use chain_storage::BlockStoreBuilder;
+    use chain_storage::{BlockStore, StoreType};
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
     use std::mem;
     use std::time::SystemTime;
@@ -220,7 +220,7 @@ mod test {
     pub fn get_from_storage(
         multiverse: &mut Multiverse<Ledger>,
         k: HeaderId,
-        store: &mut chain_storage::BlockStoreConnection<crate::block::Block>,
+        store: &mut chain_storage::BlockStore<crate::block::Block>,
     ) -> Result<Ref<Ledger>, chain_storage::Error> {
         if let Some(r) = multiverse.get_ref(&k) {
             return Ok(r);
@@ -244,9 +244,9 @@ mod test {
                 break state_ref;
             }
 
-            let cur_block_info = store.get_block_info(&cur_hash).unwrap();
-            blocks_to_apply.push(cur_hash);
-            cur_hash = cur_block_info.parent_id();
+            let cur_block = store.get_block(&cur_hash).unwrap();
+            blocks_to_apply.push(cur_hash.clone());
+            cur_hash = cur_block.parent_id();
         };
 
         /*
@@ -258,7 +258,7 @@ mod test {
         */
 
         for hash in blocks_to_apply.iter().rev() {
-            let block = store.get_block(&hash).unwrap().0;
+            let block = store.get_block(&hash).unwrap();
             let header_meta = block.header.to_content_eval_context();
             let state = state_ref.state();
             let state = state
@@ -352,10 +352,7 @@ mod test {
         let mut multiverse = Multiverse::new();
         let slot_duration = 10u8;
         let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
-        let mut store = BlockStoreBuilder::file("file:test_multiverse?mode=memory&cache=shared")
-            .build()
-            .connect()
-            .unwrap();
+        let mut store = BlockStore::new(StoreType::Memory).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();
@@ -415,11 +412,7 @@ mod test {
         let mut multiverse = Multiverse::new();
         let slot_duration = 10u8;
         let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
-        let mut store =
-            BlockStoreBuilder::file("file:test_remove_shorter_chain?mode=memory&cache=shared")
-                .build()
-                .connect()
-                .unwrap();
+        let mut store = BlockStore::new(StoreType::Memory).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();

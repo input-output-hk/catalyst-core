@@ -2,7 +2,7 @@ use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use rand_core::{OsRng, RngCore};
 
 use chain_core::property::Block as _;
-use chain_storage::{test_utils::Block, BlockStoreBuilder};
+use chain_storage::{test_utils::Block, BlockStore, StoreType};
 
 const BLOCK_DATA_LENGTH: usize = 1024;
 
@@ -16,12 +16,11 @@ fn criterion_benchmark(c: &mut Criterion) {
     let tempdir = tempfile::TempDir::new().unwrap();
     let path = {
         let mut path = tempdir.path().to_path_buf();
-        path.push("test.sqlite");
+        path.push("test.sled");
         path
     };
-    let store = BlockStoreBuilder::file(path).build();
-    let mut conn = store.connect().unwrap();
-    conn.put_block(&genesis_block).unwrap();
+    let mut store = BlockStore::new(StoreType::File(path)).unwrap();
+    store.put_block(&genesis_block).unwrap();
 
     let mut blocks = vec![genesis_block];
 
@@ -34,7 +33,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 blocks.push(block.clone());
                 block
             },
-            |block| conn.put_block(&block).unwrap(),
+            |block| store.put_block(&block).unwrap(),
             BatchSize::PerIteration,
         )
     });
@@ -47,7 +46,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                     .unwrap()
                     .id()
             },
-            |block_id| conn.get_block(&block_id).unwrap(),
+            |block_id| store.get_block(&block_id).unwrap(),
             BatchSize::PerIteration,
         )
     });

@@ -5,12 +5,13 @@ use crate::{
     fee::LinearFee,
     fragment::Fragment,
     key::EitherEd25519SecretKey,
-    testing::{builders::make_witness, data::Wallet},
+    testing::{make_witness, data::Wallet},
     transaction::{
         AccountBindingSignature, Payload, SetAuthData, SetIOs, SingleAccountBindingSignature,
-        TxBuilder, TxBuilderState,
+        TxBuilder, TxBuilderState, Input, Witness
     },
     value::Value,
+    ledger::ledger::OutputAddress
 };
 
 pub struct TestTxCertBuilder {
@@ -23,11 +24,11 @@ impl TestTxCertBuilder {
         Self { block0_hash, fee }
     }
 
-    fn block0_hash(&self) -> &HeaderId {
+    pub fn block0_hash(&self) -> &HeaderId {
         &self.block0_hash
     }
 
-    fn fee(&self, certificate: &Certificate) -> Value {
+    pub fn fee(&self, certificate: &Certificate) -> Value {
         let payload: CertificatePayload = certificate.into();
         self.fee.calculate(Some(payload.as_slice()), 1, 0)
     }
@@ -36,28 +37,39 @@ impl TestTxCertBuilder {
         &self,
         builder: TxBuilderState<SetIOs<P>>,
         funder: &Wallet,
-        cert: &Certificate,
+        inputs: &[Input],
+        outputs: &[OutputAddress],
+        should_make_witness: bool
     ) -> TxBuilderState<SetAuthData<P>> {
         //utxo not supported yet
-        let input = funder.make_input_with_value(self.fee(cert));
-        let builder = builder.set_ios(&[input], &[]);
-        let witness = make_witness(
-            self.block0_hash(),
-            &funder.as_account_data(),
-            &builder.get_auth_data_for_witness().hash(),
-        );
-        builder.set_witnesses(&[witness])
+        let builder = builder.set_ios(inputs, outputs);
+
+        let witnesses: Vec<Witness> = {
+            if should_make_witness {
+                let witness = make_witness(
+                    self.block0_hash(),
+                    &funder.as_account_data(),
+                    &builder.get_auth_data_for_witness().hash());
+                vec![witness]
+            } else {
+                vec![]
+            }
+        };
+        builder.set_witnesses(&witnesses)
     }
 
     fn fragment(
         &self,
         cert: &Certificate,
         keys: Vec<EitherEd25519SecretKey>,
+        inputs: &[Input],
+        outputs: &[OutputAddress],
+        make_witness: bool,
         funder: &Wallet,
     ) -> Fragment {
         match cert {
             Certificate::StakeDelegation(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, inputs, outputs, make_witness);
                 let signature =
                     AccountBindingSignature::new_single(&builder.get_auth_data(), |d| {
                         keys[0].sign_slice(&d.0)
@@ -66,35 +78,35 @@ impl TestTxCertBuilder {
                 Fragment::StakeDelegation(tx)
             }
             Certificate::PoolRegistration(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, inputs, outputs, make_witness);
                 let signature = pool_owner_sign(&keys, &builder);
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::PoolRegistration(tx)
             }
             Certificate::PoolRetirement(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, inputs, outputs, make_witness);
                 let signature = pool_owner_sign(&keys, &builder);
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::PoolRetirement(tx)
             }
             Certificate::PoolUpdate(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, inputs, outputs, make_witness);
                 let signature = pool_owner_sign(&keys, &builder);
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::PoolUpdate(tx)
             }
             Certificate::OwnerStakeDelegation(s) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, cert);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(s), &funder, inputs, outputs, make_witness);
                 let tx = builder.set_payload_auth(&());
                 Fragment::OwnerStakeDelegation(tx)
             }
             Certificate::VotePlan(vp) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(vp), &funder, cert);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(vp), &funder, inputs, outputs, make_witness);
                 let tx = builder.set_payload_auth(&());
                 Fragment::VotePlan(tx)
             }
             Certificate::VoteCast(vp) => {
-                let builder = self.set_initial_ios(TxBuilder::new().set_payload(vp), &funder, cert);
+                let builder = self.set_initial_ios(TxBuilder::new().set_payload(vp), &funder, inputs, outputs, make_witness);
                 let tx = builder.set_payload_auth(&());
                 Fragment::VoteCast(tx)
             }
@@ -116,7 +128,8 @@ impl TestTxCertBuilder {
             .cloned()
             .map(|owner| owner.private_key())
             .collect();
-        self.fragment(certificate, keys, funder)
+        let input = funder.make_input_with_value(self.fee(certificate));
+        self.fragment(certificate, keys,  &[input], &[], true, funder )
     }
 }
 
@@ -139,4 +152,68 @@ pub fn pool_owner_signed<P: Payload>(
         sigs.push((i as u8, sig))
     }
     PoolOwnersSigned { signatures: sigs }
+}
+
+/// this struct can create any transaction including not valid one
+/// in order to test robustness of ledger
+pub struct FaultTolerantTxCertBuilder{
+    builder: TestTxCertBuilder,
+    cert: Certificate, 
+    funder: Wallet
+}
+
+impl FaultTolerantTxCertBuilder {
+
+    pub fn new(block0_hash: HeaderId, fee: LinearFee, cert: Certificate, funder: Wallet) -> Self {
+        Self { 
+            builder: TestTxCertBuilder::new(block0_hash, fee),
+            cert: cert,
+            funder: funder
+        }
+    }
+
+    pub fn transaction_no_witness(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let input = self.funder.make_input_with_value(self.builder.fee(&self.cert));
+        self.builder.fragment(&self.cert, keys, &[input], &[], false, &self.funder)
+    }
+
+    pub fn transaction_input_to_low(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let input_value = Value(self.builder.fee(&self.cert).0 - 1);
+        let input = self.funder.make_input_with_value(input_value);
+        self.builder.fragment(&self.cert, keys, &[input], &[], false, &self.funder)
+    }
+
+    pub fn transaction_with_input_output(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let input_value = Value(self.builder.fee(&self.cert).0 + 1);
+        let input = self.funder.make_input_with_value(input_value);
+        let output = self.funder.make_output_with_value(Value(1));
+        self.builder.fragment(&self.cert, keys, &[input], &[output], false, &self.funder)
+    }
+
+    pub fn transaction_with_output_only(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let output = self.funder.make_output_with_value(self.builder.fee(&self.cert));
+        self.builder.fragment(&self.cert, keys, &[], &[output], false, &self.funder)
+    }
+    
+    pub fn transaction_with_input_only(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let input = self.funder.make_input_with_value(self.builder.fee(&self.cert));
+        self.builder.fragment(&self.cert, keys.clone(), &[input], &[], false, &self.funder)
+    }
+
+    pub fn transaction_with_witness(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let input = self.funder.make_input_with_value(self.builder.fee(&self.cert));
+        self.builder.fragment(&self.cert, keys, &[input], &[], false, &self.funder)
+    }
 }

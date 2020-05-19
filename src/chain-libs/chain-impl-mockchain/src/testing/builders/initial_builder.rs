@@ -1,11 +1,13 @@
 use crate::{
-    certificate::{Certificate, PoolUpdate},
+    ledger::ledger::OutputAddress,
+    certificate::{Certificate, PoolUpdate, VotePlan, VoteCast},
     fragment::Fragment,
     key::EitherEd25519SecretKey,
     testing::{
         builders::*,
         data::{StakePool, Wallet},
     },
+    value::Value,
     transaction::*,
 };
 use std::vec::Vec;
@@ -21,7 +23,7 @@ pub fn create_initial_stake_pool_update(
         .cloned()
         .map(|owner| owner.private_key())
         .collect();
-    fragment(cert, keys)
+    fragment(cert, keys, &[], &[])
 }
 
 pub fn create_initial_stake_pool_registration(
@@ -34,7 +36,33 @@ pub fn create_initial_stake_pool_registration(
         .cloned()
         .map(|owner| owner.private_key())
         .collect();
-    fragment(cert, keys)
+    fragment(cert, keys, &[], &[])
+}
+
+pub fn create_initial_vote_plan(
+    vote_plan: &VotePlan,
+    owners: &[Wallet],
+) -> Fragment {
+    let cert: Certificate = vote_plan.clone().into();
+    let keys: Vec<EitherEd25519SecretKey> = owners
+        .iter()
+        .cloned()
+        .map(|owner| owner.private_key())
+        .collect();
+    fragment(cert, keys, &[], &[])
+}
+
+pub fn create_initial_vote_cast(
+    vote_cast: &VoteCast,
+    owners: &[Wallet],
+) -> Fragment {
+    let cert: Certificate = vote_cast.clone().into();
+    let keys: Vec<EitherEd25519SecretKey> = owners
+        .iter()
+        .cloned()
+        .map(|owner| owner.private_key())
+        .collect();
+    fragment(cert, keys, &[], &[])
 }
 
 pub fn create_initial_transaction(wallet: &Wallet) -> Fragment {
@@ -49,19 +77,21 @@ pub fn create_initial_transaction(wallet: &Wallet) -> Fragment {
 pub fn create_initial_stake_pool_delegation(stake_pool: &StakePool, wallet: &Wallet) -> Fragment {
     let cert = build_stake_delegation_cert(&stake_pool.info(), &wallet.as_account_data());
     let keys: Vec<EitherEd25519SecretKey> = vec![wallet.private_key()];
-    fragment(cert, keys)
+    fragment(cert, keys, &[], &[])
 }
 
 fn set_initial_ios<P: Payload>(
     builder: TxBuilderState<SetIOs<P>>,
+    inputs: &[Input], 
+    outputs: &[OutputAddress]
 ) -> TxBuilderState<SetAuthData<P>> {
-    builder.set_ios(&[], &[]).set_witnesses(&[])
+    builder.set_ios(inputs, outputs).set_witnesses(&[])
 }
 
-fn fragment(cert: Certificate, keys: Vec<EitherEd25519SecretKey>) -> Fragment {
+fn fragment(cert: Certificate, keys: Vec<EitherEd25519SecretKey>, inputs: &[Input], outputs: &[OutputAddress]) -> Fragment {
     match cert {
         Certificate::StakeDelegation(s) => {
-            let builder = set_initial_ios(TxBuilder::new().set_payload(&s));
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s),inputs,outputs);
             let signature = AccountBindingSignature::new_single(&builder.get_auth_data(), |d| {
                 keys[0].sign_slice(&d.0)
             });
@@ -69,17 +99,64 @@ fn fragment(cert: Certificate, keys: Vec<EitherEd25519SecretKey>) -> Fragment {
             Fragment::StakeDelegation(tx)
         }
         Certificate::PoolRegistration(s) => {
-            let builder = set_initial_ios(TxBuilder::new().set_payload(&s));
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s),inputs,outputs);
             let signature = pool_owner_sign(&keys, &builder);
             let tx = builder.set_payload_auth(&signature);
             Fragment::PoolRegistration(tx)
         }
         Certificate::PoolUpdate(s) => {
-            let builder = set_initial_ios(TxBuilder::new().set_payload(&s));
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s),inputs,outputs);
             let signature = pool_owner_sign(&keys, &builder);
             let tx = builder.set_payload_auth(&signature);
             Fragment::PoolUpdate(tx)
+        },
+        Certificate::VotePlan(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s),inputs,outputs);
+            let tx = builder.set_payload_auth(&());
+            Fragment::VotePlan(tx)
+        }
+        Certificate::VoteCast(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s),inputs,outputs);
+            let tx = builder.set_payload_auth(&());
+            Fragment::VoteCast(tx)
         }
         _ => unreachable!(),
+    }
+}
+
+pub struct InitialFaultTolerantTxCertBuilder{
+    cert: Certificate, 
+    funder: Wallet
+}
+
+impl InitialFaultTolerantTxCertBuilder {
+
+    pub fn new(cert: Certificate, funder: Wallet) -> Self {
+        Self { 
+            cert: cert,
+            funder: funder
+        }
+    }
+
+    pub fn transaction_with_input_output(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let input = self.funder.make_input_with_value(Value(1));
+        let output = self.funder.make_output_with_value(Value(1));
+        fragment(self.cert.clone(), keys, &[input], &[output])
+    }
+
+    pub fn transaction_with_output_only(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let output = self.funder.make_output_with_value(Value(1));
+        fragment(self.cert.clone(), keys, &[], &[output])
+    }
+    
+    pub fn transaction_with_input_only(&self) -> Fragment
+    {
+        let keys = vec![self.funder.private_key()];
+        let input = self.funder.make_input_with_value(Value(1));
+        fragment(self.cert.clone(), keys.clone(), &[input], &[])
     }
 }

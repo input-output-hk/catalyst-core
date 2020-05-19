@@ -3,7 +3,7 @@ use crate::{
     block::BlockDate,
     certificate::{
         ExternalProposalId, Proposal, Proposals, PushProposal, VoteCastPayload, VoteOptions,
-        VotePlan,
+        VotePlan, VoteCast
     },
 };
 use chain_core::property::BlockDate as BlockDateProp;
@@ -61,5 +61,9 @@ impl VoteTestGen {
 
     pub fn vote_cast_payload() -> VoteCastPayload {
         VoteCastPayload::new(TestGen::bytes().to_vec())
+    }
+
+    pub fn vote_cast_for(vote_plan: &VotePlan) -> VoteCast {
+        VoteCast::new(vote_plan.to_id(), 0, VoteTestGen::vote_cast_payload())
     }
 }

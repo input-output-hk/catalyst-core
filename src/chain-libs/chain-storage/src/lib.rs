@@ -1,6 +1,6 @@
 use chain_core::property::{BlockId, Deserialize, Serialize};
 use sled::{TransactionError, Transactional};
-use std::{marker::PhantomData, path::Path};
+use std::{io::Write, marker::PhantomData, path::Path};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -55,7 +55,7 @@ where
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let result =
-            (&blocks, &height_to_block_ids).transaction(move |(blocks, _height_to_block_ids)| {
+            (&blocks, &height_to_block_ids).transaction(|(blocks, height_to_block_ids)| {
                 let block_hash = block.id().serialize_as_vec().unwrap();
 
                 if blocks.get(block_hash.clone())?.is_some() {
@@ -69,7 +69,14 @@ where
                     }
                 }
 
-                // TODO add to height_to_block_ids
+                let height_index = block.chain_length().to_le_bytes();
+                let mut ids_new = vec![];
+                let ids_old = height_to_block_ids
+                    .get(height_index)?
+                    .unwrap_or(sled::IVec::default());
+                ids_new.write(&ids_old).unwrap();
+                ids_new.write(&block_hash).unwrap();
+                height_to_block_ids.insert(&height_index, ids_new)?;
 
                 blocks.insert(block_hash, block.serialize_as_vec().unwrap())?;
 
@@ -101,8 +108,38 @@ where
             .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())
     }
 
-    pub fn get_blocks_by_chain_length(&mut self, _chain_length: u32) -> Result<Vec<B>, Error> {
-        todo!()
+    pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<B>, Error> {
+        let blocks = self
+            .inner
+            .open_tree("blocks")
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let height_to_block_ids = self
+            .inner
+            .open_tree("height_to_block_ids")
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let height_index = chain_length.to_le_bytes();
+        let ids_raw = height_to_block_ids
+            .get(height_index)
+            .map_err(|err| Error::BackendError(Box::new(err)))?
+            .unwrap_or(sled::IVec::default());
+        let mut ids_raw_reader: &[u8] = &ids_raw;
+
+        let mut ids = vec![];
+
+        while ids_raw_reader.len() != 0 {
+            ids.push(B::Id::deserialize(&mut ids_raw_reader).unwrap());
+        }
+
+        ids.iter()
+            .map(|id| {
+                blocks
+                    .get(id.serialize_as_vec().unwrap())
+                    .map(|maybe_raw_block| B::deserialize(&maybe_raw_block.unwrap()[..]).unwrap())
+                    .map_err(|err| Error::BackendError(Box::new(err)))
+            })
+            .collect()
     }
 
     pub fn put_tag(&mut self, tag_name: &str, block_hash: &B::Id) -> Result<(), Error> {
@@ -174,7 +211,7 @@ where
         &mut self,
         ancestor_id: &B::Id,
         descendent_id: &B::Id,
-    ) -> Result<Option<u64>, Error> {
+    ) -> Result<Option<u32>, Error> {
         if ancestor_id == descendent_id {
             return Ok(Some(0));
         }
@@ -192,9 +229,9 @@ where
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())?;
 
-        // TODO immediately return chain_length if the ancestor_id is
-        // B::Id::zero() once we are able to convert ChainLength to plain
-        // numbers
+        if descendent_id == &B::Id::zero() {
+            return Ok(Some(descendent.chain_length()));
+        }
 
         let mut ancestor_id_bin = descendent.parent_id().serialize_as_vec().unwrap();
 
@@ -233,10 +270,9 @@ where
             return Ok(descendent);
         }
 
-        // TODO uncomment when the number conversions are available
-        // if distance > descendent.chain_length() {
-        //     return Err(Error::BlockNotFound);
-        // }
+        if distance >= descendent.chain_length() {
+            return Err(Error::BlockNotFound);
+        }
 
         let mut ancestor_id_bin = descendent.parent_id().serialize_as_vec().unwrap();
 
@@ -265,16 +301,44 @@ where
 /// The travelling algorithm uses back links to skip over parts of the chain,
 /// so the callback will not be invoked for all blocks in the linear sequence.
 pub fn for_path_to_nth_ancestor<B, F>(
-    _store: &mut BlockStore<B>,
-    _block_hash: &B::Id,
-    _distance: u32,
-    _callback: F,
+    store: &mut BlockStore<B>,
+    block_hash: &B::Id,
+    distance: u32,
+    mut callback: F,
 ) -> Result<B, Error>
 where
     B: Block,
     F: FnMut(&B),
 {
-    todo!()
+    let block_hash = block_hash.serialize_as_vec().unwrap();
+
+    let blocks = store
+        .inner
+        .open_tree("blocks")
+        .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+    let mut current = blocks
+        .get(block_hash)
+        .map_err(|err| Error::BackendError(Box::new(err)))
+        .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
+        .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())?;
+
+    if distance >= current.chain_length() {
+        return Err(Error::BlockNotFound);
+    }
+
+    let target = current.chain_length() - distance;
+
+    while target < current.chain_length() {
+        callback(&current);
+        current = blocks
+            .get(current.parent_id().serialize_as_vec().unwrap())
+            .map_err(|err| Error::BackendError(Box::new(err)))
+            .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
+            .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())?;
+    }
+
+    Ok(current)
 }
 
 #[cfg(any(test, feature = "with-bench"))]

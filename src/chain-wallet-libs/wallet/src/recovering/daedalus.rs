@@ -1,3 +1,4 @@
+use super::RecoveryError;
 use crate::transaction::{Dump, WitnessBuilder};
 use chain_impl_mockchain::{
     fragment::Fragment,
@@ -11,17 +12,14 @@ use hdkeygen::{
     rindex::{AddressRecovering, Wallet},
     Key,
 };
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
 
 pub struct RecoveringDaedalus {
     wallet: Wallet,
     address_recovering: AddressRecovering,
     value_total: Value,
-    utxos: Vec<RecoveredUtxo>,
-}
-
-struct RecoveredUtxo {
-    pointer: UtxoPointer,
-    key: Key<XPrv, Rindex<rindex::Address>>,
+    utxos: HashMap<UtxoPointer, Key<XPrv, Rindex<rindex::Address>>>,
 }
 
 impl RecoveringDaedalus {
@@ -31,7 +29,7 @@ impl RecoveringDaedalus {
             wallet,
             address_recovering,
             value_total: Value::zero(),
-            utxos: Vec::with_capacity(128),
+            utxos: HashMap::with_capacity(128),
         }
     }
 
@@ -40,13 +38,17 @@ impl RecoveringDaedalus {
     }
 
     /// convenient function to parse a block and check for owned token
-    pub fn check_fragments<'a>(&mut self, fragments: impl Iterator<Item = &'a Fragment>) {
+    pub fn check_fragments<'a>(
+        &mut self,
+        fragments: impl Iterator<Item = &'a Fragment>,
+    ) -> Result<(), RecoveryError> {
         for fragment in fragments {
-            self.check_fragment(fragment)
+            self.check_fragment(fragment)?
         }
+        Ok(())
     }
 
-    pub fn check_fragment(&mut self, fragment: &Fragment) {
+    pub fn check_fragment(&mut self, fragment: &Fragment) -> Result<(), RecoveryError> {
         let fragment_id = fragment.hash();
         if let Fragment::OldUtxoDeclaration(utxos) = fragment {
             for (output_index, (address, value)) in utxos.addrs.iter().enumerate() {
@@ -56,30 +58,38 @@ impl RecoveringDaedalus {
                     value: *value,
                 };
 
-                self.check(pointer, address);
+                self.check(pointer, address)?;
             }
         }
+        Ok(())
     }
 
     pub fn check_address(&self, address: &OldAddress) -> bool {
         self.address_recovering.check_address(address).is_some()
     }
 
-    pub fn check(&mut self, pointer: UtxoPointer, address: &OldAddress) {
+    pub fn check(
+        &mut self,
+        pointer: UtxoPointer,
+        address: &OldAddress,
+    ) -> Result<(), RecoveryError> {
         if let Some(derivation_path) = self.address_recovering.check_address(address) {
             self.value_total = self.value_total.saturating_add(pointer.value);
             let key = self.wallet.key(&derivation_path);
-            self.utxos.push(RecoveredUtxo { pointer, key })
+            match self.utxos.entry(pointer) {
+                Entry::Occupied(_entry) => return Err(RecoveryError::DuplicatedUtxo),
+                Entry::Vacant(entry) => entry.insert(key),
+            };
         }
+        Ok(())
     }
-
     /// dump all the inputs
     pub fn dump_in(&self, dump: &mut Dump) {
-        for utxo in self.utxos.iter() {
+        for (pointer, key) in self.utxos.iter() {
             dump.push(
-                Input::from_utxo(utxo.pointer),
+                Input::from_utxo(*pointer),
                 WitnessBuilder::OldUtxo {
-                    xprv: utxo.key.as_ref().clone(),
+                    xprv: key.as_ref().clone(),
                 },
             )
         }

@@ -17,11 +17,14 @@ const CHANGE_EXTERNAL: SoftDerivation = DerivationPath::<Bip44<bip44::Account>>:
 const CHANGE_INTERNAL: SoftDerivation = DerivationPath::<Bip44<bip44::Account>>::INTERNAL;
 const DEFAULT_GAG_LIMIT: u32 = 20;
 
+use super::RecoveryError;
+use std::collections::hash_map::Entry;
+
 pub struct RecoveringIcarus {
     wallet: Wallet,
     accounts: Vec<RecoveringAccount>,
     value_total: Value,
-    utxos: Vec<RecoveredUtxo>,
+    utxos: HashMap<UtxoPointer, Address<XPrv>>,
 }
 
 struct RecoveringAccount {
@@ -30,11 +33,6 @@ struct RecoveringAccount {
     next_index: SoftDerivation,
     soft_derivation_range_length: u32,
     addresses: HashMap<OldAddress, Address<XPrv>>,
-}
-
-struct RecoveredUtxo {
-    pointer: UtxoPointer,
-    key: Address<XPrv>,
 }
 
 impl RecoveringAccount {
@@ -92,7 +90,7 @@ impl RecoveringIcarus {
             wallet,
             accounts: Vec::new(),
             value_total: Value::zero(),
-            utxos: Vec::with_capacity(128),
+            utxos: HashMap::with_capacity(128),
         };
 
         wallet.populate_first_account();
@@ -154,13 +152,17 @@ impl RecoveringIcarus {
     }
 
     /// convenient function to parse a block and check for owned token
-    pub fn check_fragments<'a>(&mut self, fragments: impl Iterator<Item = &'a Fragment>) {
+    pub fn check_fragments<'a>(
+        &mut self,
+        fragments: impl Iterator<Item = &'a Fragment>,
+    ) -> Result<(), RecoveryError> {
         for fragment in fragments {
-            self.check_fragment(fragment)
+            self.check_fragment(fragment)?
         }
+        Ok(())
     }
 
-    pub fn check_fragment(&mut self, fragment: &Fragment) {
+    pub fn check_fragment(&mut self, fragment: &Fragment) -> Result<(), RecoveryError> {
         let fragment_id = fragment.hash();
         if let Fragment::OldUtxoDeclaration(utxos) = fragment {
             for (output_index, (address, value)) in utxos.addrs.iter().enumerate() {
@@ -170,25 +172,35 @@ impl RecoveringIcarus {
                     value: *value,
                 };
 
-                self.check(pointer, address);
+                self.check(pointer, address)?;
             }
         }
+        Ok(())
     }
 
-    pub fn check(&mut self, pointer: UtxoPointer, address: &OldAddress) {
+    pub fn check(
+        &mut self,
+        pointer: UtxoPointer,
+        address: &OldAddress,
+    ) -> Result<(), RecoveryError> {
         if let Some(key) = self.check_address(address) {
             self.value_total = self.value_total.saturating_add(pointer.value);
-            self.utxos.push(RecoveredUtxo { pointer, key })
+
+            match self.utxos.entry(pointer) {
+                Entry::Occupied(_entry) => return Err(RecoveryError::DuplicatedUtxo),
+                Entry::Vacant(entry) => entry.insert(key),
+            };
         }
+        Ok(())
     }
 
     /// dump all the inputs
     pub fn dump_in(&self, dump: &mut Dump) {
-        for utxo in self.utxos.iter() {
+        for (pointer, key) in self.utxos.iter() {
             dump.push(
-                Input::from_utxo(utxo.pointer),
+                Input::from_utxo(*pointer),
                 WitnessBuilder::OldUtxo {
-                    xprv: utxo.key.key().as_ref().clone(),
+                    xprv: key.key().as_ref().clone(),
                 },
             )
         }

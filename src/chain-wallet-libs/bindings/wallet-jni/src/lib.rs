@@ -1,4 +1,4 @@
-use jni::objects::{JClass, JString};
+use jni::objects::{JClass, JObject, JString, JValue};
 use jni::sys::{jbyte, jbyteArray, jint, jlong};
 use jni::JNIEnv;
 use std::ptr::{null, null_mut};
@@ -196,7 +196,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transactionsSize(
     _env: JNIEnv,
     _: JClass,
-    conversion: ConversionPtr,
+    conversion: jlong,
 ) -> jint {
     let conversion = conversion as ConversionPtr;
     // TODO: i don't think this can actually overflow, but probably best to have someone confirm that too
@@ -214,7 +214,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transac
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transactionsGet(
     env: JNIEnv,
     _: JClass,
-    conversion: ConversionPtr,
+    conversion: jlong,
     index: jint,
 ) -> jbyteArray {
     let conversion = conversion as ConversionPtr;
@@ -258,7 +258,54 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_transac
     array
 }
 
-// TODO: get convert ignored values
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+/// The `callback` parameter it's expected to be a java object with a `call` method that takes 2 parameters
+///
+/// long value: will returns the total value lost into dust inputs
+/// long ignored: will returns the number of dust utxos
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_ignored(
+    env: JNIEnv,
+    _: JClass,
+    conversion: jlong,
+    callback: JObject,
+) {
+    let conversion = conversion as ConversionPtr;
+    let mut value_out: u64 = 0;
+    let mut ignored_out: usize = 0;
+
+    let result = unsafe { wallet_convert_ignored(conversion, &mut value_out, &mut ignored_out) };
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+    }
+
+    let result = env.call_method(
+        callback,
+        "call",
+        "(JJ)V",
+        &[
+            JValue::Long(value_out as jlong),
+            JValue::Long(ignored_out as jlong),
+        ],
+    );
+
+    // throw error as exception only the call didn't already threw an error
+    // if this happens then there is nothing to do, but it's a bit more gentle than a panic
+    // this can happen for example if the type signature of the callback is invalid
+    if let (Err(error), false) = (
+        result,
+        env.exception_check()
+            .expect("error checking if exception was thrown"),
+    ) {
+        let _ = env.throw(error.to_string());
+    }
+}
 
 #[no_mangle]
 pub extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_delete(
@@ -276,7 +323,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Conversion_delete(
 pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_setState(
     env: JNIEnv,
     _: JClass,
-    wallet: WalletPtr,
+    wallet: jlong,
     value: jlong,
     counter: jlong,
 ) {

@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class WalletTest {
     @Test
@@ -46,7 +47,13 @@ public class WalletTest {
 
         final byte[] transaction = Conversion.transactionsGet(conversionPtr, 0);
 
-        assertEquals(723, transaction.length);
+        Conversion.ignored(conversionPtr, new Conversion.IgnoredCallback() {
+            @Override
+            public void call(long value, long ignored) {
+                assertEquals(1, value);
+                assertEquals(1, ignored);
+            }
+        });
 
         Conversion.delete(conversionPtr);
         Settings.delete(settingsPtr);

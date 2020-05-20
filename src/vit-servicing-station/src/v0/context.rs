@@ -22,7 +22,11 @@ impl Context {
 }
 
 pub fn new_default_context() -> SharedContext {
-    let chain_data = match load_file_data(Path::new("../../../static/v0/chain_data.json")) {
+    new_shared_context(Path::new("./resources/v0/chain_data.json"))
+}
+
+pub fn new_shared_context(file_path: &Path) -> SharedContext {
+    let chain_data = match load_file_data(file_path) {
         Ok(data) => data,
         Err(err) => panic!("Error reading chain data file: {}", err),
     };
@@ -39,4 +43,14 @@ fn load_file_data(file_path: &Path) -> std::io::Result<String> {
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
     Ok(contents)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::v0::context::new_default_context;
+
+    #[test]
+    fn load_default() {
+        new_default_context();
+    }
 }

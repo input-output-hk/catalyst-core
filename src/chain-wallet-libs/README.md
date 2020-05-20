@@ -24,13 +24,13 @@ Currently we provide support for many platforms of the high level wallet library
 
 ### Android
 
-| Target                               | released binaries |
-|--------------------------------------|:------:|
-| `aarch64-linux-android`              |   ✓    |
-| `arm-linux-androideabi`              |   ✓    |
-| `armv7-linux-androideabi`            |   ✓    |
-| `i686-linux-android`                 |   ✓    |
-| `x86_64-linux-android`               |   ✓    |
+| Target                    | released binaries |
+| ------------------------- | :---------------: |
+| `aarch64-linux-android`   |         ✓         |
+| `arm-linux-androideabi`   |         ✓         |
+| `armv7-linux-androideabi` |         ✓         |
+| `i686-linux-android`      |         ✓         |
+| `x86_64-linux-android`    |         ✓         |
 
 This includes bindings for Android Kotlin already packaged in a AAR package.
 
@@ -40,46 +40,46 @@ _under construction_
 
 ### iOS
 
-| Target                               | released binaries |
-|--------------------------------------|:------:|
-| `aarch64-apple-ios`                  |   ✓    |
-| `x86_64-apple-ios`                   |   ✓    |
+| Target              | released binaries |
+| ------------------- | :---------------: |
+| `aarch64-apple-ios` |         ✓         |
+| `x86_64-apple-ios`  |         ✓         |
 
 _Swift package in development..._
 
 ### Linux
 
-| Target                               | released binaries |
-|--------------------------------------|:------:|
-| `aarch64-unknown-linux-gnu`          |   ✓    |
-| `arm-unknown-linux-gnueabi`          |   ✓    |
-| `armv7-unknown-linux-gnueabihf`      |   ✓    |
-| `mips64el-unknown-linux-gnueabi64`   |   ✓    |
-| `powerpc64el-unknown-linux-gnu`      |   ✓    |
-| `x86_64-unknown-linux-gnu`           |   ✓    |
-| `x86_64-unknown-linux-musl`          |   ✓    |
+| Target                             | released binaries |
+| ---------------------------------- | :---------------: |
+| `aarch64-unknown-linux-gnu`        |         ✓         |
+| `arm-unknown-linux-gnueabi`        |         ✓         |
+| `armv7-unknown-linux-gnueabihf`    |         ✓         |
+| `mips64el-unknown-linux-gnueabi64` |         ✓         |
+| `powerpc64el-unknown-linux-gnu`    |         ✓         |
+| `x86_64-unknown-linux-gnu`         |         ✓         |
+| `x86_64-unknown-linux-musl`        |         ✓         |
 
 ### MacOS
 
-| Target                               | released binaries |
-|--------------------------------------|:------:|
-| `x86_64-apple-darwin`                |   ✓    |
+| Target                | released binaries |
+| --------------------- | :---------------: |
+| `x86_64-apple-darwin` |         ✓         |
 
 ### Wasm (and JavaScript)
 
-| Target                                  | released binaries |
-|-----------------------------------------|:------:|
-| `wasm32-unknown-unknown`                |   ✓    |
+| Target                   | released binaries |
+| ------------------------ | :---------------: |
+| `wasm32-unknown-unknown` |         ✓         |
 
 This include Javascript generated binaries (with typescript annotations)
 for webjs and nodejs.
 
 ### Windows
 
-| Target                               | released binaries |
-|--------------------------------------|:------:|
-| `x86_64-pc-windows-gnu`              |   ✓    |
-| `x86_64-pc-windows-msvc`             |   ✓    |
+| Target                   | released binaries |
+| ------------------------ | :---------------: |
+| `x86_64-pc-windows-gnu`  |         ✓         |
+| `x86_64-pc-windows-msvc` |         ✓         |
 
 # Development
 
@@ -97,6 +97,12 @@ be formatted for better readability all must be formatted with `rustfmt`.
 Cargo clippy is ran on this repository at every PRs. This will come in handy to
 prevent some readability issues but also potential mistakes in the C bindings
 when manipulating raw pointers.
+
+## Documentation
+
+- [Getting Started](doc/getting_started.md)
+- [Wallet Cryptography and Encoding](doc/CRYPTO.md)
+- [Enhanced Mnemonic Encoding (EME)](doc/EME.md)
 
 [rust-lang]: https://www.rust-lang.org/
 [Jörmungandr]: https://input-output-hk.github.io/jormungandr

@@ -1,6 +1,6 @@
 use chain_core::property::{BlockId, Deserialize, Serialize};
 use sled::{TransactionError, Transactional};
-use std::{io::Write, marker::PhantomData, path::Path};
+use std::{io::{BufRead, Write}, marker::PhantomData, path::Path};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -29,6 +29,35 @@ pub struct BlockStore<B> {
     dummy: PhantomData<B>,
 }
 
+pub struct BlockInfo<Id: BlockId> {
+    pub id: Id,
+    pub parent_id: Id,
+    pub chain_length: u32,
+}
+
+impl<Id: BlockId> BlockInfo<Id> {
+    fn serialize(&self) -> Vec<u8> {
+        let mut w = Vec::new();
+        self.id.serialize(&mut w).unwrap();
+        self.parent_id.serialize(&mut w).unwrap();
+        w.write_all(&self.chain_length.to_le_bytes()[..]).unwrap();
+        w
+    }
+
+    fn deserialize<R: BufRead>(mut r: R) -> Self {
+        let id = Id::deserialize(&mut r).unwrap();
+        let parent_id = Id::deserialize(&mut r).unwrap();
+        let mut chain_length_bytes = [0u8; 4];
+        r.read(&mut chain_length_bytes).unwrap();
+        let chain_length = u32::from_le_bytes(chain_length_bytes);
+        BlockInfo {
+            id,
+            parent_id,
+            chain_length,
+        }
+    }
+} 
+
 impl<B> BlockStore<B>
 where
     B: Block,
@@ -49,22 +78,27 @@ where
             .open_tree("blocks")
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
+        let info = self
+            .inner
+            .open_tree("info")
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
         let height_to_block_ids = self
             .inner
             .open_tree("height_to_block_ids")
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let result =
-            (&blocks, &height_to_block_ids).transaction(|(blocks, height_to_block_ids)| {
+            (&blocks, &info, &height_to_block_ids).transaction(|(blocks, info, height_to_block_ids)| {
                 let block_hash = block.id().serialize_as_vec().unwrap();
 
-                if blocks.get(block_hash.clone())?.is_some() {
+                if info.get(block_hash.clone())?.is_some() {
                     return Ok(Err(Error::BlockAlreadyPresent));
                 }
 
                 if block.parent_id() != B::Id::zero() {
                     let parent_id = block.parent_id().serialize_as_vec().unwrap();
-                    if blocks.get(parent_id)?.is_none() {
+                    if info.get(parent_id)?.is_none() {
                         return Ok(Err(Error::MissingParent));
                     }
                 }
@@ -78,7 +112,15 @@ where
                 ids_new.write_all(&block_hash).unwrap();
                 height_to_block_ids.insert(&height_index, ids_new)?;
 
-                blocks.insert(block_hash, block.serialize_as_vec().unwrap())?;
+                blocks.insert(block_hash.clone(), block.serialize_as_vec().unwrap())?;
+
+                let block_info = BlockInfo {
+                    id: block.id(),
+                    parent_id: block.parent_id(),
+                    chain_length: block.chain_length(),
+                };
+
+                info.insert(block_hash, &block_info.serialize()[..])?;
 
                 Ok(Ok(()))
             });
@@ -106,6 +148,24 @@ where
             .map_err(|err| Error::BackendError(Box::new(err)))
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())
+    }
+
+    pub fn get_block_info(&mut self, block_hash: &B::Id) -> Result<BlockInfo<B::Id>, Error> {
+        let block_hash = block_hash.serialize_as_vec().unwrap();
+
+        let info = self
+            .inner
+            .open_tree("info")
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+        
+        info
+            .get(block_hash)
+            .map_err(|err| Error::BackendError(Box::new(err)))
+            .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
+            .map(|block_info_bin| {
+                let mut block_info_reader: &[u8] = &block_info_bin;
+                BlockInfo::deserialize(&mut block_info_reader)
+            })
     }
 
     pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<B>, Error> {
@@ -143,9 +203,9 @@ where
     }
 
     pub fn put_tag(&mut self, tag_name: &str, block_hash: &B::Id) -> Result<(), Error> {
-        let blocks = self
+        let info = self
             .inner
-            .open_tree("blocks")
+            .open_tree("info")
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let tags = self
@@ -153,10 +213,10 @@ where
             .open_tree("tags")
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        let result = (&blocks, &tags).transaction(move |(blocks, tags)| {
+        let result = (&info, &tags).transaction(move |(info, tags)| {
             let block_hash = block_hash.serialize_as_vec().unwrap();
 
-            if blocks.get(block_hash.clone())?.is_none() {
+            if info.get(block_hash.clone())?.is_none() {
                 return Ok(Err(Error::BlockNotFound));
             }
 
@@ -189,12 +249,12 @@ where
     pub fn block_exists(&mut self, block_hash: &B::Id) -> Result<bool, Error> {
         let block_hash = block_hash.serialize_as_vec().unwrap();
 
-        let blocks = self
+        let info = self
             .inner
-            .open_tree("blocks")
+            .open_tree("info")
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        blocks
+        info
             .get(block_hash)
             .map(|maybe_block| maybe_block.is_some())
             .map_err(|err| Error::BackendError(Box::new(err)))
@@ -218,41 +278,47 @@ where
 
         let descendent_id_bin = descendent_id.serialize_as_vec().unwrap();
 
-        let blocks = self
+        let info = self
             .inner
-            .open_tree("blocks")
+            .open_tree("info")
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        let descendent = blocks
+        let descendent: BlockInfo<B::Id> = info
             .get(descendent_id_bin)
             .map_err(|err| Error::BackendError(Box::new(err)))
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
-            .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())?;
+            .map(|block_info_bin| {
+                let mut block_info_reader: &[u8] = &block_info_bin;
+                BlockInfo::deserialize(&mut block_info_reader)
+            })?;
 
         if descendent_id == &B::Id::zero() {
-            return Ok(Some(descendent.chain_length()));
+            return Ok(Some(descendent.chain_length));
         }
 
-        let mut ancestor_id_bin = descendent.parent_id().serialize_as_vec().unwrap();
+        let mut ancestor_id_bin = descendent.parent_id.serialize_as_vec().unwrap();
 
         let mut distance = 0;
 
-        while let Some(ancestor) = blocks
+        while let Some(ancestor) = info
             .get(ancestor_id_bin)
             .map_err(|err| Error::BackendError(Box::new(err)))?
-            .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())
+            .map(|block_info_bin| {
+                let mut block_info_reader: &[u8] = &block_info_bin;
+                BlockInfo::<B::Id>::deserialize(&mut block_info_reader)
+            })
         {
             distance += 1;
-            if &ancestor.id() == ancestor_id {
+            if &ancestor.id == ancestor_id {
                 return Ok(Some(distance));
             }
-            ancestor_id_bin = ancestor.parent_id().serialize_as_vec().unwrap();
+            ancestor_id_bin = ancestor.parent_id.serialize_as_vec().unwrap();
         }
 
         Ok(None)
     }
 
-    pub fn get_nth_ancestor(&mut self, block_hash: &B::Id, distance: u32) -> Result<B, Error> {
+    pub fn get_nth_ancestor(&mut self, block_hash: &B::Id, distance: u32) -> Result<BlockInfo<B::Id>, Error> {
         for_path_to_nth_ancestor(self, block_hash, distance, |_| {})
     }
 }
@@ -268,37 +334,43 @@ pub fn for_path_to_nth_ancestor<B, F>(
     block_hash: &B::Id,
     distance: u32,
     mut callback: F,
-) -> Result<B, Error>
+) -> Result<BlockInfo<B::Id>, Error>
 where
     B: Block,
-    F: FnMut(&B),
+    F: FnMut(&BlockInfo<B::Id>),
 {
     let block_hash = block_hash.serialize_as_vec().unwrap();
 
-    let blocks = store
+    let info = store
         .inner
-        .open_tree("blocks")
+        .open_tree("info")
         .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-    let mut current = blocks
+    let mut current = info
         .get(block_hash)
         .map_err(|err| Error::BackendError(Box::new(err)))
         .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
-        .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())?;
+        .map(|block_info_bin| {
+            let mut block_info_reader: &[u8] = &block_info_bin;
+            BlockInfo::deserialize(&mut block_info_reader)
+        })?;
 
-    if distance >= current.chain_length() {
+    if distance >= current.chain_length {
         return Err(Error::BlockNotFound);
     }
 
-    let target = current.chain_length() - distance;
+    let target = current.chain_length - distance;
 
-    while target < current.chain_length() {
+    while target < current.chain_length {
         callback(&current);
-        current = blocks
-            .get(current.parent_id().serialize_as_vec().unwrap())
+        current = info
+            .get(current.parent_id.serialize_as_vec().unwrap())
             .map_err(|err| Error::BackendError(Box::new(err)))
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
-            .map(|block_bin| B::deserialize(&block_bin[..]).unwrap())?;
+            .map(|block_info_bin| {
+                let mut block_info_reader: &[u8] = &block_info_bin;
+                BlockInfo::deserialize(&mut block_info_reader)
+            })?;
     }
 
     Ok(current)
@@ -486,8 +558,11 @@ pub mod tests {
 
         let genesis_block = Block::genesis(None);
         store.put_block(&genesis_block).unwrap();
-        let genesis_block_restored = store.get_block(&genesis_block.id()).unwrap();
-        assert_eq!(genesis_block, genesis_block_restored);
+        let genesis_block_restored = store.get_block_info(&genesis_block.id()).unwrap();
+
+        assert_eq!(genesis_block.id(), genesis_block_restored.id);
+        assert_eq!(genesis_block.parent_id(), genesis_block_restored.parent_id);
+        assert_eq!(genesis_block.chain_length(), genesis_block_restored.chain_length);
 
         store.put_tag("tip", &genesis_block.id()).unwrap();
         assert_eq!(store.get_tag("tip").unwrap().unwrap(), genesis_block.id());
@@ -517,11 +592,11 @@ pub mod tests {
             .unwrap();
 
             assert_eq!(
-                ancestor_info.chain_length() + distance,
+                ancestor_info.chain_length + distance,
                 block.chain_length()
             );
 
-            let ancestor = store.get_block(&ancestor_info.id()).unwrap();
+            let ancestor = store.get_block(&ancestor_info.id).unwrap();
 
             assert_eq!(ancestor.chain_length() + distance, block.chain_length());
         }

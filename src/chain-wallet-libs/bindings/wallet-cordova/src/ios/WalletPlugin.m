@@ -21,9 +21,9 @@
             iohk_jormungandr_wallet_recover([mnemonics UTF8String], nil, 0, &wallet_ptr);
 
         if (result != nil) {
-            char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);
+            char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);      
             NSString* error_desc = [NSString stringWithCString:error_desc_raw
-                                                      encoding:NSUTF8StringEncoding];
+                                                      encoding:NSUTF8StringEncoding];    
 
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
                                              messageAsString:error_desc];
@@ -133,13 +133,80 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)SETTINGS_DELETE:(CDVInvokedUrlCommand*)command
+- (void)WALLET_CONVERT:(CDVInvokedUrlCommand*)command
 {
-    NSString* settings_ptr_raw = [command.arguments objectAtIndex:0];
+    CDVPluginResult* pluginResult = nil;
+    NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];
+    NSString* settings_ptr_raw = [command.arguments objectAtIndex:1];
+
+    WalletPtr wallet_ptr = (WalletPtr)[wallet_ptr_raw longLongValue];
     SettingsPtr settings_ptr = (SettingsPtr)[settings_ptr_raw longLongValue];
-    iohk_jormungandr_wallet_delete_settings(settings_ptr);
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+
+    ConversionPtr conversion_ptr = nil;
+    ErrorPtr result = iohk_jormungandr_wallet_convert(wallet_ptr, settings_ptr, &conversion_ptr);
+
+    if (result != nil) {
+        char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);
+        NSString* error_desc = [NSString stringWithCString:error_desc_raw
+                                                  encoding:NSUTF8StringEncoding];
+
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:error_desc];
+
+        free(error_desc_raw);
+        iohk_jormungandr_wallet_delete_error(result);
+    } else {
+        NSString* returnValue = [NSString stringWithFormat:@"%ld", (uintptr_t)conversion_ptr];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                         messageAsString:returnValue];
+    }
+
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)CONVERSION_TRANSACTIONS_SIZE:(CDVInvokedUrlCommand*)command
+{
+    NSString* conversion_ptr_raw = [command.arguments objectAtIndex:0];
+    ConversionPtr conversion_ptr = (ConversionPtr)[conversion_ptr_raw longLongValue];
+    uintptr_t value = iohk_jormungandr_wallet_convert_transactions_size(conversion_ptr);
+    NSString* returnValue = [NSString stringWithFormat:@"%ld", (uintptr_t)value];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                      messageAsString:returnValue];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)CONVERSION_TRANSACTIONS_GET:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+    NSString* conversion_ptr_raw = [command.arguments objectAtIndex:0];
+    NSString* index_raw = [command.arguments objectAtIndex:0];
+
+    ConversionPtr conversion_ptr = (ConversionPtr)[conversion_ptr_raw longLongValue];
+    uintptr_t index = (uintptr_t)[index_raw longLongValue];
+
+    uint8_t* transaction_out_ptr = nil;
+    uintptr_t transaction_size;
+
+    ErrorPtr result = iohk_jormungandr_wallet_convert_transactions_get(conversion_ptr,
+        index,
+        &transaction_out_ptr,
+        &transaction_size);
+
+    if (result != nil) {
+        char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);
+        NSString* error_desc = [NSString stringWithCString:error_desc_raw
+                                                  encoding:NSUTF8StringEncoding];
+
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:error_desc];
+
+        free(error_desc_raw);
+        iohk_jormungandr_wallet_delete_error(result);
+    } else {
+        NSData* returnValue = [NSData dataWithBytes:transaction_out_ptr length:transaction_size];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                    messageAsArrayBuffer:returnValue];
+    }
 }
 
 - (void)WALLET_DELETE:(CDVInvokedUrlCommand*)command
@@ -151,4 +218,23 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)SETTINGS_DELETE:(CDVInvokedUrlCommand*)command
+{
+    NSString* settings_ptr_raw = [command.arguments objectAtIndex:0];
+    SettingsPtr settings_ptr = (SettingsPtr)[settings_ptr_raw longLongValue];
+    iohk_jormungandr_wallet_delete_settings(settings_ptr);
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)CONVERSION_DELETE:(CDVInvokedUrlCommand*)command
+{
+    NSString* conversion_ptr_raw = [command.arguments objectAtIndex:0];
+    ConversionPtr conversion_ptr = (ConversionPtr)[conversion_ptr_raw longLongValue];
+    iohk_jormungandr_wallet_delete_conversion(conversion_ptr);
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 @end
+

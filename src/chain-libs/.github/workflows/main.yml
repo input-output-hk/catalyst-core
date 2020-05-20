@@ -1,59 +1,117 @@
+name: CI
+
 on:
   push:
     branches:
       - master
   pull_request:
 
-name: Continuous integration
-
 jobs:
-  check:
-    name: Check
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  update_deps:
+    name: Update dependencies
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+
+      - uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
-        continue-on-error: false
+
+      - name: Generate Cargo.lock
+        run: cargo generate-lockfile
+
+      - name: Cargo registry cache
+        id: cache-deps
+        uses: actions/cache@v1
         with:
-          command: check
+          path: ~/.cargo/registry
+          key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
+
+      - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
+        name: Fetch dependencies
+        run: cargo fetch --locked
+
+      - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
+        name: Prune crate sources from cache
+        run: rm -rf ~/.cargo/registry/src
+
+      - name: Upload Cargo.lock
+        uses: actions/upload-artifact@v2
+        with:
+          name: lockfile
+          path: Cargo.lock
 
   test:
-    name: Test Suite
+    name: Test
+    needs: update_deps
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        toolchain: [stable]
+        mode: ['', '--release']
+        include:
+          - os: ubuntu-latest
+            toolchain: nightly
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+
+      - uses: actions/checkout@v2
+
+      - name: Download Cargo.lock
+        uses: actions/download-artifact@v2
         with:
+          name: lockfile
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
           profile: minimal
-          toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
+
+      - name: Restore cargo registry cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: build
+          args: --all-targets ${{ matrix.mode }} --locked --offline
+
+      - name: Run tests
+        uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: test
+          args: ${{ matrix.mode }} --locked --offline
 
   lints:
-    name: Rust lints
+    name: Lints
+    needs: update_deps
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+
+      - uses: actions/checkout@v2
+
+      - name: Download Cargo.lock
+        uses: actions/download-artifact@v2
+        with:
+          name: lockfile
+
       - uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
-          override: true
+          profile: minimal
           components: rustfmt, clippy
+          override: true
 
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1
@@ -61,6 +119,12 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+      - name: Restore dependency crates from cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: cargo-registry-v1-${{ hashFiles('Cargo.lock') }}
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1

@@ -1,6 +1,5 @@
 use serde_json::Value;
 use std::collections::HashMap;
-use std::error::Error;
 use std::io::Read;
 use std::path::Path;
 use std::sync::Arc;
@@ -47,8 +46,26 @@ fn load_file_data(file_path: &Path) -> std::io::Result<String> {
 }
 
 #[cfg(test)]
-mod test {
-    use crate::v0::context::new_default_context;
+pub mod test {
+    use super::*;
+    use crate::v0::context::{new_default_context, SharedContext};
+
+    /// Build a fake context, returns the id, the fake data and the context object to check
+    /// Returns `(id, data, context)`
+    pub fn fake_data_context() -> (String, ChainData, SharedContext) {
+        // build fake data
+        let data = r#"{"foo" : "bar"}"#;
+        let json_data: ChainData = serde_json::from_str(data).unwrap();
+
+        let id = String::from("foo");
+
+        // build fake context chain data
+        let mut context_data = ChainDataStore::new();
+        context_data.insert(id.clone(), json_data.clone());
+
+        let context = Arc::new(RwLock::new(Context::new(context_data)));
+        (id.clone(), json_data.clone(), context)
+    }
 
     #[test]
     fn load_default() {

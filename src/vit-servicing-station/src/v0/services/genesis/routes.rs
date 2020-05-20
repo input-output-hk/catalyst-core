@@ -9,19 +9,11 @@ pub fn filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let with_context = warp::any().map(move || context.clone());
 
-    let convert_root = warp::path!("convert" / ..);
-
-    let id = warp::path!("id-from-hash" / String)
+    let from_id = warp::path!("id" / String)
         .and(warp::get())
         .and(with_context.clone())
-        .and_then(get_id_from_hash)
+        .and_then(get_genesis_from_id)
         .boxed();
 
-    let hash = warp::path!("hash-from-id" / String)
-        .and(warp::get())
-        .and(with_context.clone())
-        .and_then(get_hash_from_id)
-        .boxed();
-
-    root.and(convert_root.and(id.or(hash))).boxed()
+    root.and(from_id).boxed()
 }

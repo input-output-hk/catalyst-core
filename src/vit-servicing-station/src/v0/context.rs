@@ -6,17 +6,18 @@ use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-pub type ChainData = HashMap<String, Value>;
+pub type ChainData = Value;
+pub type ChainDataStore = HashMap<String, ChainData>;
 
 pub type SharedContext = Arc<RwLock<Context>>;
 
 #[derive(Clone)]
 pub struct Context {
-    pub static_chain_data: ChainData,
+    pub static_chain_data: ChainDataStore,
 }
 
 impl Context {
-    pub fn new(static_chain_data: ChainData) -> Self {
+    pub fn new(static_chain_data: ChainDataStore) -> Self {
         Self { static_chain_data }
     }
 }
@@ -30,7 +31,7 @@ pub fn new_shared_context(file_path: &Path) -> SharedContext {
         Ok(data) => data,
         Err(err) => panic!("Error reading chain data file: {}", err),
     };
-    let static_chain_data: ChainData = match serde_json::from_str(&chain_data) {
+    let static_chain_data: ChainDataStore = match serde_json::from_str(&chain_data) {
         Ok(data) => data,
         Err(err) => panic!("Error parsing chain data file: {}", err),
     };

@@ -208,27 +208,11 @@ mod test {
     };
 
     use chain_addr::Discrimination;
-    use chain_core::property::Block as _;
-    use chain_storage::BlockStore;
+    use chain_core::property::{Block as _, Deserialize, Serialize};
+    use chain_storage::{BlockInfo, BlockStore};
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
     use std::mem;
     use std::time::SystemTime;
-
-    impl chain_storage::Block for Block {
-        type Id = HeaderId;
-
-        fn id(&self) -> Self::Id {
-            self.header.id()
-        }
-
-        fn parent_id(&self) -> Self::Id {
-            self.header.block_parent_hash()
-        }
-
-        fn chain_length(&self) -> u32 {
-            self.header.chain_length().into()
-        }
-    }
 
     /// Get the chain state at block 'k' from memory if present;
     /// otherwise reconstruct it by reading blocks from storage and
@@ -236,7 +220,7 @@ mod test {
     pub fn get_from_storage(
         multiverse: &mut Multiverse<Ledger>,
         k: HeaderId,
-        store: &mut chain_storage::BlockStore<crate::block::Block>,
+        store: &mut chain_storage::BlockStore,
     ) -> Result<Ref<Ledger>, chain_storage::Error> {
         if let Some(r) = multiverse.get_ref(&k) {
             return Ok(r);
@@ -260,9 +244,9 @@ mod test {
                 break state_ref;
             }
 
-            let cur_block = store.get_block(&cur_hash).unwrap();
+            let cur_block = store.get_block_info(cur_hash.serialize_as_vec().unwrap().as_slice()).unwrap();
             blocks_to_apply.push(cur_hash.clone());
-            cur_hash = cur_block.parent_id();
+            cur_hash = Hash::deserialize(&*cur_block.parent_id).unwrap();
         };
 
         /*
@@ -274,7 +258,7 @@ mod test {
         */
 
         for hash in blocks_to_apply.iter().rev() {
-            let block = store.get_block(&hash).unwrap();
+            let block = Block::deserialize(store.get_block(hash.serialize_as_vec().unwrap().as_slice()).unwrap().as_slice()).unwrap();
             let header_meta = block.header.to_content_eval_context();
             let state = state_ref.state();
             let state = state
@@ -375,7 +359,12 @@ mod test {
         let mut date = BlockDate::first();
         let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
-        store.put_block(&genesis_block).unwrap();
+        let genesis_block_info = BlockInfo {
+            id: genesis_block.id().serialize_as_vec().unwrap().into_boxed_slice(),
+            parent_id: genesis_block.parent_id().serialize_as_vec().unwrap().into_boxed_slice(),
+            chain_length: genesis_block.chain_length().into(),
+        };
+        store.put_block(genesis_block.serialize_as_vec().unwrap().as_slice(), genesis_block_info).unwrap();
         let _root = multiverse.add(genesis_block.header.id(), genesis_state.clone());
 
         let mut state = genesis_state;
@@ -388,7 +377,12 @@ mod test {
             state = apply_block(&state, &block);
             assert_eq!(state.chain_length().0, i);
             assert_eq!(state.date, block.date());
-            store.put_block(&block).unwrap();
+            let block_info = BlockInfo {
+                id: block.id().serialize_as_vec().unwrap().into_boxed_slice(),
+                parent_id: block.parent_id().serialize_as_vec().unwrap().into_boxed_slice(),
+                chain_length: block.chain_length().into(),
+            };
+            store.put_block(block.serialize_as_vec().unwrap().as_slice(), block_info).unwrap();
             _ref = Some(multiverse.add(block.id(), state.clone()));
             multiverse.gc();
             ids.push(block.header.id());
@@ -436,7 +430,12 @@ mod test {
         let mut date = BlockDate::first();
         let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
-        store.put_block(&genesis_block).unwrap();
+        let genesis_block_info = BlockInfo {
+            id: genesis_block.id().serialize_as_vec().unwrap().into_boxed_slice(),
+            parent_id: genesis_block.parent_id().serialize_as_vec().unwrap().into_boxed_slice(),
+            chain_length: genesis_block.chain_length().into(),
+        };
+        store.put_block(genesis_block.serialize_as_vec().unwrap().as_slice(), genesis_block_info).unwrap();
         let _root = multiverse.add(genesis_block.header.id(), genesis_state.clone());
 
         let mut state = genesis_state;
@@ -450,7 +449,12 @@ mod test {
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
-            store.put_block(&block).unwrap();
+            let block_info = BlockInfo {
+                id: block.id().serialize_as_vec().unwrap().into_boxed_slice(),
+                parent_id: block.parent_id().serialize_as_vec().unwrap().into_boxed_slice(),
+                chain_length: block.chain_length().into(),
+            };
+            store.put_block(block.serialize_as_vec().unwrap().as_slice(), block_info).unwrap();
             _ref = Some(multiverse.add(block.id(), state.clone()));
             ids.push(block.header.id());
             parent = block.header.id();
@@ -471,7 +475,12 @@ mod test {
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
-            store.put_block(&block).unwrap();
+            let block_info = BlockInfo {
+                id: block.id().serialize_as_vec().unwrap().into_boxed_slice(),
+                parent_id: block.parent_id().serialize_as_vec().unwrap().into_boxed_slice(),
+                chain_length: block.chain_length().into(),
+            };
+            store.put_block(block.serialize_as_vec().unwrap().as_slice(), block_info).unwrap();
             _ref = Some(multiverse.add(block.id(), state.clone()));
             ids.push(block.header.id());
             parent = block.header.id();

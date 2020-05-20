@@ -5,19 +5,20 @@ authors = ["dev@iohk.io"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
+[features]
+with-bench = ["chain-core", "criterion", "tempfile", "rand_core"]
+
 [dependencies]
-chain-core = { path = "../chain-core" }
 sled = "0.31.0"
 thiserror = "1.0"
 
+chain-core = { path = "../chain-core", optional = true }
 criterion = { version = "0.3.0", optional = true }
 rand_core = { version = "0.5", features = ["getrandom"], optional = true }
 tempfile = { version = "3.1.0", optional = true }
 
-[features]
-with-bench = ["criterion", "tempfile", "rand_core"]
-
 [dev-dependencies]
+chain-core = { path = "../chain-core" }
 rand_core = { version = "0.5", features = ["getrandom"] }
 tempfile = "3.1.0"
 

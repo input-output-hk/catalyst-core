@@ -51,6 +51,24 @@ async function walletTotalFunds (successCallback, errorCallback, opts) {
     }
 }
 
+async function walletSetState (successCallback, errorCallback, opts) {
+    await loaded;
+    if (opts && typeof (opts[0]) === 'number') {
+        const walletPtr = opts[0];
+        const value = opts[1];
+        const counter = opts[2];
+        const wallet = wasm.Wallet.__wrap(walletPtr);
+        try {
+            wallet.set_state(value, counter);
+            successCallback();
+        } catch (err) {
+            errorCallback(err);
+        }
+    } else {
+        errorCallback('invalid wallet pointer');
+    }
+}
+
 async function walletId (successCallback, errorCallback, opts) {
     await loaded;
     if (opts && typeof (opts[0]) === 'number') {
@@ -118,6 +136,24 @@ async function conversionTransactionsGet (successCallback, errorCallback, opts) 
     }
 }
 
+async function conversionIgnored (successCallback, errorCallback, opts) {
+    await loaded;
+    if (opts && typeof (opts[0]) === 'number') {
+        const conversionPtr = opts[0];
+        const conversion = wasm.Conversion.__wrap(conversionPtr);
+
+        try {
+            const ignored = conversion.num_ignored();
+            const value = conversion.total_value_ignored();
+            successCallback({ ignored, value });
+        } catch (err) {
+            errorCallback(err);
+        }
+    } else {
+        errorCallback('invalid or missing conversion pointer');
+    }
+}
+
 async function walletDelete (successCallback, errorCallback, opts) {
     await loaded;
     if (opts && typeof (opts[0]) === 'number') {
@@ -156,9 +192,11 @@ const bindings = {
     WALLET_RETRIEVE_FUNDS: walletRetrieveFunds,
     WALLET_TOTAL_FUNDS: walletTotalFunds,
     WALLET_ID: walletId,
+    WALLET_SET_STATE: walletSetState,
     WALLET_CONVERT: walletConvert,
     CONVERSION_TRANSACTIONS_SIZE: conversionTransactionsSize,
     CONVERSION_TRANSACTIONS_GET: conversionTransactionsGet,
+    CONVERSION_IGNORED: conversionIgnored,
     WALLET_DELETE: walletDelete,
     SETTINGS_DELETE: settingsDelete,
     CONVERSION_DELETE: conversionDelete
@@ -169,7 +207,13 @@ require('cordova/exec/proxy').add('WalletPlugin', bindings);
 // this is in done in order to make it work regardless of where the html file is located
 const appPath = global.require('electron').remote.app.getAppPath();
 const binaryPath = global.require('path').join(appPath, 'wallet_js_bg.wasm');
-// TODO: we could probably do this async
-const bytes = global.require('fs').readFileSync(binaryPath);
 
-const loaded = wasm(bytes);
+const loaded = new Promise(function (resolve, reject) {
+    global.require('fs').readFile(binaryPath, function (err, bytes) {
+        if (err) {
+            reject(err);
+        }
+
+        resolve(bytes);
+    });
+}).then(bytes => wasm(bytes));

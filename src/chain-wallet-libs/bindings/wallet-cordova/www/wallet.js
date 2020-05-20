@@ -7,8 +7,10 @@ const WALLET_RETRIEVE_FUNDS_ACTION_TAG = 'WALLET_RETRIEVE_FUNDS';
 const WALLET_TOTAL_FUNDS_ACTION_TAG = 'WALLET_TOTAL_FUNDS';
 const WALLET_ID_TAG = 'WALLET_ID';
 const WALLET_CONVERT_ACTION_TAG = 'WALLET_CONVERT';
+const WALLET_SET_STATE_ACTION_TAG = 'WALLET_SET_STATE';
 const CONVERSION_TRANSACTIONS_SIZE_ACTION_TAG = 'CONVERSION_TRANSACTIONS_SIZE';
 const CONVERSION_TRANSACTIONS_GET_ACTION_TAG = 'CONVERSION_TRANSACTIONS_GET';
+const CONVERSION_IGNORED_GET_ACTION_TAG = 'CONVERSION_IGNORED';
 const WALLET_DELETE_ACTION_TAG = 'WALLET_DELETE';
 const SETTINGS_DELETE_ACTION_TAG = 'SETTINGS_DELETE';
 const CONVERSION_DELETE_ACTION_TAG = 'CONVERSION_DELETE';
@@ -82,6 +84,32 @@ var plugin = {
     },
 
     /**
+     *
+     * update the wallet account state
+     *
+     * this is the value retrieved from any jormungandr endpoint that allows to query
+     * for the account state. It gives the value associated to the account as well as
+     * the counter.
+     *
+     * It is important to be sure to have an updated wallet state before doing any
+     * transactions otherwise future transactions may fail to be accepted by any
+     * nodes of the blockchain because of invalid signature state.
+     *
+     * # Errors
+     *
+     * this function may fail if the wallet pointer is null;
+     * @param {number} ptr a pointer to a Wallet object obtained with WalletRestore
+     * @param {number} value
+     * @param {number} counter
+     * @param {function} successCallback
+     * @param {function} errorCallback
+     *
+     */
+    walletSetState: function (ptr, value, counter, successCallback, errorCallback) {
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_SET_STATE_ACTION_TAG, [ptr, value, counter]);
+    },
+
+    /**
      * @param {number} walletPtr a pointer to a wallet obtained with walletRestore
      * @param {number} settingsPtr a pointer to a settings object obtained with walletRetrieveFunds
      * @param {pointerCallback} successCallback returns a Conversion object
@@ -108,6 +136,15 @@ var plugin = {
      */
     conversionTransactionsGet: function (ptr, index, successCallback, errorCallback) {
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_TRANSACTIONS_GET_ACTION_TAG, [ptr, index]);
+    },
+
+    /**
+     * @param {number} ptr a pointer to a Conversion object obtained with walletConvert
+     * @param {function} successCallback returns an object with ignored, and value properties
+     * @param {errorCallback} errorCallback
+     */
+    conversionGetIgnored: function (ptr, successCallback, errorCallback) {
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_IGNORED_GET_ACTION_TAG, [ptr]);
     },
 
     /**

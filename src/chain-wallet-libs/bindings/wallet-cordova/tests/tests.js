@@ -40,10 +40,12 @@ const restoreWallet = promisify(primitives.walletRestore);
 const retrieveFunds = promisify(primitives.walletRetrieveFunds);
 const totalFunds = promisify(primitives.walletTotalFunds);
 const convertWallet = promisify(primitives.walletConvert);
+const setState = promisify(primitives.walletSetState);
 const deleteWallet = promisify(primitives.walletDelete);
 const deleteSettings = promisify(primitives.settingsDelete);
 const deleteConversion = promisify(primitives.conversionDelete);
 const conversionGetTransactionAt = promisify(primitives.conversionTransactionsGet);
+const conversionGetIgnored = promisify(primitives.conversionTransactionsGetIgnored);
 
 function conversionGetTransactions (conversion) {
     return new Promise(function (resolve, reject) {
@@ -101,6 +103,22 @@ exports.defineAutoTests = function () {
                 });
         });
 
+        // there is nothing we can assert here, I think
+        it('should be able to set state', function (done) {
+            restoreWallet(YOROI_WALLET)
+                .then(function (wallet) {
+                    const value = 1000;
+                    const counter = 2;
+                    setState(wallet, value, counter);
+                })
+                .catch(function (err) {
+                    done.fail('could not set wallet state' + err);
+                })
+                .then(function () {
+                    done();
+                });
+        });
+
         it('should fail with invalid mnemonics', function (done) {
             restoreWallet('invalidmnemonics')
                 .then(
@@ -145,7 +163,11 @@ exports.defineAutoTests = function () {
                 })
                 .then(function (transactions) {
                     expect(transactions.length).toBe(1);
-                    expect(transactions[0].byteLength).toBe(723);
+                    return conversionGetIgnored(conversionPtr);
+                })
+                .then(function (ignored_value) {
+                    expect(ignored_value.value).toBe(1);
+                    expect(ignored_value.ignored).toBe(1);
                     return new Promise(function (resolve) {
                         resolve();
                     });

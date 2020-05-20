@@ -1143,6 +1143,7 @@ checksum = "078775d0255232fb988e6fccf26ddc9d1ac274299aaedcedce21c6f72cc533ce"
 name = "vit-servicing-station"
 version = "0.1.0"
 dependencies = [
+ "serde_json",
  "tokio",
  "warp",
 ]

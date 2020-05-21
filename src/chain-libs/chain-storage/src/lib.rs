@@ -98,17 +98,23 @@ impl BlockStore {
                     return Ok(Err(Error::BlockAlreadyPresent));
                 }
 
-                if block_info.parent_id != vec![0; block_info.parent_id.len()].into_boxed_slice() {
-                    if info.get(&*block_info.parent_id)?.is_none() {
-                        return Ok(Err(Error::MissingParent));
+                // these if statementsa cannot be collapsed, this will result
+                // into unnecessary DB reads if the optimization does not touch
+                // it
+                #[allow(clippy::collapsible_if)]
+                {
+                    if block_info.parent_id
+                        != vec![0; block_info.parent_id.len()].into_boxed_slice()
+                    {
+                        if info.get(&*block_info.parent_id)?.is_none() {
+                            return Ok(Err(Error::MissingParent));
+                        }
                     }
                 }
 
                 let height_index = block_info.chain_length.to_le_bytes();
                 let mut ids_new = vec![];
-                let ids_old = height_to_block_ids
-                    .get(height_index)?
-                    .unwrap_or(sled::IVec::default());
+                let ids_old = height_to_block_ids.get(height_index)?.unwrap_or_default();
                 ids_new.write_all(&ids_old).unwrap();
                 ids_new
                     .write_all(&(block_info.id.len() as u32).to_be_bytes()[..])
@@ -181,12 +187,12 @@ impl BlockStore {
         let ids_raw = height_to_block_ids
             .get(height_index)
             .map_err(|err| Error::BackendError(Box::new(err)))?
-            .unwrap_or(sled::IVec::default());
+            .unwrap_or_default();
         let mut ids_raw_reader: &[u8] = &ids_raw;
 
         let mut ids = vec![];
 
-        while ids_raw_reader.len() != 0 {
+        while ids_raw_reader.is_empty() {
             let mut id_size_bytes = [0u8; 4];
             ids_raw_reader.read_exact(&mut id_size_bytes).unwrap();
             let id_size = u32::from_le_bytes(id_size_bytes);
@@ -223,7 +229,7 @@ impl BlockStore {
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let result = (&info, &tags).transaction(move |(info, tags)| {
-            if info.get(block_hash.clone())?.is_none() {
+            if info.get(block_hash)?.is_none() {
                 return Ok(Err(Error::BlockNotFound));
             }
 
@@ -365,7 +371,10 @@ where
         })?;
 
     if distance >= current.chain_length {
-        panic!("distance {} > chain length {}", distance, current.chain_length);
+        panic!(
+            "distance {} > chain length {}",
+            distance, current.chain_length
+        );
     }
 
     let target = current.chain_length - distance;
@@ -387,8 +396,6 @@ where
 
 #[cfg(any(test, feature = "with-bench"))]
 pub mod test_utils {
-    use chain_core::packer::*;
-    use chain_core::property::{BlockDate as _, BlockId as _};
     use std::sync::atomic::{AtomicU64, Ordering};
 
     #[derive(Debug, Clone, Hash, Ord, PartialOrd, Eq, PartialEq, Copy)]
@@ -400,38 +407,15 @@ pub mod test_utils {
         pub fn generate() -> Self {
             Self(GLOBAL_ID_COUNTER.fetch_add(1, Ordering::SeqCst))
         }
-    }
 
-    impl chain_core::property::BlockId for BlockId {
-        fn zero() -> Self {
-            Self(0)
+        pub fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), std::io::Error> {
+            writer.write_all(&self.0.to_le_bytes())
         }
-    }
 
-    impl chain_core::property::Serialize for BlockId {
-        type Error = std::io::Error;
-
-        fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-            let mut codec = Codec::new(writer);
-            codec.put_u64(self.0)
-        }
-    }
-
-    impl chain_core::property::Deserialize for BlockId {
-        type Error = std::io::Error;
-
-        fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-            let mut codec = Codec::new(reader);
-            Ok(Self(codec.get_u64()?))
-        }
-    }
-
-    #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Copy)]
-    pub struct BlockDate(u32, u32);
-
-    impl chain_core::property::BlockDate for BlockDate {
-        fn from_epoch_slot_id(epoch: u32, slot_id: u32) -> Self {
-            Self(epoch, slot_id)
+        pub fn serialize_as_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+            let mut v = Vec::new();
+            self.serialize(&mut v)?;
+            Ok(v)
         }
     }
 
@@ -439,7 +423,6 @@ pub mod test_utils {
     pub struct Block {
         pub id: BlockId,
         pub parent: BlockId,
-        pub date: BlockDate,
         pub chain_length: u32,
         pub data: Box<[u8]>,
     }
@@ -448,8 +431,7 @@ pub mod test_utils {
         pub fn genesis(data: Option<Box<[u8]>>) -> Self {
             Self {
                 id: BlockId::generate(),
-                parent: BlockId::zero(),
-                date: BlockDate::from_epoch_slot_id(0, 0),
+                parent: BlockId(0),
                 chain_length: 1,
                 data: data.unwrap_or_default(),
             }
@@ -459,44 +441,24 @@ pub mod test_utils {
             Self {
                 id: BlockId::generate(),
                 parent: self.id,
-                date: BlockDate::from_epoch_slot_id(self.date.0, self.date.1 + 1),
                 chain_length: self.chain_length,
                 data: data.unwrap_or_default(),
             }
         }
-    }
 
-    impl chain_core::property::Serialize for Block {
-        type Error = std::io::Error;
-
-        fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-            let mut codec = Codec::new(writer);
-            codec.put_u64(self.id.0)?;
-            codec.put_u64(self.parent.0)?;
-            codec.put_u32(self.date.0)?;
-            codec.put_u32(self.date.1)?;
-            codec.put_u32(self.chain_length)?;
-            codec.put_u64(self.data.len() as u64)?;
-            codec.put_bytes(&self.data)?;
+        pub fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), std::io::Error> {
+            writer.write_all(&self.id.0.to_le_bytes())?;
+            writer.write_all(&self.parent.0.to_le_bytes())?;
+            writer.write_all(&self.chain_length.to_le_bytes())?;
+            writer.write_all(&(self.data.len() as u64).to_le_bytes())?;
+            writer.write_all(&self.data)?;
             Ok(())
         }
-    }
 
-    impl chain_core::property::Deserialize for Block {
-        type Error = std::io::Error;
-
-        fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-            let mut codec = Codec::new(reader);
-            Ok(Self {
-                id: BlockId(codec.get_u64()?),
-                parent: BlockId(codec.get_u64()?),
-                date: BlockDate(codec.get_u32()?, codec.get_u32()?),
-                chain_length: codec.get_u32()?,
-                data: {
-                    let length = codec.get_u64()?;
-                    codec.get_bytes(length as usize)?.into_boxed_slice()
-                },
-            })
+        pub fn serialize_as_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+            let mut v = Vec::new();
+            self.serialize(&mut v)?;
+            Ok(v)
         }
     }
 }
@@ -505,7 +467,6 @@ pub mod test_utils {
 pub mod tests {
     use super::test_utils::{Block, BlockId};
     use super::*;
-    use chain_core::property::{BlockId as _, Serialize};
     use rand_core::{OsRng, RngCore};
 
     const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
@@ -568,10 +529,7 @@ pub mod tests {
         let mut store = BlockStore::new(file.path()).unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
 
-        match store.put_tag(
-            "tip",
-            BlockId::zero().serialize_as_vec().unwrap().as_slice(),
-        ) {
+        match store.put_tag("tip", BlockId(0).serialize_as_vec().unwrap().as_slice()) {
             Err(Error::BlockNotFound) => {}
             err => panic!(err),
         }

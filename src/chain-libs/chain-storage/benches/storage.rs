@@ -1,7 +1,6 @@
 use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
 use rand_core::{OsRng, RngCore};
 
-use chain_core::property::Serialize;
 use chain_storage::{test_utils::Block, BlockInfo, BlockStore};
 
 const BLOCK_DATA_LENGTH: usize = 1024;

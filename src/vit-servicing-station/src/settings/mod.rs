@@ -1,7 +1,6 @@
-use serde::{de::Error as _, de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use std::fmt;
 use std::net::SocketAddr;
-use std::path::Path;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

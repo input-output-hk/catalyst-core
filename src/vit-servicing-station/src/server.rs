@@ -1,10 +1,8 @@
 use crate::settings::{Cors, ServiceSettings, Tls};
-use crate::v0::context::SharedContext;
 
 use std::time::Duration;
-use tokio;
 use warp::filters::cors::Builder as CorsBuilder;
-use warp::{Filter, Future, TlsServer};
+use warp::{Filter, TlsServer};
 
 fn setup_cors(cors_config: Cors) -> CorsBuilder {
     let allowed_origins: Vec<&str> = cors_config

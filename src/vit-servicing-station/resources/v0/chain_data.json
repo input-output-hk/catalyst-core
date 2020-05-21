@@ -1,0 +1,28 @@
+{
+  "16437440": {
+    "external_id": "adb92757155d09e7f92c9f100866a92dddd35abd2a789a44ae19ab9a1dbc3280",
+    "voteplan_id": "7c1e49c31425c03cef428c313d1d438800b0ef8101532188e3c1e0372d2eae76",
+    "index": 0,
+    "vote_start": "0.0",
+    "vote_end": "5.0",
+    "committee_end": "10.0",
+    "options": {
+      "OneOf": {
+        "max_value": 3
+      }
+    }
+  },
+  "16437441": {
+    "external_id": "6778d37161c3962fe62c9fa8a31a55bccf6ec2d1ea254a467d8cd994709fc404",
+    "voteplan_id": "7c1e49c31425c03cef428c313d1d438800b0ef8101532188e3c1e0372d2eae76",
+    "index": 1,
+    "vote_start": "0.0",
+    "vote_end": "5.0",
+    "committee_end": "10.0",
+    "options": {
+      "OneOf": {
+        "max_value": 3
+      }
+    }
+  }
+}

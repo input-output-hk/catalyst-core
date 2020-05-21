@@ -24,6 +24,8 @@ pub enum RecoveryError {
 
     #[error("Missing entropy, either missing the mnemonics or need to generate a new wallet")]
     MissingEntropy,
+    #[error("Tried to recover same utxo more than once, either the function was called twice or the block is malformed")]
+    DuplicatedUtxo,
 }
 
 #[derive(Default)]
@@ -247,6 +249,12 @@ mod tests {
         "sxtitePxjp5Y7GQre2hj7LPAnZp7F49KxE6Cg1huwTzjWbfW2Jd7hSgSqsbMzESs8aQC44ng1LJdnLKqiou4m4gGy8",
     ];
 
+    const MNEMONICS3: &str = "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone";
+    const ADDRESSES3: &[&str] = &[
+        "Ae2tdPwUPEZ8og5u4WF5rmSyme5Gvp8RYiLM2u7Vm8CyDQzLN3VYTN895Wk",
+        "Ae2tdPwUPEZEAjEsQsCtBMkLKANxQUEvzLkumPWWYugLeXcgkeMCDH1gnuL",
+    ];
+
     /// not sure yet, but it appears this test is not valid
     ///
     /// the mnemonics may not be correct?
@@ -300,6 +308,64 @@ mod tests {
         let address = ADDRESS.parse().unwrap();
 
         assert!(wallet.check_address(&address));
+    }
+
+    #[test]
+    fn recover_daedalus_utxo_twice_fails() {
+        use chain_impl_mockchain::{
+            fragment::Fragment,
+            legacy::{OldAddress, UtxoDeclaration},
+            value::Value,
+        };
+
+        let mut wallet = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS1)
+            .unwrap()
+            .build_daedalus()
+            .unwrap();
+
+        let address: OldAddress = ADDRESSES1[0].parse().unwrap();
+        assert!(wallet.check_address(&address));
+
+        let fragment_value = Value(10);
+        let fragment = Fragment::OldUtxoDeclaration(UtxoDeclaration {
+            addrs: vec![(address, fragment_value)],
+        });
+
+        assert_eq!(wallet.value_total(), Value(0));
+        assert!(wallet.check_fragment(&fragment).is_ok());
+        assert_eq!(wallet.value_total(), fragment_value);
+        assert!(wallet.check_fragment(&fragment).is_err());
+        assert_eq!(wallet.value_total(), fragment_value);
+    }
+
+    #[test]
+    fn recover_yoroi_utxo_twice_fails() {
+        use chain_impl_mockchain::{
+            fragment::Fragment,
+            legacy::{OldAddress, UtxoDeclaration},
+            value::Value,
+        };
+
+        let mut wallet = RecoveryBuilder::new()
+            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS3)
+            .unwrap()
+            .build_yoroi()
+            .unwrap();
+
+        let address: OldAddress = ADDRESSES3[0].parse().unwrap();
+        assert!(wallet.check_address(&address).is_some());
+
+        let fragment_value = Value(10);
+        let fragment = Fragment::OldUtxoDeclaration(UtxoDeclaration {
+            addrs: vec![(address, fragment_value)],
+        });
+
+        assert_eq!(wallet.value_total(), Value(0));
+        assert!(wallet.check_fragment(&fragment).is_ok());
+        assert_eq!(wallet.value_total(), fragment_value);
+        assert!(wallet.check_fragment(&fragment).is_err());
+        assert_eq!(wallet.value_total(), fragment_value);
     }
 
     #[test]

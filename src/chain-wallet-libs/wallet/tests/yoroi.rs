@@ -25,7 +25,9 @@ fn yoroi1() {
     let settings = state.settings().expect("valid initial settings");
     let address = account.account_id().address(settings.discrimination());
 
-    yoroi.check_fragments(state.initial_contents());
+    yoroi
+        .check_fragments(state.initial_contents())
+        .expect("couldn't check fragments");
     assert_eq!(yoroi.value_total().as_ref(), &WALLET_VALUE);
 
     let mut dump = Dump::new(settings, address);

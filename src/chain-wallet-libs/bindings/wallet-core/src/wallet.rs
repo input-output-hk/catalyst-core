@@ -99,8 +99,13 @@ impl Wallet {
 
         let settings = wallet::Settings::new(&block0).unwrap();
         for fragment in block0.contents.iter() {
-            self.daedalus.check_fragment(fragment);
-            self.icarus.check_fragment(fragment);
+            self.daedalus
+                .check_fragment(fragment)
+                .map_err(|e| Error::wallet_recovering().with(e))?;
+
+            self.icarus
+                .check_fragment(fragment)
+                .map_err(|e| Error::wallet_recovering().with(e))?;
         }
         Ok(settings)
     }

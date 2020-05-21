@@ -45,7 +45,7 @@ const deleteWallet = promisify(primitives.walletDelete);
 const deleteSettings = promisify(primitives.settingsDelete);
 const deleteConversion = promisify(primitives.conversionDelete);
 const conversionGetTransactionAt = promisify(primitives.conversionTransactionsGet);
-const conversionGetIgnored = promisify(primitives.conversionTransactionsGetIgnored);
+const conversionGetIgnored = promisify(primitives.conversionGetIgnored);
 
 function conversionGetTransactions (conversion) {
     return new Promise(function (resolve, reject) {

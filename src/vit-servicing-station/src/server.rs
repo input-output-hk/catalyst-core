@@ -24,11 +24,10 @@ where
     App: Filter<Error = warp::Rejection> + Clone + Send + Sync + 'static,
     App::Extract: warp::Reply,
 {
-    let server = warp::serve(app)
+    warp::serve(app)
         .tls()
         .cert_path(tls_config.cert_file)
-        .key_path(tls_config.priv_key_file);
-    server
+        .key_path(tls_config.priv_key_file)
 }
 
 async fn start_server_with_config<App>(app: App, settings: ServiceSettings)

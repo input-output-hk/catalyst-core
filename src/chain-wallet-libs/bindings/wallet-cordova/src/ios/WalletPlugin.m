@@ -21,9 +21,9 @@
             iohk_jormungandr_wallet_recover([mnemonics UTF8String], nil, 0, &wallet_ptr);
 
         if (result != nil) {
-            char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);      
+            char* error_desc_raw = iohk_jormungandr_wallet_error_to_string(result);
             NSString* error_desc = [NSString stringWithCString:error_desc_raw
-                                                      encoding:NSUTF8StringEncoding];    
+                                                      encoding:NSUTF8StringEncoding];
 
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
                                              messageAsString:error_desc];
@@ -43,10 +43,16 @@
 - (void)WALLET_RETRIEVE_FUNDS:(CDVInvokedUrlCommand*)command
 {
     NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];
-    NSString* raw_block0 = [command.arguments objectAtIndex:1];
+    NSData* block0 = [command.arguments objectAtIndex:1];
+
+    if ([block0 isEqual:[NSNull null]]) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
 
     WalletPtr wallet_ptr = (WalletPtr)[wallet_ptr_raw longLongValue];
-    NSData* block0 = [[NSData alloc] initWithBase64EncodedString:raw_block0 options:0];
 
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* pluginResult = nil;
@@ -237,4 +243,3 @@
 }
 
 @end
-

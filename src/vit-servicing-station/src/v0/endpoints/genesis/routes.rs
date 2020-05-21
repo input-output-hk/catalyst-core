@@ -11,7 +11,7 @@ pub fn filter(
 
     let from_id = warp::path!("id" / String)
         .and(warp::get())
-        .and(with_context.clone())
+        .and(with_context)
         .and_then(get_genesis_from_id)
         .boxed();
 

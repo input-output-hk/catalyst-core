@@ -1,12 +1,7 @@
 use crate::v0::context::{ChainData, SharedContext};
 
 pub async fn get_data_from_id(id: String, context: SharedContext) -> Option<ChainData> {
-    context
-        .read()
-        .await
-        .static_chain_data
-        .get(&id)
-        .map(|data| data.clone())
+    context.read().await.static_chain_data.get(&id).cloned()
 }
 
 #[cfg(test)]

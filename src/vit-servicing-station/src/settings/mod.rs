@@ -48,7 +48,7 @@ impl<'de> Deserialize<'de> for CorsOrigin {
                 write!(fmt, "an origin in format http[s]://example.com[:3000]",)
             }
 
-            fn visit_str<'a, E>(self, v: &'a str) -> std::result::Result<Self::Value, E>
+            fn visit_str<E>(self, v: &str) -> std::result::Result<Self::Value, E>
             where
                 E: serde::de::Error,
             {

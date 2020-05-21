@@ -12,6 +12,6 @@ pub fn filter(
     let chain_data_root = warp::path!("chain-data" / ..);
     let genesis_root = warp::path!("genesis" / ..);
     let chain_data_filter = chain_data::filter(chain_data_root.boxed(), context.clone());
-    let genesis_filter = genesis::filter(genesis_root.boxed(), context.clone());
+    let genesis_filter = genesis::filter(genesis_root.boxed(), context);
     root.and(genesis_filter.or(chain_data_filter)).boxed()
 }

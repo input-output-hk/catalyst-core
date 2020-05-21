@@ -33,3 +33,42 @@ pub struct Cors {
     /// If none provided, CORS responses won't be cached
     pub max_age_secs: Option<u64>,
 }
+
+#[cfg(test)]
+mod test {
+    use super::{CorsOrigin, ServiceSettings};
+    use std::net::SocketAddr;
+    use std::str::FromStr;
+
+    #[test]
+    fn load_simple_configuration() {
+        let raw_config = r#"
+        {
+            "listen" : "127.0.0.1:3030",
+            "tls" : {
+                "cert_file" : "./foo/bar.pem",
+                "priv_key_file" : "./bar/foo.pem"
+            },
+            "cors" : {
+                "allowed_origins" : ["https://foo.test"],
+                "max_age_secs" : 60
+            }
+        }
+        "#;
+
+        let config: ServiceSettings = serde_json::from_str(raw_config).unwrap();
+        assert_eq!(
+            config.listen,
+            SocketAddr::from_str("127.0.0.1:3030").unwrap()
+        );
+        let tls_config = config.tls.clone().unwrap();
+        let cors_config = config.cors.clone().unwrap();
+        assert_eq!(tls_config.cert_file, "./foo/bar.pem");
+        assert_eq!(tls_config.priv_key_file, "./bar/foo.pem");
+        assert_eq!(
+            cors_config.allowed_origins[0],
+            CorsOrigin("https://foo.test".to_string())
+        );
+        assert_eq!(cors_config.max_age_secs.unwrap(), 60);
+    }
+}

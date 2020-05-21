@@ -7,7 +7,7 @@ use std::str::FromStr;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ServiceSettings {
-    pub listen: SocketAddr,
+    pub address: SocketAddr,
     /// Enables TLS and disables plain HTTP if provided
     pub tls: Option<Tls>,
     /// Enables CORS if provided
@@ -73,6 +73,12 @@ impl<'de> Deserialize<'de> for CorsOrigin {
     }
 }
 
+impl AsRef<str> for CorsOrigin {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{CorsOrigin, ServiceSettings};
@@ -83,7 +89,7 @@ mod test {
     fn load_simple_configuration() {
         let raw_config = r#"
         {
-            "listen" : "127.0.0.1:3030",
+            "address" : "127.0.0.1:3030",
             "tls" : {
                 "cert_file" : "./foo/bar.pem",
                 "priv_key_file" : "./bar/foo.pem"
@@ -97,7 +103,7 @@ mod test {
 
         let config: ServiceSettings = serde_json::from_str(raw_config).unwrap();
         assert_eq!(
-            config.listen,
+            config.address,
             SocketAddr::from_str("127.0.0.1:3030").unwrap()
         );
         let tls_config = config.tls.clone().unwrap();

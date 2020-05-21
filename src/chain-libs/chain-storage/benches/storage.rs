@@ -15,28 +15,17 @@ fn criterion_benchmark(c: &mut Criterion) {
     let tempdir = tempfile::TempDir::new().unwrap();
     let path = {
         let mut path = tempdir.path().to_path_buf();
-        path.push("test.sled");
+        path.push("test");
         path
     };
     let mut store = BlockStore::new(path).unwrap();
     let genesis_block_info = BlockInfo {
-        id: genesis_block
-            .id
-            .serialize_as_vec()
-            .unwrap()
-            .into_boxed_slice(),
-        parent_id: genesis_block
-            .parent
-            .serialize_as_vec()
-            .unwrap()
-            .into_boxed_slice(),
+        id: genesis_block.id.serialize_as_boxed_slice(),
+        parent_id: genesis_block.parent.serialize_as_boxed_slice(),
         chain_length: genesis_block.chain_length,
     };
     store
-        .put_block(
-            genesis_block.serialize_as_vec().unwrap().as_slice(),
-            genesis_block_info,
-        )
+        .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
         .unwrap();
 
     let mut blocks = vec![genesis_block];
@@ -52,12 +41,12 @@ fn criterion_benchmark(c: &mut Criterion) {
             },
             |block| {
                 let block_info = BlockInfo {
-                    id: block.id.serialize_as_vec().unwrap().into_boxed_slice(),
-                    parent_id: block.parent.serialize_as_vec().unwrap().into_boxed_slice(),
+                    id: block.id.serialize_as_boxed_slice(),
+                    parent_id: block.parent.serialize_as_boxed_slice(),
                     chain_length: block.chain_length,
                 };
                 store
-                    .put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
+                    .put_block(&block.serialize_as_vec(), block_info)
                     .unwrap()
             },
             BatchSize::PerIteration,
@@ -72,7 +61,6 @@ fn criterion_benchmark(c: &mut Criterion) {
                     .unwrap()
                     .id
                     .serialize_as_vec()
-                    .unwrap()
             },
             |block_id| store.get_block(&block_id).unwrap(),
             BatchSize::PerIteration,

@@ -28,16 +28,28 @@ pub struct BlockInfo {
     pub chain_length: u32,
 }
 
+mod tree {
+    pub const BLOCKS: &str = "blocks";
+    pub const INFO: &str = "info";
+    pub const CHAIN_HEIGHT_INDEX: &str = "height_to_block_ids";
+}
+
 impl BlockInfo {
     fn serialize(&self) -> Vec<u8> {
         let mut w = Vec::new();
+
         let id_size = self.id.len() as u32;
-        w.write_all(&id_size.to_le_bytes()[..]).unwrap();
+        w.write_all(&id_size.to_le_bytes()).unwrap();
+
         w.write_all(&self.id).unwrap();
+
         let parent_id_size = self.id.len() as u32;
-        w.write_all(&parent_id_size.to_le_bytes()[..]).unwrap();
+        w.write_all(&parent_id_size.to_le_bytes()).unwrap();
+
         w.write_all(&self.parent_id).unwrap();
-        w.write_all(&self.chain_length.to_le_bytes()[..]).unwrap();
+
+        w.write_all(&self.chain_length.to_le_bytes()).unwrap();
+
         w
     }
 
@@ -79,22 +91,22 @@ impl BlockStore {
     pub fn put_block(&mut self, block: &[u8], block_info: BlockInfo) -> Result<(), Error> {
         let blocks = self
             .inner
-            .open_tree("blocks")
+            .open_tree(tree::BLOCKS)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let info = self
             .inner
-            .open_tree("info")
+            .open_tree(tree::INFO)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let height_to_block_ids = self
             .inner
-            .open_tree("height_to_block_ids")
+            .open_tree(tree::CHAIN_HEIGHT_INDEX)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let result = (&blocks, &info, &height_to_block_ids).transaction(
             |(blocks, info, height_to_block_ids)| {
-                if info.get(&*block_info.id)?.is_some() {
+                if info.get(block_info.id.as_ref())?.is_some() {
                     return Ok(Err(Error::BlockAlreadyPresent));
                 }
 
@@ -103,10 +115,10 @@ impl BlockStore {
                 // it
                 #[allow(clippy::collapsible_if)]
                 {
-                    if block_info.parent_id
-                        != vec![0; block_info.parent_id.len()].into_boxed_slice()
+                    if block_info.parent_id.as_ref()
+                        != vec![0; block_info.parent_id.len()].as_slice()
                     {
-                        if info.get(&*block_info.parent_id)?.is_none() {
+                        if info.get(block_info.parent_id.as_ref())?.is_none() {
                             return Ok(Err(Error::MissingParent));
                         }
                     }
@@ -117,14 +129,14 @@ impl BlockStore {
                 let ids_old = height_to_block_ids.get(height_index)?.unwrap_or_default();
                 ids_new.write_all(&ids_old).unwrap();
                 ids_new
-                    .write_all(&(block_info.id.len() as u32).to_be_bytes()[..])
+                    .write_all(&(block_info.id.len() as u32).to_be_bytes())
                     .unwrap();
-                ids_new.write_all(&*block_info.id).unwrap();
+                ids_new.write_all(block_info.id.as_ref()).unwrap();
                 height_to_block_ids.insert(&height_index, ids_new)?;
 
-                blocks.insert(&*block_info.id, block)?;
+                blocks.insert(block_info.id.as_ref(), block)?;
 
-                info.insert(&*block_info.id, &block_info.serialize()[..])?;
+                info.insert(block_info.id.as_ref(), block_info.serialize().as_slice())?;
 
                 Ok(Ok(()))
             },
@@ -143,7 +155,7 @@ impl BlockStore {
     pub fn get_block(&mut self, block_hash: &[u8]) -> Result<Vec<u8>, Error> {
         let blocks = self
             .inner
-            .open_tree("blocks")
+            .open_tree(tree::BLOCKS)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         blocks
@@ -160,7 +172,7 @@ impl BlockStore {
     pub fn get_block_info(&mut self, block_hash: &[u8]) -> Result<BlockInfo, Error> {
         let info = self
             .inner
-            .open_tree("info")
+            .open_tree(tree::INFO)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         info.get(block_hash)
@@ -175,12 +187,12 @@ impl BlockStore {
     pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<Vec<u8>>, Error> {
         let blocks = self
             .inner
-            .open_tree("blocks")
+            .open_tree(tree::BLOCKS)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let height_to_block_ids = self
             .inner
-            .open_tree("height_to_block_ids")
+            .open_tree(tree::CHAIN_HEIGHT_INDEX)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let height_index = chain_length.to_le_bytes();
@@ -209,7 +221,7 @@ impl BlockStore {
                     .get(id)
                     .map(|maybe_raw_block| {
                         let mut v = Vec::new();
-                        v.extend_from_slice(&maybe_raw_block.unwrap()[..]);
+                        v.extend_from_slice(&maybe_raw_block.unwrap());
                         v
                     })
                     .map_err(|err| Error::BackendError(Box::new(err)))
@@ -220,7 +232,7 @@ impl BlockStore {
     pub fn put_tag(&mut self, tag_name: &str, block_hash: &[u8]) -> Result<(), Error> {
         let info = self
             .inner
-            .open_tree("info")
+            .open_tree(tree::INFO)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let tags = self
@@ -268,7 +280,7 @@ impl BlockStore {
     pub fn block_exists(&mut self, block_hash: &[u8]) -> Result<bool, Error> {
         let info = self
             .inner
-            .open_tree("info")
+            .open_tree(tree::INFO)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         info.get(block_hash)
@@ -294,7 +306,7 @@ impl BlockStore {
 
         let info = self
             .inner
-            .open_tree("info")
+            .open_tree(tree::INFO)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
         let descendent: BlockInfo = info
@@ -315,7 +327,7 @@ impl BlockStore {
         let mut distance = 0;
 
         while let Some(ancestor) = info
-            .get(&*ancestor_id)
+            .get(ancestor_id.as_ref())
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
@@ -358,7 +370,7 @@ where
 {
     let info = store
         .inner
-        .open_tree("info")
+        .open_tree(tree::INFO)
         .map_err(|err| Error::BackendError(Box::new(err)))?;
 
     let mut current = info
@@ -382,7 +394,7 @@ where
     while target < current.chain_length {
         callback(&current);
         current = info
-            .get(&*current.parent_id)
+            .get(current.parent_id.as_ref())
             .map_err(|err| Error::BackendError(Box::new(err)))
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
@@ -412,10 +424,14 @@ pub mod test_utils {
             writer.write_all(&self.0.to_le_bytes())
         }
 
-        pub fn serialize_as_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        pub fn serialize_as_vec(&self) -> Vec<u8> {
             let mut v = Vec::new();
-            self.serialize(&mut v)?;
-            Ok(v)
+            self.serialize(&mut v).unwrap();
+            v
+        }
+
+        pub fn serialize_as_boxed_slice(&self) -> Box<[u8]> {
+            self.serialize_as_vec().into_boxed_slice()
         }
     }
 
@@ -455,10 +471,10 @@ pub mod test_utils {
             Ok(())
         }
 
-        pub fn serialize_as_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        pub fn serialize_as_vec(&self) -> Vec<u8> {
             let mut v = Vec::new();
-            self.serialize(&mut v)?;
-            Ok(v)
+            self.serialize(&mut v).unwrap();
+            v
         }
     }
 }
@@ -482,23 +498,12 @@ pub mod tests {
 
         let genesis_block = Block::genesis(None);
         let genesis_block_info = BlockInfo {
-            id: genesis_block
-                .id
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
-            parent_id: genesis_block
-                .parent
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
+            id: genesis_block.id.serialize_as_boxed_slice(),
+            parent_id: genesis_block.parent.serialize_as_boxed_slice(),
             chain_length: genesis_block.chain_length,
         };
         store
-            .put_block(
-                genesis_block.serialize_as_vec().unwrap().as_slice(),
-                genesis_block_info,
-            )
+            .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
             .unwrap();
         blocks.push(genesis_block);
 
@@ -508,12 +513,12 @@ pub mod tests {
             for _ in 0..r {
                 let block = parent_block.make_child(None);
                 let block_info = BlockInfo {
-                    id: block.id.serialize_as_vec().unwrap().into_boxed_slice(),
-                    parent_id: block.parent.serialize_as_vec().unwrap().into_boxed_slice(),
+                    id: block.id.serialize_as_boxed_slice(),
+                    parent_id: block.parent.serialize_as_boxed_slice(),
                     chain_length: block.chain_length,
                 };
                 store
-                    .put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
+                    .put_block(&block.serialize_as_vec(), block_info)
                     .unwrap();
                 parent_block = block.clone();
                 blocks.push(block);
@@ -529,49 +534,30 @@ pub mod tests {
         let mut store = BlockStore::new(file.path()).unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
 
-        match store.put_tag("tip", BlockId(0).serialize_as_vec().unwrap().as_slice()) {
+        match store.put_tag("tip", &BlockId(0).serialize_as_vec()) {
             Err(Error::BlockNotFound) => {}
             err => panic!(err),
         }
 
         let genesis_block = Block::genesis(None);
         let genesis_block_info = BlockInfo {
-            id: genesis_block
-                .id
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
-            parent_id: genesis_block
-                .parent
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
+            id: genesis_block.id.serialize_as_boxed_slice(),
+            parent_id: genesis_block.parent.serialize_as_boxed_slice(),
             chain_length: genesis_block.chain_length,
         };
         store
-            .put_block(
-                genesis_block.serialize_as_vec().unwrap().as_slice(),
-                genesis_block_info,
-            )
+            .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
             .unwrap();
         let genesis_block_restored = store
-            .get_block_info(genesis_block.id.serialize_as_vec().unwrap().as_slice())
+            .get_block_info(&genesis_block.id.serialize_as_vec())
             .unwrap();
 
         assert_eq!(
-            genesis_block
-                .id
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
+            genesis_block.id.serialize_as_boxed_slice(),
             genesis_block_restored.id
         );
         assert_eq!(
-            genesis_block
-                .parent
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
+            genesis_block.parent.serialize_as_boxed_slice(),
             genesis_block_restored.parent_id
         );
         assert_eq!(
@@ -580,14 +566,11 @@ pub mod tests {
         );
 
         store
-            .put_tag(
-                "tip",
-                genesis_block.id.serialize_as_vec().unwrap().as_slice(),
-            )
+            .put_tag("tip", &genesis_block.id.serialize_as_vec())
             .unwrap();
         assert_eq!(
             store.get_tag("tip").unwrap().unwrap(),
-            genesis_block.id.serialize_as_vec().unwrap()
+            genesis_block.id.serialize_as_vec()
         );
     }
 
@@ -605,10 +588,8 @@ pub mod tests {
         for _ in 0..nr_tests {
             let block = pick_from_vector(&mut rng, &blocks);
             assert_eq!(
-                store
-                    .get_block(&block.id.serialize_as_vec().unwrap().as_slice())
-                    .unwrap(),
-                block.serialize_as_vec().unwrap()
+                store.get_block(&block.id.serialize_as_vec()).unwrap(),
+                block.serialize_as_vec()
             );
 
             let distance = rng.next_u32() % block.chain_length;
@@ -616,7 +597,7 @@ pub mod tests {
 
             let ancestor_info = for_path_to_nth_ancestor(
                 &mut store,
-                block.id.serialize_as_vec().unwrap().as_slice(),
+                &block.id.serialize_as_vec(),
                 distance,
                 |_| {
                     blocks_fetched += 1;
@@ -645,23 +626,12 @@ pub mod tests {
 
         let genesis_block = Block::genesis(None);
         let genesis_block_info = BlockInfo {
-            id: genesis_block
-                .id
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
-            parent_id: genesis_block
-                .parent
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
+            id: genesis_block.id.serialize_as_boxed_slice(),
+            parent_id: genesis_block.parent.serialize_as_boxed_slice(),
             chain_length: genesis_block.chain_length,
         };
-        conn.put_block(
-            genesis_block.serialize_as_vec().unwrap().as_slice(),
-            genesis_block_info,
-        )
-        .unwrap();
+        conn.put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
+            .unwrap();
         let mut blocks = vec![genesis_block];
 
         for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
@@ -669,11 +639,11 @@ pub mod tests {
             let block = last_block.make_child(None);
             blocks.push(block.clone());
             let block_info = BlockInfo {
-                id: block.id.serialize_as_vec().unwrap().into_boxed_slice(),
-                parent_id: block.parent.serialize_as_vec().unwrap().into_boxed_slice(),
+                id: block.id.serialize_as_boxed_slice(),
+                parent_id: block.parent.serialize_as_boxed_slice(),
                 chain_length: block.chain_length,
             };
-            conn.put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
+            conn.put_block(&block.serialize_as_vec(), block_info)
                 .unwrap()
         }
 
@@ -686,9 +656,8 @@ pub mod tests {
                     .get(rng.next_u32() as usize % blocks_1.len())
                     .unwrap()
                     .id
-                    .serialize_as_vec()
-                    .unwrap();
-                conn_1.get_block(block_id.as_slice()).unwrap();
+                    .serialize_as_vec();
+                conn_1.get_block(&block_id).unwrap();
             }
         });
 
@@ -697,11 +666,11 @@ pub mod tests {
                 let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
                 let block = last_block.make_child(None);
                 let block_info = BlockInfo {
-                    id: block.id.serialize_as_vec().unwrap().into_boxed_slice(),
-                    parent_id: block.parent.serialize_as_vec().unwrap().into_boxed_slice(),
+                    id: block.id.serialize_as_boxed_slice(),
+                    parent_id: block.parent.serialize_as_boxed_slice(),
                     chain_length: block.chain_length,
                 };
-                conn.put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
+                conn.put_block(&block.serialize_as_vec(), block_info)
                     .unwrap()
             }
         });

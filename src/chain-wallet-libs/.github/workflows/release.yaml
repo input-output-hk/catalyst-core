@@ -121,6 +121,7 @@ jobs:
 
   release_wasm:
     name: Release wasm assets
+    needs: initial_release
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -251,9 +252,39 @@ jobs:
           file_glob: true
           overwrite: true
 
+  build_lipo_asset:
+    name: Build universal lib for cordova plugin
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          default: true
+
+      - run: rustup target add x86_64-apple-ios
+      - run: rustup target add aarch64-apple-ios
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: build universal lib 
+        working-directory: ./bindings/wallet-cordova
+        run: python3 ./build_ios.py 
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: iosLibs
+          path: ./bindings/wallet-cordova/src/ios
+
   package_cordova_plugin:
     runs-on: ubuntu-latest
-    needs: build_jni_assets
+    needs: [ build_jni_assets, build_lipo_asset, initial_release ]
 
     steps:
       - name: Checkout code
@@ -302,6 +333,14 @@ jobs:
 
       - name: copy java definitions from jni
         run: python3 ./bindings/wallet-cordova/copy_jni_definitions.py
+
+      - name: Download artifact with universal lib
+        uses: actions/download-artifact@v1
+        with:
+          name: iosLibs
+
+      - name: Copy universal lib to plugin's directory
+        run: cp -r iosLibs/* bindings/wallet-cordova/src/ios
 
       - name: setup node
         uses: actions/setup-node@v1

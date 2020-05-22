@@ -9,10 +9,12 @@
 - (void)WALLET_RETRIEVE_FUNDS:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_TOTAL_FUNDS:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_ID:(CDVInvokedUrlCommand*)command;
+- (void)WALLET_SET_STATE:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_CONVERT:(CDVInvokedUrlCommand*)command;
 
 - (void)CONVERSION_TRANSACTIONS_SIZE:(CDVInvokedUrlCommand*)command;
 - (void)CONVERSION_TRANSACTIONS_GET:(CDVInvokedUrlCommand*)command;
+- (void)CONVERSION_IGNORED:(CDVInvokedUrlCommand*)command;
 
 - (void)WALLET_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)SETTINGS_DELETE:(CDVInvokedUrlCommand*)command;

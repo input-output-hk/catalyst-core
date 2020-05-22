@@ -1,5 +1,7 @@
 mod chain_data;
 mod genesis;
+mod graphql;
+
 use crate::v0::context::SharedContext;
 
 use warp::filters::BoxedFilter;

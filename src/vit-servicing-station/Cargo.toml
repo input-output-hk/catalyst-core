@@ -8,7 +8,11 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-warp = {version = "0.2", features = ["tls"] }
-tokio = { version = "0.2.21", features = ["macros"] }
-serde = {version = "1.0", features = ["derive"]}
+async-graphql = "1.13.2"
+async-graphql-warp = "1.13.2"
+diesel = { version = "1.4", features = ["sqlite"] }
+dotenv = "0.9.0"
+serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.53"
+tokio = { version = "0.2.21", features = ["macros"] }
+warp = { version = "0.2", features = ["tls"] }

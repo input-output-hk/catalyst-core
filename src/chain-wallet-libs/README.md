@@ -36,7 +36,11 @@ This includes bindings for Android Kotlin already packaged in a AAR package.
 
 ### Cordova plugin
 
-_under construction_
+| Platform | supported |
+| -------- | :-------: |
+| android  |     ✓     |
+| ios      |     ✓     |
+| electron |     ✓     |
 
 ### iOS
 

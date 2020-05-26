@@ -121,7 +121,8 @@ impl str::FromStr for BlockDate {
 mod tests {
     use super::*;
     use quickcheck::{Arbitrary, Gen};
-    use std::error::Error;
+    #[cfg(test)]
+    use std::error::Error as _;
 
     #[test]
     fn parse_no_dot() {

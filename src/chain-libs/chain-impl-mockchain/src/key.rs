@@ -409,9 +409,12 @@ impl Readable for GenesisPraosLeader {
 mod tests {
     use super::*;
     use chain_crypto::{testing, Curve25519_2HashDH, PublicKey, SecretKey, SumEd25519_12};
+    #[cfg(test)]
     use chain_test_utils::property::serialization_bijection;
     use lazy_static::lazy_static;
-    use quickcheck::{quickcheck, Arbitrary, Gen, TestResult};
+    #[cfg(test)]
+    use quickcheck::TestResult;
+    use quickcheck::{quickcheck, Arbitrary, Gen};
 
     impl Arbitrary for Hash {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {

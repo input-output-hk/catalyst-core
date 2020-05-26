@@ -62,8 +62,11 @@ impl fmt::Display for Milli {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-    use quickcheck::{Arbitrary, Gen, TestResult};
+    #[cfg(test)]
+    use quickcheck::TestResult;
+    use quickcheck::{Arbitrary, Gen};
 
+    #[cfg(test)]
     fn assert_from_str(input: &str, expected_milli: u64) {
         let expected = Milli::from_millis(expected_milli);
 
@@ -74,6 +77,7 @@ mod tests {
         assert_eq!(actual, expected, "Invalid result for input {}", input);
     }
 
+    #[cfg(test)]
     fn refute_from_str(input: &str) {
         let result = Milli::from_str(input);
 
@@ -99,6 +103,7 @@ mod tests {
         assert_from_str(".99999999999999999999999999999999", 999);
     }
 
+    #[cfg(test)]
     fn assert_display(milli: u64, expected: &str) {
         let target = Milli::from_millis(milli);
 

@@ -395,22 +395,29 @@ impl Readable for SignedUpdateVote {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
+    #[cfg(test)]
     use crate::{
         config::ConfigParam,
-        fragment::config::ConfigParams,
         testing::{
             builders::update_builder::{ProposalBuilder, SignedProposalBuilder, UpdateVoteBuilder},
             data::LeaderPair,
             TestGen,
         },
+    };
+    use crate::{
+        fragment::config::ConfigParams,
         update::{
             SignedUpdateProposal, SignedUpdateVote, UpdateProposal, UpdateProposalWithProposer,
             UpdateVote,
         },
     };
+    #[cfg(test)]
     use chain_addr::Discrimination;
+    #[cfg(test)]
     use chain_test_utils::property::serialization_bijection;
-    use quickcheck::{Arbitrary, Gen, TestResult};
+    #[cfg(test)]
+    use quickcheck::TestResult;
+    use quickcheck::{Arbitrary, Gen};
     use quickcheck_macros::quickcheck;
     use std::iter;
 
@@ -471,6 +478,7 @@ mod tests {
         }
     }
 
+    #[cfg(test)]
     fn apply_update_proposal(
         update_state: UpdateState,
         proposal_id: UpdateProposalId,
@@ -491,6 +499,7 @@ mod tests {
         update_state.apply_proposal(proposal_id, &signed_update_proposal, &settings, block_date)
     }
 
+    #[cfg(test)]
     fn apply_update_vote(
         update_state: UpdateState,
         proposal_id: UpdateProposalId,
@@ -783,6 +792,7 @@ mod tests {
         pub proposal_expiration: u32,
     }
 
+    #[cfg(test)]
     impl ExpiryBlockDate {
         pub fn block_date(&self) -> BlockDate {
             self.block_date

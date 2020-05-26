@@ -1,11 +1,15 @@
-#[warn(unused_imports)]
+#[cfg(test)]
+use crate::block::Header;
 use crate::{
-    block::{Block, BlockVersion, Header, HeaderRaw},
+    block::{Block, BlockVersion, HeaderRaw},
     fragment::{Contents, ContentsBuilder, Fragment},
     header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
 };
+#[cfg(test)]
 use chain_test_utils::property;
-use quickcheck::{Arbitrary, Gen, TestResult};
+#[cfg(test)]
+use quickcheck::TestResult;
+use quickcheck::{Arbitrary, Gen};
 
 quickcheck! {
     fn headerraw_serialization_bijection(b: HeaderRaw) -> TestResult {

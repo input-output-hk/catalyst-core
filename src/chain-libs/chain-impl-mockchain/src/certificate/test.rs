@@ -1,12 +1,14 @@
-#[warn(unused_imports)]
 use super::*;
 use crate::accounting::account::DelegationType;
 use crate::block::BlockDate;
 use crate::rewards::TaxType;
+#[cfg(test)]
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::{testing, Ed25519};
 use chain_time::DurationSeconds;
-use quickcheck::{Arbitrary, Gen, TestResult};
+#[cfg(test)]
+use quickcheck::TestResult;
+use quickcheck::{Arbitrary, Gen};
 use quickcheck_macros::quickcheck;
 
 impl Arbitrary for PoolRetirement {

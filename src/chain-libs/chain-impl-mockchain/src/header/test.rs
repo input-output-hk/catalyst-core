@@ -7,7 +7,10 @@ use chain_crypto::{
     VerifiableRandomFunction,
 };
 use lazy_static::lazy_static;
-use quickcheck::{Arbitrary, Gen, TestResult};
+#[cfg(test)]
+use quickcheck::TestResult;
+use quickcheck::{Arbitrary, Gen};
+
 quickcheck! {
     fn header_serialization_bijection(b: Header) -> TestResult {
         chain_test_utils::property::serialization_bijection_r(b)

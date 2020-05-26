@@ -1141,7 +1141,7 @@ impl Deserialize for Ledger {
     }
 }
 
-#[cfg(any(test, feature = "property-test-api"))]
+#[cfg(test)]
 pub mod test {
     use super::*;
     use crate::testing::{ConfigBuilder, LedgerBuilder, StakePoolBuilder};
@@ -1408,6 +1408,7 @@ pub mod test {
         Ok(())
     }
 
+    #[cfg(test)]
     fn pack_unpack_bijection<T, Pack, Unpack>(
         pack_method: &Pack,
         unpack_method: &Unpack,

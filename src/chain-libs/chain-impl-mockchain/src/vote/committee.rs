@@ -125,6 +125,7 @@ impl Readable for CommitteeId {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
+    #[cfg(test)]
     use chain_core::property::Serialize as _;
     use quickcheck::{Arbitrary, Gen};
     use quickcheck_macros::quickcheck;

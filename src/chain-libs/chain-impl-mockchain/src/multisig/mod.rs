@@ -14,13 +14,19 @@ pub use index::{Index, TreeIndex};
 #[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
+    #[cfg(test)]
     use crate::accounting::account::SpendingCounter;
+    #[cfg(test)]
     use crate::transaction::{TransactionSignData, TransactionSignDataHash};
+    #[cfg(test)]
     use crate::{account, key};
+    #[cfg(test)]
     use chain_crypto::{PublicKey, SecretKey};
     use quickcheck::{Arbitrary, Gen};
+    #[cfg(test)]
     use rand_core::{CryptoRng, RngCore};
 
+    #[cfg(test)]
     fn make_keypair<R: RngCore + CryptoRng>(
         rng: &mut R,
     ) -> (
@@ -32,6 +38,7 @@ mod test {
         (sk, pk)
     }
 
+    #[cfg(test)]
     fn make_participant<R: RngCore + CryptoRng>(
         rng: &mut R,
         idx: usize,

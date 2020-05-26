@@ -2,10 +2,13 @@ use super::{
     element::SingleAccountBindingSignature, AccountBindingSignature, AccountIdentifier, Input,
     NoExtra, Payload, Transaction, TxBuilder, UnspecifiedAccountIdentifier, UtxoPointer, Witness,
 };
+#[cfg(test)]
 use crate::certificate::OwnerStakeDelegation;
 use crate::key::{EitherEd25519SecretKey, SpendingSignature};
 use chain_crypto::{testing::arbitrary_secret_key, Ed25519, SecretKey, Signature};
-use quickcheck::{Arbitrary, Gen, TestResult};
+#[cfg(test)]
+use quickcheck::TestResult;
+use quickcheck::{Arbitrary, Gen};
 use quickcheck_macros::quickcheck;
 
 quickcheck! {
@@ -25,9 +28,11 @@ quickcheck! {
     }
 }
 
-use std::fmt::Display;
-
-fn check_eq<X: Eq + Display>(s1: &str, x1: X, s2: &str, x2: X, s: &str) -> Result<(), String> {
+#[cfg(test)]
+fn check_eq<X>(s1: &str, x1: X, s2: &str, x2: X, s: &str) -> Result<(), String>
+where
+    X: Eq + std::fmt::Display,
+{
     if x1 == x2 {
         Ok(())
     } else {

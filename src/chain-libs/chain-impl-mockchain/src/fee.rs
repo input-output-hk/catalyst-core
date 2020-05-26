@@ -140,8 +140,11 @@ impl FeeAlgorithm for LinearFee {
 #[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
+    #[cfg(test)]
     use crate::certificate::{Certificate, CertificatePayload};
-    use quickcheck::{Arbitrary, Gen, TestResult};
+    #[cfg(test)]
+    use quickcheck::TestResult;
+    use quickcheck::{Arbitrary, Gen};
     use quickcheck_macros::quickcheck;
 
     impl Arbitrary for PerCertificateFee {
@@ -214,6 +217,7 @@ mod test {
         }
     }
 
+    #[cfg(test)]
     fn calculate_expected_cert_fee_value(certificate: &Certificate, fee: &LinearFee) -> u64 {
         let cert_fees = fee.per_certificate_fees;
         let vote_cert_fees = fee.per_vote_certificate_fees;

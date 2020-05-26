@@ -270,7 +270,9 @@ pub fn tax_cut(v: Value, tax_type: &TaxType) -> Result<TaxDistribution, ValueErr
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-    use quickcheck::{Arbitrary, Gen, TestResult};
+    #[cfg(test)]
+    use quickcheck::TestResult;
+    use quickcheck::{Arbitrary, Gen};
     use quickcheck_macros::quickcheck;
 
     #[quickcheck]

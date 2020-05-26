@@ -765,7 +765,9 @@ impl TagLen {
 #[cfg(any(test, feature = "property-test-api"))]
 mod test {
     use super::*;
-    use quickcheck::{Arbitrary, Gen, TestResult};
+    #[cfg(test)]
+    use quickcheck::TestResult;
+    use quickcheck::{Arbitrary, Gen};
     use strum::IntoEnumIterator;
 
     quickcheck! {

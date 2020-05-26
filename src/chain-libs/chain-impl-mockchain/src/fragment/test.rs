@@ -1,7 +1,8 @@
-#[warn(unused_imports)]
 use super::*;
 use crate::config::ConfigParam;
-use quickcheck::{Arbitrary, Gen, TestResult};
+#[cfg(test)]
+use quickcheck::TestResult;
+use quickcheck::{Arbitrary, Gen};
 use quickcheck_macros::quickcheck;
 
 impl Arbitrary for Fragment {

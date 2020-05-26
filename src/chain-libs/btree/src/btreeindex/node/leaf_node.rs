@@ -117,8 +117,8 @@ where
                     for (i, (k, v)) in self
                         .keys()
                         .sub(m - 1..self.keys().len())
-                        .into_iter()
-                        .zip(self.values().sub(m - 1..self.values().len()).into_iter())
+                        .iter()
+                        .zip(self.values().sub(m - 1..self.values().len()).iter())
                         .enumerate()
                     {
                         match right_node.as_leaf_mut().insert_key_value::<F>(
@@ -147,8 +147,8 @@ where
                     for (k, v) in self
                         .keys()
                         .sub(m..pos)
-                        .into_iter()
-                        .zip(self.values().sub(m..pos).into_iter())
+                        .iter()
+                        .zip(self.values().sub(m..pos).iter())
                     {
                         right_node.as_leaf_mut().insert_key_value::<F>(
                             position,
@@ -167,8 +167,8 @@ where
                     for (k, v) in self
                         .keys()
                         .sub(pos..self.keys().len())
-                        .into_iter()
-                        .zip(self.values().sub(pos..self.values().len()).into_iter())
+                        .iter()
+                        .zip(self.values().sub(pos..self.values().len()).iter())
                     {
                         right_node.as_leaf_mut::<V>().insert_key_value::<F>(
                             position,
@@ -196,8 +196,8 @@ where
                     for (k, v) in self
                         .keys()
                         .sub(m..self.keys().len())
-                        .into_iter()
-                        .zip(self.values().sub(m..self.values().len()).into_iter())
+                        .iter()
+                        .zip(self.values().sub(m..self.values().len()).iter())
                     {
                         right_node.as_leaf_mut::<V>().insert_key_value::<F>(
                             position,
@@ -386,7 +386,7 @@ where
     V: FixedSize,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub fn take_key_from_left<'siblings>(
+    pub fn take_key_from_left(
         mut self,
         mut parent: impl NodeRefMut,
         anchor: Option<usize>,
@@ -444,7 +444,7 @@ where
     V: FixedSize,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub fn take_key_from_right<'siblings>(
+    pub fn take_key_from_right(
         mut self,
         mut parent: impl NodeRefMut,
         anchor: Option<usize>,
@@ -506,16 +506,11 @@ where
     V: FixedSize,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub fn merge_into_left<'siblings>(self, mut sibling: impl NodeRefMut) -> LeafNode<'b, K, V, T> {
+    pub fn merge_into_left(self, mut sibling: impl NodeRefMut) -> LeafNode<'b, K, V, T> {
         //merge this into left
         sibling.as_node_mut(|mut node| {
             let mut merge_target = node.as_leaf_mut();
-            for (k, v) in self
-                .node
-                .keys()
-                .into_iter()
-                .zip(self.node.values().into_iter())
-            {
+            for (k, v) in self.node.keys().iter().zip(self.node.values().iter()) {
                 // TODO: Create an Append?
                 let insert_pos = merge_target.keys().len();
                 merge_target
@@ -540,14 +535,14 @@ where
     V: FixedSize,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub fn merge_into_self<'siblings>(mut self, sibling: impl NodeRef) -> LeafNode<'b, K, V, T> {
+    pub fn merge_into_self(mut self, sibling: impl NodeRef) -> LeafNode<'b, K, V, T> {
         //merge right into this
         sibling.as_node(|node: Node<K, &[u8]>| {
             for (k, v) in node
                 .as_leaf::<V>()
                 .keys()
-                .into_iter()
-                .zip(node.as_leaf::<V>().values().into_iter())
+                .iter()
+                .zip(node.as_leaf::<V>().values().iter())
             {
                 let insert_pos = self.node.keys().len();
                 self.node
@@ -596,11 +591,11 @@ mod tests {
         T: AsRef<[u8]>,
     {
         fn eq(&self, other: &Self) -> bool {
-            let same_keys = self.keys().into_iter().collect::<Vec<U64Key>>()
-                == other.keys().into_iter().collect::<Vec<U64Key>>();
+            let same_keys = self.keys().iter().collect::<Vec<U64Key>>()
+                == other.keys().iter().collect::<Vec<U64Key>>();
 
-            let same_values = self.values().into_iter().collect::<Vec<u64>>()
-                == other.values().into_iter().collect::<Vec<u64>>();
+            let same_values = self.values().iter().collect::<Vec<u64>>()
+                == other.values().iter().collect::<Vec<u64>>();
 
             same_keys && same_values
         }

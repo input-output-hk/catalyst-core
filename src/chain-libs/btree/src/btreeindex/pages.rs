@@ -155,9 +155,8 @@ pub mod borrow {
                 guard.as_ref().unwrap().clone()
             });
 
-            match *arc {
-                BorrowGuard::Exclusive => panic!("can't borrow mutably borrowed page {}", id),
-                _ => (),
+            if matches!(*arc, BorrowGuard::Exclusive) {
+                panic!("can't borrow mutably borrowed page {}", id)
             }
 
             BorrowRAIIGuard(arc)

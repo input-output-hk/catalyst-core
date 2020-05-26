@@ -345,7 +345,7 @@ where
         }
     }
 
-    pub fn get_next<'a>(&'a mut self) -> Result<Option<PageRefMut<'a>>, std::io::Error> {
+    pub fn get_next(&mut self) -> Result<Option<PageRefMut<'_>>, std::io::Error> {
         let id = match self.backtrack.pop() {
             Some(id) => id,
             None => return Ok(None),
@@ -418,7 +418,7 @@ where
         }
     }
 
-    pub fn update<'a, V: FixedSize>(&'a mut self, new_value: V) -> Result<(), std::io::Error> {
+    pub fn update<V: FixedSize>(&mut self, new_value: V) -> Result<(), std::io::Error> {
         let leaf = match self.backtrack.pop() {
             Some(id) => id,
             None => return Ok(()),
@@ -466,8 +466,7 @@ where
                     };
                 };
 
-                let page = handle.unwrap_or_else(|| rename_in_parents.take().unwrap().finish());
-                page
+                handle.unwrap_or_else(|| rename_in_parents.take().unwrap().finish())
             }
             transaction::MutablePage::InTransaction(handle) => handle,
         };

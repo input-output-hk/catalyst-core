@@ -63,6 +63,7 @@ pub struct Leader {
     pub genesis_leader: Option<GenesisLeader>,
 }
 
+#[allow(clippy::large_enum_variant)]
 pub enum LeaderOutput {
     None,
     Bft(BftLeaderId),

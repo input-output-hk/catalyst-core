@@ -199,7 +199,7 @@ impl<'b, K> Node<K, crate::mem_page::MemPage>
 where
     K: FixedSize,
 {
-    pub(crate) fn to_page(self) -> crate::mem_page::MemPage {
+    pub(crate) fn into_page(self) -> crate::mem_page::MemPage {
         self.data
     }
 }
@@ -228,8 +228,7 @@ mod tests {
             page_size: page_size as u16,
         };
 
-        let pages = Pages::new(params);
-        pages
+        Pages::new(params)
     }
 
     pub fn allocate_internal() -> Node<U64Key, MemPage> {

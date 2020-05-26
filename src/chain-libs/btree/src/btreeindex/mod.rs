@@ -222,20 +222,20 @@ where
         };
 
         if let Some((leaf_id, split_key, new_node)) = needs_recurse {
-            let id = backtrack.add_new_node(new_node.to_page())?;
+            let id = backtrack.add_new_node(new_node.into_page())?;
 
             if backtrack.has_next() {
                 self.insert_in_internals(split_key, id, &mut backtrack)?;
             } else {
                 let new_root = self.create_internal_node(leaf_id, id, split_key);
-                backtrack.new_root(new_root.to_page())?;
+                backtrack.new_root(new_root.into_page())?;
             }
         }
 
         Ok(())
     }
 
-    pub(crate) fn insert_in_leaf<'a, 'b: 'a>(
+    pub(crate) fn insert_in_leaf<'a>(
         &self,
         mut leaf: PageRefMut<'a>,
         key: K,
@@ -295,7 +295,7 @@ where
                 }
             };
 
-            let new_id = backtrack.add_new_node(new_node.to_page())?;
+            let new_id = backtrack.add_new_node(new_node.into_page())?;
 
             if backtrack.has_next() {
                 // set values to insert in next iteration (recurse on parent)
@@ -306,7 +306,7 @@ where
                 let right_id = new_id;
                 let new_root = self.create_internal_node(left_id, right_id, new_split_key);
 
-                backtrack.new_root(new_root.to_page())?;
+                backtrack.new_root(new_root.into_page())?;
                 return Ok(());
             }
         }
@@ -456,7 +456,7 @@ where
         let left = next_element.left.as_ref();
         let right = next_element.right.as_ref();
         // we need this to know which child we are (what position does this node have in the parent)
-        let anchor = next_element.anchor.clone();
+        let anchor = next_element.anchor;
 
         let should_recurse_on_parent: Option<usize> = next.as_node_mut(
             |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
@@ -552,7 +552,7 @@ where
                 Some(mut mut_context) => {
                     // non-root node
                     // let parent = next_element.parent.unwrap();
-                    let anchor = next_element.anchor.clone();
+                    let anchor = next_element.anchor;
                     let left = next_element.left;
                     let right = next_element.right;
 
@@ -669,22 +669,22 @@ mod tests {
                     node::NodeTag::Internal => {
                         println!("Internal Node");
                         println!("keys: ");
-                        for k in node.as_internal().keys().into_iter() {
+                        for k in node.as_internal().keys().iter() {
                             println!("{:?}", k.borrow());
                         }
                         println!("children: ");
-                        for c in node.as_internal().children().into_iter() {
+                        for c in node.as_internal().children().iter() {
                             println!("{:?}", c.borrow());
                         }
                     }
                     node::NodeTag::Leaf => {
                         println!("Leaf Node");
                         println!("keys: ");
-                        for k in node.as_leaf::<u64>().keys().into_iter() {
+                        for k in node.as_leaf::<u64>().keys().iter() {
                             println!("{:?}", k.borrow());
                         }
                         println!("values: ");
-                        for v in node.as_leaf::<u64>().values().into_iter() {
+                        for v in node.as_leaf::<u64>().values().iter() {
                             println!("{:?}", v.borrow());
                         }
                     }
@@ -742,20 +742,18 @@ mod tests {
 
         // we insert first in the reference in order to get rid of duplicates
         for (xk, xv) in xs {
-            reference.entry(xk.clone()).or_insert(xv.clone());
+            reference.entry(xk.clone()).or_insert(xv);
         }
 
         tree.insert_many(reference.iter().map(|(k, v)| (U64Key(*k), *v)))
             .unwrap();
 
-        let prop = reference
+        reference
             .iter()
             .all(|(k, v)| match tree.get(&U64Key(*k), |v| v.cloned()) {
                 Some(l) => *v == l,
                 None => false,
-            });
-
-        prop
+            })
     }
 
     #[test]
@@ -954,14 +952,12 @@ mod tests {
             assert!(tree.get(&U64Key(k), |v| v.cloned()).is_none());
         }
 
-        let prop = reference
+        reference
             .iter()
             .all(|(k, v)| match tree.get(k, |v| v.cloned()) {
                 Some(l) => *v == l,
                 None => false,
-            });
-
-        prop
+            })
     }
 
     #[test]
@@ -970,8 +966,7 @@ mod tests {
 
         let n: u64 = 2000;
 
-        tree.insert_many((0..n).into_iter().map(|i| (U64Key(i), i)))
-            .unwrap();
+        tree.insert_many((0..n).map(|i| (U64Key(i), i))).unwrap();
 
         assert_eq!(tree.get(&U64Key(100), |v| v.cloned()), Some(100));
 

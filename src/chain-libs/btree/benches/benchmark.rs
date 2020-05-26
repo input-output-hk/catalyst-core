@@ -47,14 +47,14 @@ fn single_key_insertion(c: &mut Criterion) {
     let tree: BTreeStore<U64Key> =
         BTreeStore::new(dir_path, key_size.try_into().unwrap(), page_size).unwrap();
 
-    let n: u64 = 200000;
+    let n: u64 = 200_000;
 
     let mut rng = StdRng::seed_from_u64(SEED);
 
     tree.insert_many(
         (0..n)
             .step_by(2)
-            .map(|i| (U64Key(i.clone()), random_blob(&mut rng))),
+            .map(|i| (U64Key(i), random_blob(&mut rng))),
     )
     .expect("Couldn't insert setup values");
 
@@ -84,7 +84,7 @@ fn single_key_search(c: &mut Criterion) {
     let tree: BTreeStore<U64Key> =
         BTreeStore::new(dir_path, key_size.try_into().unwrap(), page_size).unwrap();
 
-    let n: u64 = 200000;
+    let n: u64 = 200_000;
 
     let mut rng = StdRng::seed_from_u64(SEED);
 

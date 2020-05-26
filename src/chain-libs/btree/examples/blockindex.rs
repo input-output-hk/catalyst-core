@@ -1,5 +1,5 @@
 use btree::{BTreeStore, FixedSize, Storeable};
-use hex;
+
 use std::io;
 use std::io::BufRead;
 

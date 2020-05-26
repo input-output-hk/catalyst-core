@@ -157,6 +157,6 @@ impl InitialFaultTolerantTxCertBuilder {
     {
         let keys = vec![self.funder.private_key()];
         let input = self.funder.make_input_with_value(Value(1));
-        fragment(self.cert.clone(), keys.clone(), &[input], &[])
+        fragment(self.cert.clone(), keys, &[input], &[])
     }
 }

@@ -64,6 +64,10 @@ impl MmapStorage {
     /// this call is unsafe because get_mut is &self and not &mut self, so this could lead to mutable aliasing
     /// this panics if the location (+ count) is out of range
     /// the size of the returning slice should be checked as the underlying file is split in multiple pages, it may not be possible to return a slice with the entire range
+    ///
+    /// # Safety
+    ///
+    /// This function contains unsafe code: TODO precise what is unsafe here
     pub unsafe fn get(&self, location: u64, count: u64) -> &[u8] {
         let (page_id, offset) = absolute_offset_to_relative(self.page_size, location);
         match self.pages.get_page(page_id as PageId) {
@@ -88,6 +92,10 @@ impl MmapStorage {
 
     /// caller must enforce that there is no aliasing here
     /// the size of the returning slice should be checked as the underlying file is split in multiple pages, it may not be possible to return a slice with the entire range
+    ///
+    /// # Safety
+    ///
+    /// This function contains unsafe code: TODO precise what is unsafe here
     pub unsafe fn get_mut(&self, location: u64, count: u64) -> Result<&mut [u8], io::Error> {
         if location + count > self.allocated_size.load(Ordering::SeqCst) {
             self.extend(location + count)?;
@@ -128,7 +136,7 @@ impl MmapStorage {
             let new_size = (page_id + 1) * self.page_size;
             // TODO: Is the new expanded section zeroed or something?
             unsafe {
-                (&mut *self.file).set_len(new_size)?;
+                (&*self.file).set_len(new_size)?;
             }
             self.allocated_size.store(new_size, Ordering::Release);
 
@@ -143,6 +151,10 @@ impl MmapStorage {
 
     pub fn len(&self) -> u64 {
         self.file_len.load(Ordering::SeqCst)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 

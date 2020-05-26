@@ -207,7 +207,7 @@ impl FaultTolerantTxCertBuilder {
     {
         let keys = vec![self.funder.private_key()];
         let input = self.funder.make_input_with_value(self.builder.fee(&self.cert));
-        self.builder.fragment(&self.cert, keys.clone(), &[input], &[], false, &self.funder)
+        self.builder.fragment(&self.cert, keys, &[input], &[], false, &self.funder)
     }
 
     pub fn transaction_with_witness(&self) -> Fragment

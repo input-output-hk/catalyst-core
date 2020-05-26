@@ -5,7 +5,6 @@ pub mod data;
 pub mod e2e;
 mod gen;
 pub mod ledger;
-#[cfg(test)]
 pub mod scenario;
 pub mod verifiers;
 

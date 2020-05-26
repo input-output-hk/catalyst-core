@@ -242,7 +242,7 @@ mod tests {
         let first_vote_cast_payload = VoteTestGen::vote_cast_payload();
         let second_vote_cast_payload = VoteTestGen::vote_cast_payload();
 
-        let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload.clone());
+        let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload);
         let second_vote_cast =
             VoteCast::new(vote_plan.to_id(), 0, second_vote_cast_payload.clone());
 
@@ -322,7 +322,7 @@ mod tests {
         let first_vote_cast_payload = VoteTestGen::vote_cast_payload();
         let second_vote_cast_payload = VoteTestGen::vote_cast_payload();
 
-        let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload.clone());
+        let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload);
         let second_vote_cast =
             VoteCast::new(vote_plan.to_id(), 0, second_vote_cast_payload.clone());
 
@@ -390,7 +390,7 @@ mod tests {
     pub fn vote_manager_vote_cast_different_id() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(1);
         let wrong_plan = VoteTestGen::vote_plan_with_proposals(1);
-        let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
+        let vote_plan_manager = VotePlanManager::new(vote_plan);
         let vote_cast = VoteCast::new(wrong_plan.to_id(), 0, VoteTestGen::vote_cast_payload());
 
         assert_eq!(
@@ -404,7 +404,7 @@ mod tests {
                 .unwrap(),
             VoteError::InvalidVotePlan {
                 expected: vote_plan_manager.id().clone(),
-                vote: vote_cast.clone(),
+                vote: vote_cast,
             }
         );
     }
@@ -477,7 +477,7 @@ mod tests {
             .vote(
                 BlockDate::from_epoch_slot_id(1, 1),
                 TestGen::unspecified_account_identifier(),
-                vote_cast.clone()
+                vote_cast
             )
             .is_ok());
     }

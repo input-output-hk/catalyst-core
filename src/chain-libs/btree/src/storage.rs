@@ -136,7 +136,7 @@ impl MmapStorage {
             let new_size = (page_id + 1) * self.page_size;
             // TODO: Is the new expanded section zeroed or something?
             unsafe {
-                (&mut *self.file).set_len(new_size)?;
+                (&*self.file).set_len(new_size)?;
             }
             self.allocated_size.store(new_size, Ordering::Release);
 

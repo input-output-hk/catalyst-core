@@ -422,7 +422,7 @@ where
             let last = keys.len().checked_sub(1).unwrap();
             let stolen_key = keys.get(last);
             let stolen_child = node.children().get(last + 1);
-            (stolen_key.borrow().clone(), stolen_child.borrow().clone())
+            (stolen_key.borrow().clone(), *stolen_child.borrow())
         });
 
         let new_first_key = parent.as_node(|node: Node<K, &[u8]>| {
@@ -478,7 +478,7 @@ where
             let keys = node.keys();
             let stolen_key = keys.get(0);
             let stolen_child = node.children().get(0);
-            (stolen_key.borrow().clone(), stolen_child.borrow().clone())
+            (stolen_key.borrow().clone(), *stolen_child.borrow())
         });
 
         let right_anchor_pos = anchor.map(|a| a + 1).unwrap_or(0);

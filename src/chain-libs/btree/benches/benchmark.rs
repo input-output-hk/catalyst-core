@@ -54,7 +54,7 @@ fn single_key_insertion(c: &mut Criterion) {
     tree.insert_many(
         (0..n)
             .step_by(2)
-            .map(|i| (U64Key(i.clone()), random_blob(&mut rng))),
+            .map(|i| (U64Key(i), random_blob(&mut rng))),
     )
     .expect("Couldn't insert setup values");
 

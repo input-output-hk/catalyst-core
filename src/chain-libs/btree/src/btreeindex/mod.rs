@@ -456,7 +456,7 @@ where
         let left = next_element.left.as_ref();
         let right = next_element.right.as_ref();
         // we need this to know which child we are (what position does this node have in the parent)
-        let anchor = next_element.anchor.clone();
+        let anchor = next_element.anchor;
 
         let should_recurse_on_parent: Option<usize> = next.as_node_mut(
             |mut node: Node<K, &mut [u8]>| -> Result<Option<usize>, BTreeStoreError> {
@@ -552,7 +552,7 @@ where
                 Some(mut mut_context) => {
                     // non-root node
                     // let parent = next_element.parent.unwrap();
-                    let anchor = next_element.anchor.clone();
+                    let anchor = next_element.anchor;
                     let left = next_element.left;
                     let right = next_element.right;
 
@@ -742,7 +742,7 @@ mod tests {
 
         // we insert first in the reference in order to get rid of duplicates
         for (xk, xv) in xs {
-            reference.entry(xk.clone()).or_insert(xv.clone());
+            reference.entry(xk.clone()).or_insert(xv);
         }
 
         tree.insert_many(reference.iter().map(|(k, v)| (U64Key(*k), *v)))

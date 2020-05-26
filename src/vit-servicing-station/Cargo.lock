@@ -716,10 +716,11 @@ checksum = "3baa92041a6fec78c687fa0cc2b3fae8884f743d672cf551bed1d6dac6988d0f"
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.17.3"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56d90181c2904c287e5390186be820e5ef311a3c62edebb7d6ca3d6a48ce041d"
+checksum = "0e9eb7b8e152b6a01be6a4a2917248381875758250dc3df5d46caf9250341dda"
 dependencies = [
+ "cc",
  "pkg-config",
  "vcpkg",
 ]
@@ -1878,6 +1879,7 @@ dependencies = [
  "async-graphql-warp",
  "diesel",
  "dotenv",
+ "libsqlite3-sys",
  "serde",
  "serde_json",
  "tokio",

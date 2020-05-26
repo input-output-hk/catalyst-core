@@ -199,7 +199,7 @@ impl<'b, K> Node<K, crate::mem_page::MemPage>
 where
     K: FixedSize,
 {
-    pub(crate) fn to_page(self) -> crate::mem_page::MemPage {
+    pub(crate) fn into_page(self) -> crate::mem_page::MemPage {
         self.data
     }
 }

@@ -153,7 +153,7 @@ where
         }
     }
 
-    pub(crate) fn into_iter(&self) -> ArrayViewIter<T, E> {
+    pub(crate) fn iter(&self) -> ArrayViewIter<T, E> {
         ArrayViewIter { view: self, pos: 0 }
     }
 }
@@ -342,7 +342,7 @@ mod test {
         }
 
         assert_eq!(view.len(), numbers.len());
-        for (n, v) in numbers.iter().zip(view.into_iter()) {
+        for (n, v) in numbers.iter().zip(view.iter()) {
             assert_eq!(n, v.borrow())
         }
 
@@ -364,7 +364,7 @@ mod test {
         view.delete(1usize).unwrap();
 
         assert_eq!(view.len(), numbers.len() - 1);
-        let result: Vec<u32> = view.into_iter().map(|e| e.borrow().clone()).collect();
+        let result: Vec<u32> = view.iter().collect();
         let expected = vec![0u32, 2];
         assert_eq!(result, expected);
     }
@@ -396,7 +396,7 @@ mod test {
         }
 
         assert_eq!(view.len(), numbers.len());
-        for (n, v) in numbers.iter().take(3).zip(view.sub(0..3).into_iter()) {
+        for (n, v) in numbers.iter().take(3).zip(view.sub(0..3).iter()) {
             assert_eq!(n, v.borrow())
         }
     }
@@ -416,7 +416,7 @@ mod test {
         view.insert(1, &1u32).unwrap();
 
         assert_eq!(view.len(), 3);
-        let result: Vec<u32> = view.into_iter().map(|e| e.borrow().clone()).collect();
+        let result: Vec<u32> = view.iter().collect();
         let expected = vec![0u32, 1, 2];
         assert_eq!(result, expected);
     }

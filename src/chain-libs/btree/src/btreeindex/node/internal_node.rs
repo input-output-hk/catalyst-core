@@ -166,7 +166,7 @@ where
                     let split_key = self.keys().get(m - 1 as usize).borrow().clone();
 
                     let mut keys_mut = right_node_internal.keys_mut();
-                    for k in self.keys().sub(m..self.keys().len()).into_iter() {
+                    for k in self.keys().sub(m..self.keys().len()).iter() {
                         keys_mut.append(k.borrow()).unwrap();
                     }
 
@@ -177,7 +177,7 @@ where
                     for c in self
                         .children()
                         .sub(m as usize..self.children().len())
-                        .into_iter()
+                        .iter()
                     {
                         children_mut
                             .append(c.borrow())
@@ -200,13 +200,13 @@ where
                     let split_key = self.keys().get(m as usize).borrow().clone();
 
                     let mut keys_mut = right_internal_node.keys_mut();
-                    for k in self.keys().sub(m + 1..pos as usize).into_iter() {
+                    for k in self.keys().sub(m + 1..pos as usize).iter() {
                         keys_mut.append(k.borrow()).unwrap();
                     }
 
                     keys_mut.append(&key).unwrap();
 
-                    for k in self.keys().sub(pos as usize..self.keys().len()).into_iter() {
+                    for k in self.keys().sub(pos as usize..self.keys().len()).iter() {
                         keys_mut.append(k.borrow()).unwrap();
                     }
 
@@ -216,12 +216,12 @@ where
                     for c in self
                         .children()
                         .sub(m as usize + 1..pos as usize + 1)
-                        .into_iter()
+                        .iter()
                         .chain(Some(node_id).into_iter())
                         .chain(
                             self.children()
                                 .sub(pos as usize + 1..self.children().len())
-                                .into_iter(),
+                                .iter(),
                         )
                     {
                         children_mut.append(c.borrow()).unwrap();
@@ -239,7 +239,7 @@ where
                     let split_key = key;
 
                     let mut keys_mut = right_internal_node.keys_mut();
-                    for k in self.keys().sub(m as usize..self.keys().len()).into_iter() {
+                    for k in self.keys().sub(m as usize..self.keys().len()).iter() {
                         keys_mut.append(k.borrow()).unwrap();
                     }
 
@@ -249,7 +249,7 @@ where
                     for c in Some(node_id).into_iter().chain(
                         self.children()
                             .sub(m as usize + 1..self.children().len())
-                            .into_iter(),
+                            .iter(),
                     ) {
                         children_mut.append(c.borrow()).unwrap();
                     }
@@ -561,8 +561,8 @@ where
         sibling.as_node_mut(|mut node| {
             for (k, v) in Some(borrowed_key)
                 .into_iter()
-                .chain(keys.into_iter())
-                .zip(children.into_iter())
+                .chain(keys.iter())
+                .zip(children.iter())
             {
                 let mut merge_target = node.as_internal_mut();
                 let insert_pos = merge_target.keys().len();
@@ -617,8 +617,8 @@ where
 
             for (k, v) in Some(borrowed_key)
                 .into_iter()
-                .chain(node.as_internal().keys().into_iter())
-                .zip(node.as_internal().children().into_iter())
+                .chain(node.as_internal().keys().iter())
+                .zip(node.as_internal().children().iter())
             {
                 let insert_pos = self.node.keys().len();
                 self.node
@@ -662,11 +662,7 @@ mod tests {
         T: AsRef<[u8]>,
     {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let keys: Vec<K> = self
-                .keys()
-                .into_iter()
-                .map(|k| k.borrow().clone())
-                .collect();
+            let keys: Vec<K> = self.keys().iter().map(|k| k.borrow().clone()).collect();
             write!(
                 f,
                 "Internal Node {{ max_keys: {}, keys: {:?} }}",
@@ -680,11 +676,11 @@ mod tests {
         T: AsRef<[u8]>,
     {
         fn eq(&self, other: &Self) -> bool {
-            let same_keys = self.keys().into_iter().collect::<Vec<U64Key>>()
-                == other.keys().into_iter().collect::<Vec<U64Key>>();
+            let same_keys = self.keys().iter().collect::<Vec<U64Key>>()
+                == other.keys().iter().collect::<Vec<U64Key>>();
 
-            let same_children = self.children().into_iter().collect::<Vec<u32>>()
-                == other.children().into_iter().collect::<Vec<u32>>();
+            let same_children = self.children().iter().collect::<Vec<u32>>()
+                == other.children().iter().collect::<Vec<u32>>();
 
             same_keys && same_children
         }

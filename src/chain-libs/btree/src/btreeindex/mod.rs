@@ -748,14 +748,12 @@ mod tests {
         tree.insert_many(reference.iter().map(|(k, v)| (U64Key(*k), *v)))
             .unwrap();
 
-        let prop = reference
+        reference
             .iter()
             .all(|(k, v)| match tree.get(&U64Key(*k), |v| v.cloned()) {
                 Some(l) => *v == l,
                 None => false,
-            });
-
-        prop
+            })
     }
 
     #[test]
@@ -954,14 +952,12 @@ mod tests {
             assert!(tree.get(&U64Key(k), |v| v.cloned()).is_none());
         }
 
-        let prop = reference
+        reference
             .iter()
             .all(|(k, v)| match tree.get(k, |v| v.cloned()) {
                 Some(l) => *v == l,
                 None => false,
-            });
-
-        prop
+            })
     }
 
     #[test]

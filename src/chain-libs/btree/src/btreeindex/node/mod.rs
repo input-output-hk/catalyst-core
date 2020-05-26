@@ -228,8 +228,7 @@ mod tests {
             page_size: page_size as u16,
         };
 
-        let pages = Pages::new(params);
-        pages
+        Pages::new(params)
     }
 
     pub fn allocate_internal() -> Node<U64Key, MemPage> {

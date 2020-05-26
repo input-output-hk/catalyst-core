@@ -466,8 +466,7 @@ where
                     };
                 };
 
-                let page = handle.unwrap_or_else(|| rename_in_parents.take().unwrap().finish());
-                page
+                handle.unwrap_or_else(|| rename_in_parents.take().unwrap().finish())
             }
             transaction::MutablePage::InTransaction(handle) => handle,
         };

@@ -152,6 +152,10 @@ impl MmapStorage {
     pub fn len(&self) -> u64 {
         self.file_len.load(Ordering::SeqCst)
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 }
 
 impl Page {

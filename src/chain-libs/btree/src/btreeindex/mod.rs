@@ -966,8 +966,7 @@ mod tests {
 
         let n: u64 = 2000;
 
-        tree.insert_many((0..n).map(|i| (U64Key(i), i)))
-            .unwrap();
+        tree.insert_many((0..n).map(|i| (U64Key(i), i))).unwrap();
 
         assert_eq!(tree.get(&U64Key(100), |v| v.cloned()), Some(100));
 

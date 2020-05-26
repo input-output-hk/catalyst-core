@@ -76,7 +76,7 @@ where
     // The first insertion of an InternalNode is different, because in general we can insert
     // only new keys and the right child. When the node has only one key, we need two children so
     // the first insertion must insert two keys
-    pub fn insert_first<'me>(&'me mut self, key: K, left: PageId, right: PageId) {
+    pub fn insert_first(&mut self, key: K, left: PageId, right: PageId) {
         assert_eq!(self.keys().len(), 0);
         self.keys_mut()
             .append(&key)
@@ -95,8 +95,8 @@ where
     }
 
     /// function to call after inserted the first key with `insert_first`. It will insert key with node_id as right child
-    pub fn insert<'me>(
-        &'me mut self,
+    pub fn insert(
+        &mut self,
         key: K,
         node_id: PageId,
         allocate: impl FnMut() -> Node<K, MemPage>,
@@ -109,7 +109,7 @@ where
         }
     }
 
-    pub fn children_mut<'me>(&'me mut self) -> ChildrenMut<'me> {
+    pub fn children_mut(&mut self) -> ChildrenMut<'_> {
         let len = if self.keys().len() > 0 {
             self.keys().len().checked_add(1).unwrap() as usize
         } else {
@@ -123,7 +123,7 @@ where
         ChildrenMut::new_static_size(data, len)
     }
 
-    fn keys_mut<'me>(&'me mut self) -> KeysMut<'me, K> {
+    fn keys_mut(&mut self) -> KeysMut<'_, K> {
         let len = LittleEndian::read_u64(&self.data.as_ref()[0..LEN_SIZE]);
 
         let data = &mut self.data.as_mut()[LEN_SIZE..LEN_SIZE + self.max_keys * K::max_size()];
@@ -131,8 +131,8 @@ where
         KeysMut::new_dynamic_size(data, len.try_into().unwrap(), K::max_size())
     }
 
-    fn insert_key_child<'me>(
-        &'me mut self,
+    fn insert_key_child(
+        &mut self,
         pos: usize,
         key: K,
         node_id: PageId,
@@ -375,7 +375,7 @@ where
         }
     }
 
-    pub(crate) fn children<'me>(&'me self) -> Children<'me> {
+    pub(crate) fn children(&self) -> Children<'_> {
         let len = if self.keys().len() > 0 {
             self.keys().len().checked_add(1).unwrap() as usize
         } else {
@@ -389,7 +389,7 @@ where
         Children::new_static_size(data, len)
     }
 
-    pub(crate) fn keys<'me>(&'me self) -> Keys<'me, K> {
+    pub(crate) fn keys(&self) -> Keys<'_, K> {
         let len = LittleEndian::read_u64(&self.data.as_ref()[0..LEN_SIZE]);
 
         let data = &self.data.as_ref()[LEN_SIZE..LEN_SIZE + self.max_keys * K::max_size()];
@@ -407,7 +407,7 @@ where
     K: FixedSize,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub fn take_key_from_left<'siblings>(
+    pub fn take_key_from_left(
         mut self,
         mut parent: impl NodeRefMut,
         anchor: usize,
@@ -464,7 +464,7 @@ where
     K: FixedSize,
     T: AsMut<[u8]> + AsRef<[u8]> + 'b,
 {
-    pub fn take_key_from_right<'siblings>(
+    pub fn take_key_from_right(
         mut self,
         mut parent: impl NodeRefMut,
         anchor: Option<usize>,
@@ -590,7 +590,7 @@ where
 {
     /// take all the keys from the right sibling and append them to this node, this doesn't mutate the right
     /// sibling because in the full algorithm it will be deleted afterwards anyway
-    pub fn merge_into_self<'siblings>(
+    pub fn merge_into_self(
         mut self,
         parent: impl NodeRefMut,
         anchor: Option<usize>,

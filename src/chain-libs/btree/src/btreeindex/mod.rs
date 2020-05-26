@@ -222,20 +222,20 @@ where
         };
 
         if let Some((leaf_id, split_key, new_node)) = needs_recurse {
-            let id = backtrack.add_new_node(new_node.to_page())?;
+            let id = backtrack.add_new_node(new_node.into_page())?;
 
             if backtrack.has_next() {
                 self.insert_in_internals(split_key, id, &mut backtrack)?;
             } else {
                 let new_root = self.create_internal_node(leaf_id, id, split_key);
-                backtrack.new_root(new_root.to_page())?;
+                backtrack.new_root(new_root.into_page())?;
             }
         }
 
         Ok(())
     }
 
-    pub(crate) fn insert_in_leaf<'a, 'b: 'a>(
+    pub(crate) fn insert_in_leaf<'a>(
         &self,
         mut leaf: PageRefMut<'a>,
         key: K,

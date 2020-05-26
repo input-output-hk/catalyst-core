@@ -115,11 +115,11 @@ where
         self.len
     }
 
-    pub(crate) fn get<'me>(&'me self, pos: usize) -> <E as Storeable<'_>>::Output {
+    pub(crate) fn get(&self, pos: usize) -> <E as Storeable<'_>>::Output {
         self.try_get(pos).unwrap()
     }
 
-    pub(crate) fn try_get<'me>(&'me self, pos: usize) -> Option<<E as Storeable<'_>>::Output> {
+    pub(crate) fn try_get(&self, pos: usize) -> Option<<E as Storeable<'_>>::Output> {
         if pos < self.len() {
             Some(
                 E::read(

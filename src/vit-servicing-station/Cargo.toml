@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 async-graphql = "1.13.2"
 async-graphql-warp = "1.13.2"
-diesel = { version = "1.4", features = ["sqlite"] }
+diesel = { version = "1.4.4", features = ["sqlite", "r2d2"] }
 dotenv = "0.9.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.53"

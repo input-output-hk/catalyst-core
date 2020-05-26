@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Install libsqlite3
         run: sudo apt-get install libsqlite3-dev
-        if: ${{ matrix.os }} == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest'
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1
         with:

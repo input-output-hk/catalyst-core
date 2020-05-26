@@ -8,10 +8,11 @@ use crate::{
     },
 };
 
-use super::{
-    scenario_builder::{prepare_scenario, stake_pool, wallet},
-    FragmentFactory,
-};
+use super::FragmentFactory;
+#[cfg(test)]
+use super::
+    scenario_builder::{prepare_scenario, stake_pool, wallet};
+#[cfg(test)]
 use chain_addr::Discrimination;
 
 use thiserror::Error;

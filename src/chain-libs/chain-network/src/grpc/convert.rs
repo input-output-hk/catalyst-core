@@ -150,7 +150,7 @@ impl FromProtobuf<proto::Gossip> for Gossip {
             nodes: message
                 .nodes
                 .into_iter()
-                .map(|v| Node::from_bytes(v))
+                .map(Node::from_bytes)
                 .collect::<Vec<_>>()
                 .into(),
         };

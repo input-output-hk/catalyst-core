@@ -138,6 +138,7 @@ impl<'a> From<&'a Certificate> for CertificatePayload {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone)]
 pub enum Certificate {
     StakeDelegation(StakeDelegation),
@@ -205,6 +206,7 @@ impl Certificate {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone)]
 pub enum SignedCertificate {
     StakeDelegation(StakeDelegation, <StakeDelegation as Payload>::Auth),

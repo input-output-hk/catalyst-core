@@ -2,6 +2,7 @@
 use crate::transaction::*;
 use chain_addr::Address;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone)]
 pub enum Error {
     /// If the Ledger could not find the given input in the UTxO list it will

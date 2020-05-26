@@ -151,6 +151,7 @@ pub enum Block0Error {
 pub type OutputOldAddress = Output<legacy::OldAddress>;
 pub type OutputAddress = Output<Address>;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum Error {
     #[error("Invalid settings")]

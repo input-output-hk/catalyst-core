@@ -21,8 +21,8 @@ pub fn filter(
 
     // mount graphql endpoint
     let graphql_root = warp::path!("graphql" / ..);
-    // TODO: Use proper db url
-    let graphql_filter = graphql::filter(graphql_root.boxed(), context, "");
+    // TODO: Use proper db url from config instead of hardcoded one
+    let graphql_filter = graphql::filter(graphql_root.boxed(), context, "./db/database.sqlite3");
 
     root.and(genesis_filter.or(chain_data_filter).or(graphql_filter))
         .boxed()

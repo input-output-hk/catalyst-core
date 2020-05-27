@@ -1,7 +1,8 @@
 use crate::{
-    certificate::{Proposal, VoteCast, VoteCastPayload, VotePlan, VotePlanId},
+    certificate::{Proposal, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
+    vote,
 };
 use imhamt::Hamt;
 use std::{collections::hash_map::DefaultHasher, sync::Arc};
@@ -24,7 +25,7 @@ struct ProposalManagers(Vec<ProposalManager>);
 
 #[derive(Clone, PartialEq, Eq)]
 struct ProposalManager {
-    votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, VoteCastPayload>,
+    votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, vote::Payload>,
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -46,6 +47,12 @@ pub enum VoteError {
     InvalidVoteProposal {
         num_proposals: usize,
         vote: VoteCast,
+    },
+
+    #[error("{received:?} is not the expected payload type, expected {expected:?}")]
+    InvalidPayloadType {
+        received: vote::PayloadType,
+        expected: vote::PayloadType,
     },
 }
 
@@ -176,6 +183,7 @@ impl VotePlanManager {
     /// * if the proposal index is not one one of the proposal listed
     /// * if the block_date show it is no longer valid to cast a vote for any
     ///   of the managed proposals
+    /// * if the payload type of the vote is not the expected one
     ///
     pub fn vote(
         &self,
@@ -193,6 +201,11 @@ impl VotePlanManager {
                 start: self.plan().vote_start(),
                 end: self.plan().vote_end(),
                 vote: cast,
+            })
+        } else if self.plan().payload_type() != cast.payload().payload_type() {
+            Err(VoteError::InvalidPayloadType {
+                expected: self.plan().payload_type(),
+                received: cast.payload().payload_type(),
             })
         } else {
             let proposal_managers = self.proposal_managers.vote(identifier, cast)?;
@@ -218,7 +231,7 @@ mod tests {
     #[test]
     pub fn proposal_manager_insert_vote() {
         let vote_plan = VoteTestGen::vote_plan();
-        let vote_cast_payload = VoteCastPayload::new(vec![1u8]);
+        let vote_cast_payload = vote::Payload::public(vote::Choice::new(1));
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload.clone());
 
         let mut proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
@@ -439,6 +452,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(2, 0),
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
+            vote::PayloadType::Public,
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
@@ -468,6 +482,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(2, 0),
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
+            vote::PayloadType::Public,
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone());

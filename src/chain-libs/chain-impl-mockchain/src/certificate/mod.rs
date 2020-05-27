@@ -8,10 +8,10 @@ mod test;
 
 use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
-pub use self::vote_cast::{VoteCast, VoteCastPayload};
+pub use self::vote_cast::VoteCast;
 pub use self::vote_plan::{
-    ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VoteOptions,
-    VotePlan, VotePlanId,
+    ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VotePlan,
+    VotePlanId,
 };
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
 pub use pool::{

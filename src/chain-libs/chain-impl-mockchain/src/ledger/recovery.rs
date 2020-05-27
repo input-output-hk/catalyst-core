@@ -41,7 +41,7 @@ use crate::account::AccountAlg;
 use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
 };
-use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VoteOptions, VotePlan};
+use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VotePlan};
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::fragment::FragmentId;
@@ -54,6 +54,7 @@ use crate::stake::{PoolLastRewards, PoolState};
 use crate::transaction::Output;
 use crate::update::{UpdateProposal, UpdateProposalId, UpdateProposalState, UpdateVoterId};
 use crate::value::Value;
+use crate::vote;
 use crate::{config, key, multisig, utxo};
 use chain_addr::{Address, Discrimination};
 use chain_core::mempack::{ReadBuf, Readable};
@@ -884,7 +885,8 @@ fn pack_vote_proposal<W: std::io::Write>(
 
 fn unpack_proposal<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Proposal, std::io::Error> {
     let external_id = unpack_digestof(codec)?;
-    let options = VoteOptions::new_length(codec.get_u8()?);
+    let options = vote::Options::new_length(codec.get_u8()?)
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
     Ok(Proposal::new(external_id, options))
 }
 
@@ -910,6 +912,23 @@ fn unpack_proposals<R: std::io::BufRead>(
     Ok(proposals)
 }
 
+fn pack_payload_type<W: std::io::Write>(
+    t: vote::PayloadType,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    codec.put_u8(t as u8)
+}
+
+fn unpack_payload_type<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<vote::PayloadType, std::io::Error> {
+    use std::convert::TryFrom as _;
+
+    let byte = codec.get_u8()?;
+    vote::PayloadType::try_from(byte)
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))
+}
+
 fn pack_vote_plan<W: std::io::Write>(
     vote_plan: &VotePlan,
     codec: &mut Codec<W>,
@@ -917,6 +936,7 @@ fn pack_vote_plan<W: std::io::Write>(
     pack_block_date(vote_plan.vote_start(), codec)?;
     pack_block_date(vote_plan.vote_end(), codec)?;
     pack_block_date(vote_plan.committee_end(), codec)?;
+    pack_payload_type(vote_plan.payload_type(), codec)?;
     pack_vote_proposals(vote_plan.proposals(), codec)?;
     Ok(())
 }
@@ -924,9 +944,17 @@ fn pack_vote_plan<W: std::io::Write>(
 fn unpack_vote_plan<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<VotePlan, std::io::Error> {
     let vote_start = unpack_block_date(codec)?;
     let vote_end = unpack_block_date(codec)?;
-    let commitee_end = unpack_block_date(codec)?;
+    let committee_end = unpack_block_date(codec)?;
+    let payload_type = unpack_payload_type(codec)?;
     let proposals = unpack_proposals(codec)?;
-    Ok(VotePlan::new(vote_start, vote_end, commitee_end, proposals))
+
+    Ok(VotePlan::new(
+        vote_start,
+        vote_end,
+        committee_end,
+        proposals,
+        payload_type,
+    ))
 }
 
 #[derive(Debug, Eq, PartialEq)]

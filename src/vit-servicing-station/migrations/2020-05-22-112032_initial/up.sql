@@ -16,9 +16,9 @@ CREATE TABLE proposals (
     proposer_url VARCHAR NOT NULL,
     chain_proposal_id VARCHAR NOT NULL,
     chain_voteplan_id VARCHAR NOT NULL,
-    chain_proposal_index INTEGER NOT NULL,
-    chain_vote_start_time INTEGER NOT NULL,
-    chain_vote_end_time INTEGER NOT NULL,
-    chain_committee_end_time INTEGER NOT NULL,
+    chain_proposal_index BIGINT NOT NULL,
+    chain_vote_start_time BIGINT NOT NULL,
+    chain_vote_end_time BIGINT NOT NULL,
+    chain_committee_end_time BIGINT NOT NULL,
     chain_vote_options VARCHAR NOT NULL
 )

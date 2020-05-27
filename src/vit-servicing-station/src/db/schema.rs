@@ -15,10 +15,10 @@ table! {
         proposer_url -> Text,
         chain_proposal_id -> Text,
         chain_voteplan_id -> Text,
-        chain_proposal_index -> Integer,
-        chain_vote_start_time -> Integer,
-        chain_vote_end_time -> Integer,
-        chain_committee_end_time -> Integer,
+        chain_proposal_index -> BigInt,
+        chain_vote_start_time -> BigInt,
+        chain_vote_end_time -> BigInt,
+        chain_committee_end_time -> BigInt,
         chain_vote_options -> Text,
     }
 }

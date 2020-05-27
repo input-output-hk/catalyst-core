@@ -22,10 +22,10 @@ pub struct Proposal {
     pub proposer_url: String,
     pub chain_proposal_id: String,
     pub chain_voteplan_id: String,
-    pub chain_proposal_index: i32,
-    pub chain_vote_start_time: i32,
-    pub chain_vote_end_time: i32,
-    pub chain_committee_end_time: i32,
+    pub chain_proposal_index: i64,
+    pub chain_vote_start_time: i64,
+    pub chain_vote_end_time: i64,
+    pub chain_committee_end_time: i64,
     pub chain_vote_options: String,
 }
 
@@ -87,19 +87,19 @@ impl Proposal {
         &self.chain_voteplan_id
     }
 
-    pub async fn chain_proposal_index(&self) -> i32 {
+    pub async fn chain_proposal_index(&self) -> i64 {
         self.chain_proposal_index
     }
 
-    pub async fn chain_vote_start_time(&self) -> i32 {
+    pub async fn chain_vote_start_time(&self) -> i64 {
         self.chain_vote_start_time
     }
 
-    pub async fn chain_vote_end_time(&self) -> i32 {
+    pub async fn chain_vote_end_time(&self) -> i64 {
         self.chain_vote_end_time
     }
 
-    pub async fn chain_committee_end_time(&self) -> i32 {
+    pub async fn chain_committee_end_time(&self) -> i64 {
         self.chain_committee_end_time
     }
 

@@ -4,6 +4,16 @@ use std::convert::{TryFrom, TryInto as _};
 use thiserror::Error;
 use typed_bytes::ByteBuilder;
 
+/// the `PayloadType` to use for a vote plan
+///
+/// this defines how the vote must be published on chain.
+/// Be careful because the default is set to `Public`.
+///
+/// ```
+/// use chain_impl_mockchain::vote::PayloadType;
+/// assert_eq!(PayloadType::Public, PayloadType::default());
+/// ```
+///
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
 #[repr(u8)]
 pub enum PayloadType {

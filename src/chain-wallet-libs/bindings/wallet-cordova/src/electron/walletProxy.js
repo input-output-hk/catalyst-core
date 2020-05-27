@@ -1,3 +1,4 @@
+/* global BigInt */
 const wasm = require('wallet-cordova-plugin.wasmModule');
 
 async function walletRestore (successCallback, errorCallback, opts) {
@@ -7,7 +8,7 @@ async function walletRestore (successCallback, errorCallback, opts) {
         const password = '';
         try {
             const wallet = wasm.Wallet.recover(mnemonics, password);
-            successCallback(wallet.ptr);
+            successCallback(wallet.ptr.toString());
         } catch (err) {
             errorCallback(`couldn't recover wallet ${err}`);
         }
@@ -18,7 +19,7 @@ async function walletRestore (successCallback, errorCallback, opts) {
 
 async function walletRetrieveFunds (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number' && opts[1] instanceof ArrayBuffer) {
+    if (opts && typeof (opts[0]) === 'string' && opts[1] instanceof ArrayBuffer) {
         const walletPtr = opts[0];
         const block = opts[1];
 
@@ -26,7 +27,7 @@ async function walletRetrieveFunds (successCallback, errorCallback, opts) {
 
         try {
             const settings = wallet.retrieve_funds(new Uint8Array(block));
-            successCallback(settings.ptr);
+            successCallback(settings.ptr.toString());
         } catch (err) {
             errorCallback(`couldn't retrieve funds ${err}`);
         }
@@ -37,12 +38,12 @@ async function walletRetrieveFunds (successCallback, errorCallback, opts) {
 
 async function walletTotalFunds (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string') {
         const walletPtr = opts[0];
         const wallet = wasm.Wallet.__wrap(walletPtr);
 
         try {
-            successCallback(wallet.total_value());
+            successCallback(wallet.total_value().toString());
         } catch (err) {
             errorCallback(`couldn't get funds ${err}`);
         }
@@ -53,13 +54,13 @@ async function walletTotalFunds (successCallback, errorCallback, opts) {
 
 async function walletSetState (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string') {
         const walletPtr = opts[0];
         const value = opts[1];
         const counter = opts[2];
         const wallet = wasm.Wallet.__wrap(walletPtr);
         try {
-            wallet.set_state(value, counter);
+            wallet.set_state(BigInt(value), counter);
             successCallback();
         } catch (err) {
             errorCallback(err);
@@ -71,7 +72,7 @@ async function walletSetState (successCallback, errorCallback, opts) {
 
 async function walletId (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string') {
         const walletPtr = opts[0];
         const wallet = wasm.Wallet.__wrap(walletPtr);
 
@@ -87,14 +88,14 @@ async function walletId (successCallback, errorCallback, opts) {
 
 async function walletConvert (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number' && typeof (opts[1]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string' && typeof (opts[1]) === 'string') {
         const walletPtr = opts[0];
         const settingsPtr = opts[1];
         const wallet = wasm.Wallet.__wrap(walletPtr);
         const settings = wasm.Settings.__wrap(settingsPtr);
 
         try {
-            successCallback(wallet.convert(settings).ptr);
+            successCallback(wallet.convert(settings).ptr.toString());
         } catch (err) {
             errorCallback(`couldn't get funds ${err}`);
         }
@@ -105,7 +106,7 @@ async function walletConvert (successCallback, errorCallback, opts) {
 
 async function conversionTransactionsSize (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string') {
         const conversionPtr = opts[0];
         const conversion = wasm.Conversion.__wrap(conversionPtr);
 
@@ -121,7 +122,7 @@ async function conversionTransactionsSize (successCallback, errorCallback, opts)
 
 async function conversionTransactionsGet (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number' && typeof (opts[1]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string' && typeof (opts[1]) === 'number') {
         const conversionPtr = opts[0];
         const index = opts[1];
         const conversion = wasm.Conversion.__wrap(conversionPtr);
@@ -138,7 +139,7 @@ async function conversionTransactionsGet (successCallback, errorCallback, opts) 
 
 async function conversionIgnored (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string') {
         const conversionPtr = opts[0];
         const conversion = wasm.Conversion.__wrap(conversionPtr);
 
@@ -156,7 +157,7 @@ async function conversionIgnored (successCallback, errorCallback, opts) {
 
 async function walletDelete (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string') {
         const walletPtr = opts[0];
         wasm.Wallet.__wrap(walletPtr).free();
         successCallback();
@@ -167,7 +168,7 @@ async function walletDelete (successCallback, errorCallback, opts) {
 
 async function settingsDelete (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string') {
         const settingsPtr = opts[0];
         wasm.Settings.__wrap(settingsPtr).free();
         successCallback();
@@ -178,7 +179,7 @@ async function settingsDelete (successCallback, errorCallback, opts) {
 
 async function conversionDelete (successCallback, errorCallback, opts) {
     await loaded;
-    if (opts && typeof (opts[0]) === 'number') {
+    if (opts && typeof (opts[0]) === 'string') {
         const conversionPtr = opts[0];
         wasm.Conversion.__wrap(conversionPtr).free();
         successCallback();

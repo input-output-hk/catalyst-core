@@ -912,6 +912,23 @@ fn unpack_proposals<R: std::io::BufRead>(
     Ok(proposals)
 }
 
+fn pack_payload_type<W: std::io::Write>(
+    t: vote::PayloadType,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    codec.put_u8(t as u8)
+}
+
+fn unpack_payload_type<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<vote::PayloadType, std::io::Error> {
+    use std::convert::TryFrom as _;
+
+    let byte = codec.get_u8()?;
+    vote::PayloadType::try_from(byte)
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))
+}
+
 fn pack_vote_plan<W: std::io::Write>(
     vote_plan: &VotePlan,
     codec: &mut Codec<W>,
@@ -919,6 +936,7 @@ fn pack_vote_plan<W: std::io::Write>(
     pack_block_date(vote_plan.vote_start(), codec)?;
     pack_block_date(vote_plan.vote_end(), codec)?;
     pack_block_date(vote_plan.committee_end(), codec)?;
+    pack_payload_type(vote_plan.payload_type(), codec)?;
     pack_vote_proposals(vote_plan.proposals(), codec)?;
     Ok(())
 }
@@ -926,9 +944,17 @@ fn pack_vote_plan<W: std::io::Write>(
 fn unpack_vote_plan<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<VotePlan, std::io::Error> {
     let vote_start = unpack_block_date(codec)?;
     let vote_end = unpack_block_date(codec)?;
-    let commitee_end = unpack_block_date(codec)?;
+    let committee_end = unpack_block_date(codec)?;
+    let payload_type = unpack_payload_type(codec)?;
     let proposals = unpack_proposals(codec)?;
-    Ok(VotePlan::new(vote_start, vote_end, commitee_end, proposals))
+
+    Ok(VotePlan::new(
+        vote_start,
+        vote_end,
+        committee_end,
+        proposals,
+        payload_type,
+    ))
 }
 
 #[derive(Debug, Eq, PartialEq)]

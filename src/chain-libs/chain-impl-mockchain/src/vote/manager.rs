@@ -440,6 +440,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(2, 0),
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
+            vote::PayloadType::Public,
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
@@ -469,6 +470,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(2, 0),
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
+            vote::PayloadType::Public,
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone());

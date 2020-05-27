@@ -14,5 +14,5 @@ pub use self::{
     committee::CommitteeId,
     ledger::{VotePlanLedger, VotePlanLedgerError},
     manager::{VoteError, VotePlanManager},
-    payload::Payload,
+    payload::{Payload, PayloadType, TryFromIntError},
 };

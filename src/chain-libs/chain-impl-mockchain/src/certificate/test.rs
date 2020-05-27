@@ -155,8 +155,9 @@ impl Arbitrary for VotePlan {
         let vote_end = BlockDate::arbitrary(g);
         let committee_end = BlockDate::arbitrary(g);
         let proposals = Proposals::arbitrary(g);
+        let payload_type = vote::PayloadType::arbitrary(g);
 
-        Self::new(vote_start, vote_end, committee_end, proposals)
+        Self::new(vote_start, vote_end, committee_end, proposals, payload_type)
     }
 }
 

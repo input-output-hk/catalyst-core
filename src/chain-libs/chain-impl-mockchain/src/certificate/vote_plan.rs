@@ -40,6 +40,8 @@ pub struct VotePlan {
     committee_end: BlockDate,
     /// the proposals to vote for
     proposals: Proposals,
+    /// vote payload type
+    payload_type: vote::PayloadType,
 }
 
 /// a collection of proposals
@@ -123,12 +125,14 @@ impl VotePlan {
         vote_end: BlockDate,
         committee_end: BlockDate,
         proposals: Proposals,
+        payload_type: vote::PayloadType,
     ) -> Self {
         Self {
             vote_start,
             vote_end,
             committee_end,
             proposals,
+            payload_type,
         }
     }
 
@@ -155,6 +159,10 @@ impl VotePlan {
 
     pub fn proposals_mut(&mut self) -> &mut Proposals {
         &mut self.proposals
+    }
+
+    pub fn payload_type(&self) -> vote::PayloadType {
+        self.payload_type
     }
 
     #[inline]
@@ -203,6 +211,7 @@ impl VotePlan {
             .u32(self.vote_end.slot_id)
             .u32(self.committee_end.epoch)
             .u32(self.committee_end.slot_id)
+            .u8(self.payload_type as u8)
             .iter8(&mut self.proposals.iter(), |bb, proposal| {
                 proposal.serialize_in(bb)
             })
@@ -268,6 +277,8 @@ impl property::Serialize for VotePlan {
 
 impl Readable for VotePlan {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        use std::convert::TryInto as _;
+
         let vote_start = BlockDate {
             epoch: buf.get_u32()?,
             slot_id: buf.get_u32()?,
@@ -280,6 +291,11 @@ impl Readable for VotePlan {
             epoch: buf.get_u32()?,
             slot_id: buf.get_u32()?,
         };
+
+        let payload_type = buf
+            .get_u8()?
+            .try_into()
+            .map_err(|e: vote::TryFromIntError| ReadError::StructureInvalid(e.to_string()))?;
 
         let proposal_size = buf.get_u8()? as usize;
         let mut proposals = Proposals {
@@ -305,6 +321,7 @@ impl Readable for VotePlan {
             vote_end,
             committee_end,
             proposals,
+            payload_type,
         })
     }
 }
@@ -350,6 +367,7 @@ mod tests {
             vote_end,
             committee_finished,
             VoteTestGen::proposals(1),
+            vote::PayloadType::Public,
         );
 
         assert!(vote_plan.vote_started(vote_start));
@@ -368,6 +386,7 @@ mod tests {
             vote_end,
             committee_finished,
             VoteTestGen::proposals(1),
+            vote::PayloadType::Public,
         );
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);
@@ -398,6 +417,7 @@ mod tests {
             vote_end,
             vote_start,
             VoteTestGen::proposals(1),
+            vote::PayloadType::Public,
         );
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);

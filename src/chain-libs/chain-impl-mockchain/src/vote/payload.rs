@@ -65,6 +65,12 @@ impl TryFrom<u8> for PayloadType {
     }
 }
 
+impl Default for PayloadType {
+    fn default() -> Self {
+        PayloadType::Public
+    }
+}
+
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;

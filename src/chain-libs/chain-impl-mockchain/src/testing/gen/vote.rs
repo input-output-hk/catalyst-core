@@ -48,6 +48,7 @@ impl VoteTestGen {
             BlockDate::from_epoch_slot_id(2, 0),
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
+            vote::PayloadType::Public
         )
     }
 
@@ -57,6 +58,7 @@ impl VoteTestGen {
             BlockDate::from_epoch_slot_id(2, 0),
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(count),
+            vote::PayloadType::Public
         )
     }
 

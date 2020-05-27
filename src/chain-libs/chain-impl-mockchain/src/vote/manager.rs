@@ -48,6 +48,12 @@ pub enum VoteError {
         num_proposals: usize,
         vote: VoteCast,
     },
+
+    #[error("{received:?} is not the expected payload type, expected {expected:?}")]
+    InvalidPayloadType {
+        received: vote::PayloadType,
+        expected: vote::PayloadType,
+    },
 }
 
 impl ProposalManager {
@@ -177,6 +183,7 @@ impl VotePlanManager {
     /// * if the proposal index is not one one of the proposal listed
     /// * if the block_date show it is no longer valid to cast a vote for any
     ///   of the managed proposals
+    /// * if the payload type of the vote is not the expected one
     ///
     pub fn vote(
         &self,
@@ -194,6 +201,11 @@ impl VotePlanManager {
                 start: self.plan().vote_start(),
                 end: self.plan().vote_end(),
                 vote: cast,
+            })
+        } else if self.plan().payload_type() != cast.payload().payload_type() {
+            Err(VoteError::InvalidPayloadType {
+                expected: self.plan().payload_type(),
+                received: cast.payload().payload_type(),
             })
         } else {
             let proposal_managers = self.proposal_managers.vote(identifier, cast)?;

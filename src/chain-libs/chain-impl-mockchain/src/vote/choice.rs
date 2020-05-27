@@ -138,7 +138,7 @@ mod tests {
             TestResult::from_bool(options.is_err())
         } else {
             let options = options.expect("non `0` options should always be valid");
-            TestResult::from_bool(options.as_byte() == num_choices % Options::NUM_CHOICES_MAX)
+            TestResult::from_bool(options.as_byte() == num_choices)
         }
     }
 }

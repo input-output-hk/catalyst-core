@@ -14,7 +14,7 @@ pub struct Proposal {
     pub proposal_summary: String,
     pub proposal_problem: String,
     pub proposal_solution: String,
-    pub proposal_funds: i32,
+    pub proposal_funds: i64,
     pub proposal_url: String,
     pub proposal_files_url: String,
     pub proposer_name: String,
@@ -55,7 +55,7 @@ impl Proposal {
         &self.proposal_solution
     }
 
-    pub async fn proposal_funds(&self) -> i32 {
+    pub async fn proposal_funds(&self) -> i64 {
         self.proposal_funds
     }
 

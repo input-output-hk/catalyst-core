@@ -7,7 +7,7 @@ table! {
         proposal_summary -> Text,
         proposal_problem -> Text,
         proposal_solution -> Text,
-        proposal_funds -> Integer,
+        proposal_funds -> BigInt,
         proposal_url -> Text,
         proposal_files_url -> Text,
         proposer_name -> Text,

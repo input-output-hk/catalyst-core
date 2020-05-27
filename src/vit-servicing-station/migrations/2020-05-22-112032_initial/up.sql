@@ -8,7 +8,7 @@ CREATE TABLE proposals (
     proposal_summary VARCHAR NOT NULL,
     proposal_problem VARCHAR NOT NULL,
     proposal_solution VARCHAR NOT NULL,
-    proposal_funds INTEGER NOT NULL,
+    proposal_funds BIGINT NOT NULL,
     proposal_url VARCHAR NOT NULL,
     proposal_files_url VARCHAR NOT NULL,
     proposer_name VARCHAR NOT NULL,

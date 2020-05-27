@@ -2,6 +2,7 @@ use super::*;
 use crate::accounting::account::DelegationType;
 use crate::block::BlockDate;
 use crate::rewards::TaxType;
+use crate::vote;
 #[cfg(test)]
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::{testing, Ed25519};
@@ -123,16 +124,10 @@ impl Arbitrary for PoolRegistration {
     }
 }
 
-impl Arbitrary for VoteOptions {
-    fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        Self::new_length(u8::arbitrary(g))
-    }
-}
-
 impl Arbitrary for Proposal {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let external_id = ExternalProposalId::arbitrary(g);
-        let funding_plan = VoteOptions::arbitrary(g);
+        let funding_plan = vote::Options::arbitrary(g);
 
         Self::new(external_id, funding_plan)
     }
@@ -169,7 +164,7 @@ impl Arbitrary for VoteCast {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let vote_plan = VotePlanId::arbitrary(g);
         let proposal_index = u8::arbitrary(g);
-        let payload = VoteCastPayload::empty();
+        let payload = vote::Payload::arbitrary(g);
 
         VoteCast::new(vote_plan, proposal_index, payload)
     }

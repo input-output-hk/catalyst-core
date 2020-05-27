@@ -1,6 +1,7 @@
 use crate::{
     certificate::{CertificateSlice, VotePlanId},
     transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
+    vote,
 };
 use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
@@ -12,17 +13,11 @@ use typed_bytes::{ByteArray, ByteBuilder};
 pub struct VoteCast {
     vote_plan: VotePlanId,
     proposal_index: u8,
-    payload: VoteCastPayload,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct VoteCastPayload {
-    // TODO: add missing crypto here
-    cryptographic_data: Vec<u8>,
+    payload: vote::Payload,
 }
 
 impl VoteCast {
-    pub fn new(vote_plan: VotePlanId, proposal_index: u8, payload: VoteCastPayload) -> Self {
+    pub fn new(vote_plan: VotePlanId, proposal_index: u8, payload: vote::Payload) -> Self {
         Self {
             vote_plan,
             proposal_index,
@@ -38,42 +33,21 @@ impl VoteCast {
         self.proposal_index
     }
 
-    pub fn payload(&self) -> &VoteCastPayload {
+    pub fn payload(&self) -> &vote::Payload {
         &self.payload
     }
 
-    pub(crate) fn into_payload(self) -> VoteCastPayload {
+    pub(crate) fn into_payload(self) -> vote::Payload {
         self.payload
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        bb.bytes(self.vote_plan.as_ref()).u8(self.proposal_index)
-        // .bytes(self.payload.as_ref())
+        let bb = bb.bytes(self.vote_plan.as_ref()).u8(self.proposal_index);
+        self.payload.serialize_in(bb)
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {
         self.serialize_in(ByteBuilder::new()).finalize()
-    }
-}
-
-impl VoteCastPayload {
-    #[cfg(any(test, feature = "property-test-api"))]
-    pub(crate) fn empty() -> Self {
-        Self {
-            cryptographic_data: Vec::new(),
-        }
-    }
-    #[cfg(any(test, feature = "property-test-api"))]
-    pub(crate) fn new(data: Vec<u8>) -> Self {
-        Self {
-            cryptographic_data: data,
-        }
-    }
-}
-
-impl AsRef<[u8]> for VoteCastPayload {
-    fn as_ref(&self) -> &[u8] {
-        self.cryptographic_data.as_slice()
     }
 }
 
@@ -116,10 +90,7 @@ impl Readable for VoteCast {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let vote_plan = <[u8; 32]>::read(buf)?.into();
         let proposal_index = buf.get_u8()?;
-        let payload = VoteCastPayload {
-            // TODO
-            cryptographic_data: Vec::new(),
-        };
+        let payload = vote::Payload::read(buf)?;
 
         Ok(Self::new(vote_plan, proposal_index, payload))
     }

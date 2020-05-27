@@ -2,6 +2,7 @@ use crate::{
     block::BlockDate,
     certificate::CertificateSlice,
     transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
+    vote,
 };
 use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
@@ -49,15 +50,6 @@ pub struct Proposals {
     proposals: Vec<Proposal>,
 }
 
-/// options for the vote
-///
-/// currently this is a 4bits structure, allowing up to 16 choices
-/// however we may allow more complex object to be set in
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct VoteOptions {
-    num_choices: u8,
-}
-
 /// a proposal with the associated external proposal identifier
 /// which leads to retrieving data from outside of the blockchain
 /// with its unique identifier and the funding plan required
@@ -66,7 +58,7 @@ pub struct VoteOptions {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Proposal {
     external_id: ExternalProposalId,
-    options: VoteOptions,
+    options: vote::Options,
 }
 
 #[must_use = "Adding a proposal may fail"]
@@ -76,22 +68,8 @@ pub enum PushProposal {
     Full { proposal: Proposal },
 }
 
-impl VoteOptions {
-    const NUM_CHOICES_MAX: u8 = 0b0000_1111;
-
-    pub fn new_length(num_choices: u8) -> Self {
-        Self {
-            num_choices: num_choices & Self::NUM_CHOICES_MAX,
-        }
-    }
-
-    pub fn as_byte(self) -> u8 {
-        self.num_choices
-    }
-}
-
 impl Proposal {
-    pub fn new(external_id: ExternalProposalId, options: VoteOptions) -> Self {
+    pub fn new(external_id: ExternalProposalId, options: vote::Options) -> Self {
         Self {
             external_id,
             options,
@@ -102,13 +80,13 @@ impl Proposal {
         &self.external_id
     }
 
-    pub fn options(&self) -> &VoteOptions {
+    pub fn options(&self) -> &vote::Options {
         &self.options
     }
 
     fn serialize_in(&self, bb: ByteBuilder<VotePlan>) -> ByteBuilder<VotePlan> {
         bb.bytes(self.external_id.as_ref())
-            .u8(self.options.num_choices)
+            .u8(self.options.as_byte())
     }
 }
 
@@ -309,7 +287,10 @@ impl Readable for VotePlan {
         };
         for _ in 0..proposal_size {
             let external_id = <[u8; 32]>::read(buf)?.into();
-            let options = buf.get_u8().map(VoteOptions::new_length)?;
+            let options = buf.get_u8().and_then(|num_choices| {
+                vote::Options::new_length(num_choices)
+                    .map_err(|e| ReadError::StructureInvalid(e.to_string()))
+            })?;
 
             let proposal = Proposal {
                 external_id,
@@ -334,7 +315,6 @@ mod tests {
     use crate::block::BlockDate;
     use crate::testing::VoteTestGen;
     use chain_core::property::BlockDate as BlockDateProp;
-    use quickcheck::TestResult;
     use quickcheck_macros::quickcheck;
 
     #[quickcheck]
@@ -347,11 +327,6 @@ mod tests {
         let decoded = result.expect("can decode encoded vote plan");
 
         decoded == vote_plan
-    }
-
-    #[quickcheck]
-    pub fn vote_options_max(count: u8) -> TestResult {
-        TestResult::from_bool(VoteOptions::new_length(count).as_byte() == count % 16)
     }
 
     #[test]
@@ -397,8 +372,8 @@ mod tests {
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);
         let voting_date = BlockDate::from_epoch_slot_id(1, 10);
-        let committe_time = BlockDate::from_epoch_slot_id(2, 10);
-        let after_committe_time = BlockDate::from_epoch_slot_id(3, 10);
+        let committee_time = BlockDate::from_epoch_slot_id(2, 10);
+        let after_committee_time = BlockDate::from_epoch_slot_id(3, 10);
 
         assert!(!vote_plan.can_vote(before_voting));
         assert!(!vote_plan.committee_time(before_voting));
@@ -406,11 +381,11 @@ mod tests {
         assert!(vote_plan.can_vote(voting_date));
         assert!(!vote_plan.committee_time(voting_date));
 
-        assert!(!vote_plan.can_vote(committe_time));
-        assert!(vote_plan.committee_time(committe_time));
+        assert!(!vote_plan.can_vote(committee_time));
+        assert!(vote_plan.committee_time(committee_time));
 
-        assert!(!vote_plan.can_vote(after_committe_time));
-        assert!(!vote_plan.committee_time(after_committe_time));
+        assert!(!vote_plan.can_vote(after_committee_time));
+        assert!(!vote_plan.committee_time(after_committee_time));
     }
 
     #[test]
@@ -427,8 +402,8 @@ mod tests {
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);
         let voting_date = BlockDate::from_epoch_slot_id(1, 10);
-        let committe_time = BlockDate::from_epoch_slot_id(2, 10);
-        let after_committe_time = BlockDate::from_epoch_slot_id(3, 10);
+        let committee_time = BlockDate::from_epoch_slot_id(2, 10);
+        let after_committee_time = BlockDate::from_epoch_slot_id(3, 10);
 
         assert!(!vote_plan.can_vote(before_voting));
         assert!(!vote_plan.committee_time(before_voting));
@@ -436,10 +411,10 @@ mod tests {
         assert!(!vote_plan.can_vote(voting_date));
         assert!(!vote_plan.committee_time(voting_date));
 
-        assert!(!vote_plan.can_vote(committe_time));
-        assert!(!vote_plan.committee_time(committe_time));
+        assert!(!vote_plan.can_vote(committee_time));
+        assert!(!vote_plan.committee_time(committee_time));
 
-        assert!(!vote_plan.can_vote(after_committe_time));
-        assert!(!vote_plan.committee_time(after_committe_time));
+        assert!(!vote_plan.can_vote(after_committee_time));
+        assert!(!vote_plan.committee_time(after_committee_time));
     }
 }

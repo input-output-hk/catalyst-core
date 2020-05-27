@@ -2,9 +2,10 @@ use super::TestGen;
 use crate::{
     block::BlockDate,
     certificate::{
-        ExternalProposalId, Proposal, Proposals, PushProposal, VoteCastPayload, VoteOptions,
+        ExternalProposalId, Proposal, Proposals, PushProposal,
         VotePlan, VoteCast
     },
+    vote,
 };
 use chain_core::property::BlockDate as BlockDateProp;
 use chain_crypto::digest::DigestOf;
@@ -16,7 +17,7 @@ impl VoteTestGen {
     pub fn proposal() -> Proposal {
         Proposal::new(
             VoteTestGen::external_proposal_id(),
-            VoteOptions::new_length(4),
+            vote::Options::new_length(4).unwrap(),
         )
     }
 
@@ -59,8 +60,8 @@ impl VoteTestGen {
         )
     }
 
-    pub fn vote_cast_payload() -> VoteCastPayload {
-        VoteCastPayload::new(TestGen::bytes().to_vec())
+    pub fn vote_cast_payload() -> vote::Payload {
+        vote::Payload::public(vote::Choice::new(1))
     }
 
     pub fn vote_cast_for(vote_plan: &VotePlan) -> VoteCast {

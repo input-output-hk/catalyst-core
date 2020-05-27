@@ -41,7 +41,7 @@ use crate::account::AccountAlg;
 use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
 };
-use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VoteOptions, VotePlan};
+use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VotePlan};
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::fragment::FragmentId;
@@ -54,6 +54,7 @@ use crate::stake::{PoolLastRewards, PoolState};
 use crate::transaction::Output;
 use crate::update::{UpdateProposal, UpdateProposalId, UpdateProposalState, UpdateVoterId};
 use crate::value::Value;
+use crate::vote;
 use crate::{config, key, multisig, utxo};
 use chain_addr::{Address, Discrimination};
 use chain_core::mempack::{ReadBuf, Readable};
@@ -884,7 +885,8 @@ fn pack_vote_proposal<W: std::io::Write>(
 
 fn unpack_proposal<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Proposal, std::io::Error> {
     let external_id = unpack_digestof(codec)?;
-    let options = VoteOptions::new_length(codec.get_u8()?);
+    let options = vote::Options::new_length(codec.get_u8()?)
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
     Ok(Proposal::new(external_id, options))
 }
 

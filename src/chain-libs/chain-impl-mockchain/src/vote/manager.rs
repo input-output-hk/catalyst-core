@@ -1,7 +1,8 @@
 use crate::{
-    certificate::{Proposal, VoteCast, VoteCastPayload, VotePlan, VotePlanId},
+    certificate::{Proposal, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
+    vote,
 };
 use imhamt::Hamt;
 use std::{collections::hash_map::DefaultHasher, sync::Arc};
@@ -24,7 +25,7 @@ struct ProposalManagers(Vec<ProposalManager>);
 
 #[derive(Clone, PartialEq, Eq)]
 struct ProposalManager {
-    votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, VoteCastPayload>,
+    votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, vote::Payload>,
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -218,7 +219,7 @@ mod tests {
     #[test]
     pub fn proposal_manager_insert_vote() {
         let vote_plan = VoteTestGen::vote_plan();
-        let vote_cast_payload = VoteCastPayload::new(vec![1u8]);
+        let vote_cast_payload = vote::Payload::public(vote::Choice::new(1));
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload.clone());
 
         let mut proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());

@@ -13,19 +13,26 @@ pub type SharedContext = Arc<RwLock<Context>>;
 #[derive(Clone)]
 pub struct Context {
     pub static_chain_data: ChainDataStore,
+    pub db_url: String,
 }
 
 impl Context {
-    pub fn new(static_chain_data: ChainDataStore) -> Self {
-        Self { static_chain_data }
+    pub fn new(static_chain_data: ChainDataStore, db_url: &str) -> Self {
+        Self {
+            static_chain_data,
+            db_url: db_url.to_string(),
+        }
     }
 }
 
 pub fn new_default_context() -> SharedContext {
-    new_shared_context(Path::new("./resources/v0/chain_data.json"))
+    new_shared_context(
+        Path::new("./resources/v0/chain_data.json"),
+        "./db/database.sqlite3",
+    )
 }
 
-pub fn new_shared_context(file_path: &Path) -> SharedContext {
+pub fn new_shared_context(file_path: &Path, db_url: &str) -> SharedContext {
     let chain_data = match load_file_data(file_path) {
         Ok(data) => data,
         Err(err) => panic!("Error reading chain data file: {}", err),
@@ -34,7 +41,7 @@ pub fn new_shared_context(file_path: &Path) -> SharedContext {
         Ok(data) => data,
         Err(err) => panic!("Error parsing chain data file: {}", err),
     };
-    let context = Context::new(static_chain_data);
+    let context = Context::new(static_chain_data, db_url);
     Arc::new(RwLock::new(context))
 }
 
@@ -63,7 +70,8 @@ pub mod test {
         let mut context_data = ChainDataStore::new();
         context_data.insert(id.clone(), json_data.clone());
 
-        let context = Arc::new(RwLock::new(Context::new(context_data)));
+        // Empty ("") db_url should create a temporary file db for sqlite3
+        let context = Arc::new(RwLock::new(Context::new(context_data, "")));
         (id.clone(), json_data.clone(), context)
     }
 

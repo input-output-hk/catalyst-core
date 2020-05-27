@@ -1,4 +1,4 @@
-use super::handlers::*;
+use super::handlers::get_genesis_from_id;
 use crate::v0::context::SharedContext;
 use warp::filters::BoxedFilter;
 use warp::{Filter, Rejection, Reply};

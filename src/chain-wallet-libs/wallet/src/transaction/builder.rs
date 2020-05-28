@@ -6,26 +6,27 @@ use chain_addr::Address;
 use chain_impl_mockchain::{
     fee::FeeAlgorithm as _,
     transaction::{
-        Input, NoExtra, Output, Payload, SetAuthData, SetIOs, SetWitnesses, Transaction,
-        TxBuilderState,
+        Input, Output, Payload, SetAuthData, SetIOs, SetWitnesses, Transaction, TxBuilderState,
     },
     value::Value,
 };
 
 /// Dump all the values into transactions to fill one address
-pub struct TransactionBuilder {
+pub struct TransactionBuilder<P: Payload> {
     settings: Settings,
     outputs: Vec<Output<Address>>,
     inputs: Vec<Input>,
+    certificate: P,
     witness_builders: Vec<WitnessBuilder>,
 }
 
-impl TransactionBuilder {
+impl<P: Payload> TransactionBuilder<P> {
     /// create a new transaction builder with the given settings and outputs
-    pub fn new(settings: Settings, outputs: Vec<Output<Address>>) -> Self {
+    pub fn new(settings: Settings, outputs: Vec<Output<Address>>, certificate: P) -> Self {
         Self {
             settings,
             outputs,
+            certificate,
             inputs: Vec::with_capacity(255),
             witness_builders: Vec::with_capacity(255),
         }
@@ -39,7 +40,7 @@ impl TransactionBuilder {
         G: InputGenerator,
     {
         let estimate_fee = self.settings.parameters.fees.calculate(
-            None,
+            Payload::to_certificate_slice(self.certificate.payload_data().borrow()),
             self.inputs().len() as u8,
             self.outputs().len() as u8,
         );
@@ -91,25 +92,25 @@ impl TransactionBuilder {
         total_in == total_out.saturating_add(total_fee)
     }
 
-    pub fn finalize_tx(self) -> Transaction<NoExtra> {
+    pub fn finalize_tx(self, auth: <P as Payload>::Auth) -> Transaction<P> {
         if !self.check_balance() {
             todo!()
         }
 
         let builder = TxBuilderState::new();
-        let builder = builder.set_nopayload();
+        let builder = builder.set_payload(&self.certificate);
 
         let builder = self.set_ios(builder);
         let builder = self.set_witnesses(builder);
 
-        builder.set_payload_auth(&())
+        builder.set_payload_auth(&auth)
     }
 
-    fn set_ios<P>(&self, builder: TxBuilderState<SetIOs<P>>) -> TxBuilderState<SetWitnesses<P>> {
+    fn set_ios(&self, builder: TxBuilderState<SetIOs<P>>) -> TxBuilderState<SetWitnesses<P>> {
         builder.set_ios(&self.inputs, &self.outputs)
     }
 
-    fn set_witnesses<P>(
+    fn set_witnesses(
         &self,
         builder: TxBuilderState<SetWitnesses<P>>,
     ) -> TxBuilderState<SetAuthData<P>>

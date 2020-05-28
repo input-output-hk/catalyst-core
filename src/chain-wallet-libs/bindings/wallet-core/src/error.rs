@@ -44,6 +44,9 @@ pub enum ErrorCode {
     /// an out of bound operation when attempting to access the `nth`
     /// transaction of the conversion.
     WalletConversion = 3,
+
+    /// TODO
+    WalletVote = 4,
 }
 
 #[derive(Debug)]
@@ -52,7 +55,9 @@ pub enum ErrorKind {
     /// invalid format or of unexpected value (null pointer).
     ///
     /// The `details` should provide more info on what caused the error.
-    InvalidInput { argument_name: &'static str },
+    InvalidInput {
+        argument_name: &'static str,
+    },
 
     /// an error occurred while recovering a wallet
     WalletRecovering,
@@ -61,6 +66,8 @@ pub enum ErrorKind {
     /// the transactions of the wallet conversion. For example,
     /// there may be an out of bound error
     WalletConversion,
+
+    WalletVote,
 }
 
 impl ErrorKind {
@@ -73,6 +80,7 @@ impl ErrorKind {
             Self::InvalidInput { .. } => ErrorCode::InvalidInput,
             Self::WalletRecovering => ErrorCode::WalletRecovering,
             Self::WalletConversion => ErrorCode::WalletConversion,
+            Self::WalletVote => ErrorCode::WalletVote,
         }
     }
 }
@@ -135,6 +143,13 @@ impl Error {
     pub fn wallet_conversion() -> Self {
         Self {
             kind: ErrorKind::WalletConversion,
+            details: None,
+        }
+    }
+
+    pub fn wallet_vote() -> Self {
+        Self {
+            kind: ErrorKind::WalletVote,
             details: None,
         }
     }
@@ -272,6 +287,7 @@ impl Display for ErrorKind {
             Self::WalletConversion => {
                 f.write_str("Error while performing operation on the wallet conversion object")
             }
+            Self::WalletVote => f.write_str("Error while casting a vote"),
         }
     }
 }

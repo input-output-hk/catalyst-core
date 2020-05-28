@@ -1,19 +1,15 @@
 use super::schema::QueryRoot;
-use crate::db;
 use crate::v0::context::SharedContext;
 use async_graphql::{http::GQLResponse, EmptyMutation, EmptySubscription, QueryBuilder, Schema};
 use std::convert::Infallible;
-use std::sync::Arc;
 use warp::{filters::BoxedFilter, Filter, Rejection, Reply};
 
-pub fn filter(
+pub async fn filter(
     root: BoxedFilter<()>,
-    _context: SharedContext,
-    db_url: &str,
+    context: SharedContext,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     // load a connection pool for the graphql schema
-    let db_connection_pool =
-        Arc::new(db::load_db_connection_pool(db_url).expect("Error connecting to database"));
+    let db_connection_pool = context.clone().read().await.db_connection_pool.clone();
 
     let schema = Schema::new(
         QueryRoot { db_connection_pool },

@@ -7,13 +7,13 @@ use crate::v0::context::SharedContext;
 use warp::filters::BoxedFilter;
 use warp::{Filter, Rejection, Reply};
 
-pub fn filter(
+pub async fn filter(
     root: BoxedFilter<()>,
     context: SharedContext,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     // mount chain-data endpoint
     let chain_data_root = warp::path!("chain-data" / ..);
-    let chain_data_filter = chain_data::filter(chain_data_root.boxed(), context.clone());
+    let chain_data_filter = chain_data::filter(chain_data_root.boxed(), context.clone()).await;
 
     // mount genesis endpoint
     let genesis_root = warp::path!("genesis" / ..);
@@ -21,8 +21,7 @@ pub fn filter(
 
     // mount graphql endpoint
     let graphql_root = warp::path!("graphql" / ..);
-    // TODO: Use proper db url from config instead of hardcoded one
-    let graphql_filter = graphql::filter(graphql_root.boxed(), context, "./db/database.sqlite3");
+    let graphql_filter = graphql::filter(graphql_root.boxed(), context).await;
 
     root.and(genesis_filter.or(chain_data_filter).or(graphql_filter))
         .boxed()

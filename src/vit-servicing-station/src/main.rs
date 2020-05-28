@@ -31,7 +31,7 @@ async fn main() {
 
     // run server with settings
     let context = v0::context::new_default_context();
-    let app = v0::filter(context);
+    let app = v0::filter(context).await;
     println!("Running server at {}", settings.address);
     server::start_server(app, Some(settings)).await
 }

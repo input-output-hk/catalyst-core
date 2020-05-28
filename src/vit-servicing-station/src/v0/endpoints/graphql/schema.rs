@@ -1,7 +1,5 @@
 use crate::db;
-use crate::db::{models::Proposal, schema::proposals::dsl::proposals};
-use async_graphql::*;
-use diesel::prelude::*;
+use crate::db::models::Proposal;
 use std::sync::Arc;
 
 pub struct QueryRoot {
@@ -84,23 +82,5 @@ impl Proposal {
 
     pub async fn chain_vote_options(&self) -> &str {
         &self.chain_vote_options
-    }
-}
-
-#[Object]
-impl QueryRoot {
-    #[field(desc = "Proposal information")]
-    async fn proposals<'ctx>(&self, _ctx: &Context<'_>) -> Vec<Proposal> {
-        let db_conn = self
-            .db_connection_pool
-            .get()
-            .expect("Error connecting to database");
-        tokio::task::spawn_blocking(move || {
-            proposals
-                .load::<Proposal>(&db_conn)
-                .expect("Error loading proposals")
-        })
-        .await
-        .expect("Error loading proposals")
     }
 }

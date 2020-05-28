@@ -81,9 +81,4 @@ pub mod test {
         let context = Arc::new(RwLock::new(Context::new(context_data, db_conn_pool)));
         (id.clone(), json_data.clone(), context)
     }
-
-    #[test]
-    fn load_default() {
-        new_default_context();
-    }
 }

@@ -31,7 +31,7 @@ impl Context {
 
 pub fn new_default_context() -> SharedContext {
     new_shared_context(
-        Path::new("./resources/v0/chain_data.json"),
+        Path::new("./resources/v0/proposals.json"),
         db::load_db_connection_pool("./db/database.sqlite3").expect("Error connecting to database"),
     )
 }

@@ -9,10 +9,13 @@ pub async fn get_all_proposals(context: SharedContext) -> Vec<Proposal> {
         .db_connection_pool
         .get()
         .expect("Error connecting to database");
-    // TODO: make a non blocking task for this retrieve
-    proposals
-        .load::<Proposal>(&db_conn)
-        .expect("Error loading proposals")
+    tokio::task::spawn_blocking(move || {
+        proposals
+            .load::<Proposal>(&db_conn)
+            .expect("Error loading proposals")
+    })
+    .await
+    .expect("Error loading proposals")
 }
 
 pub async fn get_data_from_id(id: String, context: SharedContext) -> Option<ChainData> {

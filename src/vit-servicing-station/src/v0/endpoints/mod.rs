@@ -1,6 +1,6 @@
-mod chain_data;
 mod genesis;
 mod graphql;
+mod proposals;
 
 use crate::v0::context::SharedContext;
 
@@ -12,8 +12,8 @@ pub async fn filter(
     context: SharedContext,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     // mount chain-data endpoint
-    let chain_data_root = warp::path!("chain-data" / ..);
-    let chain_data_filter = chain_data::filter(chain_data_root.boxed(), context.clone()).await;
+    let chain_data_root = warp::path!("proposals" / ..);
+    let chain_data_filter = proposals::filter(chain_data_root.boxed(), context.clone()).await;
 
     // mount genesis endpoint
     let genesis_root = warp::path!("genesis" / ..);

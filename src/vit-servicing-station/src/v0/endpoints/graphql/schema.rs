@@ -95,8 +95,12 @@ impl QueryRoot {
             .db_connection_pool
             .get()
             .expect("Error connecting to database");
-        proposals
-            .load::<Proposal>(&db_conn)
-            .expect("Error loading proposals")
+        tokio::task::spawn_blocking(move || {
+            proposals
+                .load::<Proposal>(&db_conn)
+                .expect("Error loading proposals")
+        })
+        .await
+        .expect("Error loading proposals")
     }
 }

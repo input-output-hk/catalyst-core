@@ -182,7 +182,6 @@ impl Wallet {
     /// # Parameters
     ///
     /// * `settings` - ledger settings.
-    /// * `vote_plan` - voting plan settings.
     /// * `proposal` - proposal information including the range of values
     ///   allowed in `choice`.
     /// * `choice` - the option to vote for.

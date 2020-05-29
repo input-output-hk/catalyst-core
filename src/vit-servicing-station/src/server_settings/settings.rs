@@ -72,7 +72,7 @@ fn parse_allowed_origins(arg: &str) -> Result<AllowedOrigins, std::io::Error> {
 
 impl Tls {
     pub fn is_loaded(&self) -> bool {
-        return self.priv_key_file.is_some() && self.cert_file.is_some();
+        self.priv_key_file.is_some() && self.cert_file.is_some()
     }
 }
 

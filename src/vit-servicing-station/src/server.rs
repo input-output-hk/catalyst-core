@@ -1,4 +1,4 @@
-use crate::settings::{Cors, ServiceSettings, Tls};
+use crate::server_settings::{Cors, ServiceSettings, Tls};
 
 use std::time::Duration;
 use warp::filters::cors::Builder as CorsBuilder;

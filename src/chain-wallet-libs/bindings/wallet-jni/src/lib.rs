@@ -1,3 +1,4 @@
+use chain_impl_mockchain::vote::PayloadType;
 use jni::objects::{JClass, JObject, JString, JValue};
 use jni::sys::{jbyte, jbyteArray, jint, jlong};
 use jni::JNIEnv;
@@ -333,4 +334,96 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_setState(
     if let Some(error) = r.error() {
         let _ = env.throw(error.to_string());
     }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPublicPayload(
+    env: JNIEnv,
+    _: JClass,
+    vote_plan_id: jbyteArray,
+    index: u8,
+    num_choices: u8,
+) -> jlong {
+    let size = env.get_array_length(vote_plan_id).expect("invalid array");
+
+    let mut buffer = vec![0i8; size as usize];
+    env.get_byte_array_region(vote_plan_id, 0, &mut buffer)
+        .expect("invalid byte arrray read");
+
+    let mut proposal = null_mut();
+    let r = unsafe {
+        wallet_vote_proposal(
+            buffer.as_ptr() as *const u8,
+            PayloadType::Public,
+            index,
+            num_choices,
+            &mut proposal,
+        )
+    };
+
+    debug_assert!(!proposal.is_null());
+
+    if let Some(error) = r.error() {
+        let _ = env.throw(error.to_string());
+    }
+
+    proposal as jlong
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_delete(
+    _: JNIEnv,
+    _: JClass,
+    proposal: jlong,
+) {
+    let proposal = proposal as ProposalPtr;
+    if !proposal.is_null() {
+        wallet_delete_proposal(proposal);
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
+    env: JNIEnv,
+    _: JClass,
+    wallet: jlong,
+    settings: jlong,
+    proposal: jlong,
+    choice: jint,
+) -> jbyteArray {
+    let wallet_ptr = wallet as WalletPtr;
+    let settings_ptr = settings as SettingsPtr;
+    let proposal_ptr = proposal as ProposalPtr;
+
+    let mut transaction_out: *const u8 = null();
+    let mut transaction_size: usize = 0;
+
+    let r = unsafe {
+        wallet_vote_cast(
+            wallet_ptr,
+            settings_ptr,
+            proposal_ptr,
+            choice as u8,
+            &mut transaction_out as *mut *const u8,
+            &mut transaction_size as *mut usize,
+        )
+    };
+
+    if let Some(error) = r.error() {
+        let _ = env.throw(error.to_string());
+        return null_mut() as jbyteArray;
+    }
+
+    let array = env
+        .new_byte_array(transaction_size as jint)
+        .expect("Failed to create new byte array");
+
+    debug_assert!(!transaction_out.is_null());
+    let slice =
+        unsafe { std::slice::from_raw_parts(transaction_out as *const jbyte, transaction_size) };
+
+    env.set_byte_array_region(array, 0, slice)
+        .expect("Couldn't copy array to jvm");
+
+    array
 }

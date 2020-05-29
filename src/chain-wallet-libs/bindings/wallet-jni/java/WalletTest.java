@@ -1,6 +1,7 @@
 import com.iohk.jormungandrwallet.Wallet;
 import com.iohk.jormungandrwallet.Settings;
 import com.iohk.jormungandrwallet.Conversion;
+import com.iohk.jormungandrwallet.Proposal;
 
 import java.util.Properties;
 import java.util.Enumeration;
@@ -79,6 +80,30 @@ public class WalletTest {
             Conversion.delete(conversionPtr);
             Settings.delete(settingsPtr);
             Wallet.delete(walletPtr);
+            throw e;
+        }
+    }
+
+    @Test
+    public void voteCast() throws IOException {
+        final long walletPtr = Wallet.recover(
+                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+
+        final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
+
+        final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
+
+        final byte[] id = new byte[Proposal.ID_SIZE];
+        final long proposalPtr = Proposal.withPublicPayload(id, 0, 3);
+
+        Wallet.setState(walletPtr, 10000000, 0);
+        try {
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+        } catch (final Exception e) {
+            Proposal.delete(proposalPtr);
+            Settings.delete(settingsPtr);
+            Wallet.delete(walletPtr);
+            System.out.println(e.getMessage());
             throw e;
         }
     }

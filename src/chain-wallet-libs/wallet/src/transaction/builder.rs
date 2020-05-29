@@ -39,8 +39,9 @@ impl<P: Payload> TransactionBuilder<P> {
     where
         G: InputGenerator,
     {
-        let estimate_fee = self.estimate_fee();
-        let input_needed = self.outputs_value().saturating_add(estimate_fee);
+        let estimated_fee = self.estimate_fee_to_cover_new_input();
+
+        let input_needed = self.outputs_value().saturating_add(estimated_fee);
 
         if let Some(input) = input_generator.input_to_cover(input_needed) {
             self.inputs.push(input.input);
@@ -76,6 +77,15 @@ impl<P: Payload> TransactionBuilder<P> {
         self.settings.parameters.fees.calculate(
             Payload::to_certificate_slice(self.certificate.payload_data().borrow()),
             self.inputs.len() as u8,
+            self.outputs.len() as u8,
+        )
+    }
+
+    #[inline]
+    fn estimate_fee_to_cover_new_input(&self) -> Value {
+        self.settings.parameters.fees.calculate(
+            Payload::to_certificate_slice(self.certificate.payload_data().borrow()),
+            self.inputs.len() as u8 + 1u8,
             self.outputs.len() as u8,
         )
     }
@@ -122,5 +132,52 @@ impl<P: Payload> TransactionBuilder<P> {
             .collect();
 
         builder.set_witnesses(&witnesses)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chain_impl_mockchain::block::Block;
+    use chain_impl_mockchain::transaction::NoExtra;
+    use chain_ser::deser::Deserialize;
+    use hdkeygen::account::Account;
+
+    struct Generator {
+        account: Account,
+    }
+
+    impl Generator {
+        fn new() -> Generator {
+            Generator {
+                account: Account::from_seed([0u8; 32]),
+            }
+        }
+    }
+
+    impl InputGenerator for Generator {
+        fn input_to_cover(&mut self, value: Value) -> Option<crate::transaction::GeneratedInput> {
+            let input = Input::from_account_public_key(self.account.account_id().into(), value);
+            let witness_builder = WitnessBuilder::Account {
+                account: self.account.clone(),
+            };
+            Some(crate::transaction::GeneratedInput {
+                input,
+                witness_builder,
+            })
+        }
+    }
+
+    #[test]
+    fn build_transaction_with_input_selector() {
+        const BLOCK0: &[u8] = include_bytes!("../../../test-vectors/block0");
+        let block = Block::deserialize(BLOCK0).unwrap();
+        let settings = Settings::new(&block).unwrap();
+        let mut builder = TransactionBuilder::new(settings, vec![], NoExtra);
+
+        let mut generator = Generator::new();
+        builder.select_from(&mut generator);
+
+        let _tx = builder.finalize_tx(());
     }
 }

@@ -1,14 +1,22 @@
 //! This module expose handy C compatible functions to reuse in the different
 //! C style bindings that we have (wallet-c, wallet-jni...)
 
-use crate::{Conversion, Error, Result, Wallet};
-use chain_impl_mockchain::{transaction::Input, value::Value};
+use crate::{Conversion, Error, Proposal, Result, VotePlan, Wallet};
+use chain_impl_mockchain::{
+    certificate::VotePlanId,
+    transaction::Input,
+    value::Value,
+    vote::{Choice, Options as VoteOptions},
+};
+use std::convert::{TryFrom, TryInto};
 use thiserror::Error;
 pub use wallet::Settings;
 
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
+pub type VotePlanPtr = *mut VotePlan;
+pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
 
 #[derive(Debug, Error)]
@@ -385,6 +393,107 @@ pub fn wallet_set_state(wallet: WalletPtr, value: u64, counter: u32) -> Result {
     Result::success()
 }
 
+pub unsafe fn wallet_vote_plan(
+    id: *const u8,
+    payload_type: u8,
+    vote_plan_out: *mut VotePlanPtr,
+) -> Result {
+    if id.is_null() {
+        return Error::invalid_input("id").with(NulPtr).into();
+    }
+
+    if vote_plan_out.is_null() {
+        return Error::invalid_input("vote_plan_out").with(NulPtr).into();
+    }
+
+    let payload_type = match payload_type.try_into() {
+        Ok(payload_type) => payload_type,
+        Err(err) => return Error::invalid_input("payload_type").with(err).into(),
+    };
+
+    let id = std::slice::from_raw_parts(id, crate::vote::VOTE_PLAN_ID_LENGTH);
+    let id = match VotePlanId::try_from(id) {
+        Ok(id) => id,
+        Err(err) => return Error::invalid_input("id").with(err).into(),
+    };
+
+    *vote_plan_out = Box::into_raw(Box::new(VotePlan::new(id, payload_type)));
+
+    Result::success()
+}
+
+pub unsafe fn wallet_vote_proposal(
+    index: u8,
+    num_choices: u8,
+    proposal_out: *mut ProposalPtr,
+) -> Result {
+    if proposal_out.is_null() {
+        return Error::invalid_input("proposal_out").with(NulPtr).into();
+    }
+
+    let options = match VoteOptions::new_length(num_choices) {
+        Ok(options) => options,
+        Err(err) => return Error::invalid_input("num_choices").with(err).into(),
+    };
+
+    *proposal_out = Box::into_raw(Box::new(Proposal::new(index, options)));
+
+    Result::success()
+}
+
+pub unsafe fn wallet_vote_cast(
+    wallet: WalletPtr,
+    settings: SettingsPtr,
+    vote_plan: VotePlanPtr,
+    proposal: ProposalPtr,
+    choice: u8,
+    transaction_out: *mut *const u8,
+    len_out: *mut usize,
+) -> Result {
+    let wallet = if let Some(wallet) = wallet.as_mut() {
+        wallet
+    } else {
+        return Error::invalid_input("wallet").with(NulPtr).into();
+    };
+
+    let settings = if let Some(settings) = settings.as_ref() {
+        settings.clone()
+    } else {
+        return Error::invalid_input("settings").with(NulPtr).into();
+    };
+
+    let vote_plan = if let Some(vote_plan) = vote_plan.as_ref() {
+        vote_plan
+    } else {
+        return Error::invalid_input("vote_plan").with(NulPtr).into();
+    };
+
+    let proposal = if let Some(proposal) = proposal.as_ref() {
+        proposal
+    } else {
+        return Error::invalid_input("proposal").with(NulPtr).into();
+    };
+
+    if transaction_out.is_null() {
+        return Error::invalid_input("transaction_out").with(NulPtr).into();
+    }
+    if len_out.is_null() {
+        return Error::invalid_input("len_out").with(NulPtr).into();
+    }
+
+    let choice = Choice::new(choice);
+
+    let transaction = match wallet.vote(settings, vote_plan, proposal, choice) {
+        Ok(transaction) => transaction,
+        Err(err) => return Error::from(err).into(),
+    };
+
+    *transaction_out = transaction.as_ptr();
+    *len_out = transaction.len();
+
+    Result::success()
+}
+
 /// delete the pointer and free the allocated memory
 pub fn wallet_delete_error(error: ErrorPtr) {
     if !error.is_null() {
@@ -416,6 +525,24 @@ pub fn wallet_delete_wallet(wallet: WalletPtr) {
 pub fn wallet_delete_conversion(conversion: ConversionPtr) {
     if !conversion.is_null() {
         let boxed = unsafe { Box::from_raw(conversion) };
+
+        std::mem::drop(boxed);
+    }
+}
+
+/// delete the pointer
+pub fn wallet_delete_vote_plan(vote_plan: VotePlanPtr) {
+    if !vote_plan.is_null() {
+        let boxed = unsafe { Box::from_raw(vote_plan) };
+
+        std::mem::drop(boxed);
+    }
+}
+
+/// delete the pointer
+pub fn wallet_delete_proposal(proposal: VotePlanPtr) {
+    if !proposal.is_null() {
+        let boxed = unsafe { Box::from_raw(proposal) };
 
         std::mem::drop(boxed);
     }

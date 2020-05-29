@@ -3,6 +3,8 @@ use chain_impl_mockchain::{
     vote::{Choice, Options, Payload, PayloadType},
 };
 
+pub const VOTE_PLAN_ID_LENGTH: usize = 32;
+
 pub struct VotePlan {
     id: VotePlanId,
     payload_type: PayloadType,

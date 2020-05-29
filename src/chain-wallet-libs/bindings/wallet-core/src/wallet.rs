@@ -1,8 +1,6 @@
 use crate::{Conversion, Error, Proposal, VotePlan};
 use chain_core::property::Serialize as _;
-use chain_impl_mockchain::{
-    block::Block, certificate::VoteCast, transaction::Transaction, value::Value, vote::Choice,
-};
+use chain_impl_mockchain::{block::Block, value::Value, vote::Choice};
 
 use chain_ser::mempack::{ReadBuf, Readable as _};
 use wallet::{AccountId, Settings};
@@ -181,15 +179,16 @@ impl Wallet {
     pub fn vote(
         &mut self,
         settings: Settings,
-        vote_plan: VotePlan,
-        proposal: Proposal,
+        vote_plan: &VotePlan,
+        proposal: &Proposal,
         choice: Choice,
-    ) -> Result<Transaction<VoteCast>, Error> {
+    ) -> Result<Vec<u8>, Error> {
         if let Some(payload) = proposal.vote(&vote_plan, choice) {
             let mut builder =
                 wallet::transaction::TransactionBuilder::new(settings, vec![], payload);
             builder.select_from(&mut self.account);
             let tx = builder.finalize_tx(());
+            let tx = tx.serialize_as_vec().unwrap();
             Ok(tx)
         } else {
             return Err(Error::wallet_vote_range());

@@ -5,37 +5,38 @@ use chain_impl_mockchain::{
 
 pub const VOTE_PLAN_ID_LENGTH: usize = 32;
 
-pub struct VotePlan {
-    id: VotePlanId,
-    payload_type: PayloadType,
-}
-
 pub struct Proposal {
+    vote_plan_id: VotePlanId,
+    payload_type: PayloadType,
     index: u8,
     options: Options,
 }
 
-impl VotePlan {
-    pub fn new(id: VotePlanId, payload_type: PayloadType) -> Self {
-        Self { id, payload_type }
-    }
-}
-
 impl Proposal {
-    pub fn new(index: u8, options: Options) -> Self {
-        Self { index, options }
+    pub fn new(
+        vote_plan_id: VotePlanId,
+        payload_type: PayloadType,
+        index: u8,
+        options: Options,
+    ) -> Self {
+        Self {
+            vote_plan_id,
+            payload_type,
+            index,
+            options,
+        }
     }
 
-    pub fn vote(&self, vote_plan: &VotePlan, choice: Choice) -> Option<VoteCast> {
+    pub fn vote(&self, choice: Choice) -> Option<VoteCast> {
         if !self.options.validate(choice) {
             return None;
         }
 
-        let payload = match vote_plan.payload_type {
+        let payload = match self.payload_type {
             PayloadType::Public => Payload::Public { choice },
         };
 
-        let cast = VoteCast::new(vote_plan.id.clone(), self.index, payload);
+        let cast = VoteCast::new(self.vote_plan_id.clone(), self.index, payload);
 
         Some(cast)
     }

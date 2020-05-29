@@ -29,8 +29,6 @@ typedef Conversion *ConversionPtr;
 
 typedef Proposal *ProposalPtr;
 
-typedef VotePlan *VotePlanPtr;
-
 /**
  * once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
  * it is possible to convert all existing funds to the new wallet.
@@ -185,18 +183,6 @@ void iohk_jormungandr_wallet_delete_settings(SettingsPtr settings);
  *
  */
 void iohk_jormungandr_wallet_delete_string(char *ptr);
-
-/**
- * delete the pointer
- *
- * # Safety
- *
- * This function dereference raw pointers. Even though
- * the function checks if the pointers are null. Mind not to put random values
- * in or you may see unexpected behaviors
- *
- */
-void iohk_jormungandr_wallet_delete_vote_plan(VotePlanPtr vote_plan);
 
 /**
  * delete the pointer, zero all the keys and free the allocated memory
@@ -429,11 +415,25 @@ ErrorPtr iohk_jormungandr_wallet_set_state(WalletPtr wallet,
 ErrorPtr iohk_jormungandr_wallet_total_value(WalletPtr wallet,
                                              uint64_t *total_out);
 
-ErrorPtr iohk_jormungandr_wallet_vote_plan(const uint8_t *id,
-                                           uint8_t payload_type,
-                                           VotePlanPtr *vote_plan_out);
-
-ErrorPtr iohk_jormungandr_wallet_vote_proposal(uint8_t index,
+/**
+ * build the proposal object
+ *
+ * # Errors
+ *
+ * This function may fail if:
+ *
+ * * `proposal_out` is null.
+ * * `num_choices` is out of the allowed range.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though the function checks if
+ * the pointers are null. Mind not to put random values in or you may see
+ * unexpected behaviors.
+ */
+ErrorPtr iohk_jormungandr_wallet_vote_proposal(const uint8_t *vote_plan_id,
+                                               uint8_t payload_type,
+                                               uint8_t index,
                                                uint8_t num_choices,
                                                ProposalPtr *proposal_out);
 

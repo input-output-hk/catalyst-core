@@ -7,7 +7,7 @@ mod wallet;
 pub use self::{
     conversion::Conversion,
     error::{Error, ErrorCode, ErrorKind, Result},
-    vote::{Proposal, VotePlan},
+    vote::Proposal,
     wallet::Wallet,
 };
 pub use ::wallet::Settings;

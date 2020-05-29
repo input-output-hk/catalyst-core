@@ -1,4 +1,4 @@
-use crate::{Conversion, Error, Proposal, VotePlan};
+use crate::{Conversion, Error, Proposal};
 use chain_core::property::Serialize as _;
 use chain_impl_mockchain::{block::Block, fragment::Fragment, value::Value, vote::Choice};
 
@@ -194,11 +194,10 @@ impl Wallet {
     pub fn vote(
         &mut self,
         settings: Settings,
-        vote_plan: &VotePlan,
         proposal: &Proposal,
         choice: Choice,
     ) -> Result<Vec<u8>, Error> {
-        let payload = if let Some(payload) = proposal.vote(&vote_plan, choice) {
+        let payload = if let Some(payload) = proposal.vote(choice) {
             payload
         } else {
             return Err(Error::wallet_vote_range());

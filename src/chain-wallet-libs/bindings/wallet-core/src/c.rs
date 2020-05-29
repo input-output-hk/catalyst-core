@@ -540,7 +540,7 @@ pub fn wallet_delete_vote_plan(vote_plan: VotePlanPtr) {
 }
 
 /// delete the pointer
-pub fn wallet_delete_proposal(proposal: VotePlanPtr) {
+pub fn wallet_delete_proposal(proposal: ProposalPtr) {
     if !proposal.is_null() {
         let boxed = unsafe { Box::from_raw(proposal) };
 

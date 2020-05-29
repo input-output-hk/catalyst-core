@@ -6,8 +6,9 @@ pub use wallet::Settings;
 use wallet_core::c::{
     wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
     wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_error,
-    wallet_delete_settings, wallet_delete_wallet, wallet_id, wallet_recover, wallet_retrieve_funds,
-    wallet_set_state, wallet_total_value,
+    wallet_delete_proposal, wallet_delete_settings, wallet_delete_vote_plan, wallet_delete_wallet,
+    wallet_id, wallet_recover, wallet_retrieve_funds, wallet_set_state, wallet_total_value,
+    wallet_vote_cast, wallet_vote_plan, wallet_vote_proposal,
 };
 pub use wallet_core::{
     // c::{ConversionPtr, ErrorPtr, SettingsPtr, WalletPtr},
@@ -15,12 +16,16 @@ pub use wallet_core::{
     Error,
     ErrorCode,
     ErrorKind,
+    Proposal,
+    VotePlan,
     Wallet,
 };
 
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
+pub type VotePlanPtr = *mut VotePlan;
+pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
@@ -339,6 +344,50 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
     r.into_c_api()
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_plan(
+    id: *const u8,
+    payload_type: u8,
+    vote_plan_out: *mut VotePlanPtr,
+) -> ErrorPtr {
+    let r = wallet_vote_plan(id, payload_type, vote_plan_out);
+
+    r.into_c_api()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
+    index: u8,
+    num_choices: u8,
+    proposal_out: *mut ProposalPtr,
+) -> ErrorPtr {
+    let r = wallet_vote_proposal(index, num_choices, proposal_out);
+
+    r.into_c_api()
+}
+
+pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
+    wallet: WalletPtr,
+    settings: SettingsPtr,
+    vote_plan: VotePlanPtr,
+    proposal: ProposalPtr,
+    choice: u8,
+    transaction_out: *mut *const u8,
+    len_out: *mut usize,
+) -> ErrorPtr {
+    let r = wallet_vote_cast(
+        wallet,
+        settings,
+        vote_plan,
+        proposal,
+        choice,
+        transaction_out,
+        len_out,
+    );
+
+    r.into_c_api()
+}
+
 /// Get a string describing the error, this will return an allocated
 /// null terminated string describing the error.
 ///
@@ -463,4 +512,30 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_conversion(conversion: ConversionPtr) {
     wallet_delete_conversion(conversion)
+}
+
+/// delete the pointer
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub extern "C" fn iohk_jormungandr_wallet_delete_vote_plan(vote_plan: VotePlanPtr) {
+    wallet_delete_vote_plan(vote_plan)
+}
+
+/// delete the pointer
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub extern "C" fn iohk_jormungandr_wallet_delete_proposal(proposal: ProposalPtr) {
+    wallet_delete_proposal(proposal)
 }

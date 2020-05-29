@@ -1,17 +1,21 @@
 #[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate structopt;
 
 pub mod db;
 pub mod server;
 pub mod settings;
 pub mod v0;
 
+use crate::settings::ServiceSettings;
+use structopt::StructOpt;
+
 #[tokio::main]
 async fn main() {
-    // TODO: create configuration to load the required context information
+    let settings: ServiceSettings = ServiceSettings::from_args();
     let context = v0::context::new_default_context();
     let app = v0::filter(context);
-    // TODO: load serving address and port from configuration
-    warp::log("Running server at 127.0.0.1:3030");
-    server::start_server(app, None).await
+    println!("Running server at {}", settings.address);
+    server::start_server(app, Some(settings)).await
 }

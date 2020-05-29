@@ -19,6 +19,15 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+/**
+ * Payload type for voting
+ */
+enum PayloadType
+{
+  PayloadType_Public = 1,
+};
+typedef uint8_t PayloadType;
+
 typedef Error *ErrorPtr;
 
 typedef Wallet *WalletPtr;
@@ -428,6 +437,30 @@ ErrorPtr iohk_jormungandr_wallet_total_value(WalletPtr wallet,
                                              uint64_t *total_out);
 
 /**
+ * build the vote cast transaction
+ *
+ * # Errors
+ *
+ * This function may fail upon receiving a null pointer or a `choice` value
+ * that does not fall within the range specified in `proposal`.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though the function checks if
+ * the pointers are null. Mind not to put random values in or you may see
+ * unexpected behaviors.
+ *
+ * Don't forget to remove `transaction_out` with
+ * `iohk_jormungandr_waller_delete_buffer`.
+ */
+ErrorPtr iohk_jormungandr_wallet_vote_cast(WalletPtr wallet,
+                                           SettingsPtr settings,
+                                           ProposalPtr proposal,
+                                           uint8_t choice,
+                                           const uint8_t **transaction_out,
+                                           uintptr_t *len_out);
+
+/**
  * build the proposal object
  *
  * # Errors
@@ -444,7 +477,7 @@ ErrorPtr iohk_jormungandr_wallet_total_value(WalletPtr wallet,
  * unexpected behaviors.
  */
 ErrorPtr iohk_jormungandr_wallet_vote_proposal(const uint8_t *vote_plan_id,
-                                               uint8_t payload_type,
+                                               PayloadType payload_type,
                                                uint8_t index,
                                                uint8_t num_choices,
                                                ProposalPtr *proposal_out);

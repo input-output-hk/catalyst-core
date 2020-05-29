@@ -6,9 +6,9 @@ use chain_impl_mockchain::{
     certificate::VotePlanId,
     transaction::Input,
     value::Value,
-    vote::{Choice, Options as VoteOptions},
+    vote::{Choice, Options as VoteOptions, PayloadType},
 };
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 use thiserror::Error;
 pub use wallet::Settings;
 
@@ -408,7 +408,7 @@ pub fn wallet_set_state(wallet: WalletPtr, value: u64, counter: u32) -> Result {
 /// unexpected behaviors.
 pub unsafe fn wallet_vote_proposal(
     vote_plan_id: *const u8,
-    payload_type: u8,
+    payload_type: PayloadType,
     index: u8,
     num_choices: u8,
     proposal_out: *mut ProposalPtr,
@@ -420,11 +420,6 @@ pub unsafe fn wallet_vote_proposal(
     if proposal_out.is_null() {
         return Error::invalid_input("proposal_out").with(NulPtr).into();
     }
-
-    let payload_type = match payload_type.try_into() {
-        Ok(payload_type) => payload_type,
-        Err(err) => return Error::invalid_input("payload_type").with(err).into(),
-    };
 
     let options = match VoteOptions::new_length(num_choices) {
         Ok(options) => options,

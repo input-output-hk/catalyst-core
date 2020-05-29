@@ -1,3 +1,4 @@
+pub use chain_impl_mockchain::vote::PayloadType as PayloadTypeRust;
 use std::{
     ffi::{CStr, CString},
     os::raw::c_char,
@@ -25,6 +26,20 @@ pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
 pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
+
+/// Payload type for voting
+#[repr(u8)]
+pub enum PayloadType {
+    Public = 1,
+}
+
+impl From<PayloadType> for PayloadTypeRust {
+    fn from(c_enum: PayloadType) -> Self {
+        match c_enum {
+            PayloadType::Public => PayloadTypeRust::Public,
+        }
+    }
+}
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
 ///
@@ -359,12 +374,18 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
     vote_plan_id: *const u8,
-    payload_type: u8,
+    payload_type: PayloadType,
     index: u8,
     num_choices: u8,
     proposal_out: *mut ProposalPtr,
 ) -> ErrorPtr {
-    let r = wallet_vote_proposal(vote_plan_id, payload_type, index, num_choices, proposal_out);
+    let r = wallet_vote_proposal(
+        vote_plan_id,
+        payload_type.into(),
+        index,
+        num_choices,
+        proposal_out,
+    );
 
     r.into_c_api()
 }

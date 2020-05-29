@@ -393,6 +393,20 @@ pub fn wallet_set_state(wallet: WalletPtr, value: u64, counter: u32) -> Result {
     Result::success()
 }
 
+/// build the vote plan object
+///
+/// # Errors
+///
+/// This function may fail if:
+///
+/// * `id` or `vote_plan_out` is null.
+/// * `payload_type` is not a valid value.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
 pub unsafe fn wallet_vote_plan(
     id: *const u8,
     payload_type: u8,
@@ -422,6 +436,20 @@ pub unsafe fn wallet_vote_plan(
     Result::success()
 }
 
+/// build the proposal object
+///
+/// # Errors
+///
+/// This function may fail if:
+///
+/// * `proposal_out` is null.
+/// * `num_choices` is out of the allowed range.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
 pub unsafe fn wallet_vote_proposal(
     index: u8,
     num_choices: u8,
@@ -441,6 +469,18 @@ pub unsafe fn wallet_vote_proposal(
     Result::success()
 }
 
+/// build the vote cast transaction
+///
+/// # Errors
+///
+/// This function may fail upon receiving a null pointer or a `choice` value
+/// that does not fall within the range specified in `proposal`.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
 pub unsafe fn wallet_vote_cast(
     wallet: WalletPtr,
     settings: SettingsPtr,
@@ -485,7 +525,7 @@ pub unsafe fn wallet_vote_cast(
 
     let transaction = match wallet.vote(settings, vote_plan, proposal, choice) {
         Ok(transaction) => transaction,
-        Err(err) => return Error::from(err).into(),
+        Err(err) => return err.into(),
     };
 
     *transaction_out = transaction.as_ptr();

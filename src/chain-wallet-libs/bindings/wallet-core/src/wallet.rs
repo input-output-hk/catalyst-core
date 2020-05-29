@@ -176,6 +176,21 @@ impl Wallet {
     }
 
     /// Cast a vote
+    ///
+    /// This function outputs a fragment containing a voting transaction.
+    ///
+    /// # Parameters
+    ///
+    /// * `settings` - ledger settings.
+    /// * `vote_plan` - voting plan settings.
+    /// * `proposal` - proposal information including the range of values
+    ///   allowed in `choice`.
+    /// * `choice` - the option to vote for.
+    ///
+    /// # Errors
+    ///
+    /// The error is returned when `choice` does not fall withing the range of
+    /// available choices specified in `proposal`.
     pub fn vote(
         &mut self,
         settings: Settings,

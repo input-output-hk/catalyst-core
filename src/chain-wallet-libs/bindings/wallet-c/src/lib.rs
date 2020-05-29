@@ -344,6 +344,20 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
     r.into_c_api()
 }
 
+/// build the vote plan object
+///
+/// # Errors
+///
+/// This function may fail if:
+///
+/// * `id` or `vote_plan_out` is null.
+/// * `payload_type` is not a valid value.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_plan(
     id: *const u8,
@@ -354,6 +368,21 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_plan(
 
     r.into_c_api()
 }
+
+/// build the proposal object
+///
+/// # Errors
+///
+/// This function may fail if:
+///
+/// * `proposal_out` is null.
+/// * `num_choices` is out of the allowed range.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
 
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
@@ -366,6 +395,18 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
     r.into_c_api()
 }
 
+/// build the vote cast transaction
+///
+/// # Errors
+///
+/// This function may fail upon receiving a null pointer or a `choice` value
+/// that does not fall within the range specified in `proposal`.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
 pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
     wallet: WalletPtr,
     settings: SettingsPtr,

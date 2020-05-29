@@ -196,7 +196,7 @@ impl Wallet {
         settings: Settings,
         proposal: &Proposal,
         choice: Choice,
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<Box<[u8]>, Error> {
         let payload = if let Some(payload) = proposal.vote(choice) {
             payload
         } else {
@@ -207,6 +207,6 @@ impl Wallet {
         builder.select_from(&mut self.account);
         let tx = builder.finalize_tx(());
         let fragment = Fragment::VoteCast(tx);
-        Ok(fragment.serialize_as_vec().unwrap())
+        Ok(fragment.serialize_as_vec().unwrap().into_boxed_slice())
     }
 }

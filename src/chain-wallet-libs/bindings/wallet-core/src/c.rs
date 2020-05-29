@@ -489,19 +489,13 @@ pub unsafe fn wallet_vote_cast(
 
     let choice = Choice::new(choice);
 
-    let mut transaction = match wallet.vote(settings, proposal, choice) {
-        Ok(transaction) => transaction,
+    let transaction = match wallet.vote(settings, proposal, choice) {
+        Ok(transaction) => Box::leak(transaction),
         Err(err) => return err.into(),
     };
 
-    transaction.shrink_to_fit();
-
-    // TODO use `into_raw_parts` when stabilized
-    // https://github.com/rust-lang/rust/issues/65816
     *transaction_out = transaction.as_ptr();
     *len_out = transaction.len();
-
-    std::mem::forget(transaction);
 
     Result::success()
 }

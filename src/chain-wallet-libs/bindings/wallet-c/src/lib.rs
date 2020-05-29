@@ -504,8 +504,9 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_string(ptr: *mut c_char)
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_waller_delete_buffer(ptr: *mut c_char, length: usize) {
     if !ptr.is_null() {
-        let vec = Vec::from_raw_parts(ptr, length, length);
-        std::mem::drop(vec);
+        let data = std::slice::from_raw_parts_mut(ptr, length);
+        let data = Box::from_raw(data as *mut [i8]);
+        std::mem::drop(data);
     }
 }
 

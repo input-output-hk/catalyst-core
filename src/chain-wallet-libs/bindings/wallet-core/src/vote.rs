@@ -8,8 +8,7 @@ pub struct VotePlan {
     payload_type: PayloadType,
 }
 
-pub struct Proposal<'a> {
-    vote_plan: &'a VotePlan,
+pub struct Proposal {
     index: u8,
     options: Options,
 }
@@ -20,25 +19,21 @@ impl VotePlan {
     }
 }
 
-impl<'a> Proposal<'a> {
-    pub fn new(vote_plan: &'a VotePlan, index: u8, options: Options) -> Self {
-        Self {
-            vote_plan,
-            index,
-            options,
-        }
+impl Proposal {
+    pub fn new(index: u8, options: Options) -> Self {
+        Self { index, options }
     }
 
-    pub fn vote(&self, choice: Choice) -> Option<VoteCast> {
+    pub fn vote(&self, vote_plan: &VotePlan, choice: Choice) -> Option<VoteCast> {
         if !self.options.validate(choice) {
             return None;
         }
 
-        let payload = match self.vote_plan.payload_type {
+        let payload = match vote_plan.payload_type {
             PayloadType::Public => Payload::Public { choice },
         };
 
-        let cast = VoteCast::new(self.vote_plan.id.clone(), self.index, payload);
+        let cast = VoteCast::new(vote_plan.id.clone(), self.index, payload);
 
         Some(cast)
     }

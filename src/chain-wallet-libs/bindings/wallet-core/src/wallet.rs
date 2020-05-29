@@ -1,4 +1,4 @@
-use crate::{Conversion, Error, Proposal};
+use crate::{Conversion, Error, Proposal, VotePlan};
 use chain_core::property::Serialize as _;
 use chain_impl_mockchain::{
     block::Block, certificate::VoteCast, transaction::Transaction, value::Value, vote::Choice,
@@ -178,13 +178,14 @@ impl Wallet {
     }
 
     /// Cast a vote
-    pub fn vote<'a>(
+    pub fn vote(
         &mut self,
         settings: Settings,
-        proposal: Proposal<'a>,
+        vote_plan: VotePlan,
+        proposal: Proposal,
         choice: Choice,
     ) -> Result<Transaction<VoteCast>, Error> {
-        if let Some(payload) = proposal.vote(choice) {
+        if let Some(payload) = proposal.vote(&vote_plan, choice) {
             let mut builder =
                 wallet::transaction::TransactionBuilder::new(settings, vec![], payload);
             builder.select_from(&mut self.account);

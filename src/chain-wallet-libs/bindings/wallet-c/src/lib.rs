@@ -384,6 +384,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
 ///
 /// Don't forget to remove `transaction_out` with
 /// `iohk_jormungandr_waller_delete_buffer`.
+#[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
     wallet: WalletPtr,
     settings: SettingsPtr,

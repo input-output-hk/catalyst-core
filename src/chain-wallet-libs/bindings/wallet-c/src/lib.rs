@@ -381,6 +381,9 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
 /// This function dereference raw pointers. Even though the function checks if
 /// the pointers are null. Mind not to put random values in or you may see
 /// unexpected behaviors.
+///
+/// Don't forget to remove `transaction_out` with
+/// `iohk_jormungandr_waller_delete_buffer`.
 pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
     wallet: WalletPtr,
     settings: SettingsPtr,
@@ -465,6 +468,22 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_string(ptr: *mut c_char)
     if !ptr.is_null() {
         let cstring = CString::from_raw(ptr);
         std::mem::drop(cstring)
+    }
+}
+
+/// Delete a binery buffer that was returned by this library alongside with its
+/// length.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_waller_delete_buffer(ptr: *mut c_char, length: usize) {
+    if !ptr.is_null() {
+        let vec = Vec::from_raw_parts(ptr, length, length);
+        std::mem::drop(vec);
     }
 }
 

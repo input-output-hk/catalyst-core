@@ -1,11 +1,13 @@
 pub mod c;
 mod conversion;
 mod error;
+mod vote;
 mod wallet;
 
 pub use self::{
     conversion::Conversion,
     error::{Error, ErrorCode, ErrorKind, Result},
+    vote::{Proposal, VotePlan},
     wallet::Wallet,
 };
 pub use ::wallet::Settings;

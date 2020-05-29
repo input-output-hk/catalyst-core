@@ -45,8 +45,8 @@ pub enum ErrorCode {
     /// transaction of the conversion.
     WalletConversion = 3,
 
-    /// TODO
-    WalletVote = 4,
+    /// the provided voting choice is out of the allowed range
+    WalletVoteOutOfRange = 4,
 }
 
 #[derive(Debug)]
@@ -55,9 +55,7 @@ pub enum ErrorKind {
     /// invalid format or of unexpected value (null pointer).
     ///
     /// The `details` should provide more info on what caused the error.
-    InvalidInput {
-        argument_name: &'static str,
-    },
+    InvalidInput { argument_name: &'static str },
 
     /// an error occurred while recovering a wallet
     WalletRecovering,
@@ -67,7 +65,8 @@ pub enum ErrorKind {
     /// there may be an out of bound error
     WalletConversion,
 
-    WalletVote,
+    /// the provided voting choice is out of the allowed range
+    WalletVoteOutOfRange,
 }
 
 impl ErrorKind {
@@ -80,7 +79,7 @@ impl ErrorKind {
             Self::InvalidInput { .. } => ErrorCode::InvalidInput,
             Self::WalletRecovering => ErrorCode::WalletRecovering,
             Self::WalletConversion => ErrorCode::WalletConversion,
-            Self::WalletVote => ErrorCode::WalletVote,
+            Self::WalletVoteOutOfRange => ErrorCode::WalletVoteOutOfRange,
         }
     }
 }
@@ -147,9 +146,9 @@ impl Error {
         }
     }
 
-    pub fn wallet_vote() -> Self {
+    pub fn wallet_vote_range() -> Self {
         Self {
-            kind: ErrorKind::WalletVote,
+            kind: ErrorKind::WalletVoteOutOfRange,
             details: None,
         }
     }
@@ -287,7 +286,9 @@ impl Display for ErrorKind {
             Self::WalletConversion => {
                 f.write_str("Error while performing operation on the wallet conversion object")
             }
-            Self::WalletVote => f.write_str("Error while casting a vote"),
+            Self::WalletVoteOutOfRange => {
+                f.write_str("The provided choice is out of the vote variants range")
+            }
         }
     }
 }

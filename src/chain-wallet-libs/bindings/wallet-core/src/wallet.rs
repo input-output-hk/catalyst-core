@@ -1,11 +1,7 @@
-use crate::{Conversion, Error};
+use crate::{Conversion, Error, Proposal};
 use chain_core::property::Serialize as _;
 use chain_impl_mockchain::{
-    block::Block,
-    certificate::{VoteCast, VotePlanId},
-    transaction::Transaction,
-    value::Value,
-    vote::{Choice, Options, Payload as VotePayload},
+    block::Block, certificate::VoteCast, transaction::Transaction, value::Value, vote::Choice,
 };
 
 use chain_ser::mempack::{ReadBuf, Readable as _};
@@ -182,31 +178,20 @@ impl Wallet {
     }
 
     /// Cast a vote
-    pub fn vote(
+    pub fn vote<'a>(
         &mut self,
         settings: Settings,
-        plan: VotePlanId,
-        proposal_index: u8,
+        proposal: Proposal<'a>,
         choice: Choice,
     ) -> Result<Transaction<VoteCast>, Error> {
-        // TODO: get max options from settings? Or from where?
-        let options = Options::new_length(3).map_err(|e| Error::wallet_vote().with(e))?;
-
-        if !options.validate(choice) {
-            // TODO: add error type? to add a description
-            // or add a `with_description` for providing directly a string/Display instead of Error?
-            // after all, the error code is already kind of "strongly typing" this anyway
-            return Err(Error::wallet_vote());
+        if let Some(payload) = proposal.vote(choice) {
+            let mut builder =
+                wallet::transaction::TransactionBuilder::new(settings, vec![], payload);
+            builder.select_from(&mut self.account);
+            let tx = builder.finalize_tx(());
+            Ok(tx)
+        } else {
+            return Err(Error::wallet_vote_range());
         }
-
-        let payload = VoteCast::new(plan, proposal_index, VotePayload::Public { choice });
-
-        let mut builder = wallet::transaction::TransactionBuilder::new(settings, vec![], payload);
-
-        builder.select_from(&mut self.account);
-
-        let tx = builder.finalize_tx(());
-
-        Ok(tx)
     }
 }

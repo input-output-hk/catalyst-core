@@ -39,11 +39,7 @@ impl<P: Payload> TransactionBuilder<P> {
     where
         G: InputGenerator,
     {
-        let estimate_fee = self.settings.parameters.fees.calculate(
-            Payload::to_certificate_slice(self.certificate.payload_data().borrow()),
-            self.inputs().len() as u8,
-            self.outputs().len() as u8,
-        );
+        let estimate_fee = self.estimate_fee();
         let input_needed = self.outputs_value().saturating_add(estimate_fee);
 
         if let Some(input) = input_generator.input_to_cover(input_needed) {
@@ -78,7 +74,7 @@ impl<P: Payload> TransactionBuilder<P> {
     #[inline]
     fn estimate_fee(&self) -> Value {
         self.settings.parameters.fees.calculate(
-            None,
+            Payload::to_certificate_slice(self.certificate.payload_data().borrow()),
             self.inputs.len() as u8,
             self.outputs.len() as u8,
         )

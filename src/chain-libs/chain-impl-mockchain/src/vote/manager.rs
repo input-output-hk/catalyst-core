@@ -1,8 +1,9 @@
 use crate::{
+    account,
     certificate::{Proposal, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
-    vote,
+    vote::{self, Options, Tally, TallyResult},
 };
 use imhamt::Hamt;
 use std::{collections::hash_map::DefaultHasher, sync::Arc};
@@ -26,6 +27,8 @@ struct ProposalManagers(Vec<ProposalManager>);
 #[derive(Clone, PartialEq, Eq)]
 struct ProposalManager {
     votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, vote::Payload>,
+    options: Options,
+    tally: Option<Tally>,
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -54,6 +57,16 @@ pub enum VoteError {
         received: vote::PayloadType,
         expected: vote::PayloadType,
     },
+
+    #[error("It is not possible to tally the votes for the proposals, time to tally the votes is between {start} to {end}.")]
+    CommitteeTimeElapsed { start: BlockDate, end: BlockDate },
+
+    #[error("Cannot tally votes")]
+    CannotTallyVotes {
+        #[source]
+        #[from]
+        source: vote::TallyError,
+    },
 }
 
 impl ProposalManager {
@@ -64,9 +77,11 @@ impl ProposalManager {
     /// of verification in the future about the content of the vote (if
     /// possible : ZK is not necessarily allowing this).
     ///
-    fn new(_proposal: &Proposal) -> Self {
+    fn new(proposal: &Proposal) -> Self {
         Self {
             votes_by_voters: Hamt::new(),
+            options: proposal.options().clone(),
+            tally: None,
         }
     }
 
@@ -87,7 +102,36 @@ impl ProposalManager {
         let votes_by_voters =
             self.votes_by_voters
                 .insert_or_update_simple(identifier, payload.clone(), |_| Some(payload));
-        Ok(Self { votes_by_voters })
+        Ok(Self {
+            votes_by_voters,
+            tally: self.tally.clone(),
+            options: self.options.clone(),
+        })
+    }
+
+    #[must_use = "Compute the PublicTally in a new ProposalManager, does not modify self"]
+    pub fn public_tally(&self, accounts: &account::Ledger) -> Result<Self, VoteError> {
+        let mut results = TallyResult::new(self.options.clone());
+
+        for (id, payload) in self.votes_by_voters.iter() {
+            if let Some(account_id) = id.to_single_account() {
+                if let Ok(account) = accounts.get_state(&account_id) {
+                    let value = account.get_value();
+
+                    match payload {
+                        vote::Payload::Public { choice } => {
+                            results.add_vote(*choice, value)?;
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(Self {
+            votes_by_voters: self.votes_by_voters.clone(),
+            options: self.options.clone(),
+            tally: Some(Tally::new_public(results)),
+        })
     }
 }
 
@@ -134,6 +178,15 @@ impl ProposalManagers {
                 vote: cast,
             })
         }
+    }
+
+    pub fn public_tally(&self, accounts: &account::Ledger) -> Result<Self, VoteError> {
+        let mut proposals = Vec::with_capacity(self.0.len());
+        for proposal in self.0.iter() {
+            proposals.push(proposal.public_tally(accounts)?);
+        }
+
+        Ok(Self(proposals))
     }
 }
 
@@ -209,6 +262,29 @@ impl VotePlanManager {
             })
         } else {
             let proposal_managers = self.proposal_managers.vote(identifier, cast)?;
+
+            Ok(Self {
+                proposal_managers,
+                plan: Arc::clone(&self.plan),
+                id: self.id.clone(),
+            })
+        }
+    }
+
+    pub fn tally(
+        &self,
+        block_date: BlockDate,
+        accounts: &account::Ledger,
+    ) -> Result<Self, VoteError> {
+        if !self.can_committee(block_date) {
+            Err(VoteError::CommitteeTimeElapsed {
+                start: self.plan().committee_start(),
+                end: self.plan().committee_end(),
+            })
+        } else {
+            let proposal_managers = match self.plan().payload_type() {
+                vote::PayloadType::Public => self.proposal_managers.public_tally(accounts)?,
+            };
 
             Ok(Self {
                 proposal_managers,

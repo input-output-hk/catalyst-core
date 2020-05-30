@@ -22,8 +22,7 @@ use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
-use chain_time::Epoch as TimeEpoch;
-use chain_time::{SlotDuration, TimeEra, TimeFrame, Timeline};
+use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
 use std::mem::swap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
@@ -277,8 +276,6 @@ pub enum Error {
     UpdateNotAllowedYet,
     #[error("Vote plans are not allowed outside of the genesis block yet")]
     VotePlanNotAllowedYet,
-    #[error("Vote castings are not allowed outside of the genesis block yet")]
-    VoteCastNotAllowedYet,
     #[error("Cannot add the vote plan")]
     CannotAddVotePlan(
         #[from]
@@ -864,10 +861,6 @@ impl Ledger {
                 new_ledger = new_ledger.apply_update_vote(&vote)?;
             }
             Fragment::VotePlan(tx) => {
-                // TODO: voting is not allowed on some blockchain already
-                // operating with jormungandr nodes (ITN)
-                // see to have a setting to prevent anyone from submitting
-                // a vote when not allowed
                 if true {
                     // TODO: vote plans are not yet allowed outside of the initial block0
                     return Err(Error::VotePlanNotAllowedYet);
@@ -880,15 +873,6 @@ impl Ledger {
                     new_ledger_.apply_vote_plan(block_date, tx.payload().into_payload())?;
             }
             Fragment::VoteCast(tx) => {
-                // TODO: voting is not allowed on some blockchain already
-                // operating with jormungandr nodes (ITN)
-                // see to have a setting to prevent anyone from submitting
-                // a vote when not allowed
-                if true {
-                    // TODO: vote plans are not yet allowed outside of the initial block0
-                    return Err(Error::VoteCastNotAllowedYet);
-                }
-
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) = new_ledger.apply_vote_cast(&tx, &ledger_params)?;
                 new_ledger = new_ledger_;

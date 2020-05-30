@@ -68,7 +68,7 @@ impl From<PayloadType> for PayloadTypeRust {
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -116,7 +116,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// * this function may fail if the wallet pointer is null;
@@ -153,7 +153,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_id(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -187,7 +187,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -233,7 +233,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -267,7 +267,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -300,7 +300,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// If the `total_out` pointer is null, this function does nothing
@@ -337,7 +337,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_total_value(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -493,7 +493,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_string(ptr: *mut c_char)
     }
 }
 
-/// Delete a binery buffer that was returned by this library alongside with its
+/// Delete a binary buffer that was returned by this library alongside with its
 /// length.
 ///
 /// # Safety
@@ -502,7 +502,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_string(ptr: *mut c_char)
 /// the function checks if the pointers are null. Mind not to put random values
 /// in or you may see unexpected behaviors
 #[no_mangle]
-pub unsafe extern "C" fn iohk_jormungandr_waller_delete_buffer(ptr: *mut c_char, length: usize) {
+pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_buffer(ptr: *mut c_char, length: usize) {
     if !ptr.is_null() {
         let data = std::slice::from_raw_parts_mut(ptr, length);
         let data = Box::from_raw(data as *mut [c_char]);

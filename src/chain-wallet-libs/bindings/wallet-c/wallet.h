@@ -39,18 +39,6 @@ typedef Conversion *ConversionPtr;
 typedef Proposal *ProposalPtr;
 
 /**
- * Delete a binery buffer that was returned by this library alongside with its
- * length.
- *
- * # Safety
- *
- * This function dereference raw pointers. Even though
- * the function checks if the pointers are null. Mind not to put random values
- * in or you may see unexpected behaviors
- */
-void iohk_jormungandr_waller_delete_buffer(char *ptr, uintptr_t length);
-
-/**
  * once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
  * it is possible to convert all existing funds to the new wallet.
  *
@@ -64,7 +52,7 @@ void iohk_jormungandr_waller_delete_buffer(char *ptr, uintptr_t length);
  *
  * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
  * The `ErrorPtr` can then be observed to gathered details of the error.
- * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
  * the `ErrorPtr` from memory and avoid memory leaks.
  *
  * # Safety
@@ -92,7 +80,7 @@ ErrorPtr iohk_jormungandr_wallet_convert(WalletPtr wallet,
  *
  * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
  * The `ErrorPtr` can then be observed to gathered details of the error.
- * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
  * the `ErrorPtr` from memory and avoid memory leaks.
  *
  * # Safety
@@ -118,7 +106,7 @@ ErrorPtr iohk_jormungandr_wallet_convert_ignored(ConversionPtr conversion,
  *
  * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
  * The `ErrorPtr` can then be observed to gathered details of the error.
- * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
  * the `ErrorPtr` from memory and avoid memory leaks.
  *
  * # Safety
@@ -144,6 +132,18 @@ ErrorPtr iohk_jormungandr_wallet_convert_transactions_get(ConversionPtr conversi
  *
  */
 uintptr_t iohk_jormungandr_wallet_convert_transactions_size(ConversionPtr conversion);
+
+/**
+ * Delete a binary buffer that was returned by this library alongside with its
+ * length.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ */
+void iohk_jormungandr_wallet_delete_buffer(char *ptr, uintptr_t length);
 
 /**
  * delete the pointer
@@ -284,7 +284,7 @@ char *iohk_jormungandr_wallet_error_to_string(ErrorPtr error);
  *
  * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
  * The `ErrorPtr` can then be observed to gathered details of the error.
- * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
  * the `ErrorPtr` from memory and avoid memory leaks.
  *
  * * this function may fail if the wallet pointer is null;
@@ -321,7 +321,7 @@ ErrorPtr iohk_jormungandr_wallet_id(WalletPtr wallet,
  *
  * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
  * The `ErrorPtr` can then be observed to gathered details of the error.
- * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
  * the `ErrorPtr` from memory and avoid memory leaks.
  *
  * # Safety
@@ -361,7 +361,7 @@ ErrorPtr iohk_jormungandr_wallet_recover(const char *mnemonics,
  *
  * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
  * The `ErrorPtr` can then be observed to gathered details of the error.
- * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
  * the `ErrorPtr` from memory and avoid memory leaks.
  *
  * # Safety
@@ -393,7 +393,7 @@ ErrorPtr iohk_jormungandr_wallet_retrieve_funds(WalletPtr wallet,
  *
  * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
  * The `ErrorPtr` can then be observed to gathered details of the error.
- * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
  * the `ErrorPtr` from memory and avoid memory leaks.
  *
  * # Safety
@@ -421,7 +421,7 @@ ErrorPtr iohk_jormungandr_wallet_set_state(WalletPtr wallet,
  *
  * On error the function returns a `ErrorPtr`. On success `NULL` is returned.
  * The `ErrorPtr` can then be observed to gathered details of the error.
- * Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+ * Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
  * the `ErrorPtr` from memory and avoid memory leaks.
  *
  * If the `total_out` pointer is null, this function does nothing

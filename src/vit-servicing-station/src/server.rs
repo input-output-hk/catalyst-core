@@ -1,17 +1,16 @@
-use crate::settings::{Cors, ServiceSettings, Tls};
+use crate::server_settings::{Cors, ServiceSettings, Tls};
 
 use std::time::Duration;
 use warp::filters::cors::Builder as CorsBuilder;
 use warp::{Filter, TlsServer};
 
 fn setup_cors(cors_config: Cors) -> CorsBuilder {
-    let allowed_origins: Vec<&str> = cors_config
-        .allowed_origins
-        .iter()
-        .map(AsRef::as_ref)
-        .collect();
-
-    let mut cors: CorsBuilder = warp::cors().allow_origins(allowed_origins);
+    let mut cors: CorsBuilder = if let Some(allowed_origins) = cors_config.allowed_origins {
+        let allowed_origins: Vec<&str> = allowed_origins.iter().map(AsRef::as_ref).collect();
+        warp::cors().allow_origins(allowed_origins)
+    } else {
+        warp::cors()
+    };
 
     if let Some(max_age) = cors_config.max_age_secs {
         cors = cors.max_age(Duration::from_secs(max_age));
@@ -24,10 +23,18 @@ where
     App: Filter<Error = warp::Rejection> + Clone + Send + Sync + 'static,
     App::Extract: warp::Reply,
 {
+    assert!(
+        tls_config.is_loaded(),
+        "Tls config should be filled before calling setup"
+    );
+    let (cert_file, priv_key_file) = (
+        tls_config.cert_file.unwrap(),
+        tls_config.priv_key_file.unwrap(),
+    );
     warp::serve(app)
         .tls()
-        .cert_path(tls_config.cert_file)
-        .key_path(tls_config.priv_key_file)
+        .cert_path(cert_file)
+        .key_path(priv_key_file)
 }
 
 async fn start_server_with_config<App>(app: App, settings: ServiceSettings)
@@ -35,14 +42,10 @@ where
     App: Filter<Error = warp::Rejection> + Clone + Send + Sync + 'static,
     App::Extract: warp::Reply,
 {
-    let app = if let Some(cors) = settings.cors.map(setup_cors) {
-        app.with(cors)
-    } else {
-        app.with(warp::cors())
-    };
+    let app = app.with(setup_cors(settings.cors));
 
-    if let Some(tls) = settings.tls {
-        setup_tls(app, tls).bind(settings.address).await
+    if settings.tls.is_loaded() {
+        setup_tls(app, settings.tls).bind(settings.address).await
     } else {
         warp::serve(app).bind(settings.address).await
     };

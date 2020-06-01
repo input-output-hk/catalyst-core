@@ -62,7 +62,7 @@ fn load_file_data(file_path: &Path) -> std::io::Result<String> {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::v0::context::{new_default_context, SharedContext};
+    use crate::v0::context::SharedContext;
 
     /// Build a fake context, returns the id, the fake data and the context object to check
     /// Returns `(id, data, context)`

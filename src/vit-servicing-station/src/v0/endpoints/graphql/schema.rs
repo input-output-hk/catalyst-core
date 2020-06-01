@@ -1,6 +1,51 @@
 use crate::db;
 use crate::db::models::Proposal;
+use serde::Serialize;
 use std::sync::Arc;
+
+#[derive(Serialize)]
+pub struct Category {
+    category_id: String,
+    category_name: String,
+    category_description: String,
+}
+
+#[async_graphql::Object]
+impl Category {
+    pub async fn category_id(&self) -> &str {
+        &self.category_id
+    }
+
+    pub async fn category_name(&self) -> &str {
+        &self.category_name
+    }
+
+    pub async fn category_description(&self) -> &str {
+        &self.category_description
+    }
+}
+
+#[derive(Serialize)]
+pub struct Proposer {
+    proposer_name: String,
+    proposer_email: String,
+    proposer_url: String,
+}
+
+#[async_graphql::Object]
+impl Proposer {
+    pub async fn proposer_name(&self) -> &str {
+        &self.proposer_name
+    }
+
+    pub async fn proposer_email(&self) -> &str {
+        &self.proposer_email
+    }
+
+    pub async fn proposer_url(&self) -> &str {
+        &self.proposer_url
+    }
+}
 
 pub struct QueryRoot {
     pub db_connection_pool: Arc<db::DBConnectionPool>,
@@ -8,8 +53,12 @@ pub struct QueryRoot {
 
 #[async_graphql::Object]
 impl Proposal {
-    pub async fn proposal_category(&self) -> &str {
-        &self.proposal_category
+    pub async fn category(&self) -> Category {
+        Category {
+            category_id: "".to_string(),
+            category_name: self.proposal_category.to_string(),
+            category_description: "".to_string(),
+        }
     }
 
     pub async fn proposal_id(&self) -> &str {
@@ -44,16 +93,12 @@ impl Proposal {
         &self.proposal_files_url
     }
 
-    pub async fn proposer_name(&self) -> &str {
-        &self.proposer_name
-    }
-
-    pub async fn proposer_contact(&self) -> &str {
-        &self.proposer_contact
-    }
-
-    pub async fn proposer_url(&self) -> &str {
-        &self.proposer_url
+    pub async fn proposer(&self) -> Proposer {
+        Proposer {
+            proposer_name: self.proposer_name.to_string(),
+            proposer_email: self.proposer_contact.to_string(),
+            proposer_url: self.proposer_url.to_string(),
+        }
     }
 
     pub async fn chain_proposal_id(&self) -> &str {

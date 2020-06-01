@@ -1,3 +1,4 @@
+use crate::db;
 use serde_json::Value;
 use std::collections::HashMap;
 use std::io::Read;
@@ -13,26 +14,32 @@ pub type SharedContext = Arc<RwLock<Context>>;
 #[derive(Clone)]
 pub struct Context {
     pub static_chain_data: ChainDataStore,
-    pub db_url: String,
+    pub db_connection_pool: Arc<db::DBConnectionPool>,
 }
 
 impl Context {
-    pub fn new(static_chain_data: ChainDataStore, db_url: &str) -> Self {
+    pub fn new(
+        static_chain_data: ChainDataStore,
+        db_connection_pool: db::DBConnectionPool,
+    ) -> Self {
         Self {
             static_chain_data,
-            db_url: db_url.to_string(),
+            db_connection_pool: Arc::new(db_connection_pool),
         }
     }
 }
 
 pub fn new_default_context() -> SharedContext {
     new_shared_context(
-        Path::new("./resources/v0/chain_data.json"),
-        "./db/database.sqlite3",
+        Path::new("./resources/v0/proposals.json"),
+        db::load_db_connection_pool("./db/database.sqlite3").expect("Error connecting to database"),
     )
 }
 
-pub fn new_shared_context(file_path: &Path, db_url: &str) -> SharedContext {
+pub fn new_shared_context(
+    file_path: &Path,
+    db_connection_pool: db::DBConnectionPool,
+) -> SharedContext {
     let chain_data = match load_file_data(file_path) {
         Ok(data) => data,
         Err(err) => panic!("Error reading chain data file: {}", err),
@@ -41,7 +48,7 @@ pub fn new_shared_context(file_path: &Path, db_url: &str) -> SharedContext {
         Ok(data) => data,
         Err(err) => panic!("Error parsing chain data file: {}", err),
     };
-    let context = Context::new(static_chain_data, db_url);
+    let context = Context::new(static_chain_data, db_connection_pool);
     Arc::new(RwLock::new(context))
 }
 
@@ -69,14 +76,9 @@ pub mod test {
         // build fake context chain data
         let mut context_data = ChainDataStore::new();
         context_data.insert(id.clone(), json_data.clone());
-
+        let db_conn_pool = db::load_db_connection_pool("").unwrap();
         // Empty ("") db_url should create a temporary file db for sqlite3
-        let context = Arc::new(RwLock::new(Context::new(context_data, "")));
+        let context = Arc::new(RwLock::new(Context::new(context_data, db_conn_pool)));
         (id.clone(), json_data.clone(), context)
-    }
-
-    #[test]
-    fn load_default() {
-        new_default_context();
     }
 }

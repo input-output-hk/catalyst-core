@@ -1,4 +1,22 @@
+use crate::db::{models::Proposal, schema::proposals::dsl::proposals};
 use crate::v0::context::{ChainData, SharedContext};
+use diesel::RunQueryDsl;
+
+pub async fn get_all_proposals(context: SharedContext) -> Vec<Proposal> {
+    let db_conn = context
+        .read()
+        .await
+        .db_connection_pool
+        .get()
+        .expect("Error connecting to database");
+    tokio::task::spawn_blocking(move || {
+        proposals
+            .load::<Proposal>(&db_conn)
+            .expect("Error loading proposals")
+    })
+    .await
+    .expect("Error loading proposals")
+}
 
 pub async fn get_data_from_id(id: String, context: SharedContext) -> Option<ChainData> {
     context.read().await.static_chain_data.get(&id).cloned()

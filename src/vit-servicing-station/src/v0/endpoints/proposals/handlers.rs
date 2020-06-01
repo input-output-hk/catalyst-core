@@ -8,3 +8,7 @@ pub async fn get_data_from_id(id: String, context: SharedContext) -> Result<impl
         None => Err(warp::reject::not_found()),
     }
 }
+
+pub async fn get_all_proposals(context: SharedContext) -> Result<impl Reply, Rejection> {
+    Ok(warp::reply::json(&logic::get_all_proposals(context).await))
+}

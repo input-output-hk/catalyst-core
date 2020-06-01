@@ -9,12 +9,15 @@ const WALLET_TOTAL_FUNDS_ACTION_TAG = 'WALLET_TOTAL_FUNDS';
 const WALLET_ID_TAG = 'WALLET_ID';
 const WALLET_CONVERT_ACTION_TAG = 'WALLET_CONVERT';
 const WALLET_SET_STATE_ACTION_TAG = 'WALLET_SET_STATE';
+const WALLET_VOTE_ACTION_TAG = 'WALLET_VOTE';
 const CONVERSION_TRANSACTIONS_SIZE_ACTION_TAG = 'CONVERSION_TRANSACTIONS_SIZE';
 const CONVERSION_TRANSACTIONS_GET_ACTION_TAG = 'CONVERSION_TRANSACTIONS_GET';
 const CONVERSION_IGNORED_GET_ACTION_TAG = 'CONVERSION_IGNORED';
+const PROPOSAL_NEW_ACTION_TAG = 'PROPOSAL_NEW';
 const WALLET_DELETE_ACTION_TAG = 'WALLET_DELETE';
 const SETTINGS_DELETE_ACTION_TAG = 'SETTINGS_DELETE';
 const CONVERSION_DELETE_ACTION_TAG = 'CONVERSION_DELETE';
+const PROPOSAL_DELETE_ACTION_TAG = 'PROPOSAL_DELETE';
 
 /**
  * THOUGHTS/TODO
@@ -36,6 +39,14 @@ var plugin = {
      * @callback errorCallback
      * @param {string} error - error description
      */
+
+    /**
+     * @readonly
+     * @enum {number}
+     */
+    PayloadType: {
+        PUBLIC: 1
+    },
 
     /**
      * @param {string} mnemonics a string with the mnemonic phrase
@@ -122,6 +133,25 @@ var plugin = {
     },
 
     /**
+     *
+     *
+     * # Errors
+     *
+     * this function may fail if if any of the pointers are is null;
+     * @param {string} walletPtr a pointer to a Wallet object obtained with WalletRestore
+     * @param {string} settingsPtr
+     * @param {string} proposalPtr
+     * @param {number} choice
+     * @param {function} successCallback
+     * @param {function} errorCallback
+     *
+     */
+    walletVote: function (walletPtr, settingsPtr, proposalPtr, choice, successCallback, errorCallback) {
+        argscheck.checkArgs('sssnff', 'walletVote', arguments);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_VOTE_ACTION_TAG, [walletPtr, settingsPtr, proposalPtr, choice]);
+    },
+
+    /**
      * @param {string} walletPtr a pointer to a wallet obtained with walletRestore
      * @param {string} settingsPtr a pointer to a settings object obtained with walletRetrieveFunds
      * @param {pointerCallback} successCallback returns a Conversion object
@@ -164,6 +194,23 @@ var plugin = {
     },
 
     /**
+     * @param {string} votePlanId
+     * @param {PayloadType} payloadType
+     * @param {number} index
+     * @param {number} numChoices
+     * @param {function} successCallback returns an object with ignored, and value properties
+     * @param {errorCallback} errorCallback
+     */
+    proposalNew: function (votePlanId, payloadType, index, numChoices, successCallback, errorCallback) {
+        argscheck.checkArgs('*nnnff', 'proposalNew', arguments);
+        if (require('cordova/utils').typeName(votePlanId) === 'Uint8Array') {
+            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_ACTION_TAG, [votePlanId, payloadType, index, numChoices]);
+        } else {
+            throw TypeError('expected votePlanId to be a Uint8Array in proposalNew');
+        }
+    },
+
+    /**
      * @param {string} ptr a pointer to a Wallet obtained with walletRestore
      * @param {function} successCallback  indicates success. Does not return anything.
      * @param {errorCallback} errorCallback
@@ -191,6 +238,16 @@ var plugin = {
     conversionDelete: function (ptr, successCallback, errorCallback) {
         argscheck.checkArgs('sff', 'conversionDelete', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_DELETE_ACTION_TAG, [ptr]);
+    },
+
+    /**
+     * @param {string} ptr a pointer to a Proposal object obtained with proposalNew
+     * @param {function} successCallback  indicates success. Does not return anything.
+     * @param {errorCallback} errorCallback
+     */
+    proposalDelete: function (ptr, successCallback, errorCallback) {
+        argscheck.checkArgs('sff', 'proposalDelete', arguments);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_DELETE_ACTION_TAG, [ptr]);
     }
 };
 

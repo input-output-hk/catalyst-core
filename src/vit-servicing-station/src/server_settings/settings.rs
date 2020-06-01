@@ -1,9 +1,9 @@
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
-use std::fmt;
 use std::io::ErrorKind;
 use std::net::SocketAddr;
 use std::ops::Deref;
 use std::str::FromStr;
+use std::{fmt, fs};
 
 /// Settings environment variables names
 const DATABASE_URL: &str = "DATABASE_URL";
@@ -15,6 +15,14 @@ const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
 #[serde(deny_unknown_fields)]
 #[structopt(rename_all = "kebab-case")]
 pub struct ServiceSettings {
+    /// Load settings from file
+    #[structopt(long)]
+    pub in_settings_file: Option<String>,
+
+    /// Dump current settings to file
+    #[structopt(long)]
+    pub out_settings_file: Option<String>,
+
     /// Server binding address
     #[structopt(long, default_value = "0.0.0.0:3030")]
     pub address: SocketAddr,
@@ -150,12 +158,46 @@ impl Default for AllowedOrigins {
     }
 }
 
+pub fn load_settings_from_file(file_path: &str) -> Result<ServiceSettings, serde_json::Error> {
+    let f = fs::File::open(file_path)
+        .unwrap_or_else(|e| panic!("Error reading file {}: {}", file_path, e));
+    serde_json::from_reader(&f)
+}
+
+pub fn dump_settings_to_file(
+    file_path: &str,
+    settings: &ServiceSettings,
+) -> Result<(), serde_json::Error> {
+    let f = fs::File::create(file_path)
+        .unwrap_or_else(|e| panic!("Error opening file {}: {}", file_path, e));
+    serde_json::to_writer(&f, settings)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use std::net::SocketAddr;
     use std::str::FromStr;
     use structopt::StructOpt;
+    use tempfile;
+
+    #[test]
+    fn cors_origin_from_str() {
+        let s = "https://foo.test";
+        CorsOrigin::from_str(s).unwrap();
+    }
+
+    #[test]
+    fn parse_allowed_origins_from_str() {
+        let s = "https://foo.test;https://test.foo:5050";
+        let res = parse_allowed_origins(s).unwrap();
+        assert_eq!(res.len(), 2);
+        assert_eq!(res[0], CorsOrigin::from_str("https://foo.test").unwrap());
+        assert_eq!(
+            res[1],
+            CorsOrigin::from_str("https://test.foo:5050").unwrap()
+        );
+    }
 
     #[test]
     fn load_json_configuration() {
@@ -191,21 +233,13 @@ mod test {
     }
 
     #[test]
-    fn cors_origin_from_str() {
-        let s = "https://foo.test";
-        CorsOrigin::from_str(s).unwrap();
-    }
-
-    #[test]
-    fn parse_allowed_origins_from_str() {
-        let s = "https://foo.test;https://test.foo:5050";
-        let res = parse_allowed_origins(s).unwrap();
-        assert_eq!(res.len(), 2);
-        assert_eq!(res[0], CorsOrigin::from_str("https://foo.test").unwrap());
-        assert_eq!(
-            res[1],
-            CorsOrigin::from_str("https://test.foo:5050").unwrap()
-        );
+    fn dump_and_load_settings_to_file() {
+        let temp_file_path = tempfile::NamedTempFile::new().unwrap().into_temp_path();
+        let settings = ServiceSettings::default();
+        let file_path = temp_file_path.to_str().unwrap();
+        dump_settings_to_file(file_path, &settings).unwrap();
+        let loaded_settings = load_settings_from_file(file_path).unwrap();
+        assert_eq!(settings, loaded_settings);
     }
 
     #[test]

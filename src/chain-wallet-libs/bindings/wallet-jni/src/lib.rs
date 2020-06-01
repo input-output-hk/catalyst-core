@@ -2,6 +2,7 @@ use chain_impl_mockchain::vote::PayloadType;
 use jni::objects::{JClass, JObject, JString, JValue};
 use jni::sys::{jbyte, jbyteArray, jint, jlong};
 use jni::JNIEnv;
+use std::convert::TryInto;
 use std::ptr::{null, null_mut};
 use wallet_core::c::*;
 
@@ -341,14 +342,38 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPublicPayloa
     env: JNIEnv,
     _: JClass,
     vote_plan_id: jbyteArray,
-    index: u8,
-    num_choices: u8,
+    index: jint,
+    num_choices: jint,
 ) -> jlong {
     let size = env.get_array_length(vote_plan_id).expect("invalid array");
 
     let mut buffer = vec![0i8; size as usize];
     env.get_byte_array_region(vote_plan_id, 0, &mut buffer)
         .expect("invalid byte arrray read");
+
+    let index: u8 = match index.try_into() {
+        Ok(index) => index,
+        Err(_) => {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "index should be a number between 0 and 255",
+            );
+
+            return 0;
+        }
+    };
+
+    let num_choices: u8 = match num_choices.try_into() {
+        Ok(index) => index,
+        Err(_) => {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "numChoices should be a number between 0 and 255",
+            );
+
+            return 0;
+        }
+    };
 
     let mut proposal = null_mut();
     let r = unsafe {
@@ -395,6 +420,18 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
     let settings_ptr = settings as SettingsPtr;
     let proposal_ptr = proposal as ProposalPtr;
 
+    let choice: u8 = match choice.try_into() {
+        Ok(index) => index,
+        Err(_) => {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "choice should be a number between 0 and 255",
+            );
+
+            return null_mut() as jbyteArray;
+        }
+    };
+
     let mut transaction_out: *const u8 = null();
     let mut transaction_size: usize = 0;
 
@@ -403,7 +440,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
             wallet_ptr,
             settings_ptr,
             proposal_ptr,
-            choice as u8,
+            choice,
             &mut transaction_out as *mut *const u8,
             &mut transaction_size as *mut usize,
         )
@@ -424,6 +461,10 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
 
     env.set_byte_array_region(array, 0, slice)
         .expect("Couldn't copy array to jvm");
+
+    // wallet_vote_cast leaks the buffer, so we need to deallocate that memory,
+    // as set_byte_array_region does a *copy* of the buffer so we don't need it anymore.
+    unsafe { Box::from_raw(slice.as_ptr() as *mut u8) };
 
     array
 }

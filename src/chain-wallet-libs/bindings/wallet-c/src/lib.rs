@@ -502,10 +502,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_string(ptr: *mut c_char)
 /// the function checks if the pointers are null. Mind not to put random values
 /// in or you may see unexpected behaviors
 #[no_mangle]
-pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_buffer(ptr: *mut c_char, length: usize) {
+pub unsafe extern "C" fn iohk_jormungandr_waller_delete_buffer(ptr: *mut u8, length: usize) {
     if !ptr.is_null() {
         let data = std::slice::from_raw_parts_mut(ptr, length);
-        let data = Box::from_raw(data as *mut [c_char]);
+        let data = Box::from_raw(data as *mut [u8]);
         std::mem::drop(data);
     }
 }

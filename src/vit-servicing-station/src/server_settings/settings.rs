@@ -16,10 +16,12 @@ const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
 #[structopt(rename_all = "kebab-case")]
 pub struct ServiceSettings {
     /// Load settings from file
+    #[serde(skip)]
     #[structopt(long)]
     pub in_settings_file: Option<String>,
 
     /// Dump current settings to file
+    #[serde(skip)]
     #[structopt(long)]
     pub out_settings_file: Option<String>,
 

@@ -22,6 +22,20 @@ pub struct Settings(wallet_core::Settings);
 pub struct Conversion(wallet_core::Conversion);
 
 #[wasm_bindgen]
+pub struct Proposal(wallet_core::Proposal);
+
+#[wasm_bindgen]
+pub struct VotePlanId([u8; wallet_core::VOTE_PLAN_ID_LENGTH]);
+
+#[wasm_bindgen]
+pub struct Options(wallet_core::Options);
+
+#[wasm_bindgen]
+pub enum PayloadType {
+    Public,
+}
+
+#[wasm_bindgen]
 impl Wallet {
     /// retrieve a wallet from the given mnemonics and password
     ///
@@ -88,6 +102,36 @@ impl Wallet {
     pub fn set_state(&mut self, value: u64, counter: u32) {
         self.0.set_state(wallet_core::Value(value), counter);
     }
+
+    /// Cast a vote
+    ///
+    /// This function outputs a fragment containing a voting transaction.
+    ///
+    /// # Parameters
+    ///
+    /// * `settings` - ledger settings.
+    /// * `proposal` - proposal information including the range of values
+    ///   allowed in `choice`.
+    /// * `choice` - the option to vote for.
+    ///
+    /// # Errors
+    ///
+    /// The error is returned when `choice` does not fall withing the range of
+    /// available choices specified in `proposal`.
+    pub fn vote(
+        &mut self,
+        settings: &Settings,
+        proposal: &Proposal,
+        choice: u8,
+    ) -> Result<Box<[u8]>, JsValue> {
+        self.0
+            .vote(
+                settings.0.clone(),
+                &proposal.0,
+                wallet_core::Choice::new(choice),
+            )
+            .map_err(|e| JsValue::from(e.to_string()))
+    }
 }
 
 #[wasm_bindgen]
@@ -124,5 +168,25 @@ impl Conversion {
 
     pub fn transactions_get(&self, index: usize) -> Option<Vec<u8>> {
         self.0.transactions().get(index).map(|t| t.to_owned())
+    }
+}
+
+#[wasm_bindgen]
+impl Proposal {
+    pub fn new(
+        vote_plan_id: VotePlanId,
+        payload_type: PayloadType,
+        index: u8,
+        options: Options,
+    ) -> Self {
+        let payload_type = match payload_type {
+            PayloadType::Public => wallet_core::PayloadType::Public,
+        };
+        Proposal(wallet_core::Proposal::new(
+            vote_plan_id.0.into(),
+            payload_type,
+            index,
+            options.0,
+        ))
     }
 }

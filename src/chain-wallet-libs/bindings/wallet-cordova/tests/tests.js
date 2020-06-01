@@ -44,8 +44,12 @@ const setState = promisify(primitives.walletSetState);
 const deleteWallet = promisify(primitives.walletDelete);
 const deleteSettings = promisify(primitives.settingsDelete);
 const deleteConversion = promisify(primitives.conversionDelete);
+const deleteProposal = promisify(primitives.proposalDelete);
 const conversionGetTransactionAt = promisify(primitives.conversionTransactionsGet);
 const conversionGetIgnored = promisify(primitives.conversionGetIgnored);
+const proposalNew = promisify(primitives.proposalNew);
+const walletVote = promisify(primitives.walletVote);
+const walletSetState = promisify(primitives.walletSetState);
 
 function conversionGetTransactions (conversion) {
     return new Promise(function (resolve, reject) {
@@ -180,6 +184,60 @@ exports.defineAutoTests = function () {
                 })
                 .then(function () {
                     return deleteConversion(conversionPtr);
+                })
+                .catch(function (err) {
+                    done.fail('could not restore wallet' + err);
+                })
+                .then(function () {
+                    done();
+                });
+        });
+
+        it('can cast vote', function (done) {
+            let walletPtr;
+            let settingsPtr;
+            let proposalPtr;
+
+            const array = new Array(32);
+            for (let index = 0; index < array.length; index++) {
+                array[index] = index;
+            }
+
+            const votePlanId = new Uint8Array(array);
+            const payloadType = primitives.PayloadType.PUBLIC;
+            const index = 0;
+            const numChoices = 3;
+
+            proposalNew(votePlanId, payloadType, index, numChoices)
+                .catch(function (err) {
+                    done.fail('could not create proposal + ', err);
+                })
+                .then(function (proposal) {
+                    proposalPtr = proposal;
+                    return restoreWallet(YOROI_WALLET);
+                })
+                .then(function (wallet) {
+                    walletPtr = wallet;
+                    return retrieveFunds(wallet, hexStringToBytes(BLOCK0));
+                })
+                .then(function (settings) {
+                    settingsPtr = settings;
+                    return walletSetState(walletPtr, 1000000, 1);
+                })
+                .then(function () {
+                    const tx = walletVote(walletPtr, settingsPtr, proposalPtr, 0);
+                    return tx.then(function (tx) {
+                        console.log(tx);
+                    });
+                })
+                .then(function () {
+                    return deleteSettings(settingsPtr);
+                })
+                .then(function () {
+                    return deleteWallet(walletPtr);
+                })
+                .then(function () {
+                    return deleteProposal(proposalPtr);
                 })
                 .catch(function (err) {
                     done.fail('could not restore wallet' + err);

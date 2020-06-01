@@ -1,14 +1,6 @@
 use crate::db;
-use crate::db::models::Proposal;
-use serde::Serialize;
+use crate::db::models::{Category, Proposal, Proposer};
 use std::sync::Arc;
-
-#[derive(Serialize)]
-pub struct Category {
-    category_id: String,
-    category_name: String,
-    category_description: String,
-}
 
 #[async_graphql::Object]
 impl Category {
@@ -23,13 +15,6 @@ impl Category {
     pub async fn category_description(&self) -> &str {
         &self.category_description
     }
-}
-
-#[derive(Serialize)]
-pub struct Proposer {
-    proposer_name: String,
-    proposer_email: String,
-    proposer_url: String,
 }
 
 #[async_graphql::Object]
@@ -53,12 +38,8 @@ pub struct QueryRoot {
 
 #[async_graphql::Object]
 impl Proposal {
-    pub async fn category(&self) -> Category {
-        Category {
-            category_id: "".to_string(),
-            category_name: self.proposal_category.to_string(),
-            category_description: "".to_string(),
-        }
+    pub async fn category(&self) -> &Category {
+        &self.category
     }
 
     pub async fn proposal_id(&self) -> &str {
@@ -93,12 +74,8 @@ impl Proposal {
         &self.proposal_files_url
     }
 
-    pub async fn proposer(&self) -> Proposer {
-        Proposer {
-            proposer_name: self.proposer_name.to_string(),
-            proposer_email: self.proposer_contact.to_string(),
-            proposer_url: self.proposer_url.to_string(),
-        }
+    pub async fn proposer(&self) -> &Proposer {
+        &self.proposer
     }
 
     pub async fn chain_proposal_id(&self) -> &str {

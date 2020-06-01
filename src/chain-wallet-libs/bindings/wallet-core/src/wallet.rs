@@ -1,6 +1,7 @@
-use crate::{Conversion, Error};
+use crate::{Conversion, Error, Proposal};
 use chain_core::property::Serialize as _;
-use chain_impl_mockchain::{block::Block, value::Value};
+use chain_impl_mockchain::{block::Block, fragment::Fragment, value::Value, vote::Choice};
+
 use chain_ser::mempack::{ReadBuf, Readable as _};
 use wallet::{AccountId, Settings};
 
@@ -172,5 +173,39 @@ impl Wallet {
     ///
     pub fn set_state(&mut self, value: Value, counter: u32) {
         self.account.update_state(value, counter)
+    }
+
+    /// Cast a vote
+    ///
+    /// This function outputs a fragment containing a voting transaction.
+    ///
+    /// # Parameters
+    ///
+    /// * `settings` - ledger settings.
+    /// * `proposal` - proposal information including the range of values
+    ///   allowed in `choice`.
+    /// * `choice` - the option to vote for.
+    ///
+    /// # Errors
+    ///
+    /// The error is returned when `choice` does not fall withing the range of
+    /// available choices specified in `proposal`.
+    pub fn vote(
+        &mut self,
+        settings: Settings,
+        proposal: &Proposal,
+        choice: Choice,
+    ) -> Result<Box<[u8]>, Error> {
+        let payload = if let Some(payload) = proposal.vote(choice) {
+            payload
+        } else {
+            return Err(Error::wallet_vote_range());
+        };
+
+        let mut builder = wallet::transaction::TransactionBuilder::new(settings, vec![], payload);
+        builder.select_from(&mut self.account);
+        let tx = builder.finalize_tx(());
+        let fragment = Fragment::VoteCast(tx);
+        Ok(fragment.serialize_as_vec().unwrap().into_boxed_slice())
     }
 }

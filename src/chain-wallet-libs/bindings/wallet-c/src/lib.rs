@@ -1,3 +1,4 @@
+pub use chain_impl_mockchain::vote::PayloadType as PayloadTypeRust;
 use std::{
     ffi::{CStr, CString},
     os::raw::c_char,
@@ -6,8 +7,9 @@ pub use wallet::Settings;
 use wallet_core::c::{
     wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
     wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_error,
-    wallet_delete_settings, wallet_delete_wallet, wallet_id, wallet_recover, wallet_retrieve_funds,
-    wallet_set_state, wallet_total_value,
+    wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet, wallet_id,
+    wallet_recover, wallet_retrieve_funds, wallet_set_state, wallet_total_value, wallet_vote_cast,
+    wallet_vote_proposal,
 };
 pub use wallet_core::{
     // c::{ConversionPtr, ErrorPtr, SettingsPtr, WalletPtr},
@@ -15,13 +17,29 @@ pub use wallet_core::{
     Error,
     ErrorCode,
     ErrorKind,
+    Proposal,
     Wallet,
 };
 
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
+pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
+
+/// Payload type for voting
+#[repr(u8)]
+pub enum PayloadType {
+    Public = 1,
+}
+
+impl From<PayloadType> for PayloadTypeRust {
+    fn from(c_enum: PayloadType) -> Self {
+        match c_enum {
+            PayloadType::Public => PayloadTypeRust::Public,
+        }
+    }
+}
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
 ///
@@ -50,7 +68,7 @@ pub type ErrorPtr = *mut Error;
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -98,7 +116,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// * this function may fail if the wallet pointer is null;
@@ -135,7 +153,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_id(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -169,7 +187,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -215,7 +233,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -249,7 +267,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -282,7 +300,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// If the `total_out` pointer is null, this function does nothing
@@ -319,7 +337,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_total_value(
 ///
 /// On error the function returns a `ErrorPtr`. On success `NULL` is returned.
 /// The `ErrorPtr` can then be observed to gathered details of the error.
-/// Don't forget to call `iohk_jormungandr_wallet_delete_result` to free
+/// Don't forget to call `iohk_jormungandr_wallet_delete_error` to free
 /// the `ErrorPtr` from memory and avoid memory leaks.
 ///
 /// # Safety
@@ -335,6 +353,68 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
     counter: u32,
 ) -> ErrorPtr {
     let r = wallet_set_state(wallet, value, counter);
+
+    r.into_c_api()
+}
+
+/// build the proposal object
+///
+/// # Errors
+///
+/// This function may fail if:
+///
+/// * `proposal_out` is null.
+/// * `num_choices` is out of the allowed range.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
+    vote_plan_id: *const u8,
+    payload_type: PayloadType,
+    index: u8,
+    num_choices: u8,
+    proposal_out: *mut ProposalPtr,
+) -> ErrorPtr {
+    let r = wallet_vote_proposal(
+        vote_plan_id,
+        payload_type.into(),
+        index,
+        num_choices,
+        proposal_out,
+    );
+
+    r.into_c_api()
+}
+
+/// build the vote cast transaction
+///
+/// # Errors
+///
+/// This function may fail upon receiving a null pointer or a `choice` value
+/// that does not fall within the range specified in `proposal`.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
+///
+/// Don't forget to remove `transaction_out` with
+/// `iohk_jormungandr_waller_delete_buffer`.
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
+    wallet: WalletPtr,
+    settings: SettingsPtr,
+    proposal: ProposalPtr,
+    choice: u8,
+    transaction_out: *mut *const u8,
+    len_out: *mut usize,
+) -> ErrorPtr {
+    let r = wallet_vote_cast(wallet, settings, proposal, choice, transaction_out, len_out);
 
     r.into_c_api()
 }
@@ -413,6 +493,23 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_string(ptr: *mut c_char)
     }
 }
 
+/// Delete a binary buffer that was returned by this library alongside with its
+/// length.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_buffer(ptr: *mut u8, length: usize) {
+    if !ptr.is_null() {
+        let data = std::slice::from_raw_parts_mut(ptr, length);
+        let data = Box::from_raw(data as *mut [u8]);
+        std::mem::drop(data);
+    }
+}
+
 /// delete the pointer and free the allocated memory
 ///
 /// # Safety
@@ -463,4 +560,17 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_conversion(conversion: ConversionPtr) {
     wallet_delete_conversion(conversion)
+}
+
+/// delete the pointer
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub extern "C" fn iohk_jormungandr_wallet_delete_proposal(proposal: ProposalPtr) {
+    wallet_delete_proposal(proposal)
 }

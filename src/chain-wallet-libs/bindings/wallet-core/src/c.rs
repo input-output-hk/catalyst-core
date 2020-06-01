@@ -1,14 +1,21 @@
 //! This module expose handy C compatible functions to reuse in the different
 //! C style bindings that we have (wallet-c, wallet-jni...)
 
-use crate::{Conversion, Error, Result, Wallet};
-use chain_impl_mockchain::{transaction::Input, value::Value};
+use crate::{Conversion, Error, Proposal, Result, Wallet};
+use chain_impl_mockchain::{
+    certificate::VotePlanId,
+    transaction::Input,
+    value::Value,
+    vote::{Choice, Options as VoteOptions, PayloadType},
+};
+use std::convert::TryFrom;
 use thiserror::Error;
 pub use wallet::Settings;
 
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
+pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
 
 #[derive(Debug, Error)]
@@ -385,6 +392,114 @@ pub fn wallet_set_state(wallet: WalletPtr, value: u64, counter: u32) -> Result {
     Result::success()
 }
 
+/// build the proposal object
+///
+/// # Errors
+///
+/// This function may fail if:
+///
+/// * a null pointer was provided as an argument.
+/// * `num_choices` is out of the allowed range.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
+pub unsafe fn wallet_vote_proposal(
+    vote_plan_id: *const u8,
+    payload_type: PayloadType,
+    index: u8,
+    num_choices: u8,
+    proposal_out: *mut ProposalPtr,
+) -> Result {
+    if vote_plan_id.is_null() {
+        return Error::invalid_input("vote_plan_id").with(NulPtr).into();
+    }
+
+    if proposal_out.is_null() {
+        return Error::invalid_input("proposal_out").with(NulPtr).into();
+    }
+
+    let options = match VoteOptions::new_length(num_choices) {
+        Ok(options) => options,
+        Err(err) => return Error::invalid_input("num_choices").with(err).into(),
+    };
+
+    let vote_plan_id = std::slice::from_raw_parts(vote_plan_id, crate::vote::VOTE_PLAN_ID_LENGTH);
+    let vote_plan_id = match VotePlanId::try_from(vote_plan_id) {
+        Ok(id) => id,
+        Err(err) => return Error::invalid_input("vote_plan_id").with(err).into(),
+    };
+
+    *proposal_out = Box::into_raw(Box::new(Proposal::new(
+        vote_plan_id,
+        payload_type,
+        index,
+        options,
+    )));
+
+    Result::success()
+}
+
+/// build the vote cast transaction
+///
+/// # Errors
+///
+/// This function may fail upon receiving a null pointer or a `choice` value
+/// that does not fall within the range specified in `proposal`.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
+pub unsafe fn wallet_vote_cast(
+    wallet: WalletPtr,
+    settings: SettingsPtr,
+    proposal: ProposalPtr,
+    choice: u8,
+    transaction_out: *mut *const u8,
+    len_out: *mut usize,
+) -> Result {
+    let wallet = if let Some(wallet) = wallet.as_mut() {
+        wallet
+    } else {
+        return Error::invalid_input("wallet").with(NulPtr).into();
+    };
+
+    let settings = if let Some(settings) = settings.as_ref() {
+        settings.clone()
+    } else {
+        return Error::invalid_input("settings").with(NulPtr).into();
+    };
+
+    let proposal = if let Some(proposal) = proposal.as_ref() {
+        proposal
+    } else {
+        return Error::invalid_input("proposal").with(NulPtr).into();
+    };
+
+    if transaction_out.is_null() {
+        return Error::invalid_input("transaction_out").with(NulPtr).into();
+    }
+    if len_out.is_null() {
+        return Error::invalid_input("len_out").with(NulPtr).into();
+    }
+
+    let choice = Choice::new(choice);
+
+    let transaction = match wallet.vote(settings, proposal, choice) {
+        Ok(transaction) => Box::leak(transaction),
+        Err(err) => return err.into(),
+    };
+
+    *transaction_out = transaction.as_ptr();
+    *len_out = transaction.len();
+
+    Result::success()
+}
+
 /// delete the pointer and free the allocated memory
 pub fn wallet_delete_error(error: ErrorPtr) {
     if !error.is_null() {
@@ -416,6 +531,15 @@ pub fn wallet_delete_wallet(wallet: WalletPtr) {
 pub fn wallet_delete_conversion(conversion: ConversionPtr) {
     if !conversion.is_null() {
         let boxed = unsafe { Box::from_raw(conversion) };
+
+        std::mem::drop(boxed);
+    }
+}
+
+/// delete the pointer
+pub fn wallet_delete_proposal(proposal: ProposalPtr) {
+    if !proposal.is_null() {
+        let boxed = unsafe { Box::from_raw(proposal) };
 
         std::mem::drop(boxed);
     }

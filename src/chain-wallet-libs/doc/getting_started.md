@@ -50,6 +50,8 @@
 - [wallet_convert_transactions_size](#wallet_convert_transactions_size)
 - [wallet_convert_transactions_get](#wallet_convert_transactions_get)
 - [wallet_set_state](#wallet_set_state)
+- [wallet_vote_proposal](#wallet_vote_proposal)
+- [wallet_vote_cast](#wallet_vote_cast)
 
 ---
 
@@ -300,7 +302,7 @@ This function is used to get the total value ignored in the conversion.
 These returned values are informational only and this show that there are UTxOs entries
 that are unusable because of the way they are populated with dust.
 
-> The cost of converting those UTxOs is higher that the value itself.
+> The cost of converting those UTxOs is higher than the value itself.
 
 - In the example wallet **ignored_value** = **1** and **ignored_utxo_cnt** = **1**
 
@@ -332,7 +334,7 @@ to convert the retrieved wallet by [wallet_convert](#wallet_convert).
   - `conversion` - contains *transactions* list built from conversion ([wallet_convert](#wallet_convert))
   - `index` - index-nth transaction in the conversion, from 0 to `size-1` where size is retrieved from ([wallet_convert_transactions_size](#wallet_convert_transactions_size))
 - **output**:
-  - `transaction` - single transaction data in bytes that will sent to the network
+  - `transaction` - single transaction data in bytes that will be sent to the network
   - `error` - returned in case of failure (wallet not yet converted, ...)
 
 This function is used to get the built transactions one by one.
@@ -362,10 +364,12 @@ Response {
     url: "http://127.0.0.1:8001/api/v0/message",
     status: 200,
     headers: {
-        "content-length": "0",
+        "content-type": "text/plain; charset=utf-8",
+        "content-length": "64",
         "date": "Thu, 14 May 2020 21:18:22 GMT",
     },
 }
+Response body:
 68dcc12fe0dfe5e7b66ca6f8c959f9aa43b273e120a77fc3e4e2f04f1ecd7968
 ```
 
@@ -475,11 +479,157 @@ The **counter** and **value** are the field of interest that will be used to upd
 
 ---
 
+### wallet_vote_proposal
+
+- **input**:
+  - `vote_plan_id` - the ID of the voteplan on the chain
+  - `payload_type` - the payload of the voteplan (right now is just **Public** and 1 is the numeric value represented on chain)
+  - `index` - the proposal index within the provided vote plan
+  - `num_choices` - the number of choices allowed for this proposal (min:1 max: 16)
+- **output**:
+  - `proposal` - the builded proposal that we will cast the vote for
+  - `error` - returned in case of failure (wrong vote_plan_id format, num_choices outside the allowed range, ...)
+
+This function is used to build the proposal that we will cast the vote for with [wallet_vote_cast](#wallet_vote_cast).
+
+#### How to retieve the voteplans info and data from the network
+
+API calls used:
+>Get: /v0/**vote/active/plans**
+
+```json
+Request {
+    method: GET,
+    url: "http://127.0.0.1:8001/api/v0/vote/active/plans",
+    headers: {},
+}
+Response {
+    url: "http://127.0.0.1:8001/api/v0/vote/active/plans",
+    status: 200,
+    headers: {
+        "content-type": "application/json",
+        "content-length": "3129",
+        "date": "Mon, 01 Jun 2020 11:13:16 GMT",
+    },
+}
+Response body:
+[
+  {
+    "voteplan_id": "a19b9eae101a423dd3936c978ad44a145407be363f457ddb76d4cd6eb8847376",
+    "vote_start": {
+      "epoch": 0,
+      "slot_id": 0
+    },
+    "vote_end": {
+      "epoch": 5,
+      "slot_id": 0
+    },
+    "committee_end": {
+      "epoch": 10,
+      "slot_id": 0
+    },
+    "payload_type": "Public",
+    "proposals": [
+      {
+        "external_id": "5db05d3c7bfc37f2059d24966aa6ef05cfa25b6a478dedb3b93f5dca5c57c24a",
+        "index": 0,
+        "options": {
+          "range": {
+            "start": 0,
+            "end": 3
+          }
+        }
+      },
+      {
+        "external_id": "f78a5e1b0cc558529be705d58479602ce8fe7af1b11e8d383e0b112d2d58d3fe",
+        "index": 1,
+        "options": {
+          "range": {
+            "start": 0,
+            "end": 3
+          }
+        }
+      }
+    ]
+  },
+  ...
+  {
+    "voteplan_id": "72b8904083ecf511f36940c03bf8b592c814d7aaa41d1ec8a67f9254ebd1f202",
+    "vote_start": {
+      "epoch": 0,
+      "slot_id": 0
+    },
+    "vote_end": {
+      "epoch": 5,
+      "slot_id": 0
+    },
+    "committee_end": {
+      "epoch": 10,
+      "slot_id": 0
+    },
+    "payload_type": "Public",
+    "proposals": [
+      {
+        "external_id": "df2596ad616577c9047d23f106371258c98c329a662432c1e57d80092ae74e44",
+        "index": 0,
+        "options": {
+          "range": {
+            "start": 0,
+            "end": 3
+          }
+        }
+      },
+      {
+        "external_id": "d9d3544bad57f2597f55fce907adfe4ad5afe1aedc3d5480a3745a200b153708",
+        "index": 1,
+        "options": {
+          "range": {
+            "start": 0,
+            "end": 3
+          }
+        }
+      }
+    ]
+  }
+]
+```
+
+The interesting values are:
+
+- VotePlna related:
+  - **voteplan_id**
+  - **payload_type**
+- Proposal related:
+  - **index**
+  - options.range.**end** (to be used as `num_choices`)
+
+---
+
+### wallet_vote_cast
+
+- **input**:
+  - `wallet` - the converted wallet
+  - `settings` - ledger parameters retrieved from block0 ([wallet_retrieve_funds](#wallet_retrieve_funds))
+  - `proposal` - the proposal retrieved from [wallet_vote_proposal](#wallet_vote_proposal)
+  - `choice` - the choice our vote, a numeric value [0 - [wallet_vote_proposal](#wallet_vote_proposal) num_choices)
+- **output**:
+  - `transaction` - single transaction data in bytes, containing the vote cast, that will be sent to the network
+  - `error` - returned in case of failure (wrong choice value, ...)
+
+This function is used to cast the vote choice for the proposal and to retrieve the already builded transaction for that vote.
+The retrieved transactions can be sent to the network by using the Rest API. [How to send a transaction to the network](#How-to-send-a-transaction-to-the-network)
+
+> **Note**: Please make sure to have an updated wallet state, using [wallet_set_state](#wallet_set_state)
+> before using this function.
+
+---
+
 ## Cleanup core api
 
 - [wallet_delete_wallet](#wallet_delete_wallet)
 - [wallet_delete_settings](#wallet_delete_settings)
 - [wallet_delete_conversion](#wallet_delete_conversion)
+- [wallet_delete_proposal](#wallet_delete_proposal)
 
 ---
 
@@ -510,12 +660,22 @@ The **counter** and **value** are the field of interest that will be used to upd
 
 ---
 
+### wallet_delete_proposal
+
+- **input**:
+  - `proposal`
+- **output**:
+  - none
+
+---
+
 ## Other/specific api
 
 - [wallet_error_to_string](#wallet_error_to_string)
 - [wallet_error_details](#wallet_error_details)
 - [wallet_delete_error](#wallet_delete_error)
 - [wallet_delete_string](#wallet_delete_string)
+- [wallet_delete_buffer](#wallet_delete_buffer)
 
 ---
 
@@ -550,6 +710,16 @@ The **counter** and **value** are the field of interest that will be used to upd
 
 - **input**:
   - `*`
+- **output**:
+  - none
+
+---
+
+### wallet_delete_buffer
+
+- **input**:
+  - `*`
+  - `length`
 - **output**:
   - none
 

@@ -44,6 +44,9 @@ pub enum ErrorCode {
     /// an out of bound operation when attempting to access the `nth`
     /// transaction of the conversion.
     WalletConversion = 3,
+
+    /// the provided voting choice is out of the allowed range
+    WalletVoteOutOfRange = 4,
 }
 
 #[derive(Debug)]
@@ -61,6 +64,9 @@ pub enum ErrorKind {
     /// the transactions of the wallet conversion. For example,
     /// there may be an out of bound error
     WalletConversion,
+
+    /// the provided voting choice is out of the allowed range
+    WalletVoteOutOfRange,
 }
 
 impl ErrorKind {
@@ -73,6 +79,7 @@ impl ErrorKind {
             Self::InvalidInput { .. } => ErrorCode::InvalidInput,
             Self::WalletRecovering => ErrorCode::WalletRecovering,
             Self::WalletConversion => ErrorCode::WalletConversion,
+            Self::WalletVoteOutOfRange => ErrorCode::WalletVoteOutOfRange,
         }
     }
 }
@@ -135,6 +142,13 @@ impl Error {
     pub fn wallet_conversion() -> Self {
         Self {
             kind: ErrorKind::WalletConversion,
+            details: None,
+        }
+    }
+
+    pub fn wallet_vote_range() -> Self {
+        Self {
+            kind: ErrorKind::WalletVoteOutOfRange,
             details: None,
         }
     }
@@ -271,6 +285,9 @@ impl Display for ErrorKind {
             Self::WalletRecovering => f.write_str("Error while recovering a wallet"),
             Self::WalletConversion => {
                 f.write_str("Error while performing operation on the wallet conversion object")
+            }
+            Self::WalletVoteOutOfRange => {
+                f.write_str("The provided choice is out of the vote variants range")
             }
         }
     }

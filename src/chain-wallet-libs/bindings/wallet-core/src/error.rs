@@ -47,6 +47,10 @@ pub enum ErrorCode {
 
     /// the provided voting choice is out of the allowed range
     WalletVoteOutOfRange = 4,
+
+    /// the wallet failed to build a valid transaction, for example
+    /// not enough funds available
+    WalletTransactionBuilding = 5,
 }
 
 #[derive(Debug)]
@@ -67,6 +71,9 @@ pub enum ErrorKind {
 
     /// the provided voting choice is out of the allowed range
     WalletVoteOutOfRange,
+
+    /// the wallet failed to build a valid transaction
+    WalletTransactionBuilding,
 }
 
 impl ErrorKind {
@@ -80,6 +87,7 @@ impl ErrorKind {
             Self::WalletRecovering => ErrorCode::WalletRecovering,
             Self::WalletConversion => ErrorCode::WalletConversion,
             Self::WalletVoteOutOfRange => ErrorCode::WalletVoteOutOfRange,
+            Self::WalletTransactionBuilding => ErrorCode::WalletTransactionBuilding,
         }
     }
 }
@@ -149,6 +157,13 @@ impl Error {
     pub fn wallet_vote_range() -> Self {
         Self {
             kind: ErrorKind::WalletVoteOutOfRange,
+            details: None,
+        }
+    }
+
+    pub fn wallet_transaction() -> Self {
+        Self {
+            kind: ErrorKind::WalletTransactionBuilding,
             details: None,
         }
     }
@@ -289,6 +304,9 @@ impl Display for ErrorKind {
             Self::WalletVoteOutOfRange => {
                 f.write_str("The provided choice is out of the vote variants range")
             }
+            Self::WalletTransactionBuilding => f.write_str(
+                "Failed to build a valid transaction, probably not enough funds available",
+            ),
         }
     }
 }

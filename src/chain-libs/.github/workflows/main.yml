@@ -113,14 +113,14 @@ jobs:
         continue-on-error: false
         with:
           command: build
-          args: --all-targets ${{ matrix.mode }} --locked --offline
+          args: --all-targets ${{ matrix.mode }} --locked
 
       - name: Run tests
         uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: test
-          args: ${{ matrix.mode }} --locked --offline
+          args: ${{ matrix.mode }} --locked
 
   lints:
     name: Lints

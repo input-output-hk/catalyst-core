@@ -386,8 +386,6 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPublicPayloa
         )
     };
 
-    debug_assert!(!proposal.is_null());
-
     if let Some(error) = r.error() {
         let _ = env.throw(error.to_string());
     }
@@ -463,7 +461,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
         .expect("Couldn't copy array to jvm");
 
     // wallet_vote_cast leaks the buffer, so we need to deallocate that memory,
-    // as set_byte_array_region does a *copy* of the buffer so we don't need it anymore.
+    // set_byte_array_region does a *copy* of the buffer so we don't need it anymore.
     unsafe { Box::from_raw(slice.as_ptr() as *mut u8) };
 
     array

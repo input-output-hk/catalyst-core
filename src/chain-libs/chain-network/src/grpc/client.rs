@@ -19,6 +19,7 @@ use tonic::transport;
 use std::convert::{TryFrom, TryInto};
 
 /// Builder to customize the gRPC client.
+#[derive(Default)]
 pub struct Builder {
     legacy_node_id: Option<legacy::NodeId>,
 }

@@ -14,6 +14,7 @@ use std::net::SocketAddr;
 pub type Server<T> = proto::node_server::NodeServer<NodeService<T>>;
 
 /// Builder to customize the gRPC server.
+#[derive(Default)]
 pub struct Builder {
     legacy_node_id: Option<legacy::NodeId>,
 }

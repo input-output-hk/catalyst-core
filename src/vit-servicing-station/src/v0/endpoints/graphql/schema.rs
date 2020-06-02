@@ -1,5 +1,5 @@
 use crate::db;
-use crate::db::models::{Category, Proposal, Proposer};
+use crate::db::models::proposals::{Category, Proposal, Proposer};
 use std::sync::Arc;
 
 #[async_graphql::Object]

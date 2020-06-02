@@ -1,5 +1,5 @@
 use super::schema::QueryRoot;
-use crate::db::{schema::proposals::dsl::proposals, Proposal};
+use crate::db::{models::proposals::Proposal, schema::proposals::dsl::proposals};
 use async_graphql::Context;
 use diesel::RunQueryDsl;
 

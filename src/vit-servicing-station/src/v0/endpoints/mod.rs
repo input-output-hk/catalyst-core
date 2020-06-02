@@ -1,3 +1,4 @@
+mod funds;
 mod genesis;
 mod graphql;
 mod proposals;

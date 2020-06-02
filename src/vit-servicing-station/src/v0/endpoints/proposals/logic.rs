@@ -1,4 +1,4 @@
-use crate::db::{models::Proposal, schema::proposals::dsl::proposals};
+use crate::db::{models::proposals::Proposal, schema::proposals::dsl::proposals};
 use crate::v0::context::{ChainData, SharedContext};
 use diesel::RunQueryDsl;
 

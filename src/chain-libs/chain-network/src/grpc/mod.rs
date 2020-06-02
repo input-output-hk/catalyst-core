@@ -6,6 +6,8 @@ mod proto {
 pub mod client;
 pub mod server;
 
+pub mod legacy;
+
 mod convert;
 mod streaming;
 

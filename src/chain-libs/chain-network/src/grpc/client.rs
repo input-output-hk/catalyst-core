@@ -1,4 +1,5 @@
 use super::convert;
+use super::legacy;
 use super::proto;
 use super::streaming::{InboundStream, OutboundStream};
 use crate::data::block::{Block, BlockEvent, BlockId, BlockIds, Header};
@@ -10,12 +11,65 @@ use futures::prelude::*;
 use tonic::body::{Body, BoxBody};
 use tonic::client::GrpcService;
 use tonic::codegen::{HttpBody, StdError};
+use tonic::metadata::MetadataValue;
 
-use std::convert::TryFrom;
+#[cfg(feature = "transport")]
+use tonic::transport;
+
+use std::convert::{TryFrom, TryInto};
+
+/// Builder to customize the gRPC client.
+#[derive(Default)]
+pub struct Builder {
+    legacy_node_id: Option<legacy::NodeId>,
+}
+
+impl Builder {
+    pub fn new() -> Self {
+        Builder {
+            legacy_node_id: None,
+        }
+    }
+
+    /// Make the client add "node-id-bin" metadata with the passed value
+    /// into subscription requests, for backward compatibility with
+    /// jormungandr versions prior to 0.9.
+    pub fn legacy_node_id(&mut self, node_id: legacy::NodeId) -> &mut Self {
+        self.legacy_node_id = Some(node_id);
+        self
+    }
+
+    pub fn build<T>(&self, service: T) -> Client<T>
+    where
+        T: GrpcService<BoxBody>,
+        T::ResponseBody: Body + HttpBody + Send + 'static,
+        T::Error: Into<StdError>,
+        <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
+    {
+        Client {
+            inner: proto::node_client::NodeClient::new(service),
+            legacy_node_id: self.legacy_node_id,
+        }
+    }
+
+    #[cfg(feature = "transport")]
+    pub async fn connect<D>(&self, dst: D) -> Result<Client<transport::Channel>, transport::Error>
+    where
+        D: TryInto<transport::Endpoint>,
+        D::Error: Into<StdError>,
+    {
+        let inner = proto::node_client::NodeClient::connect(dst).await?;
+        Ok(Client {
+            inner,
+            legacy_node_id: self.legacy_node_id,
+        })
+    }
+}
 
 #[derive(Clone)]
 pub struct Client<T> {
     inner: proto::node_client::NodeClient<T>,
+    legacy_node_id: Option<legacy::NodeId>,
 }
 
 /// The inbound subscription stream of block events.
@@ -28,14 +82,13 @@ pub type FragmentSubscription = InboundStream<proto::Fragment, Fragment>;
 pub type GossipSubscription = InboundStream<proto::Gossip, Gossip>;
 
 #[cfg(feature = "transport")]
-impl Client<tonic::transport::Channel> {
-    pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
+impl Client<transport::Channel> {
+    pub async fn connect<D>(dst: D) -> Result<Self, transport::Error>
     where
-        D: std::convert::TryInto<tonic::transport::Endpoint>,
+        D: TryInto<transport::Endpoint>,
         D::Error: Into<StdError>,
     {
-        let inner = proto::node_client::NodeClient::connect(dst).await?;
-        Ok(Client { inner })
+        Builder::new().connect(dst).await
     }
 }
 
@@ -47,9 +100,16 @@ where
     <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
 {
     pub fn new(service: T) -> Self {
-        Client {
-            inner: proto::node_client::NodeClient::new(service),
+        Builder::new().build(service)
+    }
+
+    fn subscription_request<S>(&self, outbound: S) -> tonic::Request<S> {
+        let mut req = tonic::Request::new(outbound);
+        if let Some(node_id) = self.legacy_node_id {
+            let val = MetadataValue::from_bytes(node_id.as_bytes());
+            req.metadata_mut().insert_bin("node-id-bin", val);
         }
+        req
     }
 }
 
@@ -205,8 +265,8 @@ where
     where
         S: Stream<Item = Header> + Send + Sync + 'static,
     {
-        let outbound = OutboundStream::new(outbound);
-        let inbound = self.inner.block_subscription(outbound).await?.into_inner();
+        let req = self.subscription_request(OutboundStream::new(outbound));
+        let inbound = self.inner.block_subscription(req).await?.into_inner();
         Ok(InboundStream::new(inbound))
     }
 
@@ -222,12 +282,8 @@ where
     where
         S: Stream<Item = Fragment> + Send + Sync + 'static,
     {
-        let outbound = OutboundStream::new(outbound);
-        let inbound = self
-            .inner
-            .fragment_subscription(outbound)
-            .await?
-            .into_inner();
+        let req = self.subscription_request(OutboundStream::new(outbound));
+        let inbound = self.inner.fragment_subscription(req).await?.into_inner();
         Ok(InboundStream::new(inbound))
     }
 
@@ -239,8 +295,8 @@ where
     where
         S: Stream<Item = Gossip> + Send + Sync + 'static,
     {
-        let outbound = OutboundStream::new(outbound);
-        let inbound = self.inner.gossip_subscription(outbound).await?.into_inner();
+        let req = self.subscription_request(OutboundStream::new(outbound));
+        let inbound = self.inner.gossip_subscription(req).await?.into_inner();
         Ok(InboundStream::new(inbound))
     }
 }

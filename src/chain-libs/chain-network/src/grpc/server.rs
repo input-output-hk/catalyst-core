@@ -1,9 +1,11 @@
 use super::convert;
+use super::legacy;
 use super::proto;
 use super::streaming::{InboundStream, OutboundTryStream};
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
 use crate::data::{block, fragment, BlockId, Peer};
 use crate::PROTOCOL_VERSION;
+use tonic::metadata::MetadataValue;
 use tonic::{Code, Status};
 
 use std::convert::TryFrom;
@@ -11,9 +13,39 @@ use std::net::SocketAddr;
 
 pub type Server<T> = proto::node_server::NodeServer<NodeService<T>>;
 
+/// Builder to customize the gRPC server.
+pub struct Builder {
+    legacy_node_id: Option<legacy::NodeId>,
+}
+
+impl Builder {
+    pub fn new() -> Self {
+        Builder {
+            legacy_node_id: None,
+        }
+    }
+
+    /// Make the server add "node-id-bin" metadata with the passed value
+    /// into subscription responses, for backward compatibility with
+    /// jormungandr versions prior to 0.9.
+    pub fn legacy_node_id(&mut self, node_id: legacy::NodeId) -> &mut Self {
+        self.legacy_node_id = Some(node_id);
+        self
+    }
+
+    pub fn build<T: Node>(&self, inner: T) -> Server<T> {
+        let service = NodeService {
+            legacy_node_id: self.legacy_node_id,
+            ..NodeService::new(inner)
+        };
+        Server::new(service)
+    }
+}
+
 #[derive(Debug)]
 pub struct NodeService<T> {
     inner: T,
+    legacy_node_id: Option<legacy::NodeId>,
 }
 
 impl<T> NodeService<T>
@@ -21,7 +53,10 @@ where
     T: Node,
 {
     pub fn new(inner: T) -> Self {
-        NodeService { inner }
+        NodeService {
+            inner,
+            legacy_node_id: None,
+        }
     }
 
     fn block_service(&self) -> Result<&T::BlockService, Status> {
@@ -40,6 +75,15 @@ where
         self.inner
             .gossip_service()
             .ok_or_else(|| Status::new(Code::Unimplemented, "not implemented"))
+    }
+
+    fn subscription_response<S>(&self, outbound: S) -> tonic::Response<OutboundTryStream<S>> {
+        let mut res = tonic::Response::new(OutboundTryStream::new(outbound));
+        if let Some(node_id) = self.legacy_node_id {
+            let val = MetadataValue::from_bytes(node_id.as_bytes());
+            res.metadata_mut().insert_bin("node-id-bin", val);
+        }
+        res
     }
 }
 
@@ -193,8 +237,8 @@ where
         let peer = remote_addr_to_peer(req.remote_addr())?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.block_subscription(peer, Box::pin(inbound)).await?;
-        let res = OutboundTryStream::new(outbound);
-        Ok(tonic::Response::new(res))
+        let res = self.subscription_response(outbound);
+        Ok(res)
     }
 
     type FragmentSubscriptionStream =
@@ -210,8 +254,8 @@ where
         let outbound = service
             .fragment_subscription(peer, Box::pin(inbound))
             .await?;
-        let res = OutboundTryStream::new(outbound);
-        Ok(tonic::Response::new(res))
+        let res = self.subscription_response(outbound);
+        Ok(res)
     }
 
     type GossipSubscriptionStream =
@@ -225,7 +269,7 @@ where
         let peer = remote_addr_to_peer(req.remote_addr())?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.gossip_subscription(peer, Box::pin(inbound)).await?;
-        let res = OutboundTryStream::new(outbound);
-        Ok(tonic::Response::new(res))
+        let res = self.subscription_response(outbound);
+        Ok(res)
     }
 }

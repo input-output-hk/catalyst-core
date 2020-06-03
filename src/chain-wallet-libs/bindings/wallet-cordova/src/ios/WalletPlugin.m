@@ -17,7 +17,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
                                                       messageAsString:error_desc];
 
-    free(error_desc_raw);
+    iohk_jormungandr_wallet_delete_string(error_desc_raw);
     iohk_jormungandr_wallet_delete_error(error);
 
     return pluginResult;

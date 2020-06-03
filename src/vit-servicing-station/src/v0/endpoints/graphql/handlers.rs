@@ -1,5 +1,7 @@
 use super::schema::QueryRoot;
-use crate::db::{models::proposals::Proposal, schema::proposals::dsl::proposals};
+use crate::db::{
+    models::proposals::Proposal, views_schema::full_proposals_info::dsl::full_proposals_info,
+};
 use async_graphql::Context;
 use diesel::RunQueryDsl;
 
@@ -12,7 +14,7 @@ impl QueryRoot {
             .get()
             .expect("Error connecting to database");
         tokio::task::spawn_blocking(move || {
-            proposals
+            full_proposals_info
                 .load::<Proposal>(&db_conn)
                 .expect("Error loading proposals")
         })

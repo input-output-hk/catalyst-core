@@ -1,18 +1,7 @@
-table! {
-    funds (id) {
-        id -> Integer,
-        fund_name -> Text,
-        fund_goal -> Text,
-        voting_power_info -> Text,
-        rewards_info -> Text,
-        fund_start_time -> Text,
-        fund_end_time -> Text,
-        next_fund_start_time -> Text,
-    }
-}
+use diesel::table;
 
 table! {
-    proposals (id) {
+    full_proposals_info {
         id -> Integer,
         proposal_id -> Text,
         proposal_category -> Text,
@@ -31,13 +20,6 @@ table! {
         chain_proposal_index -> BigInt,
         chain_vote_options -> Text,
         chain_voteplan_id -> Text,
-    }
-}
-
-table! {
-    voteplans (id) {
-        id -> Integer,
-        chain_voteplan_id -> Text,
         chain_vote_start_time -> Text,
         chain_vote_end_time -> Text,
         chain_committee_end_time -> Text,
@@ -45,9 +27,3 @@ table! {
         fund_id -> Integer,
     }
 }
-
-allow_tables_to_appear_in_same_query!(
-    funds,
-    proposals,
-    voteplans,
-);

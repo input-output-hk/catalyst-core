@@ -9,9 +9,9 @@ pub async fn filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let with_context = warp::any().map(move || context.clone());
 
-    let fund = warp::path!("fund" / String)
+    let fund = warp::path!("fund" / i32)
         .and(warp::get())
-        .and(with_context.clone())
+        .and(with_context)
         .and_then(get_fund)
         .boxed();
 

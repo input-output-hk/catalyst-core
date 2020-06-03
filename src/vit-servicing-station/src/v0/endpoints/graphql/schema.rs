@@ -39,7 +39,7 @@ pub struct QueryRoot {
 #[async_graphql::Object]
 impl Proposal {
     pub async fn category(&self) -> &Category {
-        &self.category
+        &self.proposal_category
     }
 
     pub async fn proposal_id(&self) -> &str {
@@ -78,7 +78,7 @@ impl Proposal {
         &self.proposer
     }
 
-    pub async fn chain_proposal_id(&self) -> &str {
+    pub async fn chain_proposal_id(&self) -> &Vec<u8> {
         &self.chain_proposal_id
     }
 
@@ -90,16 +90,16 @@ impl Proposal {
         self.chain_proposal_index
     }
 
-    pub async fn chain_vote_start_time(&self) -> i64 {
-        self.chain_vote_start_time
+    pub async fn chain_vote_start_time(&self) -> &str {
+        &self.chain_vote_start_time
     }
 
-    pub async fn chain_vote_end_time(&self) -> i64 {
-        self.chain_vote_end_time
+    pub async fn chain_vote_end_time(&self) -> &str {
+        &self.chain_vote_end_time
     }
 
-    pub async fn chain_committee_end_time(&self) -> i64 {
-        self.chain_committee_end_time
+    pub async fn chain_committee_end_time(&self) -> &str {
+        &self.chain_committee_end_time
     }
 
     pub async fn chain_vote_options(&self) -> &str {

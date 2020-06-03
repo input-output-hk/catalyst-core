@@ -8,6 +8,7 @@ import java.text.Normalizer.Form;
 import com.iohk.jormungandrwallet.Settings;
 import com.iohk.jormungandrwallet.Wallet;
 import com.iohk.jormungandrwallet.Conversion;
+import com.iohk.jormungandrwallet.Proposal;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -70,6 +71,9 @@ public class WalletPlugin extends CordovaPlugin {
             case "WALLET_SET_STATE":
                 walletSetState(args, callbackContext);
                 break;
+            case "WALLET_VOTE":
+                walletVote(args, callbackContext);
+                break;
             case "WALLET_CONVERT":
                 walletConvert(args, callbackContext);
                 break;
@@ -82,6 +86,9 @@ public class WalletPlugin extends CordovaPlugin {
             case "CONVERSION_IGNORED":
                 conversionIgnored(args, callbackContext);
                 break;
+            case "PROPOSAL_NEW":
+                proposalNew(args, callbackContext);
+                break;
             case "WALLET_DELETE":
                 walletDelete(args, callbackContext);
                 break;
@@ -90,6 +97,9 @@ public class WalletPlugin extends CordovaPlugin {
                 break;
             case "CONVERSION_DELETE":
                 conversionDelete(args, callbackContext);
+                break;
+            case "PROPOSAL_DELETE":
+                proposalDelete(args, callbackContext);
                 break;
             default:
                 return false;
@@ -150,6 +160,20 @@ public class WalletPlugin extends CordovaPlugin {
         try {
             Wallet.setState(walletPtr, value, counter);
             callbackContext.success();
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void walletVote(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long wallet = args.getLong(0);
+        final Long settings = args.getLong(1);
+        final Long proposal = args.getLong(2);
+        final Integer choice = args.getInt(3);
+
+        try {
+            final byte[] tx = Wallet.voteCast(wallet, settings, proposal, choice);
+            callbackContext.success(tx);
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());
         }
@@ -216,6 +240,26 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
+    private void proposalNew(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final byte[] votePlanId = args.getArrayBuffer(0);
+        final Integer payloadType = args.getInt(1);
+        final Integer index = args.getInt(2);
+        final Integer numChoices = args.getInt(3);
+
+        try {
+            switch (payloadType) {
+                case 1:
+                    long ptr = Proposal.withPublicPayload(votePlanId, index, numChoices);
+                    callbackContext.success(Long.toString(ptr));
+                    break;
+                default:
+                    callbackContext.error("Unknown payload type");
+            }
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
     private void walletId(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
         final Long walletPtr = args.getLong(0);
 
@@ -245,6 +289,13 @@ public class WalletPlugin extends CordovaPlugin {
         final Long conversionPtr = args.getLong(0);
 
         Conversion.delete(conversionPtr);
+        callbackContext.success();
+    }
+
+    private void proposalDelete(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long proposalPtr = args.getLong(0);
+
+        Proposal.delete(proposalPtr);
         callbackContext.success();
     }
 }

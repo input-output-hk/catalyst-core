@@ -204,7 +204,9 @@ impl Wallet {
 
         let mut builder = wallet::transaction::TransactionBuilder::new(settings, vec![], payload);
         builder.select_from(&mut self.account);
-        let tx = builder.finalize_tx(());
+        let tx = builder
+            .finalize_tx(())
+            .map_err(|e| Error::wallet_transaction().with(e))?;
         let fragment = Fragment::VoteCast(tx);
         Ok(fragment.serialize_as_vec().unwrap().into_boxed_slice())
     }

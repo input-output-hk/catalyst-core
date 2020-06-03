@@ -18,4 +18,6 @@ public class Wallet {
     public native static byte[] id(long wallet);
 
     public native static void setState(long wallet, long value, long counter);
+
+    public native static byte[] voteCast(long wallet, long settings, long proposal, int choice);
 }

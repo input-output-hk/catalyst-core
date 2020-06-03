@@ -12,3 +12,4 @@ crate-type = [ "cdylib" ]
 [dependencies]
 jni = "0.16.0"
 wallet-core = { path = "../wallet-core" }
+chain-impl-mockchain = { path = "../../chain-deps/chain-impl-mockchain" }

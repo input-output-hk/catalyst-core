@@ -20,6 +20,10 @@ pub struct TransactionBuilder<P: Payload> {
     witness_builders: Vec<WitnessBuilder>,
 }
 
+// TODO: add more info to the error?
+#[derive(Debug, Clone)]
+pub struct BalancingError;
+
 impl<P: Payload> TransactionBuilder<P> {
     /// create a new transaction builder with the given settings and outputs
     pub fn new(settings: Settings, outputs: Vec<Output<Address>>, certificate: P) -> Self {
@@ -98,9 +102,9 @@ impl<P: Payload> TransactionBuilder<P> {
         total_in == total_out.saturating_add(total_fee)
     }
 
-    pub fn finalize_tx(self, auth: <P as Payload>::Auth) -> Transaction<P> {
+    pub fn finalize_tx(self, auth: <P as Payload>::Auth) -> Result<Transaction<P>, BalancingError> {
         if !self.check_balance() {
-            todo!()
+            return Err(BalancingError);
         }
 
         let builder = TxBuilderState::new();
@@ -109,7 +113,7 @@ impl<P: Payload> TransactionBuilder<P> {
         let builder = self.set_ios(builder);
         let builder = self.set_witnesses(builder);
 
-        builder.set_payload_auth(&auth)
+        Ok(builder.set_payload_auth(&auth))
     }
 
     fn set_ios(&self, builder: TxBuilderState<SetIOs<P>>) -> TxBuilderState<SetWitnesses<P>> {
@@ -132,6 +136,21 @@ impl<P: Payload> TransactionBuilder<P> {
             .collect();
 
         builder.set_witnesses(&witnesses)
+    }
+}
+
+impl std::fmt::Display for BalancingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "transaction building failed, couldn't balance transaction"
+        )
+    }
+}
+
+impl std::error::Error for BalancingError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
     }
 }
 

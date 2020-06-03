@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use wasm_bindgen::prelude::*;
 
 mod utils;
@@ -188,5 +189,25 @@ impl Proposal {
             index,
             options.0,
         ))
+    }
+}
+
+#[wasm_bindgen]
+impl VotePlanId {
+    pub fn new_from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
+        let array: [u8; wallet_core::VOTE_PLAN_ID_LENGTH] = bytes
+            .try_into()
+            .map_err(|_| JsValue::from_str("Invalid vote plan id length"))?;
+
+        Ok(VotePlanId(array))
+    }
+}
+
+#[wasm_bindgen]
+impl Options {
+    pub fn new_length(length: u8) -> Result<Options, JsValue> {
+        wallet_core::Options::new_length(length)
+            .map_err(|e| JsValue::from(e.to_string()))
+            .map(Options)
     }
 }

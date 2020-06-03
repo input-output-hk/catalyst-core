@@ -70,6 +70,44 @@ async function walletSetState (successCallback, errorCallback, opts) {
     }
 }
 
+async function walletVote (successCallback, errorCallback, opts) {
+    await loaded;
+    const walletPtr = opts[0];
+    const settingsPtr = opts[1];
+    const proposalPtr = opts[2];
+    const choice = opts[3];
+
+    const wallet = wasm.Wallet.__wrap(walletPtr);
+    const settings = wasm.Settings.__wrap(settingsPtr);
+    const proposal = wasm.Proposal.__wrap(proposalPtr);
+
+    try {
+        const tx = wallet.vote(settings, proposal, choice);
+        successCallback(tx);
+    } catch (err) {
+        errorCallback(err);
+    }
+}
+
+async function proposalNew (successCallback, errorCallback, opts) {
+    await loaded;
+
+    const votePlanId = opts[0];
+    // const payloadType = opts[1];
+    const index = opts[2];
+    const numChoices = opts[3];
+
+    try {
+        const id = wasm.VotePlanId.new_from_bytes(votePlanId);
+        const payloadType = wasm.PayloadType.Public;
+        const options = wasm.Options.new_length(numChoices);
+        const proposal = wasm.Proposal.new(id, payloadType, index, options);
+        successCallback(proposal.ptr);
+    } catch (err) {
+        errorCallback(err);
+    }
+}
+
 async function walletId (successCallback, errorCallback, opts) {
     await loaded;
     if (opts && typeof (opts[0]) === 'string') {
@@ -188,19 +226,33 @@ async function conversionDelete (successCallback, errorCallback, opts) {
     }
 }
 
+async function proposalDelete (successCallback, errorCallback, opts) {
+    await loaded;
+    if (opts && typeof (opts[0]) === 'string') {
+        const conversionPtr = opts[0];
+        wasm.Conversion.__wrap(conversionPtr).free();
+        successCallback();
+    } else {
+        errorCallback();
+    }
+}
+
 const bindings = {
     WALLET_RESTORE: walletRestore,
     WALLET_RETRIEVE_FUNDS: walletRetrieveFunds,
     WALLET_TOTAL_FUNDS: walletTotalFunds,
     WALLET_ID: walletId,
     WALLET_SET_STATE: walletSetState,
+    WALLET_VOTE: walletVote,
+    PROPOSAL_NEW: proposalNew,
     WALLET_CONVERT: walletConvert,
     CONVERSION_TRANSACTIONS_SIZE: conversionTransactionsSize,
     CONVERSION_TRANSACTIONS_GET: conversionTransactionsGet,
     CONVERSION_IGNORED: conversionIgnored,
     WALLET_DELETE: walletDelete,
     SETTINGS_DELETE: settingsDelete,
-    CONVERSION_DELETE: conversionDelete
+    CONVERSION_DELETE: conversionDelete,
+    PROPOSAL_DELETE: proposalDelete
 };
 
 require('cordova/exec/proxy').add('WalletPlugin', bindings);

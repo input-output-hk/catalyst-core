@@ -1,5 +1,5 @@
 use crate::db::{
-    models::{funds::Fund, voteplan::Voteplan},
+    models::{funds::Fund, voteplans::Voteplan},
     schema::{funds::dsl as fund_dsl, voteplans::dsl as voteplans_dsl},
 };
 use crate::v0::context::SharedContext;

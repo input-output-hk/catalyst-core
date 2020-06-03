@@ -1,4 +1,4 @@
-use crate::db::{models::voteplan::Voteplan, schema::funds, DB};
+use crate::db::{models::voteplans::Voteplan, schema::funds, DB};
 use diesel::Queryable;
 use serde::{Deserialize, Serialize};
 

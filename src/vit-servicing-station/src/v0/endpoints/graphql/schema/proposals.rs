@@ -1,6 +1,4 @@
-use crate::db;
 use crate::db::models::proposals::{Category, Proposal, Proposer};
-use std::sync::Arc;
 
 #[async_graphql::Object]
 impl Category {
@@ -30,10 +28,6 @@ impl Proposer {
     pub async fn proposer_url(&self) -> &str {
         &self.proposer_url
     }
-}
-
-pub struct QueryRoot {
-    pub db_connection_pool: Arc<db::DBConnectionPool>,
 }
 
 #[async_graphql::Object]

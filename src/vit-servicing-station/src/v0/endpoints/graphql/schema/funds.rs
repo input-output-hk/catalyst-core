@@ -3,7 +3,7 @@ use crate::db::{
     models::{funds::Fund, voteplans::Voteplan},
     schema::voteplans::dsl as voteplans_dsl,
 };
-use async_graphql::{Context, FieldResult};
+use async_graphql::Context;
 use diesel::{ExpressionMethods, RunQueryDsl};
 
 #[async_graphql::Object]

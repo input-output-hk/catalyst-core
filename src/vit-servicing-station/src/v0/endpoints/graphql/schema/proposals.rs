@@ -1,4 +1,5 @@
 use crate::db::models::proposals::{Category, Proposal, Proposer};
+use crate::db::models::vote_options::VoteOptions;
 
 #[async_graphql::Object]
 impl Category {
@@ -96,7 +97,7 @@ impl Proposal {
         &self.chain_committee_end_time
     }
 
-    pub async fn chain_vote_options(&self) -> &Vec<String> {
-        &self.chain_vote_options
+    pub async fn chain_vote_options(&self) -> VoteOptions {
+        self.chain_vote_options.clone()
     }
 }

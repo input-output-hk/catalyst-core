@@ -1,3 +1,5 @@
+use super::vote_options;
+use crate::db::models::vote_options::VoteOptions;
 use crate::db::{views_schema::full_proposals_info, DB};
 use diesel::Queryable;
 use serde::{Deserialize, Serialize};
@@ -32,7 +34,7 @@ pub struct Proposal {
     pub proposer: Proposer,
     pub chain_proposal_id: String,
     pub chain_proposal_index: i64,
-    pub chain_vote_options: Vec<String>,
+    pub chain_vote_options: VoteOptions,
     pub chain_voteplan_id: String,
     pub chain_voteplan_payload: String,
     pub chain_vote_start_time: String,
@@ -119,7 +121,7 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_proposal_id: String::from_utf8(row.14).unwrap(),
             chain_proposal_index: row.15,
             // TODO: maybe use a map to disambiguate ordering
-            chain_vote_options: row.16.split(",").map(str::to_string).collect(),
+            chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.16),
             chain_voteplan_id: row.17,
             chain_vote_start_time: row.18,
             chain_vote_end_time: row.19,

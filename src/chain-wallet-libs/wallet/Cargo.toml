@@ -1,6 +1,6 @@
 [package]
 name = "wallet"
-version = "0.4.0-pre1"
+version = "0.4.0-pre2"
 authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"

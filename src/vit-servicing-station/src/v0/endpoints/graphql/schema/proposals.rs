@@ -72,7 +72,7 @@ impl Proposal {
         &self.proposer
     }
 
-    pub async fn chain_proposal_id(&self) -> &Vec<u8> {
+    pub async fn chain_proposal_id(&self) -> &str {
         &self.chain_proposal_id
     }
 
@@ -96,7 +96,7 @@ impl Proposal {
         &self.chain_committee_end_time
     }
 
-    pub async fn chain_vote_options(&self) -> &str {
+    pub async fn chain_vote_options(&self) -> &Vec<String> {
         &self.chain_vote_options
     }
 }

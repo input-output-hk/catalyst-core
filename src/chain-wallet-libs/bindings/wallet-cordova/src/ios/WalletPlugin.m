@@ -176,6 +176,8 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         NSData* returnValue = [NSData dataWithBytes:transaction_out length:len_out];
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                     messageAsArrayBuffer:returnValue];
+
+        iohk_jormungandr_wallet_delete_buffer(transaction_out, len_out);
     }
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];

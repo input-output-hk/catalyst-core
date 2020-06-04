@@ -38,6 +38,10 @@ pub struct ServiceSettings {
     /// Database url
     #[structopt(long, env = DATABASE_URL, default_value = "./db/database.sqlite3")]
     pub db_url: String,
+
+    // block0 static file path
+    #[structopt(long, default_value = "./resources/v0/block0.bin")]
+    pub block0_path: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]

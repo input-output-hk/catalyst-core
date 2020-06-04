@@ -32,7 +32,7 @@ async fn main() {
     // run server with settings
     let db_pool =
         db::load_db_connection_pool(&settings.db_url).expect("Error connecting to database");
-    let context = v0::context::new_shared_context(db_pool);
+    let context = v0::context::new_shared_context(db_pool, &settings.block0_path);
 
     let app = v0::filter(context).await;
     println!(

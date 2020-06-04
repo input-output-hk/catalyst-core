@@ -102,7 +102,7 @@ async function proposalNew (successCallback, errorCallback, opts) {
         const payloadType = wasm.PayloadType.Public;
         const options = wasm.Options.new_length(numChoices);
         const proposal = wasm.Proposal.new(id, payloadType, index, options);
-        successCallback(proposal.ptr);
+        successCallback(proposal.ptr.toString());
     } catch (err) {
         errorCallback(err);
     }

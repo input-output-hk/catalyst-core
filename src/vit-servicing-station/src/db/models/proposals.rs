@@ -120,7 +120,6 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             // TODO: check, would this be invalid in any case?
             chain_proposal_id: String::from_utf8(row.14).unwrap(),
             chain_proposal_index: row.15,
-            // TODO: maybe use a map to disambiguate ordering
             chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.16),
             chain_voteplan_id: row.17,
             chain_vote_start_time: row.18,

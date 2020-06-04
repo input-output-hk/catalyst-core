@@ -10,15 +10,19 @@
 - (void)WALLET_TOTAL_FUNDS:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_ID:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_SET_STATE:(CDVInvokedUrlCommand*)command;
+- (void)WALLET_VOTE:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_CONVERT:(CDVInvokedUrlCommand*)command;
 
 - (void)CONVERSION_TRANSACTIONS_SIZE:(CDVInvokedUrlCommand*)command;
 - (void)CONVERSION_TRANSACTIONS_GET:(CDVInvokedUrlCommand*)command;
 - (void)CONVERSION_IGNORED:(CDVInvokedUrlCommand*)command;
 
+- (void)PROPOSAL_NEW:(CDVInvokedUrlCommand*)command;
+
 - (void)WALLET_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)SETTINGS_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)CONVERSION_DELETE:(CDVInvokedUrlCommand*)command;
+- (void)PROPOSAL_DELETE:(CDVInvokedUrlCommand*)command;
 
 @end
 

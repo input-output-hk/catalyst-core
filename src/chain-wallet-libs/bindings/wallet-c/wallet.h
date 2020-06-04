@@ -28,15 +28,15 @@ enum PayloadType
 };
 typedef uint8_t PayloadType;
 
-typedef Error *ErrorPtr;
+typedef struct Error *ErrorPtr;
 
-typedef Wallet *WalletPtr;
+typedef struct Wallet *WalletPtr;
 
-typedef Settings *SettingsPtr;
+typedef struct Settings *SettingsPtr;
 
-typedef Conversion *ConversionPtr;
+typedef struct Conversion *ConversionPtr;
 
-typedef Proposal *ProposalPtr;
+typedef struct Proposal *ProposalPtr;
 
 /**
  * once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`

@@ -212,7 +212,7 @@ var plugin = {
         var isArray = require('cordova/utils').typeName(votePlanId) === 'Uint8Array';
 
         if (isArray && votePlanId.length === VOTE_PLAN_ID_LENGTH) {
-            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_ACTION_TAG, [votePlanId, payloadType, index, numChoices]);
+            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_ACTION_TAG, [votePlanId.buffer, payloadType, index, numChoices]);
         } else {
             throw TypeError('expected votePlanId to be a Uint8Array in proposalNew');
         }

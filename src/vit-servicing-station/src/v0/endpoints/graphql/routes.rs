@@ -1,7 +1,9 @@
 use super::schema::QueryRoot;
+use crate::db;
 use crate::v0::context::SharedContext;
 use async_graphql::{http::GQLResponse, EmptyMutation, EmptySubscription, QueryBuilder, Schema};
 use std::convert::Infallible;
+use std::sync::Arc;
 use warp::{filters::BoxedFilter, Filter, Rejection, Reply};
 
 pub async fn filter(
@@ -9,13 +11,18 @@ pub async fn filter(
     context: SharedContext,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     // load a connection pool for the graphql schema
-    let db_connection_pool = context.clone().read().await.db_connection_pool.clone();
+    let db_connection_pool: Arc<db::DBConnectionPool> =
+        context.clone().read().await.db_connection_pool.clone();
 
-    let schema = Schema::new(
-        QueryRoot { db_connection_pool },
+    let schema = Schema::build(
+        QueryRoot {
+            db_connection_pool: db_connection_pool.clone(),
+        },
         EmptyMutation,
         EmptySubscription,
-    );
+    )
+    .data(db_connection_pool)
+    .finish();
 
     let graph_ql = async_graphql_warp::graphql(schema).and_then(
         |(schema, builder): (_, QueryBuilder)| async move {

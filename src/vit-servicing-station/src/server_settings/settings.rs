@@ -38,6 +38,10 @@ pub struct ServiceSettings {
     /// Database url
     #[structopt(long, env = DATABASE_URL, default_value = "./db/database.sqlite3")]
     pub db_url: String,
+
+    // block0 static file path
+    #[structopt(long, default_value = "./resources/v0/block0.bin")]
+    pub block0_path: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
@@ -214,7 +218,8 @@ mod test {
                 "allowed_origins" : ["https://foo.test"],
                 "max_age_secs" : 60
             },
-            "db_url": ""
+            "db_url": "",
+            "block0_path": "./test/bin.test"
         }
         "#;
 
@@ -223,6 +228,7 @@ mod test {
             config.address,
             SocketAddr::from_str("127.0.0.1:3030").unwrap()
         );
+        assert_eq!(config.block0_path, "./test/bin.test");
         let tls_config = config.tls;
         let cors_config = config.cors;
         assert_eq!(tls_config.cert_file.unwrap(), "./foo/bar.pem");
@@ -231,7 +237,7 @@ mod test {
             cors_config.allowed_origins.unwrap()[0],
             CorsOrigin("https://foo.test".to_string())
         );
-        assert_eq!(cors_config.max_age_secs.unwrap(), 60);
+        assert_eq!(cors_config.max_age_secs.unwrap(), 60)
     }
 
     #[test]

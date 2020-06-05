@@ -1,19 +1,25 @@
-use super::handlers::get_genesis;
+use super::handlers::*;
 use crate::v0::context::SharedContext;
 use warp::filters::BoxedFilter;
 use warp::{Filter, Rejection, Reply};
 
-pub fn filter(
+pub async fn filter(
     root: BoxedFilter<()>,
     context: SharedContext,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let with_context = warp::any().map(move || context.clone());
 
-    let block0 = warp::any()
+    let fund = warp::any()
         .and(warp::get())
-        .and(with_context)
-        .and_then(get_genesis)
+        .and(with_context.clone())
+        .and_then(get_fund)
         .boxed();
 
-    root.and(block0).boxed()
+    let fund_by_id = warp::path!(i32)
+        .and(warp::get())
+        .and(with_context)
+        .and_then(get_fund_by_id)
+        .boxed();
+
+    root.and(fund.or(fund_by_id)).boxed()
 }

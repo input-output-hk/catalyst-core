@@ -18,6 +18,7 @@ impl Default for ServiceSettings {
                 allowed_origins: None,
             },
             db_url: "./db/database.sqlite3".to_string(),
+            block0_path: "./resources/v0/block0.bin".to_string(),
         }
     }
 }

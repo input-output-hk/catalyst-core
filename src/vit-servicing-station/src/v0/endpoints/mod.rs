@@ -17,11 +17,11 @@ pub async fn filter(
     let chain_data_filter = proposals::filter(chain_data_root.boxed(), context.clone()).await;
 
     // mount funds endpoint
-    let funds_root = warp::path!("funds" / ..);
+    let funds_root = warp::path!("fund" / ..);
     let funds_filter = funds::filter(funds_root.boxed(), context.clone()).await;
 
     // mount genesis endpoint
-    let genesis_root = warp::path!("genesis" / ..);
+    let genesis_root = warp::path!("block0" / ..);
     let genesis_filter = genesis::filter(genesis_root.boxed(), context.clone());
 
     // mount graphql endpoint

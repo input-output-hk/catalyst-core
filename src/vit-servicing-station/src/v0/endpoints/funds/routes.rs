@@ -20,6 +20,6 @@ pub async fn filter(
         .and(with_context)
         .and_then(get_fund_by_id)
         .boxed();
-
-    root.and(fund.or(fund_by_id)).boxed()
+    // fund_by_id need to be checked first otherwise requests are swallowed by the fund::any
+    root.and(fund_by_id.or(fund)).boxed()
 }

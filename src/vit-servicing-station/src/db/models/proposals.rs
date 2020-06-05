@@ -20,7 +20,7 @@ pub struct Proposer {
 
 #[derive(Serialize, Deserialize)]
 pub struct Proposal {
-    pub id: i32,
+    pub internal_id: i32,
     pub proposal_id: String,
     pub proposal_category: Category,
     pub proposal_title: String,
@@ -97,11 +97,11 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
 
     fn build(row: Self::Row) -> Self {
         Proposal {
-            id: row.0,
+            internal_id: row.0,
             proposal_id: row.1,
             proposal_category: Category {
-                category_id: row.2,
-                category_name: "".to_string(),
+                category_id: "".to_string(),
+                category_name: row.2,
                 category_description: "".to_string(),
             },
             proposal_title: row.3,

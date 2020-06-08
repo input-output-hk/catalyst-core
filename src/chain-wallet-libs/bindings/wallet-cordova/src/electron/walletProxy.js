@@ -93,13 +93,20 @@ async function proposalNew (successCallback, errorCallback, opts) {
     await loaded;
 
     const votePlanId = opts[0];
-    // const payloadType = opts[1];
+    const cordovaPayloadType = opts[1];
     const index = opts[2];
     const numChoices = opts[3];
 
     try {
         const id = wasm.VotePlanId.new_from_bytes(votePlanId);
-        const payloadType = wasm.PayloadType.Public;
+        let payloadType;
+
+        if (cordovaPayloadType === 1) {
+            payloadType = wasm.PayloadType.Public;
+        } else {
+            throw new Error('unrecognized payload type');
+        }
+
         const options = wasm.Options.new_length(numChoices);
         const proposal = wasm.Proposal.new(id, payloadType, index, options);
         successCallback(proposal.ptr.toString());

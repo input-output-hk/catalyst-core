@@ -1,5 +1,7 @@
 pub mod context;
 pub mod endpoints;
+pub mod errors;
+pub mod result;
 
 use warp::{Filter, Rejection, Reply};
 

@@ -3,7 +3,6 @@ use crate::db;
 use crate::v0::context::SharedContext;
 use async_graphql::{http::GQLResponse, EmptyMutation, EmptySubscription, QueryBuilder, Schema};
 use std::convert::Infallible;
-use std::sync::Arc;
 use warp::{filters::BoxedFilter, Filter, Rejection, Reply};
 
 pub async fn filter(
@@ -11,7 +10,7 @@ pub async fn filter(
     context: SharedContext,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     // load a connection pool for the graphql schema
-    let db_connection_pool: Arc<db::DBConnectionPool> =
+    let db_connection_pool: db::DBConnectionPool =
         context.clone().read().await.db_connection_pool.clone();
 
     let schema = Schema::build(

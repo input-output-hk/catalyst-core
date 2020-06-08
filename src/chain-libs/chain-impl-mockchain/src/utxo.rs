@@ -215,7 +215,7 @@ impl<OutAddress: Clone> Ledger<OutAddress> {
         assert!(!outs.is_empty());
         assert!(outs.len() < 255);
         let b = TransactionUnspents::from_outputs(outs);
-        let next = self.0.insert(tid.clone(), b)?;
+        let next = self.0.insert(*tid, b)?;
         Ok(Ledger(next))
     }
 

@@ -394,7 +394,7 @@ impl LedgerBuilder {
         fragments.extend_from_slice(&self.fragments);
         fragments.extend_from_slice(&self.certs);
 
-        let faucets = self.faucets.clone();
+        let faucets = self.faucets;
         Ledger::new(block0_hash, &fragments).map(|ledger| {
             let parameters = ledger.get_ledger_parameters();
             TestLedger {
@@ -568,7 +568,7 @@ impl TestLedger {
         fragments: Vec<Fragment>,
     ) -> Block {
         GenesisPraosBlockBuilder::new()
-            .with_date(self.date().clone())
+            .with_date(self.date())
             .with_fragments(fragments)
             .with_chain_length(self.ledger.chain_length())
             .with_parent_id(self.block0_hash)
@@ -594,7 +594,7 @@ impl TestLedger {
                 .leader(
                     &stake_pool.id(),
                     &stake_pool.vrf().private_key(),
-                    self.ledger.date().clone(),
+                    self.ledger.date(),
                 )
                 .expect("cannot calculate leader")
                 .is_some()

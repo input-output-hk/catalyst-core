@@ -114,10 +114,10 @@ impl<State> Multiverse<State> {
         self.states_by_chain_length
             .entry(chain_length)
             .or_insert_with(HashSet::new)
-            .insert(k.clone());
+            .insert(k);
         let state = Arc::new(st);
         self.states_by_hash
-            .insert(k.clone(), GcEntry::Retained(state.clone()));
+            .insert(k, GcEntry::Retained(state.clone()));
         Ref::new(k, state)
     }
 }
@@ -162,7 +162,7 @@ impl Multiverse<Ledger> {
                     hashes.retain(|k| {
                         use std::collections::hash_map::Entry::*;
 
-                        match states_by_hash.entry(k.clone()) {
+                        match states_by_hash.entry(*k) {
                             Occupied(mut entry) => {
                                 if entry.get_mut().collect() {
                                     entry.remove();

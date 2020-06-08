@@ -1,3 +1,4 @@
+mod graphiql;
 mod handlers;
 mod routes;
 mod schema;

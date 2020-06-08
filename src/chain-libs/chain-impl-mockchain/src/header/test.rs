@@ -61,7 +61,7 @@ impl Arbitrary for GenesisPraosProof {
 
         let kes_proof = {
             lazy_static! {
-                static ref SK_FIRST: SecretKey<SumEd25519_12> = { testing::static_secret_key() };
+                static ref SK_FIRST: SecretKey<SumEd25519_12> = testing::static_secret_key();
             }
             let sk = SK_FIRST.clone();
             let signature = sk.sign(&[0u8, 1, 2, 3]);

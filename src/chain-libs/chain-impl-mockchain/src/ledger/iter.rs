@@ -318,7 +318,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                 Entry::UpdateProposal((proposal_id, proposal_state)) => {
                     updates
                         .proposals
-                        .insert(proposal_id.clone(), proposal_state.clone());
+                        .insert(*proposal_id, proposal_state.clone());
                 }
                 Entry::MultisigAccount((account_id, account_state)) => {
                     multisig_accounts.push((account_id.clone(), account_state.clone()));
@@ -337,9 +337,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                     .set_for(pool_id.clone(), *pool_participation)
                     .unwrap(),
                 Entry::VotePlan((vote_plan, block_date)) => {
-                    votes
-                        .add_vote_plan(block_date.clone(), vote_plan.clone())
-                        .unwrap();
+                    votes.add_vote_plan(*block_date, vote_plan.clone()).unwrap();
                 }
             }
         }

@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 #[cfg(any(test, feature = "property-test-api"))]
 #[macro_use]
 extern crate quickcheck;

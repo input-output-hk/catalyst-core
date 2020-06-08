@@ -9,7 +9,7 @@ fn setup_cors(cors_config: Cors) -> CorsBuilder {
         let allowed_origins: Vec<&str> = allowed_origins.iter().map(AsRef::as_ref).collect();
         warp::cors().allow_origins(allowed_origins)
     } else {
-        warp::cors()
+        warp::cors().allow_any_origin()
     };
 
     if let Some(max_age) = cors_config.max_age_secs {

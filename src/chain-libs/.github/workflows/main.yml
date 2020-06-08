@@ -75,6 +75,8 @@ jobs:
             toolchain: nightly
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    env:
+      CARGO_INCREMENTAL: 0
     steps:
 
       - uses: actions/checkout@v2

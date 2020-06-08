@@ -32,15 +32,6 @@ pub async fn filter(
         },
     );
 
-    // expose the playground just when using debugging builds
-    #[cfg(debug_assertions)]
-    {
-        root.and(crate::v0::endpoints::graphql::playground::filter().or(graph_ql))
-            .boxed()
-    }
-
-    #[cfg(not(debug_assertions))]
-    {
-        root.and(graph_ql).boxed()
-    }
+    root.and(crate::v0::endpoints::graphql::playground::filter().or(graph_ql))
+        .boxed()
 }

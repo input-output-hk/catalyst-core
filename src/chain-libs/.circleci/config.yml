@@ -1,124 +1,122 @@
-version: 2
-jobs:
-  cargo_fetch:
+version: 2.1
+
+executors:
+  rust-stable:
     docker:
-      - image: rust:latest
-    working_directory: /mnt/crate
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - cargo-v3-{{ checksum "Cargo.toml" }}-
-            - cargo-v3-
-      - run: cargo fetch
-      - persist_to_workspace:
-          root: /mnt/crate
-          paths:
-            - Cargo.lock
-      - save_cache:
-          key: cargo-v3-{{ checksum "Cargo.toml" }}-{{ checksum "Cargo.lock" }}
-          paths:
-            - /usr/local/cargo/registry
-            - /usr/local/cargo/git
-
-  #rustfmt:
-  #  docker:
-  #    - image: rust:latest
-  #  working_directory: /mnt/crate
-  #  steps:
-  #    - checkout
-  #    - run:
-  #        name: Install rustfmt
-  #        command: rustup component add rustfmt
-  #    - run:
-  #        name: Print version information
-  #        command: cargo fmt -- --version
-  #    - run:
-  #        name: Check rustfmt
-  #        command: cargo fmt -- --check
-
-  test_debug:
-    docker:
-      - image: rust:latest
-    working_directory: /mnt/crate
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /mnt/crate
-      - restore_cache:
-          keys:
-            - cargo-v3-{{ checksum "Cargo.toml" }}-{{ checksum "Cargo.lock" }}
-      - run:
-          name: Print version information
-          command: rustc --version; cargo --version
-      - run:
-          name: Build
-          command: cargo build --tests --verbose --frozen
-      - run:
-          name: Test
-          environment:
-            RUST_BACKTRACE: 1
-          command: cargo test --verbose --frozen
-
-  test_release:
-    docker:
-      - image: rust:latest
-    working_directory: /mnt/crate
-    steps:
-      - checkout
-      - attach_workspace:
-          at: /mnt/crate
-      - restore_cache:
-          keys:
-            - cargo-v3-{{ checksum "Cargo.toml" }}-{{ checksum "Cargo.lock" }}
-      - run:
-          name: Print version information
-          command: rustc --version; cargo --version
-      - run:
-          name: Build
-          command: cargo build --tests --verbose --frozen --release
-      - run:
-          name: Test
-          command: cargo test --verbose --frozen --release
-
-  test_nightly:
+      - image: circleci/rust:latest
+    working_directory: /home/circleci/build
+  rust-nightly:
     docker:
       - image: rustlang/rust:nightly
-    working_directory: /mnt/crate
+    working_directory: /home/build
+
+jobs:
+  cargo_fetch:
+    executor: rust-stable
+    steps:
+      - checkout
+      - run:
+          name: Get top commit hash of cargo registry index
+          command: |
+            git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master |
+              cut -f 1 | tee .circleci/crates.io-index.head
+      - restore_cache:
+          name: Restore cargo registry index from cache
+          keys:
+            - cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
+            - cargo-index-v1-
+      - run:
+          name: Generate Cargo.lock and update cargo registry index
+          command: |
+            cargo generate-lockfile
+            git -C /usr/local/cargo/registry/index/github.com-1ecc6299db9ec823 \
+                show-ref -s refs/remotes/origin/master |
+              tee .circleci/crates.io-index.head
+      - save_cache:
+          name: Save cargo registry index into cache
+          key: cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
+          paths:
+            - /usr/local/cargo/registry/index
+      - restore_cache:
+          name: Restore dependency crates from cache
+          keys:
+            - cargo-deps-v1-{{ checksum "Cargo.lock" }}
+            - cargo-deps-v1-
+      - run: cargo fetch
+      - save_cache:
+          name: Save dependency crates into cache
+          key: cargo-deps-v1-{{ checksum "Cargo.lock" }}
+          paths:
+            - /usr/local/cargo/registry/cache
+      - persist_to_workspace:
+          root: .
+          paths:
+            - Cargo.lock
+            - .circleci/crates.io-index.head
+
+  test_debug:
+    executor: rust-stable
+    steps:
+      - test
+
+  test_release:
+    executor: rust-stable
+    steps:
+      - test:
+          mode: --release
+
+  test_nightly:
+    executor: rust-nightly
+    steps:
+      - test
+
+commands:
+  test:
+    description: "Steps for the test jobs"
+    parameters:
+      mode:
+        type: string
+        default: ''
+      cargo_behavior:
+        type: string
+        default: --locked --offline --verbose
     steps:
       - checkout
       - attach_workspace:
-          at: /mnt/crate
+          at: .
       - restore_cache:
+          name: Restore cargo registry index from cache
           keys:
-            - cargo-v3-{{ checksum "Cargo.toml" }}-{{ checksum "Cargo.lock" }}
+            - cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
+      - restore_cache:
+          name: Restore dependency crates from cache
+          keys:
+            - cargo-deps-v1-{{ checksum "Cargo.lock" }}
       - run:
           name: Print version information
           command: rustc --version; cargo --version
       - run:
           name: Build
-          command: cargo build --tests --verbose --frozen
+          command: |
+            cargo build --all-targets << parameters.mode >> << parameters.cargo_behavior >>
       - run:
           name: Test
           environment:
             RUST_BACKTRACE: 1
-          command: cargo test --verbose --frozen
+          command: |
+            cargo test << parameters.mode >> << parameters.cargo_behavior >>
 
 workflows:
   version: 2
   test_all:
     jobs:
       - cargo_fetch
-      #- rustfmt
       - test_debug:
           requires:
-            #- rustfmt
             - cargo_fetch
       - test_release:
           requires:
-            #- rustfmt
             - cargo_fetch
       - test_nightly:
           requires:
-            #- rustfmt
             - cargo_fetch

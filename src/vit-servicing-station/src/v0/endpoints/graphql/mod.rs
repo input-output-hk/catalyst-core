@@ -1,5 +1,5 @@
-mod graphiql;
 mod handlers;
+mod playground;
 mod routes;
 mod schema;
 

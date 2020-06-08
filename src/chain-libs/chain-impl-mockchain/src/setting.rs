@@ -218,7 +218,7 @@ impl Settings {
                 ConfigParam::AddCommitteeId(committee_id) => {
                     // FIXME: O(n)
                     let mut v = new_state.committees.to_vec();
-                    v.push(committee_id.clone());
+                    v.push(*committee_id);
                     new_state.committees = Arc::new(v);
                 }
                 ConfigParam::RemoveCommitteeId(committee_id) => {

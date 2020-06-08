@@ -84,7 +84,7 @@ impl TestTxBuilder {
             .clone();
         let fee = test_ledger.fee().fees_for_inputs_outputs(1u8, 1u8);
         let output_value = (value - fee).expect("input value is smaller than fee");
-        let inputs = vec![faucet.clone().make_input_with_value(
+        let inputs = vec![faucet.make_input_with_value(
             test_ledger.find_utxo_for_address(&faucet.clone().into()),
             value,
         )];
@@ -122,7 +122,7 @@ impl TestTxBuilder {
             .expect("test ledger with no faucet configured")
             .clone();
         let input_val = Value::sum(destination.iter().map(|o| o.value)).unwrap();
-        let inputs = vec![faucet.clone().make_input_with_value(
+        let inputs = vec![faucet.make_input_with_value(
             test_ledger.find_utxo_for_address(&faucet.clone().into()),
             input_val,
         )];

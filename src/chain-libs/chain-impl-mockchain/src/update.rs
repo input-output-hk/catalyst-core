@@ -116,11 +116,11 @@ impl UpdateState {
                 // for some number of epochs.
                 if proposal_state.votes.len() > settings.bft_leaders.len() / 2 {
                     settings = settings.apply(&proposal_state.proposal.changes)?;
-                    expired_ids.push(proposal_id.clone());
+                    expired_ids.push(*proposal_id);
                 } else if proposal_state.proposal_date.epoch + settings.proposal_expiration
                     < new_date.epoch
                 {
-                    expired_ids.push(proposal_id.clone());
+                    expired_ids.push(*proposal_id);
                 }
             }
 

@@ -434,7 +434,7 @@ mod tests {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             lazy_static! {
                 static ref PK_KES: PublicKey<SumEd25519_12> =
-                    { testing::static_secret_key::<SumEd25519_12>().to_public() };
+                    testing::static_secret_key::<SumEd25519_12>().to_public();
             }
 
             let tcg = testing::TestCryptoGen::arbitrary(g);

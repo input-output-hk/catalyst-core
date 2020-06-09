@@ -39,13 +39,13 @@
             </feature>
         </config-file>
 
-
         <js-module src="src/electron/walletProxy.js" name="WalletProxy">
             <runs />
         </js-module>
 
-        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule"></js-module>
+        <js-module src="src/electron/bindings.js" name="bindings"></js-module>
 
+        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule"></js-module>
         <asset src="src/electron/pkg/wallet_js_bg.wasm" target="wallet_js_bg.wasm" />
     </platform>
 
@@ -69,11 +69,13 @@
             </feature>
         </config-file>
 
-        <js-module src="src/browser/walletProxy.js" name="WalletProxy">
+        <js-module src="src/browser/walletProxy.js" name="walletProxy">
             <runs />
         </js-module>
-        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule"></js-module>
 
+        <js-module src="src/electron/bindings.js" name="bindings"></js-module>
+
+        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule"></js-module>
         <asset src="src/electron/pkg/wallet_js_bg.wasm" target="wallet_js_bg.wasm" />
     </platform>
 </plugin>

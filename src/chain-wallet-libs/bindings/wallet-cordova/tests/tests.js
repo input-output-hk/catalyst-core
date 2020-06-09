@@ -170,7 +170,7 @@ exports.defineAutoTests = function () {
                     return conversionGetIgnored(conversionPtr);
                 })
                 .then(function (ignored_value) {
-                    expect(ignored_value.value).toBe(1);
+                    expect(Number(ignored_value.value)).toBe(1);
                     expect(ignored_value.ignored).toBe(1);
                     return new Promise(function (resolve) {
                         resolve();
@@ -210,7 +210,7 @@ exports.defineAutoTests = function () {
 
             proposalNew(votePlanId, payloadType, index, numChoices)
                 .catch(function (err) {
-                    done.fail('could not create proposal + ', err);
+                    done.fail('could not create proposal ' + err);
                 })
                 .then(function (proposal) {
                     proposalPtr = proposal;

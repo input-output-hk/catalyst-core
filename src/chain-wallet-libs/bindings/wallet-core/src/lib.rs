@@ -11,4 +11,8 @@ pub use self::{
     wallet::Wallet,
 };
 pub use ::wallet::Settings;
-pub use chain_impl_mockchain::value::Value;
+pub use chain_impl_mockchain::{
+    value::Value,
+    vote::{Choice, Options, PayloadType},
+};
+pub use vote::VOTE_PLAN_ID_LENGTH;

@@ -38,6 +38,7 @@ The command line flags can be retrieved using the `--help` when running the serv
 ```bash
 --address <address>                        Server binding address [default: 0.0.0.0:3030]
 --allowed-origins <allowed-origins>        If none provided, echos request origin [env: CORS_ALLOWED_ORIGINS=]
+--block0-path <block0-path>                block0 static file path [default: ./resources/v0/block0.bin]
 --cert-file <cert-file>
     Path to server X.509 certificate chain file, must be PEM-encoded and contain at least 1 item [env:
     TLS_CERT_FILE=]
@@ -66,7 +67,8 @@ An example of the contents of the file would be like this:
         "allowed_origins" : ["https://foo.test", "https://test.foo"],
         "max_age_secs" : 60
     },
-    "db_url": "./database.sqlite3"
+    "db_url": "./database.sqlite3",
+    "block0_path": "./test/bin.test"
 }
 ```
 

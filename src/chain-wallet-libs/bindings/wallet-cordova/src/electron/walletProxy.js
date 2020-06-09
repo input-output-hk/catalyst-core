@@ -98,7 +98,7 @@ async function proposalNew (successCallback, errorCallback, opts) {
     const numChoices = opts[3];
 
     try {
-        const id = wasm.VotePlanId.new_from_bytes(votePlanId);
+        const id = wasm.VotePlanId.new_from_bytes(new Uint8Array(votePlanId));
         let payloadType;
 
         if (cordovaPayloadType === 1) {

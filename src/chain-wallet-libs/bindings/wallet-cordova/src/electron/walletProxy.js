@@ -236,8 +236,8 @@ async function conversionDelete (successCallback, errorCallback, opts) {
 async function proposalDelete (successCallback, errorCallback, opts) {
     await loaded;
     if (opts && typeof (opts[0]) === 'string') {
-        const conversionPtr = opts[0];
-        wasm.Conversion.__wrap(conversionPtr).free();
+        const proposalPtr = opts[0];
+        wasm.Proposal.__wrap(proposalPtr).free();
         successCallback();
     } else {
         errorCallback();

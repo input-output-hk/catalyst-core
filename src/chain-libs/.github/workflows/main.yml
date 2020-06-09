@@ -149,6 +149,9 @@ jobs:
           path: ~/.cargo/registry/index
           key: cargo-index-v1-${{ needs.update-deps.outputs.crates-io-index-head }}
 
+      - name: Print rustfmt version
+        run: rustfmt --version
+
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1
         continue-on-error: false

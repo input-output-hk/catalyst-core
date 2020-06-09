@@ -33,6 +33,10 @@ impl Proposer {
 
 #[async_graphql::Object]
 impl Proposal {
+    pub async fn id(&self) -> i32 {
+        self.internal_id
+    }
+
     pub async fn category(&self) -> &Category {
         &self.proposal_category
     }

@@ -22,7 +22,7 @@ impl QueryRoot {
     }
 
     #[field(desc = "Funds information")]
-    async fn funds<'ctx>(&self, _ctx: &Context<'_>) -> Vec<Fund> {
-        funds::funds(&self, _ctx).await
+    async fn funds<'ctx>(&self, ctx: &Context<'_>) -> async_graphql::FieldResult<Vec<Fund>> {
+        funds::funds(&self, ctx).await
     }
 }

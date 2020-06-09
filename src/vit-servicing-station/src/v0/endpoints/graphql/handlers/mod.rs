@@ -7,7 +7,7 @@ use async_graphql::Context;
 
 #[async_graphql::Object]
 impl QueryRoot {
-    #[field(desc = "List of proposals information")]
+    #[field(desc = "List of proposals")]
     async fn proposals<'ctx>(&self, _ctx: &Context<'_>) -> Vec<Proposal> {
         proposals::proposals(&self, _ctx).await
     }
@@ -21,8 +21,13 @@ impl QueryRoot {
         proposals::proposal(&self, proposal_id, _ctx).await
     }
 
-    #[field(desc = "Funds information")]
+    #[field(desc = "List of funds information")]
     async fn funds<'ctx>(&self, ctx: &Context<'_>) -> async_graphql::FieldResult<Vec<Fund>> {
         funds::funds(&self, ctx).await
+    }
+
+    #[field(desc = "Fund information")]
+    async fn fund<'ctx>(&self, ctx: &Context<'_>, id: i32) -> async_graphql::FieldResult<Fund> {
+        funds::fund(&self, id, ctx).await
     }
 }

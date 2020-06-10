@@ -1,8 +1,11 @@
 use crate::{
     certificate::{ExternalProposalId, VotePlanId},
     date::BlockDate,
-    vote::{Options, PayloadType, Tally},
+    transaction::UnspecifiedAccountIdentifier,
+    vote::{Options, Payload, PayloadType, Tally},
 };
+use imhamt::Hamt;
+use std::collections::hash_map::DefaultHasher;
 
 pub struct VotePlanStatus {
     pub id: VotePlanId,
@@ -18,4 +21,5 @@ pub struct VoteProposalStatus {
     pub proposal_id: ExternalProposalId,
     pub options: Options,
     pub tally: Option<Tally>,
+    pub votes: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, Payload>,
 }

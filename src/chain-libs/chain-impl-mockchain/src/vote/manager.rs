@@ -1,6 +1,6 @@
 use crate::{
     account,
-    certificate::{ExternalProposalId, Proposal, VoteCast, VotePlan, VotePlanId},
+    certificate::{Proposal, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
@@ -222,6 +222,7 @@ impl VotePlanManager {
                 proposal_id: proposal.external_id().clone(),
                 options: proposal.options().clone(),
                 tally: manager.tally.clone(),
+                votes: manager.votes_by_voters.clone(),
             })
             .collect();
 

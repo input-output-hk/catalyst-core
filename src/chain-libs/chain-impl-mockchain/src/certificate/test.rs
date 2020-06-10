@@ -171,9 +171,16 @@ impl Arbitrary for VoteCast {
     }
 }
 
+impl Arbitrary for VoteTally {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let vote_plan_id = VotePlanId::arbitrary(g);
+        Self::new_public(vote_plan_id)
+    }
+}
+
 impl Arbitrary for Certificate {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let option = u8::arbitrary(g) % 7;
+        let option = u8::arbitrary(g) % 8;
         match option {
             0 => Certificate::StakeDelegation(Arbitrary::arbitrary(g)),
             1 => Certificate::OwnerStakeDelegation(Arbitrary::arbitrary(g)),
@@ -182,6 +189,7 @@ impl Arbitrary for Certificate {
             4 => Certificate::PoolUpdate(Arbitrary::arbitrary(g)),
             5 => Certificate::VotePlan(Arbitrary::arbitrary(g)),
             6 => Certificate::VoteCast(Arbitrary::arbitrary(g)),
+            7 => Certificate::VoteTally(Arbitrary::arbitrary(g)),
             _ => panic!("unimplemented"),
         }
     }

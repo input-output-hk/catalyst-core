@@ -145,6 +145,8 @@ pub enum Block0Error {
     HasPoolManagement,
     #[error("Vote casting are not valid in the block0")]
     HasVoteCast,
+    #[error("Vote tallying are not valid in the block0")]
+    HasVoteTally,
 }
 
 pub type OutputOldAddress = Output<legacy::OldAddress>;
@@ -266,6 +268,8 @@ pub enum Error {
     StakeDelegationSignatureFailed,
     #[error("Pool Retirement payload signature failed")]
     PoolRetirementSignatureFailed,
+    #[error("Vote Tally Proof failed")]
+    VoteTallyProofFailed,
     #[error("Pool update payload signature failed")]
     PoolUpdateSignatureFailed,
     #[error("Pool update last known registration hash doesn't match")]
@@ -451,6 +455,9 @@ impl Ledger {
                 }
                 Fragment::VoteCast(_) => {
                     return Err(Error::Block0(Block0Error::HasVoteCast));
+                }
+                Fragment::VoteTally(_) => {
+                    return Err(Error::Block0(Block0Error::HasVoteTally));
                 }
             }
         }
@@ -877,6 +884,19 @@ impl Ledger {
                 let (new_ledger_, _fee) = new_ledger.apply_vote_cast(&tx, &ledger_params)?;
                 new_ledger = new_ledger_;
             }
+            Fragment::VoteTally(tx) => {
+                let tx = tx.as_slice();
+
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+
+                new_ledger = new_ledger_.apply_vote_tally(
+                    &tx.payload().into_payload(),
+                    &tx.transaction_binding_auth_data(),
+                    tx.payload_auth().into_payload_auth(),
+                    &ledger_params,
+                )?;
+            }
         }
 
         Ok(new_ledger)
@@ -999,6 +1019,24 @@ impl Ledger {
             .map(|(_, (plan, _))| plan.plan())
             .cloned()
             .collect()
+    }
+
+    pub fn apply_vote_tally<'a>(
+        mut self,
+        tally: &certificate::VoteTally,
+        bad: &TransactionBindingAuthData<'a>,
+        sig: certificate::TallyProof,
+        ledger_params: &LedgerParameters,
+    ) -> Result<Self, Error> {
+        if sig.verify(tally, bad, &ledger_params.committees) == Verification::Failed {
+            return Err(Error::VoteTallyProofFailed);
+        }
+
+        self.votes = self
+            .votes
+            .apply_committee_result(self.date(), &self.accounts, tally)?;
+
+        Ok(self)
     }
 
     pub fn apply_pool_registration_signcheck<'a>(

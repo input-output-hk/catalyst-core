@@ -85,6 +85,10 @@ impl ProposalManager {
         }
     }
 
+    pub fn tally(&self) -> Option<&Tally> {
+        self.tally.as_ref()
+    }
+
     /// apply the given vote cast to the proposal
     ///
     /// if there is already a vote present for this proposal it will

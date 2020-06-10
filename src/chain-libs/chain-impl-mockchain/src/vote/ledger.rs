@@ -1,5 +1,6 @@
 use crate::{
-    certificate::{VoteCast, VotePlan, VotePlanId},
+    account,
+    certificate::{VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
     vote::{VoteError, VotePlanManager},
@@ -104,9 +105,8 @@ impl VotePlanLedger {
     ) -> Result<Self, VotePlanLedgerError> {
         let id = vote.vote_plan().clone();
 
-        let r = self.plans.update(&id, move |(v, _)| {
-            v.vote(block_date, identifier, vote)
-                .map(|v| Some((v, block_date)))
+        let r = self.plans.update(&id, move |(v, d)| {
+            v.vote(block_date, identifier, vote).map(|v| Some((v, *d)))
         });
 
         match r {
@@ -167,9 +167,32 @@ impl VotePlanLedger {
 
     /// apply the committee result for the associated vote plan
     ///
-    /// TODO: this function is not implemented
-    pub fn apply_committee_result(&self) -> Self {
-        todo!()
+    /// # Errors
+    ///
+    /// This function may fail:
+    ///
+    /// * if the Committee time has elapsed
+    /// * if the tally is not a public tally
+    ///
+    pub fn apply_committee_result(
+        &self,
+        block_date: BlockDate,
+        accounts: &account::Ledger,
+        tally: &VoteTally,
+    ) -> Result<Self, VotePlanLedgerError> {
+        let id = tally.id().clone();
+
+        let r = self.plans.update(&id, move |(v, d)| {
+            v.tally(block_date, accounts).map(|v| Some((v, *d)))
+        });
+
+        match r {
+            Err(reason) => Err(VotePlanLedgerError::VoteError { reason, id }),
+            Ok(plans) => Ok(Self {
+                plans,
+                plans_by_end_date: self.plans_by_end_date.clone(),
+            }),
+        }
     }
 }
 

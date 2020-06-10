@@ -1,5 +1,4 @@
 #![allow(clippy::type_complexity)]
-#![allow(clippy::comparison_chain)]
 #![allow(clippy::block_in_if_condition_stmt)]
 
 #[cfg(test)]

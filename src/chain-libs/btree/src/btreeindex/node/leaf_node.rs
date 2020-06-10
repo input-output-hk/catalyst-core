@@ -111,108 +111,111 @@ where
             Err(()) => {
                 let mut right_node = allocate.unwrap()();
 
-                if pos < m.try_into().unwrap() {
-                    let split_key = self.keys().get(m - 1 as usize).borrow().clone();
+                use std::cmp::Ordering;
+                match pos.cmp(&m) {
+                    Ordering::Less => {
+                        let split_key = self.keys().get(m - 1 as usize).borrow().clone();
 
-                    for (i, (k, v)) in self
-                        .keys()
-                        .sub(m - 1..self.keys().len())
-                        .iter()
-                        .zip(self.values().sub(m - 1..self.values().len()).iter())
-                        .enumerate()
-                    {
-                        match right_node.as_leaf_mut().insert_key_value::<F>(
-                            i,
-                            k.borrow().clone(),
-                            v.borrow().clone(),
-                            None,
-                        ) {
+                        for (i, (k, v)) in self
+                            .keys()
+                            .sub(m - 1..self.keys().len())
+                            .iter()
+                            .zip(self.values().sub(m - 1..self.values().len()).iter())
+                            .enumerate()
+                        {
+                            match right_node.as_leaf_mut().insert_key_value::<F>(
+                                i,
+                                k.borrow().clone(),
+                                v.borrow().clone(),
+                                None,
+                            ) {
+                                LeafInsertStatus::Ok => (),
+                                _ => unreachable!(),
+                            }
+                        }
+
+                        self.set_len(m.saturating_sub(1) as usize);
+
+                        match self.insert_key_value::<F>(pos, key, value, None) {
                             LeafInsertStatus::Ok => (),
                             _ => unreachable!(),
+                        };
+
+                        LeafInsertStatus::Split(split_key, right_node)
+                    }
+                    Ordering::Greater => {
+                        let split_key = self.keys().get(m as usize).borrow().clone();
+
+                        let mut position = 0;
+                        for (k, v) in self
+                            .keys()
+                            .sub(m..pos)
+                            .iter()
+                            .zip(self.values().sub(m..pos).iter())
+                        {
+                            right_node.as_leaf_mut().insert_key_value::<F>(
+                                position,
+                                k.borrow().clone(),
+                                v.borrow().clone(),
+                                None,
+                            );
+                            position += 1;
                         }
-                    }
 
-                    self.set_len(m.saturating_sub(1) as usize);
-
-                    match self.insert_key_value::<F>(pos, key, value, None) {
-                        LeafInsertStatus::Ok => (),
-                        _ => unreachable!(),
-                    };
-
-                    LeafInsertStatus::Split(split_key, right_node)
-                } else if pos > m.try_into().unwrap() {
-                    let split_key = self.keys().get(m as usize).borrow().clone();
-
-                    let mut position = 0;
-                    for (k, v) in self
-                        .keys()
-                        .sub(m..pos)
-                        .iter()
-                        .zip(self.values().sub(m..pos).iter())
-                    {
-                        right_node.as_leaf_mut().insert_key_value::<F>(
-                            position,
-                            k.borrow().clone(),
-                            v.borrow().clone(),
-                            None,
-                        );
+                        right_node
+                            .as_leaf_mut()
+                            .insert_key_value::<F>(position, key, value, None);
                         position += 1;
+
+                        for (k, v) in self
+                            .keys()
+                            .sub(pos..self.keys().len())
+                            .iter()
+                            .zip(self.values().sub(pos..self.values().len()).iter())
+                        {
+                            right_node.as_leaf_mut::<V>().insert_key_value::<F>(
+                                position,
+                                k.borrow().clone(),
+                                v.borrow().clone(),
+                                None,
+                            );
+                            position += 1;
+                        }
+
+                        self.set_len(m as usize);
+
+                        LeafInsertStatus::Split(split_key, right_node)
                     }
+                    Ordering::Equal => {
+                        let split_key = key.clone();
 
-                    right_node
-                        .as_leaf_mut()
-                        .insert_key_value::<F>(position, key, value, None);
-                    position += 1;
+                        right_node
+                            .as_leaf_mut::<V>()
+                            .insert_key_value::<F>(0, key, value, None);
 
-                    for (k, v) in self
-                        .keys()
-                        .sub(pos..self.keys().len())
-                        .iter()
-                        .zip(self.values().sub(pos..self.values().len()).iter())
-                    {
-                        right_node.as_leaf_mut::<V>().insert_key_value::<F>(
-                            position,
-                            k.borrow().clone(),
-                            v.borrow().clone(),
-                            None,
-                        );
-                        position += 1;
+                        let mut position = 1;
+
+                        for (k, v) in self
+                            .keys()
+                            .sub(m..self.keys().len())
+                            .iter()
+                            .zip(self.values().sub(m..self.values().len()).iter())
+                        {
+                            right_node.as_leaf_mut::<V>().insert_key_value::<F>(
+                                position,
+                                k.borrow().clone(),
+                                v.borrow().clone(),
+                                None,
+                            );
+
+                            position += 1;
+                        }
+
+                        // Truncate left(self) node to have `m` elements
+                        self.set_len(m as usize);
+
+                        LeafInsertStatus::Split(split_key, right_node)
                     }
-
-                    self.set_len(m as usize);
-
-                    LeafInsertStatus::Split(split_key, right_node)
-                } else {
-                    // pos == m
-
-                    let split_key = key.clone();
-
-                    right_node
-                        .as_leaf_mut::<V>()
-                        .insert_key_value::<F>(0, key, value, None);
-
-                    let mut position = 1;
-
-                    for (k, v) in self
-                        .keys()
-                        .sub(m..self.keys().len())
-                        .iter()
-                        .zip(self.values().sub(m..self.values().len()).iter())
-                    {
-                        right_node.as_leaf_mut::<V>().insert_key_value::<F>(
-                            position,
-                            k.borrow().clone(),
-                            v.borrow().clone(),
-                            None,
-                        );
-
-                        position += 1;
-                    }
-
-                    // Truncate left(self) node to have `m` elements
-                    self.set_len(m as usize);
-
-                    LeafInsertStatus::Split(split_key, right_node)
                 }
             }
         }

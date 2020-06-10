@@ -1768,9 +1768,7 @@ mod tests {
     fn account_ledger_with_initials(initials: &[(Identifier, Value)]) -> account::Ledger {
         let mut account_ledger = account::Ledger::new();
         for (id, initial_value) in initials {
-            account_ledger = account_ledger
-                .add_account(&id, initial_value.clone(), ())
-                .unwrap();
+            account_ledger = account_ledger.add_account(&id, *initial_value, ()).unwrap();
         }
         account_ledger
     }

@@ -6,6 +6,7 @@ mod proto {
 pub mod client;
 pub mod server;
 
+#[cfg(feature = "legacy")]
 pub mod legacy;
 
 mod convert;

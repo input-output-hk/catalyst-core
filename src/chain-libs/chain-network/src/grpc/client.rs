@@ -1,7 +1,10 @@
 use super::convert;
-use super::legacy;
 use super::proto;
 use super::streaming::{InboundStream, OutboundStream};
+
+#[cfg(feature = "legacy")]
+use super::legacy;
+
 use crate::data::block::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::data::fragment::{Fragment, FragmentIds};
 use crate::data::{Gossip, Peers};
@@ -11,22 +14,29 @@ use futures::prelude::*;
 use tonic::body::{Body, BoxBody};
 use tonic::client::GrpcService;
 use tonic::codegen::{HttpBody, StdError};
+
+#[cfg(feature = "legacy")]
 use tonic::metadata::MetadataValue;
 
 #[cfg(feature = "transport")]
 use tonic::transport;
 
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
+
+#[cfg(feature = "transport")]
+use std::convert::TryInto;
 
 /// Builder to customize the gRPC client.
 #[derive(Default)]
 pub struct Builder {
+    #[cfg(feature = "legacy")]
     legacy_node_id: Option<legacy::NodeId>,
 }
 
 impl Builder {
     pub fn new() -> Self {
         Builder {
+            #[cfg(feature = "legacy")]
             legacy_node_id: None,
         }
     }
@@ -34,6 +44,7 @@ impl Builder {
     /// Make the client add "node-id-bin" metadata with the passed value
     /// into subscription requests, for backward compatibility with
     /// jormungandr versions prior to 0.9.
+    #[cfg(feature = "legacy")]
     pub fn legacy_node_id(&mut self, node_id: legacy::NodeId) -> &mut Self {
         self.legacy_node_id = Some(node_id);
         self
@@ -48,6 +59,7 @@ impl Builder {
     {
         Client {
             inner: proto::node_client::NodeClient::new(service),
+            #[cfg(feature = "legacy")]
             legacy_node_id: self.legacy_node_id,
         }
     }
@@ -61,6 +73,7 @@ impl Builder {
         let inner = proto::node_client::NodeClient::connect(dst).await?;
         Ok(Client {
             inner,
+            #[cfg(feature = "legacy")]
             legacy_node_id: self.legacy_node_id,
         })
     }
@@ -69,6 +82,7 @@ impl Builder {
 #[derive(Clone)]
 pub struct Client<T> {
     inner: proto::node_client::NodeClient<T>,
+    #[cfg(feature = "legacy")]
     legacy_node_id: Option<legacy::NodeId>,
 }
 
@@ -103,10 +117,13 @@ where
         Builder::new().build(service)
     }
 
+    #[allow(unused_mut)]
+    #[allow(clippy::let_and_return)]
     fn subscription_request<S>(&self, outbound: S) -> tonic::Request<S> {
         let mut req = tonic::Request::new(outbound);
+        #[cfg(feature = "legacy")]
         if let Some(node_id) = self.legacy_node_id {
-            let val = MetadataValue::from_bytes(node_id.as_bytes());
+            let val = MetadataValue::from_bytes(&node_id.encode());
             req.metadata_mut().insert_bin("node-id-bin", val);
         }
         req

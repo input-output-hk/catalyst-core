@@ -1,6 +1,7 @@
 //! Support for legacy features.
 
 use rand_core::RngCore;
+use std::convert::TryInto;
 
 const NODE_ID_LEN: usize = 32;
 
@@ -17,7 +18,12 @@ impl NodeId {
         Ok(NodeId(bytes))
     }
 
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.0
+    pub fn encode(&self) -> Vec<u8> {
+        let mut config = bincode::config();
+        config.limit(NODE_ID_LEN.try_into().unwrap());
+
+        let mut vec = Vec::with_capacity(NODE_ID_LEN);
+        config.serialize_into(&mut vec, &self.0).unwrap();
+        vec
     }
 }

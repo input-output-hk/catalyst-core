@@ -125,6 +125,17 @@ jobs:
           command: test
           args: ${{ matrix.mode }} --locked
 
+      - name: Test chain-network without default features
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        env:
+          RUSTFLAGS: -D warnings
+        with:
+          command: test
+          args: >-
+            ${{ matrix.mode }} --locked
+            --manifest-path chain-network/Cargo.toml --no-default-features
+
   lints:
     name: Lints
     needs: update_deps

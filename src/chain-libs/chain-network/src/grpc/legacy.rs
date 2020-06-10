@@ -1,6 +1,7 @@
 //! Support for legacy features.
 
 use rand_core::RngCore;
+use serde::{Serialize, Serializer};
 use std::convert::TryFrom;
 
 const NODE_ID_LEN: usize = 32;
@@ -20,11 +21,20 @@ impl NodeId {
 
     pub fn encode(&self) -> Vec<u8> {
         let mut config = bincode::config();
-        config.limit(u64::try_from(NODE_ID_LEN).unwrap());
+        config.limit(u64::try_from(NODE_ID_LEN).unwrap() + 8);
 
         let mut vec = Vec::with_capacity(NODE_ID_LEN);
-        config.serialize_into(&mut vec, &self.0).unwrap();
+        config.serialize_into(&mut vec, &self).unwrap();
         vec
+    }
+}
+
+impl Serialize for NodeId {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_bytes(&self.0)
     }
 }
 

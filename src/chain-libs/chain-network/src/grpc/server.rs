@@ -1,12 +1,17 @@
 use super::convert;
-use super::legacy;
 use super::proto;
 use super::streaming::{InboundStream, OutboundTryStream};
+
+#[cfg(feature = "legacy")]
+use super::legacy;
+
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
 use crate::data::{block, fragment, BlockId, Peer};
 use crate::PROTOCOL_VERSION;
-use tonic::metadata::MetadataValue;
 use tonic::{Code, Status};
+
+#[cfg(feature = "legacy")]
+use tonic::metadata::MetadataValue;
 
 use std::convert::TryFrom;
 use std::net::SocketAddr;
@@ -16,12 +21,14 @@ pub type Server<T> = proto::node_server::NodeServer<NodeService<T>>;
 /// Builder to customize the gRPC server.
 #[derive(Default)]
 pub struct Builder {
+    #[cfg(feature = "legacy")]
     legacy_node_id: Option<legacy::NodeId>,
 }
 
 impl Builder {
     pub fn new() -> Self {
         Builder {
+            #[cfg(feature = "legacy")]
             legacy_node_id: None,
         }
     }
@@ -29,6 +36,7 @@ impl Builder {
     /// Make the server add "node-id-bin" metadata with the passed value
     /// into subscription responses, for backward compatibility with
     /// jormungandr versions prior to 0.9.
+    #[cfg(feature = "legacy")]
     pub fn legacy_node_id(&mut self, node_id: legacy::NodeId) -> &mut Self {
         self.legacy_node_id = Some(node_id);
         self
@@ -36,6 +44,7 @@ impl Builder {
 
     pub fn build<T: Node>(&self, inner: T) -> Server<T> {
         let service = NodeService {
+            #[cfg(feature = "legacy")]
             legacy_node_id: self.legacy_node_id,
             ..NodeService::new(inner)
         };
@@ -46,6 +55,7 @@ impl Builder {
 #[derive(Debug)]
 pub struct NodeService<T> {
     inner: T,
+    #[cfg(feature = "legacy")]
     legacy_node_id: Option<legacy::NodeId>,
 }
 
@@ -56,6 +66,7 @@ where
     pub fn new(inner: T) -> Self {
         NodeService {
             inner,
+            #[cfg(feature = "legacy")]
             legacy_node_id: None,
         }
     }
@@ -78,10 +89,13 @@ where
             .ok_or_else(|| Status::new(Code::Unimplemented, "not implemented"))
     }
 
+    #[allow(unused_mut)]
+    #[allow(clippy::let_and_return)]
     fn subscription_response<S>(&self, outbound: S) -> tonic::Response<OutboundTryStream<S>> {
         let mut res = tonic::Response::new(OutboundTryStream::new(outbound));
+        #[cfg(feature = "legacy")]
         if let Some(node_id) = self.legacy_node_id {
-            let val = MetadataValue::from_bytes(node_id.as_bytes());
+            let val = MetadataValue::from_bytes(&node_id.encode());
             res.metadata_mut().insert_bin("node-id-bin", val);
         }
         res

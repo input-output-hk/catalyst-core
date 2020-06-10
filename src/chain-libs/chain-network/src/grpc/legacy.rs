@@ -2,7 +2,7 @@
 
 use rand_core::RngCore;
 
-const NODE_ID_LEN: usize = 32;
+const NODE_ID_LEN: usize = 24;
 
 /// Represents a randomly generated node ID such as was present in subscription
 /// requests and responses in Jormungandr versions prior to 0.9
@@ -17,7 +17,23 @@ impl NodeId {
         Ok(NodeId(bytes))
     }
 
-    pub fn as_bytes(&self) -> &[u8] {
-        &self.0
+    pub fn encode(&self) -> Vec<u8> {
+        let mut vec = Vec::with_capacity(NODE_ID_LEN + 8);
+        vec.extend_from_slice(&(NODE_ID_LEN as u64).to_le_bytes());
+        vec.extend_from_slice(&self.0);
+        vec
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encode_works() {
+        let id = NodeId::generate(&mut rand::thread_rng()).unwrap();
+        let v = id.encode();
+        assert_eq!(v.len(), NODE_ID_LEN + 8);
+        assert_eq!(v[..8], (NODE_ID_LEN as u64).to_le_bytes());
     }
 }

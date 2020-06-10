@@ -18,7 +18,7 @@ use crate::stake::{PercentStake, PoolError, PoolStakeInformation, PoolsState, St
 use crate::transaction::*;
 use crate::treasury::Treasury;
 use crate::value::*;
-use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError};
+use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError, VotePlanStatus};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
@@ -1012,12 +1012,11 @@ impl Ledger {
         Ok((self, fee))
     }
 
-    pub fn active_vote_plans(&self) -> Vec<VotePlan> {
+    pub fn active_vote_plans(&self) -> Vec<VotePlanStatus> {
         self.votes
             .plans
             .iter()
-            .map(|(_, (plan, _))| plan.plan())
-            .cloned()
+            .map(|(_, (plan, _))| plan.statuses())
             .collect()
     }
 

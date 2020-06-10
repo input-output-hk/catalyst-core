@@ -1,9 +1,9 @@
 use crate::{
     account,
-    certificate::{Proposal, VoteCast, VotePlan, VotePlanId},
+    certificate::{ExternalProposalId, Proposal, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
-    vote::{self, Options, Tally, TallyResult},
+    vote::{self, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
 use imhamt::Hamt;
 use std::{collections::hash_map::DefaultHasher, sync::Arc};
@@ -83,10 +83,6 @@ impl ProposalManager {
             options: proposal.options().clone(),
             tally: None,
         }
-    }
-
-    pub fn tally(&self) -> Option<&Tally> {
-        self.tally.as_ref()
     }
 
     /// apply the given vote cast to the proposal
@@ -212,6 +208,31 @@ impl VotePlanManager {
 
     pub fn plan(&self) -> &VotePlan {
         &self.plan
+    }
+
+    pub fn statuses(&self) -> VotePlanStatus {
+        let proposals = self
+            .plan()
+            .proposals()
+            .iter()
+            .zip(self.proposal_managers.0.iter())
+            .enumerate()
+            .map(|(index, (proposal, manager))| VoteProposalStatus {
+                index: index as u8,
+                proposal_id: proposal.external_id().clone(),
+                options: proposal.options().clone(),
+                tally: manager.tally.clone(),
+            })
+            .collect();
+
+        VotePlanStatus {
+            id: self.id.clone(),
+            payload: self.plan().payload_type(),
+            vote_start: self.plan().vote_start(),
+            vote_end: self.plan().vote_end(),
+            committee_end: self.plan().committee_end(),
+            proposals,
+        }
     }
 
     pub fn can_vote(&self, date: BlockDate) -> bool {

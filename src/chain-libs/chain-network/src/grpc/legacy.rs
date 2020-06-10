@@ -2,7 +2,7 @@
 
 use rand_core::RngCore;
 
-const NODE_ID_LEN: usize = 32;
+const NODE_ID_LEN: usize = 24;
 
 /// Represents a randomly generated node ID such as was present in subscription
 /// requests and responses in Jormungandr versions prior to 0.9

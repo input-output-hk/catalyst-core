@@ -57,18 +57,28 @@ jobs:
   test_debug:
     executor: rust-stable
     steps:
-      - test
+      - test:
+          mode: --all-targets
 
   test_release:
     executor: rust-stable
     steps:
       - test:
-          mode: --release
+          mode: --release --all-targets
 
   test_nightly:
     executor: rust-nightly
     steps:
-      - test
+      - test:
+          mode: --all-targets
+
+  test_no_default_features:
+    executor: rust-stable
+    environment:
+      RUSTFLAGS: -D warnings
+    steps:
+      - test:
+          mode: --manifest-path chain-network/Cargo.toml --no-default-features
 
 commands:
   test:
@@ -96,11 +106,11 @@ commands:
           name: Print version information
           command: rustc --version; cargo --version
       - run:
-          name: Build
+          name: Build with << parameters.mode >>
           command: |
-            cargo build --all-targets << parameters.mode >> << parameters.cargo_behavior >>
+            cargo build << parameters.mode >> << parameters.cargo_behavior >>
       - run:
-          name: Test
+          name: Test with << parameters.mode >>
           environment:
             RUST_BACKTRACE: 1
           command: |
@@ -118,5 +128,8 @@ workflows:
           requires:
             - cargo_fetch
       - test_nightly:
+          requires:
+            - cargo_fetch
+      - test_no_default_features:
           requires:
             - cargo_fetch

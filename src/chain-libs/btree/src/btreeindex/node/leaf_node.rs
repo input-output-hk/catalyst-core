@@ -238,24 +238,15 @@ where
                 _ => None,
             };
 
+            let has_extra = |handle: &&N| -> bool {
+                handle.as_node(|node: Node<K, &[u8]>| node.as_leaf::<K>().has_extra())
+            };
+
             if current_len < self.lower_bound() {
                 // underflow
-                if left_sibling_handle
-                    .filter(|handle| {
-                        handle.as_node(|node: Node<K, &[u8]>| -> bool {
-                            node.as_leaf::<K>().has_extra()
-                        })
-                    })
-                    .is_some()
-                {
+                if left_sibling_handle.filter(has_extra).is_some() {
                     RebalanceResult::TakeFromLeft(RebalanceSiblingArg::new(self))
-                } else if right_sibling_handle
-                    .clone()
-                    .filter(|handle| {
-                        handle.as_node(|node: Node<K, &[u8]>| node.as_leaf::<K>().has_extra())
-                    })
-                    .is_some()
-                {
+                } else if right_sibling_handle.clone().filter(has_extra).is_some() {
                     RebalanceResult::TakeFromRight(RebalanceSiblingArg::new(self))
                 } else if left_sibling_handle.is_some() {
                     RebalanceResult::MergeIntoLeft(RebalanceSiblingArg::new(self))

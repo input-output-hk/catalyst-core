@@ -58,6 +58,8 @@ pub(crate) type ValuesMut<'a, V> = ArrayView<'a, &'a mut [u8], V>;
 pub(crate) type Keys<'a, K> = ArrayView<'a, &'a [u8], K>;
 pub(crate) type KeysMut<'a, K> = ArrayView<'a, &'a mut [u8], K>;
 
+type SplitKeyNodePair<K> = (K, Node<K, MemPage>);
+
 impl<'me, K: 'me, V> BTree<K, V>
 where
     K: FixedSize,
@@ -240,7 +242,7 @@ where
         mut leaf: PageRefMut<'a>,
         key: K,
         value: V,
-    ) -> Result<Option<(K, Node<K, MemPage>)>, BTreeStoreError> {
+    ) -> Result<Option<SplitKeyNodePair<K>>, BTreeStoreError> {
         let update = {
             let page_size = usize::try_from(self.static_settings.page_size).unwrap();
             let mut allocate = || {

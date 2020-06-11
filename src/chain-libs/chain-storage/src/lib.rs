@@ -124,15 +124,9 @@ impl BlockStore {
                     }
                 }
 
-                let height_index = block_info.chain_length.to_le_bytes();
-                let mut ids_new = vec![];
-                let ids_old = height_to_block_ids.get(height_index)?.unwrap_or_default();
-                ids_new.write_all(&ids_old).unwrap();
-                ids_new
-                    .write_all(&(block_info.id.len() as u32).to_be_bytes())
-                    .unwrap();
-                ids_new.write_all(block_info.id.as_ref()).unwrap();
-                height_to_block_ids.insert(&height_index, ids_new)?;
+                let mut height_index = block_info.chain_length.to_le_bytes().to_vec();
+                height_index.extend_from_slice(block_info.id.as_ref());
+                height_to_block_ids.insert(height_index, &[])?;
 
                 blocks.insert(block_info.id.as_ref(), block)?;
 
@@ -195,34 +189,19 @@ impl BlockStore {
             .open_tree(tree::CHAIN_HEIGHT_INDEX)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        let height_index = chain_length.to_le_bytes();
-        let ids_raw = height_to_block_ids
-            .get(height_index)
-            .map_err(|err| Error::BackendError(Box::new(err)))?
-            .unwrap_or_default();
-        let mut ids_raw_reader: &[u8] = &ids_raw;
+        let height_index_prefix = chain_length.to_le_bytes();
+        height_to_block_ids
+            .scan_prefix(height_index_prefix)
+            .map(|scan_result| {
+                let block_hash = scan_result
+                    .map(|(key, _)| Vec::from(&key[4..key.len()]))
+                    .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        let mut ids = vec![];
-
-        while ids_raw_reader.is_empty() {
-            let mut id_size_bytes = [0u8; 4];
-            ids_raw_reader.read_exact(&mut id_size_bytes).unwrap();
-            let id_size = u32::from_le_bytes(id_size_bytes);
-
-            let mut id = vec![0; id_size as usize];
-            ids_raw_reader.read_exact(&mut id).unwrap();
-
-            ids.push(id);
-        }
-
-        ids.iter()
-            .map(|id| {
                 blocks
-                    .get(id)
+                    .get(block_hash)
                     .map(|maybe_raw_block| {
-                        let mut v = Vec::new();
-                        v.extend_from_slice(&maybe_raw_block.unwrap());
-                        v
+                        let raw_block: &[u8] = &maybe_raw_block.unwrap();
+                        Vec::from(raw_block)
                     })
                     .map_err(|err| Error::BackendError(Box::new(err)))
             })

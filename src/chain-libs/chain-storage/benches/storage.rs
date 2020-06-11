@@ -19,11 +19,11 @@ fn criterion_benchmark(c: &mut Criterion) {
         path
     };
     let mut store = BlockStore::new(path).unwrap();
-    let genesis_block_info = BlockInfo {
-        id: genesis_block.id.serialize_as_boxed_slice(),
-        parent_id: genesis_block.parent.serialize_as_boxed_slice(),
-        chain_length: genesis_block.chain_length,
-    };
+    let genesis_block_info = BlockInfo::new(
+        genesis_block.id.serialize_as_vec(),
+        genesis_block.parent.serialize_as_vec(),
+        genesis_block.chain_length,
+    );
     store
         .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
         .unwrap();
@@ -40,11 +40,11 @@ fn criterion_benchmark(c: &mut Criterion) {
                 block
             },
             |block| {
-                let block_info = BlockInfo {
-                    id: block.id.serialize_as_boxed_slice(),
-                    parent_id: block.parent.serialize_as_boxed_slice(),
-                    chain_length: block.chain_length,
-                };
+                let block_info = BlockInfo::new(
+                    block.id.serialize_as_vec(),
+                    block.parent.serialize_as_vec(),
+                    block.chain_length,
+                );
                 store
                     .put_block(&block.serialize_as_vec(), block_info)
                     .unwrap()

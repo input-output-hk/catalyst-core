@@ -248,7 +248,7 @@ mod test {
                 .get_block_info(cur_hash.serialize_as_vec().unwrap().as_slice())
                 .unwrap();
             blocks_to_apply.push(cur_hash.clone());
-            cur_hash = Hash::deserialize(&*cur_block.parent_id).unwrap();
+            cur_hash = Hash::deserialize(cur_block.parent_id()).unwrap();
         };
 
         /*
@@ -367,19 +367,11 @@ mod test {
         let mut date = BlockDate::first();
         let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
-        let genesis_block_info = BlockInfo {
-            id: genesis_block
-                .id()
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
-            parent_id: genesis_block
-                .parent_id()
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
-            chain_length: genesis_block.chain_length().into(),
-        };
+        let genesis_block_info = BlockInfo::new(
+            genesis_block.id().serialize_as_vec().unwrap(),
+            genesis_block.parent_id().serialize_as_vec().unwrap(),
+            genesis_block.chain_length().into(),
+        );
         store
             .put_block(
                 genesis_block.serialize_as_vec().unwrap().as_slice(),
@@ -398,15 +390,11 @@ mod test {
             state = apply_block(&state, &block);
             assert_eq!(state.chain_length().0, i);
             assert_eq!(state.date, block.date());
-            let block_info = BlockInfo {
-                id: block.id().serialize_as_vec().unwrap().into_boxed_slice(),
-                parent_id: block
-                    .parent_id()
-                    .serialize_as_vec()
-                    .unwrap()
-                    .into_boxed_slice(),
-                chain_length: block.chain_length().into(),
-            };
+            let block_info = BlockInfo::new(
+                block.id().serialize_as_vec().unwrap(),
+                block.parent_id().serialize_as_vec().unwrap(),
+                block.chain_length().into(),
+            );
             store
                 .put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
                 .unwrap();
@@ -457,19 +445,11 @@ mod test {
         let mut date = BlockDate::first();
         let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
-        let genesis_block_info = BlockInfo {
-            id: genesis_block
-                .id()
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
-            parent_id: genesis_block
-                .parent_id()
-                .serialize_as_vec()
-                .unwrap()
-                .into_boxed_slice(),
-            chain_length: genesis_block.chain_length().into(),
-        };
+        let genesis_block_info = BlockInfo::new(
+            genesis_block.id().serialize_as_vec().unwrap(),
+            genesis_block.parent_id().serialize_as_vec().unwrap(),
+            genesis_block.chain_length().into(),
+        );
         store
             .put_block(
                 genesis_block.serialize_as_vec().unwrap().as_slice(),
@@ -489,15 +469,11 @@ mod test {
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
-            let block_info = BlockInfo {
-                id: block.id().serialize_as_vec().unwrap().into_boxed_slice(),
-                parent_id: block
-                    .parent_id()
-                    .serialize_as_vec()
-                    .unwrap()
-                    .into_boxed_slice(),
-                chain_length: block.chain_length().into(),
-            };
+            let block_info = BlockInfo::new(
+                block.id().serialize_as_vec().unwrap(),
+                block.parent_id().serialize_as_vec().unwrap(),
+                block.chain_length().into(),
+            );
             store
                 .put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
                 .unwrap();
@@ -521,15 +497,11 @@ mod test {
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
-            let block_info = BlockInfo {
-                id: block.id().serialize_as_vec().unwrap().into_boxed_slice(),
-                parent_id: block
-                    .parent_id()
-                    .serialize_as_vec()
-                    .unwrap()
-                    .into_boxed_slice(),
-                chain_length: block.chain_length().into(),
-            };
+            let block_info = BlockInfo::new(
+                block.id().serialize_as_vec().unwrap(),
+                block.parent_id().serialize_as_vec().unwrap(),
+                block.chain_length().into(),
+            );
             store
                 .put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
                 .unwrap();

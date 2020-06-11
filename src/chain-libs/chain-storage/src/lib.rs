@@ -23,9 +23,9 @@ pub struct BlockStore {
 }
 
 pub struct BlockInfo {
-    pub id: Box<[u8]>,
-    pub parent_id: Box<[u8]>,
-    pub chain_length: u32,
+    id: Box<[u8]>,
+    parent_id: Box<[u8]>,
+    chain_length: u32,
 }
 
 mod tree {
@@ -35,6 +35,26 @@ mod tree {
 }
 
 impl BlockInfo {
+    pub fn new(id: Vec<u8>, parent_id: Vec<u8>, chain_length: u32) -> Self {
+        Self {
+            id: id.into_boxed_slice(),
+            parent_id: parent_id.into_boxed_slice(),
+            chain_length,
+        }
+    }
+
+    pub fn id(&self) -> &[u8] {
+        &self.id
+    }
+
+    pub fn parent_id(&self) -> &[u8] {
+        &self.parent_id
+    }
+
+    pub fn chain_length(&self) -> u32 {
+        self.chain_length
+    }
+
     fn serialize(&self) -> Vec<u8> {
         let mut w = Vec::new();
 
@@ -72,11 +92,7 @@ impl BlockInfo {
         r.read_exact(&mut chain_length_bytes).unwrap();
         let chain_length = u32::from_le_bytes(chain_length_bytes);
 
-        BlockInfo {
-            id: id.into_boxed_slice(),
-            parent_id: parent_id.into_boxed_slice(),
-            chain_length,
-        }
+        BlockInfo::new(id, parent_id, chain_length)
     }
 }
 
@@ -106,7 +122,7 @@ impl BlockStore {
 
         let result = (&blocks, &info, &height_to_block_ids).transaction(
             |(blocks, info, height_to_block_ids)| {
-                if info.get(block_info.id.as_ref())?.is_some() {
+                if info.get(block_info.id())?.is_some() {
                     return Ok(Err(Error::BlockAlreadyPresent));
                 }
 
@@ -115,22 +131,20 @@ impl BlockStore {
                 // it
                 #[allow(clippy::collapsible_if)]
                 {
-                    if block_info.parent_id.as_ref()
-                        != vec![0; block_info.parent_id.len()].as_slice()
-                    {
-                        if info.get(block_info.parent_id.as_ref())?.is_none() {
+                    if block_info.parent_id() != vec![0; block_info.parent_id().len()].as_slice() {
+                        if info.get(block_info.parent_id())?.is_none() {
                             return Ok(Err(Error::MissingParent));
                         }
                     }
                 }
 
-                let mut height_index = block_info.chain_length.to_le_bytes().to_vec();
-                height_index.extend_from_slice(block_info.id.as_ref());
+                let mut height_index = block_info.chain_length().to_le_bytes().to_vec();
+                height_index.extend_from_slice(block_info.id());
                 height_to_block_ids.insert(height_index, &[])?;
 
-                blocks.insert(block_info.id.as_ref(), block)?;
+                blocks.insert(block_info.id(), block)?;
 
-                info.insert(block_info.id.as_ref(), block_info.serialize().as_slice())?;
+                info.insert(block_info.id(), block_info.serialize().as_slice())?;
 
                 Ok(Ok(()))
             },
@@ -298,15 +312,15 @@ impl BlockStore {
             })?;
 
         if descendent_id == vec![0u8; descendent_id.len()].as_slice() {
-            return Ok(Some(descendent.chain_length));
+            return Ok(Some(descendent.chain_length()));
         }
 
-        let mut ancestor_id = descendent.parent_id;
+        let mut prev_ancestor = descendent;
 
         let mut distance = 0;
 
         while let Some(ancestor) = info
-            .get(ancestor_id.as_ref())
+            .get(prev_ancestor.id())
             .map_err(|err| Error::BackendError(Box::new(err)))?
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
@@ -314,10 +328,10 @@ impl BlockStore {
             })
         {
             distance += 1;
-            if ancestor.id == ancestor_id {
+            if ancestor.id() == ancestor_id {
                 return Ok(Some(distance));
             }
-            ancestor_id = ancestor.parent_id;
+            prev_ancestor = ancestor;
         }
 
         Ok(None)
@@ -361,19 +375,20 @@ where
             BlockInfo::deserialize(&mut block_info_reader)
         })?;
 
-    if distance >= current.chain_length {
+    if distance >= current.chain_length() {
         panic!(
             "distance {} > chain length {}",
-            distance, current.chain_length
+            distance,
+            current.chain_length()
         );
     }
 
-    let target = current.chain_length - distance;
+    let target = current.chain_length() - distance;
 
-    while target < current.chain_length {
+    while target < current.chain_length() {
         callback(&current);
         current = info
-            .get(current.parent_id.as_ref())
+            .get(current.parent_id())
             .map_err(|err| Error::BackendError(Box::new(err)))
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
@@ -407,10 +422,6 @@ pub mod test_utils {
             let mut v = Vec::new();
             self.serialize(&mut v).unwrap();
             v
-        }
-
-        pub fn serialize_as_boxed_slice(&self) -> Box<[u8]> {
-            self.serialize_as_vec().into_boxed_slice()
         }
     }
 
@@ -476,11 +487,11 @@ pub mod tests {
         let mut blocks = vec![];
 
         let genesis_block = Block::genesis(None);
-        let genesis_block_info = BlockInfo {
-            id: genesis_block.id.serialize_as_boxed_slice(),
-            parent_id: genesis_block.parent.serialize_as_boxed_slice(),
-            chain_length: genesis_block.chain_length,
-        };
+        let genesis_block_info = BlockInfo::new(
+            genesis_block.id.serialize_as_vec(),
+            genesis_block.parent.serialize_as_vec(),
+            genesis_block.chain_length,
+        );
         store
             .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
             .unwrap();
@@ -491,11 +502,11 @@ pub mod tests {
             let r = 1 + (rng.next_u32() % 9999);
             for _ in 0..r {
                 let block = parent_block.make_child(None);
-                let block_info = BlockInfo {
-                    id: block.id.serialize_as_boxed_slice(),
-                    parent_id: block.parent.serialize_as_boxed_slice(),
-                    chain_length: block.chain_length,
-                };
+                let block_info = BlockInfo::new(
+                    block.id.serialize_as_vec(),
+                    block.parent.serialize_as_vec(),
+                    block.chain_length,
+                );
                 store
                     .put_block(&block.serialize_as_vec(), block_info)
                     .unwrap();
@@ -519,11 +530,11 @@ pub mod tests {
         }
 
         let genesis_block = Block::genesis(None);
-        let genesis_block_info = BlockInfo {
-            id: genesis_block.id.serialize_as_boxed_slice(),
-            parent_id: genesis_block.parent.serialize_as_boxed_slice(),
-            chain_length: genesis_block.chain_length,
-        };
+        let genesis_block_info = BlockInfo::new(
+            genesis_block.id.serialize_as_vec(),
+            genesis_block.parent.serialize_as_vec(),
+            genesis_block.chain_length,
+        );
         store
             .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
             .unwrap();
@@ -532,16 +543,16 @@ pub mod tests {
             .unwrap();
 
         assert_eq!(
-            genesis_block.id.serialize_as_boxed_slice(),
-            genesis_block_restored.id
+            &genesis_block.id.serialize_as_vec()[..],
+            genesis_block_restored.id()
         );
         assert_eq!(
-            genesis_block.parent.serialize_as_boxed_slice(),
-            genesis_block_restored.parent_id
+            &genesis_block.parent.serialize_as_vec()[..],
+            genesis_block_restored.parent_id()
         );
         assert_eq!(
             genesis_block.chain_length,
-            genesis_block_restored.chain_length
+            genesis_block_restored.chain_length()
         );
 
         store
@@ -584,7 +595,7 @@ pub mod tests {
             )
             .unwrap();
 
-            assert_eq!(ancestor_info.chain_length + distance, block.chain_length);
+            assert_eq!(ancestor_info.chain_length() + distance, block.chain_length);
         }
 
         let blocks_per_test = blocks_fetched as f64 / nr_tests as f64;
@@ -604,11 +615,11 @@ pub mod tests {
         let mut conn = BlockStore::new(file.path()).unwrap();
 
         let genesis_block = Block::genesis(None);
-        let genesis_block_info = BlockInfo {
-            id: genesis_block.id.serialize_as_boxed_slice(),
-            parent_id: genesis_block.parent.serialize_as_boxed_slice(),
-            chain_length: genesis_block.chain_length,
-        };
+        let genesis_block_info = BlockInfo::new(
+            genesis_block.id.serialize_as_vec(),
+            genesis_block.parent.serialize_as_vec(),
+            genesis_block.chain_length,
+        );
         conn.put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
             .unwrap();
         let mut blocks = vec![genesis_block];
@@ -617,11 +628,11 @@ pub mod tests {
             let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
             let block = last_block.make_child(None);
             blocks.push(block.clone());
-            let block_info = BlockInfo {
-                id: block.id.serialize_as_boxed_slice(),
-                parent_id: block.parent.serialize_as_boxed_slice(),
-                chain_length: block.chain_length,
-            };
+            let block_info = BlockInfo::new(
+                block.id.serialize_as_vec(),
+                block.parent.serialize_as_vec(),
+                block.chain_length,
+            );
             conn.put_block(&block.serialize_as_vec(), block_info)
                 .unwrap()
         }
@@ -644,11 +655,11 @@ pub mod tests {
             for _ in 1..SIMULTANEOUS_READ_WRITE_ITERS {
                 let last_block = blocks.get(rng.next_u32() as usize % blocks.len()).unwrap();
                 let block = last_block.make_child(None);
-                let block_info = BlockInfo {
-                    id: block.id.serialize_as_boxed_slice(),
-                    parent_id: block.parent.serialize_as_boxed_slice(),
-                    chain_length: block.chain_length,
-                };
+                let block_info = BlockInfo::new(
+                    block.id.serialize_as_vec(),
+                    block.parent.serialize_as_vec(),
+                    block.chain_length,
+                );
                 conn.put_block(&block.serialize_as_vec(), block_info)
                     .unwrap()
             }

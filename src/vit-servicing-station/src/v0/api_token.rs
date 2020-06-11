@@ -1,7 +1,8 @@
 use crate::db::DBConnectionPool;
-use crate::v0::context::SharedContext;
+use crate::v0::{context::SharedContext, errors::HandleError};
 use async_graphql::validators::InputValueValidatorExt;
 use warp::filters::BoxedFilter;
+use warp::reject::Reject;
 use warp::{Filter, Rejection, Reply};
 
 const API_TOKEN_HEADER: &str = "API-Token";
@@ -33,7 +34,7 @@ async fn reject(token: String, context: SharedContext) -> Result<(), Rejection> 
     if manager.is_token_valid(APIToken(token)).await {
         return Ok(());
     }
-    Err(warp::reject())
+    Err(warp::reject::custom(HandleError::UnauthorizedToken))
 }
 
 pub async fn api_token_filter(

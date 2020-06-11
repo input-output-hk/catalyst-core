@@ -242,6 +242,7 @@ pub enum SignedCertificate {
     PoolUpdate(PoolUpdate, <PoolUpdate as Payload>::Auth),
     VotePlan(VotePlan, <VotePlan as Payload>::Auth),
     VoteCast(VoteCast, <VoteCast as Payload>::Auth),
+    VoteTally(VoteTally, <VoteTally as Payload>::Auth),
 }
 
 #[cfg(test)]

@@ -24,6 +24,7 @@ pub enum VoteTallyPayload {
     Public,
 }
 
+#[derive(Debug, Clone)]
 pub enum TallyProof {
     Public {
         id: CommitteeId,

@@ -161,103 +161,105 @@ where
                 // the extra keys before actually doing the insert
 
                 // the key would be inserted in the first half
-                if pos < m.try_into().unwrap() {
-                    let mut right_node_internal = right_node.as_internal_mut();
-                    let split_key = self.keys().get(m - 1 as usize).borrow().clone();
+                use std::cmp::Ordering;
+                match pos.cmp(&m) {
+                    Ordering::Less => {
+                        let mut right_node_internal = right_node.as_internal_mut();
+                        let split_key = self.keys().get(m - 1 as usize).borrow().clone();
 
-                    let mut keys_mut = right_node_internal.keys_mut();
-                    for k in self.keys().sub(m..self.keys().len()).iter() {
-                        keys_mut.append(k.borrow()).unwrap();
+                        let mut keys_mut = right_node_internal.keys_mut();
+                        for k in self.keys().sub(m..self.keys().len()).iter() {
+                            keys_mut.append(k.borrow()).unwrap();
+                        }
+
+                        let new_len = keys_mut.len();
+
+                        let mut children_mut = right_node_internal.children_mut();
+
+                        for c in self
+                            .children()
+                            .sub(m as usize..self.children().len())
+                            .iter()
+                        {
+                            children_mut
+                                .append(c.borrow())
+                                .expect("Couldn't insert children");
+                        }
+
+                        right_node_internal.set_len(new_len);
+
+                        self.set_len(m);
+                        self.keys_mut().insert(pos, &key).unwrap();
+                        self.children_mut()
+                            .insert(pos.checked_add(1).unwrap(), &node_id)
+                            .unwrap();
+
+                        InternalInsertStatus::Split(split_key, right_node)
                     }
+                    Ordering::Greater => {
+                        let mut right_internal_node = right_node.as_internal_mut();
+                        let split_key = self.keys().get(m as usize).borrow().clone();
 
-                    let new_len = keys_mut.len();
+                        let mut keys_mut = right_internal_node.keys_mut();
+                        for k in self.keys().sub(m + 1..pos as usize).iter() {
+                            keys_mut.append(k.borrow()).unwrap();
+                        }
 
-                    let mut children_mut = right_node_internal.children_mut();
+                        keys_mut.append(&key).unwrap();
 
-                    for c in self
-                        .children()
-                        .sub(m as usize..self.children().len())
-                        .iter()
-                    {
-                        children_mut
-                            .append(c.borrow())
-                            .expect("Couldn't insert children");
+                        for k in self.keys().sub(pos as usize..self.keys().len()).iter() {
+                            keys_mut.append(k.borrow()).unwrap();
+                        }
+
+                        let new_len = keys_mut.len();
+                        let mut children_mut = right_internal_node.children_mut();
+
+                        for c in self
+                            .children()
+                            .sub(m as usize + 1..pos as usize + 1)
+                            .iter()
+                            .chain(Some(node_id).into_iter())
+                            .chain(
+                                self.children()
+                                    .sub(pos as usize + 1..self.children().len())
+                                    .iter(),
+                            )
+                        {
+                            children_mut.append(c.borrow()).unwrap();
+                        }
+
+                        right_internal_node.set_len(new_len);
+
+                        // Truncate node to have m elements
+                        self.set_len(m as usize);
+                        InternalInsertStatus::Split(split_key, right_node)
                     }
+                    Ordering::Equal => {
+                        let mut right_internal_node = right_node.as_internal_mut();
 
-                    right_node_internal.set_len(new_len);
+                        let split_key = key;
 
-                    self.set_len(m);
-                    self.keys_mut().insert(pos, &key).unwrap();
-                    self.children_mut()
-                        .insert(pos.checked_add(1).unwrap(), &node_id)
-                        .unwrap();
+                        let mut keys_mut = right_internal_node.keys_mut();
+                        for k in self.keys().sub(m as usize..self.keys().len()).iter() {
+                            keys_mut.append(k.borrow()).unwrap();
+                        }
 
-                    InternalInsertStatus::Split(split_key, right_node)
-                }
-                // the key would be inserted in the last half
-                else if pos > m.try_into().unwrap() {
-                    let mut right_internal_node = right_node.as_internal_mut();
-                    let split_key = self.keys().get(m as usize).borrow().clone();
+                        let new_len = keys_mut.len();
+                        let mut children_mut = right_internal_node.children_mut();
 
-                    let mut keys_mut = right_internal_node.keys_mut();
-                    for k in self.keys().sub(m + 1..pos as usize).iter() {
-                        keys_mut.append(k.borrow()).unwrap();
-                    }
-
-                    keys_mut.append(&key).unwrap();
-
-                    for k in self.keys().sub(pos as usize..self.keys().len()).iter() {
-                        keys_mut.append(k.borrow()).unwrap();
-                    }
-
-                    let new_len = keys_mut.len();
-                    let mut children_mut = right_internal_node.children_mut();
-
-                    for c in self
-                        .children()
-                        .sub(m as usize + 1..pos as usize + 1)
-                        .iter()
-                        .chain(Some(node_id).into_iter())
-                        .chain(
+                        for c in Some(node_id).into_iter().chain(
                             self.children()
-                                .sub(pos as usize + 1..self.children().len())
+                                .sub(m as usize + 1..self.children().len())
                                 .iter(),
-                        )
-                    {
-                        children_mut.append(c.borrow()).unwrap();
+                        ) {
+                            children_mut.append(c.borrow()).unwrap();
+                        }
+
+                        right_internal_node.set_len(new_len);
+                        self.set_len(m as usize);
+
+                        InternalInsertStatus::Split(split_key, right_node)
                     }
-
-                    right_internal_node.set_len(new_len);
-
-                    // Truncate node to have m elements
-                    self.set_len(m as usize);
-                    InternalInsertStatus::Split(split_key, right_node)
-                } else {
-                    // pos == m
-                    let mut right_internal_node = right_node.as_internal_mut();
-
-                    let split_key = key;
-
-                    let mut keys_mut = right_internal_node.keys_mut();
-                    for k in self.keys().sub(m as usize..self.keys().len()).iter() {
-                        keys_mut.append(k.borrow()).unwrap();
-                    }
-
-                    let new_len = keys_mut.len();
-                    let mut children_mut = right_internal_node.children_mut();
-
-                    for c in Some(node_id).into_iter().chain(
-                        self.children()
-                            .sub(m as usize + 1..self.children().len())
-                            .iter(),
-                    ) {
-                        children_mut.append(c.borrow()).unwrap();
-                    }
-
-                    right_internal_node.set_len(new_len);
-                    self.set_len(m as usize);
-
-                    InternalInsertStatus::Split(split_key, right_node)
                 }
             }
         }
@@ -295,24 +297,15 @@ where
                 _ => None,
             };
 
+            let has_extra = |handle: &&N| -> bool {
+                handle.as_node(|node: Node<K, &[u8]>| node.as_internal().has_extra())
+            };
+
             if self.children().len() < self.lower_bound() {
                 // underflow
-                if left_sibling_handle
-                    .filter(|handle| {
-                        handle.as_node(|node: Node<K, &[u8]>| -> bool {
-                            node.as_internal().has_extra()
-                        })
-                    })
-                    .is_some()
-                {
+                if left_sibling_handle.filter(has_extra).is_some() {
                     RebalanceResult::TakeFromLeft(RebalanceSiblingArg::new(self))
-                } else if right_sibling_handle
-                    .clone()
-                    .filter(|handle| {
-                        handle.as_node(|node: Node<K, &[u8]>| node.as_internal().has_extra())
-                    })
-                    .is_some()
-                {
+                } else if right_sibling_handle.clone().filter(has_extra).is_some() {
                     RebalanceResult::TakeFromRight(RebalanceSiblingArg::new(self))
                 } else if left_sibling_handle.is_some() {
                     RebalanceResult::MergeIntoLeft(RebalanceSiblingArg::new(self))

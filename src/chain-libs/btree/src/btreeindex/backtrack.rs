@@ -115,7 +115,10 @@ where
     pub fn delete_right_sibling(&self) -> Result<(), ()> {
         match self.right_id {
             None => Err(()),
-            Some(right_id) => Ok(self.backtrack.delete_node(right_id)),
+            Some(right_id) => {
+                self.backtrack.delete_node(right_id);
+                Ok(())
+            }
         }
     }
 

@@ -61,13 +61,14 @@ impl MmapStorage {
     }
 
     // TODO: Create a better abstraction for chunks that overlap multiple pages?
-    /// this call is unsafe because get_mut is &self and not &mut self, so this could lead to mutable aliasing
     /// this panics if the location (+ count) is out of range
     /// the size of the returning slice should be checked as the underlying file is split in multiple pages, it may not be possible to return a slice with the entire range
     ///
     /// # Safety
     ///
-    /// This function contains unsafe code: TODO precise what is unsafe here
+    /// This function contains unsafe code: There is no aliasing checking involved. It's up to the caller
+    /// to guarantee that there is no mutable borrow overlapping the requested area. The actual cause of the unsafety
+    /// is that `get_mut` doesn't take a mutable borrow.
     pub unsafe fn get(&self, location: u64, count: u64) -> &[u8] {
         let (page_id, offset) = absolute_offset_to_relative(self.page_size, location);
         match self.pages.get_page(page_id as PageId) {
@@ -95,7 +96,8 @@ impl MmapStorage {
     ///
     /// # Safety
     ///
-    /// This function contains unsafe code: TODO precise what is unsafe here
+    /// This function contains unsafe code: There is no aliasing checking involved. It's up to the caller
+    /// to guarantee that there is no mutable borrow overlapping the requested area.
     pub unsafe fn get_mut(&self, location: u64, count: u64) -> Result<&mut [u8], io::Error> {
         if location + count > self.allocated_size.load(Ordering::SeqCst) {
             self.extend(location + count)?;

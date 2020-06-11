@@ -1,8 +1,3 @@
-#![allow(clippy::unit_arg)]
-#![allow(clippy::type_complexity)]
-#![allow(clippy::comparison_chain)]
-#![allow(clippy::block_in_if_condition_stmt)]
-
 #[cfg(test)]
 #[macro_use]
 extern crate quickcheck_macros;

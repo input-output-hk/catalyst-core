@@ -359,7 +359,7 @@ where
             self.new_root = Some(id);
         }
 
-        match self.tx.mut_page(dbg!(id))? {
+        match self.tx.mut_page(id)? {
             transaction::MutablePage::NeedsParentRedirect(rename_in_parents) => {
                 // this part may be tricky, we need to recursively clone and redirect all the path
                 // from the root to the node we are writing to. We need the backtrack stack, because

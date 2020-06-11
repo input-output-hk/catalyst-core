@@ -15,6 +15,8 @@ pub enum Error {
     BlockAlreadyPresent,
     #[error("the parent block is missing for the required write")]
     MissingParent,
+    #[error("branch with the requested tip does not exist")]
+    BranchNotFound,
 }
 
 #[derive(Clone)]
@@ -26,12 +28,14 @@ pub struct BlockInfo {
     id: Box<[u8]>,
     parent_id: Box<[u8]>,
     chain_length: u32,
+    ref_count: u32,
 }
 
 mod tree {
     pub const BLOCKS: &str = "blocks";
     pub const INFO: &str = "info";
     pub const CHAIN_HEIGHT_INDEX: &str = "height_to_block_ids";
+    pub const BRANCHES_TIPS: &str = "branches_tips";
 }
 
 impl BlockInfo {
@@ -40,6 +44,7 @@ impl BlockInfo {
             id: id.into_boxed_slice(),
             parent_id: parent_id.into_boxed_slice(),
             chain_length,
+            ref_count: 0,
         }
     }
 
@@ -55,6 +60,14 @@ impl BlockInfo {
         self.chain_length
     }
 
+    fn add_ref(&mut self) {
+        self.ref_count += 1
+    }
+
+    fn remove_ref(&mut self) {
+        self.ref_count -= 1
+    }
+
     fn serialize(&self) -> Vec<u8> {
         let mut w = Vec::new();
 
@@ -65,6 +78,8 @@ impl BlockInfo {
         w.write_all(&parent_id_size.to_le_bytes()).unwrap();
 
         w.write_all(&self.chain_length.to_le_bytes()).unwrap();
+
+        w.write_all(&self.ref_count.to_le_bytes()).unwrap();
 
         w.write_all(&self.id).unwrap();
 
@@ -86,13 +101,22 @@ impl BlockInfo {
         r.read_exact(&mut chain_length_bytes).unwrap();
         let chain_length = u32::from_le_bytes(chain_length_bytes);
 
+        let mut ref_count_bytes = [0u8; 4];
+        r.read_exact(&mut ref_count_bytes).unwrap();
+        let ref_count = u32::from_le_bytes(ref_count_bytes);
+
         let mut id = vec![0u8; id_size as usize];
         r.read_exact(&mut id).unwrap();
 
         let mut parent_id = vec![0u8; parent_id_size as usize];
         r.read_exact(&mut parent_id).unwrap();
 
-        BlockInfo::new(id, parent_id, chain_length)
+        BlockInfo {
+            id: id.into_boxed_slice(),
+            parent_id: parent_id.into_boxed_slice(),
+            chain_length,
+            ref_count,
+        }
     }
 }
 
@@ -120,23 +144,32 @@ impl BlockStore {
             .open_tree(tree::CHAIN_HEIGHT_INDEX)
             .map_err(|err| Error::BackendError(Box::new(err)))?;
 
-        let result = (&blocks, &info, &height_to_block_ids).transaction(
-            |(blocks, info, height_to_block_ids)| {
+        let tips = self
+            .inner
+            .open_tree(tree::BRANCHES_TIPS)
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let result = (&blocks, &info, &height_to_block_ids, &tips).transaction(
+            |(blocks, info, height_to_block_ids, tips)| {
                 if info.get(block_info.id())?.is_some() {
                     return Ok(Err(Error::BlockAlreadyPresent));
                 }
 
-                // these if statementsa cannot be collapsed, this will result
-                // into unnecessary DB reads if the optimization does not touch
-                // it
-                #[allow(clippy::collapsible_if)]
-                {
-                    if block_info.parent_id() != vec![0; block_info.parent_id().len()].as_slice() {
-                        if info.get(block_info.parent_id())?.is_none() {
-                            return Ok(Err(Error::MissingParent));
-                        }
+                if block_info.parent_id() != vec![0; block_info.parent_id().len()].as_slice() {
+                    if info.get(block_info.parent_id())?.is_none() {
+                        return Ok(Err(Error::MissingParent));
                     }
+
+                    let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
+                    let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
+                    let mut parent_block_info =
+                        BlockInfo::deserialize(&mut parent_block_info_reader);
+                    parent_block_info.add_ref();
+                    info.insert(parent_block_info.id(), parent_block_info.serialize())?;
                 }
+
+                tips.remove(block_info.parent_id())?;
+                tips.insert(block_info.id(), &[])?;
 
                 let mut height_index = block_info.chain_length().to_le_bytes().to_vec();
                 height_index.extend_from_slice(block_info.id());
@@ -268,6 +301,110 @@ impl BlockStore {
                 })
             })
             .map_err(|err| Error::BackendError(Box::new(err)))
+    }
+
+    pub fn get_tips_ids(&mut self) -> Result<Vec<Vec<u8>>, Error> {
+        let tips = self
+            .inner
+            .open_tree(tree::BRANCHES_TIPS)
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        tips.iter()
+            .map(|id_result| {
+                id_result
+                    .map(|(id, _)| {
+                        let id: &[u8] = &id;
+                        Vec::from(id)
+                    })
+                    .map_err(|err| Error::BackendError(Box::new(err)))
+            })
+            .collect()
+    }
+
+    pub fn prune_branch(&mut self, tip_id: &[u8]) -> Result<(), Error> {
+        let tips = self
+            .inner
+            .open_tree(tree::BRANCHES_TIPS)
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        if !tips
+            .contains_key(tip_id)
+            .map_err(|err| Error::BackendError(Box::new(err)))?
+        {
+            return Err(Error::BranchNotFound);
+        }
+
+        let blocks = self
+            .inner
+            .open_tree(tree::BLOCKS)
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+        let info = self
+            .inner
+            .open_tree(tree::INFO)
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+        let height_to_block_ids = self
+            .inner
+            .open_tree(tree::CHAIN_HEIGHT_INDEX)
+            .map_err(|err| Error::BackendError(Box::new(err)))?;
+
+        let mut maybe_current_tip = Some(Vec::from(tip_id));
+
+        while let Some(current_tip) = &maybe_current_tip {
+            let result = (&blocks, &info, &height_to_block_ids, &tips).transaction(
+                |(blocks, info, height_to_block_ids, tips)| {
+                    let current_tip: &[u8] = current_tip;
+
+                    let block_info_bin = info.remove(current_tip)?.unwrap();
+                    let mut block_info_reader: &[u8] = &block_info_bin;
+                    let block_info = BlockInfo::deserialize(&mut block_info_reader);
+
+                    blocks.remove(current_tip)?;
+
+                    let mut height_index = block_info.chain_length().to_le_bytes().to_vec();
+                    height_index.extend_from_slice(block_info.id());
+                    height_to_block_ids.remove(height_index)?;
+
+                    tips.remove(current_tip)?;
+
+                    if block_info.parent_id() == vec![0; block_info.parent_id().len()].as_slice() {
+                        return Ok(Ok(None));
+                    }
+
+                    let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
+                    let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
+                    let mut parent_block_info =
+                        BlockInfo::deserialize(&mut parent_block_info_reader);
+                    parent_block_info.remove_ref();
+                    info.insert(parent_block_info.id(), parent_block_info.serialize())?;
+
+                    let maybe_next_tip = if parent_block_info.ref_count == 0 {
+                        // if the block is inside another branch it cannot be a tip
+                        tips.insert(block_info.parent_id(), &[])?;
+                        Some(block_info.parent_id().to_vec())
+                    } else {
+                        None
+                    };
+
+                    Ok(Ok(maybe_next_tip))
+                },
+            );
+
+            // Transactional impl for (&Tree, &Tree) implies the use of () as
+            // the type for user-defined errors, so we have a workaround for
+            // that.
+            match result {
+                Ok(Ok(maybe_next_tip)) => {
+                    maybe_current_tip = maybe_next_tip;
+                }
+                Ok(Err(err)) => return Err(err),
+                Err(TransactionError::Storage(err)) => {
+                    return Err(Error::BackendError(Box::new(err)))
+                }
+                Err(TransactionError::Abort(())) => unreachable!(),
+            }
+        }
+
+        Ok(())
     }
 
     pub fn block_exists(&mut self, block_hash: &[u8]) -> Result<bool, Error> {
@@ -562,6 +699,11 @@ pub mod tests {
             store.get_tag("tip").unwrap().unwrap(),
             genesis_block.id.serialize_as_vec()
         );
+
+        assert_eq!(
+            vec![genesis_block.id.serialize_as_vec()],
+            store.get_tips_ids().unwrap()
+        );
     }
 
     #[test]
@@ -667,5 +809,90 @@ pub mod tests {
 
         thread_1.join().unwrap();
         thread_2.join().unwrap();
+    }
+
+    #[test]
+    fn branch_pruning() {
+        use std::{collections::HashSet, iter::FromIterator};
+
+        const MAIN_BRANCH_LEN: usize = 100;
+        const SECOND_BRANCH_LEN: usize = 25;
+        const BIFURCATION_POINT: usize = 50;
+
+        let file = tempfile::TempDir::new().unwrap();
+        let mut store = BlockStore::new(file.path()).unwrap();
+
+        let mut main_branch_blocks = vec![];
+
+        let genesis_block = Block::genesis(None);
+        let genesis_block_info = BlockInfo::new(
+            genesis_block.id.serialize_as_vec(),
+            genesis_block.parent.serialize_as_vec(),
+            genesis_block.chain_length,
+        );
+        store
+            .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
+            .unwrap();
+
+        let mut block = genesis_block.make_child(None);
+
+        main_branch_blocks.push(genesis_block);
+
+        for _i in 1..MAIN_BRANCH_LEN {
+            let block_info = BlockInfo::new(
+                block.id.serialize_as_vec(),
+                block.parent.serialize_as_vec(),
+                block.chain_length,
+            );
+            store
+                .put_block(&block.serialize_as_vec(), block_info)
+                .unwrap();
+            main_branch_blocks.push(block.clone());
+            block = block.make_child(None);
+        }
+
+        let mut second_branch_blocks = vec![main_branch_blocks[BIFURCATION_POINT].clone()];
+
+        block = main_branch_blocks[BIFURCATION_POINT].make_child(None);
+
+        for _i in 1..SECOND_BRANCH_LEN {
+            let block_info = BlockInfo::new(
+                block.id.serialize_as_vec(),
+                block.parent.serialize_as_vec(),
+                block.chain_length,
+            );
+            store
+                .put_block(&block.serialize_as_vec(), block_info)
+                .unwrap();
+            second_branch_blocks.push(block.clone());
+            block = block.make_child(None);
+        }
+
+        let expected_tips = {
+            let mut hs = HashSet::new();
+            hs.insert(main_branch_blocks.last().unwrap().id.serialize_as_vec());
+            hs.insert(second_branch_blocks.last().unwrap().id.serialize_as_vec());
+            hs
+        };
+        let actual_tips = HashSet::from_iter(store.get_tips_ids().unwrap().into_iter());
+        assert_eq!(expected_tips, actual_tips);
+
+        store
+            .prune_branch(&second_branch_blocks.last().unwrap().id.serialize_as_vec())
+            .unwrap();
+
+        assert_eq!(
+            vec![main_branch_blocks.last().unwrap().id.serialize_as_vec()],
+            store.get_tips_ids().unwrap()
+        );
+
+        store
+            .get_block(&second_branch_blocks[0].id.serialize_as_vec())
+            .unwrap();
+
+        for i in 1..SECOND_BRANCH_LEN {
+            let block_result = store.get_block(&second_branch_blocks[i].id.serialize_as_vec());
+            assert!(matches!(block_result, Err(Error::BlockNotFound)));
+        }
     }
 }

@@ -40,19 +40,21 @@ impl Fund {
         &self.next_fund_start_time
     }
 
-    pub async fn chain_vote_plans(&self, ctx: &Context<'_>) -> Vec<Voteplan> {
-        // FIXME: right now this is buggy,the DBConnectionPool type is not recognize as a type and cannot be retrieve, hence the whole method crashes
+    pub async fn chain_vote_plans(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::FieldResult<Vec<Voteplan>> {
         let db_conn = ctx
             .data::<db::DBConnectionPool>()
             .get()
-            .expect("Error connecting to database");
+            .map_err(async_graphql::FieldError::from)?;
         let id = self.id;
         tokio::task::spawn_blocking(move || {
             diesel::QueryDsl::filter(voteplans_dsl::voteplans, voteplans_dsl::fund_id.eq(id))
                 .load::<Voteplan>(&db_conn)
-                .expect("Error loading fund")
+                .map_err(async_graphql::FieldError::from)
         })
-        .await
-        .expect("Error loading fund")
+        .await?
+        .map_err(async_graphql::FieldError::from)
     }
 }

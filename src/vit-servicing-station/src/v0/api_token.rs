@@ -28,17 +28,20 @@ impl APITokenManager {
     }
 }
 
-async fn reject(token: String) -> Result<(), Rejection> {
-    if token == "foo" {
+async fn reject(token: String, context: SharedContext) -> Result<(), Rejection> {
+    let manager = APITokenManager::new(context.read().await.db_connection_pool.clone());
+    if manager.is_token_valid(APIToken(token)).await {
         return Ok(());
     }
     Err(warp::reject())
 }
 
-pub fn api_token_filter(
+pub async fn api_token_filter(
     context: SharedContext,
-) -> impl Filter<Extract = (), Error = Rejection> + Copy {
+) -> impl Filter<Extract = (), Error = Rejection> + Clone {
+    let with_context = warp::any().map(move || context.clone());
     warp::header::header(API_TOKEN_HEADER)
+        .and(with_context)
         .and_then(reject)
         .and(warp::any())
         .untuple_one()

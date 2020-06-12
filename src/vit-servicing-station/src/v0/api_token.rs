@@ -8,12 +8,17 @@ use diesel::query_dsl::{filter_dsl::FilterDsl, RunQueryDsl};
 use diesel::{ExpressionMethods, OptionalExtension};
 use warp::{Filter, Rejection};
 
+/// Header where token should be present in requests
 const API_TOKEN_HEADER: &str = "API-Token";
 
 /// API Token wrapper type
 #[derive(PartialEq, Eq)]
 pub struct APIToken(String);
 
+/// API token manager is an abstraction on the API tokens for the service
+/// The main idea is to keep the service agnostic of what kind of backend we are using such task.
+/// Right now we rely on a SQLlite connection. But in the future it maybe be something else like a
+/// REDIS, or some other hybrid system.
 pub struct APITokenManager {
     connection_pool: DBConnectionPool,
 }
@@ -28,6 +33,7 @@ impl APITokenManager {
             .connection_pool
             .get()
             .map_err(HandleError::DatabaseError)?;
+
         match tokio::task::spawn_blocking(move || {
             api_tokens_dsl
                 .filter(api_tokens::token.eq(token.0))
@@ -52,7 +58,7 @@ impl APITokenManager {
     }
 }
 
-async fn reject(token: String, context: SharedContext) -> Result<(), Rejection> {
+async fn authorize_token(token: String, context: SharedContext) -> Result<(), Rejection> {
     let manager = APITokenManager::new(context.read().await.db_connection_pool.clone());
     match manager.is_token_valid(APIToken(token)).await {
         Ok(true) => Ok(()),
@@ -61,13 +67,15 @@ async fn reject(token: String, context: SharedContext) -> Result<(), Rejection> 
     }
 }
 
+/// A warp filter that checks authorization through API tokens.
+/// The header `API_TOKEN_HEADER` should be present and valid otherwise the request is rejected.
 pub async fn api_token_filter(
     context: SharedContext,
 ) -> impl Filter<Extract = (), Error = Rejection> + Clone {
     let with_context = warp::any().map(move || context.clone());
     warp::header::header(API_TOKEN_HEADER)
         .and(with_context)
-        .and_then(reject)
+        .and_then(authorize_token)
         .and(warp::any())
         .untuple_one()
 }

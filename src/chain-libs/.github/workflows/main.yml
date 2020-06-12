@@ -35,22 +35,22 @@ jobs:
           echo "::set-output name=head::$commit"
 
       - name: Cache cargo registry index
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.cargo/registry/index
-          key: cargo-index-v1-${{ steps.ls-crates-io-index.outputs.head }}
+          key: cargo-index-v2-${{ steps.ls-crates-io-index.outputs.head }}
           restore-keys: |
-            cargo-index-v1-
+            cargo-index-v2-
 
       - name: Generate Cargo.lock
         run: cargo generate-lockfile
 
       - id: cache-deps
         name: Cache dependency crates
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.cargo/registry/cache
-          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
+          key: cargo-deps-v2-${{ hashFiles('Cargo.lock') }}
 
       - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
         name: Fetch dependencies
@@ -70,9 +70,10 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         toolchain: [stable]
         mode: ['', '--release']
-        include:
-          - os: ubuntu-latest
-            toolchain: nightly
+        include: []
+          # Temporarily disabled due to https://github.com/rust-lang/cargo/issues/8351
+          # - os: ubuntu-latest
+          #   toolchain: nightly
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
@@ -100,16 +101,16 @@ jobs:
         run: rm -r -fo $env:UserProfile\.cargo\registry
 
       - name: Restore cargo registry index
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.cargo/registry/index
-          key: cargo-index-v1-${{ needs.update-deps.outputs.crates-io-index-head }}
+          key: cargo-index-v2-${{ needs.update_deps.outputs.crates-io-index-head }}
 
       - name: Restore dependency crates
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.cargo/registry/cache
-          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
+          key: cargo-deps-v2-${{ hashFiles('Cargo.lock') }}
 
       - name: Build
         uses: actions-rs/cargo@v1
@@ -167,16 +168,16 @@ jobs:
           args: -- --check
 
       - name: Restore cargo registry index
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.cargo/registry/index
-          key: cargo-index-v1-${{ needs.update-deps.outputs.crates-io-index-head }}
+          key: cargo-index-v2-${{ needs.update_deps.outputs.crates-io-index-head }}
 
       - name: Restore dependency crates
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ~/.cargo/registry/cache
-          key: cargo-deps-v1-${{ hashFiles('Cargo.lock') }}
+          key: cargo-deps-v2-${{ hashFiles('Cargo.lock') }}
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1

@@ -611,6 +611,7 @@ pub mod tests {
     use super::test_utils::{Block, BlockId};
     use super::*;
     use rand_core::{OsRng, RngCore};
+    use std::{collections::HashSet, iter::FromIterator};
 
     const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
 
@@ -813,8 +814,6 @@ pub mod tests {
 
     #[test]
     fn branch_pruning() {
-        use std::{collections::HashSet, iter::FromIterator};
-
         const MAIN_BRANCH_LEN: usize = 100;
         const SECOND_BRANCH_LEN: usize = 25;
         const BIFURCATION_POINT: usize = 50;
@@ -894,5 +893,50 @@ pub mod tests {
             let block_result = store.get_block(&second_branch_blocks[i].id.serialize_as_vec());
             assert!(matches!(block_result, Err(Error::BlockNotFound)));
         }
+    }
+
+    #[test]
+    fn get_blocks_by_chain_length() {
+        const N_BLOCKS: usize = 5;
+
+        let file = tempfile::TempDir::new().unwrap();
+        let mut store = BlockStore::new(file.path()).unwrap();
+
+        let genesis_block = Block::genesis(None);
+        let genesis_block_info = BlockInfo::new(
+            genesis_block.id.serialize_as_vec(),
+            genesis_block.parent.serialize_as_vec(),
+            genesis_block.chain_length,
+        );
+        store
+            .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
+            .unwrap();
+
+        let mut blocks = vec![];
+
+        for _i in 0..N_BLOCKS {
+            let block = genesis_block.make_child(None);
+            let block_info = BlockInfo::new(
+                block.id.serialize_as_vec(),
+                block.parent.serialize_as_vec(),
+                block.chain_length,
+            );
+            let block = block.serialize_as_vec();
+            store.put_block(&block, block_info).unwrap();
+            blocks.push(block);
+        }
+
+        let chain_length = genesis_block.chain_length + 1;
+
+        let expected: HashSet<_, std::collections::hash_map::RandomState> =
+            HashSet::from_iter(blocks.into_iter());
+        let actual = HashSet::from_iter(
+            store
+                .get_blocks_by_chain_length(chain_length)
+                .unwrap()
+                .into_iter(),
+        );
+
+        assert_eq!(expected, actual);
     }
 }

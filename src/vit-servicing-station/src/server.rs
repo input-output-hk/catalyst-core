@@ -1,6 +1,5 @@
 use crate::server_settings::{Cors, ServiceSettings, Tls};
 
-use std::convert::Infallible;
 use std::time::Duration;
 use warp::filters::cors::Builder as CorsBuilder;
 use warp::{Filter, TlsServer};

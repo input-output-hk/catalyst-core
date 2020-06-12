@@ -10,7 +10,6 @@ pub mod v0;
 
 use crate::server_settings::ServiceSettings;
 use structopt::StructOpt;
-use warp::Filter;
 
 #[tokio::main]
 async fn main() {

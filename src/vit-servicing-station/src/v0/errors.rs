@@ -1,4 +1,3 @@
-use std::convert::Infallible;
 use thiserror::Error;
 use warp::{reply::Response, Rejection, Reply};
 
@@ -18,13 +17,17 @@ pub enum HandleError {
 }
 
 impl HandleError {
-    fn to_response(&self) -> Response {
-        let status_code = match self {
+    fn to_status_code(&self) -> warp::http::StatusCode {
+        match self {
             HandleError::NotFound(_) => warp::http::StatusCode::NOT_FOUND,
             HandleError::DatabaseError(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
             HandleError::InternalError(_) => warp::http::StatusCode::INTERNAL_SERVER_ERROR,
             HandleError::UnauthorizedToken => warp::http::StatusCode::UNAUTHORIZED,
-        };
+        }
+    }
+
+    fn to_response(&self) -> Response {
+        let status_code = self.to_status_code();
         warp::reply::with_status(warp::reply(), status_code).into_response()
     }
 }

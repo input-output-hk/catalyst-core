@@ -1,4 +1,12 @@
 table! {
+    api_tokens (token) {
+        token -> Text,
+        creation_time -> Text,
+        expire_time -> Text,
+    }
+}
+
+table! {
     funds (id) {
         id -> Integer,
         fund_name -> Text,
@@ -46,4 +54,9 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(funds, proposals, voteplans,);
+allow_tables_to_appear_in_same_query!(
+    api_tokens,
+    funds,
+    proposals,
+    voteplans,
+);

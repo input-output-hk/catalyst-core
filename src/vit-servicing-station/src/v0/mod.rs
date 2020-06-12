@@ -4,7 +4,6 @@ pub mod endpoints;
 pub mod errors;
 pub mod result;
 
-use std::convert::Infallible;
 use warp::{Filter, Rejection, Reply};
 
 pub async fn filter(

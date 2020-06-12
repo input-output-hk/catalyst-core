@@ -1,9 +1,12 @@
-use crate::db::DBConnectionPool;
+use crate::db::{
+    models::api_token,
+    schema::{api_tokens, api_tokens::dsl::api_tokens as api_tokens_dsl},
+    DBConnectionPool,
+};
 use crate::v0::{context::SharedContext, errors::HandleError};
-use async_graphql::validators::InputValueValidatorExt;
-use warp::filters::BoxedFilter;
-use warp::reject::Reject;
-use warp::{Filter, Rejection, Reply};
+use diesel::query_dsl::{filter_dsl::FilterDsl, RunQueryDsl};
+use diesel::{ExpressionMethods, OptionalExtension};
+use warp::{Filter, Rejection};
 
 const API_TOKEN_HEADER: &str = "API-Token";
 
@@ -20,21 +23,42 @@ impl APITokenManager {
         Self { connection_pool }
     }
 
-    async fn is_token_valid(&self, token: APIToken) -> bool {
-        false
+    async fn is_token_valid(&self, token: APIToken) -> Result<bool, HandleError> {
+        let db_conn = self
+            .connection_pool
+            .get()
+            .map_err(HandleError::DatabaseError)?;
+        match tokio::task::spawn_blocking(move || {
+            api_tokens_dsl
+                .filter(api_tokens::token.eq(token.0))
+                .first::<api_token::APIToken>(&db_conn)
+                .optional()
+        })
+        .await
+        .map_err(|_| HandleError::InternalError("Error executing request".to_string()))?
+        {
+            Ok(Some(_)) => Ok(true),
+            Ok(None) => Ok(false),
+            Err(e) => Err(HandleError::InternalError(format!(
+                "Error retrieving token: {}",
+                e
+            ))),
+        }
     }
 
-    async fn revoke_token(&self, token: APIToken) -> Result<(), ()> {
+    #[allow(dead_code)]
+    async fn revoke_token(&self, _token: APIToken) -> Result<(), ()> {
         Ok(())
     }
 }
 
 async fn reject(token: String, context: SharedContext) -> Result<(), Rejection> {
     let manager = APITokenManager::new(context.read().await.db_connection_pool.clone());
-    if manager.is_token_valid(APIToken(token)).await {
-        return Ok(());
+    match manager.is_token_valid(APIToken(token)).await {
+        Ok(true) => Ok(()),
+        Ok(false) => Err(warp::reject::custom(HandleError::UnauthorizedToken)),
+        Err(e) => Err(warp::reject::custom(e)),
     }
-    Err(warp::reject::custom(HandleError::UnauthorizedToken))
 }
 
 pub async fn api_token_filter(

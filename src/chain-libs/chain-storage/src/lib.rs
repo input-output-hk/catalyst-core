@@ -212,10 +212,6 @@ impl BlockStore {
         ancestor_id: &[u8],
         descendent_id: &[u8],
     ) -> Result<Option<u32>, Error> {
-        if ancestor_id == descendent_id {
-            return Ok(Some(0));
-        }
-
         let info = self.inner.open_tree(tree::INFO)?;
 
         let descendent: BlockInfo = info
@@ -227,27 +223,41 @@ impl BlockStore {
                 BlockInfo::deserialize(&mut block_info_reader)
             })?;
 
+        if ancestor_id == descendent_id {
+            return Ok(Some(0));
+        }
+
         if descendent_id == vec![0u8; descendent_id.len()].as_slice() {
             return Ok(Some(descendent.chain_length()));
         }
 
-        let mut prev_ancestor = descendent;
-
-        let mut distance = 0;
-
-        while let Some(ancestor) = info
-            .get(prev_ancestor.id())
-            .map_err(Error::BackendError)?
+        let ancestor = info
+            .get(descendent_id)
+            .map_err(Into::into)
+            .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
+                BlockInfo::deserialize(&mut block_info_reader)
+            })?;
+
+        if ancestor.chain_length() >= descendent.chain_length() {
+            return Ok(None);
+        }
+
+        let mut current_block_info = descendent;
+        let mut distance = 0;
+
+        while let Some(parent_block_info) =
+            info.get(current_block_info.parent_id())?.map(|block_info| {
+                let mut block_info_reader: &[u8] = &block_info;
                 BlockInfo::deserialize(&mut block_info_reader)
             })
         {
             distance += 1;
-            if ancestor.id() == ancestor_id {
+            if parent_block_info.id() == ancestor_id {
                 return Ok(Some(distance));
             }
-            prev_ancestor = ancestor;
+            current_block_info = parent_block_info;
         }
 
         Ok(None)
@@ -721,5 +731,90 @@ pub mod tests {
         );
 
         assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn is_ancestor() {
+        const MAIN_BRANCH_LEN: usize = 100;
+        const SECOND_BRANCH_LEN: usize = 25;
+        const BIFURCATION_POINT: usize = 50;
+        const TEST_1: [usize; 2] = [20, 30];
+        const TEST_2: [usize; 2] = [60, 10];
+
+        let file = tempfile::TempDir::new().unwrap();
+        let mut store = BlockStore::new(file.path()).unwrap();
+
+        let mut main_branch_blocks = vec![];
+
+        let genesis_block = Block::genesis(None);
+        let genesis_block_info = BlockInfo::new(
+            genesis_block.id.serialize_as_vec(),
+            genesis_block.parent.serialize_as_vec(),
+            genesis_block.chain_length,
+        );
+        store
+            .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
+            .unwrap();
+
+        let mut block = genesis_block.make_child(None);
+
+        main_branch_blocks.push(genesis_block);
+
+        for _i in 1..MAIN_BRANCH_LEN {
+            let block_info = BlockInfo::new(
+                block.id.serialize_as_vec(),
+                block.parent.serialize_as_vec(),
+                block.chain_length,
+            );
+            store
+                .put_block(&block.serialize_as_vec(), block_info)
+                .unwrap();
+            main_branch_blocks.push(block.clone());
+            block = block.make_child(None);
+        }
+
+        let mut second_branch_blocks = vec![main_branch_blocks[BIFURCATION_POINT].clone()];
+
+        block = main_branch_blocks[BIFURCATION_POINT].make_child(None);
+
+        for _i in 1..SECOND_BRANCH_LEN {
+            let block_info = BlockInfo::new(
+                block.id.serialize_as_vec(),
+                block.parent.serialize_as_vec(),
+                block.chain_length,
+            );
+            store
+                .put_block(&block.serialize_as_vec(), block_info)
+                .unwrap();
+            second_branch_blocks.push(block.clone());
+            block = block.make_child(None);
+        }
+
+        // same branch
+        let result = store
+            .is_ancestor(
+                &main_branch_blocks[TEST_1[0]].id.serialize_as_vec()[..],
+                &main_branch_blocks[TEST_1[1]].id.serialize_as_vec()[..],
+            )
+            .unwrap();
+        assert!(matches!(Some(TEST_1[1] - TEST_1[0]), result));
+
+        // wrong order
+        let result = store
+            .is_ancestor(
+                &main_branch_blocks[TEST_1[1]].id.serialize_as_vec()[..],
+                &main_branch_blocks[TEST_1[0]].id.serialize_as_vec()[..],
+            )
+            .unwrap();
+        assert!(result.is_none());
+
+        // different branches
+        let result = store
+            .is_ancestor(
+                &main_branch_blocks[TEST_2[0]].id.serialize_as_vec()[..],
+                &second_branch_blocks[TEST_2[1]].id.serialize_as_vec()[..],
+            )
+            .unwrap();
+        assert!(result.is_none());
     }
 }

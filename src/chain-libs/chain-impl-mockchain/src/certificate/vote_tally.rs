@@ -67,7 +67,7 @@ impl VoteTally {
 }
 
 impl TallyProof {
-    fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+    pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         match self {
             Self::Public { id, signature } => bb.u8(0).bytes(id.as_ref()).bytes(signature.as_ref()),
         }

@@ -584,7 +584,7 @@ pub mod test_utils {
             Self {
                 id: BlockId::generate(),
                 parent: self.id,
-                chain_length: self.chain_length,
+                chain_length: self.chain_length + 1,
                 data: data.unwrap_or_default(),
             }
         }

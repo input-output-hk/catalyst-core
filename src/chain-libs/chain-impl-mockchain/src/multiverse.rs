@@ -251,14 +251,6 @@ mod test {
             cur_hash = Hash::deserialize(cur_block.parent_id()).unwrap();
         };
 
-        /*
-        println!(
-            "applying {} blocks to reconstruct state at {}",
-            blocks_to_apply.len(),
-            k
-        );
-        */
-
         for hash in blocks_to_apply.iter().rev() {
             let block = Block::deserialize(
                 store

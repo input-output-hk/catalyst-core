@@ -38,6 +38,6 @@ fn yoroi1() {
     assert!(ignored[0].value() == Value(1), "the value ignored is `1`");
 
     state
-        .apply_fragments(fragments.iter())
+        .apply_fragments(fragments.iter().map(|v| &v.1))
         .expect("the dump fragments should be valid");
 }

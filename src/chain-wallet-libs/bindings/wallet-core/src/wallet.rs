@@ -1,8 +1,14 @@
 use crate::{Conversion, Error, Proposal};
 use chain_core::property::Serialize as _;
-use chain_impl_mockchain::{block::Block, fragment::Fragment, value::Value, vote::Choice};
-
+use chain_impl_mockchain::{
+    block::Block,
+    fragment::{Fragment, FragmentId},
+    transaction::{Input, InputEnum},
+    value::Value,
+    vote::Choice,
+};
 use chain_ser::mempack::{ReadBuf, Readable as _};
+use std::collections::HashMap;
 use wallet::{AccountId, Settings};
 
 /// the wallet
@@ -15,6 +21,8 @@ pub struct Wallet {
     account: wallet::Wallet,
     daedalus: wallet::RecoveringDaedalus,
     icarus: wallet::RecoveringIcarus,
+
+    pending_transactions: HashMap<FragmentId, Vec<Input>>,
 }
 
 impl Wallet {
@@ -77,6 +85,7 @@ impl Wallet {
             account,
             daedalus,
             icarus,
+            pending_transactions: HashMap::default(),
         })
     }
 
@@ -135,15 +144,37 @@ impl Wallet {
         self.icarus.dump_in(&mut dump);
 
         let (ignored, transactions) = dump.finalize();
+        let mut raws = Vec::with_capacity(transactions.len());
 
-        let transactions = transactions
-            .into_iter()
-            .map(|t| t.serialize_as_vec().unwrap())
-            .collect();
+        for (used, f) in transactions {
+            let id = f.id();
+
+            self.pending_transactions.insert(id, used);
+            raws.push(f.serialize_as_vec().unwrap());
+        }
 
         Conversion {
             ignored,
-            transactions,
+            transactions: raws,
+        }
+    }
+
+    /// use this function to confirm a transaction has been properly received
+    ///
+    /// This function will automatically update the state of the wallet
+    pub fn confirm_transaction(&mut self, id: FragmentId) {
+        if let Some(inputs) = self.pending_transactions.remove(&id) {
+            for input in inputs {
+                match input.to_enum() {
+                    InputEnum::UtxoInput(pointer) => {
+                        self.icarus.remove(pointer);
+                        self.daedalus.remove(pointer);
+                    }
+                    InputEnum::AccountInput(identifier, value) => {
+                        self.account.remove(identifier, value);
+                    }
+                }
+            }
         }
     }
 
@@ -152,7 +183,8 @@ impl Wallet {
     /// make sure to call `retrieve_funds` prior to calling this function
     /// otherwise you will always have `0`
     ///
-    /// After calling this function the results is returned in the `total_out`.
+    /// Once a conversion has been performed, this value can be use to display
+    /// how much the wallet started with or retrieved from the chain.
     ///
     pub fn total_value(&self) -> Value {
         self.icarus

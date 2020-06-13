@@ -3,7 +3,7 @@ use chain_addr::Address;
 use chain_impl_mockchain::{
     fee::FeeAlgorithm as _,
     fragment::{Fragment, FragmentRaw},
-    transaction::{Input, NoExtra, Output, Transaction, TxBuilderState},
+    transaction::{Input, Output, TxBuilderState},
     value::Value,
 };
 
@@ -13,7 +13,7 @@ pub struct Dump {
     address: Address,
     inputs: Vec<Input>,
     witness_builders: Vec<WitnessBuilder>,
-    outputs: Vec<Transaction<NoExtra>>,
+    outputs: Vec<(Vec<Input>, FragmentRaw)>,
     ignored: Vec<Input>,
 }
 
@@ -33,7 +33,7 @@ impl Dump {
     /// return the list of ignored inputs and the list of built transactions
     ///
     /// the transactions are ready to send
-    pub fn finalize(mut self) -> (Vec<Input>, Vec<FragmentRaw>) {
+    pub fn finalize(mut self) -> (Vec<Input>, Vec<(Vec<Input>, FragmentRaw)>) {
         self.build_tx_and_clear();
 
         assert!(
@@ -45,12 +45,7 @@ impl Dump {
             "we should not have any more pending inputs to spend"
         );
 
-        let outputs = self
-            .outputs
-            .into_iter()
-            .map(Fragment::Transaction)
-            .map(|f| Fragment::to_raw(&f))
-            .collect();
+        let outputs = self.outputs.into_iter().collect();
 
         (self.ignored, outputs)
     }
@@ -91,13 +86,15 @@ impl Dump {
 
             let builder = builder.set_witnesses(&witnesses);
             let tx = builder.set_payload_auth(&());
-            self.outputs.push(tx);
+            let used = std::mem::replace(&mut self.inputs, Vec::with_capacity(255));
+            self.outputs
+                .push((used, Fragment::Transaction(tx).to_raw()));
         } else {
-            self.ignored.extend_from_slice(self.inputs.as_slice());
+            self.ignored
+                .extend(std::mem::replace(&mut self.inputs, Vec::with_capacity(255)));
         }
 
         self.witness_builders.clear();
-        self.inputs.clear();
     }
 
     pub(crate) fn push(&mut self, input: Input, witness_builder: WitnessBuilder) {

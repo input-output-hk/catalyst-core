@@ -127,9 +127,10 @@ workflows:
       - test_release:
           requires:
             - cargo_fetch
-      - test_nightly:
-          requires:
-            - cargo_fetch
+      # Temporarily disabled due to https://github.com/rust-lang/cargo/issues/8351
+      #- test_nightly:
+      #    requires:
+      #      - cargo_fetch
       - test_no_default_features:
           requires:
             - cargo_fetch

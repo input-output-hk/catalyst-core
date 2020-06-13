@@ -8,6 +8,8 @@ mod committee;
 mod ledger;
 mod manager;
 mod payload;
+mod status;
+mod tally;
 
 pub use self::{
     choice::{Choice, Options},
@@ -15,4 +17,6 @@ pub use self::{
     ledger::{VotePlanLedger, VotePlanLedgerError},
     manager::{VoteError, VotePlanManager},
     payload::{Payload, PayloadType, TryFromIntError},
+    status::{VotePlanStatus, VoteProposalStatus},
+    tally::{Tally, TallyError, TallyResult, Weight},
 };

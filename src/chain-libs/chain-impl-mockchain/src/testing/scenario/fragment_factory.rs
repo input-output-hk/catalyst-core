@@ -1,6 +1,6 @@
 use crate::{
     accounting::account::{DelegationRatio, DelegationType},
-    certificate::{Certificate, PoolId, PoolUpdate, VotePlan, VoteCast},
+    certificate::{Certificate, PoolId, PoolUpdate, VoteCast, VotePlan},
     fee::LinearFee,
     fragment::Fragment,
     key::Hash,

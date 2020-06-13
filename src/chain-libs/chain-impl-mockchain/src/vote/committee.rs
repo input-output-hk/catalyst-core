@@ -2,6 +2,7 @@ use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
     property,
 };
+use chain_crypto::{Ed25519, PublicKey};
 use std::{
     convert::TryFrom,
     fmt::{self, Debug, Display},
@@ -31,6 +32,10 @@ impl CommitteeId {
         hex::decode_to_slice(s, &mut bytes)?;
         Ok(CommitteeId(bytes))
     }
+
+    pub fn public_key(&self) -> PublicKey<Ed25519> {
+        self.clone().into()
+    }
 }
 
 /* Conversion ************************************************************** */
@@ -44,6 +49,13 @@ impl From<[u8; Self::COMMITTEE_ID_SIZE]> for CommitteeId {
 impl From<CommitteeId> for [u8; CommitteeId::COMMITTEE_ID_SIZE] {
     fn from(id: CommitteeId) -> Self {
         id.0
+    }
+}
+
+impl From<CommitteeId> for PublicKey<Ed25519> {
+    fn from(id: CommitteeId) -> Self {
+        PublicKey::from_binary(id.0.as_ref())
+            .expect("CommitteeId should be a valid Ed25519 public key")
     }
 }
 

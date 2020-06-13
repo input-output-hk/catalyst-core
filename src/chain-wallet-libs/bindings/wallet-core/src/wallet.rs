@@ -178,6 +178,20 @@ impl Wallet {
         }
     }
 
+    /// get access to all the pending transaction
+    ///
+    /// TODO: this might need to be updated to have a more user friendly
+    ///       API. Currently do this for simplicity
+    pub fn pending_transactions(&self) -> &HashMap<FragmentId, Vec<Input>> {
+        &self.pending_transactions
+    }
+
+    /// remove a given pending transaction returning the associated Inputs
+    /// that were used for this transaction
+    pub fn remove_pending_transaction(&mut self, id: &FragmentId) -> Option<Vec<Input>> {
+        self.pending_transactions.remove(id)
+    }
+
     /// get the total value in the wallet
     ///
     /// make sure to call `retrieve_funds` prior to calling this function

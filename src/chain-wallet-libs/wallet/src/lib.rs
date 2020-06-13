@@ -30,12 +30,14 @@ impl Wallet {
     pub fn remove(&mut self, id: UnspecifiedAccountIdentifier, value: Value) {
         let id = id.as_ref();
         if self.account.account_id().as_ref() == id {
-            let counter = self.account.counter().saturating_add(1);
-            let value = self
-                .value()
+            self.committed_amount = self
+                .committed_amount
                 .checked_sub(value)
                 .unwrap_or_else(|_| Value::zero());
-            self.update_state(value, counter)
+            self.value = self
+                .value
+                .checked_sub(value)
+                .unwrap_or_else(|_| Value::zero());
         }
     }
 

@@ -239,7 +239,12 @@ impl Wallet {
         let tx = builder
             .finalize_tx(())
             .map_err(|e| Error::wallet_transaction().with(e))?;
+        let inputs = tx.as_slice().inputs().iter().collect();
         let fragment = Fragment::VoteCast(tx);
-        Ok(fragment.serialize_as_vec().unwrap().into_boxed_slice())
+        let raw = fragment.to_raw();
+        let id = raw.id();
+        self.pending_transactions.insert(id, inputs);
+
+        Ok(raw.serialize_as_vec().unwrap().into_boxed_slice())
     }
 }

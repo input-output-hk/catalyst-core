@@ -30,7 +30,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Install libsqlite3 Ubuntu
-        run: sudo apt-get install libsqlite3-dev
+        run:
+          sudo apt-get update
+          sudo apt-get install libsqlite3-dev
         if: matrix.os == 'ubuntu-latest'
       - uses: actions/checkout@v1
       - uses: actions-rs/toolchain@v1

@@ -71,11 +71,13 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         toolchain: [stable]
         mode: ['', '--release']
-        include: []
-          # Temporarily disabled due to https://github.com/rust-lang/cargo/issues/8351
-          # - os: ubuntu-latest
-          #   toolchain: nightly
+        experimental: [false]
+        include:
+          - os: ubuntu-latest
+            toolchain: nightly
+            experimental: true
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 30
     env:
       CARGO_INCREMENTAL: 0

@@ -460,7 +460,7 @@ mod tests {
         let (ledger, output_address) = ledger
             .remove(&first_fragment_id, first_index)
             .expect("Unable to remove single output (first output)");
-        assert_eq!(output_address, first_address_data.clone());
+        assert_eq!(output_address, first_address_data);
         assert!(ledger.get(&first_fragment_id, first_index).is_none());
         assert!(ledger.get(&first_fragment_id, second_index).is_some());
         assert_eq!(ledger.iter().count(), 3);
@@ -469,7 +469,7 @@ mod tests {
         let (ledger, output_address) = ledger
             .remove(&first_fragment_id, second_index)
             .expect("Unable to remove single output (second output)");
-        assert_eq!(output_address, second_address_data.clone());
+        assert_eq!(output_address, second_address_data);
         assert!(ledger.get(&first_fragment_id, second_index).is_none());
 
         assert_eq!(ledger.iter().count(), 2);

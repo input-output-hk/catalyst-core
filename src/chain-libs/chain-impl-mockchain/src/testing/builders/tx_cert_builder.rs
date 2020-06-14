@@ -241,8 +241,8 @@ impl FaultTolerantTxCertBuilder {
     pub fn new(block0_hash: HeaderId, fee: LinearFee, cert: Certificate, funder: Wallet) -> Self {
         Self {
             builder: TestTxCertBuilder::new(block0_hash, fee),
-            cert: cert,
-            funder: funder,
+            cert,
+            funder,
         }
     }
 

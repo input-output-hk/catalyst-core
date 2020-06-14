@@ -28,11 +28,11 @@ impl StakePool {
     ) -> Self {
         StakePool {
             alias: alias.to_owned(),
-            id: id,
-            vrf: vrf,
-            kes: kes,
-            pool_info: pool_info,
-            reward_account: reward_account,
+            id,
+            vrf,
+            kes,
+            pool_info,
+            reward_account,
         }
     }
 

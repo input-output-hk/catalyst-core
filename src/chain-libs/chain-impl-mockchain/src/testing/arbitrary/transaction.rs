@@ -61,10 +61,10 @@ impl ArbitraryValidTransactionData {
         fee: LinearFee,
     ) -> Self {
         ArbitraryValidTransactionData {
-            addresses: addresses,
+            addresses,
             input_addresses: input_addresses_values,
             output_addresses: output_addresses_values,
-            fee: fee,
+            fee,
         }
     }
 

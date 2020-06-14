@@ -744,7 +744,7 @@ mod tests {
 
         // we insert first in the reference in order to get rid of duplicates
         for (xk, xv) in xs {
-            reference.entry(xk.clone()).or_insert(xv);
+            reference.entry(xk).or_insert(xv);
         }
 
         tree.insert_many(reference.iter().map(|(k, v)| (U64Key(*k), *v)))

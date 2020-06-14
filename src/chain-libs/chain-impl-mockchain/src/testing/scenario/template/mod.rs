@@ -34,7 +34,7 @@ impl WalletTemplate {
             alias: alias.to_owned(),
             stake_pool_delegate_alias: None,
             stake_pool_owner_alias: None,
-            initial_value: initial_value,
+            initial_value,
         }
     }
 

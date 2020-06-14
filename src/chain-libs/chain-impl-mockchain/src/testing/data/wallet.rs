@@ -19,7 +19,7 @@ impl Wallet {
     pub fn from_address_data_value(account: AddressDataValue) -> Self {
         Wallet {
             alias: "".to_owned(),
-            account: account,
+            account,
             related_utxos: None,
         }
     }

@@ -351,7 +351,7 @@ mod tests {
         .is_failure());
 
         // add value to account
-        ledger = match ledger.add_value(&account_id, value.clone()) {
+        ledger = match ledger.add_value(&account_id, value) {
             Ok(ledger) => ledger,
             Err(err) => {
                 return TestResult::error(format!(
@@ -371,7 +371,7 @@ mod tests {
         }
 
         //add reward to account
-        ledger = match ledger.add_rewards_to_account(&account_id, 0, value.clone(), ()) {
+        ledger = match ledger.add_rewards_to_account(&account_id, 0, value, ()) {
             Ok(ledger) => ledger,
             Err(err) => {
                 return TestResult::error(format!(
@@ -421,7 +421,7 @@ mod tests {
         }
 
         // remove value from account
-        ledger = match ledger.remove_value(&account_id, value.clone()) {
+        ledger = match ledger.remove_value(&account_id, value) {
             Ok((ledger, _spending_counter)) => ledger,
             Err(err) => {
                 return TestResult::error(format!(

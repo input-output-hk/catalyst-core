@@ -47,7 +47,7 @@ pub struct LedgerStateVerifier {
 impl LedgerStateVerifier {
     pub fn new(ledger: Ledger) -> Self {
         LedgerStateVerifier {
-            ledger: ledger,
+            ledger,
             info: Info::empty(),
         }
     }

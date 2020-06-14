@@ -235,8 +235,8 @@ pub struct AddressDataValue {
 impl AddressDataValue {
     pub fn new(address_data: AddressData, value: Value) -> Self {
         AddressDataValue {
-            address_data: address_data,
-            value: value,
+            address_data,
+            value,
         }
     }
 

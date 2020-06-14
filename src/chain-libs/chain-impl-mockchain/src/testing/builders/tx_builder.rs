@@ -58,9 +58,7 @@ impl TestTx {
 
 impl TestTxBuilder {
     pub fn new(block0_hash: HeaderId) -> Self {
-        Self {
-            block0_hash: block0_hash,
-        }
+        Self { block0_hash }
     }
 
     pub fn move_from_faucet(

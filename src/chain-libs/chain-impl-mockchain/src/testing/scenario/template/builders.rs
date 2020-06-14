@@ -179,7 +179,7 @@ impl StakePoolDefBuilder {
         self.tax_type = Some(TaxType {
             fixed: Value(0),
             ratio: Ratio {
-                numerator: numerator,
+                numerator,
                 denominator: NonZeroU64::new(denominator).unwrap(),
             },
             max_limit: None,

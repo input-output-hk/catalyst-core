@@ -172,6 +172,12 @@ impl Settings {
                     let mut v = new_state.bft_leaders.to_vec();
                     v.push(d.clone());
                     new_state.bft_leaders = Arc::new(v);
+
+                    // BFT Leader are automatically promoted committee too
+                    // FIXME: O(n)
+                    let mut v = new_state.committees.to_vec();
+                    v.push(d.as_public_key().clone().into());
+                    new_state.committees = Arc::new(v);
                 }
                 ConfigParam::RemoveBftLeader(d) => {
                     new_state.bft_leaders = Arc::new(

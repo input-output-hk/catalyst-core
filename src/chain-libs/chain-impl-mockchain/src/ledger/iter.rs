@@ -337,7 +337,10 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                     .set_for(pool_id.clone(), *pool_participation)
                     .unwrap(),
                 Entry::VotePlan((vote_plan, block_date)) => {
-                    votes.add_vote_plan(*block_date, vote_plan.clone()).unwrap();
+                    // TODO: don't use default
+                    votes
+                        .add_vote_plan(*block_date, vote_plan.clone(), Default::default())
+                        .unwrap();
                 }
             }
         }

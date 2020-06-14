@@ -77,11 +77,10 @@ impl TallyProof {
         &self,
         tally: &VoteTally,
         verify_data: &TransactionBindingAuthData<'a>,
-        committee: &[CommitteeId],
     ) -> Verification {
         match self {
             Self::Public { id, signature } => {
-                if tally.tally_type() != PayloadType::Public || !committee.contains(id) {
+                if tally.tally_type() != PayloadType::Public {
                     Verification::Failed
                 } else {
                     let pk = id.public_key();

@@ -405,6 +405,8 @@ impl Ledger {
             Ledger::empty(settings, static_params, era, pots)
         };
 
+        let params = ledger.get_ledger_parameters();
+
         for content in content_iter {
             let fragment_id = content.hash();
             match content {
@@ -451,7 +453,12 @@ impl Ledger {
                     // here current date is the date of the previous state of the
                     // ledger. It makes sense only because we are creating the block0
                     let cur_date = ledger.date();
-                    ledger = ledger.apply_vote_plan(cur_date, tx.payload().into_payload())?;
+                    ledger = ledger.apply_vote_plan(
+                        &tx,
+                        cur_date,
+                        tx.payload().into_payload(),
+                        &params,
+                    )?;
                 }
                 Fragment::VoteCast(_) => {
                     return Err(Error::Block0(Block0Error::HasVoteCast));
@@ -876,8 +883,12 @@ impl Ledger {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
                     new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
-                new_ledger =
-                    new_ledger_.apply_vote_plan(block_date, tx.payload().into_payload())?;
+                new_ledger = new_ledger_.apply_vote_plan(
+                    &tx,
+                    block_date,
+                    tx.payload().into_payload(),
+                    &ledger_params,
+                )?;
             }
             Fragment::VoteCast(tx) => {
                 let tx = tx.as_slice();
@@ -894,7 +905,6 @@ impl Ledger {
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
                     tx.payload_auth().into_payload_auth(),
-                    &ledger_params,
                 )?;
             }
         }
@@ -943,12 +953,34 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_vote_plan(
+    pub fn apply_vote_plan<'a>(
         mut self,
+        tx: &TransactionSlice<'a, VotePlan>,
         cur_date: BlockDate,
         vote_plan: VotePlan,
+        dyn_params: &LedgerParameters,
     ) -> Result<Self, Error> {
-        self.votes = self.votes.add_vote_plan(cur_date, vote_plan)?;
+        let committee = {
+            let mut vec = Vec::with_capacity(tx.nb_inputs() as usize);
+
+            for input in tx.inputs().iter() {
+                match input.to_enum() {
+                    InputEnum::UtxoInput(_) => {
+                        return Err(Error::VoteCastInvalidTransaction);
+                    }
+                    InputEnum::AccountInput(account_id, _value) => {
+                        use std::convert::TryInto as _;
+                        vec.push(account_id.as_ref().try_into().unwrap());
+                    }
+                }
+            }
+
+            vec.into_iter()
+                .chain(dyn_params.committees.iter().cloned())
+                .collect()
+        };
+
+        self.votes = self.votes.add_vote_plan(cur_date, vote_plan, committee)?;
         Ok(self)
     }
 
@@ -1025,15 +1057,14 @@ impl Ledger {
         tally: &certificate::VoteTally,
         bad: &TransactionBindingAuthData<'a>,
         sig: certificate::TallyProof,
-        ledger_params: &LedgerParameters,
     ) -> Result<Self, Error> {
-        if sig.verify(tally, bad, &ledger_params.committees) == Verification::Failed {
+        if sig.verify(tally, bad) == Verification::Failed {
             return Err(Error::VoteTallyProofFailed);
         }
 
         self.votes = self
             .votes
-            .apply_committee_result(self.date(), &self.accounts, tally)?;
+            .apply_committee_result(self.date(), &self.accounts, tally, sig)?;
 
         Ok(self)
     }

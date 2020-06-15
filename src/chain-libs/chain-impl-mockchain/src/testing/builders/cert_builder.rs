@@ -17,7 +17,7 @@ pub fn build_stake_delegation_cert(
         delegate_from.delegation_key(),
     ));
     Certificate::StakeDelegation(StakeDelegation {
-        account_id: account_id,
+        account_id,
         delegation: DelegationType::Full(stake_pool.to_id()),
     })
 }
@@ -50,7 +50,7 @@ pub fn build_owner_stake_delegation(delegation_type: DelegationType) -> Certific
 
 pub fn build_stake_pool_retirement_cert(pool_id: PoolId, start_validity: u64) -> Certificate {
     let retirement = PoolRetirement {
-        pool_id: pool_id,
+        pool_id,
         retirement_time: DurationSeconds(start_validity).into(),
     };
 

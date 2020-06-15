@@ -40,6 +40,12 @@ impl CommitteeId {
 
 /* Conversion ************************************************************** */
 
+impl From<PublicKey<Ed25519>> for CommitteeId {
+    fn from(key: PublicKey<Ed25519>) -> Self {
+        Self::try_from(key.as_ref()).unwrap()
+    }
+}
+
 impl From<[u8; Self::COMMITTEE_ID_SIZE]> for CommitteeId {
     fn from(id: [u8; Self::COMMITTEE_ID_SIZE]) -> Self {
         Self(id)

@@ -57,7 +57,7 @@ pub fn total_funds_are_const_in_ledger(
 ) -> TestResult {
     let config = ConfigBuilder::new(0)
         .with_discrimination(Discrimination::Test)
-        .with_fee(transaction_data.fee.clone());
+        .with_fee(transaction_data.fee);
 
     let mut ledger = LedgerBuilder::from_config(config)
         .initial_funds(&transaction_data.addresses)

@@ -1,12 +1,15 @@
 use crate::{
     account,
-    certificate::{Proposal, VoteCast, VotePlan, VotePlanId},
+    certificate::{Proposal, TallyProof, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
-    vote::{self, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
+    vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
 use imhamt::Hamt;
-use std::{collections::hash_map::DefaultHasher, sync::Arc};
+use std::{
+    collections::{hash_map::DefaultHasher, HashSet},
+    sync::Arc,
+};
 use thiserror::Error;
 
 /// Manage the vote plan and the associated votes in the ledger
@@ -17,6 +20,7 @@ use thiserror::Error;
 pub struct VotePlanManager {
     id: VotePlanId,
     plan: Arc<VotePlan>,
+    committee: Arc<HashSet<CommitteeId>>,
 
     proposal_managers: ProposalManagers,
 }
@@ -60,6 +64,9 @@ pub enum VoteError {
 
     #[error("It is not possible to tally the votes for the proposals, time to tally the votes is between {start} to {end}.")]
     CommitteeTimeElapsed { start: BlockDate, end: BlockDate },
+
+    #[error("Unexpected TallyProof's public ID, expected one of the committee")]
+    InvalidTallyCommittee,
 
     #[error("Cannot tally votes")]
     CannotTallyVotes {
@@ -191,7 +198,7 @@ impl ProposalManagers {
 }
 
 impl VotePlanManager {
-    pub fn new(plan: VotePlan) -> Self {
+    pub fn new(plan: VotePlan, committee: HashSet<CommitteeId>) -> Self {
         let id = plan.to_id();
         let proposal_managers = ProposalManagers::new(&plan);
 
@@ -199,6 +206,7 @@ impl VotePlanManager {
             id,
             plan: Arc::new(plan),
             proposal_managers,
+            committee: Arc::new(committee),
         }
     }
 
@@ -244,11 +252,21 @@ impl VotePlanManager {
         self.plan().committee_time(date)
     }
 
+    pub fn committee_set(&self) -> &HashSet<CommitteeId> {
+        &self.committee
+    }
+
     /// return true if the vote plan has elapsed i.e. the vote is
     /// no longer interesting to track in the ledger and it can be
     /// GCed.
     pub fn vote_plan_elapsed(&self, date: BlockDate) -> bool {
         self.plan().committee_end() < date
+    }
+
+    fn valid_committee(&self, sig: TallyProof) -> bool {
+        match sig {
+            TallyProof::Public { id, signature: _ } => self.committee_set().contains(&id),
+        }
     }
 
     /// attempt to apply the vote to one of the proposals
@@ -293,6 +311,7 @@ impl VotePlanManager {
                 proposal_managers,
                 plan: Arc::clone(&self.plan),
                 id: self.id.clone(),
+                committee: Arc::clone(&self.committee),
             })
         }
     }
@@ -301,12 +320,15 @@ impl VotePlanManager {
         &self,
         block_date: BlockDate,
         accounts: &account::Ledger,
+        sig: TallyProof,
     ) -> Result<Self, VoteError> {
         if !self.can_committee(block_date) {
             Err(VoteError::CommitteeTimeElapsed {
                 start: self.plan().committee_start(),
                 end: self.plan().committee_end(),
             })
+        } else if !self.valid_committee(sig) {
+            Err(VoteError::InvalidTallyCommittee)
         } else {
             let proposal_managers = match self.plan().payload_type() {
                 vote::PayloadType::Public => self.proposal_managers.public_tally(accounts)?,
@@ -316,6 +338,7 @@ impl VotePlanManager {
                 proposal_managers,
                 plan: Arc::clone(&self.plan),
                 id: self.id.clone(),
+                committee: Arc::clone(&self.committee),
             })
         }
     }
@@ -464,7 +487,7 @@ mod tests {
 
     #[quickcheck]
     pub fn vote_plan_manager_can_vote(vote_plan: VotePlan, date: BlockDate) -> TestResult {
-        let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
         TestResult::from_bool(
             should_be_in_vote_time(&vote_plan, date) == vote_plan_manager.can_vote(date),
         )
@@ -472,7 +495,7 @@ mod tests {
 
     #[quickcheck]
     pub fn vote_plan_manager_can_committee(vote_plan: VotePlan, date: BlockDate) -> TestResult {
-        let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
         TestResult::from_bool(
             should_be_in_committee_time(&vote_plan, date) == vote_plan_manager.can_committee(date),
         )
@@ -494,7 +517,7 @@ mod tests {
 
     #[quickcheck]
     pub fn vote_plan_manager_plan_elapsed(vote_plan: VotePlan, date: BlockDate) -> TestResult {
-        let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
         let committee_end_date = vote_plan.committee_end();
 
         let vote_plan_elapsed = committee_end_date < date;
@@ -505,7 +528,7 @@ mod tests {
     pub fn vote_manager_vote_cast_different_id() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(1);
         let wrong_plan = VoteTestGen::vote_plan_with_proposals(1);
-        let vote_plan_manager = VotePlanManager::new(vote_plan);
+        let vote_plan_manager = VotePlanManager::new(vote_plan, HashSet::new());
         let vote_cast = VoteCast::new(wrong_plan.to_id(), 0, VoteTestGen::vote_cast_payload());
 
         assert_eq!(
@@ -527,7 +550,7 @@ mod tests {
     #[test]
     pub fn vote_manager_too_late_to_vote() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(1);
-        let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, VoteTestGen::vote_cast_payload());
 
         assert_eq!(
@@ -557,7 +580,7 @@ mod tests {
             vote::PayloadType::Public,
         );
 
-        let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, VoteTestGen::vote_cast_payload());
 
         assert_eq!(
@@ -587,7 +610,7 @@ mod tests {
             vote::PayloadType::Public,
         );
 
-        let vote_plan_manager = VotePlanManager::new(vote_plan.clone());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, VoteTestGen::vote_cast_payload());
 
         assert!(vote_plan_manager

@@ -19,7 +19,8 @@ impl<'a> Storeable<'a> for U64Key {
     type Output = Self;
 
     fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error> {
-        Ok(LittleEndian::write_u64(buf, self.0))
+        LittleEndian::write_u64(buf, self.0);
+        Ok(())
     }
     fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {
         Ok(U64Key(LittleEndian::read_u64(buf)))

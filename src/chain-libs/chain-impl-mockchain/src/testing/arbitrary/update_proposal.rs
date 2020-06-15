@@ -102,9 +102,9 @@ impl Arbitrary for UpdateProposalData {
         let update_successful = signed_votes.len() > (leaders.len() / 2);
 
         UpdateProposalData {
-            leaders: leaders,
+            leaders,
             proposal: signed_update_proposal,
-            proposal_id: proposal_id,
+            proposal_id,
             votes: signed_votes,
             block_signing_key: sk,
             update_successful,

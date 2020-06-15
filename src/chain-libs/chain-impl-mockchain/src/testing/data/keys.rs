@@ -15,7 +15,7 @@ impl KeysDb {
     pub fn new(tcg: TestCryptoGen) -> Self {
         KeysDb {
             rng: 0,
-            tcg: tcg,
+            tcg,
             ed25519: HashMap::new(),
         }
     }

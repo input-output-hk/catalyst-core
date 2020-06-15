@@ -288,7 +288,7 @@ mod tests {
             if reference.get(k).is_some() {
                 continue;
             }
-            reference.insert(k.clone(), v.clone());
+            reference.insert(k.clone(), *v);
             h = h.insert(k.clone(), *v).unwrap();
         }
 
@@ -321,7 +321,7 @@ mod tests {
             if reference.get(k).is_some() {
                 continue;
             }
-            reference.insert(k.clone(), v.clone());
+            reference.insert(k.clone(), *v);
             h = h.insert(k.clone(), *v).unwrap();
         }
 

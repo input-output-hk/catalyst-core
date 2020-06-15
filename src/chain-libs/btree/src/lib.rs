@@ -204,7 +204,8 @@ mod tests {
         type Output = Self;
 
         fn write(&self, buf: &mut [u8]) -> Result<(), Self::Error> {
-            Ok(LittleEndian::write_u64(buf, self.0))
+            LittleEndian::write_u64(buf, self.0);
+            Ok(())
         }
 
         fn read(buf: &'a [u8]) -> Result<Self::Output, Self::Error> {

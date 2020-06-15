@@ -164,7 +164,7 @@ impl TestTxCertBuilder {
                     outputs,
                     make_witness,
                 );
-                let committee_signature = committee_sign(vt, &builder);
+                let committee_signature = committee_sign(&keys, vt, &builder);
                 let tx = builder.set_payload_auth(&committee_signature);
                 Fragment::VoteTally(tx)
             }
@@ -191,13 +191,17 @@ impl TestTxCertBuilder {
     }
 }
 
-fn committee_sign(vt: &VoteTally, builder: &TxBuilderState<SetAuthData<VoteTally>>) -> TallyProof {
+fn committee_sign(
+    keys: &[EitherEd25519SecretKey],
+    vt: &VoteTally,
+    builder: &TxBuilderState<SetAuthData<VoteTally>>,
+) -> TallyProof {
     let payload_type = vt.tally_type();
 
     match payload_type {
         PayloadType::Public => {
-            let id = todo!();
-            let key: EitherEd25519SecretKey = todo!();
+            let key: EitherEd25519SecretKey = keys[0].clone();
+            let id = key.to_public().into();
 
             let auth_data = builder.get_auth_data();
             let signature =
@@ -241,8 +245,8 @@ impl FaultTolerantTxCertBuilder {
     pub fn new(block0_hash: HeaderId, fee: LinearFee, cert: Certificate, funder: Wallet) -> Self {
         Self {
             builder: TestTxCertBuilder::new(block0_hash, fee),
-            cert: cert,
-            funder: funder,
+            cert,
+            funder,
         }
     }
 

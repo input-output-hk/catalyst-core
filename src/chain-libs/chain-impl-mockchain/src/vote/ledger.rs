@@ -1,12 +1,12 @@
 use crate::{
     account,
-    certificate::{VoteCast, VotePlan, VotePlanId, VoteTally},
+    certificate::{TallyProof, VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
-    vote::{VoteError, VotePlanManager},
+    vote::{CommitteeId, VoteError, VotePlanManager},
 };
 use imhamt::{Hamt, InsertError, UpdateError};
-use std::collections::{hash_map::DefaultHasher, BTreeMap};
+use std::collections::{hash_map::DefaultHasher, BTreeMap, HashSet};
 use thiserror::Error;
 
 #[derive(Clone, PartialEq, Eq)]
@@ -133,6 +133,7 @@ impl VotePlanLedger {
         &self,
         current_date: BlockDate,
         vote_plan: VotePlan,
+        committee: HashSet<CommitteeId>,
     ) -> Result<Self, VotePlanLedgerError> {
         if current_date > vote_plan.vote_end() {
             return Err(VotePlanLedgerError::VotePlanVoteEndPassed {
@@ -150,7 +151,7 @@ impl VotePlanLedger {
 
         let id = vote_plan.to_id();
         let end_date = vote_plan.committee_end();
-        let manager = VotePlanManager::new(vote_plan);
+        let manager = VotePlanManager::new(vote_plan, committee);
 
         match self.plans.insert(id.clone(), (manager, end_date)) {
             Err(reason) => Err(VotePlanLedgerError::VotePlanInsertionError { id, reason }),
@@ -179,11 +180,12 @@ impl VotePlanLedger {
         block_date: BlockDate,
         accounts: &account::Ledger,
         tally: &VoteTally,
+        sig: TallyProof,
     ) -> Result<Self, VotePlanLedgerError> {
         let id = tally.id().clone();
 
         let r = self.plans.update(&id, move |(v, d)| {
-            v.tally(block_date, accounts).map(|v| Some((v, *d)))
+            v.tally(block_date, accounts, sig).map(|v| Some((v, *d)))
         });
 
         match r {

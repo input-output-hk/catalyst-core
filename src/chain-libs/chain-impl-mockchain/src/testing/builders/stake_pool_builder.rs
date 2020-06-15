@@ -79,7 +79,7 @@ impl StakePoolBuilder {
         self.with_tax_type(TaxType {
             fixed: Value(0),
             ratio: Ratio {
-                numerator: numerator,
+                numerator,
                 denominator: NonZeroU64::new(denominator).unwrap(),
             },
             max_limit: max_limit.map(|x| NonZeroU64::new(x).unwrap()),
@@ -115,7 +115,7 @@ impl StakePoolBuilder {
             owners: self.owners.clone(),
             operators: self.operators.iter().cloned().collect(),
             start_validity: DurationSeconds::from(0).into(),
-            permissions: permissions,
+            permissions,
             rewards: self.tax_type,
             reward_account: reward_identifier,
             keys: GenesisPraosLeader {

@@ -130,10 +130,7 @@ pub struct InitialFaultTolerantTxCertBuilder {
 
 impl InitialFaultTolerantTxCertBuilder {
     pub fn new(cert: Certificate, funder: Wallet) -> Self {
-        Self {
-            cert: cert,
-            funder: funder,
-        }
+        Self { cert, funder }
     }
 
     pub fn transaction_with_input_output(&self) -> Fragment {

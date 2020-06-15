@@ -456,7 +456,7 @@ mod tests {
         // add accounts with delegation as a target for delegation addresses
         let single_account = stake_distribution_data.single_account.clone();
         accounts = accounts
-            .add_account(&single_account.0.clone(), single_account.1, ())
+            .add_account(&single_account.0, single_account.1, ())
             .unwrap();
         accounts = accounts
             .set_delegation(&single_account.0, &DelegationType::Full(id_active_pool))

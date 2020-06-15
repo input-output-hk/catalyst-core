@@ -88,7 +88,7 @@ pub fn apply_block_wrong_date() {
     });
 
     let block = GenesisPraosBlockBuilder::new()
-        .with_date(date.clone())
+        .with_date(date)
         .with_chain_length(ChainLength(0))
         .with_parent_id(ledger.block0_hash)
         .build(&stake_pool, ledger.era());
@@ -119,7 +119,7 @@ pub fn apply_block_epoch_transition_without_rewards_distribution() {
         slot_id: 0,
     };
     let block = GenesisPraosBlockBuilder::new()
-        .with_date(date.clone())
+        .with_date(date)
         .with_chain_length(ChainLength(1))
         .with_parent_id(ledger.block0_hash)
         .build(&stake_pool, ledger.era());
@@ -157,7 +157,7 @@ pub fn apply_block_incorrect_fragment() {
         .get_fragment();
 
     let block = GenesisPraosBlockBuilder::new()
-        .with_date(date.clone())
+        .with_date(date)
         .with_fragment(fragment)
         .with_chain_length(ChainLength(0))
         .with_parent_id(ledger.block0_hash)
@@ -192,7 +192,7 @@ pub fn apply_block_above_max_content_size() {
     let fragment = fragment_factory.transaction(&alice, &bob, &mut ledger, 10);
 
     let block = GenesisPraosBlockBuilder::new()
-        .with_date(date.clone())
+        .with_date(date)
         .with_fragment(fragment)
         .with_chain_length(ChainLength(0))
         .with_parent_id(ledger.block0_hash)

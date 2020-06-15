@@ -245,7 +245,7 @@ mod test {
             }
 
             let cur_block_info = store.get_block_info(&cur_hash).unwrap();
-            blocks_to_apply.push(cur_hash.clone());
+            blocks_to_apply.push(cur_hash);
             cur_hash = cur_block_info.parent_id();
         };
 
@@ -268,7 +268,7 @@ mod test {
                     &header_meta,
                 )
                 .unwrap();
-            state_ref = multiverse.add(hash.clone(), state);
+            state_ref = multiverse.add(*hash, state);
         }
 
         Ok(state_ref)

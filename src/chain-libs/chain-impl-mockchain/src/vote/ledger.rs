@@ -1,7 +1,8 @@
 use crate::{
     account,
-    certificate::{TallyProof, VoteCast, VotePlan, VotePlanId, VoteTally},
+    certificate::{TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
+    ledger::governance::TreasuryGovernance,
     transaction::UnspecifiedAccountIdentifier,
     vote::{CommitteeId, VoteError, VotePlanManager},
 };
@@ -194,6 +195,20 @@ impl VotePlanLedger {
                 plans,
                 plans_by_end_date: self.plans_by_end_date.clone(),
             }),
+        }
+    }
+
+    pub fn select_votes<'a>(
+        &'a self,
+        tally: &VoteTally,
+        governance: &'a TreasuryGovernance,
+    ) -> impl Iterator<Item = &'a VoteAction> {
+        let id = tally.id().clone();
+
+        if let Some((plans, _)) = self.plans.lookup(&id) {
+            plans.select_votes(governance)
+        } else {
+            unreachable!()
         }
     }
 }

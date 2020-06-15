@@ -2,11 +2,11 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxVerifyError};
-use super::governance::{TreasuryGovernance, TreasuryGovernanceAcceptanceCriteria};
+use super::governance::{TreasuryGovernance, TreasuryGovernanceAction};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
-use crate::certificate::{PoolId, VotePlan};
+use crate::certificate::{PoolId, VoteAction, VotePlan};
 use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
@@ -1076,6 +1076,17 @@ impl Ledger {
         self.votes = self
             .votes
             .apply_committee_result(self.date(), &self.accounts, tally, sig)?;
+
+        let selected_proposals = self.votes.select_votes(tally, &self.treasury_governance);
+
+        for action in selected_proposals {
+            match action {
+                VoteAction::OffChain => {}
+                VoteAction::Treasury {
+                    action: TreasuryGovernanceAction::TransferToRewards { value },
+                } => todo!(),
+            }
+        }
 
         Ok(self)
     }

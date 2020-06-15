@@ -1,7 +1,8 @@
 use crate::{
     account,
-    certificate::{Proposal, TallyProof, VoteCast, VotePlan, VotePlanId},
+    certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
+    ledger::governance::TreasuryGovernance,
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
@@ -33,6 +34,7 @@ struct ProposalManager {
     votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, vote::Payload>,
     options: Options,
     tally: Option<Tally>,
+    action: VoteAction,
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -89,6 +91,7 @@ impl ProposalManager {
             votes_by_voters: Hamt::new(),
             options: proposal.options().clone(),
             tally: None,
+            action: proposal.action().clone(),
         }
     }
 
@@ -113,6 +116,7 @@ impl ProposalManager {
             votes_by_voters,
             tally: self.tally.clone(),
             options: self.options.clone(),
+            action: self.action.clone(),
         })
     }
 
@@ -138,7 +142,20 @@ impl ProposalManager {
             votes_by_voters: self.votes_by_voters.clone(),
             options: self.options.clone(),
             tally: Some(Tally::new_public(results)),
+            action: self.action.clone(),
         })
+    }
+
+    fn check(&self, governance: &TreasuryGovernance) -> bool {
+        match &self.action {
+            VoteAction::OffChain => false,
+            VoteAction::Treasury { action } => {
+                let t = action.to_type();
+                let acceptance = governance.acceptance_criteria_for(t);
+
+                todo!()
+            }
+        }
     }
 }
 
@@ -341,6 +358,19 @@ impl VotePlanManager {
                 committee: Arc::clone(&self.committee),
             })
         }
+    }
+
+    pub fn select_votes<'a>(
+        &'a self,
+        governance: &'a TreasuryGovernance,
+    ) -> impl Iterator<Item = &'a VoteAction> {
+        self.proposal_managers.0.iter().filter_map(move |proposal| {
+            if proposal.check(&governance) {
+                Some(&proposal.action)
+            } else {
+                None
+            }
+        })
     }
 }
 

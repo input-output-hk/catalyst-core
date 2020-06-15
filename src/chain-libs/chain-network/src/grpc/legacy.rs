@@ -40,7 +40,11 @@ struct HexWrap<'a>(&'a [u8]);
 
 impl<'a> fmt::Debug for HexWrap<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "0x{}", &hex::encode(self.0))
+        f.write_str("0x")?;
+        for b in self.0 {
+            write!(f, "{:x}", *b)?;
+        }
+        Ok(())
     }
 }
 

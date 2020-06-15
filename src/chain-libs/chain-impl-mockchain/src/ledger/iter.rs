@@ -1,3 +1,4 @@
+use super::governance::TreasuryGovernance;
 use super::ledger::{Error, Ledger, LedgerStaticParameters};
 use super::pots::{self, Pots};
 use super::LeadersParticipationRecord;
@@ -290,6 +291,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         let mut leaders_log = LeadersParticipationRecord::new();
         // TODO: votes don't have their entry
         let votes = VotePlanLedger::new();
+        let treasury_governance = TreasuryGovernance::default();
 
         for entry in iter {
             match entry {
@@ -362,6 +364,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             pots,
             leaders_log,
             votes,
+            treasury_governance,
         })
     }
 }

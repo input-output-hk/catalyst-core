@@ -2,6 +2,7 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxVerifyError};
+use super::governance::{TreasuryGovernance, TreasuryGovernanceAcceptanceCriteria};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
@@ -82,6 +83,7 @@ pub struct Ledger {
     pub(crate) pots: Pots,
     pub(crate) leaders_log: LeadersParticipationRecord,
     pub(crate) votes: VotePlanLedger,
+    pub(crate) treasury_governance: TreasuryGovernance,
 }
 
 // Dummy implementation of Debug for Ledger
@@ -320,6 +322,7 @@ impl Ledger {
             pots,
             leaders_log: LeadersParticipationRecord::new(),
             votes: VotePlanLedger::new(),
+            treasury_governance: TreasuryGovernance::default(),
         }
     }
 

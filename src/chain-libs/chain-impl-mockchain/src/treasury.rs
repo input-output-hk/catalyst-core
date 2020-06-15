@@ -21,6 +21,15 @@ impl Treasury {
         Ok(())
     }
 
+    /// remove some values from the treasury
+    pub fn sub(&mut self, value: Value) -> Result<(), Error> {
+        self.0 = self
+            .0
+            .checked_sub(value)
+            .map_err(|error| Error::PotValueInvalid { error })?;
+        Ok(())
+    }
+
     /// Get value in the treasury
     pub fn value(self) -> Value {
         self.0

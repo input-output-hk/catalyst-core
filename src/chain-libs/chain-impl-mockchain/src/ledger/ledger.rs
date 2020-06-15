@@ -282,8 +282,6 @@ pub enum Error {
     PoolUpdateFeesNotAllowedYet,
     #[error("Update not yet allowed")]
     UpdateNotAllowedYet,
-    #[error("Vote plans are not allowed outside of the genesis block yet")]
-    VotePlanNotAllowedYet,
     #[error("Cannot add the vote plan")]
     CannotAddVotePlan(
         #[from]
@@ -880,11 +878,6 @@ impl Ledger {
                 new_ledger = new_ledger.apply_update_vote(&vote)?;
             }
             Fragment::VotePlan(tx) => {
-                if true {
-                    // TODO: vote plans are not yet allowed outside of the initial block0
-                    return Err(Error::VotePlanNotAllowedYet);
-                }
-
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
                     new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;

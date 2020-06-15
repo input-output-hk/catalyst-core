@@ -1,13 +1,14 @@
 //! Support for legacy features.
 
 use rand_core::RngCore;
+use std::fmt;
 
 const NODE_ID_LEN: usize = 24;
 
 /// Represents a randomly generated node ID such as was present in subscription
 /// requests and responses in Jormungandr versions prior to 0.9
 /// (as implemented in the old `network-grpc` crate).
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct NodeId([u8; NODE_ID_LEN]);
 
 impl NodeId {
@@ -32,6 +33,20 @@ impl NodeId {
         vec.extend_from_slice(&(NODE_ID_LEN as u64).to_le_bytes());
         vec.extend_from_slice(&self.0);
         vec
+    }
+}
+
+struct HexWrap<'a>(&'a [u8]);
+
+impl<'a> fmt::Debug for HexWrap<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "0x{}", &hex::encode(self.0))
+    }
+}
+
+impl fmt::Debug for NodeId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_tuple("NodeId").field(&HexWrap(&self.0)).finish()
     }
 }
 

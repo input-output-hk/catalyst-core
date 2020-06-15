@@ -1,6 +1,7 @@
 use super::*;
 use crate::accounting::account::DelegationType;
 use crate::block::BlockDate;
+use crate::ledger::governance::TreasuryGovernanceAction;
 use crate::rewards::TaxType;
 use crate::vote;
 #[cfg(test)]
@@ -124,12 +125,31 @@ impl Arbitrary for PoolRegistration {
     }
 }
 
+impl Arbitrary for TreasuryGovernanceAction {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        TreasuryGovernanceAction::TransferToRewards {
+            value: Arbitrary::arbitrary(g),
+        }
+    }
+}
+
+impl Arbitrary for VoteAction {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        if let Some(action) = Arbitrary::arbitrary(g) {
+            VoteAction::Treasury { action }
+        } else {
+            VoteAction::OffChain
+        }
+    }
+}
+
 impl Arbitrary for Proposal {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let external_id = ExternalProposalId::arbitrary(g);
         let funding_plan = vote::Options::arbitrary(g);
+        let action = VoteAction::arbitrary(g);
 
-        Self::new(external_id, funding_plan)
+        Self::new(external_id, funding_plan, action)
     }
 }
 

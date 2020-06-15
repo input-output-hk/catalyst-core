@@ -11,8 +11,8 @@ use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
 pub use self::vote_cast::VoteCast;
 pub use self::vote_plan::{
-    ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VotePlan,
-    VotePlanId, VotePlanProof,
+    ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VoteAction,
+    VotePlan, VotePlanId, VotePlanProof,
 };
 pub use self::vote_tally::{TallyProof, VoteTally, VoteTallyPayload};
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};

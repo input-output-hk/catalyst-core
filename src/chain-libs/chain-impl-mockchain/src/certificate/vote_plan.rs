@@ -1,6 +1,7 @@
 use crate::{
     block::BlockDate,
     certificate::CertificateSlice,
+    ledger::governance::TreasuryGovernanceAction,
     transaction::{
         Payload, PayloadAuthData, PayloadData, PayloadSlice, SingleAccountBindingSignature,
         TransactionBindingAuthData,
@@ -53,6 +54,17 @@ pub struct VotePlanProof {
     pub signature: SingleAccountBindingSignature,
 }
 
+/// this is the action that will result of the vote
+///
+///
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VoteAction {
+    /// the action if off chain or not relevant to the blockchain
+    OffChain,
+    /// control the treasury
+    Treasury { action: TreasuryGovernanceAction },
+}
+
 /// a collection of proposals
 ///
 /// there may not be more than 255 proposal
@@ -70,6 +82,7 @@ pub struct Proposals {
 pub struct Proposal {
     external_id: ExternalProposalId,
     options: vote::Options,
+    action: VoteAction,
 }
 
 #[must_use = "Adding a proposal may fail"]
@@ -80,10 +93,15 @@ pub enum PushProposal {
 }
 
 impl Proposal {
-    pub fn new(external_id: ExternalProposalId, options: vote::Options) -> Self {
+    pub fn new(
+        external_id: ExternalProposalId,
+        options: vote::Options,
+        action: VoteAction,
+    ) -> Self {
         Self {
             external_id,
             options,
+            action,
         }
     }
 
@@ -95,9 +113,22 @@ impl Proposal {
         &self.options
     }
 
+    pub fn action(&self) -> &VoteAction {
+        &self.action
+    }
+
     fn serialize_in(&self, bb: ByteBuilder<VotePlan>) -> ByteBuilder<VotePlan> {
         bb.bytes(self.external_id.as_ref())
             .u8(self.options.as_byte())
+    }
+}
+
+impl VoteAction {
+    fn serialize_in(&self, bb: ByteBuilder<VotePlan>) -> ByteBuilder<VotePlan> {
+        match self {
+            Self::OffChain => bb.u8(0),
+            Self::Treasury { action } => bb.u8(1).sub(|bb| action.serialize_in(bb)),
+        }
     }
 }
 
@@ -300,11 +331,22 @@ impl property::Serialize for VotePlan {
     }
 }
 
+
 impl Readable for VotePlanProof {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let id = vote::CommitteeId::read(buf)?;
         let signature = SingleAccountBindingSignature::read(buf)?;
         Ok(Self { id, signature })
+    }
+}
+
+impl Readable for VoteAction {
+    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        match buf.get_u8()? {
+            0 => Ok(Self::OffChain),
+            1 => TreasuryGovernanceAction::read(buf).map(|action| Self::Treasury { action }),
+            t => Err(ReadError::UnknownTag(t as u32)),
+        }
     }
 }
 
@@ -340,10 +382,12 @@ impl Readable for VotePlan {
                 vote::Options::new_length(num_choices)
                     .map_err(|e| ReadError::StructureInvalid(e.to_string()))
             })?;
+            let action = VoteAction::read(buf)?;
 
             let proposal = Proposal {
                 external_id,
                 options,
+                action,
             };
 
             proposals.proposals.push(proposal);

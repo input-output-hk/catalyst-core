@@ -1,6 +1,11 @@
 use crate::{rewards::Ratio, value::Value};
+use chain_core::{
+    mempack::{ReadBuf, ReadError, Readable},
+    property,
+};
 use imhamt::Hamt;
 use std::{collections::hash_map::DefaultHasher, num::NonZeroU64};
+use typed_bytes::{ByteArray, ByteBuilder};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TreasuryGovernanceAction {
@@ -30,6 +35,12 @@ impl TreasuryGovernanceAction {
     pub fn to_type(&self) -> TreasuryGovernanceActionType {
         match self {
             Self::TransferToRewards { .. } => TreasuryGovernanceActionType::TransferToRewards,
+        }
+    }
+
+    pub(crate) fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+        match self {
+            Self::TransferToRewards { value } => bb.u8(1).u64(value.0),
         }
     }
 }
@@ -92,6 +103,20 @@ impl Default for TreasuryGovernanceAcceptanceCriteria {
                 numerator: 50,
                 denominator: CENT,
             }),
+        }
+    }
+}
+
+/* Ser/De ******************************************************************* */
+
+impl Readable for TreasuryGovernanceAction {
+    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        match buf.get_u8()? {
+            1 => {
+                let value = Value::read(buf)?;
+                Ok(Self::TransferToRewards { value })
+            }
+            t => Err(ReadError::UnknownTag(t as u32)),
         }
     }
 }

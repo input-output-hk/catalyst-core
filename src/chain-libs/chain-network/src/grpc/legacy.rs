@@ -1,6 +1,8 @@
 //! Support for legacy features.
 
 use rand_core::RngCore;
+use std::array::TryFromSliceError;
+use std::convert::{TryFrom, TryInto};
 use std::fmt;
 
 const NODE_ID_LEN: usize = 24;
@@ -33,6 +35,24 @@ impl NodeId {
         vec.extend_from_slice(&(NODE_ID_LEN as u64).to_le_bytes());
         vec.extend_from_slice(&self.0);
         vec
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+#[error("invalid slice length for legacy node ID")]
+pub struct TryFromBytesError();
+
+impl From<TryFromSliceError> for TryFromBytesError {
+    fn from(_: TryFromSliceError) -> Self {
+        TryFromBytesError()
+    }
+}
+
+impl<'a> TryFrom<&'a [u8]> for NodeId {
+    type Error = TryFromBytesError;
+    fn try_from(bytes: &'a [u8]) -> Result<Self, TryFromBytesError> {
+        let bytes = bytes.try_into()?;
+        Ok(NodeId(bytes))
     }
 }
 

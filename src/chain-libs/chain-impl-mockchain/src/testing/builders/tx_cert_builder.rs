@@ -1,6 +1,6 @@
 use crate::{
     certificate::{
-        Certificate, CertificatePayload, PoolOwnersSigned, PoolSignature, TallyProof, VoteTally,
+        Certificate, CertificatePayload, PoolOwnersSigned, PoolSignature, TallyProof, VoteTally, VotePlan, VotePlanProof,
     },
     chaintypes::HeaderId,
     fee::FeeAlgorithm,
@@ -142,7 +142,8 @@ impl TestTxCertBuilder {
                     outputs,
                     make_witness,
                 );
-                let tx = builder.set_payload_auth(&());
+                let committee_signature = plan_sign(&keys, &builder);
+                let tx = builder.set_payload_auth(&committee_signature);
                 Fragment::VotePlan(tx)
             }
             Certificate::VoteCast(vp) => {
@@ -164,7 +165,7 @@ impl TestTxCertBuilder {
                     outputs,
                     make_witness,
                 );
-                let committee_signature = committee_sign(&keys, vt, &builder);
+                let committee_signature = tally_sign(&keys, vt, &builder);
                 let tx = builder.set_payload_auth(&committee_signature);
                 Fragment::VoteTally(tx)
             }
@@ -191,7 +192,7 @@ impl TestTxCertBuilder {
     }
 }
 
-fn committee_sign(
+fn tally_sign(
     keys: &[EitherEd25519SecretKey],
     vt: &VoteTally,
     builder: &TxBuilderState<SetAuthData<VoteTally>>,
@@ -210,6 +211,19 @@ fn committee_sign(
             TallyProof::Public { id, signature }
         }
     }
+}
+
+pub fn plan_sign(
+    keys: &[EitherEd25519SecretKey],
+    builder: &TxBuilderState<SetAuthData<VotePlan>>,
+) -> VotePlanProof {
+    let key: EitherEd25519SecretKey = keys[0].clone();
+    let id = key.to_public().into();
+
+    let auth_data = builder.get_auth_data();
+    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
+
+    VotePlanProof { id, signature }
 }
 
 pub fn pool_owner_sign<P: Payload>(

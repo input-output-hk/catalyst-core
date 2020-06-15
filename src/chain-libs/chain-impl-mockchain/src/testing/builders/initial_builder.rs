@@ -111,7 +111,8 @@ fn fragment(
         }
         Certificate::VotePlan(s) => {
             let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
-            let tx = builder.set_payload_auth(&());
+            let signature = plan_sign(&keys, &builder);
+            let tx = builder.set_payload_auth(&signature);
             Fragment::VotePlan(tx)
         }
         Certificate::VoteCast(s) => {

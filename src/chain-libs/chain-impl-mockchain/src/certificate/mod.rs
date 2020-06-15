@@ -12,7 +12,7 @@ use crate::transaction::{Payload, PayloadData, PayloadSlice};
 pub use self::vote_cast::VoteCast;
 pub use self::vote_plan::{
     ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VotePlan,
-    VotePlanId,
+    VotePlanId, VotePlanProof,
 };
 pub use self::vote_tally::{TallyProof, VoteTally, VoteTallyPayload};
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
@@ -259,7 +259,7 @@ mod tests {
             Certificate::PoolRetirement(_) => true,
             Certificate::StakeDelegation(_) => true,
             Certificate::OwnerStakeDelegation(_) => false,
-            Certificate::VotePlan(_) => false,
+            Certificate::VotePlan(_) => true,
             Certificate::VoteCast(_) => false,
             Certificate::VoteTally(_) => true,
         };

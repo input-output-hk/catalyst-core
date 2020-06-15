@@ -1,11 +1,8 @@
 use crate::{rewards::Ratio, value::Value};
-use chain_core::{
-    mempack::{ReadBuf, ReadError, Readable},
-    property,
-};
+use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use imhamt::Hamt;
 use std::{collections::hash_map::DefaultHasher, num::NonZeroU64};
-use typed_bytes::{ByteArray, ByteBuilder};
+use typed_bytes::ByteBuilder;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TreasuryGovernanceAction {

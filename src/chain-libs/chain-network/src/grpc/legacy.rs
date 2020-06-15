@@ -17,6 +17,16 @@ impl NodeId {
         Ok(NodeId(bytes))
     }
 
+    /// Get the node ID as a byte slice.
+    ///
+    /// This is mostly useful for display purposes such as logging.
+    /// To get the wire format representation, use `encode`.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+
+    /// Get the wire format representation that was used (sigh) by
+    /// jormungandr releases prior to 0.9.
     pub fn encode(&self) -> Vec<u8> {
         let mut vec = Vec::with_capacity(NODE_ID_LEN + 8);
         vec.extend_from_slice(&(NODE_ID_LEN as u64).to_le_bytes());

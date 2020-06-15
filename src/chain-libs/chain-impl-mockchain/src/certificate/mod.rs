@@ -241,7 +241,6 @@ pub enum SignedCertificate {
     PoolRetirement(PoolRetirement, <PoolRetirement as Payload>::Auth),
     PoolUpdate(PoolUpdate, <PoolUpdate as Payload>::Auth),
     VotePlan(VotePlan, <VotePlan as Payload>::Auth),
-    VoteCast(VoteCast, <VoteCast as Payload>::Auth),
     VoteTally(VoteTally, <VoteTally as Payload>::Auth),
 }
 

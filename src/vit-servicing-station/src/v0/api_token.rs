@@ -4,8 +4,8 @@ use crate::db::{
     DBConnectionPool,
 };
 use crate::v0::{context::SharedContext, errors::HandleError};
-use diesel::query_dsl::{filter_dsl::FilterDsl, RunQueryDsl};
-use diesel::{ExpressionMethods, OptionalExtension};
+use diesel::query_dsl::RunQueryDsl;
+use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use warp::{Filter, Rejection};
 
 /// Header where token should be present in requests
@@ -13,7 +13,7 @@ const API_TOKEN_HEADER: &str = "API-Token";
 
 /// API Token wrapper type
 #[derive(PartialEq, Eq)]
-pub struct APIToken(String);
+pub struct APIToken([u8; 32]);
 
 /// API token manager is an abstraction on the API tokens for the service
 /// The main idea is to keep the service agnostic of what kind of backend we are using such task.
@@ -21,6 +21,12 @@ pub struct APIToken(String);
 /// REDIS, or some other hybrid system.
 pub struct APITokenManager {
     connection_pool: DBConnectionPool,
+}
+
+impl AsRef<[u8]> for APIToken {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
 }
 
 impl APITokenManager {
@@ -36,7 +42,7 @@ impl APITokenManager {
 
         match tokio::task::spawn_blocking(move || {
             api_tokens_dsl
-                .filter(api_tokens::token.eq(token.0))
+                .filter(api_tokens::token.eq(token.0.as_ref()))
                 .first::<api_token::APIToken>(&db_conn)
                 .optional()
         })
@@ -60,7 +66,26 @@ impl APITokenManager {
 
 async fn authorize_token(token: String, context: SharedContext) -> Result<(), Rejection> {
     let manager = APITokenManager::new(context.read().await.db_connection_pool.clone());
-    match manager.is_token_valid(APIToken(token)).await {
+
+    let mut token_vec: Vec<u8> = Vec::with_capacity(32);
+    base64::decode_config_buf(token, base64::URL_SAFE, &mut token_vec).map_err(|_err| {
+        warp::reject::custom(HandleError::InvalidHeader(
+            API_TOKEN_HEADER,
+            "header should be base64 url safe decodable",
+        ))
+    })?;
+
+    // enforce that the hash size is correct
+    if token_vec.len() != 32 {
+        return Err(warp::reject::custom(HandleError::InvalidHeader(
+            API_TOKEN_HEADER,
+            "header should contain a 32 bytes long hash encoded as a url safe base64",
+        )));
+    }
+
+    let api_token = APIToken(token_vec_to_token_array(token_vec));
+
+    match manager.is_token_valid(api_token).await {
         Ok(true) => Ok(()),
         Ok(false) => Err(warp::reject::custom(HandleError::UnauthorizedToken)),
         Err(e) => Err(warp::reject::custom(e)),
@@ -78,4 +103,15 @@ pub async fn api_token_filter(
         .and_then(authorize_token)
         .and(warp::any())
         .untuple_one()
+}
+
+fn token_vec_to_token_array(token_vec: Vec<u8>) -> [u8; 32] {
+    // this should never happen at this point
+    assert_eq!(token_vec.len(), 32);
+    // build the actual buffer
+    let mut token_buff: [u8; 32] = [0u8; 32];
+
+    token_buff[..32].clone_from_slice(&token_vec[..32]);
+
+    token_buff
 }

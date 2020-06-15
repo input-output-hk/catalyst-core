@@ -49,7 +49,7 @@ create table voteplans
 
 create table api_tokens
 (
-    token VARCHAR NOT NULL UNIQUE PRIMARY KEY ,
+    token BLOB NOT NULL UNIQUE PRIMARY KEY ,
     creation_time VARCHAR NOT NULL,
     expire_time VARCHAR NOT NULL
 );

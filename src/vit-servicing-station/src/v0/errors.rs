@@ -12,8 +12,11 @@ pub enum HandleError {
     #[error("Unauthorized token")]
     UnauthorizedToken,
 
-    #[error("Internal error")]
+    #[error("Internal error: {0}")]
     InternalError(String),
+
+    #[error("Invalid header {0}, cause: {1}")]
+    InvalidHeader(&'static str, &'static str),
 }
 
 impl HandleError {
@@ -23,12 +26,21 @@ impl HandleError {
             HandleError::DatabaseError(_) => warp::http::StatusCode::SERVICE_UNAVAILABLE,
             HandleError::InternalError(_) => warp::http::StatusCode::INTERNAL_SERVER_ERROR,
             HandleError::UnauthorizedToken => warp::http::StatusCode::UNAUTHORIZED,
+            HandleError::InvalidHeader(_, _) => warp::http::StatusCode::BAD_REQUEST,
         }
+    }
+
+    fn to_message(&self) -> String {
+        format!("{}", self)
     }
 
     fn to_response(&self) -> Response {
         let status_code = self.to_status_code();
-        warp::reply::with_status(warp::reply(), status_code).into_response()
+        warp::reply::with_status(
+            warp::reply::json(&serde_json::json!({"message" : self.to_message()})),
+            status_code,
+        )
+        .into_response()
     }
 }
 

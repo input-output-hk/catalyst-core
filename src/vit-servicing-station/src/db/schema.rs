@@ -1,6 +1,6 @@
 table! {
     api_tokens (token) {
-        token -> Text,
+        token -> Binary,
         creation_time -> Text,
         expire_time -> Text,
     }

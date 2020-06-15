@@ -1,13 +1,14 @@
 //! Support for legacy features.
 
 use rand_core::RngCore;
+use std::fmt;
 
 const NODE_ID_LEN: usize = 24;
 
 /// Represents a randomly generated node ID such as was present in subscription
 /// requests and responses in Jormungandr versions prior to 0.9
 /// (as implemented in the old `network-grpc` crate).
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct NodeId([u8; NODE_ID_LEN]);
 
 impl NodeId {
@@ -17,11 +18,39 @@ impl NodeId {
         Ok(NodeId(bytes))
     }
 
+    /// Get the node ID as a byte slice.
+    ///
+    /// This is mostly useful for display purposes such as logging.
+    /// To get the wire format representation, use `encode`.
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+
+    /// Get the wire format representation that was used (sigh) by
+    /// jormungandr releases prior to 0.9.
     pub fn encode(&self) -> Vec<u8> {
         let mut vec = Vec::with_capacity(NODE_ID_LEN + 8);
         vec.extend_from_slice(&(NODE_ID_LEN as u64).to_le_bytes());
         vec.extend_from_slice(&self.0);
         vec
+    }
+}
+
+struct HexWrap<'a>(&'a [u8]);
+
+impl<'a> fmt::Debug for HexWrap<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("0x")?;
+        for b in self.0 {
+            write!(f, "{:x}", *b)?;
+        }
+        Ok(())
+    }
+}
+
+impl fmt::Debug for NodeId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_tuple("NodeId").field(&HexWrap(&self.0)).finish()
     }
 }
 

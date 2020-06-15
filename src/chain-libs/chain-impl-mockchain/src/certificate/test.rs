@@ -161,6 +161,15 @@ impl Arbitrary for VotePlan {
     }
 }
 
+impl Arbitrary for VotePlanProof {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        Self {
+            id: Arbitrary::arbitrary(g),
+            signature: Arbitrary::arbitrary(g),
+        }
+    }
+}
+
 impl Arbitrary for VoteCast {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let vote_plan = VotePlanId::arbitrary(g);
@@ -175,6 +184,15 @@ impl Arbitrary for VoteTally {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         let vote_plan_id = VotePlanId::arbitrary(g);
         Self::new_public(vote_plan_id)
+    }
+}
+
+impl Arbitrary for TallyProof {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        Self::Public {
+            id: Arbitrary::arbitrary(g),
+            signature: Arbitrary::arbitrary(g),
+        }
     }
 }
 

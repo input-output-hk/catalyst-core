@@ -120,6 +120,7 @@ impl Proposal {
     fn serialize_in(&self, bb: ByteBuilder<VotePlan>) -> ByteBuilder<VotePlan> {
         bb.bytes(self.external_id.as_ref())
             .u8(self.options.as_byte())
+            .sub(|bb| self.action.serialize_in(bb))
     }
 }
 

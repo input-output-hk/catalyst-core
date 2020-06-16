@@ -3,6 +3,7 @@ use crate::{
     value::Value,
     vote::{Choice, Options},
 };
+use std::fmt;
 use thiserror::Error;
 
 /// weight of a vote
@@ -127,5 +128,11 @@ impl From<u64> for Weight {
 impl From<Weight> for u64 {
     fn from(w: Weight) -> Self {
         w.0
+    }
+}
+
+impl fmt::Display for Weight {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }

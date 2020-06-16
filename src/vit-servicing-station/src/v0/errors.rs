@@ -1,3 +1,4 @@
+use async_graphql::FieldError;
 use thiserror::Error;
 use warp::{reply::Response, Rejection, Reply};
 
@@ -12,7 +13,7 @@ pub enum HandleError {
     #[error("Unauthorized token")]
     UnauthorizedToken,
 
-    #[error("Internal error: {0}")]
+    #[error("Internal error, cause: {0}")]
     InternalError(String),
 
     #[error("Invalid header {0}, cause: {1}")]
@@ -36,11 +37,11 @@ impl HandleError {
 
     fn to_response(&self) -> Response {
         let status_code = self.to_status_code();
-        warp::reply::with_status(
-            warp::reply::json(&serde_json::json!({"message" : self.to_message()})),
-            status_code,
-        )
-        .into_response()
+        warp::reply::with_status(warp::reply::json(&self.to_json()), status_code).into_response()
+    }
+
+    fn to_json(&self) -> serde_json::Value {
+        serde_json::json!({"code": self.to_status_code().as_u16(), "message" : self.to_message()})
     }
 }
 
@@ -51,6 +52,15 @@ impl warp::Reply for HandleError {
 }
 
 impl warp::reject::Reject for HandleError {}
+
+impl async_graphql::ErrorExtensions for HandleError {
+    fn extend(&self) -> FieldError {
+        async_graphql::FieldError(
+            self.to_message(),
+            Some(serde_json::json!({"code" : self.to_status_code().as_u16()})),
+        )
+    }
+}
 
 pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Rejection> {
     if let Some(handle_error) = err.find::<HandleError>() {

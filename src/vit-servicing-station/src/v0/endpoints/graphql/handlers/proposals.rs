@@ -3,39 +3,38 @@ use crate::db::{
     views_schema::full_proposals_info::dsl::full_proposals_info as proposals_table,
 };
 use crate::v0::endpoints::graphql::schema::QueryRoot;
-use async_graphql::Context;
+use crate::v0::errors::HandleError;
+use async_graphql::{Context, ErrorExtensions, FieldResult};
 use diesel::query_dsl::filter_dsl::FilterDsl;
 use diesel::{ExpressionMethods, RunQueryDsl};
 
-pub async fn proposals<'ctx>(root: &QueryRoot, _ctx: &Context<'_>) -> Vec<Proposal> {
+pub async fn proposals<'ctx>(root: &QueryRoot, _ctx: &Context<'_>) -> FieldResult<Vec<Proposal>> {
     let db_conn = root
         .db_connection_pool
         .get()
-        .expect("Error connecting to database");
+        .map_err(|e| HandleError::DatabaseError(e).extend())?;
     tokio::task::spawn_blocking(move || {
-        proposals_table
-            .load::<Proposal>(&db_conn)
-            .expect("Error loading proposals")
+        proposals_table.load::<Proposal>(&db_conn).map_err(|_| {
+            HandleError::InternalError("Error retrieving proposals".to_string()).extend()
+        })
     })
-    .await
-    .expect("Error loading proposals")
+    .await?
 }
 
 pub async fn proposal<'ctx>(
     root: &QueryRoot,
     proposal_id: String,
     _ctx: &Context<'_>,
-) -> async_graphql::FieldResult<Proposal> {
+) -> FieldResult<Proposal> {
     let db_conn = root
         .db_connection_pool
         .get()
-        .map_err(async_graphql::FieldError::from)?;
+        .map_err(|e| HandleError::DatabaseError(e).extend())?;
     tokio::task::spawn_blocking(move || {
         proposals_table
-            .filter(proposals_dsl::proposal_id.eq(proposal_id))
+            .filter(proposals_dsl::proposal_id.eq(proposal_id.clone()))
             .first::<Proposal>(&db_conn)
-            .map_err(async_graphql::FieldError::from)
+            .map_err(|_| HandleError::NotFound(format!("proposal id {}", proposal_id)).extend())
     })
     .await?
-    .map_err(async_graphql::FieldError::from)
 }

@@ -8,7 +8,10 @@ use async_graphql::Context;
 #[async_graphql::Object]
 impl QueryRoot {
     #[field(desc = "List of proposals")]
-    async fn proposals<'ctx>(&self, _ctx: &Context<'_>) -> Vec<Proposal> {
+    async fn proposals<'ctx>(
+        &self,
+        _ctx: &Context<'_>,
+    ) -> async_graphql::FieldResult<Vec<Proposal>> {
         proposals::proposals(&self, _ctx).await
     }
 

@@ -6,6 +6,7 @@ extern crate structopt;
 pub mod db;
 pub mod server;
 pub mod server_settings;
+pub mod utils;
 pub mod v0;
 
 use crate::server_settings::ServiceSettings;

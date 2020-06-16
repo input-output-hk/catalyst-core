@@ -20,9 +20,9 @@ table! {
         chain_proposal_index -> BigInt,
         chain_vote_options -> Text,
         chain_voteplan_id -> Text,
-        chain_vote_start_time -> Text,
-        chain_vote_end_time -> Text,
-        chain_committee_end_time -> Text,
+        chain_vote_start_time -> BigInt,
+        chain_vote_end_time -> BigInt,
+        chain_committee_end_time -> BigInt,
         chain_voteplan_payload -> Text,
         fund_id -> Integer,
     }

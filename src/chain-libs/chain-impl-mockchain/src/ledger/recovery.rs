@@ -47,9 +47,7 @@ use crate::date::BlockDate;
 use crate::fragment::FragmentId;
 use crate::header::{ChainLength, HeaderId};
 use crate::key::serialize_public_key;
-use crate::ledger::{
-    governance::TreasuryGovernanceAction, Globals, Ledger, LedgerStaticParameters,
-};
+use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
 use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
 use crate::stake::{PoolLastRewards, PoolState};
@@ -1059,10 +1057,9 @@ fn pack_entry<W: std::io::Write>(
             pack_digestof(pool_id, codec)?;
             codec.put_u32(**participation)?;
         }
-        Entry::VotePlan((vote_plan, block_date)) => {
+        Entry::VotePlan(vote_plan) => {
             codec.put_u8(EntrySerializeCode::VotePlan as u8)?;
             pack_vote_plan(vote_plan, codec)?;
-            pack_block_date(**block_date, codec)?;
         }
     }
     Ok(())
@@ -1122,8 +1119,7 @@ fn unpack_entry_owned<R: std::io::BufRead>(
         }
         EntrySerializeCode::VotePlan => {
             let vote_plan = unpack_vote_plan(codec)?;
-            let block_date = unpack_block_date(codec)?;
-            Ok(EntryOwned::VotePlan((vote_plan, block_date)))
+            Ok(EntryOwned::VotePlan(vote_plan))
         }
         EntrySerializeCode::SerializationEnd => Ok(EntryOwned::StopEntry),
     }

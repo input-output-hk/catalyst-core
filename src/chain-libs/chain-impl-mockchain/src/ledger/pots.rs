@@ -131,6 +131,12 @@ impl Pots {
         to_draw
     }
 
+    /// Draw rewards from the pot
+    #[must_use]
+    pub fn draw_treasury(&mut self, expected_treasury: Value) -> Value {
+        self.treasury.draw(expected_treasury)
+    }
+
     /// Siphon all the fees
     #[must_use]
     pub fn siphon_fees(&mut self) -> Value {
@@ -142,6 +148,15 @@ impl Pots {
     /// Add to treasury
     pub fn treasury_add(&mut self, value: Value) -> Result<(), Error> {
         self.treasury.add(value)
+    }
+
+    /// Add to treasury
+    pub fn rewards_add(&mut self, value: Value) -> Result<(), Error> {
+        self.rewards = self
+            .rewards
+            .checked_add(value)
+            .map_err(|error| Error::PotValueInvalid { error })?;
+        Ok(())
     }
 
     /// Get the value in the treasury

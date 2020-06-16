@@ -18,7 +18,7 @@ impl Ledger {
             pots: _,
             leaders_log: _,
             votes: _,
-            treasury_governance: _,
+            governance: _,
         } = self;
 
         vec![
@@ -61,7 +61,7 @@ impl Ledger {
             pots: pots1,
             leaders_log: leaders_log1,
             votes: votes1,
-            treasury_governance: treasury_governance1,
+            governance: governance1,
         } = self;
 
         let Ledger {
@@ -79,7 +79,7 @@ impl Ledger {
             pots: pots2,
             leaders_log: leaders_log2,
             votes: votes2,
-            treasury_governance: treasury_governance2,
+            governance: governance2,
         } = other;
 
         vec![
@@ -97,10 +97,7 @@ impl Ledger {
             format!("pots-same: {}", pots1 == pots2),
             format!("leaders-log-same: {}", leaders_log1 == leaders_log2),
             format!("vote-plans: {}", votes1 == votes2),
-            format!(
-                "treasury-governance: {}",
-                treasury_governance1 == treasury_governance2
-            ),
+            format!("governance: {}", governance1 == governance2),
         ]
     }
 }

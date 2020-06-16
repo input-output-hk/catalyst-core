@@ -2,18 +2,19 @@ use crate::{
     account,
     certificate::{TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
-    ledger::governance::TreasuryGovernance,
+    ledger::governance::Governance,
     transaction::UnspecifiedAccountIdentifier,
+    utxo,
     vote::{CommitteeId, VoteError, VotePlanManager},
 };
+use chain_addr::Address;
 use imhamt::{Hamt, InsertError, UpdateError};
-use std::collections::{hash_map::DefaultHasher, BTreeMap, HashSet};
+use std::collections::{hash_map::DefaultHasher, HashSet};
 use thiserror::Error;
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct VotePlanLedger {
-    pub(crate) plans: Hamt<DefaultHasher, VotePlanId, (VotePlanManager, BlockDate)>,
-    plans_by_end_date: BTreeMap<BlockDate, Vec<VotePlanId>>,
+    pub(crate) plans: Hamt<DefaultHasher, VotePlanId, VotePlanManager>,
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -42,50 +43,7 @@ pub enum VotePlanLedgerError {
 
 impl VotePlanLedger {
     pub fn new() -> Self {
-        Self {
-            plans: Hamt::new(),
-            plans_by_end_date: BTreeMap::new(),
-        }
-    }
-
-    /// garbage collect the vote plans that should no longer be tracked
-    /// and return the new state
-    ///
-    /// the block_date is supposed to be the current block date for the
-    /// new state.
-    ///
-    /// This function is not to use lightly as this will remove VotePlans
-    /// that are still interesting to track down:
-    ///
-    /// * we still need to publish the vote result;
-    /// * we still need to distribute the rewards?
-    ///
-    pub fn gc(&self, block_date: BlockDate) -> Self {
-        let mut to_remove = self.plans_by_end_date.clone();
-        let to_keep = to_remove.split_off(&block_date);
-
-        let mut plans = self.plans.clone();
-        for ids in to_remove.values() {
-            for id in ids {
-                plans = match plans.remove(id) {
-                    Err(remove_error) => {
-                        // it should not be possible to happen
-                        // if it does then there is something else
-                        // going on, maybe in the add_vote function?
-                        unreachable!(
-                            "It should not be possible to fail to remove an entry: {:?}",
-                            remove_error
-                        )
-                    }
-                    Ok(plans) => plans,
-                };
-            }
-        }
-
-        Self {
-            plans,
-            plans_by_end_date: to_keep,
-        }
+        Self { plans: Hamt::new() }
     }
 
     /// attempt to apply the vote to the appropriate Vote Proposal
@@ -106,16 +64,13 @@ impl VotePlanLedger {
     ) -> Result<Self, VotePlanLedgerError> {
         let id = vote.vote_plan().clone();
 
-        let r = self.plans.update(&id, move |(v, d)| {
-            v.vote(block_date, identifier, vote).map(|v| Some((v, *d)))
-        });
+        let r = self
+            .plans
+            .update(&id, move |v| v.vote(block_date, identifier, vote).map(Some));
 
         match r {
             Err(reason) => Err(VotePlanLedgerError::VoteError { reason, id }),
-            Ok(plans) => Ok(Self {
-                plans,
-                plans_by_end_date: self.plans_by_end_date.clone(),
-            }),
+            Ok(plans) => Ok(Self { plans }),
         }
     }
 
@@ -151,19 +106,11 @@ impl VotePlanLedger {
         }
 
         let id = vote_plan.to_id();
-        let end_date = vote_plan.committee_end();
         let manager = VotePlanManager::new(vote_plan, committee);
 
-        match self.plans.insert(id.clone(), (manager, end_date)) {
+        match self.plans.insert(id.clone(), manager) {
             Err(reason) => Err(VotePlanLedgerError::VotePlanInsertionError { id, reason }),
-            Ok(plans) => {
-                let mut plans_by_end_date = self.plans_by_end_date.clone();
-                plans_by_end_date.entry(end_date).or_default().push(id);
-                Ok(Self {
-                    plans,
-                    plans_by_end_date,
-                })
-            }
+            Ok(plans) => Ok(Self { plans }),
         }
     }
 
@@ -176,39 +123,30 @@ impl VotePlanLedger {
     /// * if the Committee time has elapsed
     /// * if the tally is not a public tally
     ///
-    pub fn apply_committee_result(
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_committee_result<F>(
         &self,
         block_date: BlockDate,
         accounts: &account::Ledger,
+        utxos: &utxo::Ledger<Address>,
+        governance: &Governance,
         tally: &VoteTally,
         sig: TallyProof,
-    ) -> Result<Self, VotePlanLedgerError> {
+        f: &mut F,
+    ) -> Result<Self, VotePlanLedgerError>
+    where
+        F: FnMut(&VoteAction),
+    {
         let id = tally.id().clone();
 
-        let r = self.plans.update(&id, move |(v, d)| {
-            v.tally(block_date, accounts, sig).map(|v| Some((v, *d)))
+        let r = self.plans.update(&id, move |v| {
+            v.tally(block_date, accounts, utxos, governance, sig, f)
+                .map(Some)
         });
 
         match r {
             Err(reason) => Err(VotePlanLedgerError::VoteError { reason, id }),
-            Ok(plans) => Ok(Self {
-                plans,
-                plans_by_end_date: self.plans_by_end_date.clone(),
-            }),
-        }
-    }
-
-    pub fn select_votes<'a>(
-        &'a self,
-        tally: &VoteTally,
-        governance: &'a TreasuryGovernance,
-    ) -> impl Iterator<Item = &'a VoteAction> {
-        let id = tally.id().clone();
-
-        if let Some((plans, _)) = self.plans.lookup(&id) {
-            plans.select_votes(governance)
-        } else {
-            unreachable!()
+            Ok(plans) => Ok(Self { plans }),
         }
     }
 }

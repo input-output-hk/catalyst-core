@@ -15,6 +15,12 @@ impl Treasury {
         Self(v)
     }
 
+    pub fn draw(&mut self, value: Value) -> Value {
+        let to_draw = std::cmp::min(value, self.0);
+        (self.0).0 -= to_draw.0;
+        to_draw
+    }
+
     /// Add some value in the treasury
     pub fn add(&mut self, v: Value) -> Result<(), Error> {
         self.0 = (self.0 + v).map_err(|error| Error::PotValueInvalid { error })?;

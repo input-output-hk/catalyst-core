@@ -1,4 +1,4 @@
-use crate::{rewards::Ratio, value::Value};
+use crate::{rewards::Ratio, value::Value, vote::Choice};
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use imhamt::Hamt;
 use std::{collections::hash_map::DefaultHasher, num::NonZeroU64};
@@ -18,6 +18,7 @@ pub enum TreasuryGovernanceActionType {
 pub struct TreasuryGovernanceAcceptanceCriteria {
     pub minimum_stake_participation: Option<Ratio>,
     pub minimum_approval: Option<Ratio>,
+    pub choice: Choice,
 }
 
 #[derive(Default, Clone, Eq, PartialEq)]
@@ -100,6 +101,7 @@ impl Default for TreasuryGovernanceAcceptanceCriteria {
                 numerator: 50,
                 denominator: CENT,
             }),
+            choice: Choice::new(1),
         }
     }
 }

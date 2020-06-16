@@ -2,7 +2,7 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxVerifyError};
-use super::governance::{TreasuryGovernance, TreasuryGovernanceAction};
+use super::governance::{Governance, TreasuryGovernanceAction};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
@@ -83,7 +83,7 @@ pub struct Ledger {
     pub(crate) pots: Pots,
     pub(crate) leaders_log: LeadersParticipationRecord,
     pub(crate) votes: VotePlanLedger,
-    pub(crate) treasury_governance: TreasuryGovernance,
+    pub(crate) governance: Governance,
 }
 
 // Dummy implementation of Debug for Ledger
@@ -322,7 +322,7 @@ impl Ledger {
             pots,
             leaders_log: LeadersParticipationRecord::new(),
             votes: VotePlanLedger::new(),
-            treasury_governance: TreasuryGovernance::default(),
+            governance: Governance::default(),
         }
     }
 
@@ -1059,7 +1059,7 @@ impl Ledger {
         self.votes
             .plans
             .iter()
-            .map(|(_, (plan, _))| plan.statuses())
+            .map(|(_, plan)| plan.statuses())
             .collect()
     }
 
@@ -1073,18 +1073,29 @@ impl Ledger {
             return Err(Error::VoteTallyProofFailed);
         }
 
-        self.votes = self
-            .votes
-            .apply_committee_result(self.date(), &self.accounts, tally, sig)?;
+        let mut actions = Vec::new();
 
-        let selected_proposals = self.votes.select_votes(tally, &self.treasury_governance);
+        let mut f = |action: &VoteAction| actions.push(action.clone());
 
-        for action in selected_proposals {
+        self.votes = self.votes.apply_committee_result(
+            self.date(),
+            &self.accounts,
+            &self.utxos,
+            &self.governance,
+            tally,
+            sig,
+            &mut f,
+        )?;
+
+        for action in actions {
             match action {
                 VoteAction::OffChain => {}
                 VoteAction::Treasury {
                     action: TreasuryGovernanceAction::TransferToRewards { value },
-                } => todo!(),
+                } => {
+                    let value = self.pots.draw_treasury(value);
+                    self.pots.rewards_add(value)?;
+                }
             }
         }
 

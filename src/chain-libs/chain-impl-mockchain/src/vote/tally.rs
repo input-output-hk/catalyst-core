@@ -67,6 +67,11 @@ impl TallyResult {
         &self.results
     }
 
+    pub fn participation(&self) -> Stake {
+        let s: u64 = self.results.iter().map(|w| w.0).sum();
+        Stake::from_value(Value(s))
+    }
+
     pub fn options(&self) -> &Options {
         &self.options
     }

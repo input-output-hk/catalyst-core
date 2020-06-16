@@ -1,9 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    id="wallet-cordova-plugin"
-    version="0.4.0-pre2">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="wallet-cordova-plugin" version="0.4.0-pre2">
     <name>Wallet Cordova Plugin</name>
     <description>Wallet Cordova Plugin</description>
     <license>MIT OR Apache-2.0 </license>
@@ -18,8 +15,8 @@
     <!-- android -->
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="WalletPlugin" >
-                <param name="android-package" value="com.iohk.jormungandrwallet.WalletPlugin"/>
+            <feature name="WalletPlugin">
+                <param name="android-package" value="com.iohk.jormungandrwallet.WalletPlugin" />
             </feature>
         </config-file>
 
@@ -42,21 +39,20 @@
             </feature>
         </config-file>
 
-
         <js-module src="src/electron/walletProxy.js" name="WalletProxy">
             <runs />
         </js-module>
 
-        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule">
-        </js-module>
+        <js-module src="src/electron/bindings.js" name="bindings"></js-module>
 
+        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule"></js-module>
         <asset src="src/electron/pkg/wallet_js_bg.wasm" target="wallet_js_bg.wasm" />
     </platform>
 
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
             <feature name="WalletPlugin">
-                <param name="ios-package" value="WalletPlugin"/>
+                <param name="ios-package" value="WalletPlugin" />
             </feature>
         </config-file>
 
@@ -64,5 +60,22 @@
         <header-file src="src/ios/WalletPlugin.h" />
         <source-file src="src/ios/WalletPlugin.m" />
         <source-file src="src/ios/libjormungandrwallet.a" framework="true" />
+    </platform>
+
+    <platform name="browser">
+        <config-file target="config.xml" parent="/*">
+            <feature name="WalletPlugin">
+                <param name="electron-package" value="WalletPlugin" />
+            </feature>
+        </config-file>
+
+        <js-module src="src/browser/walletProxy.js" name="walletProxy">
+            <runs />
+        </js-module>
+
+        <js-module src="src/electron/bindings.js" name="bindings"></js-module>
+
+        <js-module src="src/electron/pkg/wallet_js.js" name="wasmModule"></js-module>
+        <asset src="src/electron/pkg/wallet_js_bg.wasm" target="wallet_js_bg.wasm" />
     </platform>
 </plugin>

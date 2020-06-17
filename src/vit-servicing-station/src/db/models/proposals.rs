@@ -38,10 +38,10 @@ pub struct Proposal {
     pub chain_proposal_index: i64,
     pub chain_vote_options: VoteOptions,
     pub chain_voteplan_id: String,
-    pub chain_voteplan_payload: DateTime<chrono::Utc>,
     pub chain_vote_start_time: DateTime<chrono::Utc>,
     pub chain_vote_end_time: DateTime<chrono::Utc>,
     pub chain_committee_end_time: DateTime<chrono::Utc>,
+    pub chain_voteplan_payload: String,
     pub fund_id: i32,
 }
 
@@ -86,11 +86,11 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
         // 17 -> chain_voteplan_id
         String,
         // 18 -> chain_vote_starttime
-        String,
+        i64,
         // 29 -> chain_vote_endtime
-        String,
+        i64,
         // 20 -> chain_committee_end_time
-        String,
+        i64,
         // 21 -> chain_voteplan_payload
         String,
         // 22 -> fund_id
@@ -123,10 +123,10 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_proposal_index: row.15,
             chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.16),
             chain_voteplan_id: row.17,
-            chain_vote_start_time: unix_timestamp_to_datetime(row.18 as i64),
-            chain_vote_end_time: unix_timestamp_to_datetime(row.19 as i64),
-            chain_committee_end_time: unix_timestamp_to_datetime(row.20 as i64),
-            chain_voteplan_payload: unix_timestamp_to_datetime(row.21 as i64),
+            chain_vote_start_time: unix_timestamp_to_datetime(row.18),
+            chain_vote_end_time: unix_timestamp_to_datetime(row.19),
+            chain_committee_end_time: unix_timestamp_to_datetime(row.20),
+            chain_voteplan_payload: row.21,
             fund_id: row.22,
         }
     }

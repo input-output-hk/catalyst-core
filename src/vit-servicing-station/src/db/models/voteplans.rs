@@ -1,13 +1,32 @@
+use crate::db::{schema::voteplans, DB};
+use crate::utils::datetime::unix_timestamp_to_datetime;
+use chrono::{DateTime, Utc};
 use diesel::Queryable;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Queryable)]
+#[derive(Serialize, Deserialize)]
 pub struct Voteplan {
     pub id: i32,
     pub chain_voteplan_id: String,
-    pub chain_vote_start_time: String,
-    pub chain_vote_end_time: String,
-    pub chain_committee_end: String,
+    pub chain_vote_start_time: DateTime<Utc>,
+    pub chain_vote_end_time: DateTime<Utc>,
+    pub chain_committee_end: DateTime<Utc>,
     pub chain_voteplan_payload: String,
     pub fund_id: i32,
+}
+
+impl Queryable<voteplans::SqlType, DB> for Voteplan {
+    type Row = (i32, String, i64, i64, i64, String, i32);
+
+    fn build(row: Self::Row) -> Self {
+        Self {
+            id: row.0,
+            chain_voteplan_id: row.1,
+            chain_vote_start_time: unix_timestamp_to_datetime(row.2),
+            chain_vote_end_time: unix_timestamp_to_datetime(row.3),
+            chain_committee_end: unix_timestamp_to_datetime(row.4),
+            chain_voteplan_payload: "".to_string(),
+            fund_id: row.6,
+        }
+    }
 }

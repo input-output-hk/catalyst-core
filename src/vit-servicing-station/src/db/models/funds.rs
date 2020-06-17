@@ -30,11 +30,11 @@ impl Queryable<funds::SqlType, DB> for Fund {
         // 4 -> rewards_info
         String,
         // 5 -> fund_start_time
-        u64,
+        i64,
         // 6 -> fund_end_time
-        u64,
+        i64,
         // 7 -> next_fund_start_time
-        u64,
+        i64,
     );
 
     fn build(row: Self::Row) -> Self {
@@ -44,9 +44,9 @@ impl Queryable<funds::SqlType, DB> for Fund {
             fund_goal: row.2,
             voting_power_info: row.3,
             rewards_info: row.4,
-            fund_start_time: unix_timestamp_to_datetime(row.5 as i64),
-            fund_end_time: unix_timestamp_to_datetime(row.6 as i64),
-            next_fund_start_time: unix_timestamp_to_datetime(row.7 as i64),
+            fund_start_time: unix_timestamp_to_datetime(row.5),
+            fund_end_time: unix_timestamp_to_datetime(row.6),
+            next_fund_start_time: unix_timestamp_to_datetime(row.7),
             chain_vote_plans: vec![],
         }
     }

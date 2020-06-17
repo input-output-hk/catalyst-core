@@ -28,16 +28,16 @@ impl Fund {
         &self.rewards_info
     }
 
-    pub async fn fund_start_time(&self) -> &str {
-        &self.fund_start_time
+    pub async fn fund_start_time(&self) -> String {
+        self.fund_start_time.to_rfc3339()
     }
 
-    pub async fn fund_end_time(&self) -> &str {
-        &self.fund_end_time
+    pub async fn fund_end_time(&self) -> String {
+        self.fund_end_time.to_rfc3339()
     }
 
-    pub async fn next_fund_start_time(&self) -> &str {
-        &self.next_fund_start_time
+    pub async fn next_fund_start_time(&self) -> String {
+        self.next_fund_start_time.to_rfc3339()
     }
 
     pub async fn chain_vote_plans(

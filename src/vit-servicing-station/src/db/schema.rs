@@ -13,9 +13,9 @@ table! {
         fund_goal -> Text,
         voting_power_info -> Text,
         rewards_info -> Text,
-        fund_start_time -> Text,
-        fund_end_time -> Text,
-        next_fund_start_time -> Text,
+        fund_start_time -> BigInt,
+        fund_end_time -> BigInt,
+        next_fund_start_time -> BigInt,
     }
 }
 
@@ -46,12 +46,17 @@ table! {
     voteplans (id) {
         id -> Integer,
         chain_voteplan_id -> Text,
-        chain_vote_start_time -> Text,
-        chain_vote_end_time -> Text,
-        chain_committee_end_time -> Text,
+        chain_vote_start_time -> BigInt,
+        chain_vote_end_time -> BigInt,
+        chain_committee_end_time -> BigInt,
         chain_voteplan_payload -> Text,
         fund_id -> Integer,
     }
 }
 
-allow_tables_to_appear_in_same_query!(api_tokens, funds, proposals, voteplans,);
+allow_tables_to_appear_in_same_query!(
+    api_tokens,
+    funds,
+    proposals,
+    voteplans,
+);

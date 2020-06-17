@@ -77,8 +77,8 @@ impl Proposal {
         &self.proposer
     }
 
-    pub async fn chain_proposal_id(&self) -> &str {
-        &self.chain_proposal_id
+    pub async fn chain_proposal_id(&self) -> String {
+        String::from_utf8(self.chain_proposal_id.clone()).unwrap()
     }
 
     pub async fn chain_voteplan_id(&self) -> &str {
@@ -89,16 +89,16 @@ impl Proposal {
         self.chain_proposal_index
     }
 
-    pub async fn chain_vote_start_time(&self) -> &str {
-        &self.chain_vote_start_time
+    pub async fn chain_vote_start_time(&self) -> String {
+        self.chain_vote_start_time.to_rfc3339()
     }
 
-    pub async fn chain_vote_end_time(&self) -> &str {
-        &self.chain_vote_end_time
+    pub async fn chain_vote_end_time(&self) -> String {
+        self.chain_vote_end_time.to_rfc3339()
     }
 
-    pub async fn chain_committee_end_time(&self) -> &str {
-        &self.chain_committee_end_time
+    pub async fn chain_committee_end_time(&self) -> String {
+        self.chain_committee_end_time.to_rfc3339()
     }
 
     pub async fn chain_vote_options(&self) -> VoteOptions {

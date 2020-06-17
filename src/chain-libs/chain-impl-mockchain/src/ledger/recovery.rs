@@ -892,7 +892,7 @@ fn unpack_proposal<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Proposal
 }
 
 fn unpack_vote_action<R: std::io::BufRead>(
-    codec: &mut Codec<R>,
+    _codec: &mut Codec<R>,
 ) -> Result<VoteAction, std::io::Error> {
     todo!()
 }

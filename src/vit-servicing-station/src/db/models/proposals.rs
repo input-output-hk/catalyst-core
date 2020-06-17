@@ -34,12 +34,16 @@ pub struct Proposal {
     pub proposal_url: String,
     pub proposal_files_url: String,
     pub proposer: Proposer,
+    #[serde(serialize_with = "crate::utils::serde::serialize_bin_as_string")]
     pub chain_proposal_id: Vec<u8>,
     pub chain_proposal_index: i64,
     pub chain_vote_options: VoteOptions,
     pub chain_voteplan_id: String,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub chain_vote_start_time: DateTime<chrono::Utc>,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub chain_vote_end_time: DateTime<chrono::Utc>,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub chain_committee_end_time: DateTime<chrono::Utc>,
     pub chain_voteplan_payload: String,
     pub fund_id: i32,

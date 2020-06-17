@@ -1094,6 +1094,9 @@ impl Ledger {
             match action {
                 VoteAction::OffChain => {}
                 VoteAction::Treasury {
+                    action: TreasuryGovernanceAction::NoOp,
+                } => {}
+                VoteAction::Treasury {
                     action: TreasuryGovernanceAction::TransferToRewards { value },
                 } => {
                     let value = self.pots.draw_treasury(value);

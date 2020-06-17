@@ -6,11 +6,13 @@ use typed_bytes::ByteBuilder;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TreasuryGovernanceAction {
+    NoOp,
     TransferToRewards { value: Value },
 }
 
 #[derive(Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum TreasuryGovernanceActionType {
+    NoOp,
     TransferToRewards,
 }
 
@@ -32,12 +34,14 @@ pub struct TreasuryGovernance {
 impl TreasuryGovernanceAction {
     pub fn to_type(&self) -> TreasuryGovernanceActionType {
         match self {
+            Self::NoOp => TreasuryGovernanceActionType::NoOp,
             Self::TransferToRewards { .. } => TreasuryGovernanceActionType::TransferToRewards,
         }
     }
 
     pub(crate) fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         match self {
+            Self::NoOp => bb.u8(0),
             Self::TransferToRewards { value } => bb.u8(1).u64(value.0),
         }
     }
@@ -111,6 +115,7 @@ impl Default for TreasuryGovernanceAcceptanceCriteria {
 impl Readable for TreasuryGovernanceAction {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         match buf.get_u8()? {
+            0 => Ok(Self::NoOp),
             1 => {
                 let value = Value::read(buf)?;
                 Ok(Self::TransferToRewards { value })

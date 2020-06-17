@@ -165,6 +165,39 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_id(
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_confirmTransaction(
+    env: JNIEnv,
+    _: JClass,
+    wallet: jlong,
+    fragment_id: jbyteArray,
+) {
+    let wallet_ptr: WalletPtr = wallet as WalletPtr;
+    let len = env
+        .get_array_length(fragment_id)
+        .expect("Couldn't get block0 array length") as usize;
+
+    debug_assert_eq!(len, wallet_core::c::FRAGMENT_ID_LENGTH);
+
+    let mut bytes = vec![0i8; len as usize];
+
+    let _r = env.get_byte_array_region(fragment_id, 0, &mut bytes);
+
+    if !wallet_ptr.is_null() {
+        let result = wallet_confirm_transaction(wallet_ptr, bytes.as_ptr() as *const u8);
+        if let Some(error) = result.error() {
+            let _ = env.throw(error.to_string());
+        }
+    }
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
     env: JNIEnv,
     _: JClass,

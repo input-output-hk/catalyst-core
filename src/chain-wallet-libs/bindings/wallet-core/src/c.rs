@@ -8,7 +8,8 @@ use chain_impl_mockchain::{
     value::Value,
     vote::{Choice, Options as VoteOptions, PayloadType},
 };
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
+
 use thiserror::Error;
 pub use wallet::Settings;
 
@@ -25,6 +26,28 @@ struct NulPtr;
 #[derive(Debug, Error)]
 #[error("access out of bound")]
 struct OutOfBound;
+
+macro_rules! non_null {
+    ( $obj:expr ) => {
+        if let Some(obj) = $obj.as_ref() {
+            obj
+        } else {
+            return Error::invalid_input(stringify!($expr)).with(NulPtr).into();
+        }
+    };
+}
+
+macro_rules! non_null_mut {
+    ( $obj:expr ) => {
+        if let Some(obj) = $obj.as_mut() {
+            obj
+        } else {
+            return Error::invalid_input(stringify!($expr)).with(NulPtr).into();
+        }
+    };
+}
+
+pub const FRAGMENT_ID_LENGTH: usize = 32;
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
 ///
@@ -184,6 +207,29 @@ pub unsafe fn wallet_retrieve_funds(
         }
         Err(err) => err.into(),
     }
+}
+
+/// Confirm the previously generated transaction identified by fragment_id
+///
+/// # Safety
+///
+/// This function dereference raw pointers (wallet, fragment_id). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors. It's also asummed that fragment_id is
+/// a pointer to FRAGMENT_ID_LENGTH bytes of contiguous data.
+///
+pub unsafe fn wallet_confirm_transaction(wallet: WalletPtr, fragment_id: *const u8) -> Result {
+    let wallet = non_null_mut!(wallet);
+    let fragment_id: &u8 = non_null!(fragment_id);
+
+    let fragment_id_bytes: [u8; FRAGMENT_ID_LENGTH] =
+        std::slice::from_raw_parts(fragment_id as *const u8, FRAGMENT_ID_LENGTH)
+            .try_into()
+            .unwrap();
+
+    wallet.confirm_transaction(fragment_id_bytes.into());
+
+    Result::success()
 }
 
 /// once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`

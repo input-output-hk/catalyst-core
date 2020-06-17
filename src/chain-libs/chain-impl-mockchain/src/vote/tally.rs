@@ -59,7 +59,8 @@ impl Tally {
 
 impl TallyResult {
     pub fn new(options: Options) -> Self {
-        let results = Vec::with_capacity(options.choice_range().len()).into();
+        let len = options.choice_range().len();
+        let results = vec![Weight(0); len].into();
         Self { results, options }
     }
 

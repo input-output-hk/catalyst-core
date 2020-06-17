@@ -35,8 +35,9 @@ async fn main() {
     let context = v0::context::new_shared_context(db_pool, &settings.block0_path);
 
     let app = v0::filter(context).await;
+
     println!(
-        "Running server at {}, dababase located at {}",
+        "Running server at {}, database located at {}",
         settings.address, settings.db_url
     );
     server::start_server(app, Some(settings)).await

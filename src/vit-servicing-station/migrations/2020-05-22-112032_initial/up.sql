@@ -1,51 +1,59 @@
 create table funds
 (
-    id INTEGER not null
+    id INTEGER NOT NULL
         primary key autoincrement,
-    fund_name VARCHAR not null,
-    fund_goal VARCHAR not null,
-    voting_power_info VARCHAR not null,
-    rewards_info VARCHAR not null,
-    fund_start_time VARCHAR not null,
-    fund_end_time VARCHAR not null,
-    next_fund_start_time VARCHAR not null
+    fund_name VARCHAR NOT NULL,
+    fund_goal VARCHAR NOT NULL,
+    voting_power_info VARCHAR NOT NULL,
+    rewards_info VARCHAR NOT NULL,
+    fund_start_time VARCHAR NOT NULL,
+    fund_end_time VARCHAR NOT NULL,
+    next_fund_start_time VARCHAR NOT NULL
 );
 
 create table proposals
 (
-    id INTEGER not null
+    id INTEGER NOT NULL
         primary key autoincrement,
-    proposal_id VARCHAR not null,
-    proposal_category VARCHAR not null,
-    proposal_title VARCHAR not null,
-    proposal_summary VARCHAR not null,
-    proposal_problem VARCHAR not null,
-    proposal_solution VARCHAR not null,
-    proposal_public_key VARCHAR not null,
-    proposal_funds BIGINT not null,
-    proposal_url VARCHAR not null,
-    proposal_files_url VARCHAR not null,
-    proposer_name VARCHAR not null,
-    proposer_contact VARCHAR not null,
-    proposer_url VARCHAR not null,
-    chain_proposal_id BLOB not null,
-    chain_proposal_index BIGINT not null,
-    chain_vote_options VARCHAR not null,
-    chain_voteplan_id VARCHAR not null
+    proposal_id VARCHAR NOT NULL,
+    proposal_category VARCHAR NOT NULL,
+    proposal_title VARCHAR NOT NULL,
+    proposal_summary VARCHAR NOT NULL,
+    proposal_problem VARCHAR NOT NULL,
+    proposal_solution VARCHAR NOT NULL,
+    proposal_public_key VARCHAR NOT NULL,
+    proposal_funds BIGINT NOT NULL,
+    proposal_url VARCHAR NOT NULL,
+    proposal_files_url VARCHAR NOT NULL,
+    proposer_name VARCHAR NOT NULL,
+    proposer_contact VARCHAR NOT NULL,
+    proposer_url VARCHAR NOT NULL,
+    chain_proposal_id BLOB NOT NULL,
+    chain_proposal_index BIGINT NOT NULL,
+    chain_vote_options VARCHAR NOT NULL,
+    chain_voteplan_id VARCHAR NOT NULL
 );
 
 create table voteplans
 (
-    id INTEGER not null
+    id INTEGER NOT NULL
         primary key autoincrement,
-    chain_voteplan_id VARCHAR not null
+    chain_voteplan_id VARCHAR NOT NULL
         unique,
-    chain_vote_start_time VARCHAR not null,
-    chain_vote_end_time VARCHAR not null,
-    chain_committee_end_time VARCHAR not null,
-    chain_voteplan_payload VARCHAR not null,
-    fund_id INTEGER not null
+    chain_vote_start_time VARCHAR NOT NULL,
+    chain_vote_end_time VARCHAR NOT NULL,
+    chain_committee_end_time VARCHAR NOT NULL,
+    chain_voteplan_payload VARCHAR NOT NULL,
+    fund_id INTEGER NOT NULL
 );
+
+create table api_tokens
+(
+    token BLOB NOT NULL UNIQUE PRIMARY KEY ,
+    creation_time VARCHAR NOT NULL,
+    expire_time VARCHAR NOT NULL
+);
+
 
 CREATE VIEW full_proposals_info
 AS

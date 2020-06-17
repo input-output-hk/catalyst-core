@@ -2025,6 +2025,7 @@ dependencies = [
  "async-graphql",
  "async-graphql-warp",
  "async-trait",
+ "base64 0.12.1",
  "diesel",
  "dotenv",
  "libsqlite3-sys",

@@ -11,8 +11,11 @@ pub struct Fund {
     pub fund_goal: String,
     pub voting_power_info: String,
     pub rewards_info: String,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub fund_start_time: DateTime<Utc>,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub fund_end_time: DateTime<Utc>,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub next_fund_start_time: DateTime<Utc>,
     pub chain_vote_plans: Vec<Voteplan>,
 }

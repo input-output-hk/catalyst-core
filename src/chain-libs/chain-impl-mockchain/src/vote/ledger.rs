@@ -1,13 +1,11 @@
 use crate::{
-    account,
     certificate::{TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
     ledger::governance::Governance,
+    stake::StakeControl,
     transaction::UnspecifiedAccountIdentifier,
-    utxo,
     vote::{CommitteeId, VoteError, VotePlanManager},
 };
-use chain_addr::Address;
 use imhamt::{Hamt, InsertError, UpdateError};
 use std::collections::{hash_map::DefaultHasher, HashSet};
 use thiserror::Error;
@@ -123,12 +121,10 @@ impl VotePlanLedger {
     /// * if the Committee time has elapsed
     /// * if the tally is not a public tally
     ///
-    #[allow(clippy::too_many_arguments)]
     pub fn apply_committee_result<F>(
         &self,
         block_date: BlockDate,
-        accounts: &account::Ledger,
-        utxos: &utxo::Ledger<Address>,
+        stake: &StakeControl,
         governance: &Governance,
         tally: &VoteTally,
         sig: TallyProof,
@@ -140,8 +136,7 @@ impl VotePlanLedger {
         let id = tally.id().clone();
 
         let r = self.plans.update(&id, move |v| {
-            v.tally(block_date, accounts, utxos, governance, sig, f)
-                .map(Some)
+            v.tally(block_date, stake, governance, sig, f).map(Some)
         });
 
         match r {

@@ -1,18 +1,15 @@
 use crate::{
-    account,
     certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     ledger::governance::Governance,
     rewards::Ratio,
-    stake::Stake,
+    stake::{Stake, StakeControl},
     transaction::UnspecifiedAccountIdentifier,
-    utxo,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
-use chain_addr::{Address, Kind};
 use imhamt::Hamt;
 use std::{
-    collections::{hash_map::DefaultHasher, HashMap, HashSet},
+    collections::{hash_map::DefaultHasher, HashSet},
     num::NonZeroU64,
     sync::Arc,
 };
@@ -128,8 +125,7 @@ impl ProposalManager {
     #[must_use = "Compute the PublicTally in a new ProposalManager, does not modify self"]
     pub fn public_tally<F>(
         &self,
-        stake: &HashMap<account::Identifier, Stake>,
-        total: Stake,
+        stake: &StakeControl,
         governance: &Governance,
         f: &mut F,
     ) -> Result<Self, VoteError>
@@ -140,17 +136,17 @@ impl ProposalManager {
 
         for (id, payload) in self.votes_by_voters.iter() {
             if let Some(account_id) = id.to_single_account() {
-                if let Some(stake) = stake.get(&account_id) {
+                if let Some(stake) = stake.by(&account_id) {
                     match payload {
                         vote::Payload::Public { choice } => {
-                            results.add_vote(*choice, *stake)?;
+                            results.add_vote(*choice, stake)?;
                         }
                     }
                 }
             }
         }
 
-        if self.check(total, governance, &results) {
+        if self.check(stake.assigned(), governance, &results) {
             f(&self.action)
         }
 
@@ -262,8 +258,7 @@ impl ProposalManagers {
 
     pub fn public_tally<F>(
         &self,
-        stake: &HashMap<account::Identifier, Stake>,
-        total: Stake,
+        stake: &StakeControl,
         governance: &Governance,
         f: &mut F,
     ) -> Result<Self, VoteError>
@@ -272,7 +267,7 @@ impl ProposalManagers {
     {
         let mut proposals = Vec::with_capacity(self.0.len());
         for proposal in self.0.iter() {
-            proposals.push(proposal.public_tally(stake, total, governance, f)?);
+            proposals.push(proposal.public_tally(stake, governance, f)?);
         }
 
         Ok(Self(proposals))
@@ -401,8 +396,7 @@ impl VotePlanManager {
     pub fn tally<F>(
         &self,
         block_date: BlockDate,
-        accounts: &account::Ledger,
-        utxos: &utxo::Ledger<Address>,
+        stake: &StakeControl,
         governance: &Governance,
         sig: TallyProof,
         f: &mut F,
@@ -418,12 +412,10 @@ impl VotePlanManager {
         } else if !self.valid_committee(sig) {
             Err(VoteError::InvalidTallyCommittee)
         } else {
-            let (stake, total) = stake_controlled(accounts, utxos);
-
             let proposal_managers = match self.plan().payload_type() {
-                vote::PayloadType::Public => self
-                    .proposal_managers
-                    .public_tally(&stake, total, governance, f)?,
+                vote::PayloadType::Public => {
+                    self.proposal_managers.public_tally(&stake, governance, f)?
+                }
             };
 
             Ok(Self {
@@ -434,37 +426,6 @@ impl VotePlanManager {
             })
         }
     }
-}
-
-fn stake_controlled(
-    accounts: &account::Ledger,
-    utxos: &utxo::Ledger<Address>,
-) -> (HashMap<account::Identifier, Stake>, Stake) {
-    let mut map = HashMap::new();
-    let mut total = Stake::zero();
-
-    for (identifier, account_state) in accounts.iter() {
-        let stake = Stake::from_value(account_state.value());
-        total += stake;
-        map.insert(identifier.clone(), stake);
-    }
-
-    for output in utxos.values() {
-        let stake = Stake::from_value(output.value);
-
-        // We're only interested in "group" addresses
-        // (i.e. containing a spending key and a stake key).
-        match output.address.kind() {
-            Kind::Group(_spending_key, account_key) => {
-                let identifier = account_key.clone().into();
-                total += stake;
-                *map.get_mut(&identifier).unwrap() += stake;
-            }
-            _ => unreachable!(),
-        }
-    }
-
-    (map, total)
 }
 
 #[cfg(test)]

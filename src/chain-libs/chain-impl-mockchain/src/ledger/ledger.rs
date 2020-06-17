@@ -15,7 +15,9 @@ use crate::fee::{FeeAlgorithm, LinearFee};
 use crate::fragment::{BlockContentHash, BlockContentSize, Contents, Fragment, FragmentId};
 use crate::rewards;
 use crate::setting::ActiveSlotsCoeffError;
-use crate::stake::{PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeDistribution};
+use crate::stake::{
+    PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeControl, StakeDistribution,
+};
 use crate::transaction::*;
 use crate::treasury::Treasury;
 use crate::value::*;
@@ -1073,14 +1075,15 @@ impl Ledger {
             return Err(Error::VoteTallyProofFailed);
         }
 
+        let stake = StakeControl::new_with(&self.accounts, &self.utxos);
+
         let mut actions = Vec::new();
 
         let mut f = |action: &VoteAction| actions.push(action.clone());
 
         self.votes = self.votes.apply_committee_result(
             self.date(),
-            &self.accounts,
-            &self.utxos,
+            &stake,
             &self.governance,
             tally,
             sig,

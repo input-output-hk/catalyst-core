@@ -1,14 +1,17 @@
 use crate::{
     block::BlockDate,
     certificate::CertificateSlice,
-    transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
+    transaction::{
+        Payload, PayloadAuthData, PayloadData, PayloadSlice, SingleAccountBindingSignature,
+        TransactionBindingAuthData,
+    },
     vote,
 };
 use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
     property,
 };
-use chain_crypto::{digest::DigestOf, Blake2b256};
+use chain_crypto::{digest::DigestOf, Blake2b256, Verification};
 use std::ops::Deref;
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -42,6 +45,12 @@ pub struct VotePlan {
     proposals: Proposals,
     /// vote payload type
     payload_type: vote::PayloadType,
+}
+
+#[derive(Debug, Clone)]
+pub struct VotePlanProof {
+    pub id: vote::CommitteeId,
+    pub signature: SingleAccountBindingSignature,
 }
 
 /// a collection of proposals
@@ -231,12 +240,23 @@ impl VotePlan {
     }
 }
 
+impl VotePlanProof {
+    pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+        bb.bytes(self.id.as_ref()).bytes(self.signature.as_ref())
+    }
+
+    pub fn verify<'a>(&self, verify_data: &TransactionBindingAuthData<'a>) -> Verification {
+        let pk = self.id.public_key();
+        self.signature.verify_slice(&pk, verify_data)
+    }
+}
+
 /* Auth/Payload ************************************************************* */
 
 impl Payload for VotePlan {
     const HAS_DATA: bool = true;
-    const HAS_AUTH: bool = false;
-    type Auth = ();
+    const HAS_AUTH: bool = true;
+    type Auth = VotePlanProof;
 
     fn payload_data(&self) -> PayloadData<Self> {
         PayloadData(
@@ -247,8 +267,13 @@ impl Payload for VotePlan {
         )
     }
 
-    fn payload_auth_data(_: &Self::Auth) -> PayloadAuthData<Self> {
-        PayloadAuthData(Vec::with_capacity(0).into(), std::marker::PhantomData)
+    fn payload_auth_data(auth: &Self::Auth) -> PayloadAuthData<Self> {
+        PayloadAuthData(
+            auth.serialize_in(ByteBuilder::new())
+                .finalize_as_vec()
+                .into(),
+            std::marker::PhantomData,
+        )
     }
 
     fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
@@ -272,6 +297,14 @@ impl property::Serialize for VotePlan {
     fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
         writer.write_all(self.serialize().as_slice())?;
         Ok(())
+    }
+}
+
+impl Readable for VotePlanProof {
+    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        let id = vote::CommitteeId::read(buf)?;
+        let signature = SingleAccountBindingSignature::read(buf)?;
+        Ok(Self { id, signature })
     }
 }
 

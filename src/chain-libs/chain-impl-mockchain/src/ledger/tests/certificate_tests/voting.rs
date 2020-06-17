@@ -8,6 +8,7 @@ use crate::{
         data::Wallet,
         ConfigBuilder, LedgerBuilder, VoteTestGen,
     },
+    key::BftLeaderId,
     value::*,
 };
 
@@ -17,15 +18,14 @@ pub fn vote_plan_in_block0() {
     let vote_plan = VoteTestGen::vote_plan();
     let vote_plan_certificate = create_initial_vote_plan(&vote_plan, &[alice.clone()]);
 
-    let ledger_build_result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let leader = BftLeaderId::from(alice.public_key());
+    let config_builder = ConfigBuilder::new(0).with_leaders(&[leader]);
+
+    LedgerBuilder::from_config(config_builder)
         .faucets_wallets(vec![&alice])
         .certs(&[vote_plan_certificate])
-        .build();
-
-    assert!(
-        ledger_build_result.is_ok(),
-        "ledger should be built with vote plan certificate"
-    );
+        .build()
+        .expect("ledger should be built with vote plan certificate");
 }
 
 #[ignore]

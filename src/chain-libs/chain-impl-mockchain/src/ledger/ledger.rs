@@ -268,6 +268,10 @@ pub enum Error {
     StakeDelegationSignatureFailed,
     #[error("Pool Retirement payload signature failed")]
     PoolRetirementSignatureFailed,
+    #[error("Vote Plan Proof has an invalid signature")]
+    VotePlanProofInvalidSignature,
+    #[error("Vote Plan Proof ID is not present in the committee")]
+    VotePlanProofInvalidCommittee,
     #[error("Vote Tally Proof failed")]
     VoteTallyProofFailed,
     #[error("Pool update payload signature failed")]
@@ -278,8 +282,6 @@ pub enum Error {
     PoolUpdateFeesNotAllowedYet,
     #[error("Update not yet allowed")]
     UpdateNotAllowedYet,
-    #[error("Vote plans are not allowed outside of the genesis block yet")]
-    VotePlanNotAllowedYet,
     #[error("Cannot add the vote plan")]
     CannotAddVotePlan(
         #[from]
@@ -458,6 +460,7 @@ impl Ledger {
                         cur_date,
                         tx.payload().into_payload(),
                         &params,
+                        tx.payload_auth().into_payload_auth(),
                     )?;
                 }
                 Fragment::VoteCast(_) => {
@@ -875,11 +878,6 @@ impl Ledger {
                 new_ledger = new_ledger.apply_update_vote(&vote)?;
             }
             Fragment::VotePlan(tx) => {
-                if true {
-                    // TODO: vote plans are not yet allowed outside of the initial block0
-                    return Err(Error::VotePlanNotAllowedYet);
-                }
-
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
                     new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
@@ -888,6 +886,7 @@ impl Ledger {
                     block_date,
                     tx.payload().into_payload(),
                     &ledger_params,
+                    tx.payload_auth().into_payload_auth(),
                 )?;
             }
             Fragment::VoteCast(tx) => {
@@ -959,8 +958,13 @@ impl Ledger {
         cur_date: BlockDate,
         vote_plan: VotePlan,
         dyn_params: &LedgerParameters,
+        sig: certificate::VotePlanProof,
     ) -> Result<Self, Error> {
-        let committee = {
+        if sig.verify(&tx.transaction_binding_auth_data()) == Verification::Failed {
+            return Err(Error::VotePlanProofInvalidSignature);
+        }
+
+        let committee: std::collections::HashSet<CommitteeId> = {
             let mut vec = Vec::with_capacity(tx.nb_inputs() as usize);
 
             for input in tx.inputs().iter() {
@@ -979,6 +983,10 @@ impl Ledger {
                 .chain(dyn_params.committees.iter().cloned())
                 .collect()
         };
+
+        if !committee.contains(&sig.id) {
+            return Err(Error::VotePlanProofInvalidCommittee);
+        }
 
         self.votes = self.votes.add_vote_plan(cur_date, vote_plan, committee)?;
         Ok(self)

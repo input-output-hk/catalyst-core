@@ -1,8 +1,8 @@
 table! {
     api_tokens (token) {
         token -> Binary,
-        creation_time -> Text,
-        expire_time -> Text,
+        creation_time -> BigInt,
+        expire_time -> BigInt,
     }
 }
 
@@ -54,4 +54,9 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(api_tokens, funds, proposals, voteplans,);
+allow_tables_to_appear_in_same_query!(
+    api_tokens,
+    funds,
+    proposals,
+    voteplans,
+);

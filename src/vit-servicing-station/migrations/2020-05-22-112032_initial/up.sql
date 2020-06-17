@@ -50,8 +50,8 @@ create table voteplans
 create table api_tokens
 (
     token BLOB NOT NULL UNIQUE PRIMARY KEY ,
-    creation_time VARCHAR NOT NULL,
-    expire_time VARCHAR NOT NULL
+    creation_time BIGINT NOT NULL,
+    expire_time BIGINT NOT NULL
 );
 
 

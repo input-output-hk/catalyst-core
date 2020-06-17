@@ -8,8 +8,11 @@ use serde::{Deserialize, Serialize};
 pub struct Voteplan {
     pub id: i32,
     pub chain_voteplan_id: String,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub chain_vote_start_time: DateTime<Utc>,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub chain_vote_end_time: DateTime<Utc>,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
     pub chain_committee_end: DateTime<Utc>,
     pub chain_voteplan_payload: String,
     pub fund_id: i32,

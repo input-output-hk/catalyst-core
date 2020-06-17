@@ -40,7 +40,7 @@ impl Queryable<voteplans::SqlType, DB> for Voteplan {
             chain_vote_start_time: unix_timestamp_to_datetime(row.2),
             chain_vote_end_time: unix_timestamp_to_datetime(row.3),
             chain_committee_end: unix_timestamp_to_datetime(row.4),
-            chain_voteplan_payload: "".to_string(),
+            chain_voteplan_payload: row.5,
             fund_id: row.6,
         }
     }

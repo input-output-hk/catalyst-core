@@ -332,7 +332,6 @@ impl property::Serialize for VotePlan {
     }
 }
 
-
 impl Readable for VotePlanProof {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         let id = vote::CommitteeId::read(buf)?;

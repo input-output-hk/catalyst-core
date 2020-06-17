@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use crate::{
+    key::BftLeaderId,
     testing::{
         builders::{
             create_initial_vote_cast, create_initial_vote_plan, InitialFaultTolerantTxCertBuilder,
@@ -8,7 +9,6 @@ use crate::{
         data::Wallet,
         ConfigBuilder, LedgerBuilder, VoteTestGen,
     },
-    key::BftLeaderId,
     value::*,
 };
 

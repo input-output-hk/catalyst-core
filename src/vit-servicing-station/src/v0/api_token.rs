@@ -108,3 +108,39 @@ pub async fn api_token_filter(
         .and(warp::any())
         .untuple_one()
 }
+
+#[cfg(test)]
+mod test {
+    use crate::v0::api_token::{api_token_filter, API_TOKEN_HEADER};
+    use crate::v0::context::test::new_test_shared_context;
+    use crate::v0::context::SharedContext;
+    use crate::v0::context::{new_shared_context, test::new_empty_test_shared_context};
+    use chrono::DateTime;
+
+    #[tokio::test]
+    async fn api_token_filter_reject() {
+        let shared_context = new_empty_test_shared_context();
+        let filter = api_token_filter(shared_context).await;
+
+        assert!(warp::test::request()
+            .header(API_TOKEN_HEADER, "foobar")
+            .filter(&filter)
+            .await
+            .is_err());
+    }
+
+    #[tokio::test]
+    async fn api_token_filter_accepted() {
+        let shared_context = new_test_shared_context(
+            "./db/tests/vit_station_test.db",
+            "./resources/tests/block0.bin",
+        );
+        let filter = api_token_filter(shared_context).await;
+        let base64_token = "ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmY=";
+        let token = assert!(warp::test::request()
+            .header(API_TOKEN_HEADER, base64_token)
+            .filter(&filter)
+            .await
+            .is_ok());
+    }
+}

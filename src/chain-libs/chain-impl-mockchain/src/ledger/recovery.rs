@@ -41,7 +41,7 @@ use crate::account::AccountAlg;
 use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
 };
-use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VotePlan};
+use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VoteAction, VotePlan};
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::fragment::FragmentId;
@@ -887,7 +887,14 @@ fn unpack_proposal<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<Proposal
     let external_id = unpack_digestof(codec)?;
     let options = vote::Options::new_length(codec.get_u8()?)
         .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
-    Ok(Proposal::new(external_id, options))
+    let action = unpack_vote_action(codec)?;
+    Ok(Proposal::new(external_id, options, action))
+}
+
+fn unpack_vote_action<R: std::io::BufRead>(
+    _codec: &mut Codec<R>,
+) -> Result<VoteAction, std::io::Error> {
+    todo!()
 }
 
 fn pack_vote_proposals<W: std::io::Write>(
@@ -1050,10 +1057,9 @@ fn pack_entry<W: std::io::Write>(
             pack_digestof(pool_id, codec)?;
             codec.put_u32(**participation)?;
         }
-        Entry::VotePlan((vote_plan, block_date)) => {
+        Entry::VotePlan(vote_plan) => {
             codec.put_u8(EntrySerializeCode::VotePlan as u8)?;
             pack_vote_plan(vote_plan, codec)?;
-            pack_block_date(**block_date, codec)?;
         }
     }
     Ok(())
@@ -1113,8 +1119,7 @@ fn unpack_entry_owned<R: std::io::BufRead>(
         }
         EntrySerializeCode::VotePlan => {
             let vote_plan = unpack_vote_plan(codec)?;
-            let block_date = unpack_block_date(codec)?;
-            Ok(EntryOwned::VotePlan((vote_plan, block_date)))
+            Ok(EntryOwned::VotePlan(vote_plan))
         }
         EntrySerializeCode::SerializationEnd => Ok(EntryOwned::StopEntry),
     }

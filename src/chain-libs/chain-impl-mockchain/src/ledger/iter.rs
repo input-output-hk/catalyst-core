@@ -1,3 +1,4 @@
+use super::governance::Governance;
 use super::ledger::{Error, Ledger, LedgerStaticParameters};
 use super::pots::{self, Pots};
 use super::LeadersParticipationRecord;
@@ -45,7 +46,7 @@ pub enum Entry<'a> {
     ),
     StakePool((&'a crate::certificate::PoolId, &'a crate::stake::PoolState)),
     LeaderParticipation((&'a crate::certificate::PoolId, &'a u32)),
-    VotePlan((&'a VotePlan, &'a BlockDate)),
+    VotePlan(&'a VotePlan),
 }
 
 #[derive(Clone)]
@@ -76,7 +77,7 @@ pub enum EntryOwned {
     MultisigDeclaration((crate::multisig::Identifier, crate::multisig::Declaration)),
     StakePool((crate::certificate::PoolId, crate::stake::PoolState)),
     LeaderParticipation((crate::certificate::PoolId, u32)),
-    VotePlan((VotePlan, BlockDate)),
+    VotePlan(VotePlan),
     StopEntry,
 }
 
@@ -120,9 +121,7 @@ impl EntryOwned {
             EntryOwned::LeaderParticipation((pool_id, participation)) => {
                 Some(Entry::LeaderParticipation((pool_id, participation)))
             }
-            EntryOwned::VotePlan((vote_plan, block_date)) => {
-                Some(Entry::VotePlan((vote_plan, block_date)))
-            }
+            EntryOwned::VotePlan(vote_plan) => Some(Entry::VotePlan(vote_plan)),
             EntryOwned::StopEntry => None,
         }
     }
@@ -156,7 +155,7 @@ enum IterState<'a> {
     StakePools(imhamt::HamtIter<'a, crate::certificate::PoolId, crate::stake::PoolState>),
     Pots(pots::Entries<'a>),
     LeaderParticipations(imhamt::HamtIter<'a, crate::certificate::PoolId, u32>),
-    VotePlan(imhamt::HamtIter<'a, VotePlanId, (VotePlanManager, BlockDate)>),
+    VotePlan(imhamt::HamtIter<'a, VotePlanId, VotePlanManager>),
     Done,
 }
 
@@ -256,9 +255,7 @@ impl<'a> Iterator for LedgerIterator<'a> {
                     self.state = IterState::Done;
                     self.next()
                 }
-                Some((_, (plan_manager, block_date))) => {
-                    Some(Entry::VotePlan((plan_manager.plan(), block_date)))
-                }
+                Some((_, plan_manager)) => Some(Entry::VotePlan(plan_manager.plan())),
             },
             IterState::Done => None,
         }
@@ -289,7 +286,8 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         let mut pots = Pots::zero();
         let mut leaders_log = LeadersParticipationRecord::new();
         // TODO: votes don't have their entry
-        let votes = VotePlanLedger::new();
+        let mut votes = VotePlanLedger::new();
+        let governance = Governance::default();
 
         for entry in iter {
             match entry {
@@ -336,10 +334,14 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                 Entry::LeaderParticipation((pool_id, pool_participation)) => leaders_log
                     .set_for(pool_id.clone(), *pool_participation)
                     .unwrap(),
-                Entry::VotePlan((vote_plan, block_date)) => {
+                Entry::VotePlan(vote_plan) => {
                     // TODO: don't use default
-                    votes
-                        .add_vote_plan(*block_date, vote_plan.clone(), Default::default())
+                    votes.plans = votes
+                        .plans
+                        .insert(
+                            vote_plan.to_id(),
+                            VotePlanManager::new(vote_plan.clone(), Default::default()),
+                        )
                         .unwrap();
                 }
             }
@@ -362,6 +364,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             pots,
             leaders_log,
             votes,
+            governance,
         })
     }
 }
@@ -466,8 +469,8 @@ mod tests {
                 Entry::LeaderParticipation((pool_id, pool_record)) => {
                     println!("LeaderParticipation {} {}", pool_id, pool_record);
                 }
-                Entry::VotePlan((plan, block_date)) => {
-                    println!("VotePlan {} {}", plan.to_id(), block_date);
+                Entry::VotePlan(plan) => {
+                    println!("VotePlan {}", plan.to_id());
                 }
             }
         }

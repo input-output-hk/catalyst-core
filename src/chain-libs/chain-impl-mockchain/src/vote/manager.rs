@@ -1,13 +1,16 @@
 use crate::{
-    account,
-    certificate::{Proposal, TallyProof, VoteCast, VotePlan, VotePlanId},
+    certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
+    ledger::governance::Governance,
+    rewards::Ratio,
+    stake::{Stake, StakeControl},
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
 use imhamt::Hamt;
 use std::{
     collections::{hash_map::DefaultHasher, HashSet},
+    num::NonZeroU64,
     sync::Arc,
 };
 use thiserror::Error;
@@ -33,6 +36,7 @@ struct ProposalManager {
     votes_by_voters: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, vote::Payload>,
     options: Options,
     tally: Option<Tally>,
+    action: VoteAction,
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -89,6 +93,7 @@ impl ProposalManager {
             votes_by_voters: Hamt::new(),
             options: proposal.options().clone(),
             tally: None,
+            action: proposal.action().clone(),
         }
     }
 
@@ -113,32 +118,96 @@ impl ProposalManager {
             votes_by_voters,
             tally: self.tally.clone(),
             options: self.options.clone(),
+            action: self.action.clone(),
         })
     }
 
     #[must_use = "Compute the PublicTally in a new ProposalManager, does not modify self"]
-    pub fn public_tally(&self, accounts: &account::Ledger) -> Result<Self, VoteError> {
+    pub fn public_tally<F>(
+        &self,
+        stake: &StakeControl,
+        governance: &Governance,
+        f: &mut F,
+    ) -> Result<Self, VoteError>
+    where
+        F: FnMut(&VoteAction),
+    {
         let mut results = TallyResult::new(self.options.clone());
 
         for (id, payload) in self.votes_by_voters.iter() {
             if let Some(account_id) = id.to_single_account() {
-                if let Ok(account) = accounts.get_state(&account_id) {
-                    let value = account.get_value();
-
+                if let Some(stake) = stake.by(&account_id) {
                     match payload {
                         vote::Payload::Public { choice } => {
-                            results.add_vote(*choice, value)?;
+                            results.add_vote(*choice, stake)?;
                         }
                     }
                 }
             }
         }
 
+        if self.check(stake.assigned(), governance, &results) {
+            f(&self.action)
+        }
+
         Ok(Self {
             votes_by_voters: self.votes_by_voters.clone(),
             options: self.options.clone(),
             tally: Some(Tally::new_public(results)),
+            action: self.action.clone(),
         })
+    }
+
+    fn check(&self, total: Stake, governance: &Governance, results: &TallyResult) -> bool {
+        match &self.action {
+            VoteAction::OffChain => false,
+            VoteAction::Treasury { action } => {
+                let t = action.to_type();
+                let acceptance = governance.treasury.acceptance_criteria_for(t);
+                let total = if let Some(t) = NonZeroU64::new(total.into()) {
+                    t
+                } else {
+                    return false;
+                };
+                let participation = if let Some(p) = NonZeroU64::new(results.participation().into())
+                {
+                    p
+                } else {
+                    return false;
+                };
+                let favorable: u64 = if let Some(weight) =
+                    results.results().get(acceptance.choice.as_byte() as usize)
+                {
+                    (*weight).into()
+                } else {
+                    return false;
+                };
+
+                let ratio_favorable = Ratio {
+                    numerator: favorable,
+                    denominator: participation,
+                };
+
+                let ratio_participation = Ratio {
+                    numerator: participation.into(),
+                    denominator: total,
+                };
+
+                if let Some(criteria) = acceptance.minimum_stake_participation {
+                    if ratio_participation <= criteria {
+                        return false;
+                    }
+                }
+
+                if let Some(criteria) = acceptance.minimum_approval {
+                    if ratio_favorable <= criteria {
+                        return false;
+                    }
+                }
+
+                true
+            }
+        }
     }
 }
 
@@ -187,10 +256,18 @@ impl ProposalManagers {
         }
     }
 
-    pub fn public_tally(&self, accounts: &account::Ledger) -> Result<Self, VoteError> {
+    pub fn public_tally<F>(
+        &self,
+        stake: &StakeControl,
+        governance: &Governance,
+        f: &mut F,
+    ) -> Result<Self, VoteError>
+    where
+        F: FnMut(&VoteAction),
+    {
         let mut proposals = Vec::with_capacity(self.0.len());
         for proposal in self.0.iter() {
-            proposals.push(proposal.public_tally(accounts)?);
+            proposals.push(proposal.public_tally(stake, governance, f)?);
         }
 
         Ok(Self(proposals))
@@ -316,12 +393,17 @@ impl VotePlanManager {
         }
     }
 
-    pub fn tally(
+    pub fn tally<F>(
         &self,
         block_date: BlockDate,
-        accounts: &account::Ledger,
+        stake: &StakeControl,
+        governance: &Governance,
         sig: TallyProof,
-    ) -> Result<Self, VoteError> {
+        f: &mut F,
+    ) -> Result<Self, VoteError>
+    where
+        F: FnMut(&VoteAction),
+    {
         if !self.can_committee(block_date) {
             Err(VoteError::CommitteeTimeElapsed {
                 start: self.plan().committee_start(),
@@ -331,7 +413,9 @@ impl VotePlanManager {
             Err(VoteError::InvalidTallyCommittee)
         } else {
             let proposal_managers = match self.plan().payload_type() {
-                vote::PayloadType::Public => self.proposal_managers.public_tally(accounts)?,
+                vote::PayloadType::Public => {
+                    self.proposal_managers.public_tally(&stake, governance, f)?
+                }
             };
 
             Ok(Self {

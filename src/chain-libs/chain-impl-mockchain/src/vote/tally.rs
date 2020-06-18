@@ -59,12 +59,18 @@ impl Tally {
 
 impl TallyResult {
     pub fn new(options: Options) -> Self {
-        let results = Vec::with_capacity(options.choice_range().len()).into();
+        let len = options.choice_range().len();
+        let results = vec![Weight(0); len].into();
         Self { results, options }
     }
 
     pub fn results(&self) -> &[Weight] {
         &self.results
+    }
+
+    pub fn participation(&self) -> Stake {
+        let s: u64 = self.results.iter().map(|w| w.0).sum();
+        Stake::from_value(Value(s))
     }
 
     pub fn options(&self) -> &Options {

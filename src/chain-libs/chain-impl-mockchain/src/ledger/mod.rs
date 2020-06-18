@@ -1,4 +1,5 @@
 pub mod check;
+pub mod governance;
 mod info;
 pub mod iter;
 mod leaderlog;

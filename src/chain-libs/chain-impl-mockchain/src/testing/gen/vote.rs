@@ -1,7 +1,9 @@
 use super::TestGen;
 use crate::{
     block::BlockDate,
-    certificate::{ExternalProposalId, Proposal, Proposals, PushProposal, VoteCast, VotePlan},
+    certificate::{
+        ExternalProposalId, Proposal, Proposals, PushProposal, VoteAction, VoteCast, VotePlan,
+    },
     vote,
 };
 use chain_core::property::BlockDate as BlockDateProp;
@@ -15,6 +17,7 @@ impl VoteTestGen {
         Proposal::new(
             VoteTestGen::external_proposal_id(),
             vote::Options::new_length(4).unwrap(),
+            VoteAction::OffChain,
         )
     }
 

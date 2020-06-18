@@ -2,10 +2,11 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxVerifyError};
+use super::governance::{Governance, TreasuryGovernanceAction};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
-use crate::certificate::{PoolId, VotePlan};
+use crate::certificate::{PoolId, VoteAction, VotePlan};
 use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
@@ -14,7 +15,9 @@ use crate::fee::{FeeAlgorithm, LinearFee};
 use crate::fragment::{BlockContentHash, BlockContentSize, Contents, Fragment, FragmentId};
 use crate::rewards;
 use crate::setting::ActiveSlotsCoeffError;
-use crate::stake::{PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeDistribution};
+use crate::stake::{
+    PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeControl, StakeDistribution,
+};
 use crate::transaction::*;
 use crate::treasury::Treasury;
 use crate::value::*;
@@ -82,6 +85,7 @@ pub struct Ledger {
     pub(crate) pots: Pots,
     pub(crate) leaders_log: LeadersParticipationRecord,
     pub(crate) votes: VotePlanLedger,
+    pub(crate) governance: Governance,
 }
 
 // Dummy implementation of Debug for Ledger
@@ -320,6 +324,7 @@ impl Ledger {
             pots,
             leaders_log: LeadersParticipationRecord::new(),
             votes: VotePlanLedger::new(),
+            governance: Governance::default(),
         }
     }
 
@@ -1056,7 +1061,7 @@ impl Ledger {
         self.votes
             .plans
             .iter()
-            .map(|(_, (plan, _))| plan.statuses())
+            .map(|(_, plan)| plan.statuses())
             .collect()
     }
 
@@ -1070,9 +1075,35 @@ impl Ledger {
             return Err(Error::VoteTallyProofFailed);
         }
 
-        self.votes = self
-            .votes
-            .apply_committee_result(self.date(), &self.accounts, tally, sig)?;
+        let stake = StakeControl::new_with(&self.accounts, &self.utxos);
+
+        let mut actions = Vec::new();
+
+        let mut f = |action: &VoteAction| actions.push(action.clone());
+
+        self.votes = self.votes.apply_committee_result(
+            self.date(),
+            &stake,
+            &self.governance,
+            tally,
+            sig,
+            &mut f,
+        )?;
+
+        for action in actions {
+            match action {
+                VoteAction::OffChain => {}
+                VoteAction::Treasury {
+                    action: TreasuryGovernanceAction::NoOp,
+                } => {}
+                VoteAction::Treasury {
+                    action: TreasuryGovernanceAction::TransferToRewards { value },
+                } => {
+                    let value = self.pots.draw_treasury(value);
+                    self.pots.rewards_add(value)?;
+                }
+            }
+        }
 
         Ok(self)
     }

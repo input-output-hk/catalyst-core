@@ -35,6 +35,26 @@ impl Stake {
         values.fold(Stake(0), |acc, v| acc + v)
     }
 
+    #[must_use = "internal state is not modified"]
+    pub fn checked_add(&self, rhs: Self) -> Option<Self> {
+        self.0.checked_add(rhs.0).map(Self)
+    }
+
+    #[must_use = "internal state is not modified"]
+    pub fn checked_sub(&self, rhs: Self) -> Option<Self> {
+        self.0.checked_sub(rhs.0).map(Self)
+    }
+
+    #[must_use = "internal state is not modified"]
+    pub fn wrapping_add(&self, rhs: Self) -> Self {
+        Self(self.0.wrapping_add(rhs.0))
+    }
+
+    #[must_use = "internal state is not modified"]
+    pub fn wrapping_sub(&self, rhs: Self) -> Self {
+        Self(self.0.wrapping_sub(rhs.0))
+    }
+
     /// Divide a value by n equals parts, with a potential remainder
     pub fn split_in(self, n: u32) -> SplitValueIn {
         let n = n as u64;

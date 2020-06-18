@@ -1,6 +1,7 @@
 use crate::{
     certificate::{
-        Certificate, CertificatePayload, PoolOwnersSigned, PoolSignature, TallyProof, VoteTally, VotePlan, VotePlanProof,
+        Certificate, CertificatePayload, PoolOwnersSigned, PoolSignature, TallyProof, VotePlan,
+        VotePlanProof, VoteTally,
     },
     chaintypes::HeaderId,
     fee::FeeAlgorithm,

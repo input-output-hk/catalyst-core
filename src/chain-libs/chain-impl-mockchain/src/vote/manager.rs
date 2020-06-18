@@ -1,7 +1,7 @@
 use crate::{
     certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
-    ledger::governance::Governance,
+    ledger::governance::{Governance, GovernanceAcceptanceCriteria},
     rewards::Ratio,
     stake::{Stake, StakeControl},
     transaction::UnspecifiedAccountIdentifier,
@@ -164,50 +164,64 @@ impl ProposalManager {
             VoteAction::Treasury { action } => {
                 let t = action.to_type();
                 let acceptance = governance.treasury.acceptance_criteria_for(t);
-                let total = if let Some(t) = NonZeroU64::new(total.into()) {
-                    t
-                } else {
-                    return false;
-                };
-                let participation = if let Some(p) = NonZeroU64::new(results.participation().into())
-                {
-                    p
-                } else {
-                    return false;
-                };
-                let favorable: u64 = if let Some(weight) =
-                    results.results().get(acceptance.choice.as_byte() as usize)
-                {
-                    (*weight).into()
-                } else {
-                    return false;
-                };
 
-                let ratio_favorable = Ratio {
-                    numerator: favorable,
-                    denominator: participation,
-                };
+                self.check_governance_criteria(total, acceptance, results)
+            }
+            VoteAction::Parameters { action } => {
+                let t = action.to_type();
+                let acceptance = governance.parameters.acceptance_criteria_for(t);
 
-                let ratio_participation = Ratio {
-                    numerator: participation.into(),
-                    denominator: total,
-                };
-
-                if let Some(criteria) = acceptance.minimum_stake_participation {
-                    if ratio_participation <= criteria {
-                        return false;
-                    }
-                }
-
-                if let Some(criteria) = acceptance.minimum_approval {
-                    if ratio_favorable <= criteria {
-                        return false;
-                    }
-                }
-
-                true
+                self.check_governance_criteria(total, acceptance, results)
             }
         }
+    }
+
+    fn check_governance_criteria(
+        &self,
+        total: Stake,
+        acceptance: &GovernanceAcceptanceCriteria,
+        results: &TallyResult,
+    ) -> bool {
+        let total = if let Some(t) = NonZeroU64::new(total.into()) {
+            t
+        } else {
+            return false;
+        };
+        let participation = if let Some(p) = NonZeroU64::new(results.participation().into()) {
+            p
+        } else {
+            return false;
+        };
+        let favorable: u64 =
+            if let Some(weight) = results.results().get(acceptance.choice.as_byte() as usize) {
+                (*weight).into()
+            } else {
+                return false;
+            };
+
+        let ratio_favorable = Ratio {
+            numerator: favorable,
+            denominator: participation,
+        };
+
+        let ratio_participation = Ratio {
+            numerator: participation.into(),
+            denominator: total,
+        };
+
+        if let Some(criteria) = acceptance.minimum_stake_participation {
+            if ratio_participation <= criteria {
+                return false;
+            }
+        }
+
+        if let Some(criteria) = acceptance.minimum_approval {
+            if ratio_favorable <= criteria {
+                return false;
+            }
+        }
+
+        true
     }
 }
 

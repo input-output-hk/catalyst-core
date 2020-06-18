@@ -4,7 +4,6 @@
 use crate::{Conversion, Error, Proposal, Result, Wallet};
 use chain_impl_mockchain::{
     certificate::VotePlanId,
-    transaction::Input,
     value::Value,
     vote::{Choice, Options as VoteOptions, PayloadType},
 };
@@ -18,6 +17,7 @@ pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
 pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
+pub type PendingTransactionsPtr = *mut PendingTransactions;
 
 #[derive(Debug, Error)]
 #[error("null pointer")]
@@ -26,6 +26,11 @@ struct NulPtr;
 #[derive(Debug, Error)]
 #[error("access out of bound")]
 struct OutOfBound;
+
+/// opaque handle over a list of pending transaction ids
+pub struct PendingTransactions {
+    fragment_ids: Box<[chain_impl_mockchain::fragment::FragmentId]>,
+}
 
 macro_rules! non_null {
     ( $obj:expr ) => {
@@ -207,6 +212,99 @@ pub unsafe fn wallet_retrieve_funds(
         }
         Err(err) => err.into(),
     }
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers (wallet, fragment_id). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors.
+///
+pub unsafe fn pending_transactions_len(
+    transactions: PendingTransactionsPtr,
+    len_out: *mut usize,
+) -> Result {
+    let pending_transactions = non_null!(transactions);
+
+    *len_out = pending_transactions.fragment_ids.len();
+
+    Result::success()
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers (wallet, fragment_id). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors.
+///
+pub unsafe fn pending_transactions_get(
+    transactions: PendingTransactionsPtr,
+    index: usize,
+    id_out: *mut *const u8,
+) -> Result {
+    let pending_transactions = non_null!(transactions);
+
+    let fragment_id: &[u8] = pending_transactions.fragment_ids[index].as_ref();
+
+    *id_out = fragment_id.as_ptr();
+
+    Result::success()
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers (wallet, fragment_id). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors.
+///
+pub unsafe fn pending_transactions_delete(transactions: PendingTransactionsPtr) -> Result {
+    let pending = non_null_mut!(transactions);
+
+    Box::from_raw(pending as PendingTransactionsPtr);
+
+    Result::success()
+}
+
+/// Get list of pending transaction id's
+///
+/// # Parameters
+///
+/// * wallet: the recovered wallet (see recover function);
+/// * pending_transactions_out: an opaque type that works as an array
+///
+/// # Errors
+///
+/// * this function may fail if the wallet pointer is null;
+/// * the block is not valid (cannot be decoded)
+///
+/// # Safety
+///
+/// This function dereference raw pointers (wallet). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors.
+///
+pub unsafe fn wallet_pending_transactions(
+    wallet: WalletPtr,
+    pending_transactions_out: *mut PendingTransactionsPtr,
+) -> Result {
+    let wallet = non_null!(wallet);
+
+    let pending_transactions = PendingTransactions {
+        fragment_ids: wallet
+            .pending_transactions()
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>()
+            .into_boxed_slice(),
+    };
+
+    *pending_transactions_out =
+        Box::into_raw(Box::new(pending_transactions)) as PendingTransactionsPtr;
+
+    Result::success()
 }
 
 /// Confirm the previously generated transaction identified by fragment_id

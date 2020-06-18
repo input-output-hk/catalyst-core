@@ -492,7 +492,7 @@ impl Ledger {
             match action {
                 ParametersGovernanceAction::NoOp => {}
                 ParametersGovernanceAction::RewardAdd { value } => {
-                    todo!("modify the appropriate places for the rewards")
+                    new.pots.rewards_add(*value)?;
                 }
             }
         }

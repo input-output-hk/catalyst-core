@@ -253,6 +253,7 @@ pub unsafe fn pending_transactions_get(
     Result::success()
 }
 
+/// delete the pointer and free the allocated memory
 ///
 /// # Safety
 ///
@@ -260,12 +261,12 @@ pub unsafe fn pending_transactions_get(
 /// the function checks if the pointers are null. Mind not to put random values
 /// in or you may see unexpected behaviors.
 ///
-pub unsafe fn pending_transactions_delete(transactions: PendingTransactionsPtr) -> Result {
-    let pending = non_null_mut!(transactions);
+pub unsafe fn pending_transactions_delete(pending: PendingTransactionsPtr) {
+    if !pending.is_null() {
+        let boxed = Box::from_raw(pending);
 
-    Box::from_raw(pending as PendingTransactionsPtr);
-
-    Result::success()
+        std::mem::drop(boxed);
+    }
 }
 
 /// Get list of pending transaction id's

@@ -6,9 +6,9 @@ create table funds
     fund_goal VARCHAR NOT NULL,
     voting_power_info VARCHAR NOT NULL,
     rewards_info VARCHAR NOT NULL,
-    fund_start_time VARCHAR NOT NULL,
-    fund_end_time VARCHAR NOT NULL,
-    next_fund_start_time VARCHAR NOT NULL
+    fund_start_time BIGINT NOT NULL,
+    fund_end_time BIGINT NOT NULL,
+    next_fund_start_time BIGINT NOT NULL
 );
 
 create table proposals
@@ -40,9 +40,9 @@ create table voteplans
         primary key autoincrement,
     chain_voteplan_id VARCHAR NOT NULL
         unique,
-    chain_vote_start_time VARCHAR NOT NULL,
-    chain_vote_end_time VARCHAR NOT NULL,
-    chain_committee_end_time VARCHAR NOT NULL,
+    chain_vote_start_time BIGINT NOT NULL,
+    chain_vote_end_time BIGINT NOT NULL,
+    chain_committee_end_time BIGINT NOT NULL,
     chain_voteplan_payload VARCHAR NOT NULL,
     fund_id INTEGER NOT NULL
 );
@@ -50,8 +50,8 @@ create table voteplans
 create table api_tokens
 (
     token BLOB NOT NULL UNIQUE PRIMARY KEY ,
-    creation_time VARCHAR NOT NULL,
-    expire_time VARCHAR NOT NULL
+    creation_time BIGINT NOT NULL,
+    expire_time BIGINT NOT NULL
 );
 
 

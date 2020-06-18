@@ -10,16 +10,16 @@ impl Voteplan {
         &self.chain_voteplan_id
     }
 
-    pub async fn chain_vote_start_time(&self) -> &str {
-        &self.chain_vote_start_time
+    pub async fn chain_vote_start_time(&self) -> String {
+        self.chain_vote_start_time.to_rfc3339()
     }
 
-    pub async fn chain_vote_end_time(&self) -> &str {
-        &self.chain_vote_end_time
+    pub async fn chain_vote_end_time(&self) -> String {
+        self.chain_vote_end_time.to_rfc3339()
     }
 
-    pub async fn chain_committee_end(&self) -> &str {
-        &self.chain_committee_end
+    pub async fn chain_committee_end(&self) -> String {
+        self.chain_committee_end.to_rfc3339()
     }
 
     pub async fn chain_voteplan_payload(&self) -> &str {

@@ -1,6 +1,8 @@
 use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
 use crate::db::{views_schema::full_proposals_info, DB};
+use crate::utils::datetime::unix_timestamp_to_datetime;
+use chrono::DateTime;
 use diesel::Queryable;
 use serde::{Deserialize, Serialize};
 
@@ -32,14 +34,18 @@ pub struct Proposal {
     pub proposal_url: String,
     pub proposal_files_url: String,
     pub proposer: Proposer,
-    pub chain_proposal_id: String,
+    #[serde(serialize_with = "crate::utils::serde::serialize_bin_as_string")]
+    pub chain_proposal_id: Vec<u8>,
     pub chain_proposal_index: i64,
     pub chain_vote_options: VoteOptions,
     pub chain_voteplan_id: String,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
+    pub chain_vote_start_time: DateTime<chrono::Utc>,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
+    pub chain_vote_end_time: DateTime<chrono::Utc>,
+    #[serde(serialize_with = "crate::utils::serde::serialize_datetime_as_rfc3339")]
+    pub chain_committee_end_time: DateTime<chrono::Utc>,
     pub chain_voteplan_payload: String,
-    pub chain_vote_start_time: String,
-    pub chain_vote_end_time: String,
-    pub chain_committee_end_time: String,
     pub fund_id: i32,
 }
 
@@ -84,11 +90,11 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
         // 17 -> chain_voteplan_id
         String,
         // 18 -> chain_vote_starttime
-        String,
+        i64,
         // 29 -> chain_vote_endtime
-        String,
+        i64,
         // 20 -> chain_committee_end_time
-        String,
+        i64,
         // 21 -> chain_voteplan_payload
         String,
         // 22 -> fund_id
@@ -117,14 +123,13 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
                 proposer_email: row.12,
                 proposer_url: row.13,
             },
-            // TODO: check, would this be invalid in any case?
-            chain_proposal_id: String::from_utf8(row.14).unwrap(),
+            chain_proposal_id: row.14,
             chain_proposal_index: row.15,
             chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.16),
             chain_voteplan_id: row.17,
-            chain_vote_start_time: row.18,
-            chain_vote_end_time: row.19,
-            chain_committee_end_time: row.20,
+            chain_vote_start_time: unix_timestamp_to_datetime(row.18),
+            chain_vote_end_time: unix_timestamp_to_datetime(row.19),
+            chain_committee_end_time: unix_timestamp_to_datetime(row.20),
             chain_voteplan_payload: row.21,
             fund_id: row.22,
         }

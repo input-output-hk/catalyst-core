@@ -305,6 +305,7 @@ checksum = "80094f509cf8b5ae86a4966a39b3ff66cd7e2a3e594accec3743ff3fabeab5b2"
 dependencies = [
  "num-integer",
  "num-traits",
+ "serde",
  "time",
 ]
 
@@ -2026,6 +2027,7 @@ dependencies = [
  "async-graphql-warp",
  "async-trait",
  "base64 0.12.1",
+ "chrono",
  "diesel",
  "dotenv",
  "libsqlite3-sys",

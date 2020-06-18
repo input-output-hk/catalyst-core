@@ -12,6 +12,7 @@ async-graphql = "1.13.2"
 async-graphql-warp = "1.13.2"
 async-trait = "0.1.33"
 base64 = "0.12.1"
+chrono = { version = "0.4", features = ["serde"] }
 diesel = { version = "1.4.4", features = ["sqlite", "r2d2"] }
 dotenv = "0.9.0"
 serde = { version = "1.0", features = ["derive"] }

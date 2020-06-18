@@ -1,8 +1,8 @@
 table! {
     api_tokens (token) {
         token -> Binary,
-        creation_time -> Text,
-        expire_time -> Text,
+        creation_time -> BigInt,
+        expire_time -> BigInt,
     }
 }
 
@@ -13,9 +13,9 @@ table! {
         fund_goal -> Text,
         voting_power_info -> Text,
         rewards_info -> Text,
-        fund_start_time -> Text,
-        fund_end_time -> Text,
-        next_fund_start_time -> Text,
+        fund_start_time -> BigInt,
+        fund_end_time -> BigInt,
+        next_fund_start_time -> BigInt,
     }
 }
 
@@ -46,9 +46,9 @@ table! {
     voteplans (id) {
         id -> Integer,
         chain_voteplan_id -> Text,
-        chain_vote_start_time -> Text,
-        chain_vote_end_time -> Text,
-        chain_committee_end_time -> Text,
+        chain_vote_start_time -> BigInt,
+        chain_vote_end_time -> BigInt,
+        chain_committee_end_time -> BigInt,
         chain_voteplan_payload -> Text,
         fund_id -> Integer,
     }

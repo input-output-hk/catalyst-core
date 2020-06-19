@@ -37,7 +37,7 @@ pub mod test {
     use super::*;
     use crate::db;
 
-    pub fn new_empty_test_shared_context() -> SharedContext {
+    pub fn new_in_memmory_db_test_shared_context() -> SharedContext {
         let pool = db::load_db_connection_pool("").unwrap();
         let block0: Vec<u8> = Vec::new();
         Arc::new(RwLock::new(Context::new(pool, block0)))

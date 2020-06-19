@@ -28,4 +28,5 @@ warp = { version = "0.2", features = ["tls"] }
 libsqlite3-sys =  { version = "0.9.1", features = ["bundled"] }
 
 [dev-dependencies]
+diesel_migrations = "1.4.0"
 tempfile = "3"

@@ -112,11 +112,13 @@ pub async fn api_token_filter(
 #[cfg(test)]
 mod test {
     use crate::v0::api_token::{api_token_filter, API_TOKEN_HEADER};
-    use crate::v0::context::test::{new_empty_test_shared_context, new_test_shared_context};
+    use crate::v0::context::test::{
+        new_in_memmory_db_test_shared_context, new_test_shared_context,
+    };
 
     #[tokio::test]
     async fn api_token_filter_reject() {
-        let shared_context = new_empty_test_shared_context();
+        let shared_context = new_in_memmory_db_test_shared_context();
         let filter = api_token_filter(shared_context).await;
 
         assert!(warp::test::request()

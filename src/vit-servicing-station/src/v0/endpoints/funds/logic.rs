@@ -49,14 +49,14 @@ pub async fn get_fund(context: SharedContext) -> Result<Fund, HandleError> {
     tokio::task::spawn_blocking(move || {
         let fund = fund_dsl::funds
             .first::<Fund>(&db_conn)
-            .map_err(|_e| HandleError::NotFound("Error loading fund".to_string()));
+            .map_err(|_e| HandleError::NotFound("fund".to_string()));
         match fund {
             Ok(mut fund) => diesel::QueryDsl::filter(
                 voteplans_dsl::voteplans,
                 voteplans_dsl::fund_id.eq(fund.id),
             )
             .load::<Voteplan>(&db_conn)
-            .map_err(|_e| HandleError::NotFound("Error loading fund".to_string()))
+            .map_err(|_e| HandleError::NotFound("fund voteplans".to_string()))
             .map(|mut voteplans| {
                 fund.chain_vote_plans.append(&mut voteplans);
                 Ok(fund)

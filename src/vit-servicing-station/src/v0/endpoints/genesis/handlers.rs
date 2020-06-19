@@ -12,15 +12,14 @@ pub async fn get_genesis(context: SharedContext) -> Result<impl Reply, Rejection
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::v0::context::load_block0;
-    use crate::v0::context::test::new_test_shared_context;
+    use crate::v0::context::{load_block0, test::new_test_shared_context};
     use warp::Filter;
 
     #[tokio::test]
     async fn get_block0_succeed() {
         // build context
         let block0_path = "./resources/tests/block0.bin";
-        let shared_context = new_test_shared_context("./db/tests/vit_station_test.db", block0_path);
+        let shared_context = new_test_shared_context("", block0_path);
         let block0 = load_block0(block0_path);
 
         let with_context = warp::any().map(move || shared_context.clone());

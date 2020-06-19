@@ -2,7 +2,7 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxVerifyError};
-use super::governance::{Governance, TreasuryGovernanceAction};
+use super::governance::{Governance, ParametersGovernanceAction, TreasuryGovernanceAction};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
@@ -483,6 +483,22 @@ impl Ledger {
 
     pub fn can_distribute_reward(&self) -> bool {
         self.leaders_log.total() != 0
+    }
+
+    pub fn apply_protocol_changes(&self) -> Result<Self, Error> {
+        let mut new = self.clone();
+
+        for action in new.governance.parameters.logs() {
+            match action {
+                ParametersGovernanceAction::NoOp => {}
+                ParametersGovernanceAction::RewardAdd { value } => {
+                    new.pots.rewards_add(*value)?;
+                }
+            }
+        }
+
+        new.governance.parameters.logs_clear();
+        Ok(new)
     }
 
     /// This need to be called before the *first* block of a new epoch
@@ -1101,6 +1117,13 @@ impl Ledger {
                 } => {
                     let value = self.pots.draw_treasury(value);
                     self.pots.rewards_add(value)?;
+                }
+                VoteAction::Parameters { action } => {
+                    if self.governance.parameters.logs_register(action).is_err() {
+                        unimplemented!("the action was already recorded for this epoch")
+                    } else {
+                        // nothing
+                    }
                 }
             }
         }

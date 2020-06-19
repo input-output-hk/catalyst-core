@@ -1,7 +1,7 @@
 use crate::{
     block::BlockDate,
     certificate::CertificateSlice,
-    ledger::governance::TreasuryGovernanceAction,
+    ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAction},
     transaction::{
         Payload, PayloadAuthData, PayloadData, PayloadSlice, SingleAccountBindingSignature,
         TransactionBindingAuthData,
@@ -63,6 +63,8 @@ pub enum VoteAction {
     OffChain,
     /// control the treasury
     Treasury { action: TreasuryGovernanceAction },
+    /// control the parameters
+    Parameters { action: ParametersGovernanceAction },
 }
 
 /// a collection of proposals
@@ -129,6 +131,7 @@ impl VoteAction {
         match self {
             Self::OffChain => bb.u8(0),
             Self::Treasury { action } => bb.u8(1).sub(|bb| action.serialize_in(bb)),
+            Self::Parameters { action } => bb.u8(2).sub(|bb| action.serialize_in(bb)),
         }
     }
 }
@@ -345,6 +348,7 @@ impl Readable for VoteAction {
         match buf.get_u8()? {
             0 => Ok(Self::OffChain),
             1 => TreasuryGovernanceAction::read(buf).map(|action| Self::Treasury { action }),
+            2 => ParametersGovernanceAction::read(buf).map(|action| Self::Parameters { action }),
             t => Err(ReadError::UnknownTag(t as u32)),
         }
     }

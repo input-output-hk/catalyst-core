@@ -37,6 +37,7 @@ impl Weight {
         self.0 == 0
     }
 
+    #[must_use = "Does not modify the internal state"]
     fn saturating_add(self, other: Self) -> Self {
         Self(self.0.saturating_add(other.0))
     }
@@ -106,7 +107,7 @@ impl TallyResult {
         } else {
             let index = choice.as_byte() as usize;
 
-            self.results[index].saturating_add(weight);
+            self.results[index] = self.results[index].saturating_add(weight);
 
             Ok(())
         }

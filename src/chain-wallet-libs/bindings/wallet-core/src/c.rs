@@ -4,6 +4,7 @@
 use crate::{Conversion, Error, Proposal, Result, Wallet};
 use chain_impl_mockchain::{
     certificate::VotePlanId,
+    transaction::Input,
     value::Value,
     vote::{Choice, Options as VoteOptions, PayloadType},
 };

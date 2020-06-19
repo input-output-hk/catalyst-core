@@ -28,6 +28,7 @@
         <source-file src="src/android/jormungandrwallet/Wallet.java" target-dir="src/com/iohk/jormungandrwallet" />
         <source-file src="src/android/jormungandrwallet/Conversion.java" target-dir="src/com/iohk/jormungandrwallet" />
         <source-file src="src/android/jormungandrwallet/Proposal.java" target-dir="src/com/iohk/jormungandrwallet" />
+        <source-file src="src/android/jormungandrwallet/PendingTransactions.java" target-dir="src/com/iohk/jormungandrwallet" />
 
         <source-file src="src/android/libs/x86/libwallet_jni.so" target-dir="libs/x86" />
         <source-file src="src/android/libs/x86_64/libwallet_jni.so" target-dir="libs/x86_64" />

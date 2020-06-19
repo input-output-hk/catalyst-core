@@ -45,11 +45,15 @@ const deleteWallet = promisify(primitives.walletDelete);
 const deleteSettings = promisify(primitives.settingsDelete);
 const deleteConversion = promisify(primitives.conversionDelete);
 const deleteProposal = promisify(primitives.proposalDelete);
+const deletePending = promisify(primitives.pendingTransactionsDelete);
 const conversionGetTransactionAt = promisify(primitives.conversionTransactionsGet);
 const conversionGetIgnored = promisify(primitives.conversionGetIgnored);
 const proposalNew = promisify(primitives.proposalNew);
 const walletVote = promisify(primitives.walletVote);
 const walletSetState = promisify(primitives.walletSetState);
+const walletConfirmTransaction = promisify(primitives.walletConfirmTransaction);
+const walletPendingTransactions = promisify(primitives.walletPendingTransactions);
+const pendingTransactionsGet = promisify(primitives.pendingTransactionsGet);
 
 function conversionGetTransactions (conversion) {
     return new Promise(function (resolve, reject) {
@@ -70,6 +74,36 @@ function conversionGetTransactions (conversion) {
         });
     }
     );
+}
+
+function pendingTransactionsGetAll (pendingTransactions) {
+    return new Promise(function (resolve, reject) {
+        primitives.pendingTransactionsSize(pendingTransactions, function (size) {
+            const transactions = [];
+            for (let i = 0; i < size; ++i) {
+                transactions.push(pendingTransactionsGet(pendingTransactions, i));
+            }
+            Promise.all(transactions).then(
+                function (array) {
+                    resolve(array);
+                }
+            ).catch(function (err) {
+                reject(err);
+            });
+        }, function (err) {
+            reject(err);
+        });
+    }
+    );
+}
+
+function getPendingTransactions (walletPtr) {
+    return walletPendingTransactions(walletPtr).then(
+        function (pendingPtr) {
+            return pendingTransactionsGetAll(pendingPtr).then(pending => {
+                return deletePending(pendingPtr).then(() => pending);
+            });
+        });
 }
 
 exports.defineAutoTests = function () {
@@ -172,9 +206,18 @@ exports.defineAutoTests = function () {
                 .then(function (ignored_value) {
                     expect(ignored_value.value).toBe(1);
                     expect(ignored_value.ignored).toBe(1);
-                    return new Promise(function (resolve) {
-                        resolve();
-                    });
+                })
+                .then(function () {
+                    return getPendingTransactions(walletPtr);
+                })
+                .then(function (pending) {
+                    expect(pending.length).toBe(1);
+                    return walletConfirmTransaction(walletPtr, new Uint8Array(pending[0])).then(
+                        function () { return getPendingTransactions(walletPtr); }
+                    );
+                })
+                .then(function (pending) {
+                    expect(pending.length).toBe(0);
                 })
                 .then(function () {
                     return deleteSettings(settingsPtr);

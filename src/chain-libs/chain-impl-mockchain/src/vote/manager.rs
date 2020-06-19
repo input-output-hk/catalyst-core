@@ -192,16 +192,31 @@ impl ProposalManager {
         } else {
             return false;
         };
-        let favorable: u64 =
-            if let Some(weight) = results.results().get(acceptance.choice.as_byte() as usize) {
-                (*weight).into()
+        let favorable: u64 = if let Some(weight) = results
+            .results()
+            .get(acceptance.favorable.as_byte() as usize)
+        {
+            (*weight).into()
+        } else {
+            return false;
+        };
+        let non_blanks = if let Some(weight) = results
+            .results()
+            .get(acceptance.rejection.as_byte() as usize)
+        {
+            let v: u64 = (*weight).into();
+            if let Some(v) = NonZeroU64::new(v + favorable) {
+                v
             } else {
                 return false;
-            };
+            }
+        } else {
+            return false;
+        };
 
         let ratio_favorable = Ratio {
             numerator: favorable,
-            denominator: participation,
+            denominator: non_blanks,
         };
 
         let ratio_participation = Ratio {

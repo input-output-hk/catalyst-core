@@ -276,6 +276,8 @@ pub enum Error {
     VotePlanProofInvalidSignature,
     #[error("Vote Plan Proof ID is not present in the committee")]
     VotePlanProofInvalidCommittee,
+    #[error("Vote plan contains proposal(s) that does not pass governance criteria")]
+    VotePlanInvalidGovernanceParameters,
     #[error("Vote Tally Proof failed")]
     VoteTallyProofFailed,
     #[error("Pool update payload signature failed")]
@@ -985,17 +987,24 @@ impl Ledger {
             return Err(Error::VotePlanProofInvalidSignature);
         }
 
+        if !vote_plan.check_governance(&self.governance) {
+            return Err(Error::VotePlanInvalidGovernanceParameters);
+        }
+
         let committee: std::collections::HashSet<CommitteeId> = {
             let mut vec = Vec::with_capacity(tx.nb_inputs() as usize);
 
-            for input in tx.inputs().iter() {
-                match input.to_enum() {
-                    InputEnum::UtxoInput(_) => {
-                        return Err(Error::VoteCastInvalidTransaction);
-                    }
-                    InputEnum::AccountInput(account_id, _value) => {
-                        use std::convert::TryInto as _;
-                        vec.push(account_id.as_ref().try_into().unwrap());
+            if !vote_plan.is_governance() {
+                for input in tx.inputs().iter() {
+                    match input.to_enum() {
+                        InputEnum::UtxoInput(_) => {
+                            return Err(Error::VoteCastInvalidTransaction);
+                        }
+                        InputEnum::AccountInput(account_id, _value) => {
+                            use std::convert::TryInto as _;
+
+                            vec.push(account_id.as_ref().try_into().unwrap());
+                        }
                     }
                 }
             }

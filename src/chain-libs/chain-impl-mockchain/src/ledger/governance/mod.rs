@@ -10,7 +10,10 @@ pub use self::{
     },
     treasury::{TreasuryGovernance, TreasuryGovernanceAction, TreasuryGovernanceActionType},
 };
-use crate::{rewards::Ratio, vote::Choice};
+use crate::{
+    rewards::Ratio,
+    vote::{Choice, Options},
+};
 use std::num::NonZeroU64;
 
 #[derive(Clone, Default, Eq, PartialEq)]
@@ -23,7 +26,10 @@ pub struct Governance {
 pub struct GovernanceAcceptanceCriteria {
     pub minimum_stake_participation: Option<Ratio>,
     pub minimum_approval: Option<Ratio>,
-    pub choice: Choice,
+    pub blank: Choice,
+    pub favorable: Choice,
+    pub rejection: Choice,
+    pub options: Options,
 }
 
 impl Default for GovernanceAcceptanceCriteria {
@@ -39,7 +45,10 @@ impl Default for GovernanceAcceptanceCriteria {
                 numerator: 50,
                 denominator: CENT,
             }),
-            choice: Choice::new(1),
+            blank: Choice::new(0),
+            favorable: Choice::new(1),
+            rejection: Choice::new(2),
+            options: Options::new_length(3).expect("3 valid choices possible"),
         }
     }
 }

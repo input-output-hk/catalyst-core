@@ -48,7 +48,7 @@ pub enum VoteError {
     },
 
     #[error("It is not possible to vote at the moment for the proposals, time to vote is between {start} to {end}.")]
-    VoteTimeElapsed {
+    NotVoteTime {
         start: BlockDate,
         end: BlockDate,
         vote: VoteCast,
@@ -67,7 +67,7 @@ pub enum VoteError {
     },
 
     #[error("It is not possible to tally the votes for the proposals, time to tally the votes is between {start} to {end}.")]
-    CommitteeTimeElapsed { start: BlockDate, end: BlockDate },
+    NotCommitteeTime { start: BlockDate, end: BlockDate },
 
     #[error("Unexpected TallyProof's public ID, expected one of the committee")]
     InvalidTallyCommittee,
@@ -400,7 +400,7 @@ impl VotePlanManager {
                 vote: cast,
             })
         } else if !self.can_vote(block_date) {
-            Err(VoteError::VoteTimeElapsed {
+            Err(VoteError::NotVoteTime {
                 start: self.plan().vote_start(),
                 end: self.plan().vote_end(),
                 vote: cast,
@@ -434,7 +434,7 @@ impl VotePlanManager {
         F: FnMut(&VoteAction),
     {
         if !self.can_committee(block_date) {
-            Err(VoteError::CommitteeTimeElapsed {
+            Err(VoteError::NotCommitteeTime {
                 start: self.plan().committee_start(),
                 end: self.plan().committee_end(),
             })
@@ -675,7 +675,7 @@ mod tests {
                 )
                 .err()
                 .unwrap(),
-            VoteError::VoteTimeElapsed {
+            VoteError::NotVoteTime {
                 start: vote_plan.vote_start(),
                 end: vote_plan.vote_end(),
                 vote: vote_cast,
@@ -705,7 +705,7 @@ mod tests {
                 )
                 .err()
                 .unwrap(),
-            VoteError::VoteTimeElapsed {
+            VoteError::NotVoteTime {
                 start: vote_plan.vote_start(),
                 end: vote_plan.vote_end(),
                 vote: vote_cast,

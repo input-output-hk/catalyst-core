@@ -1,7 +1,7 @@
 use crate::{
     block::BlockDate,
     certificate::CertificateSlice,
-    ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAction},
+    ledger::governance::{Governance, ParametersGovernanceAction, TreasuryGovernanceAction},
     transaction::{
         Payload, PayloadAuthData, PayloadData, PayloadSlice, SingleAccountBindingSignature,
         TransactionBindingAuthData,
@@ -107,6 +107,23 @@ impl Proposal {
         }
     }
 
+    pub fn check_governance(&self, governance: &Governance) -> bool {
+        let criteria = match self.action() {
+            VoteAction::OffChain => {
+                // OffChain passes acceptance as it does not require governance
+                return true;
+            }
+            VoteAction::Parameters { action } => governance
+                .parameters
+                .acceptance_criteria_for(action.to_type()),
+            VoteAction::Treasury { action } => governance
+                .treasury
+                .acceptance_criteria_for(action.to_type()),
+        };
+
+        criteria.options == self.options
+    }
+
     pub fn external_id(&self) -> &ExternalProposalId {
         &self.external_id
     }
@@ -178,6 +195,19 @@ impl VotePlan {
             proposals,
             payload_type,
         }
+    }
+
+    pub fn check_governance(&self, governance: &Governance) -> bool {
+        self.proposals()
+            .iter()
+            .all(|proposal| proposal.check_governance(governance))
+    }
+
+    pub fn is_governance(&self) -> bool {
+        self.proposals().iter().any(|proposal| {
+            matches!(proposal.action(), VoteAction::Parameters { .. })
+                || matches!(proposal.action(), VoteAction::Treasury { .. })
+        })
     }
 
     pub fn vote_start(&self) -> BlockDate {

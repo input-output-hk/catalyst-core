@@ -33,6 +33,15 @@ impl RecoveringDaedalus {
         }
     }
 
+    pub fn remove(&mut self, pointer: UtxoPointer) {
+        if self.utxos.remove(&pointer).is_some() {
+            self.value_total = self
+                .value_total
+                .checked_sub(pointer.value)
+                .unwrap_or_else(|_| Value::zero())
+        }
+    }
+
     pub fn value_total(&self) -> Value {
         self.value_total
     }

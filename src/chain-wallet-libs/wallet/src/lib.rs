@@ -9,7 +9,9 @@ pub use self::{
     password::{Password, ScrubbedBytes},
     recovering::{RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
 };
-use chain_impl_mockchain::{transaction::Input, value::Value};
+use chain_impl_mockchain::{
+    transaction::Input, transaction::UnspecifiedAccountIdentifier, value::Value,
+};
 use hdkeygen::account::Account;
 pub use hdkeygen::account::AccountId;
 
@@ -23,6 +25,20 @@ pub struct Wallet {
 impl Wallet {
     pub fn account_id(&self) -> AccountId {
         self.account.account_id()
+    }
+
+    pub fn remove(&mut self, id: UnspecifiedAccountIdentifier, value: Value) {
+        let id = id.as_ref();
+        if self.account.account_id().as_ref() == id {
+            self.committed_amount = self
+                .committed_amount
+                .checked_sub(value)
+                .unwrap_or_else(|_| Value::zero());
+            self.value = self
+                .value
+                .checked_sub(value)
+                .unwrap_or_else(|_| Value::zero());
+        }
     }
 
     /// set the state counter so we can sync with the blockchain and the

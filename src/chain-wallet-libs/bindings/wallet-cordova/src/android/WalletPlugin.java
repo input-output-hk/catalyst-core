@@ -77,6 +77,18 @@ public class WalletPlugin extends CordovaPlugin {
             case "WALLET_CONVERT":
                 walletConvert(args, callbackContext);
                 break;
+            case "WALLET_PENDING_TRANSACTIONS":
+                walletPendingTransactions(args, callbackContext);
+                break;
+            case "PENDING_TRANSACTIONS_SIZE":
+                pendingTransactionsSize(args, callbackContext);
+                break;
+            case "PENDING_TRANSACTIONS_GET":
+                pendingTransactionsGet(args, callbackContext);
+                break;
+            case "WALLET_CONFIRM_TRANSACTION":
+                walletConfirmTransaction(args, callbackContext);
+                break;
             case "CONVERSION_TRANSACTIONS_SIZE":
                 conversionTransactionsSize(args, callbackContext);
                 break;
@@ -100,6 +112,9 @@ public class WalletPlugin extends CordovaPlugin {
                 break;
             case "PROPOSAL_DELETE":
                 proposalDelete(args, callbackContext);
+                break;
+            case "PENDING_TRANSACTIONS_DELETE":
+                pendingDelete(args, callbackContext);
                 break;
             default:
                 return false;
@@ -175,6 +190,56 @@ public class WalletPlugin extends CordovaPlugin {
             final byte[] tx = Wallet.voteCast(wallet, settings, proposal, choice);
             callbackContext.success(tx);
         } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void walletPendingTransactions(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long wallet = args.getLong(0);
+
+        try {
+            Long pendingTransactions = Wallet.pendingTransactions(wallet);
+            callbackContext.success(Long.toString(pendingTransactions));
+        }
+        catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void pendingTransactionsSize(final CordovaArgs args, final CallbackContext callbackContext)
+            throws JSONException {
+        final Long pendingTransactionsPtr = args.getLong(0);
+
+        try {
+            final int size = PendingTransactions.len(pendingTransactionsPtr);
+            callbackContext.success(Integer.toString(size));
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void pendingTransactionsGet(final CordovaArgs args, final CallbackContext callbackContext)
+            throws JSONException {
+        final Long pendingTransactionsPtr = args.getLong(0);
+        final int index = args.getInt(1);
+
+        try {
+            final byte[] transaction = PendingTransactions.get(pendingTransactionsPtr, index);
+            callbackContext.success(transaction);
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void walletConfirmTransaction(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long wallet = args.getLong(0);
+        final byte[] fragmentId = args.getArrayBuffer(1);
+
+        try {
+            Wallet.confirmTransaction(wallet, fragmentId);
+            callbackContext.success();
+        }
+        catch(final Exception e) {
             callbackContext.error(e.getMessage());
         }
     }
@@ -296,6 +361,13 @@ public class WalletPlugin extends CordovaPlugin {
         final Long proposalPtr = args.getLong(0);
 
         Proposal.delete(proposalPtr);
+        callbackContext.success();
+    }
+
+    private void pendingDelete(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long pendingPtr = args.getLong(0);
+
+        PendingTransactions.delete(pendingPtr);
         callbackContext.success();
     }
 }

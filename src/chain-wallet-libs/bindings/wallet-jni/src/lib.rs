@@ -165,6 +165,67 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_id(
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_pendingTransactions(
+    env: JNIEnv,
+    _: JClass,
+    wallet: jlong,
+) -> jlong {
+    let wallet_ptr: WalletPtr = wallet as WalletPtr;
+
+    let mut pending_transactions = null_mut();
+
+    if !wallet_ptr.is_null() {
+        let result = wallet_pending_transactions(wallet_ptr, &mut pending_transactions);
+
+        if let Some(error) = result.error() {
+            let _ = env.throw(error.to_string());
+        }
+    }
+
+    pending_transactions as jlong
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_confirmTransaction(
+    env: JNIEnv,
+    _: JClass,
+    wallet: jlong,
+    fragment_id: jbyteArray,
+) {
+    let wallet_ptr: WalletPtr = wallet as WalletPtr;
+    let len = env
+        .get_array_length(fragment_id)
+        .expect("Couldn't get block0 array length") as usize;
+
+    debug_assert_eq!(len, wallet_core::c::FRAGMENT_ID_LENGTH);
+
+    let mut bytes = vec![0i8; len as usize];
+
+    let _r = env.get_byte_array_region(fragment_id, 0, &mut bytes);
+
+    if !wallet_ptr.is_null() {
+        let result = wallet_confirm_transaction(wallet_ptr, bytes.as_ptr() as *const u8);
+        if let Some(error) = result.error() {
+            let _ = env.throw(error.to_string());
+        }
+    }
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
     env: JNIEnv,
     _: JClass,
@@ -465,4 +526,81 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
     unsafe { Box::from_raw(slice.as_ptr() as *mut u8) };
 
     array
+}
+
+/// # TODO
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_PendingTransactions_len(
+    env: JNIEnv,
+    _: JClass,
+    pending: jlong,
+) -> jint {
+    let pending = pending as PendingTransactionsPtr;
+    let mut len: usize = 0;
+    if !pending.is_null() {
+        let r = unsafe { pending_transactions_len(pending, &mut len) };
+
+        if let Some(error) = r.error() {
+            let _ = env.throw(error.to_string());
+        }
+    }
+
+    len as jint
+}
+
+// # TODO (doc)
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_PendingTransactions_get(
+    env: JNIEnv,
+    _: JClass,
+    pending: jlong,
+    index: jint,
+) -> jbyteArray {
+    let pending = pending as PendingTransactionsPtr;
+
+    if index.is_negative() {
+        let _ = env.throw_new(
+            "java/lang/IndexOutOfBoundsException",
+            "Conversion transaction index should be a positive number",
+        );
+        return null_mut();
+    }
+
+    let index = index as usize;
+    let mut id_out: *const u8 = null();
+    let id_size: usize = FRAGMENT_ID_LENGTH;
+
+    let result =
+        unsafe { pending_transactions_get(pending, index, (&mut id_out) as *mut *const u8) };
+
+    match result.error() {
+        None => {
+            let slice = unsafe { std::slice::from_raw_parts(id_out as *const jbyte, id_size) };
+
+            let array = env
+                .new_byte_array(id_size as jint)
+                .expect("Failed to create new byte array");
+
+            env.set_byte_array_region(array, 0, slice)
+                .expect("Couldn't copy array to jvm");
+
+            array
+        }
+        Some(error) => {
+            let _ = env.throw(error.to_string());
+            null_mut()
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_PendingTransactions_delete(
+    _env: JNIEnv,
+    _: JClass,
+    pending: jlong,
+) {
+    let pending = pending as PendingTransactionsPtr;
+    if !pending.is_null() {
+        unsafe { pending_transactions_delete(pending) };
+    }
 }

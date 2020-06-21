@@ -39,7 +39,7 @@ fn daedalus_wallet1() {
     assert!(ignored.is_empty());
 
     state
-        .apply_fragments(fragments.iter())
+        .apply_fragments(fragments.iter().map(|v| &v.1))
         .expect("the dump fragments should be valid");
 }
 
@@ -76,6 +76,6 @@ fn daedalus_wallet2() {
     assert!(ignored[0].value() == Value(1), "the value ignored is `1`");
 
     state
-        .apply_fragments(fragments.iter())
+        .apply_fragments(fragments.iter().map(|v| &v.1))
         .expect("the dump fragments should be valid");
 }

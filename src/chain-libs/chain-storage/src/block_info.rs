@@ -1,5 +1,6 @@
 use std::io::{Read, Write};
 
+#[derive(Clone)]
 pub struct BlockInfo {
     id: Box<[u8]>,
     parent_id: Box<[u8]>,

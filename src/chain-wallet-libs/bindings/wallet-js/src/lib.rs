@@ -1,8 +1,10 @@
+use js_sys::Array;
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use std::convert::TryInto;
 
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast as _;
 
 mod utils;
 
@@ -50,6 +52,16 @@ impl_public_key!(Ed25519Public, chain_crypto::Ed25519);
 
 #[wasm_bindgen]
 pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
+
+#[wasm_bindgen]
+pub struct FragmentId(wallet_core::FragmentId);
+
+/// this is used only for giving the Array a type in the typescript generated notation
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(typescript_type = "Array<FragmentId>")]
+    pub type FragmentIds;
+}
 
 #[wasm_bindgen]
 impl Wallet {
@@ -147,6 +159,28 @@ impl Wallet {
                 wallet_core::Choice::new(choice),
             )
             .map_err(|e| JsValue::from(e.to_string()))
+    }
+
+    /// use this function to confirm a transaction has been properly received
+    ///
+    /// This function will automatically update the state of the wallet
+    ///
+    pub fn confirm_transaction(&mut self, fragment: &FragmentId) {
+        self.0.confirm_transaction(fragment.0);
+    }
+
+    /// get the list of pending transaction ids, which can be used to query
+    /// the status and then using `confirm_transaction` as needed.
+    ///
+    pub fn pending_transactions(&self) -> FragmentIds {
+        self.0
+            .pending_transactions()
+            .iter()
+            .cloned()
+            .map(FragmentId)
+            .map(JsValue::from)
+            .collect::<Array>()
+            .unchecked_into::<FragmentIds>()
     }
 }
 
@@ -318,4 +352,18 @@ macro_rules! impl_secret_key {
             }
         }
     };
+}
+
+impl FragmentId {
+    pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
+        let array: [u8; std::mem::size_of::<wallet_core::FragmentId>()] = bytes
+            .try_into()
+            .map_err(|_| JsValue::from_str("Invalid fragment id"))?;
+
+        Ok(FragmentId(array.into()))
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.as_bytes().to_vec()
+    }
 }

@@ -28,9 +28,9 @@ pub mod test {
             fund_goal: "test this endpoint".to_string(),
             voting_power_info: ">9000".to_string(),
             rewards_info: "not much".to_string(),
-            fund_start_time: Utc::now(),
-            fund_end_time: Utc::now(),
-            next_fund_start_time: Utc::now(),
+            fund_start_time: Utc::now().timestamp(),
+            fund_end_time: Utc::now().timestamp(),
+            next_fund_start_time: Utc::now().timestamp(),
             chain_vote_plans: vec![],
         }
     }
@@ -42,9 +42,9 @@ pub mod test {
             funds::fund_goal.eq(fund.fund_goal.clone()),
             funds::voting_power_info.eq(fund.voting_power_info.clone()),
             funds::rewards_info.eq(fund.rewards_info.clone()),
-            funds::fund_start_time.eq(fund.fund_start_time.timestamp()),
-            funds::fund_end_time.eq(fund.fund_end_time.timestamp()),
-            funds::next_fund_start_time.eq(fund.next_fund_start_time.timestamp()),
+            funds::fund_start_time.eq(fund.fund_start_time),
+            funds::fund_end_time.eq(fund.fund_end_time),
+            funds::next_fund_start_time.eq(fund.next_fund_start_time),
         );
         diesel::insert_into(funds::table)
             .values(values)

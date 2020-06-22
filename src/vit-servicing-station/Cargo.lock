@@ -2062,6 +2062,7 @@ dependencies = [
  "diesel",
  "diesel_migrations",
  "dotenv",
+ "itertools",
  "libsqlite3-sys",
  "serde",
  "serde_json",

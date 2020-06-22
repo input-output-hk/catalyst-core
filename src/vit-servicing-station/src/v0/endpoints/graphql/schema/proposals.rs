@@ -1,5 +1,6 @@
 use crate::db::models::proposals::{Category, Proposal, Proposer};
 use crate::db::models::vote_options::VoteOptions;
+use crate::utils::datetime::unix_timestamp_to_datetime;
 
 #[async_graphql::Object]
 impl Category {
@@ -90,15 +91,15 @@ impl Proposal {
     }
 
     pub async fn chain_vote_start_time(&self) -> String {
-        self.chain_vote_start_time.to_rfc3339()
+        unix_timestamp_to_datetime(self.chain_vote_start_time).to_rfc3339()
     }
 
     pub async fn chain_vote_end_time(&self) -> String {
-        self.chain_vote_end_time.to_rfc3339()
+        unix_timestamp_to_datetime(self.chain_vote_end_time).to_rfc3339()
     }
 
     pub async fn chain_committee_end_time(&self) -> String {
-        self.chain_committee_end_time.to_rfc3339()
+        unix_timestamp_to_datetime(self.chain_committee_end_time).to_rfc3339()
     }
 
     pub async fn chain_vote_options(&self) -> VoteOptions {

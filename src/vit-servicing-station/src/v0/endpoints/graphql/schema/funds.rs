@@ -3,6 +3,7 @@ use crate::db::{
     models::{funds::Fund, voteplans::Voteplan},
     schema::voteplans::dsl as voteplans_dsl,
 };
+use crate::utils::datetime::unix_timestamp_to_datetime;
 use async_graphql::Context;
 use diesel::{ExpressionMethods, RunQueryDsl};
 
@@ -29,15 +30,15 @@ impl Fund {
     }
 
     pub async fn fund_start_time(&self) -> String {
-        self.fund_start_time.to_rfc3339()
+        unix_timestamp_to_datetime(self.fund_start_time).to_rfc3339()
     }
 
     pub async fn fund_end_time(&self) -> String {
-        self.fund_end_time.to_rfc3339()
+        unix_timestamp_to_datetime(self.fund_end_time).to_rfc3339()
     }
 
     pub async fn next_fund_start_time(&self) -> String {
-        self.next_fund_start_time.to_rfc3339()
+        unix_timestamp_to_datetime(self.next_fund_start_time).to_rfc3339()
     }
 
     pub async fn chain_vote_plans(

@@ -137,3 +137,93 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
         }
     }
 }
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+    use crate::db::{
+        models::vote_options::VoteOptions,
+        schema::{proposals, voteplans},
+        DBConnectionPool,
+    };
+    use chrono::Utc;
+    use diesel::{ExpressionMethods, RunQueryDsl};
+
+    pub fn get_test_proposal() -> Proposal {
+        Proposal {
+            internal_id: 1,
+            proposal_id: "foo_proposal".to_string(),
+            proposal_category: Category {
+                category_id: "".to_string(),
+                category_name: "foo_category_name".to_string(),
+                category_description: "".to_string(),
+            },
+            proposal_title: "the proposal".to_string(),
+            proposal_summary: "the proposal summary".to_string(),
+            proposal_problem: "the proposal problem".to_string(),
+            proposal_solution: "the proposal solution".to_string(),
+            proposal_public_key: "pubkey".to_string(),
+            proposal_funds: 10000,
+            proposal_url: "http://foo.bar".to_string(),
+            proposal_files_url: "http://foo.bar/files".to_string(),
+            proposer: Proposer {
+                proposer_name: "tester".to_string(),
+                proposer_email: "tester@tester.tester".to_string(),
+                proposer_url: "http://tester.tester".to_string(),
+            },
+            chain_proposal_id: b"foobar".to_vec(),
+            chain_proposal_index: 0,
+            chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
+            chain_voteplan_id: "voteplain_id".to_string(),
+            chain_vote_start_time: Utc::now().timestamp(),
+            chain_vote_end_time: Utc::now().timestamp(),
+            chain_committee_end_time: Utc::now().timestamp(),
+            chain_voteplan_payload: "none".to_string(),
+            fund_id: 1,
+        }
+    }
+
+    pub fn populate_db_with_proposal(proposal: &Proposal, pool: &DBConnectionPool) {
+        let connection = pool.get().unwrap();
+
+        // insert the proposal information
+        let values = (
+            proposals::proposal_id.eq(proposal.proposal_id.clone()),
+            proposals::proposal_category.eq(proposal.proposal_category.category_name.clone()),
+            proposals::proposal_title.eq(proposal.proposal_title.clone()),
+            proposals::proposal_summary.eq(proposal.proposal_summary.clone()),
+            proposals::proposal_problem.eq(proposal.proposal_problem.clone()),
+            proposals::proposal_solution.eq(proposal.proposal_solution.clone()),
+            proposals::proposal_public_key.eq(proposal.proposal_public_key.clone()),
+            proposals::proposal_funds.eq(proposal.proposal_funds.clone()),
+            proposals::proposal_url.eq(proposal.proposal_url.clone()),
+            proposals::proposal_files_url.eq(proposal.proposal_files_url.clone()),
+            proposals::proposer_name.eq(proposal.proposer.proposer_name.clone()),
+            proposals::proposer_contact.eq(proposal.proposer.proposer_email.clone()),
+            proposals::proposer_url.eq(proposal.proposer.proposer_url.clone()),
+            proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),
+            proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
+            proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
+            proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
+        );
+        diesel::insert_into(proposals::table)
+            .values(values)
+            .execute(&connection)
+            .unwrap();
+
+        // insert the related fund voteplan information
+        let voteplan_values = (
+            voteplans::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
+            voteplans::chain_vote_start_time.eq(proposal.chain_vote_start_time),
+            voteplans::chain_vote_end_time.eq(proposal.chain_vote_end_time),
+            voteplans::chain_committee_end_time.eq(proposal.chain_committee_end_time),
+            voteplans::chain_voteplan_payload.eq(proposal.chain_voteplan_payload.clone()),
+            voteplans::fund_id.eq(proposal.fund_id),
+        );
+
+        diesel::insert_into(voteplans::table)
+            .values(voteplan_values)
+            .execute(&connection)
+            .unwrap();
+    }
+}

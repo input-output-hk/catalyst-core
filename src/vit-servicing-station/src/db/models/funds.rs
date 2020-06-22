@@ -55,3 +55,42 @@ impl Queryable<funds::SqlType, DB> for Fund {
         }
     }
 }
+
+#[cfg(test)]
+pub mod test {
+    use crate::db::{models::funds::Fund, schema::funds, DBConnectionPool};
+
+    use chrono::Utc;
+    use diesel::{ExpressionMethods, RunQueryDsl};
+
+    pub fn get_test_fund() -> Fund {
+        Fund {
+            id: 1,
+            fund_name: "hey oh let's go".to_string(),
+            fund_goal: "test this endpoint".to_string(),
+            voting_power_info: ">9000".to_string(),
+            rewards_info: "not much".to_string(),
+            fund_start_time: Utc::now().timestamp(),
+            fund_end_time: Utc::now().timestamp(),
+            next_fund_start_time: Utc::now().timestamp(),
+            chain_vote_plans: vec![],
+        }
+    }
+
+    pub fn populate_db_with_fund(fund: &Fund, pool: &DBConnectionPool) {
+        let connection = pool.get().unwrap();
+        let values = (
+            funds::fund_name.eq(fund.fund_name.clone()),
+            funds::fund_goal.eq(fund.fund_goal.clone()),
+            funds::voting_power_info.eq(fund.voting_power_info.clone()),
+            funds::rewards_info.eq(fund.rewards_info.clone()),
+            funds::fund_start_time.eq(fund.fund_start_time),
+            funds::fund_end_time.eq(fund.fund_end_time),
+            funds::next_fund_start_time.eq(fund.next_fund_start_time),
+        );
+        diesel::insert_into(funds::table)
+            .values(values)
+            .execute(&connection)
+            .unwrap();
+    }
+}

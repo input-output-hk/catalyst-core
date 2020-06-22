@@ -43,6 +43,12 @@ impl BlockStore {
 
     /// Write a block to the store. The parent of the block must exist (unless
     /// it's the zero hash).
+    ///
+    /// # Arguments
+    ///
+    /// * `block` - a serialized representation of a block.
+    /// * `block_info` - block metadata for internal needs (indexing, linking
+    ///   between blocks, etc)
     pub fn put_block(&mut self, block: &[u8], block_info: BlockInfo) -> Result<(), Error> {
         let blocks = self.inner.open_tree(tree::BLOCKS)?;
         let info = self.inner.open_tree(tree::INFO)?;
@@ -65,11 +71,16 @@ impl BlockStore {
         }
     }
 
-    pub fn get_block(&mut self, block_hash: &[u8]) -> Result<Vec<u8>, Error> {
+    /// Get a block from the storage.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - the serialized block identifier.
+    pub fn get_block(&mut self, block_id: &[u8]) -> Result<Vec<u8>, Error> {
         let blocks = self.inner.open_tree(tree::BLOCKS)?;
 
         blocks
-            .get(block_hash)
+            .get(block_id)
             .map_err(Into::into)
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_bin| {
@@ -79,6 +90,11 @@ impl BlockStore {
             })
     }
 
+    /// Get the `BlockInfo` instance for the requested block.
+    ///
+    /// # Arguments
+    ///
+    /// * `block_id` - the serialized block identifier.
     pub fn get_block_info(&mut self, block_hash: &[u8]) -> Result<BlockInfo, Error> {
         let info = self.inner.open_tree(tree::INFO)?;
 
@@ -91,6 +107,7 @@ impl BlockStore {
             })
     }
 
+    /// Get multiple serialized blocks from the given height.
     pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<Vec<u8>>, Error> {
         let blocks = self.inner.open_tree(tree::BLOCKS)?;
         let height_to_block_ids = self.inner.open_tree(tree::CHAIN_HEIGHT_INDEX)?;
@@ -109,6 +126,8 @@ impl BlockStore {
             .map_err(Into::into)
     }
 
+    /// Add a tag for a given block. The block id can be later retrieved by this
+    /// tag.
     pub fn put_tag(&mut self, tag_name: &str, block_hash: &[u8]) -> Result<(), Error> {
         let info = self.inner.open_tree(tree::INFO)?;
         let tags = self.inner.open_tree(tree::TAGS)?;
@@ -133,6 +152,7 @@ impl BlockStore {
         }
     }
 
+    /// Get the block id for the given tag.
     pub fn get_tag(&mut self, tag_name: &str) -> Result<Option<Vec<u8>>, Error> {
         let tags = self.inner.open_tree(tree::TAGS)?;
 
@@ -147,6 +167,7 @@ impl BlockStore {
             .map_err(Into::into)
     }
 
+    /// Get identifier of all branches tips.
     pub fn get_tips_ids(&mut self) -> Result<Vec<Vec<u8>>, Error> {
         let tips = self.inner.open_tree(tree::BRANCHES_TIPS)?;
 
@@ -156,6 +177,7 @@ impl BlockStore {
             .map_err(Into::into)
     }
 
+    /// Prune a branch with the given tip id from the storage.
     pub fn prune_branch(&mut self, tip_id: &[u8]) -> Result<(), Error> {
         let tips = self.inner.open_tree(tree::BRANCHES_TIPS)?;
 
@@ -192,6 +214,7 @@ impl BlockStore {
         Ok(())
     }
 
+    /// Check if the block with the given id exists.
     pub fn block_exists(&mut self, block_hash: &[u8]) -> Result<bool, Error> {
         let info = self.inner.open_tree(tree::INFO)?;
 

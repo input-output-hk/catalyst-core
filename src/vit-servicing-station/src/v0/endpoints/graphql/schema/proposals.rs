@@ -1,7 +1,6 @@
 use crate::db::models::proposals::{Category, Proposal, Proposer};
 use crate::db::models::vote_options::VoteOptions;
-use crate::utils::datetime::unix_timestamp_to_datetime;
-
+use crate::utils::{datetime::unix_timestamp_to_datetime, graphql::ScalarI64};
 #[async_graphql::Object]
 impl Category {
     pub async fn category_id(&self) -> &str {
@@ -34,7 +33,7 @@ impl Proposer {
 
 #[async_graphql::Object]
 impl Proposal {
-    pub async fn id(&self) -> i32 {
+    pub async fn internal_id(&self) -> i32 {
         self.internal_id
     }
 
@@ -62,8 +61,12 @@ impl Proposal {
         &self.proposal_solution
     }
 
-    pub async fn proposal_funds(&self) -> i64 {
-        self.proposal_funds
+    pub async fn proposal_public_key(&self) -> &str {
+        &self.proposal_public_key
+    }
+
+    pub async fn proposal_funds(&self) -> ScalarI64 {
+        ScalarI64(self.proposal_funds)
     }
 
     pub async fn proposal_url(&self) -> &str {
@@ -86,8 +89,12 @@ impl Proposal {
         &self.chain_voteplan_id
     }
 
-    pub async fn chain_proposal_index(&self) -> i64 {
-        self.chain_proposal_index
+    pub async fn chain_proposal_index(&self) -> ScalarI64 {
+        ScalarI64(self.chain_proposal_index)
+    }
+
+    pub async fn chain_voteplan_payload(&self) -> &str {
+        &self.chain_voteplan_payload
     }
 
     pub async fn chain_vote_start_time(&self) -> String {
@@ -104,5 +111,9 @@ impl Proposal {
 
     pub async fn chain_vote_options(&self) -> VoteOptions {
         self.chain_vote_options.clone()
+    }
+
+    pub async fn fund_id(&self) -> i32 {
+        self.fund_id
     }
 }

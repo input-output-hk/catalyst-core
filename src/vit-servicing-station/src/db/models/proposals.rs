@@ -6,48 +6,74 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Category {
+    #[serde(alias = "categoryId")]
     pub category_id: String,
+    #[serde(alias = "categoryName")]
     pub category_name: String,
+    #[serde(alias = "categoryDescription")]
     pub category_description: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Proposer {
+    #[serde(alias = "proposerName")]
     pub proposer_name: String,
+    #[serde(alias = "proposerEmail")]
     pub proposer_email: String,
+    #[serde(alias = "proposerUrl")]
     pub proposer_url: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Proposal {
+    #[serde(alias = "internalId")]
     pub internal_id: i32,
+    #[serde(alias = "proposalId")]
     pub proposal_id: String,
+    #[serde(alias = "category")]
     pub proposal_category: Category,
+    #[serde(alias = "proposalTitle")]
     pub proposal_title: String,
+    #[serde(alias = "proposalSummary")]
     pub proposal_summary: String,
+    #[serde(alias = "proposalProblem")]
     pub proposal_problem: String,
+    #[serde(alias = "proposalSolution")]
     pub proposal_solution: String,
+    #[serde(alias = "proposalPublicKey")]
     pub proposal_public_key: String,
+    #[serde(alias = "proposalFunds")]
     pub proposal_funds: i64,
+    #[serde(alias = "proposalUrl")]
     pub proposal_url: String,
+    #[serde(alias = "proposalFilesUrl")]
     pub proposal_files_url: String,
     pub proposer: Proposer,
+    #[serde(alias = "chainProposalId")]
     #[serde(serialize_with = "crate::utils::serde::serialize_bin_as_string")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_string_as_bytes")]
     pub chain_proposal_id: Vec<u8>,
+    #[serde(alias = "chainProposalIndex")]
     pub chain_proposal_index: i64,
+    #[serde(alias = "chainVoteOptions")]
     pub chain_vote_options: VoteOptions,
+    #[serde(alias = "chainVoteplanId")]
     pub chain_voteplan_id: String,
+    #[serde(alias = "chainVoteStartTime")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub chain_vote_start_time: i64,
+    #[serde(alias = "chainVoteEndTime")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub chain_vote_end_time: i64,
+    #[serde(alias = "chainCommitteeEndTime")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub chain_committee_end_time: i64,
+    #[serde(alias = "chainVoteplanPayload")]
     pub chain_voteplan_payload: String,
+    #[serde(alias = "fundId")]
     pub fund_id: i32,
 }
 
@@ -152,7 +178,7 @@ pub mod test {
     pub fn get_test_proposal() -> Proposal {
         Proposal {
             internal_id: 1,
-            proposal_id: "foo_proposal".to_string(),
+            proposal_id: "1".to_string(),
             proposal_category: Category {
                 category_id: "".to_string(),
                 category_name: "foo_category_name".to_string(),

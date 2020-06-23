@@ -250,12 +250,12 @@ impl BlockStore {
             return Ok(Some(0));
         }
 
-        if descendent_id == vec![0u8; descendent_id.len()].as_slice() {
+        if ancestor_id == vec![0u8; descendent_id.len()].as_slice() {
             return Ok(Some(descendent.chain_length()));
         }
 
         let ancestor = info
-            .get(descendent_id)
+            .get(ancestor_id)
             .map_err(Into::into)
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
@@ -265,6 +265,10 @@ impl BlockStore {
 
         if ancestor.chain_length() >= descendent.chain_length() {
             return Ok(None);
+        }
+
+        if descendent.parent_id() == ancestor.id() {
+            return Ok(Some(1));
         }
 
         let mut current_block_info = descendent;

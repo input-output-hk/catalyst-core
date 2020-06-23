@@ -45,9 +45,9 @@ mod test {
 
     use crate::db::testing as db_testing;
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
-    use warp::Filter;
+    use warp::{Filter, Rejection, Reply};
 
-    // FIXME: This query is not nice to read as documentation for the test. It was taken from the option
+    // TODO: This query is not nice to read as documentation for the test. It was taken from the option
     // in postman to check the curl command. The actual graphql body request is like this:
     // {
     //     fund(id: 1) {
@@ -70,10 +70,107 @@ mod test {
     //         },
     //     }
     // }
-    const FUND_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    fund(id: 1) {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEnd,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
+    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    fund(id: 1) {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEnd,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
 
-    #[tokio::test]
-    async fn get_fund() {
+    // TODO: This query is not nice to read as documentation for the test. It was taken from the option
+    // in postman to check the curl command. The actual graphql body request is like this:
+    // {
+    //     funds {
+    //         id,
+    //         fundName,
+    //         fundGoal,
+    //         votingPowerInfo,
+    //         rewardsInfo,
+    //         fundStartTime,
+    //         fundEndTime,
+    //         nextFundStartTime,
+    //         chainVotePlans {
+    //             id,
+    //             chainVoteplanId,
+    //             chainVoteStartTime,
+    //             chainVoteEndTime,
+    //             chainCommitteeEnd,
+    //             chainVoteplanPayload,
+    //             fundId
+    //         },
+    //     }
+    // }
+    const FUNDS_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    funds {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEnd,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
+
+    // TODO: This query is not nice to read as documentation for the test. It was taken from the option
+    // in postman to check the curl command. The actual graphql body request is like this:
+    //     proposal(proposalId: 1) {
+    //         id,
+    //         proposalId,
+    //         category {
+    //             categoryId,
+    //             categoryName,
+    //             categoryDescription,
+    //         },
+    //         proposalTitle,
+    //         proposalSummary,
+    //         proposalProblem,
+    //         proposalPublicKey,
+    //         proposalFunds,
+    //         proposalUrl,
+    //         proposalFilesUrl,
+    //         proposer {
+    //             proposerName,
+    //             proposerEmail,
+    //             proposerUrl
+    //         },
+    //         chainProposalId,
+    //         chainProposalIndex,
+    //         chainVoteOptions,
+    //         chainVoteplanId,
+    //         chainVoteplanPayload,
+    //         chainVoteStartTime,
+    //         chainVoteEndTime,
+    //         chainCommitteeEndTime,
+    //         fundId
+    //     }
+    // }
+    const PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposal(proposalId: \\\"1\\\") {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
+
+    // TODO: This query is not nice to read as documentation for the test. It was taken from the option
+    // in postman to check the curl command. The actual graphql body request is like this:
+    //     proposal(proposalId: 1) {
+    //         id,
+    //         proposalId,
+    //         category {
+    //             categoryId,
+    //             categoryName,
+    //             categoryDescription,
+    //         },
+    //         proposalTitle,
+    //         proposalSummary,
+    //         proposalProblem,
+    //         proposalPublicKey,
+    //         proposalFunds,
+    //         proposalUrl,
+    //         proposalFilesUrl,
+    //         proposer {
+    //             proposerName,
+    //             proposerEmail,
+    //             proposerUrl
+    //         },
+    //         chainProposalId,
+    //         chainProposalIndex,
+    //         chainVoteOptions,
+    //         chainVoteplanId,
+    //         chainVoteplanPayload,
+    //         chainVoteStartTime,
+    //         chainVoteEndTime,
+    //         chainCommitteeEndTime,
+    //         fundId
+    //     }
+    // }
+    const PROPOSALS_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposals {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
+
+    async fn build_fund_test_filter() -> (
+        Fund,
+        impl Filter<Extract = impl Reply, Error = Rejection> + Clone,
+    ) {
         // build context
         let shared_context = new_in_memmory_db_test_shared_context();
 
@@ -83,18 +180,48 @@ mod test {
         let fund: Fund = funds_testing::get_test_fund();
         funds_testing::populate_db_with_fund(&fund, &pool);
 
-        // build filter
-
-        let graphql_filter = super::filter(
-            warp::any().and(warp::post()).boxed(),
-            shared_context.clone(),
+        // return filter
+        (
+            fund,
+            super::filter(
+                warp::any().and(warp::post()).boxed(),
+                shared_context.clone(),
+            )
+            .await,
         )
-        .await;
+    }
+
+    async fn build_proposal_test_filter() -> (
+        Proposal,
+        impl Filter<Extract = impl Reply, Error = Rejection> + Clone,
+    ) {
+        // build context
+        let shared_context = new_in_memmory_db_test_shared_context();
+
+        // initialize db
+        let pool = &shared_context.read().await.db_connection_pool;
+        db_testing::initialize_db_with_migration(&pool);
+        let proposal: Proposal = proposal_testing::get_test_proposal();
+        proposal_testing::populate_db_with_proposal(&proposal, &pool);
+
+        // return filter
+        (
+            proposal,
+            super::filter(
+                warp::any().and(warp::post()).boxed(),
+                shared_context.clone(),
+            )
+            .await,
+        )
+    }
+
+    #[tokio::test]
+    async fn get_fund_by_id() {
+        let (fund, graphql_filter) = build_fund_test_filter().await;
 
         let result = warp::test::request()
             .method("POST")
-            .header("Content-Type", "application/graphql")
-            .body(FUND_ALL_ATTRIBUTES_QUERY.as_bytes())
+            .body(FUND_BY_ID_ALL_ATTRIBUTES_QUERY.as_bytes())
             .reply(&graphql_filter)
             .await;
 
@@ -107,5 +234,68 @@ mod test {
         let result_fund: Fund = serde_json::from_value(result_fund).unwrap();
 
         assert_eq!(fund, result_fund);
+    }
+
+    #[tokio::test]
+    async fn get_funds() {
+        let (fund, graphql_filter) = build_fund_test_filter().await;
+
+        let result = warp::test::request()
+            .method("POST")
+            .body(FUNDS_ALL_ATTRIBUTES_QUERY.as_bytes())
+            .reply(&graphql_filter)
+            .await;
+
+        assert_eq!(result.status(), warp::http::StatusCode::OK);
+
+        let query_result: serde_json::Value =
+            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+
+        let result_fund = query_result["data"]["funds"].clone();
+        let result_fund: Vec<Fund> = serde_json::from_value(result_fund).unwrap();
+
+        assert_eq!(vec![fund], result_fund);
+    }
+
+    #[tokio::test]
+    async fn get_proposal_by_id() {
+        let (proposal, graphql_filter) = build_proposal_test_filter().await;
+
+        let result = warp::test::request()
+            .method("POST")
+            .body(PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY.as_bytes())
+            .reply(&graphql_filter)
+            .await;
+
+        assert_eq!(result.status(), warp::http::StatusCode::OK);
+
+        let query_result: serde_json::Value =
+            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+
+        let result_proposal = query_result["data"]["proposal"].clone();
+        let result_proposal: Proposal = serde_json::from_value(result_proposal).unwrap();
+
+        assert_eq!(proposal, result_proposal);
+    }
+
+    #[tokio::test]
+    async fn get_proposals() {
+        let (proposal, graphql_filter) = build_proposal_test_filter().await;
+
+        let result = warp::test::request()
+            .method("POST")
+            .body(PROPOSALS_ALL_ATTRIBUTES_QUERY.as_bytes())
+            .reply(&graphql_filter)
+            .await;
+
+        assert_eq!(result.status(), warp::http::StatusCode::OK);
+
+        let query_result: serde_json::Value =
+            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+
+        let result_proposal = query_result["data"]["proposals"].clone();
+        let result_proposal: Vec<Proposal> = serde_json::from_value(result_proposal).unwrap();
+
+        assert_eq!(vec![proposal], result_proposal);
     }
 }

@@ -5,19 +5,27 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Fund {
     pub id: i32,
+    #[serde(alias = "fundName")]
     pub fund_name: String,
+    #[serde(alias = "fundGoal")]
     pub fund_goal: String,
+    #[serde(alias = "votingPowerInfo")]
     pub voting_power_info: String,
+    #[serde(alias = "rewardsInfo")]
     pub rewards_info: String,
+    #[serde(alias = "fundStartTime")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub fund_start_time: i64,
+    #[serde(alias = "fundEndTime")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub fund_end_time: i64,
+    #[serde(alias = "nextFundStartTime")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub next_fund_start_time: i64,
+    #[serde(alias = "chainVotePlans")]
     pub chain_vote_plans: Vec<Voteplan>,
 }
 

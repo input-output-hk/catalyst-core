@@ -793,6 +793,15 @@ mod test {
 
             TestResult::from_bool(fee == decoded)
         }
+
+        fn config_param_serialize_correct(param: ConfigParam) -> bool {
+            use chain_core::property::{Serialize as _, Deserialize as _};
+            let bytes = param.serialize_as_vec().unwrap();
+            let reader = std::io::Cursor::new(&bytes);
+            let decoded = ConfigParam::deserialize(reader).unwrap();
+
+            param == decoded
+        }
     }
 
     impl Arbitrary for Tag {
@@ -840,7 +849,7 @@ mod test {
 
     impl Arbitrary for ConfigParam {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            match u8::arbitrary(g) % 19 {
+            match u8::arbitrary(g) % 29 {
                 0 => ConfigParam::Block0Date(Arbitrary::arbitrary(g)),
                 1 => ConfigParam::Discrimination(Arbitrary::arbitrary(g)),
                 2 => ConfigParam::ConsensusVersion(Arbitrary::arbitrary(g)),
@@ -860,6 +869,16 @@ mod test {
                 16 => ConfigParam::AddCommitteeId(Arbitrary::arbitrary(g)),
                 17 => ConfigParam::RemoveCommitteeId(Arbitrary::arbitrary(g)),
                 18 => ConfigParam::PerVoteCertificateFees(Arbitrary::arbitrary(g)),
+                19 => ConfigParam::RewardPot(Arbitrary::arbitrary(g)),
+                20 => ConfigParam::RewardParams(Arbitrary::arbitrary(g)),
+                21 => ConfigParam::RewardParams(Arbitrary::arbitrary(g)),
+                22 => ConfigParam::FeesInTreasury(Arbitrary::arbitrary(g)),// Some(Tag::FeesInTreasury),
+                23 => ConfigParam::RewardLimitNone,// Some(Tag::RewardLimitNone),
+                24 => ConfigParam::RewardLimitByAbsoluteStake(Arbitrary::arbitrary(g)),// Some(Tag::RewardLimitByAbsoluteStake),
+                25 => ConfigParam::PoolRewardParticipationCapping(Arbitrary::arbitrary(g)),// Some(Tag::PoolRewardParticipationCapping),
+                26 => ConfigParam::AddCommitteeId(Arbitrary::arbitrary(g)), // Some(Tag::AddCommitteeId),
+                27 => ConfigParam::RemoveCommitteeId(Arbitrary::arbitrary(g)),// Some(Tag::RemoveCommitteeId),
+                28 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)), // Some(Tag::PerVoteCertificateFees),
                 _ => unreachable!(),
             }
         }

@@ -111,10 +111,40 @@ pub async fn api_token_filter(
 
 #[cfg(test)]
 mod test {
-    use crate::v0::api_token::{api_token_filter, API_TOKEN_HEADER};
-    use crate::v0::context::test::{
-        new_in_memmory_db_test_shared_context, new_test_shared_context,
+    use crate::db::{
+        models::api_token, models::api_token::APITokenData, schema::api_tokens,
+        testing as db_testing, DBConnectionPool,
     };
+    use crate::v0::api_token::{api_token_filter, APIToken, API_TOKEN_HEADER};
+    use crate::v0::context::test::new_in_memmory_db_test_shared_context;
+    use chrono::Utc;
+    use diesel::{ExpressionMethods, RunQueryDsl};
+
+    pub fn get_testing_token() -> (api_token::APITokenData, String) {
+        let data = b"ffffffffffffffffffffffffffffffff".to_vec();
+        let token_data = APITokenData {
+            token: APIToken(data.clone()),
+            creation_time: Utc::now().timestamp(),
+            expire_time: Utc::now().timestamp(),
+        };
+        (
+            token_data,
+            base64::encode_config(data, base64::URL_SAFE_NO_PAD),
+        )
+    }
+
+    pub fn insert_token_to_db(token: api_token::APITokenData, db: &DBConnectionPool) {
+        let conn = db.get().unwrap();
+        let values = (
+            api_tokens::dsl::token.eq(token.token.0.clone()),
+            api_tokens::dsl::creation_time.eq(token.creation_time),
+            api_tokens::dsl::expire_time.eq(token.expire_time),
+        );
+        diesel::insert_into(api_tokens::table)
+            .values(values)
+            .execute(&conn)
+            .unwrap();
+    }
 
     #[tokio::test]
     async fn api_token_filter_reject() {
@@ -130,12 +160,15 @@ mod test {
 
     #[tokio::test]
     async fn api_token_filter_accepted() {
-        let shared_context = new_test_shared_context(
-            "./db/tests/vit_station_test.db",
-            "./resources/tests/block0.bin",
-        );
-        let filter = api_token_filter(shared_context).await;
-        let base64_token = "ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmY=";
+        let shared_context = new_in_memmory_db_test_shared_context();
+
+        // initialize db
+        let pool = &shared_context.read().await.db_connection_pool;
+        db_testing::initialize_db_with_migration(&pool);
+        let (token, base64_token) = get_testing_token();
+        insert_token_to_db(token, pool);
+
+        let filter = api_token_filter(shared_context.clone()).await;
 
         assert!(warp::test::request()
             .header(API_TOKEN_HEADER, base64_token)

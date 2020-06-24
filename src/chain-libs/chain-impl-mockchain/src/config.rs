@@ -802,6 +802,15 @@ mod test {
 
             param == decoded
         }
+
+        fn config_param_serialize_readable(param: ConfigParam) -> bool {
+            use chain_core::property::Serialize as _;
+            let bytes = param.serialize_as_vec().unwrap();
+            let mut reader = ReadBuf::from(&bytes);
+            let decoded = ConfigParam::read(&mut reader).unwrap();
+
+            param == decoded
+        }
     }
 
     impl Arbitrary for Tag {
@@ -872,13 +881,13 @@ mod test {
                 19 => ConfigParam::RewardPot(Arbitrary::arbitrary(g)),
                 20 => ConfigParam::RewardParams(Arbitrary::arbitrary(g)),
                 21 => ConfigParam::RewardParams(Arbitrary::arbitrary(g)),
-                22 => ConfigParam::FeesInTreasury(Arbitrary::arbitrary(g)),// Some(Tag::FeesInTreasury),
-                23 => ConfigParam::RewardLimitNone,// Some(Tag::RewardLimitNone),
-                24 => ConfigParam::RewardLimitByAbsoluteStake(Arbitrary::arbitrary(g)),// Some(Tag::RewardLimitByAbsoluteStake),
-                25 => ConfigParam::PoolRewardParticipationCapping(Arbitrary::arbitrary(g)),// Some(Tag::PoolRewardParticipationCapping),
-                26 => ConfigParam::AddCommitteeId(Arbitrary::arbitrary(g)), // Some(Tag::AddCommitteeId),
-                27 => ConfigParam::RemoveCommitteeId(Arbitrary::arbitrary(g)),// Some(Tag::RemoveCommitteeId),
-                28 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)), // Some(Tag::PerVoteCertificateFees),
+                22 => ConfigParam::FeesInTreasury(Arbitrary::arbitrary(g)),
+                23 => ConfigParam::RewardLimitNone,
+                24 => ConfigParam::RewardLimitByAbsoluteStake(Arbitrary::arbitrary(g)),
+                25 => ConfigParam::PoolRewardParticipationCapping(Arbitrary::arbitrary(g)),
+                26 => ConfigParam::AddCommitteeId(Arbitrary::arbitrary(g)),
+                27 => ConfigParam::RemoveCommitteeId(Arbitrary::arbitrary(g)),
+                28 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)),
                 _ => unreachable!(),
             }
         }

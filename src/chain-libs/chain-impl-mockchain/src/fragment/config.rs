@@ -52,7 +52,7 @@ impl Readable for ConfigParams {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
         // FIXME: check canonical order?
         let len = buf.get_u16()?;
-        let mut configs = vec![];
+        let mut configs: Vec<ConfigParam> = Vec::with_capacity(len as usize);
         for _ in 0..len {
             configs.push(ConfigParam::read(buf)?);
         }
@@ -70,6 +70,15 @@ mod tests {
             let bytes = params.serialize_as_vec().unwrap();
             let reader = std::io::Cursor::new(&bytes);
             let decoded = ConfigParams::deserialize(reader).unwrap();
+
+            params == decoded
+        }
+
+        fn config_params_serialize_readable(params: ConfigParams) -> bool {
+            use chain_core::property::Serialize as _;
+            let bytes = params.serialize_as_vec().unwrap();
+            let mut reader = ReadBuf::from(&bytes);
+            let decoded = ConfigParams::read(&mut reader).unwrap();
 
             params == decoded
         }

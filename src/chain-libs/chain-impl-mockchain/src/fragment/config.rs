@@ -59,3 +59,19 @@ impl Readable for ConfigParams {
         Ok(ConfigParams(configs))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    quickcheck! {
+        fn config_params_serialize(params: ConfigParams) -> bool {
+            use chain_core::property::{Serialize as _, Deserialize as _};
+            let bytes = params.serialize_as_vec().unwrap();
+            let reader = std::io::Cursor::new(&bytes);
+            let decoded = ConfigParams::deserialize(reader).unwrap();
+
+            params == decoded
+        }
+    }
+}

@@ -828,8 +828,9 @@ pub mod tests {
                 &main_branch_blocks[TEST_1[0]].id.serialize_as_vec()[..],
                 &main_branch_blocks[TEST_1[1]].id.serialize_as_vec()[..],
             )
-            .unwrap();
-        assert!(matches!(Some(TEST_1[1] - TEST_1[0]), result));
+            .unwrap()
+            .expect("should be a non-None result") as usize;
+        assert!(TEST_1[1] - TEST_1[0] == result);
 
         // wrong order
         let result = store

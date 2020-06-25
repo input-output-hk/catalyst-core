@@ -61,14 +61,7 @@ impl BlockStore {
             },
         );
 
-        // Transactional impl for (&Tree, &Tree) implies the use of () as the
-        // type for user-defined errors, so we have a workaround for that.
-        match result {
-            Ok(Ok(())) => Ok(()),
-            Ok(Err(err)) => Err(err),
-            Err(TransactionError::Storage(err)) => Err(err.into()),
-            Err(TransactionError::Abort(())) => unreachable!(),
-        }
+        convert_transaction_result(result)
     }
 
     /// Get a block from the storage.
@@ -156,14 +149,7 @@ impl BlockStore {
             Ok(Ok(()))
         });
 
-        // Transactional impl for (&Tree, &Tree) implies the use of () as the
-        // type for user-defined errors, so we have a workaround for that.
-        match result {
-            Ok(Ok(())) => Ok(()),
-            Ok(Err(err)) => Err(err),
-            Err(TransactionError::Storage(err)) => Err(err.into()),
-            Err(TransactionError::Abort(())) => unreachable!(),
-        }
+        convert_transaction_result(result)
     }
 
     /// Get the block id for the given tag.
@@ -212,17 +198,7 @@ impl BlockStore {
                 },
             );
 
-            // Transactional impl for (&Tree, &Tree) implies the use of () as
-            // the type for user-defined errors, so we have a workaround for
-            // that.
-            match result {
-                Ok(Ok(maybe_next_tip)) => {
-                    maybe_current_tip = maybe_next_tip;
-                }
-                Ok(Err(err)) => return Err(err),
-                Err(TransactionError::Storage(err)) => return Err(err.into()),
-                Err(TransactionError::Abort(())) => unreachable!(),
-            }
+            maybe_current_tip = convert_transaction_result(result)?;
         }
 
         Ok(())
@@ -444,6 +420,17 @@ fn remove_tip_impl(
     };
 
     Ok(Ok(maybe_next_tip))
+}
+
+fn convert_transaction_result<T>(
+    result: Result<Result<T, Error>, TransactionError<()>>,
+) -> Result<T, Error> {
+    match result {
+        Ok(Ok(v)) => Ok(v),
+        Ok(Err(err)) => Err(err),
+        Err(TransactionError::Storage(err)) => Err(err.into()),
+        Err(TransactionError::Abort(())) => unreachable!(),
+    }
 }
 
 #[cfg(test)]

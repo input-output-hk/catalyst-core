@@ -1,11 +1,5 @@
-use crate::db::{
-    models::api_token,
-    schema::{api_tokens, api_tokens::dsl::api_tokens as api_tokens_dsl},
-    DBConnectionPool,
-};
+use crate::db::{queries::api_tokens as api_tokens_queries, DBConnectionPool};
 use crate::v0::{context::SharedContext, errors::HandleError};
-use diesel::query_dsl::RunQueryDsl;
-use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use warp::{Filter, Rejection};
 
 /// Header where token should be present in requests
@@ -47,20 +41,7 @@ impl APITokenManager {
     }
 
     async fn is_token_valid(&self, token: APIToken) -> Result<bool, HandleError> {
-        let db_conn = self
-            .connection_pool
-            .get()
-            .map_err(HandleError::DatabaseError)?;
-
-        match tokio::task::spawn_blocking(move || {
-            api_tokens_dsl
-                .filter(api_tokens::token.eq(token.as_ref()))
-                .first::<api_token::APITokenData>(&db_conn)
-                .optional()
-        })
-        .await
-        .map_err(|_| HandleError::InternalError("Error executing request".to_string()))?
-        {
+        match api_tokens_queries::query_token(token, &self.connection_pool).await {
             Ok(Some(_)) => Ok(true),
             Ok(None) => Ok(false),
             Err(e) => Err(HandleError::InternalError(format!(
@@ -112,15 +93,15 @@ pub async fn api_token_filter(
 #[cfg(test)]
 mod test {
     use crate::db::{
-        models::api_token, models::api_token::APITokenData, schema::api_tokens,
-        testing as db_testing, DBConnectionPool,
+        models::api_tokens as api_token_model, models::api_tokens::APITokenData,
+        schema::api_tokens, testing as db_testing, DBConnectionPool,
     };
     use crate::v0::api_token::{api_token_filter, APIToken, API_TOKEN_HEADER};
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
 
-    pub fn get_testing_token() -> (api_token::APITokenData, String) {
+    pub fn get_testing_token() -> (api_token_model::APITokenData, String) {
         let data = b"ffffffffffffffffffffffffffffffff".to_vec();
         let token_data = APITokenData {
             token: APIToken(data.clone()),
@@ -133,7 +114,7 @@ mod test {
         )
     }
 
-    pub fn insert_token_to_db(token: api_token::APITokenData, db: &DBConnectionPool) {
+    pub fn insert_token_to_db(token: APITokenData, db: &DBConnectionPool) {
         let conn = db.get().unwrap();
         let values = (
             api_tokens::dsl::token.eq(token.token.0.clone()),

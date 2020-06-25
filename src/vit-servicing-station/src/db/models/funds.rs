@@ -66,7 +66,11 @@ impl Queryable<funds::SqlType, DB> for Fund {
 
 #[cfg(test)]
 pub mod test {
-    use crate::db::{models::funds::Fund, schema::funds, DBConnectionPool};
+    use crate::db::{
+        models::{funds::Fund, voteplans::test as voteplans_testing},
+        schema::funds,
+        DBConnectionPool,
+    };
 
     use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
@@ -81,12 +85,11 @@ pub mod test {
             fund_start_time: Utc::now().timestamp(),
             fund_end_time: Utc::now().timestamp(),
             next_fund_start_time: Utc::now().timestamp(),
-            chain_vote_plans: vec![],
+            chain_vote_plans: vec![voteplans_testing::get_test_voteplan_with_fund_id(1)],
         }
     }
 
     pub fn populate_db_with_fund(fund: &Fund, pool: &DBConnectionPool) {
-        let connection = pool.get().unwrap();
         let values = (
             funds::fund_name.eq(fund.fund_name.clone()),
             funds::fund_goal.eq(fund.fund_goal.clone()),
@@ -96,9 +99,20 @@ pub mod test {
             funds::fund_end_time.eq(fund.fund_end_time),
             funds::next_fund_start_time.eq(fund.next_fund_start_time),
         );
-        diesel::insert_into(funds::table)
-            .values(values)
-            .execute(&connection)
-            .unwrap();
+
+        // Warning! mind this scope: r2d2 pooled connection behaviour depend of the scope. Looks like
+        // if the connection is not out of scope, when giving the reference to the next function
+        // call below it creates a wrong connection (where there are not tables even if they were loaded).
+        {
+            let connection = pool.get().unwrap();
+            diesel::insert_into(funds::table)
+                .values(values)
+                .execute(&connection)
+                .unwrap();
+        }
+
+        for voteplan in &fund.chain_vote_plans {
+            voteplans_testing::populate_db_with_voteplan(voteplan, pool);
+        }
     }
 }

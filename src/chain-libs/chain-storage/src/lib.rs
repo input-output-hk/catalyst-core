@@ -133,11 +133,25 @@ impl BlockStore {
         let tags = self.inner.open_tree(tree::TAGS)?;
 
         let result = (&info, &tags).transaction(move |(info, tags)| {
-            if info.get(block_hash)?.is_none() {
-                return Ok(Err(Error::BlockNotFound));
-            }
+            match info.get(block_hash)? {
+                Some(info_bin) => {
+                    let mut block_info = BlockInfo::deserialize(&info_bin[..]);
+                    block_info.add_ref();
+                    let info_bin = block_info.serialize();
+                    info.insert(block_hash, info_bin)?;
 
-            tags.insert(tag_name, block_hash)?;
+                    let maybe_old_block_hash = tags.insert(tag_name, block_hash)?;
+
+                    if let Some(old_block_hash) = maybe_old_block_hash {
+                        let info_bin = info.get(old_block_hash)?.unwrap();
+                        let mut block_info = BlockInfo::deserialize(&info_bin[..]);
+                        block_info.remove_ref();
+                        let info_bin = block_info.serialize();
+                        info.insert(block_info.id(), info_bin)?;
+                    }
+                }
+                None => return Ok(Err(Error::BlockNotFound)),
+            }
 
             Ok(Ok(()))
         });
@@ -398,6 +412,10 @@ fn remove_tip_impl(
     let block_info_bin = info.remove(block_id)?.unwrap();
     let mut block_info_reader: &[u8] = &block_info_bin;
     let block_info = BlockInfo::deserialize(&mut block_info_reader);
+
+    if block_info.ref_count() != 0 {
+        return Ok(Ok(None));
+    }
 
     blocks.remove(block_id)?;
 

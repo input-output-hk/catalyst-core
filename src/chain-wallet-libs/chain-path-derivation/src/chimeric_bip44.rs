@@ -1,62 +1,24 @@
-//! # Bip44 derivation scheme
+//! # cardano shelley HD Wallet derivation scheme
 //!
-//! based on the [BIP-0044] scheme.
+//! based on the [BIP-0044] scheme but with different purpose and a new kind of
+//! `change` to allow for account stake key.
 //!
-//! While nearly only the full bip44 address is indeed interesting, it is
-//! valuable to keep the different intermediate steps as they can be reused
-//! to define specific API objects.
+//! We have the 5 levels of Derivations: `m / purpose' / coin_type' / account' / type / address_index`
 //!
-//! For example, for example a wallet with support to multiple coin types
-//! will be interested to keep the `m/'44` path. For every account it is
-//! interesting to keep the `m/'44/'<coin_type>/'<account>`.
+//! see https://input-output-hk.github.io/adrestia/docs/key-concepts/hierarchical-deterministic-wallets/
 //!
-//! We have the 5 levels of Derivations: `m / purpose' / coin_type' / account' / change / address_index`
-//!
-//! # Examples
-//!
-//! basic usage:
-//!
-//! ```
-//! # use chain_path_derivation::{Derivation, HardDerivation};
-//! # const BITCOIN: HardDerivation = HardDerivation::new_unchecked(Derivation::new(0x8000_0000));
-//! # const ACCOUNT_01: HardDerivation = HardDerivation::new_unchecked(Derivation::new(0x8000_0000));
-//! #
-//! use chain_path_derivation::bip44;
-//!
-//! let account = bip44::new().purpose().coin_type(BITCOIN).account(ACCOUNT_01);
-//! assert_eq!(account.to_string(), "m/'44/'0/'0")
-//! ```
-//!
-//! then it is possible to generate addresses from there:
-//!
-//! ```
-//! # use chain_path_derivation::{Derivation, HardDerivation, SoftDerivation};
-//! # const BITCOIN: HardDerivation = HardDerivation::new_unchecked(Derivation::new(0x8000_0000));
-//! # const ACCOUNT_01: HardDerivation = HardDerivation::new_unchecked(Derivation::new(0x8000_0000));
-//! #
-//! # use chain_path_derivation::bip44;
-//! #
-//! # let account = bip44::new().purpose().coin_type(BITCOIN).account(ACCOUNT_01);
-//! let change = account.external();
-//! let first_address = change.address(SoftDerivation::min_value().wrapping_add(0));
-//! let second_address = change.address(SoftDerivation::min_value().wrapping_add(1));
-//! assert_eq!(first_address.to_string(), "m/'44/'0/'0/0/0");
-//! assert_eq!(second_address.to_string(), "m/'44/'0/'0/0/1");
-//! ```
 
 use crate::{
+    bip44::{Bip44, Root},
     AnyScheme, Derivation, DerivationPath, DerivationPathRange, HardDerivation,
     ParseDerivationPathError, SoftDerivation, SoftDerivationRange,
 };
 use std::str::{self, FromStr};
 
-/// scheme for the Bip44 chain path derivation
+/// scheme for the ChimericBip44 chain path derivation
 ///
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Bip44<P>(std::marker::PhantomData<P>);
+type ChimericBip44<A> = Bip44<A>;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Root;
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Purpose;
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -64,64 +26,38 @@ pub struct CoinType;
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Account;
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Change;
+pub struct Type;
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Address;
 
 const INDEX_PURPOSE: usize = 0;
 const INDEX_COIN_TYPE: usize = 1;
 const INDEX_ACCOUNT: usize = 2;
-const INDEX_CHANGE: usize = 3;
+const INDEX_TYPE: usize = 3;
 const INDEX_ADDRESS: usize = 4;
 
-/// the BIP44 purpose ('44). This is the first item of the derivation path
-const PURPOSE: HardDerivation = HardDerivation::new_unchecked(Derivation::new(0x8000_002C));
+/// the Chimeric BIP44 purpose ('1852). This is the first item of the derivation path
+///
+const PURPOSE: HardDerivation = HardDerivation::new_unchecked(Derivation::new(0x8000_073C));
 
-/// create a Bip44 chain path derivation
-///
-/// This derivation level is not really interesting, though it is interesting
-/// to consider the following levels which can then be constructed via
-/// each individual type.
-///
-/// See [module documentation] for more details
-///
-/// [module documentation]: ./index.html
-#[inline]
-pub fn new() -> DerivationPath<Bip44<Root>> {
-    DerivationPath::new_empty()
-}
-
-impl DerivationPath<Bip44<Root>> {
-    pub fn purpose(&self) -> DerivationPath<Bip44<Purpose>> {
+impl DerivationPath<ChimericBip44<Root>> {
+    /// use the same "model" of 5 derivation level but instead of starting with the
+    /// bip44 Hard Derivation uses the `'1852` (`'0x073C`) derivation path.
+    ///
+    /// see https://input-output-hk.github.io/adrestia/docs/key-concepts/hierarchical-deterministic-wallets/
+    ///
+    pub fn chimeric(&self) -> DerivationPath<Bip44<Purpose>> {
         let mut p = self.clone();
         p.push(PURPOSE.into());
         p.coerce_unchecked()
     }
 }
 
-impl DerivationPath<Bip44<Purpose>> {
-    /// add the next derivation level for the Bip44 chain path derivation.
-    ///
+impl DerivationPath<ChimericBip44<CoinType>> {
     /// See [module documentation] for more details
     ///
     /// [module documentation]: ./index.html
-    pub fn coin_type(&self, coin_type: HardDerivation) -> DerivationPath<Bip44<CoinType>> {
-        let mut ct = self.clone();
-        ct.push(coin_type.into());
-        ct.coerce_unchecked()
-    }
-
-    #[inline]
-    pub fn purpose(&self) -> HardDerivation {
-        HardDerivation::new_unchecked(self.get_unchecked(INDEX_PURPOSE))
-    }
-}
-
-impl DerivationPath<Bip44<CoinType>> {
-    /// See [module documentation] for more details
-    ///
-    /// [module documentation]: ./index.html
-    pub fn account(&self, account: HardDerivation) -> DerivationPath<Bip44<Account>> {
+    pub fn account(&self, account: HardDerivation) -> DerivationPath<ChimericBip44<Account>> {
         let mut a = self.clone();
         a.push(account.into());
         a.coerce_unchecked()
@@ -141,11 +77,12 @@ impl DerivationPath<Bip44<CoinType>> {
 impl DerivationPath<Bip44<Account>> {
     pub const EXTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(0));
     pub const INTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(1));
+    pub const ACCOUNT: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(2));
 
     /// See [module documentation] for more details
     ///
     /// [module documentation]: ./index.html
-    fn change(&self, change: SoftDerivation) -> DerivationPath<Bip44<Change>> {
+    fn change(&self, change: SoftDerivation) -> DerivationPath<ChimericBip44<Type>> {
         let mut c = self.clone();
         c.push(change.into());
         c.coerce_unchecked()
@@ -154,15 +91,22 @@ impl DerivationPath<Bip44<Account>> {
     /// See [module documentation] for more details
     ///
     /// [module documentation]: ./index.html
-    pub fn external(&self) -> DerivationPath<Bip44<Change>> {
+    pub fn external(&self) -> DerivationPath<ChimericBip44<Type>> {
         self.change(Self::EXTERNAL)
     }
 
     /// See [module documentation] for more details
     ///
     /// [module documentation]: ./index.html
-    pub fn internal(&self) -> DerivationPath<Bip44<Change>> {
+    pub fn internal(&self) -> DerivationPath<ChimericBip44<Type>> {
         self.change(Self::INTERNAL)
+    }
+
+    /// See [module documentation] for more details
+    ///
+    /// [module documentation]: ./index.html
+    pub fn reward_account(&self) -> DerivationPath<ChimericBip44<Type>> {
+        self.change(Self::ACCOUNT)
     }
 
     #[inline]
@@ -181,7 +125,7 @@ impl DerivationPath<Bip44<Account>> {
     }
 }
 
-impl DerivationPath<Bip44<Change>> {
+impl DerivationPath<ChimericBip44<Type>> {
     /// See [module documentation] for more details
     ///
     /// [module documentation]: ./index.html
@@ -223,7 +167,11 @@ impl DerivationPath<Bip44<Change>> {
     pub fn addresses<R, T>(
         &self,
         range: R,
-    ) -> DerivationPathRange<DerivationPath<Bip44<Address>>, SoftDerivationRange, SoftDerivation>
+    ) -> DerivationPathRange<
+        DerivationPath<ChimericBip44<Address>>,
+        SoftDerivationRange,
+        SoftDerivation,
+    >
     where
         R: std::ops::RangeBounds<T>,
         T: std::convert::TryInto<SoftDerivation> + Copy,
@@ -251,11 +199,11 @@ impl DerivationPath<Bip44<Change>> {
 
     #[inline]
     pub fn change(&self) -> SoftDerivation {
-        SoftDerivation::new_unchecked(self.get_unchecked(INDEX_CHANGE))
+        SoftDerivation::new_unchecked(self.get_unchecked(INDEX_TYPE))
     }
 }
 
-impl DerivationPath<Bip44<Address>> {
+impl DerivationPath<ChimericBip44<Address>> {
     #[inline]
     pub fn purpose(&self) -> HardDerivation {
         HardDerivation::new_unchecked(self.get_unchecked(INDEX_PURPOSE))
@@ -273,7 +221,7 @@ impl DerivationPath<Bip44<Address>> {
 
     #[inline]
     pub fn change(&self) -> SoftDerivation {
-        SoftDerivation::new_unchecked(self.get_unchecked(INDEX_CHANGE))
+        SoftDerivation::new_unchecked(self.get_unchecked(INDEX_TYPE))
     }
 
     #[inline]
@@ -305,11 +253,10 @@ macro_rules! mk_from_str_dp_bip44 {
     };
 }
 
-mk_from_str_dp_bip44!(Bip44<Root>, 0);
 mk_from_str_dp_bip44!(Bip44<Purpose>, 1);
 mk_from_str_dp_bip44!(Bip44<CoinType>, 2);
 mk_from_str_dp_bip44!(Bip44<Account>, 3);
-mk_from_str_dp_bip44!(Bip44<Change>, 4);
+mk_from_str_dp_bip44!(Bip44<Type>, 4);
 mk_from_str_dp_bip44!(Bip44<Address>, 5);
 
 #[cfg(test)]
@@ -330,11 +277,10 @@ mod tests {
         };
     }
 
-    mk_arbitrary_dp_bip44!(Bip44<Root>, 0);
     mk_arbitrary_dp_bip44!(Bip44<Purpose>, 1);
     mk_arbitrary_dp_bip44!(Bip44<CoinType>, 2);
     mk_arbitrary_dp_bip44!(Bip44<Account>, 3);
-    mk_arbitrary_dp_bip44!(Bip44<Change>, 4);
+    mk_arbitrary_dp_bip44!(Bip44<Type>, 4);
     mk_arbitrary_dp_bip44!(Bip44<Address>, 5);
 
     macro_rules! mk_quickcheck_dp_bip44 {
@@ -352,10 +298,9 @@ mod tests {
         };
     }
 
-    mk_quickcheck_dp_bip44!(Root);
     mk_quickcheck_dp_bip44!(Purpose);
     mk_quickcheck_dp_bip44!(CoinType);
     mk_quickcheck_dp_bip44!(Account);
-    mk_quickcheck_dp_bip44!(Change);
+    mk_quickcheck_dp_bip44!(Type);
     mk_quickcheck_dp_bip44!(Address);
 }

@@ -1,11 +1,10 @@
 use crate::db;
 use crate::db::{
     models::{funds::Fund, voteplans::Voteplan},
-    schema::voteplans::dsl as voteplans_dsl,
+    queries::voteplans as voteplans_queries,
 };
 use crate::utils::datetime::unix_timestamp_to_datetime;
 use async_graphql::Context;
-use diesel::{ExpressionMethods, RunQueryDsl};
 
 #[async_graphql::Object]
 impl Fund {
@@ -45,17 +44,9 @@ impl Fund {
         &self,
         ctx: &Context<'_>,
     ) -> async_graphql::FieldResult<Vec<Voteplan>> {
-        let db_conn = ctx
-            .data::<db::DBConnectionPool>()
-            .get()
-            .map_err(async_graphql::FieldError::from)?;
-        let id = self.id;
-        tokio::task::spawn_blocking(move || {
-            diesel::QueryDsl::filter(voteplans_dsl::voteplans, voteplans_dsl::fund_id.eq(id))
-                .load::<Voteplan>(&db_conn)
-                .map_err(async_graphql::FieldError::from)
-        })
-        .await?
-        .map_err(async_graphql::FieldError::from)
+        let pool = ctx.data::<db::DBConnectionPool>();
+        voteplans_queries::query_voteplan_by_id(self.id, pool)
+            .await
+            .map_err(async_graphql::FieldError::from)
     }
 }

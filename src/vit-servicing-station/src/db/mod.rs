@@ -1,4 +1,5 @@
 pub mod models;
+pub mod queries;
 pub mod schema;
 pub mod views_schema;
 

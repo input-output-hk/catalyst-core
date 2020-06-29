@@ -9,15 +9,16 @@
 //!
 
 use crate::{
-    bip44::{Bip44, Root},
-    AnyScheme, Derivation, DerivationPath, DerivationPathRange, HardDerivation,
+    bip44::Bip44, AnyScheme, Derivation, DerivationPath, DerivationPathRange, HardDerivation,
     ParseDerivationPathError, SoftDerivation, SoftDerivationRange,
 };
 use std::str::{self, FromStr};
 
+pub use crate::bip44::{new, Root};
+
 /// scheme for the ChimericBip44 chain path derivation
 ///
-type ChimericBip44<A> = Bip44<A>;
+pub type ChimericBip44<A> = Bip44<A>;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Purpose;
@@ -53,6 +54,24 @@ impl DerivationPath<ChimericBip44<Root>> {
     }
 }
 
+impl DerivationPath<ChimericBip44<Purpose>> {
+    /// add the next derivation level for the Bip44 chain path derivation.
+    ///
+    /// See [module documentation] for more details
+    ///
+    /// [module documentation]: ./index.html
+    pub fn coin_type(&self, coin_type: HardDerivation) -> DerivationPath<ChimericBip44<CoinType>> {
+        let mut ct = self.clone();
+        ct.push(coin_type.into());
+        ct.coerce_unchecked()
+    }
+
+    #[inline]
+    pub fn purpose(&self) -> HardDerivation {
+        HardDerivation::new_unchecked(self.get_unchecked(INDEX_PURPOSE))
+    }
+}
+
 impl DerivationPath<ChimericBip44<CoinType>> {
     /// See [module documentation] for more details
     ///
@@ -74,7 +93,7 @@ impl DerivationPath<ChimericBip44<CoinType>> {
     }
 }
 
-impl DerivationPath<Bip44<Account>> {
+impl DerivationPath<ChimericBip44<Account>> {
     pub const EXTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(0));
     pub const INTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(1));
     pub const ACCOUNT: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(2));

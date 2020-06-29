@@ -6,6 +6,7 @@ extern crate quickcheck_macros;
 
 pub mod account;
 pub mod bip44;
+pub mod chimeric_bip44;
 mod key;
 pub mod rindex;
 

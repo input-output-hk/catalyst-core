@@ -4,7 +4,7 @@ use crate::{
 };
 use chain_path_derivation::{
     chimeric_bip44::{self, ChimericBip44},
-    Derivation, DerivationPath, HardDerivation, SoftDerivation, SoftDerivationRange,
+    DerivationPath, HardDerivation, SoftDerivation, SoftDerivationRange,
 };
 use ed25519_bip32::{DerivationScheme, XPrv, XPub};
 
@@ -25,38 +25,47 @@ impl Account<XPrv> {
     }
 
     pub fn chimeric_account(&self) -> ChimericAccount<XPrv> {
-        let key = self.cached_key().derive_unchecked(Self::ACCOUNT.into());
+        let key = self
+            .cached_key()
+            .derive_unchecked(Self::CHIMERIC_ACCOUNT.into());
         ChimericAccount::new(key)
     }
 
-    pub fn addresses(
-        &self,
-        change: SoftDerivation,
-        range: SoftDerivationRange,
-    ) -> AddressRange<XPrv> {
-        let key = self.cached_key().derive_unchecked(change.into());
+    pub fn externals(&self, range: SoftDerivationRange) -> AddressRange<XPrv> {
+        let key = self.cached_key().derive_unchecked(Self::EXTERNAL.into());
+        AddressRange { key, range }
+    }
+
+    pub fn internals(&self, range: SoftDerivationRange) -> AddressRange<XPrv> {
+        let key = self.cached_key().derive_unchecked(Self::INTERNAL.into());
         AddressRange { key, range }
     }
 }
 
 impl Account<XPub> {
     pub fn chimeric_account(&self) -> ChimericAccount<XPub> {
-        let key = self.cached_key().derive_unchecked(Self::ACCOUNT);
+        let key = self.cached_key().derive_unchecked(Self::CHIMERIC_ACCOUNT);
         ChimericAccount::new(key)
     }
 
-    pub fn addresses(
-        &self,
-        change: SoftDerivation,
-        range: SoftDerivationRange,
-    ) -> AddressRange<XPub> {
-        let key = self.cached_key().derive_unchecked(change);
+    pub fn externals(&self, range: SoftDerivationRange) -> AddressRange<XPub> {
+        let key = self.cached_key().derive_unchecked(Self::EXTERNAL);
+        AddressRange { key, range }
+    }
+
+    pub fn internals(&self, range: SoftDerivationRange) -> AddressRange<XPub> {
+        let key = self.cached_key().derive_unchecked(Self::INTERNAL);
         AddressRange { key, range }
     }
 }
 
 impl<K> Account<K> {
-    const ACCOUNT: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(2));
+    const EXTERNAL: SoftDerivation =
+        DerivationPath::<ChimericBip44<chimeric_bip44::Account>>::INTERNAL;
+    const INTERNAL: SoftDerivation =
+        DerivationPath::<ChimericBip44<chimeric_bip44::Account>>::EXTERNAL;
+    const CHIMERIC_ACCOUNT: SoftDerivation =
+        DerivationPath::<ChimericBip44<chimeric_bip44::Account>>::ACCOUNT;
 
     pub fn new(key: Key<K, ChimericBip44<chimeric_bip44::Account>>) -> Self {
         Self { key }

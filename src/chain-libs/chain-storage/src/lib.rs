@@ -292,9 +292,6 @@ impl BlockStore {
 /// Like `BlockStore::get_nth_ancestor`, but calls the closure 'callback' with
 /// each intermediate block encountered while travelling from
 /// 'block_hash' to its n'th ancestor.
-///
-/// The travelling algorithm uses back links to skip over parts of the chain,
-/// so the callback will not be invoked for all blocks in the linear sequence.
 pub fn for_path_to_nth_ancestor<F>(
     store: &mut BlockStore,
     block_hash: &[u8],
@@ -385,7 +382,7 @@ fn remove_tip_impl(
     tips: &TransactionalTree,
     block_id: &[u8],
 ) -> Result<Result<Option<Vec<u8>>, Error>, ConflictableTransactionError<()>> {
-    let block_info_bin = info.remove(block_id)?.unwrap();
+    let block_info_bin = info.get(block_id)?.unwrap();
     let mut block_info_reader: &[u8] = &block_info_bin;
     let block_info = BlockInfo::deserialize(&mut block_info_reader);
 
@@ -393,6 +390,7 @@ fn remove_tip_impl(
         return Ok(Ok(None));
     }
 
+    info.remove(block_id)?;
     blocks.remove(block_id)?;
 
     let mut height_index = block_info.chain_length().to_le_bytes().to_vec();
@@ -412,7 +410,8 @@ fn remove_tip_impl(
     info.insert(parent_block_info.id(), parent_block_info.serialize())?;
 
     let maybe_next_tip = if parent_block_info.ref_count() == 0 {
-        // if the block is inside another branch it cannot be a tip
+        // If the block is inside another branch it cannot be a tip. This will
+        // also apply if this tip is tagged.
         tips.insert(block_info.parent_id(), &[])?;
         Some(block_info.parent_id().to_vec())
     } else {
@@ -500,12 +499,20 @@ pub mod tests {
             genesis_block.parent.serialize_as_vec(),
             genesis_block.chain_length,
         );
+
+        assert!(!store.block_exists(genesis_block_info.id()).unwrap());
+
         store
-            .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
+            .put_block(
+                &genesis_block.serialize_as_vec(),
+                genesis_block_info.clone(),
+            )
             .unwrap();
         let genesis_block_restored = store
             .get_block_info(&genesis_block.id.serialize_as_vec())
             .unwrap();
+
+        assert!(store.block_exists(genesis_block_info.id()).unwrap());
 
         assert_eq!(
             &genesis_block.id.serialize_as_vec()[..],
@@ -532,6 +539,25 @@ pub mod tests {
             vec![genesis_block.id.serialize_as_vec()],
             store.get_tips_ids().unwrap()
         );
+
+        let block = genesis_block.make_child(None);
+        let block_info = BlockInfo::new(
+            block.id.serialize_as_vec(),
+            block.parent.serialize_as_vec(),
+            block.chain_length,
+        );
+        store
+            .put_block(&block.serialize_as_vec(), block_info)
+            .unwrap();
+        store.put_tag("tip", &block.id.serialize_as_vec()).unwrap();
+        assert_eq!(
+            store.get_tag("tip").unwrap().unwrap(),
+            block.id.serialize_as_vec()
+        );
+
+        // tagged branch must not be removed
+        store.prune_branch(&block.id.serialize_as_vec()).unwrap();
+        assert!(store.block_exists(&block.id.serialize_as_vec()).unwrap());
     }
 
     #[test]

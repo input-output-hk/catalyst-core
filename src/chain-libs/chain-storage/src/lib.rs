@@ -25,6 +25,8 @@ pub enum Error {
 #[derive(Clone)]
 pub struct BlockStore {
     inner: sled::Db,
+    root_id: Box<[u8]>,
+    id_length: usize,
 }
 
 mod tree {
@@ -36,9 +38,18 @@ mod tree {
 }
 
 impl BlockStore {
-    pub fn new<P: AsRef<Path>>(path: P) -> Result<Self, Error> {
+    pub fn new<P: AsRef<Path>, I: Into<Box<[u8]>>>(
+        path: P,
+        root_id: I,
+        id_length: usize,
+    ) -> Result<Self, Error> {
         let inner = sled::open(path)?;
-        Ok(Self { inner })
+        let root_id = root_id.into();
+        Ok(Self {
+            inner,
+            root_id,
+            id_length,
+        })
     }
 
     /// Write a block to the store. The parent of the block must exist (unless
@@ -57,7 +68,16 @@ impl BlockStore {
 
         let result = (&blocks, &info, &height_to_block_ids, &tips).transaction(
             |(blocks, info, height_to_block_ids, tips)| {
-                put_block_impl(blocks, info, height_to_block_ids, tips, block, &block_info)
+                put_block_impl(
+                    blocks,
+                    info,
+                    height_to_block_ids,
+                    tips,
+                    block,
+                    &block_info,
+                    self.root_id.as_ref(),
+                    self.id_length,
+                )
             },
         );
 
@@ -96,7 +116,7 @@ impl BlockStore {
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader)
+                BlockInfo::deserialize(&mut block_info_reader, self.id_length)
             })
     }
 
@@ -125,8 +145,9 @@ impl BlockStore {
         let info = self.inner.open_tree(tree::INFO)?;
         let tags = self.inner.open_tree(tree::TAGS)?;
 
-        let result = (&info, &tags)
-            .transaction(move |(info, tags)| put_tag_impl(info, tags, tag_name, block_hash));
+        let result = (&info, &tags).transaction(move |(info, tags)| {
+            put_tag_impl(info, tags, tag_name, block_hash, self.id_length)
+        });
 
         convert_transaction_result(result)
     }
@@ -173,8 +194,15 @@ impl BlockStore {
                 let mut maybe_current_tip = Some(Vec::from(tip_id));
 
                 while let Some(current_tip) = &maybe_current_tip {
-                    maybe_current_tip =
-                        remove_tip_impl(blocks, info, height_to_block_ids, tips, current_tip)?;
+                    maybe_current_tip = remove_tip_impl(
+                        blocks,
+                        info,
+                        height_to_block_ids,
+                        tips,
+                        current_tip,
+                        self.root_id.as_ref(),
+                        self.id_length,
+                    )?;
                 }
 
                 Ok(Ok(()))
@@ -213,14 +241,14 @@ impl BlockStore {
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader)
+                BlockInfo::deserialize(&mut block_info_reader, self.id_length)
             })?;
 
         if ancestor_id == descendent_id {
             return Ok(Some(0));
         }
 
-        if ancestor_id == vec![0u8; descendent_id.len()].as_slice() {
+        if ancestor_id == self.root_id.as_ref() {
             return Ok(Some(descendent.chain_length()));
         }
 
@@ -230,7 +258,7 @@ impl BlockStore {
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader)
+                BlockInfo::deserialize(&mut block_info_reader, self.id_length)
             })?;
 
         if ancestor.chain_length() >= descendent.chain_length() {
@@ -247,7 +275,7 @@ impl BlockStore {
         while let Some(parent_block_info) =
             info.get(current_block_info.parent_id())?.map(|block_info| {
                 let mut block_info_reader: &[u8] = &block_info;
-                BlockInfo::deserialize(&mut block_info_reader)
+                BlockInfo::deserialize(&mut block_info_reader, self.id_length)
             })
         {
             distance += 1;
@@ -289,7 +317,7 @@ where
         .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
         .map(|block_info_bin| {
             let mut block_info_reader: &[u8] = &block_info_bin;
-            BlockInfo::deserialize(&mut block_info_reader)
+            BlockInfo::deserialize(&mut block_info_reader, store.id_length)
         })?;
 
     if distance >= current.chain_length() {
@@ -310,7 +338,7 @@ where
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader)
+                BlockInfo::deserialize(&mut block_info_reader, store.id_length)
             })?;
     }
 
@@ -325,19 +353,21 @@ fn put_block_impl(
     tips: &TransactionalTree,
     block: &[u8],
     block_info: &BlockInfo,
+    root_id: &[u8],
+    id_size: usize,
 ) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
     if info.get(block_info.id())?.is_some() {
         return Ok(Err(Error::BlockAlreadyPresent));
     }
 
-    if block_info.parent_id() != vec![0; block_info.parent_id().len()].as_slice() {
+    if block_info.parent_id() != root_id {
         if info.get(block_info.parent_id())?.is_none() {
             return Ok(Err(Error::MissingParent));
         }
 
         let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
         let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
-        let mut parent_block_info = BlockInfo::deserialize(&mut parent_block_info_reader);
+        let mut parent_block_info = BlockInfo::deserialize(&mut parent_block_info_reader, id_size);
         parent_block_info.add_ref();
         info.insert(parent_block_info.id(), parent_block_info.serialize())?;
     }
@@ -362,10 +392,11 @@ fn put_tag_impl(
     tags: &TransactionalTree,
     tag_name: &str,
     block_hash: &[u8],
+    id_size: usize,
 ) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
     match info.get(block_hash)? {
         Some(info_bin) => {
-            let mut block_info = BlockInfo::deserialize(&info_bin[..]);
+            let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size);
             block_info.add_ref();
             let info_bin = block_info.serialize();
             info.insert(block_hash, info_bin)?;
@@ -374,7 +405,7 @@ fn put_tag_impl(
 
             if let Some(old_block_hash) = maybe_old_block_hash {
                 let info_bin = info.get(old_block_hash)?.unwrap();
-                let mut block_info = BlockInfo::deserialize(&info_bin[..]);
+                let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size);
                 block_info.remove_ref();
                 let info_bin = block_info.serialize();
                 info.insert(block_info.id(), info_bin)?;
@@ -393,10 +424,12 @@ fn remove_tip_impl(
     height_to_block_ids: &TransactionalTree,
     tips: &TransactionalTree,
     block_id: &[u8],
+    root_id: &[u8],
+    id_size: usize,
 ) -> Result<Option<Vec<u8>>, ConflictableTransactionError<()>> {
     let block_info_bin = info.get(block_id)?.unwrap();
     let mut block_info_reader: &[u8] = &block_info_bin;
-    let block_info = BlockInfo::deserialize(&mut block_info_reader);
+    let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size);
 
     if block_info.ref_count() != 0 {
         return Ok(None);
@@ -411,13 +444,13 @@ fn remove_tip_impl(
 
     tips.remove(block_id)?;
 
-    if block_info.parent_id() == vec![0; block_info.parent_id().len()].as_slice() {
+    if block_info.parent_id() == root_id {
         return Ok(None);
     }
 
     let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
     let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
-    let mut parent_block_info = BlockInfo::deserialize(&mut parent_block_info_reader);
+    let mut parent_block_info = BlockInfo::deserialize(&mut parent_block_info_reader, id_size);
     parent_block_info.remove_ref();
     info.insert(parent_block_info.id(), parent_block_info.serialize())?;
 
@@ -498,7 +531,12 @@ pub mod tests {
     #[test]
     pub fn test_put_get() {
         let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(file.path()).unwrap();
+        let mut store = BlockStore::new(
+            file.path(),
+            BlockId(0).serialize_as_vec(),
+            BlockId(0).serialize_as_vec().len(),
+        )
+        .unwrap();
         assert!(store.get_tag("tip").unwrap().is_none());
 
         match store.put_tag("tip", &BlockId(0).serialize_as_vec()) {
@@ -577,7 +615,12 @@ pub mod tests {
     pub fn test_nth_ancestor() {
         let mut rng = OsRng;
         let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(file.path()).unwrap();
+        let mut store = BlockStore::new(
+            file.path(),
+            BlockId(0).serialize_as_vec(),
+            BlockId(0).serialize_as_vec().len(),
+        )
+        .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
 
         let mut blocks_fetched = 0;
@@ -619,7 +662,12 @@ pub mod tests {
     fn simultaneous_read_write() {
         let mut rng = OsRng;
         let file = tempfile::TempDir::new().unwrap();
-        let mut conn = BlockStore::new(file.path()).unwrap();
+        let mut conn = BlockStore::new(
+            file.path(),
+            BlockId(0).serialize_as_vec(),
+            BlockId(0).serialize_as_vec().len(),
+        )
+        .unwrap();
 
         let genesis_block = Block::genesis(None);
         let genesis_block_info = BlockInfo::new(
@@ -683,7 +731,12 @@ pub mod tests {
         const BIFURCATION_POINT: usize = 50;
 
         let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(file.path()).unwrap();
+        let mut store = BlockStore::new(
+            file.path(),
+            BlockId(0).serialize_as_vec(),
+            BlockId(0).serialize_as_vec().len(),
+        )
+        .unwrap();
 
         let mut main_branch_blocks = vec![];
 
@@ -764,7 +817,12 @@ pub mod tests {
         const N_BLOCKS: usize = 5;
 
         let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(file.path()).unwrap();
+        let mut store = BlockStore::new(
+            file.path(),
+            BlockId(0).serialize_as_vec(),
+            BlockId(0).serialize_as_vec().len(),
+        )
+        .unwrap();
 
         let genesis_block = Block::genesis(None);
         let genesis_block_info = BlockInfo::new(
@@ -813,7 +871,12 @@ pub mod tests {
         const TEST_2: [usize; 2] = [60, 10];
 
         let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(file.path()).unwrap();
+        let mut store = BlockStore::new(
+            file.path(),
+            BlockId(0).serialize_as_vec(),
+            BlockId(0).serialize_as_vec().len(),
+        )
+        .unwrap();
 
         let mut main_branch_blocks = vec![];
 

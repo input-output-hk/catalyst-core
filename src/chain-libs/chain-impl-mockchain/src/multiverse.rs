@@ -208,7 +208,7 @@ mod test {
     };
 
     use chain_addr::Discrimination;
-    use chain_core::property::{Block as _, Deserialize, Serialize};
+    use chain_core::property::{self, Block as _, BlockId as _, Deserialize, Serialize};
     use chain_storage::{BlockInfo, BlockStore};
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
     use std::mem;
@@ -353,7 +353,9 @@ mod test {
         let slot_duration = 10u8;
         let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
         let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(file.path()).unwrap();
+        let zero_id: [u8; 32] = <Block as property::Block>::Id::zero().into();
+        let zero_id = zero_id.to_vec();
+        let mut store = BlockStore::new(file.path(), zero_id.clone(), zero_id.len()).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();
@@ -431,7 +433,9 @@ mod test {
         let slot_duration = 10u8;
         let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
         let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(file.path()).unwrap();
+        let zero_id: [u8; 32] = <Block as property::Block>::Id::zero().into();
+        let zero_id = zero_id.to_vec();
+        let mut store = BlockStore::new(file.path(), zero_id.clone(), zero_id.len()).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();

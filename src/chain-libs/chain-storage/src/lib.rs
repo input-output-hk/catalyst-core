@@ -125,29 +125,8 @@ impl BlockStore {
         let info = self.inner.open_tree(tree::INFO)?;
         let tags = self.inner.open_tree(tree::TAGS)?;
 
-        let result = (&info, &tags).transaction(move |(info, tags)| {
-            match info.get(block_hash)? {
-                Some(info_bin) => {
-                    let mut block_info = BlockInfo::deserialize(&info_bin[..]);
-                    block_info.add_ref();
-                    let info_bin = block_info.serialize();
-                    info.insert(block_hash, info_bin)?;
-
-                    let maybe_old_block_hash = tags.insert(tag_name, block_hash)?;
-
-                    if let Some(old_block_hash) = maybe_old_block_hash {
-                        let info_bin = info.get(old_block_hash)?.unwrap();
-                        let mut block_info = BlockInfo::deserialize(&info_bin[..]);
-                        block_info.remove_ref();
-                        let info_bin = block_info.serialize();
-                        info.insert(block_info.id(), info_bin)?;
-                    }
-                }
-                None => return Ok(Err(Error::BlockNotFound)),
-            }
-
-            Ok(Ok(()))
-        });
+        let result = (&info, &tags)
+            .transaction(move |(info, tags)| put_tag_impl(info, tags, tag_name, block_hash));
 
         convert_transaction_result(result)
     }
@@ -189,19 +168,20 @@ impl BlockStore {
         let info = self.inner.open_tree(tree::INFO)?;
         let height_to_block_ids = self.inner.open_tree(tree::CHAIN_HEIGHT_INDEX)?;
 
-        let mut maybe_current_tip = Some(Vec::from(tip_id));
+        let result = (&blocks, &info, &height_to_block_ids, &tips).transaction(
+            |(blocks, info, height_to_block_ids, tips)| {
+                let mut maybe_current_tip = Some(Vec::from(tip_id));
 
-        while let Some(current_tip) = &maybe_current_tip {
-            let result = (&blocks, &info, &height_to_block_ids, &tips).transaction(
-                |(blocks, info, height_to_block_ids, tips)| {
-                    remove_tip_impl(blocks, info, height_to_block_ids, tips, current_tip)
-                },
-            );
+                while let Some(current_tip) = &maybe_current_tip {
+                    maybe_current_tip =
+                        remove_tip_impl(blocks, info, height_to_block_ids, tips, current_tip)?;
+                }
 
-            maybe_current_tip = convert_transaction_result(result)?;
-        }
+                Ok(Ok(()))
+            },
+        );
 
-        Ok(())
+        convert_transaction_result(result)
     }
 
     /// Check if the block with the given id exists.
@@ -337,6 +317,7 @@ where
     Ok(current)
 }
 
+#[inline]
 fn put_block_impl(
     blocks: &TransactionalTree,
     info: &TransactionalTree,
@@ -375,19 +356,50 @@ fn put_block_impl(
     Ok(Ok(()))
 }
 
+#[inline]
+fn put_tag_impl(
+    info: &TransactionalTree,
+    tags: &TransactionalTree,
+    tag_name: &str,
+    block_hash: &[u8],
+) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
+    match info.get(block_hash)? {
+        Some(info_bin) => {
+            let mut block_info = BlockInfo::deserialize(&info_bin[..]);
+            block_info.add_ref();
+            let info_bin = block_info.serialize();
+            info.insert(block_hash, info_bin)?;
+
+            let maybe_old_block_hash = tags.insert(tag_name, block_hash)?;
+
+            if let Some(old_block_hash) = maybe_old_block_hash {
+                let info_bin = info.get(old_block_hash)?.unwrap();
+                let mut block_info = BlockInfo::deserialize(&info_bin[..]);
+                block_info.remove_ref();
+                let info_bin = block_info.serialize();
+                info.insert(block_info.id(), info_bin)?;
+            }
+        }
+        None => return Ok(Err(Error::BlockNotFound)),
+    }
+
+    Ok(Ok(()))
+}
+
+#[inline]
 fn remove_tip_impl(
     blocks: &TransactionalTree,
     info: &TransactionalTree,
     height_to_block_ids: &TransactionalTree,
     tips: &TransactionalTree,
     block_id: &[u8],
-) -> Result<Result<Option<Vec<u8>>, Error>, ConflictableTransactionError<()>> {
+) -> Result<Option<Vec<u8>>, ConflictableTransactionError<()>> {
     let block_info_bin = info.get(block_id)?.unwrap();
     let mut block_info_reader: &[u8] = &block_info_bin;
     let block_info = BlockInfo::deserialize(&mut block_info_reader);
 
     if block_info.ref_count() != 0 {
-        return Ok(Ok(None));
+        return Ok(None);
     }
 
     info.remove(block_id)?;
@@ -400,7 +412,7 @@ fn remove_tip_impl(
     tips.remove(block_id)?;
 
     if block_info.parent_id() == vec![0; block_info.parent_id().len()].as_slice() {
-        return Ok(Ok(None));
+        return Ok(None);
     }
 
     let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
@@ -418,9 +430,10 @@ fn remove_tip_impl(
         None
     };
 
-    Ok(Ok(maybe_next_tip))
+    Ok(maybe_next_tip)
 }
 
+#[inline]
 fn convert_transaction_result<T>(
     result: Result<Result<T, Error>, TransactionError<()>>,
 ) -> Result<T, Error> {

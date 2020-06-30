@@ -9,10 +9,10 @@ pub struct BlockInfo {
 }
 
 impl BlockInfo {
-    pub fn new(id: Vec<u8>, parent_id: Vec<u8>, chain_length: u32) -> Self {
+    pub fn new<T: Into<Box<[u8]>>>(id: T, parent_id: T, chain_length: u32) -> Self {
         Self {
-            id: id.into_boxed_slice(),
-            parent_id: parent_id.into_boxed_slice(),
+            id: id.into(),
+            parent_id: parent_id.into(),
             chain_length,
             ref_count: 0,
         }
@@ -85,7 +85,7 @@ impl BlockInfo {
         let mut parent_id = vec![0u8; parent_id_size as usize];
         r.read_exact(&mut parent_id).unwrap();
 
-        BlockInfo {
+        Self {
             id: id.into_boxed_slice(),
             parent_id: parent_id.into_boxed_slice(),
             chain_length,

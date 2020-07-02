@@ -43,6 +43,8 @@ pub struct Proposal {
     #[serde(alias = "proposalPublicKey")]
     pub proposal_public_key: String,
     #[serde(alias = "proposalFunds")]
+    #[serde(serialize_with = "crate::utils::serde::serialize_i64_as_str")]
+    #[serde(deserialize_with = "crate::utils::serde::deserialize_i64_from_str")]
     pub proposal_funds: i64,
     #[serde(alias = "proposalUrl")]
     pub proposal_url: String,
@@ -50,10 +52,12 @@ pub struct Proposal {
     pub proposal_files_url: String,
     pub proposer: Proposer,
     #[serde(alias = "chainProposalId")]
-    #[serde(serialize_with = "crate::utils::serde::serialize_bin_as_string")]
+    #[serde(serialize_with = "crate::utils::serde::serialize_bin_as_str")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_string_as_bytes")]
     pub chain_proposal_id: Vec<u8>,
     #[serde(alias = "chainProposalIndex")]
+    #[serde(serialize_with = "crate::utils::serde::serialize_i64_as_str")]
+    #[serde(deserialize_with = "crate::utils::serde::deserialize_i64_from_str")]
     pub chain_proposal_index: i64,
     #[serde(alias = "chainVoteOptions")]
     pub chain_vote_options: VoteOptions,

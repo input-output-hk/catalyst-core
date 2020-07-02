@@ -1,6 +1,6 @@
 use crate::db::models::proposals::{Category, Proposal, Proposer};
 use crate::db::models::vote_options::VoteOptions;
-use crate::utils::{datetime::unix_timestamp_to_datetime, graphql::ScalarI64};
+use crate::utils::datetime::unix_timestamp_to_datetime;
 #[async_graphql::Object]
 impl Category {
     pub async fn category_id(&self) -> &str {
@@ -65,8 +65,8 @@ impl Proposal {
         &self.proposal_public_key
     }
 
-    pub async fn proposal_funds(&self) -> ScalarI64 {
-        ScalarI64(self.proposal_funds)
+    pub async fn proposal_funds(&self) -> i64 {
+        self.proposal_funds
     }
 
     pub async fn proposal_url(&self) -> &str {
@@ -89,8 +89,8 @@ impl Proposal {
         &self.chain_voteplan_id
     }
 
-    pub async fn chain_proposal_index(&self) -> ScalarI64 {
-        ScalarI64(self.chain_proposal_index)
+    pub async fn chain_proposal_index(&self) -> i64 {
+        self.chain_proposal_index
     }
 
     pub async fn chain_voteplan_payload(&self) -> &str {

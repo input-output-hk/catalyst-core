@@ -1,5 +1,5 @@
 mod handlers;
-mod playground;
+pub mod playground;
 mod routes;
 mod schema;
 

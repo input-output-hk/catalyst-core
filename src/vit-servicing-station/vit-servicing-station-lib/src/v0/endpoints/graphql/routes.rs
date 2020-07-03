@@ -32,8 +32,7 @@ pub async fn filter(
         },
     );
 
-    root.and(crate::v0::endpoints::graphql::playground::filter().or(graph_ql))
-        .boxed()
+    root.and(graph_ql).boxed()
 }
 
 #[cfg(test)]

@@ -6,6 +6,7 @@ mod proposals;
 
 use crate::v0::context::SharedContext;
 
+use crate::v0::api_token;
 use warp::filters::BoxedFilter;
 use warp::{Filter, Rejection, Reply};
 
@@ -31,14 +32,21 @@ pub async fn filter(
 
     // mount graphql endpoint
     let graphql_root = warp::path!("graphql" / ..);
-    let graphql_filter = graphql::filter(graphql_root.boxed(), context).await;
+    let graphql_filter = graphql::filter(graphql_root.boxed(), context.clone()).await;
+
+    let playground_filter = graphql::playground::filter();
 
     root.and(
-        health_filter
-            .or(genesis_filter)
-            .or(chain_data_filter)
-            .or(funds_filter)
-            .or(graphql_filter),
+        api_token::api_token_filter(context)
+            .await
+            .and(
+                health_filter
+                    .or(genesis_filter)
+                    .or(chain_data_filter)
+                    .or(funds_filter)
+                    .or(graphql_filter),
+            )
+            .or(playground_filter),
     )
     .boxed()
 }

@@ -1,5 +1,5 @@
-use super::settings::ServiceSettings;
-use crate::server_settings::{Cors, Tls};
+use super::config::ServiceSettings;
+use super::config::{Cors, Tls};
 use std::net::SocketAddr;
 use std::str::FromStr;
 

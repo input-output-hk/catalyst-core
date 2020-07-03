@@ -44,10 +44,7 @@ where
         .map(|datetime| datetime.timestamp())
 }
 
-pub fn serialize_bin_as_string<S: Serializer>(
-    data: &[u8],
-    serializer: S,
-) -> Result<S::Ok, S::Error> {
+pub fn serialize_bin_as_str<S: Serializer>(data: &[u8], serializer: S) -> Result<S::Ok, S::Error> {
     serializer.serialize_str(&String::from_utf8(data.to_vec()).unwrap())
 }
 
@@ -74,4 +71,36 @@ where
     }
 
     deserializer.deserialize_str(VecU8Deserializer())
+}
+
+// this warning should be disable here since the interface for this function requires
+// the first argument to be passed by value
+#[allow(clippy::trivially_copy_pass_by_ref)]
+pub fn serialize_i64_as_str<S: Serializer>(data: &i64, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(&data.to_string())
+}
+
+pub fn deserialize_i64_from_str<'de, D>(deserializer: D) -> Result<i64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct I64Deserializer();
+
+    impl<'de> Visitor<'de> for I64Deserializer {
+        type Value = i64;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a compatible i64 number or string with i64 format")
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<i64, E>
+        where
+            E: serde::de::Error,
+        {
+            value
+                .parse()
+                .map_err(|e| E::custom(format!("Error parsing {} to i64: {}", value, e)))
+        }
+    }
+    deserializer.deserialize_str(I64Deserializer())
 }

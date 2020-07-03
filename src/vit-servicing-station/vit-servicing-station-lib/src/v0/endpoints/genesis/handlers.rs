@@ -18,7 +18,7 @@ mod test {
     #[tokio::test]
     async fn get_block0_succeed() {
         // build context
-        let block0_path = "./resources/tests/block0.bin";
+        let block0_path = "../resources/tests/block0.bin";
         let shared_context = new_test_shared_context("", block0_path);
         let block0 = load_block0(block0_path);
 

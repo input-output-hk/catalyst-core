@@ -20,7 +20,7 @@ async fn main() {
     // load settings from file if specified
     if let Some(settings_file) = &settings.in_settings_file {
         settings = server_settings::load_settings_from_file(settings_file).unwrap_or_else(|e| {
-            println!("Error loading settings from file {}: {}", settings_file, e);
+            println!("Error loading settings from file {}, {}", settings_file, e);
             std::process::exit(1)
         });
     };

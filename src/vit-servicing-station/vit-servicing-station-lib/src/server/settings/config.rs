@@ -176,7 +176,7 @@ pub fn dump_settings_to_file(
 ) -> Result<(), serde_json::Error> {
     let f = fs::File::create(file_path)
         .unwrap_or_else(|e| panic!("Error opening file {}: {}", file_path, e));
-    serde_json::to_writer(&f, settings)
+    serde_json::to_writer_pretty(&f, settings)
 }
 
 #[cfg(test)]

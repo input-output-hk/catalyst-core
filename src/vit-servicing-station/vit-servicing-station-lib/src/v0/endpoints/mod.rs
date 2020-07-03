@@ -34,19 +34,18 @@ pub async fn filter(
     let graphql_root = warp::path!("graphql" / ..);
     let graphql_filter = graphql::filter(graphql_root.boxed(), context.clone()).await;
 
-    let playground_filter = graphql::playground::filter();
+    let playground_root = warp::path!("graphql" / ..);
+    let playground_filter = graphql::playground::filter(playground_root.boxed());
 
+    let api_token_filter = api_token::api_token_filter(context).await;
     root.and(
-        api_token::api_token_filter(context)
-            .await
-            .and(
-                health_filter
-                    .or(genesis_filter)
-                    .or(chain_data_filter)
-                    .or(funds_filter)
-                    .or(graphql_filter),
-            )
-            .or(playground_filter),
+        playground_filter.or(api_token_filter.and(
+            health_filter
+                .or(genesis_filter)
+                .or(chain_data_filter)
+                .or(funds_filter)
+                .or(graphql_filter),
+        )),
     )
     .boxed()
 }

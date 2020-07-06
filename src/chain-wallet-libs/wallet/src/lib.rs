@@ -2,12 +2,14 @@ mod blockchain;
 mod keygen;
 mod password;
 mod recovering;
+mod store;
 pub mod transaction;
 
 pub use self::{
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
     recovering::{RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
+    store::{UtxoGroup, UtxoStore},
 };
 use chain_impl_mockchain::{
     transaction::Input, transaction::UnspecifiedAccountIdentifier, value::Value,

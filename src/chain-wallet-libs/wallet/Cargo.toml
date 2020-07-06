@@ -14,6 +14,7 @@ bip39 = { path = "../bip39" }
 chain-path-derivation = { path = "../chain-path-derivation" }
 hdkeygen = { path = "../hdkeygen" }
 hex = "0.4.2"
+im-rc = "15.0.0"
 
 chain-time = { path = "../chain-deps/chain-time" }
 chain-crypto = { path = "../chain-deps/chain-crypto" }

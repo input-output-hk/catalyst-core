@@ -10,7 +10,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 
 use crate::common::{data, server::Server};
 
-use self::{db::DbBuilder, server::Starter};
+use self::{db::DbBuilder, server::ServerBootstrapper};
 
 pub fn get_exe() -> PathBuf {
     const VIT_BIN_NAME: &str = env!("VIT_BIN_NAME");
@@ -63,7 +63,7 @@ pub fn quick_start(temp_dir: &TempDir) -> (Server, String) {
         .build(&temp_dir)
         .unwrap();
 
-    let server = Starter::new()
+    let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .start()
         .unwrap();

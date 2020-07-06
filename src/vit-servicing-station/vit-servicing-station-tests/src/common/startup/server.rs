@@ -7,11 +7,11 @@ use vit_servicing_station_lib::server::settings::ServiceSettings;
 
 use crate::common::{paths::BLOCK0_BIN, server::Server, startup::get_available_port};
 
-pub struct Starter {
+pub struct ServerBootstrapper {
     settings: ServiceSettings,
 }
 
-impl Starter {
+impl ServerBootstrapper {
     pub fn new() -> Self {
         let mut settings: ServiceSettings = Default::default();
         settings.address = Self::format_localhost_address(get_available_port());
@@ -39,7 +39,7 @@ impl Starter {
         self
     }
 
-    pub fn start(&self) -> Result<Server, StarterError> {
+    pub fn start(&self) -> Result<Server, ServerBootstrapperError> {
         let child = Command::new(get_exe())
             .arg("--address")
             .arg(self.settings.address.to_string())
@@ -56,14 +56,14 @@ impl Starter {
     }
 }
 
-impl Default for Starter {
+impl Default for ServerBootstrapper {
     fn default() -> Self {
         Self::new()
     }
 }
 
 #[derive(Debug, Error)]
-pub enum StarterError {
+pub enum ServerBootstrapperError {
     #[error("cannot spawn process")]
     ProcessSpawnError(#[from] std::io::Error),
     #[error("cannot find binary (0)")]

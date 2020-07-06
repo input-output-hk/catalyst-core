@@ -10,6 +10,8 @@ use vit_servicing_station_lib::db::{
     schema::{api_tokens, proposals, voteplans},
 };
 
+use std::fs;
+
 use crate::common::paths::MIGRATION_DIR;
 
 pub struct DbBuilder {
@@ -20,8 +22,13 @@ pub struct DbBuilder {
 
 impl DbBuilder {
     pub fn new() -> Self {
+        let migration_dir = PathBuf::from_str(MIGRATION_DIR).unwrap();
+
+        println!("EXE: {:?}", std::env::current_exe());
+        println!("{:?}", fs::canonicalize(&migration_dir));
+
         Self {
-            migrations_folder: Some(PathBuf::from_str(MIGRATION_DIR).unwrap()),
+            migrations_folder: Some(migration_dir),
             token: None,
             proposals: None,
         }

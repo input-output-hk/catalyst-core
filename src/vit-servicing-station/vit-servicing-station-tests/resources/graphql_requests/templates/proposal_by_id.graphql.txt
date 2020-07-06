@@ -1,0 +1,35 @@
+{
+    "query":"{ 
+        proposal(proposalId: \"{{ id }}\"){ 
+            internalId
+            proposalId,
+            category {
+                categoryId,
+                categoryName,
+                categoryDescription,
+            },
+            proposalTitle,
+            proposalSummary,
+            proposalProblem,
+            proposalPublicKey,
+            proposalFunds,
+            proposalSolution
+            proposalUrl,
+            proposalFilesUrl,
+            proposer {
+                proposerName,
+                proposerEmail,
+                proposerUrl
+            },
+            chainProposalId,
+            chainProposalIndex,
+            chainVoteOptions,
+            chainVoteplanId,
+            chainVoteplanPayload,
+            chainVoteStartTime,
+            chainVoteEndTime,
+            chainCommitteeEndTime,
+            fundId
+        }
+    }"
+}

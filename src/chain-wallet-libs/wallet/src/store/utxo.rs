@@ -20,6 +20,9 @@ type GroupRef<K> = Rc<RefCell<UtxoGroup<K>>>;
 /// The data structure of the store allows for sharing states between multiple
 /// reality of the blockchain. Following different branches if needed.
 ///
+/// The UTxO store, if used for a bip32 scheme based wallet, needs to be for
+/// one given wallet. I.e. multiple wallets will need different Store.
+///
 /// ## performance considerations
 ///
 /// The Store has been optimized to allow following multiple branches of a

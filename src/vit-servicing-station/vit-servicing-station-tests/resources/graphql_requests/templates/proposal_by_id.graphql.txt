@@ -1,7 +1,7 @@
 {
     "query":"{ 
         proposal(proposalId: \"{{ id }}\"){ 
-            internalId
+            internalId,
             proposalId,
             category {
                 categoryId,

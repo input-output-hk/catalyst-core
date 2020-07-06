@@ -8,7 +8,7 @@ use std::env;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::common::{data::TestGen, server::Server};
+use crate::common::{data, server::Server};
 
 use self::{db::DbBuilder, server::Starter};
 
@@ -55,11 +55,11 @@ pub fn get_available_port() -> u32 {
 }
 
 pub fn quick_start(temp_dir: &TempDir) -> (Server, String) {
-    let (token, hash) = TestGen::token();
+    let (token, hash) = data::token();
 
     let db_path = DbBuilder::new()
         .with_token(token)
-        .with_proposals(TestGen::proposals())
+        .with_proposals(data::proposals())
         .build(&temp_dir)
         .unwrap();
 

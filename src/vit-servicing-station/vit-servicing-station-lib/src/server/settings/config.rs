@@ -29,9 +29,11 @@ pub struct ServiceSettings {
     #[structopt(long, default_value = "0.0.0.0:3030")]
     pub address: SocketAddr,
 
+    #[serde(default)]
     #[structopt(flatten)]
     pub tls: Tls,
 
+    #[serde(default)]
     #[structopt(flatten)]
     pub cors: Cors,
 
@@ -44,7 +46,7 @@ pub struct ServiceSettings {
     pub block0_path: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt, Default)]
 #[serde(deny_unknown_fields)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Tls {

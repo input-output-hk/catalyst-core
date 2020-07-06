@@ -9,14 +9,8 @@ impl Default for ServiceSettings {
             in_settings_file: None,
             out_settings_file: None,
             address: SocketAddr::from_str("0.0.0.0:3030").unwrap(),
-            tls: Tls {
-                cert_file: None,
-                priv_key_file: None,
-            },
-            cors: Cors {
-                max_age_secs: None,
-                allowed_origins: None,
-            },
+            tls: Tls::default(),
+            cors: Cors::default(),
             db_url: "./db/database.sqlite3".to_string(),
             block0_path: "./resources/v0/block0.bin".to_string(),
         }

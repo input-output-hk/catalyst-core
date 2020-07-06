@@ -25,7 +25,9 @@ impl GraphqlClient {
         let proposal = ProposalById { id };
         let data = proposal.render()?;
         println!("Request: {}", data);
-        let query_result = self.rest_client.post("graphql", data.replace("\r\n", ""))?;
+        let query_result = self
+            .rest_client
+            .post("graphql", data.replace("\r\n", "").replace("\n", ""))?;
         let proposal = query_result["data"]["proposal"].clone();
         serde_json::from_value(proposal).map_err(GraphQlClientError::CannotDeserialize)
     }

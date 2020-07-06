@@ -3,7 +3,7 @@ use crate::v0::{context::SharedContext, errors::HandleError};
 use warp::{Filter, Rejection};
 
 /// Header where token should be present in requests
-const API_TOKEN_HEADER: &str = "API-Token";
+pub const API_TOKEN_HEADER: &str = "API-Token";
 
 /// API Token wrapper type
 #[derive(PartialEq, Eq)]

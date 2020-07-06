@@ -8,6 +8,7 @@ use hdkeygen::account::Account;
 
 pub(crate) enum WitnessBuilder {
     OldUtxo { xprv: XPrv },
+    Utxo { xprv: XPrv },
     Account { account: Account },
 }
 
@@ -33,6 +34,10 @@ impl WitnessBuilder {
                     &some_bytes,
                 )
             }
+            Self::Utxo { xprv } => Witness::new_utxo(block0, sign_data_hash, |data| {
+                Signature::from_binary(xprv.sign::<()>(data.as_ref()).to_bytes())
+                    .expect("cannot have invalid signature here")
+            }),
             Self::Account { account } => {
                 let key = account.seed();
                 let spending_counter = account.counter().into();

@@ -7,8 +7,6 @@ use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::{api_tokens::APITokenData, proposals::Proposal};
 
-use std::fs;
-
 use crate::common::{
     db::{DbInserter, DbInserterError},
     paths::MIGRATION_DIR,

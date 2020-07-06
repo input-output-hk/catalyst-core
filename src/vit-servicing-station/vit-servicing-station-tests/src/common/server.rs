@@ -12,22 +12,22 @@ impl Server {
         Self { process, settings }
     }
 
-    pub fn rest(&self) -> RestClient {
+    pub fn rest_client(&self) -> RestClient {
         RestClient::new(self.settings.address.to_string())
     }
 
-    pub fn rest_with_token(&self, hash: String) -> RestClient {
-        let mut rest_client = self.rest();
+    pub fn rest_client_with_token(&self, hash: String) -> RestClient {
+        let mut rest_client = self.rest_client();
         rest_client.set_api_token(hash);
         rest_client
     }
 
-    pub fn graphql(&self) -> GraphqlClient {
+    pub fn graphql_client(&self) -> GraphqlClient {
         GraphqlClient::new(self.settings.address.to_string())
     }
 
-    pub fn graphql_with_token(&self, hash: String) -> GraphqlClient {
-        let mut graphql_client = self.graphql();
+    pub fn graphql_client_with_token(&self, hash: String) -> GraphqlClient {
+        let mut graphql_client = self.graphql_client();
         graphql_client.set_api_token(hash);
         graphql_client
     }

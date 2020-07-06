@@ -43,6 +43,10 @@ jobs:
       - uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
+          command: build
+      - uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
           command: test
 
   lints:

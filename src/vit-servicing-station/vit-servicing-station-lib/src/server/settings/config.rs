@@ -129,12 +129,18 @@ impl FromStr for CorsOrigin {
                 return Err(std::io::Error::new(
                     ErrorKind::InvalidInput,
                     format!(
-                        "Invalid schema {}, only http and https are supported: ",
+                        "Cors origin invalid schema {}, only [http] and [https] are supported: ",
                         uri.scheme_str().unwrap()
                     ),
                 ));
             }
+        } else {
+            return Err(std::io::Error::new(
+                ErrorKind::InvalidInput,
+                "Cors origin missing schema, only [http] or [https] are supported",
+            ));
         }
+
         if let Some(p) = uri.path_and_query() {
             if p.as_str() != "/" {
                 return Err(std::io::Error::new(

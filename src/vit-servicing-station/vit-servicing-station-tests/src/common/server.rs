@@ -16,9 +16,9 @@ impl Server {
         RestClient::new(self.settings.address.to_string())
     }
 
-    pub fn rest_client_with_token(&self, token: String) -> RestClient {
+    pub fn rest_client_with_token(&self, token: &str) -> RestClient {
         let mut rest_client = self.rest_client();
-        rest_client.set_api_token(token);
+        rest_client.set_api_token(token.to_string());
         rest_client
     }
 
@@ -26,17 +26,17 @@ impl Server {
         GraphqlClient::new(self.settings.address.to_string())
     }
 
-    pub fn graphql_client_with_token(&self, token: String) -> GraphqlClient {
+    pub fn graphql_client_with_token(&self, token: &str) -> GraphqlClient {
         let mut graphql_client = self.graphql_client();
-        graphql_client.set_api_token(token);
+        graphql_client.set_api_token(token.to_string());
         graphql_client
     }
 
-    pub fn is_token_valid(&self, token: String) -> bool {
+    pub fn is_token_valid(&self, token: &str) -> bool {
         self.is_up(token)
     }
 
-    pub fn is_up(&self, token: String) -> bool {
+    pub fn is_up(&self, token: &str) -> bool {
         self.rest_client_with_token(token).health().is_ok()
     }
 }

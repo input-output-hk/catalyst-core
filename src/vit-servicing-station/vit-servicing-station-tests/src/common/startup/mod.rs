@@ -11,6 +11,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use crate::common::{data, server::Server};
 
 use self::{db::DbBuilder, server::ServerBootstrapper};
+use server::ServerBootstrapperError;
 
 pub fn get_exe() -> PathBuf {
     const VIT_BIN_NAME: &str = env!("VIT_BIN_NAME");
@@ -54,19 +55,21 @@ pub fn get_available_port() -> u32 {
     NEXT_AVAILABLE_PORT_NUMBER.fetch_add(1, Ordering::SeqCst)
 }
 
-pub fn quick_start(temp_dir: &TempDir) -> (Server, String) {
+pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, String), ServerBootstrapperError> {
     let (token, hash) = data::token();
 
     let db_path = DbBuilder::new()
         .with_token(token)
         .with_proposals(data::proposals())
-        .build(&temp_dir)
-        .unwrap();
+        .build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
-        .start(&hash)
-        .unwrap();
+        .start()?;
 
-    (server, hash)
+    if !server.is_up(&hash) {
+        panic!("server is not up");
+    }
+
+    Ok((server, hash))
 }

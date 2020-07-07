@@ -5,6 +5,7 @@ use std::process::Stdio;
 use thiserror::Error;
 use vit_servicing_station_lib::server::settings::ServiceSettings;
 
+use super::db::DbBuilderError;
 use crate::common::{paths::BLOCK0_BIN, server::Server, startup::get_available_port};
 
 pub struct ServerBootstrapper {
@@ -39,23 +40,7 @@ impl ServerBootstrapper {
         self
     }
 
-    pub fn start(&self, token: &str) -> Result<Server, ServerBootstrapperError> {
-        let server = self.start_async()?;
-        self.is_up(&server, token)?;
-        Ok(server)
-    }
-
-    pub fn is_up(&self, server: &Server, token: &str) -> Result<(), ServerBootstrapperError> {
-        for _ in 0..3 {
-            if server.is_up(token.to_string()) {
-                return Ok(());
-            }
-            std::thread::sleep(std::time::Duration::from_secs(1));
-        }
-        Err(ServerBootstrapperError::FailToBootstrap)
-    }
-
-    pub fn start_async(&self) -> Result<Server, ServerBootstrapperError> {
+    pub fn start(&self) -> Result<Server, ServerBootstrapperError> {
         let child = Command::new(get_exe())
             .arg("--address")
             .arg(self.settings.address.to_string())
@@ -85,4 +70,6 @@ pub enum ServerBootstrapperError {
     CargoError(#[from] assert_cmd::cargo::CargoError),
     #[error("failed to bootstrap server")]
     FailToBootstrap,
+    #[error("failed to build db")]
+    DbBuilderError(#[from] DbBuilderError),
 }

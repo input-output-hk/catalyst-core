@@ -39,7 +39,23 @@ impl ServerBootstrapper {
         self
     }
 
-    pub fn start(&self) -> Result<Server, ServerBootstrapperError> {
+    pub fn start(&self, token: &str) -> Result<Server, ServerBootstrapperError> {
+        let server = self.start_async()?;
+        self.is_up(&server, token)?;
+        Ok(server)
+    }
+
+    pub fn is_up(&self, server: &Server, token: &str) -> Result<(), ServerBootstrapperError> {
+        for _ in 0..3 {
+            if server.is_up(token.to_string()) {
+                return Ok(());
+            }
+            std::thread::sleep(std::time::Duration::from_secs(1));
+        }
+        Err(ServerBootstrapperError::FailToBootstrap)
+    }
+
+    pub fn start_async(&self) -> Result<Server, ServerBootstrapperError> {
         let child = Command::new(get_exe())
             .arg("--address")
             .arg(self.settings.address.to_string())
@@ -51,7 +67,6 @@ impl ServerBootstrapper {
             .stdout(Stdio::piped())
             .spawn()?;
 
-        std::thread::sleep(std::time::Duration::from_secs(1));
         Ok(Server::new(child, self.settings.clone()))
     }
 }
@@ -68,4 +83,6 @@ pub enum ServerBootstrapperError {
     ProcessSpawnError(#[from] std::io::Error),
     #[error("cannot find binary (0)")]
     CargoError(#[from] assert_cmd::cargo::CargoError),
+    #[error("failed to bootstrap server")]
+    FailToBootstrap,
 }

@@ -17,6 +17,13 @@ impl RestClient {
         }
     }
 
+    pub fn health(&self) -> Result<(), RestError> {
+        if self.get("health")?.status().is_success() {
+            return Ok(());
+        }
+        Err(RestError::ServerIsNotUp)
+    }
+
     pub fn funds(&self) -> Result<Vec<Fund>, RestError> {
         let content = self.get("funds")?.text()?;
         if content.is_empty() {
@@ -75,4 +82,6 @@ pub enum RestError {
     CannotDeserialize(#[from] serde_json::Error),
     #[error("could not send reqeuest")]
     RequestError(#[from] reqwest::Error),
+    #[error("server is not up")]
+    ServerIsNotUp,
 }

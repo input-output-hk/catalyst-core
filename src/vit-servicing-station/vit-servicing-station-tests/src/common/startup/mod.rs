@@ -65,7 +65,7 @@ pub fn quick_start(temp_dir: &TempDir) -> (Server, String) {
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
-        .start()
+        .start(&hash)
         .unwrap();
 
     (server, hash)

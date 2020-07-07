@@ -5,9 +5,9 @@ use crate::common::{
         server::{dump_settings, BootstrapCommandBuilder, ServerSettingsBuilder},
     },
 };
-use assert_cmd::assert::OutputAssertExt;
+use assert_cmd::assert::{Assert, OutputAssertExt};
 use assert_fs::TempDir;
-use predicates::prelude::*;
+use predicates::{prelude::*, str::ContainsPredicate};
 use std::{
     fs::{self, File},
     io::Read,
@@ -18,11 +18,19 @@ use std::{
 #[test]
 pub fn no_in_settings_provided() {
     let command_builder: BootstrapCommandBuilder = Default::default();
-    command_builder
-        .build()
-        .assert()
-        .failure()
-        .stdout(predicate::str::contains("Unable to open the database file"));
+    let assert = command_builder.build().assert().failure();
+
+    let predicate = predicate::str::contains("Error connecting to database");
+    assert_stdout_or_stderr(assert, predicate);
+}
+
+fn assert_stdout_or_stderr(assert: Assert, predicate: ContainsPredicate) {
+    let output = assert.get_output();
+    if output.stdout.len() > 0 {
+        assert.stdout(predicate);
+    } else {
+        assert.stderr(predicate);
+    }
 }
 
 #[test]
@@ -36,9 +44,7 @@ pub fn in_settings_file_does_not_exist() {
         .build()
         .assert()
         .failure()
-        .stderr(predicate::str::contains(
-            "Error reading file settings.json: The system cannot find the file specified",
-        ));
+        .stderr(predicate::str::contains("Error reading file"));
 }
 
 #[test]
@@ -56,12 +62,14 @@ pub fn in_settings_file_malformed() {
     remove_first_char_in_file(&settings_file);
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();
-    command_builder
+    let assert = command_builder
         .in_settings_file(&settings_file)
         .build()
         .assert()
-        .failure()
-        .stdout(predicate::str::contains("Error loading settings from file"));
+        .failure();
+
+    let predicate = predicate::str::contains("Error loading settings from file");
+    assert_stdout_or_stderr(assert, predicate);
 }
 
 pub fn remove_first_char_in_file(settings_file: &PathBuf) {
@@ -84,5 +92,5 @@ pub fn in_settings_file_with_malformed_path() {
         .build()
         .assert()
         .failure()
-        .stderr(predicate::str::contains("label syntax is incorrect"));
+        .stderr(predicate::str::contains("Error reading file"));
 }

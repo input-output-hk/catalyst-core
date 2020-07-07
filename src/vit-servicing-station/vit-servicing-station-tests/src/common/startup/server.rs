@@ -52,6 +52,8 @@ impl ServerBootstrapper {
             .stdout(Stdio::piped())
             .spawn()?;
 
+        std::thread::sleep(std::time::Duration::from_secs(1));
+
         Ok(Server::new(child, self.settings.clone()))
     }
 }

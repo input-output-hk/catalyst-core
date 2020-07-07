@@ -68,7 +68,7 @@ pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, String), ServerBootstr
         .start()?;
 
     if !server.is_up(&hash) {
-        panic!("server is not up");
+        return Err(ServerBootstrapperError::FailToBootstrap);
     }
 
     Ok((server, hash))

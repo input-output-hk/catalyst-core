@@ -98,6 +98,13 @@ impl DbBuilder {
         Ok(())
     }
 
+    fn try_insert_funds(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+        if let Some(funds) = &self.funds {
+            DbInserter::new(connection).insert_funds(funds)?;
+        }
+        Ok(())
+    }
+
     fn try_insert_proposals(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
         if let Some(proposals) = &self.proposals {
             DbInserter::new(connection).insert_proposals(proposals)?;
@@ -127,6 +134,7 @@ impl DbBuilder {
         self.try_insert_token(&connection)?;
         self.try_insert_funds(&connection)?;
         self.try_insert_proposals(&connection)?;
+        self.try_insert_funds(&connection)?;
         Ok(PathBuf::from(db.path()))
     }
 }

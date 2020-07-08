@@ -9,7 +9,7 @@ pub use self::{
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
     recovering::{RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
-    store::{UtxoGroup, UtxoStore},
+    store::{Multiverse, UtxoGroup, UtxoStore},
 };
 use chain_impl_mockchain::{
     transaction::Input, transaction::UnspecifiedAccountIdentifier, value::Value,

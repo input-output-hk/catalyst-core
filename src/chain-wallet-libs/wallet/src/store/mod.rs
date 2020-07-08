@@ -1,3 +1,7 @@
+mod multiverse;
 mod utxo;
 
-pub use self::utxo::{UtxoGroup, UtxoStore};
+pub use self::{
+    multiverse::Multiverse,
+    utxo::{UtxoGroup, UtxoStore},
+};

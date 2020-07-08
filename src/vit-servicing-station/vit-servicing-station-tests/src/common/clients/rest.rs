@@ -1,3 +1,4 @@
+use reqwest::blocking::Response;
 use hyper::StatusCode;
 use thiserror::Error;
 use vit_servicing_station_lib::{
@@ -43,6 +44,7 @@ impl RestClientLogger {
 
 #[derive(Debug, Clone)]
 pub struct RestClient {
+    path_builder: RestPathBuilder,
     address: String,
     api_token: Option<String>,
     logger: RestClientLogger,
@@ -53,8 +55,13 @@ impl RestClient {
         Self {
             address,
             api_token: None,
+            path_builder: Default::default(),
             logger: RestClientLogger { enabled: true },
         }
+    }
+
+    pub fn genesis(&self) -> Result<Vec<u8>, RestError> {
+        Ok(self.get(&self.path_builder.genesis())?.bytes()?.to_vec())
     }
 
     pub fn health(&self) -> Result<(), RestError> {
@@ -75,6 +82,10 @@ impl RestClient {
         })
     }
 
+    pub fn path_builder(&self) -> &RestPathBuilder {
+        &self.path_builder
+    }
+
     pub fn proposals(&self) -> Result<Vec<Proposal>, RestError> {
         let content = self.get_and_verify_status_code("proposals")?.text()?;
         self.logger.log_text(&content);
@@ -87,7 +98,29 @@ impl RestClient {
         })
     }
 
-    fn get(&self, path: &str) -> Result<reqwest::blocking::Response, reqwest::Error> {
+    pub fn proposal(&self, id: &str) -> Result<Proposal, RestError> {
+        let content = self.proposal_raw(id)?.text()?;
+        println!("Body: {}", content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
+    pub fn proposal_raw(&self, id: &str) -> Result<Response, RestError> {
+        self.get(&self.path_builder().proposal(id))
+            .map_err(RestError::RequestError)
+    }
+
+    pub fn fund(&self, id: &str) -> Result<Fund, RestError> {
+        let content = self.fund_raw(id)?.text()?;
+        println!("Body: {}", content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
+    pub fn fund_raw(&self, id: &str) -> Result<Response, RestError> {
+        self.get(&self.path_builder().fund(id))
+            .map_err(RestError::RequestError)
+    }
+
+    pub fn get(&self, path: &str) -> Result<reqwest::blocking::Response, reqwest::Error> {
         let request = self.path(path);
         let client = reqwest::blocking::Client::new();
         let mut res = client.get(&request);
@@ -115,7 +148,7 @@ impl RestClient {
     }
 
     fn path(&self, path: &str) -> String {
-        let path = format!("http://{}/api/v0/{}", self.address, path);
+        let path = format!("http://{}{}", self.address, path);
         self.logger.log_request(&path);
         path
     }
@@ -135,6 +168,48 @@ impl RestClient {
         self.logger.log_response(&response);
         let result = response.text();
         Ok(serde_json::from_str(&result?)?)
+    }
+}
+
+pub struct RestPathBuilder {
+    root: String,
+}
+
+impl Default for RestPathBuilder {
+    fn default() -> Self {
+        RestPathBuilder {
+            root: "/api/v0/".to_string(),
+        }
+    }
+}
+
+impl RestPathBuilder {
+    pub fn proposals(&self) -> String {
+        self.path("proposals")
+    }
+
+    pub fn funds(&self) -> String {
+        self.path("fund")
+    }
+
+    pub fn proposal(&self, id: &str) -> String {
+        self.path(&format!("proposals/{}", id))
+    }
+
+    pub fn fund(&self, id: &str) -> String {
+        self.path(&format!("fund/{}", id))
+    }
+
+    pub fn genesis(&self) -> String {
+        self.path("block0")
+    }
+
+    pub fn graphql(&self) -> String {
+        self.path("graphql")
+    }
+
+    fn path(&self, path: &str) -> String {
+        format!("{}{}", self.root, path)
     }
 }
 

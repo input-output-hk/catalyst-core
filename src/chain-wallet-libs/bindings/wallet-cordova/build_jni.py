@@ -12,7 +12,7 @@ script_directory = Path(__file__).parent
 root_directory = script_directory.parent.parent / "target"
 
 targets = {
-    "aarch64-linux-android": "amd64-v8a",
+    "aarch64-linux-android": "arm64-v8a",
     "armv7-linux-androideabi": "armeabi-v7a",
     "i686-linux-android": "x86",
     "x86_64-linux-android": "x86_64",

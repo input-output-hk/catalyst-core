@@ -29,7 +29,7 @@
 
         <source-file src="src/android/libs/x86/libwallet_jni.so" target-dir="libs/x86" />
         <source-file src="src/android/libs/x86_64/libwallet_jni.so" target-dir="libs/x86_64" />
-        <source-file src="src/android/libs/amd64-v8a/libwallet_jni.so" target-dir="libs/amd64-v8a" />
+        <source-file src="src/android/libs/arm64-v8a/libwallet_jni.so" target-dir="libs/arm64-v8a" />
         <source-file src="src/android/libs/armeabi-v7a/libwallet_jni.so" target-dir="libs/armeabi-v7a" />
     </platform>
 

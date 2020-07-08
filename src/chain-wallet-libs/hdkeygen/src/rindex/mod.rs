@@ -52,6 +52,22 @@ impl Wallet {
 }
 
 impl AddressRecovering {
+    pub fn from_root_key(root_key: Key<XPrv, Rindex<rindex::Root>>) -> Self {
+        let payload_key = HDKey::new(root_key.public().public_key());
+
+        AddressRecovering {
+            root_key,
+            payload_key,
+        }
+    }
+
+    pub fn key(
+        &self,
+        derivation_path: &DerivationPath<Rindex<rindex::Address>>,
+    ) -> Key<XPrv, Rindex<rindex::Address>> {
+        self.root_key.derive_path_unchecked(derivation_path)
+    }
+
     /// check a legacy address is part of this wallet and returns the associated
     /// derived path.
     ///

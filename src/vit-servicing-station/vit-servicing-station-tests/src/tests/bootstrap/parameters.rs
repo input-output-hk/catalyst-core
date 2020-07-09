@@ -24,6 +24,7 @@ pub fn no_in_settings_provided() {
         .failure()
         .code(ApplicationExitCode::DBConnectionError as i32);
 }
+
 #[test]
 pub fn in_settings_file_does_not_exist() {
     let mut command_builder: BootstrapCommandBuilder = Default::default();

@@ -20,3 +20,9 @@ impl ApplicationExitCode {
         }
     }
 }
+
+impl Into<i32> for ApplicationExitCode {
+    fn into(self) -> i32 {
+        self as i32
+    }
+}

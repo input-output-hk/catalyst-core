@@ -5,6 +5,7 @@ use std::process::Stdio;
 use thiserror::Error;
 use vit_servicing_station_lib::server::settings::ServiceSettings;
 
+use super::db::DbBuilderError;
 use crate::common::{paths::BLOCK0_BIN, server::Server, startup::get_available_port};
 
 pub struct ServerBootstrapper {
@@ -52,6 +53,7 @@ impl ServerBootstrapper {
             .spawn()?;
 
         std::thread::sleep(std::time::Duration::from_secs(1));
+
         Ok(Server::new(child, self.settings.clone()))
     }
 }
@@ -68,4 +70,8 @@ pub enum ServerBootstrapperError {
     ProcessSpawnError(#[from] std::io::Error),
     #[error("cannot find binary (0)")]
     CargoError(#[from] assert_cmd::cargo::CargoError),
+    #[error("failed to bootstrap server")]
+    FailToBootstrap,
+    #[error("failed to build db")]
+    DbBuilderError(#[from] DbBuilderError),
 }

@@ -2,7 +2,7 @@ use std::process::Stdio;
 use thiserror::Error;
 
 use super::{BootstrapCommandBuilder, ServerSettingsBuilder};
-use crate::common::{paths::BLOCK0_BIN, server::Server};
+use crate::common::{paths::BLOCK0_BIN, server::Server, startup::db::DbBuilderError};
 
 pub struct ServerBootstrapper {
     settings_builder: ServerSettingsBuilder,
@@ -63,4 +63,8 @@ pub enum ServerBootstrapperError {
     ProcessSpawnError(#[from] std::io::Error),
     #[error("cannot find binary (0)")]
     CargoError(#[from] assert_cmd::cargo::CargoError),
+    #[error("failed to bootstrap")]
+    FailToBootstrap,
+    #[error("database builder error")]
+    DbBuilderError(#[from] DbBuilderError),
 }

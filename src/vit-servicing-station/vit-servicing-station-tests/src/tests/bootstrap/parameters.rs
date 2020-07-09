@@ -5,9 +5,8 @@ use crate::common::{
         server::{dump_settings, BootstrapCommandBuilder, ServerSettingsBuilder},
     },
 };
-use assert_cmd::assert::{Assert, OutputAssertExt};
+use assert_cmd::assert::OutputAssertExt;
 use assert_fs::TempDir;
-use predicates::{prelude::*, str::ContainsPredicate};
 use std::{
     fs::{self, File},
     io::Read,

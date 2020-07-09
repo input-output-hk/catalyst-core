@@ -2554,6 +2554,7 @@ dependencies = [
  "diesel_migrations",
  "lazy_static",
  "libsqlite3-sys",
+ "predicates",
  "rand 0.7.3",
  "reqwest",
  "rusqlite",

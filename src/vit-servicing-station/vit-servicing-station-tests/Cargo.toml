@@ -25,6 +25,7 @@ askama_shared = "0.8"
 vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
 lazy_static = "1.4"
 rand = "0.7"
+predicates = { version = "1.0", default-features = false, features = ["difference"] }
 
 #diesel doesn't have an way to create empty db
 #rustqlite is used for that purpose

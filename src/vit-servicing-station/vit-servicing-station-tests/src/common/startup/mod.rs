@@ -73,3 +73,7 @@ pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, String), ServerBootstr
 
     Ok((server, hash))
 }
+
+pub fn empty_db(temp_dir: &TempDir) -> PathBuf {
+    DbBuilder::new().build(&temp_dir).unwrap()
+}

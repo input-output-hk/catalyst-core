@@ -13,11 +13,16 @@ use std::{
     path::PathBuf,
     str::FromStr,
 };
+use vit_servicing_station_lib::server::exit_codes::ApplicationExitCode;
 
 #[test]
 pub fn no_in_settings_provided() {
     let command_builder: BootstrapCommandBuilder = Default::default();
-    command_builder.build().assert().failure();
+    command_builder
+        .build()
+        .assert()
+        .failure()
+        .code(ApplicationExitCode::DBConnectionError as i32);
 }
 #[test]
 pub fn in_settings_file_does_not_exist() {
@@ -29,7 +34,8 @@ pub fn in_settings_file_does_not_exist() {
         .in_settings_file(&non_existing_file)
         .build()
         .assert()
-        .failure();
+        .failure()
+        .code(ApplicationExitCode::LoadSettingsError as i32);
 }
 
 #[test]
@@ -51,7 +57,8 @@ pub fn in_settings_file_malformed() {
         .in_settings_file(&settings_file)
         .build()
         .assert()
-        .failure();
+        .failure()
+        .code(ApplicationExitCode::LoadSettingsError as i32);
 }
 
 pub fn remove_first_char_in_file(settings_file: &PathBuf) {
@@ -73,5 +80,6 @@ pub fn in_settings_file_with_malformed_path() {
         .in_settings_file(&non_existing_file)
         .build()
         .assert()
-        .failure();
+        .failure()
+        .code(ApplicationExitCode::LoadSettingsError as i32);
 }

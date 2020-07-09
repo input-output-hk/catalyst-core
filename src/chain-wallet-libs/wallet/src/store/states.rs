@@ -86,12 +86,12 @@ where
     }
 
     /// get the underlying State associated to the given key
-    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&S>
+    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<(&S, Status)>
     where
         KeyRef<K>: Borrow<Q>,
         Q: Hash + Eq,
     {
-        self.map.get(key).map(|s| &s.state)
+        self.map.get(key).map(|s| (&s.state, s.status))
     }
 
     /// push a new **unconfirmed** state in the States

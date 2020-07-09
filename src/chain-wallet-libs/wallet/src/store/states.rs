@@ -5,10 +5,16 @@ use std::{
     iter::FusedIterator,
 };
 
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+pub enum Status {
+    Confirmed,
+    Pending,
+}
+
 struct State<K, S> {
     key: K,
     state: S,
-    confirmed: bool,
+    status: Status,
     prev: *mut State<K, S>,
     next: *mut State<K, S>,
 }
@@ -23,7 +29,7 @@ pub struct StateIter<'a, K, S> {
     _anchor: std::marker::PhantomData<&'a (K, S)>,
 }
 
-pub struct Multiverse<K, S> {
+pub struct States<K, S> {
     map: HashMap<KeyRef<K>, Box<State<K, S>>>,
 
     head: *mut State<K, S>,
@@ -31,34 +37,34 @@ pub struct Multiverse<K, S> {
 }
 
 impl<K, S> State<K, S> {
-    fn new(key: K, state: S, confirmed: bool) -> Self {
+    fn new(key: K, state: S, status: Status) -> Self {
         Self {
             key,
             state,
-            confirmed,
+            status,
             prev: std::ptr::null_mut(),
             next: std::ptr::null_mut(),
         }
     }
 
     fn confirmed(&self) -> bool {
-        self.confirmed
+        self.status == Status::Confirmed
     }
 
     fn confirm(&mut self) {
-        self.confirmed = true
+        self.status = Status::Confirmed
     }
 }
 
-impl<K, S> Multiverse<K, S>
+impl<K, S> States<K, S>
 where
     K: Hash + Eq,
 {
-    /// create a new Multiverse with the given initial state
+    /// create a new States with the given initial state
     ///
     /// by default this state is always assumed confirmed
     pub fn new(key: K, state: S) -> Self {
-        let mut state = Box::new(State::new(key, state, true));
+        let mut state = Box::new(State::new(key, state, Status::Confirmed));
         let key_ref = KeyRef(&state.key);
         let head: *mut State<K, S> = &mut *state;
         let tail: *mut State<K, S> = &mut *state;
@@ -70,7 +76,7 @@ where
     }
 
     /// check wether the given state associate to this key is present
-    /// in the Multiverse
+    /// in the States
     pub fn contains<Q: ?Sized>(&self, key: &Q) -> bool
     where
         KeyRef<K>: Borrow<Q>,
@@ -88,9 +94,9 @@ where
         self.map.get(key).map(|s| &s.state)
     }
 
-    /// push a new **unconfirmed** state in the Multiverse
+    /// push a new **unconfirmed** state in the States
     pub fn push(&mut self, key: K, state: S) {
-        let mut state = Box::new(State::new(key, state, false));
+        let mut state = Box::new(State::new(key, state, Status::Pending));
         let key_ref = KeyRef(&state.key);
 
         state.prev = self.tail;
@@ -132,8 +138,8 @@ where
     }
 }
 
-impl<K, S> Multiverse<K, S> {
-    /// get the number of states in the Multiverse
+impl<K, S> States<K, S> {
+    /// get the number of states in the States
     pub fn len(&self) -> usize {
         self.map.len()
     }
@@ -167,17 +173,13 @@ impl<K, S> Multiverse<K, S> {
         }
     }
 
-    /// get the most recent un confirmed state
-    pub fn last_unconfirmed_state(&self) -> Option<(&K, &S)> {
-        if let Some(state) = unsafe { self.tail.as_ref() } {
-            if state.confirmed() && self.tail == self.head {
-                None
-            } else {
-                Some((&state.key, &state.state))
-            }
-        } else {
-            unsafe { std::hint::unreachable_unchecked() }
-        }
+    /// get the last state of the store
+    pub fn last_state(&self) -> (&K, &S, Status) {
+        let key = unsafe { &(*self.tail).key as &K };
+        let state = unsafe { &(*self.tail).state as &S };
+        let status = unsafe { (*self.tail).status };
+
+        (key, state, status)
     }
 }
 
@@ -202,8 +204,8 @@ impl<K> Borrow<K> for KeyRef<K> {
     }
 }
 
-impl<'a, K, S> IntoIterator for &'a Multiverse<K, S> {
-    type Item = (&'a K, &'a S);
+impl<'a, K, S> IntoIterator for &'a States<K, S> {
+    type Item = (&'a K, &'a S, Status);
     type IntoIter = StateIter<'a, K, S>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -212,7 +214,7 @@ impl<'a, K, S> IntoIterator for &'a Multiverse<K, S> {
 }
 
 impl<'a, K, S> Iterator for StateIter<'a, K, S> {
-    type Item = (&'a K, &'a S);
+    type Item = (&'a K, &'a S, Status);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.len == 0 {
@@ -221,11 +223,12 @@ impl<'a, K, S> Iterator for StateIter<'a, K, S> {
 
         let key = unsafe { &(*self.forward).key as &K };
         let state = unsafe { &(*self.forward).state as &S };
+        let status = unsafe { (*self.forward).status };
 
         self.len -= 1;
         self.forward = unsafe { (*self.forward).next };
 
-        Some((key, state))
+        Some((key, state, status))
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
@@ -245,11 +248,12 @@ impl<'a, K, S> DoubleEndedIterator for StateIter<'a, K, S> {
 
         let key = unsafe { &(*self.backward).key as &K };
         let state = unsafe { &(*self.backward).state as &S };
+        let status = unsafe { (*self.backward).status };
 
         self.len -= 1;
         self.backward = unsafe { (*self.backward).prev };
 
-        Some((key, state))
+        Some((key, state, status))
     }
 }
 
@@ -262,7 +266,7 @@ mod tests {
 
     #[test]
     fn forward_iterator() {
-        let mut multiverse = Multiverse::new(0u8, ());
+        let mut multiverse = States::new(0u8, ());
         multiverse.push(1, ());
         multiverse.push(2, ());
         multiverse.push(3, ());
@@ -274,12 +278,12 @@ mod tests {
 
         let mut iter = multiverse.iter();
 
-        assert_eq!(Some((&0, &())), iter.next());
-        assert_eq!(Some((&1, &())), iter.next());
-        assert_eq!(Some((&2, &())), iter.next());
-        assert_eq!(Some((&3, &())), iter.next());
-        assert_eq!(Some((&4, &())), iter.next());
-        assert_eq!(Some((&5, &())), iter.next());
+        assert_eq!(Some((&0, &(), Status::Confirmed)), iter.next());
+        assert_eq!(Some((&1, &(), Status::Pending)), iter.next());
+        assert_eq!(Some((&2, &(), Status::Pending)), iter.next());
+        assert_eq!(Some((&3, &(), Status::Pending)), iter.next());
+        assert_eq!(Some((&4, &(), Status::Pending)), iter.next());
+        assert_eq!(Some((&5, &(), Status::Pending)), iter.next());
         assert_eq!(None, iter.next());
         assert_eq!(None, iter.next());
         assert_eq!(None, iter.next_back());
@@ -288,7 +292,7 @@ mod tests {
 
     #[test]
     fn backward_iterator() {
-        let mut multiverse = Multiverse::new(0u8, ());
+        let mut multiverse = States::new(0u8, ());
         multiverse.push(1, ());
         multiverse.push(2, ());
         multiverse.push(3, ());
@@ -300,12 +304,12 @@ mod tests {
 
         let mut iter = multiverse.iter();
 
-        assert_eq!(Some((&5, &())), iter.next_back());
-        assert_eq!(Some((&4, &())), iter.next_back());
-        assert_eq!(Some((&3, &())), iter.next_back());
-        assert_eq!(Some((&2, &())), iter.next_back());
-        assert_eq!(Some((&1, &())), iter.next_back());
-        assert_eq!(Some((&0, &())), iter.next_back());
+        assert_eq!(Some((&5, &(), Status::Pending)), iter.next_back());
+        assert_eq!(Some((&4, &(), Status::Pending)), iter.next_back());
+        assert_eq!(Some((&3, &(), Status::Pending)), iter.next_back());
+        assert_eq!(Some((&2, &(), Status::Pending)), iter.next_back());
+        assert_eq!(Some((&1, &(), Status::Pending)), iter.next_back());
+        assert_eq!(Some((&0, &(), Status::Confirmed)), iter.next_back());
         assert_eq!(None, iter.next_back());
         assert_eq!(None, iter.next_back());
         assert_eq!(None, iter.next());
@@ -314,7 +318,7 @@ mod tests {
 
     #[test]
     fn double_ended_iterator() {
-        let mut multiverse = Multiverse::new(0u8, ());
+        let mut multiverse = States::new(0u8, ());
         multiverse.push(1, ());
         multiverse.push(2, ());
         multiverse.push(3, ());
@@ -326,12 +330,12 @@ mod tests {
 
         let mut iter = multiverse.iter();
 
-        assert_eq!(Some((&0, &())), iter.next());
-        assert_eq!(Some((&5, &())), iter.next_back());
-        assert_eq!(Some((&4, &())), iter.next_back());
-        assert_eq!(Some((&1, &())), iter.next());
-        assert_eq!(Some((&2, &())), iter.next());
-        assert_eq!(Some((&3, &())), iter.next());
+        assert_eq!(Some((&0, &(), Status::Confirmed)), iter.next());
+        assert_eq!(Some((&5, &(), Status::Pending)), iter.next_back());
+        assert_eq!(Some((&4, &(), Status::Pending)), iter.next_back());
+        assert_eq!(Some((&1, &(), Status::Pending)), iter.next());
+        assert_eq!(Some((&2, &(), Status::Pending)), iter.next());
+        assert_eq!(Some((&3, &(), Status::Pending)), iter.next());
         assert_eq!(None, iter.next());
         assert_eq!(None, iter.next());
         assert_eq!(None, iter.next_back());
@@ -342,31 +346,31 @@ mod tests {
 
     #[test]
     fn confirmed_state() {
-        let mut multiverse = Multiverse::new(0u8, ());
+        let mut multiverse = States::new(0u8, ());
         assert_eq!((&0, &()), multiverse.confirmed_state());
-        assert_eq!(None, multiverse.last_unconfirmed_state());
+        assert_eq!((&0, &(), Status::Confirmed), multiverse.last_state());
 
         multiverse.push(1, ());
         assert_eq!((&0, &()), multiverse.confirmed_state());
-        assert_eq!(Some((&1, &())), multiverse.last_unconfirmed_state());
+        assert_eq!((&1, &(), Status::Pending), multiverse.last_state());
 
         multiverse.push(2, ());
         multiverse.push(3, ());
         multiverse.push(4, ());
         assert_eq!((&0, &()), multiverse.confirmed_state());
-        assert_eq!(Some((&4, &())), multiverse.last_unconfirmed_state());
+        assert_eq!((&4, &(), Status::Pending), multiverse.last_state());
 
         multiverse.confirm(&1);
         assert_eq!((&1, &()), multiverse.confirmed_state());
-        assert_eq!(Some((&4, &())), multiverse.last_unconfirmed_state());
+        assert_eq!((&4, &(), Status::Pending), multiverse.last_state());
 
         multiverse.confirm(&4);
         assert_eq!((&1, &()), multiverse.confirmed_state());
-        assert_eq!(Some((&4, &())), multiverse.last_unconfirmed_state());
+        assert_eq!((&4, &(), Status::Pending), multiverse.last_state());
 
         multiverse.confirm(&3);
         multiverse.confirm(&2);
         assert_eq!((&4, &()), multiverse.confirmed_state());
-        assert_eq!(None, multiverse.last_unconfirmed_state());
+        assert_eq!((&4, &(), Status::Confirmed), multiverse.last_state());
     }
 }

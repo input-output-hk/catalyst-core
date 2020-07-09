@@ -2,6 +2,7 @@ mod blockchain;
 mod keygen;
 mod password;
 mod recovering;
+pub mod scheme;
 mod store;
 pub mod transaction;
 
@@ -9,7 +10,7 @@ pub use self::{
     blockchain::Settings,
     password::{Password, ScrubbedBytes},
     recovering::{RecoveringDaedalus, RecoveringIcarus, RecoveryBuilder, RecoveryError},
-    store::{Multiverse, UtxoGroup, UtxoStore},
+    store::{StateIter, States, Status, UtxoGroup, UtxoStore},
 };
 use chain_impl_mockchain::{
     transaction::Input, transaction::UnspecifiedAccountIdentifier, value::Value,

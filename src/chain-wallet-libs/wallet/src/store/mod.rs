@@ -1,7 +1,7 @@
-mod multiverse;
+mod states;
 mod utxo;
 
 pub use self::{
-    multiverse::Multiverse,
+    states::{StateIter, States, Status},
     utxo::{UtxoGroup, UtxoStore},
 };

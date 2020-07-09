@@ -175,19 +175,19 @@ impl Default for AllowedOrigins {
     }
 }
 
-pub fn load_settings_from_file(file_path: &str) -> Result<ServiceSettings, serde_json::Error> {
-    let f = fs::File::open(file_path)
-        .unwrap_or_else(|e| panic!("Error reading file {}: {}", file_path, e));
+pub fn load_settings_from_file(file_path: &str) -> Result<ServiceSettings, impl std::error::Error> {
+    let f = fs::File::open(file_path)?;
     serde_json::from_reader(&f)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidInput, e.to_string()))
 }
 
 pub fn dump_settings_to_file(
     file_path: &str,
     settings: &ServiceSettings,
-) -> Result<(), serde_json::Error> {
-    let f = fs::File::create(file_path)
-        .unwrap_or_else(|e| panic!("Error opening file {}: {}", file_path, e));
+) -> Result<(), impl std::error::Error> {
+    let f = fs::File::create(file_path)?;
     serde_json::to_writer_pretty(&f, settings)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))
 }
 
 #[cfg(test)]

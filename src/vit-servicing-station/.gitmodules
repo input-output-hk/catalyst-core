@@ -1,0 +1,3 @@
+[submodule "vit-servicing-station-tests/jortestkit"]
+	path = vit-servicing-station-tests/jortestkit
+	url = C:/Work/iohk/jortestkit/

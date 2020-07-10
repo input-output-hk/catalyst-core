@@ -1,10 +1,13 @@
-use assert_fs::fixture::ChildPath;
+use crate::prelude::file_exists_and_not_empty;
+use assert_fs::{
+    assert::PathAssert,
+    fixture::{ChildPath, PathChild},
+    TempDir,
+};
 use bawawa::{Command, Error, Process, Program, StandardError, StandardOutput};
 use futures::stream::Stream;
-use tokio_codec::LinesCodec;
-
 use std::path::PathBuf;
-
+use tokio_codec::LinesCodec;
 pub struct Openssl {
     program: Program,
 }
@@ -125,4 +128,34 @@ impl Openssl {
 fn path_to_str(path: &ChildPath) -> String {
     let path_buf: PathBuf = path.path().into();
     path_buf.as_os_str().to_owned().into_string().unwrap()
+}
+
+pub fn generate_keys(temp_dir: &TempDir) -> (PathBuf, PathBuf) {
+    let openssl = Openssl::new().expect("no openssla installed.");
+    let prv_key_file = temp_dir.child("prv.key");
+    let pk8_key_file = temp_dir.child("prv.pk8");
+    let csr_cert_file = temp_dir.child("cert.csr");
+    let cert_file = temp_dir.child("cert.crt");
+    let der_file = temp_dir.child("cert.der");
+
+    openssl
+        .genrsa(2048, &prv_key_file)
+        .expect("cannot generate private key.");
+    openssl
+        .pkcs8(&prv_key_file, &pk8_key_file)
+        .expect("cannot wrap private key in PKC8");
+    openssl
+        .req(&prv_key_file, &csr_cert_file)
+        .expect("cannot register a self-signed certificate for private key");
+    openssl
+        .x509(&prv_key_file, &csr_cert_file, &cert_file)
+        .expect("cannot generate a self-signed certificate for private key");
+    openssl
+        .convert_to_der(&cert_file, &der_file)
+        .expect("cannot convert cert file to der file");
+
+    prv_key_file.assert(file_exists_and_not_empty());
+    cert_file.assert(file_exists_and_not_empty());
+
+    (prv_key_file.path().into(), cert_file.path().into())
 }

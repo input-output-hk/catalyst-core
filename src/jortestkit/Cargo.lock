@@ -696,6 +696,7 @@ dependencies = [
  "humantime",
  "lazy_static",
  "os_info",
+ "predicates",
  "rand",
  "rand_chacha",
  "rand_core",

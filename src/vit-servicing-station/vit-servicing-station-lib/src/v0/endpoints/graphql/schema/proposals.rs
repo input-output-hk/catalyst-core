@@ -67,8 +67,8 @@ impl Proposal {
         &self.proposal_public_key
     }
 
-    pub async fn proposal_funds(&self) -> i64 {
-        self.proposal_funds
+    pub async fn proposal_funds(&self) -> OutputJson<i64> {
+        OutputJson(self.proposal_funds)
     }
 
     pub async fn proposal_url(&self) -> &str {
@@ -91,8 +91,8 @@ impl Proposal {
         &self.chain_voteplan_id
     }
 
-    pub async fn chain_proposal_index(&self) -> i64 {
-        self.chain_proposal_index
+    pub async fn chain_proposal_index(&self) -> OutputJson<i64> {
+        OutputJson(self.chain_proposal_index)
     }
 
     pub async fn chain_voteplan_payload(&self) -> &str {

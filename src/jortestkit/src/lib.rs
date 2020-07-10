@@ -2,6 +2,7 @@ pub mod archive;
 pub mod github;
 pub mod measurement;
 pub mod openssl;
+pub mod predicates;
 pub mod process;
 pub mod web;
 
@@ -15,6 +16,7 @@ pub mod prelude {
         EnduranceBenchmarkFinish, EnduranceBenchmarkRun, NamedProcess, ResourcesUsage, Speed,
         SpeedBenchmarkDef, SpeedBenchmarkFinish, SpeedBenchmarkRun, Thresholds, Timestamp,
     };
-    pub use crate::openssl::Openssl;
+    pub use crate::openssl::{generate_keys, Openssl};
+    pub use crate::predicates::*;
     pub use crate::web::download_file;
 }

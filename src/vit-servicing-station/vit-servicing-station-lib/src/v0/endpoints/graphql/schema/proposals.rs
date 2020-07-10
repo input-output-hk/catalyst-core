@@ -1,6 +1,8 @@
 use crate::db::models::proposals::{Category, Proposal, Proposer};
 use crate::db::models::vote_options::VoteOptions;
 use crate::utils::datetime::unix_timestamp_to_datetime;
+use async_graphql::OutputJson;
+
 #[async_graphql::Object]
 impl Category {
     pub async fn category_id(&self) -> &str {
@@ -109,8 +111,8 @@ impl Proposal {
         unix_timestamp_to_datetime(self.chain_committee_end_time).to_rfc3339()
     }
 
-    pub async fn chain_vote_options(&self) -> VoteOptions {
-        self.chain_vote_options.clone()
+    pub async fn chain_vote_options(&self) -> OutputJson<&VoteOptions> {
+        OutputJson(&self.chain_vote_options)
     }
 
     pub async fn fund_id(&self) -> i32 {

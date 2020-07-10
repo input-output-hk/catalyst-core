@@ -2,8 +2,10 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+pub type VoteOptionsMap = HashMap<String, u8>;
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
-pub struct VoteOptions(pub HashMap<String, u8>);
+pub struct VoteOptions(pub VoteOptionsMap);
 
 impl VoteOptions {
     pub fn parse_coma_separated_value(csv: &str) -> VoteOptions {

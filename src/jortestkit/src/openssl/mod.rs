@@ -29,7 +29,8 @@ impl Openssl {
             .wait();
         println!("{}", cmd);
 
-        let lines: Vec<String> = captured.map(|r| r.unwrap_or_else(|_| "".to_owned()))
+        let lines: Vec<String> = captured
+            .map(|r| r.unwrap_or_else(|_| "".to_owned()))
             .collect();
         Ok(lines.join("\n"))
     }

@@ -88,9 +88,7 @@ impl ConsumptionBenchmarkRun {
                 .get_processes()
                 .iter()
                 .find(|(pid, _)| (named_process.id() as u32) == pid.as_u32())
-                .ok_or_else(|| ConsumptionBenchmarkError::NoProcessWitId(
-                    named_process.clone(),
-                ))?;
+                .ok_or_else(|| ConsumptionBenchmarkError::NoProcessWitId(named_process.clone()))?;
 
             let marker = ResourcesUsage::new(
                 process.cpu_usage() as u32,

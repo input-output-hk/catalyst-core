@@ -83,11 +83,14 @@ pub fn run_process_until_exited_successfully(
     let mut attempts = max_attempts;
 
     loop {
-        if command
-            .status()
-            .unwrap_or_else(|_| panic!("failed to get exit status of command: {}", &command_description))
-            .success()
-        {
+        let status = command.status().unwrap_or_else(|_| {
+            panic!(
+                "failed to get exit status of command: {}",
+                &command_description
+            )
+        });
+
+        if status.success() {
             break;
         }
 

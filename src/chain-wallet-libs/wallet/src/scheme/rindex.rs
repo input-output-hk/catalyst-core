@@ -25,6 +25,11 @@ impl Wallet {
         }
     }
 
+    /// get the utxos of this given wallet
+    pub fn utxos(&self) -> &UtxoStore<Rindex<rindex::Address>> {
+        self.state.last_state().1
+    }
+
     /// confirm a pending transaction
     ///
     /// to only do once it is confirmed a transaction is on chain

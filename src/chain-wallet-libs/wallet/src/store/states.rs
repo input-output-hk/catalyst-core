@@ -366,7 +366,7 @@ mod tests {
 
         multiverse.confirm(&4);
         assert_eq!((&1, &()), multiverse.confirmed_state());
-        assert_eq!((&4, &(), Status::Pending), multiverse.last_state());
+        assert_eq!((&4, &(), Status::Confirmed), multiverse.last_state());
 
         multiverse.confirm(&3);
         multiverse.confirm(&2);

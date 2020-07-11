@@ -11,7 +11,6 @@ extern crate quickcheck;
 extern crate quickcheck_macros;
 
 pub mod bip44;
-pub mod chimeric_bip44;
 mod derivation;
 mod derivation_path;
 pub mod rindex;

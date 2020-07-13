@@ -10,3 +10,168 @@ info:
 servers:
   - url: 'http://localhost'
   
+paths:
+  /api/v0/fund:
+    get:
+      summary: Get available fund
+      responses:
+        200:
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fund"
+
+  /api/v0/fund/{id}:
+    get:
+      summary: Get fund by id
+      responses:
+        200:
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fund"
+
+  /api/v0/proposals:
+    get:
+      summary: Get all available proposals
+      responses:
+        200:
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Proposal"
+
+  /api/v0/proposals/{id}:
+    get:
+      summary: Get proposal by id
+      responses:
+        200:
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Proposal"
+
+components:
+  schemas:
+    Fund:
+      properties:
+        id:
+          type: integer
+          format: int32
+        fund_name:
+          type: string
+        fund_goal:
+          type: string
+        voting_power_info:
+          type: string
+        rewards_info:
+          type: string
+        fund_start_time:
+          type: string
+          format: date-time
+        fund_end_time:
+          type: string
+          format: date-time
+        next_fund_start_time:
+          type: string
+          format: date-time
+        chain_vote_plans:
+          type: array
+          items:
+            $ref: '#/components/schemas/VotePlan'
+
+    VotePlan:
+      properties:
+        id:
+          type: integer
+          format: int32
+        chain_voteplan_id:
+          type: string
+          format: hash
+        chain_vote_start_time:
+          type: string
+          format: date-time
+        chain_vote_end_time:
+          type: string
+          format: date-time
+        chain_committee_end:
+          type: string
+          format: date-time
+        chain_voteplan_payload:
+          type: string
+        fund_id:
+          type: integer
+          format: int32
+
+    Proposal:
+      properties:
+        internal_id:
+          type: integer
+          format: int32
+        proposal_id:
+          type: string
+        proposal_category:
+          type: object
+          properties:
+            category_id:
+              type: string
+            category_name:
+              type: string
+            category_description:
+              type: string
+        proposal_title:
+          type: string
+        proposal_summary:
+          type: string
+        proposal_problem:
+          type: string
+        proposal_solution:
+          type: string
+        proposal_public_key:
+          type: string
+          format: binary
+        proposal_funds:
+          type: integer
+          format: int64
+        proposal_url:
+          type: string
+        proposal_files:
+          type: string
+        proposer:
+          type: object
+          properties:
+            proposer_name:
+              type: string
+            proposer_email:
+              type: string
+            proposer_url:
+              type: string
+        chain_proposal_id:
+          type: string
+        chain_proposal_index:
+          type: integer
+          format: int64
+        chain_vote_options:
+          description: Map[VoteOption; Index]
+          type: object
+        chain_voteplan_id:
+          type: string
+        chain_vote_start_time:
+          type: string
+          format: date-time
+        chain_vote_end_time:
+          type: string
+          format: date-time
+        chain_committee_end_time:
+          type: string
+          format: date-time
+        chain_voteplan_payload:
+          type: string
+        fund_id:
+          type: integer
+          format: int32

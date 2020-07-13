@@ -4,6 +4,7 @@ on: [push, pull_request]
 name: Continuous integration
 
 jobs:
+
   check:
     name: Check
     strategy:
@@ -11,7 +12,9 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -34,7 +37,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install libsqlite3-dev
         if: matrix.os == 'ubuntu-latest'
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -53,7 +58,9 @@ jobs:
     name: Rust lints
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal

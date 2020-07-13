@@ -1,7 +1,12 @@
 use crate::common::startup::get_available_port;
 use assert_fs::{fixture::PathChild, TempDir};
-use std::{net::SocketAddr, path::PathBuf};
-use vit_servicing_station_lib::server::settings::{dump_settings_to_file, Cors, ServiceSettings};
+use std::{
+    net::SocketAddr,
+    path::{Path, PathBuf},
+};
+use vit_servicing_station_lib::server::settings::{
+    dump_settings_to_file, load_settings_from_file, Cors, ServiceSettings,
+};
 
 pub struct ServerSettingsBuilder {
     settings: ServiceSettings,
@@ -52,8 +57,14 @@ impl ServerSettingsBuilder {
     }
 }
 
+///todo: add error mapping
 pub fn dump_settings(temp_dir: &TempDir, settings: &ServiceSettings) -> PathBuf {
     let child_path = temp_dir.child("settings.json");
     dump_settings_to_file(child_path.path().to_str().unwrap(), settings).unwrap();
     child_path.path().into()
+}
+
+///todo: add error mapping
+pub fn load_settings<P: AsRef<Path>>(path: P) -> ServiceSettings {
+    load_settings_from_file(path.as_ref().to_str().unwrap()).unwrap()
 }

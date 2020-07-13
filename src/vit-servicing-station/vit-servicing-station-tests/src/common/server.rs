@@ -16,6 +16,10 @@ impl Server {
         RestClient::new(self.settings.address.to_string())
     }
 
+    pub fn settings(&self) -> ServiceSettings {
+        self.settings.clone()
+    }
+
     pub fn rest_client_with_token(&self, token: &str) -> RestClient {
         let mut rest_client = self.rest_client();
         rest_client.set_api_token(token.to_string());

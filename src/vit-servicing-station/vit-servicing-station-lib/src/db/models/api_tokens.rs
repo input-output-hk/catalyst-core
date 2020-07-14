@@ -1,6 +1,6 @@
 use crate::db::{schema::api_tokens, DB};
 use crate::v0::api_token::APIToken;
-use diesel::Queryable;
+use diesel::{ExpressionMethods, Insertable, Queryable};
 
 #[derive(Debug, Clone)]
 pub struct APITokenData {
@@ -25,5 +25,21 @@ impl Queryable<api_tokens::SqlType, DB> for APITokenData {
             creation_time: row.1,
             expire_time: row.2,
         }
+    }
+}
+
+impl Insertable<api_tokens::table> for APITokenData {
+    type Values = (
+        diesel::dsl::Eq<api_tokens::token, Vec<u8>>,
+        diesel::dsl::Eq<api_tokens::creation_time, i64>,
+        diesel::dsl::Eq<api_tokens::expire_time, i64>,
+    );
+
+    fn values(self) -> Self::Values {
+        (
+            api_tokens::token.eq(self.token.as_ref().to_vec()),
+            api_tokens::creation_time.eq(self.creation_time),
+            api_tokens::expire_time.eq(self.expire_time),
+        )
     }
 }

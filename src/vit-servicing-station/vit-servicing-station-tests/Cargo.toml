@@ -46,6 +46,7 @@ libsqlite3-sys =  { version = "0.9.1", features = ["bundled"] }
 
 [features]
 test-api = []
+non-functional = []
 
 
 

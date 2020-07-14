@@ -1,4 +1,4 @@
-use super::request::Response;
+use super::request::{RequestFailure, Response};
 use std::time::Duration;
 
 pub struct Stats {
@@ -39,6 +39,7 @@ impl Stats {
         println!("Load scenario `{}` finished", title);
         println!("I made a total of {:.2} requests, the mean response time was: {:.3} seconds. tps: {:.2}. Test duration: {} s. Passrate: {} %", 
             requests, mean, tps, self.duration.as_secs(),passrate);
+        self.print_errors_if_any();
     }
 
     pub fn calculate_passrate(&self) -> f64 {
@@ -47,6 +48,37 @@ impl Stats {
 
     pub fn total_requests_passed(&self) -> usize {
         self.requests.iter().filter(|r| r.is_ok()).count()
+    }
+
+    pub fn print_errors_if_any(&self) {
+        let errors = self.errors();
+        if errors.is_empty() {
+            return;
+        }
+
+        if errors.len() > 10 {
+            println!("{} errors fund. Printing only 10 :", errors.len());
+            let first_10_errors: Vec<RequestFailure> = errors.iter().cloned().take(10).collect();
+            self.print_errors(first_10_errors);
+            return;
+        }
+        println!("{} errors fund", errors.len());
+        self.print_errors(errors);
+    }
+
+    fn print_errors(&self, errors: Vec<RequestFailure>) {
+        for (id, error) in errors.iter().enumerate() {
+            println!("{}: {}", id + 1, error);
+        }
+    }
+
+    pub fn errors(&self) -> Vec<RequestFailure> {
+        self.requests
+            .iter()
+            .cloned()
+            .filter(|r| r.is_err())
+            .map(|r| r.err().unwrap())
+            .collect()
     }
 
     pub fn tps_status(&self) -> String {

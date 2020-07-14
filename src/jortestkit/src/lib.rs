@@ -1,5 +1,6 @@
 pub mod archive;
 pub mod github;
+pub mod load;
 pub mod measurement;
 pub mod openssl;
 pub mod predicates;
@@ -9,6 +10,7 @@ pub mod web;
 pub mod prelude {
     pub use crate::archive::decompress;
     pub use crate::github::{GitHubApi, GitHubApiError, Release};
+    pub use crate::load;
     pub use crate::measurement::{
         benchmark_consumption, benchmark_efficiency, benchmark_endurance, benchmark_speed,
         ConsumptionBenchmarkError, ConsumptionBenchmarkRun, EfficiencyBenchmarkDef,

@@ -4,7 +4,7 @@ pub type Response = Result<Duration, RequestFailure>;
 
 #[derive(Error, Debug, Clone)]
 pub enum RequestFailure {
-    #[error("failure during request execution {0}")]
+    #[error("General - {0}")]
     General(String),
 }
 

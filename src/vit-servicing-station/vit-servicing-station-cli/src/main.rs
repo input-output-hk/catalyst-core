@@ -1,5 +1,9 @@
 mod app;
 
+use app::*;
+use structopt::StructOpt;
+
 fn main() {
-    println!("Hello, world!");
+    let app = CLIApp::from_args();
+    app.exec();
 }

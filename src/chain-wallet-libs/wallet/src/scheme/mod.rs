@@ -1,3 +1,4 @@
+pub mod bip44;
 pub mod rindex;
 
 use chain_impl_mockchain::{

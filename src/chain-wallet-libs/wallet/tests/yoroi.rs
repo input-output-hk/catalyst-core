@@ -7,7 +7,7 @@ use wallet::{transaction::Dump, RecoveryBuilder};
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 const MNEMONICS: &str =
     "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone";
-const WALLET_VALUE: u64 = 1_000_000 + 10_000 + 10_000 + 1 + 100;
+const WALLET_VALUE: Value = Value(1_000_000 + 10_000 + 10_000 + 1 + 100);
 
 /// test to recover a daedalus style address in the test-vectors block0
 ///
@@ -25,10 +25,11 @@ fn yoroi1() {
     let settings = state.settings().expect("valid initial settings");
     let address = account.account_id().address(settings.discrimination());
 
-    yoroi
-        .check_fragments(state.initial_contents())
-        .expect("couldn't check fragments");
-    assert_eq!(yoroi.value_total().as_ref(), &WALLET_VALUE);
+    assert!(
+        yoroi.check_fragments(state.initial_contents()),
+        "failed to check fragments"
+    );
+    assert_eq!(yoroi.unconfirmed_value(), Some(WALLET_VALUE));
 
     let mut dump = Dump::new(settings, address);
     yoroi.dump_in(&mut dump);

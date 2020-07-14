@@ -2,25 +2,35 @@ use crate::{
     scheme::on_tx_input,
     store::{States, Status, UtxoStore},
 };
+use cardano_legacy_address::{AddressMatchXPub, ExtendedAddr};
 use chain_impl_mockchain::{
     fragment::{Fragment, FragmentId},
     legacy::OldAddress,
     transaction::{InputEnum, UtxoPointer},
     value::Value,
 };
-use chain_path_derivation::rindex::{self, Rindex};
+use chain_path_derivation::{
+    rindex::{self, Rindex},
+    DerivationPath,
+};
 use ed25519_bip32::XPrv;
-use hdkeygen::{rindex::AddressRecovering, Key};
+use hdkeygen::{
+    rindex::{decode_derivation_path, HDKey},
+    Key,
+};
 
 pub struct Wallet {
-    recovering: AddressRecovering,
+    root_key: Key<XPrv, Rindex<rindex::Root>>,
+    payload_key: HDKey,
     state: States<FragmentId, UtxoStore<Rindex<rindex::Address>>>,
 }
 
 impl Wallet {
     pub fn from_root_key(root_key: Key<XPrv, Rindex<rindex::Root>>) -> Self {
+        let payload_key = root_key.hd_key();
         Self {
-            recovering: AddressRecovering::from_root_key(root_key),
+            root_key,
+            payload_key,
             state: States::new(FragmentId::zero_hash(), UtxoStore::new()),
         }
     }
@@ -77,7 +87,25 @@ impl Wallet {
         })
     }
 
+    pub fn check_fragments<'a, I>(&mut self, fragments: I) -> bool
+    where
+        I: Iterator<Item = &'a Fragment>,
+    {
+        let mut at_least_once = false;
+
+        for fragment in fragments {
+            let fragment_id = fragment.hash();
+            at_least_once |= self.check_fragment(&fragment_id, fragment);
+        }
+
+        at_least_once
+    }
+
     pub fn check_fragment(&mut self, fragment_id: &FragmentId, fragment: &Fragment) -> bool {
+        if self.state.contains(fragment_id) {
+            return true;
+        }
+
         let mut at_least_one_match = false;
         let (_, legacy, _) = self.state.last_state();
         let mut store = legacy.clone();
@@ -118,11 +146,46 @@ impl Wallet {
         at_least_one_match
     }
 
-    fn check(&mut self, address: &OldAddress) -> Option<Key<XPrv, Rindex<rindex::Address>>> {
-        if let Some(derivation_path) = self.recovering.check_address(address) {
-            Some(self.recovering.key(&derivation_path))
+    pub fn check_address(&self, address: &OldAddress) -> bool {
+        self.check(address).is_some()
+    }
+
+    pub(crate) fn check(&self, address: &OldAddress) -> Option<Key<XPrv, Rindex<rindex::Address>>> {
+        let extended = address.deconstruct();
+        let dp = self.derivation_path(&extended)?;
+
+        let key_xprv = self.root_key.key(&dp);
+        let key_xpub = key_xprv.public();
+
+        if address.identical_with_xpub(key_xpub.public_key()) == AddressMatchXPub::Yes {
+            Some(key_xprv)
         } else {
             None
         }
+    }
+
+    /// retrieve the derivation path from the extended address if possible
+    ///
+    /// if there is no derivation path, maybe this is a bip44 address
+    /// if it is not possible to decrypt the payload it is not associated
+    /// to this wallet
+    fn derivation_path(
+        &self,
+        address: &ExtendedAddr,
+    ) -> Option<DerivationPath<Rindex<rindex::Address>>> {
+        let payload = address.attributes.derivation_path.as_deref()?;
+        self.decode_payload(payload)
+    }
+
+    /// decode the payload expecting to retrieve the derivation path
+    /// encrypted and encoded in cbor
+    fn decode_payload(&self, payload: &[u8]) -> Option<DerivationPath<Rindex<rindex::Address>>> {
+        let payload = self.payload_key.decrypt(payload).ok()?;
+
+        decode_derivation_path(&payload)
+            // assume derivation path will be RIndex. Even if this is not the case
+            // and the decoded address is actually longer or shorter. Here we make
+            // ourselves lenient to error
+            .map(|dp| dp.coerce_unchecked())
     }
 }

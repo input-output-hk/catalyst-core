@@ -53,6 +53,10 @@ impl<K> UtxoGroup<K> {
         }
     }
 
+    pub fn key(&self) -> &Rc<Key<XPrv, K>> {
+        &self.key
+    }
+
     /// utxos already ordered by value
     pub fn utxos(&self) -> impl Iterator<Item = &UTxO> {
         self.by_value.values().flatten()
@@ -113,9 +117,14 @@ impl<K> UtxoStore<K> {
         self.by_derivation_path.values().map(|r| r.borrow())
     }
 
-    /// get the UTxO, not grouped ordered by value
+    /// get the UTxO, not grouped, ordered by value
     pub fn utxos(&self) -> impl Iterator<Item = &UTxO> {
         self.by_value.values().flatten()
+    }
+
+    /// lookup the UTxO group (if any) associated to the given derivation path
+    pub fn group(&self, dp: &DerivationPath<K>) -> Option<&GroupRef<K>> {
+        self.by_derivation_path.get(dp)
     }
 
     /// create a new UTxOStore with the added value

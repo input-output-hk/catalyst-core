@@ -12,7 +12,7 @@ use wallet::{transaction::Dump, RecoveryBuilder};
 fn daedalus_wallet1() {
     const MNEMONICS: &str =
         "tired owner misery large dream glad upset welcome shuffle eagle pulp time";
-    const WALLET_VALUE: u64 = 100_000 + 1010;
+    const WALLET_VALUE: Value = Value(100_000 + 1010);
 
     let wallet = RecoveryBuilder::new()
         .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
@@ -26,11 +26,12 @@ fn daedalus_wallet1() {
     let settings = state.settings().expect("valid initial settings");
     let address = account.account_id().address(settings.discrimination());
 
-    daedalus
-        .check_fragments(state.initial_contents())
-        .expect("failed to check fragments");
+    assert!(
+        daedalus.check_fragments(state.initial_contents()),
+        "failed to check fragments"
+    );
 
-    assert_eq!(daedalus.value_total().as_ref(), &WALLET_VALUE);
+    assert_eq!(daedalus.unconfirmed_value(), Some(WALLET_VALUE));
 
     let mut dump = Dump::new(settings, address);
     daedalus.dump_in(&mut dump);
@@ -48,7 +49,7 @@ fn daedalus_wallet1() {
 #[test]
 fn daedalus_wallet2() {
     const MNEMONICS: &str = "edge club wrap where juice nephew whip entry cover bullet cause jeans";
-    const WALLET_VALUE: u64 = 1_000_000 + 1 + 100;
+    const WALLET_VALUE: Value = Value(1_000_000 + 1 + 100);
 
     let wallet = RecoveryBuilder::new()
         .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
@@ -62,11 +63,12 @@ fn daedalus_wallet2() {
     let settings = state.settings().expect("valid initial settings");
     let address = account.account_id().address(settings.discrimination());
 
-    daedalus
-        .check_fragments(state.initial_contents())
-        .expect("failed to check fragments");
+    assert!(
+        daedalus.check_fragments(state.initial_contents()),
+        "failed to check fragments"
+    );
 
-    assert_eq!(daedalus.value_total().as_ref(), &WALLET_VALUE);
+    assert_eq!(daedalus.unconfirmed_value(), Some(WALLET_VALUE));
 
     let mut dump = Dump::new(settings, address);
     daedalus.dump_in(&mut dump);

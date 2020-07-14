@@ -12,7 +12,7 @@ mod stats;
 
 pub use config::{Configuration, Monitor, Strategy};
 pub use monitor::MonitorThread;
-pub use request::{Request, RequestWithTimer, Response};
+pub use request::{Request, RequestFailure, RequestWithTimer, Response};
 pub use stats::Stats;
 
 pub fn start(

@@ -35,8 +35,18 @@ impl Stats {
         let mean = self.calculate_mean();
         let requests = self.total_requests_made();
         let tps = self.calculate_tps();
+        let passrate = self.calculate_passrate();
         println!("Load scenario `{}` finished", title);
-        println!("I made a total of {:.2} requests, the mean response time was: {:.3} seconds. tps: {:.2}. Test duration: {} s", requests, mean, tps, self.duration.as_secs());
+        println!("I made a total of {:.2} requests, the mean response time was: {:.3} seconds. tps: {:.2}. Test duration: {} s. Passrate: {} %", 
+            requests, mean, tps, self.duration.as_secs(),passrate);
+    }
+
+    pub fn calculate_passrate(&self) -> f64 {
+        ((self.total_requests_passed() as f64) / self.total_requests_made() as f64) * 100.0
+    }
+
+    pub fn total_requests_passed(&self) -> usize {
+        self.requests.iter().filter(|r| r.is_ok()).count()
     }
 
     pub fn tps_status(&self) -> String {

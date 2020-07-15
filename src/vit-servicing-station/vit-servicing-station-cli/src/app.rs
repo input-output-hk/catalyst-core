@@ -26,7 +26,7 @@ pub enum APITokenCmd {
     /// Add provided tokens to database. If --tokens is not provided the binary will read them from the `stdin`
     Add {
         /// List of tokens in URL safe base64. If --tokens is not provided the binary will read them from the `stdin`
-        #[structopt(long = "token")]
+        #[structopt(long = "tokens")]
         tokens: Option<Vec<String>>,
 
         /// URL of the vit-servicing-station database to interact with

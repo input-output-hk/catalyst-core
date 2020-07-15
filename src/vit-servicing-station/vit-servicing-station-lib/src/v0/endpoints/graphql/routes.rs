@@ -42,7 +42,7 @@ mod test {
         proposals::{test as proposal_testing, Proposal},
     };
 
-    use crate::db::testing as db_testing;
+    use crate::db::migrations as db_testing;
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use warp::{Filter, Rejection, Reply};
 

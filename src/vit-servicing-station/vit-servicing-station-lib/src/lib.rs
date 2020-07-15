@@ -3,7 +3,6 @@ extern crate diesel;
 #[macro_use]
 extern crate structopt;
 
-#[cfg(test)]
 #[macro_use]
 extern crate diesel_migrations;
 

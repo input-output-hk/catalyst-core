@@ -2,15 +2,13 @@ use crate::db::models::api_tokens::APITokenData;
 use crate::db::{
     models::api_tokens as api_token_model,
     schema::{api_tokens, api_tokens::dsl::api_tokens as api_tokens_dsl},
-    DBConnectionPool,
+    DBConnection, DBConnectionPool,
 };
 use crate::v0::api_token::APIToken;
 use crate::v0::errors::HandleError;
 use chrono::{Duration, Utc};
 use diesel::query_dsl::RunQueryDsl;
-use diesel::{
-    ExpressionMethods, Insertable, OptionalExtension, QueryDsl, QueryResult, SqliteConnection,
-};
+use diesel::{ExpressionMethods, Insertable, OptionalExtension, QueryDsl, QueryResult};
 
 pub async fn query_token(
     token: APIToken,
@@ -47,7 +45,7 @@ pub async fn insert_token(token: &APIToken, pool: &DBConnectionPool) -> Result<(
 
 pub fn query_token_data_by_token(
     raw_token: &[u8],
-    db_conn: &SqliteConnection,
+    db_conn: &DBConnection,
 ) -> Result<Option<api_token_model::APITokenData>, diesel::result::Error> {
     api_tokens_dsl
         .filter(api_tokens::token.eq(raw_token))
@@ -55,10 +53,7 @@ pub fn query_token_data_by_token(
         .optional()
 }
 
-pub fn insert_token_data(
-    token_data: APITokenData,
-    db_conn: &SqliteConnection,
-) -> QueryResult<usize> {
+pub fn insert_token_data(token_data: APITokenData, db_conn: &DBConnection) -> QueryResult<usize> {
     diesel::insert_into(api_tokens::table)
         .values(token_data.values())
         .execute(db_conn)
@@ -66,7 +61,7 @@ pub fn insert_token_data(
 
 pub fn batch_insert_token_data(
     tokens_data: &[APITokenData],
-    db_conn: &SqliteConnection,
+    db_conn: &DBConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(api_tokens::table)
         .values(
@@ -82,7 +77,7 @@ pub fn batch_insert_token_data(
 mod test {
     use super::*;
     use crate::db::{
-        load_db_connection_pool, models::api_tokens::APITokenData, testing as db_testing,
+        load_db_connection_pool, migrations as db_testing, models::api_tokens::APITokenData,
         DBConnectionPool,
     };
 

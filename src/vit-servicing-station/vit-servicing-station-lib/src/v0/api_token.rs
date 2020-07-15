@@ -93,8 +93,8 @@ pub async fn api_token_filter(
 #[cfg(test)]
 mod test {
     use crate::db::{
-        models::api_tokens as api_token_model, models::api_tokens::APITokenData,
-        schema::api_tokens, testing as db_testing, DBConnectionPool,
+        migrations as db_testing, models::api_tokens as api_token_model,
+        models::api_tokens::APITokenData, schema::api_tokens, DBConnectionPool,
     };
     use crate::v0::api_token::{api_token_filter, APIToken, API_TOKEN_HEADER};
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;

@@ -3208,6 +3208,8 @@ version = "0.1.0"
 dependencies = [
  "base64 0.12.3",
  "chrono",
+ "diesel",
+ "diesel_migrations",
  "rand 0.7.3",
  "structopt",
  "vit-servicing-station-lib",

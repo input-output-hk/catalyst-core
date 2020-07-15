@@ -18,10 +18,12 @@ thiserror = "1.0"
 tokio = { version = "0.2.21", features = ["macros"] }
 diesel_migrations = "1.4.0"
 tempfile = "3"
+rand_core = "0.5"
 assert_fs = "1.0.0"
 assert_cmd = "1.0.1"
 askama = "0.8"
 askama_shared = "0.8"
+hyper = "0.13.6"
 vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
 lazy_static = "1.4"
 rand = "0.7"
@@ -44,6 +46,7 @@ libsqlite3-sys =  { version = "0.9.1", features = ["bundled"] }
 
 [features]
 test-api = []
+non-functional = []
 
 
 

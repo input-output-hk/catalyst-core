@@ -28,6 +28,9 @@ impl Queryable<api_tokens::SqlType, DB> for APITokenData {
     }
 }
 
+// This warning is disabled here. Values is only referenced as a type here. It should be ok not to
+// split the types definitions.
+#[allow(clippy::type_complexity)]
 impl Insertable<api_tokens::table> for APITokenData {
     type Values = (
         diesel::dsl::Eq<api_tokens::token, Vec<u8>>,

@@ -1,5 +1,4 @@
 use chrono::{Duration, Utc};
-use rand::prelude::thread_rng;
 use rand::Rng;
 use structopt::StructOpt;
 use vit_servicing_station_lib::{
@@ -21,7 +20,7 @@ pub enum CLIApp {
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
-enum APITokenCmd {
+pub enum APITokenCmd {
     // Add token to database
     Add {
         #[structopt(long = "token")]

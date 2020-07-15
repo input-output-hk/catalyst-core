@@ -64,6 +64,20 @@ pub fn insert_token_data(
         .execute(db_conn)
 }
 
+pub fn batch_insert_token_data(
+    tokens_data: &[APITokenData],
+    db_conn: &SqliteConnection,
+) -> QueryResult<usize> {
+    diesel::insert_into(api_tokens::table)
+        .values(
+            tokens_data
+                .iter()
+                .map(|t| t.clone().values())
+                .collect::<Vec<_>>(),
+        )
+        .execute(db_conn)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

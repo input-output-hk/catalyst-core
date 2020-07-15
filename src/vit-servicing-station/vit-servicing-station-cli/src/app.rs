@@ -17,26 +17,31 @@ pub trait ExecTask {
 
 #[derive(StructOpt)]
 pub enum CLIApp {
+    /// API token related operations
     APIToken(APITokenCmd),
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
 pub enum APITokenCmd {
-    // Add token to database
+    /// Add provided tokens to database. If --tokens is not provided the binary will read them from the `stdin`
     Add {
+        /// List of tokens in URL safe base64. If --tokens is not provided the binary will read them from the `stdin`
         #[structopt(long = "token")]
         tokens: Option<Vec<String>>,
 
+        /// URL of the vit-servicing-station database to interact with
         #[structopt(long = "db-url")]
         db_url: String,
     },
 
-    // Generate a new token
+    /// Generate API tokens, URL safe base64 encoded.
     Generate {
+        /// Number of tokens to generate
         #[structopt(long = "n", default_value = "1")]
         n: usize,
 
-        #[structopt(long = "size")]
+        /// Size of the token
+        #[structopt(long = "size", default_value = "10")]
         size: usize,
     },
 }

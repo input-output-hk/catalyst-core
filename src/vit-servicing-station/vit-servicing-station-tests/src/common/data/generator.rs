@@ -42,6 +42,10 @@ impl Snapshot {
     pub fn token(&self) -> (APITokenData, String) {
         self.token.clone()
     }
+
+    pub fn token_hash(&self) -> String {
+        self.token().1
+    }
 }
 
 pub struct Generator {
@@ -123,7 +127,7 @@ impl Generator {
 
         Proposal {
             internal_id: 1,
-            proposal_id: id.to_string(),
+            proposal_id: id.abs().to_string(),
             proposal_category: Category {
                 category_id: NumberWithFormat("^##").fake::<String>(),
                 category_name: Industry().fake::<String>(),
@@ -134,7 +138,7 @@ impl Generator {
             proposal_problem: Buzzword().fake::<String>(),
             proposal_solution: CatchPhase().fake::<String>(),
             proposal_public_key: self.hash(),
-            proposal_funds: self.id_generator.next_u64() as i64,
+            proposal_funds: (self.id_generator.next_u64() as i64).abs(),
             proposal_url: proposal_url.to_string(),
             proposal_files_url: format!("{}/files", proposal_url),
             proposer: Proposer {
@@ -193,7 +197,7 @@ impl Generator {
         let (start, end, next) = self.consecutive_dates();
 
         Voteplan {
-            id,
+            id: id.abs(),
             chain_voteplan_id: self.hash(),
             chain_vote_start_time: start.timestamp(),
             chain_vote_end_time: end.timestamp(),

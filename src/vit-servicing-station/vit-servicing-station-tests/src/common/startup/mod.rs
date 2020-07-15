@@ -11,6 +11,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use crate::common::{data, server::Server};
 
 use self::{db::DbBuilder, server::ServerBootstrapper};
+use data::{Generator, Snapshot};
 use server::ServerBootstrapperError;
 
 pub fn get_exe() -> PathBuf {
@@ -55,23 +56,20 @@ pub fn get_available_port() -> u32 {
     NEXT_AVAILABLE_PORT_NUMBER.fetch_add(1, Ordering::SeqCst)
 }
 
-pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, String), ServerBootstrapperError> {
-    let (token, hash) = data::token();
+pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, Snapshot), ServerBootstrapperError> {
+    let snapshot = Generator::new().snapshot();
 
-    let db_path = DbBuilder::new()
-        .with_token(token)
-        .with_proposals(data::proposals())
-        .build(&temp_dir)?;
+    let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .start()?;
 
-    if !server.is_up(&hash) {
+    if !server.is_up(&snapshot.token_hash()) {
         return Err(ServerBootstrapperError::FailToBootstrap);
     }
 
-    Ok((server, hash))
+    Ok((server, snapshot))
 }
 
 pub fn empty_db(temp_dir: &TempDir) -> PathBuf {

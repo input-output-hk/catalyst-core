@@ -5,7 +5,7 @@ use structopt::StructOpt;
 use vit_servicing_station_lib::{
     db::{
         load_db_connection_pool, models::api_tokens::APITokenData,
-        queries::api_tokens::insert_token_data,
+        queries::api_tokens::insert_token_data, DBConnection,
     },
     v0::api_token::APIToken,
 };
@@ -57,7 +57,7 @@ impl APITokenCmd {
             .collect()
     }
 
-    fn add_tokens_from_stream(db_url: &str) -> io::Result<()> {
+    fn add_tokens_from_stream(db_url: &DBConnection) -> io::Result<()> {
         let mut base64_tokens: Vec<String> = Vec::new();
         let mut input = String::new();
         while let Ok(n) = io::stdin().read_line(&mut input) {
@@ -71,7 +71,7 @@ impl APITokenCmd {
         APITokenCmd::add_tokens(&base64_tokens, db_url)
     }
 
-    fn add_tokens(base64_tokens: &[String], db_url: &str) -> io::Result<()> {
+    fn add_tokens(base64_tokens: &[String], db_conn: &DBConnection) -> io::Result<()> {
         for base64_token in base64_tokens {
             let token = base64::decode_config(base64_token, base64::URL_SAFE_NO_PAD).unwrap();
             let api_token_data = APITokenData {
@@ -79,13 +79,31 @@ impl APITokenCmd {
                 creation_time: Utc::now().timestamp(),
                 expire_time: (Utc::now() + Duration::days(365)).timestamp(),
             };
-            let pool = load_db_connection_pool(db_url)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;
-            let connection = pool
-                .get()
-                .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{}", e)))?;
-            insert_token_data(api_token_data, &connection)
+            insert_token_data(api_token_data, db_conn)
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        }
+        Ok(())
+    }
+
+    fn handle_api_token_add(tokens: &Option<Vec<String>>, db_url: &str) -> io::Result<()> {
+        let pool = load_db_connection_pool(db_url)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;
+        let db_conn = pool
+            .get()
+            .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{}", e)))?;
+
+        match tokens {
+            // if not tokens are provided then listen to stdin for input ones
+            None => APITokenCmd::add_tokens_from_stream(&db_conn),
+            // process the provided tokens
+            Some(tokens) => APITokenCmd::add_tokens(tokens, &db_conn),
+        }
+    }
+
+    fn handle_generate(n: usize, size: usize) -> io::Result<()> {
+        let tokens = APITokenCmd::generate(n, size);
+        for token in tokens {
+            println!("{}", token);
         }
         Ok(())
     }
@@ -96,19 +114,10 @@ impl ExecTask for APITokenCmd {
 
     fn exec(&self) -> std::io::Result<()> {
         match self {
-            APITokenCmd::Add { tokens, db_url } => match tokens {
-                // if not tokens are provided then listen to stdin for input ones
-                None => APITokenCmd::add_tokens_from_stream(db_url),
-                // process the provided tokens
-                Some(tokens) => APITokenCmd::add_tokens(tokens, &db_url),
-            },
-            APITokenCmd::Generate { n, size } => {
-                let tokens = APITokenCmd::generate(*n, *size);
-                for token in tokens {
-                    println!("{}", token);
-                }
-                Ok(())
+            APITokenCmd::Add { tokens, db_url } => {
+                APITokenCmd::handle_api_token_add(tokens, db_url)
             }
+            APITokenCmd::Generate { n, size } => APITokenCmd::handle_generate(*n, *size),
         }
     }
 }
@@ -119,6 +128,48 @@ impl ExecTask for CLIApp {
     fn exec(&self) -> std::io::Result<Self::ResultValue> {
         match self {
             CLIApp::APIToken(api_token) => api_token.exec(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use vit_servicing_station_lib::db::{
+        load_db_connection_pool, migrations::initialize_db_with_migration,
+        queries::api_tokens::query_token_data_by_token,
+    };
+
+    #[test]
+    fn generate_token() {
+        let size = 10;
+        let n = 10;
+        let tokens = APITokenCmd::generate(n, size);
+        assert_eq!(tokens.len(), n);
+        tokens.iter().for_each(|token| {
+            assert_eq!(
+                base64::decode_config(token, base64::URL_SAFE_NO_PAD)
+                    .unwrap()
+                    .len(),
+                size
+            )
+        })
+    }
+
+    #[test]
+    fn add_token() {
+        let tokens = APITokenCmd::generate(10, 10);
+        let connection_pool = load_db_connection_pool("").unwrap();
+        initialize_db_with_migration(&connection_pool);
+        let db_conn = connection_pool.get().unwrap();
+        APITokenCmd::add_tokens(&tokens, &db_conn).unwrap();
+        for token in tokens
+            .iter()
+            .map(|t| base64::decode_config(t, base64::URL_SAFE_NO_PAD).unwrap())
+        {
+            assert!(query_token_data_by_token(token.as_ref(), &db_conn)
+                .unwrap()
+                .is_some());
         }
     }
 }

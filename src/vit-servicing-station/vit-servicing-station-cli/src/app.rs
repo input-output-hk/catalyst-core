@@ -52,7 +52,7 @@ impl APITokenCmd {
             .collect()
     }
 
-    fn add_tokens_from_stream(db_url: &str) {
+    fn add_tokens_from_stream(db_url: &str) -> io::Result<()> {
         let mut base64_tokens: Vec<String> = Vec::new();
         let mut input = String::new();
         while let Ok(n) = io::stdin().read_line(&mut input) {
@@ -63,11 +63,10 @@ impl APITokenCmd {
             input.pop();
             base64_tokens.push(input.clone());
         }
-        // println!("{:?}", base64_tokens);
-        APITokenCmd::add_tokens(&base64_tokens, db_url);
+        APITokenCmd::add_tokens(&base64_tokens, db_url)
     }
 
-    fn add_tokens(base64_tokens: &[String], db_url: &str) {
+    fn add_tokens(base64_tokens: &[String], db_url: &str) -> io::Result<()> {
         for base64_token in base64_tokens {
             let token = base64::decode_config(base64_token, base64::URL_SAFE_NO_PAD).unwrap();
             let api_token_data = APITokenData {
@@ -75,10 +74,15 @@ impl APITokenCmd {
                 creation_time: Utc::now().timestamp(),
                 expire_time: (Utc::now() + Duration::days(365)).timestamp(),
             };
-            let pool = load_db_connection_pool(db_url).unwrap();
-            let connection = pool.get().unwrap();
-            insert_token_data(api_token_data, &connection).unwrap();
+            let pool = load_db_connection_pool(db_url)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;
+            let connection = pool
+                .get()
+                .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{}", e)))?;
+            insert_token_data(api_token_data, &connection)
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
         }
+        Ok(())
     }
 }
 
@@ -88,19 +92,19 @@ impl ExecTask for APITokenCmd {
     fn exec(&self) -> std::io::Result<()> {
         match self {
             APITokenCmd::Add { tokens, db_url } => match tokens {
+                // if not tokens are provided then listen to stdin for input ones
                 None => APITokenCmd::add_tokens_from_stream(db_url),
-                Some(tokens) => {
-                    APITokenCmd::add_tokens(tokens, &db_url);
-                }
+                // process the provided tokens
+                Some(tokens) => APITokenCmd::add_tokens(tokens, &db_url),
             },
             APITokenCmd::Generate { n, size } => {
                 let tokens = APITokenCmd::generate(*n, *size);
                 for token in tokens {
                     println!("{}", token);
                 }
+                Ok(())
             }
-        };
-        Ok(())
+        }
     }
 }
 

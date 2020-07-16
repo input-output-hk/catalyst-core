@@ -9,14 +9,6 @@ use vit_servicing_station_lib::{
 async fn main() {
     // load settings from command line (defaults to env variables)
     let mut settings: ServiceSettings = ServiceSettings::from_args();
-    // dump settings and exit if specified
-    if let Some(settings_file) = &settings.out_settings_file {
-        server_settings::dump_settings_to_file(settings_file, &settings).unwrap_or_else(|e| {
-            println!("Error writing settings to file {}: {}", settings_file, e);
-            std::process::exit(ApplicationExitCode::WriteSettingsError.into())
-        });
-        return;
-    }
 
     // load settings from file if specified
     if let Some(settings_file) = &settings.in_settings_file {
@@ -25,6 +17,15 @@ async fn main() {
             std::process::exit(ApplicationExitCode::LoadSettingsError.into())
         });
     };
+
+    // dump settings and exit if specified
+    if let Some(settings_file) = &settings.out_settings_file {
+        server_settings::dump_settings_to_file(settings_file, &settings).unwrap_or_else(|e| {
+            println!("Error writing settings to file {}: {}", settings_file, e);
+            std::process::exit(ApplicationExitCode::WriteSettingsError.into())
+        });
+        return;
+    }
 
     // load db pool
     let db_pool = db::load_db_connection_pool(&settings.db_url).unwrap_or_else(|e| {

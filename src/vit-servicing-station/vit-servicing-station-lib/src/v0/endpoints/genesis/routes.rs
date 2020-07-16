@@ -9,7 +9,7 @@ pub fn filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let with_context = warp::any().map(move || context.clone());
 
-    let block0 = warp::any()
+    let block0 = warp::path::end()
         .and(warp::get())
         .and(with_context)
         .and_then(get_genesis)

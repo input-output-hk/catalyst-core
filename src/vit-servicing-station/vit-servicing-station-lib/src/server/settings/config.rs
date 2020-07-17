@@ -103,7 +103,7 @@ impl ServiceSettings {
         }
 
         if other_settings.address != SocketAddr::from_str(ADDRESS_DEFAULT).unwrap() {
-            return_settings.address = other_settings.address.clone();
+            return_settings.address = other_settings.address;
         }
 
         if other_settings.tls.is_loaded() {

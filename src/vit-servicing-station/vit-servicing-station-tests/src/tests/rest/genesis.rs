@@ -22,7 +22,7 @@ pub fn genesis_deserialize_bijection() {
     let expected = std::fs::read(BLOCK0_BIN).unwrap();
 
     let genesis_as_bytes = server
-        .rest_client_with_token(hash)
+        .rest_client_with_token(&hash)
         .genesis()
         .expect("cannot get genesis block bytes");
 

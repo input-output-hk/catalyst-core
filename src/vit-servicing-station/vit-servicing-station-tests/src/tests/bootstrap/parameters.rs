@@ -1,8 +1,12 @@
 use crate::common::{
+    data,
     paths::BLOCK0_BIN,
     startup::{
+        db::DbBuilder,
         empty_db,
-        server::{dump_settings, BootstrapCommandBuilder, ServerSettingsBuilder},
+        server::{
+            dump_settings, BootstrapCommandBuilder, ServerBootstrapper, ServerSettingsBuilder,
+        },
     },
 };
 use assert_cmd::assert::OutputAssertExt;
@@ -83,4 +87,24 @@ pub fn in_settings_file_with_malformed_path() {
         .assert()
         .failure()
         .code(ApplicationExitCode::LoadSettingsError as i32);
+}
+
+#[test]
+pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
+    let temp_dir = TempDir::new().unwrap();
+
+    let (token, hash) = data::token();
+
+    let db_path = DbBuilder::new()
+        .with_token(token)
+        .with_proposals(data::proposals())
+        .build(&temp_dir)?;
+
+    let server = ServerBootstrapper::new()
+        .with_block0_path(db_path.to_str().unwrap())
+        .with_db_path(BLOCK0_BIN)
+        .start()?;
+
+    assert!(server.rest_client_with_token(&hash).health().is_err());
+    Ok(())
 }

@@ -1,14 +1,11 @@
+use super::{RestClient, RestError};
 use askama::Template;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
 
-use super::{RestClient, RestError};
+pub mod templates;
 
-#[derive(Template)]
-#[template(path = "proposal_by_id.graphql.txt")]
-struct ProposalById {
-    id: u32,
-}
+use serde_json::Value;
 
 pub struct GraphqlClient {
     rest_client: RestClient,
@@ -22,14 +19,17 @@ impl GraphqlClient {
     }
 
     pub fn proposal_by_id(&self, id: u32) -> Result<Proposal, GraphQlClientError> {
-        let proposal = ProposalById { id };
+        let proposal = templates::ProposalById { id };
         let data = proposal.render()?.replace("\r\n", "").replace("\n", "");
-        println!("Request: {}", data);
+        let query_result = self.run_query(&data)?;
+        serde_json::from_value(query_result["data"]["proposal"].clone())
+            .map_err(GraphQlClientError::CannotDeserialize)
+    }
 
-        let path = self.rest_client.path_builder().graphql();
-        let query_result = self.rest_client.post(&path, data)?;
-        let proposal = query_result["data"]["proposal"].clone();
-        serde_json::from_value(proposal).map_err(GraphQlClientError::CannotDeserialize)
+    pub fn run_query(&self, data: &str) -> Result<Value, GraphQlClientError> {
+        self.rest_client
+            .post("graphql", data.replace("\r\n", " ").replace("\n", " "))
+            .map_err(GraphQlClientError::RestError)
     }
 
     pub fn set_api_token(&mut self, token: String) {

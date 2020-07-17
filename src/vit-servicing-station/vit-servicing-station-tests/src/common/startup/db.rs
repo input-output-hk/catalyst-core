@@ -5,9 +5,12 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::{api_tokens::APITokenData, proposals::Proposal};
+use vit_servicing_station_lib::db::models::{
+    api_tokens::APITokenData, funds::Fund, proposals::Proposal,
+};
 
 use crate::common::{
+    data::Snapshot,
     db::{DbInserter, DbInserterError},
     paths::MIGRATION_DIR,
 };
@@ -16,6 +19,7 @@ pub struct DbBuilder {
     migrations_folder: Option<PathBuf>,
     token: Option<APITokenData>,
     proposals: Option<Vec<Proposal>>,
+    funds: Option<Vec<Fund>>,
 }
 
 impl DbBuilder {
@@ -24,6 +28,7 @@ impl DbBuilder {
             migrations_folder: Some(PathBuf::from_str(MIGRATION_DIR).unwrap()),
             token: None,
             proposals: None,
+            funds: None,
         }
     }
 
@@ -34,6 +39,18 @@ impl DbBuilder {
 
     pub fn with_proposals(&mut self, proposals: Vec<Proposal>) -> &mut Self {
         self.proposals = Some(proposals);
+        self
+    }
+
+    pub fn with_snapshot(&mut self, snapshot: &Snapshot) -> &mut Self {
+        self.with_proposals(snapshot.proposals());
+        self.with_token(snapshot.token().0);
+        self.with_funds(snapshot.funds());
+        self
+    }
+
+    pub fn with_funds(&mut self, funds: Vec<Fund>) -> &mut Self {
+        self.funds = Some(funds);
         self
     }
 
@@ -88,6 +105,13 @@ impl DbBuilder {
         Ok(())
     }
 
+    fn try_insert_funds(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+        if let Some(funds) = &self.funds {
+            DbInserter::new(connection).insert_funds(funds)?;
+        }
+        Ok(())
+    }
+
     pub fn build(&self, temp_dir: &TempDir) -> Result<PathBuf, DbBuilderError> {
         let db = temp_dir.child("vit_station.db");
         let db_path = db
@@ -101,6 +125,7 @@ impl DbBuilder {
         let connection = SqliteConnection::establish(db_path).unwrap();
         self.try_do_migration(&connection)?;
         self.try_insert_token(&connection)?;
+        self.try_insert_funds(&connection)?;
         self.try_insert_proposals(&connection)?;
         Ok(PathBuf::from(db.path()))
     }

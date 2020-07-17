@@ -6,7 +6,7 @@ use warp::{Filter, Rejection};
 pub const API_TOKEN_HEADER: &str = "API-Token";
 
 /// API Token wrapper type
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct APIToken(Vec<u8>);
 
 /// API token manager is an abstraction on the API tokens for the service

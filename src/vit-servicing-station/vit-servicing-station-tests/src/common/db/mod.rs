@@ -3,8 +3,8 @@ use diesel::query_dsl::RunQueryDsl;
 use diesel::SqliteConnection;
 use thiserror::Error;
 use vit_servicing_station_lib::db::{
-    models::{api_tokens::APITokenData, proposals::Proposal},
-    schema::{api_tokens, proposals, voteplans},
+    models::{api_tokens::APITokenData, funds::Fund, proposals::Proposal},
+    schema::{api_tokens, funds, proposals, voteplans},
 };
 
 pub struct DbInserter<'a> {
@@ -51,7 +51,7 @@ impl<'a> DbInserter<'a> {
                 proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
                 proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
             );
-            diesel::insert_into(proposals::table)
+            diesel::insert_or_ignore_into(proposals::table)
                 .values(values)
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
@@ -65,10 +65,45 @@ impl<'a> DbInserter<'a> {
                 voteplans::fund_id.eq(proposal.fund_id),
             );
 
-            diesel::insert_into(voteplans::table)
+            diesel::insert_or_ignore_into(voteplans::table)
                 .values(voteplan_values)
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
+        }
+        Ok(())
+    }
+
+    pub fn insert_funds(&self, funds: &[Fund]) -> Result<(), DbInserterError> {
+        for fund in funds {
+            let values = (
+                funds::fund_name.eq(fund.fund_name.clone()),
+                funds::fund_goal.eq(fund.fund_goal.clone()),
+                funds::voting_power_info.eq(fund.voting_power_info.clone()),
+                funds::rewards_info.eq(fund.rewards_info.clone()),
+                funds::fund_start_time.eq(fund.fund_start_time),
+                funds::fund_end_time.eq(fund.fund_end_time),
+                funds::next_fund_start_time.eq(fund.next_fund_start_time),
+            );
+
+            diesel::insert_into(funds::table)
+                .values(values)
+                .execute(self.connection)
+                .map_err(DbInserterError::DieselError)?;
+
+            for voteplan in &fund.chain_vote_plans {
+                let values = (
+                    voteplans::chain_voteplan_id.eq(voteplan.chain_voteplan_id.clone()),
+                    voteplans::chain_vote_start_time.eq(voteplan.chain_vote_start_time),
+                    voteplans::chain_vote_end_time.eq(voteplan.chain_vote_end_time),
+                    voteplans::chain_committee_end_time.eq(voteplan.chain_committee_end),
+                    voteplans::chain_voteplan_payload.eq(voteplan.chain_voteplan_payload.clone()),
+                    voteplans::fund_id.eq(voteplan.fund_id),
+                );
+                diesel::insert_or_ignore_into(voteplans::table)
+                    .values(values)
+                    .execute(self.connection)
+                    .map_err(DbInserterError::DieselError)?;
+            }
         }
         Ok(())
     }

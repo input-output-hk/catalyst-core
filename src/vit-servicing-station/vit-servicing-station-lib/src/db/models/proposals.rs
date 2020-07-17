@@ -4,7 +4,7 @@ use crate::db::{views_schema::full_proposals_info, DB};
 use diesel::Queryable;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Category {
     #[serde(alias = "categoryId")]
     pub category_id: String,
@@ -14,7 +14,7 @@ pub struct Category {
     pub category_description: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Proposer {
     #[serde(alias = "proposerName")]
     pub proposer_name: String,
@@ -24,7 +24,7 @@ pub struct Proposer {
     pub proposer_url: String,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Proposal {
     #[serde(alias = "internalId")]
     pub internal_id: i32,

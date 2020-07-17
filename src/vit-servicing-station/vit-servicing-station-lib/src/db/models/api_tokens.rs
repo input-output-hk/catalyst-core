@@ -2,6 +2,7 @@ use crate::db::{schema::api_tokens, DB};
 use crate::v0::api_token::APIToken;
 use diesel::Queryable;
 
+#[derive(Debug, Clone)]
 pub struct APITokenData {
     pub token: APIToken,
     pub creation_time: i64,

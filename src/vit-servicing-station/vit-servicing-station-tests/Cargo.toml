@@ -29,6 +29,7 @@ lazy_static = "1.4"
 rand = "0.7"
 predicates = { version = "1.0", default-features = false, features = ["difference"] }
 jortestkit = { path = "./jortestkit"}
+fake = { version = "2.2", features=['chrono','http']}
 
 #diesel doesn't have an way to create empty db
 #rustqlite is used for that purpose

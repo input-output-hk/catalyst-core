@@ -12,11 +12,14 @@ async fn main() {
 
     // load settings from file if specified
     if let Some(settings_file) = &settings.in_settings_file {
-        settings = server_settings::load_settings_from_file(settings_file).unwrap_or_else(|e| {
-            println!("Error loading settings from file {}, {}", settings_file, e);
-            std::process::exit(ApplicationExitCode::LoadSettingsError.into())
-        });
-    };
+        let in_file_settings = server_settings::load_settings_from_file(settings_file)
+            .unwrap_or_else(|e| {
+                println!("Error loading settings from file {}, {}", settings_file, e);
+                std::process::exit(ApplicationExitCode::LoadSettingsError.into())
+            });
+        // merge input file settings override by cli arguments
+        settings = in_file_settings.override_from(&settings);
+    }
 
     // dump settings and exit if specified
     if let Some(settings_file) = &settings.out_settings_file {
@@ -24,7 +27,7 @@ async fn main() {
             println!("Error writing settings to file {}: {}", settings_file, e);
             std::process::exit(ApplicationExitCode::WriteSettingsError.into())
         });
-        return;
+        std::process::exit(0);
     }
 
     // load db pool

@@ -33,6 +33,13 @@ impl RestClientLogger {
         println!("Text: {:#?}", content);
     }
 
+    pub fn log_post_body(&self, content: &str) {
+        if !self.is_enabled() {
+            return;
+        }
+        println!("Post Body: {}", content);
+    }
+
     pub fn is_enabled(&self) -> bool {
         self.enabled
     }
@@ -162,15 +169,19 @@ impl RestClient {
 
     pub fn post(&self, path: &str, data: String) -> Result<serde_json::Value, RestError> {
         let client = reqwest::blocking::Client::new();
-        let mut res = client.post(path).body(String::into_bytes(data));
+        let mut res = client
+            .post(&self.path(path))
+            .body(String::into_bytes(data.clone()));
 
+        self.logger.log_post_body(&data);
         if let Some(api_token) = &self.api_token {
             res = res.header(API_TOKEN_HEADER, api_token.to_string());
         }
         let response = res.send()?;
         self.logger.log_response(&response);
-        let result = response.text();
-        Ok(serde_json::from_str(&result?)?)
+        let content = response.text()?;
+        self.logger.log_text(&content);
+        Ok(serde_json::from_str(&content)?)
     }
 }
 

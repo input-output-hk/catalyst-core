@@ -122,7 +122,7 @@ pub fn test_graphql_requests() -> Result<(), Box<dyn std::error::Error>> {
 
     let graphql_client = server.graphql_client_with_token(&snapshot.token_hash());
 
-    //get_proposal_by_id_test(&graphql_client, proposal_id, &snapshot);
+    get_proposal_by_id_test(&graphql_client, proposal_id, &snapshot);
 
     run_query_with_comment_test(&graphql_client, proposal_id);
 

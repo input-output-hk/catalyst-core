@@ -1,0 +1,21 @@
+{
+  "query": "proposal {
+    proposalTitle
+    proposalSummary
+    proposalProblem
+    proposalPublicKey
+    proposalFunds
+    proposalSolution
+    proposalUrl
+    proposalFilesUrl
+    chainProposalId
+    chainProposalIndex
+    chainVoteOptions
+    chainVoteplanId
+    chainVoteplanPayload
+    chainVoteStartTime
+    chainVoteEndTime
+    chainCommitteeEndTime
+    fundId
+  }"
+}

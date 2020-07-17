@@ -1,0 +1,34 @@
+{
+  "query": "{
+      proposals {
+        internalId,
+        proposalId,
+        category {
+            categoryId,
+            categoryDescription,
+        }
+        proposalTitle,
+        proposalSummary,
+        proposalProblem,
+        proposalPublicKey,
+        proposalFunds,
+        proposalSolution,
+        proposalUrl,
+        proposalFilesUrl,
+        proposer {
+            proposerName,
+            proposerEmail,
+            proposerUrl,
+        }
+        chainProposalId,
+        chainProposalIndex,
+        chainVoteOptions,
+        chainVoteplanId,
+        chainVoteplanPayload,
+        chainVoteStartTime,
+        chainVoteEndTime,
+        chainCommitteeEndTime,
+        fundId
+      }
+  }"
+}

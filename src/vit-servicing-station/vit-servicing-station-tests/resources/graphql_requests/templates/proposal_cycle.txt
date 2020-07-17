@@ -1,0 +1,13 @@
+{
+    "query":"{query: proposal(proposalId: \"{{ id }}\") {
+                ...comparisonFields
+            }
+
+            fragment comparisonFields on Proposal {
+                internalId,
+                proposalId,
+                category {
+                    ...comparisonFields
+                }
+            }"
+}

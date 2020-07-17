@@ -64,7 +64,8 @@ impl RestClient {
 
     pub fn health(&self) -> Result<(), RestError> {
         self.get_and_verify_status_code(&self.path_builder.health())
-            .map(|_| ()).map_err(|_| RestError::ServerIsNotUp)
+            .map(|_| ())
+            .map_err(|_| RestError::ServerIsNotUp)
     }
 
     pub fn funds(&self) -> Result<Fund, RestError> {

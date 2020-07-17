@@ -39,6 +39,10 @@ impl Snapshot {
         self.proposals.clone()
     }
 
+    pub fn proposal_by_id(&self, id: &str) -> Option<&Proposal> {
+        self.proposals.iter().find(|x| x.proposal_id.eq(id))
+    }
+
     pub fn token(&self) -> (APITokenData, String) {
         self.token.clone()
     }

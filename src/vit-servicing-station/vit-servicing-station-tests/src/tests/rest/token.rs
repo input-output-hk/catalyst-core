@@ -20,7 +20,7 @@ pub fn token_validation() -> Result<(), Box<dyn std::error::Error>> {
     let response = server.rest_client_with_token(&hash).health_raw()?;
     assert_eq!(response.status(), StatusCode::OK);
 
-    let invalid_token = data::invalid_token_hash();
+    let invalid_token = data::token_hash();
     let rest_client = server.rest_client_with_token(&invalid_token);
     assert_eq!(rest_client.health_raw()?.status(), StatusCode::UNAUTHORIZED);
     assert_eq!(

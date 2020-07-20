@@ -9,6 +9,10 @@ pub fn token() -> (APITokenData, String) {
     Generator::new().token()
 }
 
+pub fn token_hash() -> String {
+    token().1
+}
+
 pub fn proposals() -> Vec<Proposal> {
     let mut gen = Generator::new();
     let funds = gen.funds();

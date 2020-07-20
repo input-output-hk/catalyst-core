@@ -69,8 +69,18 @@ impl Generator {
         (self.id_generator.next_u32() as usize) % 100 + 1
     }
 
-    pub fn token(&self) -> (APITokenData, String) {
-        let data = b"ffffffffffffffffffffffffffffffff".to_vec();
+    fn bytes(&mut self) -> [u8; 32] {
+        let mut random_bytes: [u8; 32] = [0; 32];
+        self.id_generator.fill_bytes(&mut random_bytes);
+        random_bytes
+    }
+
+    pub fn token_hash(&mut self) -> String {
+        base64::encode_config(self.bytes().to_vec(), base64::URL_SAFE_NO_PAD)
+    }
+
+    pub fn token(&mut self) -> (APITokenData, String) {
+        let data = self.bytes().to_vec();
         let token_creation_time = Utc::now() - Duration::days(1);
         let toket_expiry_time = Utc::now() + Duration::days(1);
 

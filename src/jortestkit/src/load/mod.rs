@@ -19,7 +19,7 @@ pub fn start(
     request: impl Request + std::clone::Clone + Send + Sized + 'static,
     config: Configuration,
     title: &str,
-) {
+) -> Stats {
     let requests = Arc::new(Mutex::new(Vec::new()));
     let start = Instant::now();
     let child_threads = get_threads(&request, &config, &requests);
@@ -33,6 +33,7 @@ pub fn start(
     let lock_request = &mut requests.lock().unwrap();
     let stats = Stats::new(lock_request.to_vec(), start.elapsed());
     stats.print_summary(title);
+    stats
 }
 
 fn get_threads(

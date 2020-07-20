@@ -58,14 +58,15 @@ impl RestClient {
         }
     }
 
-    pub fn genesis(&self) -> Result<Vec<u8>, RestError> {
-        Ok(self.get(&self.path_builder.genesis())?.bytes()?.to_vec())
-    }
-
     pub fn health(&self) -> Result<(), RestError> {
         self.get_and_verify_status_code(&self.path_builder.health())
             .map(|_| ())
             .map_err(|_| RestError::ServerIsNotUp)
+    }
+
+    pub fn health_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder.health())
+            .map_err(RestError::RequestError)
     }
 
     pub fn funds(&self) -> Result<Fund, RestError> {
@@ -77,6 +78,11 @@ impl RestClient {
             source: e,
             text: content.clone(),
         })
+    }
+
+    pub fn funds_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder.funds())
+            .map_err(RestError::RequestError)
     }
 
     pub fn path_builder(&self) -> &RestPathBuilder {
@@ -95,6 +101,11 @@ impl RestClient {
             source: e,
             text: content.clone(),
         })
+    }
+
+    pub fn proposals_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder.proposals())
+            .map_err(RestError::RequestError)
     }
 
     pub fn proposal(&self, id: &str) -> Result<Proposal, RestError> {
@@ -120,6 +131,15 @@ impl RestClient {
 
     pub fn fund_raw(&self, id: &str) -> Result<Response, RestError> {
         self.get(&self.path_builder().fund(id))
+            .map_err(RestError::RequestError)
+    }
+
+    pub fn genesis(&self) -> Result<Vec<u8>, RestError> {
+        Ok(self.genesis_raw()?.bytes()?.to_vec())
+    }
+
+    pub fn genesis_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder.genesis())
             .map_err(RestError::RequestError)
     }
 

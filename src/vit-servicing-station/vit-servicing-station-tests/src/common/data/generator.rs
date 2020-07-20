@@ -97,7 +97,7 @@ impl Generator {
         let (start, end, next) = self.consecutive_dates();
 
         Fund {
-            id,
+            id: id.abs(),
             fund_name: CatchPhase().fake::<String>(),
             fund_goal: Buzzword().fake::<String>(),
             voting_power_info: format!(">{}", NumberWithFormat("^###").fake::<String>()),
@@ -105,7 +105,7 @@ impl Generator {
             fund_start_time: start.timestamp(),
             fund_end_time: end.timestamp(),
             next_fund_start_time: next.timestamp(),
-            chain_vote_plans: vec![self.voteplan_with_fund_id(id)],
+            chain_vote_plans: vec![self.voteplan_with_fund_id(id.abs())],
         }
     }
 
@@ -126,12 +126,12 @@ impl Generator {
         let proposal_url = self.gen_http_address();
 
         Proposal {
-            internal_id: 1,
+            internal_id: id.abs(),
             proposal_id: id.abs().to_string(),
             proposal_category: Category {
-                category_id: NumberWithFormat("^##").fake::<String>(),
+                category_id: "".to_string(),
                 category_name: Industry().fake::<String>(),
-                category_description: CatchPhase().fake::<String>(),
+                category_description: "".to_string(),
             },
             proposal_title: CatchPhase().fake::<String>(),
             proposal_summary: CatchPhase().fake::<String>(),

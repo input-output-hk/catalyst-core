@@ -28,7 +28,7 @@ impl GraphqlClient {
 
     pub fn run_query(&self, data: &str) -> Result<Value, GraphQlClientError> {
         self.rest_client
-            .post("graphql", data.replace("\r\n", " ").replace("\n", " "))
+            .graphql(data.replace("\r\n", " ").replace("\n", " "))
             .map_err(GraphQlClientError::RestError)
     }
 

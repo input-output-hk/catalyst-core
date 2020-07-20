@@ -167,11 +167,13 @@ impl RestClient {
         self.api_token = Some(token);
     }
 
-    pub fn post(&self, path: &str, data: String) -> Result<serde_json::Value, RestError> {
+    pub fn graphql(&self, data: String) -> Result<serde_json::Value, RestError> {
+        self.post(&self.path_builder.graphql(), data)
+    }
+
+    fn post(&self, path: &str, data: String) -> Result<serde_json::Value, RestError> {
         let client = reqwest::blocking::Client::new();
-        let mut res = client
-            .post(&self.path(path))
-            .body(String::into_bytes(data.clone()));
+        let mut res = client.post(path).body(String::into_bytes(data.clone()));
 
         self.logger.log_post_body(&data);
         if let Some(api_token) = &self.api_token {
@@ -227,7 +229,7 @@ impl RestPathBuilder {
         self.path("health")
     }
 
-    fn path(&self, path: &str) -> String {
+    pub fn path(&self, path: &str) -> String {
         format!("http://{}{}{}", self.address, self.root, path)
     }
 }

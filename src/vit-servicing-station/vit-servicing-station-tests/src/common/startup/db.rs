@@ -112,13 +112,6 @@ impl DbBuilder {
         Ok(())
     }
 
-    fn try_insert_funds(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
-        if let Some(funds) = &self.funds {
-            DbInserter::new(connection).insert_funds(funds)?;
-        }
-        Ok(())
-    }
-
     pub fn build(&self, temp_dir: &TempDir) -> Result<PathBuf, DbBuilderError> {
         let db = temp_dir.child("vit_station.db");
         let db_path = db
@@ -134,7 +127,6 @@ impl DbBuilder {
         self.try_insert_token(&connection)?;
         self.try_insert_funds(&connection)?;
         self.try_insert_proposals(&connection)?;
-        self.try_insert_funds(&connection)?;
         Ok(PathBuf::from(db.path()))
     }
 }

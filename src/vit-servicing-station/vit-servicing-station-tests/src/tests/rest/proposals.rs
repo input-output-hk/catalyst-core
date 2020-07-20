@@ -33,7 +33,7 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
 
     let rest_client = server.rest_client_with_token(&hash);
 
-    let actual_proposal = rest_client.proposal(&expected_proposal.proposal_id)?;
+    let actual_proposal = rest_client.proposal(&expected_proposal.internal_id.to_string())?;
     assert_eq!(actual_proposal, expected_proposal);
 
     // non existing

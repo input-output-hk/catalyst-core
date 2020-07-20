@@ -8,9 +8,9 @@ use reqwest::StatusCode;
 #[test]
 pub fn get_funds_list_is_not_empty() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let (server, hash) = quick_start(&temp_dir)?;
+    let (server, snapshot) = quick_start(&temp_dir)?;
     server
-        .rest_client_with_token(&hash)
+        .rest_client_with_token(&snapshot.token_hash())
         .funds()
         .expect("cannot get funds");
     Ok(())

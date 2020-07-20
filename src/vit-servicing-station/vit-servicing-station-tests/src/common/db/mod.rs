@@ -33,6 +33,7 @@ impl<'a> DbInserter<'a> {
     pub fn insert_proposals(&self, proposals: &[Proposal]) -> Result<(), DbInserterError> {
         for proposal in proposals {
             let values = (
+                proposals::id.eq(proposal.internal_id),
                 proposals::proposal_id.eq(proposal.proposal_id.clone()),
                 proposals::proposal_category.eq(proposal.proposal_category.category_name.clone()),
                 proposals::proposal_title.eq(proposal.proposal_title.clone()),
@@ -76,6 +77,7 @@ impl<'a> DbInserter<'a> {
     pub fn insert_funds(&self, funds: &[Fund]) -> Result<(), DbInserterError> {
         for fund in funds {
             let values = (
+                funds::id.eq(fund.id),
                 funds::fund_name.eq(fund.fund_name.clone()),
                 funds::fund_goal.eq(fund.fund_goal.clone()),
                 funds::voting_power_info.eq(fund.voting_power_info.clone()),
@@ -92,6 +94,7 @@ impl<'a> DbInserter<'a> {
 
             for voteplan in &fund.chain_vote_plans {
                 let values = (
+                    voteplans::id.eq(voteplan.id),
                     voteplans::chain_voteplan_id.eq(voteplan.chain_voteplan_id.clone()),
                     voteplans::chain_vote_start_time.eq(voteplan.chain_vote_start_time),
                     voteplans::chain_vote_end_time.eq(voteplan.chain_vote_end_time),

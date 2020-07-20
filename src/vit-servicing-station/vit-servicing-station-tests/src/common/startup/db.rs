@@ -98,16 +98,16 @@ impl DbBuilder {
         Ok(())
     }
 
-    fn try_insert_proposals(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
-        if let Some(proposals) = &self.proposals {
-            DbInserter::new(connection).insert_proposals(proposals)?;
+    fn try_insert_funds(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+        if let Some(funds) = &self.funds {
+            DbInserter::new(connection).insert_funds(funds)?;
         }
         Ok(())
     }
 
-    fn try_insert_funds(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
-        if let Some(funds) = &self.funds {
-            DbInserter::new(connection).insert_funds(funds)?;
+    fn try_insert_proposals(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+        if let Some(proposals) = &self.proposals {
+            DbInserter::new(connection).insert_proposals(proposals)?;
         }
         Ok(())
     }

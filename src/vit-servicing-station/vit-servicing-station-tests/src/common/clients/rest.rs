@@ -1,4 +1,5 @@
 use hyper::StatusCode;
+use reqwest::blocking::Response;
 use thiserror::Error;
 use vit_servicing_station_lib::{
     db::models::{funds::Fund, proposals::Proposal},
@@ -15,21 +16,21 @@ impl RestClientLogger {
         if !self.is_enabled() {
             return;
         }
-        println!("Request: {}", request);
+        println!("Request: {:#?}", request);
     }
 
     pub fn log_response(&self, response: &reqwest::blocking::Response) {
         if !self.is_enabled() {
             return;
         }
-        println!("Response: {:?}", response);
+        println!("Response: {:#?}", response);
     }
 
     pub fn log_text(&self, content: &str) {
         if !self.is_enabled() {
             return;
         }
-        println!("Text: {}", content);
+        println!("Text: {:#?}", content);
     }
 
     pub fn is_enabled(&self) -> bool {
@@ -43,7 +44,7 @@ impl RestClientLogger {
 
 #[derive(Debug, Clone)]
 pub struct RestClient {
-    address: String,
+    path_builder: RestPathBuilder,
     api_token: Option<String>,
     logger: RestClientLogger,
 }
@@ -51,32 +52,41 @@ pub struct RestClient {
 impl RestClient {
     pub fn new(address: String) -> Self {
         Self {
-            address,
             api_token: None,
+            path_builder: RestPathBuilder::new(address),
             logger: RestClientLogger { enabled: true },
         }
     }
 
-    pub fn health(&self) -> Result<(), RestError> {
-        if self.get("health")?.status().is_success() {
-            return Ok(());
-        }
-        Err(RestError::ServerIsNotUp)
+    pub fn genesis(&self) -> Result<Vec<u8>, RestError> {
+        Ok(self.get(&self.path_builder.genesis())?.bytes()?.to_vec())
     }
 
-    pub fn funds(&self) -> Result<Vec<Fund>, RestError> {
-        let content = self.get_and_verify_status_code("funds")?.text()?;
-        if content.is_empty() {
-            return Ok(vec![]);
-        }
+    pub fn health(&self) -> Result<(), RestError> {
+        self.get_and_verify_status_code(&self.path_builder.health())
+            .map(|_| ())
+            .map_err(|_| RestError::ServerIsNotUp)
+    }
+
+    pub fn funds(&self) -> Result<Fund, RestError> {
+        let content = self
+            .get_and_verify_status_code(&self.path_builder.funds())?
+            .text()?;
+        self.logger.log_text(&content);
         serde_json::from_str(&content).map_err(|e| RestError::CannotDeserializeResponse {
             source: e,
             text: content.clone(),
         })
     }
 
+    pub fn path_builder(&self) -> &RestPathBuilder {
+        &self.path_builder
+    }
+
     pub fn proposals(&self) -> Result<Vec<Proposal>, RestError> {
-        let content = self.get_and_verify_status_code("proposals")?.text()?;
+        let content = self
+            .get_and_verify_status_code(&self.path_builder.proposals())?
+            .text()?;
         self.logger.log_text(&content);
         if content.is_empty() {
             return Ok(vec![]);
@@ -87,15 +97,42 @@ impl RestClient {
         })
     }
 
-    fn get(&self, path: &str) -> Result<reqwest::blocking::Response, reqwest::Error> {
-        let request = self.path(path);
+    pub fn proposal(&self, id: &str) -> Result<Proposal, RestError> {
+        let response = self.proposal_raw(id)?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.logger.log_text(&content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
+    pub fn proposal_raw(&self, id: &str) -> Result<Response, RestError> {
+        self.get(&self.path_builder().proposal(id))
+            .map_err(RestError::RequestError)
+    }
+
+    pub fn fund(&self, id: &str) -> Result<Fund, RestError> {
+        let response = self.fund_raw(id)?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.logger.log_text(&content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
+    pub fn fund_raw(&self, id: &str) -> Result<Response, RestError> {
+        self.get(&self.path_builder().fund(id))
+            .map_err(RestError::RequestError)
+    }
+
+    pub fn get(&self, path: &str) -> Result<reqwest::blocking::Response, reqwest::Error> {
+        self.logger.log_request(path);
         let client = reqwest::blocking::Client::new();
-        let mut res = client.get(&request);
+        let mut res = client.get(path);
 
         if let Some(api_token) = &self.api_token {
             res = res.header(API_TOKEN_HEADER, api_token.to_string());
         }
         let response = res.send()?;
+        self.logger.log_response(&response);
         Ok(response)
     }
 
@@ -104,20 +141,19 @@ impl RestClient {
         path: &str,
     ) -> Result<reqwest::blocking::Response, RestError> {
         let response = self.get(path)?;
+        self.verify_status_code(&response)?;
+        Ok(response)
+    }
+
+    fn verify_status_code(&self, response: &Response) -> Result<(), RestError> {
         if !response.status().is_success() {
             return Err(RestError::ErrorStatusCode(response.status()));
         }
-        Ok(response)
+        Ok(())
     }
 
     pub fn disable_log(&mut self) {
         self.logger.set_enabled(false);
-    }
-
-    fn path(&self, path: &str) -> String {
-        let path = format!("http://{}/api/v0/{}", self.address, path);
-        self.logger.log_request(&path);
-        path
     }
 
     pub fn set_api_token(&mut self, token: String) {
@@ -126,7 +162,7 @@ impl RestClient {
 
     pub fn post(&self, path: &str, data: String) -> Result<serde_json::Value, RestError> {
         let client = reqwest::blocking::Client::new();
-        let mut res = client.post(&self.path(path)).body(String::into_bytes(data));
+        let mut res = client.post(path).body(String::into_bytes(data));
 
         if let Some(api_token) = &self.api_token {
             res = res.header(API_TOKEN_HEADER, api_token.to_string());
@@ -135,6 +171,53 @@ impl RestClient {
         self.logger.log_response(&response);
         let result = response.text();
         Ok(serde_json::from_str(&result?)?)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct RestPathBuilder {
+    address: String,
+    root: String,
+}
+
+impl RestPathBuilder {
+    pub fn new<S: Into<String>>(address: S) -> Self {
+        RestPathBuilder {
+            root: "/api/v0/".to_string(),
+            address: address.into(),
+        }
+    }
+
+    pub fn proposals(&self) -> String {
+        self.path("proposals")
+    }
+
+    pub fn funds(&self) -> String {
+        self.path("fund")
+    }
+
+    pub fn proposal(&self, id: &str) -> String {
+        self.path(&format!("proposals/{}", id))
+    }
+
+    pub fn fund(&self, id: &str) -> String {
+        self.path(&format!("fund/{}", id))
+    }
+
+    pub fn genesis(&self) -> String {
+        self.path("block0")
+    }
+
+    pub fn graphql(&self) -> String {
+        self.path("graphql")
+    }
+
+    pub fn health(&self) -> String {
+        self.path("health")
+    }
+
+    fn path(&self, path: &str) -> String {
+        format!("http://{}{}{}", self.address, self.root, path)
     }
 }
 

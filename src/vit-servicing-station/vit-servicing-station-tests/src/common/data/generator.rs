@@ -126,8 +126,9 @@ impl Generator {
 
     fn gen_single_proposal(&mut self, fund: &Fund) -> Proposal {
         let id = self.id_generator.next_u32() as i32;
-        let (start, end, next) = self.consecutive_dates();
         let proposal_url = self.gen_http_address();
+
+        let voteplan = fund.chain_vote_plans.first().unwrap();
 
         Proposal {
             internal_id: id.abs(),
@@ -153,17 +154,11 @@ impl Generator {
             chain_proposal_id: self.hash().as_bytes().to_vec(),
             chain_proposal_index: self.id_generator.next_u32() as i64,
             chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
-            chain_voteplan_id: fund
-                .chain_vote_plans
-                .iter()
-                .next()
-                .unwrap()
-                .chain_voteplan_id
-                .clone(),
-            chain_vote_start_time: start.timestamp(),
-            chain_vote_end_time: end.timestamp(),
-            chain_committee_end_time: next.timestamp(),
-            chain_voteplan_payload: Words(3..5).fake::<Vec<String>>().join(" "),
+            chain_voteplan_id: voteplan.chain_voteplan_id.clone(),
+            chain_vote_start_time: voteplan.chain_vote_start_time,
+            chain_vote_end_time: voteplan.chain_vote_end_time,
+            chain_committee_end_time: voteplan.chain_committee_end,
+            chain_voteplan_payload: voteplan.chain_voteplan_payload.clone(),
             fund_id: fund.id,
         }
     }
@@ -206,7 +201,7 @@ impl Generator {
             chain_vote_start_time: start.timestamp(),
             chain_vote_end_time: end.timestamp(),
             chain_committee_end: next.timestamp(),
-            chain_voteplan_payload: Sentence(3..5).fake::<String>(),
+            chain_voteplan_payload: "bla".to_string(), //Sentence(3..5).fake::<String>(),
             fund_id,
         }
     }

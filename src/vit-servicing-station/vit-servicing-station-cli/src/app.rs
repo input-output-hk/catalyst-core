@@ -1,6 +1,8 @@
 use chrono::{Duration, Utc};
 use rand::Rng;
+use std::collections::HashSet;
 use std::io;
+use std::iter::FromIterator;
 use structopt::StructOpt;
 use vit_servicing_station_lib::{
     db::{
@@ -57,7 +59,7 @@ impl APITokenCmd {
             .collect()
     }
 
-    fn add_tokens_from_stream(db_url: &DBConnection) -> io::Result<()> {
+    fn add_tokens_from_stream(db_conn: &DBConnection) -> io::Result<()> {
         let mut base64_tokens: Vec<String> = Vec::new();
         let mut input = String::new();
         while let Ok(n) = io::stdin().read_line(&mut input) {
@@ -68,12 +70,23 @@ impl APITokenCmd {
             input.pop();
             base64_tokens.push(input.clone());
         }
-        APITokenCmd::add_tokens(&base64_tokens, db_url)
+        APITokenCmd::add_tokens(&base64_tokens, db_conn)
     }
 
     fn add_tokens(base64_tokens: &[String], db_conn: &DBConnection) -> io::Result<()> {
+        // filter duplicated tokens
+        let base64_tokens: HashSet<String> = HashSet::from_iter(base64_tokens.iter().cloned());
         for base64_token in base64_tokens {
-            let token = base64::decode_config(base64_token, base64::URL_SAFE_NO_PAD).unwrap();
+            let token =
+                base64::decode_config(&base64_token, base64::URL_SAFE_NO_PAD).map_err(|e| {
+                    io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        format!(
+                            "base64 encoded token `{}` is not valid due to:\n {}",
+                            base64_token, e
+                        ),
+                    )
+                })?;
             let api_token_data = APITokenData {
                 token: APIToken::new(token),
                 creation_time: Utc::now().timestamp(),

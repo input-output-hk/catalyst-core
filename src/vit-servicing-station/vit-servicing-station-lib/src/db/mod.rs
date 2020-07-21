@@ -26,6 +26,12 @@ WHERE
 ";
 
 pub fn load_db_connection_pool(db_url: &str) -> Result<DBConnectionPool, Error> {
+    // check if db file exists
+    if !std::path::Path::new(db_url).exists() {
+        return Err(Box::new(diesel::ConnectionError::InvalidConnectionUrl(
+            format!("{} url does not exists", db_url.to_string()),
+        )));
+    }
     let manager = ConnectionManager::<SqliteConnection>::new(db_url);
     let pool = Pool::builder().build(manager)?;
 

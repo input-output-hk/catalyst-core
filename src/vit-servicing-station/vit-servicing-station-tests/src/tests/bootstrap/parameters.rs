@@ -93,18 +93,20 @@ pub fn in_settings_file_with_malformed_path() {
 pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
 
-    let (token, hash) = data::token();
+    let (token, _) = data::token();
 
     let db_path = DbBuilder::new()
         .with_token(token)
         .with_proposals(data::proposals())
         .build(&temp_dir)?;
 
-    let server = ServerBootstrapper::new()
-        .with_block0_path(db_path.to_str().unwrap())
-        .with_db_path(BLOCK0_BIN)
-        .start()?;
-
-    assert!(server.rest_client_with_token(&hash).health().is_err());
+    let mut command_builder: BootstrapCommandBuilder = Default::default();
+    command_builder
+        .block0_path(db_path.to_str().unwrap())
+        .db_url(BLOCK0_BIN)
+        .build()
+        .assert()
+        .failure()
+        .code(ApplicationExitCode::DBConnectionError as i32);
     Ok(())
 }

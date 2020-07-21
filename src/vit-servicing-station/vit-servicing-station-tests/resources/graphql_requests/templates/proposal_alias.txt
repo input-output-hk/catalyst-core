@@ -1,0 +1,12 @@
+{  
+    "query":"{ query_1: proposal(proposalId: \"{{ id }}\") {
+                internalId,
+                proposalId,
+                category {
+                    categoryId,
+                    categoryName,
+                    categoryDescription,
+                }
+            }
+        }" 
+}

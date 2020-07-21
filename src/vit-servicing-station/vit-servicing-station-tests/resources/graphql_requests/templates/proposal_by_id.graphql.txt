@@ -1,4 +1,4 @@
-{
+{    
     "query":"{ 
         proposal(proposalId: \"{{ id }}\"){ 
             internalId,

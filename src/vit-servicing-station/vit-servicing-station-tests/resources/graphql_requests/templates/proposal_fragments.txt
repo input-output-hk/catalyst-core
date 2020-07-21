@@ -1,0 +1,22 @@
+{
+    "query": "{
+            left: proposal(proposalId: \"{{ id }}\") {
+                ...proposalFragment
+            }
+
+            right: proposal(proposalId: \"{{ id }}\") {
+                ...proposalFragment
+            }
+        
+
+        fragment proposalFragment on proposals {
+            internalId,
+            proposalId,
+            category {
+                categoryId,
+                categoryName,
+                categoryDescription,
+            }
+        }
+    }"
+}

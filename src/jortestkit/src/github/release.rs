@@ -1,12 +1,37 @@
 use crate::github::Release;
+use chrono::{DateTime, Utc};
 use os_info::Type as OsType;
 use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
+
+mod serializer {
+    use chrono::{DateTime, TimeZone, Utc};
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    const FORMAT: &str = "%Y-%m-%dT%H:%M:%SZ";
+
+    pub fn serialize<S>(date: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = format!("{}", date.format(FORMAT));
+        serializer.serialize_str(&s)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Utc.datetime_from_str(&s, FORMAT)
+            .map_err(serde::de::Error::custom)
+    }
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ReleaseDto {
     tag_name: String,
-    published_at: SystemTime,
+    #[serde(with = "serializer")]
+    published_at: DateTime<Utc>,
     assets: Vec<AssetDto>,
     prerelease: bool,
 }
@@ -15,7 +40,7 @@ impl Into<Release> for ReleaseDto {
     fn into(self) -> Release {
         Release {
             version: self.tag_name.clone(),
-            released_date: self.published_at,
+            released_date: self.published_at.into(),
             releases_per_os: self
                 .assets
                 .iter()
@@ -32,7 +57,7 @@ impl ReleaseDto {
         self.tag_name
     }
 
-    pub fn published_at(&self) -> &SystemTime {
+    pub fn published_at(&self) -> &DateTime<Utc> {
         &self.published_at
     }
 

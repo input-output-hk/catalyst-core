@@ -49,11 +49,14 @@ impl RestClientLogger {
     }
 }
 
+const ORIGIN: &str = "Origin";
+
 #[derive(Debug, Clone)]
 pub struct RestClient {
     path_builder: RestPathBuilder,
     api_token: Option<String>,
     logger: RestClientLogger,
+    origin: Option<String>,
 }
 
 impl RestClient {
@@ -62,6 +65,7 @@ impl RestClient {
             api_token: None,
             path_builder: RestPathBuilder::new(address),
             logger: RestClientLogger { enabled: true },
+            origin: None,
         }
     }
 
@@ -158,6 +162,9 @@ impl RestClient {
         if let Some(api_token) = &self.api_token {
             res = res.header(API_TOKEN_HEADER, api_token.to_string());
         }
+        if let Some(origin) = &self.origin {
+            res = res.header(ORIGIN, origin.to_string());
+        }
         let response = res.send()?;
         self.logger.log_response(&response);
         Ok(response)
@@ -185,6 +192,10 @@ impl RestClient {
 
     pub fn set_api_token(&mut self, token: String) {
         self.api_token = Some(token);
+    }
+
+    pub fn set_origin<S: Into<String>>(&mut self, origin: S) {
+        self.origin = Some(origin.into());
     }
 
     pub fn graphql(&self, data: String) -> Result<serde_json::Value, RestError> {

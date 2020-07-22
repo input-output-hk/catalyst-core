@@ -1,11 +1,11 @@
+use super::{BootstrapCommandBuilder, ServerSettingsBuilder};
+use crate::common::{paths::BLOCK0_BIN, server::Server, startup::db::DbBuilderError};
 use std::process::Stdio;
 use thiserror::Error;
 
-use super::{BootstrapCommandBuilder, ServerSettingsBuilder};
-use crate::common::{paths::BLOCK0_BIN, server::Server, startup::db::DbBuilderError};
-
 pub struct ServerBootstrapper {
     settings_builder: ServerSettingsBuilder,
+    allowed_origins: Option<String>,
 }
 
 impl ServerBootstrapper {
@@ -15,7 +15,10 @@ impl ServerBootstrapper {
             .with_random_localhost_address()
             .with_block0_path(BLOCK0_BIN.to_string());
 
-        Self { settings_builder }
+        Self {
+            settings_builder,
+            allowed_origins: None,
+        }
     }
 
     pub fn with_localhost_address(&mut self, port: u32) -> &mut Self {
@@ -33,17 +36,26 @@ impl ServerBootstrapper {
         self
     }
 
+    pub fn with_allowed_origins<S: Into<String>>(&mut self, allowed_origins: S) -> &mut Self {
+        self.allowed_origins = Some(allowed_origins.into());
+        self
+    }
+
     pub fn start(&self) -> Result<Server, ServerBootstrapperError> {
         let settings = self.settings_builder.build();
 
         let mut command_builder: BootstrapCommandBuilder = Default::default();
 
-        let mut command = command_builder
+        command_builder
             .address(&settings.address.to_string())
             .db_url(&settings.db_url)
-            .block0_path(&settings.block0_path)
-            .build();
+            .block0_path(&settings.block0_path);
 
+        if let Some(allowed_origins) = self.allowed_origins.as_ref() {
+            command_builder.allowed_origins(allowed_origins);
+        }
+        let mut command = command_builder.build();
+        println!("{:?}", command);
         let child = command.stdout(Stdio::inherit()).spawn()?;
 
         std::thread::sleep(std::time::Duration::from_secs(1));

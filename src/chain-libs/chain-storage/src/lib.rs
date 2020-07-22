@@ -116,7 +116,7 @@ impl BlockStore {
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader, self.id_length)
+                BlockInfo::deserialize(&mut block_info_reader, self.id_length, block_hash)
             })
     }
 
@@ -241,7 +241,7 @@ impl BlockStore {
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader, self.id_length)
+                BlockInfo::deserialize(&mut block_info_reader, self.id_length, descendent_id)
             })?;
 
         if ancestor_id == descendent_id {
@@ -258,7 +258,7 @@ impl BlockStore {
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader, self.id_length)
+                BlockInfo::deserialize(&mut block_info_reader, self.id_length, ancestor_id)
             })?;
 
         if ancestor.chain_length() >= descendent.chain_length() {
@@ -275,7 +275,11 @@ impl BlockStore {
         while let Some(parent_block_info) =
             info.get(current_block_info.parent_id())?.map(|block_info| {
                 let mut block_info_reader: &[u8] = &block_info;
-                BlockInfo::deserialize(&mut block_info_reader, self.id_length)
+                BlockInfo::deserialize(
+                    &mut block_info_reader,
+                    self.id_length,
+                    current_block_info.parent_id(),
+                )
             })
         {
             distance += 1;
@@ -317,7 +321,7 @@ where
         .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
         .map(|block_info_bin| {
             let mut block_info_reader: &[u8] = &block_info_bin;
-            BlockInfo::deserialize(&mut block_info_reader, store.id_length)
+            BlockInfo::deserialize(&mut block_info_reader, store.id_length, block_hash)
         })?;
 
     if distance >= current.chain_length() {
@@ -338,7 +342,7 @@ where
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader, store.id_length)
+                BlockInfo::deserialize(&mut block_info_reader, store.id_length, current.parent_id())
             })?;
     }
 
@@ -367,7 +371,11 @@ fn put_block_impl(
 
         let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
         let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
-        let mut parent_block_info = BlockInfo::deserialize(&mut parent_block_info_reader, id_size);
+        let mut parent_block_info = BlockInfo::deserialize(
+            &mut parent_block_info_reader,
+            id_size,
+            block_info.parent_id(),
+        );
         parent_block_info.add_ref();
         info.insert(parent_block_info.id(), parent_block_info.serialize())?;
     }
@@ -396,7 +404,7 @@ fn put_tag_impl(
 ) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
     match info.get(block_hash)? {
         Some(info_bin) => {
-            let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size);
+            let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, block_hash);
             block_info.add_ref();
             let info_bin = block_info.serialize();
             info.insert(block_hash, info_bin)?;
@@ -404,8 +412,9 @@ fn put_tag_impl(
             let maybe_old_block_hash = tags.insert(tag_name, block_hash)?;
 
             if let Some(old_block_hash) = maybe_old_block_hash {
-                let info_bin = info.get(old_block_hash)?.unwrap();
-                let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size);
+                let info_bin = info.get(old_block_hash.clone())?.unwrap();
+                let mut block_info =
+                    BlockInfo::deserialize(&info_bin[..], id_size, old_block_hash.to_vec());
                 block_info.remove_ref();
                 let info_bin = block_info.serialize();
                 info.insert(block_info.id(), info_bin)?;
@@ -429,7 +438,7 @@ fn remove_tip_impl(
 ) -> Result<Option<Vec<u8>>, ConflictableTransactionError<()>> {
     let block_info_bin = info.get(block_id)?.unwrap();
     let mut block_info_reader: &[u8] = &block_info_bin;
-    let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size);
+    let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id);
 
     if block_info.ref_count() != 0 {
         return Ok(None);
@@ -450,7 +459,11 @@ fn remove_tip_impl(
 
     let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
     let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
-    let mut parent_block_info = BlockInfo::deserialize(&mut parent_block_info_reader, id_size);
+    let mut parent_block_info = BlockInfo::deserialize(
+        &mut parent_block_info_reader,
+        id_size,
+        block_info.parent_id(),
+    );
     parent_block_info.remove_ref();
     info.insert(parent_block_info.id(), parent_block_info.serialize())?;
 

@@ -49,14 +49,16 @@ impl BlockInfo {
 
         w.write_all(&self.ref_count.to_le_bytes()).unwrap();
 
-        w.write_all(&self.id).unwrap();
-
         w.write_all(&self.parent_id).unwrap();
 
         w
     }
 
-    pub(crate) fn deserialize<R: Read>(mut r: R, id_size: usize) -> Self {
+    pub(crate) fn deserialize<R: Read, T: Into<Box<[u8]>>>(
+        mut r: R,
+        id_size: usize,
+        id: T,
+    ) -> Self {
         let mut chain_length_bytes = [0u8; 4];
         r.read_exact(&mut chain_length_bytes).unwrap();
         let chain_length = u32::from_le_bytes(chain_length_bytes);
@@ -65,14 +67,11 @@ impl BlockInfo {
         r.read_exact(&mut ref_count_bytes).unwrap();
         let ref_count = u32::from_le_bytes(ref_count_bytes);
 
-        let mut id = vec![0u8; id_size];
-        r.read_exact(&mut id).unwrap();
-
         let mut parent_id = vec![0u8; id_size];
         r.read_exact(&mut parent_id).unwrap();
 
         Self {
-            id: id.into_boxed_slice(),
+            id: id.into(),
             parent_id: parent_id.into_boxed_slice(),
             chain_length,
             ref_count,

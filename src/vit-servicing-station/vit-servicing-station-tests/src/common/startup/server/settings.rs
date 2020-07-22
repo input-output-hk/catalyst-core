@@ -1,16 +1,18 @@
 use crate::common::startup::get_available_port;
 use assert_fs::{fixture::PathChild, TempDir};
 use std::{net::SocketAddr, path::PathBuf};
-use vit_servicing_station_lib::server::settings::{dump_settings_to_file, ServiceSettings};
+use vit_servicing_station_lib::server::settings::{dump_settings_to_file, Cors, ServiceSettings};
 
 pub struct ServerSettingsBuilder {
     settings: ServiceSettings,
+    cors: Option<Cors>,
 }
 
 impl Default for ServerSettingsBuilder {
     fn default() -> Self {
         Self {
             settings: Default::default(),
+            cors: None,
         }
     }
 }
@@ -37,6 +39,11 @@ impl ServerSettingsBuilder {
 
     pub fn with_block0_path<S: Into<String>>(&mut self, block0_path: S) -> &mut Self {
         self.settings.block0_path = block0_path.into();
+        self
+    }
+
+    pub fn with_cors(&mut self, cors: Cors) -> &mut Self {
+        self.cors = Some(cors);
         self
     }
 

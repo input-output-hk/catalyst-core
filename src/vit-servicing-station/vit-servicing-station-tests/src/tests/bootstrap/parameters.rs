@@ -1,6 +1,8 @@
 use crate::common::{
+    data,
     paths::BLOCK0_BIN,
     startup::{
+        db::DbBuilder,
         empty_db,
         server::{dump_settings, BootstrapCommandBuilder, ServerSettingsBuilder},
     },
@@ -83,4 +85,26 @@ pub fn in_settings_file_with_malformed_path() {
         .assert()
         .failure()
         .code(ApplicationExitCode::LoadSettingsError as i32);
+}
+
+#[test]
+pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
+    let temp_dir = TempDir::new().unwrap();
+
+    let (token, _) = data::token();
+
+    let db_path = DbBuilder::new()
+        .with_token(token)
+        .with_proposals(data::proposals())
+        .build(&temp_dir)?;
+
+    let mut command_builder: BootstrapCommandBuilder = Default::default();
+    command_builder
+        .block0_path(db_path.to_str().unwrap())
+        .db_url(BLOCK0_BIN)
+        .build()
+        .assert()
+        .failure()
+        .code(ApplicationExitCode::DBConnectionError as i32);
+    Ok(())
 }

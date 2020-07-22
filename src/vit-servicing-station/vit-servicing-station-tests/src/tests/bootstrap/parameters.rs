@@ -4,9 +4,7 @@ use crate::common::{
     startup::{
         db::DbBuilder,
         empty_db,
-        server::{
-            dump_settings, BootstrapCommandBuilder, ServerBootstrapper, ServerSettingsBuilder,
-        },
+        server::{dump_settings, BootstrapCommandBuilder, ServerSettingsBuilder},
     },
 };
 use assert_cmd::assert::OutputAssertExt;

@@ -164,7 +164,12 @@ impl Generator {
             chain_proposal_id: self.hash().as_bytes().to_vec(),
             chain_proposal_index: self.id_generator.next_u32() as i64,
             chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
-            chain_voteplan_id: voteplan.chain_voteplan_id.clone(),
+            chain_voteplan_id: fund
+                .chain_vote_plans
+                .get(0)
+                .unwrap()
+                .chain_voteplan_id
+                .clone(),
             chain_vote_start_time: voteplan.chain_vote_start_time,
             chain_vote_end_time: voteplan.chain_vote_end_time,
             chain_committee_end_time: voteplan.chain_committee_end,

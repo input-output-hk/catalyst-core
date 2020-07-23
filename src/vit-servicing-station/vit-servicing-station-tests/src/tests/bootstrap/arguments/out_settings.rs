@@ -10,7 +10,6 @@ use assert_fs::{fixture::PathChild, TempDir};
 use std::path::PathBuf;
 use vit_servicing_station_lib::server::settings::ServiceSettings;
 
-#[ignore]
 #[test]
 pub fn out_settings_provided() {
     let temp_dir = TempDir::new().unwrap();

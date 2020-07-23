@@ -11,6 +11,10 @@ const TLS_CERT_FILE: &str = "TLS_CERT_FILE";
 const TLS_PRIVATE_KEY_FILE: &str = "TLS_PK_FILE";
 const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
 
+const ADDRESS_DEFAULT: &str = "0.0.0.0:3030";
+const DB_URL_DEFAULT: &str = "./db/database.sqlite3";
+const BLOCK0_PATH_DEFAULT: &str = "./resources/v0/block0.bin";
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
 #[serde(deny_unknown_fields)]
 #[structopt(rename_all = "kebab-case")]
@@ -26,7 +30,7 @@ pub struct ServiceSettings {
     pub out_settings_file: Option<String>,
 
     /// Server binding address
-    #[structopt(long, default_value = "0.0.0.0:3030")]
+    #[structopt(long, default_value = ADDRESS_DEFAULT)]
     pub address: SocketAddr,
 
     #[serde(default)]
@@ -38,11 +42,11 @@ pub struct ServiceSettings {
     pub cors: Cors,
 
     /// Database url
-    #[structopt(long, env = DATABASE_URL, default_value = "./db/database.sqlite3")]
+    #[structopt(long, env = DATABASE_URL, default_value = DB_URL_DEFAULT)]
     pub db_url: String,
 
     /// block0 static file path
-    #[structopt(long, default_value = "./resources/v0/block0.bin")]
+    #[structopt(long, default_value = BLOCK0_PATH_DEFAULT)]
     pub block0_path: String,
 }
 
@@ -84,6 +88,46 @@ fn parse_allowed_origins(arg: &str) -> Result<AllowedOrigins, std::io::Error> {
         res.push(CorsOrigin::from_str(origin_str)?);
     }
     Ok(AllowedOrigins(res))
+}
+
+impl ServiceSettings {
+    pub fn override_from(&self, other_settings: &ServiceSettings) -> Self {
+        let mut return_settings = self.clone();
+
+        if let Some(in_file) = &other_settings.in_settings_file {
+            return_settings.in_settings_file = Some(in_file.clone());
+        }
+
+        if let Some(out_file) = &other_settings.out_settings_file {
+            return_settings.out_settings_file = Some(out_file.clone());
+        }
+
+        if other_settings.address != SocketAddr::from_str(ADDRESS_DEFAULT).unwrap() {
+            return_settings.address = other_settings.address;
+        }
+
+        if other_settings.tls.is_loaded() {
+            return_settings.tls = other_settings.tls.clone();
+        }
+
+        if other_settings.cors.allowed_origins.is_some() {
+            return_settings.cors.allowed_origins = other_settings.cors.allowed_origins.clone();
+        }
+
+        if other_settings.cors.max_age_secs.is_some() {
+            return_settings.cors.max_age_secs = other_settings.cors.max_age_secs
+        }
+
+        if other_settings.db_url != DB_URL_DEFAULT {
+            return_settings.db_url = other_settings.db_url.clone();
+        }
+
+        if other_settings.block0_path != BLOCK0_PATH_DEFAULT {
+            return_settings.block0_path = other_settings.block0_path.clone();
+        }
+
+        return_settings
+    }
 }
 
 impl Tls {
@@ -332,5 +376,30 @@ mod test {
             allowed_origins[0],
             CorsOrigin("https://foo.test".to_string())
         );
+    }
+
+    #[test]
+    fn merge_settings() {
+        let default = ServiceSettings::default();
+        let other_settings = ServiceSettings::from_iter(&[
+            "test",
+            "--address",
+            "127.0.0.1:8080",
+            "--cert-file",
+            "foo.bar",
+            "--priv-key-file",
+            "bar.foo",
+            "--db-url",
+            "database.sqlite3",
+            "--max-age-secs",
+            "60",
+            "--allowed-origins",
+            "https://foo.test;https://test.foo:5050",
+            "--block0-path",
+            "block0.bin",
+        ]);
+
+        let merged_settings = default.override_from(&other_settings);
+        assert_eq!(merged_settings, other_settings);
     }
 }

@@ -9,22 +9,26 @@ use vit_servicing_station_lib::{
 async fn main() {
     // load settings from command line (defaults to env variables)
     let mut settings: ServiceSettings = ServiceSettings::from_args();
+
+    // load settings from file if specified
+    if let Some(settings_file) = &settings.in_settings_file {
+        let in_file_settings = server_settings::load_settings_from_file(settings_file)
+            .unwrap_or_else(|e| {
+                println!("Error loading settings from file {}, {}", settings_file, e);
+                std::process::exit(ApplicationExitCode::LoadSettingsError.into())
+            });
+        // merge input file settings override by cli arguments
+        settings = in_file_settings.override_from(&settings);
+    }
+
     // dump settings and exit if specified
     if let Some(settings_file) = &settings.out_settings_file {
         server_settings::dump_settings_to_file(settings_file, &settings).unwrap_or_else(|e| {
             println!("Error writing settings to file {}: {}", settings_file, e);
             std::process::exit(ApplicationExitCode::WriteSettingsError.into())
         });
-        return;
+        std::process::exit(0);
     }
-
-    // load settings from file if specified
-    if let Some(settings_file) = &settings.in_settings_file {
-        settings = server_settings::load_settings_from_file(settings_file).unwrap_or_else(|e| {
-            println!("Error loading settings from file {}, {}", settings_file, e);
-            std::process::exit(ApplicationExitCode::LoadSettingsError.into())
-        });
-    };
 
     // load db pool
     let db_pool = db::load_db_connection_pool(&settings.db_url).unwrap_or_else(|e| {

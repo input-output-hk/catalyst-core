@@ -1,7 +1,7 @@
 use super::{RestClient, RestError};
 use askama::Template;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::proposals::Proposal;
+use vit_servicing_station_lib::db::models::{funds::Fund, proposals::Proposal};
 
 pub mod templates;
 
@@ -20,9 +20,25 @@ impl GraphqlClient {
 
     pub fn proposal_by_id(&self, id: u32) -> Result<Proposal, GraphQlClientError> {
         let proposal = templates::ProposalById { id };
-        let data = proposal.render()?.replace("\r\n", "").replace("\n", "");
+        let data = proposal.render()?;
         let query_result = self.run_query(&data)?;
         serde_json::from_value(query_result["data"]["proposal"].clone())
+            .map_err(GraphQlClientError::CannotDeserialize)
+    }
+
+    pub fn fund_by_id(&self, id: i32) -> Result<Fund, GraphQlClientError> {
+        let fund = templates::FundById { id };
+        let data = fund.render()?;
+        let query_result = self.run_query(&data)?;
+        serde_json::from_value(query_result["data"]["fund"].clone())
+            .map_err(GraphQlClientError::CannotDeserialize)
+    }
+
+    pub fn funds(&self) -> Result<Vec<Fund>, GraphQlClientError> {
+        let funds = templates::Funds;
+        let data = funds.render()?;
+        let query_result = self.run_query(&data)?;
+        serde_json::from_value(query_result["data"]["funds"].clone())
             .map_err(GraphQlClientError::CannotDeserialize)
     }
 

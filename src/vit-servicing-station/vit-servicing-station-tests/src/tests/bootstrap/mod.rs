@@ -4,7 +4,7 @@ use crate::common::{
 };
 use assert_fs::TempDir;
 
-pub mod parameters;
+pub mod arguments;
 
 #[test]
 pub fn bootstrap_with_random_data() -> Result<(), Box<dyn std::error::Error>> {

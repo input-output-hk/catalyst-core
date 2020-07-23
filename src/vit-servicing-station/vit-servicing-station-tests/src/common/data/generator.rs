@@ -43,6 +43,10 @@ impl Snapshot {
         self.proposals.iter().find(|x| x.proposal_id.eq(id))
     }
 
+    pub fn fund_by_id(&self, id: i32) -> Option<&Fund> {
+        self.funds.iter().find(|x| x.id == id)
+    }
+
     pub fn token(&self) -> (APITokenData, String) {
         self.token.clone()
     }

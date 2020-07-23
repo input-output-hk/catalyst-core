@@ -54,3 +54,31 @@ pub struct ProposalFragments {
 pub struct ProposalRequiredField {
     pub id: u32,
 }
+
+#[derive(Template)]
+#[template(path = "fund_by_id.txt")]
+pub struct FundById {
+    pub id: i32,
+}
+
+#[derive(Template)]
+#[template(path = "fund_field_does_not_exist.txt")]
+pub struct FundsFieldDoesNotExist;
+
+#[derive(Template)]
+#[template(path = "fund_required_fields.txt")]
+pub struct FundsRequiredFields;
+
+#[derive(Template)]
+#[template(path = "fund_without_argument.txt")]
+pub struct FundWithoutArgument;
+
+#[derive(Template)]
+#[template(path = "funds.txt")]
+pub struct Funds;
+
+#[derive(Template)]
+#[template(path = "fund_by_id_wrong_arg_type.txt")]
+pub struct FundByIdWrongArgType {
+    pub id: String,
+}

@@ -3274,6 +3274,7 @@ dependencies = [
  "dotenv",
  "itertools",
  "libsqlite3-sys",
+ "log 0.4.11",
  "serde",
  "serde_json",
  "simplelog",

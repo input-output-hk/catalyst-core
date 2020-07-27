@@ -1,6 +1,6 @@
 use structopt::StructOpt;
 use vit_servicing_station_lib::{
-    db, server, server::exit_codes::ApplicationExitCode, server::log::config_log,
+    db, logging::config::config_log, server, server::exit_codes::ApplicationExitCode,
     server::settings as server_settings, server::settings::ServiceSettings, v0,
 };
 
@@ -29,14 +29,14 @@ async fn main() {
         std::process::exit(0);
     }
 
-    // setup log
+    // setup logging
     config_log(
         settings.log.log_level.into(),
         settings.log.log_output_path.clone(),
         None,
     )
     .unwrap_or_else(|e| {
-        log::error!("Error setting up log: {}", e);
+        log::error!("Error setting up logging: {}", e);
         std::process::exit(ApplicationExitCode::LoadSettingsError.into())
     });
 

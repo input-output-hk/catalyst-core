@@ -10,6 +10,7 @@ pub enum LogMessageId {
 pub struct LogMessage {
     id: LogMessageId,
     level: log::Level,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     tags: Vec<String>,
     message: String,
     timestamp: i64,

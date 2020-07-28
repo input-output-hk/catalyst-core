@@ -9,7 +9,11 @@ pub struct BlockInfo {
 }
 
 impl BlockInfo {
-    pub fn new<T: Into<Box<[u8]>>>(id: T, parent_id: T, chain_length: u32) -> Self {
+    pub fn new<A: Into<Box<[u8]>>, B: Into<Box<[u8]>>>(
+        id: A,
+        parent_id: B,
+        chain_length: u32,
+    ) -> Self {
         Self {
             id: id.into(),
             parent_id: parent_id.into(),

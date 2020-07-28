@@ -1,5 +1,6 @@
 [workspace]
 members = [
+  "logging-lib",
   "vit-servicing-station-cli",
   "vit-servicing-station-lib",
   "vit-servicing-station-server",

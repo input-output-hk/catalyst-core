@@ -1,8 +1,11 @@
 use structopt::StructOpt;
+
 use vit_servicing_station_lib::{
-    db, logging::config::config_log, server, server::exit_codes::ApplicationExitCode,
-    server::settings as server_settings, server::settings::ServiceSettings, v0,
+    db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
+    server::settings::ServiceSettings, v0,
 };
+
+use logging_lib::{config::config_log, *};
 
 #[tokio::main]
 async fn main() {
@@ -13,7 +16,7 @@ async fn main() {
     if let Some(settings_file) = &settings.in_settings_file {
         let in_file_settings = server_settings::load_settings_from_file(settings_file)
             .unwrap_or_else(|e| {
-                log::error!("Error loading settings from file {}, {}", settings_file, e);
+                error!("Error loading settings from file {}, {}", settings_file, e);
                 std::process::exit(ApplicationExitCode::LoadSettingsError.into())
             });
         // merge input file settings override by cli arguments
@@ -56,10 +59,9 @@ async fn main() {
 
     let app = v0::filter(context, settings.enable_api_tokens).await;
 
-    log::info!(
+    info!(
         "Running server at {}, database located at {}",
-        settings.address,
-        settings.db_url
+        settings.address, settings.db_url
     );
 
     // run server with settings

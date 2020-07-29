@@ -1,4 +1,5 @@
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
+use simplelog::LevelFilter;
 use std::io::ErrorKind;
 use std::net::SocketAddr;
 use std::ops::Deref;
@@ -48,6 +49,10 @@ pub struct ServiceSettings {
     /// block0 static file path
     #[structopt(long, default_value = BLOCK0_PATH_DEFAULT)]
     pub block0_path: String,
+
+    #[serde(default)]
+    #[structopt(flatten)]
+    pub log: Log,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt, Default)]
@@ -80,6 +85,30 @@ pub struct Cors {
     /// If none provided, CORS responses won't be cached
     #[structopt(long)]
     pub max_age_secs: Option<u64>,
+}
+
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum LogLevel {
+    Disabled,
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt)]
+#[serde(deny_unknown_fields)]
+#[structopt(rename_all = "kebab-case")]
+pub struct Log {
+    /// Output log file path
+    #[structopt(long)]
+    pub log_output_path: Option<String>,
+
+    /// Application logging level
+    #[structopt(long, default_value = "info")]
+    pub log_level: LogLevel,
 }
 
 fn parse_allowed_origins(arg: &str) -> Result<AllowedOrigins, std::io::Error> {
@@ -219,6 +248,47 @@ impl Default for AllowedOrigins {
     }
 }
 
+impl From<LogLevel> for LevelFilter {
+    fn from(level: LogLevel) -> Self {
+        match level {
+            LogLevel::Disabled => LevelFilter::Off,
+            LogLevel::Error => LevelFilter::Error,
+            LogLevel::Warn => LevelFilter::Warn,
+            LogLevel::Info => LevelFilter::Info,
+            LogLevel::Debug => LevelFilter::Debug,
+            LogLevel::Trace => LevelFilter::Trace,
+        }
+    }
+}
+
+impl FromStr for LogLevel {
+    type Err = std::io::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "disabled" => Ok(Self::Disabled),
+            "error" => Ok(Self::Error),
+            "warn" => Ok(Self::Warn),
+            "info" => Ok(Self::Info),
+            "debug" => Ok(Self::Debug),
+            "trace" => Ok(Self::Trace),
+            _ => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("{} is not a valid log level", s),
+            )),
+        }
+    }
+}
+
+impl Default for Log {
+    fn default() -> Self {
+        Self {
+            log_output_path: None,
+            log_level: LogLevel::Info,
+        }
+    }
+}
+
 pub fn load_settings_from_file(file_path: &str) -> Result<ServiceSettings, impl std::error::Error> {
     let f = fs::File::open(file_path)?;
     serde_json::from_reader(&f)
@@ -274,7 +344,11 @@ mod test {
                 "max_age_secs" : 60
             },
             "db_url": "",
-            "block0_path": "./test/bin.test"
+            "block0_path": "./test/bin.test",
+            "log" : {
+                "log_output_path" : "./server.log",
+                "log_level" : "error"    
+            }
         }
         "#;
 
@@ -284,6 +358,8 @@ mod test {
             SocketAddr::from_str("127.0.0.1:3030").unwrap()
         );
         assert_eq!(config.block0_path, "./test/bin.test");
+        assert_eq!(config.log.log_output_path.unwrap(), "./server.log");
+        assert_eq!(config.log.log_level, LogLevel::Error);
         let tls_config = config.tls;
         let cors_config = config.cors;
         assert_eq!(tls_config.cert_file.unwrap(), "./foo/bar.pem");
@@ -292,7 +368,7 @@ mod test {
             cors_config.allowed_origins.unwrap()[0],
             CorsOrigin("https://foo.test".to_string())
         );
-        assert_eq!(cors_config.max_age_secs.unwrap(), 60)
+        assert_eq!(cors_config.max_age_secs.unwrap(), 60);
     }
 
     #[test]
@@ -321,6 +397,10 @@ mod test {
             "60",
             "--allowed-origins",
             "https://foo.test;https://test.foo:5050",
+            "--log-output-path",
+            "./log.log",
+            "--log-level",
+            "error",
         ]);
 
         assert_eq!(
@@ -339,6 +419,8 @@ mod test {
             allowed_origins[0],
             CorsOrigin("https://foo.test".to_string())
         );
+        assert_eq!(settings.log.log_output_path.unwrap(), "./log.log");
+        assert_eq!(settings.log.log_level, LogLevel::Error);
     }
 
     #[test]

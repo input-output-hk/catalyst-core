@@ -1,5 +1,5 @@
 use super::config::ServiceSettings;
-use super::config::{Cors, Tls};
+use super::config::{Cors, Log, Tls};
 use std::net::SocketAddr;
 use std::str::FromStr;
 
@@ -13,6 +13,7 @@ impl Default for ServiceSettings {
             cors: Cors::default(),
             db_url: "./db/database.sqlite3".to_string(),
             block0_path: "./resources/v0/block0.bin".to_string(),
+            log: Log::default(),
         }
     }
 }

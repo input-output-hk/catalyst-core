@@ -36,6 +36,12 @@ pub struct BlockStore {
     id_length: usize,
 }
 
+enum RemoveTipResult {
+    NextTip(Vec<u8>),
+    HitColdStore(Vec<u8>),
+    Done,
+}
+
 mod tree {
     pub const BLOCKS: &str = "blocks";
     pub const INFO: &str = "info";
@@ -79,11 +85,11 @@ impl BlockStore {
     /// * `block_info` - block metadata for internal needs (indexing, linking
     ///   between blocks, etc)
     pub fn put_block(&mut self, block: &[u8], block_info: BlockInfo) -> Result<(), Error> {
-        let block_in_cold_store = self.cold.block_exists(block_info.parent_id());
-
-        if block_in_cold_store {
+        if self.cold.block_exists(block_info.id()) {
             return Err(Error::BlockAlreadyPresent);
         }
+
+        let parent_in_cold_store = self.cold.block_exists(block_info.parent_id());
 
         let blocks = self.hot.open_tree(tree::BLOCKS)?;
         let info = self.hot.open_tree(tree::INFO)?;
@@ -98,7 +104,7 @@ impl BlockStore {
                     height_to_block_ids,
                     tips,
                     block,
-                    block_in_cold_store,
+                    parent_in_cold_store,
                     &block_info,
                     self.root_id.as_ref(),
                     self.id_length,
@@ -228,10 +234,10 @@ impl BlockStore {
 
         let result = (&blocks, &info, &height_to_block_ids, &tips).transaction(
             |(blocks, info, height_to_block_ids, tips)| {
-                let mut maybe_current_tip = Some(Vec::from(tip_id));
+                let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
 
-                while let Some(current_tip) = &maybe_current_tip {
-                    maybe_current_tip = remove_tip_impl(
+                while let RemoveTipResult::NextTip(current_tip) = &result {
+                    result = remove_tip_impl(
                         blocks,
                         info,
                         height_to_block_ids,
@@ -243,11 +249,24 @@ impl BlockStore {
                     )?;
                 }
 
-                Ok(Ok(()))
+                Ok(Ok(result))
             },
         );
 
-        convert_transaction_result(result)
+        let result = convert_transaction_result(result)?;
+
+        if let RemoveTipResult::HitColdStore(id) = result {
+            let block_info = self
+                .get_block_info(&id)
+                .expect("parent block in cold store not found");
+            let chain_length = block_info.chain_length() + 1;
+
+            if self.get_blocks_by_chain_length(chain_length)?.is_empty() {
+                tips.insert(block_info.id(), &[])?;
+            }
+        }
+
+        Ok(())
     }
 
     /// Check if the block with the given id exists.
@@ -410,7 +429,7 @@ fn put_block_impl(
     height_to_block_ids: &TransactionalTree,
     tips: &TransactionalTree,
     block: &[u8],
-    block_in_cold_store: bool,
+    parent_in_cold_store: bool,
     block_info: &BlockInfo,
     root_id: &[u8],
     id_length: usize,
@@ -420,11 +439,11 @@ fn put_block_impl(
     }
 
     if block_info.parent_id() != root_id.as_ref() {
-        if info.get(block_info.parent_id())?.is_none() || block_in_cold_store {
+        if info.get(block_info.parent_id())?.is_none() && !parent_in_cold_store {
             return Ok(Err(Error::MissingParent));
         }
 
-        if !block_in_cold_store {
+        if !parent_in_cold_store {
             let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
             let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
             let mut parent_block_info = BlockInfo::deserialize(
@@ -498,10 +517,10 @@ fn remove_tip_impl(
     block_id: &[u8],
     root_id: &[u8],
     id_size: usize,
-) -> Result<Option<Vec<u8>>, ConflictableTransactionError<()>> {
+) -> Result<RemoveTipResult, ConflictableTransactionError<()>> {
     // Stop when we bump into a block stored in the cold storage.
     if cold.block_exists(block_id) {
-        return Ok(None);
+        return Ok(RemoveTipResult::Done);
     }
 
     let block_info_bin = info.get(block_id)?.unwrap();
@@ -509,7 +528,7 @@ fn remove_tip_impl(
     let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id);
 
     if block_info.ref_count() != 0 {
-        return Ok(None);
+        return Ok(RemoveTipResult::Done);
     }
 
     info.remove(block_id)?;
@@ -522,26 +541,37 @@ fn remove_tip_impl(
     tips.remove(block_id)?;
 
     if block_info.parent_id() == root_id {
-        return Ok(None);
+        return Ok(RemoveTipResult::Done);
     }
 
-    let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
-    let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
-    let mut parent_block_info = BlockInfo::deserialize(
-        &mut parent_block_info_reader,
-        id_size,
-        block_info.parent_id(),
-    );
-    parent_block_info.remove_ref();
-    info.insert(parent_block_info.id(), parent_block_info.serialize())?;
-
-    let maybe_next_tip = if parent_block_info.ref_count() == 0 {
-        // If the block is inside another branch it cannot be a tip. This will
-        // also apply if this tip is tagged.
-        tips.insert(block_info.parent_id(), &[])?;
-        Some(block_info.parent_id().to_vec())
-    } else {
+    let maybe_parent_block_info = if cold.block_exists(block_info.parent_id()) {
         None
+    } else {
+        let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
+        let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
+        let mut parent_block_info = BlockInfo::deserialize(
+            &mut parent_block_info_reader,
+            id_size,
+            block_info.parent_id(),
+        );
+        parent_block_info.remove_ref();
+        info.insert(parent_block_info.id(), parent_block_info.serialize())?;
+
+        Some(parent_block_info)
+    };
+
+    let maybe_next_tip = match maybe_parent_block_info {
+        Some(parent_block_info) => {
+            if parent_block_info.ref_count() == 0 {
+                // If the block is inside another branch it cannot be a tip.
+                // This will also apply if this tip is tagged.
+                tips.insert(block_info.parent_id(), &[])?;
+                RemoveTipResult::NextTip(block_info.parent_id().to_vec())
+            } else {
+                RemoveTipResult::Done
+            }
+        }
+        None => RemoveTipResult::HitColdStore(block_info.parent_id().to_vec()),
     };
 
     Ok(maybe_next_tip)
@@ -948,8 +978,11 @@ pub mod tests {
         const MAIN_BRANCH_LEN: usize = 100;
         const SECOND_BRANCH_LEN: usize = 25;
         const BIFURCATION_POINT: usize = 50;
+        const COLD_STORAGE_START: usize = 40;
         const TEST_1: [usize; 2] = [20, 30];
         const TEST_2: [usize; 2] = [60, 10];
+        const TEST_3: [usize; 2] = [10, 50];
+        const TEST_4: [usize; 2] = [10, 20];
 
         let file = tempfile::TempDir::new().unwrap();
         let mut store = BlockStore::new(
@@ -1032,6 +1065,31 @@ pub mod tests {
             )
             .unwrap();
         assert!(result.is_none());
+
+        // start with permanent storage
+        store
+            .flush_to_cold_store(&main_branch_blocks[COLD_STORAGE_START].id.serialize_as_vec())
+            .unwrap();
+
+        // ancestor in permanent storage, descendant in hot storage
+        let result = store
+            .is_ancestor(
+                &main_branch_blocks[TEST_3[0]].id.serialize_as_vec()[..],
+                &main_branch_blocks[TEST_3[1]].id.serialize_as_vec()[..],
+            )
+            .unwrap()
+            .unwrap() as usize;
+        assert!(TEST_3[1] - TEST_3[0] == result);
+
+        // ancestor and descendant in permanent storage
+        let result = store
+            .is_ancestor(
+                &main_branch_blocks[TEST_4[0]].id.serialize_as_vec()[..],
+                &main_branch_blocks[TEST_4[1]].id.serialize_as_vec()[..],
+            )
+            .unwrap()
+            .unwrap() as usize;
+        assert!(TEST_4[1] - TEST_4[0] == result);
     }
 
     #[test]
@@ -1039,6 +1097,11 @@ pub mod tests {
         const BLOCK_NUM_1: usize = 1024;
         const FLUSH_TO_BLOCK: usize = 512;
         const BLOCK_DATA_LENGTH: usize = 512;
+
+        const TAGS_TEST_HEIGHT: usize = 20;
+
+        const BRANCH_START: usize = 50;
+        const BRANCH_LEN: usize = 256;
 
         let mut rng = OsRng;
         let mut block_data = [0; BLOCK_DATA_LENGTH];
@@ -1088,6 +1151,7 @@ pub mod tests {
             .flush_to_cold_store(&blocks[FLUSH_TO_BLOCK].id.serialize_as_vec())
             .unwrap();
 
+        // read all blocks from both storages
         for block in blocks.iter() {
             let block_id = block.id.serialize_as_vec();
 
@@ -1099,5 +1163,78 @@ pub mod tests {
             let actual_block = store.get_block(&block_id).unwrap();
             assert_eq!(block.serialize_as_vec(), actual_block);
         }
+
+        // tags on permanent storage
+        store
+            .put_tag("test1", &blocks[TAGS_TEST_HEIGHT].id.serialize_as_vec())
+            .unwrap();
+
+        // branch starting in permanent storage
+        rng.fill_bytes(&mut block_data);
+        block =
+            blocks[BRANCH_START].make_child(Some(block_data.clone().to_vec().into_boxed_slice()));
+        let mut branch = Vec::new();
+
+        for _i in 0..BRANCH_LEN {
+            let block_info = BlockInfo::new(
+                block.id.serialize_as_vec(),
+                block.parent.serialize_as_vec(),
+                block.chain_length,
+            );
+            store
+                .put_block(&block.serialize_as_vec(), block_info)
+                .unwrap();
+            branch.push(block.clone());
+            rng.fill_bytes(&mut block_data);
+            block = block.make_child(Some(block_data.clone().to_vec().into_boxed_slice()));
+        }
+
+        store
+            .prune_branch(&branch.last().unwrap().id.serialize_as_vec())
+            .unwrap();
+
+        for block in branch {
+            assert!(!store.block_exists(&block.id.serialize_as_vec()).unwrap());
+        }
+
+        for i in 0..BRANCH_START {
+            assert!(store
+                .block_exists(&blocks[i].id.serialize_as_vec())
+                .unwrap());
+        }
+
+        assert_eq!(
+            vec![blocks.last().unwrap().id.serialize_as_vec()],
+            store.get_tips_ids().unwrap()
+        );
+
+        // prune down to permanent storage
+        store
+            .prune_branch(&blocks.last().unwrap().id.serialize_as_vec())
+            .unwrap();
+
+        for i in 0..=FLUSH_TO_BLOCK {
+            assert!(store
+                .block_exists(&blocks[i].id.serialize_as_vec())
+                .unwrap());
+        }
+
+        for i in (FLUSH_TO_BLOCK + 1)..BLOCK_NUM_1 {
+            assert!(!store
+                .block_exists(&blocks[i].id.serialize_as_vec())
+                .unwrap());
+        }
+
+        assert_eq!(
+            vec![blocks[FLUSH_TO_BLOCK].id.serialize_as_vec()],
+            store.get_tips_ids().unwrap()
+        );
+
+        // get by chain length from cold storage
+        let chain_length = blocks[TAGS_TEST_HEIGHT].chain_length;
+        assert_eq!(
+            vec![blocks[TAGS_TEST_HEIGHT].serialize_as_vec()],
+            store.get_blocks_by_chain_length(chain_length).unwrap()
+        );
     }
 }

@@ -6,6 +6,7 @@ use std::{io::Write, path::Path};
 pub(crate) struct ColdStore {
     inner: data_pile::Database<ConstKeyLenRecordSerializer>,
     id_length: usize,
+    maybe_chain_length_offset: Option<u32>,
 }
 
 struct ColdStoreData<'a> {
@@ -19,7 +20,15 @@ impl ColdStore {
         let serializer = ConstKeyLenRecordSerializer::new(id_length);
         let inner = data_pile::Database::new(path, serializer)?;
 
-        Ok(Self { inner, id_length })
+        let maybe_chain_length_offset = inner
+            .get_by_seqno(0)
+            .map(|record| ColdStoreData::deserialize(record.value(), id_length).chain_length);
+
+        Ok(Self {
+            inner,
+            id_length,
+            maybe_chain_length_offset,
+        })
     }
 
     pub fn block_exists(&self, id: &[u8]) -> bool {
@@ -39,12 +48,13 @@ impl ColdStore {
     }
 
     pub fn get_block_by_chain_length(&self, chain_length: u32) -> Option<&[u8]> {
+        let seqno = chain_length - self.maybe_chain_length_offset?;
         self.inner
-            .get_by_seqno(chain_length as usize)
+            .get_by_seqno(seqno as usize)
             .map(|record| ColdStoreData::deserialize(record.value(), self.id_length).data)
     }
 
-    pub fn put_blocks(&self, blocks: &[(Vec<u8>, &BlockInfo)]) -> Result<(), Error> {
+    pub fn put_blocks(&mut self, blocks: &[(Vec<u8>, &BlockInfo)]) -> Result<(), Error> {
         let data: Vec<_> = blocks
             .iter()
             .map(|(data, block_info)| {
@@ -61,7 +71,15 @@ impl ColdStore {
             .map(|(id, data)| Record::new(id, &data))
             .collect();
 
-        self.inner.append(&records).map_err(Error::ColdBackendError)
+        self.inner
+            .append(&records)
+            .map_err(Error::ColdBackendError)?;
+
+        if self.maybe_chain_length_offset.is_none() && blocks.len() > 0 {
+            self.maybe_chain_length_offset = Some(blocks[0].1.chain_length());
+        }
+
+        Ok(())
     }
 }
 

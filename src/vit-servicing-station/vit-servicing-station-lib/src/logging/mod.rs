@@ -9,6 +9,7 @@ pub fn log_request_elapsed_time(elapsed_time: Duration) {
         .with_level(log::Level::Info)
         .with_tags(vec!["request", "elapsed"])
         .with_message(format!("Request elapsed time: {}ns", elapsed))
+        .with_metadata(metadata)
         .with_id(LogMessageId::Other("request_elapsed_time".into()))
         .build()
         .log();
@@ -21,6 +22,7 @@ pub fn log_rejected_api_key(api_key: String) {
         .with_level(log::Level::Info)
         .with_tags(vec!["api_key", "reject"])
         .with_message(format!("Rejected API-Token: {}", api_key))
+        .with_metadata(metadata)
         .with_id(LogMessageId::Other("RejectedAPIToken".into()))
         .build()
         .log();

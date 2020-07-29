@@ -3,12 +3,12 @@ mod cold_store;
 #[cfg(any(test, feature = "with-bench"))]
 pub mod test_utils;
 
+use cold_store::ColdStore;
 use sled::{ConflictableTransactionError, TransactionError, Transactional, TransactionalTree};
 use std::path::Path;
 use thiserror::Error;
 
 pub use block_info::BlockInfo;
-use cold_store::ColdStore;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -973,16 +973,10 @@ pub mod tests {
         assert_eq!(expected, actual);
     }
 
-    #[test]
-    fn is_ancestor() {
+    fn generate_two_branches() -> (tempfile::TempDir, BlockStore, Vec<Block>, Vec<Block>) {
         const MAIN_BRANCH_LEN: usize = 100;
         const SECOND_BRANCH_LEN: usize = 25;
         const BIFURCATION_POINT: usize = 50;
-        const COLD_STORAGE_START: usize = 40;
-        const TEST_1: [usize; 2] = [20, 30];
-        const TEST_2: [usize; 2] = [60, 10];
-        const TEST_3: [usize; 2] = [10, 50];
-        const TEST_4: [usize; 2] = [10, 20];
 
         let file = tempfile::TempDir::new().unwrap();
         let mut store = BlockStore::new(
@@ -1038,58 +1032,100 @@ pub mod tests {
             block = block.make_child(None);
         }
 
-        // same branch
+        (file, store, main_branch_blocks, second_branch_blocks)
+    }
+
+    #[test]
+    fn is_ancestor_same_branch() {
+        const FIRST: usize = 20;
+        const SECOND: usize = 30;
+
+        let (_file, mut store, main_branch_blocks, _) = generate_two_branches();
+
         let result = store
             .is_ancestor(
-                &main_branch_blocks[TEST_1[0]].id.serialize_as_vec()[..],
-                &main_branch_blocks[TEST_1[1]].id.serialize_as_vec()[..],
+                &main_branch_blocks[FIRST].id.serialize_as_vec()[..],
+                &main_branch_blocks[SECOND].id.serialize_as_vec()[..],
             )
             .unwrap()
             .expect("should be a non-None result") as usize;
-        assert!(TEST_1[1] - TEST_1[0] == result);
+        assert!(SECOND - FIRST == result);
+    }
 
-        // wrong order
+    #[test]
+    fn is_ancestor_wrong_order() {
+        const FIRST: usize = 30;
+        const SECOND: usize = 20;
+
+        let (_file, mut store, main_branch_blocks, _) = generate_two_branches();
+
         let result = store
             .is_ancestor(
-                &main_branch_blocks[TEST_1[1]].id.serialize_as_vec()[..],
-                &main_branch_blocks[TEST_1[0]].id.serialize_as_vec()[..],
+                &main_branch_blocks[FIRST].id.serialize_as_vec()[..],
+                &main_branch_blocks[SECOND].id.serialize_as_vec()[..],
             )
             .unwrap();
         assert!(result.is_none());
+    }
 
-        // different branches
+    #[test]
+    fn is_ancestor_different_branches() {
+        const FIRST: usize = 60;
+        const SECOND: usize = 10;
+
+        let (_file, mut store, main_branch_blocks, second_branch_blocks) = generate_two_branches();
+
         let result = store
             .is_ancestor(
-                &main_branch_blocks[TEST_2[0]].id.serialize_as_vec()[..],
-                &second_branch_blocks[TEST_2[1]].id.serialize_as_vec()[..],
+                &main_branch_blocks[FIRST].id.serialize_as_vec()[..],
+                &second_branch_blocks[SECOND].id.serialize_as_vec()[..],
             )
             .unwrap();
         assert!(result.is_none());
+    }
 
-        // start with permanent storage
+    #[test]
+    fn is_ancestor_permanent_hot() {
+        const COLD_STORAGE_START: usize = 40;
+        const FIRST: usize = 10;
+        const SECOND: usize = 50;
+
+        let (_file, mut store, main_branch_blocks, _) = generate_two_branches();
+
         store
             .flush_to_cold_store(&main_branch_blocks[COLD_STORAGE_START].id.serialize_as_vec())
             .unwrap();
 
-        // ancestor in permanent storage, descendant in hot storage
         let result = store
             .is_ancestor(
-                &main_branch_blocks[TEST_3[0]].id.serialize_as_vec()[..],
-                &main_branch_blocks[TEST_3[1]].id.serialize_as_vec()[..],
+                &main_branch_blocks[FIRST].id.serialize_as_vec()[..],
+                &main_branch_blocks[SECOND].id.serialize_as_vec()[..],
             )
             .unwrap()
-            .unwrap() as usize;
-        assert!(TEST_3[1] - TEST_3[0] == result);
+            .expect("should be a non-None result") as usize;
+        assert!(SECOND - FIRST == result);
+    }
 
-        // ancestor and descendant in permanent storage
+    #[test]
+    fn is_ancestor_only_permanent() {
+        const COLD_STORAGE_START: usize = 40;
+        const FIRST: usize = 10;
+        const SECOND: usize = 20;
+
+        let (_file, mut store, main_branch_blocks, _) = generate_two_branches();
+
+        store
+            .flush_to_cold_store(&main_branch_blocks[COLD_STORAGE_START].id.serialize_as_vec())
+            .unwrap();
+
         let result = store
             .is_ancestor(
-                &main_branch_blocks[TEST_4[0]].id.serialize_as_vec()[..],
-                &main_branch_blocks[TEST_4[1]].id.serialize_as_vec()[..],
+                &main_branch_blocks[FIRST].id.serialize_as_vec()[..],
+                &main_branch_blocks[SECOND].id.serialize_as_vec()[..],
             )
             .unwrap()
-            .unwrap() as usize;
-        assert!(TEST_4[1] - TEST_4[0] == result);
+            .expect("should be a non-None result") as usize;
+        assert!(SECOND - FIRST == result);
     }
 
     #[test]

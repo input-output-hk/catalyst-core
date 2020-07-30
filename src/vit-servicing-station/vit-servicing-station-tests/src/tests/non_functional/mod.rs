@@ -112,7 +112,7 @@ impl Request for VitRestRequest {
 }
 
 #[test]
-pub fn rest_load() {
+pub fn rest_load_quick() {
     let temp_dir = TempDir::new().unwrap();
     let (server, snapshot) = quick_start(&temp_dir).unwrap();
 
@@ -126,5 +126,25 @@ pub fn rest_load() {
         500,
         Monitor::Progress(100),
     );
-    load::start(request, config, "Vit station service rest");
+    let stats = load::start(request, config, "Vit station service rest");
+    assert!((stats.calculate_passrate() as u32) > 95);
+}
+
+#[test]
+pub fn rest_load_long() {
+    let temp_dir = TempDir::new().unwrap();
+    let (server, snapshot) = quick_start(&temp_dir).unwrap();
+
+    let rest_client = server.rest_client();
+    let graphql_client = server.graphql_client();
+
+    let request = VitRestRequest::new(snapshot, rest_client, graphql_client);
+    let config = Configuration::duration(
+        3,
+        std::time::Duration::from_secs(18_000),
+        1_000,
+        Monitor::Progress(10_000),
+    );
+    let stats = load::start(request, config, "Vit station service rest");
+    assert!((stats.calculate_passrate() as u32) > 95);
 }

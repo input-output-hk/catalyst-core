@@ -18,7 +18,7 @@ pub fn cors_illegal_domain() -> Result<(), Box<dyn std::error::Error>> {
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .with_allowed_origins("http://domain.com")
-        .start()?;
+        .start(&temp_dir)?;
 
     let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
     rest_client.set_origin("http://other_domain.com");
@@ -62,7 +62,7 @@ pub fn cors_ip_versus_domain() -> Result<(), Box<dyn std::error::Error>> {
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .with_allowed_origins("http://127.0.0.1")
-        .start()?;
+        .start(&temp_dir)?;
 
     let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
     rest_client.set_origin("http://localhost");
@@ -97,7 +97,7 @@ pub fn cors_single_domain() -> Result<(), Box<dyn std::error::Error>> {
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .with_allowed_origins("http://domain.com")
-        .start()?;
+        .start(&temp_dir)?;
 
     let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
     rest_client.set_origin("http://domain.com");
@@ -116,7 +116,7 @@ pub fn cors_https() -> Result<(), Box<dyn std::error::Error>> {
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .with_allowed_origins("https://domain.com")
-        .start()?;
+        .start(&temp_dir)?;
 
     let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
     rest_client.set_origin("https://domain.com");
@@ -135,7 +135,7 @@ pub fn cors_multi_domain() -> Result<(), Box<dyn std::error::Error>> {
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .with_allowed_origins("http://domain.com;http://other_domain.com")
-        .start()?;
+        .start(&temp_dir)?;
 
     let mut rest_client = server.rest_client_with_token(&snapshot.token_hash());
     rest_client.set_origin("http://other_domain.com");

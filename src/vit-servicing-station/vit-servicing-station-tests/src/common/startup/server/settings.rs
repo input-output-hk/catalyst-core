@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use vit_servicing_station_lib::server::settings::{
-    dump_settings_to_file, load_settings_from_file, Cors, ServiceSettings,
+    dump_settings_to_file, load_settings_from_file, Cors, LogLevel, ServiceSettings,
 };
 
 pub struct ServerSettingsBuilder {
@@ -54,6 +54,16 @@ impl ServerSettingsBuilder {
 
     pub fn with_api_tokens(&mut self, enabled: bool) -> &mut Self {
         self.settings.enable_api_tokens = enabled;
+        self
+    }
+
+    pub fn with_log_output_path(&mut self, path: PathBuf) -> &mut Self {
+        self.settings.log.log_output_path = Some(path.to_str().unwrap().to_owned());
+        self
+    }
+
+    pub fn with_log_level(&mut self, log_level: LogLevel) -> &mut Self {
+        self.settings.log.log_level = log_level;
         self
     }
 

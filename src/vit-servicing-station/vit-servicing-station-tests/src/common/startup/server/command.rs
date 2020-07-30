@@ -15,6 +15,8 @@ pub struct BootstrapCommandBuilder {
     max_age_secs: Option<u32>,
     out_settings_file: Option<PathBuf>,
     priv_key_file: Option<PathBuf>,
+    log_file: Option<PathBuf>,
+    log_level: Option<String>,
 }
 
 impl Default for BootstrapCommandBuilder {
@@ -37,6 +39,8 @@ impl BootstrapCommandBuilder {
             max_age_secs: None,
             out_settings_file: None,
             priv_key_file: None,
+            log_file: None,
+            log_level: None,
         }
     }
 
@@ -88,6 +92,16 @@ impl BootstrapCommandBuilder {
         self
     }
 
+    pub fn log_file(&mut self, log_file: &PathBuf) -> &mut Self {
+        self.log_file = Some(log_file.clone());
+        self
+    }
+
+    pub fn log_level(&mut self, log_level: &str) -> &mut Self {
+        self.log_level = Some(log_level.to_owned());
+        self
+    }
+
     pub fn build(&self) -> Command {
         let mut command = Command::new(self.exe.clone());
         if let Some(address) = &self.address {
@@ -136,6 +150,14 @@ impl BootstrapCommandBuilder {
             command.arg("--enable-api-tokens");
         }
 
+        if let Some(log_file) = &self.log_file {
+            command
+                .arg("--log-output-path")
+                .arg(log_file.to_str().unwrap());
+        }
+        if let Some(log_level) = &self.log_level {
+            command.arg("--log-level").arg(log_level.to_string());
+        }
         command
     }
 }

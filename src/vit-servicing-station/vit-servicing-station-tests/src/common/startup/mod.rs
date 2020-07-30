@@ -8,9 +8,8 @@ use std::env;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU32, Ordering};
 
-use crate::common::{data, server::Server};
-
 use self::{db::DbBuilder, server::ServerBootstrapper};
+use crate::common::{data, server::Server};
 use data::{Generator, Snapshot};
 use server::ServerBootstrapperError;
 
@@ -79,7 +78,7 @@ pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, Snapshot), ServerBoots
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
-        .start()?;
+        .start(&temp_dir)?;
 
     if !server.is_up(&snapshot.token_hash()) {
         return Err(ServerBootstrapperError::FailToBootstrap);

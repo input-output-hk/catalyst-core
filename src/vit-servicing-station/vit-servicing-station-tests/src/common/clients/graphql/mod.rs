@@ -7,6 +7,7 @@ pub mod templates;
 
 use serde_json::Value;
 
+#[derive(Debug, Clone)]
 pub struct GraphqlClient {
     rest_client: RestClient,
 }
@@ -16,6 +17,10 @@ impl GraphqlClient {
         Self {
             rest_client: RestClient::new(address),
         }
+    }
+
+    pub fn disable_log(&mut self) {
+        self.rest_client.disable_log();
     }
 
     pub fn proposal_by_id(&self, id: u32) -> Result<Proposal, GraphQlClientError> {

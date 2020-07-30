@@ -1,8 +1,4 @@
-use crate::{
-    store::UtxoStore,
-    transaction::{InputStrategy, OutputStrategy, Strategy, WitnessBuilder},
-    Settings,
-};
+use crate::{transaction::WitnessBuilder, Settings};
 use chain_addr::Address;
 use chain_impl_mockchain::{
     fee::FeeAlgorithm as _,
@@ -18,28 +14,29 @@ use thiserror::Error;
 #[error("Cannot balance the transaction")]
 pub struct BalancingError;
 
-pub struct TransactionBuilder<P: Payload> {
-    settings: Settings,
-    strategy: Strategy,
+pub struct TransactionBuilder<'settings, P: Payload> {
+    settings: &'settings Settings,
     payload: P,
     outputs: Vec<Output<Address>>,
     inputs: Vec<Input>,
-    witness_builders: Vec<WitnessBuilder>,
+    witness_builders: Vec<WB>,
 }
 
-impl<P: Payload> TransactionBuilder<P> {
+type WB = Box<dyn WitnessBuilder>;
+
+pub enum AddInputStatus {
+    Added,
+    Skipped(Input),
+    NotEnoughSpace,
+}
+
+impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
     /// create a new transaction builder with the given settings and outputs
-    pub fn new(
-        settings: Settings,
-        strategy: Strategy,
-        outputs: Vec<Output<Address>>,
-        payload: P,
-    ) -> Self {
+    pub fn new(settings: &'settings Settings, payload: P) -> Self {
         Self {
             settings,
-            strategy,
-            outputs,
             payload,
+            outputs: Vec::with_capacity(255),
             inputs: Vec::with_capacity(255),
             witness_builders: Vec::with_capacity(255),
         }
@@ -79,31 +76,29 @@ impl<P: Payload> TransactionBuilder<P> {
         self.estimate_fee_with(0, 0)
     }
 
-    pub fn populate_with_utxos<K>(&mut self, utxo_store: &UtxoStore<K>) {
-        match self.strategy.input() {
-            InputStrategy::BestEffort => {
-                // in case of a best effort, the utxos are selected in by increasing order
-                // the goal being to take us as closely as possible to the target value
-                // by adding values one by one in increasing order
-                let mut utxos = utxo_store.utxos();
+    pub fn add_input<B: WitnessBuilder + 'static>(
+        &mut self,
+        input: Input,
+        witness_builder: B,
+    ) -> AddInputStatus {
+        if self.inputs.len() < 255 && self.settings.is_input_worth(&input) {
+            self.inputs.push(input);
+            self.witness_builders.push(Box::new(witness_builder));
 
-                while let Some(utxo) = utxos.next() {
-                    match self.check_balance_with(1, 0) {
-                        Balance::Zero => break,
-                        Balance::Positive(_) => break,
-                        Balance::Negative(missing) => {
-                            if utxo.value <= missing {
-                                let input = Input::from_utxo(*utxo.as_ref());
-                                self.inputs.push(input);
-                            }
-                        }
-                    }
-                    //
-                }
-            }
-            InputStrategy::PrivacyPreserving => {
-                utxo_store.groups();
-            }
+            AddInputStatus::Added
+        } else if self.inputs.len() >= 255 {
+            AddInputStatus::NotEnoughSpace
+        } else {
+            AddInputStatus::Skipped(input)
+        }
+    }
+
+    pub fn add_output(&mut self, output: Output<Address>) -> bool {
+        if self.outputs().len() < 255 {
+            self.outputs.push(output);
+            true
+        } else {
+            false
         }
     }
 
@@ -157,7 +152,7 @@ impl<P: Payload> TransactionBuilder<P> {
         let witnesses: Vec<_> = self
             .witness_builders
             .iter()
-            .map(move |wb| wb.mk_witness(&header_id, &auth_data))
+            .map(|wb| wb.build(&header_id, &auth_data))
             .collect();
 
         builder.set_witnesses(&witnesses)

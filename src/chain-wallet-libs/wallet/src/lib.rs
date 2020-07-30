@@ -11,16 +11,14 @@ pub use self::{
     password::{Password, ScrubbedBytes},
     recovering::{RecoveryBuilder, RecoveryError},
     store::{StateIter, States, Status, UtxoGroup, UtxoStore},
+    transaction::{AccountWitnessBuilder, TransactionBuilder, WitnessBuilder},
 };
-use chain_impl_mockchain::{
-    transaction::Input, transaction::UnspecifiedAccountIdentifier, value::Value,
-};
+use chain_impl_mockchain::{transaction::UnspecifiedAccountIdentifier, value::Value};
 use hdkeygen::account::Account;
 pub use hdkeygen::account::AccountId;
 
 pub struct Wallet {
     account: Account,
-
     value: Value,
     committed_amount: Value,
 }
@@ -64,6 +62,10 @@ impl Wallet {
 
     pub fn committed_amount(&self) -> Value {
         self.committed_amount
+    }
+
+    pub fn witness_builder(&self) -> transaction::AccountWitnessBuilder {
+        transaction::AccountWitnessBuilder(self.account.clone())
     }
 
     fn current_value(&self) -> Value {

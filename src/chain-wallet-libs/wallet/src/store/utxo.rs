@@ -188,6 +188,12 @@ impl<K> UtxoStore<K> {
 
         Some(new)
     }
+
+    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<Key<XPrv, K>>> {
+        self.by_utxo
+            .get(utxo)
+            .map(|group| Rc::clone(&group.borrow().key))
+    }
 }
 
 impl<K> Clone for UtxoGroup<K> {

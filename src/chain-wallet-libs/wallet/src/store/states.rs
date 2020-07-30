@@ -125,9 +125,9 @@ where
 
         if let Some(next) = unsafe { current.next.as_mut() } {
             if next.confirmed() {
-                self.map.remove(&current.key);
+                let current = self.map.remove(&current.key);
 
-                self.head = current.next;
+                self.head = current.expect("head reference is not in map").next;
                 next.prev = std::ptr::null_mut();
 
                 return true;

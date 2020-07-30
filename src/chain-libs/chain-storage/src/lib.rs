@@ -641,22 +641,71 @@ pub mod tests {
         blocks
     }
 
-    #[test]
-    pub fn test_put_get() {
+    fn prepare_store() -> (tempfile::TempDir, BlockStore) {
         let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(
+        let store = BlockStore::new(
             file.path(),
             BlockId(0).serialize_as_vec(),
             BlockId(0).serialize_as_vec().len(),
         )
         .unwrap();
-        assert!(store.get_tag("tip").unwrap().is_none());
 
+        (file, store)
+    }
+
+    #[test]
+    fn tag_get_non_existent() {
+        let (_file, mut store) = prepare_store();
+        assert!(store.get_tag("tip").unwrap().is_none());
+    }
+
+    #[test]
+    fn tag_non_existent_block() {
+        let (_file, mut store) = prepare_store();
         match store.put_tag("tip", &BlockId(0).serialize_as_vec()) {
             Err(Error::BlockNotFound) => {}
             err => panic!(err),
         }
+    }
 
+    #[test]
+    fn tag_put() {
+        let mut rng = OsRng;
+
+        let (_file, mut store) = prepare_store();
+        let blocks = generate_chain(&mut rng, &mut store);
+
+        store
+            .put_tag("tip", &blocks.last().unwrap().id.serialize_as_vec())
+            .unwrap();
+        assert_eq!(
+            store.get_tag("tip").unwrap().unwrap(),
+            blocks.last().unwrap().id.serialize_as_vec()
+        );
+    }
+
+    #[test]
+    fn tag_overwrite() {
+        let mut rng = OsRng;
+
+        let (_file, mut store) = prepare_store();
+        let blocks = generate_chain(&mut rng, &mut store);
+
+        store
+            .put_tag("tip", &blocks.last().unwrap().id.serialize_as_vec())
+            .unwrap();
+        store
+            .put_tag("tip", &blocks.first().unwrap().id.serialize_as_vec())
+            .unwrap();
+        assert_eq!(
+            store.get_tag("tip").unwrap().unwrap(),
+            blocks.first().unwrap().id.serialize_as_vec()
+        );
+    }
+
+    #[test]
+    fn block_read_write() {
+        let (_file, mut store) = prepare_store();
         let genesis_block = Block::genesis(None);
         let genesis_block_info = BlockInfo::new(
             genesis_block.id.serialize_as_vec(),
@@ -691,41 +740,14 @@ pub mod tests {
             genesis_block_restored.chain_length()
         );
 
-        store
-            .put_tag("tip", &genesis_block.id.serialize_as_vec())
-            .unwrap();
-        assert_eq!(
-            store.get_tag("tip").unwrap().unwrap(),
-            genesis_block.id.serialize_as_vec()
-        );
-
         assert_eq!(
             vec![genesis_block.id.serialize_as_vec()],
             store.get_tips_ids().unwrap()
         );
-
-        let block = genesis_block.make_child(None);
-        let block_info = BlockInfo::new(
-            block.id.serialize_as_vec(),
-            block.parent.serialize_as_vec(),
-            block.chain_length,
-        );
-        store
-            .put_block(&block.serialize_as_vec(), block_info)
-            .unwrap();
-        store.put_tag("tip", &block.id.serialize_as_vec()).unwrap();
-        assert_eq!(
-            store.get_tag("tip").unwrap().unwrap(),
-            block.id.serialize_as_vec()
-        );
-
-        // tagged branch must not be removed
-        store.prune_branch(&block.id.serialize_as_vec()).unwrap();
-        assert!(store.block_exists(&block.id.serialize_as_vec()).unwrap());
     }
 
     #[test]
-    pub fn test_nth_ancestor() {
+    pub fn nth_ancestor() {
         let mut rng = OsRng;
         let file = tempfile::TempDir::new().unwrap();
         let mut store = BlockStore::new(
@@ -923,6 +945,20 @@ pub mod tests {
             let block_result = store.get_block(&second_branch_blocks[i].id.serialize_as_vec());
             assert!(matches!(block_result, Err(Error::BlockNotFound)));
         }
+
+        // tagged branch must not be removed
+        store
+            .put_tag(
+                "tip",
+                &main_branch_blocks.last().unwrap().id.serialize_as_vec(),
+            )
+            .unwrap();
+        store
+            .prune_branch(&main_branch_blocks.last().unwrap().id.serialize_as_vec())
+            .unwrap();
+        assert!(store
+            .block_exists(&main_branch_blocks.last().unwrap().id.serialize_as_vec())
+            .unwrap());
     }
 
     #[test]
@@ -980,13 +1016,7 @@ pub mod tests {
         const SECOND_BRANCH_LEN: usize = 25;
         const BIFURCATION_POINT: usize = 50;
 
-        let file = tempfile::TempDir::new().unwrap();
-        let mut store = BlockStore::new(
-            file.path(),
-            BlockId(0).serialize_as_vec(),
-            BlockId(0).serialize_as_vec().len(),
-        )
-        .unwrap();
+        let (file, mut store) = prepare_store();
 
         let mut main_branch_blocks = vec![];
 

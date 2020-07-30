@@ -16,17 +16,19 @@ impl<'a> DbInserter<'a> {
         Self { connection }
     }
 
-    pub fn insert_token(&self, token_data: &APITokenData) -> Result<(), DbInserterError> {
-        let values = (
-            api_tokens::dsl::token.eq(token_data.token.as_ref()),
-            api_tokens::dsl::creation_time.eq(token_data.creation_time),
-            api_tokens::dsl::expire_time.eq(token_data.expire_time),
-        );
+    pub fn insert_tokens(&self, tokens_data: &[APITokenData]) -> Result<(), DbInserterError> {
+        for token_data in tokens_data {
+            let values = (
+                api_tokens::dsl::token.eq(token_data.token.as_ref()),
+                api_tokens::dsl::creation_time.eq(token_data.creation_time),
+                api_tokens::dsl::expire_time.eq(token_data.expire_time),
+            );
 
-        diesel::insert_into(api_tokens::table)
-            .values(values)
-            .execute(self.connection)
-            .map_err(DbInserterError::DieselError)?;
+            diesel::insert_into(api_tokens::table)
+                .values(values)
+                .execute(self.connection)
+                .map_err(DbInserterError::DieselError)?;
+        }
         Ok(())
     }
 

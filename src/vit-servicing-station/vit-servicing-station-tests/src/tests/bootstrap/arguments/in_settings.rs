@@ -91,7 +91,7 @@ pub fn in_settings_file_with_malformed_path() {
 pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
 
-    let (token, _) = data::token();
+    let (_, token) = data::token();
 
     let db_path = DbBuilder::new()
         .with_token(token)

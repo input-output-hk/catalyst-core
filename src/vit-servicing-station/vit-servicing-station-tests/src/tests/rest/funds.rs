@@ -20,7 +20,7 @@ pub fn get_funds_list_is_not_empty() -> Result<(), Box<dyn std::error::Error>> {
 pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let expected_fund = data::funds().first().unwrap().clone();
-    let (token, hash) = data::token();
+    let (hash, token) = data::token();
 
     let db_path = DbBuilder::new()
         .with_token(token)

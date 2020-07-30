@@ -17,7 +17,7 @@ use crate::common::{
 
 pub struct DbBuilder {
     migrations_folder: Option<PathBuf>,
-    token: Option<APITokenData>,
+    tokens: Option<Vec<APITokenData>>,
     proposals: Option<Vec<Proposal>>,
     funds: Option<Vec<Fund>>,
 }
@@ -26,14 +26,19 @@ impl DbBuilder {
     pub fn new() -> Self {
         Self {
             migrations_folder: Some(PathBuf::from_str(MIGRATION_DIR).unwrap()),
-            token: None,
+            tokens: None,
             proposals: None,
             funds: None,
         }
     }
 
+    pub fn with_tokens(&mut self, tokens: Vec<APITokenData>) -> &mut Self {
+        self.tokens = Some(tokens);
+        self
+    }
+
     pub fn with_token(&mut self, token: APITokenData) -> &mut Self {
-        self.token = Some(token);
+        self.with_tokens(vec![token]);
         self
     }
 
@@ -44,7 +49,7 @@ impl DbBuilder {
 
     pub fn with_snapshot(&mut self, snapshot: &Snapshot) -> &mut Self {
         self.with_proposals(snapshot.proposals());
-        self.with_token(snapshot.token().0);
+        self.with_tokens(snapshot.tokens().values().cloned().collect());
         self.with_funds(snapshot.funds());
         self
     }
@@ -91,9 +96,9 @@ impl DbBuilder {
         Ok(())
     }
 
-    fn try_insert_token(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
-        if let Some(token) = &self.token {
-            DbInserter::new(connection).insert_token(token)?;
+    fn try_insert_tokens(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+        if let Some(tokens) = &self.tokens {
+            DbInserter::new(connection).insert_tokens(tokens)?;
         }
         Ok(())
     }
@@ -124,7 +129,7 @@ impl DbBuilder {
 
         let connection = SqliteConnection::establish(db_path).unwrap();
         self.try_do_migration(&connection)?;
-        self.try_insert_token(&connection)?;
+        self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;
         self.try_insert_proposals(&connection)?;
         Ok(PathBuf::from(db.path()))

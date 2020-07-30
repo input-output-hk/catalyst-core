@@ -20,7 +20,7 @@ pub fn get_proposals_list_is_not_empty() {
 pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
     let expected_proposal = data::proposals().first().unwrap().clone();
-    let (token, hash) = data::token();
+    let (hash, token) = data::token();
 
     let db_path = DbBuilder::new()
         .with_token(token)

@@ -1,10 +1,12 @@
-use logging_lib::messages::{DefaultLogMessageBuilder, DefaultMetadata, LogMessageId};
+use logging_lib::{
+    json,
+    messages::{DefaultLogMessageBuilder, LogMessageId},
+};
 use std::time::Duration;
 
 pub fn log_request_elapsed_time(elapsed_time: Duration) {
     let elapsed = elapsed_time.as_nanos().to_string();
-    let mut metadata = DefaultMetadata::new();
-    metadata.insert("elapsed_nano_seconds".into(), elapsed.clone());
+    let metadata = json!({ "elapsed_nano_seconds" : elapsed.clone() });
     DefaultLogMessageBuilder::new()
         .with_level(log::Level::Info)
         .with_tags(vec!["request", "elapsed"])
@@ -16,8 +18,7 @@ pub fn log_request_elapsed_time(elapsed_time: Duration) {
 }
 
 pub fn log_rejected_api_key(api_key: String) {
-    let mut metadata = DefaultMetadata::new();
-    metadata.insert("api_key".into(), api_key.clone());
+    let metadata = json!({ "api_key" : api_key.clone() });
     DefaultLogMessageBuilder::new()
         .with_level(log::Level::Info)
         .with_tags(vec!["api_key", "reject"])

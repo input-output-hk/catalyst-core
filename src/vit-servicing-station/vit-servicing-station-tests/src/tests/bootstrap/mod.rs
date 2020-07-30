@@ -17,6 +17,6 @@ pub fn bootstrap_with_random_data() -> Result<(), Box<dyn std::error::Error>> {
         .start()?;
 
     std::thread::sleep(std::time::Duration::from_secs(1));
-    assert!(server.is_up(&snapshot.token().1));
+    assert!(server.is_up(&snapshot.any_token().0));
     Ok(())
 }

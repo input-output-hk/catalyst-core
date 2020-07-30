@@ -8,7 +8,7 @@ use reqwest::StatusCode;
 #[test]
 pub fn token_validation() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let (token, hash) = data::token();
+    let (hash, token) = data::token();
 
     let db_path = DbBuilder::new().with_token(token).build(&temp_dir).unwrap();
 

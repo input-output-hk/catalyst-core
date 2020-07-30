@@ -5,12 +5,12 @@ use vit_servicing_station_lib::db::models::{
 mod generator;
 pub use generator::{Generator, Snapshot};
 
-pub fn token() -> (APITokenData, String) {
+pub fn token() -> (String, APITokenData) {
     Generator::new().token()
 }
 
 pub fn token_hash() -> String {
-    token().1
+    token().0
 }
 
 pub fn proposals() -> Vec<Proposal> {

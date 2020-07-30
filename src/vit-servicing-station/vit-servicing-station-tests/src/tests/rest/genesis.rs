@@ -9,7 +9,7 @@ use crate::common::paths::BLOCK0_BIN;
 #[test]
 pub fn genesis_deserialize_bijection() {
     let temp_dir = TempDir::new().unwrap();
-    let (token, hash) = data::token();
+    let (hash, token) = data::token();
 
     let db_path = DbBuilder::new().with_token(token).build(&temp_dir).unwrap();
 

@@ -27,6 +27,14 @@ impl<'a> DbInserter<'a> {
             .values(values)
             .execute(self.connection)
             .map_err(DbInserterError::DieselError)?;
+
+        Ok(())
+    }
+
+    pub fn insert_tokens(&self, tokens_data: &[APITokenData]) -> Result<(), DbInserterError> {
+        for token_data in tokens_data {
+            self.insert_token(token_data)?;
+        }
         Ok(())
     }
 

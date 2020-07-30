@@ -18,7 +18,7 @@ use fake::{
     Fake,
 };
 use rand::{rngs::OsRng, RngCore};
-use std::iter;
+use std::{collections::HashMap, iter};
 
 use chrono::DateTime;
 type UtcDateTime = DateTime<Utc>;
@@ -27,7 +27,7 @@ type UtcDateTime = DateTime<Utc>;
 pub struct Snapshot {
     funds: Vec<Fund>,
     proposals: Vec<Proposal>,
-    token: (APITokenData, String),
+    tokens: HashMap<String, APITokenData>,
 }
 
 impl Snapshot {
@@ -39,6 +39,10 @@ impl Snapshot {
         self.proposals.clone()
     }
 
+    pub fn tokens(&self) -> HashMap<String, APITokenData> {
+        self.tokens.clone()
+    }
+
     pub fn proposal_by_id(&self, id: &str) -> Option<&Proposal> {
         self.proposals.iter().find(|x| x.proposal_id.eq(id))
     }
@@ -47,12 +51,13 @@ impl Snapshot {
         self.funds.iter().find(|x| x.id == id)
     }
 
-    pub fn token(&self) -> (APITokenData, String) {
-        self.token.clone()
+    pub fn any_token(&self) -> (String, APITokenData) {
+        let (hash, token) = self.tokens.iter().next().clone().unwrap();
+        (hash.to_string(), token.clone())
     }
 
     pub fn token_hash(&self) -> String {
-        self.token().1
+        self.any_token().0
     }
 }
 
@@ -87,7 +92,7 @@ impl Generator {
         base64::encode_config(self.bytes().to_vec(), base64::URL_SAFE_NO_PAD)
     }
 
-    pub fn token(&mut self) -> (APITokenData, String) {
+    pub fn token(&mut self) -> (String, APITokenData) {
         let data = self.bytes().to_vec();
         let token_creation_time = Utc::now() - Duration::days(1);
         let toket_expiry_time = Utc::now() + Duration::days(1);
@@ -98,9 +103,14 @@ impl Generator {
             expire_time: toket_expiry_time.timestamp(),
         };
         (
-            token_data,
             base64::encode_config(data, base64::URL_SAFE_NO_PAD),
+            token_data,
         )
+    }
+
+    pub fn tokens(&mut self) -> HashMap<String, APITokenData> {
+        let size = self.random_size() % 10 + 2;
+        iter::from_fn(|| Some(self.token())).take(size).collect()
     }
 
     pub fn funds(&mut self) -> Vec<Fund> {
@@ -228,12 +238,12 @@ impl Generator {
     pub fn snapshot(&mut self) -> Snapshot {
         let funds = self.funds();
         let proposals = self.proposals(&funds);
-        let token = self.token();
+        let tokens = self.tokens();
 
         Snapshot {
             funds,
             proposals,
-            token,
+            tokens,
         }
     }
 }

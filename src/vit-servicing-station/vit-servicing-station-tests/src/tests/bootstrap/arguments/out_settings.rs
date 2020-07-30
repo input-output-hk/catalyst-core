@@ -8,6 +8,7 @@ use crate::common::{
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
 use std::path::PathBuf;
+use vit_servicing_station_lib::server::settings::LogLevel;
 use vit_servicing_station_lib::server::settings::ServiceSettings;
 
 #[test]
@@ -70,6 +71,8 @@ fn example_settings_file(temp_dir: &TempDir) -> (PathBuf, ServiceSettings) {
         .with_random_localhost_address()
         .with_db_path(empty_db(&temp_dir).to_str().unwrap())
         .with_block0_path(BLOCK0_BIN)
+        .with_log_level(LogLevel::Info)
+        .with_log_output_path(temp_dir.child("logger.log").path().into())
         .build();
     let settings_file = dump_settings(&temp_dir, &settings);
     (settings_file, settings)

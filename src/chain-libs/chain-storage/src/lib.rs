@@ -597,6 +597,8 @@ pub mod tests {
     use std::{collections::HashSet, iter::FromIterator};
 
     const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
+    const BLOCK_NUM_PERMANENT_TEST: usize = 1024;
+    const FLUSH_TO_BLOCK: usize = 512;
 
     pub fn pick_from_vector<'a, A, R: RngCore>(rng: &mut R, v: &'a [A]) -> &'a A {
         let s = rng.next_u32() as usize;
@@ -1128,16 +1130,8 @@ pub mod tests {
         assert!(SECOND - FIRST == result);
     }
 
-    #[test]
-    fn test_cold_store() {
-        const BLOCK_NUM_1: usize = 1024;
-        const FLUSH_TO_BLOCK: usize = 512;
+    fn prepare_permament_store() -> (tempfile::TempDir, BlockStore, Vec<Block>) {
         const BLOCK_DATA_LENGTH: usize = 512;
-
-        const TAGS_TEST_HEIGHT: usize = 20;
-
-        const BRANCH_START: usize = 50;
-        const BRANCH_LEN: usize = 256;
 
         let mut rng = OsRng;
         let mut block_data = [0; BLOCK_DATA_LENGTH];
@@ -1169,7 +1163,7 @@ pub mod tests {
 
         blocks.push(genesis_block);
 
-        for _i in 1..BLOCK_NUM_1 {
+        for _i in 1..BLOCK_NUM_PERMANENT_TEST {
             let block_info = BlockInfo::new(
                 block.id.serialize_as_vec(),
                 block.parent.serialize_as_vec(),
@@ -1187,7 +1181,13 @@ pub mod tests {
             .flush_to_cold_store(&blocks[FLUSH_TO_BLOCK].id.serialize_as_vec())
             .unwrap();
 
-        // read all blocks from both storages
+        (file, store, blocks)
+    }
+
+    #[test]
+    fn permanent_store_read() {
+        let (_file, mut store, blocks) = prepare_permament_store();
+
         for block in blocks.iter() {
             let block_id = block.id.serialize_as_vec();
 
@@ -1199,52 +1199,23 @@ pub mod tests {
             let actual_block = store.get_block(&block_id).unwrap();
             assert_eq!(block.serialize_as_vec(), actual_block);
         }
+    }
 
-        // tags on permanent storage
+    #[test]
+    fn permanent_store_tag() {
+        const TAGS_TEST_HEIGHT: usize = 20;
+
+        let (_file, mut store, blocks) = prepare_permament_store();
+
         store
             .put_tag("test1", &blocks[TAGS_TEST_HEIGHT].id.serialize_as_vec())
             .unwrap();
+    }
 
-        // branch starting in permanent storage
-        rng.fill_bytes(&mut block_data);
-        block =
-            blocks[BRANCH_START].make_child(Some(block_data.clone().to_vec().into_boxed_slice()));
-        let mut branch = Vec::new();
+    #[test]
+    fn permanent_store_prune_main_branch() {
+        let (_file, mut store, blocks) = prepare_permament_store();
 
-        for _i in 0..BRANCH_LEN {
-            let block_info = BlockInfo::new(
-                block.id.serialize_as_vec(),
-                block.parent.serialize_as_vec(),
-                block.chain_length,
-            );
-            store
-                .put_block(&block.serialize_as_vec(), block_info)
-                .unwrap();
-            branch.push(block.clone());
-            rng.fill_bytes(&mut block_data);
-            block = block.make_child(Some(block_data.clone().to_vec().into_boxed_slice()));
-        }
-
-        store
-            .prune_branch(&branch.last().unwrap().id.serialize_as_vec())
-            .unwrap();
-
-        for block in branch {
-            assert!(!store.block_exists(&block.id.serialize_as_vec()).unwrap());
-        }
-
-        for i in 0..BRANCH_START {
-            assert!(store
-                .block_exists(&blocks[i].id.serialize_as_vec())
-                .unwrap());
-        }
-
-        assert_eq!(
-            vec![blocks.last().unwrap().id.serialize_as_vec()],
-            store.get_tips_ids().unwrap()
-        );
-
-        // prune down to permanent storage
         store
             .prune_branch(&blocks.last().unwrap().id.serialize_as_vec())
             .unwrap();
@@ -1255,7 +1226,7 @@ pub mod tests {
                 .unwrap());
         }
 
-        for i in (FLUSH_TO_BLOCK + 1)..BLOCK_NUM_1 {
+        for i in (FLUSH_TO_BLOCK + 1)..FLUSH_TO_BLOCK {
             assert!(!store
                 .block_exists(&blocks[i].id.serialize_as_vec())
                 .unwrap());
@@ -1265,11 +1236,17 @@ pub mod tests {
             vec![blocks[FLUSH_TO_BLOCK].id.serialize_as_vec()],
             store.get_tips_ids().unwrap()
         );
+    }
 
-        // get by chain length from cold storage
-        let chain_length = blocks[TAGS_TEST_HEIGHT].chain_length;
+    #[test]
+    fn permanent_store_get_by_chain_length() {
+        const HEIGHT: usize = 20;
+
+        let (_file, mut store, blocks) = prepare_permament_store();
+
+        let chain_length = blocks[HEIGHT].chain_length;
         assert_eq!(
-            vec![blocks[TAGS_TEST_HEIGHT].serialize_as_vec()],
+            vec![blocks[HEIGHT].serialize_as_vec()],
             store.get_blocks_by_chain_length(chain_length).unwrap()
         );
     }

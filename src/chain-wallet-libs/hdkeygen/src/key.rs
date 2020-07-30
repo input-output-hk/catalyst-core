@@ -92,6 +92,12 @@ impl<P> Key<XPrv, P> {
         self.key.verify(message.as_ref(), signature)
     }
 
+    /// get key's chain code
+    #[inline]
+    pub fn chain_code(&self) -> [u8; 32] {
+        self.key.chain_code()
+    }
+
     /// derive the private key against the given derivation index and scheme
     ///
     #[must_use = "this returns the result of the operation, without modifying the original"]
@@ -151,7 +157,7 @@ impl<P> Key<XPub, P> {
         &self.key
     }
 
-    pub(crate) fn pk(&self) -> chain_crypto::PublicKey<chain_crypto::Ed25519> {
+    pub fn pk(&self) -> chain_crypto::PublicKey<chain_crypto::Ed25519> {
         if let Ok(pk) = chain_crypto::PublicKey::from_binary(self.public_key_slice()) {
             pk
         } else {

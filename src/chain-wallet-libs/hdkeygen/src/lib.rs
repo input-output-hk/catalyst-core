@@ -5,7 +5,7 @@ extern crate quickcheck;
 extern crate quickcheck_macros;
 
 pub mod account;
-mod bip44;
+pub mod bip44;
 mod key;
 pub mod rindex;
 

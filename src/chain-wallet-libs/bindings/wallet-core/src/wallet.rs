@@ -3,6 +3,7 @@ use chain_core::property::Serialize as _;
 use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentId},
+    legacy::OldAddress,
     transaction::{Input, InputEnum},
     value::Value,
     vote::Choice,
@@ -19,8 +20,8 @@ use wallet::{AccountId, Settings};
 ///
 pub struct Wallet {
     account: wallet::Wallet,
-    daedalus: wallet::RecoveringDaedalus,
-    icarus: wallet::RecoveringIcarus,
+    daedalus: wallet::scheme::rindex::Wallet,
+    icarus: wallet::scheme::bip44::Wallet<OldAddress>,
 
     pending_transactions: HashMap<FragmentId, Vec<Input>>,
 }
@@ -109,14 +110,11 @@ impl Wallet {
 
         let settings = wallet::Settings::new(&block0).unwrap();
         for fragment in block0.contents.iter() {
-            self.daedalus
-                .check_fragment(fragment)
-                .map_err(|e| Error::wallet_recovering().with(e))?;
+            self.daedalus.check_fragment(&fragment.hash(), fragment);
 
-            self.icarus
-                .check_fragment(fragment)
-                .map_err(|e| Error::wallet_recovering().with(e))?;
+            self.icarus.check_fragment(&fragment.hash(), fragment);
         }
+
         Ok(settings)
     }
 
@@ -138,19 +136,27 @@ impl Wallet {
     pub fn convert(&mut self, settings: Settings) -> Conversion {
         let address = self.account.account_id().address(settings.discrimination());
 
-        let mut dump = wallet::transaction::Dump::new(settings, address);
+        let mut raws = Vec::new();
+        let mut ignored = Vec::new();
 
-        self.daedalus.dump_in(&mut dump);
-        self.icarus.dump_in(&mut dump);
+        while let Some((transaction, mut ignored_inputs)) =
+            wallet::transaction::send_to_one_address(&settings, &address, self.daedalus.utxos())
+        {
+            let fragment = Fragment::Transaction(transaction);
 
-        let (ignored, transactions) = dump.finalize();
-        let mut raws = Vec::with_capacity(transactions.len());
+            raws.push(fragment.serialize_as_vec().unwrap());
+            ignored.append(&mut ignored_inputs);
+            self.daedalus.check_fragment(&fragment.hash(), &fragment);
+        }
 
-        for (used, f) in transactions {
-            let id = f.id();
+        while let Some((transaction, mut ignored_inputs)) =
+            wallet::transaction::send_to_one_address(&settings, &address, self.icarus.utxos())
+        {
+            let fragment = Fragment::Transaction(transaction);
 
-            self.pending_transactions.insert(id, used);
-            raws.push(f.serialize_as_vec().unwrap());
+            raws.push(fragment.serialize_as_vec().unwrap());
+            ignored.append(&mut ignored_inputs);
+            self.icarus.check_fragment(&fragment.hash(), &fragment);
         }
 
         Conversion {
@@ -163,13 +169,13 @@ impl Wallet {
     ///
     /// This function will automatically update the state of the wallet
     pub fn confirm_transaction(&mut self, id: FragmentId) {
+        self.icarus.confirm(&id);
+        self.daedalus.confirm(&id);
+
         if let Some(inputs) = self.pending_transactions.remove(&id) {
             for input in inputs {
                 match input.to_enum() {
-                    InputEnum::UtxoInput(pointer) => {
-                        self.icarus.remove(pointer);
-                        self.daedalus.remove(pointer);
-                    }
+                    InputEnum::UtxoInput(_pointer) => {}
                     InputEnum::AccountInput(identifier, value) => {
                         self.account.remove(identifier, value);
                     }
@@ -183,13 +189,13 @@ impl Wallet {
     /// TODO: this might need to be updated to have a more user friendly
     ///       API. Currently do this for simplicity
     pub fn pending_transactions(&self) -> &HashMap<FragmentId, Vec<Input>> {
-        &self.pending_transactions
+        todo!("pending transactions not including the utxos");
     }
 
     /// remove a given pending transaction returning the associated Inputs
     /// that were used for this transaction
     pub fn remove_pending_transaction(&mut self, id: &FragmentId) -> Option<Vec<Input>> {
-        self.pending_transactions.remove(id)
+        todo!("pending transactions not including the utxos");
     }
 
     /// get the total value in the wallet
@@ -202,8 +208,9 @@ impl Wallet {
     ///
     pub fn total_value(&self) -> Value {
         self.icarus
-            .value_total()
-            .saturating_add(self.daedalus.value_total())
+            .utxos()
+            .total_value()
+            .saturating_add(self.daedalus.utxos().total_value())
             .saturating_add(self.account.value())
     }
 
@@ -248,8 +255,13 @@ impl Wallet {
             return Err(Error::wallet_vote_range());
         };
 
-        let mut builder = wallet::transaction::TransactionBuilder::new(settings, vec![], payload);
-        builder.select_from(&mut self.account);
+        let mut builder = wallet::TransactionBuilder::new(&settings, payload);
+
+        let value = builder.estimate_fee_with(1, 0);
+        let input = Input::from_account_public_key(self.account.account_id().into(), value);
+
+        builder.add_input(input, self.account.witness_builder());
+
         let tx = builder
             .finalize_tx(())
             .map_err(|e| Error::wallet_transaction().with(e))?;

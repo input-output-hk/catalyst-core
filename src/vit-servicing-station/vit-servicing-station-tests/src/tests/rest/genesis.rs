@@ -7,7 +7,7 @@ use assert_fs::TempDir;
 use crate::common::paths::BLOCK0_BIN;
 
 #[test]
-pub fn genesis_deserialize_bijection() {
+pub fn genesis_deserialize_bijection() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
     let (hash, token) = data::token();
 
@@ -27,6 +27,7 @@ pub fn genesis_deserialize_bijection() {
         .expect("cannot get genesis block bytes");
 
     assert_eq!(expected, genesis_as_bytes);
+    Ok(())
 }
 
 #[test]

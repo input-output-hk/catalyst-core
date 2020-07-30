@@ -128,7 +128,7 @@ pub fn cors_https() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 pub fn cors_multi_domain() -> Result<(), Box<dyn std::error::Error>> {
-    let temp_dir = TempDir::new().unwrap();
+    let temp_dir = TempDir::new().unwrap().into_persistent();
     let snapshot = Generator::new().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
@@ -143,6 +143,8 @@ pub fn cors_multi_domain() -> Result<(), Box<dyn std::error::Error>> {
 
     rest_client.set_origin("http://domain.com");
     assert!(rest_client.funds_raw()?.status().is_success());
+
+    assert!(!server.logger().any_error());
 
     Ok(())
 }

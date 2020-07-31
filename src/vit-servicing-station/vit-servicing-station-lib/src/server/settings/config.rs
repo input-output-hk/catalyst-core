@@ -111,8 +111,13 @@ pub struct Log {
     pub log_output_path: Option<String>,
 
     /// Application logging level
-    #[structopt(long, default_value = "info")]
+    #[structopt(long, default_value = "disabled")]
     pub log_level: LogLevel,
+
+    /// Mute stdout log
+    #[serde(default)]
+    #[structopt(long)]
+    pub mute_terminal_log: bool,
 }
 
 fn parse_allowed_origins(arg: &str) -> Result<AllowedOrigins, std::io::Error> {
@@ -158,6 +163,16 @@ impl ServiceSettings {
         if other_settings.block0_path != BLOCK0_PATH_DEFAULT {
             return_settings.block0_path = other_settings.block0_path.clone();
         }
+
+        if other_settings.log.log_level != return_settings.log.log_level {
+            return_settings.log.log_level = other_settings.log.log_level;
+        }
+
+        if other_settings.log.log_output_path.is_some() {
+            return_settings.log.log_output_path = other_settings.log.log_output_path.clone();
+        }
+
+        return_settings.log.mute_terminal_log = other_settings.log.mute_terminal_log;
 
         return_settings.enable_api_tokens = other_settings.enable_api_tokens;
 
@@ -290,7 +305,8 @@ impl Default for Log {
     fn default() -> Self {
         Self {
             log_output_path: None,
-            log_level: LogLevel::Info,
+            log_level: LogLevel::Disabled,
+            mute_terminal_log: false,
         }
     }
 }

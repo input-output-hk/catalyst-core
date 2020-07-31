@@ -5,15 +5,19 @@ use std::fs::File;
 pub fn config_log(
     level: LevelFilter,
     file_log_path: Option<String>,
+    mute_terminal: bool,
     config: Option<Config>,
 ) -> std::io::Result<()> {
-    let terminal_logger = TermLogger::new(
-        level,
-        config.clone().unwrap_or_default(),
-        TerminalMode::Mixed,
-    );
+    let mut log_vec: Vec<Box<dyn SharedLogger>> = Vec::new();
 
-    let mut log_vec: Vec<Box<dyn SharedLogger>> = vec![terminal_logger];
+    if !mute_terminal {
+        let terminal_logger = TermLogger::new(
+            level,
+            config.clone().unwrap_or_default(),
+            TerminalMode::Mixed,
+        );
+        log_vec.push(terminal_logger);
+    }
 
     if let Some(file_path) = file_log_path {
         let file_logger =

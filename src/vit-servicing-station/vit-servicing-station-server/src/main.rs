@@ -36,6 +36,7 @@ async fn main() {
     config_log(
         settings.log.log_level.into(),
         settings.log.log_output_path.clone(),
+        settings.log.mute_terminal_log,
         None,
     )
     .unwrap_or_else(|e| {

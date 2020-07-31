@@ -1,6 +1,7 @@
 use crate::{
     scheme::{on_tx_input, on_tx_output},
-    store::{States, Status, UtxoStore},
+    states::{States, Status},
+    store::UtxoStore,
 };
 use chain_crypto::{Ed25519, PublicKey};
 use chain_impl_mockchain::{

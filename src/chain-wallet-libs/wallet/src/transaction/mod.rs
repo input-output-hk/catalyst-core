@@ -10,7 +10,7 @@ pub use self::{
     strategy::{InputStrategy, OutputStrategy, Strategy, StrategyBuilder, DEFAULT_STRATEGIES},
 };
 
-use crate::UtxoStore;
+use crate::store::UtxoStore;
 
 use chain_impl_mockchain::transaction::{Balance, Input, NoExtra, Output, Transaction};
 

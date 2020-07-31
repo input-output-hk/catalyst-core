@@ -1,6 +1,7 @@
 use crate::{
     scheme::on_tx_input,
-    store::{States, Status, UtxoStore},
+    states::{States, Status},
+    store::UtxoStore,
 };
 use cardano_legacy_address::{AddressMatchXPub, ExtendedAddr};
 use chain_impl_mockchain::{

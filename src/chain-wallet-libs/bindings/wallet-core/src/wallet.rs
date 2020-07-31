@@ -22,8 +22,6 @@ pub struct Wallet {
     account: wallet::Wallet,
     daedalus: wallet::scheme::rindex::Wallet,
     icarus: wallet::scheme::bip44::Wallet<OldAddress>,
-
-    pending_transactions: HashMap<FragmentId, Vec<Input>>,
 }
 
 impl Wallet {
@@ -86,7 +84,6 @@ impl Wallet {
             account,
             daedalus,
             icarus,
-            pending_transactions: HashMap::default(),
         })
     }
 
@@ -147,6 +144,7 @@ impl Wallet {
             raws.push(fragment.serialize_as_vec().unwrap());
             ignored.append(&mut ignored_inputs);
             self.daedalus.check_fragment(&fragment.hash(), &fragment);
+            self.account.check_fragment(&fragment.hash(), &fragment);
         }
 
         while let Some((transaction, mut ignored_inputs)) =
@@ -157,6 +155,7 @@ impl Wallet {
             raws.push(fragment.serialize_as_vec().unwrap());
             ignored.append(&mut ignored_inputs);
             self.icarus.check_fragment(&fragment.hash(), &fragment);
+            self.account.check_fragment(&fragment.hash(), &fragment);
         }
 
         Conversion {
@@ -171,17 +170,7 @@ impl Wallet {
     pub fn confirm_transaction(&mut self, id: FragmentId) {
         self.icarus.confirm(&id);
         self.daedalus.confirm(&id);
-
-        if let Some(inputs) = self.pending_transactions.remove(&id) {
-            for input in inputs {
-                match input.to_enum() {
-                    InputEnum::UtxoInput(_pointer) => {}
-                    InputEnum::AccountInput(identifier, value) => {
-                        self.account.remove(identifier, value);
-                    }
-                }
-            }
-        }
+        self.account.confirm(&id);
     }
 
     /// get access to all the pending transaction
@@ -194,7 +183,7 @@ impl Wallet {
 
     /// remove a given pending transaction returning the associated Inputs
     /// that were used for this transaction
-    pub fn remove_pending_transaction(&mut self, id: &FragmentId) -> Option<Vec<Input>> {
+    pub fn remove_pending_transaction(&mut self, _id: &FragmentId) -> Option<Vec<Input>> {
         todo!("pending transactions not including the utxos");
     }
 
@@ -258,18 +247,22 @@ impl Wallet {
         let mut builder = wallet::TransactionBuilder::new(&settings, payload);
 
         let value = builder.estimate_fee_with(1, 0);
-        let input = Input::from_account_public_key(self.account.account_id().into(), value);
 
-        builder.add_input(input, self.account.witness_builder());
+        let account_tx_builder = self.account.new_transaction(value);
+        let input = account_tx_builder.input();
+        let witness_builder = account_tx_builder.witness_builder();
+
+        builder.add_input(input, witness_builder);
 
         let tx = builder
             .finalize_tx(())
             .map_err(|e| Error::wallet_transaction().with(e))?;
-        let inputs = tx.as_slice().inputs().iter().collect();
+
         let fragment = Fragment::VoteCast(tx);
         let raw = fragment.to_raw();
         let id = raw.id();
-        self.pending_transactions.insert(id, inputs);
+
+        account_tx_builder.add_fragment_id(id);
 
         Ok(raw.serialize_as_vec().unwrap().into_boxed_slice())
     }

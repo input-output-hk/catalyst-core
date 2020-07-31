@@ -115,11 +115,7 @@ impl RecoveryBuilder {
 
         let account = hdkeygen::account::Account::from_seed(seed);
 
-        Ok(Wallet {
-            account,
-            committed_amount: Value::zero(),
-            value: Value::zero(),
-        })
+        Ok(Wallet::new(account))
     }
 
     #[cfg(test)]

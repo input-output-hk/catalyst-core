@@ -45,11 +45,39 @@ impl Treasury {
 #[cfg(test)]
 mod tests {
     use super::Treasury;
+    use crate::ledger::Error;
+    use crate::value::{Value, ValueError};
     use quickcheck::{Arbitrary, Gen};
 
     impl Arbitrary for Treasury {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             Treasury::initial(Arbitrary::arbitrary(g))
         }
+    }
+
+    #[test]
+    pub fn draw_from_treasure() {
+        let mut treasury = Treasury::initial(Value(100));
+        assert_eq!(treasury.draw(Value(60)), Value(60));
+        assert_eq!(treasury.value(), Value(40));
+
+        assert_eq!(treasury.draw(Value(50)), Value(40));
+        assert_eq!(treasury.value(), Value::zero());
+    }
+
+    #[test]
+    pub fn sub_from_treasure() {
+        let mut treasury = Treasury::initial(Value(100));
+        assert!(treasury.sub(Value(60)).is_ok());
+        assert_eq!(treasury.value(), Value(40));
+
+        assert_eq!(treasury.value(), Value(40));
+
+        assert_eq!(
+            treasury.sub(Value(50)),
+            Err(Error::PotValueInvalid {
+                error: ValueError::NegativeAmount
+            })
+        );
     }
 }

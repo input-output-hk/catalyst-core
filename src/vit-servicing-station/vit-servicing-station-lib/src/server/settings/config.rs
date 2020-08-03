@@ -164,9 +164,7 @@ impl ServiceSettings {
             return_settings.block0_path = other_settings.block0_path.clone();
         }
 
-        if other_settings.log.log_level != return_settings.log.log_level {
-            return_settings.log.log_level = other_settings.log.log_level;
-        }
+        return_settings.log.log_level = other_settings.log.log_level;
 
         if other_settings.log.log_output_path.is_some() {
             return_settings.log.log_output_path = other_settings.log.log_output_path.clone();

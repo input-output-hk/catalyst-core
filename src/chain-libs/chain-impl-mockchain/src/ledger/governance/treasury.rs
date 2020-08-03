@@ -99,3 +99,64 @@ impl Readable for TreasuryGovernanceAction {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::{TreasuryGovernance, TreasuryGovernanceAction, TreasuryGovernanceActionType};
+    use crate::{ledger::governance::GovernanceAcceptanceCriteria, value::Value, vote::Choice};
+    use quickcheck::{Arbitrary, Gen};
+    use quickcheck_macros::quickcheck;
+
+    impl Arbitrary for TreasuryGovernanceActionType {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let option = u8::arbitrary(g) % 2;
+            match option {
+                0 => TreasuryGovernanceActionType::NoOp,
+                1 => TreasuryGovernanceActionType::TransferToRewards,
+                _ => unreachable!(),
+            }
+        }
+    }
+    #[test]
+    pub fn treasury_governance_to_type() {
+        let action = TreasuryGovernanceAction::NoOp;
+        assert_eq!(action.to_type(), TreasuryGovernanceActionType::NoOp);
+
+        let action = TreasuryGovernanceAction::TransferToRewards { value: Value(10) };
+        assert_eq!(
+            action.to_type(),
+            TreasuryGovernanceActionType::TransferToRewards
+        );
+    }
+
+    #[test]
+    pub fn treasury_governance_set_default_acceptance_criteria() {
+        let mut governance = TreasuryGovernance::new();
+        let new_governance_criteria = some_new_governance_criteria();
+        governance.set_default_acceptance_criteria(new_governance_criteria.clone());
+
+        assert_eq!(
+            *governance.default_acceptance_criteria(),
+            new_governance_criteria
+        );
+    }
+
+    #[quickcheck]
+    pub fn treasury_governance_set_acceptance_criteria(action_type: TreasuryGovernanceActionType) {
+        let mut governance = TreasuryGovernance::new();
+        let new_governance_criteria = some_new_governance_criteria();
+        governance.set_acceptance_criteria(action_type, new_governance_criteria.clone());
+        assert_eq!(
+            *governance.acceptance_criteria_for(action_type),
+            new_governance_criteria
+        );
+    }
+
+    fn some_new_governance_criteria() -> GovernanceAcceptanceCriteria {
+        let mut new_governance_criteria: GovernanceAcceptanceCriteria = Default::default();
+        let new_option = Choice::new(20);
+        new_governance_criteria.favorable = new_option.clone();
+        new_governance_criteria
+    }
+}

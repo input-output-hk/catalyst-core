@@ -125,3 +125,88 @@ impl Readable for ParametersGovernanceAction {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::{ParametersGovernance, ParametersGovernanceAction, ParametersGovernanceActionType};
+    use crate::{ledger::governance::GovernanceAcceptanceCriteria, value::Value, vote::Choice};
+    use quickcheck::{Arbitrary, Gen};
+    use quickcheck_macros::quickcheck;
+
+    impl Arbitrary for ParametersGovernanceActionType {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let option = u8::arbitrary(g) % 2;
+            match option {
+                0 => ParametersGovernanceActionType::NoOp,
+                1 => ParametersGovernanceActionType::RewardAdd,
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    impl Arbitrary for ParametersGovernanceAction {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let option = u8::arbitrary(g) % 2;
+            match option {
+                0 => ParametersGovernanceAction::NoOp,
+                1 => ParametersGovernanceAction::RewardAdd {
+                    value: Arbitrary::arbitrary(g),
+                },
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    #[test]
+    pub fn parameters_to_type() {
+        let action = ParametersGovernanceAction::NoOp;
+        assert_eq!(action.to_type(), ParametersGovernanceActionType::NoOp);
+
+        let action = ParametersGovernanceAction::RewardAdd { value: Value(10) };
+        assert_eq!(action.to_type(), ParametersGovernanceActionType::RewardAdd);
+    }
+
+    #[test]
+    pub fn parameters_governance_set_default_acceptance_criteria() {
+        let mut governance = ParametersGovernance::new();
+        let new_governance_criteria = some_new_governance_criteria();
+        governance.set_default_acceptance_criteria(new_governance_criteria.clone());
+
+        assert_eq!(
+            *governance.default_acceptance_criteria(),
+            new_governance_criteria
+        );
+    }
+
+    #[quickcheck]
+    pub fn parameters_governance_set_acceptance_criteria(
+        action_type: ParametersGovernanceActionType,
+    ) {
+        let mut governance = ParametersGovernance::new();
+        let new_governance_criteria = some_new_governance_criteria();
+        governance.set_acceptance_criteria(action_type, new_governance_criteria.clone());
+        assert_eq!(
+            *governance.acceptance_criteria_for(action_type),
+            new_governance_criteria
+        );
+    }
+
+    fn some_new_governance_criteria() -> GovernanceAcceptanceCriteria {
+        let mut new_governance_criteria: GovernanceAcceptanceCriteria = Default::default();
+        let new_option = Choice::new(20);
+        new_governance_criteria.favorable = new_option.clone();
+        new_governance_criteria
+    }
+
+    #[quickcheck]
+    pub fn parameters_governance_logs(action_type: ParametersGovernanceAction) {
+        let mut governance = ParametersGovernance::new();
+        assert!(governance.logs_register(action_type.clone()).is_ok());
+        assert!(governance.logs().any(|x| *x == action_type));
+        governance.logs_clear();
+
+        assert!(!governance.logs().any(|x| *x == action_type));
+        assert!(governance.logs().count() == 0);
+    }
+}

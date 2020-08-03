@@ -6,6 +6,7 @@ pub mod output;
 pub mod transaction;
 pub mod update_proposal;
 pub mod utils;
+pub mod utxo;
 pub mod wallet;
 
 use crate::{key::BftLeaderId, transaction::Output, value::Value};

@@ -44,6 +44,8 @@ The command line flags can be retrieved using the `--help` when running the serv
     TLS_CERT_FILE=]
 --db-url <db-url>                          Database url [env: DATABASE_URL=]  [default: ./db/database.sqlite3]
 --in-settings-file <in-settings-file>      Load settings from file
+--log-level <log-level>                    Application logging level
+--log-output-path <log-output-path>        Output log file path
 --max-age-secs <max-age-secs>              If none provided, CORS responses won't be cached
 --out-settings-file <out-settings-file>    Dump current settings to file
 --priv-key-file <priv-key-file>
@@ -68,7 +70,11 @@ An example of the contents of the file would be like this:
         "max_age_secs" : 60
     },
     "db_url": "./database.sqlite3",
-    "block0_path": "./test/bin.test"
+    "block0_path": "./test/bin.test",
+    "log" : {
+        "log_output_path" : "./server.log",
+        "log_level" : "error"    
+    }
 }
 ```
 

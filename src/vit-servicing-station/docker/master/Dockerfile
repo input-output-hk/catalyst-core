@@ -32,4 +32,4 @@ RUN cd ${ENV_PREFIX}/src && \
 	~/.cargo/bin/cargo install --path vit-servicing-station-server
 	
 
-CMD ["bash", "-c", "~/.cargo/bin/vit-servicing-station-server --db-url /data/database.db --block0-path /data/block0.bin"]
+CMD ["bash", "-c", "~/.cargo/bin/vit-servicing-station-server --db-url /data/database.db --block0-path /data/block0.bin --log-output-path vit-servicing-station.log --log-level info"]

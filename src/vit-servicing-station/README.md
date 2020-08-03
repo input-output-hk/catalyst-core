@@ -88,3 +88,40 @@ Some considerations when using the playground:
 In order to use your API-Token just add it inside the json configuration for headers in the bottom left part of the webpage. For example: `{ "API-Token" : "your api token here" }`
 * Since the API-Token is needed for any request. Both the **docs** and the **schema** will not be available till the header is filled.
 * Depending on the deployment and/or  your server configuration you may need to configure properly the **CORS** settings in order to make the playground work as expected.
+
+## CLI
+
+The `vit-servicing-station-cli` is an accompanying tool to interact with some of the ecosystem.
+Right now it offers the following commands:
+
+### api-token
+
+#### generate
+It is possible to generate api tokens (URL safe base64 encoded) with a simple command. For example:
+```bash 
+❯ ./vit-servicing-station-cli api-token generate
+F-4QxU3FrbH7qg
+```
+
+It can be combined with two (optional) arguments:
+* `--n` number of tokens to generate
+* `--size` length (in **bytes**) of the tokens
+
+#### add
+We can add a token to some db using the tool too:
+
+```bash
+./vit-servicing-station-cli api-token add --db-url ../../db/vit_station_new.db --tokens 1CNDAo43fo4ktQ 0wNbdTDMJCFcnw
+```
+
+We need to provide the url to the database where we want it to be inserted (with `--db-url`) and the tokens we want too 
+insert (with `--tokens` followed by the tokens). 
+Notice that the token is in the same URL safe base64 encoding as we generated in the previous command.
+
+**If not specifying** the `--tokens` argument the cli will read the input from the standard input the tokens we want to insert.
+This enables the command to be piped from another command, for example:
+
+```bash
+./vit-servicing-station-cli api-token generate --size 10 --n 10 | ./vit-servicing-station-cli api-token add --db-url ../../db/vit_station_new.db
+```
+

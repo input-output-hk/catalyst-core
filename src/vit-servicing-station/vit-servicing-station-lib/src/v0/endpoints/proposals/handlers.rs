@@ -14,8 +14,8 @@ pub async fn get_all_proposals(context: SharedContext) -> Result<impl Reply, Rej
 pub mod test {
     use super::*;
     use crate::db::{
+        migrations as db_testing,
         models::proposals::{test as proposals_testing, *},
-        testing as db_testing,
     };
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use warp::Filter;

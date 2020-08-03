@@ -15,8 +15,8 @@ pub async fn get_fund(context: SharedContext) -> Result<impl Reply, Rejection> {
 pub mod test {
     use super::*;
     use crate::db::{
+        migrations as db_testing,
         models::funds::{test as funds_testing, Fund},
-        testing as db_testing,
     };
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use warp::Filter;

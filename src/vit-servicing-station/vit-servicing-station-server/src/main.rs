@@ -34,7 +34,7 @@ async fn main() {
 
     // setup logging
     config_log(
-        settings.log.log_level.into(),
+        settings.log.log_level.unwrap_or_default().into(),
         settings.log.log_output_path.clone(),
         settings.log.mute_terminal_log,
         None,

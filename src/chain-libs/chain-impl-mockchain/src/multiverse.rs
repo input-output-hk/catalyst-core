@@ -248,7 +248,7 @@ mod test {
                 .get_block_info(cur_hash.serialize_as_vec().unwrap().as_slice())
                 .unwrap();
             blocks_to_apply.push(cur_hash.clone());
-            cur_hash = Hash::deserialize(cur_block.parent_id()).unwrap();
+            cur_hash = Hash::deserialize(cur_block.parent_id().as_ref()).unwrap();
         };
 
         for hash in blocks_to_apply.iter().rev() {
@@ -256,7 +256,7 @@ mod test {
                 store
                     .get_block(hash.serialize_as_vec().unwrap().as_slice())
                     .unwrap()
-                    .as_slice(),
+                    .as_ref(),
             )
             .unwrap();
             let header_meta = block.header.to_content_eval_context();
@@ -355,7 +355,7 @@ mod test {
         let file = tempfile::TempDir::new().unwrap();
         let zero_id: [u8; 32] = <Block as property::Block>::Id::zero().into();
         let zero_id = zero_id.to_vec();
-        let mut store = BlockStore::new(file.path(), zero_id.clone(), zero_id.len()).unwrap();
+        let mut store = BlockStore::new(file.path(), zero_id.clone(), zero_id.len(), 1).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();
@@ -435,7 +435,7 @@ mod test {
         let file = tempfile::TempDir::new().unwrap();
         let zero_id: [u8; 32] = <Block as property::Block>::Id::zero().into();
         let zero_id = zero_id.to_vec();
-        let mut store = BlockStore::new(file.path(), zero_id.clone(), zero_id.len()).unwrap();
+        let mut store = BlockStore::new(file.path(), zero_id.clone(), zero_id.len(), 1).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();

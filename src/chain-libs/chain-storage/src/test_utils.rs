@@ -1,3 +1,4 @@
+use crate::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 #[derive(Debug, Clone, Hash, Ord, PartialOrd, Eq, PartialEq, Copy)]
@@ -18,6 +19,10 @@ impl BlockId {
         let mut v = Vec::new();
         self.serialize(&mut v).unwrap();
         v
+    }
+
+    pub fn serialize_as_value(&self) -> Value {
+        Value::owned(self.serialize_as_vec().into_boxed_slice())
     }
 }
 
@@ -61,5 +66,9 @@ impl Block {
         let mut v = Vec::new();
         self.serialize(&mut v).unwrap();
         v
+    }
+
+    pub fn serialize_as_value(&self) -> Value {
+        Value::owned(self.serialize_as_vec().into_boxed_slice())
     }
 }

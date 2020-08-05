@@ -25,6 +25,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         path,
         BlockId(0).serialize_as_vec(),
         BlockId(0).serialize_as_vec().len(),
+        1,
     )
     .unwrap();
     let genesis_block_info = BlockInfo::new(

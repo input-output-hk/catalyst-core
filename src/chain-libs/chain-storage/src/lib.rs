@@ -731,14 +731,7 @@ pub mod tests {
             .unwrap();
         assert_eq!(
             store.get_tag("tip").unwrap().unwrap(),
-            Value::owned(
-                blocks
-                    .last()
-                    .unwrap()
-                    .id
-                    .serialize_as_vec()
-                    .into_boxed_slice()
-            )
+            blocks.last().unwrap().id.serialize_as_value()
         );
     }
 
@@ -757,14 +750,7 @@ pub mod tests {
             .unwrap();
         assert_eq!(
             store.get_tag("tip").unwrap().unwrap(),
-            Value::owned(
-                blocks
-                    .first()
-                    .unwrap()
-                    .id
-                    .serialize_as_vec()
-                    .into_boxed_slice()
-            )
+            blocks.first().unwrap().id.serialize_as_value()
         );
     }
 
@@ -810,9 +796,7 @@ pub mod tests {
         );
 
         assert_eq!(
-            vec![Value::owned(
-                genesis_block.id.serialize_as_vec().into_boxed_slice()
-            )],
+            vec![genesis_block.id.serialize_as_value()],
             store.get_tips_ids().unwrap()
         );
     }
@@ -838,7 +822,7 @@ pub mod tests {
             let block = pick_from_vector(&mut rng, &blocks);
             assert_eq!(
                 store.get_block(&block.id.serialize_as_vec()).unwrap(),
-                Value::owned(block.serialize_as_vec().into_boxed_slice())
+                block.serialize_as_value()
             );
 
             let distance = rng.next_u32() % block.chain_length;
@@ -995,22 +979,8 @@ pub mod tests {
 
         let expected_tips = {
             let mut hs = HashSet::new();
-            hs.insert(Value::owned(
-                main_branch_blocks
-                    .last()
-                    .unwrap()
-                    .id
-                    .serialize_as_vec()
-                    .into_boxed_slice(),
-            ));
-            hs.insert(Value::owned(
-                second_branch_blocks
-                    .last()
-                    .unwrap()
-                    .id
-                    .serialize_as_vec()
-                    .into_boxed_slice(),
-            ));
+            hs.insert(main_branch_blocks.last().unwrap().id.serialize_as_value());
+            hs.insert(second_branch_blocks.last().unwrap().id.serialize_as_value());
             hs
         };
         let actual_tips = HashSet::from_iter(store.get_tips_ids().unwrap().into_iter());
@@ -1021,14 +991,7 @@ pub mod tests {
             .unwrap();
 
         assert_eq!(
-            vec![Value::owned(
-                main_branch_blocks
-                    .last()
-                    .unwrap()
-                    .id
-                    .serialize_as_vec()
-                    .into_boxed_slice()
-            )],
+            vec![main_branch_blocks.last().unwrap().id.serialize_as_value()],
             store.get_tips_ids().unwrap()
         );
 
@@ -1330,10 +1293,7 @@ pub mod tests {
             assert_eq!(block.chain_length, block_info.chain_length());
 
             let actual_block = store.get_block(&block_id).unwrap();
-            assert_eq!(
-                Value::owned(block.serialize_as_vec().into_boxed_slice()),
-                actual_block
-            );
+            assert_eq!(block.id.serialize_as_value(), actual_block);
         }
     }
 
@@ -1369,12 +1329,7 @@ pub mod tests {
         }
 
         assert_eq!(
-            vec![Value::owned(
-                blocks[FLUSH_TO_BLOCK]
-                    .id
-                    .serialize_as_vec()
-                    .into_boxed_slice()
-            )],
+            vec![blocks[FLUSH_TO_BLOCK].id.serialize_as_value()],
             store.get_tips_ids().unwrap()
         );
     }
@@ -1387,9 +1342,7 @@ pub mod tests {
 
         let chain_length = blocks[HEIGHT].chain_length;
         assert_eq!(
-            vec![Value::owned(
-                blocks[HEIGHT].serialize_as_vec().into_boxed_slice()
-            )],
+            vec![blocks[HEIGHT].id.serialize_as_value()],
             store.get_blocks_by_chain_length(chain_length).unwrap()
         );
     }

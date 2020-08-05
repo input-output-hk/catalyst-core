@@ -174,7 +174,7 @@ impl BlockStore {
                 })
                 .transpose()?
                 .map(|(key, _)| key[4..].to_vec().into())
-                .unwrap_or(self.root_id.clone());
+                .unwrap_or_else(|| self.root_id.clone());
 
             let block_info = BlockInfo::new(block_hash.to_vec(), parent_id, chain_length);
 
@@ -363,7 +363,7 @@ impl BlockStore {
 
         while let Some(parent_block_info) = self
             .get_block_info(current_block_info.parent_id().as_ref())
-            .map(|block_info| Some(block_info))
+            .map(Some)
             .or_else(|err| match err {
                 Error::BlockNotFound => Ok(None),
                 e => Err(e),
@@ -464,6 +464,7 @@ where
 }
 
 #[inline]
+#[allow(clippy::too_many_arguments)]
 fn put_block_impl(
     blocks: &TransactionalTree,
     cold_store_blocks: &TransactionalTree,
@@ -555,6 +556,7 @@ fn put_tag_impl(
 }
 
 #[inline]
+#[allow(clippy::too_many_arguments)]
 fn remove_tip_impl(
     blocks: &TransactionalTree,
     info: &TransactionalTree,

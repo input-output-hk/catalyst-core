@@ -1,4 +1,5 @@
-use crate::{transaction::WitnessBuilder, Settings};
+use super::witness_builder::WitnessBuilder;
+use crate::Settings;
 use chain_addr::Address;
 use chain_impl_mockchain::{
     fee::FeeAlgorithm as _,

@@ -1,7 +1,7 @@
-use chain_crypto::{Ed25519, SecretKey, Signature};
+use chain_crypto::{Ed25519, Ed25519Extended, SecretKey, Signature};
 use chain_impl_mockchain::{
     block::HeaderId,
-    transaction::{TransactionSignDataHash, Witness},
+    transaction::{TransactionSignDataHash, Witness, WitnessUtxoData},
 };
 use ed25519_bip32::XPrv;
 use hdkeygen::account::Account;
@@ -12,7 +12,7 @@ pub trait WitnessBuilder {
 }
 
 pub struct OldUtxoWitnessBuilder<D>(pub Key<XPrv, D>);
-pub struct UtxoWitnessBuilder<D>(pub Key<XPrv, D>);
+pub struct UtxoWitnessBuilder<S, D>(pub Key<S, D>);
 pub struct AccountWitnessBuilder(pub Account);
 
 impl<D> WitnessBuilder for OldUtxoWitnessBuilder<D> {
@@ -34,12 +34,22 @@ impl<D> WitnessBuilder for OldUtxoWitnessBuilder<D> {
     }
 }
 
-impl<D> WitnessBuilder for UtxoWitnessBuilder<D> {
+impl<D> WitnessBuilder for UtxoWitnessBuilder<XPrv, D> {
     fn build(&self, block0: &HeaderId, sign_data_hash: &TransactionSignDataHash) -> Witness {
         let xprv = &self.0;
         Witness::new_utxo(block0, sign_data_hash, |data| {
-            Signature::from_binary(xprv.sign::<&[u8], _>(data.as_ref()).to_bytes())
-                .expect("cannot have invalid signature here")
+            Signature::from_binary(xprv.sign::<WitnessUtxoData, &[u8]>(data.as_ref()).as_ref())
+                .unwrap()
+        })
+    }
+}
+
+impl<D> WitnessBuilder for UtxoWitnessBuilder<SecretKey<Ed25519Extended>, D> {
+    fn build(&self, block0: &HeaderId, sign_data_hash: &TransactionSignDataHash) -> Witness {
+        let key = &self.0;
+        Witness::new_utxo(block0, sign_data_hash, |data| {
+            Signature::from_binary(key.sign::<WitnessUtxoData, &[u8]>(data.as_ref()).as_ref())
+                .unwrap()
         })
     }
 }

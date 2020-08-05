@@ -1,19 +1,18 @@
 use chain_impl_mockchain::{transaction::UtxoPointer, value::Value};
 use chain_path_derivation::DerivationPath;
-use ed25519_bip32::XPrv;
 use hdkeygen::Key;
 use im_rc::{HashMap, HashSet, OrdMap};
 use std::{cell::RefCell, rc::Rc};
 
 type UTxO = Rc<UtxoPointer>;
 
-pub struct UtxoGroup<K> {
+pub struct UtxoGroup<S, K> {
     by_value: OrdMap<Value, HashSet<UTxO>>,
     total_value: Value,
-    key: Rc<Key<XPrv, K>>,
+    key: Rc<Key<S, K>>,
 }
 
-type GroupRef<K> = Rc<RefCell<UtxoGroup<K>>>;
+type GroupRef<S, K> = Rc<RefCell<UtxoGroup<S, K>>>;
 
 /// A UTxO store that can be cheaply updated/cloned
 ///
@@ -36,16 +35,16 @@ type GroupRef<K> = Rc<RefCell<UtxoGroup<K>>>;
 /// UTxO Stores. For larger UTxO stores it is more interesting to use a different
 /// data structure, tuned for the need.
 ///
-pub struct UtxoStore<K> {
-    by_utxo: HashMap<UTxO, GroupRef<K>>,
-    by_derivation_path: HashMap<DerivationPath<K>, GroupRef<K>>,
+pub struct UtxoStore<S, K> {
+    by_utxo: HashMap<UTxO, GroupRef<S, K>>,
+    by_derivation_path: HashMap<DerivationPath<K>, GroupRef<S, K>>,
     by_value: OrdMap<Value, HashSet<UTxO>>,
 
     total_value: Value,
 }
 
-impl<K> UtxoGroup<K> {
-    fn new(key: Key<XPrv, K>) -> Self {
+impl<S, K> UtxoGroup<S, K> {
+    fn new(key: Key<S, K>) -> Self {
         Self {
             by_value: OrdMap::new(),
             total_value: Value::zero(),
@@ -53,7 +52,7 @@ impl<K> UtxoGroup<K> {
         }
     }
 
-    pub fn key(&self) -> &Rc<Key<XPrv, K>> {
+    pub fn key(&self) -> &Rc<Key<S, K>> {
         &self.key
     }
 
@@ -97,7 +96,7 @@ impl<K> UtxoGroup<K> {
     }
 }
 
-impl<K> UtxoStore<K> {
+impl<S, K> UtxoStore<S, K> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -113,7 +112,7 @@ impl<K> UtxoStore<K> {
     ///
     /// this allows optimizing the search of inputs and to favors using
     /// inputs of the same key to preserve privacy
-    pub fn groups(&self) -> impl Iterator<Item = std::cell::Ref<'_, UtxoGroup<K>>> {
+    pub fn groups(&self) -> impl Iterator<Item = std::cell::Ref<'_, UtxoGroup<S, K>>> {
         self.by_derivation_path.values().map(|r| r.borrow())
     }
 
@@ -123,7 +122,7 @@ impl<K> UtxoStore<K> {
     }
 
     /// lookup the UTxO group (if any) associated to the given derivation path
-    pub fn group(&self, dp: &DerivationPath<K>) -> Option<&GroupRef<K>> {
+    pub fn group(&self, dp: &DerivationPath<K>) -> Option<&GroupRef<S, K>> {
         self.by_derivation_path.get(dp)
     }
 
@@ -133,7 +132,7 @@ impl<K> UtxoStore<K> {
     /// to a previous state is a rollback happened or in case of managing
     /// different forks
     #[must_use = "function does not modify the internal state, the returned value is the new state"]
-    pub fn add(&self, utxo: UtxoPointer, key: Key<XPrv, K>) -> Self {
+    pub fn add(&self, utxo: UtxoPointer, key: Key<S, K>) -> Self {
         use im_rc::hashmap::Entry::*;
 
         let mut new = self.clone();
@@ -189,14 +188,14 @@ impl<K> UtxoStore<K> {
         Some(new)
     }
 
-    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<Key<XPrv, K>>> {
+    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<Key<S, K>>> {
         self.by_utxo
             .get(utxo)
             .map(|group| Rc::clone(&group.borrow().key))
     }
 }
 
-impl<K> Clone for UtxoGroup<K> {
+impl<S, K> Clone for UtxoGroup<S, K> {
     fn clone(&self) -> Self {
         Self {
             by_value: self.by_value.clone(),
@@ -206,7 +205,7 @@ impl<K> Clone for UtxoGroup<K> {
     }
 }
 
-impl<K> Clone for UtxoStore<K> {
+impl<S, K> Clone for UtxoStore<S, K> {
     fn clone(&self) -> Self {
         Self {
             by_utxo: self.by_utxo.clone(),
@@ -217,7 +216,7 @@ impl<K> Clone for UtxoStore<K> {
     }
 }
 
-impl<K> Default for UtxoStore<K> {
+impl<S, K> Default for UtxoStore<S, K> {
     fn default() -> Self {
         Self {
             by_utxo: HashMap::new(),

@@ -188,6 +188,23 @@ impl<P> Key<XPub, P> {
     }
 }
 
+impl<P> Key<chain_crypto::SecretKey<chain_crypto::Ed25519Extended>, P> {
+    /// create a signature for the given message and associate the given type `T`
+    /// to the signature type.
+    ///
+    #[inline]
+    pub fn sign<T, B>(&self, message: B) -> Signature<T>
+    where
+        B: AsRef<[u8]>,
+    {
+        Signature::from_slice(self.key.sign(&message.as_ref()).as_ref()).unwrap()
+    }
+
+    pub fn pk(&self) -> chain_crypto::PublicKey<chain_crypto::Ed25519> {
+        self.key.to_public()
+    }
+}
+
 impl<'a, P, Q> Iterator for KeyRange<'a, XPub, SoftDerivationRange, P, Q> {
     type Item = Key<XPub, Q>;
 

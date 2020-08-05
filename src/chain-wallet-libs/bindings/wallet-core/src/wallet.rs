@@ -1,15 +1,15 @@
 use crate::{Conversion, Error, Proposal};
 use chain_core::property::Serialize as _;
+use chain_crypto::{AsymmetricKey, Ed25519Extended, SecretKey};
 use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentId},
     legacy::OldAddress,
-    transaction::{Input, InputEnum},
+    transaction::Input,
     value::Value,
     vote::Choice,
 };
 use chain_ser::mempack::{ReadBuf, Readable as _};
-use std::collections::HashMap;
 use wallet::{AccountId, Settings};
 
 /// the wallet
@@ -22,6 +22,7 @@ pub struct Wallet {
     account: wallet::Wallet,
     daedalus: wallet::scheme::rindex::Wallet,
     icarus: wallet::scheme::bip44::Wallet<OldAddress>,
+    free_keys: wallet::scheme::freeutxo::Wallet,
 }
 
 impl Wallet {
@@ -71,6 +72,7 @@ impl Wallet {
         let daedalus = builder
             .build_daedalus()
             .map_err(|e| Error::wallet_recovering().with(e))?;
+
         let icarus = builder
             .build_yoroi()
             .map_err(|e| Error::wallet_recovering().with(e))?;
@@ -80,10 +82,70 @@ impl Wallet {
             .build_wallet()
             .expect("build the account cannot fail as expected");
 
+        let free_keys = builder
+            .build_free_utxos()
+            .expect("build without free keys cannot fail");
+
         Ok(Wallet {
             account,
             daedalus,
             icarus,
+            free_keys,
+        })
+    }
+
+    /// retrieve a wallet from a list of free keys used as utxo's
+    ///
+    /// this function will work for all yoroi, daedalus and other wallets
+    /// as it will try every kind of wallet anyway
+    ///
+    /// You can also use this function to recover a wallet even after you have
+    /// transferred all the funds to the new format (see the _convert_ function)
+    ///
+    /// The recovered wallet will be returned in `wallet_out`.
+    ///
+    /// # parameters
+    ///
+    /// * mnemonics: a null terminated utf8 string (already normalized NFKD) in english;
+    /// * password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
+    ///   this value is optional and passing a null pointer will result in no password;
+    ///
+    /// # errors
+    ///
+    /// The function may fail if:
+    ///
+    /// * the mnemonics are not valid (invalid length or checksum);
+    ///
+    pub fn recover_free_keys(
+        keys: Vec<<Ed25519Extended as AsymmetricKey>::Secret>,
+    ) -> Result<Self, Error> {
+        let builder = wallet::RecoveryBuilder::new();
+
+        let builder = keys.iter().fold(builder, |builder, key| {
+            builder.add_key(SecretKey::from_binary(key.as_ref()).unwrap())
+        });
+
+        let free_keys = builder
+            .build_free_utxos()
+            .map_err(|err| Error::invalid_input("todo").with(err))?;
+
+        let account = builder
+            .build_wallet()
+            .expect("build the account cannot fail as expected");
+
+        let daedalus = builder
+            .build_daedalus()
+            .map_err(|e| Error::wallet_recovering().with(e))?;
+
+        let icarus = builder
+            .build_yoroi()
+            .map_err(|e| Error::wallet_recovering().with(e))?;
+
+        Ok(Wallet {
+            account,
+            daedalus,
+            icarus,
+            free_keys,
         })
     }
 
@@ -108,8 +170,8 @@ impl Wallet {
         let settings = wallet::Settings::new(&block0).unwrap();
         for fragment in block0.contents.iter() {
             self.daedalus.check_fragment(&fragment.hash(), fragment);
-
             self.icarus.check_fragment(&fragment.hash(), fragment);
+            self.free_keys.check_fragment(&fragment.hash(), fragment);
         }
 
         Ok(settings)
@@ -136,25 +198,22 @@ impl Wallet {
         let mut raws = Vec::new();
         let mut ignored = Vec::new();
 
-        while let Some((transaction, mut ignored_inputs)) =
-            wallet::transaction::send_to_one_address(&settings, &address, self.daedalus.utxos())
-        {
-            let fragment = Fragment::Transaction(transaction);
+        let fragments =
+            wallet::transaction::dump_daedalus_utxo(&settings, &address, &mut self.daedalus)
+                .chain(wallet::transaction::dump_icarus_utxo(
+                    &settings,
+                    &address,
+                    &mut self.icarus,
+                ))
+                .chain(wallet::transaction::dump_free_utxo(
+                    &settings,
+                    &address,
+                    &mut self.free_keys,
+                ));
 
+        for (fragment, mut ignored_inputs) in fragments {
             raws.push(fragment.serialize_as_vec().unwrap());
             ignored.append(&mut ignored_inputs);
-            self.daedalus.check_fragment(&fragment.hash(), &fragment);
-            self.account.check_fragment(&fragment.hash(), &fragment);
-        }
-
-        while let Some((transaction, mut ignored_inputs)) =
-            wallet::transaction::send_to_one_address(&settings, &address, self.icarus.utxos())
-        {
-            let fragment = Fragment::Transaction(transaction);
-
-            raws.push(fragment.serialize_as_vec().unwrap());
-            ignored.append(&mut ignored_inputs);
-            self.icarus.check_fragment(&fragment.hash(), &fragment);
             self.account.check_fragment(&fragment.hash(), &fragment);
         }
 
@@ -170,6 +229,7 @@ impl Wallet {
     pub fn confirm_transaction(&mut self, id: FragmentId) {
         self.icarus.confirm(&id);
         self.daedalus.confirm(&id);
+        self.free_keys.confirm(&id);
         self.account.confirm(&id);
     }
 
@@ -177,14 +237,20 @@ impl Wallet {
     ///
     /// TODO: this might need to be updated to have a more user friendly
     ///       API. Currently do this for simplicity
-    pub fn pending_transactions(&self) -> &HashMap<FragmentId, Vec<Input>> {
-        todo!("pending transactions not including the utxos");
+    pub fn pending_transactions(&self) -> impl Iterator<Item = &FragmentId> {
+        self.daedalus
+            .pending_transactions()
+            .chain(self.icarus.pending_transactions())
+            .chain(self.free_keys.pending_transactions())
+            .chain(self.account.pending_transactions())
     }
 
     /// remove a given pending transaction returning the associated Inputs
     /// that were used for this transaction
     pub fn remove_pending_transaction(&mut self, _id: &FragmentId) -> Option<Vec<Input>> {
-        todo!("pending transactions not including the utxos");
+        // there are no cordova bindings for this, so this todo is not that important right now
+        // and I'm not that sure what's the best api here.
+        todo!("pending transactions");
     }
 
     /// get the total value in the wallet
@@ -200,6 +266,7 @@ impl Wallet {
             .utxos()
             .total_value()
             .saturating_add(self.daedalus.utxos().total_value())
+            .saturating_add(self.free_keys.utxos().total_value())
             .saturating_add(self.account.value())
     }
 

@@ -1,4 +1,5 @@
 pub mod bip44;
+pub mod freeutxo;
 pub mod rindex;
 
 use chain_impl_mockchain::{

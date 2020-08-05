@@ -1,11 +1,10 @@
 //! module for all the recovering mechanism around the cardano blockchains
 
-// mod daedalus;
-// mod icarus;
 mod paperwallet;
 
-use crate::{keygen, scheme as wallet, Password, Wallet};
-use chain_impl_mockchain::{legacy::OldAddress, value::Value};
+use crate::{account::Wallet, keygen, scheme as wallet, Password};
+use chain_crypto::{Ed25519Extended, SecretKey};
+use chain_impl_mockchain::legacy::OldAddress;
 use chain_path_derivation::{
     bip44::{self, Bip44},
     rindex::{self, Rindex},
@@ -27,10 +26,11 @@ pub enum RecoveryError {
     DuplicatedUtxo,
 }
 
-#[derive(Default)]
 pub struct RecoveryBuilder {
     entropy: Option<bip39::Entropy>,
     password: Option<Password>,
+    free_keys: Vec<SecretKey<Ed25519Extended>>,
+    account_seed: Option<hdkeygen::account::SEED>,
 }
 
 impl RecoveryBuilder {
@@ -81,6 +81,18 @@ impl RecoveryBuilder {
         }
     }
 
+    pub fn account_seed(self, seed: hdkeygen::account::SEED) -> Self {
+        Self {
+            account_seed: Some(seed),
+            ..self
+        }
+    }
+
+    pub fn add_key(mut self, key: SecretKey<Ed25519Extended>) -> Self {
+        self.free_keys.push(key);
+        self
+    }
+
     pub fn build_daedalus(&self) -> Result<wallet::rindex::Wallet, RecoveryError> {
         if self.password.is_some() {
             return Err(RecoveryError::SchemeDoesNotRequirePassword);
@@ -107,15 +119,23 @@ impl RecoveryBuilder {
     }
 
     pub fn build_wallet(&self) -> Result<Wallet, RecoveryError> {
-        let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
-        let password = self.password.clone().unwrap_or_default();
+        let seed = self.account_seed.map(Ok).unwrap_or_else(|| {
+            let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
+            let password = self.password.clone().unwrap_or_default();
 
-        let mut seed = [0u8; hdkeygen::account::SEED_LENGTH];
-        keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
+            let mut seed = [0u8; hdkeygen::account::SEED_LENGTH];
+            keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
+
+            Ok(seed)
+        })?;
 
         let account = hdkeygen::account::Account::from_seed(seed);
 
         Ok(Wallet::new(account))
+    }
+
+    pub fn build_free_utxos(&self) -> Result<wallet::freeutxo::Wallet, RecoveryError> {
+        Ok(wallet::freeutxo::Wallet::from_keys(self.free_keys.clone()))
     }
 
     #[cfg(test)]
@@ -215,6 +235,17 @@ fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
         }
 
         iter += 1;
+    }
+}
+
+impl Default for RecoveryBuilder {
+    fn default() -> RecoveryBuilder {
+        RecoveryBuilder {
+            entropy: Default::default(),
+            password: Default::default(),
+            free_keys: Vec::<SecretKey<Ed25519Extended>>::new(),
+            account_seed: Default::default(),
+        }
     }
 }
 

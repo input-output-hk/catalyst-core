@@ -23,7 +23,7 @@ use hdkeygen::{
 pub struct Wallet {
     root_key: Key<XPrv, Rindex<rindex::Root>>,
     payload_key: HDKey,
-    state: States<FragmentId, UtxoStore<Rindex<rindex::Address>>>,
+    state: States<FragmentId, UtxoStore<XPrv, Rindex<rindex::Address>>>,
 }
 
 impl Wallet {
@@ -37,7 +37,7 @@ impl Wallet {
     }
 
     /// get the utxos of this given wallet
-    pub fn utxos(&self) -> &UtxoStore<Rindex<rindex::Address>> {
+    pub fn utxos(&self) -> &UtxoStore<XPrv, Rindex<rindex::Address>> {
         self.state.last_state().1
     }
 

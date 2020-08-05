@@ -3,8 +3,8 @@ const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 mod utils;
 
 use self::utils::State;
-use chain_impl_mockchain::value::Value;
-use wallet::{transaction::Dump, RecoveryBuilder};
+use chain_impl_mockchain::{fragment::Fragment, value::Value};
+use wallet::{transaction::dump_daedalus_utxo, RecoveryBuilder};
 
 /// test to recover a daedalus style address in the test-vectors block0
 ///
@@ -33,14 +33,12 @@ fn daedalus_wallet1() {
 
     assert_eq!(daedalus.unconfirmed_value(), Some(WALLET_VALUE));
 
-    let mut dump = Dump::new(settings, address);
-    daedalus.dump_in(&mut dump);
-    let (ignored, fragments) = dump.finalize();
+    let (transaction, ignored) = dump_daedalus_utxo(&settings, &address, &daedalus).unwrap();
 
     assert!(ignored.is_empty());
 
     state
-        .apply_fragments(fragments.iter().map(|v| &v.1))
+        .apply_fragments(&[Fragment::Transaction(transaction).to_raw()])
         .expect("the dump fragments should be valid");
 }
 
@@ -70,14 +68,12 @@ fn daedalus_wallet2() {
 
     assert_eq!(daedalus.unconfirmed_value(), Some(WALLET_VALUE));
 
-    let mut dump = Dump::new(settings, address);
-    daedalus.dump_in(&mut dump);
-    let (ignored, fragments) = dump.finalize();
+    let (transaction, ignored) = dump_daedalus_utxo(&settings, &address, &daedalus).unwrap();
 
     assert!(ignored.len() == 1, "there is only one ignored input");
     assert!(ignored[0].value() == Value(1), "the value ignored is `1`");
 
     state
-        .apply_fragments(fragments.iter().map(|v| &v.1))
+        .apply_fragments(&[Fragment::Transaction(transaction).to_raw()])
         .expect("the dump fragments should be valid");
 }

@@ -1,0 +1,157 @@
+use crate::store::UtxoStore;
+
+use super::builder::{AddInputStatus, TransactionBuilder};
+use super::witness_builder::{OldUtxoWitnessBuilder, UtxoWitnessBuilder, WitnessBuilder};
+use chain_impl_mockchain::{
+    fragment::Fragment,
+    transaction::{Balance, Input, NoExtra, Output, Transaction},
+};
+
+pub struct DumpIter<'a, W> {
+    settings: &'a crate::Settings,
+    address: &'a chain_addr::Address,
+    wallet: &'a mut W,
+}
+
+pub type DumpDaedalus<'a> = DumpIter<'a, crate::scheme::rindex::Wallet>;
+pub type DumpIcarus<'a> =
+    DumpIter<'a, crate::scheme::bip44::Wallet<chain_impl_mockchain::legacy::OldAddress>>;
+pub type DumpFreeKeys<'a> = DumpIter<'a, crate::scheme::freeutxo::Wallet>;
+
+pub fn send_to_one_address<S: Clone, K: 'static, WB: WitnessBuilder>(
+    settings: &crate::Settings,
+    address: &chain_addr::Address,
+    utxo_store: &UtxoStore<S, K>,
+    mk_witness: &'static dyn Fn(hdkeygen::Key<S, K>) -> WB,
+) -> Option<(Transaction<NoExtra>, Vec<Input>)> {
+    let payload = chain_impl_mockchain::transaction::NoExtra;
+
+    let mut builder = TransactionBuilder::new(settings, payload);
+    let utxos = utxo_store.utxos();
+
+    let mut ignored = vec![];
+
+    // TODO: return this?
+    let _new_store = utxos
+        .take_while(|utxo| {
+            let input = Input::from_utxo(*utxo.as_ref());
+
+            let key = utxo_store.get_signing_key(utxo).unwrap();
+            let witness_builder = mk_witness((*key).clone());
+
+            match builder.add_input(input, witness_builder) {
+                AddInputStatus::Added => true,
+                AddInputStatus::Skipped(input) => {
+                    ignored.push(input);
+                    true
+                }
+                AddInputStatus::NotEnoughSpace => false,
+            }
+        })
+        .fold(utxo_store.clone(), |store, utxo| {
+            store.remove(utxo).unwrap()
+        });
+
+    if builder.inputs().is_empty() {
+        None
+    } else {
+        match builder.check_balance_with(0, 1) {
+            Balance::Positive(value) => {
+                builder.add_output(Output::from_address(address.clone(), value));
+            }
+            Balance::Zero => (),
+            Balance::Negative(_) => unreachable!(),
+        }
+
+        let fragment = builder.finalize_tx(()).unwrap();
+
+        Some((fragment, ignored))
+    }
+}
+
+pub fn dump_daedalus_utxo<'a>(
+    settings: &'a crate::Settings,
+    address: &'a chain_addr::Address,
+    wallet: &'a mut crate::scheme::rindex::Wallet,
+) -> DumpDaedalus<'a> {
+    DumpDaedalus {
+        settings,
+        address,
+        wallet,
+    }
+}
+
+pub fn dump_icarus_utxo<'a>(
+    settings: &'a crate::Settings,
+    address: &'a chain_addr::Address,
+    wallet: &'a mut crate::scheme::bip44::Wallet<chain_impl_mockchain::legacy::OldAddress>,
+) -> DumpIcarus<'a> {
+    DumpIcarus {
+        settings,
+        address,
+        wallet,
+    }
+}
+
+pub fn dump_free_utxo<'a>(
+    settings: &'a crate::Settings,
+    address: &'a chain_addr::Address,
+    wallet: &'a mut crate::scheme::freeutxo::Wallet,
+) -> DumpFreeKeys<'a> {
+    DumpFreeKeys {
+        settings,
+        address,
+        wallet,
+    }
+}
+
+impl<'a> Iterator for DumpDaedalus<'a> {
+    type Item = (Fragment, Vec<Input>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
+            OldUtxoWitnessBuilder(key)
+        })
+        .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
+
+        if let Some((fragment, _)) = next.as_ref() {
+            self.wallet.check_fragment(&fragment.hash(), &fragment);
+        }
+
+        next
+    }
+}
+
+impl<'a> Iterator for DumpIcarus<'a> {
+    type Item = (Fragment, Vec<Input>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
+            OldUtxoWitnessBuilder(key)
+        })
+        .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
+
+        if let Some((fragment, _)) = next.as_ref() {
+            self.wallet.check_fragment(&fragment.hash(), &fragment);
+        }
+
+        next
+    }
+}
+
+impl<'a> Iterator for DumpFreeKeys<'a> {
+    type Item = (Fragment, Vec<Input>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
+            UtxoWitnessBuilder(key)
+        })
+        .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
+
+        if let Some((fragment, _)) = next.as_ref() {
+            self.wallet.check_fragment(&fragment.hash(), &fragment);
+        }
+
+        next
+    }
+}

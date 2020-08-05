@@ -44,6 +44,7 @@ enum RemoveTipResult {
 
 mod tree {
     pub const BLOCKS: &str = "blocks";
+    pub const COLD_STORE_BLOCKS: &str = "cold_store";
     pub const INFO: &str = "info";
     pub const CHAIN_HEIGHT_INDEX: &str = "height_to_block_ids";
     pub const BRANCHES_TIPS: &str = "branches_tips";
@@ -55,6 +56,7 @@ impl BlockStore {
         path: P,
         root_id: I,
         id_length: usize,
+        chain_length_offset: u32,
     ) -> Result<Self, Error> {
         if !path.as_ref().exists() {
             std::fs::create_dir(path.as_ref()).map_err(Error::Open)?;
@@ -64,7 +66,7 @@ impl BlockStore {
         let cold_path = path.as_ref().join("cold");
 
         let hot = sled::open(hot_path)?;
-        let cold = ColdStore::new(cold_path, id_length)?;
+        let cold = ColdStore::new(cold_path, id_length, chain_length_offset)?;
 
         let root_id = root_id.into();
 
@@ -85,32 +87,34 @@ impl BlockStore {
     /// * `block_info` - block metadata for internal needs (indexing, linking
     ///   between blocks, etc)
     pub fn put_block(&mut self, block: &[u8], block_info: BlockInfo) -> Result<(), Error> {
-        if self.cold.block_exists(block_info.id()) {
-            return Err(Error::BlockAlreadyPresent);
-        }
-
-        let parent_in_cold_store = self.cold.block_exists(block_info.parent_id());
-
         let blocks = self.hot.open_tree(tree::BLOCKS)?;
+        let cold_store_blocks = self.hot.open_tree(tree::COLD_STORE_BLOCKS)?;
         let info = self.hot.open_tree(tree::INFO)?;
         let height_to_block_ids = self.hot.open_tree(tree::CHAIN_HEIGHT_INDEX)?;
         let tips = self.hot.open_tree(tree::BRANCHES_TIPS)?;
 
-        let result = (&blocks, &info, &height_to_block_ids, &tips).transaction(
-            |(blocks, info, height_to_block_ids, tips)| {
-                put_block_impl(
-                    blocks,
-                    info,
-                    height_to_block_ids,
-                    tips,
-                    block,
-                    parent_in_cold_store,
-                    &block_info,
-                    self.root_id.as_ref(),
-                    self.id_length,
-                )
-            },
-        );
+        let result = (
+            &blocks,
+            &cold_store_blocks,
+            &info,
+            &height_to_block_ids,
+            &tips,
+        )
+            .transaction(
+                |(blocks, cold_store_blocks, info, height_to_block_ids, tips)| {
+                    put_block_impl(
+                        blocks,
+                        cold_store_blocks,
+                        info,
+                        height_to_block_ids,
+                        tips,
+                        block,
+                        &block_info,
+                        self.root_id.as_ref(),
+                        self.id_length,
+                    )
+                },
+            );
 
         convert_transaction_result(result)
     }
@@ -121,11 +125,20 @@ impl BlockStore {
     ///
     /// * `block_id` - the serialized block identifier.
     pub fn get_block(&mut self, block_id: &[u8]) -> Result<Vec<u8>, Error> {
-        if let Some(block) = self.cold.get_block(block_id) {
-            return Ok(block.to_vec());
-        }
-
         let blocks = self.hot.open_tree(tree::BLOCKS)?;
+        let cold_store_blocks = self.hot.open_tree(tree::COLD_STORE_BLOCKS)?;
+
+        if let Some(chain_length_bytes_slice) = cold_store_blocks.get(block_id)? {
+            let mut chain_length_bytes = [0u8; 4];
+            chain_length_bytes.copy_from_slice(chain_length_bytes_slice.as_ref());
+            let chain_length = u32::from_le_bytes(chain_length_bytes);
+
+            return self
+                .cold
+                .get_block_by_chain_length(chain_length)
+                .map(|block| block.to_vec())
+                .ok_or(Error::BlockNotFound);
+        }
 
         blocks
             .get(block_id)
@@ -144,11 +157,31 @@ impl BlockStore {
     ///
     /// * `block_id` - the serialized block identifier.
     pub fn get_block_info(&mut self, block_hash: &[u8]) -> Result<BlockInfo, Error> {
-        if let Some(block_info) = self.cold.get_block_info(block_hash) {
+        let info = self.hot.open_tree(tree::INFO)?;
+        let cold_store_blocks = self.hot.open_tree(tree::COLD_STORE_BLOCKS)?;
+        let chain_height_index = self.hot.open_tree(tree::CHAIN_HEIGHT_INDEX)?;
+
+        if let Some(chain_length_bytes_slice) = cold_store_blocks.get(block_hash)? {
+            let mut chain_length_bytes = [0u8; 4];
+            chain_length_bytes.copy_from_slice(chain_length_bytes_slice.as_ref());
+            let chain_length = u32::from_le_bytes(chain_length_bytes);
+
+            let parent_id = chain_length
+                .checked_sub(1)
+                .map(|parent_chain_length| parent_chain_length.to_le_bytes())
+                .and_then(|parent_chain_length_bytes| {
+                    chain_height_index
+                        .scan_prefix(&parent_chain_length_bytes[..])
+                        .next()
+                })
+                .transpose()?
+                .map(|(key, _)| key[4..].to_vec().into_boxed_slice())
+                .unwrap_or(self.root_id.clone());
+
+            let block_info = BlockInfo::new(block_hash, parent_id, chain_length);
+
             return Ok(block_info);
         }
-
-        let info = self.hot.open_tree(tree::INFO)?;
 
         info.get(block_hash)
             .map_err(Into::into)
@@ -187,10 +220,20 @@ impl BlockStore {
     pub fn put_tag(&mut self, tag_name: &str, block_hash: &[u8]) -> Result<(), Error> {
         let info = self.hot.open_tree(tree::INFO)?;
         let tags = self.hot.open_tree(tree::TAGS)?;
+        let cold_store_blocks = self.hot.open_tree(tree::COLD_STORE_BLOCKS)?;
 
-        let result = (&info, &tags).transaction(move |(info, tags)| {
-            put_tag_impl(info, tags, &self.cold, tag_name, block_hash, self.id_length)
-        });
+        let result = (&info, &tags, &cold_store_blocks).transaction(
+            move |(info, tags, cold_store_blocks)| {
+                put_tag_impl(
+                    info,
+                    tags,
+                    cold_store_blocks,
+                    tag_name,
+                    block_hash,
+                    self.id_length,
+                )
+            },
+        );
 
         convert_transaction_result(result)
     }
@@ -231,27 +274,35 @@ impl BlockStore {
         let blocks = self.hot.open_tree(tree::BLOCKS)?;
         let info = self.hot.open_tree(tree::INFO)?;
         let height_to_block_ids = self.hot.open_tree(tree::CHAIN_HEIGHT_INDEX)?;
+        let cold_store_blocks = self.hot.open_tree(tree::COLD_STORE_BLOCKS)?;
 
-        let result = (&blocks, &info, &height_to_block_ids, &tips).transaction(
-            |(blocks, info, height_to_block_ids, tips)| {
-                let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
+        let result = (
+            &blocks,
+            &info,
+            &height_to_block_ids,
+            &tips,
+            &cold_store_blocks,
+        )
+            .transaction(
+                |(blocks, info, height_to_block_ids, tips, cold_store_blocks)| {
+                    let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
 
-                while let RemoveTipResult::NextTip(current_tip) = &result {
-                    result = remove_tip_impl(
-                        blocks,
-                        info,
-                        height_to_block_ids,
-                        tips,
-                        &self.cold,
-                        current_tip,
-                        self.root_id.as_ref(),
-                        self.id_length,
-                    )?;
-                }
+                    while let RemoveTipResult::NextTip(current_tip) = &result {
+                        result = remove_tip_impl(
+                            blocks,
+                            info,
+                            height_to_block_ids,
+                            tips,
+                            cold_store_blocks,
+                            current_tip,
+                            self.root_id.as_ref(),
+                            self.id_length,
+                        )?;
+                    }
 
-                Ok(Ok(result))
-            },
-        );
+                    Ok(Ok(result))
+                },
+            );
 
         let result = convert_transaction_result(result)?;
 
@@ -271,11 +322,12 @@ impl BlockStore {
 
     /// Check if the block with the given id exists.
     pub fn block_exists(&mut self, block_hash: &[u8]) -> Result<bool, Error> {
-        if self.cold.block_exists(block_hash) {
+        let info = self.hot.open_tree(tree::INFO)?;
+        let cold_store_blocks = self.hot.open_tree(tree::COLD_STORE_BLOCKS)?;
+
+        if cold_store_blocks.get(block_hash)?.is_some() {
             return Ok(true);
         }
-
-        let info = self.hot.open_tree(tree::INFO)?;
 
         info.get(block_hash)
             .map(|maybe_block| maybe_block.is_some())
@@ -362,28 +414,25 @@ impl BlockStore {
 
         block_infos.reverse();
 
-        let records = block_infos
+        let blocks = block_infos
             .iter()
-            .map(|block_info| {
-                let data = self.get_block(block_info.id())?;
-                Ok((data, block_info))
-            })
+            .map(|block_info| self.get_block(block_info.id()))
             .collect::<Result<Vec<_>, Error>>()?;
+        let block_refs: Vec<_> = blocks.iter().map(|block| block.as_ref()).collect();
 
-        self.cold.put_blocks(&records)?;
+        self.cold.put_blocks(&block_refs)?;
 
         let blocks = self.hot.open_tree(tree::BLOCKS)?;
         let info = self.hot.open_tree(tree::INFO)?;
-        let height_to_block_ids = self.hot.open_tree(tree::CHAIN_HEIGHT_INDEX)?;
+        let cold_store_blocks = self.hot.open_tree(tree::COLD_STORE_BLOCKS)?;
 
         for block_info in block_infos.iter() {
             let key = block_info.id();
+            let chain_length_bytes = block_info.chain_length().to_le_bytes();
+
+            cold_store_blocks.insert(key, chain_length_bytes.as_ref())?;
             blocks.remove(key)?;
             info.remove(key)?;
-
-            let mut height_index = block_info.chain_length().to_le_bytes().to_vec();
-            height_index.extend_from_slice(block_info.id());
-            height_to_block_ids.remove(height_index)?;
         }
 
         Ok(())
@@ -425,18 +474,20 @@ where
 #[inline]
 fn put_block_impl(
     blocks: &TransactionalTree,
+    cold_store_blocks: &TransactionalTree,
     info: &TransactionalTree,
     height_to_block_ids: &TransactionalTree,
     tips: &TransactionalTree,
     block: &[u8],
-    parent_in_cold_store: bool,
     block_info: &BlockInfo,
     root_id: &[u8],
     id_length: usize,
 ) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
-    if info.get(block_info.id())?.is_some() {
+    if info.get(block_info.id())?.is_some() || cold_store_blocks.get(block_info.id())?.is_some() {
         return Ok(Err(Error::BlockAlreadyPresent));
     }
+
+    let parent_in_cold_store = cold_store_blocks.get(block_info.id())?.is_some();
 
     if block_info.parent_id() != root_id.as_ref() {
         if info.get(block_info.parent_id())?.is_none() && !parent_in_cold_store {
@@ -474,7 +525,7 @@ fn put_block_impl(
 fn put_tag_impl(
     info: &TransactionalTree,
     tags: &TransactionalTree,
-    cold: &ColdStore,
+    cold_store_blocks: &TransactionalTree,
     tag_name: &str,
     block_hash: &[u8],
     id_size: usize,
@@ -487,7 +538,7 @@ fn put_tag_impl(
             info.insert(block_hash, info_bin)?;
         }
         None => {
-            if !cold.block_exists(block_hash) {
+            if cold_store_blocks.get(block_hash)?.is_none() {
                 return Ok(Err(Error::BlockNotFound));
             }
         }
@@ -513,13 +564,13 @@ fn remove_tip_impl(
     info: &TransactionalTree,
     height_to_block_ids: &TransactionalTree,
     tips: &TransactionalTree,
-    cold: &ColdStore,
+    cold_store_blocks: &TransactionalTree,
     block_id: &[u8],
     root_id: &[u8],
     id_size: usize,
 ) -> Result<RemoveTipResult, ConflictableTransactionError<()>> {
     // Stop when we bump into a block stored in the cold storage.
-    if cold.block_exists(block_id) {
+    if cold_store_blocks.get(block_id)?.is_some() {
         return Ok(RemoveTipResult::Done);
     }
 
@@ -544,7 +595,7 @@ fn remove_tip_impl(
         return Ok(RemoveTipResult::Done);
     }
 
-    let maybe_parent_block_info = if cold.block_exists(block_info.parent_id()) {
+    let maybe_parent_block_info = if cold_store_blocks.get(block_info.parent_id())?.is_some() {
         None
     } else {
         let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
@@ -647,6 +698,7 @@ pub mod tests {
             file.path(),
             BlockId(0).serialize_as_vec(),
             BlockId(0).serialize_as_vec().len(),
+            1,
         )
         .unwrap();
 
@@ -754,6 +806,7 @@ pub mod tests {
             file.path(),
             BlockId(0).serialize_as_vec(),
             BlockId(0).serialize_as_vec().len(),
+            1,
         )
         .unwrap();
         let blocks = generate_chain(&mut rng, &mut store);
@@ -801,6 +854,7 @@ pub mod tests {
             file.path(),
             BlockId(0).serialize_as_vec(),
             BlockId(0).serialize_as_vec().len(),
+            1,
         )
         .unwrap();
 
@@ -870,6 +924,7 @@ pub mod tests {
             file.path(),
             BlockId(0).serialize_as_vec(),
             BlockId(0).serialize_as_vec().len(),
+            1,
         )
         .unwrap();
 
@@ -970,6 +1025,7 @@ pub mod tests {
             file.path(),
             BlockId(0).serialize_as_vec(),
             BlockId(0).serialize_as_vec().len(),
+            1,
         )
         .unwrap();
 
@@ -1171,6 +1227,7 @@ pub mod tests {
             file.path(),
             BlockId(0).serialize_as_vec(),
             BlockId(0).serialize_as_vec().len(),
+            1,
         )
         .unwrap();
 

@@ -1,19 +1,16 @@
+use crate::Value;
 use std::io::{Read, Write};
 
 #[derive(Clone)]
 pub struct BlockInfo {
-    id: Box<[u8]>,
-    parent_id: Box<[u8]>,
+    id: Value,
+    parent_id: Value,
     chain_length: u32,
     ref_count: u32,
 }
 
 impl BlockInfo {
-    pub fn new<A: Into<Box<[u8]>>, B: Into<Box<[u8]>>>(
-        id: A,
-        parent_id: B,
-        chain_length: u32,
-    ) -> Self {
+    pub fn new<A: Into<Value>, B: Into<Value>>(id: A, parent_id: B, chain_length: u32) -> Self {
         Self {
             id: id.into(),
             parent_id: parent_id.into(),
@@ -22,11 +19,11 @@ impl BlockInfo {
         }
     }
 
-    pub fn id(&self) -> &[u8] {
+    pub fn id(&self) -> &Value {
         &self.id
     }
 
-    pub fn parent_id(&self) -> &[u8] {
+    pub fn parent_id(&self) -> &Value {
         &self.parent_id
     }
 
@@ -53,16 +50,12 @@ impl BlockInfo {
 
         w.write_all(&self.ref_count.to_le_bytes()).unwrap();
 
-        w.write_all(&self.parent_id).unwrap();
+        w.write_all(self.parent_id.as_ref()).unwrap();
 
         w
     }
 
-    pub(crate) fn deserialize<R: Read, T: Into<Box<[u8]>>>(
-        mut r: R,
-        id_size: usize,
-        id: T,
-    ) -> Self {
+    pub(crate) fn deserialize<R: Read, T: Into<Value>>(mut r: R, id_size: usize, id: T) -> Self {
         let mut chain_length_bytes = [0u8; 4];
         r.read_exact(&mut chain_length_bytes).unwrap();
         let chain_length = u32::from_le_bytes(chain_length_bytes);
@@ -76,7 +69,7 @@ impl BlockInfo {
 
         Self {
             id: id.into(),
-            parent_id: parent_id.into_boxed_slice(),
+            parent_id: parent_id.into(),
             chain_length,
             ref_count,
         }

@@ -2,6 +2,7 @@ mod block_info;
 mod cold_store;
 #[cfg(any(test, feature = "with-bench"))]
 pub mod test_utils;
+mod value;
 
 use cold_store::ColdStore;
 use sled::{ConflictableTransactionError, TransactionError, Transactional, TransactionalTree};
@@ -9,6 +10,7 @@ use std::path::Path;
 use thiserror::Error;
 
 pub use block_info::BlockInfo;
+pub use value::Value;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -32,7 +34,7 @@ pub enum Error {
 pub struct BlockStore {
     hot: sled::Db,
     cold: ColdStore,
-    root_id: Box<[u8]>,
+    root_id: Value,
     id_length: usize,
 }
 
@@ -52,7 +54,7 @@ mod tree {
 }
 
 impl BlockStore {
-    pub fn new<P: AsRef<Path>, I: Into<Box<[u8]>>>(
+    pub fn new<P: AsRef<Path>, I: Into<Value>>(
         path: P,
         root_id: I,
         id_length: usize,
@@ -124,7 +126,7 @@ impl BlockStore {
     /// # Arguments
     ///
     /// * `block_id` - the serialized block identifier.
-    pub fn get_block(&mut self, block_id: &[u8]) -> Result<Vec<u8>, Error> {
+    pub fn get_block(&mut self, block_id: &[u8]) -> Result<Value, Error> {
         let blocks = self.hot.open_tree(tree::BLOCKS)?;
         let cold_store_blocks = self.hot.open_tree(tree::COLD_STORE_BLOCKS)?;
 
@@ -136,7 +138,7 @@ impl BlockStore {
             return self
                 .cold
                 .get_block_by_chain_length(chain_length)
-                .map(|block| block.to_vec())
+                .map(|block| Value::owned(block.to_vec().into_boxed_slice()))
                 .ok_or(Error::BlockNotFound);
         }
 
@@ -144,11 +146,7 @@ impl BlockStore {
             .get(block_id)
             .map_err(Into::into)
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
-            .map(|block_bin| {
-                let mut v = Vec::new();
-                v.extend_from_slice(&block_bin);
-                v
-            })
+            .map(Value::volatile)
     }
 
     /// Get the `BlockInfo` instance for the requested block.
@@ -175,10 +173,10 @@ impl BlockStore {
                         .next()
                 })
                 .transpose()?
-                .map(|(key, _)| key[4..].to_vec().into_boxed_slice())
+                .map(|(key, _)| key[4..].to_vec().into())
                 .unwrap_or(self.root_id.clone());
 
-            let block_info = BlockInfo::new(block_hash, parent_id, chain_length);
+            let block_info = BlockInfo::new(block_hash.to_vec(), parent_id, chain_length);
 
             return Ok(block_info);
         }
@@ -188,14 +186,14 @@ impl BlockStore {
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .map(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
-                BlockInfo::deserialize(&mut block_info_reader, self.id_length, block_hash)
+                BlockInfo::deserialize(&mut block_info_reader, self.id_length, block_hash.to_vec())
             })
     }
 
     /// Get multiple serialized blocks from the given height.
-    pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<Vec<u8>>, Error> {
+    pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<Value>, Error> {
         if let Some(block) = self.cold.get_block_by_chain_length(chain_length) {
-            return Ok(vec![block.to_vec()]);
+            return Ok(vec![Value::owned(block.to_vec().into_boxed_slice())]);
         }
 
         let blocks = self.hot.open_tree(tree::BLOCKS)?;
@@ -209,7 +207,7 @@ impl BlockStore {
 
                 blocks
                     .get(block_hash)
-                    .map(|maybe_raw_block| maybe_raw_block.unwrap().to_vec())
+                    .map(|maybe_raw_block| Value::volatile(maybe_raw_block.unwrap()))
             })
             .collect::<Result<Vec<_>, _>>()
             .map_err(Into::into)
@@ -239,26 +237,20 @@ impl BlockStore {
     }
 
     /// Get the block id for the given tag.
-    pub fn get_tag(&mut self, tag_name: &str) -> Result<Option<Vec<u8>>, Error> {
+    pub fn get_tag(&mut self, tag_name: &str) -> Result<Option<Value>, Error> {
         let tags = self.hot.open_tree(tree::TAGS)?;
 
         tags.get(tag_name)
-            .map(|maybe_id_bin| {
-                maybe_id_bin.map(|id_bin| {
-                    let mut v = Vec::new();
-                    v.extend_from_slice(&id_bin);
-                    v
-                })
-            })
+            .map(|maybe_id_bin| maybe_id_bin.map(Value::volatile))
             .map_err(Into::into)
     }
 
     /// Get identifier of all branches tips.
-    pub fn get_tips_ids(&mut self) -> Result<Vec<Vec<u8>>, Error> {
+    pub fn get_tips_ids(&mut self) -> Result<Vec<Value>, Error> {
         let tips = self.hot.open_tree(tree::BRANCHES_TIPS)?;
 
         tips.iter()
-            .map(|id_result| id_result.map(|(id, _)| id.to_vec()))
+            .map(|id_result| id_result.map(|(id, _)| Value::volatile(id)))
             .collect::<Result<Vec<_>, _>>()
             .map_err(Into::into)
     }
@@ -370,7 +362,7 @@ impl BlockStore {
         let mut distance = 0;
 
         while let Some(parent_block_info) = self
-            .get_block_info(current_block_info.parent_id())
+            .get_block_info(current_block_info.parent_id().as_ref())
             .map(|block_info| Some(block_info))
             .or_else(|err| match err {
                 Error::BlockNotFound => Ok(None),
@@ -378,7 +370,7 @@ impl BlockStore {
             })?
         {
             distance += 1;
-            if parent_block_info.id() == ancestor_id {
+            if parent_block_info.id().as_ref() == ancestor_id {
                 return Ok(Some(distance));
             }
             current_block_info = parent_block_info;
@@ -409,14 +401,14 @@ impl BlockStore {
                 })?
         {
             block_infos.push(block_info);
-            current_block_hash = block_infos.last().unwrap().parent_id();
+            current_block_hash = block_infos.last().unwrap().parent_id().as_ref();
         }
 
         block_infos.reverse();
 
         let blocks = block_infos
             .iter()
-            .map(|block_info| self.get_block(block_info.id()))
+            .map(|block_info| self.get_block(block_info.id().as_ref()))
             .collect::<Result<Vec<_>, Error>>()?;
         let block_refs: Vec<_> = blocks.iter().map(|block| block.as_ref()).collect();
 
@@ -465,7 +457,7 @@ where
 
     while target < current.chain_length() {
         callback(&current);
-        current = store.get_block_info(current.parent_id())?;
+        current = store.get_block_info(current.parent_id().as_ref())?;
     }
 
     Ok(current)
@@ -489,7 +481,7 @@ fn put_block_impl(
 
     let parent_in_cold_store = cold_store_blocks.get(block_info.id())?.is_some();
 
-    if block_info.parent_id() != root_id.as_ref() {
+    if block_info.parent_id().as_ref() != root_id {
         if info.get(block_info.parent_id())?.is_none() && !parent_in_cold_store {
             return Ok(Err(Error::MissingParent));
         }
@@ -500,23 +492,26 @@ fn put_block_impl(
             let mut parent_block_info = BlockInfo::deserialize(
                 &mut parent_block_info_reader,
                 id_length,
-                block_info.parent_id(),
+                block_info.parent_id().clone(),
             );
             parent_block_info.add_ref();
-            info.insert(parent_block_info.id(), parent_block_info.serialize())?;
+            info.insert(
+                parent_block_info.id().as_ref(),
+                parent_block_info.serialize(),
+            )?;
         }
     }
 
-    tips.remove(block_info.parent_id())?;
-    tips.insert(block_info.id(), &[])?;
+    tips.remove(block_info.parent_id().as_ref())?;
+    tips.insert(block_info.id().as_ref(), &[])?;
 
     let mut height_index = block_info.chain_length().to_le_bytes().to_vec();
-    height_index.extend_from_slice(block_info.id());
+    height_index.extend_from_slice(block_info.id().as_ref());
     height_to_block_ids.insert(height_index, &[])?;
 
-    blocks.insert(block_info.id(), block)?;
+    blocks.insert(block_info.id().as_ref(), block)?;
 
-    info.insert(block_info.id(), block_info.serialize().as_slice())?;
+    info.insert(block_info.id().as_ref(), block_info.serialize().as_slice())?;
 
     Ok(Ok(()))
 }
@@ -532,7 +527,8 @@ fn put_tag_impl(
 ) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
     match info.get(block_hash)? {
         Some(info_bin) => {
-            let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, block_hash);
+            let mut block_info =
+                BlockInfo::deserialize(&info_bin[..], id_size, block_hash.to_vec());
             block_info.add_ref();
             let info_bin = block_info.serialize();
             info.insert(block_hash, info_bin)?;
@@ -552,7 +548,7 @@ fn put_tag_impl(
             BlockInfo::deserialize(&info_bin[..], id_size, old_block_hash.to_vec());
         block_info.remove_ref();
         let info_bin = block_info.serialize();
-        info.insert(block_info.id(), info_bin)?;
+        info.insert(block_info.id().as_ref(), info_bin)?;
     }
 
     Ok(Ok(()))
@@ -576,7 +572,7 @@ fn remove_tip_impl(
 
     let block_info_bin = info.get(block_id)?.unwrap();
     let mut block_info_reader: &[u8] = &block_info_bin;
-    let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id);
+    let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id.to_vec());
 
     if block_info.ref_count() != 0 {
         return Ok(RemoveTipResult::Done);
@@ -586,12 +582,12 @@ fn remove_tip_impl(
     blocks.remove(block_id)?;
 
     let mut height_index = block_info.chain_length().to_le_bytes().to_vec();
-    height_index.extend_from_slice(block_info.id());
+    height_index.extend_from_slice(block_info.id().as_ref());
     height_to_block_ids.remove(height_index)?;
 
     tips.remove(block_id)?;
 
-    if block_info.parent_id() == root_id {
+    if block_info.parent_id().as_ref() == root_id {
         return Ok(RemoveTipResult::Done);
     }
 
@@ -603,10 +599,13 @@ fn remove_tip_impl(
         let mut parent_block_info = BlockInfo::deserialize(
             &mut parent_block_info_reader,
             id_size,
-            block_info.parent_id(),
+            block_info.parent_id().clone(),
         );
         parent_block_info.remove_ref();
-        info.insert(parent_block_info.id(), parent_block_info.serialize())?;
+        info.insert(
+            parent_block_info.id().as_ref(),
+            parent_block_info.serialize(),
+        )?;
 
         Some(parent_block_info)
     };
@@ -616,13 +615,13 @@ fn remove_tip_impl(
             if parent_block_info.ref_count() == 0 {
                 // If the block is inside another branch it cannot be a tip.
                 // This will also apply if this tip is tagged.
-                tips.insert(block_info.parent_id(), &[])?;
-                RemoveTipResult::NextTip(block_info.parent_id().to_vec())
+                tips.insert(block_info.parent_id().as_ref(), &[])?;
+                RemoveTipResult::NextTip(block_info.parent_id().as_ref().to_vec())
             } else {
                 RemoveTipResult::Done
             }
         }
-        None => RemoveTipResult::HitColdStore(block_info.parent_id().to_vec()),
+        None => RemoveTipResult::HitColdStore(block_info.parent_id().as_ref().to_vec()),
     };
 
     Ok(maybe_next_tip)
@@ -732,7 +731,14 @@ pub mod tests {
             .unwrap();
         assert_eq!(
             store.get_tag("tip").unwrap().unwrap(),
-            blocks.last().unwrap().id.serialize_as_vec()
+            Value::owned(
+                blocks
+                    .last()
+                    .unwrap()
+                    .id
+                    .serialize_as_vec()
+                    .into_boxed_slice()
+            )
         );
     }
 
@@ -751,7 +757,14 @@ pub mod tests {
             .unwrap();
         assert_eq!(
             store.get_tag("tip").unwrap().unwrap(),
-            blocks.first().unwrap().id.serialize_as_vec()
+            Value::owned(
+                blocks
+                    .first()
+                    .unwrap()
+                    .id
+                    .serialize_as_vec()
+                    .into_boxed_slice()
+            )
         );
     }
 
@@ -765,7 +778,9 @@ pub mod tests {
             genesis_block.chain_length,
         );
 
-        assert!(!store.block_exists(genesis_block_info.id()).unwrap());
+        assert!(!store
+            .block_exists(genesis_block_info.id().as_ref())
+            .unwrap());
 
         store
             .put_block(
@@ -777,15 +792,17 @@ pub mod tests {
             .get_block_info(&genesis_block.id.serialize_as_vec())
             .unwrap();
 
-        assert!(store.block_exists(genesis_block_info.id()).unwrap());
+        assert!(store
+            .block_exists(genesis_block_info.id().as_ref())
+            .unwrap());
 
         assert_eq!(
             &genesis_block.id.serialize_as_vec()[..],
-            genesis_block_restored.id()
+            genesis_block_restored.id().as_ref()
         );
         assert_eq!(
             &genesis_block.parent.serialize_as_vec()[..],
-            genesis_block_restored.parent_id()
+            genesis_block_restored.parent_id().as_ref()
         );
         assert_eq!(
             genesis_block.chain_length,
@@ -793,7 +810,9 @@ pub mod tests {
         );
 
         assert_eq!(
-            vec![genesis_block.id.serialize_as_vec()],
+            vec![Value::owned(
+                genesis_block.id.serialize_as_vec().into_boxed_slice()
+            )],
             store.get_tips_ids().unwrap()
         );
     }
@@ -819,7 +838,7 @@ pub mod tests {
             let block = pick_from_vector(&mut rng, &blocks);
             assert_eq!(
                 store.get_block(&block.id.serialize_as_vec()).unwrap(),
-                block.serialize_as_vec()
+                Value::owned(block.serialize_as_vec().into_boxed_slice())
             );
 
             let distance = rng.next_u32() % block.chain_length;
@@ -976,8 +995,22 @@ pub mod tests {
 
         let expected_tips = {
             let mut hs = HashSet::new();
-            hs.insert(main_branch_blocks.last().unwrap().id.serialize_as_vec());
-            hs.insert(second_branch_blocks.last().unwrap().id.serialize_as_vec());
+            hs.insert(Value::owned(
+                main_branch_blocks
+                    .last()
+                    .unwrap()
+                    .id
+                    .serialize_as_vec()
+                    .into_boxed_slice(),
+            ));
+            hs.insert(Value::owned(
+                second_branch_blocks
+                    .last()
+                    .unwrap()
+                    .id
+                    .serialize_as_vec()
+                    .into_boxed_slice(),
+            ));
             hs
         };
         let actual_tips = HashSet::from_iter(store.get_tips_ids().unwrap().into_iter());
@@ -988,7 +1021,14 @@ pub mod tests {
             .unwrap();
 
         assert_eq!(
-            vec![main_branch_blocks.last().unwrap().id.serialize_as_vec()],
+            vec![Value::owned(
+                main_branch_blocks
+                    .last()
+                    .unwrap()
+                    .id
+                    .serialize_as_vec()
+                    .into_boxed_slice()
+            )],
             store.get_tips_ids().unwrap()
         );
 
@@ -1055,8 +1095,11 @@ pub mod tests {
 
         let chain_length = genesis_block.chain_length + 1;
 
-        let expected: HashSet<_, std::collections::hash_map::RandomState> =
-            HashSet::from_iter(blocks.into_iter());
+        let expected: HashSet<_, std::collections::hash_map::RandomState> = HashSet::from_iter(
+            blocks
+                .into_iter()
+                .map(|block| Value::owned(block.into_boxed_slice())),
+        );
         let actual = HashSet::from_iter(
             store
                 .get_blocks_by_chain_length(chain_length)
@@ -1279,12 +1322,18 @@ pub mod tests {
             let block_id = block.id.serialize_as_vec();
 
             let block_info = store.get_block_info(&block_id).unwrap();
-            assert_eq!(&block.id.serialize_as_vec()[..], block_info.id());
-            assert_eq!(&block.parent.serialize_as_vec()[..], block_info.parent_id());
+            assert_eq!(&block.id.serialize_as_vec()[..], block_info.id().as_ref());
+            assert_eq!(
+                &block.parent.serialize_as_vec()[..],
+                block_info.parent_id().as_ref()
+            );
             assert_eq!(block.chain_length, block_info.chain_length());
 
             let actual_block = store.get_block(&block_id).unwrap();
-            assert_eq!(block.serialize_as_vec(), actual_block);
+            assert_eq!(
+                Value::owned(block.serialize_as_vec().into_boxed_slice()),
+                actual_block
+            );
         }
     }
 
@@ -1320,7 +1369,12 @@ pub mod tests {
         }
 
         assert_eq!(
-            vec![blocks[FLUSH_TO_BLOCK].id.serialize_as_vec()],
+            vec![Value::owned(
+                blocks[FLUSH_TO_BLOCK]
+                    .id
+                    .serialize_as_vec()
+                    .into_boxed_slice()
+            )],
             store.get_tips_ids().unwrap()
         );
     }
@@ -1333,7 +1387,9 @@ pub mod tests {
 
         let chain_length = blocks[HEIGHT].chain_length;
         assert_eq!(
-            vec![blocks[HEIGHT].serialize_as_vec()],
+            vec![Value::owned(
+                blocks[HEIGHT].serialize_as_vec().into_boxed_slice()
+            )],
             store.get_blocks_by_chain_length(chain_length).unwrap()
         );
     }

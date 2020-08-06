@@ -1,5 +1,7 @@
-use super::{config::Monitor, request::Response, stats::Stats};
-use indicatif::{ProgressBar, ProgressStyle};
+use super::{
+    config::Monitor, progress::use_as_monitor_progress_bar, request::Response, stats::Stats,
+};
+use indicatif::ProgressBar;
 use std::time::Instant;
 use std::{
     sync::{
@@ -15,34 +17,18 @@ pub struct MonitorThread {
 }
 
 impl MonitorThread {
-    fn initialize(monitor: &Monitor, title: &str) -> ProgressBar {
-        let banner = format!("[Load Scenario: {}]", title);
-        let progress_bar = ProgressBar::new(1);
-        let spinner_style = ProgressStyle::default_spinner()
-            .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")
-            .template("{prefix:.bold.dim} {spinner} {wide_msg}");
-        progress_bar.set_style(spinner_style);
-
-        match monitor {
-            Monitor::Standard(_) => println!("{}", banner),
-            Monitor::Progress(_) => {
-                progress_bar.set_prefix(&banner);
-                progress_bar.set_message(&"initializing...".to_string());
-            }
-            _ => (),
-        }
-        progress_bar
-    }
-
     pub fn start(requests: &Arc<Mutex<Vec<Response>>>, monitor: Monitor, title: &str) -> Self {
         let (tx, rx) = mpsc::channel();
         let request_clone = Arc::clone(&requests);
-        let progress_bar = Self::initialize(&monitor, title);
+        let mut progress_bar = ProgressBar::new(1);
+        use_as_monitor_progress_bar(&monitor, title, &mut progress_bar);
+
         let monitor = thread::spawn(move || {
             let timer = Instant::now();
             loop {
                 match rx.try_recv() {
                     Ok(_) | Err(TryRecvError::Disconnected) => {
+                        progress_bar.finish_and_clear();
                         break;
                     }
                     Err(TryRecvError::Empty) => {}

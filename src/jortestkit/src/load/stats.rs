@@ -17,7 +17,7 @@ impl Stats {
             .requests
             .iter()
             .filter(|r| r.is_ok())
-            .map(|r| r.as_ref().unwrap().as_secs_f64())
+            .map(|r| r.duration().as_secs_f64())
             .sum();
 
         total_duration / total_requests as f64
@@ -37,8 +37,12 @@ impl Stats {
         let tps = self.calculate_tps();
         let passrate = self.calculate_passrate();
         println!("Load scenario `{}` finished", title);
-        println!("I made a total of {:.2} requests, the mean response time was: {:.3} seconds. tps: {:.2}. Test duration: {} s. Passrate: {} %", 
-            requests, mean, tps, self.duration.as_secs(),passrate);
+        println!("I made a total of {:.2} requests ({} passed/ {} failed/ {} pending), the mean response time was: {:.3} seconds. tps: {:.2}. Test duration: {} s. Passrate: {} %", 
+            requests,
+            self.total_requests_passed(),
+            self.total_requests_failed(),
+            self.total_requests_pending(),
+            mean, tps, self.duration.as_secs(),passrate);
         self.print_errors_if_any();
     }
 
@@ -47,7 +51,15 @@ impl Stats {
     }
 
     pub fn total_requests_passed(&self) -> usize {
-        self.requests.iter().filter(|r| r.is_ok()).count()
+        self.requests.iter().filter(|r| r.is_success()).count()
+    }
+
+    pub fn total_requests_failed(&self) -> usize {
+        self.requests.iter().filter(|r| r.is_failed()).count()
+    }
+
+    pub fn total_requests_pending(&self) -> usize {
+        self.requests.iter().filter(|r| r.is_pending()).count()
     }
 
     pub fn print_errors_if_any(&self) {

@@ -33,12 +33,14 @@ fn daedalus_wallet1() {
 
     assert_eq!(daedalus.unconfirmed_value(), Some(WALLET_VALUE));
 
-    let (transaction, ignored) = dump_daedalus_utxo(&settings, &address, &daedalus).unwrap();
+    let (fragment, ignored) = dump_daedalus_utxo(&settings, &address, &mut daedalus)
+        .next()
+        .unwrap();
 
     assert!(ignored.is_empty());
 
     state
-        .apply_fragments(&[Fragment::Transaction(transaction).to_raw()])
+        .apply_fragments(&[fragment.to_raw()])
         .expect("the dump fragments should be valid");
 }
 
@@ -68,12 +70,14 @@ fn daedalus_wallet2() {
 
     assert_eq!(daedalus.unconfirmed_value(), Some(WALLET_VALUE));
 
-    let (transaction, ignored) = dump_daedalus_utxo(&settings, &address, &daedalus).unwrap();
+    let (fragment, ignored) = dump_daedalus_utxo(&settings, &address, &mut daedalus)
+        .next()
+        .unwrap();
 
     assert!(ignored.len() == 1, "there is only one ignored input");
     assert!(ignored[0].value() == Value(1), "the value ignored is `1`");
 
     state
-        .apply_fragments(&[Fragment::Transaction(transaction).to_raw()])
+        .apply_fragments(&[fragment.to_raw()])
         .expect("the dump fragments should be valid");
 }

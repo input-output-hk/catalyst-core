@@ -29,15 +29,14 @@ fn dump_from_icarus() {
         "failed to check fragments"
     );
 
-    let (transaction, _ignored) =
-        dump_icarus_utxo(&settings, &address, &yoroi).expect("expected only one transaction");
-
-    let fragment = Fragment::Transaction(transaction.clone());
+    let (fragment, _ignored) = dump_icarus_utxo(&settings, &address, &mut yoroi)
+        .next()
+        .expect("expected only one transaction");
 
     assert!(account.check_fragment(&fragment.hash(), &fragment));
 
     state
-        .apply_fragments(&[Fragment::Transaction(transaction).to_raw()])
+        .apply_fragments(&[fragment.to_raw()])
         .expect("the dump fragments should be valid");
 
     assert_eq!(account.confirmed_value(), Value::zero());

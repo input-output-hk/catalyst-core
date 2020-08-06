@@ -31,13 +31,14 @@ fn yoroi1() {
     );
     assert_eq!(yoroi.unconfirmed_value(), Some(WALLET_VALUE));
 
-    let (transaction, ignored) =
-        dump_icarus_utxo(&settings, &address, &yoroi).expect("expected only one transaction");
+    let (fragment, ignored) = dump_icarus_utxo(&settings, &address, &mut yoroi)
+        .next()
+        .unwrap();
 
     assert!(ignored.len() == 1, "there is only one ignored input");
     assert!(ignored[0].value() == Value(1), "the value ignored is `1`");
 
     state
-        .apply_fragments(&[Fragment::Transaction(transaction).to_raw()])
+        .apply_fragments(&[fragment.to_raw()])
         .expect("the dump fragments should be valid");
 }

@@ -646,6 +646,57 @@ pub unsafe fn wallet_vote_cast(
     Result::success()
 }
 
+/// decrypt payload of the wallet transfer protocol
+///
+/// Parameters
+///
+/// password: byte buffer with the encryption password
+/// password_length: length of the password buffer
+/// ciphertext: byte buffer with the encryption password
+/// ciphertext_length: length of the password buffer
+/// plaintext_out: used to return a pointer to a byte buffer with the decrypted text
+/// plaintext_out_length: used to return the length of decrypted text
+///
+/// The returned buffer is in the heap, so make sure to call the delete_buffer function
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
+pub unsafe fn transfer_decrypt(
+    password: *const u8,
+    password_length: usize,
+    ciphertext: *const u8,
+    ciphertext_length: usize,
+    plaintext_out: *mut *const u8,
+    plaintext_out_length: *mut usize,
+) -> Result {
+    let password = non_null!(password);
+    let ciphertext = non_null!(ciphertext);
+
+    let password = std::slice::from_raw_parts(password, password_length);
+    let ciphertext = std::slice::from_raw_parts(ciphertext, ciphertext_length);
+
+    let transfer_slice = wallet::TransferSlice(ciphertext);
+
+    match wallet::decrypt(password, transfer_slice) {
+        Ok(plaintext) => {
+            let len = plaintext.len();
+            let ptr = Box::into_raw(plaintext);
+
+            let out_len = non_null_mut!(plaintext_out_length);
+            let out = non_null_mut!(plaintext_out);
+
+            *out_len = len;
+            *out = ptr as *const u8;
+
+            Result::success()
+        }
+        Err(_e) => Error::transfer_crypto().into(),
+    }
+}
+
 /// delete the pointer and free the allocated memory
 pub fn wallet_delete_error(error: ErrorPtr) {
     if !error.is_null() {
@@ -688,5 +739,21 @@ pub fn wallet_delete_proposal(proposal: ProposalPtr) {
         let boxed = unsafe { Box::from_raw(proposal) };
 
         std::mem::drop(boxed);
+    }
+}
+
+/// Delete a binary buffer that was returned by this library alongside with its
+/// length.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+pub unsafe fn delete_buffer(ptr: *mut u8, length: usize) {
+    if !ptr.is_null() {
+        let data = std::slice::from_raw_parts_mut(ptr, length);
+        let data = Box::from_raw(data as *mut [u8]);
+        std::mem::drop(data);
     }
 }

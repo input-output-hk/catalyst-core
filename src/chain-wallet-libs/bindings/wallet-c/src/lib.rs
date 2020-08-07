@@ -5,7 +5,7 @@ use std::{
 };
 pub use wallet::Settings;
 use wallet_core::c::{
-    wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
+    transfer_decrypt, wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
     wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_error,
     wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet, wallet_id,
     wallet_recover, wallet_retrieve_funds, wallet_set_state, wallet_total_value, wallet_vote_cast,
@@ -415,6 +415,45 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
     len_out: *mut usize,
 ) -> ErrorPtr {
     let r = wallet_vote_cast(wallet, settings, proposal, choice, transaction_out, len_out);
+
+    r.into_c_api()
+}
+
+/// decrypt payload of the wallet transfer protocol
+///
+/// Parameters
+///
+/// password: byte buffer with the encryption password
+/// password_length: length of the password buffer
+/// ciphertext: byte buffer with the encryption password
+/// ciphertext_length: length of the password buffer
+/// plaintext_out: used to return a pointer to a byte buffer with the decrypted text
+/// plaintext_out_length: used to return the length of decrypted text
+///
+/// The returned buffer is in the heap, so make sure to call the delete_buffer function
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_transfer_decrypt(
+    password: *const u8,
+    password_length: usize,
+    ciphertext: *const u8,
+    ciphertext_length: usize,
+    plaintext_out: *mut *const u8,
+    plaintext_out_length: *mut usize,
+) -> ErrorPtr {
+    let r = transfer_decrypt(
+        password,
+        password_length,
+        ciphertext,
+        ciphertext_length,
+        plaintext_out,
+        plaintext_out_length,
+    );
 
     r.into_c_api()
 }

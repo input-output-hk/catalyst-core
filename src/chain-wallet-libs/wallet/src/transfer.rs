@@ -26,11 +26,14 @@ const SALT_SIZE: usize = 16;
 const NONCE_SIZE: usize = 12;
 const TAG_SIZE: usize = 16;
 
-pub struct TransferSlice(pub Box<[u8]>);
+pub struct TransferSlice<T: AsRef<[u8]>>(pub T);
 
 struct TransferSliceBuilder<T>(Codec<Vec<u8>>, PhantomData<T>);
 
-pub fn encrypt(password: impl AsRef<[u8]>, data: impl AsRef<[u8]>) -> Result<TransferSlice, Error> {
+pub fn encrypt(
+    password: impl AsRef<[u8]>,
+    data: impl AsRef<[u8]>,
+) -> Result<TransferSlice<Box<[u8]>>, Error> {
     if data.as_ref().is_empty() {
         return Err(Error::EmptyPayload);
     }
@@ -74,7 +77,10 @@ pub fn encrypt(password: impl AsRef<[u8]>, data: impl AsRef<[u8]>) -> Result<Tra
         .set_tag(&tag)
 }
 
-pub fn decrypt(password: impl AsRef<[u8]>, data: TransferSlice) -> Result<Box<[u8]>, Error> {
+pub fn decrypt<T: AsRef<[u8]>>(
+    password: impl AsRef<[u8]>,
+    data: TransferSlice<T>,
+) -> Result<Box<[u8]>, Error> {
     let aad = [];
 
     if data.protocol() != 0x1 {
@@ -146,43 +152,44 @@ impl TransferSliceBuilder<SetCipherText> {
 }
 
 impl TransferSliceBuilder<SetTag> {
-    fn set_tag(mut self, tag: &[u8; TAG_SIZE]) -> Result<TransferSlice, Error> {
+    fn set_tag(mut self, tag: &[u8; TAG_SIZE]) -> Result<TransferSlice<Box<[u8]>>, Error> {
         self.0.put_bytes(tag)?;
 
         Ok(TransferSlice(self.0.into_inner().into_boxed_slice()))
     }
 }
 
-impl TransferSlice {
+impl<T: AsRef<[u8]>> TransferSlice<T> {
     #[inline]
     fn protocol(&self) -> u8 {
-        self.0[0]
+        self.0.as_ref()[0]
     }
 
     #[inline]
     fn salt(&self) -> &[u8] {
-        &self.0[PROTOCOL_SIZE..PROTOCOL_SIZE + SALT_SIZE]
+        &self.0.as_ref()[PROTOCOL_SIZE..PROTOCOL_SIZE + SALT_SIZE]
     }
 
     #[inline]
     fn nonce(&self) -> &[u8] {
-        &self.0[PROTOCOL_SIZE + SALT_SIZE..PROTOCOL_SIZE + SALT_SIZE + NONCE_SIZE]
+        &self.0.as_ref()[PROTOCOL_SIZE + SALT_SIZE..PROTOCOL_SIZE + SALT_SIZE + NONCE_SIZE]
     }
 
     fn encrypted_data(&self) -> &[u8] {
         let data_len = self
             .0
+            .as_ref()
             .len()
             .checked_sub(PROTOCOL_SIZE + SALT_SIZE + NONCE_SIZE + TAG_SIZE)
             .unwrap();
 
         let starting_pos = PROTOCOL_SIZE + SALT_SIZE + NONCE_SIZE;
-        &self.0[starting_pos..starting_pos + data_len]
+        &self.0.as_ref()[starting_pos..starting_pos + data_len]
     }
 
     fn tag(&self) -> &[u8] {
-        let start = self.0.len().checked_sub(TAG_SIZE).unwrap();
-        &self.0[start..]
+        let start = self.0.as_ref().len().checked_sub(TAG_SIZE).unwrap();
+        &self.0.as_ref()[start..]
     }
 }
 
@@ -193,6 +200,12 @@ fn derive_symmetric_key(password: impl AsRef<[u8]>, salt: [u8; SALT_SIZE]) -> [u
     pbkdf2(&mut mac, &salt[..], ITERS, &mut symmetric_key);
 
     symmetric_key
+}
+
+impl<T: AsRef<[u8]>> AsRef<[u8]> for TransferSlice<T> {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
 }
 
 #[cfg(test)]

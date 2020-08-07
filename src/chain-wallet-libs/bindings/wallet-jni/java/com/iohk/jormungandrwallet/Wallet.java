@@ -24,4 +24,6 @@ public class Wallet {
     public native static void confirmTransaction(long wallet, byte[] fragmentId);
 
     public native static long pendingTransactions(long wallet);
+
+    public native static byte[] transferDecrypt(byte[] password, byte[] ciphertext);
 }

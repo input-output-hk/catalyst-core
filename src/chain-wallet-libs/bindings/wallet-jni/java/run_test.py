@@ -29,7 +29,7 @@ def compile_java_classes():
 
 def compile_jni():
     build_jni = subprocess.run(
-        ["cargo", "rustc", "-p" "wallet-jni", "--", "-C", "lto"])
+        ["cargo", "build", "-p" "wallet-jni"])
 
     if build_jni.returncode != 0:
         print(f"failed to build jni, command:\n {' '.join(build_jni.args) }")

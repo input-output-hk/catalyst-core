@@ -291,7 +291,7 @@ mod tests {
     #[test]
     #[cfg(debug_assertions)]
     #[should_panic(expected = "KeyNotFound")]
-    pub fn stake_control_remove_non_exsiting_assigned_debug() {
+    pub fn stake_control_remove_non_existing_assigned_debug() {
         let non_existing_identifier = TestGen::identifier();
         let existing_identifier = TestGen::identifier();
         let stake_to_add = Stake(100);
@@ -304,7 +304,8 @@ mod tests {
     }
 
     #[test]
-    pub fn stake_control_remove_non_exsiting_assigned_release() {
+    #[cfg(not(debug_assertions))]
+    pub fn stake_control_remove_non_existing_assigned_release() {
         let non_existing_identifier = TestGen::identifier();
         let existing_identifier = TestGen::identifier();
         let stake_to_add = Stake(100);

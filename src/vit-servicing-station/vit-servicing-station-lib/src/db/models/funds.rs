@@ -1,9 +1,11 @@
+use crate::db::schema::funds::table;
 use crate::db::{models::voteplans::Voteplan, schema::funds, DB};
-use diesel::Queryable;
+use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Fund {
+    #[serde(default = "Default::default")]
     pub id: i32,
     #[serde(alias = "fundName")]
     pub fund_name: String,
@@ -25,7 +27,7 @@ pub struct Fund {
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub next_fund_start_time: i64,
-    #[serde(alias = "chainVotePlans")]
+    #[serde(alias = "chainVotePlans", default = "Vec::new")]
     pub chain_vote_plans: Vec<Voteplan>,
 }
 
@@ -61,6 +63,30 @@ impl Queryable<funds::SqlType, DB> for Fund {
             next_fund_start_time: row.7,
             chain_vote_plans: vec![],
         }
+    }
+}
+
+impl Insertable<funds::table> for Fund {
+    type Values = (
+        diesel::dsl::Eq<funds::fund_name, String>,
+        diesel::dsl::Eq<funds::fund_goal, String>,
+        diesel::dsl::Eq<funds::voting_power_info, String>,
+        diesel::dsl::Eq<funds::rewards_info, String>,
+        diesel::dsl::Eq<funds::fund_start_time, i64>,
+        diesel::dsl::Eq<funds::fund_end_time, i64>,
+        diesel::dsl::Eq<funds::next_fund_start_time, i64>,
+    );
+
+    fn values(self) -> Self::Values {
+        (
+            funds::fund_name.eq(self.fund_name),
+            funds::fund_goal.eq(self.fund_goal),
+            funds::voting_power_info.eq(self.voting_power_info),
+            funds::rewards_info.eq(self.rewards_info),
+            funds::fund_start_time.eq(self.fund_start_time),
+            funds::fund_end_time.eq(self.fund_end_time),
+            funds::next_fund_start_time.eq(self.next_fund_start_time),
+        )
     }
 }
 

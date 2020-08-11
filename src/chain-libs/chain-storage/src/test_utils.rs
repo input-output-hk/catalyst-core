@@ -1,9 +1,12 @@
+//! Utilities for testing the storage.
+
 use crate::Value;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 #[derive(Debug, Clone, Hash, Ord, PartialOrd, Eq, PartialEq, Copy)]
 pub struct BlockId(pub u64);
 
+/// Used to generate block ids
 static GLOBAL_ID_COUNTER: AtomicU64 = AtomicU64::new(1);
 
 impl BlockId {

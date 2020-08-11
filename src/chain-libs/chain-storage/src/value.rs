@@ -9,7 +9,9 @@ enum ValueImpl {
     Shared(SharedMmap),
 }
 
-/// Wrapper for data held by the database.
+/// Wrapper for data held by the database. This wrapper holds structs return by
+/// both volatile and permanent storage to ensure we don't have needless copying
+/// on return. Data should be accessed through the `AsRef` trait.
 #[derive(Debug, Clone)]
 pub struct Value {
     inner: ValueImpl,
@@ -56,12 +58,6 @@ impl AsRef<[u8]> for Value {
             ValueImpl::Owned(value) => value.as_ref(),
             ValueImpl::Shared(value) => value.as_ref(),
         }
-    }
-}
-
-impl From<IVec> for Value {
-    fn from(value: IVec) -> Self {
-        Self::volatile(value)
     }
 }
 

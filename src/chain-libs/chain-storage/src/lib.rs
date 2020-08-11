@@ -1,3 +1,152 @@
+//! Block storage module.
+//!
+//! # Data model
+//!
+//! This storage is designed to be independent from a particular block strucure.
+//! At the same time, since it is designed specifically for block chains, it
+//! handles the minimum amount of data required to maintain consistency. Such
+//! data includes:
+//!
+//! * Block ID
+//! * ID of the parent block
+//! * Chain height
+//!
+//! This data is provided alongside a block in the `BlockInfo` structure.
+//!
+//! # Volatile + permanent storage model
+//!
+//! Since blockchain can be branching extensively, this library provides the
+//! mechanism to have multiple blockchain branches. However, doing so for all
+//! block screates a lot of overhead for maintaining volatile storage. At the
+//! same time, branches usually die out pretty fast.
+//!
+//! Given that, the storage is separated into two parts:
+//!
+//! * Volatile storage should be used for the part of a block chain, where a
+//!   developer may need access to different branches.
+//! * Permanent storage for the part of block chain, that is guaranteed not to
+//!   change anymore.
+//!
+//! ## Moving blocks to the permanent store.
+//!
+//! If you have this block structure and call
+//! `store.flush_to_cold_store(block 2 id)`, then `Block 1` and `Block 2` will
+//! be moved to the permanent storage. If you call
+//! `store.flush_to_cold_store(block 3 id)`, `Block 3` will also be moved to the
+//! permanent store, but `Block 3'` will still exist. Note that if you call
+//! `store.get_by_chain_length(3)` only `Block 3` (which is in the permanent
+//! store) will be returned; and you cannot call 
+//! `store.flush_to_cold_store(block 3' id)` now.
+//!
+//! __fig.1 - note that root does not actually exist, this is an ID referredby__
+//! __the first block in the chain__
+//!
+//! ```
+//! +---------+       +---------+
+//! |         |       |         |
+//! | Block 4 |       | Block 4'|
+//! |         |       |         |
+//! +---------+       +---------+
+//!      |                 |
+//!      |                 |
+//!      v                 v
+//! +---------+       +---------+
+//! |         |       |         |
+//! | Block 3 |       | Block 3'|
+//! |         |       |         |
+//! +---------+       +---------+
+//!      |                 |
+//!      |                 |
+//!      v                 |
+//! +---------+            |
+//! |         |            |
+//! | Block 2 +<-----------+
+//! |         |
+//! +---------+
+//!      |
+//!      |
+//!      v
+//! +---------+
+//! |         |
+//! | Block 1 |
+//! |         |
+//! +---------+
+//!      |
+//!      |
+//!      v
+//! +---------+
+//! |         |
+//! |  (root) |
+//! |         |
+//! +---------+
+//! ```
+//!
+//! ## Removing stale branches
+//!
+//! If you want to clean up branches, do the following:
+//!
+//! * Call `store.get_tips_ids()`, in our example it will return
+//!   `[Block 4 id, Block 4' id]`;
+//! * Determine which branches do you want to remove.
+//! * Call, for example, `store.prune_branch(Block 4' id)`.
+//!
+//! ## Performance benefits of permanent storage
+//!
+//! Since blocks in the permanent storage are stored just one after another (the
+//! structure is `block_length.to_le_bytes() ++ block_bytes` and a file with
+//! references to blocks in the order they were added to the storage), it allows
+//! for the following scenarios:
+//!
+//! * Very fast block iteration
+//! * Transferring a portion of the data file over the network without locking
+//!   it.
+//! * O(1) access by the block height.
+//!
+//! __fig. 2 - permanent storage structure__
+//!
+//! ```
+//! store                  block no. index
+//!
+//! +--------------+       +-------------+
+//! |              |       |             |
+//! | len(block1)  |       | block1 pos  |
+//! |              |       |             |
+//! +--------------+       +-------------+
+//! |              |
+//! | block1       |
+//! |              |
+//! +--------------+       +-------------+
+//! |              |       |             |
+//! | len(block2)  |       | block2 pos  |
+//! |              |       |             |
+//! +--------------+       +-------------+
+//! |              |
+//! | block2       |
+//! |              |
+//! +--------------+       +-------------+
+//! |              |       |             |
+//! | ...          |       | ...         |
+//! |              |       |             |
+//! +--------------+       +-------------+
+//! |              |       |             |
+//! | len(blockn)  |       | blockn pos  |
+//! |              |       |             |
+//! +--------------+       +-------------+
+//! |              |
+//! | blockn       |
+//! |              |
+//! +--------------+
+//! ```
+//!
+//! # Storage directory layout
+//!
+//! ```
+//! store
+//! ├── permanent       - permanent storage directory
+//! │   └── flatfile    - storage file that can be transferred over the network
+//! └── volatile        - volatile storage
+//! ```
+
 mod block_info;
 mod cold_store;
 #[cfg(any(test, feature = "with-bench"))]
@@ -44,16 +193,44 @@ enum RemoveTipResult {
     Done,
 }
 
+
+/// Names of trees in `sled` storage. For documentation about trees please refer
+/// to `sled` docs.
 mod tree {
+    /// Binary data of blocks stored in the volatile storage.
     pub const BLOCKS: &str = "blocks";
+    /// Correspondence between IDs and chain lengths of blocks stored in the
+    /// permanent storage.
     pub const COLD_STORE_BLOCKS: &str = "cold_store";
+    /// Block information (see `BlockInfo`) for volatile storage.
     pub const INFO: &str = "info";
+    /// Maintains conversion from chain length to block IDs. This tree has empty
+    /// values and keys in the form of `chain_length.to_le_bytes() ++ block_id`.
+    /// Such structure allows to get all blocks on the given height by using
+    /// prefix `chain_length.to_le_bytes()`. `sled` allows to iterate over
+    /// key-value pairs with the same prefix.
     pub const CHAIN_HEIGHT_INDEX: &str = "height_to_block_ids";
+    /// Holds references to blocks in the volatile storage that have no
+    /// descendants. This allows to quickly determine which branches should be
+    /// removed.
     pub const BRANCHES_TIPS: &str = "branches_tips";
+    /// Converts a tag name to a block ID.
     pub const TAGS: &str = "tags";
 }
 
 impl BlockStore {
+    /// Create a new storage handle. The path must not exist or should be a
+    /// directory. The directory will be created if it does not exist.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - a path to the storage directory.
+    /// * `root_id` - the ID of the root block which the first block in this
+    ///   block chain should refer to as a parent.
+    /// * `id_length` - the length of block IDs. All IDs must have the same
+    ///   length.
+    /// * `chain_length_offset` - chain length value the first block in the
+    ///   block chain must have.
     pub fn new<P: AsRef<Path>, I: Into<Value>>(
         path: P,
         root_id: I,
@@ -190,7 +367,10 @@ impl BlockStore {
             })
     }
 
-    /// Get multiple serialized blocks from the given height.
+    /// Get multiple serialized blocks from the given chain length. This will
+    /// return block contents, not their IDs. If there is a block at the given
+    /// chain length in the permanent storage, only this block is returned.
+    /// Other branches are considered to be ready of removal if there are any.
     pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<Value>, Error> {
         if let Some(block) = self.cold.get_block_by_chain_length(chain_length) {
             return Ok(vec![Value::shared(block)]);
@@ -236,7 +416,7 @@ impl BlockStore {
         convert_transaction_result(result)
     }
 
-    /// Get the block id for the given tag.
+    /// Get the block ID for the given tag.
     pub fn get_tag(&mut self, tag_name: &str) -> Result<Option<Value>, Error> {
         let tags = self.hot.open_tree(tree::TAGS)?;
 
@@ -329,10 +509,10 @@ impl BlockStore {
     /// Determine whether block 'ancestor' is an ancestor of block 'descendent'
     ///
     /// Returned values:
-    /// - `Ok(Some(dist))` - `ancestor` is ancestor of `descendent`
+    /// * `Ok(Some(dist))` - `ancestor` is ancestor of `descendent`
     ///     and there are `dist` blocks between them
-    /// - `Ok(None)` - `ancestor` is not ancestor of `descendent`
-    /// - `Err(error)` - `ancestor` or `descendent` was not found
+    /// * `Ok(None)` - `ancestor` is not ancestor of `descendent`
+    /// * `Err(error)` - `ancestor` or `descendent` was not found
     pub fn is_ancestor(
         &mut self,
         ancestor_id: &[u8],
@@ -379,6 +559,8 @@ impl BlockStore {
         Ok(None)
     }
 
+    /// Get n-th (n = `distance`) ancestor of the block, identified by
+    /// `block_hash`.
     pub fn get_nth_ancestor(
         &mut self,
         block_hash: &[u8],
@@ -387,6 +569,8 @@ impl BlockStore {
         for_path_to_nth_ancestor(self, block_hash, distance, |_| {})
     }
 
+    /// Move all blocks up to the provided block ID to the permanent block
+    /// storage.
     pub fn flush_to_cold_store(&mut self, to_block: &[u8]) -> Result<(), Error> {
         let mut block_infos = Vec::new();
 
@@ -431,9 +615,9 @@ impl BlockStore {
     }
 }
 
-/// Like `BlockStore::get_nth_ancestor`, but calls the closure 'callback' with
-/// each intermediate block encountered while travelling from
-/// 'block_hash' to its n'th ancestor.
+/// Like `BlockStore::get_nth_ancestor`, but calls the closure `callback` with
+/// each intermediate block encountered while travelling from `block_hash` to
+/// its n-th ancestor.
 pub fn for_path_to_nth_ancestor<F>(
     store: &mut BlockStore,
     block_hash: &[u8],
@@ -629,6 +813,9 @@ fn remove_tip_impl(
     Ok(maybe_next_tip)
 }
 
+/// Due to limitation of `sled` transaction mechanism we need to return nested
+/// `Result` from the transaction body which needs to be converted to plain
+/// `Result<T, Error`.
 #[inline]
 fn convert_transaction_result<T>(
     result: Result<Result<T, Error>, TransactionError<()>>,

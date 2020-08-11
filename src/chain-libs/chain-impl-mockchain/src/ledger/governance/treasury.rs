@@ -156,7 +156,7 @@ mod tests {
     fn some_new_governance_criteria() -> GovernanceAcceptanceCriteria {
         let mut new_governance_criteria: GovernanceAcceptanceCriteria = Default::default();
         let new_option = Choice::new(20);
-        new_governance_criteria.favorable = new_option.clone();
+        new_governance_criteria.favorable = new_option;
         new_governance_criteria
     }
 }

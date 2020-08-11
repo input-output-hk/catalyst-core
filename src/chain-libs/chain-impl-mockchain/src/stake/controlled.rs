@@ -168,7 +168,7 @@ impl fmt::Debug for StakeControl {
             self.assigned,
             self.control
                 .iter()
-                .map(|(id, account)| (id.clone(), account.clone()))
+                .map(|(id, account)| (id.clone(), *account))
                 .collect::<Vec<(Identifier, Stake)>>()
         )
     }
@@ -255,7 +255,7 @@ mod tests {
         let stake_to_add = Stake(100);
 
         let stake_control =
-            create_stake_control_from(&[(identifier.clone(), stake_to_add.clone())], stake_to_add);
+            create_stake_control_from(&[(identifier.clone(), stake_to_add)], stake_to_add);
 
         assert_eq!(stake_control.total(), Stake(200));
         assert_eq!(stake_control.unassigned(), stake_to_add);
@@ -274,8 +274,8 @@ mod tests {
         let stake_to_add = Stake(100);
         let stake_to_sub = Stake(50);
         let mut stake_control =
-            create_stake_control_from(&[(identifier.clone(), stake_to_add.clone())], stake_to_add);
-        stake_control = stake_control.remove_from(identifier.clone(), stake_to_sub.clone());
+            create_stake_control_from(&[(identifier.clone(), stake_to_add)], stake_to_add);
+        stake_control = stake_control.remove_from(identifier.clone(), stake_to_sub);
 
         assert_eq!(stake_control.total(), Stake(150));
         assert_eq!(stake_control.unassigned(), Stake(100));
@@ -291,20 +291,21 @@ mod tests {
     #[test]
     #[cfg(debug_assertions)]
     #[should_panic(expected = "KeyNotFound")]
-    pub fn stake_control_remove_non_exsiting_assigned_debug() {
+    pub fn stake_control_remove_non_existing_assigned_debug() {
         let non_existing_identifier = TestGen::identifier();
         let existing_identifier = TestGen::identifier();
         let stake_to_add = Stake(100);
 
         let stake_control =
-            create_stake_control_from(&[(existing_identifier, stake_to_add.clone())], stake_to_add);
+            create_stake_control_from(&[(existing_identifier, stake_to_add)], stake_to_add);
 
         assert_eq!(stake_control.total(), Stake(200));
         let _ = stake_control.remove_from(non_existing_identifier, stake_to_add);
     }
 
     #[test]
-    pub fn stake_control_remove_non_exsiting_assigned_release() {
+    #[cfg(not(debug_assertions))]
+    pub fn stake_control_remove_non_existing_assigned_release() {
         let non_existing_identifier = TestGen::identifier();
         let existing_identifier = TestGen::identifier();
         let stake_to_add = Stake(100);
@@ -322,7 +323,7 @@ mod tests {
         let stake_to_add = Stake(100);
 
         let mut stake_control =
-            create_stake_control_from(&[(identifier.clone(), stake_to_add.clone())], stake_to_add);
+            create_stake_control_from(&[(identifier.clone(), stake_to_add)], stake_to_add);
 
         assert_eq!(stake_control.total(), Stake(200));
 
@@ -347,7 +348,7 @@ mod tests {
         let stake_to_add = Stake(100);
 
         let stake_control =
-            create_stake_control_from(&[(identifier.clone(), stake_to_add.clone())], stake_to_add);
+            create_stake_control_from(&[(identifier.clone(), stake_to_add)], stake_to_add);
 
         assert_eq!(stake_control.total(), Stake(200));
         assert_eq!(stake_control.unassigned(), stake_to_add);
@@ -366,10 +367,10 @@ mod tests {
         let stake_to_add = Stake(100);
 
         let mut stake_control =
-            create_stake_control_from(&[(identifier.clone(), stake_to_add.clone())], stake_to_add);
+            create_stake_control_from(&[(identifier.clone(), stake_to_add)], stake_to_add);
 
-        stake_control = stake_control.remove_from(identifier.clone(), stake_to_add.clone());
-        stake_control = stake_control.remove_unassigned(stake_to_add.clone());
+        stake_control = stake_control.remove_from(identifier.clone(), stake_to_add);
+        stake_control = stake_control.remove_unassigned(stake_to_add);
 
         assert_eq!(stake_control.total(), Stake::zero());
         assert_eq!(stake_control.unassigned(), Stake::zero());
@@ -385,8 +386,8 @@ mod tests {
 
         let stake_control = create_stake_control_from(
             &[
-                (first_identifier.clone(), stake_to_add.clone()),
-                (second_identifier.clone(), stake_to_add.clone()),
+                (first_identifier.clone(), stake_to_add),
+                (second_identifier.clone(), stake_to_add),
             ],
             stake_to_add,
         );

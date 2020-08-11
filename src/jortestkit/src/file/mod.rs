@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
 use fs_extra::dir::{copy, CopyOptions};
+use std::fs::File;
+use std::io::{prelude::*, BufReader};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -42,4 +44,17 @@ pub fn copy_folder(from: &PathBuf, to: &PathBuf, overwrite: bool) {
     let mut options = CopyOptions::new();
     options.overwrite = overwrite;
     copy(from, to, &options).expect("cannot copy folder");
+}
+
+pub fn read_file_as_vector(
+    path: impl AsRef<Path>,
+) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+
+    let mut output = Vec::new();
+    for line in reader.lines() {
+        output.push(line?);
+    }
+    Ok(output)
 }

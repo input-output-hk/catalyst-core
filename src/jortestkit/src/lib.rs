@@ -1,4 +1,5 @@
 pub mod archive;
+pub mod file;
 pub mod github;
 pub mod load;
 pub mod measurement;
@@ -9,6 +10,7 @@ pub mod web;
 
 pub mod prelude {
     pub use crate::archive::decompress;
+    pub use crate::file::*;
     pub use crate::github::{GitHubApi, GitHubApiError, Release};
     pub use crate::load;
     pub use crate::measurement::{

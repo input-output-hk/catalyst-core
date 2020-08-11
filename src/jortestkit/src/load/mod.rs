@@ -47,8 +47,8 @@ pub fn start_sync(
 }
 
 pub fn start_async(
-    request_generator: impl RequestGenerator + Clone + Send + Sized + 'static,
-    status_provider: impl RequestStatusProvider + Clone + Send + Sized + Sync + 'static,
+    request_generator: impl RequestGenerator + Send + Sized + 'static,
+    status_provider: impl RequestStatusProvider + Send + Sized + Sync + 'static,
     config: Configuration,
     title: &str,
 ) -> Stats {
@@ -83,9 +83,7 @@ pub fn start_async(
 }
 
 fn get_threads(
-    request_generator: &Arc<
-        Mutex<impl RequestGenerator + std::clone::Clone + Send + Sized + 'static>,
-    >,
+    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
     responses: &Arc<Mutex<Vec<Response>>>,
@@ -121,9 +119,7 @@ fn per_thread_strategy(
     responses: &Arc<Mutex<Vec<Response>>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
-    request_generator: &Arc<
-        Mutex<impl RequestGenerator + std::clone::Clone + Send + Sized + 'static>,
-    >,
+    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
 ) -> Vec<JoinHandle<()>> {
     let mut child_threads = Vec::new();
     for _ in 0..config.thread_no() {
@@ -148,9 +144,7 @@ fn duration_strategy(
     responses: &Arc<Mutex<Vec<Response>>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
-    request_generator: &Arc<
-        Mutex<impl RequestGenerator + std::clone::Clone + Send + Sized + 'static>,
-    >,
+    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
 ) -> Vec<JoinHandle<()>> {
     let mut child_threads = Vec::new();
     for _ in 0..config.thread_no() {

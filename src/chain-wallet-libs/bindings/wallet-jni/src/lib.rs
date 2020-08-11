@@ -605,12 +605,6 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_PendingTransactions_delet
     }
 }
 
-// password: *const u8,
-// password_length: usize,
-// ciphertext: *const u8,
-// ciphertext_length: usize,
-// plaintext_out: *mut *const u8,
-// plaintext_out_length: *mut usize,
 #[no_mangle]
 pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_transferDecrypt(
     env: JNIEnv,

@@ -5,6 +5,8 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+use std::fs::File;
+use std::io::{self, prelude::*, BufReader};
 
 pub fn find_file<P: AsRef<Path>>(root: P, part_of_name: &str) -> Option<PathBuf> {
     for entry in fs::read_dir(root).expect("cannot read root directory") {
@@ -42,4 +44,15 @@ pub fn copy_folder(from: &PathBuf, to: &PathBuf, overwrite: bool) {
     let mut options = CopyOptions::new();
     options.overwrite = overwrite;
     copy(from, to, &options).expect("cannot copy folder");
+}
+
+pub fn read_file_as_vector(path: impl AsRef<Path>) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+
+    let mut output = Vec::new();
+    for line in reader.lines() {
+        output.push(line?);
+    }
+    Ok(output)
 }

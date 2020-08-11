@@ -6,6 +6,7 @@ pub mod openssl;
 pub mod predicates;
 pub mod process;
 pub mod web;
+pub mod file;
 
 pub mod prelude {
     pub use crate::archive::decompress;
@@ -21,4 +22,5 @@ pub mod prelude {
     pub use crate::openssl::{generate_keys, Openssl};
     pub use crate::predicates::*;
     pub use crate::web::download_file;
+    pub use crate::file::*;
 }

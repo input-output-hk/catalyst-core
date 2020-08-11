@@ -1,4 +1,4 @@
-use chain_crypto::{Ed25519, Ed25519Extended, SecretKey, Signature};
+use chain_crypto::{Ed25519Extended, SecretKey, Signature};
 use chain_impl_mockchain::{
     block::HeaderId,
     transaction::{TransactionSignDataHash, Witness, WitnessUtxoData},
@@ -57,10 +57,8 @@ impl<D> WitnessBuilder for UtxoWitnessBuilder<SecretKey<Ed25519Extended>, D> {
 impl WitnessBuilder for AccountWitnessBuilder {
     fn build(&self, block0: &HeaderId, sign_data_hash: &TransactionSignDataHash) -> Witness {
         let account = &self.0;
-        let key = account.seed();
+        let key = account.secret_key();
         let spending_counter = account.counter().into();
-        let key = SecretKey::<Ed25519>::from_binary(key)
-            .expect("an account key should already be the right size and format");
 
         Witness::new_account(block0, sign_data_hash, spending_counter, |data| {
             key.sign(data)

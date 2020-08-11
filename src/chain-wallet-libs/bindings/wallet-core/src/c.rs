@@ -113,6 +113,60 @@ pub unsafe fn wallet_recover(
     }
 }
 
+/// retrieve a wallet from the given mnemonics, password and protocol magic
+///
+/// this function will work for all yoroi, daedalus and other wallets
+/// as it will try every kind of wallet anyway
+///
+/// You can also use this function to recover a wallet even after you have
+/// transferred all the funds to the new format (see the _convert_ function)
+///
+/// The recovered wallet will be returned in `wallet_out`.
+///
+/// # parameters
+///
+/// * mnemonics: a null terminated utf8 string (already normalized NFKD) in english;
+/// * password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
+///   this value is optional and passing a null pointer will result in no password;
+/// * password_length: the length of the password;
+/// * wallet_out: a pointer to a pointer. The recovered wallet will be allocated on this pointer;
+///
+/// # Safety
+///
+/// This function dereference raw pointers (password and wallet_out). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+/// # errors
+///
+/// The function may fail if:
+///
+/// * the mnemonics are not valid (invalid length or checksum);
+/// * the `wallet_out` is null pointer
+///
+pub unsafe fn wallet_recover_free_keys(
+    account_key: [u8; 64],
+    utxo_keys: *const [u8; 64],
+    utxo_keys_len: usize,
+    wallet_out: *mut WalletPtr,
+) -> Result {
+    let wallet_out = non_null_mut!(wallet_out);
+    let utxo_keys: &[u8; 64] = non_null!(utxo_keys);
+
+    let utxo_keys: &[[u8; 64]] =
+        std::slice::from_raw_parts(utxo_keys.as_ptr() as *const [u8; 64], utxo_keys_len);
+
+    let result = Wallet::recover_free_keys(&account_key, &utxo_keys);
+
+    match result {
+        Ok(wallet) => {
+            *wallet_out = Box::into_raw(Box::new(wallet));
+            Result::success()
+        }
+        Err(err) => err.into(),
+    }
+}
+
 /// get the wallet id
 ///
 /// This ID is the identifier to use against the blockchain/explorer to retrieve

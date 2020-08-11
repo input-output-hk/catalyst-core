@@ -6,9 +6,10 @@
 //! and cannot be be controlled without having an account to group them
 
 use chain_addr::{Address, Discrimination, Kind};
-use chain_crypto::{Ed25519, PublicKey};
+use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
 use cryptoxide::ed25519;
 use std::{
+    convert::TryInto,
     fmt::{self, Display},
     str::FromStr,
 };
@@ -18,7 +19,7 @@ pub type SEED = [u8; SEED_LENGTH];
 
 #[derive(Clone)]
 pub struct Account {
-    seed: SEED,
+    key: SecretKey<Ed25519Extended>,
     counter: u32,
 }
 
@@ -33,12 +34,22 @@ impl Account {
     }
 
     pub fn from_seed(seed: SEED) -> Self {
-        Account { seed, counter: 0 }
+        let (key, _) = ed25519::keypair(&seed);
+
+        Account {
+            key: SecretKey::<_>::from_binary(key.as_ref()).unwrap(),
+            counter: 0,
+        }
+    }
+
+    pub fn from_secret_key(key: SecretKey<Ed25519Extended>) -> Self {
+        Account { key, counter: 0 }
     }
 
     pub fn public(&self) -> [u8; AccountId::SIZE] {
-        let (_, pk) = ed25519::keypair(&self.seed);
-        pk
+        // let (_, pk) = ed25519::keypair(&self.seed);
+        // pk
+        self.key.to_public().as_ref().try_into().unwrap()
     }
 
     /// get the transaction counter
@@ -59,9 +70,13 @@ impl Account {
         self.counter += atm
     }
 
-    pub fn seed(&self) -> &SEED {
-        &self.seed
+    pub fn secret_key(&self) -> &SecretKey<Ed25519Extended> {
+        &self.key
     }
+
+    // pub fn seed(&self) -> &SEED {
+    //     &self.seed
+    // }
 }
 
 impl AccountId {
@@ -81,19 +96,19 @@ impl AccountId {
     }
 }
 
-impl Drop for Account {
-    fn drop(&mut self) {
-        cryptoxide::util::secure_memset(&mut self.seed, 0)
-    }
-}
+// impl Drop for Account {
+//     fn drop(&mut self) {
+//         cryptoxide::util::secure_memset(&mut self.seed, 0)
+//     }
+// }
 
 /* Conversion ************************************************************** */
 
-impl From<[u8; SEED_LENGTH]> for Account {
-    fn from(seed: [u8; SEED_LENGTH]) -> Self {
-        Self { seed, counter: 0 }
-    }
-}
+// impl From<[u8; SEED_LENGTH]> for Account {
+//     fn from(seed: [u8; SEED_LENGTH]) -> Self {
+//         Self { seed, counter: 0 }
+//     }
+// }
 
 impl From<[u8; Self::SIZE]> for AccountId {
     fn from(id: [u8; Self::SIZE]) -> Self {

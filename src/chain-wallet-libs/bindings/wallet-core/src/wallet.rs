@@ -1,6 +1,6 @@
 use crate::{Conversion, Error, Proposal};
 use chain_core::property::Serialize as _;
-use chain_crypto::{AsymmetricKey, Ed25519Extended, SecretKey};
+use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentId},
@@ -96,30 +96,25 @@ impl Wallet {
 
     /// retrieve a wallet from a list of free keys used as utxo's
     ///
-    /// this function will work for all yoroi, daedalus and other wallets
-    /// as it will try every kind of wallet anyway
-    ///
     /// You can also use this function to recover a wallet even after you have
     /// transferred all the funds to the new format (see the _convert_ function)
     ///
-    /// The recovered wallet will be returned in `wallet_out`.
-    ///
     /// # parameters
     ///
-    /// * mnemonics: a null terminated utf8 string (already normalized NFKD) in english;
-    /// * password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
-    ///   this value is optional and passing a null pointer will result in no password;
+    /// * account_key: the private key used for voting
+    /// * keys: single keys used as utxo inputs
     ///
     /// # errors
     ///
     /// The function may fail if:
     ///
-    /// * the mnemonics are not valid (invalid length or checksum);
+    /// TODO
     ///
-    pub fn recover_free_keys(
-        keys: Vec<<Ed25519Extended as AsymmetricKey>::Secret>,
-    ) -> Result<Self, Error> {
+    pub fn recover_free_keys(account_key: &[u8; 64], keys: &[[u8; 64]]) -> Result<Self, Error> {
         let builder = wallet::RecoveryBuilder::new();
+
+        let builder =
+            builder.account_secret_key(SecretKey::from_binary(account_key.as_ref()).unwrap());
 
         let builder = keys.iter().fold(builder, |builder, key| {
             builder.add_key(SecretKey::from_binary(key.as_ref()).unwrap())

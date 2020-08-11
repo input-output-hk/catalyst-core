@@ -30,7 +30,12 @@ pub struct RecoveryBuilder {
     entropy: Option<bip39::Entropy>,
     password: Option<Password>,
     free_keys: Vec<SecretKey<Ed25519Extended>>,
-    account_seed: Option<hdkeygen::account::SEED>,
+    account: Option<AccountFrom>,
+}
+
+enum AccountFrom {
+    Seed(hdkeygen::account::SEED),
+    SecretKey(SecretKey<Ed25519Extended>),
 }
 
 impl RecoveryBuilder {
@@ -83,7 +88,14 @@ impl RecoveryBuilder {
 
     pub fn account_seed(self, seed: hdkeygen::account::SEED) -> Self {
         Self {
-            account_seed: Some(seed),
+            account: Some(AccountFrom::Seed(seed)),
+            ..self
+        }
+    }
+
+    pub fn account_secret_key(self, key: SecretKey<Ed25519Extended>) -> Self {
+        Self {
+            account: Some(AccountFrom::SecretKey(key)),
             ..self
         }
     }
@@ -119,18 +131,20 @@ impl RecoveryBuilder {
     }
 
     pub fn build_wallet(&self) -> Result<Wallet, RecoveryError> {
-        let seed = self.account_seed.map(Ok).unwrap_or_else(|| {
-            let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
-            let password = self.password.clone().unwrap_or_default();
+        use hdkeygen::account::Account;
+        let account = match &self.account {
+            Some(AccountFrom::SecretKey(key)) => Account::from_secret_key(key.clone()),
+            Some(AccountFrom::Seed(seed)) => Account::from_seed(*seed),
+            None => {
+                let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
+                let password = self.password.clone().unwrap_or_default();
 
-            let mut seed = [0u8; hdkeygen::account::SEED_LENGTH];
-            keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
+                let mut seed = [0u8; hdkeygen::account::SEED_LENGTH];
+                keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
 
-            Ok(seed)
-        })?;
-
-        let account = hdkeygen::account::Account::from_seed(seed);
-
+                Account::from_seed(seed)
+            }
+        };
         Ok(Wallet::new(account))
     }
 
@@ -244,7 +258,7 @@ impl Default for RecoveryBuilder {
             entropy: Default::default(),
             password: Default::default(),
             free_keys: Vec::<SecretKey<Ed25519Extended>>::new(),
-            account_seed: Default::default(),
+            account: Default::default(),
         }
     }
 }

@@ -1,6 +1,8 @@
 mod api_token;
 mod app;
+mod csv_loaders;
 mod task;
+
 use app::*;
 use structopt::StructOpt;
 use task::ExecTask;

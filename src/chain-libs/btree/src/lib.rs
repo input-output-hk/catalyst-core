@@ -19,7 +19,6 @@ use mem_page::MemPage;
 
 use crate::btreeindex::BTree;
 use std::borrow::Borrow;
-use std::convert::TryInto;
 use std::fmt::Debug;
 use std::fs::OpenOptions;
 use std::path::Path;
@@ -88,7 +87,7 @@ where
             metadata_file,
             tree_file,
             static_settings_file,
-            page_size.try_into().unwrap(),
+            page_size,
             key_buffer_size,
         )?;
 

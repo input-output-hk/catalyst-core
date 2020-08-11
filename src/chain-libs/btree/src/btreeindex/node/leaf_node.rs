@@ -62,9 +62,7 @@ where
         let size_per_key = K::max_size() + size_of::<V>();
         let extra_size = LEN_SIZE;
 
-        let max_keys = (usize::try_from(data.as_ref().len()).unwrap()
-            - usize::try_from(extra_size).unwrap())
-            / size_per_key;
+        let max_keys = (data.as_ref().len() - extra_size) / size_per_key;
 
         LeafNode {
             max_keys,
@@ -82,9 +80,7 @@ where
     ) -> LeafInsertStatus<K> {
         match self.keys().binary_search(&key) {
             Ok(_) => LeafInsertStatus::DuplicatedKey(key),
-            Err(index) => {
-                self.insert_key_value(index.try_into().unwrap(), key, value, Some(allocate))
-            }
+            Err(index) => self.insert_key_value(index, key, value, Some(allocate)),
         }
     }
 
@@ -328,9 +324,7 @@ where
         let size_per_key = K::max_size() + size_of::<V>();
         let extra_size = LEN_SIZE;
 
-        let max_keys = (usize::try_from(data.as_ref().len()).unwrap()
-            - usize::try_from(extra_size).unwrap())
-            / size_per_key;
+        let max_keys = (data.as_ref().len() - extra_size) / size_per_key;
 
         LeafNode {
             max_keys,

@@ -61,10 +61,7 @@ where
         let size_per_key = K::max_size() + size_of::<PageId>();
         let extra_size = LEN_SIZE - LEN_START;
 
-        let max_keys = (usize::try_from(data.as_ref().len()).unwrap()
-            - usize::try_from(extra_size).unwrap()
-            - size_of::<PageId>())
-            / size_per_key;
+        let max_keys = (data.as_ref().len() - extra_size - size_of::<PageId>()) / size_per_key;
 
         InternalNode {
             max_keys,
@@ -105,7 +102,7 @@ where
         assert!(self.keys().len() > 0);
         match self.keys().binary_search(&key) {
             Ok(_) => InternalInsertStatus::DuplicatedKey(key),
-            Err(index) => self.insert_key_child(index.try_into().unwrap(), key, node_id, allocate),
+            Err(index) => self.insert_key_child(index, key, node_id, allocate),
         }
     }
 
@@ -346,10 +343,7 @@ where
         let size_per_key = K::max_size() + size_of::<PageId>();
         let extra_size = LEN_SIZE - LEN_START;
 
-        let max_keys = (usize::try_from(data.as_ref().len()).unwrap()
-            - usize::try_from(extra_size).unwrap()
-            - size_of::<PageId>())
-            / size_per_key;
+        let max_keys = (data.as_ref().len() - extra_size - size_of::<PageId>()) / size_per_key;
 
         InternalNode {
             max_keys,

@@ -80,7 +80,7 @@ where
 
         let pages = Pages::new(PagesInitializationParams {
             storage: pages_storage,
-            page_size: page_size.try_into().unwrap(),
+            page_size,
         });
 
         let first_page_id = metadata.page_manager.new_id();

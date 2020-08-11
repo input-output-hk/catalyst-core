@@ -4,7 +4,7 @@
 // is sum. this module should never be used for anything but testing.
 use super::common::{self, Depth, Seed};
 use ed25519_dalek as ed25519;
-use ed25519_dalek::Digest;
+use ed25519_dalek::{Digest, Signer as _, Verifier as _};
 
 pub enum SecretKey {
     Leaf(ed25519::Keypair),

@@ -1,9 +1,10 @@
 use super::common::{self, Depth, Seed};
 use ed25519_dalek as ed25519;
-use ed25519_dalek::Digest;
+use ed25519_dalek::{Digest, Signer as _, Verifier as _};
+use std::convert::TryFrom as _;
 //use std::hash::Hash;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Error {
     Ed25519SignatureError(ed25519::SignatureError),
     InvalidSecretKeySize(usize),
@@ -406,7 +407,7 @@ impl Signature {
 
     fn sigma(&self) -> ed25519::Signature {
         let bytes = &self.0[Self::SIGMA_OFFSET..Self::PK_OFFSET];
-        ed25519::Signature::from_bytes(bytes).expect("internal error: signature invalid")
+        ed25519::Signature::try_from(bytes).expect("internal error: signature invalid")
     }
 
     fn pk(&self) -> ed25519::PublicKey {
@@ -476,7 +477,7 @@ impl Signature {
 
         // verify sigma and pk format, no need to verify pks
         let _ = ed25519::PublicKey::from_bytes(pk_slice)?;
-        let _ = ed25519::Signature::from_bytes(sigma_slice)?;
+        let _ = ed25519::Signature::try_from(sigma_slice)?;
 
         let mut out = Vec::with_capacity(bytes.len());
         out.extend_from_slice(bytes);

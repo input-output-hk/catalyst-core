@@ -4,6 +4,7 @@ members = [
     "chain-path-derivation",
     "hdkeygen",
     "wallet",
+    "shield-protocol",
     "bindings/wallet-c",
     "bindings/wallet-jni",
     "bindings/wallet-js",

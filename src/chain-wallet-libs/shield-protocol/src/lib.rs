@@ -1,12 +1,9 @@
-use chain_ser::packer::Codec;
 use cryptoxide::chacha20poly1305::ChaCha20Poly1305;
 use cryptoxide::hmac::Hmac;
 use cryptoxide::pbkdf2::pbkdf2;
 use cryptoxide::sha2::Sha512;
 use std::convert::TryInto;
-use std::marker::PhantomData;
 use thiserror::Error;
-use zeroize::Zeroize;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -16,6 +13,8 @@ pub enum Error {
     InvalidDataLength,
     #[error("encrypted data should not be null")]
     EmptyPayload,
+    #[error("missing data")]
+    MalformedInput,
     #[error(transparent)]
     IoError(#[from] std::io::Error),
 }
@@ -26,14 +25,7 @@ const SALT_SIZE: usize = 16;
 const NONCE_SIZE: usize = 12;
 const TAG_SIZE: usize = 16;
 
-pub struct TransferSlice<T: AsRef<[u8]>>(pub T);
-
-struct TransferSliceBuilder<T>(Codec<Vec<u8>>, PhantomData<T>);
-
-pub fn encrypt(
-    password: impl AsRef<[u8]>,
-    data: impl AsRef<[u8]>,
-) -> Result<TransferSlice<Box<[u8]>>, Error> {
+pub fn encrypt(password: impl AsRef<[u8]>, data: impl AsRef<[u8]>) -> Result<Box<[u8]>, Error> {
     if data.as_ref().is_empty() {
         return Err(Error::EmptyPayload);
     }
@@ -64,23 +56,28 @@ pub fn encrypt(
         (ciphertext.into_boxed_slice(), tag)
     };
 
-    // TODO: something else to zeroize? The password is one option, but I'm not sure if that
-    // responsibility should fall here
+    cryptoxide::util::secure_memset(&mut symmetric_key, 0x55);
 
-    symmetric_key.zeroize();
-    let builder = TransferSliceBuilder::new();
-    builder
-        .set_protocol(0x1)?
-        .set_salt(&salt)?
-        .set_nonce(&nonce)?
-        .set_cipher_text(&ciphertext)?
-        .set_tag(&tag)
+    let mut buffer =
+        vec![0u8; PROTOCOL_SIZE + SALT_SIZE + NONCE_SIZE + ciphertext.len() + TAG_SIZE];
+
+    let parts: [&[u8]; 5] = [&[1u8], &salt, &nonce, &ciphertext, &tag];
+
+    let mut low = 0;
+
+    for part in parts.iter() {
+        buffer[low..low + part.len()].copy_from_slice(part);
+        low += part.len();
+    }
+
+    Ok(buffer.into_boxed_slice())
 }
 
-pub fn decrypt<T: AsRef<[u8]>>(
-    password: impl AsRef<[u8]>,
-    data: TransferSlice<T>,
-) -> Result<Box<[u8]>, Error> {
+struct View<T: AsRef<[u8]>>(pub T);
+
+pub fn decrypt<T: AsRef<[u8]>>(password: impl AsRef<[u8]>, data: T) -> Result<Box<[u8]>, Error> {
+    let data = View::new(data)?;
+
     let aad = [];
 
     if data.protocol() != 0x1 {
@@ -94,83 +91,34 @@ pub fn decrypt<T: AsRef<[u8]>>(
     let mut plaintext = vec![0u8; data.encrypted_data().len()];
     chacha20.decrypt(data.encrypted_data(), &mut plaintext, data.tag());
 
-    key.zeroize();
+    cryptoxide::util::secure_memset(&mut key, 0x55);
 
     Ok(plaintext.into_boxed_slice())
 }
 
-enum SetProtocol {}
-enum SetSalt {}
-enum SetNonce {}
-enum SetCipherText {}
-enum SetTag {}
+impl<T: AsRef<[u8]>> View<T> {
+    fn new(inner: T) -> Result<View<T>, Error> {
+        if inner.as_ref().len() <= PROTOCOL_SIZE + SALT_SIZE + NONCE_SIZE + TAG_SIZE {
+            Err(Error::MalformedInput)
+        } else {
+            let data = Self(inner);
 
-impl TransferSliceBuilder<SetProtocol> {
-    fn new() -> Self {
-        let codec = Codec::new(vec![]);
-
-        Self(codec, PhantomData)
-    }
-
-    fn set_protocol(mut self, protocol: u8) -> Result<TransferSliceBuilder<SetSalt>, Error> {
-        self.0.put_u8(protocol)?;
-        Ok(TransferSliceBuilder(self.0, PhantomData))
-    }
-}
-
-impl TransferSliceBuilder<SetSalt> {
-    fn set_salt(mut self, salt: &[u8; SALT_SIZE]) -> Result<TransferSliceBuilder<SetNonce>, Error> {
-        self.0.put_bytes(salt)?;
-
-        Ok(TransferSliceBuilder(self.0, PhantomData))
-    }
-}
-
-impl TransferSliceBuilder<SetNonce> {
-    fn set_nonce(
-        mut self,
-        nonce: &[u8; NONCE_SIZE],
-    ) -> Result<TransferSliceBuilder<SetCipherText>, Error> {
-        self.0.put_bytes(nonce)?;
-
-        Ok(TransferSliceBuilder(self.0, PhantomData))
-    }
-}
-
-impl TransferSliceBuilder<SetCipherText> {
-    fn set_cipher_text(
-        mut self,
-        cipher_text: impl AsRef<[u8]>,
-    ) -> Result<TransferSliceBuilder<SetTag>, Error> {
-        if cipher_text.as_ref().len() % 64 != 0 {
-            return Err(Error::InvalidDataLength);
+            if data.encrypted_data().is_empty() {
+                Err(Error::EmptyPayload)
+            } else {
+                Ok(data)
+            }
         }
-
-        self.0.put_bytes(cipher_text.as_ref())?;
-        Ok(TransferSliceBuilder(self.0, PhantomData))
     }
-}
 
-impl TransferSliceBuilder<SetTag> {
-    fn set_tag(mut self, tag: &[u8; TAG_SIZE]) -> Result<TransferSlice<Box<[u8]>>, Error> {
-        self.0.put_bytes(tag)?;
-
-        Ok(TransferSlice(self.0.into_inner().into_boxed_slice()))
-    }
-}
-
-impl<T: AsRef<[u8]>> TransferSlice<T> {
-    #[inline]
     fn protocol(&self) -> u8 {
         self.0.as_ref()[0]
     }
 
-    #[inline]
     fn salt(&self) -> &[u8] {
         &self.0.as_ref()[PROTOCOL_SIZE..PROTOCOL_SIZE + SALT_SIZE]
     }
 
-    #[inline]
     fn nonce(&self) -> &[u8] {
         &self.0.as_ref()[PROTOCOL_SIZE + SALT_SIZE..PROTOCOL_SIZE + SALT_SIZE + NONCE_SIZE]
     }
@@ -200,12 +148,6 @@ fn derive_symmetric_key(password: impl AsRef<[u8]>, salt: [u8; SALT_SIZE]) -> [u
     pbkdf2(&mut mac, &salt[..], ITERS, &mut symmetric_key);
 
     symmetric_key
-}
-
-impl<T: AsRef<[u8]>> AsRef<[u8]> for TransferSlice<T> {
-    fn as_ref(&self) -> &[u8] {
-        self.0.as_ref()
-    }
 }
 
 #[cfg(test)]

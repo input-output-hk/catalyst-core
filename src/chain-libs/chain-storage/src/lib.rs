@@ -138,7 +138,7 @@ impl BlockStore {
             return self
                 .cold
                 .get_block_by_chain_length(chain_length)
-                .map(|block| Value::owned(block.to_vec().into_boxed_slice()))
+                .map(Value::shared)
                 .ok_or(Error::BlockNotFound);
         }
 
@@ -193,7 +193,7 @@ impl BlockStore {
     /// Get multiple serialized blocks from the given height.
     pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<Value>, Error> {
         if let Some(block) = self.cold.get_block_by_chain_length(chain_length) {
-            return Ok(vec![Value::owned(block.to_vec().into_boxed_slice())]);
+            return Ok(vec![Value::shared(block)]);
         }
 
         let blocks = self.hot.open_tree(tree::BLOCKS)?;
@@ -1295,7 +1295,7 @@ pub mod tests {
             assert_eq!(block.chain_length, block_info.chain_length());
 
             let actual_block = store.get_block(&block_id).unwrap();
-            assert_eq!(block.id.serialize_as_value(), actual_block);
+            assert_eq!(block.serialize_as_value().as_ref(), actual_block.as_ref());
         }
     }
 
@@ -1326,7 +1326,7 @@ pub mod tests {
 
         for i in (FLUSH_TO_BLOCK + 1)..FLUSH_TO_BLOCK {
             assert!(!store
-                .block_exists(&blocks[i].id.serialize_as_vec())
+                .block_exists(&blocks[i].serialize_as_vec())
                 .unwrap());
         }
 
@@ -1344,7 +1344,7 @@ pub mod tests {
 
         let chain_length = blocks[HEIGHT].chain_length;
         assert_eq!(
-            vec![blocks[HEIGHT].id.serialize_as_value()],
+            vec![blocks[HEIGHT].serialize_as_value()],
             store.get_blocks_by_chain_length(chain_length).unwrap()
         );
     }

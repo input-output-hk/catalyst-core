@@ -23,7 +23,7 @@ impl ColdStore {
         })
     }
 
-    pub fn get_block_by_chain_length(&self, chain_length: u32) -> Option<&[u8]> {
+    pub fn get_block_by_chain_length(&self, chain_length: u32) -> Option<data_pile::SharedMmap> {
         let seqno = chain_length - self.chain_length_offset;
         self.inner.get_by_seqno(seqno as usize)
     }

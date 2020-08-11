@@ -1,11 +1,12 @@
+use data_pile::SharedMmap;
 use sled::IVec;
 use std::hash::{Hash, Hasher};
 
 #[derive(Debug, Clone)]
 enum ValueImpl {
     Volatile(IVec),
-    // TODO replace with memmap reference after the next release of data-pile
     Owned(Box<[u8]>),
+    Shared(SharedMmap),
 }
 
 /// Wrapper for data held by the database.
@@ -24,6 +25,12 @@ impl Value {
     pub(crate) fn owned(value: Box<[u8]>) -> Self {
         Self {
             inner: ValueImpl::Owned(value),
+        }
+    }
+
+    pub(crate) fn shared(value: SharedMmap) -> Self {
+        Self {
+            inner: ValueImpl::Shared(value),
         }
     }
 }
@@ -47,6 +54,7 @@ impl AsRef<[u8]> for Value {
         match &self.inner {
             ValueImpl::Volatile(value) => value.as_ref(),
             ValueImpl::Owned(value) => value.as_ref(),
+            ValueImpl::Shared(value) => value.as_ref(),
         }
     }
 }

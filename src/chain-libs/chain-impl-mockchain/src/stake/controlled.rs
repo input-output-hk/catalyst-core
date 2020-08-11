@@ -289,8 +289,22 @@ mod tests {
     }
 
     #[test]
+    #[cfg(debug_assertions)]
     #[should_panic(expected = "KeyNotFound")]
-    pub fn stake_control_remove_non_exsiting_assigned() {
+    pub fn stake_control_remove_non_exsiting_assigned_debug() {
+        let non_existing_identifier = TestGen::identifier();
+        let existing_identifier = TestGen::identifier();
+        let stake_to_add = Stake(100);
+
+        let stake_control =
+            create_stake_control_from(&[(existing_identifier, stake_to_add.clone())], stake_to_add);
+
+        assert_eq!(stake_control.total(), Stake(200));
+        let _ = stake_control.remove_from(non_existing_identifier, stake_to_add);
+    }
+
+    #[test]
+    pub fn stake_control_remove_non_exsiting_assigned_release() {
         let non_existing_identifier = TestGen::identifier();
         let existing_identifier = TestGen::identifier();
         let stake_to_add = Stake(100);

@@ -94,7 +94,7 @@ pub trait RequestStatusProvider {
 
 fn update_statuses(
     responses_clone: &Arc<Mutex<Vec<Response>>>,
-    request_status_provider: &Arc<Mutex<impl RequestStatusProvider + Clone + Send + Sized + Sync>>,
+    request_status_provider: &Arc<Mutex<impl RequestStatusProvider + Send + Sized + Sync>>,
 ) -> Vec<Status> {
     let responses = &mut *responses_clone.lock().unwrap();
     let ids: Vec<Id> = responses
@@ -119,7 +119,7 @@ impl StatusUpdaterThread {
     pub fn spawn(
         responses: &Arc<Mutex<Vec<Response>>>,
         request_status_provider: &Arc<
-            Mutex<impl RequestStatusProvider + Clone + Send + Sized + Sync + 'static>,
+            Mutex<impl RequestStatusProvider + Send + Sized + Sync + 'static>,
         >,
         monitor: Monitor,
         title: &str,

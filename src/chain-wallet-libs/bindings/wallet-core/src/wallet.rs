@@ -20,8 +20,8 @@ use wallet::{AccountId, Settings};
 ///
 pub struct Wallet {
     account: wallet::Wallet,
-    daedalus: wallet::scheme::rindex::Wallet,
-    icarus: wallet::scheme::bip44::Wallet<OldAddress>,
+    daedalus: Option<wallet::scheme::rindex::Wallet>,
+    icarus: Option<wallet::scheme::bip44::Wallet<OldAddress>>,
     free_keys: wallet::scheme::freeutxo::Wallet,
 }
 
@@ -88,8 +88,8 @@ impl Wallet {
 
         Ok(Wallet {
             account,
-            daedalus,
-            icarus,
+            daedalus: Some(daedalus),
+            icarus: Some(icarus),
             free_keys,
         })
     }
@@ -128,18 +128,10 @@ impl Wallet {
             .build_wallet()
             .expect("build the account cannot fail as expected");
 
-        let daedalus = builder
-            .build_daedalus()
-            .map_err(|e| Error::wallet_recovering().with(e))?;
-
-        let icarus = builder
-            .build_yoroi()
-            .map_err(|e| Error::wallet_recovering().with(e))?;
-
         Ok(Wallet {
             account,
-            daedalus,
-            icarus,
+            daedalus: None,
+            icarus: None,
             free_keys,
         })
     }
@@ -164,9 +156,16 @@ impl Wallet {
 
         let settings = wallet::Settings::new(&block0).unwrap();
         for fragment in block0.contents.iter() {
-            self.daedalus.check_fragment(&fragment.hash(), fragment);
-            self.icarus.check_fragment(&fragment.hash(), fragment);
+            if let Some(daedalus) = &mut self.daedalus {
+                daedalus.check_fragment(&fragment.hash(), fragment);
+            }
+
+            if let Some(icarus) = &mut self.icarus {
+                icarus.check_fragment(&fragment.hash(), fragment);
+            }
             self.free_keys.check_fragment(&fragment.hash(), fragment);
+
+            self.confirm_transaction(fragment.hash());
         }
 
         Ok(settings)
@@ -193,23 +192,33 @@ impl Wallet {
         let mut raws = Vec::new();
         let mut ignored = Vec::new();
 
-        let fragments =
-            wallet::transaction::dump_daedalus_utxo(&settings, &address, &mut self.daedalus)
-                .chain(wallet::transaction::dump_icarus_utxo(
-                    &settings,
-                    &address,
-                    &mut self.icarus,
-                ))
-                .chain(wallet::transaction::dump_free_utxo(
-                    &settings,
-                    &address,
-                    &mut self.free_keys,
-                ));
-
-        for (fragment, mut ignored_inputs) in fragments {
+        let account = &mut self.account;
+        let mut for_each = |fragment: Fragment, mut ignored_inputs: Vec<Input>| {
             raws.push(fragment.serialize_as_vec().unwrap());
             ignored.append(&mut ignored_inputs);
-            self.account.check_fragment(&fragment.hash(), &fragment);
+            account.check_fragment(&fragment.hash(), &fragment);
+        };
+
+        for (fragment, ignored) in
+            wallet::transaction::dump_free_utxo(&settings, &address, &mut self.free_keys)
+        {
+            for_each(fragment, ignored)
+        }
+
+        if let Some(mut daedalus) = self.daedalus.as_mut() {
+            for (fragment, ignored) in
+                wallet::transaction::dump_daedalus_utxo(&settings, &address, &mut daedalus)
+            {
+                for_each(fragment, ignored)
+            }
+        }
+
+        if let Some(mut icarus) = self.icarus.as_mut() {
+            for (fragment, ignored) in
+                wallet::transaction::dump_icarus_utxo(&settings, &address, &mut icarus)
+            {
+                for_each(fragment, ignored)
+            }
         }
 
         Conversion {
@@ -222,8 +231,12 @@ impl Wallet {
     ///
     /// This function will automatically update the state of the wallet
     pub fn confirm_transaction(&mut self, id: FragmentId) {
-        self.icarus.confirm(&id);
-        self.daedalus.confirm(&id);
+        if let Some(daedalus) = self.daedalus.as_mut() {
+            daedalus.confirm(&id);
+        }
+        if let Some(icarus) = self.icarus.as_mut() {
+            icarus.confirm(&id);
+        }
         self.free_keys.confirm(&id);
         self.account.confirm(&id);
     }
@@ -232,12 +245,29 @@ impl Wallet {
     ///
     /// TODO: this might need to be updated to have a more user friendly
     ///       API. Currently do this for simplicity
-    pub fn pending_transactions(&self) -> impl Iterator<Item = &FragmentId> {
-        self.daedalus
-            .pending_transactions()
-            .chain(self.icarus.pending_transactions())
-            .chain(self.free_keys.pending_transactions())
-            .chain(self.account.pending_transactions())
+    pub fn pending_transactions(&self) -> std::collections::HashSet<FragmentId> {
+        let mut set = std::collections::HashSet::new();
+
+        if let Some(daedalus) = &self.daedalus {
+            for id in daedalus.pending_transactions() {
+                set.insert(*id);
+            }
+        }
+
+        if let Some(icarus) = &self.icarus {
+            for id in icarus.pending_transactions() {
+                set.insert(*id);
+            }
+        }
+
+        for id in self.free_keys.pending_transactions() {
+            set.insert(*id);
+        }
+
+        for id in self.account.pending_transactions() {
+            set.insert(*id);
+        }
+        set
     }
 
     /// remove a given pending transaction returning the associated Inputs
@@ -258,9 +288,15 @@ impl Wallet {
     ///
     pub fn total_value(&self) -> Value {
         self.icarus
-            .utxos()
-            .total_value()
-            .saturating_add(self.daedalus.utxos().total_value())
+            .as_ref()
+            .map(|icarus| icarus.utxos().total_value())
+            .unwrap_or(Value::zero())
+            .saturating_add(
+                self.daedalus
+                    .as_ref()
+                    .map(|daedalus| daedalus.utxos().total_value())
+                    .unwrap_or(Value::zero()),
+            )
             .saturating_add(self.free_keys.utxos().total_value())
             .saturating_add(self.account.value())
     }

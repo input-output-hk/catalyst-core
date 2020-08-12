@@ -1,4 +1,3 @@
-use crate::db::schema::funds::table;
 use crate::db::{models::voteplans::Voteplan, schema::funds, DB};
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
@@ -66,6 +65,9 @@ impl Queryable<funds::SqlType, DB> for Fund {
     }
 }
 
+// This warning is disabled here. Values is only referenced as a type here. It should be ok not to
+// split the types definitions.
+#[allow(clippy::type_complexity)]
 impl Insertable<funds::table> for Fund {
     type Values = (
         diesel::dsl::Eq<funds::fund_name, String>,

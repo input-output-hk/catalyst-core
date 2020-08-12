@@ -125,11 +125,12 @@ pub unsafe fn wallet_recover(
 ///
 /// # parameters
 ///
-/// * mnemonics: a null terminated utf8 string (already normalized NFKD) in english;
-/// * password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
-///   this value is optional and passing a null pointer will result in no password;
-/// * password_length: the length of the password;
-/// * wallet_out: a pointer to a pointer. The recovered wallet will be allocated on this pointer;
+/// * account_key: the Ed25519 extended key used wallet's account address private key
+///     in the form of a 64 bytes array.  
+/// * utxo_keys: an array of Ed25519 keys in the form of 64 bytes, used as utxo
+///     keys for the wallet
+/// * utxo_keys_len: the number of keys in the utxo_keys array (not the number of bytes)
+/// * wallet_out: the recovered wallet
 ///
 /// # Safety
 ///

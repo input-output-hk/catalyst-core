@@ -106,10 +106,7 @@ impl ConsoleWriter {
             style::success.apply_to(&format!("Welcome to {}.", self.title))
         );
         for desciption_line in &self.description {
-            println!(
-                "{}",
-                style::success.apply_to(desciption_line.to_string())
-            );
+            println!("{}", style::success.apply_to(desciption_line.to_string()));
         }
         println!();
         println!(

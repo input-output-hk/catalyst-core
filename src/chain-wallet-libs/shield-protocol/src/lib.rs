@@ -19,28 +19,38 @@ pub enum Error {
     IoError(#[from] std::io::Error),
 }
 
+struct View<T: AsRef<[u8]>>(pub T);
+
 const ITERS: u32 = 12983;
 const PROTOCOL_SIZE: usize = 1;
 const SALT_SIZE: usize = 16;
 const NONCE_SIZE: usize = 12;
 const TAG_SIZE: usize = 16;
 
-pub fn encrypt(password: impl AsRef<[u8]>, data: impl AsRef<[u8]>) -> Result<Box<[u8]>, Error> {
+pub fn encrypt<G: rand::Rng + rand::CryptoRng>(
+    password: impl AsRef<[u8]>,
+    data: impl AsRef<[u8]>,
+    mut random: G,
+) -> Result<Box<[u8]>, Error> {
     if data.as_ref().is_empty() {
         return Err(Error::EmptyPayload);
+    }
+
+    if data.as_ref().len() % 64 != 0 {
+        return Err(Error::InvalidDataLength);
     }
 
     let aad = [];
 
     let salt = {
         let mut salt = [0u8; SALT_SIZE];
-        getrandom::getrandom(&mut salt).expect("Failed to generate random salt");
+        random.fill(&mut salt);
         salt
     };
 
     let nonce = {
         let mut nonce = [0u8; NONCE_SIZE];
-        getrandom::getrandom(&mut nonce).expect("Failed to generate random nonce");
+        random.fill(&mut nonce);
         nonce
     };
 
@@ -72,8 +82,6 @@ pub fn encrypt(password: impl AsRef<[u8]>, data: impl AsRef<[u8]>) -> Result<Box
 
     Ok(buffer.into_boxed_slice())
 }
-
-struct View<T: AsRef<[u8]>>(pub T);
 
 pub fn decrypt<T: AsRef<[u8]>>(password: impl AsRef<[u8]>, data: T) -> Result<Box<[u8]>, Error> {
     let data = View::new(data)?;
@@ -153,6 +161,11 @@ fn derive_symmetric_key(password: impl AsRef<[u8]>, salt: [u8; SALT_SIZE]) -> [u
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::SeedableRng;
+
+    fn get_random_gen() -> rand_chacha::ChaChaRng {
+        rand_chacha::ChaChaRng::seed_from_u64(33)
+    }
 
     #[test]
     fn encrypt_decrypt() {
@@ -163,7 +176,7 @@ mod tests {
 
         let password = [1u8, 2, 3, 4];
 
-        let slice = encrypt(&password, &bytes[..]).unwrap();
+        let slice = encrypt(&password, &bytes[..], get_random_gen()).unwrap();
 
         assert_eq!(&decrypt(&password, slice).unwrap()[..], &bytes[..]);
     }
@@ -173,7 +186,7 @@ mod tests {
         let bytes = [0u8; 65];
         let password = [1u8, 2, 3, 4];
 
-        assert!(encrypt(&password, &bytes[..]).is_err())
+        assert!(encrypt(&password, &bytes[..], get_random_gen()).is_err())
     }
 
     #[test]
@@ -181,6 +194,6 @@ mod tests {
         let bytes = [];
         let password = [1u8, 2, 3, 4];
 
-        assert!(encrypt(&password, &bytes[..]).is_err())
+        assert!(encrypt(&password, &bytes[..], get_random_gen()).is_err())
     }
 }

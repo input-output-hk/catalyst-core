@@ -1,4 +1,6 @@
-use diesel::Queryable;
+use crate::db::schema::voteplans;
+use crate::db::schema::voteplans::table;
+use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Queryable)]
@@ -22,6 +24,21 @@ pub struct Voteplan {
     pub chain_voteplan_payload: String,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
+}
+
+impl Insertable<voteplans::table> for Voteplan {
+    type Values = (String, i64, i64, i64, String, i32);
+
+    fn values(self) -> Self::Values {
+        (
+            self.chain_voteplan_id,
+            self.chain_vote_start_time,
+            self.chain_vote_end_time,
+            self.chain_committee_end,
+            self.chain_voteplan_payload,
+            self.fund_id,
+        )
+    }
 }
 
 #[cfg(test)]

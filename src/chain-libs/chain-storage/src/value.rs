@@ -6,7 +6,7 @@ use std::hash::{Hash, Hasher};
 enum ValueImpl {
     Volatile(IVec),
     Owned(Box<[u8]>),
-    Shared(SharedMmap),
+    Permanent(SharedMmap),
 }
 
 /// Wrapper for data held by the database. This wrapper holds structs return by
@@ -30,9 +30,9 @@ impl Value {
         }
     }
 
-    pub(crate) fn shared(value: SharedMmap) -> Self {
+    pub(crate) fn permanent(value: SharedMmap) -> Self {
         Self {
-            inner: ValueImpl::Shared(value),
+            inner: ValueImpl::Permanent(value),
         }
     }
 }
@@ -56,7 +56,7 @@ impl AsRef<[u8]> for Value {
         match &self.inner {
             ValueImpl::Volatile(value) => value.as_ref(),
             ValueImpl::Owned(value) => value.as_ref(),
-            ValueImpl::Shared(value) => value.as_ref(),
+            ValueImpl::Permanent(value) => value.as_ref(),
         }
     }
 }

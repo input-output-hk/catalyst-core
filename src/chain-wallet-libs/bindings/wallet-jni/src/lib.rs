@@ -606,12 +606,12 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_PendingTransactions_delet
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_transferDecrypt(
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_importKeys(
     env: JNIEnv,
     _: JClass,
     password: jbyteArray,
     ciphertext: jbyteArray,
-) -> jbyteArray {
+) -> jlong {
     let password = {
         let size = env.get_array_length(password).expect("invalid array");
         let mut buffer = vec![0i8; size as usize];
@@ -632,7 +632,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_transferDecrypt(
     let mut plaintext_out: *const u8 = null_mut();
     let mut plaintext_out_length = 0usize;
     let result = unsafe {
-        transfer_decrypt(
+        shielded_message_decrypt(
             password.as_ptr() as *const u8,
             password.len(),
             ciphertext.as_ptr() as *const u8,
@@ -642,24 +642,34 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_transferDecrypt(
         )
     };
 
+    let mut wallet_out = null_mut();
     match result.error() {
         None => {
             let slice = unsafe {
                 std::slice::from_raw_parts(plaintext_out as *const jbyte, plaintext_out_length)
             };
 
-            let array = env
-                .new_byte_array(plaintext_out_length as jint)
-                .expect("Failed to create new byte array");
+            let (account_key, rest) = slice.split_at(64);
 
-            env.set_byte_array_region(array, 0, slice)
-                .expect("Couldn't copy array to jvm");
+            let result = unsafe {
+                wallet_recover_free_keys(
+                    account_key.as_ref().as_ptr() as *const u8,
+                    rest.as_ref().as_ptr() as *const [u8; 64],
+                    rest.len()
+                        .checked_div(64)
+                        .expect("decrypted data length is not multiple of 64"),
+                    &mut wallet_out as *mut WalletPtr,
+                )
+            };
 
-            array
+            if let Some(error) = result.error() {
+                let _ = env.throw(error.to_string());
+            }
         }
         Some(error) => {
             let _ = env.throw(error.to_string());
-            null_mut()
         }
-    }
+    };
+
+    wallet_out as jlong
 }

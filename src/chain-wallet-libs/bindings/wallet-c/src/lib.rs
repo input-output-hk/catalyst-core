@@ -5,11 +5,11 @@ use std::{
 };
 pub use wallet::Settings;
 use wallet_core::c::{
-    transfer_decrypt, wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
-    wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_error,
-    wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet, wallet_id,
-    wallet_recover, wallet_retrieve_funds, wallet_set_state, wallet_total_value, wallet_vote_cast,
-    wallet_vote_proposal,
+    shielded_message_decrypt, wallet_convert, wallet_convert_ignored,
+    wallet_convert_transactions_get, wallet_convert_transactions_size, wallet_delete_conversion,
+    wallet_delete_error, wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet,
+    wallet_id, wallet_recover, wallet_recover_free_keys, wallet_retrieve_funds, wallet_set_state,
+    wallet_total_value, wallet_vote_cast, wallet_vote_proposal,
 };
 pub use wallet_core::{
     // c::{ConversionPtr, ErrorPtr, SettingsPtr, WalletPtr},
@@ -88,6 +88,50 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
 
     let mnemonics = mnemonics.to_string_lossy();
     let r = wallet_recover(&mnemonics, password, password_length, wallet_out);
+
+    r.into_c_api()
+}
+
+/// retrieve a wallet from the given mnemonics, password and protocol magic
+///
+/// this function will work for all yoroi, daedalus and other wallets
+/// as it will try every kind of wallet anyway
+///
+/// You can also use this function to recover a wallet even after you have
+/// transferred all the funds to the new format (see the _convert_ function)
+///
+/// The recovered wallet will be returned in `wallet_out`.
+///
+/// # parameters
+///
+/// * account_key: the Ed25519 extended key used wallet's account address private key
+///     in the form of a 64 bytes array.  
+/// * utxo_keys: an array of Ed25519 keys in the form of 64 bytes, used as utxo
+///     keys for the wallet
+/// * utxo_keys_len: the number of keys in the utxo_keys array (not the number of bytes)
+/// * wallet_out: the recovered wallet
+///
+/// # Safety
+///
+/// This function dereference raw pointers (password and wallet_out). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+/// # errors
+///
+/// The function may fail if:
+///
+/// * the mnemonics are not valid (invalid length or checksum);
+/// * the `wallet_out` is null pointer
+///
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_recover_free_keys(
+    account_key: *const u8,
+    utxo_keys: *const [u8; 64],
+    utxo_keys_len: usize,
+    wallet_out: *mut WalletPtr,
+) -> ErrorPtr {
+    let r = wallet_recover_free_keys(account_key, utxo_keys, utxo_keys_len, wallet_out);
 
     r.into_c_api()
 }
@@ -446,7 +490,7 @@ pub unsafe extern "C" fn iohk_jormungandr_transfer_decrypt(
     plaintext_out: *mut *const u8,
     plaintext_out_length: *mut usize,
 ) -> ErrorPtr {
-    let r = transfer_decrypt(
+    let r = shielded_message_decrypt(
         password,
         password_length,
         ciphertext,

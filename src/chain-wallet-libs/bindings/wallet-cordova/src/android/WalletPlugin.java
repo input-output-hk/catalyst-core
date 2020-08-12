@@ -7,6 +7,7 @@ import java.text.Normalizer.Form;
 
 import com.iohk.jormungandrwallet.Settings;
 import com.iohk.jormungandrwallet.Wallet;
+import com.iohk.jormungandrwallet.Wallet.ImportCallback;
 import com.iohk.jormungandrwallet.Conversion;
 import com.iohk.jormungandrwallet.Proposal;
 
@@ -58,6 +59,9 @@ public class WalletPlugin extends CordovaPlugin {
         switch (action) {
             case "WALLET_RESTORE":
                 walletRestore(args, callbackContext);
+                break;
+            case "WALLET_IMPORT_KEYS":
+                walletImportKeys(args, callbackContext);
                 break;
             case "WALLET_RETRIEVE_FUNDS":
                 walletRetrieveFunds(args, callbackContext);
@@ -139,6 +143,18 @@ public class WalletPlugin extends CordovaPlugin {
         });
     }
 
+    private void walletImportKeys(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final byte[] password = args.getArrayBuffer(0);
+        final byte[] qrPayload = args.getArrayBuffer(1);
+
+        try {
+            final long walletPtr = Wallet.importKeys(password, qrPayload);
+            callbackContext.success(Long.toString(walletPtr));
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
     private void walletRetrieveFunds(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
         final Long walletPtr = args.getLong(0);
@@ -194,14 +210,14 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
-    private void walletPendingTransactions(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+    private void walletPendingTransactions(final CordovaArgs args, final CallbackContext callbackContext)
+            throws JSONException {
         final Long wallet = args.getLong(0);
 
         try {
             Long pendingTransactions = Wallet.pendingTransactions(wallet);
             callbackContext.success(Long.toString(pendingTransactions));
-        }
-        catch (final Exception e) {
+        } catch (final Exception e) {
             callbackContext.error(e.getMessage());
         }
     }
@@ -231,15 +247,15 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
-    private void walletConfirmTransaction(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+    private void walletConfirmTransaction(final CordovaArgs args, final CallbackContext callbackContext)
+            throws JSONException {
         final Long wallet = args.getLong(0);
         final byte[] fragmentId = args.getArrayBuffer(1);
 
         try {
             Wallet.confirmTransaction(wallet, fragmentId);
             callbackContext.success();
-        }
-        catch(final Exception e) {
+        } catch (final Exception e) {
             callbackContext.error(e.getMessage());
         }
     }

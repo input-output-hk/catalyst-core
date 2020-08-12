@@ -197,21 +197,7 @@ public class WalletTest {
 
         final byte[] password = { 1, 2, 3, 4 };
 
-        final byte[] plaintext = Wallet.transferDecrypt(password, bytes);
-
-        final byte[] expected = new byte[64 * 3];
-
-        for (int j = 0; j < 3; j++) {
-            for (int i = j * 64; i < (j + 1) * 64; i++) {
-                expected[i] = (byte) (j + 1);
-            }
-        }
-
-        for (int i = 0; i < expected.length; i++) {
-           assertEquals(plaintext[i], expected[i]);
-        }
-
-        assertEquals(plaintext.length, expected.length);
+        final long walletPtr = Wallet.importKeys(password, bytes);
     }
 
     public static byte[] hexStringToByteArray(String s) {

@@ -11,6 +11,7 @@ const WALLET_CONVERT_ACTION_TAG = 'WALLET_CONVERT';
 const WALLET_SET_STATE_ACTION_TAG = 'WALLET_SET_STATE';
 const WALLET_VOTE_ACTION_TAG = 'WALLET_VOTE';
 const WALLET_CONFIRM_TRANSACTION = 'WALLET_CONFIRM_TRANSACTION';
+const WALLET_IMPORT_KEYS = 'WALLET_IMPORT_KEYS';
 const CONVERSION_TRANSACTIONS_SIZE_ACTION_TAG = 'CONVERSION_TRANSACTIONS_SIZE';
 const CONVERSION_TRANSACTIONS_GET_ACTION_TAG = 'CONVERSION_TRANSACTIONS_GET';
 const CONVERSION_IGNORED_GET_ACTION_TAG = 'CONVERSION_IGNORED';
@@ -64,6 +65,24 @@ var plugin = {
     walletRestore: function (mnemonics, successCallback, errorCallback) {
         argscheck.checkArgs('sff', 'walletRestore', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_RESTORE_ACTION_TAG, [mnemonics]);
+    },
+
+    /**
+     * @param {string} mnemonics a string with the mnemonic phrase
+     * @param {pointerCallback} successCallback on success returns a pointer to a Wallet object
+     * @param {errorCallback} errorCallback this function can fail if the mnemonics are invalid
+     */
+    walletImportKeys: function (password, qr, successCallback, errorCallback) {
+        argscheck.checkArgs('**ff', 'walletImportKeys', arguments);
+        var typeName = require('cordova/utils').typeName;
+        var validTypes = true && typeName(password) === 'Uint8Array' && typeName(qr) === 'Uint8Array';
+
+        if (validTypes) {
+            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_IMPORT_KEYS, [password, qr]);
+        } else {
+            throw TypeError('expected block0 to be a Uint8Array in walletRetrieveFunds');
+        }
+
     },
 
     /**

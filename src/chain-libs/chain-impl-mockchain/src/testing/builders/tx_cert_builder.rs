@@ -60,7 +60,7 @@ impl TestTxCertBuilder {
                 vec![]
             }
         };
-        builder.set_witnesses(&witnesses)
+        builder.set_witnesses_unchecked(&witnesses)
     }
 
     fn fragment(
@@ -276,10 +276,11 @@ impl FaultTolerantTxCertBuilder {
 
     pub fn transaction_input_to_low(&self) -> Fragment {
         let keys = vec![self.funder.private_key()];
-        let input_value = Value(self.builder.fee(&self.cert).0 - 1);
+        let input_value = Value(1);
         let input = self.funder.make_input_with_value(input_value);
+        let output = self.funder.make_output_with_value(Value(2));
         self.builder
-            .fragment(&self.cert, keys, &[input], &[], false, &self.funder)
+            .fragment(&self.cert, keys, &[input], &[output], false, &self.funder)
     }
 
     pub fn transaction_with_input_output(&self) -> Fragment {

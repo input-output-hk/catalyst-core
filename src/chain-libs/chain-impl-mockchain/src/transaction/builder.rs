@@ -148,11 +148,23 @@ impl<P> TxBuilderState<SetWitnesses<P>> {
     ///
     /// Note that the same number of witnesses as the number of inputs need to be added here,
     /// otherwise an assert will raise.
-    pub fn set_witnesses(mut self, witnesses: &[Witness]) -> TxBuilderState<SetAuthData<P>>
+    pub fn set_witnesses(self, witnesses: &[Witness]) -> TxBuilderState<SetAuthData<P>>
     where
         P: Payload,
     {
         assert_eq!(witnesses.len(), self.tstruct.nb_inputs as usize);
+        self.set_witnesses_unchecked(witnesses)
+    }
+
+    /// Set the witnesses of the transaction.
+    //It does Not verify if witnesses count is equal to transaction inputs
+    pub fn set_witnesses_unchecked(
+        mut self,
+        witnesses: &[Witness],
+    ) -> TxBuilderState<SetAuthData<P>>
+    where
+        P: Payload,
+    {
         self.tstruct.witnesses = self.current_pos();
         for w in witnesses {
             self.data.extend_from_slice(&w.to_bytes())

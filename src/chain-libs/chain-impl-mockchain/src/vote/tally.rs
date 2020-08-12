@@ -143,3 +143,77 @@ impl fmt::Display for Weight {
         write!(f, "{}", self.0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{Tally, TallyError, TallyResult, Weight};
+    use crate::{
+        stake::Stake,
+        value::Value,
+        vote::{Choice, Options},
+    };
+    use quickcheck::TestResult;
+    use quickcheck::{Arbitrary, Gen};
+    use quickcheck_macros::quickcheck;
+
+    impl Arbitrary for TallyResult {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            TallyResult::new(Arbitrary::arbitrary(g))
+        }
+    }
+
+    #[test]
+    pub fn weight_test() {
+        let mut weight = Weight(0);
+        let weight_10 = Weight(10);
+        assert!(weight.is_zero());
+
+        weight = weight.saturating_add(weight_10);
+        assert!(!weight.is_zero());
+
+        let value: u64 = weight.into();
+        assert_eq!(value, 10);
+    }
+
+    #[test]
+    pub fn tally_result_add_vote_invalid_test() {
+        let options = Options::new_length(3u8).unwrap();
+        let mut tally_result = TallyResult::new(options.clone());
+        let choice = Choice::new(4);
+        assert_eq!(
+            tally_result.add_vote(choice, Weight(1)),
+            Err(TallyError::InvalidChoice {
+                options: options.clone(),
+                choice: choice.clone(),
+            })
+        );
+    }
+
+    #[test]
+    pub fn tally_result_add_zero_weight_vote_test() {
+        let options = Options::new_length(3u8).unwrap();
+        let mut tally_result = TallyResult::new(options);
+        let choice = Choice::new(0);
+
+        let results = tally_result.results().to_vec();
+
+        tally_result.add_vote(choice, Weight(0)).unwrap();
+        assert_eq!(tally_result.results().to_vec(), results);
+    }
+
+    #[test]
+    pub fn tally_result_add_zero_weight_add_correct_vote() {
+        let options = Options::new_length(3u8).unwrap();
+        let mut tally_result = TallyResult::new(options.clone());
+        let choice = Choice::new(2);
+        tally_result.add_vote(choice, Weight(1)).unwrap();
+        assert_eq!(tally_result.participation(), Stake(1));
+        assert_eq!(*tally_result.options(), options);
+    }
+
+    #[quickcheck]
+    pub fn tally(tally_result: TallyResult) -> TestResult {
+        let tally = Tally::new_public(tally_result.clone());
+        TestResult::from_bool(tally.is_public() && (*tally.public().unwrap()) == tally_result)
+    }
+}

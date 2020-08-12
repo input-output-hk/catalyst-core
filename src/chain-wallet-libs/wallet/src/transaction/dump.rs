@@ -31,7 +31,6 @@ pub fn send_to_one_address<S: Clone, K: 'static, WB: WitnessBuilder>(
 
     let mut ignored = vec![];
 
-    // TODO: return this?
     let _new_store = utxos
         .take_while(|utxo| {
             let input = Input::from_utxo(*utxo.as_ref());

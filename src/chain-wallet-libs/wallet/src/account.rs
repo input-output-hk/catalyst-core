@@ -15,10 +15,6 @@ pub struct Wallet {
     state: States<FragmentId, State>,
 }
 
-// TODO: remove Cell, it's only because of the signature
-// of set_state, I think that function should only be used
-// once per "session". But for the time being to avoid a breaking
-// change keep it as this.
 pub struct State {
     value: Value,
     counter: u32,

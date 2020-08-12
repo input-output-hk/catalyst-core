@@ -72,5 +72,7 @@ pub fn insert_fund(fund: Fund, db_conn: &DBConnection) -> QueryResult<Fund> {
     diesel::insert_into(funds::table)
         .values(fund.values())
         .execute(db_conn)?;
+    // This can be done in a single query if we move to postgres or any DB that supports `get_result`
+    // instead of `execute` in the previous insert
     funds::table.order(fund_dsl::id.desc()).first(db_conn)
 }

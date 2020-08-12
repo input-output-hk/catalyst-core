@@ -1,6 +1,5 @@
 # The Blockchain Configuration defines the settings of the blockchain.
 blockchain_configuration:
-
   # The block0-date defines the date the blockchain starts
   # expected value in seconds since UNIX_EPOCH
   #
@@ -63,7 +62,7 @@ blockchain_configuration:
   # It is possible to send all the generated fees to the "treasury".
   #
   # Optional, default is "rewards"
-  fees_go_to: "treasury"
+  fees_go_to: 'treasury'
 
   # Set the total reward supply available for monetary creation
   #
@@ -92,7 +91,7 @@ blockchain_configuration:
       # However in linear formula the meaning is just a scaling factor for the epoch zone
       # (current_epoch - start_epoch / epoch_rate). Further requirement is that this ratio
       # is expressed in fractional form (e.g. 1/2), which allow calculation in integer form.
-      ratio: "13/19"
+      ratio: '13/19'
 
       # indicates when this contribution start. note that if the epoch is not
       # the same or after the epoch_start, the overall contribution is zero.
@@ -111,7 +110,7 @@ initial:
       - address: DdzFFzCqrhsktawSMCWJJy3Dpp9BCjYPVecgsMb5U2G7d1ErUUmwSZvfSY3Yjn5njNadfwvebpVNS5cD4acEKSQih2sR76wx2kF4oLXT
         value: 100000
       - address: Ae2tdPwUPEZEAjEsQsCtBMkLKANxQUEvzLkumPWWYugLeXcgkeMCDH1gnuL
-        value:   10000
+        value: 10000
       - address: DdzFFzCqrhsogWSfcp4Dq9W1bcMzt86276PbDfzAKZxDhi3g6w6fRu6zYMT36uG8p3j8bCgsx4frkB3QH8m8ubUhAKRG5c8SLnGVTBh9
         value: 1 # TODO: we should see this UTxO being ignored when converting
       - address: Ae2tdPwUPEZEAjEsQsCtBMkLKANxQUEvzLkumPWWYugLeXcgkeMCDH1gnuL
@@ -121,10 +120,15 @@ initial:
       - address: Ae2tdPwUPEZ8og5u4WF5rmSyme5Gvp8RYiLM2u7Vm8CyDQzLN3VYTN895Wk
         value: 1000000
       - address: Ae2tdPwUPEZEAjEsQsCtBMkLKANxQUEvzLkumPWWYugLeXcgkeMCDH1gnuL
-        value:   10000
+        value: 10000
       - address: Ae2tdPwUPEZ8og5u4WF5rmSyme5Gvp8RYiLM2u7Vm8CyDQzLN3VYTN895Wk
         value: 1 # TODO: we should see this UTxO being ignored when converting
       - address: DdzFFzCqrhtDFbFvtrm3hhHuWUPY9ozkCW5JzuL4TcrXKMruWCrCSRzpc4mkWBUugPAGLesJv3ert9BH1cQJqXq2f4UN83WP5AZZN4jQ
         value: 100
       - address: DdzFFzCqrhsw7G6njwb8FTBxVCh9GtB7RFvvz7KPNkHxeHtDwAPT2Y6QLDLxVCu7NNUQmwpAfgG5ZeGQkoWjrkbHPUeU9wzG3YFpohse
         value: 1010
+  - fund:
+      - address: ca1qvhujnjpdjwtnvlha2ves34v6v07gekqjtsupk9kvdq8fhhcl8s7sl632wq
+        value: 1000
+      - address: ca1qvcq2yckqtjzggl3vcsmhessp0a85xnf4mjl6cgcm3vglehj4zhhccpplcd
+        value: 10000

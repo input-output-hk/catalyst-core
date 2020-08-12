@@ -290,12 +290,12 @@ impl Wallet {
         self.icarus
             .as_ref()
             .map(|icarus| icarus.utxos().total_value())
-            .unwrap_or(Value::zero())
+            .unwrap_or_else(Value::zero)
             .saturating_add(
                 self.daedalus
                     .as_ref()
                     .map(|daedalus| daedalus.utxos().total_value())
-                    .unwrap_or(Value::zero()),
+                    .unwrap_or_else(Value::zero),
             )
             .saturating_add(self.free_keys.utxos().total_value())
             .saturating_add(self.account.value())

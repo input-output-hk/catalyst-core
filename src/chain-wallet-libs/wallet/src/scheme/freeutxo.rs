@@ -78,14 +78,6 @@ impl Wallet {
         self.state.last_state().1
     }
 
-    // pub(crate) fn check_address(&mut self, address: Address) -> bool {
-    //     match address.kind() {
-    //         Kind::Single(key) => self.keys.iter().any(|k| k.to_public() == *key),
-    //         Kind::Group(key, _) => self.keys.iter().any(|k| k.to_public() == *key),
-    //         _ => false,
-    //     }
-    // }
-
     fn check(&self, pk: &PublicKey<Ed25519>) -> Option<SecretKey<Ed25519Extended>> {
         self.keys.iter().find(|k| &k.to_public() == pk).cloned()
     }

@@ -85,7 +85,6 @@ impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
         if self.inputs.len() < 255 && self.settings.is_input_worth(&input) {
             self.inputs.push(input);
             self.witness_builders.push(Box::new(witness_builder));
-
             AddInputStatus::Added
         } else if self.inputs.len() >= 255 {
             AddInputStatus::NotEnoughSpace

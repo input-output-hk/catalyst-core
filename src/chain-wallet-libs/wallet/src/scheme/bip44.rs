@@ -199,16 +199,11 @@ where
         let mut accounts = self.accounts.iter_mut();
         let mut result = None;
 
-        dbg!();
-
         while let Some(account) = accounts.next() {
-            dbg!(account.id());
             if let Some(path) = account.lookup(address).cloned() {
                 if account.within_last_range(&path) {
                     account.extend_range_with(self.mk_key);
                 }
-
-                dbg!(&path);
 
                 result = Some(path);
                 break;

@@ -31,25 +31,20 @@ pub fn send_to_one_address<S: Clone, K: 'static, WB: WitnessBuilder>(
 
     let mut ignored = vec![];
 
-    let _new_store = utxos
-        .take_while(|utxo| {
-            let input = Input::from_utxo(*utxo.as_ref());
+    for utxo in utxos {
+        let input = Input::from_utxo(*utxo.as_ref());
 
-            let key = utxo_store.get_signing_key(utxo).unwrap();
-            let witness_builder = mk_witness((*key).clone());
+        let key = utxo_store.get_signing_key(utxo).unwrap();
+        let witness_builder = mk_witness((*key).clone());
 
-            match builder.add_input(input, witness_builder) {
-                AddInputStatus::Added => true,
-                AddInputStatus::Skipped(input) => {
-                    ignored.push(input);
-                    true
-                }
-                AddInputStatus::NotEnoughSpace => false,
+        match builder.add_input(input, witness_builder) {
+            AddInputStatus::Added => (),
+            AddInputStatus::Skipped(input) => {
+                ignored.push(input);
             }
-        })
-        .fold(utxo_store.clone(), |store, utxo| {
-            store.remove(utxo).unwrap()
-        });
+            AddInputStatus::NotEnoughSpace => break,
+        }
+    }
 
     if builder.inputs().is_empty() {
         None

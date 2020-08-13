@@ -7,9 +7,9 @@ import java.text.Normalizer.Form;
 
 import com.iohk.jormungandrwallet.Settings;
 import com.iohk.jormungandrwallet.Wallet;
-import com.iohk.jormungandrwallet.Wallet.ImportCallback;
 import com.iohk.jormungandrwallet.Conversion;
 import com.iohk.jormungandrwallet.Proposal;
+import com.iohk.jormungandrwallet.SymmetricCipher;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -60,8 +60,8 @@ public class WalletPlugin extends CordovaPlugin {
             case "WALLET_RESTORE":
                 walletRestore(args, callbackContext);
                 break;
-            case "WALLET_IMPORT_KEYS":
-                walletImportKeys(args, callbackContext);
+            case "SYMMETRIC_CIPHER_DECRYPT":
+                symmetricCipherDecrypt(args, callbackContext);
                 break;
             case "WALLET_RETRIEVE_FUNDS":
                 walletRetrieveFunds(args, callbackContext);
@@ -143,13 +143,17 @@ public class WalletPlugin extends CordovaPlugin {
         });
     }
 
-    private void walletImportKeys(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+    private void symmetricCipherDecrypt(final CordovaArgs args, final CallbackContext callbackContext)
+            throws JSONException {
         final byte[] password = args.getArrayBuffer(0);
-        final byte[] qrPayload = args.getArrayBuffer(1);
+        final byte[] ciphertext = args.getArrayBuffer(1);
+
+        Log.d(TAG, Byte.toString(password[0]));
+        Log.d(TAG, Byte.toString(password[1]));
 
         try {
-            final long walletPtr = Wallet.importKeys(password, qrPayload);
-            callbackContext.success(Long.toString(walletPtr));
+            final byte[] decrypted = SymmetricCipher.decrypt(password, ciphertext);
+            callbackContext.success(decrypted);
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());
         }

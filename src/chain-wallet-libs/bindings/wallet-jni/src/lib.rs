@@ -606,12 +606,12 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_PendingTransactions_delet
 }
 
 #[no_mangle]
-pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_importKeys(
+pub extern "system" fn Java_com_iohk_jormungandrwallet_SymmetricCipher_decrypt(
     env: JNIEnv,
     _: JClass,
     password: jbyteArray,
     ciphertext: jbyteArray,
-) -> jlong {
+) -> jbyteArray {
     let password = {
         let size = env.get_array_length(password).expect("invalid array");
         let mut buffer = vec![0i8; size as usize];
@@ -642,34 +642,28 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_importKeys(
         )
     };
 
-    let mut wallet_out = null_mut();
     match result.error() {
         None => {
             let slice = unsafe {
                 std::slice::from_raw_parts(plaintext_out as *const jbyte, plaintext_out_length)
             };
 
-            let (account_key, rest) = slice.split_at(64);
+            let array = env
+                .new_byte_array(plaintext_out_length as jint)
+                .expect("Failed to create new byte array");
 
-            let result = unsafe {
-                wallet_recover_free_keys(
-                    account_key.as_ref().as_ptr() as *const u8,
-                    rest.as_ref().as_ptr() as *const [u8; 64],
-                    rest.len()
-                        .checked_div(64)
-                        .expect("decrypted data length is not multiple of 64"),
-                    &mut wallet_out as *mut WalletPtr,
-                )
-            };
+            env.set_byte_array_region(array, 0, slice)
+                .expect("Couldn't copy array to jvm");
 
-            if let Some(error) = result.error() {
-                let _ = env.throw(error.to_string());
+            unsafe {
+                delete_buffer(plaintext_out as *mut u8, plaintext_out_length);
             }
+
+            array
         }
         Some(error) => {
             let _ = env.throw(error.to_string());
+            null_mut()
         }
-    };
-
-    wallet_out as jlong
+    }
 }

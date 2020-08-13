@@ -26,6 +26,4 @@ public class Wallet {
     public native static long pendingTransactions(long wallet);
 
     public native static byte[] transferDecrypt(byte[] password, byte[] ciphertext);
-
-    public native static long importKeys(byte[] password, byte[] ciphertext);
 }

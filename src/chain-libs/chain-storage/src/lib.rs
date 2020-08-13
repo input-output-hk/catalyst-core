@@ -148,6 +148,7 @@
 //! ```
 
 mod block_info;
+mod error;
 mod permanent_store;
 #[cfg(any(test, feature = "with-bench"))]
 pub mod test_utils;
@@ -156,28 +157,10 @@ mod value;
 use permanent_store::PermanentStore;
 use sled::{ConflictableTransactionError, TransactionError, Transactional, TransactionalTree};
 use std::path::Path;
-use thiserror::Error;
 
 pub use block_info::BlockInfo;
+pub use error::Error;
 pub use value::Value;
-
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("failed to open the database directory")]
-    Open(#[source] std::io::Error),
-    #[error("block not found")]
-    BlockNotFound,
-    #[error("database backend error")]
-    VolatileBackendError(#[from] sled::Error),
-    #[error("permanent store error")]
-    PermanentBackendError(#[from] data_pile::Error),
-    #[error("Block already present in DB")]
-    BlockAlreadyPresent,
-    #[error("the parent block is missing for the required write")]
-    MissingParent,
-    #[error("branch with the requested tip does not exist")]
-    BranchNotFound,
-}
 
 #[derive(Clone)]
 pub struct BlockStore {

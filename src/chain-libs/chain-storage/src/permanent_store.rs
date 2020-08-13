@@ -35,4 +35,11 @@ impl PermanentStore {
 
         Ok(())
     }
+
+    pub fn iter(&self, chain_length: u32) -> Result<data_pile::SeqNoIter, Error> {
+        let seqno = chain_length - self.chain_length_offset;
+        self.inner
+            .iter_from_seqno(seqno as usize)
+            .ok_or(Error::BlockNotFound)
+    }
 }

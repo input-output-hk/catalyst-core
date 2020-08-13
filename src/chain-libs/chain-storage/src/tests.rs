@@ -586,7 +586,7 @@ fn is_ancestor_only_permanent() {
     assert!(SECOND - FIRST == result);
 }
 
-fn prepare_permament_store() -> (tempfile::TempDir, BlockStore, Vec<Block>) {
+fn prepare_and_fill_store(n: usize) -> (tempfile::TempDir, BlockStore, Vec<Block>) {
     const BLOCK_DATA_LENGTH: usize = 512;
 
     let mut rng = OsRng;
@@ -619,7 +619,7 @@ fn prepare_permament_store() -> (tempfile::TempDir, BlockStore, Vec<Block>) {
 
     blocks.push(genesis_block);
 
-    for _i in 1..BLOCK_NUM_PERMANENT_TEST {
+    for _i in 1..n {
         let block_info = BlockInfo::new(
             block.id.serialize_as_vec(),
             block.parent.serialize_as_vec(),
@@ -632,6 +632,12 @@ fn prepare_permament_store() -> (tempfile::TempDir, BlockStore, Vec<Block>) {
         rng.fill_bytes(&mut block_data);
         block = block.make_child(Some(block_data.clone().to_vec().into_boxed_slice()));
     }
+
+    (file, store, blocks)
+}
+
+fn prepare_permament_store() -> (tempfile::TempDir, BlockStore, Vec<Block>) {
+    let (file, mut store, blocks) = prepare_and_fill_store(BLOCK_NUM_PERMANENT_TEST);
 
     store
         .flush_to_permanent_store(&blocks[FLUSH_TO_BLOCK].id.serialize_as_vec())
@@ -706,4 +712,67 @@ fn permanent_store_get_by_chain_length() {
         vec![blocks[CHAIN_LENGTH].serialize_as_value()],
         store.get_blocks_by_chain_length(chain_length).unwrap()
     );
+}
+
+#[test]
+fn iterator_only_volatile_storage() {
+    const TEST_BLOCK_NUM: usize = 32;
+
+    let (_file, mut store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
+
+    for (i, block) in store
+        .iter(
+            &blocks[blocks.len() - 1].id.serialize_as_vec()[..],
+            TEST_BLOCK_NUM as u32 - 1,
+        )
+        .unwrap()
+        .enumerate()
+    {
+        assert_eq!(blocks[i].serialize_as_value(), block);
+    }
+}
+
+#[test]
+fn iterator_volatile_and_permanent_storage() {
+    const TEST_BLOCK_NUM: usize = 32;
+    const FLUSH_AT: usize = 16;
+
+    let (_file, mut store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
+
+    store
+        .flush_to_permanent_store(&blocks[FLUSH_AT].id.serialize_as_vec()[..])
+        .unwrap();
+
+    for (i, block) in store
+        .iter(
+            &blocks[blocks.len() - 1].id.serialize_as_vec()[..],
+            TEST_BLOCK_NUM as u32 - 1,
+        )
+        .unwrap()
+        .enumerate()
+    {
+        assert_eq!(blocks[i].serialize_as_value(), block);
+    }
+}
+
+#[test]
+fn iterator_only_permanent_storage() {
+    const TEST_BLOCK_NUM: usize = 32;
+
+    let (_file, mut store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
+
+    store
+        .flush_to_permanent_store(&blocks[blocks.len() - 1].id.serialize_as_vec()[..])
+        .unwrap();
+
+    for (i, block) in store
+        .iter(
+            &blocks[blocks.len() - 1].id.serialize_as_vec()[..],
+            TEST_BLOCK_NUM as u32 - 1,
+        )
+        .unwrap()
+        .enumerate()
+    {
+        assert_eq!(blocks[i].serialize_as_value(), block);
+    }
 }

@@ -149,6 +149,7 @@
 
 mod block_info;
 mod error;
+mod iterator;
 mod permanent_store;
 #[cfg(any(test, feature = "with-bench"))]
 pub mod test_utils;
@@ -162,6 +163,7 @@ use std::path::Path;
 
 pub use block_info::BlockInfo;
 pub use error::Error;
+pub use iterator::StorageIterator;
 pub use value::Value;
 
 #[derive(Clone)]
@@ -592,6 +594,26 @@ impl BlockStore {
         }
 
         Ok(())
+    }
+
+    pub fn iter(
+        &mut self,
+        to_block: &[u8],
+        distance: u32,
+    ) -> Result<impl Iterator<Item = Value>, Error> {
+        let from_info = for_path_to_nth_ancestor(self, to_block, distance, |_| {})?;
+        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
+        let block_info = self.volatile.open_tree(tree::INFO)?;
+        let blocks = self.volatile.open_tree(tree::BLOCKS)?;
+        StorageIterator::new(
+            from_info.id().clone(),
+            from_info.chain_length(),
+            Value::from(to_block.to_vec()),
+            self.permanent.clone(),
+            permanent_store_blocks,
+            block_info,
+            blocks,
+        )
     }
 }
 

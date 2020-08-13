@@ -160,7 +160,7 @@ mod tests {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let mut seed = [0; SEED_LENGTH];
             g.fill_bytes(&mut seed);
-            Self { seed, counter: 0 }
+            Self::from_seed(seed)
         }
     }
 

@@ -78,8 +78,12 @@ impl Wallet {
         self.state.last_state().1
     }
 
-    fn check(&self, pk: &PublicKey<Ed25519>) -> Option<SecretKey<Ed25519Extended>> {
-        self.keys.iter().find(|k| &k.to_public() == pk).cloned()
+    fn check(&self, pk: &PublicKey<Ed25519>) -> Option<(usize, SecretKey<Ed25519Extended>)> {
+        self.keys
+            .iter()
+            .cloned()
+            .enumerate()
+            .find(|(_i, k)| &k.to_public() == pk)
     }
 
     pub fn check_fragment(&mut self, fragment_id: &FragmentId, fragment: &Fragment) -> bool {
@@ -120,16 +124,29 @@ impl Wallet {
                         _ => None,
                     };
                     if let Some(pk) = pk {
-                        if let Some(key) = self.check(pk) {
+                        if let Some((fake_derivation, key)) = self.check(pk) {
                             let pointer = UtxoPointer {
                                 transaction_id: *fragment_id,
                                 output_index: index as u8,
                                 value: output.value,
                             };
 
+                            // HACK: this is wrong, but for now I'll leave it
+                            // what happens is that if I don't add any derivation
+                            // all the utxos get in the same group, and then all
+                            // have the same signing key, even if that's not the
+                            // way we are adding them
+                            // (the key of the last inserted gets used for all of them).
+
+                            use std::convert::TryInto;
+                            let derivation: u32 = fake_derivation
+                                .try_into()
+                                .expect("can't cast usize to u32 safely");
+
                             let key = Key::new_unchecked(
                                 key,
-                                DerivationPath::default(),
+                                DerivationPath::<AnyScheme>::new()
+                                    .append_unchecked(derivation.into()),
                                 DerivationScheme::V2,
                             );
                             store = store.add(pointer, key);

@@ -5,7 +5,7 @@ use std::{
 };
 pub use wallet::Settings;
 use wallet_core::c::{
-    shielded_message_decrypt, wallet_convert, wallet_convert_ignored,
+    symmetric_cipher_decrypt, wallet_convert, wallet_convert_ignored,
     wallet_convert_transactions_get, wallet_convert_transactions_size, wallet_delete_conversion,
     wallet_delete_error, wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet,
     wallet_id, wallet_recover, wallet_recover_free_keys, wallet_retrieve_funds, wallet_set_state,
@@ -482,7 +482,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
 /// the pointers are null. Mind not to put random values in or you may see
 /// unexpected behaviors.
 #[no_mangle]
-pub unsafe extern "C" fn iohk_jormungandr_transfer_decrypt(
+pub unsafe extern "C" fn iohk_jormungandr_symmetric_cipher_decrypt(
     password: *const u8,
     password_length: usize,
     ciphertext: *const u8,
@@ -490,7 +490,7 @@ pub unsafe extern "C" fn iohk_jormungandr_transfer_decrypt(
     plaintext_out: *mut *const u8,
     plaintext_out_length: *mut usize,
 ) -> ErrorPtr {
-    let r = shielded_message_decrypt(
+    let r = symmetric_cipher_decrypt(
         password,
         password_length,
         ciphertext,

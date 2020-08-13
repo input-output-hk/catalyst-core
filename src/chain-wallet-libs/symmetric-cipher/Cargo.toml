@@ -2,7 +2,7 @@
 authors = ["Nicolas Di Prima <nicolas@primetype.co.uk>", "Vincent Hanquez <vincent@typed.io>", "Enzo Cioppettini <ecioppettini@atixlabs.com"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
-name = "shield-protocol"
+name = "symmetric-cipher"
 version = "0.4.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -14,3 +14,4 @@ thiserror = {version = "1.0.13", default-features = false}
 
 [dev-dependencies]
 rand_chacha = "0.2.2"
+hex = "*"

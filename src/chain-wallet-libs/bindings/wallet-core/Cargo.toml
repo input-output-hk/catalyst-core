@@ -14,7 +14,7 @@ crate-type = ["lib"]
 thiserror = { version = "1.0.13", default-features = false }
 bip39 = { path = "../../bip39" }
 wallet = { path = "../../wallet" }
-shield-protocol = { path = "../../shield-protocol" }
+symmetric-cipher = { path = "../../symmetric-cipher" }
 chain-core = { path = "../../chain-deps/chain-core" }
 chain-crypto = { path = "../../chain-deps/chain-crypto" }
 chain-ser = { path = "../../chain-deps/chain-ser" }

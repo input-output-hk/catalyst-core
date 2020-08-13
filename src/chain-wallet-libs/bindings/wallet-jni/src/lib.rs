@@ -632,7 +632,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_importKeys(
     let mut plaintext_out: *const u8 = null_mut();
     let mut plaintext_out_length = 0usize;
     let result = unsafe {
-        shielded_message_decrypt(
+        symmetric_cipher_decrypt(
             password.as_ptr() as *const u8,
             password.len(),
             ciphertext.as_ptr() as *const u8,

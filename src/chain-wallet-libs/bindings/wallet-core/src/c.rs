@@ -153,7 +153,6 @@ pub unsafe fn wallet_recover_free_keys(
 ) -> Result {
     let wallet_out = non_null_mut!(wallet_out);
     let utxo_keys: &[u8; 64] = non_null!(utxo_keys);
-
     let account_key: &[u8; 64] = non_null!(account_key as *const [u8; 64]);
 
     let utxo_keys: &[[u8; 64]] =
@@ -721,7 +720,7 @@ pub unsafe fn wallet_vote_cast(
 /// This function dereference raw pointers. Even though the function checks if
 /// the pointers are null. Mind not to put random values in or you may see
 /// unexpected behaviors.
-pub unsafe fn shielded_message_decrypt(
+pub unsafe fn symmetric_cipher_decrypt(
     password: *const u8,
     password_length: usize,
     ciphertext: *const u8,
@@ -735,7 +734,7 @@ pub unsafe fn shielded_message_decrypt(
     let password = std::slice::from_raw_parts(password, password_length);
     let ciphertext = std::slice::from_raw_parts(ciphertext, ciphertext_length);
 
-    match shield_protocol::decrypt(password, ciphertext) {
+    match symmetric_cipher::decrypt(password, ciphertext) {
         Ok(plaintext) => {
             let len = plaintext.len();
             let ptr = Box::into_raw(plaintext);

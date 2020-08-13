@@ -222,6 +222,10 @@ mod tests {
             248, 145, 125, 182, 223, 44, 101, 61, 234,
         ];
 
+        dbg!(hex::encode(&account[..]));
+        dbg!(hex::encode(&key1[..]));
+        dbg!(hex::encode(&key2[..]));
+
         let password = [1u8, 2, 3, 4];
 
         let mut bytes = [0u8; 64 * 3];
@@ -231,7 +235,6 @@ mod tests {
         bytes[2 * 64..3 * 64].copy_from_slice(&key2);
 
         let slice = encrypt(&password, &bytes[..], get_random_gen()).unwrap();
-        dbg!(&slice);
         assert_eq!(&decrypt(&password, slice).unwrap()[..], &bytes[..]);
     }
 }

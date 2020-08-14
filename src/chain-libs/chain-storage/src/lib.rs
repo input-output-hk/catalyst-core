@@ -251,7 +251,7 @@ impl BlockStore {
     /// * `block` - a serialized representation of a block.
     /// * `block_info` - block metadata for internal needs (indexing, linking
     ///   between blocks, etc)
-    pub fn put_block(&mut self, block: &[u8], block_info: BlockInfo) -> Result<(), Error> {
+    pub fn put_block(&self, block: &[u8], block_info: BlockInfo) -> Result<(), Error> {
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
         let info = self.volatile.open_tree(tree::INFO)?;
@@ -289,7 +289,7 @@ impl BlockStore {
     /// # Arguments
     ///
     /// * `block_id` - the serialized block identifier.
-    pub fn get_block(&mut self, block_id: &[u8]) -> Result<Value, Error> {
+    pub fn get_block(&self, block_id: &[u8]) -> Result<Value, Error> {
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
 
@@ -317,7 +317,7 @@ impl BlockStore {
     /// # Arguments
     ///
     /// * `block_id` - the serialized block identifier.
-    pub fn get_block_info(&mut self, block_id: &[u8]) -> Result<BlockInfo, Error> {
+    pub fn get_block_info(&self, block_id: &[u8]) -> Result<BlockInfo, Error> {
         let info = self.volatile.open_tree(tree::INFO)?;
         let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
         let chain_length_index = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
@@ -357,7 +357,7 @@ impl BlockStore {
     /// return block contents, not their IDs. If there is a block at the given
     /// chain length in the permanent storage, only this block is returned.
     /// Other branches are considered to be ready of removal if there are any.
-    pub fn get_blocks_by_chain_length(&mut self, chain_length: u32) -> Result<Vec<Value>, Error> {
+    pub fn get_blocks_by_chain_length(&self, chain_length: u32) -> Result<Vec<Value>, Error> {
         if let Some(block) = self.permanent.get_block_by_chain_length(chain_length) {
             return Ok(vec![Value::permanent(block)]);
         }
@@ -381,7 +381,7 @@ impl BlockStore {
 
     /// Add a tag for a given block. The block id can be later retrieved by this
     /// tag.
-    pub fn put_tag(&mut self, tag_name: &str, block_id: &[u8]) -> Result<(), Error> {
+    pub fn put_tag(&self, tag_name: &str, block_id: &[u8]) -> Result<(), Error> {
         let info = self.volatile.open_tree(tree::INFO)?;
         let tags = self.volatile.open_tree(tree::TAGS)?;
         let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
@@ -403,7 +403,7 @@ impl BlockStore {
     }
 
     /// Get the block ID for the given tag.
-    pub fn get_tag(&mut self, tag_name: &str) -> Result<Option<Value>, Error> {
+    pub fn get_tag(&self, tag_name: &str) -> Result<Option<Value>, Error> {
         let tags = self.volatile.open_tree(tree::TAGS)?;
 
         tags.get(tag_name)
@@ -412,7 +412,7 @@ impl BlockStore {
     }
 
     /// Get identifier of all branches tips.
-    pub fn get_tips_ids(&mut self) -> Result<Vec<Value>, Error> {
+    pub fn get_tips_ids(&self) -> Result<Vec<Value>, Error> {
         let tips = self.volatile.open_tree(tree::BRANCHES_TIPS)?;
 
         tips.iter()
@@ -422,7 +422,7 @@ impl BlockStore {
     }
 
     /// Prune a branch with the given tip id from the storage.
-    pub fn prune_branch(&mut self, tip_id: &[u8]) -> Result<(), Error> {
+    pub fn prune_branch(&self, tip_id: &[u8]) -> Result<(), Error> {
         let tips = self.volatile.open_tree(tree::BRANCHES_TIPS)?;
 
         if !tips.contains_key(tip_id)? {
@@ -479,7 +479,7 @@ impl BlockStore {
     }
 
     /// Check if the block with the given id exists.
-    pub fn block_exists(&mut self, block_id: &[u8]) -> Result<bool, Error> {
+    pub fn block_exists(&self, block_id: &[u8]) -> Result<bool, Error> {
         let info = self.volatile.open_tree(tree::INFO)?;
         let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
 
@@ -500,7 +500,7 @@ impl BlockStore {
     /// * `Ok(None)` - `ancestor` is not ancestor of `descendent`
     /// * `Err(error)` - `ancestor` or `descendent` was not found
     pub fn is_ancestor(
-        &mut self,
+        &self,
         ancestor_id: &[u8],
         descendent_id: &[u8],
     ) -> Result<Option<u32>, Error> {
@@ -547,13 +547,13 @@ impl BlockStore {
 
     /// Get n-th (n = `distance`) ancestor of the block, identified by
     /// `block_id`.
-    pub fn get_nth_ancestor(&mut self, block_id: &[u8], distance: u32) -> Result<BlockInfo, Error> {
+    pub fn get_nth_ancestor(&self, block_id: &[u8], distance: u32) -> Result<BlockInfo, Error> {
         for_path_to_nth_ancestor(self, block_id, distance, |_| {})
     }
 
     /// Move all blocks up to the provided block ID to the permanent block
     /// storage.
-    pub fn flush_to_permanent_store(&mut self, to_block: &[u8]) -> Result<(), Error> {
+    pub fn flush_to_permanent_store(&self, to_block: &[u8]) -> Result<(), Error> {
         let mut block_infos = Vec::new();
 
         let mut current_block_id = to_block;
@@ -597,11 +597,11 @@ impl BlockStore {
     }
 
     pub fn iter(
-        &mut self,
+        &self,
         to_block: &[u8],
         distance: u32,
     ) -> Result<impl Iterator<Item = Value>, Error> {
-        let from_info = for_path_to_nth_ancestor(self, to_block, distance, |_| {})?;
+        let from_info = for_path_to_nth_ancestor(&self, to_block, distance, |_| {})?;
         let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
         let block_info = self.volatile.open_tree(tree::INFO)?;
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
@@ -621,7 +621,7 @@ impl BlockStore {
 /// each intermediate block encountered while travelling from `block_id` to
 /// its n-th ancestor.
 pub fn for_path_to_nth_ancestor<F>(
-    store: &mut BlockStore,
+    store: &BlockStore,
     block_id: &[u8],
     distance: u32,
     mut callback: F,

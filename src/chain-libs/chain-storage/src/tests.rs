@@ -16,7 +16,7 @@ pub fn pick_from_vector<'a, A, R: RngCore>(rng: &mut R, v: &'a [A]) -> &'a A {
     &v[s % v.len()]
 }
 
-pub fn generate_chain<R: RngCore>(rng: &mut R, store: &mut BlockStore) -> Vec<Block> {
+pub fn generate_chain<R: RngCore>(rng: &mut R, store: &BlockStore) -> Vec<Block> {
     let mut blocks = vec![];
 
     let genesis_block = Block::genesis(None);
@@ -66,13 +66,13 @@ fn prepare_store() -> (tempfile::TempDir, BlockStore) {
 
 #[test]
 fn tag_get_non_existent() {
-    let (_file, mut store) = prepare_store();
+    let (_file, store) = prepare_store();
     assert!(store.get_tag("tip").unwrap().is_none());
 }
 
 #[test]
 fn tag_non_existent_block() {
-    let (_file, mut store) = prepare_store();
+    let (_file, store) = prepare_store();
     match store.put_tag("tip", &BlockId(0).serialize_as_vec()) {
         Err(Error::BlockNotFound) => {}
         err => panic!(err),
@@ -83,8 +83,8 @@ fn tag_non_existent_block() {
 fn tag_put() {
     let mut rng = OsRng;
 
-    let (_file, mut store) = prepare_store();
-    let blocks = generate_chain(&mut rng, &mut store);
+    let (_file, store) = prepare_store();
+    let blocks = generate_chain(&mut rng, &store);
 
     store
         .put_tag("tip", &blocks.last().unwrap().id.serialize_as_vec())
@@ -99,8 +99,8 @@ fn tag_put() {
 fn tag_overwrite() {
     let mut rng = OsRng;
 
-    let (_file, mut store) = prepare_store();
-    let blocks = generate_chain(&mut rng, &mut store);
+    let (_file, store) = prepare_store();
+    let blocks = generate_chain(&mut rng, &store);
 
     store
         .put_tag("tip", &blocks.last().unwrap().id.serialize_as_vec())
@@ -116,7 +116,7 @@ fn tag_overwrite() {
 
 #[test]
 fn block_read_write() {
-    let (_file, mut store) = prepare_store();
+    let (_file, store) = prepare_store();
     let genesis_block = Block::genesis(None);
     let genesis_block_info = BlockInfo::new(
         genesis_block.id.serialize_as_vec(),
@@ -165,14 +165,14 @@ fn block_read_write() {
 pub fn nth_ancestor() {
     let mut rng = OsRng;
     let file = tempfile::TempDir::new().unwrap();
-    let mut store = BlockStore::new(
+    let store = BlockStore::new(
         file.path(),
         BlockId(0).serialize_as_vec(),
         BlockId(0).serialize_as_vec().len(),
         1,
     )
     .unwrap();
-    let blocks = generate_chain(&mut rng, &mut store);
+    let blocks = generate_chain(&mut rng, &store);
 
     let mut blocks_fetched = 0;
     let mut total_distance = 0;
@@ -189,7 +189,7 @@ pub fn nth_ancestor() {
         total_distance += distance;
 
         let ancestor_info =
-            for_path_to_nth_ancestor(&mut store, &block.id.serialize_as_vec(), distance, |_| {
+            for_path_to_nth_ancestor(&store, &block.id.serialize_as_vec(), distance, |_| {
                 blocks_fetched += 1;
             })
             .unwrap();
@@ -209,7 +209,7 @@ pub fn nth_ancestor() {
 fn simultaneous_read_write() {
     let mut rng = OsRng;
     let file = tempfile::TempDir::new().unwrap();
-    let mut conn = BlockStore::new(
+    let store = BlockStore::new(
         file.path(),
         BlockId(0).serialize_as_vec(),
         BlockId(0).serialize_as_vec().len(),
@@ -223,7 +223,8 @@ fn simultaneous_read_write() {
         genesis_block.parent.serialize_as_vec(),
         genesis_block.chain_length,
     );
-    conn.put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
+    store
+        .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
         .unwrap();
     let mut blocks = vec![genesis_block];
 
@@ -236,11 +237,12 @@ fn simultaneous_read_write() {
             block.parent.serialize_as_vec(),
             block.chain_length,
         );
-        conn.put_block(&block.serialize_as_vec(), block_info)
+        store
+            .put_block(&block.serialize_as_vec(), block_info)
             .unwrap()
     }
 
-    let mut conn_1 = conn.clone();
+    let store_1 = store.clone();
     let blocks_1 = blocks.clone();
 
     let thread_1 = std::thread::spawn(move || {
@@ -250,7 +252,7 @@ fn simultaneous_read_write() {
                 .unwrap()
                 .id
                 .serialize_as_vec();
-            conn_1.get_block(&block_id).unwrap();
+            store_1.get_block(&block_id).unwrap();
         }
     });
 
@@ -263,7 +265,8 @@ fn simultaneous_read_write() {
                 block.parent.serialize_as_vec(),
                 block.chain_length,
             );
-            conn.put_block(&block.serialize_as_vec(), block_info)
+            store
+                .put_block(&block.serialize_as_vec(), block_info)
                 .unwrap()
         }
     });
@@ -279,7 +282,7 @@ fn branch_pruning() {
     const BIFURCATION_POINT: usize = 50;
 
     let file = tempfile::TempDir::new().unwrap();
-    let mut store = BlockStore::new(
+    let store = BlockStore::new(
         file.path(),
         BlockId(0).serialize_as_vec(),
         BlockId(0).serialize_as_vec().len(),
@@ -380,7 +383,7 @@ fn get_blocks_by_chain_length() {
     const N_BLOCKS: usize = 5;
 
     let file = tempfile::TempDir::new().unwrap();
-    let mut store = BlockStore::new(
+    let store = BlockStore::new(
         file.path(),
         BlockId(0).serialize_as_vec(),
         BlockId(0).serialize_as_vec().len(),
@@ -434,7 +437,7 @@ fn generate_two_branches() -> (tempfile::TempDir, BlockStore, Vec<Block>, Vec<Bl
     const SECOND_BRANCH_LEN: usize = 25;
     const BIFURCATION_POINT: usize = 50;
 
-    let (file, mut store) = prepare_store();
+    let (file, store) = prepare_store();
 
     let mut main_branch_blocks = vec![];
 
@@ -490,7 +493,7 @@ fn is_ancestor_same_branch() {
     const FIRST: usize = 20;
     const SECOND: usize = 30;
 
-    let (_file, mut store, main_branch_blocks, _) = generate_two_branches();
+    let (_file, store, main_branch_blocks, _) = generate_two_branches();
 
     let result = store
         .is_ancestor(
@@ -507,7 +510,7 @@ fn is_ancestor_wrong_order() {
     const FIRST: usize = 30;
     const SECOND: usize = 20;
 
-    let (_file, mut store, main_branch_blocks, _) = generate_two_branches();
+    let (_file, store, main_branch_blocks, _) = generate_two_branches();
 
     let result = store
         .is_ancestor(
@@ -523,7 +526,7 @@ fn is_ancestor_different_branches() {
     const FIRST: usize = 60;
     const SECOND: usize = 10;
 
-    let (_file, mut store, main_branch_blocks, second_branch_blocks) = generate_two_branches();
+    let (_file, store, main_branch_blocks, second_branch_blocks) = generate_two_branches();
 
     let result = store
         .is_ancestor(
@@ -540,7 +543,7 @@ fn is_ancestor_permanent_volatile() {
     const FIRST: usize = 10;
     const SECOND: usize = 50;
 
-    let (_file, mut store, main_branch_blocks, _) = generate_two_branches();
+    let (_file, store, main_branch_blocks, _) = generate_two_branches();
 
     store
         .flush_to_permanent_store(
@@ -566,7 +569,7 @@ fn is_ancestor_only_permanent() {
     const FIRST: usize = 10;
     const SECOND: usize = 20;
 
-    let (_file, mut store, main_branch_blocks, _) = generate_two_branches();
+    let (_file, store, main_branch_blocks, _) = generate_two_branches();
 
     store
         .flush_to_permanent_store(
@@ -593,7 +596,7 @@ fn prepare_and_fill_store(n: usize) -> (tempfile::TempDir, BlockStore, Vec<Block
     let mut block_data = [0; BLOCK_DATA_LENGTH];
 
     let file = tempfile::TempDir::new().unwrap();
-    let mut store = BlockStore::new(
+    let store = BlockStore::new(
         file.path(),
         BlockId(0).serialize_as_vec(),
         BlockId(0).serialize_as_vec().len(),
@@ -637,7 +640,7 @@ fn prepare_and_fill_store(n: usize) -> (tempfile::TempDir, BlockStore, Vec<Block
 }
 
 fn prepare_permament_store() -> (tempfile::TempDir, BlockStore, Vec<Block>) {
-    let (file, mut store, blocks) = prepare_and_fill_store(BLOCK_NUM_PERMANENT_TEST);
+    let (file, store, blocks) = prepare_and_fill_store(BLOCK_NUM_PERMANENT_TEST);
 
     store
         .flush_to_permanent_store(&blocks[FLUSH_TO_BLOCK].id.serialize_as_vec())
@@ -648,7 +651,7 @@ fn prepare_permament_store() -> (tempfile::TempDir, BlockStore, Vec<Block>) {
 
 #[test]
 fn permanent_store_read() {
-    let (_file, mut store, blocks) = prepare_permament_store();
+    let (_file, store, blocks) = prepare_permament_store();
 
     for block in blocks.iter() {
         let block_id = block.id.serialize_as_vec();
@@ -670,7 +673,7 @@ fn permanent_store_read() {
 fn permanent_store_tag() {
     const TAGS_TEST_LENGTH: usize = 20;
 
-    let (_file, mut store, blocks) = prepare_permament_store();
+    let (_file, store, blocks) = prepare_permament_store();
 
     store
         .put_tag("test1", &blocks[TAGS_TEST_LENGTH].id.serialize_as_vec())
@@ -679,7 +682,7 @@ fn permanent_store_tag() {
 
 #[test]
 fn permanent_store_prune_main_branch() {
-    let (_file, mut store, blocks) = prepare_permament_store();
+    let (_file, store, blocks) = prepare_permament_store();
 
     store
         .prune_branch(&blocks.last().unwrap().id.serialize_as_vec())
@@ -705,7 +708,7 @@ fn permanent_store_prune_main_branch() {
 fn permanent_store_get_by_chain_length() {
     const CHAIN_LENGTH: usize = 20;
 
-    let (_file, mut store, blocks) = prepare_permament_store();
+    let (_file, store, blocks) = prepare_permament_store();
 
     let chain_length = blocks[CHAIN_LENGTH].chain_length;
     assert_eq!(
@@ -718,7 +721,7 @@ fn permanent_store_get_by_chain_length() {
 fn iterator_only_volatile_storage() {
     const TEST_BLOCK_NUM: usize = 32;
 
-    let (_file, mut store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
+    let (_file, store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
 
     for (i, block) in store
         .iter(
@@ -737,7 +740,7 @@ fn iterator_volatile_and_permanent_storage() {
     const TEST_BLOCK_NUM: usize = 32;
     const FLUSH_AT: usize = 16;
 
-    let (_file, mut store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
+    let (_file, store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
 
     store
         .flush_to_permanent_store(&blocks[FLUSH_AT].id.serialize_as_vec()[..])
@@ -759,7 +762,7 @@ fn iterator_volatile_and_permanent_storage() {
 fn iterator_only_permanent_storage() {
     const TEST_BLOCK_NUM: usize = 32;
 
-    let (_file, mut store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
+    let (_file, store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
 
     store
         .flush_to_permanent_store(&blocks[blocks.len() - 1].id.serialize_as_vec()[..])

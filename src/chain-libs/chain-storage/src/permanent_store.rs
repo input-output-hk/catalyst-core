@@ -28,7 +28,7 @@ impl PermanentStore {
         self.inner.get_by_seqno(seqno as usize)
     }
 
-    pub fn put_blocks(&mut self, blocks: &[&[u8]]) -> Result<(), Error> {
+    pub fn put_blocks(&self, blocks: &[&[u8]]) -> Result<(), Error> {
         self.inner
             .append(&blocks)
             .map_err(Error::PermanentBackendError)?;

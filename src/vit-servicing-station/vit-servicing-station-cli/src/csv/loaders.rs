@@ -86,6 +86,16 @@ impl CSVDataCmd {
             proposal.fund_id = fund.id;
         }
 
+        vit_servicing_station_lib::db::queries::voteplans::batch_insert_voteplans(
+            &voteplans, &db_conn,
+        )
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+
+        vit_servicing_station_lib::db::queries::proposals::batch_insert_proposals(
+            &proposals, &db_conn,
+        )
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+
         Ok(())
     }
 }

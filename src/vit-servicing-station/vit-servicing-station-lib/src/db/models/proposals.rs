@@ -1,7 +1,7 @@
 use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
-use crate::db::{views_schema::full_proposals_info, DB};
-use diesel::Queryable;
+use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
+use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -161,6 +161,50 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_voteplan_payload: row.21,
             fund_id: row.22,
         }
+    }
+}
+
+impl Insertable<proposals::table> for Proposal {
+    type Values = (
+        diesel::dsl::Eq<proposals::proposal_id, String>,
+        diesel::dsl::Eq<proposals::proposal_category, String>,
+        diesel::dsl::Eq<proposals::proposal_title, String>,
+        diesel::dsl::Eq<proposals::proposal_summary, String>,
+        diesel::dsl::Eq<proposals::proposal_problem, String>,
+        diesel::dsl::Eq<proposals::proposal_solution, String>,
+        diesel::dsl::Eq<proposals::proposal_public_key, String>,
+        diesel::dsl::Eq<proposals::proposal_funds, i64>,
+        diesel::dsl::Eq<proposals::proposal_url, String>,
+        diesel::dsl::Eq<proposals::proposal_files_url, String>,
+        diesel::dsl::Eq<proposals::proposer_name, String>,
+        diesel::dsl::Eq<proposals::proposer_contact, String>,
+        diesel::dsl::Eq<proposals::proposer_url, String>,
+        diesel::dsl::Eq<proposals::chain_proposal_id, Vec<u8>>,
+        diesel::dsl::Eq<proposals::chain_proposal_index, i64>,
+        diesel::dsl::Eq<proposals::chain_vote_options, String>,
+        diesel::dsl::Eq<proposals::chain_voteplan_id, String>,
+    );
+
+    fn values(self) -> Self::Values {
+        (
+            proposals::proposal_id.eq(self.proposal_id),
+            proposals::proposal_category.eq(self.proposal_category.category_name),
+            proposals::proposal_title.eq(self.proposal_title),
+            proposals::proposal_summary.eq(self.proposal_summary),
+            proposals::proposal_problem.eq(self.proposal_problem),
+            proposals::proposal_solution.eq(self.proposal_solution),
+            proposals::proposal_public_key.eq(self.proposal_public_key),
+            proposals::proposal_funds.eq(self.proposal_funds),
+            proposals::proposal_url.eq(self.proposal_url),
+            proposals::proposal_files_url.eq(self.proposal_files_url),
+            proposals::proposer_name.eq(self.proposer.proposer_name),
+            proposals::proposer_contact.eq(self.proposer.proposer_email),
+            proposals::proposer_url.eq(self.proposer.proposer_url),
+            proposals::chain_proposal_id.eq(self.chain_proposal_id),
+            proposals::chain_proposal_index.eq(self.chain_proposal_index),
+            proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
+            proposals::chain_voteplan_id.eq(self.chain_voteplan_id),
+        )
     }
 }
 

@@ -1,10 +1,11 @@
 use crate::db::{
-    models::proposals::Proposal, views_schema::full_proposals_info::dsl as full_proposal_dsl,
-    views_schema::full_proposals_info::dsl::full_proposals_info, DBConnectionPool,
+    models::proposals::Proposal, schema::proposals,
+    views_schema::full_proposals_info::dsl as full_proposal_dsl,
+    views_schema::full_proposals_info::dsl::full_proposals_info, DBConnection, DBConnectionPool,
 };
 use crate::v0::errors::HandleError;
 use diesel::query_dsl::filter_dsl::FilterDsl;
-use diesel::{ExpressionMethods, RunQueryDsl};
+use diesel::{ExpressionMethods, Insertable, QueryResult, RunQueryDsl};
 
 pub async fn query_all_proposals(pool: &DBConnectionPool) -> Result<Vec<Proposal>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
@@ -30,4 +31,25 @@ pub async fn query_proposal_by_id(
     })
     .await
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
+}
+
+pub fn insert_proposal(proposal: Proposal, db_conn: &DBConnection) -> QueryResult<usize> {
+    diesel::insert_into(proposals::table)
+        .values(proposal.values())
+        .execute(db_conn)
+}
+
+pub fn batch_insert_proposals(
+    proposals_slice: &[Proposal],
+    db_conn: &DBConnection,
+) -> QueryResult<usize> {
+    diesel::insert_into(proposals::table)
+        .values(
+            proposals_slice
+                .iter()
+                .cloned()
+                .map(|proposal| proposal.values())
+                .collect::<Vec<_>>(),
+        )
+        .execute(db_conn)
 }

@@ -37,7 +37,7 @@ pub fn send_to_one_address<S: Clone, K: 'static, WB: WitnessBuilder>(
         let key = utxo_store.get_signing_key(utxo).unwrap();
         let witness_builder = mk_witness((*key).clone());
 
-        match builder.add_input(input, witness_builder) {
+        match builder.add_input_if_worth(input, witness_builder) {
             AddInputStatus::Added => (),
             AddInputStatus::Skipped(input) => {
                 ignored.push(input);

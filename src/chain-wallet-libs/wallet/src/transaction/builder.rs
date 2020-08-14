@@ -77,19 +77,33 @@ impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
         self.estimate_fee_with(0, 0)
     }
 
-    pub fn add_input<B: WitnessBuilder + 'static>(
+    pub fn add_input_if_worth<B: WitnessBuilder + 'static>(
         &mut self,
         input: Input,
         witness_builder: B,
     ) -> AddInputStatus {
-        if self.inputs.len() < 255 && self.settings.is_input_worth(&input) {
-            self.inputs.push(input);
-            self.witness_builders.push(Box::new(witness_builder));
-            AddInputStatus::Added
-        } else if self.inputs.len() >= 255 {
-            AddInputStatus::NotEnoughSpace
+        if self.settings.is_input_worth(&input) {
+            match self.add_input(input, witness_builder) {
+                true => AddInputStatus::Added,
+                false => AddInputStatus::NotEnoughSpace,
+            }
         } else {
             AddInputStatus::Skipped(input)
+        }
+    }
+
+    pub fn add_input<B: WitnessBuilder + 'static>(
+        &mut self,
+        input: Input,
+        witness_builder: B,
+    ) -> bool {
+        match self.inputs.len().cmp(&255) {
+            std::cmp::Ordering::Less => {
+                self.inputs.push(input);
+                self.witness_builders.push(Box::new(witness_builder));
+                true
+            }
+            _ => false,
         }
     }
 

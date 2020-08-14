@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="wallet-cordova-plugin" version="0.4.0-pre3">
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="wallet-cordova-plugin" version="0.4.0">
     <name>Wallet Cordova Plugin</name>
     <description>Wallet Cordova Plugin</description>
     <license>MIT OR Apache-2.0 </license>
@@ -26,10 +26,11 @@
         <source-file src="src/android/jormungandrwallet/Conversion.java" target-dir="src/com/iohk/jormungandrwallet" />
         <source-file src="src/android/jormungandrwallet/Proposal.java" target-dir="src/com/iohk/jormungandrwallet" />
         <source-file src="src/android/jormungandrwallet/PendingTransactions.java" target-dir="src/com/iohk/jormungandrwallet" />
+        <source-file src="src/android/jormungandrwallet/SymmetricCipher.java" target-dir="src/com/iohk/jormungandrwallet" />
 
         <source-file src="src/android/libs/x86/libwallet_jni.so" target-dir="libs/x86" />
         <source-file src="src/android/libs/x86_64/libwallet_jni.so" target-dir="libs/x86_64" />
-        <source-file src="src/android/libs/amd64-v8a/libwallet_jni.so" target-dir="libs/amd64-v8a" />
+        <source-file src="src/android/libs/arm64-v8a/libwallet_jni.so" target-dir="libs/arm64-v8a" />
         <source-file src="src/android/libs/armeabi-v7a/libwallet_jni.so" target-dir="libs/armeabi-v7a" />
     </platform>
 

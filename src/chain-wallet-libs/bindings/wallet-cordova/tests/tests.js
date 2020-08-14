@@ -1,5 +1,4 @@
 const primitives = require('wallet-cordova-plugin.wallet');
-
 const BLOCK0 = '00520000000003c1000000000000000000000000da1006dbf989038c7df6048fb59ae3359e67184ba193e734db61718126a56948000000000000000000000000000000000000000000000000000000000000000000a60000000e0088000000005e922c7000410100c200010398000000000000000a000000000000000200000000000000640104000000b401411404040000a8c00208000000000000006402440001900001840000006405810104c800005af3107a40000521020000000000000064000000000000000d0000000000000013000000010000000302e0e57ceb3b2832f07e2ef051e772b62a837f7a486c35e38f51bf556bd3abcd8eca016f00010500000000000f4240004c82d818584283581c0992e6e3970dd01055ba919cff5b670a6813f41c588eb701231e3cf0a101581e581c4bff51e6e1bcf245c7bcb610415fad427c2d8b87faca8452215970f6001a660a147700000000000186a0004c82d818584283581c3657ed91ad2f25ad3ebc4faec404779f8dafafc03fa181743c76aa61a101581e581cd7c99cfa13e81ca55d026fe0395124646e39b188c475fb276525975d001ab75977f20000000000002710002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c70000000000000001004c82d818584283581c4baebf60011d051b02143a3417514fed6f25c8c03d2253025aa2ed5fa101581e581c4bff51e6e1bcf245c7bcb5104c7ca9ed201e1b1a6c6dfbe93eadeece001a318972700000000000000064002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c7014e00010500000000000f4240002b82d818582183581c783fd3008d0d8fb4532885481360cb6e97dc7801c8843f300ed69a56a0001a7d83a21d0000000000002710002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c70000000000000001002b82d818582183581c783fd3008d0d8fb4532885481360cb6e97dc7801c8843f300ed69a56a0001a7d83a21d0000000000000064004c82d818584283581cffd85f20cf3f289fd091e0b033285ecad725496bc57035a504b84a10a101581e581c4bff51e6e1bcf245c7bcb4105299a598c50eabacdd0f72815c016da7001a57f9068f00000000000003f2004c82d818584283581c847329097386f263121520fc9c364047b436298b37c9148a15efddb4a101581e581cd7c99cfa13e81ce17f4221e0aed54c08625a0a8c687d9748f462a6b2001af866b8b9005600020002032fc94e416c9cb9b3f7ea999846acd31fe466c092e1c0d8b6634074def8f9e1e800000000000003e8033005131602e42423f16621bbe6100bfa7a1a69aee5fd6118dc588fe6f2a8af7c0000000000002710';
 
 function hexStringToBytes (string) {
@@ -10,6 +9,16 @@ function hexStringToBytes (string) {
 
 const WALLET_VALUE = 1000000 + 10000 + 10000 + 1 + 100;
 const YOROI_WALLET = 'neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone';
+
+const ENCRYPTED_WALLET = '017b938f189c7d1d9e4c75b02710a9c9a6b287b6ca55d624001828cba8aeb3a9d4c2a86261016693c7e05fb281f012fb2d7af44484da09c4d7b2dea6585965a4cc208d2b2fb1aa5ba6338520b3aa9c4f908fdd62816ebe01f496f8b4fc0344892fe245db072d054c3dedff926320589231298e216506c1f6858c5dba915c959a98ba0d0e3995aef91d4216b5172dedf2736b451d452916b81532eb7f8487e9f88a2de4f9261d0a0ddf11698796ad8b6894908024ebc4be9bba985ef9c0f2f71afce0b37520c66938313f6bf81b3fc24f5c93d216cd2528dabc716b8093359fda84db4e58d876d215713f2db000';
+const ACCOUNT = 'c86596c2d1208885db1fe3658406aa0f7cc7b8e13c362fe46a6db277fc5064583e487588c98a6c36e2e7445c0add36f83f171cb5ccfd815509d19cd38ecb0af3';
+const KEY1 = '301559ccb2d4cc7e9e54a6f55a80960bb691b7b1409549ef8695a92ea41a6f4f405231a806c2e7b9d0db30e15ee0cc1f261c1b9f9615636b48bd89fe7be6ea1f';
+const KEY2 = 'a8b6bdf080c74fbc31337ede4b6692c2ebed7e34af6d98b7bbcd478cf07b0d5ed93f7e9d4aa3afde321ae1abb61b8344c243c9d0b407cbf8917db6df2c653dea';
+const PASSWORD = new Uint8Array(4);
+PASSWORD[0] = 1;
+PASSWORD[1] = 2;
+PASSWORD[2] = 3;
+PASSWORD[4] = 4;
 
 /**
  * helper to convert the cordova-callback-style to promises, to make tests simpler
@@ -56,6 +65,7 @@ const walletSetState = promisify(primitives.walletSetState);
 const walletConfirmTransaction = promisify(primitives.walletConfirmTransaction);
 const walletPendingTransactions = promisify(primitives.walletPendingTransactions);
 const pendingTransactionsGet = promisify(primitives.pendingTransactionsGet);
+const symmetricCipherDecrypt = promisify(primitives.symmetricCipherDecrypt);
 
 function conversionGetTransactions (conversion) {
     return new Promise(function (resolve, reject) {
@@ -338,8 +348,45 @@ exports.defineAutoTests = function () {
                     done();
                 });
         });
+
+        it('decrypts keys correctly', function (done) {
+            symmetricCipherDecrypt(PASSWORD, hexStringToBytes(ENCRYPTED_WALLET))
+                .then(function (decryptedKeys) {
+                    console.log(decryptedKeys);
+                    const account = decryptedKeys.slice(0 * 64, 1 * 64);
+                    const key1 = decryptedKeys.slice(1 * 64, 2 * 64);
+                    const key2 = decryptedKeys.slice(2 * 64, 3 * 64);
+
+                    if (uint8ArrayEquals(hexStringToBytes(ACCOUNT), new Uint8Array(account))) {
+                        done.fail('wrong expected account');
+                    }
+                    if (uint8ArrayEquals(hexStringToBytes(KEY1), new Uint8Array(key1))) {
+                        done.fail('wrong expected key1');
+                    }
+                    if (uint8ArrayEquals(hexStringToBytes(KEY2), new Uint8Array(key2))) {
+                        done.fail('wrong expected key2');
+                    }
+                })
+                .catch(function (err) {
+                    done.fail('could not restore wallet' + err);
+                })
+                .then(function () {
+                    done();
+                });
+        });
     });
 };
+
+function uint8ArrayEquals (a, b) {
+    const length = a.length === b.length;
+    let elements = true;
+
+    for (let i = 0; i < a.length; i++) {
+        elements = elements && a[i] === b[i];
+    }
+
+    return length && elements;
+}
 
 // TODO: untangle this nesting hell. I still don't know if I can use promises/async here
 function restoreManualInputWallet (mnemonics, hexBlock, callBack) {

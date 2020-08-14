@@ -39,6 +39,33 @@ typedef struct Conversion *ConversionPtr;
 typedef struct Proposal *ProposalPtr;
 
 /**
+ * decrypt payload of the wallet transfer protocol
+ *
+ * Parameters
+ *
+ * password: byte buffer with the encryption password
+ * password_length: length of the password buffer
+ * ciphertext: byte buffer with the encryption password
+ * ciphertext_length: length of the password buffer
+ * plaintext_out: used to return a pointer to a byte buffer with the decrypted text
+ * plaintext_out_length: used to return the length of decrypted text
+ *
+ * The returned buffer is in the heap, so make sure to call the delete_buffer function
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though the function checks if
+ * the pointers are null. Mind not to put random values in or you may see
+ * unexpected behaviors.
+ */
+ErrorPtr iohk_jormungandr_symmetric_cipher_decrypt(const uint8_t *password,
+                                                   uintptr_t password_length,
+                                                   const uint8_t *ciphertext,
+                                                   uintptr_t ciphertext_length,
+                                                   const uint8_t **plaintext_out,
+                                                   uintptr_t *plaintext_out_length);
+
+/**
  * once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
  * it is possible to convert all existing funds to the new wallet.
  *

@@ -6,11 +6,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Category {
-    #[serde(alias = "categoryId")]
+    #[serde(alias = "categoryId", default = "Default::default")]
     pub category_id: String,
     #[serde(alias = "categoryName")]
     pub category_name: String,
-    #[serde(alias = "categoryDescription")]
+    #[serde(alias = "categoryDescription", default = "Default::default")]
     pub category_description: String,
 }
 
@@ -59,15 +59,15 @@ pub struct Proposal {
     pub chain_vote_options: VoteOptions,
     #[serde(alias = "chainVoteplanId")]
     pub chain_voteplan_id: String,
-    #[serde(alias = "chainVoteStartTime")]
+    #[serde(alias = "chainVoteStartTime", default = "Default::default")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub chain_vote_start_time: i64,
-    #[serde(alias = "chainVoteEndTime")]
+    #[serde(alias = "chainVoteEndTime", default = "Default::default")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub chain_vote_end_time: i64,
-    #[serde(alias = "chainCommitteeEndTime")]
+    #[serde(alias = "chainCommitteeEndTime", default = "Default::default")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub chain_committee_end_time: i64,

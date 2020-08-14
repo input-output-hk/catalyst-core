@@ -1,6 +1,6 @@
 mod api_token;
 mod app;
-mod csv_loaders;
+mod csv;
 mod task;
 
 use app::*;

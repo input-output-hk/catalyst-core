@@ -96,6 +96,7 @@ impl APITokenCmd {
                 format!("{} url does not exists", db_url.to_string()),
             ));
         }
+
         let pool = load_db_connection_pool(db_url)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;
         let db_conn = pool

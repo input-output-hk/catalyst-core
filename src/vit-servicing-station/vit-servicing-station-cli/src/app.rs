@@ -1,5 +1,5 @@
 use crate::api_token::APITokenCmd;
-use crate::csv_loaders::CSVDataCmd;
+use crate::csv::loaders::CSVDataCmd;
 use crate::task::ExecTask;
 use structopt::StructOpt;
 

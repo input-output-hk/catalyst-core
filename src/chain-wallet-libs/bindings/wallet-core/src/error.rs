@@ -53,7 +53,7 @@ pub enum ErrorCode {
     WalletTransactionBuilding = 5,
 
     /// error encrypting or decrypting transfer protocol payload
-    TransferProtocolError = 6,
+    SymmetricCipherError = 6,
 }
 
 #[derive(Debug)]
@@ -79,7 +79,7 @@ pub enum ErrorKind {
     WalletTransactionBuilding,
 
     /// transfer crypto error
-    TransferCryptoError,
+    SymmetricCipherError,
 }
 
 impl ErrorKind {
@@ -94,7 +94,7 @@ impl ErrorKind {
             Self::WalletConversion => ErrorCode::WalletConversion,
             Self::WalletVoteOutOfRange => ErrorCode::WalletVoteOutOfRange,
             Self::WalletTransactionBuilding => ErrorCode::WalletTransactionBuilding,
-            Self::TransferCryptoError => ErrorCode::TransferProtocolError,
+            Self::SymmetricCipherError => ErrorCode::SymmetricCipherError,
         }
     }
 }
@@ -177,7 +177,7 @@ impl Error {
 
     pub fn transfer_crypto() -> Self {
         Self {
-            kind: ErrorKind::TransferCryptoError,
+            kind: ErrorKind::SymmetricCipherError,
             details: None,
         }
     }
@@ -321,7 +321,7 @@ impl Display for ErrorKind {
             Self::WalletTransactionBuilding => f.write_str(
                 "Failed to build a valid transaction, probably not enough funds available",
             ),
-            Self::TransferCryptoError => f.write_str("Failed to encrypt or decrypt payload"),
+            Self::SymmetricCipherError => f.write_str("Failed to encrypt or decrypt payload"),
         }
     }
 }

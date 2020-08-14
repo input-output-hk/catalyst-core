@@ -12,3 +12,6 @@ members = [
 exclude = [
     "chain-deps",
 ]
+
+[profile.release]
+lto = "yes"

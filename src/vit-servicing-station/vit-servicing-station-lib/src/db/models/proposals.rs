@@ -164,6 +164,9 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
     }
 }
 
+// This warning is disabled here. Values is only referenced as a type here. It should be ok not to
+// split the types definitions.
+#[allow(clippy::type_complexity)]
 impl Insertable<proposals::table> for Proposal {
     type Values = (
         diesel::dsl::Eq<proposals::proposal_id, String>,

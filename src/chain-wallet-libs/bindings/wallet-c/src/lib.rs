@@ -8,7 +8,7 @@ use wallet_core::c::{
     wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
     wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_error,
     wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet, wallet_id,
-    wallet_recover, wallet_recover_free_keys, wallet_retrieve_funds, wallet_set_state,
+    wallet_import_keys, wallet_recover, wallet_retrieve_funds, wallet_set_state,
     wallet_total_value, wallet_vote_cast, wallet_vote_proposal,
 };
 pub use wallet_core::{
@@ -125,13 +125,18 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
 /// * the `wallet_out` is null pointer
 ///
 #[no_mangle]
-pub unsafe extern "C" fn iohk_jormungandr_wallet_recover_free_keys(
-    account_key: [u8; 64],
-    utxo_keys: *const [u8; 64],
+pub unsafe extern "C" fn iohk_jormungandr_wallet_import_keys(
+    account_key: *const u8,
+    utxo_keys: *const u8,
     utxo_keys_len: usize,
     wallet_out: *mut WalletPtr,
 ) -> ErrorPtr {
-    let r = wallet_recover_free_keys(account_key, utxo_keys, utxo_keys_len, wallet_out);
+    let r = wallet_import_keys(
+        account_key,
+        utxo_keys as *const [u8; 64],
+        utxo_keys_len,
+        wallet_out,
+    );
 
     r.into_c_api()
 }

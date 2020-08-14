@@ -113,10 +113,7 @@ pub unsafe fn wallet_recover(
     }
 }
 
-/// retrieve a wallet from the given mnemonics, password and protocol magic
-///
-/// this function will work for all yoroi, daedalus and other wallets
-/// as it will try every kind of wallet anyway
+/// recover a wallet from an account and a list of utxo keys
 ///
 /// You can also use this function to recover a wallet even after you have
 /// transferred all the funds to the new format (see the _convert_ function)
@@ -142,11 +139,10 @@ pub unsafe fn wallet_recover(
 ///
 /// The function may fail if:
 ///
-/// * the mnemonics are not valid (invalid length or checksum);
 /// * the `wallet_out` is null pointer
 ///
-pub unsafe fn wallet_recover_free_keys(
-    account_key: [u8; 64],
+pub unsafe fn wallet_import_keys(
+    account_key: *const u8,
     utxo_keys: *const [u8; 64],
     utxo_keys_len: usize,
     wallet_out: *mut WalletPtr,
@@ -154,10 +150,13 @@ pub unsafe fn wallet_recover_free_keys(
     let wallet_out = non_null_mut!(wallet_out);
     let utxo_keys: &[u8; 64] = non_null!(utxo_keys);
 
+    let account_key: &u8 = non_null!(account_key);
+    let account_key: &[u8] = std::slice::from_raw_parts(account_key as *const u8, 64);
+
     let utxo_keys: &[[u8; 64]] =
         std::slice::from_raw_parts(utxo_keys.as_ptr() as *const [u8; 64], utxo_keys_len);
 
-    let result = Wallet::recover_free_keys(&account_key, &utxo_keys);
+    let result = Wallet::recover_free_keys(account_key, &utxo_keys);
 
     match result {
         Ok(wallet) => {

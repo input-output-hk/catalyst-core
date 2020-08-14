@@ -4,6 +4,7 @@ var argscheck = require('cordova/argscheck');
 const NATIVE_CLASS_NAME = 'WalletPlugin';
 
 const WALLET_RESTORE_ACTION_TAG = 'WALLET_RESTORE';
+const WALLET_IMPORT_KEYS_TAG = 'WALLET_IMPORT_KEYS';
 const WALLET_RETRIEVE_FUNDS_ACTION_TAG = 'WALLET_RETRIEVE_FUNDS';
 const WALLET_TOTAL_FUNDS_ACTION_TAG = 'WALLET_TOTAL_FUNDS';
 const WALLET_ID_TAG = 'WALLET_ID';
@@ -64,6 +65,24 @@ var plugin = {
     walletRestore: function (mnemonics, successCallback, errorCallback) {
         argscheck.checkArgs('sff', 'walletRestore', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_RESTORE_ACTION_TAG, [mnemonics]);
+    },
+
+    /**
+     * @param {Uint8Array} accountKeys a 64bytes array representing an Ed25519Extended private key
+     * @param {Uint8Array} utxoKeys a contiguous array of Ed25519Extended private keys (64 bytes each)
+     * @param {pointerCallback} successCallback on success returns a pointer to a Wallet object
+     * @param {errorCallback} errorCallback if the input arrays are malformed
+     */
+    walletImportKeys: function (accountKeys, utxoKeys, successCallback, errorCallback) {
+        argscheck.checkArgs('**ff', 'walletImportKeys', arguments);
+        var typeName = require('cordova/utils').typeName;
+        var validTypes = true && typeName(accountKeys) === 'Uint8Array' && typeName(utxoKeys) === 'Uint8Array';
+
+        if (validTypes) {
+            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_IMPORT_KEYS_TAG, [accountKeys.buffer, utxoKeys.buffer]);
+        } else {
+            throw TypeError('accountKeys and utxoKeys should be of type Uint8Array');
+        }
     },
 
     /**

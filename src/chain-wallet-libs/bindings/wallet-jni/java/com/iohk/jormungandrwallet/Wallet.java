@@ -7,6 +7,8 @@ public class Wallet {
 
     public native static long recover(String mnemonics);
 
+    public native static long importKeys(byte[] accountKey, byte[] utxoKeys);
+
     public native static void delete(long wallet);
 
     public native static int totalValue(long wallet);

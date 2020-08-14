@@ -14,7 +14,6 @@ use chain_impl_mockchain::{
 };
 use hdkeygen::account::Account;
 pub use hdkeygen::account::AccountId;
-pub use transfer::{decrypt, encrypt, TransferSlice};
 
 pub struct Wallet {
     account: Account,

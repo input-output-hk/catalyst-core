@@ -213,16 +213,16 @@ impl BlockStore {
     /// * `path` - a path to the storage directory.
     /// * `root_id` - the ID of the root block which the first block in this
     ///   block chain should refer to as a parent.
-    /// * `id_length` - the length of block IDs. All IDs must have the same
-    ///   length.
     /// * `chain_length_offset` - chain length value the first block in the
     ///   block chain must have.
     pub fn new<P: AsRef<Path>, I: Into<Value>>(
         path: P,
         root_id: I,
-        id_length: usize,
         chain_length_offset: u32,
     ) -> Result<Self, Error> {
+        let root_id = root_id.into();
+        let id_length = root_id.as_ref().len();
+
         if !path.as_ref().exists() {
             std::fs::create_dir(path.as_ref()).map_err(Error::Open)?;
         }
@@ -232,8 +232,6 @@ impl BlockStore {
 
         let volatile = sled::open(volatile_path)?;
         let permanent = PermanentStore::new(permanent_path, id_length, chain_length_offset)?;
-
-        let root_id = root_id.into();
 
         Ok(Self {
             volatile,

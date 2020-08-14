@@ -9,4 +9,4 @@ pub mod bip44;
 mod key;
 pub mod rindex;
 
-pub use self::key::Key;
+pub use self::key::{Key, KeyRange};

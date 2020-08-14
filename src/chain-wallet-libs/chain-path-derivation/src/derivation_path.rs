@@ -1,6 +1,7 @@
 use crate::Derivation;
 use std::{
     fmt::{self, Display},
+    hash::{Hash, Hasher},
     ops::Deref,
     str::{self, FromStr},
 };
@@ -18,7 +19,7 @@ pub struct AnyScheme;
 /// ones to be soft derivation indices.
 ///
 /// [`Bip44`]: ./struct.Bip44.html
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug)]
 pub struct DerivationPath<S> {
     path: Vec<Derivation>,
     _marker: std::marker::PhantomData<S>,
@@ -116,6 +117,37 @@ impl<S> Deref for DerivationPath<S> {
 impl Default for DerivationPath<AnyScheme> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+/* Comparison ************************************************************** */
+
+impl<T1, T2> PartialEq<DerivationPath<T1>> for DerivationPath<T2> {
+    fn eq(&self, other: &DerivationPath<T1>) -> bool {
+        self.path.eq(&other.path)
+    }
+}
+
+impl<T> Eq for DerivationPath<T> {}
+
+impl<T1, T2> PartialOrd<DerivationPath<T1>> for DerivationPath<T2> {
+    fn partial_cmp(&self, other: &DerivationPath<T1>) -> Option<std::cmp::Ordering> {
+        self.path.partial_cmp(&other.path)
+    }
+}
+
+impl<T> Ord for DerivationPath<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.path.cmp(&other.path)
+    }
+}
+
+/* Hasher ****************************************************************** */
+
+impl<T> Hash for DerivationPath<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.path.hash(state);
+        self._marker.hash(state);
     }
 }
 

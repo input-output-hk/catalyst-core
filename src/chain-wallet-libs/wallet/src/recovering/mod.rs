@@ -1,12 +1,12 @@
 //! module for all the recovering mechanism around the cardano blockchains
 
-mod daedalus;
-mod icarus;
 mod paperwallet;
 
-use crate::{keygen, Password, Wallet};
-use chain_impl_mockchain::value::Value;
+use crate::{account::Wallet, keygen, scheme as wallet, Password};
+use chain_crypto::{Ed25519Extended, SecretKey};
+use chain_impl_mockchain::legacy::OldAddress;
 use chain_path_derivation::{
+    bip44::{self, Bip44},
     rindex::{self, Rindex},
     AnyScheme,
 };
@@ -14,8 +14,6 @@ use cryptoxide::digest::Digest;
 use ed25519_bip32::{self, DerivationScheme, XPrv, XPRV_SIZE};
 use hdkeygen::Key;
 use thiserror::Error;
-
-pub use self::{daedalus::RecoveringDaedalus, icarus::RecoveringIcarus};
 
 #[derive(Debug, Error)]
 pub enum RecoveryError {
@@ -28,10 +26,16 @@ pub enum RecoveryError {
     DuplicatedUtxo,
 }
 
-#[derive(Default)]
 pub struct RecoveryBuilder {
     entropy: Option<bip39::Entropy>,
     password: Option<Password>,
+    free_keys: Vec<SecretKey<Ed25519Extended>>,
+    account: Option<AccountFrom>,
+}
+
+enum AccountFrom {
+    Seed(hdkeygen::account::SEED),
+    SecretKey(SecretKey<Ed25519Extended>),
 }
 
 impl RecoveryBuilder {
@@ -82,7 +86,26 @@ impl RecoveryBuilder {
         }
     }
 
-    pub fn build_daedalus(&self) -> Result<RecoveringDaedalus, RecoveryError> {
+    pub fn account_seed(self, seed: hdkeygen::account::SEED) -> Self {
+        Self {
+            account: Some(AccountFrom::Seed(seed)),
+            ..self
+        }
+    }
+
+    pub fn account_secret_key(self, key: SecretKey<Ed25519Extended>) -> Self {
+        Self {
+            account: Some(AccountFrom::SecretKey(key)),
+            ..self
+        }
+    }
+
+    pub fn add_key(mut self, key: SecretKey<Ed25519Extended>) -> Self {
+        self.free_keys.push(key);
+        self
+    }
+
+    pub fn build_daedalus(&self) -> Result<wallet::rindex::Wallet, RecoveryError> {
         if self.password.is_some() {
             return Err(RecoveryError::SchemeDoesNotRequirePassword);
         }
@@ -92,38 +115,41 @@ impl RecoveryBuilder {
         let key = from_daedalus_entropy(entropy, ed25519_bip32::DerivationScheme::V1)
             .expect("Cannot fail to serialize some bytes...");
 
-        let wallet = hdkeygen::rindex::Wallet::from_root_key(key);
-
-        Ok(RecoveringDaedalus::new(wallet))
+        Ok(wallet::rindex::Wallet::from_root_key(key))
     }
 
-    pub fn build_yoroi(&self) -> Result<RecoveringIcarus, RecoveryError> {
+    pub fn build_yoroi(&self) -> Result<wallet::bip44::Wallet<OldAddress>, RecoveryError> {
         let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
         let password = self.password.clone().unwrap_or_default();
 
         let key = from_bip39_entropy(entropy, password, ed25519_bip32::DerivationScheme::V2);
 
-        let root = hdkeygen::bip44::Root::from_root_key(key.coerce_unchecked());
+        let root: Key<XPrv, Bip44<bip44::Root>> = key.coerce_unchecked();
+        let key = root.bip44().cardano();
 
-        let wallet = hdkeygen::bip44::Wallet::new(root);
-
-        Ok(RecoveringIcarus::new(wallet))
+        Ok(wallet::bip44::Wallet::<OldAddress>::from_root_key(key))
     }
 
     pub fn build_wallet(&self) -> Result<Wallet, RecoveryError> {
-        let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
-        let password = self.password.clone().unwrap_or_default();
+        use hdkeygen::account::Account;
+        let account = match &self.account {
+            Some(AccountFrom::SecretKey(key)) => Account::from_secret_key(key.clone()),
+            Some(AccountFrom::Seed(seed)) => Account::from_seed(*seed),
+            None => {
+                let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
+                let password = self.password.clone().unwrap_or_default();
 
-        let mut seed = [0u8; hdkeygen::account::SEED_LENGTH];
-        keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
+                let mut seed = [0u8; hdkeygen::account::SEED_LENGTH];
+                keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
 
-        let account = hdkeygen::account::Account::from_seed(seed);
+                Account::from_seed(seed)
+            }
+        };
+        Ok(Wallet::new(account))
+    }
 
-        Ok(Wallet {
-            account,
-            committed_amount: Value::zero(),
-            value: Value::zero(),
-        })
+    pub fn build_free_utxos(&self) -> Result<wallet::freeutxo::Wallet, RecoveryError> {
+        Ok(wallet::freeutxo::Wallet::from_keys(self.free_keys.clone()))
     }
 
     #[cfg(test)]
@@ -226,6 +252,17 @@ fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
     }
 }
 
+impl Default for RecoveryBuilder {
+    fn default() -> RecoveryBuilder {
+        RecoveryBuilder {
+            entropy: Default::default(),
+            password: Default::default(),
+            free_keys: Vec::<SecretKey<Ed25519Extended>>::new(),
+            account: Default::default(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -269,7 +306,7 @@ mod tests {
         for address in ADDRESSES1 {
             use std::str::FromStr as _;
             let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
-            assert!(wallet.check_address(&addr));
+            assert!(wallet.check(&addr).is_some());
         }
     }
 
@@ -284,7 +321,7 @@ mod tests {
         for address in ADDRESSES2 {
             use std::str::FromStr as _;
             let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
-            assert!(wallet.check_address(&addr));
+            assert!(wallet.check(&addr).is_some());
         }
     }
 
@@ -307,7 +344,7 @@ mod tests {
         let wallet = builder.build_daedalus().unwrap();
         let address = ADDRESS.parse().unwrap();
 
-        assert!(wallet.check_address(&address));
+        assert!(wallet.check(&address).is_some());
     }
 
     #[test]
@@ -325,18 +362,19 @@ mod tests {
             .unwrap();
 
         let address: OldAddress = ADDRESSES1[0].parse().unwrap();
-        assert!(wallet.check_address(&address));
+        assert!(wallet.check(&address).is_some());
 
         let fragment_value = Value(10);
         let fragment = Fragment::OldUtxoDeclaration(UtxoDeclaration {
             addrs: vec![(address, fragment_value)],
         });
+        let fragment_id = fragment.hash();
 
-        assert_eq!(wallet.value_total(), Value(0));
-        assert!(wallet.check_fragment(&fragment).is_ok());
-        assert_eq!(wallet.value_total(), fragment_value);
-        assert!(wallet.check_fragment(&fragment).is_err());
-        assert_eq!(wallet.value_total(), fragment_value);
+        assert_eq!(wallet.unconfirmed_value(), None);
+        assert!(wallet.check_fragment(&fragment_id, &fragment));
+        assert_eq!(wallet.unconfirmed_value(), Some(fragment_value));
+        assert!(wallet.check_fragment(&fragment_id, &fragment));
+        assert_eq!(wallet.unconfirmed_value(), Some(fragment_value));
     }
 
     #[test]
@@ -360,12 +398,13 @@ mod tests {
         let fragment = Fragment::OldUtxoDeclaration(UtxoDeclaration {
             addrs: vec![(address, fragment_value)],
         });
+        let fragment_id = fragment.hash();
 
-        assert_eq!(wallet.value_total(), Value(0));
-        assert!(wallet.check_fragment(&fragment).is_ok());
-        assert_eq!(wallet.value_total(), fragment_value);
-        assert!(wallet.check_fragment(&fragment).is_err());
-        assert_eq!(wallet.value_total(), fragment_value);
+        assert_eq!(wallet.unconfirmed_value(), None);
+        assert!(wallet.check_fragment(&fragment_id, &fragment));
+        assert_eq!(wallet.unconfirmed_value(), Some(fragment_value));
+        assert!(wallet.check_fragment(&fragment_id, &fragment));
+        assert_eq!(wallet.unconfirmed_value(), Some(fragment_value));
     }
 
     #[test]

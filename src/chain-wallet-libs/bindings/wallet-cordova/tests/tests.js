@@ -47,6 +47,7 @@ function promisify (f) {
 }
 
 const restoreWallet = promisify(primitives.walletRestore);
+const importKeys = promisify(primitives.walletImportKeys);
 const retrieveFunds = promisify(primitives.walletRetrieveFunds);
 const totalFunds = promisify(primitives.walletTotalFunds);
 const convertWallet = promisify(primitives.walletConvert);
@@ -124,6 +125,53 @@ exports.defineAutoTests = function () {
         });
 
         it('should recover wallet', function (done) {
+            let walletPtr;
+            let settingsPtr;
+
+            const accountKey = new Uint8Array([
+                200, 101, 150, 194, 209, 32, 136, 133, 219, 31, 227, 101, 132, 6, 170, 15, 124, 199,
+                184, 225, 60, 54, 47, 228, 106, 109, 178, 119, 252, 80, 100, 88, 62, 72, 117, 136, 201,
+                138, 108, 54, 226, 231, 68, 92, 10, 221, 54, 248, 63, 23, 28, 181, 204, 253, 129, 85,
+                9, 209, 156, 211, 142, 203, 10, 243
+            ]);
+            const utxoKeys = new Uint8Array([
+                48, 21, 89, 204, 178, 212, 204, 126, 158, 84, 166, 245, 90, 128, 150, 11, 182, 145,
+                183, 177, 64, 149, 73, 239, 134, 149, 169, 46, 164, 26, 111, 79, 64, 82, 49, 168, 6,
+                194, 231, 185, 208, 219, 48, 225, 94, 224, 204, 31, 38, 28, 27, 159, 150, 21, 99, 107,
+                72, 189, 137, 254, 123, 230, 234, 31,
+                168, 182, 189, 240, 128, 199, 79, 188, 49, 51, 126, 222, 75, 102, 146, 194, 235, 237,
+                126, 52, 175, 109, 152, 183, 187, 205, 71, 140, 240, 123, 13, 94, 217, 63, 126, 157,
+                74, 163, 175, 222, 50, 26, 225, 171, 182, 27, 131, 68, 194, 67, 201, 208, 180, 7, 203,
+                248, 145, 125, 182, 223, 44, 101, 61, 234
+            ]);
+
+            importKeys(accountKey, utxoKeys)
+                .then(function (wallet) {
+                    expect(wallet !== 0).toBe(true);
+                    walletPtr = wallet;
+                    return retrieveFunds(wallet, hexStringToBytes(BLOCK0));
+                })
+                .then(function (settings) {
+                    expect(settings !== 0).toBe(true);
+                    settingsPtr = settings;
+                    return totalFunds(walletPtr);
+                })
+                .then(function (funds) {
+                    expect(parseInt(funds)).toBe(10000 + 1000);
+                    return deleteSettings(settingsPtr);
+                })
+                .then(function () {
+                    return deleteWallet(walletPtr);
+                })
+                .catch(function (err) {
+                    done.fail('could not restore wallet' + err);
+                })
+                .then(function () {
+                    done();
+                });
+        });
+
+        it('should import keys', function (done) {
             let walletPtr;
             let settingsPtr;
             restoreWallet(YOROI_WALLET)

@@ -1,112 +1,151 @@
-use crate::{transaction::WitnessBuilder, Settings};
-use chain_addr::Address;
+use crate::store::UtxoStore;
+
+use super::builder::{AddInputStatus, TransactionBuilder};
+use super::witness_builder::{OldUtxoWitnessBuilder, UtxoWitnessBuilder, WitnessBuilder};
 use chain_impl_mockchain::{
-    fee::FeeAlgorithm as _,
-    fragment::{Fragment, FragmentRaw},
-    transaction::{Input, Output, TxBuilderState},
-    value::Value,
+    fragment::Fragment,
+    transaction::{Balance, Input, NoExtra, Output, Transaction},
 };
 
-/// Dump all the values into transactions to fill one address
-pub struct Dump {
-    settings: Settings,
-    address: Address,
-    inputs: Vec<Input>,
-    witness_builders: Vec<WitnessBuilder>,
-    outputs: Vec<(Vec<Input>, FragmentRaw)>,
-    ignored: Vec<Input>,
+pub struct DumpIter<'a, W> {
+    settings: &'a crate::Settings,
+    address: &'a chain_addr::Address,
+    wallet: &'a mut W,
 }
 
-impl Dump {
-    /// dump all the associated input to the given address
-    pub fn new(settings: Settings, address: Address) -> Self {
-        Self {
-            settings,
-            address,
-            inputs: Vec::with_capacity(255),
-            witness_builders: Vec::with_capacity(255),
-            outputs: Vec::new(),
-            ignored: Vec::new(),
+pub type DumpDaedalus<'a> = DumpIter<'a, crate::scheme::rindex::Wallet>;
+pub type DumpIcarus<'a> =
+    DumpIter<'a, crate::scheme::bip44::Wallet<chain_impl_mockchain::legacy::OldAddress>>;
+pub type DumpFreeKeys<'a> = DumpIter<'a, crate::scheme::freeutxo::Wallet>;
+
+pub fn send_to_one_address<S: Clone, K: 'static, WB: WitnessBuilder>(
+    settings: &crate::Settings,
+    address: &chain_addr::Address,
+    utxo_store: &UtxoStore<S, K>,
+    mk_witness: &'static dyn Fn(hdkeygen::Key<S, K>) -> WB,
+) -> Option<(Transaction<NoExtra>, Vec<Input>)> {
+    let payload = chain_impl_mockchain::transaction::NoExtra;
+
+    let mut builder = TransactionBuilder::new(settings, payload);
+    let utxos = utxo_store.utxos();
+
+    let mut ignored = vec![];
+
+    for utxo in utxos {
+        let input = Input::from_utxo(*utxo.as_ref());
+
+        let key = utxo_store.get_signing_key(utxo).unwrap();
+        let witness_builder = mk_witness((*key).clone());
+
+        match builder.add_input_if_worth(input, witness_builder) {
+            AddInputStatus::Added => (),
+            AddInputStatus::Skipped(input) => {
+                ignored.push(input);
+            }
+            AddInputStatus::NotEnoughSpace => break,
         }
     }
 
-    /// return the list of ignored inputs and the list of built transactions
-    ///
-    /// the transactions are ready to send
-    pub fn finalize(mut self) -> (Vec<Input>, Vec<(Vec<Input>, FragmentRaw)>) {
-        self.build_tx_and_clear();
-
-        assert!(
-            self.inputs.is_empty(),
-            "we should not have any more pending inputs to spend"
-        );
-        assert!(
-            self.witness_builders.is_empty(),
-            "we should not have any more pending inputs to spend"
-        );
-
-        let outputs = self.outputs.into_iter().collect();
-
-        (self.ignored, outputs)
-    }
-
-    fn inputs_value(&self) -> Value {
-        self.inputs.iter().map(|i| i.value()).sum()
-    }
-
-    fn estimate_fee(&self) -> Value {
-        self.settings
-            .parameters
-            .fees
-            .calculate(None, self.inputs.len() as u8, 1u8)
-    }
-
-    fn mk_output(&self) -> Option<Output<Address>> {
-        let fee = self.estimate_fee();
-        let input = self.inputs_value();
-
-        let value = input.checked_sub(fee).ok()?;
-        let address = self.address.clone();
-        Some(Output::from_address(address, value))
-    }
-
-    fn build_tx_and_clear(&mut self) {
-        if let Some(output) = self.mk_output() {
-            let builder = TxBuilderState::new();
-            let builder = builder.set_nopayload();
-            let builder = builder.set_ios(&self.inputs, &[output]);
-
-            let header_id = self.settings.static_parameters.block0_initial_hash;
-            let auth_data = builder.get_auth_data_for_witness().hash();
-            let witnesses = std::mem::replace(&mut self.witness_builders, Vec::with_capacity(255));
-            let witnesses: Vec<_> = witnesses
-                .into_iter()
-                .map(move |wb| wb.mk_witness(&header_id, &auth_data))
-                .collect();
-
-            let builder = builder.set_witnesses(&witnesses);
-            let tx = builder.set_payload_auth(&());
-            let used = std::mem::replace(&mut self.inputs, Vec::with_capacity(255));
-            self.outputs
-                .push((used, Fragment::Transaction(tx).to_raw()));
-        } else {
-            self.ignored
-                .extend(std::mem::replace(&mut self.inputs, Vec::with_capacity(255)));
+    if builder.inputs().is_empty() {
+        None
+    } else {
+        match builder.check_balance_with(0, 1) {
+            Balance::Positive(value) => {
+                builder.add_output(Output::from_address(address.clone(), value));
+            }
+            Balance::Zero => (),
+            Balance::Negative(_) => unreachable!(),
         }
 
-        self.witness_builders.clear();
+        let fragment = builder.finalize_tx(()).unwrap();
+
+        Some((fragment, ignored))
     }
+}
 
-    pub(crate) fn push(&mut self, input: Input, witness_builder: WitnessBuilder) {
-        if self.inputs.len() >= 255 {
-            self.build_tx_and_clear()
+pub fn dump_daedalus_utxo<'a>(
+    settings: &'a crate::Settings,
+    address: &'a chain_addr::Address,
+    wallet: &'a mut crate::scheme::rindex::Wallet,
+) -> DumpDaedalus<'a> {
+    DumpDaedalus {
+        settings,
+        address,
+        wallet,
+    }
+}
+
+pub fn dump_icarus_utxo<'a>(
+    settings: &'a crate::Settings,
+    address: &'a chain_addr::Address,
+    wallet: &'a mut crate::scheme::bip44::Wallet<chain_impl_mockchain::legacy::OldAddress>,
+) -> DumpIcarus<'a> {
+    DumpIcarus {
+        settings,
+        address,
+        wallet,
+    }
+}
+
+pub fn dump_free_utxo<'a>(
+    settings: &'a crate::Settings,
+    address: &'a chain_addr::Address,
+    wallet: &'a mut crate::scheme::freeutxo::Wallet,
+) -> DumpFreeKeys<'a> {
+    DumpFreeKeys {
+        settings,
+        address,
+        wallet,
+    }
+}
+
+impl<'a> Iterator for DumpDaedalus<'a> {
+    type Item = (Fragment, Vec<Input>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
+            OldUtxoWitnessBuilder(key)
+        })
+        .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
+
+        if let Some((fragment, _)) = next.as_ref() {
+            self.wallet.check_fragment(&fragment.hash(), &fragment);
         }
 
-        if self.settings.is_input_worth(&input) {
-            self.inputs.push(input);
-            self.witness_builders.push(witness_builder);
-        } else {
-            self.ignored.push(input);
+        next
+    }
+}
+
+impl<'a> Iterator for DumpIcarus<'a> {
+    type Item = (Fragment, Vec<Input>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
+            OldUtxoWitnessBuilder(key)
+        })
+        .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
+
+        if let Some((fragment, _)) = next.as_ref() {
+            self.wallet.check_fragment(&fragment.hash(), &fragment);
         }
+
+        next
+    }
+}
+
+impl<'a> Iterator for DumpFreeKeys<'a> {
+    type Item = (Fragment, Vec<Input>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
+            UtxoWitnessBuilder(key)
+        })
+        .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
+
+        if let Some((fragment, _)) = next.as_ref() {
+            self.wallet.check_fragment(&fragment.hash(), &fragment);
+        }
+
+        next
     }
 }

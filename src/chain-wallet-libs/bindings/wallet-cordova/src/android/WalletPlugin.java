@@ -60,6 +60,9 @@ public class WalletPlugin extends CordovaPlugin {
             case "WALLET_RESTORE":
                 walletRestore(args, callbackContext);
                 break;
+            case "WALLET_IMPORT_KEYS":
+                walletImportKeys(args, callbackContext);
+                break;
             case "SYMMETRIC_CIPHER_DECRYPT":
                 symmetricCipherDecrypt(args, callbackContext);
                 break;
@@ -135,6 +138,23 @@ public class WalletPlugin extends CordovaPlugin {
                 try {
                     final String normalized = Normalizer.normalize(mnemonics, Form.NFKD);
                     final long walletPtr = Wallet.recover(normalized);
+                    callbackContext.success(Long.toString(walletPtr));
+                } catch (final Exception e) {
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void walletImportKeys(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final byte[] accountKey = args.getArrayBuffer(0);
+        final byte[] utxoKeys = args.getArrayBuffer(1);
+
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                try {
+                    final long walletPtr = Wallet.importKeys(accountKey, utxoKeys);
+                    Log.d(TAG, Long.toString(walletPtr));
                     callbackContext.success(Long.toString(walletPtr));
                 } catch (final Exception e) {
                     callbackContext.error(e.getMessage());

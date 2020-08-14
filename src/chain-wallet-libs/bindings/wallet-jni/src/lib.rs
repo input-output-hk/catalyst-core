@@ -43,6 +43,79 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_recover(
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_importKeys(
+    env: JNIEnv,
+    _: JClass,
+    account_key: jbyteArray,
+    utxo_keys: jbyteArray,
+) -> jlong {
+    let account_key = {
+        let len = env
+            .get_array_length(account_key)
+            .expect("Couldn't get account_key array length") as usize;
+
+        if len != 64 {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "account key should have 64 bytes",
+            );
+
+            return 0 as jlong;
+        }
+
+        let mut bytes = vec![0i8; len as usize];
+        let _r = env.get_byte_array_region(account_key, 0, &mut bytes);
+        bytes
+    };
+
+    let utxo_keys: Box<[i8]> = {
+        let len = env
+            .get_array_length(utxo_keys)
+            .expect("Couldn't get account_key array length") as usize;
+
+        let mut bytes = vec![0i8; len as usize];
+        let _r = env.get_byte_array_region(utxo_keys, 0, &mut bytes);
+        bytes.into_boxed_slice()
+    };
+
+    let mut wallet: WalletPtr = null_mut();
+    let wallet_ptr: *mut WalletPtr = &mut wallet;
+
+    let number_of_keys = match utxo_keys.len().checked_div(64) {
+        Some(n) => n,
+        None => {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "utxo_keys array is not a multiple of 64 bytes size",
+            );
+
+            return 0 as jlong;
+        }
+    };
+
+    let result = wallet_import_keys(
+        account_key.as_ptr() as *const i8 as *const u8,
+        utxo_keys.as_ptr() as *const i8 as *const [u8; 64],
+        number_of_keys,
+        wallet_ptr,
+    );
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+        0
+    } else {
+        wallet as jlong
+    }
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
 pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_delete(
     _: JNIEnv,
     _: JClass,

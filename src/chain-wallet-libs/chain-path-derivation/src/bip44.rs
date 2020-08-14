@@ -75,7 +75,13 @@ const INDEX_CHANGE: usize = 3;
 const INDEX_ADDRESS: usize = 4;
 
 /// the BIP44 purpose ('44). This is the first item of the derivation path
-const PURPOSE: HardDerivation = HardDerivation::new_unchecked(Derivation::new(0x8000_002C));
+pub const PURPOSE_BIP44: HardDerivation =
+    HardDerivation::new_unchecked(Derivation::new(0x8000_002C));
+
+/// the Chimeric BIP44 purpose ('1852). This is the first item of the derivation path
+///
+pub const PURPOSE_CHIMERIC: HardDerivation =
+    HardDerivation::new_unchecked(Derivation::new(0x8000_073C));
 
 /// create a Bip44 chain path derivation
 ///
@@ -92,9 +98,20 @@ pub fn new() -> DerivationPath<Bip44<Root>> {
 }
 
 impl DerivationPath<Bip44<Root>> {
-    pub fn purpose(&self) -> DerivationPath<Bip44<Purpose>> {
+    pub fn bip44(&self) -> DerivationPath<Bip44<Purpose>> {
         let mut p = self.clone();
-        p.push(PURPOSE.into());
+        p.push(PURPOSE_BIP44.into());
+        p.coerce_unchecked()
+    }
+
+    /// use the same "model" of 5 derivation level but instead of starting with the
+    /// bip44 Hard Derivation uses the `'1852` (`'0x073C`) derivation path.
+    ///
+    /// see https://input-output-hk.github.io/adrestia/docs/key-concepts/hierarchical-deterministic-wallets/
+    ///
+    pub fn chimeric(&self) -> DerivationPath<Bip44<Purpose>> {
+        let mut p = self.clone();
+        p.push(PURPOSE_CHIMERIC.into());
         p.coerce_unchecked()
     }
 }
@@ -141,11 +158,12 @@ impl DerivationPath<Bip44<CoinType>> {
 impl DerivationPath<Bip44<Account>> {
     pub const EXTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(0));
     pub const INTERNAL: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(1));
+    pub const ACCOUNT: SoftDerivation = SoftDerivation::new_unchecked(Derivation::new(2));
 
     /// See [module documentation] for more details
     ///
     /// [module documentation]: ./index.html
-    pub fn change(&self, change: SoftDerivation) -> DerivationPath<Bip44<Change>> {
+    fn change(&self, change: SoftDerivation) -> DerivationPath<Bip44<Change>> {
         let mut c = self.clone();
         c.push(change.into());
         c.coerce_unchecked()
@@ -163,6 +181,14 @@ impl DerivationPath<Bip44<Account>> {
     /// [module documentation]: ./index.html
     pub fn internal(&self) -> DerivationPath<Bip44<Change>> {
         self.change(Self::INTERNAL)
+    }
+
+    /// See [module documentation] for more details
+    ///
+    /// [module documentation]: ./index.html
+    pub fn reward_account(&self) -> DerivationPath<Bip44<Change>> {
+        debug_assert_eq!(self.purpose(), PURPOSE_CHIMERIC,);
+        self.change(Self::ACCOUNT)
     }
 
     #[inline]

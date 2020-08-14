@@ -1,4 +1,6 @@
-use chain_path_derivation::{Derivation, DerivationPath, SoftDerivation};
+use chain_path_derivation::{
+    Derivation, DerivationPath, DerivationRange, SoftDerivation, SoftDerivationRange,
+};
 use ed25519_bip32::{DerivationScheme, Signature, XPrv, XPub};
 use std::fmt::{self, Debug, Display};
 
@@ -8,6 +10,22 @@ pub struct Key<K, P> {
     key: K,
     path: DerivationPath<P>,
     derivation_scheme: DerivationScheme,
+}
+
+pub struct KeyRange<'a, K, DR, P, Q> {
+    key: &'a Key<K, P>,
+    range: DR,
+    _marker: std::marker::PhantomData<Q>,
+}
+
+impl<'a, K, DR, P, Q> KeyRange<'a, K, DR, P, Q> {
+    pub(crate) fn new(key: &'a Key<K, P>, range: DR) -> Self {
+        Self {
+            key,
+            range,
+            _marker: std::marker::PhantomData,
+        }
+    }
 }
 
 impl<K, P> Key<K, P> {
@@ -74,6 +92,12 @@ impl<P> Key<XPrv, P> {
         self.key.verify(message.as_ref(), signature)
     }
 
+    /// get key's chain code
+    #[inline]
+    pub fn chain_code(&self) -> [u8; 32] {
+        self.key.chain_code()
+    }
+
     /// derive the private key against the given derivation index and scheme
     ///
     #[must_use = "this returns the result of the operation, without modifying the original"]
@@ -133,6 +157,14 @@ impl<P> Key<XPub, P> {
         &self.key
     }
 
+    pub fn pk(&self) -> chain_crypto::PublicKey<chain_crypto::Ed25519> {
+        if let Ok(pk) = chain_crypto::PublicKey::from_binary(self.public_key_slice()) {
+            pk
+        } else {
+            unsafe { std::hint::unreachable_unchecked() }
+        }
+    }
+
     /// derive the private key against the given derivation index and scheme
     #[must_use = "this returns the result of the operation, without modifying the original"]
     pub(crate) fn derive_unchecked<Q>(&self, derivation: SoftDerivation) -> Key<XPub, Q> {
@@ -153,6 +185,43 @@ impl<P> Key<XPub, P> {
             path,
             derivation_scheme,
         }
+    }
+}
+
+impl<P> Key<chain_crypto::SecretKey<chain_crypto::Ed25519Extended>, P> {
+    /// create a signature for the given message and associate the given type `T`
+    /// to the signature type.
+    ///
+    #[inline]
+    pub fn sign<T, B>(&self, message: B) -> Signature<T>
+    where
+        B: AsRef<[u8]>,
+    {
+        Signature::from_slice(self.key.sign(&message.as_ref()).as_ref()).unwrap()
+    }
+
+    pub fn pk(&self) -> chain_crypto::PublicKey<chain_crypto::Ed25519> {
+        self.key.to_public()
+    }
+}
+
+impl<'a, P, Q> Iterator for KeyRange<'a, XPub, SoftDerivationRange, P, Q> {
+    type Item = Key<XPub, Q>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.range
+            .next()
+            .map(|next| self.key.derive_unchecked(next))
+    }
+}
+
+impl<'a, P, Q> Iterator for KeyRange<'a, XPrv, DerivationRange, P, Q> {
+    type Item = Key<XPrv, Q>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.range
+            .next()
+            .map(|next| self.key.derive_unchecked(next))
     }
 }
 

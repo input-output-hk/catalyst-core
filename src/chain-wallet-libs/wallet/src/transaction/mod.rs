@@ -1,10 +1,12 @@
 mod builder;
 mod dump;
-mod input_selection;
+mod strategy;
 mod witness_builder;
 
-pub use self::{builder::TransactionBuilder, dump::Dump};
-pub(crate) use self::{
-    input_selection::{GeneratedInput, InputGenerator},
-    witness_builder::WitnessBuilder,
+pub use dump::*;
+
+pub use self::{
+    builder::{AddInputStatus, TransactionBuilder},
+    strategy::{InputStrategy, OutputStrategy, Strategy, StrategyBuilder, DEFAULT_STRATEGIES},
+    witness_builder::AccountWitnessBuilder,
 };

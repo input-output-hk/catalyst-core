@@ -113,6 +113,60 @@ pub unsafe fn wallet_recover(
     }
 }
 
+/// recover a wallet from an account and a list of utxo keys
+///
+/// You can also use this function to recover a wallet even after you have
+/// transferred all the funds to the new format (see the _convert_ function)
+///
+/// The recovered wallet will be returned in `wallet_out`.
+///
+/// # parameters
+///
+/// * account_key: the Ed25519 extended key used wallet's account address private key
+///     in the form of a 64 bytes array.  
+/// * utxo_keys: an array of Ed25519 keys in the form of 64 bytes, used as utxo
+///     keys for the wallet
+/// * utxo_keys_len: the number of keys in the utxo_keys array (not the number of bytes)
+/// * wallet_out: the recovered wallet
+///
+/// # Safety
+///
+/// This function dereference raw pointers (password and wallet_out). Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+/// # errors
+///
+/// The function may fail if:
+///
+/// * the `wallet_out` is null pointer
+///
+pub unsafe fn wallet_import_keys(
+    account_key: *const u8,
+    utxo_keys: *const [u8; 64],
+    utxo_keys_len: usize,
+    wallet_out: *mut WalletPtr,
+) -> Result {
+    let wallet_out = non_null_mut!(wallet_out);
+    let utxo_keys: &[u8; 64] = non_null!(utxo_keys);
+
+    let account_key: &u8 = non_null!(account_key);
+    let account_key: &[u8] = std::slice::from_raw_parts(account_key as *const u8, 64);
+
+    let utxo_keys: &[[u8; 64]] =
+        std::slice::from_raw_parts(utxo_keys.as_ptr() as *const [u8; 64], utxo_keys_len);
+
+    let result = Wallet::recover_free_keys(account_key, &utxo_keys);
+
+    match result {
+        Ok(wallet) => {
+            *wallet_out = Box::into_raw(Box::new(wallet));
+            Result::success()
+        }
+        Err(err) => err.into(),
+    }
+}
+
 /// get the wallet id
 ///
 /// This ID is the identifier to use against the blockchain/explorer to retrieve
@@ -297,7 +351,7 @@ pub unsafe fn wallet_pending_transactions(
     let pending_transactions = PendingTransactions {
         fragment_ids: wallet
             .pending_transactions()
-            .keys()
+            .iter()
             .cloned()
             .collect::<Vec<_>>()
             .into_boxed_slice(),

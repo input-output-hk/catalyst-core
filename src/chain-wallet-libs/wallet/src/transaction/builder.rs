@@ -1,58 +1,45 @@
-use crate::{
-    transaction::{InputGenerator, WitnessBuilder},
-    Settings,
-};
+use super::witness_builder::WitnessBuilder;
+use crate::Settings;
 use chain_addr::Address;
 use chain_impl_mockchain::{
     fee::FeeAlgorithm as _,
     transaction::{
-        Input, Output, Payload, SetAuthData, SetIOs, SetWitnesses, Transaction, TxBuilderState,
+        Balance, Input, Output, Payload, SetAuthData, SetIOs, SetWitnesses, Transaction,
+        TxBuilderState,
     },
     value::Value,
 };
+use thiserror::Error;
 
-/// Dump all the values into transactions to fill one address
-pub struct TransactionBuilder<P: Payload> {
-    settings: Settings,
-    outputs: Vec<Output<Address>>,
-    inputs: Vec<Input>,
-    certificate: P,
-    witness_builders: Vec<WitnessBuilder>,
-}
-
-// TODO: add more info to the error?
-#[derive(Debug, Clone)]
+#[derive(Debug, Error)]
+#[error("Cannot balance the transaction")]
 pub struct BalancingError;
 
-impl<P: Payload> TransactionBuilder<P> {
+pub struct TransactionBuilder<'settings, P: Payload> {
+    settings: &'settings Settings,
+    payload: P,
+    outputs: Vec<Output<Address>>,
+    inputs: Vec<Input>,
+    witness_builders: Vec<WB>,
+}
+
+type WB = Box<dyn WitnessBuilder>;
+
+pub enum AddInputStatus {
+    Added,
+    Skipped(Input),
+    NotEnoughSpace,
+}
+
+impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
     /// create a new transaction builder with the given settings and outputs
-    pub fn new(settings: Settings, outputs: Vec<Output<Address>>, certificate: P) -> Self {
+    pub fn new(settings: &'settings Settings, payload: P) -> Self {
         Self {
             settings,
-            outputs,
-            certificate,
+            payload,
+            outputs: Vec::with_capacity(255),
             inputs: Vec::with_capacity(255),
             witness_builders: Vec::with_capacity(255),
-        }
-    }
-
-    /// select inputs from the given wallet (InputGenerator)
-    ///
-    ///
-    pub fn select_from<G>(&mut self, input_generator: &mut G) -> bool
-    where
-        G: InputGenerator,
-    {
-        let estimated_fee = self.estimate_fee_to_cover_new_input();
-
-        let input_needed = self.outputs_value().saturating_add(estimated_fee);
-
-        if let Some(input) = input_generator.input_to_cover(input_needed) {
-            self.inputs.push(input.input);
-            self.witness_builders.push(input.witness_builder);
-            true
-        } else {
-            false
         }
     }
 
@@ -77,38 +64,85 @@ impl<P: Payload> TransactionBuilder<P> {
     }
 
     #[inline]
-    fn estimate_fee(&self) -> Value {
+    pub fn estimate_fee_with(&self, extra_inputs: u8, extra_outputs: u8) -> Value {
         self.settings.parameters.fees.calculate(
-            Payload::to_certificate_slice(self.certificate.payload_data().borrow()),
-            self.inputs.len() as u8,
-            self.outputs.len() as u8,
+            Payload::to_certificate_slice(self.payload.payload_data().borrow()),
+            self.inputs.len() as u8 + extra_inputs,
+            self.outputs.len() as u8 + extra_outputs,
         )
     }
 
     #[inline]
-    fn estimate_fee_to_cover_new_input(&self) -> Value {
-        self.settings.parameters.fees.calculate(
-            Payload::to_certificate_slice(self.certificate.payload_data().borrow()),
-            self.inputs.len() as u8 + 1u8,
-            self.outputs.len() as u8,
-        )
+    pub fn estimate_fee(&self) -> Value {
+        self.estimate_fee_with(0, 0)
     }
 
-    fn check_balance(&self) -> bool {
+    pub fn add_input_if_worth<B: WitnessBuilder + 'static>(
+        &mut self,
+        input: Input,
+        witness_builder: B,
+    ) -> AddInputStatus {
+        if self.settings.is_input_worth(&input) {
+            match self.add_input(input, witness_builder) {
+                true => AddInputStatus::Added,
+                false => AddInputStatus::NotEnoughSpace,
+            }
+        } else {
+            AddInputStatus::Skipped(input)
+        }
+    }
+
+    pub fn add_input<B: WitnessBuilder + 'static>(
+        &mut self,
+        input: Input,
+        witness_builder: B,
+    ) -> bool {
+        match self.inputs.len().cmp(&255) {
+            std::cmp::Ordering::Less => {
+                self.inputs.push(input);
+                self.witness_builders.push(Box::new(witness_builder));
+                true
+            }
+            _ => false,
+        }
+    }
+
+    pub fn add_output(&mut self, output: Output<Address>) -> bool {
+        if self.outputs().len() < 255 {
+            self.outputs.push(output);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn check_balance(&self) -> Balance {
+        self.check_balance_with(0, 0)
+    }
+
+    pub fn check_balance_with(&self, extra_inputs: u8, extra_outputs: u8) -> Balance {
         let total_in = self.inputs_value();
         let total_out = self.outputs_value();
-        let total_fee = self.estimate_fee();
+        let total_fee = self.estimate_fee_with(extra_inputs, extra_outputs);
 
-        total_in == total_out.saturating_add(total_fee)
+        let total_out = total_out.saturating_add(total_fee);
+
+        match total_in.cmp(&total_out) {
+            std::cmp::Ordering::Greater => {
+                Balance::Positive(total_in.checked_sub(total_out).unwrap())
+            }
+            std::cmp::Ordering::Equal => Balance::Zero,
+            std::cmp::Ordering::Less => Balance::Negative(total_out.checked_sub(total_in).unwrap()),
+        }
     }
 
     pub fn finalize_tx(self, auth: <P as Payload>::Auth) -> Result<Transaction<P>, BalancingError> {
-        if !self.check_balance() {
+        if !matches!(self.check_balance(), Balance::Zero) {
             return Err(BalancingError);
         }
 
         let builder = TxBuilderState::new();
-        let builder = builder.set_payload(&self.certificate);
+        let builder = builder.set_payload(&self.payload);
 
         let builder = self.set_ios(builder);
         let builder = self.set_witnesses(builder);
@@ -132,71 +166,9 @@ impl<P: Payload> TransactionBuilder<P> {
         let witnesses: Vec<_> = self
             .witness_builders
             .iter()
-            .map(move |wb| wb.mk_witness(&header_id, &auth_data))
+            .map(|wb| wb.build(&header_id, &auth_data))
             .collect();
 
         builder.set_witnesses(&witnesses)
-    }
-}
-
-impl std::fmt::Display for BalancingError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(
-            f,
-            "transaction building failed, couldn't balance transaction"
-        )
-    }
-}
-
-impl std::error::Error for BalancingError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use chain_impl_mockchain::block::Block;
-    use chain_impl_mockchain::transaction::NoExtra;
-    use chain_ser::deser::Deserialize;
-    use hdkeygen::account::Account;
-
-    struct Generator {
-        account: Account,
-    }
-
-    impl Generator {
-        fn new() -> Generator {
-            Generator {
-                account: Account::from_seed([0u8; 32]),
-            }
-        }
-    }
-
-    impl InputGenerator for Generator {
-        fn input_to_cover(&mut self, value: Value) -> Option<crate::transaction::GeneratedInput> {
-            let input = Input::from_account_public_key(self.account.account_id().into(), value);
-            let witness_builder = WitnessBuilder::Account {
-                account: self.account.clone(),
-            };
-            Some(crate::transaction::GeneratedInput {
-                input,
-                witness_builder,
-            })
-        }
-    }
-
-    #[test]
-    fn build_transaction_with_input_selector() {
-        const BLOCK0: &[u8] = include_bytes!("../../../test-vectors/block0");
-        let block = Block::deserialize(BLOCK0).unwrap();
-        let settings = Settings::new(&block).unwrap();
-        let mut builder = TransactionBuilder::new(settings, vec![], NoExtra);
-
-        let mut generator = Generator::new();
-        builder.select_from(&mut generator);
-
-        let _tx = builder.finalize_tx(());
     }
 }

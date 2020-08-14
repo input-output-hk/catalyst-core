@@ -51,6 +51,9 @@ pub enum ErrorCode {
     /// the wallet failed to build a valid transaction, for example
     /// not enough funds available
     WalletTransactionBuilding = 5,
+
+    /// error encrypting or decrypting transfer protocol payload
+    SymmetricCipherError = 6,
 }
 
 #[derive(Debug)]
@@ -74,6 +77,9 @@ pub enum ErrorKind {
 
     /// the wallet failed to build a valid transaction
     WalletTransactionBuilding,
+
+    /// transfer crypto error
+    SymmetricCipherError,
 }
 
 impl ErrorKind {
@@ -88,6 +94,7 @@ impl ErrorKind {
             Self::WalletConversion => ErrorCode::WalletConversion,
             Self::WalletVoteOutOfRange => ErrorCode::WalletVoteOutOfRange,
             Self::WalletTransactionBuilding => ErrorCode::WalletTransactionBuilding,
+            Self::SymmetricCipherError => ErrorCode::SymmetricCipherError,
         }
     }
 }
@@ -164,6 +171,13 @@ impl Error {
     pub fn wallet_transaction() -> Self {
         Self {
             kind: ErrorKind::WalletTransactionBuilding,
+            details: None,
+        }
+    }
+
+    pub fn transfer_crypto() -> Self {
+        Self {
+            kind: ErrorKind::SymmetricCipherError,
             details: None,
         }
     }
@@ -307,6 +321,7 @@ impl Display for ErrorKind {
             Self::WalletTransactionBuilding => f.write_str(
                 "Failed to build a valid transaction, probably not enough funds available",
             ),
+            Self::SymmetricCipherError => f.write_str("Failed to encrypt or decrypt payload"),
         }
     }
 }

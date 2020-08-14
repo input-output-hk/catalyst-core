@@ -604,3 +604,66 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_PendingTransactions_delet
         unsafe { pending_transactions_delete(pending) };
     }
 }
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_SymmetricCipher_decrypt(
+    env: JNIEnv,
+    _: JClass,
+    password: jbyteArray,
+    ciphertext: jbyteArray,
+) -> jbyteArray {
+    let password = {
+        let size = env.get_array_length(password).expect("invalid array");
+        let mut buffer = vec![0i8; size as usize];
+        env.get_byte_array_region(password, 0, &mut buffer)
+            .expect("invalid byte arrray read");
+        buffer
+    };
+
+    let ciphertext = {
+        let size = env.get_array_length(ciphertext).expect("invalid array");
+        let mut buffer = vec![0i8; size as usize];
+        env.get_byte_array_region(ciphertext, 0, &mut buffer)
+            .expect("invalid byte arrray read");
+
+        buffer
+    };
+
+    let mut plaintext_out: *const u8 = null_mut();
+    let mut plaintext_out_length = 0usize;
+    let result = unsafe {
+        symmetric_cipher_decrypt(
+            password.as_ptr() as *const u8,
+            password.len(),
+            ciphertext.as_ptr() as *const u8,
+            ciphertext.len(),
+            (&mut plaintext_out) as *mut *const u8,
+            (&mut plaintext_out_length) as *mut usize,
+        )
+    };
+
+    match result.error() {
+        None => {
+            let slice = unsafe {
+                std::slice::from_raw_parts(plaintext_out as *const jbyte, plaintext_out_length)
+            };
+
+            let array = env
+                .new_byte_array(plaintext_out_length as jint)
+                .expect("Failed to create new byte array");
+
+            env.set_byte_array_region(array, 0, slice)
+                .expect("Couldn't copy array to jvm");
+
+            unsafe {
+                delete_buffer(plaintext_out as *mut u8, plaintext_out_length);
+            }
+
+            array
+        }
+        Some(error) => {
+            let _ = env.throw(error.to_string());
+            null_mut()
+        }
+    }
+}

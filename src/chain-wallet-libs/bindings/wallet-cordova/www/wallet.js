@@ -23,6 +23,7 @@ const WALLET_PENDING_TRANSACTIONS = 'WALLET_PENDING_TRANSACTIONS';
 const PENDING_TRANSACTIONS_DELETE = 'PENDING_TRANSACTIONS_DELETE';
 const PENDING_TRANSACTIONS_GET = 'PENDING_TRANSACTIONS_GET';
 const PENDING_TRANSACTIONS_SIZE = 'PENDING_TRANSACTIONS_SIZE';
+const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
 
 const VOTE_PLAN_ID_LENGTH = 32;
 const FRAGMENT_ID_LENGTH = 32;
@@ -270,6 +271,24 @@ var plugin = {
             exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_ACTION_TAG, [votePlanId.buffer, payloadType, index, numChoices]);
         } else {
             throw TypeError('expected votePlanId to be a Uint8Array in proposalNew');
+        }
+    },
+
+    /**
+     * @param {Uint8Array} password the encryption password as bytes
+     * @param {Uint8Array} ciphertext the encrypted bytes
+     * @param {pointerCallback} successCallback on success returns a pointer to a Wallet object
+     * @param {errorCallback} errorCallback this function can fail if the mnemonics are invalid
+     */
+    symmetricCipherDecrypt: function (password, ciphertext, successCallback, errorCallback) {
+        argscheck.checkArgs('**ff', 'symmetricCipherDecrypt', arguments);
+        var typeName = require('cordova/utils').typeName;
+        var validTypes = true && typeName(password) === 'Uint8Array' && typeName(ciphertext) === 'Uint8Array';
+
+        if (validTypes) {
+            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SYMMETRIC_CIPHER_DECRYPT, [password.buffer, ciphertext.buffer]);
+        } else {
+            throw TypeError('password and ciphertext should be of Uint8Array type');
         }
     },
 

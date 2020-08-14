@@ -208,11 +208,9 @@ mod test {
     };
 
     use chain_addr::Discrimination;
-    use chain_core::property::{self, Block as _, BlockId as _, Deserialize, Serialize};
-    use chain_storage::{BlockInfo, BlockStore};
+    use chain_core::property::Deserialize;
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
-    use std::mem;
-    use std::time::SystemTime;
+    use std::{collections::HashMap, mem, time::SystemTime};
 
     /// Get the chain state at block 'k' from memory if present;
     /// otherwise reconstruct it by reading blocks from storage and
@@ -220,8 +218,8 @@ mod test {
     pub fn get_from_storage(
         multiverse: &mut Multiverse<Ledger>,
         k: HeaderId,
-        store: &mut chain_storage::BlockStore,
-    ) -> Result<Ref<Ledger>, chain_storage::Error> {
+        store: &HashMap<HeaderId, Block>,
+    ) -> Result<Ref<Ledger>, ()> {
         if let Some(r) = multiverse.get_ref(&k) {
             return Ok(r);
         }
@@ -244,21 +242,13 @@ mod test {
                 break state_ref;
             }
 
-            let cur_block = store
-                .get_block_info(cur_hash.serialize_as_vec().unwrap().as_slice())
-                .unwrap();
+            let cur_block = store.get(&cur_hash).unwrap();
             blocks_to_apply.push(cur_hash.clone());
-            cur_hash = Hash::deserialize(cur_block.parent_id().as_ref()).unwrap();
+            cur_hash = Hash::deserialize(cur_block.header.block_parent_hash().as_ref()).unwrap();
         };
 
         for hash in blocks_to_apply.iter().rev() {
-            let block = Block::deserialize(
-                store
-                    .get_block(hash.serialize_as_vec().unwrap().as_slice())
-                    .unwrap()
-                    .as_ref(),
-            )
-            .unwrap();
+            let block = store.get(hash).unwrap();
             let header_meta = block.header.to_content_eval_context();
             let state = state_ref.state();
             let state = state
@@ -276,7 +266,7 @@ mod test {
 
     fn apply_block(state: &Ledger, block: &Block) -> Ledger {
         if state.chain_length().0 != 0 {
-            assert_eq!(state.chain_length().0 + 1, block.chain_length().0);
+            assert_eq!(state.chain_length().0 + 1, block.header.chain_length().0);
         }
         state
             .apply_block(
@@ -352,47 +342,28 @@ mod test {
         let mut multiverse = Multiverse::new();
         let slot_duration = 10u8;
         let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
-        let file = tempfile::TempDir::new().unwrap();
-        let zero_id: [u8; 32] = <Block as property::Block>::Id::zero().into();
-        let zero_id = zero_id.to_vec();
-        let mut store = BlockStore::new(file.path(), zero_id.clone(), zero_id.len(), 1).unwrap();
+        let mut store: HashMap<HeaderId, Block> = HashMap::new();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();
-        let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
+        let genesis_state =
+            Ledger::new(genesis_block.header.id(), genesis_block.contents.iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
-        let genesis_block_info = BlockInfo::new(
-            genesis_block.id().serialize_as_vec().unwrap(),
-            genesis_block.parent_id().serialize_as_vec().unwrap(),
-            genesis_block.chain_length().into(),
-        );
-        store
-            .put_block(
-                genesis_block.serialize_as_vec().unwrap().as_slice(),
-                genesis_block_info,
-            )
-            .unwrap();
+        store.insert(genesis_block.header.id(), genesis_block.clone());
         let _root = multiverse.add(genesis_block.header.id(), genesis_state.clone());
 
         let mut state = genesis_state;
         let mut _ref = None;
-        let mut parent = genesis_block.id();
+        let mut parent = genesis_block.header.id();
         let mut ids = vec![];
         for i in 1..10001 {
             date = date.next(&era);
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
             assert_eq!(state.chain_length().0, i);
-            assert_eq!(state.date, block.date());
-            let block_info = BlockInfo::new(
-                block.id().serialize_as_vec().unwrap(),
-                block.parent_id().serialize_as_vec().unwrap(),
-                block.chain_length().into(),
-            );
-            store
-                .put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
-                .unwrap();
-            _ref = Some(multiverse.add(block.id(), state.clone()));
+            assert_eq!(state.date, block.header.block_date());
+            store.insert(block.header.id(), block.clone());
+            _ref = Some(multiverse.add(block.header.id(), state.clone()));
             multiverse.gc();
             ids.push(block.header.id());
             parent = block.header.id();
@@ -402,15 +373,15 @@ mod test {
             );
         }
 
-        let ref1 = get_from_storage(&mut multiverse, ids[1234], &mut store).unwrap();
+        let ref1 = get_from_storage(&mut multiverse, ids[1234], &store).unwrap();
         let state = ref1.state();
         assert_eq!(state.chain_length().0, 1235);
 
-        let ref2 = get_from_storage(&mut multiverse, ids[9999], &mut store).unwrap();
+        let ref2 = get_from_storage(&mut multiverse, ids[9999], &store).unwrap();
         let state = ref2.state();
         assert_eq!(state.chain_length().0, 10000);
 
-        let ref3 = get_from_storage(&mut multiverse, ids[9500], &mut store).unwrap();
+        let ref3 = get_from_storage(&mut multiverse, ids[9500], &store).unwrap();
         let state = ref3.state();
         assert_eq!(state.chain_length().0, 9501);
 
@@ -432,31 +403,17 @@ mod test {
         let mut multiverse = Multiverse::new();
         let slot_duration = 10u8;
         let era = era(slot_duration, NUM_BLOCK_PER_EPOCH);
-        let file = tempfile::TempDir::new().unwrap();
-        let zero_id: [u8; 32] = <Block as property::Block>::Id::zero().into();
-        let zero_id = zero_id.to_vec();
-        let mut store = BlockStore::new(file.path(), zero_id.clone(), zero_id.len(), 1).unwrap();
         let leader = leader();
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();
-        let genesis_state = Ledger::new(genesis_block.id(), genesis_block.contents.iter()).unwrap();
+        let genesis_state =
+            Ledger::new(genesis_block.header.id(), genesis_block.contents.iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
-        let genesis_block_info = BlockInfo::new(
-            genesis_block.id().serialize_as_vec().unwrap(),
-            genesis_block.parent_id().serialize_as_vec().unwrap(),
-            genesis_block.chain_length().into(),
-        );
-        store
-            .put_block(
-                genesis_block.serialize_as_vec().unwrap().as_slice(),
-                genesis_block_info,
-            )
-            .unwrap();
         let _root = multiverse.add(genesis_block.header.id(), genesis_state.clone());
 
         let mut state = genesis_state;
         let mut _ref = None;
-        let mut parent = genesis_block.id();
+        let mut parent = genesis_block.header.id();
         let mut ids = vec![];
 
         let first_fork_length = 100;
@@ -465,15 +422,7 @@ mod test {
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
-            let block_info = BlockInfo::new(
-                block.id().serialize_as_vec().unwrap(),
-                block.parent_id().serialize_as_vec().unwrap(),
-                block.chain_length().into(),
-            );
-            store
-                .put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
-                .unwrap();
-            _ref = Some(multiverse.add(block.id(), state.clone()));
+            _ref = Some(multiverse.add(block.header.id(), state.clone()));
             ids.push(block.header.id());
             parent = block.header.id();
         }
@@ -486,22 +435,14 @@ mod test {
             "first fork length incorrect"
         );
 
-        let mut parent = genesis_block.id();
+        let mut parent = genesis_block.header.id();
         let second_fork_length = 102;
         for _ in 0..second_fork_length {
             date = date.next(&era);
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
-            let block_info = BlockInfo::new(
-                block.id().serialize_as_vec().unwrap(),
-                block.parent_id().serialize_as_vec().unwrap(),
-                block.chain_length().into(),
-            );
-            store
-                .put_block(block.serialize_as_vec().unwrap().as_slice(), block_info)
-                .unwrap();
-            _ref = Some(multiverse.add(block.id(), state.clone()));
+            _ref = Some(multiverse.add(block.header.id(), state.clone()));
             ids.push(block.header.id());
             parent = block.header.id();
         }

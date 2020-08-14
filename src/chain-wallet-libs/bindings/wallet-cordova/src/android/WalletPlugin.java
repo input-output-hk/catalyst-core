@@ -148,9 +148,6 @@ public class WalletPlugin extends CordovaPlugin {
         final byte[] password = args.getArrayBuffer(0);
         final byte[] ciphertext = args.getArrayBuffer(1);
 
-        Log.d(TAG, Byte.toString(password[0]));
-        Log.d(TAG, Byte.toString(password[1]));
-
         try {
             final byte[] decrypted = SymmetricCipher.decrypt(password, ciphertext);
             callbackContext.success(decrypted);

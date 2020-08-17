@@ -231,7 +231,14 @@ impl BlockStore {
         let permanent_path = path.as_ref().join("permanent");
 
         let volatile = sled::open(volatile_path)?;
-        let permanent = PermanentStore::new(permanent_path, id_length, chain_length_offset)?;
+
+        let block_id_index = volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
+        let permanent = PermanentStore::new(
+            permanent_path,
+            block_id_index,
+            id_length,
+            chain_length_offset,
+        )?;
 
         Ok(Self {
             volatile,
@@ -250,34 +257,34 @@ impl BlockStore {
     /// * `block_info` - block metadata for internal needs (indexing, linking
     ///   between blocks, etc)
     pub fn put_block(&self, block: &[u8], block_info: BlockInfo) -> Result<(), Error> {
+        if self.block_exists(block_info.id().as_ref())? {
+            return Err(Error::BlockAlreadyPresent);
+        }
+
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
-        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
         let info = self.volatile.open_tree(tree::INFO)?;
         let chain_length_to_block_ids = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
         let tips = self.volatile.open_tree(tree::BRANCHES_TIPS)?;
 
-        let result = (
-            &blocks,
-            &permanent_store_blocks,
-            &info,
-            &chain_length_to_block_ids,
-            &tips,
-        )
-            .transaction(
-                |(blocks, permanent_store_blocks, info, chain_length_to_block_ids, tips)| {
-                    put_block_impl(
-                        blocks,
-                        permanent_store_blocks,
-                        info,
-                        chain_length_to_block_ids,
-                        tips,
-                        block,
-                        &block_info,
-                        self.root_id.as_ref(),
-                        self.id_length,
-                    )
-                },
-            );
+        let parent_in_permanent_store = self
+            .permanent
+            .contains_key(block_info.parent_id().as_ref())?;
+
+        let result = (&blocks, &info, &chain_length_to_block_ids, &tips).transaction(
+            |(blocks, info, chain_length_to_block_ids, tips)| {
+                put_block_impl(
+                    blocks,
+                    info,
+                    chain_length_to_block_ids,
+                    tips,
+                    block,
+                    &block_info,
+                    self.root_id.as_ref(),
+                    self.id_length,
+                    parent_in_permanent_store,
+                )
+            },
+        );
 
         convert_transaction_result(result)
     }
@@ -289,18 +296,9 @@ impl BlockStore {
     /// * `block_id` - the serialized block identifier.
     pub fn get_block(&self, block_id: &[u8]) -> Result<Value, Error> {
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
-        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
 
-        if let Some(chain_length_bytes_slice) = permanent_store_blocks.get(block_id)? {
-            let mut chain_length_bytes = [0u8; 4];
-            chain_length_bytes.copy_from_slice(chain_length_bytes_slice.as_ref());
-            let chain_length = u32::from_le_bytes(chain_length_bytes);
-
-            return self
-                .permanent
-                .get_block_by_chain_length(chain_length)
-                .map(Value::permanent)
-                .ok_or(Error::BlockNotFound);
+        if let Some(block) = self.permanent.get_block(block_id)? {
+            return Ok(block);
         }
 
         blocks
@@ -357,7 +355,7 @@ impl BlockStore {
     /// Other branches are considered to be ready of removal if there are any.
     pub fn get_blocks_by_chain_length(&self, chain_length: u32) -> Result<Vec<Value>, Error> {
         if let Some(block) = self.permanent.get_block_by_chain_length(chain_length) {
-            return Ok(vec![Value::permanent(block)]);
+            return Ok(vec![block]);
         }
 
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
@@ -382,20 +380,17 @@ impl BlockStore {
     pub fn put_tag(&self, tag_name: &str, block_id: &[u8]) -> Result<(), Error> {
         let info = self.volatile.open_tree(tree::INFO)?;
         let tags = self.volatile.open_tree(tree::TAGS)?;
-        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
 
-        let result = (&info, &tags, &permanent_store_blocks).transaction(
-            move |(info, tags, permanent_store_blocks)| {
-                put_tag_impl(
-                    info,
-                    tags,
-                    permanent_store_blocks,
-                    tag_name,
-                    block_id,
-                    self.id_length,
-                )
-            },
-        );
+        let result = (&info, &tags).transaction(move |(info, tags)| {
+            put_tag_impl(
+                info,
+                tags,
+                &self.permanent,
+                tag_name,
+                block_id,
+                self.id_length,
+            )
+        });
 
         convert_transaction_result(result)
     }
@@ -430,35 +425,30 @@ impl BlockStore {
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         let info = self.volatile.open_tree(tree::INFO)?;
         let chain_length_to_block_ids = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
-        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
 
-        let result = (
-            &blocks,
-            &info,
-            &chain_length_to_block_ids,
-            &tips,
-            &permanent_store_blocks,
-        )
-            .transaction(
-                |(blocks, info, chain_length_to_block_ids, tips, permanent_store_blocks)| {
-                    let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
+        let result = (&blocks, &info, &chain_length_to_block_ids, &tips).transaction(
+            |(blocks, info, chain_length_to_block_ids, tips)| {
+                let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
 
-                    while let RemoveTipResult::NextTip(current_tip) = &result {
-                        result = remove_tip_impl(
-                            blocks,
-                            info,
-                            chain_length_to_block_ids,
-                            tips,
-                            permanent_store_blocks,
-                            current_tip,
-                            self.root_id.as_ref(),
-                            self.id_length,
-                        )?;
-                    }
+                while let RemoveTipResult::NextTip(current_tip) = &result {
+                    result = match remove_tip_impl(
+                        blocks,
+                        info,
+                        chain_length_to_block_ids,
+                        tips,
+                        &self.permanent,
+                        current_tip,
+                        self.root_id.as_ref(),
+                        self.id_length,
+                    )? {
+                        Ok(res) => res,
+                        Err(err) => return Ok(Err(err)),
+                    };
+                }
 
-                    Ok(Ok(result))
-                },
-            );
+                Ok(Ok(result))
+            },
+        );
 
         let result = convert_transaction_result(result)?;
 
@@ -479,9 +469,8 @@ impl BlockStore {
     /// Check if the block with the given id exists.
     pub fn block_exists(&self, block_id: &[u8]) -> Result<bool, Error> {
         let info = self.volatile.open_tree(tree::INFO)?;
-        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
 
-        if permanent_store_blocks.get(block_id)?.is_some() {
+        if self.permanent.contains_key(block_id)? {
             return Ok(true);
         }
 
@@ -568,27 +557,32 @@ impl BlockStore {
             current_block_id = block_infos.last().unwrap().parent_id().as_ref();
         }
 
-        block_infos.reverse();
+        if block_infos.is_empty() {
+            return Ok(());
+        }
 
         let blocks = block_infos
             .iter()
+            .rev()
             .map(|block_info| self.get_block(block_info.id().as_ref()))
             .collect::<Result<Vec<_>, Error>>()?;
         let block_refs: Vec<_> = blocks.iter().map(|block| block.as_ref()).collect();
-
-        self.permanent.put_blocks(&block_refs)?;
+        let ids: Vec<_> = block_infos
+            .iter()
+            .rev()
+            .map(|block_info| block_info.id().as_ref())
+            .collect();
+        let start_chain_length = block_infos.last().unwrap().chain_length();
+        self.permanent
+            .put_blocks(start_chain_length, &ids, &block_refs)?;
 
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         let info = self.volatile.open_tree(tree::INFO)?;
-        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
 
         for block_info in block_infos.iter() {
             let key = block_info.id();
-            let chain_length_bytes = block_info.chain_length().to_le_bytes();
-
-            permanent_store_blocks.insert(key, chain_length_bytes.as_ref())?;
-            blocks.remove(key)?;
             info.remove(key)?;
+            blocks.remove(key)?;
         }
 
         Ok(())
@@ -600,7 +594,6 @@ impl BlockStore {
         distance: u32,
     ) -> Result<impl Iterator<Item = Value>, Error> {
         let from_info = for_path_to_nth_ancestor(&self, to_block, distance, |_| {})?;
-        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
         let block_info = self.volatile.open_tree(tree::INFO)?;
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         StorageIterator::new(
@@ -608,7 +601,6 @@ impl BlockStore {
             from_info.chain_length(),
             Value::from(to_block.to_vec()),
             self.permanent.clone(),
-            permanent_store_blocks,
             block_info,
             blocks,
         )
@@ -651,7 +643,6 @@ where
 #[allow(clippy::too_many_arguments)]
 fn put_block_impl(
     blocks: &TransactionalTree,
-    permanent_store_blocks: &TransactionalTree,
     info: &TransactionalTree,
     chain_length_to_block_ids: &TransactionalTree,
     tips: &TransactionalTree,
@@ -659,15 +650,8 @@ fn put_block_impl(
     block_info: &BlockInfo,
     root_id: &[u8],
     id_length: usize,
+    parent_in_permanent_store: bool,
 ) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
-    if info.get(block_info.id())?.is_some()
-        || permanent_store_blocks.get(block_info.id())?.is_some()
-    {
-        return Ok(Err(Error::BlockAlreadyPresent));
-    }
-
-    let parent_in_permanent_store = permanent_store_blocks.get(block_info.id())?.is_some();
-
     if block_info.parent_id().as_ref() != root_id {
         if info.get(block_info.parent_id())?.is_none() && !parent_in_permanent_store {
             return Ok(Err(Error::MissingParent));
@@ -707,7 +691,7 @@ fn put_block_impl(
 fn put_tag_impl(
     info: &TransactionalTree,
     tags: &TransactionalTree,
-    permanent_store_blocks: &TransactionalTree,
+    permanent_store: &PermanentStore,
     tag_name: &str,
     block_id: &[u8],
     id_size: usize,
@@ -719,11 +703,14 @@ fn put_tag_impl(
             let info_bin = block_info.serialize();
             info.insert(block_id, info_bin)?;
         }
-        None => {
-            if permanent_store_blocks.get(block_id)?.is_none() {
-                return Ok(Err(Error::BlockNotFound));
+        None => match permanent_store.contains_key(block_id) {
+            Ok(contains_key) => {
+                if !contains_key {
+                    return Ok(Err(Error::BlockNotFound));
+                }
             }
-        }
+            Err(err) => return Ok(Err(err)),
+        },
     }
 
     let maybe_old_block_id = tags.insert(tag_name, block_id)?;
@@ -746,14 +733,19 @@ fn remove_tip_impl(
     info: &TransactionalTree,
     chain_length_to_block_ids: &TransactionalTree,
     tips: &TransactionalTree,
-    permanent_store_blocks: &TransactionalTree,
+    permanent_store: &PermanentStore,
     block_id: &[u8],
     root_id: &[u8],
     id_size: usize,
-) -> Result<RemoveTipResult, ConflictableTransactionError<()>> {
+) -> Result<Result<RemoveTipResult, Error>, ConflictableTransactionError<()>> {
     // Stop when we bump into a block stored in the permanent storage.
-    if permanent_store_blocks.get(block_id)?.is_some() {
-        return Ok(RemoveTipResult::Done);
+    match permanent_store.contains_key(block_id) {
+        Ok(res) => {
+            if res {
+                return Ok(Ok(RemoveTipResult::Done));
+            }
+        }
+        Err(err) => return Ok(Err(err)),
     }
 
     let block_info_bin = info.get(block_id)?.unwrap();
@@ -761,7 +753,7 @@ fn remove_tip_impl(
     let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id.to_vec());
 
     if block_info.ref_count() != 0 {
-        return Ok(RemoveTipResult::Done);
+        return Ok(Ok(RemoveTipResult::Done));
     }
 
     info.remove(block_id)?;
@@ -774,13 +766,15 @@ fn remove_tip_impl(
     tips.remove(block_id)?;
 
     if block_info.parent_id().as_ref() == root_id {
-        return Ok(RemoveTipResult::Done);
+        return Ok(Ok(RemoveTipResult::Done));
     }
 
-    let maybe_parent_block_info = if permanent_store_blocks
-        .get(block_info.parent_id())?
-        .is_some()
-    {
+    let parent_permanent = match permanent_store.contains_key(block_info.parent_id().as_ref()) {
+        Ok(res) => res,
+        Err(err) => return Ok(Err(err)),
+    };
+
+    let maybe_parent_block_info = if parent_permanent {
         None
     } else {
         let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
@@ -813,7 +807,7 @@ fn remove_tip_impl(
         None => RemoveTipResult::HitPermanentStore(block_info.parent_id().as_ref().to_vec()),
     };
 
-    Ok(maybe_next_tip)
+    Ok(Ok(maybe_next_tip))
 }
 
 /// Due to limitation of `sled` transaction mechanism we need to return nested

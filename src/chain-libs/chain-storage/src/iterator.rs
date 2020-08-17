@@ -28,11 +28,10 @@ impl StorageIterator {
         from_length: u32,
         to: Value,
         permanent_store: PermanentStore,
-        permanent_store_blocks: Tree,
         block_info: Tree,
         blocks: Tree,
     ) -> Result<Self, Error> {
-        let state = if permanent_store_blocks.contains_key(from.as_ref())? {
+        let state = if permanent_store.contains_key(from.as_ref())? {
             IteratorState::Permanent {
                 iter: permanent_store.iter(from_length)?,
                 current_length: from_length,

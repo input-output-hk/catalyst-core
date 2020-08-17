@@ -156,7 +156,7 @@ mod test {
     fn add_token() {
         let tokens = APITokenCmd::generate(10, 10);
         let connection_pool = load_db_connection_pool("").unwrap();
-        initialize_db_with_migration(&connection_pool);
+        initialize_db_with_migration(&connection_pool.get().unwrap());
         let db_conn = connection_pool.get().unwrap();
         APITokenCmd::add_tokens(&tokens, &db_conn).unwrap();
         for token in tokens

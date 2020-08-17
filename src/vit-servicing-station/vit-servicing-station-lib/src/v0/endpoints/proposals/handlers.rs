@@ -29,7 +29,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool);
+        db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let proposal: Proposal = proposals_testing::get_test_proposal();
         proposals_testing::populate_db_with_proposal(&proposal, &pool);
 
@@ -60,7 +60,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool);
+        db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let proposal: Proposal = proposals_testing::get_test_proposal();
         proposals_testing::populate_db_with_proposal(&proposal, &pool);
 

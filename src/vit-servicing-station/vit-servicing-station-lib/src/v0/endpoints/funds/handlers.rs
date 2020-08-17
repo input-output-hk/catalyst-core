@@ -30,7 +30,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool);
+        db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let fund: Fund = funds_testing::get_test_fund();
         funds_testing::populate_db_with_fund(&fund, &pool);
 
@@ -56,7 +56,7 @@ pub mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool);
+        db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let fund: Fund = funds_testing::get_test_fund();
         funds_testing::populate_db_with_fund(&fund, &pool);
 

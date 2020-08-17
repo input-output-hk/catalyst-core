@@ -10,24 +10,26 @@ use vit_servicing_station_lib::db::{
 
 #[derive(Debug, PartialEq, StructOpt)]
 pub enum CSVDataCmd {
-    /// Add provided tokens to database. If --tokens is not provided the binary will read them from the `stdin`
-    Dump {
+    /// Load Funds, Voteplans and Proposals information into a SQLite3 ready file DB.
+    Load {
         /// URL of the vit-servicing-station database to interact with
         #[structopt(long = "db-url")]
         db_url: String,
 
-        /// List of tokens in URL safe base64. If --tokens is not provided the binary will read them from the `stdin`
+        /// Path to the csv containing funds information
         #[structopt(long = "funds")]
         funds: String,
 
+        /// Path to the csv containing voteplans information
         #[structopt(long = "voteplans")]
         voteplans: String,
 
+        /// Path to the csv containing proposals information
         #[structopt(long = "proposals")]
         proposals: String,
     },
 }
-// type Fundd = (String, String, String, String, i64, i64, i64);
+
 impl CSVDataCmd {
     fn load_from_csv<T: DeserializeOwned>(csv_path: &str) -> io::Result<Vec<T>> {
         let mut reader = csv::ReaderBuilder::new()
@@ -44,7 +46,7 @@ impl CSVDataCmd {
         Ok(results)
     }
 
-    fn handle_dump(
+    fn handle_load(
         db_url: &str,
         funds_path: &str,
         voteplans_path: &str,
@@ -106,12 +108,12 @@ impl ExecTask for CSVDataCmd {
 
     fn exec(&self) -> std::io::Result<()> {
         match self {
-            CSVDataCmd::Dump {
+            CSVDataCmd::Load {
                 db_url,
                 funds,
                 voteplans,
                 proposals,
-            } => Self::handle_dump(db_url, funds, voteplans, proposals),
+            } => Self::handle_load(db_url, funds, voteplans, proposals),
         }
     }
 }

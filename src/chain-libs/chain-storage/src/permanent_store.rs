@@ -1,10 +1,12 @@
-use crate::{Error, Value};
+use crate::{BlockInfo, Error, Value};
 use std::path::Path;
 
 #[derive(Clone)]
 pub(crate) struct PermanentStore {
-    inner: data_pile::Database,
+    blocks: data_pile::Database,
+    chain_length_index: data_pile::Database,
     block_id_index: sled::Tree,
+    root_id: Value,
     id_length: usize,
     chain_length_offset: u32,
 }
@@ -13,14 +15,24 @@ impl PermanentStore {
     pub fn new<P: AsRef<Path>>(
         path: P,
         block_id_index: sled::Tree,
-        id_length: usize,
+        root_id: Value,
         chain_length_offset: u32,
     ) -> Result<PermanentStore, Error> {
-        let inner = data_pile::Database::new(path)?;
+        std::fs::create_dir_all(&path).expect("failed to create permanent storage dir");
+
+        let blocks_path = path.as_ref().join("blocks");
+        let chain_length_index_path = path.as_ref().join("chain_length");
+
+        let blocks = data_pile::Database::new(blocks_path)?;
+        let chain_length_index = data_pile::Database::new(chain_length_index_path)?;
+
+        let id_length = root_id.as_ref().len();
 
         Ok(Self {
-            inner,
+            blocks,
+            chain_length_index,
             block_id_index,
+            root_id,
             id_length,
             chain_length_offset,
         })
@@ -28,12 +40,39 @@ impl PermanentStore {
 
     pub fn get_block_by_chain_length(&self, chain_length: u32) -> Option<Value> {
         let seqno = chain_length - self.chain_length_offset;
-        self.inner
+        self.blocks
             .get_by_seqno(seqno as usize)
             .map(Value::permanent)
     }
 
     pub fn get_block(&self, block_id: &[u8]) -> Result<Option<Value>, Error> {
+        self.get_chain_length(block_id).map(|maybe_chain_length| {
+            maybe_chain_length.and_then(|chain_length| self.get_block_by_chain_length(chain_length))
+        })
+    }
+
+    pub fn get_block_info(&self, block_id: &[u8]) -> Result<Option<BlockInfo>, Error> {
+        let chain_length = match self.get_chain_length(block_id)? {
+            Some(chain_length) => chain_length,
+            None => return Ok(None),
+        };
+
+        let parent_id = match (chain_length - self.chain_length_offset).checked_sub(1) {
+            Some(chain_length) => Value::permanent(
+                self.chain_length_index
+                    .get_by_seqno(chain_length as usize)
+                    .unwrap(),
+            ),
+            None => self.root_id.clone(),
+        };
+
+        let block_id = Value::owned(block_id.to_vec().into_boxed_slice());
+        let block_info = BlockInfo::new(block_id, parent_id, chain_length);
+
+        Ok(Some(block_info))
+    }
+
+    fn get_chain_length(&self, block_id: &[u8]) -> Result<Option<u32>, Error> {
         let chain_length_bytes_slice = match self.block_id_index.get(block_id)? {
             Some(block_id) => block_id,
             None => return Ok(None),
@@ -43,7 +82,7 @@ impl PermanentStore {
         chain_length_bytes.copy_from_slice(chain_length_bytes_slice.as_ref());
         let chain_length = u32::from_le_bytes(chain_length_bytes);
 
-        Ok(self.get_block_by_chain_length(chain_length))
+        Ok(Some(chain_length))
     }
 
     pub fn contains_key(&self, block_id: &[u8]) -> Result<bool, Error> {
@@ -60,8 +99,12 @@ impl PermanentStore {
     ) -> Result<(), Error> {
         assert_eq!(ids.len(), blocks.len());
 
-        self.inner
+        self.blocks
             .append(blocks)
+            .map_err(Error::PermanentBackendError)?;
+
+        self.chain_length_index
+            .append(ids)
             .map_err(Error::PermanentBackendError)?;
 
         for (i, id) in ids.iter().enumerate() {
@@ -75,7 +118,7 @@ impl PermanentStore {
 
     pub fn iter(&self, chain_length: u32) -> Result<data_pile::SeqNoIter, Error> {
         let seqno = chain_length - self.chain_length_offset;
-        self.inner
+        self.blocks
             .iter_from_seqno(seqno as usize)
             .ok_or(Error::BlockNotFound)
     }

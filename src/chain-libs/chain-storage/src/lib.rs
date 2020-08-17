@@ -236,7 +236,7 @@ impl BlockStore {
         let permanent = PermanentStore::new(
             permanent_path,
             block_id_index,
-            id_length,
+            root_id.clone(),
             chain_length_offset,
         )?;
 
@@ -314,31 +314,11 @@ impl BlockStore {
     ///
     /// * `block_id` - the serialized block identifier.
     pub fn get_block_info(&self, block_id: &[u8]) -> Result<BlockInfo, Error> {
-        let info = self.volatile.open_tree(tree::INFO)?;
-        let permanent_store_blocks = self.volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
-        let chain_length_index = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
-
-        if let Some(chain_length_bytes_slice) = permanent_store_blocks.get(block_id)? {
-            let mut chain_length_bytes = [0u8; 4];
-            chain_length_bytes.copy_from_slice(chain_length_bytes_slice.as_ref());
-            let chain_length = u32::from_le_bytes(chain_length_bytes);
-
-            let parent_id = chain_length
-                .checked_sub(1)
-                .map(|parent_chain_length| parent_chain_length.to_le_bytes())
-                .and_then(|parent_chain_length_bytes| {
-                    chain_length_index
-                        .scan_prefix(&parent_chain_length_bytes[..])
-                        .next()
-                })
-                .transpose()?
-                .map(|(key, _)| key[4..].to_vec().into())
-                .unwrap_or_else(|| self.root_id.clone());
-
-            let block_info = BlockInfo::new(block_id.to_vec(), parent_id, chain_length);
-
+        if let Some(block_info) = self.permanent.get_block_info(block_id)? {
             return Ok(block_info);
         }
+
+        let info = self.volatile.open_tree(tree::INFO)?;
 
         info.get(block_id)
             .map_err(Into::into)
@@ -579,8 +559,13 @@ impl BlockStore {
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         let info = self.volatile.open_tree(tree::INFO)?;
 
-        for block_info in block_infos.iter() {
-            let key = block_info.id();
+        for (i, block_info) in block_infos.iter().enumerate() {
+            let key = block_info.id().as_ref();
+            let chain_length = start_chain_length + i as u32;
+
+            let mut chain_length_index = chain_length.to_le_bytes().to_vec();
+            chain_length_index.extend_from_slice(key);
+
             info.remove(key)?;
             blocks.remove(key)?;
         }

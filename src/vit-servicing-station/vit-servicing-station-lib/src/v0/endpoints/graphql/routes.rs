@@ -63,13 +63,13 @@ mod test {
     //             chainVoteplanId,
     //             chainVoteStartTime,
     //             chainVoteEndTime,
-    //             chainCommitteeEnd,
+    //             chainCommitteeEndTime,
     //             chainVoteplanPayload,
     //             fundId
     //         },
     //     }
     // }
-    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    fund(id: 1) {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEnd,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
+    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    fund(id: 1) {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEndTime,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
 
     // TODO: This query is not nice to read as documentation for the test. It was taken from the option
     // in postman to check the curl command. The actual graphql body request is like this:
@@ -88,13 +88,13 @@ mod test {
     //             chainVoteplanId,
     //             chainVoteStartTime,
     //             chainVoteEndTime,
-    //             chainCommitteeEnd,
+    //             chainCommitteeEndTime,
     //             chainVoteplanPayload,
     //             fundId
     //         },
     //     }
     // }
-    const FUNDS_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    funds {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEnd,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
+    const FUNDS_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    funds {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEndTime,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
 
     // TODO: This query is not nice to read as documentation for the test. It was taken from the option
     // in postman to check the curl command. The actual graphql body request is like this:

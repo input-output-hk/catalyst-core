@@ -14,10 +14,10 @@ pub struct Voteplan {
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub chain_vote_end_time: i64,
-    #[serde(alias = "chainCommitteeEnd")]
+    #[serde(alias = "chainCommitteeEndTime")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
-    pub chain_committee_end: i64,
+    pub chain_committee_end_time: i64,
     #[serde(alias = "chainVoteplanPayload")]
     pub chain_voteplan_payload: String,
     #[serde(alias = "fundId")]
@@ -37,7 +37,7 @@ pub mod test {
             chain_voteplan_id: "test_vote_plan".to_string(),
             chain_vote_start_time: Utc::now().timestamp(),
             chain_vote_end_time: Utc::now().timestamp(),
-            chain_committee_end: Utc::now().timestamp(),
+            chain_committee_end_time: Utc::now().timestamp(),
             chain_voteplan_payload: "foopayload".to_string(),
             fund_id,
         }
@@ -49,7 +49,7 @@ pub mod test {
             voteplans::chain_voteplan_id.eq(voteplan.chain_voteplan_id.clone()),
             voteplans::chain_vote_start_time.eq(voteplan.chain_vote_start_time),
             voteplans::chain_vote_end_time.eq(voteplan.chain_vote_end_time),
-            voteplans::chain_committee_end_time.eq(voteplan.chain_committee_end),
+            voteplans::chain_committee_end_time.eq(voteplan.chain_committee_end_time),
             voteplans::chain_voteplan_payload.eq(voteplan.chain_voteplan_payload.clone()),
             voteplans::fund_id.eq(voteplan.fund_id),
         );

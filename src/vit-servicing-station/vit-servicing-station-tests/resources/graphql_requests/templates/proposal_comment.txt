@@ -1,6 +1,6 @@
 {
-    "query":"{ 
-        proposal(proposalId: \"{{ id }}\"){ 
+    "query":"{
+        proposal(proposalId: \"{{ id }}\"){
             #sdfdfafadfasdfa
             internalId,
             proposalId,

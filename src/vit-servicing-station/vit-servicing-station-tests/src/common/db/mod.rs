@@ -106,7 +106,7 @@ impl<'a> DbInserter<'a> {
                     voteplans::chain_voteplan_id.eq(voteplan.chain_voteplan_id.clone()),
                     voteplans::chain_vote_start_time.eq(voteplan.chain_vote_start_time),
                     voteplans::chain_vote_end_time.eq(voteplan.chain_vote_end_time),
-                    voteplans::chain_committee_end_time.eq(voteplan.chain_committee_end),
+                    voteplans::chain_committee_end_time.eq(voteplan.chain_committee_end_time),
                     voteplans::chain_voteplan_payload.eq(voteplan.chain_voteplan_payload.clone()),
                     voteplans::fund_id.eq(voteplan.fund_id),
                 );

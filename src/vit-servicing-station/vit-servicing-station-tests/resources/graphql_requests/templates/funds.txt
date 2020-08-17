@@ -14,11 +14,10 @@
         chainVoteplanId,
         chainVoteStartTime,
         chainVoteEndTime,
-        chainCommitteeEnd,
+        chainCommitteeEndTime,
         chainVoteplanPayload,
         fundId,
       }
     }
   }"
 }
-

@@ -19,8 +19,8 @@ impl Voteplan {
         unix_timestamp_to_datetime(self.chain_vote_end_time).to_rfc3339()
     }
 
-    pub async fn chain_committee_end(&self) -> String {
-        unix_timestamp_to_datetime(self.chain_committee_end).to_rfc3339()
+    pub async fn chain_committee_end_time(&self) -> String {
+        unix_timestamp_to_datetime(self.chain_committee_end_time).to_rfc3339()
     }
 
     pub async fn chain_voteplan_payload(&self) -> &str {

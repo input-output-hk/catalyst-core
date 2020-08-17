@@ -1,6 +1,6 @@
 {
   "query": "{
-    fund(id: \"{{ id }}\"){ 
+    fund(id: \"{{ id }}\"){
       id
       fundName
       fundGoal
@@ -14,11 +14,10 @@
         chainVoteplanId
         chainVoteStartTime
         chainVoteEndTime
-        chainCommitteeEnd
+        chainCommitteeEndTime
         chainVoteplanPayload
         fundId
       }
     }
   }"
 }
-

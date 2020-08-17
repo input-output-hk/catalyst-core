@@ -635,27 +635,31 @@ fn put_block_impl(
     block_info: &BlockInfo,
     root_id: &[u8],
     id_length: usize,
-    parent_in_permanent_store: bool,
+    parent_external: bool,
 ) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
-    if block_info.parent_id().as_ref() != root_id {
-        if info.get(block_info.parent_id())?.is_none() && !parent_in_permanent_store {
-            return Ok(Err(Error::MissingParent));
-        }
+    let parent_in_volatile_store = if parent_external {
+        false
+    } else if block_info.parent_id().as_ref() == root_id {
+        false
+    } else if info.get(block_info.parent_id())?.is_none() {
+        return Ok(Err(Error::MissingParent));
+    } else {
+        true
+    };
 
-        if !parent_in_permanent_store {
-            let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
-            let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
-            let mut parent_block_info = BlockInfo::deserialize(
-                &mut parent_block_info_reader,
-                id_length,
-                block_info.parent_id().clone(),
-            );
-            parent_block_info.add_ref();
-            info.insert(
-                parent_block_info.id().as_ref(),
-                parent_block_info.serialize(),
-            )?;
-        }
+    if parent_in_volatile_store {
+        let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
+        let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
+        let mut parent_block_info = BlockInfo::deserialize(
+            &mut parent_block_info_reader,
+            id_length,
+            block_info.parent_id().clone(),
+        );
+        parent_block_info.add_ref();
+        info.insert(
+            parent_block_info.id().as_ref(),
+            parent_block_info.serialize(),
+        )?;
     }
 
     tips.remove(block_info.parent_id().as_ref())?;

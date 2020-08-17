@@ -1,6 +1,7 @@
 mod api_token;
 mod app;
 mod csv;
+mod db_utils;
 mod task;
 
 use app::*;

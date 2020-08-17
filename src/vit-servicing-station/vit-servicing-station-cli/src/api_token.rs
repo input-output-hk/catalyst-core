@@ -1,4 +1,4 @@
-use crate::task::ExecTask;
+use crate::{db_utils::db_file_exists, task::ExecTask};
 use chrono::{Duration, Utc};
 use rand::Rng;
 use std::collections::HashSet;
@@ -90,12 +90,7 @@ impl APITokenCmd {
 
     fn handle_api_token_add(tokens: &Option<Vec<String>>, db_url: &str) -> io::Result<()> {
         // check if db file exists
-        if !std::path::Path::new(db_url).exists() {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!("{} url does not exists", db_url.to_string()),
-            ));
-        }
+        db_file_exists(db_url)?;
 
         let pool = load_db_connection_pool(db_url)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;

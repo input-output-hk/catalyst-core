@@ -1,4 +1,4 @@
-use crate::task::ExecTask;
+use crate::{db_utils::db_file_exists, task::ExecTask};
 use csv::Trim;
 use serde::de::DeserializeOwned;
 use std::io;
@@ -50,6 +50,7 @@ impl CSVDataCmd {
         voteplans_path: &str,
         proposals_path: &str,
     ) -> io::Result<()> {
+        db_file_exists(db_url)?;
         let funds = CSVDataCmd::load_from_csv::<Fund>(funds_path)?;
         if funds.len() != 1 {
             return Err(io::Error::new(

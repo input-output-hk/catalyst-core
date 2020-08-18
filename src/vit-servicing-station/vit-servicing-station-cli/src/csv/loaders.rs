@@ -1,3 +1,4 @@
+use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
 use csv::Trim;
 use serde::de::DeserializeOwned;
@@ -101,6 +102,21 @@ impl CSVDataCmd {
 
         Ok(())
     }
+
+    fn handle_load_with_db_backup(
+        db_url: &str,
+        funds_path: &str,
+        voteplans_path: &str,
+        proposals_path: &str,
+    ) -> io::Result<()> {
+        let backup_file = backup_db_file(db_url)?;
+        if let Err(e) = Self::handle_load(db_url, funds_path, voteplans_path, proposals_path) {
+            restore_db_file(backup_file, db_url)?;
+            Err(e)
+        } else {
+            Ok(())
+        }
+    }
 }
 
 impl ExecTask for CSVDataCmd {
@@ -113,7 +129,7 @@ impl ExecTask for CSVDataCmd {
                 funds,
                 voteplans,
                 proposals,
-            } => Self::handle_load(db_url, funds, voteplans, proposals),
+            } => Self::handle_load_with_db_backup(db_url, funds, voteplans, proposals),
         }
     }
 }

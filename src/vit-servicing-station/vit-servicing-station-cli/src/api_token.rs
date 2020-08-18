@@ -1,3 +1,4 @@
+use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
 use chrono::{Duration, Utc};
 use rand::Rng;
@@ -106,6 +107,19 @@ impl APITokenCmd {
         }
     }
 
+    fn handle_api_token_add_whith_db_backup(
+        tokens: &Option<Vec<String>>,
+        db_url: &str,
+    ) -> io::Result<()> {
+        let backup_file = backup_db_file(db_url)?;
+        if let Err(e) = Self::handle_api_token_add(tokens, db_url) {
+            restore_db_file(backup_file, db_url)?;
+            Err(e)
+        } else {
+            Ok(())
+        }
+    }
+
     fn handle_generate(n: usize, size: usize) -> io::Result<()> {
         let tokens = APITokenCmd::generate(n, size);
         for token in tokens {
@@ -121,7 +135,7 @@ impl ExecTask for APITokenCmd {
     fn exec(&self) -> std::io::Result<()> {
         match self {
             APITokenCmd::Add { tokens, db_url } => {
-                APITokenCmd::handle_api_token_add(tokens, db_url)
+                APITokenCmd::handle_api_token_add_whith_db_backup(tokens, db_url)
             }
             APITokenCmd::Generate { n, size } => APITokenCmd::handle_generate(*n, *size),
         }

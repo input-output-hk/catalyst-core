@@ -1,10 +1,10 @@
 use crate::db::{
     models::{funds::Fund, voteplans::Voteplan},
-    schema::{funds::dsl as fund_dsl, voteplans::dsl as voteplans_dsl},
-    DBConnectionPool,
+    schema::{funds, funds::dsl as fund_dsl, voteplans::dsl as voteplans_dsl},
+    DBConnection, DBConnectionPool,
 };
 use crate::v0::errors::HandleError;
-use diesel::{ExpressionMethods, RunQueryDsl};
+use diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 
 pub async fn query_fund_by_id(id: i32, pool: &DBConnectionPool) -> Result<Fund, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
@@ -66,4 +66,13 @@ pub async fn query_all_funds(pool: &DBConnectionPool) -> Result<Vec<Fund>, Handl
     })
     .await
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
+}
+
+pub fn insert_fund(fund: Fund, db_conn: &DBConnection) -> QueryResult<Fund> {
+    diesel::insert_into(funds::table)
+        .values(fund.values())
+        .execute(db_conn)?;
+    // This can be done in a single query if we move to postgres or any DB that supports `get_result`
+    // instead of `execute` in the previous insert
+    funds::table.order(fund_dsl::id.desc()).first(db_conn)
 }

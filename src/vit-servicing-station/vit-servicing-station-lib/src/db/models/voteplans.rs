@@ -1,4 +1,5 @@
-use diesel::Queryable;
+use crate::db::schema::voteplans;
+use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Queryable)]
@@ -22,6 +23,31 @@ pub struct Voteplan {
     pub chain_voteplan_payload: String,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
+}
+
+// This warning is disabled here. Values is only referenced as a type here. It should be ok not to
+// split the types definitions.
+#[allow(clippy::type_complexity)]
+impl Insertable<voteplans::table> for Voteplan {
+    type Values = (
+        diesel::dsl::Eq<voteplans::chain_voteplan_id, String>,
+        diesel::dsl::Eq<voteplans::chain_vote_start_time, i64>,
+        diesel::dsl::Eq<voteplans::chain_vote_end_time, i64>,
+        diesel::dsl::Eq<voteplans::chain_committee_end_time, i64>,
+        diesel::dsl::Eq<voteplans::chain_voteplan_payload, String>,
+        diesel::dsl::Eq<voteplans::fund_id, i32>,
+    );
+
+    fn values(self) -> Self::Values {
+        (
+            voteplans::chain_voteplan_id.eq(self.chain_voteplan_id),
+            voteplans::chain_vote_start_time.eq(self.chain_vote_start_time),
+            voteplans::chain_vote_end_time.eq(self.chain_vote_end_time),
+            voteplans::chain_committee_end_time.eq(self.chain_committee_end_time),
+            voteplans::chain_voteplan_payload.eq(self.chain_voteplan_payload),
+            voteplans::fund_id.eq(self.fund_id),
+        )
+    }
 }
 
 #[cfg(test)]

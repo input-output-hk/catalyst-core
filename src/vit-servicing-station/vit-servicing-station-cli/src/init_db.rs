@@ -1,4 +1,3 @@
-use crate::db_utils::db_file_exists;
 use crate::task::ExecTask;
 use std::io;
 use structopt::StructOpt;

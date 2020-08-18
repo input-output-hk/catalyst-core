@@ -23,7 +23,7 @@
 //! #
 //! use chain_path_derivation::bip44;
 //!
-//! let account = bip44::new().purpose().coin_type(BITCOIN).account(ACCOUNT_01);
+//! let account = bip44::new().bip44().coin_type(BITCOIN).account(ACCOUNT_01);
 //! assert_eq!(account.to_string(), "m/'44/'0/'0")
 //! ```
 //!
@@ -36,7 +36,7 @@
 //! #
 //! # use chain_path_derivation::bip44;
 //! #
-//! # let account = bip44::new().purpose().coin_type(BITCOIN).account(ACCOUNT_01);
+//! # let account = bip44::new().bip44().coin_type(BITCOIN).account(ACCOUNT_01);
 //! let change = account.external();
 //! let first_address = change.address(SoftDerivation::min_value().wrapping_add(0));
 //! let second_address = change.address(SoftDerivation::min_value().wrapping_add(1));
@@ -235,7 +235,7 @@ impl DerivationPath<Bip44<Change>> {
     /// #
     /// # use chain_path_derivation::bip44;
     /// #
-    /// let account = bip44::new().purpose().coin_type(BITCOIN).account(ACCOUNT_01);
+    /// let account = bip44::new().bip44().coin_type(BITCOIN).account(ACCOUNT_01);
     /// let change = account.external();
     /// let end = SoftDerivation::min_value().saturating_add(20);
     ///

@@ -3,7 +3,7 @@ const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
 mod utils;
 
 use self::utils::State;
-use chain_impl_mockchain::{fragment::Fragment, value::Value};
+use chain_impl_mockchain::value::Value;
 use wallet::{transaction::dump_daedalus_utxo, RecoveryBuilder};
 
 /// test to recover a daedalus style address in the test-vectors block0

@@ -1,7 +1,7 @@
 mod utils;
 
 use self::utils::State;
-use chain_impl_mockchain::{fragment::Fragment, value::Value};
+use chain_impl_mockchain::value::Value;
 use wallet::{transaction::dump_icarus_utxo, RecoveryBuilder};
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");

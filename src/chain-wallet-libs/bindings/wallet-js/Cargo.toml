@@ -1,6 +1,6 @@
 [package]
 name = "wallet-js"
-version = "0.5.0-pre1"
+version = "0.5.0-pre2"
 authors = ["Enzo Cioppettini <ecioppettini@atixlabs.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"

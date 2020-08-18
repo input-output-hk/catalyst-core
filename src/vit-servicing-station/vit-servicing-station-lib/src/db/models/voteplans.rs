@@ -43,7 +43,7 @@ impl Insertable<voteplans::table> for Voteplan {
             voteplans::chain_voteplan_id.eq(self.chain_voteplan_id),
             voteplans::chain_vote_start_time.eq(self.chain_vote_start_time),
             voteplans::chain_vote_end_time.eq(self.chain_vote_end_time),
-            voteplans::chain_committee_end_time.eq(self.chain_committee_end),
+            voteplans::chain_committee_end_time.eq(self.chain_committee_end_time),
             voteplans::chain_voteplan_payload.eq(self.chain_voteplan_payload),
             voteplans::fund_id.eq(self.fund_id),
         )

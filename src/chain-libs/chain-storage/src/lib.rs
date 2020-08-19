@@ -33,9 +33,9 @@
 //! `store.flush_to_permanent_store(block 2 id)`, then `Block 1` and `Block 2`
 //! will be moved to the permanent storage. If you call
 //! `store.flush_to_permanent_store(block 3 id)`, `Block 3` will also be moved
-//! to the permanent store, but `Block 3'` will still exist in the volatile store. Note that if you
-//! call `store.get_blocks_by_chain_length(3)` only `Block 3` (which is in the
-//! permanent store) will be returned; and you cannot call
+//! to the permanent store, but `Block 3'` will still exist in the volatile store.
+//! Note that if you call `store.get_blocks_by_chain_length(3)` only `Block 3`
+//! (which is in the permanent store) will be returned; and you cannot call
 //! `store.flush_to_permanent_store(block 3' id)` now.
 //!
 //! __fig.1 - note that root does not actually exist, this is an ID referredby__
@@ -625,9 +625,8 @@ fn put_block_impl(
     id_length: usize,
     parent_external: bool,
 ) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
-    let parent_in_volatile_store = if parent_external {
-        false
-    } else if block_info.parent_id().as_ref() == root_id {
+    let parent_in_volatile_store = if parent_external || block_info.parent_id().as_ref() == root_id
+    {
         false
     } else if info.get(block_info.parent_id())?.is_none() {
         return Ok(Err(Error::MissingParent));

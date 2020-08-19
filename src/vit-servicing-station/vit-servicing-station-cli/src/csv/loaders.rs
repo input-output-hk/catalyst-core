@@ -135,6 +135,4 @@ impl ExecTask for CSVDataCmd {
 }
 
 #[cfg(test)]
-mod test {
-    use super::*;
-}
+mod test {}

@@ -1,5 +1,6 @@
 use crate::api_token::APITokenCmd;
 use crate::csv::loaders::CSVDataCmd;
+use crate::init_db::DB;
 use crate::task::ExecTask;
 use structopt::StructOpt;
 
@@ -9,6 +10,8 @@ pub enum CLIApp {
     APIToken(APITokenCmd),
     /// CSV data loaders
     CSVData(CSVDataCmd),
+    /// DB related operations
+    DB(DB),
 }
 
 impl ExecTask for CLIApp {
@@ -18,6 +21,7 @@ impl ExecTask for CLIApp {
         match self {
             CLIApp::APIToken(api_token) => api_token.exec(),
             CLIApp::CSVData(csv_data) => csv_data.exec(),
+            CLIApp::DB(db_cmd) => db_cmd.exec(),
         }
     }
 }

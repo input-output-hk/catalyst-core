@@ -175,7 +175,7 @@ mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool);
+        db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let fund: Fund = funds_testing::get_test_fund();
         funds_testing::populate_db_with_fund(&fund, &pool);
 
@@ -199,7 +199,7 @@ mod test {
 
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
-        db_testing::initialize_db_with_migration(&pool);
+        db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let proposal: Proposal = proposal_testing::get_test_proposal();
         proposal_testing::populate_db_with_proposal(&proposal, &pool);
 

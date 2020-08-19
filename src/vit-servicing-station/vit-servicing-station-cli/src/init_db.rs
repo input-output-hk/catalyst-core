@@ -7,7 +7,7 @@ use vit_servicing_station_lib::db::{
 
 #[derive(Debug, PartialEq, StructOpt)]
 pub enum DB {
-    /// Add provided tokens to database. If --tokens is not provided the binary will read them from the `stdin`
+    /// Initialize a DB with the proper migrations, DB file is created if not exists.
     Init {
         /// URL of the vit-servicing-station database to interact with
         #[structopt(long = "db-url")]

@@ -22,9 +22,9 @@
 //!
 //! Given that, the storage is separated into two parts:
 //!
-//! * Volatile storage should be used for the part of a block chain, where a
+//! * Volatile storage should be used for the part of a blockchain where a
 //!   developer may need access to different branches.
-//! * Permanent storage for the part of block chain, that is guaranteed not to
+//! * Permanent storage for the part of the blockchain that is guaranteed not to
 //!   change anymore.
 //!
 //! ## Moving blocks to the permanent store.
@@ -33,7 +33,7 @@
 //! `store.flush_to_permanent_store(block 2 id)`, then `Block 1` and `Block 2`
 //! will be moved to the permanent storage. If you call
 //! `store.flush_to_permanent_store(block 3 id)`, `Block 3` will also be moved
-//! to the permanent store, but `Block 3'` will still exist. Note that if you
+//! to the permanent store, but `Block 3'` will still exist in the volatile store. Note that if you
 //! call `store.get_blocks_by_chain_length(3)` only `Block 3` (which is in the
 //! permanent store) will be returned; and you cannot call
 //! `store.flush_to_permanent_store(block 3' id)` now.

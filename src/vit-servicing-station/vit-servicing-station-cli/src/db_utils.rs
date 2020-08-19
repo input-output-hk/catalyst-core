@@ -1,7 +1,6 @@
 use std::fs;
 use std::io;
 use std::io::{Read, Write};
-use tempfile;
 
 pub fn db_file_exists(db_url: &str) -> io::Result<()> {
     // check if db file exists

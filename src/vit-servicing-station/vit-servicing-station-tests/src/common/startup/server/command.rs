@@ -10,6 +10,7 @@ pub struct BootstrapCommandBuilder {
     block0_path: Option<String>,
     cert_file: Option<PathBuf>,
     db_url: Option<String>,
+    enable_api_tokens: bool,
     in_settings_file: Option<PathBuf>,
     max_age_secs: Option<u32>,
     out_settings_file: Option<PathBuf>,
@@ -31,6 +32,7 @@ impl BootstrapCommandBuilder {
             block0_path: None,
             cert_file: None,
             db_url: None,
+            enable_api_tokens: false,
             in_settings_file: None,
             max_age_secs: None,
             out_settings_file: None,
@@ -57,10 +59,17 @@ impl BootstrapCommandBuilder {
         self.cert_file = Some(cert_file.clone());
         self
     }
+
     pub fn db_url<S: Into<String>>(&mut self, db_url: S) -> &mut Self {
         self.db_url = Some(db_url.into());
         self
     }
+
+    pub fn enable_api_tokens(&mut self, enabled: bool) -> &mut Self {
+        self.enable_api_tokens = enabled;
+        self
+    }
+
     pub fn in_settings_file(&mut self, in_settings_file: &PathBuf) -> &mut Self {
         self.in_settings_file = Some(in_settings_file.clone());
         self
@@ -73,6 +82,7 @@ impl BootstrapCommandBuilder {
         self.out_settings_file = Some(out_settings_file.clone());
         self
     }
+
     pub fn priv_key_file(&mut self, priv_key_file: &PathBuf) -> &mut Self {
         self.priv_key_file = Some(priv_key_file.clone());
         self
@@ -95,27 +105,37 @@ impl BootstrapCommandBuilder {
         if let Some(cert_file) = &self.cert_file {
             command.arg("--cert-file").arg(cert_file.to_str().unwrap());
         }
+
         if let Some(db_url) = &self.db_url {
             command.arg("--db-url").arg(db_url);
         }
+
         if let Some(in_settings_file) = &self.in_settings_file {
             command
                 .arg("--in-settings-file")
                 .arg(in_settings_file.to_str().unwrap());
         }
+
         if let Some(max_age_secs) = &self.max_age_secs {
             command.arg("--max-age-secs").arg(max_age_secs.to_string());
         }
+
         if let Some(out_settings_file) = &self.out_settings_file {
             command
                 .arg("--out-settings-file")
                 .arg(out_settings_file.to_str().unwrap());
         }
+
         if let Some(priv_key_file) = &self.priv_key_file {
             command
                 .arg("--priv-key-file")
                 .arg(priv_key_file.to_str().unwrap());
         }
+
+        if self.enable_api_tokens {
+            command.arg("--enable-api-tokens");
+        }
+
         command
     }
 }

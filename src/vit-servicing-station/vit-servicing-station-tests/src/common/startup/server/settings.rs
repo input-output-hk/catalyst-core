@@ -52,6 +52,11 @@ impl ServerSettingsBuilder {
         self
     }
 
+    pub fn with_api_tokens(&mut self, enabled: bool) -> &mut Self {
+        self.settings.enable_api_tokens = enabled;
+        self
+    }
+
     pub fn build(&self) -> ServiceSettings {
         self.settings.clone()
     }

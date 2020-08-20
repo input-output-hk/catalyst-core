@@ -54,7 +54,7 @@ async fn main() {
 
     let context = v0::context::new_shared_context(db_pool, block0);
 
-    let app = v0::filter(context).await;
+    let app = v0::filter(context, settings.enable_api_tokens).await;
 
     log::info!(
         "Running server at {}, database located at {}",

@@ -13,6 +13,7 @@ impl Default for ServiceSettings {
             cors: Cors::default(),
             db_url: "./db/database.sqlite3".to_string(),
             block0_path: "./resources/v0/block0.bin".to_string(),
+            enable_api_tokens: false,
             log: Log::default(),
         }
     }

@@ -50,6 +50,10 @@ pub struct ServiceSettings {
     #[structopt(long, default_value = BLOCK0_PATH_DEFAULT)]
     pub block0_path: String,
 
+    /// Enable API Tokens feature
+    #[structopt(long)]
+    pub enable_api_tokens: bool,
+
     #[serde(default)]
     #[structopt(flatten)]
     pub log: Log,
@@ -154,6 +158,8 @@ impl ServiceSettings {
         if other_settings.block0_path != BLOCK0_PATH_DEFAULT {
             return_settings.block0_path = other_settings.block0_path.clone();
         }
+
+        return_settings.enable_api_tokens = other_settings.enable_api_tokens;
 
         return_settings
     }
@@ -345,6 +351,7 @@ mod test {
             },
             "db_url": "",
             "block0_path": "./test/bin.test",
+            "enable_api_tokens" : true,
             "log" : {
                 "log_output_path" : "./server.log",
                 "log_level" : "error"    
@@ -358,6 +365,7 @@ mod test {
             SocketAddr::from_str("127.0.0.1:3030").unwrap()
         );
         assert_eq!(config.block0_path, "./test/bin.test");
+        assert_eq!(config.enable_api_tokens, true);
         assert_eq!(config.log.log_output_path.unwrap(), "./server.log");
         assert_eq!(config.log.log_level, LogLevel::Error);
         let tls_config = config.tls;
@@ -401,6 +409,7 @@ mod test {
             "./log.log",
             "--log-level",
             "error",
+            "--enable-api-tokens",
         ]);
 
         assert_eq!(
@@ -409,6 +418,7 @@ mod test {
         );
 
         assert!(settings.tls.is_loaded());
+        assert_eq!(settings.enable_api_tokens, true);
         assert_eq!(settings.tls.cert_file.unwrap(), "foo.bar");
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
         assert_eq!(settings.db_url, "database.sqlite3");
@@ -479,6 +489,7 @@ mod test {
             "https://foo.test;https://test.foo:5050",
             "--block0-path",
             "block0.bin",
+            "--enable-api-tokens",
         ]);
 
         let merged_settings = default.override_from(&other_settings);

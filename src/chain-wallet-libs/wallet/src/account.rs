@@ -1,17 +1,17 @@
 use super::transaction::AccountWitnessBuilder;
 use crate::scheme::{on_tx_input_and_witnesses, on_tx_output};
 use crate::states::{States, Status};
-use chain_crypto::{Ed25519, PublicKey};
+use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
 use chain_impl_mockchain::{
     fragment::{Fragment, FragmentId},
     transaction::{Input, InputEnum},
     value::Value,
 };
-use hdkeygen::account::Account;
 pub use hdkeygen::account::AccountId;
+use hdkeygen::account::{Account, SEED};
 
 pub struct Wallet {
-    account: Account,
+    account: EitherAccount,
     state: States<FragmentId, State>,
 }
 
@@ -26,10 +26,28 @@ pub struct WalletBuildTx<'a> {
     counter: u32,
 }
 
+enum EitherAccount {
+    Seed(Account<SEED>),
+    Extended(Account<SecretKey<Ed25519Extended>>),
+}
+
 impl Wallet {
-    pub fn new(account: Account) -> Wallet {
+    pub fn new_from_seed(seed: SEED) -> Wallet {
         Wallet {
-            account,
+            account: EitherAccount::Seed(Account::from_seed(seed)),
+            state: States::new(
+                FragmentId::zero_hash(),
+                State {
+                    value: Value::zero(),
+                    counter: 0,
+                },
+            ),
+        }
+    }
+
+    pub fn new_from_key(key: SecretKey<Ed25519Extended>) -> Wallet {
+        Wallet {
+            account: EitherAccount::Extended(Account::from_secret_key(key)),
             state: States::new(
                 FragmentId::zero_hash(),
                 State {
@@ -41,7 +59,10 @@ impl Wallet {
     }
 
     pub fn account_id(&self) -> AccountId {
-        self.account.account_id()
+        match &self.account {
+            EitherAccount::Extended(account) => account.account_id(),
+            EitherAccount::Seed(account) => account.account_id(),
+        }
     }
 
     /// set the state counter so we can sync with the blockchain and the
@@ -139,12 +160,11 @@ impl Wallet {
             _ => {
                 on_tx_input_and_witnesses(fragment, |(input, _witness)| {
                     if let InputEnum::AccountInput(id, value) = input.to_enum() {
-                        if self.account.account_id().as_ref() == id.as_ref() {
+                        if self.account_id().as_ref() == id.as_ref() {
                             new_value = value.checked_sub(new_value).expect("value overflow");
                         }
+                        increment_counter = true;
                     }
-
-                    increment_counter = true;
 
                     // TODO: check monotonicity by signing and comparing
                     // if let Witness::Account(witness) = witness {
@@ -191,9 +211,18 @@ impl<'a> WalletBuildTx<'a> {
     }
 
     pub fn witness_builder(&self) -> AccountWitnessBuilder {
-        let mut account = self.wallet.account.clone();
-        account.set_counter(self.counter);
-        crate::transaction::AccountWitnessBuilder(account)
+        match &self.wallet.account {
+            EitherAccount::Seed(account) => crate::transaction::AccountWitnessBuilder::Ed25519(
+                account.secret_key(),
+                self.counter.into(),
+            ),
+            EitherAccount::Extended(account) => {
+                crate::transaction::AccountWitnessBuilder::Ed25519Extended(
+                    account.secret_key(),
+                    self.counter.into(),
+                )
+            }
+        }
     }
 
     pub fn add_fragment_id(self, fragment_id: FragmentId) {

@@ -17,9 +17,16 @@ use std::{
 pub use cryptoxide::ed25519::SEED_LENGTH;
 pub type SEED = [u8; SEED_LENGTH];
 
+pub trait Secret {
+    type SigningKey;
+    fn to_public(&self) -> PublicKey<Ed25519>;
+
+    fn secret_key(&self) -> Self::SigningKey;
+}
+
 #[derive(Clone)]
-pub struct Account {
-    key: SecretKey<Ed25519Extended>,
+pub struct Account<S: Secret> {
+    secret: S,
     counter: u32,
 }
 
@@ -28,28 +35,54 @@ pub struct AccountId {
     id: [u8; AccountId::SIZE],
 }
 
-impl Account {
+impl Secret for SEED {
+    type SigningKey = SecretKey<Ed25519>;
+    fn to_public(&self) -> PublicKey<Ed25519> {
+        let (_, pk) = ed25519::keypair(&self[..]);
+        PublicKey::<Ed25519>::from_binary(&pk).unwrap()
+    }
+
+    fn secret_key(&self) -> SecretKey<Ed25519> {
+        SecretKey::<Ed25519>::from_binary(&self[..]).unwrap()
+    }
+}
+
+impl Secret for SecretKey<Ed25519Extended> {
+    type SigningKey = SecretKey<Ed25519Extended>;
+    fn to_public(&self) -> PublicKey<Ed25519> {
+        self.to_public()
+    }
+
+    fn secret_key(&self) -> SecretKey<Ed25519Extended> {
+        self.clone()
+    }
+}
+
+impl Account<SEED> {
+    pub fn from_seed(seed: SEED) -> Self {
+        Account {
+            secret: seed,
+            counter: 0,
+        }
+    }
+}
+
+impl Account<SecretKey<Ed25519Extended>> {
+    pub fn from_secret_key(key: SecretKey<Ed25519Extended>) -> Self {
+        Account {
+            secret: key,
+            counter: 0,
+        }
+    }
+}
+
+impl<S: Secret> Account<S> {
     pub fn account_id(&self) -> AccountId {
         AccountId { id: self.public() }
     }
 
-    pub fn from_seed(seed: SEED) -> Self {
-        let (key, _) = ed25519::keypair(&seed);
-
-        Account {
-            key: SecretKey::<_>::from_binary(key.as_ref()).unwrap(),
-            counter: 0,
-        }
-    }
-
-    pub fn from_secret_key(key: SecretKey<Ed25519Extended>) -> Self {
-        Account { key, counter: 0 }
-    }
-
     pub fn public(&self) -> [u8; AccountId::SIZE] {
-        // let (_, pk) = ed25519::keypair(&self.seed);
-        // pk
-        self.key.to_public().as_ref().try_into().unwrap()
+        self.secret.to_public().as_ref().try_into().unwrap()
     }
 
     /// get the transaction counter
@@ -70,8 +103,12 @@ impl Account {
         self.counter += atm
     }
 
-    pub fn secret_key(&self) -> &SecretKey<Ed25519Extended> {
-        &self.key
+    pub fn secret(&self) -> &S {
+        &self.secret
+    }
+
+    pub fn secret_key(&self) -> S::SigningKey {
+        self.secret.secret_key()
     }
 
     // pub fn seed(&self) -> &SEED {
@@ -156,7 +193,7 @@ mod tests {
     use super::*;
     use quickcheck::{Arbitrary, Gen};
 
-    impl Arbitrary for Account {
+    impl Arbitrary for Account<SEED> {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let mut seed = [0; SEED_LENGTH];
             g.fill_bytes(&mut seed);

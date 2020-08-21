@@ -28,15 +28,15 @@ enum PayloadType
 };
 typedef uint8_t PayloadType;
 
-typedef Error *ErrorPtr;
+typedef struct Error *ErrorPtr;
 
-typedef Wallet *WalletPtr;
+typedef struct Wallet *WalletPtr;
 
-typedef Settings *SettingsPtr;
+typedef struct Settings *SettingsPtr;
 
-typedef Conversion *ConversionPtr;
+typedef struct Conversion *ConversionPtr;
 
-typedef Proposal *ProposalPtr;
+typedef struct Proposal *ProposalPtr;
 
 /**
  * decrypt payload of the wallet transfer protocol
@@ -321,6 +321,41 @@ ErrorPtr iohk_jormungandr_wallet_id(WalletPtr wallet,
                                     uint8_t *id_out);
 
 /**
+ * recover a wallet from an account and a list of utxo keys
+ *
+ * You can also use this function to recover a wallet even after you have
+ * transferred all the funds to the new format (see the _convert_ function)
+ *
+ * The recovered wallet will be returned in `wallet_out`.
+ *
+ * # parameters
+ *
+ * * account_key: the Ed25519 extended key used wallet's account address private key
+ *     in the form of a 64 bytes array.
+ * * utxo_keys: an array of Ed25519 extended keys in the form of 64 bytes, used as utxo
+ *     keys for the wallet
+ * * utxo_keys_len: the number of keys in the utxo_keys array (not the number of bytes)
+ * * wallet_out: the recovered wallet
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers (password and wallet_out). Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
+ * # errors
+ *
+ * The function may fail if:
+ *
+ * * the `wallet_out` is null pointer
+ *
+ */
+ErrorPtr iohk_jormungandr_wallet_import_keys(const uint8_t *account_key,
+                                             const uint8_t *utxo_keys,
+                                             uintptr_t utxo_keys_len,
+                                             WalletPtr *wallet_out);
+
+/**
  * retrieve a wallet from the given mnemonics, password and protocol magic
  *
  * this function will work for all yoroi, daedalus and other wallets
@@ -362,45 +397,6 @@ ErrorPtr iohk_jormungandr_wallet_recover(const char *mnemonics,
                                          const uint8_t *password,
                                          uintptr_t password_length,
                                          WalletPtr *wallet_out);
-
-/**
- * retrieve a wallet from the given mnemonics, password and protocol magic
- *
- * this function will work for all yoroi, daedalus and other wallets
- * as it will try every kind of wallet anyway
- *
- * You can also use this function to recover a wallet even after you have
- * transferred all the funds to the new format (see the _convert_ function)
- *
- * The recovered wallet will be returned in `wallet_out`.
- *
- * # parameters
- *
- * * account_key: the Ed25519 extended key used wallet's account address private key
- *     in the form of a 64 bytes array.
- * * utxo_keys: an array of Ed25519 keys in the form of 64 bytes, used as utxo
- *     keys for the wallet
- * * utxo_keys_len: the number of keys in the utxo_keys array (not the number of bytes)
- * * wallet_out: the recovered wallet
- *
- * # Safety
- *
- * This function dereference raw pointers (password and wallet_out). Even though
- * the function checks if the pointers are null. Mind not to put random values
- * in or you may see unexpected behaviors
- *
- * # errors
- *
- * The function may fail if:
- *
- * * the mnemonics are not valid (invalid length or checksum);
- * * the `wallet_out` is null pointer
- *
- */
-ErrorPtr iohk_jormungandr_wallet_recover_free_keys(uint8_t account_key[64],
-                                                   const uint8_t (*utxo_keys)[64],
-                                                   uintptr_t utxo_keys_len,
-                                                   WalletPtr *wallet_out);
 
 /**
  * retrieve funds from daedalus or yoroi wallet in the given block0 (or

@@ -92,10 +92,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
     r.into_c_api()
 }
 
-/// retrieve a wallet from the given mnemonics, password and protocol magic
-///
-/// this function will work for all yoroi, daedalus and other wallets
-/// as it will try every kind of wallet anyway
+/// recover a wallet from an account and a list of utxo keys
 ///
 /// You can also use this function to recover a wallet even after you have
 /// transferred all the funds to the new format (see the _convert_ function)
@@ -105,8 +102,8 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
 /// # parameters
 ///
 /// * account_key: the Ed25519 extended key used wallet's account address private key
-///     in the form of a 64 bytes array.  
-/// * utxo_keys: an array of Ed25519 keys in the form of 64 bytes, used as utxo
+///     in the form of a 64 bytes array.
+/// * utxo_keys: an array of Ed25519 extended keys in the form of 64 bytes, used as utxo
 ///     keys for the wallet
 /// * utxo_keys_len: the number of keys in the utxo_keys array (not the number of bytes)
 /// * wallet_out: the recovered wallet
@@ -121,7 +118,6 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
 ///
 /// The function may fail if:
 ///
-/// * the mnemonics are not valid (invalid length or checksum);
 /// * the `wallet_out` is null pointer
 ///
 #[no_mangle]

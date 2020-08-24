@@ -1,6 +1,6 @@
 use super::common::{self, Depth, Seed};
 use ed25519_dalek as ed25519;
-use ed25519_dalek::{Digest, Signer as _, Verifier as _};
+use ed25519_dalek::{Signer as _, Verifier as _};
 use std::convert::TryFrom as _;
 //use std::hash::Hash;
 
@@ -487,6 +487,7 @@ impl Signature {
 }
 
 pub fn hash(pk1: &PublicKey, pk2: &PublicKey) -> PublicKey {
+    use sha2::Digest as _;
     let mut out = [0u8; 32];
     let mut h = sha2::Sha256::default();
     h.input(&pk1.0);

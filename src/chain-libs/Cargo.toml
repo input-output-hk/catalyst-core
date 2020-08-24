@@ -3,6 +3,7 @@ members = [
     "imhamt",
     "chain-ser",
     "chain-core",
+    "chain-vote",
     "chain-addr",
     "chain-time",
     "chain-crypto",

@@ -1,0 +1,36 @@
+[package]
+name = "chain-vote"
+version = "0.1.0"
+authors = ["Vincent Hanquez <vincent.hanquez@iohk.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand_core = "0.5"
+cryptoxide = "0.2"
+eccoxide = { version = "0.1", optional = true }
+zerocaf = { version = "0.2", optional = true }
+
+criterion = { version = "0.3", optional = true }
+rand_chacha = { version = "0.2", optional = true }
+
+[dev-dependencies]
+rand_chacha = "0.2"
+smoke = "^0.2.1"
+
+[features]
+default = ["p256k1"]
+p256k1 = ["eccoxide"]
+ed = ["zerocaf"]
+with-bench = ["criterion"]
+
+[[bench]]
+harness = false
+name = "shvzk"
+required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "gmul"
+required-features = ["with-bench"]

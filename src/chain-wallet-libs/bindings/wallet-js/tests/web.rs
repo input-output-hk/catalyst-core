@@ -25,7 +25,24 @@ fn yoroi1() {
     assert_eq!(conversion.total_value_ignored(), 1);
     assert_eq!(conversion.transactions_len(), 1);
 
-    let transaction_bytes = conversion
+    let _transaction_bytes = conversion
         .transactions_get(0)
         .expect("to get the only transaction present in the conversion");
+}
+
+#[wasm_bindgen_test]
+fn gen_key() {
+    // just test that the random generator works
+    let _key = Ed25519ExtendedPrivate::generate();
+}
+
+#[wasm_bindgen_test]
+fn encrypt_decrypt() {
+    let data = [1u8; 64 * 2];
+    let password = [1u8, 2, 3, 4];
+    let encrypted = symmetric_encrypt(&password, &data).unwrap();
+    assert_eq!(
+        &symmetric_decrypt(&password, &encrypted).unwrap()[..],
+        &data[..]
+    );
 }

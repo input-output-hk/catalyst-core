@@ -37,6 +37,12 @@ pub enum PayloadType {
 }
 
 #[wasm_bindgen]
+pub struct Ed25519ExtendedPrivate([u8; 64]);
+
+#[wasm_bindgen]
+pub struct Ed25519Public(chain_crypto::PublicKey<chain_crypto::Ed25519>);
+
+#[wasm_bindgen]
 impl Wallet {
     /// retrieve a wallet from the given mnemonics and password
     ///
@@ -210,4 +216,55 @@ impl Options {
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Options)
     }
+}
+
+#[wasm_bindgen]
+impl Ed25519ExtendedPrivate {
+    pub fn generate() -> Self {
+        // TODO: use the type in chain-crypto, but it doesn't have a to_bytes() method I think
+        use rand::{RngCore, SeedableRng};
+        let mut rng =
+            rand_chacha::ChaChaRng::from_rng(rand::rngs::OsRng).expect("failed to generate random");
+        let mut bytes = [0u8; 64];
+        rng.fill_bytes(&mut bytes);
+
+        bytes[0] &= 0b1111_1000;
+        bytes[31] &= 0b0011_1111;
+        bytes[31] |= 0b0100_0000;
+        Self(bytes)
+    }
+
+    pub fn public(&self) -> Ed25519Public {
+        chain_crypto::SecretKey::<chain_crypto::Ed25519Extended>::from_binary(&self.0)
+            .map(|key| Ed25519Public(key.to_public()))
+            .unwrap()
+    }
+
+    pub fn bytes(&self) -> Box<[u8]> {
+        self.0.as_ref().into()
+    }
+}
+
+#[wasm_bindgen]
+impl Ed25519Public {
+    pub fn bytes(&self) -> Box<[u8]> {
+        self.0.as_ref().into()
+    }
+
+    pub fn bech32(&self) -> String {
+        use chain_crypto::bech32::Bech32 as _;
+        self.0.to_bech32_str()
+    }
+}
+
+#[wasm_bindgen]
+pub fn symmetric_encrypt(password: &[u8], data: &[u8]) -> Result<Box<[u8]>, JsValue> {
+    symmetric_cipher::encrypt(password, data, rand::rngs::OsRng)
+        .map_err(|e| JsValue::from_str(&format!("encryption failed {}", e)))
+}
+
+#[wasm_bindgen]
+pub fn symmetric_decrypt(password: &[u8], data: &[u8]) -> Result<Box<[u8]>, JsValue> {
+    symmetric_cipher::decrypt(password, data)
+        .map_err(|e| JsValue::from_str(&format!("decryption failed {}", e)))
 }

@@ -6,7 +6,7 @@
 //! and cannot be be controlled without having an account to group them
 
 use chain_addr::{Address, Discrimination, Kind};
-use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
+use chain_crypto::{AsymmetricKey, Ed25519, Ed25519Extended, PublicKey, SecretKey};
 use cryptoxide::ed25519;
 use std::{
     convert::TryInto,
@@ -17,16 +17,8 @@ use std::{
 pub use cryptoxide::ed25519::SEED_LENGTH;
 pub type SEED = [u8; SEED_LENGTH];
 
-pub trait Secret {
-    type SigningKey;
-    fn to_public(&self) -> PublicKey<Ed25519>;
-
-    fn secret_key(&self) -> Self::SigningKey;
-}
-
-#[derive(Clone)]
-pub struct Account<S: Secret> {
-    secret: S,
+pub struct Account<K: AsymmetricKey> {
+    secret: SecretKey<K>,
     counter: u32,
 }
 
@@ -35,39 +27,14 @@ pub struct AccountId {
     id: [u8; AccountId::SIZE],
 }
 
-impl Secret for SEED {
-    type SigningKey = SecretKey<Ed25519>;
-    fn to_public(&self) -> PublicKey<Ed25519> {
-        let (_, pk) = ed25519::keypair(&self[..]);
-        PublicKey::<Ed25519>::from_binary(&pk).unwrap()
-    }
-
-    fn secret_key(&self) -> SecretKey<Ed25519> {
-        SecretKey::<Ed25519>::from_binary(&self[..]).unwrap()
-    }
-}
-
-impl Secret for SecretKey<Ed25519Extended> {
-    type SigningKey = SecretKey<Ed25519Extended>;
-    fn to_public(&self) -> PublicKey<Ed25519> {
-        self.to_public()
-    }
-
-    fn secret_key(&self) -> SecretKey<Ed25519Extended> {
-        self.clone()
-    }
-}
-
-impl Account<SEED> {
+impl Account<Ed25519> {
     pub fn from_seed(seed: SEED) -> Self {
-        Account {
-            secret: seed,
-            counter: 0,
-        }
+        let secret = SecretKey::<Ed25519>::from_binary(&seed).unwrap();
+        Account { secret, counter: 0 }
     }
 }
 
-impl Account<SecretKey<Ed25519Extended>> {
+impl Account<Ed25519Extended> {
     pub fn from_secret_key(key: SecretKey<Ed25519Extended>) -> Self {
         Account {
             secret: key,
@@ -76,7 +43,7 @@ impl Account<SecretKey<Ed25519Extended>> {
     }
 }
 
-impl<S: Secret> Account<S> {
+impl<K: AsymmetricKey> Account<K> {
     pub fn account_id(&self) -> AccountId {
         AccountId { id: self.public() }
     }
@@ -103,12 +70,8 @@ impl<S: Secret> Account<S> {
         self.counter += atm
     }
 
-    pub fn secret(&self) -> &S {
+    pub fn secret(&self) -> &SecretKey<K> {
         &self.secret
-    }
-
-    pub fn secret_key(&self) -> S::SigningKey {
-        self.secret.secret_key()
     }
 
     // pub fn seed(&self) -> &SEED {
@@ -193,7 +156,16 @@ mod tests {
     use super::*;
     use quickcheck::{Arbitrary, Gen};
 
-    impl Arbitrary for Account<SEED> {
+    impl Clone for Account<Ed25519> {
+        fn clone(&self) -> Self {
+            Self {
+                secret: self.secret.clone(),
+                counter: self.counter.clone(),
+            }
+        }
+    }
+
+    impl Arbitrary for Account<Ed25519> {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let mut seed = [0; SEED_LENGTH];
             g.fill_bytes(&mut seed);

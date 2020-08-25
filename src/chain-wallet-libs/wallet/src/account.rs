@@ -27,8 +27,8 @@ pub struct WalletBuildTx<'a> {
 }
 
 enum EitherAccount {
-    Seed(Account<SEED>),
-    Extended(Account<SecretKey<Ed25519Extended>>),
+    Seed(Account<Ed25519>),
+    Extended(Account<Ed25519Extended>),
 }
 
 impl Wallet {
@@ -213,12 +213,12 @@ impl<'a> WalletBuildTx<'a> {
     pub fn witness_builder(&self) -> AccountWitnessBuilder {
         match &self.wallet.account {
             EitherAccount::Seed(account) => crate::transaction::AccountWitnessBuilder::Ed25519(
-                account.secret_key(),
+                account.secret().clone(),
                 self.counter.into(),
             ),
             EitherAccount::Extended(account) => {
                 crate::transaction::AccountWitnessBuilder::Ed25519Extended(
-                    account.secret_key(),
+                    account.secret().clone(),
                     self.counter.into(),
                 )
             }

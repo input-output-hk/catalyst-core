@@ -58,7 +58,7 @@ impl Depth {
 }
 
 pub fn split_seed(r: &Seed) -> (Seed, Seed) {
-    use ed25519_dalek::Digest;
+    use sha2::Digest;
     let mut hleft = sha2::Sha256::default();
     let mut hright = sha2::Sha256::default();
 

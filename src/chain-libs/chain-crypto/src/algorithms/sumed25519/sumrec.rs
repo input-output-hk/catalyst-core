@@ -4,7 +4,7 @@
 // is sum. this module should never be used for anything but testing.
 use super::common::{self, Depth, Seed};
 use ed25519_dalek as ed25519;
-use ed25519_dalek::{Digest, Signer as _, Verifier as _};
+use ed25519_dalek::{Signer as _, Verifier as _};
 
 pub enum SecretKey {
     Leaf(ed25519::Keypair),
@@ -32,6 +32,7 @@ pub enum Signature {
 }
 
 pub fn hash(pk1: &PublicKey, pk2: &PublicKey) -> [u8; 32] {
+    use sha2::Digest;
     let mut out = [0u8; 32];
     let mut h = sha2::Sha256::default();
     h.input(pk1.as_bytes());

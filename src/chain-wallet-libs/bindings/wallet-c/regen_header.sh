@@ -1,3 +1,3 @@
 #! /bin/sh
 
-cbindgen --config cbingden.toml --crate jormungandrwallet --output wallet.h .
+cbindgen --config cbindgen.toml --crate jormungandrwallet --output wallet.h .

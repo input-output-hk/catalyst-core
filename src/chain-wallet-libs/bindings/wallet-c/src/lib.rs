@@ -3,7 +3,7 @@ use std::{
     ffi::{CStr, CString},
     os::raw::c_char,
 };
-pub use wallet::Settings;
+pub use wallet::Settings as SettingsRust;
 use wallet_core::c::{
     symmetric_cipher_decrypt, wallet_convert, wallet_convert_ignored,
     wallet_convert_transactions_get, wallet_convert_transactions_size, wallet_delete_conversion,
@@ -11,15 +11,21 @@ use wallet_core::c::{
     wallet_id, wallet_import_keys, wallet_recover, wallet_retrieve_funds, wallet_set_state,
     wallet_total_value, wallet_vote_cast, wallet_vote_proposal,
 };
-pub use wallet_core::{
-    // c::{ConversionPtr, ErrorPtr, SettingsPtr, WalletPtr},
-    Conversion,
-    Error,
-    ErrorCode,
-    ErrorKind,
-    Proposal,
-    Wallet,
+use wallet_core::{
+    Conversion as ConversionRust, Error as ErrorRust, Proposal as ProposalRust,
+    Wallet as WalletRust,
 };
+
+#[repr(C)]
+pub struct Wallet {}
+#[repr(C)]
+pub struct Settings {}
+#[repr(C)]
+pub struct Conversion {}
+#[repr(C)]
+pub struct Proposal {}
+#[repr(C)]
+pub struct Error {}
 
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
@@ -87,9 +93,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_recover(
     let mnemonics = CStr::from_ptr(mnemonics);
 
     let mnemonics = mnemonics.to_string_lossy();
-    let r = wallet_recover(&mnemonics, password, password_length, wallet_out);
+    let r = wallet_recover(
+        &mnemonics,
+        password,
+        password_length,
+        wallet_out as *mut *mut WalletRust,
+    );
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// recover a wallet from an account and a list of utxo keys
@@ -131,10 +142,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_import_keys(
         account_key,
         utxo_keys as *const [u8; 64],
         utxo_keys_len,
-        wallet_out,
+        wallet_out as *mut *mut WalletRust,
     );
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// get the wallet id
@@ -171,7 +182,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_id(
     wallet: WalletPtr,
     id_out: *mut u8,
 ) -> ErrorPtr {
-    wallet_id(wallet, id_out).into_c_api()
+    wallet_id(wallet as *mut WalletRust, id_out).into_c_api() as ErrorPtr
 }
 
 /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
@@ -214,9 +225,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
     block0_length: usize,
     settings_out: *mut SettingsPtr,
 ) -> ErrorPtr {
-    let r = wallet_retrieve_funds(wallet, block0, block0_length, settings_out);
+    let r = wallet_retrieve_funds(
+        wallet as *mut WalletRust,
+        block0,
+        block0_length,
+        settings_out as *mut *mut SettingsRust,
+    );
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
@@ -247,9 +263,13 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert(
     settings: SettingsPtr,
     conversion_out: *mut ConversionPtr,
 ) -> ErrorPtr {
-    let r = wallet_convert(wallet, settings, conversion_out);
+    let r = wallet_convert(
+        wallet as *mut WalletRust,
+        settings as *mut SettingsRust,
+        conversion_out as *mut *mut ConversionRust,
+    );
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// get the number of transactions built to convert the retrieved wallet
@@ -264,7 +284,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert(
 pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_size(
     conversion: ConversionPtr,
 ) -> usize {
-    wallet_convert_transactions_size(conversion)
+    wallet_convert_transactions_size(conversion as *mut ConversionRust)
 }
 
 /// retrieve the index-nth transactions in the conversions starting from 0
@@ -294,9 +314,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_transactions_get(
     transaction_out: *mut *const u8,
     transaction_size: *mut usize,
 ) -> ErrorPtr {
-    let r = wallet_convert_transactions_get(conversion, index, transaction_out, transaction_size);
+    let r = wallet_convert_transactions_get(
+        conversion as *mut ConversionRust,
+        index,
+        transaction_out,
+        transaction_size,
+    );
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// get the total value ignored in the conversion
@@ -327,9 +352,9 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
     value_out: *mut u64,
     ignored_out: *mut usize,
 ) -> ErrorPtr {
-    let r = wallet_convert_ignored(conversion, value_out, ignored_out);
+    let r = wallet_convert_ignored(conversion as *mut ConversionRust, value_out, ignored_out);
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// get the total value in the wallet
@@ -361,9 +386,9 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_total_value(
     wallet: WalletPtr,
     total_out: *mut u64,
 ) -> ErrorPtr {
-    let r = wallet_total_value(wallet, total_out);
+    let r = wallet_total_value(wallet as *mut WalletRust, total_out);
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// update the wallet account state
@@ -397,9 +422,9 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
     value: u64,
     counter: u32,
 ) -> ErrorPtr {
-    let r = wallet_set_state(wallet, value, counter);
+    let r = wallet_set_state(wallet as *mut WalletRust, value, counter);
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// build the proposal object
@@ -429,10 +454,10 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
         payload_type.into(),
         index,
         num_choices,
-        proposal_out,
+        proposal_out as *mut *mut ProposalRust,
     );
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// build the vote cast transaction
@@ -459,9 +484,16 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
     transaction_out: *mut *const u8,
     len_out: *mut usize,
 ) -> ErrorPtr {
-    let r = wallet_vote_cast(wallet, settings, proposal, choice, transaction_out, len_out);
+    let r = wallet_vote_cast(
+        wallet as *mut WalletRust,
+        settings as *mut SettingsRust,
+        proposal as *mut ProposalRust,
+        choice,
+        transaction_out,
+        len_out,
+    );
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// decrypt payload of the wallet transfer protocol
@@ -500,7 +532,7 @@ pub unsafe extern "C" fn iohk_jormungandr_symmetric_cipher_decrypt(
         plaintext_out_length,
     );
 
-    r.into_c_api()
+    r.into_c_api() as ErrorPtr
 }
 
 /// Get a string describing the error, this will return an allocated
@@ -521,7 +553,7 @@ pub unsafe extern "C" fn iohk_jormungandr_symmetric_cipher_decrypt(
 ///
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_error_to_string(error: ErrorPtr) -> *mut c_char {
-    if let Some(error) = error.as_ref() {
+    if let Some(error) = (error as *mut ErrorRust).as_ref() {
         CString::new(error.to_string()).unwrap().into_raw()
     } else {
         CString::new(b"success".to_vec()).unwrap().into_raw()
@@ -548,7 +580,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_error_to_string(error: ErrorPtr
 ///
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_error_details(error: ErrorPtr) -> *mut c_char {
-    if let Some(error) = error.as_ref() {
+    if let Some(error) = (error as *mut ErrorRust).as_ref() {
         if let Some(details) = error.details() {
             CString::new(details.to_string()).unwrap().into_raw()
         } else {
@@ -604,7 +636,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_delete_buffer(ptr: *mut u8, len
 ///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_error(error: ErrorPtr) {
-    wallet_delete_error(error)
+    wallet_delete_error(error as *mut ErrorRust)
 }
 
 /// delete the pointer and free the allocated memory
@@ -617,7 +649,7 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_error(error: ErrorPtr) {
 ///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr) {
-    wallet_delete_settings(settings)
+    wallet_delete_settings(settings as *mut SettingsRust)
 }
 
 /// delete the pointer, zero all the keys and free the allocated memory
@@ -630,7 +662,7 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_settings(settings: SettingsPtr)
 ///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
-    wallet_delete_wallet(wallet)
+    wallet_delete_wallet(wallet as *mut WalletRust)
 }
 
 /// delete the pointer
@@ -643,7 +675,7 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_wallet(wallet: WalletPtr) {
 ///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_conversion(conversion: ConversionPtr) {
-    wallet_delete_conversion(conversion)
+    wallet_delete_conversion(conversion as *mut ConversionRust)
 }
 
 /// delete the pointer
@@ -656,5 +688,5 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_conversion(conversion: Conversi
 ///
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_proposal(proposal: ProposalPtr) {
-    wallet_delete_proposal(proposal)
+    wallet_delete_proposal(proposal as *mut ProposalRust)
 }

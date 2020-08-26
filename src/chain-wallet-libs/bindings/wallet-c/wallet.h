@@ -28,15 +28,40 @@ enum PayloadType
 };
 typedef uint8_t PayloadType;
 
-typedef struct Error *ErrorPtr;
+typedef struct Error
+{
 
-typedef struct Wallet *WalletPtr;
+} Error;
 
-typedef struct Settings *SettingsPtr;
+typedef Error *ErrorPtr;
 
-typedef struct Conversion *ConversionPtr;
+typedef struct Wallet
+{
 
-typedef struct Proposal *ProposalPtr;
+} Wallet;
+
+typedef Wallet *WalletPtr;
+
+typedef struct Settings
+{
+
+} Settings;
+
+typedef Settings *SettingsPtr;
+
+typedef struct Conversion
+{
+
+} Conversion;
+
+typedef Conversion *ConversionPtr;
+
+typedef struct Proposal
+{
+
+} Proposal;
+
+typedef Proposal *ProposalPtr;
 
 /**
  * decrypt payload of the wallet transfer protocol

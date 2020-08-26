@@ -1,0 +1,14 @@
+payload_type: public
+vote_start: 
+  epoch: 0
+  slot_id: 0
+vote_end:
+  epoch: 1
+  slot_id: 0
+committee_end:
+  epoch: 2
+  slot_id: 0
+proposals: 
+  - external_id: 0000000000000000000000000000000000000000000000000000000000000000
+    options: 3
+    action: off_chain

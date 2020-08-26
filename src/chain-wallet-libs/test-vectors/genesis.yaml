@@ -35,7 +35,7 @@ blockchain_configuration:
   # A list of Ed25519 PublicKey that represents the
   # BFT leaders encoded as bech32. The order in the list matters.
   consensus_leader_ids:
-    - ed25519_pk1u47wkwegxtc8uths28nh9d32sdlh5jrvxh3c75dl244a827d3m9q0950zk
+    - ed25519_pk1qfvwqe2ha7jsc2u55kzuf86940m84h55za8xafjzd5fx4vmpw6nq3pn204
 
   # Epoch stability depth
   #
@@ -132,3 +132,4 @@ initial:
         value: 1000
       - address: ca1qvcq2yckqtjzggl3vcsmhessp0a85xnf4mjl6cgcm3vglehj4zhhccpplcd
         value: 10000
+  - cert: 'signedcert1qcqqqqqqqqqqqqqqqqqqzqqqqqqqqqqqqgqqqqqqqyqsqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrqqp93cr92lh62rptjjjct3ylgk4lv7k7jst5um4xgfk3y64nv9m2vm5adk96s970eth8e2nj865kedqql94ldu2ekalckkgzlnhhlgx2fle0dynltlff6jeh7xmwthqqt9v0y473uvxm9uvt4hqpah33qyrqkfspyl'

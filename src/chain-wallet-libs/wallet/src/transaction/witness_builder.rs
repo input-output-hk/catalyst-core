@@ -1,10 +1,11 @@
-use chain_crypto::{Ed25519Extended, SecretKey, Signature};
+use chain_crypto::{Ed25519, Ed25519Extended, SecretKey, Signature};
 use chain_impl_mockchain::{
+    accounting::account::SpendingCounter,
     block::HeaderId,
     transaction::{TransactionSignDataHash, Witness, WitnessUtxoData},
 };
 use ed25519_bip32::XPrv;
-use hdkeygen::account::Account;
+
 use hdkeygen::Key;
 
 pub trait WitnessBuilder {
@@ -13,7 +14,10 @@ pub trait WitnessBuilder {
 
 pub struct OldUtxoWitnessBuilder<D>(pub Key<XPrv, D>);
 pub struct UtxoWitnessBuilder<S, D>(pub Key<S, D>);
-pub struct AccountWitnessBuilder(pub Account);
+pub enum AccountWitnessBuilder {
+    Ed25519(SecretKey<Ed25519>, SpendingCounter),
+    Ed25519Extended(SecretKey<Ed25519Extended>, SpendingCounter),
+}
 
 impl<D> WitnessBuilder for OldUtxoWitnessBuilder<D> {
     fn build(&self, block0: &HeaderId, sign_data_hash: &TransactionSignDataHash) -> Witness {
@@ -56,12 +60,17 @@ impl<D> WitnessBuilder for UtxoWitnessBuilder<SecretKey<Ed25519Extended>, D> {
 
 impl WitnessBuilder for AccountWitnessBuilder {
     fn build(&self, block0: &HeaderId, sign_data_hash: &TransactionSignDataHash) -> Witness {
-        let account = &self.0;
-        let key = account.secret_key();
-        let spending_counter = account.counter().into();
-
-        Witness::new_account(block0, sign_data_hash, spending_counter, |data| {
-            key.sign(data)
-        })
+        match self {
+            AccountWitnessBuilder::Ed25519(key, spending_counter) => {
+                Witness::new_account(block0, sign_data_hash, *spending_counter, |data| {
+                    key.sign(data)
+                })
+            }
+            AccountWitnessBuilder::Ed25519Extended(key, spending_counter) => {
+                Witness::new_account(block0, sign_data_hash, *spending_counter, |data| {
+                    key.sign(data)
+                })
+            }
+        }
     }
 }

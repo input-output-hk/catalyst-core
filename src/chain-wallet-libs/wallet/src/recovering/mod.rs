@@ -131,10 +131,9 @@ impl RecoveryBuilder {
     }
 
     pub fn build_wallet(&self) -> Result<Wallet, RecoveryError> {
-        use hdkeygen::account::Account;
-        let account = match &self.account {
-            Some(AccountFrom::SecretKey(key)) => Account::from_secret_key(key.clone()),
-            Some(AccountFrom::Seed(seed)) => Account::from_seed(*seed),
+        let wallet = match &self.account {
+            Some(AccountFrom::SecretKey(key)) => Wallet::new_from_key(key.clone()),
+            Some(AccountFrom::Seed(seed)) => Wallet::new_from_seed(*seed),
             None => {
                 let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
                 let password = self.password.clone().unwrap_or_default();
@@ -142,10 +141,10 @@ impl RecoveryBuilder {
                 let mut seed = [0u8; hdkeygen::account::SEED_LENGTH];
                 keygen::generate_seed(&entropy, password.as_ref(), &mut seed);
 
-                Account::from_seed(seed)
+                Wallet::new_from_seed(seed)
             }
         };
-        Ok(Wallet::new(account))
+        Ok(wallet)
     }
 
     pub fn build_free_utxos(&self) -> Result<wallet::freeutxo::Wallet, RecoveryError> {

@@ -17,6 +17,8 @@ pub enum Error {
     MalformedInput,
     #[error(transparent)]
     IoError(#[from] std::io::Error),
+    #[error("wrong password")]
+    AuthenticationFailed,
 }
 
 struct View<T: AsRef<[u8]>>(pub T);
@@ -97,11 +99,14 @@ pub fn decrypt<T: AsRef<[u8]>>(password: impl AsRef<[u8]>, data: T) -> Result<Bo
     let mut chacha20 = ChaCha20Poly1305::new(&key, &data.nonce(), &aad);
 
     let mut plaintext = vec![0u8; data.encrypted_data().len()];
-    chacha20.decrypt(data.encrypted_data(), &mut plaintext, data.tag());
 
     cryptoxide::util::secure_memset(&mut key, 0x55);
 
-    Ok(plaintext.into_boxed_slice())
+    if chacha20.decrypt(data.encrypted_data(), &mut plaintext, data.tag()) {
+        Ok(plaintext.into_boxed_slice())
+    } else {
+        Err(Error::AuthenticationFailed)
+    }
 }
 
 impl<T: AsRef<[u8]>> View<T> {
@@ -232,5 +237,23 @@ mod tests {
 
         let slice = encrypt(&password, &bytes[..], get_random_gen()).unwrap();
         assert_eq!(&decrypt(&password, slice).unwrap()[..], &bytes[..]);
+    }
+
+    #[test]
+    fn wrong_password() {
+        let mut bytes: Vec<u8> = vec![];
+        bytes.extend([1u8; 64].iter());
+        bytes.extend([2u8; 64].iter());
+        bytes.extend([3u8; 64].iter());
+
+        let password = [1u8, 2, 3, 4];
+
+        let slice = encrypt(&password, &bytes[..], get_random_gen()).unwrap();
+
+        let password = [5u8, 6, 7, 8];
+        assert!(matches!(
+            decrypt(&password, slice.clone()),
+            Err(Error::AuthenticationFailed)
+        ));
     }
 }

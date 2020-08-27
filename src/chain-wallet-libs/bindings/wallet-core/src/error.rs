@@ -54,6 +54,9 @@ pub enum ErrorCode {
 
     /// error encrypting or decrypting transfer protocol payload
     SymmetricCipherError = 6,
+
+    /// authentication failed
+    SymmetricCipherInvalidPassword = 7,
 }
 
 #[derive(Debug)]
@@ -78,8 +81,11 @@ pub enum ErrorKind {
     /// the wallet failed to build a valid transaction
     WalletTransactionBuilding,
 
-    /// transfer crypto error
+    /// format error (malformed input, etc...)
     SymmetricCipherError,
+
+    /// authentication failed
+    SymmetricCipherInvalidPassword,
 }
 
 impl ErrorKind {
@@ -95,6 +101,7 @@ impl ErrorKind {
             Self::WalletVoteOutOfRange => ErrorCode::WalletVoteOutOfRange,
             Self::WalletTransactionBuilding => ErrorCode::WalletTransactionBuilding,
             Self::SymmetricCipherError => ErrorCode::SymmetricCipherError,
+            Self::SymmetricCipherInvalidPassword => ErrorCode::SymmetricCipherInvalidPassword,
         }
     }
 }
@@ -175,9 +182,16 @@ impl Error {
         }
     }
 
-    pub fn transfer_crypto() -> Self {
+    pub fn symmetric_cipher_error(err: symmetric_cipher::Error) -> Self {
+        let kind = match err {
+            symmetric_cipher::Error::AuthenticationFailed => {
+                ErrorKind::SymmetricCipherInvalidPassword
+            }
+            _ => ErrorKind::SymmetricCipherError,
+        };
+
         Self {
-            kind: ErrorKind::SymmetricCipherError,
+            kind,
             details: None,
         }
     }
@@ -321,7 +335,8 @@ impl Display for ErrorKind {
             Self::WalletTransactionBuilding => f.write_str(
                 "Failed to build a valid transaction, probably not enough funds available",
             ),
-            Self::SymmetricCipherError => f.write_str("Failed to encrypt or decrypt payload"),
+            Self::SymmetricCipherError => f.write_str("malformed encryption or decryption payload"),
+            Self::SymmetricCipherInvalidPassword => f.write_str("invalid decryption password"),
         }
     }
 }

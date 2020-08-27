@@ -745,7 +745,7 @@ pub unsafe fn symmetric_cipher_decrypt(
 
             Result::success()
         }
-        Err(_e) => Error::transfer_crypto().into(),
+        Err(err) => Error::symmetric_cipher_error(err).into(),
     }
 }
 

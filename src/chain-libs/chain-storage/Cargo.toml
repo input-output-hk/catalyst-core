@@ -11,7 +11,7 @@ with-bench = ["criterion", "tempfile", "rand_core"]
 [dependencies]
 sled = "0.31.0"
 thiserror = "1.0"
-data-pile = "0.4.0"
+data-pile = "0.5.0"
 
 criterion = { version = "0.3.0", optional = true }
 rand_core = { version = "0.5", features = ["getrandom"], optional = true }

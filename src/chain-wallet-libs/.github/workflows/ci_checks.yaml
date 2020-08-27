@@ -76,7 +76,7 @@ jobs:
 
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
-        continue-on-error: true  # WARNING: only for this example, remove it!
+        continue-on-error: true # WARNING: only for this example, remove it!
         with:
           command: clippy
           args: -- -D warnings
@@ -115,15 +115,28 @@ jobs:
 
       - name: install dependencies
         working-directory: ./bindings/wallet-cordova
-        run: npm install 
+        run: npm install
 
       - name: eslint
         working-directory: ./bindings/wallet-cordova
-        run: npm run eslint 
+        run: npm run eslint
 
   check-c-header:
     name: check c-header is up-to-date
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
       - name: run check script
         run: bash bindings/wallet-c/check_header.sh

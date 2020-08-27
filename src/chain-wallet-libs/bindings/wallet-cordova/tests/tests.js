@@ -18,7 +18,7 @@ const PASSWORD = new Uint8Array(4);
 PASSWORD[0] = 1;
 PASSWORD[1] = 2;
 PASSWORD[2] = 3;
-PASSWORD[4] = 4;
+PASSWORD[3] = 4;
 
 /**
  * helper to convert the cordova-callback-style to promises, to make tests simpler
@@ -350,21 +350,45 @@ exports.defineAutoTests = function () {
         });
 
         it('decrypts keys correctly', function (done) {
+            console.log(hexStringToBytes(ENCRYPTED_WALLET));
             symmetricCipherDecrypt(PASSWORD, hexStringToBytes(ENCRYPTED_WALLET))
                 .then(function (decryptedKeys) {
-                    console.log(decryptedKeys);
+                    console.log(new Uint8Array(decryptedKeys));
                     const account = decryptedKeys.slice(0 * 64, 1 * 64);
                     const key1 = decryptedKeys.slice(1 * 64, 2 * 64);
                     const key2 = decryptedKeys.slice(2 * 64, 3 * 64);
 
-                    if (uint8ArrayEquals(hexStringToBytes(ACCOUNT), new Uint8Array(account))) {
+                    if (!uint8ArrayEquals(hexStringToBytes(ACCOUNT), new Uint8Array(account))) {
                         done.fail('wrong expected account');
                     }
-                    if (uint8ArrayEquals(hexStringToBytes(KEY1), new Uint8Array(key1))) {
+                    if (!uint8ArrayEquals(hexStringToBytes(KEY1), new Uint8Array(key1))) {
                         done.fail('wrong expected key1');
                     }
-                    if (uint8ArrayEquals(hexStringToBytes(KEY2), new Uint8Array(key2))) {
+                    if (!uint8ArrayEquals(hexStringToBytes(KEY2), new Uint8Array(key2))) {
                         done.fail('wrong expected key2');
+                    }
+                })
+                .catch(function (err) {
+                    done.fail('could not restore wallet' + err);
+                })
+                .then(function () {
+                    done();
+                });
+        });
+
+        it('decrypt QR', function (done) {
+            const encrypted = '01f4c73628793ad51150f3885c706474fb35f33d85c5e3d183773f8138f5d4294807ff71fd9de1fb1a31656520eb72ebefff19f563d51d4b70c1fed789ef73ca70e9870eff4516b2a2550978ede3062e3cf8dbb40408e6f977f7f7a3b92756902b37ca172dc8b2cb09456ee891';
+            const expected = 'c86596c2d1208885db1fe3658406aa0f7cc7b8e13c362fe46a6db277fc5064583e487588c98a6c36e2e7445c0add36f83f171cb5ccfd815509d19cd38ecb0af3';
+            const password = new Uint8Array(4);
+            password[0] = 1;
+            password[1] = 2;
+            password[2] = 3;
+            password[3] = 4;
+
+            symmetricCipherDecrypt(password, hexStringToBytes(encrypted))
+                .then(function (decrypted) {
+                    if (!uint8ArrayEquals(hexStringToBytes(expected), new Uint8Array(decrypted))) {
+                        done.fail('decryption failed');
                     }
                 })
                 .catch(function (err) {

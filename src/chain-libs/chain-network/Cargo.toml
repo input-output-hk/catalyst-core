@@ -14,7 +14,7 @@ rand_core = { version = "0.5", optional = true }
 thiserror = "1.0"
 
 [dependencies.tonic]
-version = "0.2"
+version = "0.3"
 default-features = false
 features = ["codegen", "prost"]
 
@@ -22,7 +22,7 @@ features = ["codegen", "prost"]
 rand = "0.7"
 
 [build-dependencies.tonic-build]
-version = "0.2"
+version = "0.3"
 default-features = false
 features = ["prost"]
 

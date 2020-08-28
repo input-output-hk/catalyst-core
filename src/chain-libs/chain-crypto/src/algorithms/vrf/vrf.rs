@@ -254,7 +254,7 @@ impl OutputSeed {
 fn make_message_hash_point(data: &[u8]) -> Point {
     let m_hash = {
         let mut c = Sha512::new();
-        c.input(data);
+        c.update(data);
         c
     };
     Point::from_hash(m_hash)

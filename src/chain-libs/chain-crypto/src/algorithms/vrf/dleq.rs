@@ -50,10 +50,10 @@ struct Challenge(Scalar);
 
 fn challenge(h1: &Point, h2: &Point, a1: &Point, a2: &Point) -> Challenge {
     let mut d = Sha512::new();
-    d.input(h1.compress().as_bytes());
-    d.input(h2.compress().as_bytes());
-    d.input(a1.compress().as_bytes());
-    d.input(a2.compress().as_bytes());
+    d.update(h1.compress().as_bytes());
+    d.update(h2.compress().as_bytes());
+    d.update(a1.compress().as_bytes());
+    d.update(a2.compress().as_bytes());
     Challenge(Scalar::from_hash(d))
 }
 

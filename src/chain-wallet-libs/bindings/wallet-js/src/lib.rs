@@ -37,7 +37,7 @@ pub enum PayloadType {
 }
 
 #[wasm_bindgen]
-pub struct Ed25519ExtendedPrivate([u8; 64]);
+pub struct Ed25519ExtendedPrivate(chain_crypto::SecretKey<chain_crypto::Ed25519Extended>);
 
 #[wasm_bindgen]
 pub struct Ed25519Public(chain_crypto::PublicKey<chain_crypto::Ed25519>);
@@ -221,27 +221,16 @@ impl Options {
 #[wasm_bindgen]
 impl Ed25519ExtendedPrivate {
     pub fn generate() -> Self {
-        // TODO: use the type in chain-crypto, but it doesn't have a to_bytes() method I think
-        use rand::{RngCore, SeedableRng};
-        let mut rng =
-            rand_chacha::ChaChaRng::from_rng(rand::rngs::OsRng).expect("failed to generate random");
-        let mut bytes = [0u8; 64];
-        rng.fill_bytes(&mut bytes);
-
-        bytes[0] &= 0b1111_1000;
-        bytes[31] &= 0b0011_1111;
-        bytes[31] |= 0b0100_0000;
-        Self(bytes)
+        Self(chain_crypto::SecretKey::<chain_crypto::Ed25519Extended>::generate(rand::rngs::OsRng))
     }
 
     pub fn public(&self) -> Ed25519Public {
-        chain_crypto::SecretKey::<chain_crypto::Ed25519Extended>::from_binary(&self.0)
-            .map(|key| Ed25519Public(key.to_public()))
-            .unwrap()
+        Ed25519Public(self.0.to_public())
     }
 
     pub fn bytes(&self) -> Box<[u8]> {
-        self.0.as_ref().into()
+        // self.0.clone().inner().as_ref().into()
+        self.0.into()
     }
 }
 

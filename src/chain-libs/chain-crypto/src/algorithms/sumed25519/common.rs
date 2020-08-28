@@ -62,14 +62,14 @@ pub fn split_seed(r: &Seed) -> (Seed, Seed) {
     let mut hleft = sha2::Sha256::default();
     let mut hright = sha2::Sha256::default();
 
-    hleft.input(&[1]);
-    hleft.input(&r.0);
+    hleft.update(&[1]);
+    hleft.update(&r.0);
 
-    hright.input(&[2]);
-    hright.input(&r.0);
+    hright.update(&[2]);
+    hright.update(&r.0);
 
-    let o1 = hleft.result();
-    let o2 = hright.result();
+    let o1 = hleft.finalize();
+    let o2 = hright.finalize();
     let s1 = Seed::from_slice(&o1);
     let s2 = Seed::from_slice(&o2);
     (s1, s2)

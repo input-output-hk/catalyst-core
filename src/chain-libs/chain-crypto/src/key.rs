@@ -167,6 +167,9 @@ impl<A: AsymmetricKey> SecretKey<A> {
     pub fn from_binary(data: &[u8]) -> Result<Self, SecretKeyError> {
         Ok(SecretKey(<A as AsymmetricKey>::secret_from_binary(data)?))
     }
+    pub fn inner(self) -> A::Secret {
+        self.0
+    }
 }
 
 impl<A: AsymmetricPublicKey> PublicKey<A> {

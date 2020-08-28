@@ -138,5 +138,8 @@ jobs:
           override: true
           components: rustfmt, clippy
 
+      - name: Install cbindgen
+        run: cargo install cbindgen --force
+
       - name: run check script
         run: bash bindings/wallet-c/check_header.sh

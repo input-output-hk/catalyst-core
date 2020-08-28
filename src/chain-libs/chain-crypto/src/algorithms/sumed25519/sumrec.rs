@@ -35,10 +35,10 @@ pub fn hash(pk1: &PublicKey, pk2: &PublicKey) -> [u8; 32] {
     use sha2::Digest;
     let mut out = [0u8; 32];
     let mut h = sha2::Sha256::default();
-    h.input(pk1.as_bytes());
-    h.input(pk2.as_bytes());
+    h.update(pk1.as_bytes());
+    h.update(pk2.as_bytes());
 
-    let o = h.result();
+    let o = h.finalize();
     out.copy_from_slice(&o);
     out
 }

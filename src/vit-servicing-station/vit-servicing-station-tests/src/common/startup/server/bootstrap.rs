@@ -41,6 +41,11 @@ impl ServerBootstrapper {
         self
     }
 
+    pub fn with_api_tokens(&mut self, enabled: bool) -> &mut Self {
+        self.settings_builder.with_api_tokens(enabled);
+        self
+    }
+
     pub fn start(&self) -> Result<Server, ServerBootstrapperError> {
         let settings = self.settings_builder.build();
 
@@ -49,6 +54,7 @@ impl ServerBootstrapper {
         command_builder
             .address(&settings.address.to_string())
             .db_url(&settings.db_url)
+            .enable_api_tokens(settings.enable_api_tokens)
             .block0_path(&settings.block0_path);
 
         if let Some(allowed_origins) = self.allowed_origins.as_ref() {

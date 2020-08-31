@@ -13,6 +13,7 @@ use warp::{Filter, Rejection, Reply};
 pub async fn filter(
     root: BoxedFilter<()>,
     context: SharedContext,
+    enable_api_tokens: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     // mount health endpoint
     let health_root = warp::path!("health" / ..);
@@ -37,7 +38,12 @@ pub async fn filter(
     let playground_root = warp::path!("graphql" / ..);
     let playground_filter = graphql::playground::filter(playground_root.boxed());
 
-    let api_token_filter = api_token::api_token_filter(context).await;
+    let api_token_filter = if enable_api_tokens {
+        api_token::api_token_filter(context).await.boxed()
+    } else {
+        warp::any().boxed()
+    };
+
     root.and(
         playground_filter.or(api_token_filter.and(
             health_filter

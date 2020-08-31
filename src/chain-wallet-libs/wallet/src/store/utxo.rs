@@ -6,13 +6,13 @@ use std::{cell::RefCell, rc::Rc};
 
 type UTxO = Rc<UtxoPointer>;
 
-pub struct UtxoGroup<S, SCHEME> {
+pub struct UtxoGroup<KEY, SCHEME> {
     by_value: OrdMap<Value, HashSet<UTxO>>,
     total_value: Value,
-    key: Rc<Key<S, SCHEME>>,
+    key: Rc<Key<KEY, SCHEME>>,
 }
 
-type GroupRef<S, SCHEME> = Rc<RefCell<UtxoGroup<S, SCHEME>>>;
+type GroupRef<KEY, SCHEME> = Rc<RefCell<UtxoGroup<KEY, SCHEME>>>;
 
 /// A UTxO store that can be cheaply updated/cloned
 ///
@@ -35,16 +35,16 @@ type GroupRef<S, SCHEME> = Rc<RefCell<UtxoGroup<S, SCHEME>>>;
 /// UTxO Stores. For larger UTxO stores it is more interesting to use a different
 /// data structure, tuned for the need.
 ///
-pub struct UtxoStore<S, SCHEME> {
-    by_utxo: HashMap<UTxO, GroupRef<S, SCHEME>>,
-    by_derivation_path: HashMap<DerivationPath<SCHEME>, GroupRef<S, SCHEME>>,
+pub struct UtxoStore<KEY, SCHEME> {
+    by_utxo: HashMap<UTxO, GroupRef<KEY, SCHEME>>,
+    by_derivation_path: HashMap<DerivationPath<SCHEME>, GroupRef<KEY, SCHEME>>,
     by_value: OrdMap<Value, HashSet<UTxO>>,
 
     total_value: Value,
 }
 
-impl<S, SCHEME> UtxoGroup<S, SCHEME> {
-    fn new(key: Key<S, SCHEME>) -> Self {
+impl<KEY, SCHEME> UtxoGroup<KEY, SCHEME> {
+    fn new(key: Key<KEY, SCHEME>) -> Self {
         Self {
             by_value: OrdMap::new(),
             total_value: Value::zero(),
@@ -52,7 +52,7 @@ impl<S, SCHEME> UtxoGroup<S, SCHEME> {
         }
     }
 
-    pub fn key(&self) -> &Rc<Key<S, SCHEME>> {
+    pub fn key(&self) -> &Rc<Key<KEY, SCHEME>> {
         &self.key
     }
 
@@ -96,7 +96,7 @@ impl<S, SCHEME> UtxoGroup<S, SCHEME> {
     }
 }
 
-impl<S, SCHEME> UtxoStore<S, SCHEME> {
+impl<KEY, SCHEME> UtxoStore<KEY, SCHEME> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -112,7 +112,7 @@ impl<S, SCHEME> UtxoStore<S, SCHEME> {
     ///
     /// this allows optimizing the search of inputs and to favors using
     /// inputs of the same key to preserve privacy
-    pub fn groups(&self) -> impl Iterator<Item = std::cell::Ref<'_, UtxoGroup<S, SCHEME>>> {
+    pub fn groups(&self) -> impl Iterator<Item = std::cell::Ref<'_, UtxoGroup<KEY, SCHEME>>> {
         self.by_derivation_path.values().map(|r| r.borrow())
     }
 
@@ -122,7 +122,7 @@ impl<S, SCHEME> UtxoStore<S, SCHEME> {
     }
 
     /// lookup the UTxO group (if any) associated to the given derivation path
-    pub fn group(&self, dp: &DerivationPath<SCHEME>) -> Option<&GroupRef<S, SCHEME>> {
+    pub fn group(&self, dp: &DerivationPath<SCHEME>) -> Option<&GroupRef<KEY, SCHEME>> {
         self.by_derivation_path.get(dp)
     }
 
@@ -132,7 +132,7 @@ impl<S, SCHEME> UtxoStore<S, SCHEME> {
     /// to a previous state is a rollback happened or in case of managing
     /// different forks
     #[must_use = "function does not modify the internal state, the returned value is the new state"]
-    pub fn add(&self, utxo: UtxoPointer, key: Key<S, SCHEME>) -> Self {
+    pub fn add(&self, utxo: UtxoPointer, key: Key<KEY, SCHEME>) -> Self {
         use im_rc::hashmap::Entry::*;
 
         let mut new = self.clone();
@@ -188,14 +188,14 @@ impl<S, SCHEME> UtxoStore<S, SCHEME> {
         Some(new)
     }
 
-    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<Key<S, SCHEME>>> {
+    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<Key<KEY, SCHEME>>> {
         self.by_utxo
             .get(utxo)
             .map(|group| Rc::clone(&group.borrow().key))
     }
 }
 
-impl<S, SCHEME> Clone for UtxoGroup<S, SCHEME> {
+impl<KEY, SCHEME> Clone for UtxoGroup<KEY, SCHEME> {
     fn clone(&self) -> Self {
         Self {
             by_value: self.by_value.clone(),
@@ -205,7 +205,7 @@ impl<S, SCHEME> Clone for UtxoGroup<S, SCHEME> {
     }
 }
 
-impl<S, SCHEME> Clone for UtxoStore<S, SCHEME> {
+impl<KEY, SCHEME> Clone for UtxoStore<KEY, SCHEME> {
     fn clone(&self) -> Self {
         Self {
             by_utxo: self.by_utxo.clone(),
@@ -216,7 +216,7 @@ impl<S, SCHEME> Clone for UtxoStore<S, SCHEME> {
     }
 }
 
-impl<S, SCHEME> Default for UtxoStore<S, SCHEME> {
+impl<KEY, SCHEME> Default for UtxoStore<KEY, SCHEME> {
     fn default() -> Self {
         Self {
             by_utxo: HashMap::new(),

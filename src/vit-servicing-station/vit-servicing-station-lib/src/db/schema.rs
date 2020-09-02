@@ -12,6 +12,7 @@ table! {
         fund_name -> Text,
         fund_goal -> Text,
         voting_power_info -> Text,
+        voting_power_threshold -> BigInt,
         rewards_info -> Text,
         fund_start_time -> BigInt,
         fund_end_time -> BigInt,
@@ -54,4 +55,9 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(api_tokens, funds, proposals, voteplans,);
+allow_tables_to_appear_in_same_query!(
+    api_tokens,
+    funds,
+    proposals,
+    voteplans,
+);

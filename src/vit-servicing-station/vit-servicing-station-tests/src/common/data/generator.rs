@@ -129,6 +129,7 @@ impl Generator {
             fund_name: CatchPhase().fake::<String>(),
             fund_goal: Buzzword().fake::<String>(),
             voting_power_info: format!(">{}", NumberWithFormat("^###").fake::<String>()),
+            voting_power_threshold: self.random_size() as i64,
             rewards_info: Sentence(3..5).fake::<String>(),
             fund_start_time: start.timestamp(),
             fund_end_time: end.timestamp(),

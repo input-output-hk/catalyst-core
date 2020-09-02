@@ -171,10 +171,12 @@ impl Generator {
             proposal_funds: (self.id_generator.next_u64() as i64).abs(),
             proposal_url: proposal_url.to_string(),
             proposal_files_url: format!("{}/files", proposal_url),
+            proposal_impact_score: self.id_generator.next_u32() as i64,
             proposer: Proposer {
                 proposer_name: Name().fake::<String>(),
                 proposer_email: SafeEmail().fake::<String>(),
                 proposer_url: self.gen_http_address(),
+                proposer_relevant_experience: CatchPhase().fake::<String>(),
             },
             chain_proposal_id: self.hash().as_bytes().to_vec(),
             chain_proposal_index: self.id_generator.next_u32() as i64,

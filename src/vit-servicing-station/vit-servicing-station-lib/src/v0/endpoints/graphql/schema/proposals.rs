@@ -31,6 +31,10 @@ impl Proposer {
     pub async fn proposer_url(&self) -> &str {
         &self.proposer_url
     }
+
+    pub async fn proposer_relevant_experience(&self) -> &str {
+        &self.proposer_relevant_experience
+    }
 }
 
 #[async_graphql::Object]
@@ -77,6 +81,10 @@ impl Proposal {
 
     pub async fn proposal_files_url(&self) -> &str {
         &self.proposal_files_url
+    }
+
+    pub async fn proposal_impact_score(&self) -> i64 {
+        self.proposal_impact_score
     }
 
     pub async fn proposer(&self) -> &Proposer {

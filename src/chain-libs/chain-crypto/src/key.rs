@@ -167,7 +167,10 @@ impl<A: AsymmetricKey> SecretKey<A> {
     pub fn from_binary(data: &[u8]) -> Result<Self, SecretKeyError> {
         Ok(SecretKey(<A as AsymmetricKey>::secret_from_binary(data)?))
     }
-    pub fn security_leak(self) -> A::Secret {
+    // get ownership of the secret key, allowing to get its byte representation.
+    // On the other hand, this may allow unintentionally logging keys through
+    // AsRef
+    pub fn leak_secret(self) -> A::Secret {
         self.0
     }
 }

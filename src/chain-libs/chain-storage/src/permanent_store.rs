@@ -8,7 +8,6 @@ pub(crate) struct PermanentStore {
     block_id_index: sled::Tree,
     root_id: Value,
     id_length: usize,
-    chain_length_offset: u32,
 }
 
 impl PermanentStore {
@@ -16,7 +15,6 @@ impl PermanentStore {
         path: P,
         block_id_index: sled::Tree,
         root_id: Value,
-        chain_length_offset: u32,
     ) -> Result<PermanentStore, Error> {
         std::fs::create_dir_all(&path).expect("failed to create permanent storage dir");
 
@@ -34,14 +32,12 @@ impl PermanentStore {
             block_id_index,
             root_id,
             id_length,
-            chain_length_offset,
         })
     }
 
     pub fn get_block_by_chain_length(&self, chain_length: u32) -> Option<Value> {
-        let seqno = chain_length - self.chain_length_offset;
         self.blocks
-            .get_by_seqno(seqno as usize)
+            .get_by_seqno(chain_length as usize)
             .map(Value::permanent)
     }
 
@@ -57,7 +53,7 @@ impl PermanentStore {
             None => return Ok(None),
         };
 
-        let parent_id = match (chain_length - self.chain_length_offset).checked_sub(1) {
+        let parent_id = match chain_length.checked_sub(1) {
             Some(chain_length) => Value::permanent(
                 self.chain_length_index
                     .get_by_seqno(chain_length as usize)
@@ -117,9 +113,8 @@ impl PermanentStore {
     }
 
     pub fn iter(&self, chain_length: u32) -> Result<data_pile::SeqNoIter, Error> {
-        let seqno = chain_length - self.chain_length_offset;
         self.blocks
-            .iter_from_seqno(seqno as usize)
+            .iter_from_seqno(chain_length as usize)
             .ok_or(Error::BlockNotFound)
     }
 }

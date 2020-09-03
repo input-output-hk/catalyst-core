@@ -42,7 +42,7 @@ impl Block {
         Self {
             id: BlockId::generate(),
             parent: BlockId(0),
-            chain_length: 1,
+            chain_length: 0,
             data: data.unwrap_or_default(),
         }
     }

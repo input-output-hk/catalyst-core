@@ -203,11 +203,7 @@ impl BlockStore {
     ///   block chain should refer to as a parent.
     /// * `chain_length_offset` - chain length value the first block in the
     ///   block chain must have.
-    pub fn new<P: AsRef<Path>, I: Into<Value>>(
-        path: P,
-        root_id: I,
-        chain_length_offset: u32,
-    ) -> Result<Self, Error> {
+    pub fn new<P: AsRef<Path>, I: Into<Value>>(path: P, root_id: I) -> Result<Self, Error> {
         let root_id = root_id.into();
         let id_length = root_id.as_ref().len();
 
@@ -221,12 +217,7 @@ impl BlockStore {
         let volatile = sled::open(volatile_path)?;
 
         let block_id_index = volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
-        let permanent = PermanentStore::new(
-            permanent_path,
-            block_id_index,
-            root_id.clone(),
-            chain_length_offset,
-        )?;
+        let permanent = PermanentStore::new(permanent_path, block_id_index, root_id.clone())?;
 
         Ok(Self {
             volatile,
@@ -594,7 +585,7 @@ where
 {
     let mut current = store.get_block_info(block_id)?;
 
-    if distance >= current.chain_length() {
+    if distance > current.chain_length() {
         panic!(
             "distance {} > chain length {}",
             distance,

@@ -6,6 +6,8 @@
 @interface WalletPlugin : CDVPlugin
 
 - (void)WALLET_RESTORE:(CDVInvokedUrlCommand*)command;
+- (void)WALLET_IMPORT_KEYS:(CDVInvokedUrlCommand*)command;
+- (void)SYMMETRIC_CIPHER_DECRYPT:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_RETRIEVE_FUNDS:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_TOTAL_FUNDS:(CDVInvokedUrlCommand*)command;
 - (void)WALLET_ID:(CDVInvokedUrlCommand*)command;

@@ -48,6 +48,95 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     }];
 }
 
+- (void)WALLET_IMPORT_KEYS:(CDVInvokedUrlCommand*)command
+{
+    NSData* account_key = [command.arguments objectAtIndex:0];
+    NSData* utxo_keys = [command.arguments objectAtIndex:1];
+
+    if ([account_key isEqual:[NSNull null]]) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    if ([utxo_keys isEqual:[NSNull null]]) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    if (utxo_keys.length % 64 != 0) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:@"invalid argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    [self.commandDelegate runInBackground:^{
+        CDVPluginResult* pluginResult = nil;
+        WalletPtr wallet_ptr = nil;
+
+        ErrorPtr result = iohk_jormungandr_wallet_import_keys(account_key.bytes,
+            utxo_keys.bytes,
+            utxo_keys.length / 64,
+            &wallet_ptr);
+
+        if (result != nil) {
+            pluginResult = jormungandr_error_to_plugin_result(result);
+        } else {
+            NSString* returnValue = [NSString stringWithFormat:@"%ld", (uintptr_t)wallet_ptr];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                             messageAsString:returnValue];
+        }
+
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+- (void)SYMMETRIC_CIPHER_DECRYPT:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+
+    NSData* password = [command.arguments objectAtIndex:0];
+    NSData* ciphertext = [command.arguments objectAtIndex:1];
+
+    if ([password isEqual:[NSNull null]]) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    if ([ciphertext isEqual:[NSNull null]]) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                                          messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    uint8_t* plaintext = nil;
+    uintptr_t plaintext_length;
+
+    ErrorPtr result = iohk_jormungandr_symmetric_cipher_decrypt(password.bytes,
+        password.length,
+        ciphertext.bytes,
+        ciphertext.length,
+        &plaintext,
+        &plaintext_length);
+
+    if (result != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(result);
+    } else {
+        NSData* returnValue = [NSData dataWithBytes:plaintext length:plaintext_length];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                    messageAsArrayBuffer:returnValue];
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)WALLET_RETRIEVE_FUNDS:(CDVInvokedUrlCommand*)command
 {
     NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];

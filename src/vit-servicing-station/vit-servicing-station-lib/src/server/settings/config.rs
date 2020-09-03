@@ -51,6 +51,7 @@ pub struct ServiceSettings {
     pub block0_path: String,
 
     /// Enable API Tokens feature
+    #[serde(default)]
     #[structopt(long)]
     pub enable_api_tokens: bool,
 

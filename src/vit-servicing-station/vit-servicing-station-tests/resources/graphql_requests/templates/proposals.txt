@@ -19,6 +19,7 @@
             proposerName,
             proposerEmail,
             proposerUrl,
+            proposerRelevantExperience
         }
         chainProposalId,
         chainProposalIndex,

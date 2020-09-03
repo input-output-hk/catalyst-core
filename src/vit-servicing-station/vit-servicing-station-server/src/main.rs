@@ -46,13 +46,7 @@ async fn main() {
         std::process::exit(ApplicationExitCode::DBConnectionError.into())
     });
 
-    // load block0
-    let block0 = std::fs::read(&settings.block0_path).unwrap_or_else(|e| {
-        log::error!("Error loading block0 from {}: {}", &settings.block0_path, e,);
-        std::process::exit(ApplicationExitCode::LoadBlock0Error.into())
-    });
-
-    let context = v0::context::new_shared_context(db_pool, block0);
+    let context = v0::context::new_shared_context(db_pool, &settings.block0_path);
 
     let app = v0::filter(context, settings.enable_api_tokens).await;
 

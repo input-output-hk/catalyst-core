@@ -2,11 +2,31 @@ use crate::v0::context::SharedContext;
 use warp::{http::Response, Rejection, Reply};
 
 pub async fn get_genesis(context: SharedContext) -> Result<impl Reply, Rejection> {
-    let response: Vec<u8> = context.read().await.block0.clone();
-    Ok(Response::builder()
-        .header("Content-Type", "application/octet-stream")
-        .body(response)
-        .unwrap())
+    let mut response: Vec<u8> = context.read().await.block0.clone();
+
+    // check if block0 is not loaded and try to load it again
+    if response.len() == 0 {
+        let block0_path = context.read().await.block0_path.clone();
+        response = tokio::fs::read(block0_path).await.unwrap_or_default();
+        if response.len() != 0 {
+            context.write().await.block0 = response.clone();
+        }
+    }
+
+    // if we have no block0
+    if response.len() == 0 {
+        Ok(Response::builder()
+            .status(warp::http::status::StatusCode::NO_CONTENT)
+            .header("Content-Type", "application/octet-stream")
+            .body(response)
+            .unwrap())
+    // if we have a block0
+    } else {
+        Ok(Response::builder()
+            .header("Content-Type", "application/octet-stream")
+            .body(response)
+            .unwrap())
+    }
 }
 
 #[cfg(test)]

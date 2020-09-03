@@ -55,7 +55,7 @@ impl<'a> DbInserter<'a> {
                 proposals::proposer_name.eq(proposal.proposer.proposer_name.clone()),
                 proposals::proposer_contact.eq(proposal.proposer.proposer_email.clone()),
                 proposals::proposer_url.eq(proposal.proposer.proposer_url.clone()),
-                proposals::proposal_impact_score.eq(proposal.proposal_impact_score.clone()),
+                proposals::proposal_impact_score.eq(proposal.proposal_impact_score),
                 proposals::proposer_relevant_experience
                     .eq(proposal.proposer.proposer_relevant_experience.clone()),
                 proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),

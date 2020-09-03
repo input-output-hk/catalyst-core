@@ -1,8 +1,8 @@
 use tokio::signal;
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(target_os = "unix")]
 pub async fn watch_signal_for_shutdown() {
-    let mut interrupt_stream = signal::unix::signal(signal::unix::SignalKind::interrupt())
+    let mut interrupt_signal = signal::unix::signal(signal::unix::SignalKind::interrupt())
         .expect("Error setting up interrupt signal");
 
     let mut terminate_signal = signal::unix::signal(signal::unix::SignalKind::terminate())
@@ -19,7 +19,7 @@ pub async fn watch_signal_for_shutdown() {
     }
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(not(target_os = "unix"))]
 pub async fn watch_signal_for_shutdown() {
     signal::ctrl_c().await.ok();
 }

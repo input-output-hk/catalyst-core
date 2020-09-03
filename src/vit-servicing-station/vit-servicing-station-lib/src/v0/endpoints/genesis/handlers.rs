@@ -5,16 +5,16 @@ pub async fn get_genesis(context: SharedContext) -> Result<impl Reply, Rejection
     let mut response: Vec<u8> = context.read().await.block0.clone();
 
     // check if block0 is not loaded and try to load it again
-    if response.len() == 0 {
+    if response.is_empty() {
         let block0_path = context.read().await.block0_path.clone();
         response = tokio::fs::read(block0_path).await.unwrap_or_default();
-        if response.len() != 0 {
+        if !response.is_empty() {
             context.write().await.block0 = response.clone();
         }
     }
 
     // if we have no block0
-    if response.len() == 0 {
+    if response.is_empty() {
         Ok(Response::builder()
             .status(warp::http::status::StatusCode::NO_CONTENT)
             .header("Content-Type", "application/octet-stream")

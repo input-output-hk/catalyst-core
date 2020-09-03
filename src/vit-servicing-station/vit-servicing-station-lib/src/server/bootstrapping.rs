@@ -45,9 +45,17 @@ where
     let app = app.with(setup_cors(settings.cors));
 
     if settings.tls.is_loaded() {
-        setup_tls(app, settings.tls).bind(settings.address).await
+        let (_, server) = setup_tls(app, settings.tls).bind_with_graceful_shutdown(
+            settings.address,
+            super::signals::watch_signal_for_shutdown(),
+        );
+        server.await
     } else {
-        warp::serve(app).bind(settings.address).await
+        let (_, server) = warp::serve(app).bind_with_graceful_shutdown(
+            settings.address,
+            super::signals::watch_signal_for_shutdown(),
+        );
+        server.await
     };
 }
 
@@ -60,6 +68,10 @@ where
         start_server_with_config(app, settings).await
     } else {
         // easy way of starting a local debug server
-        warp::serve(app).run(([127, 0, 0, 1], 3030)).await;
+        let (_, server) = warp::serve(app).bind_with_graceful_shutdown(
+            ([127, 0, 0, 1], 3030),
+            super::signals::watch_signal_for_shutdown(),
+        );
+        server.await
     }
 }

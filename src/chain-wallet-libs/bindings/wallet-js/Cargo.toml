@@ -1,15 +1,15 @@
 [package]
-name = "wallet-js"
-version = "0.5.0-pre3"
 authors = ["Enzo Cioppettini <ecioppettini@atixlabs.com>"]
-edition = "2018"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/input-output-hk/chain-wallet-libs"
 description = """Wallet functionalities to interact with Jörmungandr
 
 This package profiles all that is needed to have an healthy and secure
 interaction with Jörmungandr blockchain technology.
 """
+edition = "2018"
+license = "MIT OR Apache-2.0"
+name = "wallet-js"
+repository = "https://github.com/input-output-hk/chain-wallet-libs"
+version = "0.5.0-pre3"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -18,29 +18,34 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
+chain-crypto = {path = "../../chain-deps/chain-crypto"}
+getrandom = {version = "0.1.14", features = ["wasm-bindgen"]}
+rand = "0.7.3"
+rand_chacha = "0.2.2"
+symmetric-cipher = {path = "../../symmetric-cipher"}
+wallet-core = {path = "../wallet-core"}
 wasm-bindgen = "0.2"
-wallet-core = { path = "../wallet-core" }
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
 # all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
 # code size when deploying.
-console_error_panic_hook = { version = "0.1.1", optional = true }
+console_error_panic_hook = {version = "0.1.1", optional = true}
 
 # `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
 # compared to the default allocator's ~10K. It is slower than the default
 # allocator, however.
 #
 # Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
-wee_alloc = { version = "0.4.2", optional = true }
+wee_alloc = {version = "0.4.2", optional = true}
 
 # clear_on_drop is a dependency of ed25519_dalek
 # The default can't be compiled to wasm, so it's necessary to enable either the 'nightly'
 # feature or this one.
-clear_on_drop = { version = "0.2", features = ["no_cc"] }
+clear_on_drop = {version = "0.2", features = ["no_cc"]}
 
 [dev-dependencies]
-wasm-bindgen-test = "0.2"
+wasm-bindgen-test = "0.3"
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.
@@ -48,4 +53,4 @@ opt-level = "s"
 
 # See https://github.com/rustwasm/wasm-pack/issues/886
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-O", "--enable-mutable-globals"]
+wasm-opt = ["-O4", "--enable-mutable-globals"]

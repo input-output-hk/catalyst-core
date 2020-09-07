@@ -52,14 +52,14 @@ impl NodeId {
         &self.0
     }
 
-    pub fn signed(self, signature: &[u8]) -> Result<SignedNodeId, Error> {
+    pub fn authenticated(self, signature: &[u8]) -> Result<AuthenticatedNodeId, Error> {
         if signature.len() != NODE_SIGNATURE_LEN {
             return Err(Error::new(
                 Code::InvalidArgument,
                 format!("node signature must be {} bytes long", NODE_SIGNATURE_LEN),
             ));
         }
-        let mut res = SignedNodeId {
+        let mut res = AuthenticatedNodeId {
             id: self,
             signature: [0; NODE_SIGNATURE_LEN],
         };
@@ -84,12 +84,12 @@ impl TryFrom<&[u8]> for NodeId {
 
 const NODE_SIGNATURE_LEN: usize = 64;
 
-pub struct SignedNodeId {
+pub struct AuthenticatedNodeId {
     id: NodeId,
     signature: [u8; NODE_SIGNATURE_LEN],
 }
 
-impl SignedNodeId {
+impl AuthenticatedNodeId {
     pub fn id(&self) -> &NodeId {
         &self.id
     }

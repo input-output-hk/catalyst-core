@@ -7,7 +7,7 @@ use super::legacy;
 
 use crate::data::block::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::data::fragment::{Fragment, FragmentIds};
-use crate::data::p2p::{NodeId, SignedNodeId};
+use crate::data::p2p::{AuthenticatedNodeId, NodeId};
 use crate::data::{Gossip, Peers};
 use crate::error::{Error, HandshakeError};
 use crate::PROTOCOL_VERSION;
@@ -159,7 +159,7 @@ where
     pub async fn handshake(
         &mut self,
         nonce: Vec<u8>,
-    ) -> Result<(BlockId, SignedNodeId), HandshakeError> {
+    ) -> Result<(BlockId, AuthenticatedNodeId), HandshakeError> {
         let node_id = self.node_id.as_bytes().into();
         let req = proto::HandshakeRequest { node_id, nonce };
         let res = self
@@ -176,7 +176,7 @@ where
         let block_id = BlockId::try_from(&res.block0[..]).map_err(HandshakeError::InvalidBlock0)?;
         let node_id = NodeId::try_from(&res.node_id[..]).map_err(HandshakeError::InvalidNodeId)?;
         let node_auth = node_id
-            .signed(&res.signature)
+            .authenticated(&res.signature)
             .map_err(HandshakeError::MalformedSignature)?;
         Ok((block_id, node_auth))
     }

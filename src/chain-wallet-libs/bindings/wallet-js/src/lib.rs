@@ -229,8 +229,7 @@ impl Ed25519ExtendedPrivate {
     }
 
     pub fn bytes(&self) -> Box<[u8]> {
-        // self.0.clone().inner().as_ref().into()
-        self.0.into()
+        self.0.clone().leak_secret().as_ref().into()
     }
 }
 

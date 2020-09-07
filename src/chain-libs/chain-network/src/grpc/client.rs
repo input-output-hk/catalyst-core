@@ -7,6 +7,7 @@ use super::legacy;
 
 use crate::data::block::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::data::fragment::{Fragment, FragmentIds};
+use crate::data::p2p::{NodeId, SignedNodeId};
 use crate::data::{Gossip, Peers};
 use crate::error::{Error, HandshakeError};
 use crate::PROTOCOL_VERSION;
@@ -29,6 +30,7 @@ use std::convert::TryInto;
 /// Builder to customize the gRPC client.
 #[derive(Default)]
 pub struct Builder {
+    node_id: Option<NodeId>,
     #[cfg(feature = "legacy")]
     legacy_node_id: Option<legacy::NodeId>,
 }
@@ -36,9 +38,15 @@ pub struct Builder {
 impl Builder {
     pub fn new() -> Self {
         Builder {
+            node_id: None,
             #[cfg(feature = "legacy")]
             legacy_node_id: None,
         }
+    }
+
+    pub fn node_id(&mut self, node_id: NodeId) -> &mut Self {
+        self.node_id = Some(node_id);
+        self
     }
 
     /// Make the client add "node-id-bin" metadata with the passed value
@@ -59,6 +67,7 @@ impl Builder {
     {
         Client {
             inner: proto::node_client::NodeClient::new(service),
+            node_id: self.node_id.expect("node ID must be set"),
             #[cfg(feature = "legacy")]
             legacy_node_id: self.legacy_node_id,
         }
@@ -73,6 +82,7 @@ impl Builder {
         let inner = proto::node_client::NodeClient::connect(dst).await?;
         Ok(Client {
             inner,
+            node_id: self.node_id.expect("node ID must be set"),
             #[cfg(feature = "legacy")]
             legacy_node_id: self.legacy_node_id,
         })
@@ -82,6 +92,7 @@ impl Builder {
 #[derive(Clone)]
 pub struct Client<T> {
     inner: proto::node_client::NodeClient<T>,
+    node_id: NodeId,
     #[cfg(feature = "legacy")]
     legacy_node_id: Option<legacy::NodeId>,
 }
@@ -145,8 +156,12 @@ where
     ///
     /// This method should be called first after establishing the client
     /// connection.
-    pub async fn handshake(&mut self) -> Result<BlockId, HandshakeError> {
-        let req = proto::HandshakeRequest {};
+    pub async fn handshake(
+        &mut self,
+        nonce: Vec<u8>,
+    ) -> Result<(BlockId, SignedNodeId), HandshakeError> {
+        let node_id = self.node_id.as_bytes().into();
+        let req = proto::HandshakeRequest { node_id, nonce };
         let res = self
             .inner
             .handshake(req)
@@ -158,7 +173,12 @@ where
                 res.version.to_string().into(),
             ));
         }
-        BlockId::try_from(&res.block0[..]).map_err(HandshakeError::InvalidBlock0)
+        let block_id = BlockId::try_from(&res.block0[..]).map_err(HandshakeError::InvalidBlock0)?;
+        let node_id = NodeId::try_from(&res.node_id[..]).map_err(HandshakeError::InvalidNodeId)?;
+        let node_auth = node_id
+            .signed(&res.signature)
+            .map_err(HandshakeError::MalformedSignature)?;
+        Ok((block_id, node_auth))
     }
 
     /// One-off request for a list of peers known to the remote node.

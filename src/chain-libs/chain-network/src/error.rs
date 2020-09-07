@@ -80,4 +80,8 @@ pub enum HandshakeError {
     UnsupportedVersion(Box<str>),
     #[error("invalid genesis block payload")]
     InvalidBlock0(#[source] Error),
+    #[error("invalid node ID")]
+    InvalidNodeId(#[source] Error),
+    #[error("invalid node signature format")]
+    MalformedSignature(#[source] Error),
 }

@@ -8,9 +8,6 @@ use futures::prelude::*;
 /// providing access to block data.
 #[async_trait]
 pub trait BlockService {
-    /// Returns the ID of the genesis block of the chain served by this node.
-    fn block0(&self) -> BlockId;
-
     /// Serves a request for the current blockchain tip.
     /// Resolves to the tip of the blockchain
     /// accepted by this node.

@@ -6,6 +6,7 @@ use super::streaming::{InboundStream, OutboundTryStream};
 use super::legacy;
 
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
+use crate::data::p2p::NodeId;
 use crate::data::{block, fragment, BlockId, Peer};
 use crate::PROTOCOL_VERSION;
 use tonic::{Code, Status};
@@ -118,12 +119,17 @@ where
 {
     async fn handshake(
         &self,
-        _: tonic::Request<proto::HandshakeRequest>,
+        req: tonic::Request<proto::HandshakeRequest>,
     ) -> Result<tonic::Response<proto::HandshakeResponse>, tonic::Status> {
-        let service = self.block_service()?;
+        let req = req.into_inner();
+        let peer_id = NodeId::try_from(&req.node_id[..])?;
+        let nonce = &req.nonce;
+        let (block0, node_auth) = self.inner.handshake(peer_id, nonce)?;
         let res = proto::HandshakeResponse {
             version: PROTOCOL_VERSION,
-            block0: service.block0().as_bytes().into(),
+            block0: block0.as_bytes().into(),
+            node_id: node_auth.id().as_bytes().into(),
+            signature: node_auth.signature().into(),
         };
         Ok(tonic::Response::new(res))
     }

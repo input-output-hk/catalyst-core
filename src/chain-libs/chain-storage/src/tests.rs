@@ -690,7 +690,7 @@ fn iterator_only_volatile_storage() {
     for (i, block) in store
         .iter(
             &blocks[blocks.len() - 1].id.serialize_as_vec()[..],
-            TEST_BLOCK_NUM as u32 - 1,
+            TEST_BLOCK_NUM as u32,
         )
         .unwrap()
         .enumerate()
@@ -713,7 +713,7 @@ fn iterator_volatile_and_permanent_storage() {
     for (i, block) in store
         .iter(
             &blocks[blocks.len() - 1].id.serialize_as_vec()[..],
-            TEST_BLOCK_NUM as u32 - 1,
+            TEST_BLOCK_NUM as u32,
         )
         .unwrap()
         .enumerate()
@@ -735,7 +735,7 @@ fn iterator_only_permanent_storage() {
     for (i, block) in store
         .iter(
             &blocks[blocks.len() - 1].id.serialize_as_vec()[..],
-            TEST_BLOCK_NUM as u32 - 1,
+            TEST_BLOCK_NUM as u32,
         )
         .unwrap()
         .enumerate()

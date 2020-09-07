@@ -557,13 +557,11 @@ impl BlockStore {
         to_block: &[u8],
         distance: u32,
     ) -> Result<impl Iterator<Item = Value>, Error> {
-        let from_info = for_path_to_nth_ancestor(&self, to_block, distance, |_| {})?;
         let block_info = self.volatile.open_tree(tree::INFO)?;
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         StorageIterator::new(
-            from_info.id().clone(),
-            from_info.chain_length(),
             Value::from(to_block.to_vec()),
+            distance,
             self.permanent.clone(),
             block_info,
             blocks,

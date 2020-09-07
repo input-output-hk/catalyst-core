@@ -18,9 +18,12 @@ pub trait Node: Send + Sync + 'static {
     /// The implementation of the gossip service.
     type GossipService: GossipService + Send + Sync;
 
+    /// Implements node handshake. A remote node ID, if available, is passed in
+    /// `peer_id`. The server returns the ID of the genesis block and its own
+    /// node ID, authenticated with the signature of `nonce`.
     fn handshake(
         &self,
-        peer_id: NodeId,
+        peer_id: Option<NodeId>,
         nonce: &[u8],
     ) -> Result<(BlockId, AuthenticatedNodeId), Error>;
 

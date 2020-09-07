@@ -67,7 +67,7 @@ impl Builder {
     {
         Client {
             inner: proto::node_client::NodeClient::new(service),
-            node_id: self.node_id.expect("node ID must be set"),
+            node_id: self.node_id,
             #[cfg(feature = "legacy")]
             legacy_node_id: self.legacy_node_id,
         }
@@ -82,7 +82,7 @@ impl Builder {
         let inner = proto::node_client::NodeClient::connect(dst).await?;
         Ok(Client {
             inner,
-            node_id: self.node_id.expect("node ID must be set"),
+            node_id: self.node_id,
             #[cfg(feature = "legacy")]
             legacy_node_id: self.legacy_node_id,
         })
@@ -92,7 +92,7 @@ impl Builder {
 #[derive(Clone)]
 pub struct Client<T> {
     inner: proto::node_client::NodeClient<T>,
-    node_id: NodeId,
+    node_id: Option<NodeId>,
     #[cfg(feature = "legacy")]
     legacy_node_id: Option<legacy::NodeId>,
 }
@@ -160,7 +160,10 @@ where
         &mut self,
         nonce: Vec<u8>,
     ) -> Result<(BlockId, AuthenticatedNodeId), HandshakeError> {
-        let node_id = self.node_id.as_bytes().into();
+        let node_id = match self.node_id {
+            Some(id) => id.as_bytes().into(),
+            None => Default::default(),
+        };
         let req = proto::HandshakeRequest { node_id, nonce };
         let res = self
             .inner

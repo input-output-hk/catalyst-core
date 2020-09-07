@@ -122,7 +122,11 @@ where
         req: tonic::Request<proto::HandshakeRequest>,
     ) -> Result<tonic::Response<proto::HandshakeResponse>, tonic::Status> {
         let req = req.into_inner();
-        let peer_id = NodeId::try_from(&req.node_id[..])?;
+        let peer_id = if req.node_id.is_empty() {
+            None
+        } else {
+            Some(NodeId::try_from(&req.node_id[..])?)
+        };
         let nonce = &req.nonce;
         let (block0, node_auth) = self.inner.handshake(peer_id, nonce)?;
         let res = proto::HandshakeResponse {

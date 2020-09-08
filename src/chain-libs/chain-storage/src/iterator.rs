@@ -45,7 +45,10 @@ impl StorageIterator {
         );
         let from_length = to_info.chain_length() + 1 - distance;
 
-        let state = if let Some(_) = permanent_store.get_block_by_chain_length(from_length) {
+        let state = if permanent_store
+            .get_block_by_chain_length(from_length)
+            .is_some()
+        {
             IteratorState::Permanent {
                 iter: permanent_store.iter(from_length)?,
                 current_length: from_length,

@@ -362,11 +362,12 @@ mod test {
             state = apply_block(&state, &block);
             assert_eq!(state.chain_length().0, i);
             assert_eq!(state.date, block.header.block_date());
-            store.insert(block.header.id(), block.clone());
-            _ref = Some(multiverse.add(block.header.id(), state.clone()));
+            let block_id = block.header.id();
+            store.insert(block_id.clone(), block);
+            _ref = Some(multiverse.add(block_id.clone(), state.clone()));
             multiverse.gc();
-            ids.push(block.header.id());
-            parent = block.header.id();
+            ids.push(block_id.clone());
+            parent = block_id;
             assert!(
                 multiverse.nr_states()
                     <= super::SUFFIX_TO_KEEP as usize + ((i as f32).log2()) as usize

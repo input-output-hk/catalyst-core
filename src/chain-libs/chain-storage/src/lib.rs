@@ -569,7 +569,7 @@ impl BlockStore {
         &self,
         to_block: &[u8],
         distance: u32,
-    ) -> Result<impl Iterator<Item = Value>, Error> {
+    ) -> Result<impl Iterator<Item = Result<Value, Error>>, Error> {
         let block_info = self.volatile.open_tree(tree::INFO)?;
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         StorageIterator::new(

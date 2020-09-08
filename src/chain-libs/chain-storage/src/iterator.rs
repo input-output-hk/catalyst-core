@@ -68,7 +68,7 @@ impl StorageIterator {
 }
 
 impl Iterator for StorageIterator {
-    type Item = Value;
+    type Item = Result<Value, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match &mut self.state {
@@ -83,17 +83,14 @@ impl Iterator for StorageIterator {
                 match iter.next() {
                     Some(item) => {
                         *current_length += 1;
-                        Some(Value::permanent(item))
+                        Some(Ok(Value::permanent(item)))
                     }
                     None => {
-                        self.state = IteratorState::Volatile {
-                            ids: gather_blocks_ids(
-                                self.to.clone(),
-                                &self.block_info,
-                                *current_length,
-                            )
-                            .ok()?,
-                        };
+                        match gather_blocks_ids(self.to.clone(), &self.block_info, *current_length)
+                        {
+                            Ok(ids) => self.state = IteratorState::Volatile { ids },
+                            Err(err) => return Some(Err(err)),
+                        }
                         self.next()
                     }
                 }
@@ -102,9 +99,9 @@ impl Iterator for StorageIterator {
                 let id = ids.pop()?;
                 self.blocks
                     .get(id.as_ref())
-                    .ok()
-                    .flatten()
-                    .map(Value::volatile)
+                    .map(|maybe_value| maybe_value.map(Value::volatile))
+                    .map_err(Into::into)
+                    .transpose()
             }
         }
     }

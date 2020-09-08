@@ -695,7 +695,7 @@ fn iterator_only_volatile_storage() {
         .unwrap()
         .enumerate()
     {
-        assert_eq!(blocks[i].serialize_as_value(), block);
+        assert_eq!(blocks[i].serialize_as_value(), block.unwrap());
     }
 }
 
@@ -718,7 +718,7 @@ fn iterator_volatile_and_permanent_storage() {
         .unwrap()
         .enumerate()
     {
-        assert_eq!(blocks[i].serialize_as_value(), block);
+        assert_eq!(blocks[i].serialize_as_value(), block.unwrap());
     }
 }
 
@@ -740,6 +740,6 @@ fn iterator_only_permanent_storage() {
         .unwrap()
         .enumerate()
     {
-        assert_eq!(blocks[i].serialize_as_value(), block);
+        assert_eq!(blocks[i].serialize_as_value(), block.unwrap());
     }
 }

@@ -6,13 +6,13 @@ use std::{cell::RefCell, rc::Rc};
 
 type UTxO = Rc<UtxoPointer>;
 
-pub struct UtxoGroup<KEY, SCHEME> {
+pub struct UtxoGroup<KEY> {
     by_value: OrdMap<Value, HashSet<UTxO>>,
     total_value: Value,
-    key: Rc<Key<KEY, SCHEME>>,
+    key: Rc<KEY>,
 }
 
-type GroupRef<KEY, SCHEME> = Rc<RefCell<UtxoGroup<KEY, SCHEME>>>;
+type GroupRef<KEY> = Rc<RefCell<UtxoGroup<KEY>>>;
 
 /// A UTxO store that can be cheaply updated/cloned
 ///
@@ -35,16 +35,38 @@ type GroupRef<KEY, SCHEME> = Rc<RefCell<UtxoGroup<KEY, SCHEME>>>;
 /// UTxO Stores. For larger UTxO stores it is more interesting to use a different
 /// data structure, tuned for the need.
 ///
-pub struct UtxoStore<KEY, SCHEME> {
-    by_utxo: HashMap<UTxO, GroupRef<KEY, SCHEME>>,
-    by_derivation_path: HashMap<DerivationPath<SCHEME>, GroupRef<KEY, SCHEME>>,
+pub struct UtxoStore<KEY: GroupKey> {
+    by_utxo: HashMap<UTxO, GroupRef<KEY>>,
+    by_derivation_path: HashMap<<KEY as GroupKey>::GroupBy, GroupRef<KEY>>,
     by_value: OrdMap<Value, HashSet<UTxO>>,
 
     total_value: Value,
 }
 
-impl<KEY, SCHEME> UtxoGroup<KEY, SCHEME> {
-    fn new(key: Key<KEY, SCHEME>) -> Self {
+pub trait GroupKey {
+    type GroupBy: std::hash::Hash + Eq + Clone;
+
+    fn group_by(&self) -> Self::GroupBy;
+}
+
+impl<KIND, SCHEME> GroupKey for Key<KIND, SCHEME> {
+    type GroupBy = DerivationPath<SCHEME>;
+
+    fn group_by(&self) -> Self::GroupBy {
+        self.path().clone()
+    }
+}
+
+impl GroupKey for chain_crypto::SecretKey<chain_crypto::Ed25519Extended> {
+    type GroupBy = chain_crypto::PublicKey<chain_crypto::Ed25519>;
+
+    fn group_by(&self) -> Self::GroupBy {
+        self.to_public()
+    }
+}
+
+impl<KEY> UtxoGroup<KEY> {
+    fn new(key: KEY) -> Self {
         Self {
             by_value: OrdMap::new(),
             total_value: Value::zero(),
@@ -52,7 +74,7 @@ impl<KEY, SCHEME> UtxoGroup<KEY, SCHEME> {
         }
     }
 
-    pub fn key(&self) -> &Rc<Key<KEY, SCHEME>> {
+    pub fn key(&self) -> &Rc<KEY> {
         &self.key
     }
 
@@ -96,7 +118,7 @@ impl<KEY, SCHEME> UtxoGroup<KEY, SCHEME> {
     }
 }
 
-impl<KEY, SCHEME> UtxoStore<KEY, SCHEME> {
+impl<KEY: GroupKey> UtxoStore<KEY> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -112,7 +134,7 @@ impl<KEY, SCHEME> UtxoStore<KEY, SCHEME> {
     ///
     /// this allows optimizing the search of inputs and to favors using
     /// inputs of the same key to preserve privacy
-    pub fn groups(&self) -> impl Iterator<Item = std::cell::Ref<'_, UtxoGroup<KEY, SCHEME>>> {
+    pub fn groups(&self) -> impl Iterator<Item = std::cell::Ref<'_, UtxoGroup<KEY>>> {
         self.by_derivation_path.values().map(|r| r.borrow())
     }
 
@@ -122,7 +144,7 @@ impl<KEY, SCHEME> UtxoStore<KEY, SCHEME> {
     }
 
     /// lookup the UTxO group (if any) associated to the given derivation path
-    pub fn group(&self, dp: &DerivationPath<SCHEME>) -> Option<&GroupRef<KEY, SCHEME>> {
+    pub fn group(&self, dp: &<KEY as GroupKey>::GroupBy) -> Option<&GroupRef<KEY>> {
         self.by_derivation_path.get(dp)
     }
 
@@ -132,12 +154,12 @@ impl<KEY, SCHEME> UtxoStore<KEY, SCHEME> {
     /// to a previous state is a rollback happened or in case of managing
     /// different forks
     #[must_use = "function does not modify the internal state, the returned value is the new state"]
-    pub fn add(&self, utxo: UtxoPointer, key: Key<KEY, SCHEME>) -> Self {
+    pub fn add(&self, utxo: UtxoPointer, key: KEY) -> Self {
         use im_rc::hashmap::Entry::*;
 
         let mut new = self.clone();
         let utxo = Rc::new(utxo);
-        let path = key.path().clone();
+        let path = key.group_by();
 
         new.total_value = new.total_value.saturating_add(utxo.value);
         let group = match new.by_derivation_path.entry(path) {
@@ -170,7 +192,7 @@ impl<KEY, SCHEME> UtxoStore<KEY, SCHEME> {
         let mut new = self.clone();
 
         let group = new.by_utxo.remove(utxo)?;
-        let path = group.borrow().key.path().clone();
+        let path = group.borrow().key.group_by();
         let utxo = new
             .by_derivation_path
             .get_mut(&path)?
@@ -188,14 +210,14 @@ impl<KEY, SCHEME> UtxoStore<KEY, SCHEME> {
         Some(new)
     }
 
-    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<Key<KEY, SCHEME>>> {
+    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<KEY>> {
         self.by_utxo
             .get(utxo)
             .map(|group| Rc::clone(&group.borrow().key))
     }
 }
 
-impl<KEY, SCHEME> Clone for UtxoGroup<KEY, SCHEME> {
+impl<KEY> Clone for UtxoGroup<KEY> {
     fn clone(&self) -> Self {
         Self {
             by_value: self.by_value.clone(),
@@ -205,7 +227,7 @@ impl<KEY, SCHEME> Clone for UtxoGroup<KEY, SCHEME> {
     }
 }
 
-impl<KEY, SCHEME> Clone for UtxoStore<KEY, SCHEME> {
+impl<KEY: GroupKey> Clone for UtxoStore<KEY> {
     fn clone(&self) -> Self {
         Self {
             by_utxo: self.by_utxo.clone(),
@@ -216,7 +238,7 @@ impl<KEY, SCHEME> Clone for UtxoStore<KEY, SCHEME> {
     }
 }
 
-impl<KEY, SCHEME> Default for UtxoStore<KEY, SCHEME> {
+impl<KEY: GroupKey> Default for UtxoStore<KEY> {
     fn default() -> Self {
         Self {
             by_utxo: HashMap::new(),
@@ -225,4 +247,60 @@ impl<KEY, SCHEME> Default for UtxoStore<KEY, SCHEME> {
             total_value: Value::zero(),
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    /*     use super::{UTxO, UtxoPointer};
+       use quickcheck_macros::*;
+       use std::collections::HashSet;
+
+       struct StoreModel {
+           utxos: HashSet<UTxO>,
+       }
+
+       struct GroupModel {}
+
+       type Key = u32;
+       type Scheme = u32;
+
+       impl StoreModel {
+           pub fn new() -> Self {
+               Self {}
+           }
+
+           pub fn total_value(&self) -> Value {
+               self.total_value
+           }
+
+           pub fn groups(&self) -> impl Iterator<Item = GroupModel> {
+               todo!()
+           }
+
+           pub fn utxos(&self) -> impl Iterator<Item = &UTxO> {
+               todo!()
+           }
+
+           pub fn group(&self, dp: &Scheme) -> Option<GroupModel> {
+               todo!()
+           }
+
+           pub fn add(&self, utxo: UtxoPointer, key: Key) -> Self {
+               todo!()
+           }
+
+           pub fn remove(&self, utxo: &UtxoPointer) -> Option<Self> {
+               todo!()
+           }
+
+           pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Key> {
+               todo!()
+           }
+       }
+
+       #[quickcheck]
+       fn prop(xs: Vec<u32>) -> bool {
+           todo!()
+       }
+    */
 }

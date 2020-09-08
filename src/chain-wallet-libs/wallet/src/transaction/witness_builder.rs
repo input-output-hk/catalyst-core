@@ -13,7 +13,7 @@ pub trait WitnessBuilder {
 }
 
 pub struct OldUtxoWitnessBuilder<D>(pub Key<XPrv, D>);
-pub struct UtxoWitnessBuilder<S, D>(pub Key<S, D>);
+pub struct UtxoWitnessBuilder<K>(pub K);
 pub enum AccountWitnessBuilder {
     Ed25519(SecretKey<Ed25519>, SpendingCounter),
     Ed25519Extended(SecretKey<Ed25519Extended>, SpendingCounter),
@@ -38,7 +38,7 @@ impl<D> WitnessBuilder for OldUtxoWitnessBuilder<D> {
     }
 }
 
-impl<D> WitnessBuilder for UtxoWitnessBuilder<XPrv, D> {
+impl<D> WitnessBuilder for UtxoWitnessBuilder<Key<XPrv, D>> {
     fn build(&self, block0: &HeaderId, sign_data_hash: &TransactionSignDataHash) -> Witness {
         let xprv = &self.0;
         Witness::new_utxo(block0, sign_data_hash, |data| {
@@ -48,12 +48,11 @@ impl<D> WitnessBuilder for UtxoWitnessBuilder<XPrv, D> {
     }
 }
 
-impl<D> WitnessBuilder for UtxoWitnessBuilder<SecretKey<Ed25519Extended>, D> {
+impl WitnessBuilder for UtxoWitnessBuilder<SecretKey<Ed25519Extended>> {
     fn build(&self, block0: &HeaderId, sign_data_hash: &TransactionSignDataHash) -> Witness {
         let key = &self.0;
         Witness::new_utxo(block0, sign_data_hash, |data| {
-            Signature::from_binary(key.sign::<WitnessUtxoData, &[u8]>(data.as_ref()).as_ref())
-                .unwrap()
+            Signature::from_binary(key.sign(data).as_ref()).unwrap()
         })
     }
 }

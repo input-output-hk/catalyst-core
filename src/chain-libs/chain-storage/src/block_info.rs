@@ -9,14 +9,14 @@ pub struct BlockInfo {
     id: Value,
     parent_id: Value,
     chain_length: u32,
-    /// This field is used internally by the volatile storage only. Its purpose
-    /// is to store the number of blocks that maintain this block as a parent +
-    /// the number of tags for this block. A block CANNOT be removed from the
-    /// volatile storage if the reference counter is greater than 1. For blocks
-    /// from the permanent storage this value is always equal to 1 and MUST NOT
-    /// be used.
-    /// NOTE: "removing a block" relates only to removing an abanded branch
-    /// entirely and does not apply to moving a block to the permanent storage.
+    // This field is used internally by the volatile storage only. Its purpose
+    // is to store the number of blocks that maintain this block as a parent +
+    // the number of tags for this block. A block CANNOT be removed from the
+    // volatile storage if the reference counter is greater than 1. For blocks
+    // from the permanent storage this value is always equal to 1 and MUST NOT
+    // be used.
+    // NOTE: "removing a block" relates only to removing an abanded branch
+    // entirely and does not apply to moving a block to the permanent storage.
     ref_count: u32,
 }
 

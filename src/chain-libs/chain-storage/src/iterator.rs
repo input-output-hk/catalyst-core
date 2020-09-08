@@ -21,8 +21,6 @@ enum IteratorState {
 }
 
 impl StorageIterator {
-    /// Create a new iterator. `from` and `to` values MUST have a path between
-    /// them and this needs to be checked before the iterator is started.
     pub(crate) fn new(
         to: Value,
         distance: u32,

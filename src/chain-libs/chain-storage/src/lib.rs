@@ -493,6 +493,11 @@ impl BlockStore {
 
     /// Get n-th (n = `distance`) ancestor of the block, identified by
     /// `block_id`.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic on an attempt to go deeper that the length of
+    /// the provided block.
     pub fn get_nth_ancestor(&self, block_id: &[u8], distance: u32) -> Result<BlockInfo, Error> {
         for_path_to_nth_ancestor(self, block_id, distance, |_| {})
     }
@@ -552,6 +557,14 @@ impl BlockStore {
         Ok(())
     }
 
+    /// Iterate to the given block starting from the block at the given
+    /// `distance - 1`. `distance == 1` means that only `to_block` will be
+    /// iterated. `distance == 0` means empty iterator.
+    ///
+    /// # Panics
+    ///
+    /// Will panic on an attempt to iterate deeper than the genesis block
+    /// (`distance >= chain_length + 1`)
     pub fn iter(
         &self,
         to_block: &[u8],
@@ -572,6 +585,11 @@ impl BlockStore {
 /// Like `BlockStore::get_nth_ancestor`, but calls the closure `callback` with
 /// each intermediate block encountered while travelling from `block_id` to
 /// its n-th ancestor.
+///
+/// # Panics
+///
+/// This function will panic on an attempt to go deeper that the length of the
+/// provided block.
 pub fn for_path_to_nth_ancestor<F>(
     store: &BlockStore,
     block_id: &[u8],

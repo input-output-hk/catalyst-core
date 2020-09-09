@@ -1,3 +1,3 @@
 mod utxo;
 
-pub use self::utxo::{GroupKey, UtxoGroup, UtxoStore};
+pub use self::utxo::{Groupable, UtxoGroup, UtxoStore};

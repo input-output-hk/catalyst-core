@@ -35,32 +35,34 @@ type GroupRef<KEY> = Rc<RefCell<UtxoGroup<KEY>>>;
 /// UTxO Stores. For larger UTxO stores it is more interesting to use a different
 /// data structure, tuned for the need.
 ///
-pub struct UtxoStore<KEY: GroupKey> {
+pub struct UtxoStore<KEY: Groupable> {
     by_utxo: HashMap<UTxO, GroupRef<KEY>>,
-    by_derivation_path: HashMap<<KEY as GroupKey>::GroupBy, GroupRef<KEY>>,
+    by_derivation_path: HashMap<<KEY as Groupable>::Key, GroupRef<KEY>>,
     by_value: OrdMap<Value, HashSet<UTxO>>,
 
     total_value: Value,
 }
 
-pub trait GroupKey {
-    type GroupBy: std::hash::Hash + Eq + Clone;
+/// Define the way the utxos should be grouped, as secret keys may not be
+/// hashable/comparable by themselves.
+pub trait Groupable {
+    type Key: std::hash::Hash + Eq + Clone;
 
-    fn group_by(&self) -> Self::GroupBy;
+    fn group_key(&self) -> Self::Key;
 }
 
-impl<KIND, SCHEME> GroupKey for Key<KIND, SCHEME> {
-    type GroupBy = DerivationPath<SCHEME>;
+impl<KIND, SCHEME> Groupable for Key<KIND, SCHEME> {
+    type Key = DerivationPath<SCHEME>;
 
-    fn group_by(&self) -> Self::GroupBy {
+    fn group_key(&self) -> Self::Key {
         self.path().clone()
     }
 }
 
-impl GroupKey for chain_crypto::SecretKey<chain_crypto::Ed25519Extended> {
-    type GroupBy = chain_crypto::PublicKey<chain_crypto::Ed25519>;
+impl Groupable for chain_crypto::SecretKey<chain_crypto::Ed25519Extended> {
+    type Key = chain_crypto::PublicKey<chain_crypto::Ed25519>;
 
-    fn group_by(&self) -> Self::GroupBy {
+    fn group_key(&self) -> Self::Key {
         self.to_public()
     }
 }
@@ -118,7 +120,7 @@ impl<KEY> UtxoGroup<KEY> {
     }
 }
 
-impl<KEY: GroupKey> UtxoStore<KEY> {
+impl<KEY: Groupable> UtxoStore<KEY> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -144,7 +146,7 @@ impl<KEY: GroupKey> UtxoStore<KEY> {
     }
 
     /// lookup the UTxO group (if any) associated to the given derivation path
-    pub fn group(&self, dp: &<KEY as GroupKey>::GroupBy) -> Option<&GroupRef<KEY>> {
+    pub fn group(&self, dp: &<KEY as Groupable>::Key) -> Option<&GroupRef<KEY>> {
         self.by_derivation_path.get(dp)
     }
 
@@ -159,7 +161,7 @@ impl<KEY: GroupKey> UtxoStore<KEY> {
 
         let mut new = self.clone();
         let utxo = Rc::new(utxo);
-        let path = key.group_by();
+        let path = key.group_key();
 
         new.total_value = new.total_value.saturating_add(utxo.value);
         let group = match new.by_derivation_path.entry(path) {
@@ -192,7 +194,7 @@ impl<KEY: GroupKey> UtxoStore<KEY> {
         let mut new = self.clone();
 
         let group = new.by_utxo.remove(utxo)?;
-        let path = group.borrow().key.group_by();
+        let path = group.borrow().key.group_key();
         let utxo = new
             .by_derivation_path
             .get_mut(&path)?
@@ -227,7 +229,7 @@ impl<KEY> Clone for UtxoGroup<KEY> {
     }
 }
 
-impl<KEY: GroupKey> Clone for UtxoStore<KEY> {
+impl<KEY: Groupable> Clone for UtxoStore<KEY> {
     fn clone(&self) -> Self {
         Self {
             by_utxo: self.by_utxo.clone(),
@@ -238,7 +240,7 @@ impl<KEY: GroupKey> Clone for UtxoStore<KEY> {
     }
 }
 
-impl<KEY: GroupKey> Default for UtxoStore<KEY> {
+impl<KEY: Groupable> Default for UtxoStore<KEY> {
     fn default() -> Self {
         Self {
             by_utxo: HashMap::new(),

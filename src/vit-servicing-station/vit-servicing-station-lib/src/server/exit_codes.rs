@@ -3,7 +3,6 @@ pub enum ApplicationExitCode {
     WriteSettingsError = 10,
     LoadSettingsError,
     DBConnectionError,
-    LoadBlock0Error,
 }
 
 impl ApplicationExitCode {
@@ -15,7 +14,6 @@ impl ApplicationExitCode {
             10 => Some(Self::WriteSettingsError),
             11 => Some(Self::LoadSettingsError),
             12 => Some(Self::DBConnectionError),
-            13 => Some(Self::LoadBlock0Error),
             _ => None,
         }
     }

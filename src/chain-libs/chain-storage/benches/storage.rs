@@ -21,13 +21,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         path.push("test");
         path
     };
-    let mut store = BlockStore::new(
-        path,
-        BlockId(0).serialize_as_vec(),
-        BlockId(0).serialize_as_vec().len(),
-        1,
-    )
-    .unwrap();
+    let store = BlockStore::file(path, BlockId(0).serialize_as_vec()).unwrap();
     let genesis_block_info = BlockInfo::new(
         genesis_block.id.serialize_as_vec(),
         genesis_block.parent.serialize_as_vec(),

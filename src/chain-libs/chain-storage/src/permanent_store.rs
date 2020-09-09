@@ -11,7 +11,7 @@ pub(crate) struct PermanentStore {
 }
 
 impl PermanentStore {
-    pub fn new<P: AsRef<Path>>(
+    pub fn file<P: AsRef<Path>>(
         path: P,
         block_id_index: sled::Tree,
         root_id: Value,
@@ -21,8 +21,23 @@ impl PermanentStore {
         let blocks_path = path.as_ref().join("blocks");
         let chain_length_index_path = path.as_ref().join("chain_length");
 
-        let blocks = data_pile::Database::new(blocks_path)?;
-        let chain_length_index = data_pile::Database::new(chain_length_index_path)?;
+        let blocks = data_pile::Database::file(blocks_path)?;
+        let chain_length_index = data_pile::Database::file(chain_length_index_path)?;
+
+        let id_length = root_id.as_ref().len();
+
+        Ok(Self {
+            blocks,
+            chain_length_index,
+            block_id_index,
+            root_id,
+            id_length,
+        })
+    }
+
+    pub fn memory(block_id_index: sled::Tree, root_id: Value) -> Result<PermanentStore, Error> {
+        let blocks = data_pile::Database::memory()?;
+        let chain_length_index = data_pile::Database::memory()?;
 
         let id_length = root_id.as_ref().len();
 

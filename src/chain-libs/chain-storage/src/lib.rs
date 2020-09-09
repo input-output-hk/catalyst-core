@@ -218,9 +218,7 @@ impl BlockStore {
     /// * `path` - a path to the storage directory.
     /// * `root_id` - the ID of the root block which the first block in this
     ///   block chain should refer to as a parent.
-    /// * `chain_length_offset` - chain length value the first block in the
-    ///   block chain must have.
-    pub fn new<P: AsRef<Path>, I: Into<Value>>(path: P, root_id: I) -> Result<Self, Error> {
+    pub fn file<P: AsRef<Path>, I: Into<Value>>(path: P, root_id: I) -> Result<Self, Error> {
         let root_id = root_id.into();
         let id_length = root_id.as_ref().len();
 
@@ -234,7 +232,31 @@ impl BlockStore {
         let volatile = sled::open(volatile_path)?;
 
         let block_id_index = volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
-        let permanent = PermanentStore::new(permanent_path, block_id_index, root_id.clone())?;
+        let permanent = PermanentStore::file(permanent_path, block_id_index, root_id.clone())?;
+
+        Ok(Self {
+            volatile,
+            permanent,
+            root_id,
+            id_length,
+        })
+    }
+
+    /// Open a temporary in-memory database.
+    ///
+    /// # Arguments
+    ///
+    /// * `root_id` - the ID of the root block which the first block in this
+    ///   block chain should refer to as a parent.
+    pub fn memory<I: Into<Value>>(root_id: I) -> Result<Self, Error> {
+        let root_id = root_id.into();
+        let id_length = root_id.as_ref().len();
+        let volatile = sled::Config::new()
+            .temporary(true)
+            .open()
+            .map_err(|err| Error::Open(err.into()))?;
+        let block_id_index = volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
+        let permanent = PermanentStore::memory(block_id_index, root_id.clone())?;
 
         Ok(Self {
             volatile,

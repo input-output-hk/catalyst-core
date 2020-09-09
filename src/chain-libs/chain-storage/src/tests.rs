@@ -53,7 +53,7 @@ pub fn generate_chain<R: RngCore>(rng: &mut R, store: &BlockStore) -> Vec<Block>
 
 fn prepare_store() -> (tempfile::TempDir, BlockStore) {
     let file = tempfile::TempDir::new().unwrap();
-    let store = BlockStore::new(file.path(), BlockId(0).serialize_as_vec()).unwrap();
+    let store = BlockStore::file(file.path(), BlockId(0).serialize_as_vec()).unwrap();
 
     (file, store)
 }
@@ -159,7 +159,7 @@ fn block_read_write() {
 pub fn nth_ancestor() {
     let mut rng = OsRng;
     let file = tempfile::TempDir::new().unwrap();
-    let store = BlockStore::new(file.path(), BlockId(0).serialize_as_vec()).unwrap();
+    let store = BlockStore::file(file.path(), BlockId(0).serialize_as_vec()).unwrap();
     let blocks = generate_chain(&mut rng, &store);
 
     let mut blocks_fetched = 0;
@@ -197,7 +197,7 @@ pub fn nth_ancestor() {
 fn simultaneous_read_write() {
     let mut rng = OsRng;
     let file = tempfile::TempDir::new().unwrap();
-    let store = BlockStore::new(file.path(), BlockId(0).serialize_as_vec()).unwrap();
+    let store = BlockStore::file(file.path(), BlockId(0).serialize_as_vec()).unwrap();
 
     let genesis_block = Block::genesis(None);
     let genesis_block_info = BlockInfo::new(
@@ -264,7 +264,7 @@ fn branch_pruning() {
     const BIFURCATION_POINT: usize = 50;
 
     let file = tempfile::TempDir::new().unwrap();
-    let store = BlockStore::new(file.path(), BlockId(0).serialize_as_vec()).unwrap();
+    let store = BlockStore::file(file.path(), BlockId(0).serialize_as_vec()).unwrap();
 
     let mut main_branch_blocks = vec![];
 
@@ -359,7 +359,7 @@ fn get_blocks_by_chain_length() {
     const N_BLOCKS: usize = 5;
 
     let file = tempfile::TempDir::new().unwrap();
-    let store = BlockStore::new(file.path(), BlockId(0).serialize_as_vec()).unwrap();
+    let store = BlockStore::file(file.path(), BlockId(0).serialize_as_vec()).unwrap();
 
     let genesis_block = Block::genesis(None);
     let genesis_block_info = BlockInfo::new(
@@ -566,7 +566,7 @@ fn prepare_and_fill_store(n: usize) -> (tempfile::TempDir, BlockStore, Vec<Block
     let mut block_data = [0; BLOCK_DATA_LENGTH];
 
     let file = tempfile::TempDir::new().unwrap();
-    let store = BlockStore::new(file.path(), BlockId(0).serialize_as_vec()).unwrap();
+    let store = BlockStore::file(file.path(), BlockId(0).serialize_as_vec()).unwrap();
 
     let mut blocks = vec![];
 

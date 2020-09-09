@@ -24,6 +24,7 @@ pub fn load_sanity_sync() {
         std::time::Duration::from_secs(3),
         50,
         Monitor::Progress(10),
+        0,
     );
     load::start_sync(SampleRequestGenerator { counter: 1 }, config, "Mock load");
 }
@@ -60,6 +61,7 @@ pub fn load_sanity_async() {
         std::time::Duration::from_secs(3),
         50,
         Monitor::Progress(10),
+        0,
     );
     load::start_async(
         AsyncSampleRequestGenerator { counter: 1 },

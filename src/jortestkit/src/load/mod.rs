@@ -68,6 +68,7 @@ pub fn start_async(
         &request_provider,
         config.monitor().clone(),
         title,
+        config.shutdown_grace_period(),
     );
     for t in child_threads.into_iter() {
         let _child_threads = t.join();

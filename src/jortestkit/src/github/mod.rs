@@ -32,6 +32,7 @@ impl Release {
     }
 
     /// narrow linux distribution to linux type
+    #[allow(clippy::all)]
     fn compact_os_types(&self, os_type: OsType) -> OsType {
         match os_type {
             OsType::Emscripten => OsType::Linux,
@@ -46,6 +47,7 @@ impl Release {
             OsType::SUSE => OsType::Linux,
             OsType::openSUSE => OsType::Linux,
             OsType::Alpine => OsType::Linux,
+            //this line fixes issue in rust beta release, which prevents OraceLinux, to be hit.
             OsType::OracleLinux => {
                 return OsType::Linux;
             }

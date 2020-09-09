@@ -69,7 +69,7 @@ mod test {
     //         },
     //     }
     // }
-    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    fund(id: 1) {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEndTime,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
+    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    fund(id: 1) {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        votingPowerThreshold,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEndTime,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
 
     // TODO: This query is not nice to read as documentation for the test. It was taken from the option
     // in postman to check the curl command. The actual graphql body request is like this:
@@ -94,7 +94,7 @@ mod test {
     //         },
     //     }
     // }
-    const FUNDS_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    funds {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEndTime,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
+    const FUNDS_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    funds {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        votingPowerThreshold,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEndTime,\\n            chainVoteplanPayload,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
 
     // TODO: This query is not nice to read as documentation for the test. It was taken from the option
     // in postman to check the curl command. The actual graphql body request is like this:
@@ -129,7 +129,7 @@ mod test {
     //         fundId
     //     }
     // }
-    const PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposal(proposalId: \\\"1\\\") {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
+    const PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposal(proposalId: \\\"1\\\") {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposalImpactScore,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n,        proposerRelevantExperience\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
 
     // TODO: This query is not nice to read as documentation for the test. It was taken from the option
     // in postman to check the curl command. The actual graphql body request is like this:
@@ -164,7 +164,7 @@ mod test {
     //         fundId
     //     }
     // }
-    const PROPOSALS_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposals {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
+    const PROPOSALS_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposals {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposalImpactScore,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n,        proposerRelevantExperience\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
 
     async fn build_fund_test_filter() -> (
         Fund,

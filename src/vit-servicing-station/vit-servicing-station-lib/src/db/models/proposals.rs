@@ -22,6 +22,8 @@ pub struct Proposer {
     pub proposer_email: String,
     #[serde(alias = "proposerUrl")]
     pub proposer_url: String,
+    #[serde(alias = "proposerRelevantExperience")]
+    pub proposer_relevant_experience: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -48,6 +50,8 @@ pub struct Proposal {
     pub proposal_url: String,
     #[serde(alias = "proposalFilesUrl")]
     pub proposal_files_url: String,
+    #[serde(alias = "proposalImpactScore")]
+    pub proposal_impact_score: i64,
     pub proposer: Proposer,
     #[serde(alias = "chainProposalId")]
     #[serde(serialize_with = "crate::utils::serde::serialize_bin_as_str")]
@@ -103,29 +107,33 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
         String,
         // 10 -> proposal_files_url,
         String,
-        // 11 -> proposer_name
+        // 11 -> proposal_impact_score
+        i64,
+        // 12 -> proposer_name
         String,
-        // 12 -> proposer_contact
+        // 13 -> proposer_contact
         String,
-        // 13 -> proposer_url
+        // 14 -> proposer_url
         String,
-        // 14 -> chain_proposal_id
+        // 15 -> proposer_relevant_experience
+        String,
+        // 16 -> chain_proposal_id
         Vec<u8>,
-        // 15 -> chain_proposal_index
+        // 17 -> chain_proposal_index
         i64,
-        // 16 -> chain_vote_options
+        // 18 -> chain_vote_options
         String,
-        // 17 -> chain_voteplan_id
+        // 19 -> chain_voteplan_id
         String,
-        // 18 -> chain_vote_starttime
+        // 20 -> chain_vote_starttime
         i64,
-        // 29 -> chain_vote_endtime
+        // 21 -> chain_vote_endtime
         i64,
-        // 20 -> chain_committee_end_time
+        // 22 -> chain_committee_end_time
         i64,
-        // 21 -> chain_voteplan_payload
+        // 23 -> chain_voteplan_payload
         String,
-        // 22 -> fund_id
+        // 24 -> fund_id
         i32,
     );
 
@@ -146,20 +154,22 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             proposal_funds: row.8,
             proposal_url: row.9,
             proposal_files_url: row.10,
+            proposal_impact_score: row.11,
             proposer: Proposer {
-                proposer_name: row.11,
-                proposer_email: row.12,
-                proposer_url: row.13,
+                proposer_name: row.12,
+                proposer_email: row.13,
+                proposer_url: row.14,
+                proposer_relevant_experience: row.15,
             },
-            chain_proposal_id: row.14,
-            chain_proposal_index: row.15,
-            chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.16),
-            chain_voteplan_id: row.17,
-            chain_vote_start_time: row.18,
-            chain_vote_end_time: row.19,
-            chain_committee_end_time: row.20,
-            chain_voteplan_payload: row.21,
-            fund_id: row.22,
+            chain_proposal_id: row.16,
+            chain_proposal_index: row.17,
+            chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.18),
+            chain_voteplan_id: row.19,
+            chain_vote_start_time: row.20,
+            chain_vote_end_time: row.21,
+            chain_committee_end_time: row.22,
+            chain_voteplan_payload: row.23,
+            fund_id: row.24,
         }
     }
 }
@@ -179,9 +189,11 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::proposal_funds, i64>,
         diesel::dsl::Eq<proposals::proposal_url, String>,
         diesel::dsl::Eq<proposals::proposal_files_url, String>,
+        diesel::dsl::Eq<proposals::proposal_impact_score, i64>,
         diesel::dsl::Eq<proposals::proposer_name, String>,
         diesel::dsl::Eq<proposals::proposer_contact, String>,
         diesel::dsl::Eq<proposals::proposer_url, String>,
+        diesel::dsl::Eq<proposals::proposer_relevant_experience, String>,
         diesel::dsl::Eq<proposals::chain_proposal_id, Vec<u8>>,
         diesel::dsl::Eq<proposals::chain_proposal_index, i64>,
         diesel::dsl::Eq<proposals::chain_vote_options, String>,
@@ -200,9 +212,11 @@ impl Insertable<proposals::table> for Proposal {
             proposals::proposal_funds.eq(self.proposal_funds),
             proposals::proposal_url.eq(self.proposal_url),
             proposals::proposal_files_url.eq(self.proposal_files_url),
+            proposals::proposal_impact_score.eq(self.proposal_impact_score),
             proposals::proposer_name.eq(self.proposer.proposer_name),
             proposals::proposer_contact.eq(self.proposer.proposer_email),
             proposals::proposer_url.eq(self.proposer.proposer_url),
+            proposals::proposer_relevant_experience.eq(self.proposer.proposer_relevant_experience),
             proposals::chain_proposal_id.eq(self.chain_proposal_id),
             proposals::chain_proposal_index.eq(self.chain_proposal_index),
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
@@ -239,10 +253,12 @@ pub mod test {
             proposal_funds: 10000,
             proposal_url: "http://foo.bar".to_string(),
             proposal_files_url: "http://foo.bar/files".to_string(),
+            proposal_impact_score: 100,
             proposer: Proposer {
                 proposer_name: "tester".to_string(),
                 proposer_email: "tester@tester.tester".to_string(),
                 proposer_url: "http://tester.tester".to_string(),
+                proposer_relevant_experience: "ilumination".to_string(),
             },
             chain_proposal_id: b"foobar".to_vec(),
             chain_proposal_index: 0,
@@ -271,9 +287,12 @@ pub mod test {
             proposals::proposal_funds.eq(proposal.proposal_funds.clone()),
             proposals::proposal_url.eq(proposal.proposal_url.clone()),
             proposals::proposal_files_url.eq(proposal.proposal_files_url.clone()),
+            proposals::proposal_impact_score.eq(proposal.proposal_impact_score),
             proposals::proposer_name.eq(proposal.proposer.proposer_name.clone()),
             proposals::proposer_contact.eq(proposal.proposer.proposer_email.clone()),
             proposals::proposer_url.eq(proposal.proposer.proposer_url.clone()),
+            proposals::proposer_relevant_experience
+                .eq(proposal.proposer.proposer_relevant_experience.clone()),
             proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),
             proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),

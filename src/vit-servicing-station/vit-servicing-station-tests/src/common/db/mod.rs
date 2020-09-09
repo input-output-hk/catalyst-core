@@ -55,12 +55,15 @@ impl<'a> DbInserter<'a> {
                 proposals::proposer_name.eq(proposal.proposer.proposer_name.clone()),
                 proposals::proposer_contact.eq(proposal.proposer.proposer_email.clone()),
                 proposals::proposer_url.eq(proposal.proposer.proposer_url.clone()),
+                proposals::proposal_impact_score.eq(proposal.proposal_impact_score),
+                proposals::proposer_relevant_experience
+                    .eq(proposal.proposer.proposer_relevant_experience.clone()),
                 proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),
                 proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
                 proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
                 proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
             );
-            diesel::insert_or_ignore_into(proposals::table)
+            diesel::insert_into(proposals::table)
                 .values(values)
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
@@ -89,6 +92,7 @@ impl<'a> DbInserter<'a> {
                 funds::fund_name.eq(fund.fund_name.clone()),
                 funds::fund_goal.eq(fund.fund_goal.clone()),
                 funds::voting_power_info.eq(fund.voting_power_info.clone()),
+                funds::voting_power_threshold.eq(fund.voting_power_threshold),
                 funds::rewards_info.eq(fund.rewards_info.clone()),
                 funds::fund_start_time.eq(fund.fund_start_time),
                 funds::fund_end_time.eq(fund.fund_end_time),

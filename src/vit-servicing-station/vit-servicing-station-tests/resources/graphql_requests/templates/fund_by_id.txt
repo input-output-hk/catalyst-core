@@ -5,6 +5,7 @@
       fundName
       fundGoal
       votingPowerInfo
+      votingPowerThreshold
       rewardsInfo
       fundStartTime
       fundEndTime

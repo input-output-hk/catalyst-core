@@ -13,13 +13,15 @@
             proposalProblem,
             proposalPublicKey,
             proposalFunds,
+            proposalImpactScore,
             proposalSolution
             proposalUrl,
             proposalFilesUrl,
             proposer {
                 proposerName,
                 proposerEmail,
-                proposerUrl
+                proposerUrl,
+                proposerRelevantExperience
             },
             chainProposalId,
             chainProposalIndex,

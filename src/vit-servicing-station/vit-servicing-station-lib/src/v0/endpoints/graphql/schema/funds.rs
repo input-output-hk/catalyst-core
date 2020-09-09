@@ -28,6 +28,11 @@ impl Fund {
         &self.voting_power_info
     }
 
+    #[field(desc = "Fund voting threshold")]
+    pub async fn voting_power_threshold(&self) -> i64 {
+        self.voting_power_threshold
+    }
+
     #[field(desc = "Fund rewards information")]
     pub async fn rewards_info(&self) -> &str {
         &self.rewards_info

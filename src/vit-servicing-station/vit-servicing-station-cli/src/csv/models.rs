@@ -31,12 +31,16 @@ pub struct Proposal {
     pub proposal_url: String,
     #[serde(alias = "proposalFilesUrl")]
     pub proposal_files_url: String,
+    #[serde(alias = "proposalImpactScore")]
+    pub proposal_impact_score: i64,
     #[serde(alias = "proposerName")]
     pub proposer_name: String,
     #[serde(alias = "proposerEmail")]
     pub proposer_email: String,
     #[serde(alias = "proposerUrl")]
     pub proposer_url: String,
+    #[serde(alias = "proposerRelevantExperience")]
+    pub proposer_relevant_experience: String,
     #[serde(alias = "chainProposalId")]
     #[serde(serialize_with = "vit_servicing_station_lib::utils::serde::serialize_bin_as_str")]
     #[serde(
@@ -101,10 +105,12 @@ impl From<Proposal> for proposals::Proposal {
             proposal_funds: proposal.proposal_funds,
             proposal_url: proposal.proposal_url,
             proposal_files_url: proposal.proposal_files_url,
+            proposal_impact_score: proposal.proposal_impact_score,
             proposer: Proposer {
                 proposer_name: proposal.proposer_name,
                 proposer_email: proposal.proposer_email,
                 proposer_url: proposal.proposer_url,
+                proposer_relevant_experience: proposal.proposer_relevant_experience,
             },
             chain_proposal_id: proposal.chain_proposal_id,
             chain_proposal_index: proposal.chain_proposal_index,

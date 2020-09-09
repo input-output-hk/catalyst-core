@@ -12,6 +12,8 @@ pub struct Fund {
     pub fund_goal: String,
     #[serde(alias = "votingPowerInfo")]
     pub voting_power_info: String,
+    #[serde(alias = "votingPowerThreshold")]
+    pub voting_power_threshold: i64,
     #[serde(alias = "rewardsInfo")]
     pub rewards_info: String,
     #[serde(alias = "fundStartTime")]
@@ -40,13 +42,15 @@ impl Queryable<funds::SqlType, DB> for Fund {
         String,
         // 3 -> voting_power_info
         String,
-        // 4 -> rewards_info
+        // 4 -> voting_power_threshold
+        i64,
+        // 5 -> rewards_info
         String,
-        // 5 -> fund_start_time
+        // 6 -> fund_start_time
         i64,
-        // 6 -> fund_end_time
+        // 7 -> fund_end_time
         i64,
-        // 7 -> next_fund_start_time
+        // 8 -> next_fund_start_time
         i64,
     );
 
@@ -56,10 +60,11 @@ impl Queryable<funds::SqlType, DB> for Fund {
             fund_name: row.1,
             fund_goal: row.2,
             voting_power_info: row.3,
-            rewards_info: row.4,
-            fund_start_time: row.5,
-            fund_end_time: row.6,
-            next_fund_start_time: row.7,
+            voting_power_threshold: row.4,
+            rewards_info: row.5,
+            fund_start_time: row.6,
+            fund_end_time: row.7,
+            next_fund_start_time: row.8,
             chain_vote_plans: vec![],
         }
     }
@@ -73,6 +78,7 @@ impl Insertable<funds::table> for Fund {
         diesel::dsl::Eq<funds::fund_name, String>,
         diesel::dsl::Eq<funds::fund_goal, String>,
         diesel::dsl::Eq<funds::voting_power_info, String>,
+        diesel::dsl::Eq<funds::voting_power_threshold, i64>,
         diesel::dsl::Eq<funds::rewards_info, String>,
         diesel::dsl::Eq<funds::fund_start_time, i64>,
         diesel::dsl::Eq<funds::fund_end_time, i64>,
@@ -84,6 +90,7 @@ impl Insertable<funds::table> for Fund {
             funds::fund_name.eq(self.fund_name),
             funds::fund_goal.eq(self.fund_goal),
             funds::voting_power_info.eq(self.voting_power_info),
+            funds::voting_power_threshold.eq(self.voting_power_threshold),
             funds::rewards_info.eq(self.rewards_info),
             funds::fund_start_time.eq(self.fund_start_time),
             funds::fund_end_time.eq(self.fund_end_time),
@@ -109,6 +116,7 @@ pub mod test {
             fund_name: "hey oh let's go".to_string(),
             fund_goal: "test this endpoint".to_string(),
             voting_power_info: ">9000".to_string(),
+            voting_power_threshold: 100,
             rewards_info: "not much".to_string(),
             fund_start_time: Utc::now().timestamp(),
             fund_end_time: Utc::now().timestamp(),
@@ -122,6 +130,7 @@ pub mod test {
             funds::fund_name.eq(fund.fund_name.clone()),
             funds::fund_goal.eq(fund.fund_goal.clone()),
             funds::voting_power_info.eq(fund.voting_power_info.clone()),
+            funds::voting_power_threshold.eq(fund.voting_power_threshold),
             funds::rewards_info.eq(fund.rewards_info.clone()),
             funds::fund_start_time.eq(fund.fund_start_time),
             funds::fund_end_time.eq(fund.fund_end_time),

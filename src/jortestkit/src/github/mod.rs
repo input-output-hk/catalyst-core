@@ -13,6 +13,8 @@ pub enum GitHubApiError {
     CannotDeserialize(#[from] serde_json::Error),
     #[error("could not send reqeuest")]
     RequestError(#[from] reqwest::Error),
+    #[error("cannot find release with version: {0}")]
+    CannotFindReleaseWithVersion(String),
 }
 
 #[derive(Clone, Debug)]
@@ -44,7 +46,9 @@ impl Release {
             OsType::SUSE => OsType::Linux,
             OsType::openSUSE => OsType::Linux,
             OsType::Alpine => OsType::Linux,
-            OsType::OracleLinux => OsType::Linux,
+            OsType::OracleLinux => {
+                return OsType::Linux;
+            }
             _ => os_type,
         }
     }
@@ -104,16 +108,12 @@ impl GitHubApi {
         version: String,
     ) -> Result<Option<AssetDto>, GitHubApiError> {
         let info = os_info::get();
-        Ok(
-            match self
-                .describe_releases()?
-                .iter()
-                .cloned()
-                .find(|x| x.version == version)
-            {
-                None => None,
-                Some(release) => release.get_release_for_os(info.os_type()),
-            },
-        )
+
+        let releases = self.describe_releases()?;
+
+        match releases.iter().find(|x| *x.version == version) {
+            None => Err(GitHubApiError::CannotFindReleaseWithVersion(version)),
+            Some(release) => Ok(release.get_release_for_os(info.os_type())),
+        }
     }
 }

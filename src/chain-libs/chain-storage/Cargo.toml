@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 with-bench = ["criterion", "tempfile", "rand_core"]
 
 [dependencies]
-sled = "0.31.0"
+sled = "0.34.0"
 thiserror = "1.0"
 data-pile = "0.5.0"
 

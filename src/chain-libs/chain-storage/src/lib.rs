@@ -146,7 +146,9 @@ mod tests;
 mod value;
 
 use permanent_store::PermanentStore;
-use sled::{ConflictableTransactionError, TransactionError, Transactional, TransactionalTree};
+use sled::transaction::{
+    ConflictableTransactionError, TransactionError, Transactional, TransactionalTree,
+};
 use std::path::Path;
 
 pub use block_info::BlockInfo;
@@ -166,6 +168,21 @@ enum RemoveTipResult {
     NextTip(Vec<u8>),
     HitPermanentStore(Vec<u8>),
     Done,
+}
+
+impl From<Error> for ConflictableTransactionError<Error> {
+    fn from(from: Error) -> Self {
+        ConflictableTransactionError::Abort(from)
+    }
+}
+
+impl From<TransactionError<Error>> for Error {
+    fn from(from: TransactionError<Error>) -> Self {
+        match from {
+            TransactionError::Abort(err) => err,
+            TransactionError::Storage(err) => err.into(),
+        }
+    }
 }
 
 /// Names of trees in `sled` storage. For documentation about trees please refer
@@ -249,8 +266,8 @@ impl BlockStore {
             .permanent
             .contains_key(block_info.parent_id().as_ref())?;
 
-        let result = (&blocks, &info, &chain_length_to_block_ids, &tips).transaction(
-            |(blocks, info, chain_length_to_block_ids, tips)| {
+        (&blocks, &info, &chain_length_to_block_ids, &tips)
+            .transaction(|(blocks, info, chain_length_to_block_ids, tips)| {
                 put_block_impl(
                     blocks,
                     info,
@@ -262,10 +279,8 @@ impl BlockStore {
                     self.id_length,
                     parent_in_permanent_store,
                 )
-            },
-        );
-
-        convert_transaction_result(result)
+            })
+            .map_err(Into::into)
     }
 
     /// Get a block from the storage.
@@ -340,18 +355,18 @@ impl BlockStore {
         let info = self.volatile.open_tree(tree::INFO)?;
         let tags = self.volatile.open_tree(tree::TAGS)?;
 
-        let result = (&info, &tags).transaction(move |(info, tags)| {
-            put_tag_impl(
-                info,
-                tags,
-                &self.permanent,
-                tag_name,
-                block_id,
-                self.id_length,
-            )
-        });
-
-        convert_transaction_result(result)
+        (&info, &tags)
+            .transaction(move |(info, tags)| {
+                put_tag_impl(
+                    info,
+                    tags,
+                    &self.permanent,
+                    tag_name,
+                    block_id,
+                    self.id_length,
+                )
+            })
+            .map_err(Into::into)
     }
 
     /// Get the block ID for the given tag.
@@ -390,7 +405,7 @@ impl BlockStore {
                 let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
 
                 while let RemoveTipResult::NextTip(current_tip) = &result {
-                    result = match remove_tip_impl(
+                    result = remove_tip_impl(
                         blocks,
                         info,
                         chain_length_to_block_ids,
@@ -399,17 +414,12 @@ impl BlockStore {
                         current_tip,
                         self.root_id.as_ref(),
                         self.id_length,
-                    )? {
-                        Ok(res) => res,
-                        Err(err) => return Ok(Err(err)),
-                    };
+                    )?;
                 }
 
-                Ok(Ok(result))
+                Ok(result)
             },
-        );
-
-        let result = convert_transaction_result(result)?;
+        )?;
 
         if let RemoveTipResult::HitPermanentStore(id) = result {
             let block_info = self
@@ -631,12 +641,12 @@ fn put_block_impl(
     root_id: &[u8],
     id_length: usize,
     parent_external: bool,
-) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
+) -> Result<(), ConflictableTransactionError<Error>> {
     let parent_in_volatile_store = if parent_external || block_info.parent_id().as_ref() == root_id
     {
         false
     } else if info.get(block_info.parent_id())?.is_none() {
-        return Ok(Err(Error::MissingParent));
+        return Err(Error::MissingParent.into());
     } else {
         true
     };
@@ -667,7 +677,7 @@ fn put_block_impl(
 
     info.insert(block_info.id().as_ref(), block_info.serialize().as_slice())?;
 
-    Ok(Ok(()))
+    Ok(())
 }
 
 #[inline]
@@ -678,22 +688,14 @@ fn put_tag_impl(
     tag_name: &str,
     block_id: &[u8],
     id_size: usize,
-) -> Result<Result<(), Error>, ConflictableTransactionError<()>> {
-    match info.get(block_id)? {
-        Some(info_bin) => {
-            let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, block_id.to_vec());
-            block_info.add_ref();
-            let info_bin = block_info.serialize();
-            info.insert(block_id, info_bin)?;
-        }
-        None => match permanent_store.contains_key(block_id) {
-            Ok(contains_key) => {
-                if !contains_key {
-                    return Ok(Err(Error::BlockNotFound));
-                }
-            }
-            Err(err) => return Ok(Err(err)),
-        },
+) -> Result<(), ConflictableTransactionError<Error>> {
+    if let Some(info_bin) = info.get(block_id)? {
+        let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, block_id.to_vec());
+        block_info.add_ref();
+        let info_bin = block_info.serialize();
+        info.insert(block_id, info_bin)?;
+    } else if !permanent_store.contains_key(block_id)? {
+        return Err(Error::BlockNotFound.into());
     }
 
     let maybe_old_block_id = tags.insert(tag_name, block_id)?;
@@ -706,7 +708,7 @@ fn put_tag_impl(
         info.insert(block_info.id().as_ref(), info_bin)?;
     }
 
-    Ok(Ok(()))
+    Ok(())
 }
 
 #[inline]
@@ -720,15 +722,10 @@ fn remove_tip_impl(
     block_id: &[u8],
     root_id: &[u8],
     id_size: usize,
-) -> Result<Result<RemoveTipResult, Error>, ConflictableTransactionError<()>> {
+) -> Result<RemoveTipResult, ConflictableTransactionError<Error>> {
     // Stop when we bump into a block stored in the permanent storage.
-    match permanent_store.contains_key(block_id) {
-        Ok(res) => {
-            if res {
-                return Ok(Ok(RemoveTipResult::Done));
-            }
-        }
-        Err(err) => return Ok(Err(err)),
+    if permanent_store.contains_key(block_id)? {
+        return Ok(RemoveTipResult::Done);
     }
 
     let block_info_bin = info.get(block_id)?.unwrap();
@@ -736,7 +733,7 @@ fn remove_tip_impl(
     let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id.to_vec());
 
     if block_info.ref_count() != 0 {
-        return Ok(Ok(RemoveTipResult::Done));
+        return Ok(RemoveTipResult::Done);
     }
 
     info.remove(block_id)?;
@@ -749,13 +746,10 @@ fn remove_tip_impl(
     tips.remove(block_id)?;
 
     if block_info.parent_id().as_ref() == root_id {
-        return Ok(Ok(RemoveTipResult::Done));
+        return Ok(RemoveTipResult::Done);
     }
 
-    let parent_permanent = match permanent_store.contains_key(block_info.parent_id().as_ref()) {
-        Ok(res) => res,
-        Err(err) => return Ok(Err(err)),
-    };
+    let parent_permanent = permanent_store.contains_key(block_info.parent_id().as_ref())?;
 
     let maybe_parent_block_info = if parent_permanent {
         None
@@ -776,34 +770,18 @@ fn remove_tip_impl(
         Some(parent_block_info)
     };
 
-    let maybe_next_tip = match maybe_parent_block_info {
-        Some(parent_block_info) => {
-            if parent_block_info.ref_count() == 0 {
-                // If the block is inside another branch it cannot be a tip.
-                // This will also apply if this tip is tagged.
-                tips.insert(block_info.parent_id().as_ref(), &[])?;
-                RemoveTipResult::NextTip(block_info.parent_id().as_ref().to_vec())
-            } else {
-                RemoveTipResult::Done
-            }
+    let maybe_next_tip = if let Some(parent_block_info) = maybe_parent_block_info {
+        if parent_block_info.ref_count() == 0 {
+            // If the block is inside another branch it cannot be a tip.
+            // This will also apply if this tip is tagged.
+            tips.insert(block_info.parent_id().as_ref(), &[])?;
+            RemoveTipResult::NextTip(block_info.parent_id().as_ref().to_vec())
+        } else {
+            RemoveTipResult::Done
         }
-        None => RemoveTipResult::HitPermanentStore(block_info.parent_id().as_ref().to_vec()),
+    } else {
+        RemoveTipResult::HitPermanentStore(block_info.parent_id().as_ref().to_vec())
     };
 
-    Ok(Ok(maybe_next_tip))
-}
-
-/// Due to limitation of `sled` transaction mechanism we need to return nested
-/// `Result` from the transaction body which needs to be converted to plain
-/// `Result<T, Error`.
-#[inline]
-fn convert_transaction_result<T>(
-    result: Result<Result<T, Error>, TransactionError<()>>,
-) -> Result<T, Error> {
-    match result {
-        Ok(Ok(v)) => Ok(v),
-        Ok(Err(err)) => Err(err),
-        Err(TransactionError::Storage(err)) => Err(err.into()),
-        Err(TransactionError::Abort(())) => unreachable!(),
-    }
+    Ok(maybe_next_tip)
 }

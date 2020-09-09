@@ -123,6 +123,7 @@ impl StatusUpdaterThread {
         >,
         monitor: Monitor,
         title: &str,
+        shutdown_grace_period: u32,
     ) -> Self {
         let (tx, rx) = mpsc::channel();
         let responses_clone = Arc::clone(&responses);
@@ -137,7 +138,7 @@ impl StatusUpdaterThread {
                 Ok(_) | Err(TryRecvError::Disconnected) => {
                     progress_bar.set_message("Waiting for all messages to be accepted or rejected");
 
-                    for _ in 1..3 {
+                    for _ in 0..shutdown_grace_period {
                         let statuses =
                             update_statuses(&responses_clone, &request_status_provider_clone);
                         let pending_statuses: Vec<&Status> =
@@ -152,7 +153,7 @@ impl StatusUpdaterThread {
                                 pending_statuses.len()
                             ));
                         }
-                        std::thread::sleep(std::time::Duration::from_secs(4));
+                        std::thread::sleep(std::time::Duration::from_secs(1));
                     }
                     break;
                 }

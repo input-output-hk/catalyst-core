@@ -46,6 +46,18 @@ pub fn copy_folder(from: &PathBuf, to: &PathBuf, overwrite: bool) {
     copy(from, to, &options).expect("cannot copy folder");
 }
 
+pub fn copy_file<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q, preserve_old: bool) {
+    if preserve_old {
+        let mut old_to = to.as_ref().to_path_buf();
+        old_to.set_file_name(format!(
+            "old_{}",
+            old_to.file_name().unwrap().to_str().unwrap()
+        ));
+        copy_file(to.as_ref(), old_to.as_path(), false);
+    }
+    fs::copy(from, to).expect("cannot copy files");
+}
+
 pub fn read_file_as_vector(
     path: impl AsRef<Path>,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>> {
@@ -57,4 +69,8 @@ pub fn read_file_as_vector(
         output.push(line?);
     }
     Ok(output)
+}
+
+pub fn have_the_same_content<P: AsRef<Path>>(left: P, right: P) -> bool {
+    read_file(left) == read_file(right)
 }

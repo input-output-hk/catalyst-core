@@ -1,4 +1,4 @@
-use crate::store::UtxoStore;
+use crate::store::{Groupable, UtxoStore};
 
 use super::builder::{AddInputStatus, TransactionBuilder};
 use super::witness_builder::{OldUtxoWitnessBuilder, UtxoWitnessBuilder, WitnessBuilder};
@@ -18,11 +18,11 @@ pub type DumpIcarus<'a> =
     DumpIter<'a, crate::scheme::bip44::Wallet<chain_impl_mockchain::legacy::OldAddress>>;
 pub type DumpFreeKeys<'a> = DumpIter<'a, crate::scheme::freeutxo::Wallet>;
 
-pub fn send_to_one_address<S: Clone, K: 'static, WB: WitnessBuilder>(
+pub fn send_to_one_address<K: Clone + Groupable, WB: WitnessBuilder>(
     settings: &crate::Settings,
     address: &chain_addr::Address,
-    utxo_store: &UtxoStore<S, K>,
-    mk_witness: &'static dyn Fn(hdkeygen::Key<S, K>) -> WB,
+    utxo_store: &UtxoStore<K>,
+    mk_witness: &'static dyn Fn(K) -> WB,
 ) -> Option<(Transaction<NoExtra>, Vec<Input>)> {
     let payload = chain_impl_mockchain::transaction::NoExtra;
 

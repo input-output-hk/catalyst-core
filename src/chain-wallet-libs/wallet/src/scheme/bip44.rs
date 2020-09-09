@@ -22,7 +22,7 @@ const DEFAULT_GAG_LIMIT: u32 = 20;
 
 pub struct Wallet<A: 'static> {
     coin_type_key: Key<XPrv, Bip44<bip44::CoinType>>,
-    state: States<FragmentId, UtxoStore<XPrv, Bip44<bip44::Address>>>,
+    state: States<FragmentId, UtxoStore<Key<XPrv, Bip44<bip44::Address>>>>,
     soft_derivation_range_length: u32,
     mk_key: &'static dyn Fn(&XPub) -> A,
     accounts: Vec<Account<A>>,
@@ -151,7 +151,7 @@ impl<A> Wallet<A> {
     }
 
     /// get the utxos of this given wallet
-    pub fn utxos(&self) -> &UtxoStore<XPrv, Bip44<bip44::Address>> {
+    pub fn utxos(&self) -> &UtxoStore<Key<XPrv, Bip44<bip44::Address>>> {
         self.state.last_state().1
     }
 }

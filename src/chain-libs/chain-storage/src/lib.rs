@@ -354,13 +354,14 @@ impl BlockStore {
     pub fn put_tag(&self, tag_name: &str, block_id: &[u8]) -> Result<(), Error> {
         let info = self.volatile.open_tree(tree::INFO)?;
         let tags = self.volatile.open_tree(tree::TAGS)?;
+        let permanent_store_index = self.permanent.block_id_index();
 
-        (&info, &tags)
-            .transaction(move |(info, tags)| {
+        (&info, &tags, permanent_store_index)
+            .transaction(move |(info, tags, permanent_store_index)| {
                 put_tag_impl(
                     info,
                     tags,
-                    &self.permanent,
+                    permanent_store_index,
                     tag_name,
                     block_id,
                     self.id_length,
@@ -399,27 +400,35 @@ impl BlockStore {
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         let info = self.volatile.open_tree(tree::INFO)?;
         let chain_length_to_block_ids = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
+        let permanent_store_index = self.permanent.block_id_index();
 
-        let result = (&blocks, &info, &chain_length_to_block_ids, &tips).transaction(
-            |(blocks, info, chain_length_to_block_ids, tips)| {
-                let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
+        let result = (
+            &blocks,
+            &info,
+            &chain_length_to_block_ids,
+            &tips,
+            permanent_store_index,
+        )
+            .transaction(
+                |(blocks, info, chain_length_to_block_ids, tips, permanent_store_index)| {
+                    let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
 
-                while let RemoveTipResult::NextTip(current_tip) = &result {
-                    result = remove_tip_impl(
-                        blocks,
-                        info,
-                        chain_length_to_block_ids,
-                        tips,
-                        &self.permanent,
-                        current_tip,
-                        self.root_id.as_ref(),
-                        self.id_length,
-                    )?;
-                }
+                    while let RemoveTipResult::NextTip(current_tip) = &result {
+                        result = remove_tip_impl(
+                            blocks,
+                            info,
+                            chain_length_to_block_ids,
+                            tips,
+                            permanent_store_index,
+                            current_tip,
+                            self.root_id.as_ref(),
+                            self.id_length,
+                        )?;
+                    }
 
-                Ok(result)
-            },
-        )?;
+                    Ok(result)
+                },
+            )?;
 
         if let RemoveTipResult::HitPermanentStore(id) = result {
             let block_info = self
@@ -684,7 +693,7 @@ fn put_block_impl(
 fn put_tag_impl(
     info: &TransactionalTree,
     tags: &TransactionalTree,
-    permanent_store: &PermanentStore,
+    permanent_store_index: &TransactionalTree,
     tag_name: &str,
     block_id: &[u8],
     id_size: usize,
@@ -694,7 +703,10 @@ fn put_tag_impl(
         block_info.add_ref();
         let info_bin = block_info.serialize();
         info.insert(block_id, info_bin)?;
-    } else if !permanent_store.contains_key(block_id)? {
+    } else if !permanent_store_index
+        .get(block_id)
+        .map(|maybe_block| maybe_block.is_some())?
+    {
         return Err(Error::BlockNotFound.into());
     }
 
@@ -718,13 +730,16 @@ fn remove_tip_impl(
     info: &TransactionalTree,
     chain_length_to_block_ids: &TransactionalTree,
     tips: &TransactionalTree,
-    permanent_store: &PermanentStore,
+    permanent_store_index: &TransactionalTree,
     block_id: &[u8],
     root_id: &[u8],
     id_size: usize,
 ) -> Result<RemoveTipResult, ConflictableTransactionError<Error>> {
     // Stop when we bump into a block stored in the permanent storage.
-    if permanent_store.contains_key(block_id)? {
+    if permanent_store_index
+        .get(block_id)
+        .map(|maybe_block| maybe_block.is_some())?
+    {
         return Ok(RemoveTipResult::Done);
     }
 
@@ -749,7 +764,9 @@ fn remove_tip_impl(
         return Ok(RemoveTipResult::Done);
     }
 
-    let parent_permanent = permanent_store.contains_key(block_info.parent_id().as_ref())?;
+    let parent_permanent = permanent_store_index
+        .get(block_info.parent_id().as_ref())
+        .map(|maybe_block| maybe_block.is_some())?;
 
     let maybe_parent_block_info = if parent_permanent {
         None

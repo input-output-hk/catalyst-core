@@ -117,4 +117,8 @@ impl PermanentStore {
             .iter_from_seqno(chain_length as usize)
             .ok_or(Error::BlockNotFound)
     }
+
+    pub fn block_id_index(&self) -> &sled::Tree {
+        &self.block_id_index
+    }
 }

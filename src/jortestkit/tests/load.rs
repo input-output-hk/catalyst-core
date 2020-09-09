@@ -60,6 +60,7 @@ pub fn load_sanity_async() {
         std::time::Duration::from_secs(3),
         50,
         Monitor::Progress(10),
+        0,
     );
     load::start_async(
         AsyncSampleRequestGenerator { counter: 1 },

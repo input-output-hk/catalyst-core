@@ -18,6 +18,7 @@ pub struct Configuration {
     strategy: Strategy,
     step_delay: u64,
     monitor: Monitor,
+    shutdown_grace_period: u32,
 }
 
 impl Configuration {
@@ -26,12 +27,14 @@ impl Configuration {
         duration: std::time::Duration,
         step_delay: u64,
         monitor: Monitor,
+        shutdown_grace_period: u32,
     ) -> Configuration {
         Self {
             thread_no,
             strategy: Strategy::Duration(duration),
             step_delay,
             monitor,
+            shutdown_grace_period,
         }
     }
 
@@ -40,12 +43,14 @@ impl Configuration {
         requests_count: u32,
         step_delay: u64,
         monitor: Monitor,
+        shutdown_grace_period: u32,
     ) -> Configuration {
         Self {
             thread_no,
             strategy: Strategy::PerThread(requests_count),
             step_delay,
             monitor,
+            shutdown_grace_period,
         }
     }
 
@@ -54,12 +59,14 @@ impl Configuration {
         requests_count: u32,
         step_delay: u64,
         monitor: Monitor,
+        shutdown_grace_period: u32,
     ) -> Configuration {
         Self {
             thread_no,
             strategy: Strategy::Overall(requests_count),
             step_delay,
             monitor,
+            shutdown_grace_period,
         }
     }
 
@@ -77,5 +84,9 @@ impl Configuration {
 
     pub fn monitor(&self) -> &Monitor {
         &self.monitor
+    }
+
+    pub fn shutdown_grace_period(&self) -> u32 {
+        self.shutdown_grace_period
     }
 }

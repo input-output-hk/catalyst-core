@@ -165,8 +165,8 @@ pub struct BlockStore {
 }
 
 enum RemoveTipResult {
-    NextTip(Vec<u8>),
-    HitPermanentStore(Vec<u8>),
+    NextTip { id: Vec<u8> },
+    HitPermanentStore { id: Vec<u8> },
     Done,
 }
 
@@ -433,16 +433,18 @@ impl BlockStore {
         )
             .transaction(
                 |(blocks, info, chain_length_to_block_ids, tips, permanent_store_index)| {
-                    let mut result = RemoveTipResult::NextTip(Vec::from(tip_id));
+                    let mut result = RemoveTipResult::NextTip {
+                        id: Vec::from(tip_id),
+                    };
 
-                    while let RemoveTipResult::NextTip(current_tip) = &result {
+                    while let RemoveTipResult::NextTip { id } = &result {
                         result = remove_tip_impl(
                             blocks,
                             info,
                             chain_length_to_block_ids,
                             tips,
                             permanent_store_index,
-                            current_tip,
+                            id,
                             self.root_id.as_ref(),
                             self.id_length,
                         )?;
@@ -452,7 +454,7 @@ impl BlockStore {
                 },
             )?;
 
-        if let RemoveTipResult::HitPermanentStore(id) = result {
+        if let RemoveTipResult::HitPermanentStore { id } = result {
             let block_info = self
                 .get_block_info(&id)
                 .expect("parent block in permanent store not found");
@@ -814,12 +816,16 @@ fn remove_tip_impl(
             // If the block is inside another branch it cannot be a tip.
             // This will also apply if this tip is tagged.
             tips.insert(block_info.parent_id().as_ref(), &[])?;
-            RemoveTipResult::NextTip(block_info.parent_id().as_ref().to_vec())
+            RemoveTipResult::NextTip {
+                id: block_info.parent_id().as_ref().to_vec(),
+            }
         } else {
             RemoveTipResult::Done
         }
     } else {
-        RemoveTipResult::HitPermanentStore(block_info.parent_id().as_ref().to_vec())
+        RemoveTipResult::HitPermanentStore {
+            id: block_info.parent_id().as_ref().to_vec(),
+        }
     };
 
     Ok(maybe_next_tip)

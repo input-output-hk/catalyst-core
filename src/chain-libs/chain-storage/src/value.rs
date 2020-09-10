@@ -9,9 +9,9 @@ enum ValueImpl {
     Permanent(SharedMmap),
 }
 
-/// Wrapper for data held by the database. This wrapper holds structs return by
-/// both volatile and permanent storage to ensure we don't have needless copying
-/// on return. Data should be accessed through the `AsRef` trait.
+/// Wrapper for data held by the database. This wrapper holds structs returned
+/// by both volatile and permanent storage to ensure we don't have needless
+/// copying on return. Data should be accessed through the `AsRef` trait.
 #[derive(Debug, Clone)]
 pub struct Value {
     inner: ValueImpl,

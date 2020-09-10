@@ -1,4 +1,4 @@
-//! Block storage module.
+//! Block storage crate.
 //!
 //! # Data model
 //!
@@ -481,11 +481,12 @@ impl BlockStore {
             .map_err(Into::into)
     }
 
-    /// Determine whether block 'ancestor' is an ancestor of block 'descendent'
+    /// Determine whether block identified by `ancestor_id` is an ancestor of
+    /// block identified by `descendent_id`.
     ///
     /// Returned values:
-    /// * `Ok(Some(dist))` - `ancestor` is ancestor of `descendent`
-    ///     and there are `dist` blocks between them
+    /// * `Ok(Some(dist))` - `ancestor` is ancestor of `descendent` and there
+    ///   are `dist` blocks between them
     /// * `Ok(None)` - `ancestor` is not ancestor of `descendent`
     /// * `Err(error)` - `ancestor` or `descendent` was not found
     pub fn is_ancestor(

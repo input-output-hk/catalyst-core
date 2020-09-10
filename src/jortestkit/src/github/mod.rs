@@ -34,7 +34,7 @@ impl Release {
     /// narrow linux distribution to linux type
     #[allow(clippy::all)]
     fn compact_os_types(&self, os_type: OsType) -> OsType {
-        match os_type {
+        let os_type = match os_type {
             OsType::Emscripten => OsType::Linux,
             OsType::Redhat => OsType::Linux,
             OsType::RedHatEnterprise => OsType::Linux,
@@ -52,7 +52,8 @@ impl Release {
                 return OsType::Linux;
             }
             _ => os_type,
-        }
+        };
+        return os_type;
     }
 
     pub fn releases_per_os(&self) -> &HashMap<OsType, AssetDto> {

@@ -219,9 +219,9 @@ mod test {
         multiverse: &mut Multiverse<Ledger>,
         k: HeaderId,
         store: &HashMap<HeaderId, Block>,
-    ) -> Result<Ref<Ledger>, ()> {
+    ) -> Ref<Ledger> {
         if let Some(r) = multiverse.get_ref(&k) {
-            return Ok(r);
+            return r;
         }
 
         // Find the most recent ancestor that we have in
@@ -261,7 +261,7 @@ mod test {
             state_ref = multiverse.add(*hash, state);
         }
 
-        Ok(state_ref)
+        state_ref
     }
 
     fn apply_block(state: &Ledger, block: &Block) -> Ledger {
@@ -374,15 +374,15 @@ mod test {
             );
         }
 
-        let ref1 = get_from_storage(&mut multiverse, ids[1234], &store).unwrap();
+        let ref1 = get_from_storage(&mut multiverse, ids[1234], &store);
         let state = ref1.state();
         assert_eq!(state.chain_length().0, 1235);
 
-        let ref2 = get_from_storage(&mut multiverse, ids[9999], &store).unwrap();
+        let ref2 = get_from_storage(&mut multiverse, ids[9999], &store);
         let state = ref2.state();
         assert_eq!(state.chain_length().0, 10000);
 
-        let ref3 = get_from_storage(&mut multiverse, ids[9500], &store).unwrap();
+        let ref3 = get_from_storage(&mut multiverse, ids[9500], &store);
         let state = ref3.state();
         assert_eq!(state.chain_length().0, 9501);
 

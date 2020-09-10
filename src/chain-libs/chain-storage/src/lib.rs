@@ -693,7 +693,7 @@ fn put_block_impl(
             id_length,
             block_info.parent_id().clone(),
         );
-        parent_block_info.add_ref();
+        parent_block_info.add_parent_ref();
         info.insert(
             parent_block_info.id().as_ref(),
             parent_block_info.serialize(),
@@ -725,7 +725,7 @@ fn put_tag_impl(
 ) -> Result<(), ConflictableTransactionError<Error>> {
     if let Some(info_bin) = info.get(block_id)? {
         let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, block_id.to_vec());
-        block_info.add_ref();
+        block_info.add_tag_ref();
         let info_bin = block_info.serialize();
         info.insert(block_id, info_bin)?;
     } else if !permanent_store_index
@@ -740,7 +740,7 @@ fn put_tag_impl(
     if let Some(old_block_id) = maybe_old_block_id {
         let info_bin = info.get(old_block_id.clone())?.unwrap();
         let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, old_block_id.to_vec());
-        block_info.remove_ref();
+        block_info.remove_tag_ref();
         let info_bin = block_info.serialize();
         info.insert(block_info.id().as_ref(), info_bin)?;
     }
@@ -793,41 +793,38 @@ fn remove_tip_impl(
         .get(block_info.parent_id().as_ref())
         .map(|maybe_block| maybe_block.is_some())?;
 
-    let maybe_parent_block_info = if parent_permanent {
-        None
-    } else {
-        let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
-        let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
-        let mut parent_block_info = BlockInfo::deserialize(
-            &mut parent_block_info_reader,
-            id_size,
-            block_info.parent_id().clone(),
-        );
-        parent_block_info.remove_ref();
-        info.insert(
-            parent_block_info.id().as_ref(),
-            parent_block_info.serialize(),
-        )?;
-
-        Some(parent_block_info)
-    };
-
-    let maybe_next_tip = if let Some(parent_block_info) = maybe_parent_block_info {
-        if parent_block_info.ref_count() == 0 {
-            // If the block is inside another branch it cannot be a tip.
-            // This will also apply if this tip is tagged.
-            tips.insert(block_info.parent_id().as_ref(), &[])?;
-            RemoveTipResult::NextTip {
-                id: block_info.parent_id().as_ref().to_vec(),
-            }
-        } else {
-            RemoveTipResult::Done
-        }
-    } else {
-        RemoveTipResult::HitPermanentStore {
+    if parent_permanent {
+        return Ok(RemoveTipResult::HitPermanentStore {
             id: block_info.parent_id().as_ref().to_vec(),
-        }
-    };
+        });
+    }
 
-    Ok(maybe_next_tip)
+    let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
+    let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
+    let mut parent_block_info = BlockInfo::deserialize(
+        &mut parent_block_info_reader,
+        id_size,
+        block_info.parent_id().clone(),
+    );
+    parent_block_info.remove_parent_ref();
+    info.insert(
+        parent_block_info.id().as_ref(),
+        parent_block_info.serialize(),
+    )?;
+
+    // If the block is inside another branch it cannot be a tip.
+    if parent_block_info.parent_ref_count() != 0 {
+        return Ok(RemoveTipResult::Done);
+    }
+
+    tips.insert(block_info.parent_id().as_ref(), &[])?;
+
+    // A referenced block cannot be removed.
+    if parent_block_info.ref_count() != 0 {
+        return Ok(RemoveTipResult::Done);
+    }
+
+    Ok(RemoveTipResult::NextTip {
+        id: block_info.parent_id().as_ref().to_vec(),
+    })
 }

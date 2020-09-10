@@ -1,4 +1,4 @@
-use crate::Value;
+use crate::{Error, Value};
 use std::io::{Read, Write};
 
 /// A structure that holds the information about a blocks, that is needed to
@@ -68,42 +68,54 @@ impl BlockInfo {
         self.tags_ref_count -= 1
     }
 
-    pub(crate) fn serialize(&self) -> Vec<u8> {
+    pub(crate) fn serialize(&self) -> Result<Vec<u8>, Error> {
         let mut w = Vec::new();
 
-        w.write_all(&self.chain_length.to_le_bytes()).unwrap();
+        w.write_all(&self.chain_length.to_le_bytes())
+            .map_err(Error::BlockInfoSerialize)?;
 
-        w.write_all(&self.parent_ref_count.to_le_bytes()).unwrap();
+        w.write_all(&self.parent_ref_count.to_le_bytes())
+            .map_err(Error::BlockInfoSerialize)?;
 
-        w.write_all(&self.tags_ref_count.to_le_bytes()).unwrap();
+        w.write_all(&self.tags_ref_count.to_le_bytes())
+            .map_err(Error::BlockInfoSerialize)?;
 
-        w.write_all(self.parent_id.as_ref()).unwrap();
+        w.write_all(self.parent_id.as_ref())
+            .map_err(Error::BlockInfoSerialize)?;
 
-        w
+        Ok(w)
     }
 
-    pub(crate) fn deserialize<R: Read, T: Into<Value>>(mut r: R, id_size: usize, id: T) -> Self {
+    pub(crate) fn deserialize<R: Read, T: Into<Value>>(
+        mut r: R,
+        id_size: usize,
+        id: T,
+    ) -> Result<Self, Error> {
         let mut chain_length_bytes = [0u8; 4];
-        r.read_exact(&mut chain_length_bytes).unwrap();
+        r.read_exact(&mut chain_length_bytes)
+            .map_err(Error::BlockInfoDeserialize)?;
         let chain_length = u32::from_le_bytes(chain_length_bytes);
 
         let mut parent_ref_count_bytes = [0u8; 4];
-        r.read_exact(&mut parent_ref_count_bytes).unwrap();
+        r.read_exact(&mut parent_ref_count_bytes)
+            .map_err(Error::BlockInfoDeserialize)?;
         let parent_ref_count = u32::from_le_bytes(parent_ref_count_bytes);
 
         let mut tags_ref_count_bytes = [0u8; 4];
-        r.read_exact(&mut tags_ref_count_bytes).unwrap();
+        r.read_exact(&mut tags_ref_count_bytes)
+            .map_err(Error::BlockInfoDeserialize)?;
         let tags_ref_count = u32::from_le_bytes(tags_ref_count_bytes);
 
         let mut parent_id = vec![0u8; id_size];
-        r.read_exact(&mut parent_id).unwrap();
+        r.read_exact(&mut parent_id)
+            .map_err(Error::BlockInfoDeserialize)?;
 
-        Self {
+        Ok(Self {
             id: id.into(),
             parent_id: parent_id.into(),
             chain_length,
             parent_ref_count,
             tags_ref_count,
-        }
+        })
     }
 }

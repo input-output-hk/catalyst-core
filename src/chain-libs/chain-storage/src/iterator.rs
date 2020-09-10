@@ -29,7 +29,7 @@ impl StorageIterator {
         blocks: Tree,
     ) -> Result<Self, Error> {
         let to_info = if let Some(to_info_bin) = block_info.get(to.as_ref())? {
-            BlockInfo::deserialize(to_info_bin.as_ref(), to.as_ref().len(), to.clone())
+            BlockInfo::deserialize(to_info_bin.as_ref(), to.as_ref().len(), to.clone())?
         } else {
             permanent_store
                 .get_block_info(to.as_ref())?
@@ -122,7 +122,7 @@ fn gather_blocks_ids(
         None => return Ok(ids),
     };
 
-    let mut current_info = BlockInfo::deserialize(block_info_bin.as_ref(), id_size, to);
+    let mut current_info = BlockInfo::deserialize(block_info_bin.as_ref(), id_size, to)?;
 
     while current_info.chain_length() >= stop_at_length {
         ids.push(current_info.id().clone());
@@ -138,7 +138,7 @@ fn gather_blocks_ids(
                 .as_ref(),
             id_size,
             current_info.parent_id().clone(),
-        );
+        )?;
     }
 
     Ok(ids)

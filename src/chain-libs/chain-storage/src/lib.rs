@@ -339,7 +339,7 @@ impl BlockStore {
         info.get(block_id)
             .map_err(Into::into)
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
-            .map(|block_info_bin| {
+            .and_then(|block_info_bin| {
                 let mut block_info_reader: &[u8] = &block_info_bin;
                 BlockInfo::deserialize(&mut block_info_reader, self.id_length, block_id.to_vec())
             })
@@ -692,11 +692,11 @@ fn put_block_impl(
             &mut parent_block_info_reader,
             id_length,
             block_info.parent_id().clone(),
-        );
+        )?;
         parent_block_info.add_parent_ref();
         info.insert(
             parent_block_info.id().as_ref(),
-            parent_block_info.serialize(),
+            parent_block_info.serialize()?,
         )?;
     }
 
@@ -709,7 +709,7 @@ fn put_block_impl(
 
     blocks.insert(block_info.id().as_ref(), block)?;
 
-    info.insert(block_info.id().as_ref(), block_info.serialize().as_slice())?;
+    info.insert(block_info.id().as_ref(), block_info.serialize()?)?;
 
     Ok(())
 }
@@ -724,9 +724,9 @@ fn put_tag_impl(
     id_size: usize,
 ) -> Result<(), ConflictableTransactionError<Error>> {
     if let Some(info_bin) = info.get(block_id)? {
-        let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, block_id.to_vec());
+        let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, block_id.to_vec())?;
         block_info.add_tag_ref();
-        let info_bin = block_info.serialize();
+        let info_bin = block_info.serialize()?;
         info.insert(block_id, info_bin)?;
     } else if !permanent_store_index
         .get(block_id)
@@ -739,9 +739,9 @@ fn put_tag_impl(
 
     if let Some(old_block_id) = maybe_old_block_id {
         let info_bin = info.get(old_block_id.clone())?.unwrap();
-        let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, old_block_id.to_vec());
+        let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, old_block_id.to_vec())?;
         block_info.remove_tag_ref();
-        let info_bin = block_info.serialize();
+        let info_bin = block_info.serialize()?;
         info.insert(block_info.id().as_ref(), info_bin)?;
     }
 
@@ -770,7 +770,7 @@ fn remove_tip_impl(
 
     let block_info_bin = info.get(block_id)?.unwrap();
     let mut block_info_reader: &[u8] = &block_info_bin;
-    let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id.to_vec());
+    let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id.to_vec())?;
 
     if block_info.ref_count() != 0 {
         return Ok(RemoveTipResult::Done);
@@ -805,11 +805,11 @@ fn remove_tip_impl(
         &mut parent_block_info_reader,
         id_size,
         block_info.parent_id().clone(),
-    );
+    )?;
     parent_block_info.remove_parent_ref();
     info.insert(
         parent_block_info.id().as_ref(),
-        parent_block_info.serialize(),
+        parent_block_info.serialize()?,
     )?;
 
     // If the block is inside another branch it cannot be a tip.

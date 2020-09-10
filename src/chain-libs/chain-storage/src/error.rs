@@ -16,4 +16,8 @@ pub enum Error {
     MissingParent,
     #[error("branch with the requested tip does not exist")]
     BranchNotFound,
+    #[error("failed to serialize block metadata")]
+    BlockInfoSerialize(#[source] std::io::Error),
+    #[error("failed to deserialize block metadata")]
+    BlockInfoDeserialize(#[source] std::io::Error),
 }

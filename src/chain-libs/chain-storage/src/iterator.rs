@@ -1,4 +1,4 @@
-use crate::{permanent_store::PermanentStore, BlockInfo, Error, Value};
+use crate::{permanent_store::PermanentStore, BlockInfo, ConsistencyFailure, Error, Value};
 use sled::Tree;
 
 /// Iterator over blocks. Starts from n-th ancestor of the given block.
@@ -35,12 +35,11 @@ impl StorageIterator {
                 .get_block_info(to.as_ref())?
                 .ok_or(Error::BlockNotFound)?
         };
-        assert!(
-            to_info.chain_length() + 1 >= distance,
-            "expected distance {} <= chain length {}",
-            distance,
-            to_info.chain_length() + 1
-        );
+
+        if to_info.chain_length() + 1 < distance {
+            return Err(Error::CannotIterate);
+        }
+
         let from_length = to_info.chain_length() + 1 - distance;
 
         let state = if permanent_store
@@ -134,7 +133,7 @@ fn gather_blocks_ids(
         current_info = BlockInfo::deserialize(
             block_info
                 .get(current_info.parent_id().as_ref())?
-                .unwrap()
+                .ok_or(ConsistencyFailure::MissingParentBlock)?
                 .as_ref(),
             id_size,
             current_info.parent_id().clone(),

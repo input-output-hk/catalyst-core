@@ -1,4 +1,4 @@
-use crate::{BlockInfo, Error, Value};
+use crate::{BlockInfo, ConsistencyFailure, Error, Value};
 use std::path::Path;
 
 #[derive(Clone)]
@@ -16,7 +16,7 @@ impl PermanentStore {
         block_id_index: sled::Tree,
         root_id: Value,
     ) -> Result<PermanentStore, Error> {
-        std::fs::create_dir_all(&path).expect("failed to create permanent storage dir");
+        std::fs::create_dir_all(&path).map_err(Error::Open)?;
 
         let blocks_path = path.as_ref().join("blocks");
         let chain_length_index_path = path.as_ref().join("chain_length");
@@ -72,7 +72,7 @@ impl PermanentStore {
             Some(chain_length) => Value::permanent(
                 self.chain_length_index
                     .get_by_seqno(chain_length as usize)
-                    .unwrap(),
+                    .ok_or(ConsistencyFailure::ChainLength)?,
             ),
             None => self.root_id.clone(),
         };
@@ -108,7 +108,11 @@ impl PermanentStore {
         ids: &[&[u8]],
         blocks: &[&[u8]],
     ) -> Result<(), Error> {
-        assert_eq!(ids.len(), blocks.len());
+        assert_eq!(
+            ids.len(),
+            blocks.len(),
+            "the number of ids should be equal to the number of blocks"
+        );
 
         self.blocks
             .append(blocks)

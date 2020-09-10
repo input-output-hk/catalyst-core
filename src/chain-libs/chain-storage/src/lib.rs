@@ -152,7 +152,7 @@ use sled::transaction::{
 use std::path::Path;
 
 pub use block_info::BlockInfo;
-pub use error::Error;
+pub use error::{ConsistencyFailure, Error};
 pub use iterator::StorageIterator;
 pub use value::Value;
 
@@ -173,6 +173,12 @@ enum RemoveTipResult {
 impl From<Error> for ConflictableTransactionError<Error> {
     fn from(from: Error) -> Self {
         ConflictableTransactionError::Abort(from)
+    }
+}
+
+impl From<ConsistencyFailure> for ConflictableTransactionError<Error> {
+    fn from(from: ConsistencyFailure) -> Self {
+        ConflictableTransactionError::Abort(from.into())
     }
 }
 
@@ -364,8 +370,9 @@ impl BlockStore {
                 let block_id = scan_result.map(|(key, _)| Vec::from(&key[4..key.len()]))?;
 
                 blocks
-                    .get(block_id)
-                    .map(|maybe_raw_block| Value::volatile(maybe_raw_block.unwrap()))
+                    .get(block_id)?
+                    .ok_or(Error::Inconsistent(ConsistencyFailure::ChainLength))
+                    .map(Value::volatile)
             })
             .collect::<Result<Vec<_>, _>>()
             .map_err(Into::into)
@@ -455,9 +462,10 @@ impl BlockStore {
             )?;
 
         if let RemoveTipResult::HitPermanentStore { id } = result {
-            let block_info = self
-                .get_block_info(&id)
-                .expect("parent block in permanent store not found");
+            let block_info = self.get_block_info(&id).map_err(|err| match err {
+                Error::BlockNotFound => ConsistencyFailure::MissingPermanentBlock.into(),
+                err => err,
+            })?;
             let chain_length = block_info.chain_length() + 1;
 
             if self.get_blocks_by_chain_length(chain_length)?.is_empty() {
@@ -537,11 +545,6 @@ impl BlockStore {
 
     /// Get n-th (n = `distance`) ancestor of the block, identified by
     /// `block_id`.
-    ///
-    /// # Panics
-    ///
-    /// This function will panic on an attempt to go deeper that the length of
-    /// the provided block.
     pub fn get_nth_ancestor(&self, block_id: &[u8], distance: u32) -> Result<BlockInfo, Error> {
         for_path_to_nth_ancestor(self, block_id, distance, |_| {})
     }
@@ -580,6 +583,7 @@ impl BlockStore {
             .rev()
             .map(|block_info| block_info.id().as_ref())
             .collect();
+        // this `unwrap` will never fail because `block_infos` cannot be empty at this point
         let start_chain_length = block_infos.last().unwrap().chain_length();
         self.permanent
             .put_blocks(start_chain_length, &ids, &block_refs)?;
@@ -604,11 +608,6 @@ impl BlockStore {
     /// Iterate to the given block starting from the block at the given
     /// `distance - 1`. `distance == 1` means that only `to_block` will be
     /// iterated. `distance == 0` means empty iterator.
-    ///
-    /// # Panics
-    ///
-    /// Will panic on an attempt to iterate deeper than the genesis block
-    /// (`distance >= chain_length + 1`)
     pub fn iter(
         &self,
         to_block: &[u8],
@@ -630,10 +629,6 @@ impl BlockStore {
 /// each intermediate block encountered while travelling from `block_id` to
 /// its n-th ancestor.
 ///
-/// # Panics
-///
-/// This function will panic on an attempt to go deeper that the length of the
-/// provided block.
 pub fn for_path_to_nth_ancestor<F>(
     store: &BlockStore,
     block_id: &[u8],
@@ -646,11 +641,7 @@ where
     let mut current = store.get_block_info(block_id)?;
 
     if distance > current.chain_length() {
-        panic!(
-            "distance {} > chain length {}",
-            distance,
-            current.chain_length()
-        );
+        return Err(Error::CannotIterate);
     }
 
     let target = current.chain_length() - distance;
@@ -686,7 +677,9 @@ fn put_block_impl(
     };
 
     if parent_in_volatile_store {
-        let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
+        let parent_block_info_bin = info
+            .get(block_info.parent_id())?
+            .ok_or(ConsistencyFailure::BlockInfo)?;
         let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
         let mut parent_block_info = BlockInfo::deserialize(
             &mut parent_block_info_reader,
@@ -738,7 +731,9 @@ fn put_tag_impl(
     let maybe_old_block_id = tags.insert(tag_name, block_id)?;
 
     if let Some(old_block_id) = maybe_old_block_id {
-        let info_bin = info.get(old_block_id.clone())?.unwrap();
+        let info_bin = info
+            .get(old_block_id.clone())?
+            .ok_or(ConsistencyFailure::TaggedBlock)?;
         let mut block_info = BlockInfo::deserialize(&info_bin[..], id_size, old_block_id.to_vec())?;
         block_info.remove_tag_ref();
         let info_bin = block_info.serialize()?;
@@ -768,7 +763,7 @@ fn remove_tip_impl(
         return Ok(RemoveTipResult::Done);
     }
 
-    let block_info_bin = info.get(block_id)?.unwrap();
+    let block_info_bin = info.get(block_id)?.ok_or(ConsistencyFailure::BlockInfo)?;
     let mut block_info_reader: &[u8] = &block_info_bin;
     let block_info = BlockInfo::deserialize(&mut block_info_reader, id_size, block_id.to_vec())?;
 
@@ -799,7 +794,9 @@ fn remove_tip_impl(
         });
     }
 
-    let parent_block_info_bin = info.get(block_info.parent_id())?.unwrap();
+    let parent_block_info_bin = info
+        .get(block_info.parent_id())?
+        .ok_or(ConsistencyFailure::MissingParentBlock)?;
     let mut parent_block_info_reader: &[u8] = &parent_block_info_bin;
     let mut parent_block_info = BlockInfo::deserialize(
         &mut parent_block_info_reader,

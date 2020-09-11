@@ -30,6 +30,22 @@ pub fn get_exe() -> PathBuf {
     path
 }
 
+pub fn get_cli_exe() -> PathBuf {
+    const VIT_BIN_NAME: &str = env!("VIT_CLI_NAME");
+    let mut path = get_working_directory();
+    path.push(VIT_BIN_NAME);
+    if cfg!(windows) {
+        path.set_extension("exe");
+    }
+    assert!(
+        path.is_file(),
+        "File does not exist: {:?}, pwd: {:?}",
+        path,
+        env::current_dir()
+    );
+    path
+}
+
 /// Gets working directory
 /// Uses std::env::current_exe() for this purpose.
 /// Current exe directory is ./target/{profile}/deps/{app_name}.exe

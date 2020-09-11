@@ -4,6 +4,7 @@ use std::{collections::BTreeMap, process::Output};
 pub trait ProcessOutput {
     fn as_lossy_string(&self) -> String;
     fn as_single_line(&self) -> String;
+    fn as_multi_line(&self) -> Vec<String>;
     fn as_multi_node_yaml(&self) -> Vec<BTreeMap<String, String>>;
     fn as_single_node_yaml(&self) -> BTreeMap<String, String>;
     fn try_as_single_node_yaml(&self) -> Result<BTreeMap<String, String>, SerdeError>;
@@ -14,6 +15,15 @@ pub trait ProcessOutput {
 impl ProcessOutput for Output {
     fn as_lossy_string(&self) -> String {
         String::from_utf8_lossy(&self.stdout).into_owned()
+    }
+
+    fn as_multi_line(&self) -> Vec<String> {
+        let content = self.as_lossy_string();
+        content
+            .split('\n')
+            .filter(|x| !x.trim().is_empty())
+            .map(|x| x.to_string())
+            .collect()
     }
 
     fn as_single_line(&self) -> String {

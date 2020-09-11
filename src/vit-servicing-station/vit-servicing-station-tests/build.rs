@@ -4,6 +4,6 @@ fn main() {
 
     let vit_cli_name = option_env!("VIT_CLI_NAME").unwrap_or("vit-servicing-station-cli");
     println!("cargo:rustc-env=VIT_CLI_NAME={}", vit_cli_name);
-    
+
     println!("cargo:rustc-env=RUST_BACKTRACE=full");
 }

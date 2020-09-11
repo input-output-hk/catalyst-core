@@ -515,7 +515,15 @@ impl BlockStore {
             return Ok(Some(descendent.chain_length()));
         }
 
-        let ancestor = self.get_block_info(ancestor_id)?;
+        // if target is in the permanent storage we only need to check chain length
+        if let Some(ancestor) = self.permanent.get_block_info(ancestor_id)? {
+            if ancestor.chain_length() < descendent.chain_length() {
+                return Ok(Some(descendent.chain_length() - ancestor.chain_length()));
+            }
+            return Ok(None);
+        }
+
+        let ancestor = self.get_block_info_volatile(ancestor_id)?;
 
         if ancestor.chain_length() >= descendent.chain_length() {
             return Ok(None);
@@ -525,11 +533,24 @@ impl BlockStore {
             return Ok(Some(1));
         }
 
+        let chain_length_index = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
+        let mut chain_length_iter = chain_length_index
+            .scan_prefix(build_chain_length_index_prefix(ancestor.chain_length()));
+
+        // if the target length is in the volatile storage and there is only one
+        // block at the given length, this block is an ancestor
+        if let Some(chain_length_res) = chain_length_iter.next() {
+            let _ = chain_length_res?;
+            if chain_length_iter.next().is_none() {
+                return Ok(Some(descendent.chain_length() - ancestor.chain_length()));
+            }
+        }
+
         let mut current_block_info = descendent;
         let mut distance = 0;
 
         while let Some(parent_block_info) = self
-            .get_block_info(current_block_info.parent_id().as_ref())
+            .get_block_info_volatile(current_block_info.parent_id().as_ref())
             .map(Some)
             .or_else(|err| match err {
                 Error::BlockNotFound => Ok(None),

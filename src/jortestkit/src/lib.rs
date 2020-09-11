@@ -27,5 +27,8 @@ pub mod prelude {
     };
     pub use crate::openssl::{generate_keys, Openssl};
     pub use crate::predicates::*;
+    pub use crate::process::{
+        self, output_extensions::ProcessOutput, ProcessError, Wait, WaitBuilder,
+    };
     pub use crate::web::download_file;
 }

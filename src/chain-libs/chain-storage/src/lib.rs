@@ -202,10 +202,10 @@ mod tree {
     /// Block information (see `BlockInfo`) for volatile storage.
     pub const INFO: &str = "info";
     /// Maintains conversion from chain length to block IDs. This tree has empty
-    /// values and keys in the form of `chain_length.to_le_bytes() ++ block_id`.
-    /// Such structure allows to get all blocks on the given chain length by
-    /// using prefix `chain_length.to_le_bytes()`. `sled` allows to iterate over
-    /// key-value pairs with the same prefix.
+    /// values and keys in the form of `bytes(chain_length) ++ block_id`. Such
+    /// structure allows to get all blocks on the given chain length by using
+    /// prefix `bytes(chain_length)`. `sled` allows to iterate over key-value
+    /// pairs with the same prefix.
     pub const CHAIN_LENGTH_INDEX: &str = "length_to_block_ids";
     /// Holds references to blocks in the volatile storage that have no
     /// descendants. This allows to quickly determine which branches should be
@@ -363,9 +363,8 @@ impl BlockStore {
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         let chain_length_to_block_ids = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
 
-        let chain_length_index_prefix = chain_length.to_le_bytes();
         chain_length_to_block_ids
-            .scan_prefix(chain_length_index_prefix)
+            .scan_prefix(build_chain_length_index_prefix(chain_length))
             .map(|scan_result| {
                 let block_id = scan_result.map(|(key, _)| Vec::from(&key[4..key.len()]))?;
 
@@ -590,16 +589,15 @@ impl BlockStore {
 
         let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         let info = self.volatile.open_tree(tree::INFO)?;
+        let chain_length_index = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
 
         for (i, block_info) in block_infos.iter().enumerate() {
             let key = block_info.id().as_ref();
             let chain_length = start_chain_length + i as u32;
 
-            let mut chain_length_index = chain_length.to_le_bytes().to_vec();
-            chain_length_index.extend_from_slice(key);
-
             info.remove(key)?;
             blocks.remove(key)?;
+            chain_length_index.remove(build_chain_length_index(chain_length, key))?;
         }
 
         Ok(())
@@ -696,9 +694,10 @@ fn put_block_impl(
     tips.remove(block_info.parent_id().as_ref())?;
     tips.insert(block_info.id().as_ref(), &[])?;
 
-    let mut chain_length_index = block_info.chain_length().to_le_bytes().to_vec();
-    chain_length_index.extend_from_slice(block_info.id().as_ref());
-    chain_length_to_block_ids.insert(chain_length_index, &[])?;
+    chain_length_to_block_ids.insert(
+        build_chain_length_index(block_info.chain_length(), block_info.id().as_ref()),
+        &[],
+    )?;
 
     blocks.insert(block_info.id().as_ref(), block)?;
 
@@ -774,9 +773,10 @@ fn remove_tip_impl(
     info.remove(block_id)?;
     blocks.remove(block_id)?;
 
-    let mut chain_length_index = block_info.chain_length().to_le_bytes().to_vec();
-    chain_length_index.extend_from_slice(block_info.id().as_ref());
-    chain_length_to_block_ids.remove(chain_length_index)?;
+    chain_length_to_block_ids.remove(build_chain_length_index(
+        block_info.chain_length(),
+        block_info.id().as_ref(),
+    ))?;
 
     tips.remove(block_id)?;
 
@@ -824,4 +824,16 @@ fn remove_tip_impl(
     Ok(RemoveTipResult::NextTip {
         id: block_info.parent_id().as_ref().to_vec(),
     })
+}
+
+#[inline]
+fn build_chain_length_index_prefix(chain_length: u32) -> Vec<u8> {
+    chain_length.to_be_bytes().to_vec()
+}
+
+#[inline]
+fn build_chain_length_index(chain_length: u32, block_id: &[u8]) -> Vec<u8> {
+    let mut chain_length_index = build_chain_length_index_prefix(chain_length);
+    chain_length_index.extend_from_slice(block_id.as_ref());
+    chain_length_index
 }

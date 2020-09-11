@@ -146,8 +146,11 @@ mod tests;
 mod value;
 
 use permanent_store::PermanentStore;
-use sled::transaction::{
-    ConflictableTransactionError, TransactionError, Transactional, TransactionalTree,
+use sled::{
+    transaction::{
+        ConflictableTransactionError, TransactionError, Transactional, TransactionalTree,
+    },
+    Tree,
 };
 use std::path::Path;
 
@@ -158,10 +161,15 @@ pub use value::Value;
 
 #[derive(Clone)]
 pub struct BlockStore {
-    volatile: sled::Db,
     permanent: PermanentStore,
     root_id: Value,
     id_length: usize,
+
+    blocks_tree: Tree,
+    info_tree: Tree,
+    chain_length_index_tree: Tree,
+    branches_tips_tree: Tree,
+    tags_tree: Tree,
 }
 
 enum RemoveTipResult {
@@ -224,10 +232,10 @@ impl BlockStore {
     /// * `path` - a path to the storage directory.
     /// * `root_id` - the ID of the root block which the first block in this
     ///   block chain should refer to as a parent.
-    pub fn file<P: AsRef<Path>, I: Into<Value>>(path: P, root_id: I) -> Result<Self, Error> {
-        let root_id = root_id.into();
-        let id_length = root_id.as_ref().len();
-
+    pub fn file<P: AsRef<Path>, I: Into<Value> + Clone>(
+        path: P,
+        root_id: I,
+    ) -> Result<Self, Error> {
         if !path.as_ref().exists() {
             std::fs::create_dir(path.as_ref()).map_err(Error::Open)?;
         }
@@ -240,12 +248,7 @@ impl BlockStore {
         let block_id_index = volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
         let permanent = PermanentStore::file(permanent_path, block_id_index, root_id.clone())?;
 
-        Ok(Self {
-            volatile,
-            permanent,
-            root_id,
-            id_length,
-        })
+        Self::new(root_id, volatile, permanent)
     }
 
     /// Open a temporary in-memory database.
@@ -254,9 +257,7 @@ impl BlockStore {
     ///
     /// * `root_id` - the ID of the root block which the first block in this
     ///   block chain should refer to as a parent.
-    pub fn memory<I: Into<Value>>(root_id: I) -> Result<Self, Error> {
-        let root_id = root_id.into();
-        let id_length = root_id.as_ref().len();
+    pub fn memory<I: Into<Value> + Clone>(root_id: I) -> Result<Self, Error> {
         let volatile = sled::Config::new()
             .temporary(true)
             .open()
@@ -264,11 +265,33 @@ impl BlockStore {
         let block_id_index = volatile.open_tree(tree::PERMANENT_STORE_BLOCKS)?;
         let permanent = PermanentStore::memory(block_id_index, root_id.clone())?;
 
+        Self::new(root_id, volatile, permanent)
+    }
+
+    fn new<I: Into<Value>>(
+        root_id: I,
+        volatile: sled::Db,
+        permanent: PermanentStore,
+    ) -> Result<Self, Error> {
+        let root_id = root_id.into();
+        let id_length = root_id.as_ref().len();
+
+        let blocks_tree = volatile.open_tree(tree::BLOCKS)?;
+        let info_tree = volatile.open_tree(tree::INFO)?;
+        let chain_length_index_tree = volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
+        let branches_tips_tree = volatile.open_tree(tree::BRANCHES_TIPS)?;
+        let tags_tree = volatile.open_tree(tree::TAGS)?;
+
         Ok(Self {
-            volatile,
             permanent,
             root_id,
             id_length,
+
+            blocks_tree,
+            info_tree,
+            chain_length_index_tree,
+            branches_tips_tree,
+            tags_tree,
         })
     }
 
@@ -285,16 +308,16 @@ impl BlockStore {
             return Err(Error::BlockAlreadyPresent);
         }
 
-        let blocks = self.volatile.open_tree(tree::BLOCKS)?;
-        let info = self.volatile.open_tree(tree::INFO)?;
-        let chain_length_to_block_ids = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
-        let tips = self.volatile.open_tree(tree::BRANCHES_TIPS)?;
-
         let parent_in_permanent_store = self
             .permanent
             .contains_key(block_info.parent_id().as_ref())?;
 
-        (&blocks, &info, &chain_length_to_block_ids, &tips)
+        (
+            &self.blocks_tree,
+            &self.info_tree,
+            &self.chain_length_index_tree,
+            &self.branches_tips_tree,
+        )
             .transaction(|(blocks, info, chain_length_to_block_ids, tips)| {
                 put_block_impl(
                     blocks,
@@ -317,13 +340,11 @@ impl BlockStore {
     ///
     /// * `block_id` - the serialized block identifier.
     pub fn get_block(&self, block_id: &[u8]) -> Result<Value, Error> {
-        let blocks = self.volatile.open_tree(tree::BLOCKS)?;
-
         if let Some(block) = self.permanent.get_block(block_id)? {
             return Ok(block);
         }
 
-        blocks
+        self.blocks_tree
             .get(block_id)
             .map_err(Into::into)
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
@@ -344,9 +365,8 @@ impl BlockStore {
     }
 
     fn get_block_info_volatile(&self, block_id: &[u8]) -> Result<BlockInfo, Error> {
-        let info = self.volatile.open_tree(tree::INFO)?;
-
-        info.get(block_id)
+        self.info_tree
+            .get(block_id)
             .map_err(Into::into)
             .and_then(|maybe_block| maybe_block.ok_or(Error::BlockNotFound))
             .and_then(|block_info_bin| {
@@ -364,15 +384,12 @@ impl BlockStore {
             return Ok(vec![block]);
         }
 
-        let blocks = self.volatile.open_tree(tree::BLOCKS)?;
-        let chain_length_to_block_ids = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
-
-        chain_length_to_block_ids
+        self.chain_length_index_tree
             .scan_prefix(build_chain_length_index_prefix(chain_length))
             .map(|scan_result| {
                 let (block_id, _) = scan_result?;
 
-                blocks
+                self.blocks_tree
                     .get(block_id_from_chain_length_index(&block_id))?
                     .ok_or(Error::Inconsistent(ConsistencyFailure::ChainLength))
                     .map(Value::volatile)
@@ -384,11 +401,9 @@ impl BlockStore {
     /// Add a tag for a given block. The block id can be later retrieved by this
     /// tag.
     pub fn put_tag(&self, tag_name: &str, block_id: &[u8]) -> Result<(), Error> {
-        let info = self.volatile.open_tree(tree::INFO)?;
-        let tags = self.volatile.open_tree(tree::TAGS)?;
         let permanent_store_index = self.permanent.block_id_index();
 
-        (&info, &tags, permanent_store_index)
+        (&self.info_tree, &self.tags_tree, permanent_store_index)
             .transaction(move |(info, tags, permanent_store_index)| {
                 put_tag_impl(
                     info,
@@ -404,18 +419,16 @@ impl BlockStore {
 
     /// Get the block ID for the given tag.
     pub fn get_tag(&self, tag_name: &str) -> Result<Option<Value>, Error> {
-        let tags = self.volatile.open_tree(tree::TAGS)?;
-
-        tags.get(tag_name)
+        self.tags_tree
+            .get(tag_name)
             .map(|maybe_id_bin| maybe_id_bin.map(Value::volatile))
             .map_err(Into::into)
     }
 
     /// Get identifier of all branches tips.
     pub fn get_tips_ids(&self) -> Result<Vec<Value>, Error> {
-        let tips = self.volatile.open_tree(tree::BRANCHES_TIPS)?;
-
-        tips.iter()
+        self.branches_tips_tree
+            .iter()
             .map(|id_result| id_result.map(|(id, _)| Value::volatile(id)))
             .collect::<Result<Vec<_>, _>>()
             .map_err(Into::into)
@@ -423,22 +436,17 @@ impl BlockStore {
 
     /// Prune a branch with the given tip id from the storage.
     pub fn prune_branch(&self, tip_id: &[u8]) -> Result<(), Error> {
-        let tips = self.volatile.open_tree(tree::BRANCHES_TIPS)?;
-
-        if !tips.contains_key(tip_id)? {
+        if !self.branches_tips_tree.contains_key(tip_id)? {
             return Err(Error::BranchNotFound);
         }
 
-        let blocks = self.volatile.open_tree(tree::BLOCKS)?;
-        let info = self.volatile.open_tree(tree::INFO)?;
-        let chain_length_to_block_ids = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
         let permanent_store_index = self.permanent.block_id_index();
 
         let result = (
-            &blocks,
-            &info,
-            &chain_length_to_block_ids,
-            &tips,
+            &self.blocks_tree,
+            &self.info_tree,
+            &self.chain_length_index_tree,
+            &self.branches_tips_tree,
             permanent_store_index,
         )
             .transaction(
@@ -472,7 +480,7 @@ impl BlockStore {
             let chain_length = block_info.chain_length() + 1;
 
             if self.get_blocks_by_chain_length(chain_length)?.is_empty() {
-                tips.insert(block_info.id(), &[])?;
+                self.branches_tips_tree.insert(block_info.id(), &[])?;
             }
         }
 
@@ -485,9 +493,8 @@ impl BlockStore {
             return Ok(true);
         }
 
-        let info = self.volatile.open_tree(tree::INFO)?;
-
-        info.get(block_id)
+        self.info_tree
+            .get(block_id)
             .map(|maybe_block| maybe_block.is_some())
             .map_err(Into::into)
     }
@@ -533,8 +540,8 @@ impl BlockStore {
             return Ok(Some(1));
         }
 
-        let chain_length_index = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
-        let mut chain_length_iter = chain_length_index
+        let mut chain_length_iter = self
+            .chain_length_index_tree
             .scan_prefix(build_chain_length_index_prefix(ancestor.chain_length()));
 
         // if the target length is in the volatile storage and there is only one
@@ -583,9 +590,9 @@ impl BlockStore {
             return Ok(info);
         }
 
-        let chain_length_index = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
-        let mut chain_length_iter =
-            chain_length_index.scan_prefix(build_chain_length_index_prefix(target));
+        let mut chain_length_iter = self
+            .chain_length_index_tree
+            .scan_prefix(build_chain_length_index_prefix(target));
 
         // if the target length is in the volatile storage and there is only one
         // block at the given length, it is an ancestor
@@ -644,17 +651,14 @@ impl BlockStore {
         self.permanent
             .put_blocks(start_chain_length, &ids, &block_refs)?;
 
-        let blocks = self.volatile.open_tree(tree::BLOCKS)?;
-        let info = self.volatile.open_tree(tree::INFO)?;
-        let chain_length_index = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
-
         for (i, block_info) in block_infos.iter().enumerate() {
             let key = block_info.id().as_ref();
             let chain_length = start_chain_length + i as u32;
 
-            info.remove(key)?;
-            blocks.remove(key)?;
-            chain_length_index.remove(build_chain_length_index(chain_length, key))?;
+            self.info_tree.remove(key)?;
+            self.blocks_tree.remove(key)?;
+            self.chain_length_index_tree
+                .remove(build_chain_length_index(chain_length, key))?;
         }
 
         Ok(())
@@ -668,14 +672,12 @@ impl BlockStore {
         to_block: &[u8],
         distance: u32,
     ) -> Result<impl Iterator<Item = Result<Value, Error>>, Error> {
-        let block_info = self.volatile.open_tree(tree::INFO)?;
-        let blocks = self.volatile.open_tree(tree::BLOCKS)?;
         StorageIterator::new(
             Value::from(to_block.to_vec()),
             distance,
             self.permanent.clone(),
-            block_info,
-            blocks,
+            self.info_tree.clone(),
+            self.blocks_tree.clone(),
         )
     }
 }

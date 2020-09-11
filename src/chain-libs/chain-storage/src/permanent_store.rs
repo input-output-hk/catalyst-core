@@ -11,10 +11,10 @@ pub(crate) struct PermanentStore {
 }
 
 impl PermanentStore {
-    pub fn file<P: AsRef<Path>>(
+    pub fn file<P: AsRef<Path>, I: Into<Value>>(
         path: P,
         block_id_index: sled::Tree,
-        root_id: Value,
+        root_id: I,
     ) -> Result<PermanentStore, Error> {
         std::fs::create_dir_all(&path).map_err(Error::Open)?;
 
@@ -24,6 +24,7 @@ impl PermanentStore {
         let blocks = data_pile::Database::file(blocks_path)?;
         let chain_length_index = data_pile::Database::file(chain_length_index_path)?;
 
+        let root_id = root_id.into();
         let id_length = root_id.as_ref().len();
 
         Ok(Self {
@@ -35,10 +36,14 @@ impl PermanentStore {
         })
     }
 
-    pub fn memory(block_id_index: sled::Tree, root_id: Value) -> Result<PermanentStore, Error> {
+    pub fn memory<I: Into<Value>>(
+        block_id_index: sled::Tree,
+        root_id: I,
+    ) -> Result<PermanentStore, Error> {
         let blocks = data_pile::Database::memory()?;
         let chain_length_index = data_pile::Database::memory()?;
 
+        let root_id = root_id.into();
         let id_length = root_id.as_ref().len();
 
         Ok(Self {

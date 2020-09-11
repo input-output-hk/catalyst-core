@@ -477,11 +477,11 @@ impl BlockStore {
 
     /// Check if the block with the given id exists.
     pub fn block_exists(&self, block_id: &[u8]) -> Result<bool, Error> {
-        let info = self.volatile.open_tree(tree::INFO)?;
-
         if self.permanent.contains_key(block_id)? {
             return Ok(true);
         }
+
+        let info = self.volatile.open_tree(tree::INFO)?;
 
         info.get(block_id)
             .map(|maybe_block| maybe_block.is_some())

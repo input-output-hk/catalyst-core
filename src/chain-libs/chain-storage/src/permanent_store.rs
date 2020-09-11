@@ -83,6 +83,30 @@ impl PermanentStore {
         Ok(Some(block_info))
     }
 
+    pub fn get_block_info_by_chain_length(
+        &self,
+        chain_length: u32,
+    ) -> Result<Option<BlockInfo>, Error> {
+        let block_id = match self.chain_length_index.get_by_seqno(chain_length as usize) {
+            Some(block_id) => block_id,
+            None => return Ok(None),
+        };
+
+        let parent_id = match chain_length.checked_sub(1) {
+            Some(chain_length) => Value::permanent(
+                self.chain_length_index
+                    .get_by_seqno(chain_length as usize)
+                    .ok_or(ConsistencyFailure::ChainLength)?,
+            ),
+            None => self.root_id.clone(),
+        };
+
+        let block_id = Value::permanent(block_id);
+        let block_info = BlockInfo::new(block_id, parent_id, chain_length);
+
+        Ok(Some(block_info))
+    }
+
     fn get_chain_length(&self, block_id: &[u8]) -> Result<Option<u32>, Error> {
         let chain_length_bytes_slice = match self.block_id_index.get(block_id)? {
             Some(block_id) => block_id,

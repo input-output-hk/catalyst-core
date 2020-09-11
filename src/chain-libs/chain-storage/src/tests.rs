@@ -1,5 +1,4 @@
 use crate::{
-    for_path_to_nth_ancestor,
     test_utils::{Block, BlockId},
     BlockInfo, BlockStore, Error, Value,
 };
@@ -176,11 +175,10 @@ pub fn nth_ancestor() {
         let distance = rng.next_u32().checked_rem(block.chain_length).unwrap_or(0);
         total_distance += distance;
 
-        let ancestor_info =
-            for_path_to_nth_ancestor(&store, &block.id.serialize_as_vec(), distance, |_| {
-                blocks_fetched += 1;
-            })
+        let ancestor_info = store
+            .get_nth_ancestor(&block.id.serialize_as_vec(), distance)
             .unwrap();
+        blocks_fetched += block.chain_length - distance;
 
         assert_eq!(ancestor_info.chain_length() + distance, block.chain_length);
     }

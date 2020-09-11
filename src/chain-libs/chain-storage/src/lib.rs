@@ -340,6 +340,10 @@ impl BlockStore {
             return Ok(block_info);
         }
 
+        self.get_block_info_volatile(block_id)
+    }
+
+    fn get_block_info_volatile(&self, block_id: &[u8]) -> Result<BlockInfo, Error> {
         let info = self.volatile.open_tree(tree::INFO)?;
 
         info.get(block_id)
@@ -366,10 +370,10 @@ impl BlockStore {
         chain_length_to_block_ids
             .scan_prefix(build_chain_length_index_prefix(chain_length))
             .map(|scan_result| {
-                let block_id = scan_result.map(|(key, _)| Vec::from(&key[4..key.len()]))?;
+                let (block_id, _) = scan_result?;
 
                 blocks
-                    .get(block_id)?
+                    .get(block_id_from_chain_length_index(&block_id))?
                     .ok_or(Error::Inconsistent(ConsistencyFailure::ChainLength))
                     .map(Value::volatile)
             })
@@ -545,7 +549,39 @@ impl BlockStore {
     /// Get n-th (n = `distance`) ancestor of the block, identified by
     /// `block_id`.
     pub fn get_nth_ancestor(&self, block_id: &[u8], distance: u32) -> Result<BlockInfo, Error> {
-        for_path_to_nth_ancestor(self, block_id, distance, |_| {})
+        let mut current = self.get_block_info(block_id)?;
+
+        if distance > current.chain_length() {
+            return Err(Error::CannotIterate);
+        }
+
+        let target = current.chain_length() - distance;
+
+        // if target is in the permanent storage it is always an ancestor
+        if let Some(info) = self.permanent.get_block_info_by_chain_length(target)? {
+            return Ok(info);
+        }
+
+        let chain_length_index = self.volatile.open_tree(tree::CHAIN_LENGTH_INDEX)?;
+        let mut chain_length_iter =
+            chain_length_index.scan_prefix(build_chain_length_index_prefix(target));
+
+        // if the target length is in the volatile storage and there is only one
+        // block at the given length, it is an ancestor
+        if let Some(chain_length_res) = chain_length_iter.next() {
+            let (chain_length_index_entry, _) = chain_length_res?;
+            if chain_length_iter.next().is_none() {
+                return self
+                    .get_block_info(block_id_from_chain_length_index(&chain_length_index_entry));
+            }
+        }
+
+        // otherwise just iterate until we find the required ancestor
+        while target < current.chain_length() {
+            current = self.get_block_info_volatile(current.parent_id().as_ref())?;
+        }
+
+        Ok(current)
     }
 
     /// Move all blocks up to the provided block ID to the permanent block
@@ -621,35 +657,6 @@ impl BlockStore {
             blocks,
         )
     }
-}
-
-/// Like `BlockStore::get_nth_ancestor`, but calls the closure `callback` with
-/// each intermediate block encountered while travelling from `block_id` to
-/// its n-th ancestor.
-///
-pub fn for_path_to_nth_ancestor<F>(
-    store: &BlockStore,
-    block_id: &[u8],
-    distance: u32,
-    mut callback: F,
-) -> Result<BlockInfo, Error>
-where
-    F: FnMut(&BlockInfo),
-{
-    let mut current = store.get_block_info(block_id)?;
-
-    if distance > current.chain_length() {
-        return Err(Error::CannotIterate);
-    }
-
-    let target = current.chain_length() - distance;
-
-    while target < current.chain_length() {
-        callback(&current);
-        current = store.get_block_info(current.parent_id().as_ref())?;
-    }
-
-    Ok(current)
 }
 
 #[inline]
@@ -836,4 +843,9 @@ fn build_chain_length_index(chain_length: u32, block_id: &[u8]) -> Vec<u8> {
     let mut chain_length_index = build_chain_length_index_prefix(chain_length);
     chain_length_index.extend_from_slice(block_id.as_ref());
     chain_length_index
+}
+
+#[inline]
+fn block_id_from_chain_length_index(index: &[u8]) -> &[u8] {
+    &index[std::mem::size_of::<u32>()..]
 }

@@ -170,6 +170,9 @@ pub struct BlockStore {
     chain_length_index_tree: Tree,
     branches_tips_tree: Tree,
     tags_tree: Tree,
+
+    // needs to be kept so that the database is always closed correctly
+    _db: sled::Db,
 }
 
 enum RemoveTipResult {
@@ -292,6 +295,8 @@ impl BlockStore {
             chain_length_index_tree,
             branches_tips_tree,
             tags_tree,
+
+            _db: volatile,
         })
     }
 

@@ -97,7 +97,6 @@ impl<'a> ReadBuf<'a> {
         if left >= expected {
             Ok(())
         } else {
-            dbg!(self.debug());
             Err(ReadError::NotEnoughBytes(left, expected))
         }
     }

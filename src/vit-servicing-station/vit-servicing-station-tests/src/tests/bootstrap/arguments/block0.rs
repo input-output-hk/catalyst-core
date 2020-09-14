@@ -20,6 +20,7 @@ pub fn non_existing_block0_file() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore = "https://github.com/input-output-hk/vit-servicing-station/issues/90"]
 pub fn malformed_path() {
     let temp_dir = TempDir::new().unwrap();
     let mut command_builder: BootstrapCommandBuilder = Default::default();

@@ -924,10 +924,9 @@ mod tests {
 
         tree.delete(&key_to_delete).unwrap();
 
-        dbg!("tree after");
         tree.debug_print();
 
-        assert!(dbg!(tree.get(&key_to_delete, |v| v.cloned())).is_none());
+        assert!(tree.get(&key_to_delete, |v| v.cloned()).is_none());
 
         for i in (0..n).filter(|n| *n != delete) {
             assert!(tree.get(&U64Key(i), |v| v.cloned()).is_some());

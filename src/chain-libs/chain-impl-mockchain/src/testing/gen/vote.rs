@@ -4,7 +4,8 @@ use crate::{
     certificate::{
         ExternalProposalId, Proposal, Proposals, PushProposal, VoteAction, VoteCast, VotePlan,
     },
-    vote,
+    ledger::governance::{ParametersGovernance, TreasuryGovernance},
+    vote::{self, Choice},
 };
 use chain_core::property::BlockDate as BlockDateProp;
 use chain_crypto::digest::DigestOf;
@@ -13,12 +14,16 @@ use typed_bytes::ByteBuilder;
 pub struct VoteTestGen;
 
 impl VoteTestGen {
-    pub fn proposal() -> Proposal {
+    pub fn proposal_with_action(vote_action: VoteAction) -> Proposal {
         Proposal::new(
             VoteTestGen::external_proposal_id(),
             vote::Options::new_length(4).unwrap(),
-            VoteAction::OffChain,
+            vote_action,
         )
+    }
+
+    pub fn proposal() -> Proposal {
+        Self::proposal_with_action(VoteAction::OffChain)
     }
 
     pub fn proposals(count: usize) -> Proposals {
@@ -27,6 +32,18 @@ impl VoteTestGen {
             assert_eq!(
                 PushProposal::Success,
                 proposals.push(VoteTestGen::proposal()),
+                "generate_proposal method is only for correct data preparation"
+            );
+        }
+        proposals
+    }
+
+    pub fn proposals_with_action(vote_action: VoteAction, count: usize) -> Proposals {
+        let mut proposals = Proposals::new();
+        for _ in 0..count {
+            assert_eq!(
+                PushProposal::Success,
+                proposals.push(VoteTestGen::proposal_with_action(vote_action.clone())),
                 "generate_proposal method is only for correct data preparation"
             );
         }
@@ -62,11 +79,27 @@ impl VoteTestGen {
         )
     }
 
+    pub fn vote_cast_payload_for(choice: &Choice) -> vote::Payload {
+        vote::Payload::public(choice.clone())
+    }
+
     pub fn vote_cast_payload() -> vote::Payload {
         vote::Payload::public(vote::Choice::new(1))
     }
 
     pub fn vote_cast_for(vote_plan: &VotePlan) -> VoteCast {
         VoteCast::new(vote_plan.to_id(), 0, VoteTestGen::vote_cast_payload())
+    }
+
+    pub fn treasury_governance() -> TreasuryGovernance {
+        let mut governance = TreasuryGovernance::new();
+        governance.set_default_acceptance_criteria(Default::default());
+        governance
+    }
+
+    pub fn parameters_governance() -> ParametersGovernance {
+        let mut governance = ParametersGovernance::new();
+        governance.set_default_acceptance_criteria(Default::default());
+        governance
     }
 }

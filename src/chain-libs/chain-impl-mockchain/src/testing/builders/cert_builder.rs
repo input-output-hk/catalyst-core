@@ -2,7 +2,7 @@ use crate::{
     account::{DelegationType, Identifier},
     certificate::{
         Certificate, OwnerStakeDelegation, PoolId, PoolRegistration, PoolRetirement, PoolUpdate,
-        StakeDelegation,
+        StakeDelegation, VotePlanId, VoteTally,
     },
     testing::data::AddressData,
     transaction::UnspecifiedAccountIdentifier,
@@ -55,4 +55,8 @@ pub fn build_stake_pool_retirement_cert(pool_id: PoolId, start_validity: u64) ->
     };
 
     Certificate::PoolRetirement(retirement)
+}
+
+pub fn build_vote_tally_cert(vote_id: VotePlanId) -> Certificate {
+    Certificate::VoteTally(VoteTally::new_public(vote_id))
 }

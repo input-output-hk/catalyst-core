@@ -149,7 +149,6 @@ mod tests {
     use super::{Tally, TallyError, TallyResult, Weight};
     use crate::{
         stake::Stake,
-        value::Value,
         vote::{Choice, Options},
     };
     use quickcheck::TestResult;

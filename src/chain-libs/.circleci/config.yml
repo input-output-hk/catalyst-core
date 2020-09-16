@@ -83,7 +83,7 @@ commands:
         default: ''
       cargo_behavior:
         type: string
-        default: --locked --offline --verbose
+        default: --locked --verbose
     steps:
       - checkout
       - attach_workspace:

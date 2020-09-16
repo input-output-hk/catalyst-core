@@ -186,6 +186,7 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     Some(elements)
 }
 
+#[allow(clippy::ptr_arg)]
 pub fn result(
     max_votes: u64,
     table_size: usize,
@@ -258,7 +259,6 @@ mod tests {
     use super::*;
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
-    use crate::shvzk::prove;
 
     #[test]
     fn encdec1() {

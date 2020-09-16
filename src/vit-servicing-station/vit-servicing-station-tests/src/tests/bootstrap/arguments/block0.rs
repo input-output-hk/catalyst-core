@@ -34,6 +34,7 @@ pub fn malformed_path() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[cfg(not(windows))]
 pub fn network_path() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
     let snapshot = data::Generator::new().snapshot();

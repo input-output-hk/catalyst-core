@@ -258,6 +258,7 @@ mod tests {
     use super::*;
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
+    use crate::shvzk::prove;
 
     #[test]
     fn encdec1() {
@@ -327,20 +328,21 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let e1 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
+        let (e1, e1_proof) = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
         let e2 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 1));
         let e3 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
 
+        assert!(verify_vote(&ek, &e1, &e1_proof));
         println!("tallying");
 
         let mut tally = Tally::new(vote_options);
-        tally.add(&e1.0, 1);
+        tally.add(&e1, 1);
         tally.add(&e2.0, 3);
         tally.add(&e3.0, 4);
 
-        let (ts, tds1) = tally.finish(m1.secret_key());
+        let (_, tds1) = tally.finish(m1.secret_key());
         let (_, tds2) = tally.finish(m2.secret_key());
-        let (_, tds3) = tally.finish(m3.secret_key());
+        let (ts, tds3) = tally.finish(m3.secret_key());
 
         let max_votes = 20;
 

@@ -515,6 +515,344 @@ mod tests {
         assert_eq!(*actual_vote_cast_payload, second_vote_cast_payload);
     }
 
+    const CENT: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(100) };
+    use crate::certificate::Proposals;
+    use crate::ledger::governance::{ParametersGovernance, ParametersGovernanceAction};
+    use crate::ledger::governance::{TreasuryGovernance, TreasuryGovernanceAction};
+    use crate::value::Value;
+    use crate::vote::Choice;
+
+    #[test]
+    pub fn vote_plan_manager_statuses() {
+        let proposals = VoteTestGen::proposals(3);
+
+        let vote_plan = VotePlan::new(
+            BlockDate::from_epoch_slot_id(1, 0),
+            BlockDate::from_epoch_slot_id(2, 0),
+            BlockDate::from_epoch_slot_id(3, 0),
+            proposals,
+            vote::PayloadType::Public,
+        );
+
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
+
+        let status = vote_plan_manager.statuses();
+
+        assert_eq!(status.id, vote_plan.to_id());
+        assert_eq!(status.payload, vote_plan.payload_type());
+        assert_eq!(status.vote_start, vote_plan.vote_start());
+        assert_eq!(status.vote_end, vote_plan.vote_end());
+        assert_eq!(status.committee_end, vote_plan.committee_end());
+        assert_eq!(status.proposals.len(), 3);
+
+        assert_eq!(vote_plan_manager.committee_set().len(), 0);
+    }
+
+    use crate::fee::LinearFee;
+    use crate::fragment::Fragment;
+    use crate::testing::build_vote_tally_cert;
+    use crate::testing::data::Wallet;
+    use crate::testing::TestTxCertBuilder;
+
+    #[test]
+    pub fn vote_plan_manager_correct_tally() {
+        let blank = Choice::new(0);
+        let favorable = Choice::new(1);
+        let rejection = Choice::new(2);
+        let committee = Wallet::from_value(Value(100));
+        let proposals = VoteTestGen::proposals_with_action(
+            VoteAction::Treasury {
+                action: TreasuryGovernanceAction::TransferToRewards { value: Value(30) },
+            },
+            3,
+        );
+
+        let vote_plan = VotePlan::new(
+            BlockDate::from_epoch_slot_id(1, 0),
+            BlockDate::from_epoch_slot_id(2, 0),
+            BlockDate::from_epoch_slot_id(3, 0),
+            proposals,
+            vote::PayloadType::Public,
+        );
+
+        let mut committee_ids = HashSet::new();
+        committee_ids.insert(committee.public_key().into());
+        let mut vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
+
+        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        let mut stake_controlled = StakeControl::new();
+        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
+        //    stake_controlled = stake_controlled.add_unassigned(Stake(49));
+
+        let vote_block_date = BlockDate {
+            epoch: 1,
+            slot_id: 10,
+        };
+
+        let vote_cast = VoteCast::new(
+            vote_plan.to_id(),
+            0,
+            VoteTestGen::vote_cast_payload_for(&favorable),
+        );
+
+        vote_plan_manager = vote_plan_manager
+            .vote(
+                vote_block_date,
+                UnspecifiedAccountIdentifier::from_single_account(committee.public_key().into()),
+                vote_cast,
+            )
+            .unwrap();
+
+        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+
+        let block_date = BlockDate {
+            epoch: 2,
+            slot_id: 10,
+        };
+
+        let mut action_hit = false;
+        vote_plan_manager
+            .tally(
+                block_date,
+                &stake_controlled,
+                &governance,
+                tally_proof,
+                &mut |_| action_hit = true,
+            )
+            .unwrap();
+        assert!(action_hit)
+    }
+
+    #[test]
+    pub fn vote_plan_manager_tally_invalid_committee() {
+        let blank = Choice::new(0);
+        let favorable = Choice::new(1);
+        let rejection = Choice::new(2);
+        let committee = Wallet::from_value(Value(100));
+        let proposals = VoteTestGen::proposals(3);
+
+        let vote_plan = VotePlan::new(
+            BlockDate::from_epoch_slot_id(1, 0),
+            BlockDate::from_epoch_slot_id(2, 0),
+            BlockDate::from_epoch_slot_id(3, 0),
+            proposals,
+            vote::PayloadType::Public,
+        );
+
+        let mut committee_ids = HashSet::new();
+        committee_ids.insert(TestGen::public_key().into());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
+
+        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        let mut stake_controlled = StakeControl::new();
+        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
+        stake_controlled = stake_controlled.add_unassigned(Stake(49));
+
+        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+
+        let block_date = BlockDate {
+            epoch: 2,
+            slot_id: 10,
+        };
+
+        //invalid committee
+        assert_eq!(
+            VoteError::InvalidTallyCommittee,
+            vote_plan_manager
+                .tally(
+                    block_date,
+                    &stake_controlled,
+                    &governance,
+                    tally_proof,
+                    &mut |_| ()
+                )
+                .err()
+                .unwrap()
+        );
+    }
+
+    #[test]
+    pub fn vote_plan_manager_tally_invalid_date() {
+        let blank = Choice::new(0);
+        let favorable = Choice::new(1);
+        let rejection = Choice::new(2);
+        let committee = Wallet::from_value(Value(100));
+        let proposals = VoteTestGen::proposals(3);
+
+        let vote_plan = VotePlan::new(
+            BlockDate::from_epoch_slot_id(1, 0),
+            BlockDate::from_epoch_slot_id(2, 0),
+            BlockDate::from_epoch_slot_id(3, 0),
+            proposals,
+            vote::PayloadType::Public,
+        );
+
+        let mut committee_ids = HashSet::new();
+        committee_ids.insert(committee.public_key().into());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
+
+        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        let mut stake_controlled = StakeControl::new();
+        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
+        stake_controlled = stake_controlled.add_unassigned(Stake(49));
+
+        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+
+        let invalid_block_date = BlockDate {
+            epoch: 0,
+            slot_id: 10,
+        };
+
+        //not in committee time
+        assert_eq!(
+            VoteError::NotCommitteeTime {
+                start: vote_plan.committee_start(),
+                end: vote_plan.committee_end()
+            },
+            vote_plan_manager
+                .tally(
+                    invalid_block_date,
+                    &stake_controlled,
+                    &governance,
+                    tally_proof,
+                    &mut |_| ()
+                )
+                .err()
+                .unwrap()
+        );
+    }
+
+    fn get_tally_proof(wallet: &Wallet, id: VotePlanId) -> TallyProof {
+        let certificate = build_vote_tally_cert(id);
+        let fragment = TestTxCertBuilder::new(TestGen::hash(), LinearFee::new(0, 0, 0))
+            .make_transaction(&[&wallet], &certificate);
+
+        match fragment {
+            Fragment::VoteTally(tx) => {
+                let tx = tx.as_slice();
+                tx.payload_auth().into_payload_auth()
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    #[test]
+    pub fn proposal_manager_vote_tally() {
+        let blank = Choice::new(0);
+        let favorable = Choice::new(1);
+        let rejection = Choice::new(2);
+
+        let mut proposals = Proposals::new();
+        let _ = proposals.push(VoteTestGen::proposal_with_action(VoteAction::Treasury {
+            action: TreasuryGovernanceAction::TransferToRewards { value: Value(30) },
+        }));
+        let _ = proposals.push(VoteTestGen::proposal_with_action(VoteAction::Parameters {
+            action: ParametersGovernanceAction::RewardAdd { value: Value(30) },
+        }));
+
+        let vote_plan = VotePlan::new(
+            BlockDate::from_epoch_slot_id(1, 0),
+            BlockDate::from_epoch_slot_id(2, 0),
+            BlockDate::from_epoch_slot_id(3, 0),
+            proposals,
+            vote::PayloadType::Public,
+        );
+
+        let mut first_proposal_manager =
+            ProposalManager::new(vote_plan.proposals().get(0).unwrap());
+        let mut second_proposal_manager =
+            ProposalManager::new(vote_plan.proposals().get(1).unwrap());
+
+        let identifier = TestGen::unspecified_account_identifier();
+
+        let first_vote_cast = VoteCast::new(
+            vote_plan.to_id(),
+            0,
+            VoteTestGen::vote_cast_payload_for(&favorable),
+        );
+        first_proposal_manager = first_proposal_manager
+            .vote(identifier.clone(), first_vote_cast.clone())
+            .unwrap();
+
+        let second_vote_cast = VoteCast::new(
+            vote_plan.to_id(),
+            1,
+            VoteTestGen::vote_cast_payload_for(&favorable),
+        );
+        second_proposal_manager = second_proposal_manager
+            .vote(identifier.clone(), second_vote_cast.clone())
+            .unwrap();
+
+        let mut stake_controlled = StakeControl::new();
+        stake_controlled =
+            stake_controlled.add_to(identifier.to_single_account().unwrap(), Stake(51));
+        stake_controlled = stake_controlled.add_unassigned(Stake(49));
+
+        let proposals = ProposalManagers::new(&vote_plan);
+        let _ = proposals.vote(identifier.clone(), first_vote_cast.clone());
+        let _ = proposals.vote(identifier.clone(), second_vote_cast.clone());
+
+        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        proposals_vote_tally_succesful(&proposals, &stake_controlled, &governance);
+        vote_tally_succesful(&first_proposal_manager, &stake_controlled, &governance);
+        vote_tally_succesful(&second_proposal_manager, &stake_controlled, &governance);
+    }
+
+    fn governance_50_percent(blank: &Choice, favorable: &Choice, rejection: &Choice) -> Governance {
+        let gov_acceptance_criteria = GovernanceAcceptanceCriteria {
+            minimum_stake_participation: Some(Ratio {
+                numerator: 50,
+                denominator: CENT,
+            }),
+            minimum_approval: Some(Ratio {
+                numerator: 50,
+                denominator: CENT,
+            }),
+            blank: blank.clone(),
+            favorable: favorable.clone(),
+            rejection: rejection.clone(),
+            options: Options::new_length(3).expect("3 valid choices possible"),
+        };
+
+        let mut treasury_governance = TreasuryGovernance::new();
+        treasury_governance.set_default_acceptance_criteria(gov_acceptance_criteria.clone());
+
+        let mut parameters_governance = ParametersGovernance::new();
+        parameters_governance.set_default_acceptance_criteria(gov_acceptance_criteria.clone());
+        Governance {
+            treasury: treasury_governance,
+            parameters: parameters_governance,
+        }
+    }
+
+    fn proposals_vote_tally_succesful(
+        proposal_managers: &ProposalManagers,
+        stake_controlled: &StakeControl,
+        governance: &Governance,
+    ) {
+        let mut vote_action_hit = false;
+        proposal_managers
+            .public_tally(&stake_controlled, &governance, &mut |_vote_action| {
+                vote_action_hit = true;
+            })
+            .unwrap();
+    }
+
+    fn vote_tally_succesful(
+        proposal_manager: &ProposalManager,
+        stake_controlled: &StakeControl,
+        governance: &Governance,
+    ) {
+        let mut vote_action_hit = false;
+        proposal_manager
+            .public_tally(&stake_controlled, &governance, &mut |_vote_action| {
+                vote_action_hit = true;
+            })
+            .unwrap();
+
+        assert!(vote_action_hit);
+    }
+
     #[test]
     pub fn proposal_managers_many_votes() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(2);

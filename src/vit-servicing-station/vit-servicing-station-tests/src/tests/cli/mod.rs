@@ -100,7 +100,7 @@ pub fn add_generated_token_to_db_negative() -> Result<(), Box<dyn Error>> {
         .api_token()
         .add()
         .db_url(server.settings().db_url.clone())
-        .tokens_as_str("12334121")
+        .tokens_as_str("some_random_token")
         .build()
         .assert()
         .success();
@@ -110,7 +110,7 @@ pub fn add_generated_token_to_db_negative() -> Result<(), Box<dyn Error>> {
         .api_token()
         .add()
         .db_url(server.settings().db_url.clone())
-        .tokens_as_str("12334121;asdfadsfas")
+        .tokens_as_str("random_token_1;random_token_2")
         .build()
         .assert()
         .failure();

@@ -5,20 +5,21 @@ authors = ["dev@iohk.io"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
+[features]
+with-bench = ["criterion", "tempfile", "rand_core"]
+
 [dependencies]
-chain-core = { path = "../chain-core" }
-rusqlite = { version = "0.23.1", features = ["bundled", "unlock_notify"] }
+sled = "0.34.0"
 thiserror = "1.0"
+data-pile = "0.6.0"
 
 criterion = { version = "0.3.0", optional = true }
 rand_core = { version = "0.5", features = ["getrandom"], optional = true }
 tempfile = { version = "3.1.0", optional = true }
 
-[features]
-with-bench = ["criterion", "tempfile", "rand_core"]
-
 [dev-dependencies]
 rand_core = { version = "0.5", features = ["getrandom"] }
+tempfile = "3.1.0"
 
 [[bench]]
 harness = false

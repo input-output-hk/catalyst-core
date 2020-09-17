@@ -5,10 +5,8 @@ package iohk.chain.node;
 
 // Request message for method Handshake.
 message HandshakeRequest {
-  // Node ID of the client, the public key of a key pair.
-  bytes node_id = 3;
   // Nonce for the server to authenticate its node ID with.
-  bytes nonce = 4;
+  bytes nonce = 1;
 }
 
 // Response message for method Handshake.
@@ -23,7 +21,21 @@ message HandshakeResponse {
   // Signature of the client's nonce using the private key in the server's
   // key pair.
   bytes signature = 4;
+  // Nonce for the client to authenticate its node ID with.
+  bytes nonce = 5;
 }
+
+// Request message for method ClientAuth.
+message ClientAuthRequest {
+  // Node ID of the client, the public key of a key pair.
+  bytes node_id = 1;
+  // Signature of the server's nonce sent in HandshakeResponse,
+  // using the private key in the client's key pair.
+  bytes signature = 2;
+}
+
+// Response message for method ClientAuth.
+message ClientAuthResponse {}
 
 // Request message for method Tip.
 message TipRequest {}
@@ -138,7 +150,13 @@ message BlockEvent {
 }
 
 service Node {
+  // Initial handshake and authentication of the server node.
   rpc Handshake(HandshakeRequest) returns (HandshakeResponse);
+
+  // Optional authentication of the client node.
+  // Called after Handshake.
+  rpc ClientAuth(ClientAuthRequest) returns (ClientAuthResponse);
+
   rpc Tip(TipRequest) returns (TipResponse);
 
   // Requests for some peers

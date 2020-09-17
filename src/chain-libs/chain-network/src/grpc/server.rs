@@ -122,19 +122,27 @@ where
         req: tonic::Request<proto::HandshakeRequest>,
     ) -> Result<tonic::Response<proto::HandshakeResponse>, tonic::Status> {
         let req = req.into_inner();
-        let peer_id = if req.node_id.is_empty() {
-            None
-        } else {
-            Some(NodeId::try_from(&req.node_id[..])?)
-        };
         let nonce = &req.nonce;
-        let (block0, node_auth) = self.inner.handshake(peer_id, nonce)?;
+        let hr = self.inner.handshake(nonce)?;
         let res = proto::HandshakeResponse {
             version: PROTOCOL_VERSION,
-            block0: block0.as_bytes().into(),
-            node_id: node_auth.id().as_bytes().into(),
-            signature: node_auth.signature().into(),
+            block0: hr.block0_id.as_bytes().into(),
+            node_id: hr.auth.id().as_bytes().into(),
+            signature: hr.auth.signature().into(),
+            nonce: hr.nonce.into(),
         };
+        Ok(tonic::Response::new(res))
+    }
+
+    async fn client_auth(
+        &self,
+        req: tonic::Request<proto::ClientAuthRequest>,
+    ) -> Result<tonic::Response<proto::ClientAuthResponse>, tonic::Status> {
+        let req = req.into_inner();
+        let node_id = NodeId::try_from(&req.node_id[..])?;
+        let auth = node_id.authenticated(&req.signature)?;
+        self.inner.client_auth(auth)?;
+        let res = proto::ClientAuthResponse {};
         Ok(tonic::Response::new(res))
     }
 

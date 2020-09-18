@@ -3,7 +3,11 @@ macro_rules! log {
     ($lvl:expr, $($arg:tt)+) => (
         let formatted_message = format_args!($($arg)+).to_string();
         let level = $lvl;
-        $crate::messages::LogMessageBuilder::default().with_level(level).with_message(formatted_message).build().log();
+        $crate::messages::LogMessageBuilder::<()>::default()
+            .with_level(level)
+            .with_message(formatted_message)
+            .build()
+            .log();
     )
 }
 

@@ -1391,6 +1391,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fabed175da42fed1fa0746b0ea71f412aa9d35e76e95e59b192c64b9dc2bf8b"
 dependencies = [
  "cfg-if",
+ "serde",
+]
+
+[[package]]
+name = "logging-lib"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "log 0.4.11",
+ "serde",
+ "serde_json",
+ "simplelog",
 ]
 
 [[package]]
@@ -3298,6 +3310,8 @@ dependencies = [
  "dotenv",
  "itertools",
  "libsqlite3-sys",
+ "log 0.4.11",
+ "logging-lib",
  "serde",
  "serde_json",
  "simplelog",
@@ -3313,6 +3327,7 @@ name = "vit-servicing-station-server"
 version = "0.1.0"
 dependencies = [
  "log 0.4.11",
+ "logging-lib",
  "structopt",
  "tokio",
  "vit-servicing-station-lib",

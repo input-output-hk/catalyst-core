@@ -112,8 +112,13 @@ pub struct Log {
     pub log_output_path: Option<String>,
 
     /// Application logging level
-    #[structopt(long, default_value = "info")]
-    pub log_level: LogLevel,
+    #[structopt(long)]
+    pub log_level: Option<LogLevel>,
+
+    /// Mute stdout log
+    #[serde(default)]
+    #[structopt(long)]
+    pub mute_terminal_log: bool,
 }
 
 fn parse_allowed_origins(arg: &str) -> Result<AllowedOrigins, std::io::Error> {
@@ -158,6 +163,18 @@ impl ServiceSettings {
 
         if other_settings.block0_path != BLOCK0_PATH_DEFAULT {
             return_settings.block0_path = other_settings.block0_path.clone();
+        }
+
+        if other_settings.log.log_level.is_some() {
+            return_settings.log.log_level = other_settings.log.log_level;
+        }
+
+        if other_settings.log.log_output_path.is_some() {
+            return_settings.log.log_output_path = other_settings.log.log_output_path.clone();
+        }
+
+        if other_settings.log.mute_terminal_log {
+            return_settings.log.mute_terminal_log = other_settings.log.mute_terminal_log;
         }
 
         return_settings.enable_api_tokens = other_settings.enable_api_tokens;
@@ -287,11 +304,18 @@ impl FromStr for LogLevel {
     }
 }
 
+impl Default for LogLevel {
+    fn default() -> Self {
+        LogLevel::Disabled
+    }
+}
+
 impl Default for Log {
     fn default() -> Self {
         Self {
             log_output_path: None,
-            log_level: LogLevel::Info,
+            log_level: None,
+            mute_terminal_log: false,
         }
     }
 }
@@ -368,7 +392,7 @@ mod test {
         assert_eq!(config.block0_path, "./test/bin.test");
         assert_eq!(config.enable_api_tokens, true);
         assert_eq!(config.log.log_output_path.unwrap(), "./server.log");
-        assert_eq!(config.log.log_level, LogLevel::Error);
+        assert_eq!(config.log.log_level, Some(LogLevel::Error));
         let tls_config = config.tls;
         let cors_config = config.cors;
         assert_eq!(tls_config.cert_file.unwrap(), "./foo/bar.pem");
@@ -431,7 +455,7 @@ mod test {
             CorsOrigin("https://foo.test".to_string())
         );
         assert_eq!(settings.log.log_output_path.unwrap(), "./log.log");
-        assert_eq!(settings.log.log_level, LogLevel::Error);
+        assert_eq!(settings.log.log_level, Some(LogLevel::Error));
     }
 
     #[test]

@@ -61,7 +61,7 @@ async fn authorize_token(token: String, context: SharedContext) -> Result<(), Re
     let manager = APITokenManager::new(context.read().await.db_connection_pool.clone());
 
     let mut token_vec: Vec<u8> = Vec::new();
-    base64::decode_config_buf(token, base64::URL_SAFE, &mut token_vec).map_err(|_err| {
+    base64::decode_config_buf(token.clone(), base64::URL_SAFE, &mut token_vec).map_err(|_err| {
         warp::reject::custom(HandleError::InvalidHeader(
             API_TOKEN_HEADER,
             "header should be base64 url safe decodable",
@@ -72,7 +72,10 @@ async fn authorize_token(token: String, context: SharedContext) -> Result<(), Re
 
     match manager.is_token_valid(api_token).await {
         Ok(true) => Ok(()),
-        Ok(false) => Err(warp::reject::custom(HandleError::UnauthorizedToken)),
+        Ok(false) => {
+            crate::logging::log_rejected_api_key(token);
+            Err(warp::reject::custom(HandleError::UnauthorizedToken))
+        }
         Err(e) => Err(warp::reject::custom(e)),
     }
 }

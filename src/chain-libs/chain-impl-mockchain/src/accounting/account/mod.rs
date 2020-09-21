@@ -6,9 +6,7 @@
 
 pub mod account_state;
 pub mod last_rewards;
-
-use crate::date::Epoch;
-use crate::value::*;
+use crate::{date::Epoch, value::*};
 use imhamt::{Hamt, InsertError, UpdateError};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt::{self, Debug};
@@ -231,7 +229,7 @@ mod tests {
     use crate::{
         account::{Identifier, Ledger},
         certificate::{PoolId, PoolRegistration},
-        testing::{arbitrary::utils as arbitrary_utils, arbitrary::AverageValue},
+        testing::{arbitrary::utils as arbitrary_utils, arbitrary::AverageValue, TestGen},
         value::Value,
     };
 
@@ -565,5 +563,13 @@ mod tests {
         } else {
             TestResult::passed()
         }
+    }
+
+    #[test]
+    pub fn add_value_or_account_test() {
+        let ledger = Ledger::new();
+        assert!(ledger
+            .add_value_or_account(&TestGen::identifier(), Value(10), ())
+            .is_ok());
     }
 }

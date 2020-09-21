@@ -28,6 +28,8 @@ pub fn rewards_no_block() {
         .build()
         .unwrap();
 
+    assert_eq!(ledger.can_distribute_reward(), false);
+
     ledger.distribute_rewards().unwrap();
 
     LedgerStateVerifier::new(ledger.into())
@@ -109,6 +111,7 @@ pub fn rewards_owners_split() {
     let clarice = controller.wallet("Clarice").unwrap();
 
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.can_distribute_reward());
     ledger.distribute_rewards().unwrap();
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());

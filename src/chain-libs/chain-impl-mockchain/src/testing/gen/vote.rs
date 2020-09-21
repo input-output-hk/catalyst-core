@@ -3,6 +3,7 @@ use crate::{
     block::BlockDate,
     certificate::{
         ExternalProposalId, Proposal, Proposals, PushProposal, VoteAction, VoteCast, VotePlan,
+        VoteTally,
     },
     ledger::governance::{ParametersGovernance, TreasuryGovernance},
     vote::{self, Choice},
@@ -57,6 +58,16 @@ impl VoteTestGen {
                 .finalize()
                 .as_byteslice(),
         )
+    }
+
+    pub fn vote_cast() -> VoteCast {
+        let vote_plan = Self::vote_plan();
+        VoteCast::new(vote_plan.to_id(), 0, vote::Payload::public(Choice::new(1)))
+    }
+
+    pub fn vote_tally() -> VoteTally {
+        let vote_plan = Self::vote_plan();
+        VoteTally::new_public(vote_plan.to_id())
     }
 
     pub fn vote_plan() -> VotePlan {

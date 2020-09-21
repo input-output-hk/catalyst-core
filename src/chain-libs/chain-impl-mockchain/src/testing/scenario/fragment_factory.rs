@@ -1,6 +1,6 @@
 use crate::{
     accounting::account::{DelegationRatio, DelegationType},
-    certificate::{Certificate, PoolId, PoolUpdate, VoteCast, VotePlan},
+    certificate::{Certificate, PoolId, PoolUpdate, VoteCast, VotePlan, VoteTally},
     fee::LinearFee,
     fragment::Fragment,
     key::Hash,
@@ -118,6 +118,10 @@ impl FragmentFactory {
 
     pub fn vote_cast(&self, owner: &Wallet, vote_cast: VoteCast) -> Fragment {
         self.transaction_with_cert(&[owner], vote_cast.into())
+    }
+
+    pub fn vote_tally(&self, owner: &Wallet, vote_tally: VoteTally) -> Fragment {
+        self.transaction_with_cert(&[owner], vote_tally.into())
     }
 
     fn transaction_with_cert(&self, wallets: &[&Wallet], certificate: Certificate) -> Fragment {

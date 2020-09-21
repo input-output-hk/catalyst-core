@@ -193,7 +193,7 @@ impl TestTxCertBuilder {
     }
 }
 
-fn tally_sign(
+pub fn tally_sign(
     keys: &[EitherEd25519SecretKey],
     vt: &VoteTally,
     builder: &TxBuilderState<SetAuthData<VoteTally>>,

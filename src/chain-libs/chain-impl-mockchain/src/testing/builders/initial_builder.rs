@@ -130,6 +130,12 @@ fn fragment(
             let tx = builder.set_payload_auth(&());
             Fragment::VoteCast(tx)
         }
+        Certificate::VoteTally(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
+            let signature = tally_sign(&keys,&s, &builder);
+            let tx = builder.set_payload_auth(&signature);
+            Fragment::VoteTally(tx)
+        }
         _ => unreachable!(),
     }
 }

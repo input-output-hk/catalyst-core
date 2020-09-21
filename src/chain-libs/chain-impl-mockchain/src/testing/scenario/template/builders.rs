@@ -1,12 +1,16 @@
+use super::{StakePoolTemplate, WalletTemplate};
+use crate::certificate::VoteAction;
+use crate::ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAction};
+use crate::testing::scenario::template::ExternalProposalId;
+use crate::testing::scenario::template::ProposalDef;
+use crate::testing::scenario::template::VotePlanDef;
 use crate::{
+    date::BlockDate,
     rewards::{Ratio, TaxType},
     testing::data::Wallet,
     testing::scenario::{scenario_builder::ScenarioBuilderError, template::StakePoolDef},
     value::Value,
 };
-
-use super::{StakePoolTemplate, WalletTemplate};
-
 use std::{
     collections::{HashMap, HashSet},
     num::NonZeroU64,
@@ -18,6 +22,7 @@ pub struct WalletTemplateBuilder {
     delagate_alias: Option<String>,
     ownership_alias: Option<String>,
     initial_value: Option<Value>,
+    committee_member: bool,
 }
 
 impl WalletTemplateBuilder {
@@ -27,6 +32,7 @@ impl WalletTemplateBuilder {
             delagate_alias: None,
             ownership_alias: None,
             initial_value: None,
+            committee_member: false,
         }
     }
 
@@ -42,6 +48,11 @@ impl WalletTemplateBuilder {
 
     pub fn delegates_to(&mut self, delegates_to_alias: &str) -> &mut Self {
         self.delagate_alias = Some(delegates_to_alias.to_owned());
+        self
+    }
+
+    pub fn committee_member(&mut self) -> &mut Self {
+        self.committee_member = true;
         self
     }
 
@@ -62,6 +73,7 @@ impl WalletTemplateBuilder {
             stake_pool_delegate_alias: self.delagate_alias.clone(),
             stake_pool_owner_alias: self.ownership_alias.clone(),
             initial_value: value,
+            committee_member: self.committee_member,
         })
     }
 }
@@ -215,6 +227,119 @@ impl StakePoolDefBuilder {
             permissions_threshold: Some(self.permissions_threshold),
             has_reward_account: self.reward_account,
             tax_type: self.tax_type,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct VotePlanDefBuilder {
+    alias: String,
+    owner_alias: Option<String>,
+    vote_date: Option<BlockDate>,
+    tally_date: Option<BlockDate>,
+    end_tally_date: Option<BlockDate>,
+    proposals: Vec<ProposalDef>,
+}
+
+impl VotePlanDefBuilder {
+    pub fn new(alias: &str) -> Self {
+        VotePlanDefBuilder {
+            alias: alias.to_owned(),
+            owner_alias: Option::None,
+            vote_date: Option::None,
+            tally_date: Option::None,
+            end_tally_date: Option::None,
+            proposals: Vec::new(),
+        }
+    }
+
+    pub fn owner(&mut self, owner_alias: &str) -> &mut Self {
+        self.owner_alias = Some(owner_alias.to_string());
+        self
+    }
+
+    pub fn consecutive_epoch_dates(&mut self) -> &mut Self {
+        self.vote_date = Some(BlockDate {
+            epoch: 0,
+            slot_id: 0,
+        });
+        self.tally_date = Some(BlockDate {
+            epoch: 1,
+            slot_id: 0,
+        });
+        self.end_tally_date = Some(BlockDate {
+            epoch: 2,
+            slot_id: 0,
+        });
+        self
+    }
+
+    pub fn with_proposal(&mut self, proposal_builder: &mut ProposalDefBuilder) -> &mut Self {
+        self.proposals.push(proposal_builder.clone().build());
+        self
+    }
+
+    pub fn build(self) -> VotePlanDef {
+        VotePlanDef {
+            alias: self.alias.clone(),
+            owner_alias: self.owner_alias.unwrap(),
+            vote_date: self.vote_date.unwrap(),
+            tally_date: self.tally_date.unwrap(),
+            end_tally_date: self.end_tally_date.unwrap(),
+            proposals: self.proposals,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ProposalDefBuilder {
+    id: ExternalProposalId,
+    options: u8,
+    action_type: VoteAction,
+}
+
+impl ProposalDefBuilder {
+    pub fn new(id: ExternalProposalId) -> Self {
+        ProposalDefBuilder {
+            id,
+            options: 3,
+            action_type: VoteAction::OffChain,
+        }
+    }
+
+    pub fn options(&mut self, options: u8) -> &mut Self {
+        self.options = options;
+        self
+    }
+
+    pub fn action_off_chain(&mut self) -> &mut Self {
+        self.action_type = VoteAction::OffChain;
+        self
+    }
+
+    pub fn action_rewards_add(&mut self, value: u64) -> &mut Self {
+        self.action_type = VoteAction::Treasury {
+            action: TreasuryGovernanceAction::TransferToRewards {
+                value: Value(value),
+            },
+        };
+        self
+    }
+
+    pub fn action_trasfer_to_rewards(&mut self, value: u64) -> &mut Self {
+        self.action_type = VoteAction::Parameters {
+            action: ParametersGovernanceAction::RewardAdd {
+                value: Value(value),
+            },
+        };
+        self
+    }
+
+    pub fn build(self) -> ProposalDef {
+        ProposalDef {
+            id: self.id,
+            options: self.options,
+            action_type: self.action_type,
         }
     }
 }

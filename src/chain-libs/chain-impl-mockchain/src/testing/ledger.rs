@@ -24,6 +24,7 @@ use crate::{
     transaction::{Output, TxBuilder},
     utxo::{Entry, Iter},
     value::Value,
+    vote::CommitteeId,
 };
 use chain_addr::{Address, Discrimination};
 use chain_crypto::*;
@@ -44,6 +45,7 @@ pub struct ConfigBuilder {
     per_vote_certificate_fee: Option<PerVoteCertificateFee>,
     leaders: Vec<BftLeaderId>,
     seed: u64,
+    committees_ids: Vec<CommitteeId>,
     rewards: Value,
     treasury: Value,
     treasury_params: TaxType,
@@ -65,6 +67,7 @@ impl ConfigBuilder {
             linear_fee: None,
             per_certificate_fee: None,
             per_vote_certificate_fee: None,
+            committees_ids: Vec::new(),
             seed,
             rewards: Value(1_000_000),
             reward_params: RewardParams::Linear {
@@ -83,6 +86,11 @@ impl ConfigBuilder {
             block0_date: Block0Date(0),
             consensus_version: ConsensusVersion::Bft,
         }
+    }
+
+    pub fn with_committee_id(mut self, committee_id: CommitteeId) -> Self {
+        self.committees_ids.push(committee_id);
+        self
     }
 
     pub fn with_rewards(mut self, value: Value) -> Self {
@@ -213,6 +221,10 @@ impl ConfigBuilder {
             ie.push(ConfigParam::PerVoteCertificateFees(
                 self.per_vote_certificate_fee.clone().unwrap(),
             ));
+        }
+
+        for committee_id in self.committees_ids {
+            ie.push(ConfigParam::AddCommitteeId(committee_id.clone()));
         }
 
         ie.push(ConfigParam::Block0Date(self.block0_date));
@@ -458,6 +470,10 @@ impl TestLedger {
         Ok(())
     }
 
+    pub fn apply_protocol_changes(&mut self) -> Result<(), Error> {
+        Ok(self.ledger = self.ledger.apply_protocol_changes()?)
+    }
+
     pub fn total_funds(&self) -> Value {
         self.ledger
             .get_total_value()
@@ -577,6 +593,10 @@ impl TestLedger {
 
     pub fn forward_date(&mut self) {
         self.ledger.date = self.ledger.date.next(self.ledger.era());
+    }
+
+    pub fn can_distribute_reward(&self) -> bool {
+        self.ledger.can_distribute_reward()
     }
 
     pub fn fast_forward_to(&mut self, date: BlockDate) {

@@ -3,7 +3,7 @@ use assert_fs::TempDir;
 
 use crate::common::clients::graphql::GraphqlClient;
 use crate::common::data::Snapshot;
-use jortestkit::load::{self, Configuration, Monitor, Request, RequestFailure};
+use jortestkit::load::{self, Configuration, Id, Monitor, RequestFailure, RequestGenerator};
 use rand_core::{OsRng, RngCore};
 
 #[derive(Clone, Debug)]
@@ -13,7 +13,7 @@ struct SnapshotRandomizer {
 }
 
 #[derive(Clone, Debug)]
-struct VitRestRequest {
+struct VitRestRequestGenerator {
     rest_client: RestClient,
     graphql_client: GraphqlClient,
     snapshot_randomizer: SnapshotRandomizer,
@@ -56,7 +56,7 @@ impl SnapshotRandomizer {
     }
 }
 
-impl VitRestRequest {
+impl VitRestRequestGenerator {
     pub fn new(
         snapshot: Snapshot,
         mut rest_client: RestClient,
@@ -73,49 +73,54 @@ impl VitRestRequest {
     }
 }
 
-impl Request for VitRestRequest {
-    //TODO:make run(&mut self) to avoid cloning
-    fn run(&self) -> Result<(), RequestFailure> {
-        let mut rest_client = self.rest_client.clone();
-        let mut snapshot_randomizer = self.snapshot_randomizer.clone();
-        rest_client.set_api_token(snapshot_randomizer.random_token());
+impl RequestGenerator for VitRestRequestGenerator {
+    fn next(&mut self) -> Result<Option<Id>, RequestFailure> {
+        self.rest_client
+            .set_api_token(self.snapshot_randomizer.random_token());
+        self.graphql_client
+            .set_api_token(self.snapshot_randomizer.random_token());
 
-        let mut graphql_client = self.graphql_client.clone();
-        graphql_client.set_api_token(snapshot_randomizer.random_token());
-
-        match snapshot_randomizer.random_usize() % 7 {
-            0 => rest_client
+        match self.snapshot_randomizer.random_usize() % 7 {
+            0 => self
+                .rest_client
                 .health()
+                .map(|_| Option::None)
                 .map_err(|e| RequestFailure::General(format!("Health: {}", e.to_string()))),
-            1 => rest_client
+            1 => self
+                .rest_client
                 .proposals()
-                .map(|_| ())
+                .map(|_| Option::None)
                 .map_err(|e| RequestFailure::General(format!("Proposals: {}", e.to_string()))),
-            2 => graphql_client
-                .proposal_by_id(snapshot_randomizer.random_proposal_id() as u32)
-                .map(|_| ())
+            2 => self
+                .graphql_client
+                .proposal_by_id(self.snapshot_randomizer.random_proposal_id() as u32)
+                .map(|_| Option::None)
                 .map_err(|e| {
                     RequestFailure::General(format!("GraohQL - Proposals by id: {}", e.to_string()))
                 }),
-            3 => graphql_client
-                .fund_by_id(snapshot_randomizer.random_fund_id())
-                .map(|_| ())
+            3 => self
+                .graphql_client
+                .fund_by_id(self.snapshot_randomizer.random_fund_id())
+                .map(|_| Option::None)
                 .map_err(|e| {
                     RequestFailure::General(format!("GraphQL - Fund by id: {}", e.to_string()))
                 }),
-            4 => rest_client
-                .proposal(&snapshot_randomizer.random_proposal_id().to_string())
-                .map(|_| ())
+            4 => self
+                .rest_client
+                .proposal(&self.snapshot_randomizer.random_proposal_id().to_string())
+                .map(|_| Option::None)
                 .map_err(|e| {
                     RequestFailure::General(format!("Proposals by id: {}", e.to_string()))
                 }),
-            5 => rest_client
-                .fund(&snapshot_randomizer.random_fund_id().to_string())
-                .map(|_| ())
+            5 => self
+                .rest_client
+                .fund(&self.snapshot_randomizer.random_fund_id().to_string())
+                .map(|_| Option::None)
                 .map_err(|e| RequestFailure::General(format!("Funds by id: {}", e.to_string()))),
-            6 => graphql_client
+            6 => self
+                .graphql_client
                 .funds()
-                .map(|_| ())
+                .map(|_| Option::None)
                 .map_err(|e| RequestFailure::General(format!("Funds: {}", e.to_string()))),
             _ => unreachable!(),
         }
@@ -130,14 +135,15 @@ pub fn rest_load_quick() {
     let rest_client = server.rest_client();
     let graphql_client = server.graphql_client();
 
-    let request = VitRestRequest::new(snapshot, rest_client, graphql_client);
+    let request = VitRestRequestGenerator::new(snapshot, rest_client, graphql_client);
     let config = Configuration::duration(
         10,
         std::time::Duration::from_secs(40),
         500,
         Monitor::Progress(100),
+        0,
     );
-    let stats = load::start(request, config, "Vit station service rest");
+    let stats = load::start_sync(request, config, "Vit station service rest");
     assert!((stats.calculate_passrate() as u32) > 95);
 }
 
@@ -149,13 +155,14 @@ pub fn rest_load_long() {
     let rest_client = server.rest_client();
     let graphql_client = server.graphql_client();
 
-    let request = VitRestRequest::new(snapshot, rest_client, graphql_client);
+    let request = VitRestRequestGenerator::new(snapshot, rest_client, graphql_client);
     let config = Configuration::duration(
         3,
         std::time::Duration::from_secs(18_000),
         1_000,
         Monitor::Progress(10_000),
+        0,
     );
-    let stats = load::start(request, config, "Vit station service rest");
+    let stats = load::start_sync(request, config, "Vit station service rest");
     assert!((stats.calculate_passrate() as u32) > 95);
 }

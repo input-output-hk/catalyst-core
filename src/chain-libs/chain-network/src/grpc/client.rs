@@ -146,8 +146,10 @@ where
     ///
     /// This method should be called first after establishing the client
     /// connection.
-    pub async fn handshake(&mut self, nonce: Vec<u8>) -> Result<HandshakeResponse, HandshakeError> {
-        let req = proto::HandshakeRequest { nonce };
+    pub async fn handshake(&mut self, nonce: &[u8]) -> Result<HandshakeResponse, HandshakeError> {
+        let req = proto::HandshakeRequest {
+            nonce: nonce.into(),
+        };
         let res = self
             .inner
             .handshake(req)

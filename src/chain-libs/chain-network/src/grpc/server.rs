@@ -121,9 +121,10 @@ where
         &self,
         req: tonic::Request<proto::HandshakeRequest>,
     ) -> Result<tonic::Response<proto::HandshakeResponse>, tonic::Status> {
+        let peer = remote_addr_to_peer(req.remote_addr())?;
         let req = req.into_inner();
         let nonce = &req.nonce;
-        let hr = self.inner.handshake(nonce)?;
+        let hr = self.inner.handshake(peer, nonce).await?;
         let res = proto::HandshakeResponse {
             version: PROTOCOL_VERSION,
             block0: hr.block0_id.as_bytes().into(),
@@ -138,10 +139,11 @@ where
         &self,
         req: tonic::Request<proto::ClientAuthRequest>,
     ) -> Result<tonic::Response<proto::ClientAuthResponse>, tonic::Status> {
+        let peer = remote_addr_to_peer(req.remote_addr())?;
         let req = req.into_inner();
         let node_id = NodeId::try_from(&req.node_id[..])?;
         let auth = node_id.authenticated(&req.signature)?;
-        self.inner.client_auth(auth)?;
+        self.inner.client_auth(peer, auth).await?;
         let res = proto::ClientAuthResponse {};
         Ok(tonic::Response::new(res))
     }

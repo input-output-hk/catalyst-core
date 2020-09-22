@@ -58,17 +58,17 @@ pub struct Signature<T: ?Sized, A: VerificationAlgorithm> {
     phantom: PhantomData<T>,
 }
 
-impl<A: VerificationAlgorithm, T> fmt::Debug for Signature<T, A> {
+impl<A: VerificationAlgorithm, T: ?Sized> fmt::Debug for Signature<T, A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", hex::encode(self.signdata.as_ref()))
     }
 }
-impl<A: VerificationAlgorithm, T> fmt::Display for Signature<T, A> {
+impl<A: VerificationAlgorithm, T: ?Sized> fmt::Display for Signature<T, A> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", hex::encode(self.signdata.as_ref()))
     }
 }
-impl<T, A: VerificationAlgorithm> FromStr for Signature<T, A> {
+impl<A: VerificationAlgorithm, T: ?Sized> FromStr for Signature<T, A> {
     type Err = SignatureFromStrError;
 
     fn from_str(hex: &str) -> Result<Self, Self::Err> {
@@ -109,21 +109,21 @@ impl std::error::Error for SignatureFromStrError {
     }
 }
 
-impl<A: VerificationAlgorithm, T> Signature<T, A> {
+impl<A: VerificationAlgorithm, T: ?Sized> Signature<T, A> {
     pub fn from_binary(sig: &[u8]) -> Result<Self, SignatureError> {
         Ok(Signature {
             signdata: A::signature_from_bytes(sig)?,
             phantom: PhantomData,
         })
     }
-    pub fn coerce<U>(self) -> Signature<U, A> {
+    pub fn coerce<U: ?Sized>(self) -> Signature<U, A> {
         Signature {
             signdata: self.signdata,
             phantom: PhantomData,
         }
     }
 
-    pub fn safe_coerce<U: SafeSignatureCoerce<T>>(self) -> Signature<U, A> {
+    pub fn safe_coerce<U: ?Sized + SafeSignatureCoerce<T>>(self) -> Signature<U, A> {
         Signature {
             signdata: self.signdata,
             phantom: PhantomData,
@@ -131,11 +131,11 @@ impl<A: VerificationAlgorithm, T> Signature<T, A> {
     }
 }
 
-pub trait SafeSignatureCoerce<T> {}
+pub trait SafeSignatureCoerce<T: ?Sized> {}
 
 impl<'a, T> SafeSignatureCoerce<ByteArray<T>> for ByteSlice<'a, T> {}
 
-impl<A: VerificationAlgorithm, T: AsRef<[u8]>> Signature<T, A> {
+impl<A: VerificationAlgorithm, T: ?Sized + AsRef<[u8]>> Signature<T, A> {
     #[must_use]
     pub fn verify(&self, publickey: &key::PublicKey<A>, object: &T) -> Verification {
         <A as VerificationAlgorithm>::verify_bytes(&publickey.0, &self.signdata, object.as_ref())
@@ -165,7 +165,7 @@ impl<A: SigningAlgorithm> key::SecretKey<A>
 where
     <A as key::AsymmetricKey>::PubAlg: VerificationAlgorithm,
 {
-    pub fn sign<T: AsRef<[u8]>>(&self, object: &T) -> Signature<T, A::PubAlg> {
+    pub fn sign<T: ?Sized + AsRef<[u8]>>(&self, object: &T) -> Signature<T, A::PubAlg> {
         Signature {
             signdata: <A as SigningAlgorithm>::sign(&self.0, object.as_ref()),
             phantom: PhantomData,

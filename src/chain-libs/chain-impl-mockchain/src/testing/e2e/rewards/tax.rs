@@ -115,9 +115,6 @@ fn verify_distribute_rewards(
 
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
     let alice = controller.wallet("Alice").unwrap();
-
-    println!("{:?}", stake_pool);
-
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 

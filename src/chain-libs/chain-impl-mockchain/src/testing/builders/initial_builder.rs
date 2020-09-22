@@ -1,5 +1,5 @@
 use crate::{
-    certificate::{Certificate, PoolUpdate, VoteCast, VotePlan},
+    certificate::{Certificate, PoolUpdate, VoteCast, VotePlan, VoteTally},
     fragment::Fragment,
     key::EitherEd25519SecretKey,
     ledger::ledger::OutputAddress,
@@ -51,6 +51,16 @@ pub fn create_initial_vote_plan(vote_plan: &VotePlan, owners: &[Wallet]) -> Frag
 
 pub fn create_initial_vote_cast(vote_cast: &VoteCast, owners: &[Wallet]) -> Fragment {
     let cert: Certificate = vote_cast.clone().into();
+    let keys: Vec<EitherEd25519SecretKey> = owners
+        .iter()
+        .cloned()
+        .map(|owner| owner.private_key())
+        .collect();
+    fragment(cert, keys, &[], &[])
+}
+
+pub fn create_initial_vote_tally(vote_tally: &VoteTally, owners: &[Wallet]) -> Fragment {
+    let cert: Certificate = vote_tally.clone().into();
     let keys: Vec<EitherEd25519SecretKey> = owners
         .iter()
         .cloned()
@@ -119,6 +129,12 @@ fn fragment(
             let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
             let tx = builder.set_payload_auth(&());
             Fragment::VoteCast(tx)
+        }
+        Certificate::VoteTally(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
+            let signature = tally_sign(&keys,&s, &builder);
+            let tx = builder.set_payload_auth(&signature);
+            Fragment::VoteTally(tx)
         }
         _ => unreachable!(),
     }

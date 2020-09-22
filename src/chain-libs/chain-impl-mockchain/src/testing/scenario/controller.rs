@@ -1,11 +1,14 @@
 use crate::{
+    certificate::{ExternalProposalId, VoteCast, VotePlan, VoteTally},
     fee::LinearFee,
     key::Hash,
     ledger::Error as LedgerError,
     testing::{
         data::{StakePool, Wallet},
         ledger::TestLedger,
+        scenario::template::VotePlanDef,
     },
+    vote::{Choice, Payload},
 };
 
 #[cfg(test)]
@@ -22,12 +25,17 @@ pub enum ControllerError {
     UnknownWallet { alias: String },
     #[error("cannot find stake pool with alias {alias}")]
     UnknownStakePool { alias: String },
+    #[error("cannot find vote plan with alias {alias}")]
+    UnknownVotePlan { alias: String },
+    #[error("cannot find vote proposal with alias {id}")]
+    UnknownVoteProposal { id: ExternalProposalId },
 }
 
 pub struct Controller {
     pub block0_hash: Hash,
     pub declared_wallets: Vec<Wallet>,
     pub declared_stake_pools: Vec<StakePool>,
+    pub declared_vote_plans: Vec<VotePlanDef>,
     fragment_factory: FragmentFactory,
 }
 
@@ -37,11 +45,13 @@ impl Controller {
         fee: LinearFee,
         declared_wallets: Vec<Wallet>,
         declared_stake_pools: Vec<StakePool>,
+        declared_vote_plans: Vec<VotePlanDef>,
     ) -> Self {
         Controller {
             block0_hash,
             declared_wallets,
             declared_stake_pools,
+            declared_vote_plans,
             fragment_factory: FragmentFactory::new(block0_hash, fee),
         }
     }
@@ -52,6 +62,16 @@ impl Controller {
             .cloned()
             .find(|x| x.alias() == alias)
             .ok_or(ControllerError::UnknownWallet {
+                alias: alias.to_owned(),
+            })
+    }
+
+    pub fn vote_plan(&self, alias: &str) -> Result<VotePlanDef, ControllerError> {
+        self.declared_vote_plans
+            .iter()
+            .cloned()
+            .find(|x| x.alias() == alias)
+            .ok_or(ControllerError::UnknownVotePlan {
                 alias: alias.to_owned(),
             })
     }
@@ -181,6 +201,41 @@ impl Controller {
         let fragment = self
             .fragment_factory
             .stake_pool_update(owners, stake_pool, update);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
+    }
+
+    pub fn cast_vote(
+        &self,
+        owner: &Wallet,
+        vote_plan_def: &VotePlanDef,
+        id: &ExternalProposalId,
+        choice: Choice,
+        test_ledger: &mut TestLedger,
+    ) -> Result<(), LedgerError> {
+        let vote_plan: VotePlan = vote_plan_def.clone().into();
+        let index = vote_plan
+            .proposals()
+            .iter()
+            .enumerate()
+            .find(|(_, x)| *x.external_id() == *id)
+            .expect("cannot find proposal")
+            .0 as u8;
+        let vote_cast = VoteCast::new(vote_plan.to_id(), index, Payload::Public { choice });
+
+        let fragment = self.fragment_factory.vote_cast(owner, vote_cast);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
+    }
+
+    pub fn tally_vote(
+        &self,
+        owner: &Wallet,
+        vote_plan_def: &VotePlanDef,
+        test_ledger: &mut TestLedger,
+    ) -> Result<(), LedgerError> {
+        let vote_plan: VotePlan = vote_plan_def.clone().into();
+        let vote_tally = VoteTally::new_public(vote_plan.to_id());
+
+        let fragment = self.fragment_factory.vote_tally(owner, vote_tally);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 }

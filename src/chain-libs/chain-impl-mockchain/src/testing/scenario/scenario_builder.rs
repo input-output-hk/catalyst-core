@@ -1,17 +1,3 @@
-use crate::{
-    fee::LinearFee,
-    fragment::Fragment,
-    testing::{
-        builders::{
-            create_initial_stake_pool_delegation, create_initial_stake_pool_registration,
-            StakePoolBuilder,
-        },
-        data::{AddressDataValue, StakePool, Wallet},
-        ledger::{ConfigBuilder, LedgerBuilder, TestLedger},
-    },
-};
-use chain_addr::Discrimination;
-
 use super::{
     template::{
         StakePoolDefBuilder, StakePoolTemplate, StakePoolTemplateBuilder, WalletTemplate,
@@ -19,6 +5,24 @@ use super::{
     },
     Controller,
 };
+use crate::certificate::ExternalProposalId;
+use crate::testing::scenario::template::ProposalDefBuilder;
+use crate::{
+    certificate::VotePlan,
+    fee::LinearFee,
+    fragment::Fragment,
+    testing::{
+        builders::{
+            create_initial_stake_pool_delegation, create_initial_stake_pool_registration,
+            StakePoolBuilder,
+        },
+        create_initial_vote_plan,
+        data::{AddressDataValue, StakePool, Wallet},
+        ledger::{ConfigBuilder, LedgerBuilder, TestLedger},
+        scenario::template::{VotePlanDef, VotePlanDefBuilder},
+    },
+};
+use chain_addr::Discrimination;
 
 use thiserror::Error;
 
@@ -38,6 +42,7 @@ pub struct ScenarioBuilder {
     config: ConfigBuilder,
     initials: Option<Vec<WalletTemplateBuilder>>,
     stake_pools: Option<Vec<StakePoolDefBuilder>>,
+    vote_plans: Vec<VotePlanDefBuilder>,
 }
 
 pub fn prepare_scenario() -> ScenarioBuilder {
@@ -49,6 +54,7 @@ pub fn prepare_scenario() -> ScenarioBuilder {
         config: default_config_builder,
         initials: None,
         stake_pools: None,
+        vote_plans: Vec::new(),
     }
 }
 
@@ -60,6 +66,11 @@ impl ScenarioBuilder {
 
     pub fn with_initials(&mut self, initials: Vec<&mut WalletTemplateBuilder>) -> &mut Self {
         self.initials = Some(initials.iter().map(|x| (**x).clone()).collect());
+        self
+    }
+
+    pub fn with_vote_plans(&mut self, vote_plans: Vec<&mut VotePlanDefBuilder>) -> &mut Self {
+        self.vote_plans = vote_plans.iter().map(|x| (**x).clone()).collect();
         self
     }
 
@@ -95,7 +106,36 @@ impl ScenarioBuilder {
         messages.extend(self.build_delegation_fragments(&initials, &stake_pools, &wallets));
         let faucets: Vec<AddressDataValue> =
             wallets.iter().cloned().map(|x| x.as_account()).collect();
-        let test_ledger = LedgerBuilder::from_config(self.config.clone())
+
+        let vote_plan_defs: Vec<VotePlanDef> =
+            self.vote_plans.iter().map(|x| x.clone().build()).collect();
+        let vote_plan_fragments: Vec<Fragment> = self
+            .vote_plans
+            .iter()
+            .cloned()
+            .map(|x| {
+                let vote_plan_def = x.build();
+                let owner = wallets
+                    .iter()
+                    .cloned()
+                    .find(|w| w.alias() == vote_plan_def.owner())
+                    .expect("cannot find wallet for vote plan");
+                let vote_plan: VotePlan = vote_plan_def.into();
+                create_initial_vote_plan(&vote_plan, &[owner])
+            })
+            .collect();
+        messages.extend(vote_plan_fragments);
+
+        let mut config = self.config.clone();
+        for (_, wallet) in initials
+            .iter()
+            .zip(wallets.iter())
+            .filter(|(x, _)| x.is_committee_member())
+        {
+            config = config.with_committee_id(wallet.public_key().into())
+        }
+
+        let test_ledger = LedgerBuilder::from_config(config)
             .faucets(&faucets)
             .certs(&messages)
             .build()
@@ -105,7 +145,7 @@ impl ScenarioBuilder {
 
         Ok((
             test_ledger,
-            Controller::new(block0_hash, fee, wallets, stake_pools),
+            Controller::new(block0_hash, fee, wallets, stake_pools, vote_plan_defs),
         ))
     }
 
@@ -202,4 +242,12 @@ pub fn wallet(alias: &str) -> WalletTemplateBuilder {
 
 pub fn stake_pool(alias: &str) -> StakePoolDefBuilder {
     StakePoolDefBuilder::new(alias)
+}
+
+pub fn vote_plan(alias: &str) -> VotePlanDefBuilder {
+    VotePlanDefBuilder::new(alias)
+}
+
+pub fn proposal(id: ExternalProposalId) -> ProposalDefBuilder {
+    ProposalDefBuilder::new(id)
 }

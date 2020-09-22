@@ -117,14 +117,6 @@ impl<State> Multiverse<State> {
             .insert(k, GcEntry::Retained(state.clone()));
         Ref::new(k, state)
     }
-}
-
-impl Multiverse<Ledger> {
-    /// Add a state to the multiverse. Return a `Ref` object that
-    /// pins the state into memory.
-    pub fn add(&mut self, k: HeaderId, st: Ledger) -> Ref<Ledger> {
-        self.insert(st.chain_length(), k, st)
-    }
 
     /// Once the state are old in the timeline, they are less and less likely to
     /// be used anymore, so we leave a gap between different version that gets
@@ -183,6 +175,14 @@ impl Multiverse<Ledger> {
                 scan_length = chain_length.increase();
             }
         }
+    }
+}
+
+impl Multiverse<Ledger> {
+    /// Add a state to the multiverse. Return a `Ref` object that
+    /// pins the state into memory.
+    pub fn add(&mut self, k: HeaderId, st: Ledger) -> Ref<Ledger> {
+        self.insert(st.chain_length(), k, st)
     }
 }
 

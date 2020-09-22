@@ -2,7 +2,9 @@ use vit_servicing_station_lib::db::models::{
     api_tokens::APITokenData, funds::Fund, proposals::Proposal, voteplans::Voteplan,
 };
 
+mod csv_converter;
 mod generator;
+pub use csv_converter::CsvConverter;
 pub use generator::{Generator, Snapshot};
 
 pub fn token() -> (String, APITokenData) {

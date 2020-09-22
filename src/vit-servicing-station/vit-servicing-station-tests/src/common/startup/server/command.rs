@@ -98,7 +98,7 @@ impl BootstrapCommandBuilder {
     }
 
     pub fn log_level(&mut self, log_level: &str) -> &mut Self {
-        self.log_level = Some(log_level.to_owned());
+        self.log_level = Some(log_level.to_string());
         self
     }
 
@@ -156,7 +156,7 @@ impl BootstrapCommandBuilder {
                 .arg(log_file.to_str().unwrap());
         }
         if let Some(log_level) = &self.log_level {
-            command.arg("--log-level").arg(log_level.to_string());
+            command.arg("--log-level").arg(log_level);
         }
         command
     }

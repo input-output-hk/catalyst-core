@@ -12,7 +12,7 @@ pub fn non_existing_block0_file() -> Result<(), Box<dyn std::error::Error>> {
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
-        .start()?;
+        .start(&temp_dir)?;
 
     assert!(server.is_up(&snapshot.any_token().0));
     Ok(())
@@ -27,7 +27,7 @@ pub fn malformed_path() -> Result<(), Box<dyn std::error::Error>> {
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .with_block0_path("C:/tmp/a:/block0.bin")
-        .start()?;
+        .start(&temp_dir)?;
 
     assert!(server.is_up(&snapshot.any_token().0));
     Ok(())

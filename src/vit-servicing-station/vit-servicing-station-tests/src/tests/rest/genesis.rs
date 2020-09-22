@@ -5,6 +5,7 @@ use crate::common::{
 use assert_fs::TempDir;
 
 use crate::common::paths::BLOCK0_BIN;
+use hyper::StatusCode;
 
 #[test]
 pub fn genesis_deserialize_bijection() -> Result<(), Box<dyn std::error::Error>> {

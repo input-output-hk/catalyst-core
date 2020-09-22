@@ -71,8 +71,10 @@ impl ServerBootstrapper {
             command_builder.allowed_origins(allowed_origins);
         }
 
-        command_builder.log_level(&settings.log.log_level.to_string());
-
+        if let Some(log_level) = &settings.log.log_level {
+            command_builder.log_level(&serde_json::to_string(&log_level).unwrap());
+        }
+       
         let mut command = command_builder.build();
         println!("{:?}", command);
         let child = command.stdout(Stdio::inherit()).spawn()?;

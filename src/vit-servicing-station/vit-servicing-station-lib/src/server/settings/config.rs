@@ -304,6 +304,20 @@ impl FromStr for LogLevel {
     }
 }
 
+impl fmt::Display for LogLevel {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            Self::Disabled => write!(f, "disabled"),
+            Self::Error =>write!(f, "error"),
+            Self::Warn =>write!(f, "warn"),
+            Self::Info =>write!(f, "info"),
+            Self::Debug =>write!(f, "debug"),
+            Self::Trace =>write!(f, "trace"),
+        }        
+    }
+}
+
+
 impl Default for LogLevel {
     fn default() -> Self {
         LogLevel::Disabled

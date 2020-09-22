@@ -8,6 +8,7 @@ pub mod openssl;
 pub mod predicates;
 pub mod process;
 pub mod web;
+pub mod csv;
 
 #[macro_use(lazy_static)]
 extern crate lazy_static;
@@ -30,5 +31,6 @@ pub mod prelude {
     pub use crate::process::{
         self, output_extensions::ProcessOutput, ProcessError, Wait, WaitBuilder,
     };
+    pub use crate::csv::CsvFileBuilder;
     pub use crate::web::download_file;
 }

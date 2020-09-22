@@ -28,6 +28,7 @@ pub struct Snapshot {
     funds: Vec<Fund>,
     proposals: Vec<Proposal>,
     tokens: HashMap<String, APITokenData>,
+    voteplans: Vec<Voteplan>,
 }
 
 impl Snapshot {
@@ -41,6 +42,10 @@ impl Snapshot {
 
     pub fn tokens(&self) -> HashMap<String, APITokenData> {
         self.tokens.clone()
+    }
+
+    pub fn voteplans(&self) -> Vec<Voteplan> {
+        self.voteplans.clone()
     }
 
     pub fn proposal_by_id(&self, id: &str) -> Option<&Proposal> {
@@ -243,12 +248,14 @@ impl Generator {
     pub fn snapshot(&mut self) -> Snapshot {
         let funds = self.funds();
         let proposals = self.proposals(&funds);
+        let voteplans = self.voteplans(&funds);
         let tokens = self.tokens();
 
         Snapshot {
             funds,
             proposals,
             tokens,
+            voteplans,
         }
     }
 }

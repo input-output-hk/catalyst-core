@@ -32,9 +32,6 @@ pub struct Multiverse<State> {
     states_by_chain_length: BTreeMap<ChainLength, HashSet<HeaderId>>, // FIXME: use multimap?
 }
 
-/// Keep all states that are this close to the longest chain.
-const SUFFIX_TO_KEEP: u32 = 50;
-
 /// A RAII wrapper around a block identifier and the state pointer
 /// that keeps the state corresponding to the block pinned in memory.
 #[derive(Clone)]
@@ -129,16 +126,20 @@ impl Multiverse<Ledger> {
         self.insert(st.chain_length(), k, st)
     }
 
-    /// Once the state are old in the timeline, they are less
-    /// and less likely to be used anymore, so we leave
-    /// a gap between different version that gets bigger and bigger
-    pub fn gc(&mut self) {
+    /// Once the state are old in the timeline, they are less and less likely to
+    /// be used anymore, so we leave a gap between different version that gets
+    /// bigger and bigger
+    ///
+    /// # Arguments
+    ///
+    /// `cut_to_depth` - the depth from starting which branches would be removed.
+    pub fn gc(&mut self, cut_to_depth: u32) {
         let longest_chain = match self.states_by_chain_length.keys().next_back() {
             Some(len) => *len,
             None => return,
         };
 
-        if let Some(gc_threshold_length) = longest_chain.nth_ancestor(SUFFIX_TO_KEEP) {
+        if let Some(gc_threshold_length) = longest_chain.nth_ancestor(cut_to_depth) {
             let mut scan_length = ChainLength(0);
             let mut to_keep = ChainLength(0);
 
@@ -193,7 +194,7 @@ impl<S> Default for Multiverse<S> {
 
 #[cfg(test)]
 mod test {
-    use super::{Multiverse, Ref, SUFFIX_TO_KEEP};
+    use super::{Multiverse, Ref};
     use crate::{
         block::{Block, Contents, ContentsBuilder},
         chaintypes::{ChainLength, ConsensusType, HeaderId},
@@ -211,6 +212,8 @@ mod test {
     use chain_core::property::Deserialize;
     use chain_time::{Epoch, SlotDuration, TimeEra, TimeFrame, Timeline};
     use std::{collections::HashMap, mem, time::SystemTime};
+
+    const SUFFIX_TO_KEEP: u32 = 50;
 
     /// Get the chain state at block 'k' from memory if present;
     /// otherwise reconstruct it by reading blocks from storage and
@@ -365,12 +368,11 @@ mod test {
             let block_id = block.header.id();
             store.insert(block_id.clone(), block);
             _ref = Some(multiverse.add(block_id.clone(), state.clone()));
-            multiverse.gc();
+            multiverse.gc(SUFFIX_TO_KEEP);
             ids.push(block_id.clone());
             parent = block_id;
             assert!(
-                multiverse.nr_states()
-                    <= super::SUFFIX_TO_KEEP as usize + ((i as f32).log2()) as usize
+                multiverse.nr_states() <= SUFFIX_TO_KEEP as usize + ((i as f32).log2()) as usize
             );
         }
 
@@ -386,13 +388,13 @@ mod test {
         let state = ref3.state();
         assert_eq!(state.chain_length().0, 9501);
 
-        multiverse.gc();
+        multiverse.gc(SUFFIX_TO_KEEP);
 
         {
             let before = multiverse.nr_states();
             mem::drop(ref1);
             mem::drop(ref3);
-            multiverse.gc();
+            multiverse.gc(SUFFIX_TO_KEEP);
             let after = multiverse.nr_states();
             assert_eq!(before, after + 2);
         }
@@ -428,7 +430,7 @@ mod test {
             parent = block.header.id();
         }
 
-        multiverse.gc();
+        multiverse.gc(SUFFIX_TO_KEEP);
         // we added 1, beacuse genesis state adds up
         assert_eq!(
             multiverse.nr_states() as u32,
@@ -448,7 +450,7 @@ mod test {
             parent = block.header.id();
         }
 
-        multiverse.gc();
+        multiverse.gc(SUFFIX_TO_KEEP);
         // we added 1, beacuse genesis state adds up and
         assert_eq!(
             multiverse.nr_states() as u32,

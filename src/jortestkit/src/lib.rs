@@ -1,5 +1,6 @@
 pub mod archive;
 pub mod console;
+pub mod csv;
 pub mod file;
 pub mod github;
 pub mod load;
@@ -8,7 +9,6 @@ pub mod openssl;
 pub mod predicates;
 pub mod process;
 pub mod web;
-pub mod csv;
 
 #[macro_use(lazy_static)]
 extern crate lazy_static;
@@ -16,6 +16,7 @@ extern crate lazy_static;
 pub mod prelude {
     pub use crate::archive::decompress;
     pub use crate::console::*;
+    pub use crate::csv::CsvFileBuilder;
     pub use crate::file::*;
     pub use crate::github::{GitHubApi, GitHubApiError, Release};
     pub use crate::load;
@@ -31,6 +32,5 @@ pub mod prelude {
     pub use crate::process::{
         self, output_extensions::ProcessOutput, ProcessError, Wait, WaitBuilder,
     };
-    pub use crate::csv::CsvFileBuilder;
     pub use crate::web::download_file;
 }

@@ -1,20 +1,21 @@
 use csv::Writer;
-use std::{error::Error,path::{Path,PathBuf}};
+use std::{
+    error::Error,
+    path::{Path, PathBuf},
+};
 
-
-pub struct CsvFileBuilder{
+pub struct CsvFileBuilder {
     file: PathBuf,
     header: Vec<String>,
-    content: Vec<Vec<String>>
-} 
+    content: Vec<Vec<String>>,
+}
 
-
-impl CsvFileBuilder{
+impl CsvFileBuilder {
     pub fn from_path<P: AsRef<Path>>(path: P) -> Self {
-        Self{
+        Self {
             file: PathBuf::from(path.as_ref()),
             header: Vec::new(),
-            content: Vec::new()
+            content: Vec::new(),
         }
     }
 
@@ -22,7 +23,6 @@ impl CsvFileBuilder{
         self.header = header.iter().map(|x| x.to_string()).collect();
         self
     }
-    
 
     pub fn with_content_line(&mut self, line: Vec<String>) -> &mut Self {
         self.content.push(line);
@@ -30,7 +30,7 @@ impl CsvFileBuilder{
     }
 
     pub fn with_contents(&mut self, content: Vec<Vec<String>>) -> &mut Self {
-        for line in content{
+        for line in content {
             self.with_content_line(line);
         }
         self
@@ -41,7 +41,7 @@ impl CsvFileBuilder{
         wtr.write_record(&self.header)?;
         for line in self.content.iter() {
             wtr.write_record(&*line)?;
-        }        
+        }
         wtr.flush()?;
         Ok(())
     }

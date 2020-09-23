@@ -43,7 +43,7 @@ pub fn network_path() -> Result<(), Box<dyn std::error::Error>> {
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
         .with_block0_path("//tmp/block0.bin")
-        .start()?;
+        .start(&temp_dir)?;
 
     assert!(server.is_up(&snapshot.any_token().0));
     Ok(())

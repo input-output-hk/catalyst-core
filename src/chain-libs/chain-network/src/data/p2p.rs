@@ -98,3 +98,9 @@ impl AuthenticatedNodeId {
         &self.signature
     }
 }
+
+impl From<AuthenticatedNodeId> for NodeId {
+    fn from(auth: AuthenticatedNodeId) -> Self {
+        auth.id
+    }
+}

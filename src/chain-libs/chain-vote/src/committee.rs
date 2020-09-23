@@ -119,6 +119,12 @@ impl MemberState {
     }
 }
 
+impl MemberSecretKey {
+    pub fn to_bytes(&self) -> [u8; 32] {
+        self.0.sk.to_bytes()
+    }
+}
+
 impl MemberCommunicationKey {
     pub fn new<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         let sk = SecretKey::generate(rng);
@@ -132,6 +138,12 @@ impl MemberCommunicationKey {
     }
 }
 
+impl MemberCommunicationPublicKey {
+    pub fn from_public_key(pk: PublicKey) -> Self {
+        Self(pk)
+    }
+}
+
 impl ElectionPublicKey {
     /// Create an election public key from all the participants of this committee
     pub fn from_participants(pks: &[MemberPublicKey]) -> Self {
@@ -140,5 +152,9 @@ impl ElectionPublicKey {
             k = k + &pk.0.pk;
         }
         ElectionPublicKey(PublicKey { pk: k })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes()
     }
 }

@@ -31,6 +31,11 @@ impl PublicKey {
     pub fn to_bytes(&self) -> Vec<u8> {
         self.pk.to_bytes().to_vec()
     }
+    pub fn from_bytes(key: &[u8]) -> Option<Self> {
+        Some(Self {
+            pk: GroupElement::from_bytes(key)?,
+        })
+    }
 }
 
 impl SecretKey {

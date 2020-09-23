@@ -1,10 +1,10 @@
 //! Chain Vote
 
 mod commitment;
-mod committee;
+pub mod committee;
 mod encrypted;
-mod gang;
-mod gargamel;
+pub mod gang;
+pub mod gargamel;
 mod hybrid;
 mod math;
 mod shvzk;
@@ -23,7 +23,7 @@ pub mod debug {
 
 use rand_core::{CryptoRng, RngCore};
 
-pub use committee::{MemberCommunicationKey, MemberState};
+pub use committee::{MemberCommunicationKey, MemberCommunicationPublicKey, MemberState};
 pub use encrypted::EncryptingVote;
 use gang::Scalar;
 pub use gargamel::Ciphertext;

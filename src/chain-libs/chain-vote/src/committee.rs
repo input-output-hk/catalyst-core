@@ -136,11 +136,18 @@ impl MemberCommunicationKey {
             pk: &GroupElement::generator() * &self.0.sk,
         })
     }
+
+    pub fn to_bytes(&self) -> [u8; 32] {
+        self.0.sk.to_bytes()
+    }
 }
 
 impl MemberCommunicationPublicKey {
     pub fn from_public_key(pk: PublicKey) -> Self {
         Self(pk)
+    }
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes()
     }
 }
 

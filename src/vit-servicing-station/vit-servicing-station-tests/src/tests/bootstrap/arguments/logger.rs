@@ -22,6 +22,7 @@ pub fn wrong_log_level_provided() {
 }
 
 #[test]
+#[cfg(windows)]
 pub fn malformed_logger_path_provided() {
     let mut command_builder: BootstrapCommandBuilder = Default::default();
     command_builder
@@ -33,6 +34,7 @@ pub fn malformed_logger_path_provided() {
 }
 
 #[test]
+#[cfg(windows)]
 pub fn in_settings_file_malformed_log_output_path() {
     let temp_dir = TempDir::new().unwrap();
 

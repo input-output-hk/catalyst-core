@@ -3,10 +3,10 @@ mod release;
 use os_info::Type as OsType;
 pub use release::{AssetDto, ReleaseDto};
 use reqwest::header::USER_AGENT;
+use semver::Version;
 use std::collections::HashMap;
 use std::time::SystemTime;
 use thiserror::Error;
-
 #[derive(Debug, Error)]
 pub enum GitHubApiError {
     #[error("could not deserialize response")]
@@ -60,8 +60,20 @@ impl Release {
         &self.releases_per_os
     }
 
-    pub fn version(&self) -> String {
+    pub fn version_str(&self) -> String {
         self.version.clone()
+    }
+
+    pub fn version(&self) -> Version {
+        Version::parse(Self::without_first(&self.version_str())).unwrap()
+    }
+
+    fn without_first(string: &str) -> &str {
+        string
+            .char_indices()
+            .nth(1)
+            .and_then(|(i, _)| string.get(i..))
+            .unwrap_or("")
     }
 
     pub fn prerelease(&self) -> bool {

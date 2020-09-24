@@ -125,6 +125,12 @@ impl MemberSecretKey {
     }
 }
 
+impl MemberPublicKey {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes()
+    }
+}
+
 impl MemberCommunicationKey {
     pub fn new<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         let sk = SecretKey::generate(rng);

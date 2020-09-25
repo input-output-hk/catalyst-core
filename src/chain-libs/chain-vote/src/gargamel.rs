@@ -122,7 +122,7 @@ pub fn decrypt(sk: &SecretKey, cipher: &Ciphertext, incr: usize) -> Option<Scala
 }
 
 pub fn vec_sum(vec_ciphertexts: Vec<Vec<Ciphertext>>) -> Vec<Ciphertext> {
-    assert!(vec_ciphertexts.len() > 0);
+    assert!(!vec_ciphertexts.is_empty());
 
     let mut result = vec_ciphertexts[0].clone();
     for ciphertexts in &vec_ciphertexts[1..] {

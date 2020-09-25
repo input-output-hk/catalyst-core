@@ -15,14 +15,10 @@ pub struct Polynomial {
 impl std::fmt::Display for Polynomial {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (d, coef) in self.elements.iter().enumerate().rev() {
-            if d == 0 {
-                write!(f, "{:?}", coef)?
-            } else {
-                if d == 1 {
-                    write!(f, "{:?} x +", coef)?
-                } else {
-                    write!(f, "{:?} x^{} +", coef, d)?
-                }
+            match d {
+                0 => write!(f, "{:?}", coef)?,
+                1 => write!(f, "{:?} x +", coef)?,
+                _ => write!(f, "{:?} x^{} +", coef, d)?,
             }
         }
         Ok(())
@@ -61,7 +57,7 @@ impl Polynomial {
 
     /// Return the degree of the polynomial
     pub fn degree(&self) -> usize {
-        assert!(self.elements.len() > 0);
+        assert!(!self.elements.is_empty());
         self.elements.len() - 1
     }
 
@@ -80,11 +76,11 @@ impl Polynomial {
             let r = Scalar::random(rng);
             vec.push(r);
         }
-        return Polynomial { elements: vec };
+        Polynomial { elements: vec }
     }
 
     pub fn len(&self) -> usize {
-        return self.elements.len();
+        self.elements.len()
     }
 
     /// get the value of a polynomial a0 + a1 * x^1 + a2 * x^2 + .. + an * x^n for a value x=at
@@ -95,7 +91,7 @@ impl Polynomial {
 
     /// Evaluate the polynomial at x=0
     pub fn at_zero(&self) -> Scalar {
-        return self.elements[0].clone();
+        self.elements[0].clone()
     }
 
     pub fn get_coefficient_at(&self, degree: usize) -> &Scalar {
@@ -112,13 +108,13 @@ impl std::ops::Add<Polynomial> for Polynomial {
 
     fn add(self, rhs: Polynomial) -> Self::Output {
         if self.degree() >= rhs.degree() {
-            let mut x = self.elements.clone();
+            let mut x = self.elements;
             for (e, r) in x.iter_mut().zip(rhs.elements.iter()) {
                 *e = &*e + r;
             }
             Self { elements: x }
         } else {
-            let mut x = rhs.elements.clone();
+            let mut x = rhs.elements;
             for (e, r) in x.iter_mut().zip(self.elements.iter()) {
                 *e = &*e + r;
             }
@@ -130,6 +126,7 @@ impl std::ops::Add<Polynomial> for Polynomial {
 impl std::ops::Mul<Polynomial> for Polynomial {
     type Output = Polynomial;
 
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn mul(self, rhs: Polynomial) -> Self::Output {
         //println!("muling {} * {}", self, rhs);
         let mut acc = vec![Scalar::zero(); self.degree() + rhs.degree() + 1];

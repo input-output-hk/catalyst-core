@@ -128,7 +128,7 @@ pub fn result(
     max_votes: u64,
     table_size: usize,
     tally_state: &TallyState,
-    decrypt_shares: &Vec<TallyDecryptShare>,
+    decrypt_shares: &[TallyDecryptShare],
 ) -> TallyResult {
     let options = tally_state.r2s.len();
     let ris =

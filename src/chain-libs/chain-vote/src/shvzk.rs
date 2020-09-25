@@ -217,8 +217,7 @@ pub fn prove<R: RngCore + CryptoRng>(
                     sum = sum + (cy.power(j) * pjs[j].get_coefficient_at(i))
                 }
 
-                let d = encrypt(public_key, &sum, r);
-                d
+                encrypt(public_key, &sum, r)
             })
             .collect::<Vec<_>>();
 
@@ -260,10 +259,10 @@ pub fn prove<R: RngCore + CryptoRng>(
     Proof { ibas, ds, zwvs, r }
 }
 
-pub fn verify(public_key: &PublicKey, ciphertexts: &Vec<Ciphertext>, proof: &Proof) -> bool {
+pub fn verify(public_key: &PublicKey, ciphertexts: &[Ciphertext], proof: &Proof) -> bool {
     let ck = commitkey(&public_key);
 
-    let ciphertexts = PTP::new(ciphertexts.clone(), || Ciphertext::zero());
+    let ciphertexts = PTP::new(ciphertexts.to_vec(), || Ciphertext::zero());
     let bits = ciphertexts.bits();
     let cc = ChallengeContext::new(public_key, ciphertexts.as_ref(), &proof.ibas);
     let cy = cc.first_challenge();

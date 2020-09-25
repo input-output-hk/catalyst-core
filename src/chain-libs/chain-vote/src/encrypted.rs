@@ -80,7 +80,7 @@ impl EncryptingVote {
             ciphers.push(cipher);
         }
         Self {
-            unit_vector: vote.clone(),
+            unit_vector: *vote,
             ciphertexts: ciphers,
             random_elements: rs,
         }

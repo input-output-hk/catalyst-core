@@ -5,6 +5,7 @@ use crate::{
     fragment::{Contents, ContentsBuilder, Fragment},
     header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
 };
+use chain_core::property::{Block as _, Deserialize, HasHeader as _, Serialize};
 #[cfg(test)]
 use chain_test_utils::property;
 #[cfg(test)]
@@ -22,6 +23,46 @@ quickcheck! {
 
     fn block_serialization_bijection(b: Block) -> TestResult {
         property::serialization_bijection(b)
+    }
+
+    fn block_serialization_bijection_r(b: Block) -> TestResult {
+        property::serialization_bijection_r(b)
+    }
+
+    fn block_properties(block: Block) -> TestResult {
+
+        let vec = block.serialize_as_vec().unwrap();
+        let new_block = Block::deserialize(&vec[..]).unwrap();
+
+        assert_eq!(block.is_consistent(),new_block.is_consistent());
+        assert!(block.fragments().eq(new_block.fragments()));
+        assert_eq!(block.header(),new_block.header());
+        assert_eq!(block.id(),new_block.id());
+        assert_eq!(block.parent_id(),new_block.parent_id());
+        assert_eq!(block.date(),new_block.date());
+        assert_eq!(block.version(),new_block.version());
+
+        TestResult::from_bool(block.chain_length() == new_block.chain_length())
+    }
+
+    fn header_properties(block: Block) -> TestResult {
+        use chain_core::property::Header as Prop;
+        let header = block.header.clone();
+        assert_eq!(header.hash(),block.id());
+        assert_eq!(header.id(),block.id());
+        assert_eq!(header.parent_id(),block.parent_id());
+        assert_eq!(header.date(),block.date());
+        assert_eq!(header.version(),block.version());
+
+        assert_eq!(header.get_bft_leader_id(),block.header.get_bft_leader_id());
+        assert_eq!(header.get_stakepool_id(),block.header.get_stakepool_id());
+        assert_eq!(header.common(),block.header.common());
+        assert_eq!(header.to_raw(),block.header.to_raw());
+        assert_eq!(header.as_auth_slice(),block.header.as_auth_slice());
+        assert_eq!(header.description(),block.header.description());
+        assert_eq!(header.size(),block.header.size());
+
+        TestResult::from_bool(header.chain_length() == block.chain_length())
     }
 }
 

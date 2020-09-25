@@ -1,5 +1,4 @@
-book
+/Cargo.lock
 /target
 /vendor
-.idea/
-.vscode/
+/.vscode

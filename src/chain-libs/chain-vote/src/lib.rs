@@ -50,6 +50,9 @@ pub type EncryptedVote = Vec<Ciphertext>;
 
 pub type ProofOfCorrectVote = shvzk::Proof;
 
+/// Common Reference String
+pub type CRS = committee::CRS;
+
 /// Take a vote and encrypt it + provide a proof of correct voting
 pub fn encrypt_vote<R: RngCore + CryptoRng>(
     rng: &mut R,
@@ -198,7 +201,7 @@ mod tests {
     fn encdec1() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
-        let h = crate::gang::GroupElement::random(&mut rng);
+        let h = CRS::random(&mut rng);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc = [mc1.to_public()];
@@ -243,7 +246,7 @@ mod tests {
     fn encdec3() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
-        let h = crate::gang::GroupElement::random(&mut rng);
+        let h = CRS::random(&mut rng);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc2 = MemberCommunicationKey::new(&mut rng);

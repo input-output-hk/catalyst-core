@@ -1,6 +1,8 @@
 use crate::vote::Choice;
 use chain_core::mempack::{ReadBuf, ReadError};
+use chain_vote::EncryptedVote;
 use std::convert::{TryFrom, TryInto as _};
+use std::hash::{Hash, Hasher};
 use thiserror::Error;
 use typed_bytes::ByteBuilder;
 
@@ -18,11 +20,26 @@ use typed_bytes::ByteBuilder;
 #[repr(u8)]
 pub enum PayloadType {
     Public = 1,
+    Private = 2,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Payload {
     Public { choice: Choice },
+    Private { encrypted_vote: EncryptedVote },
+}
+
+impl Hash for Payload {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u8(self.payload_type() as u8);
+        match self {
+            Payload::Public { choice } => state.write_u8(choice.as_byte()),
+            Payload::Private { encrypted_vote } => {
+                let buff: Vec<u8> = encrypted_vote.iter().flat_map(|ct| ct.to_bytes()).collect();
+                state.write(&buff);
+            }
+        }
+    }
 }
 
 #[derive(Debug, Error)]
@@ -41,6 +58,7 @@ impl Payload {
     pub fn payload_type(&self) -> PayloadType {
         match self {
             Self::Public { .. } => PayloadType::Public,
+            Self::Private { .. } => PayloadType::Private,
         }
     }
 
@@ -49,6 +67,15 @@ impl Payload {
 
         match self {
             Self::Public { choice } => bb.u8(payload_type as u8).u8(choice.as_byte()),
+            Self::Private { encrypted_vote } => {
+                let size = encrypted_vote.len();
+                let mut bb = bb.u64(size as u64);
+                for ct in encrypted_vote.iter() {
+                    let buffer = ct.to_bytes();
+                    bb = bb.u64(buffer.len() as u64).bytes(&buffer);
+                }
+                bb
+            }
         }
     }
 
@@ -60,6 +87,21 @@ impl Payload {
 
         match t {
             PayloadType::Public => buf.get_u8().map(Choice::new).map(Self::public),
+            PayloadType::Private => {
+                let len: usize = buf.get_u64()? as usize;
+                let mut cypher_texts: Vec<chain_vote::Ciphertext> = Vec::new();
+                for _ in 0..len {
+                    let size = buf.get_u64()? as usize;
+                    cypher_texts.push(
+                        chain_vote::Ciphertext::from_bytes(buf.get_slice(size)?).ok_or(
+                            ReadError::StructureInvalid("Invalid private vote".to_string()),
+                        )?,
+                    );
+                }
+                Ok(Self::Private {
+                    encrypted_vote: cypher_texts,
+                })
+            }
         }
     }
 }
@@ -96,6 +138,9 @@ mod tests {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             match PayloadType::arbitrary(g) {
                 PayloadType::Public => Payload::public(Choice::arbitrary(g)),
+                PayloadType::Private => {
+                    unimplemented!("Arbitrary is not implemented for private votes")
+                }
             }
         }
     }

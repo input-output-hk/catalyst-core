@@ -22,6 +22,7 @@ pub struct VoteTally {
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub enum VoteTallyPayload {
     Public,
+    Private,
 }
 
 #[derive(Debug, Clone)]
@@ -36,6 +37,7 @@ impl VoteTallyPayload {
     pub fn payload_type(&self) -> PayloadType {
         match self {
             Self::Public => PayloadType::Public,
+            Self::Private => PayloadType::Private,
         }
     }
 }
@@ -160,6 +162,7 @@ impl Readable for VoteTally {
 
         let payload = match payload_type {
             PayloadType::Public => VoteTallyPayload::Public,
+            PayloadType::Private => VoteTallyPayload::Private,
         };
 
         Ok(Self { id, payload })

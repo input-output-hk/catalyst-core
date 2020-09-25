@@ -1,3 +1,4 @@
+use crate::vote::{Payload, PayloadType};
 use crate::{
     certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
@@ -141,6 +142,12 @@ impl ProposalManager {
                         vote::Payload::Public { choice } => {
                             results.add_vote(*choice, stake)?;
                         }
+                        vote::Payload::Private { .. } => {
+                            return Err(VoteError::InvalidPayloadType {
+                                expected: vote::PayloadType::Public,
+                                received: vote::PayloadType::Private,
+                            });
+                        }
                     }
                 }
             }
@@ -154,6 +161,49 @@ impl ProposalManager {
             votes_by_voters: self.votes_by_voters.clone(),
             options: self.options.clone(),
             tally: Some(Tally::new_public(results)),
+            action: self.action.clone(),
+        })
+    }
+
+    #[must_use = "Compute the PrivateTally in a new ProposalManager, does not modify self"]
+    pub fn private_tally<F>(
+        &self,
+        stake: &StakeControl,
+        governance: &Governance,
+        f: &mut F,
+    ) -> Result<Self, VoteError>
+    where
+        F: FnMut(&VoteAction),
+    {
+        let mut tally = chain_vote::Tally::new(self.options.as_byte() as usize);
+
+        for (id, payload) in self.votes_by_voters.iter() {
+            if let Some(account_id) = id.to_single_account() {
+                if let Some(stake) = stake.by(&account_id) {
+                    match payload {
+                        vote::Payload::Public { .. } => {
+                            return Err(VoteError::InvalidPayloadType {
+                                expected: vote::PayloadType::Private,
+                                received: vote::PayloadType::Public,
+                            });
+                        }
+                        vote::Payload::Private { encrypted_vote } => {
+                            tally.add(encrypted_vote, stake.0);
+                        }
+                    }
+                }
+            }
+        }
+
+        // TODO: What to check here?
+        // if self.check(stake.assigned(), governance, &results) {
+        //     f(&self.action)
+        // }
+
+        Ok(Self {
+            votes_by_voters: self.votes_by_voters.clone(),
+            options: self.options.clone(),
+            tally: Some(Tally::new_private(tally)),
             action: self.action.clone(),
         })
     }
@@ -297,6 +347,23 @@ impl ProposalManagers {
         let mut proposals = Vec::with_capacity(self.0.len());
         for proposal in self.0.iter() {
             proposals.push(proposal.public_tally(stake, governance, f)?);
+        }
+
+        Ok(Self(proposals))
+    }
+
+    pub fn private_tally<F>(
+        &self,
+        stake: &StakeControl,
+        governance: &Governance,
+        f: &mut F,
+    ) -> Result<Self, VoteError>
+    where
+        F: FnMut(&VoteAction),
+    {
+        let mut proposals = Vec::with_capacity(self.0.len());
+        for proposal in self.0.iter() {
+            proposals.push(proposal.private_tally(stake, governance, f)?);
         }
 
         Ok(Self(proposals))
@@ -445,6 +512,9 @@ impl VotePlanManager {
                 vote::PayloadType::Public => {
                     self.proposal_managers.public_tally(&stake, governance, f)?
                 }
+                PayloadType::Private => self
+                    .proposal_managers
+                    .private_tally(&stake, governance, f)?,
             };
 
             Ok(Self {

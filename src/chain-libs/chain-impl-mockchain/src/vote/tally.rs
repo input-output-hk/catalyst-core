@@ -24,6 +24,7 @@ pub struct TallyResult {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Tally {
     Public { result: TallyResult },
+    Private { tally: chain_vote::Tally },
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
@@ -47,14 +48,28 @@ impl Tally {
     pub fn new_public(result: TallyResult) -> Self {
         Self::Public { result }
     }
+    pub fn new_private(tally: chain_vote::Tally) -> Self {
+        Self::Private { tally }
+    }
 
     pub fn is_public(&self) -> bool {
         self.public().is_some()
+    }
+    pub fn is_private(&self) -> bool {
+        self.private().is_some()
     }
 
     pub fn public(&self) -> Option<&TallyResult> {
         match self {
             Self::Public { result } => Some(result),
+            _ => None,
+        }
+    }
+
+    pub fn private(&self) -> Option<&chain_vote::Tally> {
+        match self {
+            Self::Private { tally } => Some(tally),
+            _ => None,
         }
     }
 }

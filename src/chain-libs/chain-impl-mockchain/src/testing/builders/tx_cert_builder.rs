@@ -211,6 +211,10 @@ pub fn tally_sign(
 
             TallyProof::Public { id, signature }
         }
+        PayloadType::Private => {
+            //TODO: how to sign this?
+            unimplemented!("Need to implement signature for private votes")
+        }
     }
 }
 

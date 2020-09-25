@@ -75,7 +75,7 @@ pub fn verify_vote(
 }
 
 /// The encrypted tally
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Tally {
     r: Vec<Ciphertext>,
 }

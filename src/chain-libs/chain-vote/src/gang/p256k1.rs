@@ -47,7 +47,7 @@ impl GroupElement {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        if bytes[0] != 0x4 {
+        if bytes[0] == 0x4 {
             let x = FieldElement::from_slice(&bytes[1..33])?;
             let y = FieldElement::from_slice(&bytes[33..65])?;
             let p = PointAffine::from_coordinate(&x, &y)?;

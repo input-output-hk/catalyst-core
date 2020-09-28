@@ -112,6 +112,7 @@ impl TryFrom<u8> for PayloadType {
         match value {
             0 => Err(TryFromIntError::Zero),
             1 => Ok(Self::Public),
+            2 => Ok(Self::Private),
             _ => Err(TryFromIntError::InvalidValue { value }),
         }
     }

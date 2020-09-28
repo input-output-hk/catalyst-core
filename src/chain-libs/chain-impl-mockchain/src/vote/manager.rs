@@ -1,4 +1,4 @@
-use crate::vote::{Payload, PayloadType};
+use crate::vote::PayloadType;
 use crate::{
     certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
@@ -169,8 +169,8 @@ impl ProposalManager {
     pub fn private_tally<F>(
         &self,
         stake: &StakeControl,
-        governance: &Governance,
-        f: &mut F,
+        _governance: &Governance,
+        _f: &mut F,
     ) -> Result<Self, VoteError>
     where
         F: FnMut(&VoteAction),
@@ -194,11 +194,6 @@ impl ProposalManager {
                 }
             }
         }
-
-        // TODO: What to check here?
-        // if self.check(stake.assigned(), governance, &results) {
-        //     f(&self.action)
-        // }
 
         Ok(Self {
             votes_by_voters: self.votes_by_voters.clone(),
@@ -438,7 +433,8 @@ impl VotePlanManager {
 
     fn valid_committee(&self, sig: TallyProof) -> bool {
         match sig {
-            TallyProof::Public { id, signature: _ } => self.committee_set().contains(&id),
+            TallyProof::Public { id, .. } => self.committee_set().contains(&id),
+            TallyProof::Private { id, .. } => self.committee_set().contains(&id),
         }
     }
 

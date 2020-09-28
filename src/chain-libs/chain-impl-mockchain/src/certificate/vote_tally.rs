@@ -31,6 +31,11 @@ pub enum TallyProof {
         id: CommitteeId,
         signature: SingleAccountBindingSignature,
     },
+
+    Private {
+        id: CommitteeId,
+        signature: SingleAccountBindingSignature,
+    },
 }
 
 impl VoteTallyPayload {
@@ -47,6 +52,13 @@ impl VoteTally {
         Self {
             id,
             payload: VoteTallyPayload::Public,
+        }
+    }
+
+    pub fn new_private(id: VotePlanId) -> Self {
+        Self {
+            id,
+            payload: VoteTallyPayload::Private,
         }
     }
 
@@ -72,6 +84,9 @@ impl TallyProof {
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         match self {
             Self::Public { id, signature } => bb.u8(0).bytes(id.as_ref()).bytes(signature.as_ref()),
+            Self::Private { id, signature } => {
+                bb.u8(1).bytes(id.as_ref()).bytes(signature.as_ref())
+            }
         }
     }
 
@@ -86,7 +101,14 @@ impl TallyProof {
                     Verification::Failed
                 } else {
                     let pk = id.public_key();
-
+                    signature.verify_slice(&pk, verify_data)
+                }
+            }
+            Self::Private { id, signature } => {
+                if tally.tally_type() != PayloadType::Private {
+                    Verification::Failed
+                } else {
+                    let pk = id.public_key();
                     signature.verify_slice(&pk, verify_data)
                 }
             }
@@ -142,6 +164,12 @@ impl Readable for TallyProof {
                 let id = CommitteeId::read(buf)?;
                 let signature = SingleAccountBindingSignature::read(buf)?;
                 Ok(Self::Public { id, signature })
+            }
+            1 => {
+                let _ = buf.get_u8()?;
+                let id = CommitteeId::read(buf)?;
+                let signature = SingleAccountBindingSignature::read(buf)?;
+                Ok(Self::Private { id, signature })
             }
             _ => Err(ReadError::StructureInvalid(
                 "Unknown Tally proof type".to_owned(),

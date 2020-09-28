@@ -3,7 +3,7 @@
 mod commitment;
 pub mod committee;
 mod encrypted;
-pub mod gang;
+mod gang;
 pub mod gargamel;
 mod hybrid;
 mod math;

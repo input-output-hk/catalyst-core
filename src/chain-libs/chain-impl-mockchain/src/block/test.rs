@@ -3,7 +3,7 @@ use crate::block::Header;
 use crate::{
     block::{Block, BlockVersion, HeaderRaw},
     fragment::{Contents, ContentsBuilder, Fragment},
-    header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
+    header::{BftProof, GenesisPraosProof, HeaderBuilderNew, HeaderDesc},
 };
 use chain_core::property::{Block as _, Deserialize, HasHeader as _, Serialize};
 #[cfg(test)]
@@ -59,11 +59,15 @@ quickcheck! {
         assert_eq!(header.common(),block.header.common());
         assert_eq!(header.to_raw(),block.header.to_raw());
         assert_eq!(header.as_auth_slice(),block.header.as_auth_slice());
-        assert_eq!(header.description(),block.header.description());
+        assert!(are_desc_equal(header.description(),block.header.description()));
         assert_eq!(header.size(),block.header.size());
 
         TestResult::from_bool(header.chain_length() == block.chain_length())
     }
+}
+
+fn are_desc_equal(left: HeaderDesc, right: HeaderDesc) -> bool {
+    left.id == right.id
 }
 
 impl Arbitrary for HeaderRaw {

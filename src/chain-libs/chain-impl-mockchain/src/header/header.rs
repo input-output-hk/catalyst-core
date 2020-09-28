@@ -66,7 +66,7 @@ impl HeaderGenesisPraos {
 }
 
 /// Header description
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone)]
 pub struct HeaderDesc {
     pub id: HeaderId,
     pub date: BlockDate,

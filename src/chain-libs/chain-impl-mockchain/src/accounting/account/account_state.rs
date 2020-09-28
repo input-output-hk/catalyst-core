@@ -235,7 +235,10 @@ mod tests {
         AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
         DELEGATION_RATIO_MAX_DECLS,
     };
-    use crate::{certificate::PoolId, testing::builders::StakePoolBuilder, value::Value};
+    use crate::{
+        accounting::account::LedgerError, certificate::PoolId, testing::builders::StakePoolBuilder,
+        value::Value,
+    };
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::iter;
@@ -252,6 +255,33 @@ mod tests {
             should_sub_fail(account_state.clone(), sub_value)
                 == account_state.sub(sub_value).is_err(),
         )
+    }
+
+    #[test]
+    pub fn max_counter() {
+        let mut account_state = AccountState::new(Value(10), ());
+        account_state.counter = SpendingCounter(u32::MAX);
+        assert_eq!(account_state.get_counter(), u32::MAX);
+        assert!(account_state.sub(Value(10)).unwrap().is_none());
+        assert_eq!(
+            account_state.sub(Value(1)).err().unwrap(),
+            LedgerError::NeedTotalWithdrawal
+        );
+    }
+
+    #[quickcheck]
+    pub fn add_value(init_value: Value, value_to_add: Value) -> TestResult {
+        let account_state = AccountState::new(init_value, ());
+        let left = account_state.add_value(value_to_add);
+        let right = account_state.add(value_to_add);
+        match (left, right) {
+            (Err(_), Err(_)) => TestResult::passed(),
+            (Ok(next_left), Ok(next_right)) => {
+                TestResult::from_bool(next_left.value() == next_right.value())
+            }
+            (Ok(_), Err(_)) => TestResult::error("add_value() success while add() failed"),
+            (Err(_), Ok(_)) => TestResult::error("add() success while add_value() failed"),
+        }
     }
 
     #[derive(Clone, Debug)]

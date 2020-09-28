@@ -242,7 +242,7 @@ impl Header {
     }
 }
 
-#[derive(Debug, Clone, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error, PartialEq)]
 pub enum HeaderError {
     #[error("invalid payload size for block header")]
     InvalidSize,
@@ -418,5 +418,51 @@ impl<'a> HeaderSlice<'a> {
     pub fn slice_gp_auth(self) -> &'a [u8] {
         assert_eq!(self.version(), VERSION_GP);
         &self.0[0..HEADER_GP_AUTHED_SIZE]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use crate::header::cstruct::*;
+
+    #[test]
+    pub fn header_bft_version_set() {
+        let mut header = Header::new(VERSION_BFT);
+        let bft_leader_id = [0; 32];
+        header.set_bft_leader_id(&bft_leader_id);
+        let bft_leader_id_sig = [0; 64];
+        header.set_bft_signature(&bft_leader_id_sig);
+    }
+
+    #[test]
+    pub fn header_gp_version_set() {
+        let mut header = Header::new(VERSION_GP);
+        let gp_node_id = [0; 32];
+        header.set_gp_node_id_slice(&gp_node_id);
+        let gp_vrf_proof_slice = [0; 96];
+        header.set_gp_vrf_proof_slice(&gp_vrf_proof_slice);
+        let gp_kes_signature = [0; 484];
+        header.set_gp_kes_signature(&gp_kes_signature);
+    }
+
+    #[test]
+    pub fn header_slice_from_slice_below_min_known_size() {
+        assert_eq!(
+            HeaderSlice::from_slice(&[0; HEADER_MIN_KNOWN_SIZE - 1])
+                .err()
+                .unwrap(),
+            HeaderError::InvalidSize
+        );
+    }
+
+    #[test]
+    pub fn header_slice_from_slice_after_max_known_size() {
+        assert_eq!(
+            HeaderSlice::from_slice(&[0; HEADER_MAX_KNOWN_SIZE + 1])
+                .err()
+                .unwrap(),
+            HeaderError::InvalidSize
+        );
     }
 }

@@ -101,3 +101,78 @@ impl BlockVersion {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use crate::chaintypes::ConsensusType;
+    use crate::header::{AnyBlockVersion, BlockVersion};
+    use quickcheck::TestResult;
+    use quickcheck_macros::quickcheck;
+
+    #[test]
+    pub fn try_into_block_version() {
+        assert_eq!(
+            AnyBlockVersion::Supported(BlockVersion::Genesis).try_into_block_version(),
+            Some(BlockVersion::Genesis)
+        );
+        assert_eq!(
+            AnyBlockVersion::Supported(BlockVersion::Ed25519Signed).try_into_block_version(),
+            Some(BlockVersion::Ed25519Signed)
+        );
+        assert_eq!(
+            AnyBlockVersion::Supported(BlockVersion::KesVrfproof).try_into_block_version(),
+            Some(BlockVersion::KesVrfproof)
+        );
+        assert_eq!(
+            AnyBlockVersion::Unsupported(0).try_into_block_version(),
+            None
+        );
+    }
+
+    #[test]
+    pub fn equality() {
+        assert_eq!(
+            AnyBlockVersion::Supported(BlockVersion::Genesis),
+            BlockVersion::Genesis
+        );
+        assert_eq!(
+            AnyBlockVersion::Supported(BlockVersion::Ed25519Signed),
+            BlockVersion::Ed25519Signed
+        );
+        assert_eq!(
+            AnyBlockVersion::Supported(BlockVersion::KesVrfproof),
+            BlockVersion::KesVrfproof
+        );
+        assert!(AnyBlockVersion::Unsupported(0) != BlockVersion::KesVrfproof);
+        assert!(AnyBlockVersion::Unsupported(0) != BlockVersion::Ed25519Signed);
+        assert!(AnyBlockVersion::Unsupported(0) != BlockVersion::KesVrfproof);
+    }
+
+    #[quickcheck]
+    pub fn conversion_u16(block_version: AnyBlockVersion) -> TestResult {
+        let bytes: u16 = block_version.clone().into();
+        let new_block_version: AnyBlockVersion = AnyBlockVersion::from(bytes);
+        TestResult::from_bool(block_version == new_block_version)
+    }
+
+    #[quickcheck]
+    pub fn from_block_version(block_version: BlockVersion) -> TestResult {
+        let right_version = AnyBlockVersion::Supported(block_version.clone());
+        let left_version: AnyBlockVersion = block_version.into();
+        TestResult::from_bool(left_version == right_version)
+    }
+
+    #[test]
+    pub fn to_consensus_type() {
+        assert_eq!(BlockVersion::Genesis.to_consensus_type(), None);
+        assert_eq!(
+            BlockVersion::Ed25519Signed.to_consensus_type(),
+            Some(ConsensusType::Bft)
+        );
+        assert_eq!(
+            BlockVersion::KesVrfproof.to_consensus_type(),
+            Some(ConsensusType::GenesisPraos)
+        );
+    }
+}

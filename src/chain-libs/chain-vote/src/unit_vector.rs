@@ -28,11 +28,15 @@ impl UnitVector {
     }
 
     pub fn iter(&self) -> UnitVectorIter {
-        UnitVectorIter(0, self.clone())
+        UnitVectorIter(0, *self)
     }
 
     pub fn len(&self) -> usize {
         self.size
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn ith(&self) -> usize {
@@ -45,10 +49,8 @@ impl UnitVector {
                 "out of bounds: unit vector {} accessing index {}",
                 self.size, j
             );
-        } else if j == self.ith {
-            true
         } else {
-            false
+            j == self.ith
         }
     }
 

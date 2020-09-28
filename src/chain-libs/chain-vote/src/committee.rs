@@ -71,6 +71,7 @@ impl MemberState {
         }
 
         let mut encrypted = Vec::new();
+        #[allow(clippy::needless_range_loop)]
         for i in 0..n {
             // don't generate share for self
             if i == my {

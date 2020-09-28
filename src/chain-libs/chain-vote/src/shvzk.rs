@@ -135,8 +135,8 @@ pub fn prove<R: RngCore + CryptoRng>(
     public_key: &PublicKey,
     encrypting_vote: EncryptingVote,
 ) -> Proof {
-    let ciphers = PTP::new(encrypting_vote.ciphertexts, || Ciphertext::zero());
-    let cipher_randoms = PTP::new(encrypting_vote.random_elements, || Scalar::zero());
+    let ciphers = PTP::new(encrypting_vote.ciphertexts, Ciphertext::zero);
+    let cipher_randoms = PTP::new(encrypting_vote.random_elements, Scalar::zero);
 
     assert_eq!(ciphers.bits(), cipher_randoms.bits());
 
@@ -213,6 +213,7 @@ pub fn prove<R: RngCore + CryptoRng>(
             .enumerate()
             .map(|(i, r)| {
                 let mut sum = Scalar::zero();
+                #[allow(clippy::needless_range_loop)]
                 for j in 0..ciphers.len() {
                     sum = sum + (cy.power(j) * pjs[j].get_coefficient_at(i))
                 }
@@ -262,7 +263,7 @@ pub fn prove<R: RngCore + CryptoRng>(
 pub fn verify(public_key: &PublicKey, ciphertexts: &[Ciphertext], proof: &Proof) -> bool {
     let ck = commitkey(&public_key);
 
-    let ciphertexts = PTP::new(ciphertexts.to_vec(), || Ciphertext::zero());
+    let ciphertexts = PTP::new(ciphertexts.to_vec(), Ciphertext::zero);
     let bits = ciphertexts.bits();
     let cc = ChallengeContext::new(public_key, ciphertexts.as_ref(), &proof.ibas);
     let cy = cc.first_challenge();

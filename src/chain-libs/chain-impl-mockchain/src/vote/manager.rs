@@ -187,7 +187,10 @@ impl ProposalManager {
                                 received: vote::PayloadType::Public,
                             });
                         }
-                        vote::Payload::Private { encrypted_vote } => {
+                        vote::Payload::Private {
+                            encrypted_vote,
+                            proof: _,
+                        } => {
                             tally.add(encrypted_vote, stake.0);
                         }
                     }
@@ -639,6 +642,77 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+        );
+
+        let mut committee_ids = HashSet::new();
+        committee_ids.insert(committee.public_key().into());
+        let mut vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
+
+        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        let mut stake_controlled = StakeControl::new();
+        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
+        //    stake_controlled = stake_controlled.add_unassigned(Stake(49));
+
+        let vote_block_date = BlockDate {
+            epoch: 1,
+            slot_id: 10,
+        };
+
+        let vote_cast = VoteCast::new(
+            vote_plan.to_id(),
+            0,
+            VoteTestGen::vote_cast_payload_for(&favorable),
+        );
+
+        vote_plan_manager = vote_plan_manager
+            .vote(
+                vote_block_date,
+                UnspecifiedAccountIdentifier::from_single_account(committee.public_key().into()),
+                vote_cast,
+            )
+            .unwrap();
+
+        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+
+        let block_date = BlockDate {
+            epoch: 2,
+            slot_id: 10,
+        };
+
+        let mut action_hit = false;
+        vote_plan_manager
+            .tally(
+                block_date,
+                &stake_controlled,
+                &governance,
+                tally_proof,
+                &mut |_| action_hit = true,
+            )
+            .unwrap();
+        assert!(action_hit)
+    }
+
+    #[test]
+    pub fn vote_plan_manager_correct_tally_private_votes() {
+        let blank = Choice::new(0);
+        let favorable = Choice::new(1);
+        let rejection = Choice::new(2);
+
+        let committee = Wallet::from_value(Value(100));
+
+        let proposals = VoteTestGen::proposals_with_action(
+            VoteAction::Treasury {
+                action: TreasuryGovernanceAction::TransferToRewards { value: Value(30) },
+            },
+            3,
+        );
+
+        let vote_plan = VotePlan::new(
+            BlockDate::from_epoch_slot_id(1, 0),
+            BlockDate::from_epoch_slot_id(2, 0),
+            BlockDate::from_epoch_slot_id(3, 0),
+            proposals,
+            vote::PayloadType::Private,
         );
 
         let mut committee_ids = HashSet::new();

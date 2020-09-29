@@ -1,6 +1,6 @@
 use crate::vote::Choice;
 use chain_core::mempack::{ReadBuf, ReadError};
-use chain_vote::EncryptedVote;
+use chain_vote::{EncryptedVote, ProofOfCorrectVote};
 use std::convert::{TryFrom, TryInto as _};
 use std::hash::{Hash, Hasher};
 use thiserror::Error;
@@ -25,8 +25,13 @@ pub enum PayloadType {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Payload {
-    Public { choice: Choice },
-    Private { encrypted_vote: EncryptedVote },
+    Public {
+        choice: Choice,
+    },
+    Private {
+        encrypted_vote: EncryptedVote,
+        proof: ProofOfCorrectVote,
+    },
 }
 
 impl Hash for Payload {
@@ -34,7 +39,8 @@ impl Hash for Payload {
         state.write_u8(self.payload_type() as u8);
         match self {
             Payload::Public { choice } => state.write_u8(choice.as_byte()),
-            Payload::Private { encrypted_vote } => {
+            // TODO: Use proof here?
+            Payload::Private { encrypted_vote, .. } => {
                 let buff: Vec<u8> = encrypted_vote.iter().flat_map(|ct| ct.to_bytes()).collect();
                 state.write(&buff);
             }
@@ -67,14 +73,17 @@ impl Payload {
 
         match self {
             Self::Public { choice } => bb.u8(payload_type as u8).u8(choice.as_byte()),
-            Self::Private { encrypted_vote } => {
+            Self::Private {
+                encrypted_vote,
+                proof,
+            } => {
                 let size = encrypted_vote.len();
                 let mut bb = bb.u64(size as u64);
                 for ct in encrypted_vote.iter() {
                     let buffer = ct.to_bytes();
                     bb = bb.u64(buffer.len() as u64).bytes(&buffer);
                 }
-                bb
+                proof.serialize_in(bb)
             }
         }
     }
@@ -98,8 +107,10 @@ impl Payload {
                         )?,
                     );
                 }
+                let proof = ProofOfCorrectVote::read(buf)?;
                 Ok(Self::Private {
                     encrypted_vote: cypher_texts,
+                    proof,
                 })
             }
         }

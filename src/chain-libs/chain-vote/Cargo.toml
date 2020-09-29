@@ -14,6 +14,8 @@ zerocaf = { version = "0.2", optional = true }
 
 criterion = { version = "0.3", optional = true }
 rand_chacha = { version = "0.2", optional = true }
+typed-bytes = { path = "../typed-bytes" }
+chain-ser = { path = "../chain-ser" }
 
 [dev-dependencies]
 rand_chacha = "0.2"

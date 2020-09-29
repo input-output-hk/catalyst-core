@@ -3,7 +3,7 @@ use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul};
 
 /// Pedersen commitment
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Commitment {
     c: GroupElement,
 }
@@ -53,6 +53,11 @@ impl Commitment {
     }
     pub fn to_bytes(&self) -> Vec<u8> {
         self.c.to_bytes().to_vec()
+    }
+    pub fn from_bytes(buf: &[u8]) -> Option<Self> {
+        Some(Self {
+            c: GroupElement::from_bytes(buf)?,
+        })
     }
 }
 

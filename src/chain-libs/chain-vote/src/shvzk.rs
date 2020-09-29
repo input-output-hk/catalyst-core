@@ -1,6 +1,8 @@
+use chain_ser::mempack::{ReadBuf, ReadError};
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};
+use typed_bytes::ByteBuilder;
 
 use crate::commitment::{Commitment, CommitmentKey};
 use crate::encrypted::{EncryptingVote, PTP};
@@ -32,7 +34,7 @@ impl ABCD {
 }
 
 /// I, B, A commitments
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct IBA {
     pub i: Commitment,
     pub b: Commitment,
@@ -40,7 +42,7 @@ struct IBA {
 }
 
 // Computed z, w, v
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct ZWV {
     pub z: Scalar,
     pub w: Scalar,
@@ -48,12 +50,108 @@ struct ZWV {
 }
 
 /// Proof of unit vector
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Proof {
     ibas: Vec<IBA>,
     ds: Vec<Ciphertext>,
     zwvs: Vec<ZWV>,
     r: Scalar,
+}
+
+impl IBA {
+    pub(crate) fn serialize_in<T>(&self, bb: ByteBuilder<T>) -> ByteBuilder<T> {
+        let mut bb = bb;
+        for component in [&self.i, &self.b, &self.a].iter() {
+            let buf = component.to_bytes();
+            bb = bb.u64(buf.len() as u64).bytes(&buf);
+        }
+        bb
+    }
+
+    pub(crate) fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        let i_size = buf.get_u64()?;
+        let i_buf = buf.get_slice(i_size as usize)?;
+        let b_size = buf.get_u64()?;
+        let b_buf = buf.get_slice(b_size as usize)?;
+        let a_size = buf.get_u64()?;
+        let a_buf = buf.get_slice(a_size as usize)?;
+        Ok(Self {
+            i: Commitment::from_bytes(i_buf).ok_or(ReadError::StructureInvalid(
+                "Invalid IBA component".to_string(),
+            ))?,
+            b: Commitment::from_bytes(b_buf).ok_or(ReadError::StructureInvalid(
+                "Invalid IBA component".to_string(),
+            ))?,
+            a: Commitment::from_bytes(a_buf).ok_or(ReadError::StructureInvalid(
+                "Invalid IBA component".to_string(),
+            ))?,
+        })
+    }
+}
+
+impl Proof {
+    pub fn serialize_in<T>(&self, bb: ByteBuilder<T>) -> ByteBuilder<T> {
+        let mut bb = bb;
+        // serialize ibas
+        bb = bb.u64(self.ibas.len() as u64);
+        for iba in self.ibas.iter() {
+            bb = iba.serialize_in(bb);
+        }
+        // serialize ciphertexts
+        bb = bb.u64(self.ds.len() as u64);
+        for ct in self.ds.iter() {
+            let buf = ct.to_bytes();
+            bb = bb.u64(buf.len() as u64).bytes(&buf);
+        }
+        // serialize zwvs
+        bb = bb.u64(self.zwvs.len() as u64);
+        for zwv in self.zwvs.iter() {
+            bb = bb.bytes(&zwv.z.to_bytes());
+            bb = bb.bytes(&zwv.w.to_bytes());
+            bb = bb.bytes(&zwv.v.to_bytes());
+        }
+        // serialize r scalar
+        bb = bb.bytes(&self.r.to_bytes());
+        bb
+    }
+
+    pub fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        let ibas_size = buf.get_u64()?;
+        let mut ibas: Vec<IBA> = Vec::new();
+        for _ in 0..ibas_size {
+            ibas.push(IBA::read(buf)?);
+        }
+
+        let cts_size = buf.get_u64()?;
+        let mut ds: Vec<Ciphertext> = Vec::new();
+        for _ in 0..cts_size {
+            let size = buf.get_u64()?;
+            ds.push(Ciphertext::from_bytes(buf.get_slice(size as usize)?).ok_or(
+                ReadError::StructureInvalid("Invalid encoded ciphertext".to_string()),
+            )?);
+        }
+
+        let zwvs_size = buf.get_u64()?;
+        let mut zwvs: Vec<ZWV> = Vec::new();
+        for _ in 0..zwvs_size {
+            zwvs.push(ZWV {
+                z: Scalar::from_slice(buf.get_slice(32)?).ok_or(ReadError::StructureInvalid(
+                    "Invalid ZWV encoded scalar Z".to_string(),
+                ))?,
+                w: Scalar::from_slice(buf.get_slice(32)?).ok_or(ReadError::StructureInvalid(
+                    "Invalid ZWV encoded scalar W".to_string(),
+                ))?,
+                v: Scalar::from_slice(buf.get_slice(32)?).ok_or(ReadError::StructureInvalid(
+                    "Invalid ZWV encoded scalar V".to_string(),
+                ))?,
+            });
+        }
+
+        let r = Scalar::from_slice(buf.get_slice(32)?).ok_or(ReadError::StructureInvalid(
+            "Invalid Proof encoded R scalar".to_string(),
+        ))?;
+        Ok(Self { ibas, ds, zwvs, r })
+    }
 }
 
 fn commitkey(pk: &PublicKey) -> CommitmentKey {

@@ -200,21 +200,15 @@ pub fn tally_sign(
 ) -> TallyProof {
     let payload_type = vt.tally_type();
 
+    let key: EitherEd25519SecretKey = keys[0].clone();
+    let id = key.to_public().into();
+
+    let auth_data = builder.get_auth_data();
+    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
+
     match payload_type {
-        PayloadType::Public => {
-            let key: EitherEd25519SecretKey = keys[0].clone();
-            let id = key.to_public().into();
-
-            let auth_data = builder.get_auth_data();
-            let signature =
-                SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
-
-            TallyProof::Public { id, signature }
-        }
-        PayloadType::Private => {
-            //TODO: how to sign this?
-            unimplemented!("Need to implement signature for private votes")
-        }
+        PayloadType::Public => TallyProof::Public { id, signature },
+        PayloadType::Private => TallyProof::Private { id, signature },
     }
 }
 

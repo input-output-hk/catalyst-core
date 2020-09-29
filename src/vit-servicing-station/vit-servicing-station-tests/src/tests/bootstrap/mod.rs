@@ -14,7 +14,7 @@ pub fn bootstrap_with_random_data() -> Result<(), Box<dyn std::error::Error>> {
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
-        .start()?;
+        .start(&temp_dir)?;
 
     std::thread::sleep(std::time::Duration::from_secs(1));
     assert!(server.is_up(&snapshot.any_token().0));

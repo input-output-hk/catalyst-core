@@ -29,7 +29,7 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
-        .start()?;
+        .start(&temp_dir)?;
 
     let rest_client = server.rest_client_with_token(&hash);
 

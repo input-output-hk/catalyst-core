@@ -63,7 +63,7 @@ impl GroupElement {
     {
         let mut sum = GroupElement::zero();
         for v in i {
-            sum = &sum + v;
+            sum = sum + v;
         }
         sum
     }

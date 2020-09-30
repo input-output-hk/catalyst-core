@@ -132,7 +132,7 @@ fn fragment(
         }
         Certificate::VoteTally(s) => {
             let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
-            let signature = tally_sign(&keys,&s, &builder);
+            let signature = tally_sign(&keys, &s, &builder);
             let tx = builder.set_payload_auth(&signature);
             Fragment::VoteTally(tx)
         }

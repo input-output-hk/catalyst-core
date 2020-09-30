@@ -1,4 +1,4 @@
-use crate::vote::PayloadType;
+use crate::vote::{Payload, PayloadType};
 use crate::{
     certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
@@ -79,6 +79,9 @@ pub enum VoteError {
         #[from]
         source: vote::TallyError,
     },
+
+    #[error("Invalid private vote verification")]
+    VoteVerificationError,
 }
 
 impl ProposalManager {
@@ -110,6 +113,18 @@ impl ProposalManager {
         cast: VoteCast,
     ) -> Result<Self, VoteError> {
         let payload = cast.into_payload();
+        match &payload {
+            Payload::Public { .. } => {}
+            Payload::Private {
+                encrypted_vote,
+                proof,
+            } => {
+                // TODO: verify private vote. Need committee public member keys
+                // if !chain_vote::verify_vote(, encrypted_vote, proof) {
+                //     return Err(VoteError::VoteVerificationError)
+                // }
+            }
+        }
 
         // we don't mind if we are replacing a vote
         let votes_by_voters =

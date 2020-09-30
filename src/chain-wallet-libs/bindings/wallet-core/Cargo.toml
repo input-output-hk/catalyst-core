@@ -18,7 +18,10 @@ chain-crypto = {path = "../../chain-deps/chain-crypto"}
 chain-impl-mockchain = {path = "../../chain-deps/chain-impl-mockchain"}
 chain-path-derivation = {path = "../../chain-path-derivation"}
 chain-ser = {path = "../../chain-deps/chain-ser"}
+chain-vote = {path = "../../chain-deps/chain-vote"}
 hdkeygen = {path = "../../hdkeygen"}
 symmetric-cipher = {path = "../../symmetric-cipher"}
 thiserror = {version = "1.0.13", default-features = false}
 wallet = {path = "../../wallet"}
+
+rand = { version = "0.7.3", features = ["getrandom"] }

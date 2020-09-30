@@ -183,20 +183,12 @@ impl Conversion {
 
 #[wasm_bindgen]
 impl Proposal {
-    pub fn new(
-        vote_plan_id: VotePlanId,
-        payload_type: PayloadType,
-        index: u8,
-        options: Options,
-    ) -> Self {
-        let payload_type = match payload_type {
-            PayloadType::Public => wallet_core::PayloadType::Public,
-        };
+    pub fn new_public(vote_plan_id: VotePlanId, index: u8, options: Options) -> Self {
         Proposal(wallet_core::Proposal::new(
             vote_plan_id.0.into(),
-            payload_type,
             index,
             options.0,
+            wallet_core::PayloadTypeConfig::Public,
         ))
     }
 }

@@ -13,6 +13,6 @@ pub use self::{
 pub use ::wallet::Settings;
 pub use chain_impl_mockchain::{
     value::Value,
-    vote::{Choice, Options, PayloadType},
+    vote::{Choice, Options},
 };
-pub use vote::VOTE_PLAN_ID_LENGTH;
+pub use vote::{PayloadTypeConfig, VOTE_PLAN_ID_LENGTH};

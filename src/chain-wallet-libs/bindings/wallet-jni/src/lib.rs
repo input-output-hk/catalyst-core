@@ -1,4 +1,3 @@
-use chain_impl_mockchain::vote::PayloadType;
 use jni::objects::{JClass, JObject, JString, JValue};
 use jni::sys::{jbyte, jbyteArray, jint, jlong};
 use jni::JNIEnv;
@@ -511,11 +510,11 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPublicPayloa
 
     let mut proposal = null_mut();
     let r = unsafe {
-        wallet_vote_proposal(
+        vote::proposal_new(
             buffer.as_ptr() as *const u8,
-            PayloadType::Public,
             index,
             num_choices,
+            vote::ProposalPublic,
             &mut proposal,
         )
     };

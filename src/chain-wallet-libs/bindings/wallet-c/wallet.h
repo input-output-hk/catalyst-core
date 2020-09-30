@@ -19,21 +19,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-/**
- * Payload type for voting
- */
-enum PayloadType
-{
-  PayloadType_Public = 1,
-};
-typedef uint8_t PayloadType;
-
 typedef struct Error
 {
 
 } Error;
 
 typedef Error *ErrorPtr;
+
+typedef struct Proposal
+{
+
+} Proposal;
+
+typedef Proposal *ProposalPtr;
 
 typedef struct Wallet
 {
@@ -55,13 +53,6 @@ typedef struct Conversion
 } Conversion;
 
 typedef Conversion *ConversionPtr;
-
-typedef struct Proposal
-{
-
-} Proposal;
-
-typedef Proposal *ProposalPtr;
 
 /**
  * decrypt payload of the wallet transfer protocol
@@ -89,6 +80,49 @@ ErrorPtr iohk_jormungandr_symmetric_cipher_decrypt(const uint8_t *password,
                                                    uintptr_t ciphertext_length,
                                                    const uint8_t **plaintext_out,
                                                    uintptr_t *plaintext_out_length);
+
+/**
+ * build the proposal object
+ *
+ * # Errors
+ *
+ * This function may fail if:
+ *
+ * * `proposal_out` is null.
+ * * `num_choices` is out of the allowed range.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though the function checks if
+ * the pointers are null. Mind not to put random values in or you may see
+ * unexpected behaviors.
+ */
+ErrorPtr iohk_jormungandr_vote_proposal_new_private(const uint8_t *vote_plan_id,
+                                                    uint8_t index,
+                                                    uint8_t num_choices,
+                                                    const uint8_t *vote_encryption_key,
+                                                    ProposalPtr *proposal_out);
+
+/**
+ * build the proposal object
+ *
+ * # Errors
+ *
+ * This function may fail if:
+ *
+ * * `proposal_out` is null.
+ * * `num_choices` is out of the allowed range.
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though the function checks if
+ * the pointers are null. Mind not to put random values in or you may see
+ * unexpected behaviors.
+ */
+ErrorPtr iohk_jormungandr_vote_proposal_new_public(const uint8_t *vote_plan_id,
+                                                   uint8_t index,
+                                                   uint8_t num_choices,
+                                                   ProposalPtr *proposal_out);
 
 /**
  * once funds have been retrieved with `iohk_jormungandr_wallet_retrieve_funds`
@@ -546,27 +580,5 @@ ErrorPtr iohk_jormungandr_wallet_vote_cast(WalletPtr wallet,
                                            uint8_t choice,
                                            const uint8_t **transaction_out,
                                            uintptr_t *len_out);
-
-/**
- * build the proposal object
- *
- * # Errors
- *
- * This function may fail if:
- *
- * * `proposal_out` is null.
- * * `num_choices` is out of the allowed range.
- *
- * # Safety
- *
- * This function dereference raw pointers. Even though the function checks if
- * the pointers are null. Mind not to put random values in or you may see
- * unexpected behaviors.
- */
-ErrorPtr iohk_jormungandr_wallet_vote_proposal(const uint8_t *vote_plan_id,
-                                               PayloadType payload_type,
-                                               uint8_t index,
-                                               uint8_t num_choices,
-                                               ProposalPtr *proposal_out);
 
 #endif /* IOHK_CHAIN_WALLET_LIBC_ */

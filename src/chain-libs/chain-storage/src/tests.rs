@@ -8,6 +8,7 @@ use std::{collections::HashSet, iter::FromIterator};
 const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
 const BLOCK_NUM_PERMANENT_TEST: usize = 1024;
 const FLUSH_TO_BLOCK: usize = 512;
+const FLUSH_TO_BLOCK_2: usize = 768;
 
 pub fn pick_from_vector<'a, A, R: RngCore>(rng: &mut R, v: &'a [A]) -> &'a A {
     let s = rng.next_u32() as usize;
@@ -628,6 +629,27 @@ fn permanent_store_read() {
 
         let actual_block = store.get_block(&block_id).unwrap();
         assert_eq!(block.serialize_as_value().as_ref(), actual_block.as_ref());
+    }
+}
+
+#[test]
+fn permanent_store_flush_twice() {
+    let (_file, store, blocks) = prepare_permament_store();
+
+    store
+        .flush_to_permanent_store(&blocks[FLUSH_TO_BLOCK_2].id.serialize_as_vec())
+        .unwrap();
+
+    for (i, block) in store
+        .iter(
+            &blocks[BLOCK_NUM_PERMANENT_TEST - 1].id.serialize_as_vec(),
+            BLOCK_NUM_PERMANENT_TEST as u32,
+        )
+        .unwrap()
+        .map(|result| result.unwrap())
+        .enumerate()
+    {
+        assert_eq!(blocks[i].serialize_as_value(), block);
     }
 }
 

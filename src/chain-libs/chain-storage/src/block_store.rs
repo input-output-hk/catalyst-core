@@ -474,13 +474,13 @@ impl BlockStore {
 
         let mut current_block_id = to_block;
 
-        while let Some(block_info) =
-            self.get_block_info(current_block_id)
-                .map(Some)
-                .or_else(|err| match err {
-                    Error::BlockNotFound => Ok(None),
-                    e => Err(e),
-                })?
+        while let Some(block_info) = self
+            .get_block_info_volatile(current_block_id)
+            .map(Some)
+            .or_else(|err| match err {
+                Error::BlockNotFound => Ok(None),
+                e => Err(e),
+            })?
         {
             block_infos.push(block_info);
             current_block_id = block_infos.last().unwrap().parent_id().as_ref();

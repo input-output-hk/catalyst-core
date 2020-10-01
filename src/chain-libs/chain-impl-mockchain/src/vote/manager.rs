@@ -491,6 +491,24 @@ impl VotePlanManager {
                 expected: self.plan().payload_type(),
                 received: cast.payload().payload_type(),
             })
+        // verify vote if private
+        } else if let Err(e) = match &cast.payload() {
+            Payload::Public { .. } => Ok(()),
+            Payload::Private {
+                encrypted_vote,
+                proof,
+            } => {
+                let pk = chain_vote::EncryptingVoteKey::from_participants(
+                    self.plan.committee_member_public_keys(),
+                );
+                if !chain_vote::verify_vote(&pk, encrypted_vote, proof) {
+                    Err(VoteError::VoteVerificationError)
+                } else {
+                    Ok(())
+                }
+            }
+        } {
+            Err(e)
         } else {
             let proposal_managers = self.proposal_managers.vote(identifier, cast)?;
 

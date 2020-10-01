@@ -39,10 +39,14 @@ impl Hash for Payload {
         state.write_u8(self.payload_type() as u8);
         match self {
             Payload::Public { choice } => state.write_u8(choice.as_byte()),
-            // TODO: Use proof here?
-            Payload::Private { encrypted_vote, .. } => {
+            Payload::Private {
+                encrypted_vote,
+                proof,
+            } => {
                 let buff: Vec<u8> = encrypted_vote.iter().flat_map(|ct| ct.to_bytes()).collect();
                 state.write(&buff);
+                let proof_buf = proof.serialize_in::<u8>(ByteBuilder::new()).finalize();
+                state.write(proof_buf.as_slice());
             }
         }
     }

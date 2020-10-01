@@ -113,18 +113,6 @@ impl ProposalManager {
         cast: VoteCast,
     ) -> Result<Self, VoteError> {
         let payload = cast.into_payload();
-        match &payload {
-            Payload::Public { .. } => {}
-            Payload::Private {
-                encrypted_vote,
-                proof,
-            } => {
-                // TODO: verify private vote. Need committee public member keys
-                // if !chain_vote::verify_vote(, encrypted_vote, proof) {
-                //     return Err(VoteError::VoteVerificationError)
-                // }
-            }
-        }
 
         // we don't mind if we are replacing a vote
         let votes_by_voters =

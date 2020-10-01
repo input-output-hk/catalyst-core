@@ -13,6 +13,7 @@ use chain_core::{
     property,
 };
 use chain_crypto::{digest::DigestOf, Blake2b256, Verification};
+use chain_vote::MemberPublicKey;
 use std::ops::Deref;
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -46,6 +47,8 @@ pub struct VotePlan {
     proposals: Proposals,
     /// vote payload type
     payload_type: vote::PayloadType,
+    /// encrypting votes public keys
+    committee_member_public_keys: Vec<chain_vote::MemberPublicKey>,
 }
 
 #[derive(Debug, Clone)]
@@ -187,6 +190,7 @@ impl VotePlan {
         committee_end: BlockDate,
         proposals: Proposals,
         payload_type: vote::PayloadType,
+        committee_member_public_keys: Vec<chain_vote::MemberPublicKey>,
     ) -> Self {
         Self {
             vote_start,
@@ -194,6 +198,7 @@ impl VotePlan {
             committee_end,
             proposals,
             payload_type,
+            committee_member_public_keys,
         }
     }
 
@@ -239,6 +244,10 @@ impl VotePlan {
         self.payload_type
     }
 
+    pub fn committee_member_public_keys(&self) -> &[chain_vote::MemberPublicKey] {
+        &self.committee_member_public_keys
+    }
+
     #[inline]
     pub fn vote_started(&self, date: BlockDate) -> bool {
         self.vote_start <= date
@@ -279,6 +288,12 @@ impl VotePlan {
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+        let mut member_keys_buf: ByteBuilder<u8> = ByteBuilder::new();
+        member_keys_buf = member_keys_buf.u64(self.committee_member_public_keys.len() as u64);
+        for key in &self.committee_member_public_keys {
+            let buf = key.to_bytes();
+            member_keys_buf = member_keys_buf.u64(buf.len() as u64).bytes(&buf);
+        }
         bb.u32(self.vote_start.epoch)
             .u32(self.vote_start.slot_id)
             .u32(self.vote_end.epoch)
@@ -289,6 +304,7 @@ impl VotePlan {
             .iter8(&mut self.proposals.iter(), |bb, proposal| {
                 proposal.serialize_in(bb)
             })
+            .bytes(member_keys_buf.finalize().as_slice())
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {
@@ -427,12 +443,22 @@ impl Readable for VotePlan {
             proposals.proposals.push(proposal);
         }
 
+        let member_keys_len = buf.get_u64()?;
+        let mut committee_member_public_keys = Vec::new();
+        for _ in 0..member_keys_len {
+            let key_len = buf.get_u64()?;
+            let key_buf = buf.get_slice(key_len as usize)?;
+            // Unwrap should be ok here, since we did serialize it ourselves
+            committee_member_public_keys.push(MemberPublicKey::from_bytes(key_buf).unwrap());
+        }
+
         Ok(Self {
             vote_start,
             vote_end,
             committee_end,
             proposals,
             payload_type,
+            committee_member_public_keys,
         })
     }
 }
@@ -479,6 +505,7 @@ mod tests {
             committee_finished,
             VoteTestGen::proposals(1),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         assert!(vote_plan.vote_started(vote_start));
@@ -498,6 +525,7 @@ mod tests {
             committee_finished,
             VoteTestGen::proposals(1),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);
@@ -529,6 +557,7 @@ mod tests {
             vote_start,
             VoteTestGen::proposals(1),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);

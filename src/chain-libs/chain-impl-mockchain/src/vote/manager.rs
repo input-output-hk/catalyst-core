@@ -616,6 +616,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
@@ -657,6 +658,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let mut committee_ids = HashSet::new();
@@ -721,6 +723,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let mut committee_ids = HashSet::new();
@@ -769,6 +772,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let mut committee_ids = HashSet::new();
@@ -840,6 +844,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let mut first_proposal_manager =
@@ -1113,6 +1118,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
@@ -1143,6 +1149,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());

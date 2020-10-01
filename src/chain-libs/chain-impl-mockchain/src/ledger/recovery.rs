@@ -936,6 +936,33 @@ fn unpack_payload_type<R: std::io::BufRead>(
         .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))
 }
 
+fn pack_committee_member_public_keys<W: std::io::Write>(
+    keys: &[chain_vote::MemberPublicKey],
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    codec.put_u64(keys.len() as u64)?;
+    for k in keys {
+        let buf = k.to_bytes();
+        codec.put_u64(buf.len() as u64)?;
+        codec.write_all(&buf)?;
+    }
+    Ok(())
+}
+
+fn unpack_committee_member_public_keys<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<Vec<chain_vote::MemberPublicKey>, std::io::Error> {
+    let size = codec.get_u64()?;
+    let mut result = Vec::new();
+    for _ in 0..size {
+        let size = codec.get_u64()?;
+        let buf = codec.get_bytes(size as usize)?;
+        // It should be safe to unpack here since this is only used with our custom packing too.
+        result.push(chain_vote::MemberPublicKey::from_bytes(&buf).unwrap());
+    }
+    Ok(result)
+}
+
 fn pack_vote_plan<W: std::io::Write>(
     vote_plan: &VotePlan,
     codec: &mut Codec<W>,
@@ -945,6 +972,7 @@ fn pack_vote_plan<W: std::io::Write>(
     pack_block_date(vote_plan.committee_end(), codec)?;
     pack_payload_type(vote_plan.payload_type(), codec)?;
     pack_vote_proposals(vote_plan.proposals(), codec)?;
+    pack_committee_member_public_keys(vote_plan.committee_member_public_keys(), codec)?;
     Ok(())
 }
 
@@ -954,13 +982,14 @@ fn unpack_vote_plan<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<VotePla
     let committee_end = unpack_block_date(codec)?;
     let payload_type = unpack_payload_type(codec)?;
     let proposals = unpack_proposals(codec)?;
-
+    let keys = unpack_committee_member_public_keys(codec)?;
     Ok(VotePlan::new(
         vote_start,
         vote_end,
         committee_end,
         proposals,
         payload_type,
+        keys,
     ))
 }
 

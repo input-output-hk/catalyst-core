@@ -176,8 +176,16 @@ impl Arbitrary for VotePlan {
         let committee_end = BlockDate::arbitrary(g);
         let proposals = Proposals::arbitrary(g);
         let payload_type = vote::PayloadType::arbitrary(g);
-
-        Self::new(vote_start, vote_end, committee_end, proposals, payload_type)
+        // TODO: implement arbitrary for keys
+        let keys = Vec::new();
+        Self::new(
+            vote_start,
+            vote_end,
+            committee_end,
+            proposals,
+            payload_type,
+            keys,
+        )
     }
 }
 

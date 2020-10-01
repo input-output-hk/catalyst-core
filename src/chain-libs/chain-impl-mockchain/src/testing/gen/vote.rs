@@ -77,6 +77,7 @@ impl VoteTestGen {
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
             vote::PayloadType::Public,
+            Vec::new(),
         )
     }
 
@@ -87,6 +88,7 @@ impl VoteTestGen {
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(count),
             vote::PayloadType::Public,
+            Vec::new(),
         )
     }
 

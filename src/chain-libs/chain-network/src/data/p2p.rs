@@ -1,4 +1,6 @@
 use crate::error::{Code, Error};
+use chain_crypto::{Ed25519, KeyPair, PublicKey, Signature, Verification};
+use rand_core::{CryptoRng, RngCore};
 
 use std::convert::TryFrom;
 use std::fmt;
@@ -31,40 +33,51 @@ impl fmt::Display for Peer {
     }
 }
 
-const NODE_ID_LEN: usize = 32;
+/// The key pair used to authenticate a network node,
+/// including the secret key.
+pub struct NodeKeyPair(KeyPair<Ed25519>);
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
-pub struct NodeId([u8; NODE_ID_LEN]);
+impl NodeKeyPair {
+    /// Generates a key pair using the provided random number generator.
+    pub fn generate<R: RngCore + CryptoRng>(rng: R) -> Self {
+        NodeKeyPair(KeyPair::generate(rng))
+    }
 
-impl fmt::Debug for NodeId {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("NodeId(0x")?;
-        for byte in self.0.iter() {
-            write!(f, "{:02x}", byte)?;
+    /// Produces the node ID (i.e. the public key), authenticated by signing
+    /// the provided nonce with the secret key.
+    pub fn sign(&self, nonce: &[u8]) -> AuthenticatedNodeId {
+        let signature = self.0.private_key().sign(nonce);
+        AuthenticatedNodeId {
+            id: NodeId(self.0.public_key().clone()),
+            signature,
         }
-        f.write_str(")")
     }
 }
+
+/// Identifier of a network peer.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct NodeId(PublicKey<Ed25519>);
 
 impl NodeId {
     #[inline]
     pub fn as_bytes(&self) -> &[u8] {
-        &self.0
+        &self.0.as_ref()
     }
 
+    /// Adds a signature given as a byte slice to produce an
+    /// `AuthenticatedNodeId`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `signature` byte slice does not conform to the
+    /// format of a signature used to authenticate node ID.
     pub fn authenticated(self, signature: &[u8]) -> Result<AuthenticatedNodeId, Error> {
-        if signature.len() != NODE_SIGNATURE_LEN {
-            return Err(Error::new(
-                Code::InvalidArgument,
-                format!("node signature must be {} bytes long", NODE_SIGNATURE_LEN),
-            ));
-        }
-        let mut res = AuthenticatedNodeId {
+        let signature =
+            Signature::from_binary(signature).map_err(|e| Error::new(Code::InvalidArgument, e))?;
+        Ok(AuthenticatedNodeId {
             id: self,
-            signature: [0; NODE_SIGNATURE_LEN],
-        };
-        res.signature.copy_from_slice(&signature);
-        Ok(res)
+            signature,
+        })
     }
 }
 
@@ -72,21 +85,21 @@ impl TryFrom<&[u8]> for NodeId {
     type Error = Error;
 
     fn try_from(src: &[u8]) -> Result<Self, Error> {
-        match TryFrom::try_from(src) {
+        match PublicKey::from_binary(src) {
             Ok(data) => Ok(NodeId(data)),
-            Err(_) => Err(Error::new(
-                Code::InvalidArgument,
-                format!("block identifier must be {} bytes long", NODE_ID_LEN),
-            )),
+            Err(e) => Err(Error::new(Code::InvalidArgument, e)),
         }
     }
 }
 
-const NODE_SIGNATURE_LEN: usize = 64;
-
+/// A node ID accompanied with a signature.
+///
+/// The signature is not assumed to be valid by construction.
+/// Use the `verify` method to verify the signature against the original
+/// nonce.
 pub struct AuthenticatedNodeId {
     id: NodeId,
-    signature: [u8; NODE_SIGNATURE_LEN],
+    signature: Signature<[u8], Ed25519>,
 }
 
 impl AuthenticatedNodeId {
@@ -95,7 +108,19 @@ impl AuthenticatedNodeId {
     }
 
     pub fn signature(&self) -> &[u8] {
-        &self.signature
+        &self.signature.as_ref()
+    }
+
+    /// Verifies that the signature is correct for this node ID and
+    /// the given nonce.
+    pub fn verify(&self, nonce: &[u8]) -> Result<(), Error> {
+        match self.signature.verify(&self.id.0, nonce) {
+            Verification::Success => Ok(()),
+            Verification::Failed => Err(Error::new(
+                Code::InvalidArgument,
+                "invalid node ID signature",
+            )),
+        }
     }
 }
 

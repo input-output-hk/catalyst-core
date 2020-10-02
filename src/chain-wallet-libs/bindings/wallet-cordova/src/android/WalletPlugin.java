@@ -105,8 +105,11 @@ public class WalletPlugin extends CordovaPlugin {
             case "CONVERSION_IGNORED":
                 conversionIgnored(args, callbackContext);
                 break;
-            case "PROPOSAL_NEW":
-                proposalNew(args, callbackContext);
+            case "PROPOSAL_NEW_PUBLIC":
+                proposalNewPublic(args, callbackContext);
+                break;
+            case "PROPOSAL_NEW_PRIVATE":
+                proposalNewPrivate(args, callbackContext);
                 break;
             case "WALLET_DELETE":
                 walletDelete(args, callbackContext);
@@ -342,21 +345,27 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
-    private void proposalNew(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+    private void proposalNewPublic(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
         final byte[] votePlanId = args.getArrayBuffer(0);
-        final Integer payloadType = args.getInt(1);
-        final Integer index = args.getInt(2);
-        final Integer numChoices = args.getInt(3);
+        final Integer index = args.getInt(1);
+        final Integer numChoices = args.getInt(2);
 
         try {
-            switch (payloadType) {
-                case 1:
-                    long ptr = Proposal.withPublicPayload(votePlanId, index, numChoices);
-                    callbackContext.success(Long.toString(ptr));
-                    break;
-                default:
-                    callbackContext.error("Unknown payload type");
-            }
+            long ptr = Proposal.withPublicPayload(votePlanId, index, numChoices);
+            callbackContext.success(Long.toString(ptr));
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void proposalNewPrivate(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final byte[] votePlanId = args.getArrayBuffer(0);
+        final Integer index = args.getInt(1);
+        final Integer numChoices = args.getInt(2);
+
+        try {
+            long ptr = Proposal.withPublicPayload(votePlanId, index, numChoices);
+            callbackContext.success(Long.toString(ptr));
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());
         }

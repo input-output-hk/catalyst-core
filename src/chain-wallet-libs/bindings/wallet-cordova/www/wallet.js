@@ -15,7 +15,8 @@ const WALLET_CONFIRM_TRANSACTION = 'WALLET_CONFIRM_TRANSACTION';
 const CONVERSION_TRANSACTIONS_SIZE_ACTION_TAG = 'CONVERSION_TRANSACTIONS_SIZE';
 const CONVERSION_TRANSACTIONS_GET_ACTION_TAG = 'CONVERSION_TRANSACTIONS_GET';
 const CONVERSION_IGNORED_GET_ACTION_TAG = 'CONVERSION_IGNORED';
-const PROPOSAL_NEW_ACTION_TAG = 'PROPOSAL_NEW';
+const PROPOSAL_NEW_PUBLIC_ACTION_TAG = 'PROPOSAL_NEW_PUBLIC';
+const PROPOSAL_NEW_PRIVATE_ACTION_TAG = 'PROPOSAL_NEW_PRIVATE';
 const WALLET_DELETE_ACTION_TAG = 'WALLET_DELETE';
 const SETTINGS_DELETE_ACTION_TAG = 'SETTINGS_DELETE';
 const CONVERSION_DELETE_ACTION_TAG = 'CONVERSION_DELETE';
@@ -28,6 +29,8 @@ const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
 
 const VOTE_PLAN_ID_LENGTH = 32;
 const FRAGMENT_ID_LENGTH = 32;
+const ENCRYPTION_VOTE_KEY_LENGTH = 65;
+const ED25519_EXTENDED_LENGTH = 64;
 
 /**
  * THOUGHTS/TODO
@@ -51,6 +54,7 @@ var plugin = {
      */
 
     /**
+     * @deprecated since version 0.6.0
      * @readonly
      * @enum {number}
      */
@@ -76,14 +80,10 @@ var plugin = {
      */
     walletImportKeys: function (accountKeys, utxoKeys, successCallback, errorCallback) {
         argscheck.checkArgs('**ff', 'walletImportKeys', arguments);
-        var typeName = require('cordova/utils').typeName;
-        var validTypes = true && typeName(accountKeys) === 'Uint8Array' && typeName(utxoKeys) === 'Uint8Array';
+        checkUint8Array({ name: 'accountKeys', testee: accountKeys, optLength: ED25519_EXTENDED_LENGTH });
+        checkUint8Array({ name: 'utxoKeys', testee: utxoKeys });
 
-        if (validTypes) {
-            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_IMPORT_KEYS_TAG, [accountKeys.buffer, utxoKeys.buffer]);
-        } else {
-            throw TypeError('accountKeys and utxoKeys should be of type Uint8Array');
-        }
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_IMPORT_KEYS_TAG, [accountKeys.buffer, utxoKeys.buffer]);
     },
 
     /**
@@ -94,12 +94,9 @@ var plugin = {
      */
     walletRetrieveFunds: function (ptr, block0, successCallback, errorCallback) {
         argscheck.checkArgs('s*ff', 'walletRetrieveFunds', arguments);
-        // cordova checkArgs doesn't support Uint8Array, so we use the * to let it pass and then check it ourselves
-        if (require('cordova/utils').typeName(block0) === 'Uint8Array') {
-            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_RETRIEVE_FUNDS_ACTION_TAG, [ptr, block0.buffer]);
-        } else {
-            throw TypeError('expected block0 to be a Uint8Array in walletRetrieveFunds');
-        }
+        checkUint8Array({ name: 'block0', testee: block0 });
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_RETRIEVE_FUNDS_ACTION_TAG, [ptr, block0.buffer]);
     },
 
     /**
@@ -230,14 +227,9 @@ var plugin = {
      */
     walletConfirmTransaction: function (walletPtr, transactionId, successCallback, errorCallback) {
         argscheck.checkArgs('s*ff', 'walletConfirmTransaction', arguments);
+        checkUint8Array({ name: 'transactionId', testee: transactionId, optLength: FRAGMENT_ID_LENGTH });
 
-        var isArray = require('cordova/utils').typeName(transactionId) === 'Uint8Array';
-
-        if (isArray && transactionId.length === FRAGMENT_ID_LENGTH) {
-            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_CONFIRM_TRANSACTION, [walletPtr, transactionId.buffer]);
-        } else {
-            throw TypeError('expected transactionId to be a Uint8Array in confirmTransaction');
-        }
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_CONFIRM_TRANSACTION, [walletPtr, transactionId.buffer]);
     },
 
     /**
@@ -272,6 +264,7 @@ var plugin = {
     },
 
     /**
+     * @deprecated since version 0.6.0: use proposalNewPublic for public vote
      * Get a proposal object, used to validate the vote on `walletVote`
      *
      * @param {Uint8Array} votePlanId a byte array of 32 elements that identifies the voteplan
@@ -283,14 +276,49 @@ var plugin = {
      */
     proposalNew: function (votePlanId, payloadType, index, numChoices, successCallback, errorCallback) {
         argscheck.checkArgs('*nnnff', 'proposalNew', arguments);
+        checkUint8Array({ name: 'votePlanId', testee: votePlanId, optLength: VOTE_PLAN_ID_LENGTH });
 
-        var isArray = require('cordova/utils').typeName(votePlanId) === 'Uint8Array';
-
-        if (isArray && votePlanId.length === VOTE_PLAN_ID_LENGTH) {
-            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_ACTION_TAG, [votePlanId.buffer, payloadType, index, numChoices]);
+        if (payloadType === this.PayloadType.PUBLIC) {
+            this.proposalNewPublic(votePlanId, index, numChoices, successCallback, errorCallback);
         } else {
-            throw TypeError('expected votePlanId to be a Uint8Array in proposalNew');
+            throw Error('unsupported operation');
         }
+    },
+
+    /**
+     * Get a proposal object, used to validate the vote on `walletVote`
+     *
+     * @param {Uint8Array} votePlanId a byte array of 32 elements that identifies the voteplan
+     * @param {number} index the index of the proposal in the voteplan
+     * @param {number} numChoices the number of choices of the proposal, used to validate the choice
+     * @param {function} successCallback returns an object with ignored, and value properties
+     * @param {errorCallback} errorCallback
+     */
+    proposalNewPublic: function (votePlanId, index, numChoices, successCallback, errorCallback) {
+        argscheck.checkArgs('*nnff', 'proposalNewPublic', arguments);
+        checkUint8Array({ name: 'votePlanId', testee: votePlanId, optLength: VOTE_PLAN_ID_LENGTH });
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_PUBLIC_ACTION_TAG, [votePlanId.buffer, index, numChoices]);
+    },
+
+    /**
+     * Get a proposal object, used to validate the vote on `walletVote`
+     *
+     * @param {Uint8Array} votePlanId a byte array of 32 elements that identifies the voteplan
+     * @param {number} index the index of the proposal in the voteplan
+     * @param {number} numChoices the number of choices of the proposal, used to validate the choice
+     * @param {Uint8Array} encryptionVoteKey a byte array of 65 elements, this
+     * is the single key used to encrypt a vote, generated from the public keys
+     * from all committee members
+     * @param {function} successCallback returns an object with ignored, and value properties
+     * @param {errorCallback} errorCallback
+     */
+    proposalNewPrivate: function (votePlanId, index, numChoices, encryptionVoteKey, successCallback, errorCallback) {
+        argscheck.checkArgs('*nnn*ff', 'proposalNewPrivate', arguments);
+        checkUint8Array({ name: 'votePlanId', testee: votePlanId, optLength: VOTE_PLAN_ID_LENGTH });
+        checkUint8Array({ name: 'encryptionVoteKey', testee: encryptionVoteKey, optLength: ENCRYPTION_VOTE_KEY_LENGTH });
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_PRIVATE_ACTION_TAG, [votePlanId.buffer, index, numChoices, encryptionVoteKey.buffer]);
     },
 
     /**
@@ -301,14 +329,10 @@ var plugin = {
      */
     symmetricCipherDecrypt: function (password, ciphertext, successCallback, errorCallback) {
         argscheck.checkArgs('**ff', 'symmetricCipherDecrypt', arguments);
-        var typeName = require('cordova/utils').typeName;
-        var validTypes = true && typeName(password) === 'Uint8Array' && typeName(ciphertext) === 'Uint8Array';
+        checkUint8Array({ name: 'password', testee: password });
+        checkUint8Array({ name: 'ciphertext', testee: ciphertext });
 
-        if (validTypes) {
-            exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SYMMETRIC_CIPHER_DECRYPT, [password.buffer, ciphertext.buffer]);
-        } else {
-            throw TypeError('password and ciphertext should be of Uint8Array type');
-        }
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SYMMETRIC_CIPHER_DECRYPT, [password.buffer, ciphertext.buffer]);
     },
 
     /**
@@ -361,5 +385,18 @@ var plugin = {
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PENDING_TRANSACTIONS_DELETE, [ptr]);
     }
 };
+
+function checkUint8Array (arg) {
+    var typeName = require('cordova/utils').typeName;
+    var validType = arg.testee && typeName(arg.testee) === 'Uint8Array';
+    if (!validType) {
+        throw TypeError('expected ' + arg.name + ' to be of type Uint8Array');
+    }
+
+    var validLength = arg.optLength ? arg.testee.length === arg.optLength : true;
+    if (!validLength) {
+        throw TypeError('expected ' + arg.name + ' to have length ' + arg.optLength + ' found: ' + arg.testee.length);
+    }
+}
 
 module.exports = plugin;

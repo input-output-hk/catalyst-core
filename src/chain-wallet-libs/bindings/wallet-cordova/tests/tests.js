@@ -40,7 +40,7 @@ function promisify (f) {
             args.push(success);
             args.push(error);
 
-            f.apply(null, args);
+            f.apply(primitives, args);
         });
     };
     return newFunction;

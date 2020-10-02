@@ -35,6 +35,7 @@ impl fmt::Display for Peer {
 
 /// The key pair used to authenticate a network node,
 /// including the secret key.
+#[derive(Clone, Debug)]
 pub struct NodeKeyPair(KeyPair<Ed25519>);
 
 impl NodeKeyPair {

@@ -10,5 +10,17 @@
     "ecosystem:cordova"
   ],
   "author": "ecioppettini@atixlabs.com",
-  "license": "MIT OR Apache-2.0"
+  "license": "MIT OR Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.11.6",
+    "@babel/core": "^7.11.6",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/runtime-corejs3": "^7.11.2",
+    "browserify": "^16.5.2",
+    "core-js": "^3.6.5"
+  },
+  "scripts": {
+    "build": "babel src/main.js --out-file tests.js && browserify tests.js -o tests.js --external wallet-cordova-plugin.wallet -s tests"
+  }
 }

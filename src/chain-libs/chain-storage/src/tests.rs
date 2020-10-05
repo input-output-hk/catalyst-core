@@ -519,6 +519,7 @@ fn is_ancestor_permanent_volatile() {
             &main_branch_blocks[PERMANENT_STORAGE_START]
                 .id
                 .serialize_as_vec(),
+            1,
         )
         .unwrap();
 
@@ -545,6 +546,7 @@ fn is_ancestor_only_permanent() {
             &main_branch_blocks[PERMANENT_STORAGE_START]
                 .id
                 .serialize_as_vec(),
+            1,
         )
         .unwrap();
 
@@ -606,7 +608,7 @@ fn prepare_permament_store() -> (tempfile::TempDir, BlockStore, Vec<Block>) {
     let (file, store, blocks) = prepare_and_fill_store(BLOCK_NUM_PERMANENT_TEST);
 
     store
-        .flush_to_permanent_store(&blocks[FLUSH_TO_BLOCK].id.serialize_as_vec())
+        .flush_to_permanent_store(&blocks[FLUSH_TO_BLOCK].id.serialize_as_vec(), 1)
         .unwrap();
 
     (file, store, blocks)
@@ -637,7 +639,7 @@ fn permanent_store_flush_twice() {
     let (_file, store, blocks) = prepare_permament_store();
 
     store
-        .flush_to_permanent_store(&blocks[FLUSH_TO_BLOCK_2].id.serialize_as_vec())
+        .flush_to_permanent_store(&blocks[FLUSH_TO_BLOCK_2].id.serialize_as_vec(), 1)
         .unwrap();
 
     for (i, block) in store
@@ -727,7 +729,7 @@ fn iterator_volatile_and_permanent_storage() {
     let (_file, store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
 
     store
-        .flush_to_permanent_store(&blocks[FLUSH_AT].id.serialize_as_vec()[..])
+        .flush_to_permanent_store(&blocks[FLUSH_AT].id.serialize_as_vec()[..], 1)
         .unwrap();
 
     for (i, block) in store
@@ -749,7 +751,7 @@ fn iterator_only_permanent_storage() {
     let (_file, store, blocks) = prepare_and_fill_store(TEST_BLOCK_NUM);
 
     store
-        .flush_to_permanent_store(&blocks[blocks.len() - 1].id.serialize_as_vec()[..])
+        .flush_to_permanent_store(&blocks[blocks.len() - 1].id.serialize_as_vec()[..], 1)
         .unwrap();
 
     for (i, block) in store

@@ -2,7 +2,7 @@ use crate::vote::Choice;
 use chain_core::mempack::{ReadBuf, ReadError};
 use chain_vote::{EncryptedVote, ProofOfCorrectVote};
 use std::convert::{TryFrom, TryInto as _};
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use thiserror::Error;
 use typed_bytes::ByteBuilder;
 
@@ -23,7 +23,7 @@ pub enum PayloadType {
     Private = 2,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Payload {
     Public {
         choice: Choice,
@@ -32,24 +32,6 @@ pub enum Payload {
         encrypted_vote: EncryptedVote,
         proof: ProofOfCorrectVote,
     },
-}
-
-impl Hash for Payload {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write_u8(self.payload_type() as u8);
-        match self {
-            Payload::Public { choice } => state.write_u8(choice.as_byte()),
-            Payload::Private {
-                encrypted_vote,
-                proof,
-            } => {
-                let buff: Vec<u8> = encrypted_vote.iter().flat_map(|ct| ct.to_bytes()).collect();
-                state.write(&buff);
-                let proof_buf = proof.serialize_in::<u8>(ByteBuilder::new()).finalize();
-                state.write(proof_buf.as_slice());
-            }
-        }
-    }
 }
 
 #[derive(Debug, Error)]
@@ -106,8 +88,8 @@ impl Payload {
                 for _ in 0..len {
                     let size = buf.get_u64()? as usize;
                     cypher_texts.push(
-                        chain_vote::Ciphertext::from_bytes(buf.get_slice(size)?).ok_or(
-                            ReadError::StructureInvalid("Invalid private vote".to_string()),
+                        chain_vote::Ciphertext::from_bytes(buf.get_slice(size)?).ok_or_else(
+                            || ReadError::StructureInvalid("Invalid private vote".to_string()),
                         )?,
                     );
                 }

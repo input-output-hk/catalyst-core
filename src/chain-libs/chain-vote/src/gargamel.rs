@@ -24,7 +24,7 @@ pub struct Keypair {
     pub public_key: PublicKey,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ciphertext {
     e1: GroupElement,
     e2: GroupElement,

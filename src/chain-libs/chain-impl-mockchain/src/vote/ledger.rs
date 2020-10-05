@@ -15,6 +15,7 @@ pub struct VotePlanLedger {
     pub(crate) plans: Hamt<DefaultHasher, VotePlanId, VotePlanManager>,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum VotePlanLedgerError {
     #[error("cannot insert the vote plan {id}: {reason:?}")]

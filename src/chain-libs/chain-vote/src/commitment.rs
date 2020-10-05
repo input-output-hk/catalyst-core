@@ -3,7 +3,7 @@ use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul};
 
 /// Pedersen commitment
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Commitment {
     c: GroupElement,
 }

@@ -34,7 +34,7 @@ impl ABCD {
 }
 
 /// I, B, A commitments
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 struct IBA {
     pub i: Commitment,
     pub b: Commitment,
@@ -42,7 +42,7 @@ struct IBA {
 }
 
 // Computed z, w, v
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 struct ZWV {
     pub z: Scalar,
     pub w: Scalar,
@@ -50,7 +50,7 @@ struct ZWV {
 }
 
 /// Proof of unit vector
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Proof {
     ibas: Vec<IBA>,
     ds: Vec<Ciphertext>,
@@ -76,15 +76,12 @@ impl IBA {
         let a_size = buf.get_u64()?;
         let a_buf = buf.get_slice(a_size as usize)?;
         Ok(Self {
-            i: Commitment::from_bytes(i_buf).ok_or(ReadError::StructureInvalid(
-                "Invalid IBA component".to_string(),
-            ))?,
-            b: Commitment::from_bytes(b_buf).ok_or(ReadError::StructureInvalid(
-                "Invalid IBA component".to_string(),
-            ))?,
-            a: Commitment::from_bytes(a_buf).ok_or(ReadError::StructureInvalid(
-                "Invalid IBA component".to_string(),
-            ))?,
+            i: Commitment::from_bytes(i_buf)
+                .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?,
+            b: Commitment::from_bytes(b_buf)
+                .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?,
+            a: Commitment::from_bytes(a_buf)
+                .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?,
         })
     }
 }
@@ -126,30 +123,32 @@ impl Proof {
         let mut ds: Vec<Ciphertext> = Vec::new();
         for _ in 0..cts_size {
             let size = buf.get_u64()?;
-            ds.push(Ciphertext::from_bytes(buf.get_slice(size as usize)?).ok_or(
-                ReadError::StructureInvalid("Invalid encoded ciphertext".to_string()),
-            )?);
+            ds.push(
+                Ciphertext::from_bytes(buf.get_slice(size as usize)?).ok_or_else(|| {
+                    ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
+                })?,
+            );
         }
 
         let zwvs_size = buf.get_u64()?;
         let mut zwvs: Vec<ZWV> = Vec::new();
         for _ in 0..zwvs_size {
             zwvs.push(ZWV {
-                z: Scalar::from_slice(buf.get_slice(32)?).ok_or(ReadError::StructureInvalid(
-                    "Invalid ZWV encoded scalar Z".to_string(),
-                ))?,
-                w: Scalar::from_slice(buf.get_slice(32)?).ok_or(ReadError::StructureInvalid(
-                    "Invalid ZWV encoded scalar W".to_string(),
-                ))?,
-                v: Scalar::from_slice(buf.get_slice(32)?).ok_or(ReadError::StructureInvalid(
-                    "Invalid ZWV encoded scalar V".to_string(),
-                ))?,
+                z: Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
+                    ReadError::StructureInvalid("Invalid ZWV encoded scalar Z".to_string())
+                })?,
+                w: Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
+                    ReadError::StructureInvalid("Invalid ZWV encoded scalar W".to_string())
+                })?,
+                v: Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
+                    ReadError::StructureInvalid("Invalid ZWV encoded scalar V".to_string())
+                })?,
             });
         }
 
-        let r = Scalar::from_slice(buf.get_slice(32)?).ok_or(ReadError::StructureInvalid(
-            "Invalid Proof encoded R scalar".to_string(),
-        ))?;
+        let r = Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
+            ReadError::StructureInvalid("Invalid Proof encoded R scalar".to_string())
+        })?;
         Ok(Self { ibas, ds, zwvs, r })
     }
 }

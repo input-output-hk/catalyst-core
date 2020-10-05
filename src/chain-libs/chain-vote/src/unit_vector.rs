@@ -19,6 +19,9 @@ impl std::fmt::Display for UnitVector {
     }
 }
 
+// `is_empty` cannot ever be useful in the case of UnitVector,
+// as the size will always be > 0 as enforced in new()
+#[allow(clippy::len_without_is_empty)]
 impl UnitVector {
     /// Create a new
     pub fn new(size: usize, ith: usize) -> Self {
@@ -33,10 +36,6 @@ impl UnitVector {
 
     pub fn len(&self) -> usize {
         self.size
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
     }
 
     pub fn ith(&self) -> usize {

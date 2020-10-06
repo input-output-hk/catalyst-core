@@ -1167,7 +1167,7 @@ impl Ledger {
 
         let stake = StakeControl::new_with(&self.accounts, &self.utxos);
 
-        let mut f = |action: &VoteAction| ();
+        let mut f = |_action: &VoteAction| ();
 
         self.votes = self.votes.apply_encrypted_vote_tally(
             self.date(),

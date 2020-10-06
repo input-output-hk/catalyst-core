@@ -55,13 +55,6 @@ impl VoteTally {
         }
     }
 
-    pub fn new_private(id: VotePlanId) -> Self {
-        Self {
-            id,
-            payload: VoteTallyPayload::Private,
-        }
-    }
-
     pub fn id(&self) -> &VotePlanId {
         &self.id
     }
@@ -92,12 +85,12 @@ impl TallyProof {
 
     pub fn verify<'a>(
         &self,
-        tally: &VoteTally,
+        tally_type: PayloadType,
         verify_data: &TransactionBindingAuthData<'a>,
     ) -> Verification {
         match self {
             Self::Public { id, signature } => {
-                if tally.tally_type() != PayloadType::Public {
+                if tally_type != PayloadType::Public {
                     Verification::Failed
                 } else {
                     let pk = id.public_key();
@@ -105,7 +98,7 @@ impl TallyProof {
                 }
             }
             Self::Private { id, signature } => {
-                if tally.tally_type() != PayloadType::Private {
+                if tally_type != PayloadType::Private {
                     Verification::Failed
                 } else {
                     let pk = id.public_key();

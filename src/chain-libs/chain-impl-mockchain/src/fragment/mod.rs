@@ -42,6 +42,7 @@ pub enum Fragment {
     VotePlan(Transaction<certificate::VotePlan>),
     VoteCast(Transaction<certificate::VoteCast>),
     VoteTally(Transaction<certificate::VoteTally>),
+    EncryptedVoteTally(Transaction<certificate::EncryptedVoteTally>),
 }
 
 impl PartialEq for Fragment {
@@ -67,6 +68,7 @@ pub(super) enum FragmentTag {
     VotePlan = 10,
     VoteCast = 11,
     VoteTally = 12,
+    EncryptedVoteTally = 13,
 }
 
 impl FragmentTag {
@@ -85,6 +87,7 @@ impl FragmentTag {
             10 => Some(FragmentTag::VotePlan),
             11 => Some(FragmentTag::VoteCast),
             12 => Some(FragmentTag::VoteTally),
+            13 => Some(FragmentTag::EncryptedVoteTally),
             _ => None,
         }
     }
@@ -107,6 +110,7 @@ impl Fragment {
             Fragment::VotePlan(_) => FragmentTag::VotePlan,
             Fragment::VoteCast(_) => FragmentTag::VoteCast,
             Fragment::VoteTally(_) => FragmentTag::VoteTally,
+            Fragment::EncryptedVoteTally(_) => FragmentTag::EncryptedVoteTally,
         }
     }
 
@@ -132,6 +136,7 @@ impl Fragment {
             Fragment::VotePlan(vote_plan) => vote_plan.serialize(&mut codec).unwrap(),
             Fragment::VoteCast(vote_plan) => vote_plan.serialize(&mut codec).unwrap(),
             Fragment::VoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
+            Fragment::EncryptedVoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
         }
         FragmentRaw(codec.into_inner())
     }
@@ -184,6 +189,9 @@ impl Readable for Fragment {
             Some(FragmentTag::VotePlan) => Transaction::read(buf).map(Fragment::VotePlan),
             Some(FragmentTag::VoteCast) => Transaction::read(buf).map(Fragment::VoteCast),
             Some(FragmentTag::VoteTally) => Transaction::read(buf).map(Fragment::VoteTally),
+            Some(FragmentTag::EncryptedVoteTally) => {
+                Transaction::read(buf).map(Fragment::EncryptedVoteTally)
+            }
             None => Err(ReadError::UnknownTag(tag as u32)),
         }
     }

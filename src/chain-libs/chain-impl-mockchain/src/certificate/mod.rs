@@ -11,8 +11,7 @@ mod test;
 
 use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
-pub use self::encrypted_vote_tally::EncryptedVoteTally;
-
+pub use self::encrypted_vote_tally::{EncryptedVoteTally, EncryptedVoteTallyProof};
 pub use self::vote_cast::VoteCast;
 pub use self::vote_plan::{
     ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VoteAction,
@@ -257,6 +256,12 @@ impl From<EncryptedVoteTally> for Certificate {
     }
 }
 
+impl From<PrivateVoteTally> for Certificate {
+    fn from(vote_tally: PrivateVoteTally) -> Self {
+        Self::PrivateVoteTally(vote_tally)
+    }
+}
+
 impl Certificate {
     pub fn need_auth(&self) -> bool {
         match self {
@@ -287,6 +292,8 @@ pub enum SignedCertificate {
     PoolUpdate(PoolUpdate, <PoolUpdate as Payload>::Auth),
     VotePlan(VotePlan, <VotePlan as Payload>::Auth),
     VoteTally(VoteTally, <VoteTally as Payload>::Auth),
+    EncryptedVoteTally(EncryptedVoteTally, <EncryptedVoteTally as Payload>::Auth),
+    PrivateVoteTally(PrivateVoteTally, <PrivateVoteTally as Payload>::Auth),
 }
 
 #[cfg(test)]

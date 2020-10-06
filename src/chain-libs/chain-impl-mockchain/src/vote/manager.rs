@@ -437,11 +437,8 @@ impl VotePlanManager {
         self.plan().committee_end() < date
     }
 
-    fn valid_committee(&self, sig: TallyProof) -> bool {
-        match sig {
-            TallyProof::Public { id, .. } => self.committee_set().contains(&id),
-            TallyProof::Private { id, .. } => self.committee_set().contains(&id),
-        }
+    fn valid_committee(&self, id: &CommitteeId) -> bool {
+        self.committee_set().contains(id)
     }
 
     /// attempt to apply the vote to one of the proposals
@@ -514,7 +511,7 @@ impl VotePlanManager {
         block_date: BlockDate,
         stake: &StakeControl,
         governance: &Governance,
-        sig: TallyProof,
+        sig: CommitteeId,
         f: &mut F,
     ) -> Result<Self, VoteError>
     where
@@ -525,7 +522,7 @@ impl VotePlanManager {
                 start: self.plan().committee_start(),
                 end: self.plan().committee_end(),
             })
-        } else if !self.valid_committee(sig) {
+        } else if !self.valid_committee(&sig) {
             Err(VoteError::InvalidTallyCommittee)
         } else {
             let proposal_managers = match self.plan().payload_type() {
@@ -703,12 +700,16 @@ mod tests {
         };
 
         let mut action_hit = false;
+        let committee_id = match tally_proof {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
         vote_plan_manager
             .tally(
                 block_date,
                 &stake_controlled,
                 &governance,
-                tally_proof,
+                committee_id,
                 &mut |_| action_hit = true,
             )
             .unwrap();
@@ -748,6 +749,11 @@ mod tests {
             slot_id: 10,
         };
 
+        let committee_id = match tally_proof {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
+
         //invalid committee
         assert_eq!(
             VoteError::InvalidTallyCommittee,
@@ -756,7 +762,7 @@ mod tests {
                     block_date,
                     &stake_controlled,
                     &governance,
-                    tally_proof,
+                    committee_id,
                     &mut |_| ()
                 )
                 .err()
@@ -797,6 +803,11 @@ mod tests {
             slot_id: 10,
         };
 
+        let committee_id = match tally_proof {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
+
         //not in committee time
         assert_eq!(
             VoteError::NotCommitteeTime {
@@ -808,7 +819,7 @@ mod tests {
                     invalid_block_date,
                     &stake_controlled,
                     &governance,
-                    tally_proof,
+                    committee_id,
                     &mut |_| ()
                 )
                 .err()

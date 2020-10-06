@@ -1,4 +1,4 @@
-use crate::certificate::EncryptedVoteTally;
+use crate::certificate::{EncryptedVoteTally, EncryptedVoteTallyProof};
 use crate::{
     certificate::{TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
@@ -137,8 +137,13 @@ impl VotePlanLedger {
     {
         let id = tally.id().clone();
 
+        let committee_id = match sig {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
         let r = self.plans.update(&id, move |v| {
-            v.tally(block_date, stake, governance, sig, f).map(Some)
+            v.tally(block_date, stake, governance, committee_id, f)
+                .map(Some)
         });
 
         match r {
@@ -162,7 +167,7 @@ impl VotePlanLedger {
         stake: &StakeControl,
         governance: &Governance,
         tally: &EncryptedVoteTally,
-        sig: TallyProof,
+        sig: EncryptedVoteTallyProof,
         f: &mut F,
     ) -> Result<Self, VotePlanLedgerError>
     where
@@ -171,7 +176,7 @@ impl VotePlanLedger {
         let id = tally.id().clone();
 
         let r = self.plans.update(&id, move |v| {
-            v.tally(block_date, stake, governance, sig, f).map(Some)
+            v.tally(block_date, stake, governance, sig.id, f).map(Some)
         });
 
         match r {

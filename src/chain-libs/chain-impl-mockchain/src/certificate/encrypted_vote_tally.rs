@@ -1,5 +1,7 @@
+use crate::transaction::{SingleAccountBindingSignature, TransactionBindingAuthData};
+use crate::vote::CommitteeId;
 use crate::{
-    certificate::{CertificateSlice, TallyProof, VotePlanId, VoteTallyPayload},
+    certificate::{CertificateSlice, VotePlanId, VoteTallyPayload},
     transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
     vote::{PayloadType, TryFromIntError},
 };
@@ -7,7 +9,14 @@ use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
     property,
 };
+use chain_crypto::Verification;
 use typed_bytes::{ByteArray, ByteBuilder};
+
+#[derive(Debug, Clone)]
+pub struct EncryptedVoteTallyProof {
+    pub id: CommitteeId,
+    pub signature: SingleAccountBindingSignature,
+}
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct EncryptedVoteTally {
@@ -15,11 +24,32 @@ pub struct EncryptedVoteTally {
     payload: VoteTallyPayload,
 }
 
+impl EncryptedVoteTallyProof {
+    pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+        bb.u8(0)
+            .bytes(self.id.as_ref())
+            .bytes(self.signature.as_ref())
+    }
+
+    pub fn verify<'a>(
+        &self,
+        tally_type: PayloadType,
+        verify_data: &TransactionBindingAuthData<'a>,
+    ) -> Verification {
+        if tally_type != PayloadType::Private {
+            Verification::Failed
+        } else {
+            let pk = self.id.public_key();
+            self.signature.verify_slice(&pk, verify_data)
+        }
+    }
+}
+
 impl EncryptedVoteTally {
     pub fn new_private(id: VotePlanId) -> Self {
         Self {
             id,
-            payload: VoteTallyPayload::Private,
+            payload: VoteTallyPayload::Public,
         }
     }
 
@@ -46,7 +76,7 @@ impl EncryptedVoteTally {
 impl Payload for EncryptedVoteTally {
     const HAS_DATA: bool = true;
     const HAS_AUTH: bool = true; // TODO: true it is the Committee signatures
-    type Auth = TallyProof;
+    type Auth = EncryptedVoteTallyProof;
 
     fn payload_data(&self) -> PayloadData<Self> {
         PayloadData(
@@ -78,6 +108,22 @@ impl property::Serialize for EncryptedVoteTally {
     fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
         writer.write_all(self.serialize().as_slice())?;
         Ok(())
+    }
+}
+
+impl Readable for EncryptedVoteTallyProof {
+    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        match buf.peek_u8()? {
+            0 => {
+                let _ = buf.get_u8()?;
+                let id = CommitteeId::read(buf)?;
+                let signature = SingleAccountBindingSignature::read(buf)?;
+                Ok(Self { id, signature })
+            }
+            _ => Err(ReadError::StructureInvalid(
+                "Unknown Tally proof type".to_owned(),
+            )),
+        }
     }
 }
 

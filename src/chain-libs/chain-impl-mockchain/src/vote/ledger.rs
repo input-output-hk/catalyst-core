@@ -1,3 +1,4 @@
+use crate::certificate::EncryptedVoteTally;
 use crate::{
     certificate::{TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
@@ -128,6 +129,39 @@ impl VotePlanLedger {
         stake: &StakeControl,
         governance: &Governance,
         tally: &VoteTally,
+        sig: TallyProof,
+        f: &mut F,
+    ) -> Result<Self, VotePlanLedgerError>
+    where
+        F: FnMut(&VoteAction),
+    {
+        let id = tally.id().clone();
+
+        let r = self.plans.update(&id, move |v| {
+            v.tally(block_date, stake, governance, sig, f).map(Some)
+        });
+
+        match r {
+            Err(reason) => Err(VotePlanLedgerError::VoteError { reason, id }),
+            Ok(plans) => Ok(Self { plans }),
+        }
+    }
+
+    /// apply the committee result for the associated vote plan
+    ///
+    /// # Errors
+    ///
+    /// This function may fail:
+    ///
+    /// * if the Committee time has elapsed
+    /// * if the tally is not a private tally
+    ///
+    pub fn apply_encrypted_vote_tally<F>(
+        &self,
+        block_date: BlockDate,
+        stake: &StakeControl,
+        governance: &Governance,
+        tally: &EncryptedVoteTally,
         sig: TallyProof,
         f: &mut F,
     ) -> Result<Self, VotePlanLedgerError>

@@ -21,14 +21,15 @@ pub mod debug {
     }
 }
 
-use rand_core::{CryptoRng, RngCore};
-
+use chain_ser::mempack::{ReadBuf, ReadError, Readable};
 pub use committee::{
     MemberCommunicationKey, MemberCommunicationPublicKey, MemberPublicKey, MemberState,
 };
 pub use encrypted::EncryptingVote;
 use gang::{Scalar, GROUP_ELEMENT_BYTES_LEN};
 pub use gargamel::{Ciphertext, CIPHERTEXT_BYTES_LEN};
+use rand_core::{CryptoRng, RngCore};
+use typed_bytes::{ByteArray, ByteBuilder};
 pub use unit_vector::UnitVector;
 
 /// Secret key for opening vote
@@ -82,7 +83,7 @@ pub struct Tally {
     r: Vec<Ciphertext>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TallyDecryptShare {
     r1s: Vec<gang::GroupElement>,
 }
@@ -95,6 +96,33 @@ pub struct TallyState {
 #[derive(Debug, Clone)]
 pub struct TallyResult {
     pub votes: Vec<Option<u64>>,
+}
+
+impl TallyDecryptShare {
+    pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+        let mut bb = bb.u64(self.r1s.len() as u64);
+        for e in &self.r1s {
+            bb = bb.bytes(&e.to_bytes())
+        }
+        bb
+    }
+
+    pub fn serialize(&self) -> ByteArray<Self> {
+        self.serialize_in(ByteBuilder::new()).finalize()
+    }
+}
+
+impl Readable for TallyDecryptShare {
+    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        let len = buf.get_u64()?;
+        let mut r1s: Vec<gang::GroupElement> = Vec::new();
+        for _ in 0..len {
+            let elem_buf = buf.get_slice(65)?;
+            r1s.push(gang::GroupElement::from_bytes(elem_buf).unwrap());
+        }
+
+        Ok(Self { r1s })
+    }
 }
 
 impl Tally {

@@ -1,6 +1,7 @@
 mod delegation;
 mod encrypted_vote_tally;
 mod pool;
+mod private_vote_tally;
 mod vote_cast;
 mod vote_plan;
 mod vote_tally;
@@ -11,12 +12,14 @@ mod test;
 use crate::transaction::{Payload, PayloadData, PayloadSlice};
 
 pub use self::encrypted_vote_tally::EncryptedVoteTally;
+
 pub use self::vote_cast::VoteCast;
 pub use self::vote_plan::{
     ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VoteAction,
     VotePlan, VotePlanId, VotePlanProof,
 };
 pub use self::vote_tally::{TallyProof, VoteTally, VoteTallyPayload};
+pub use crate::certificate::private_vote_tally::PrivateVoteTally;
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
 pub use pool::{
     GenesisPraosLeaderHash, IndexSignatures, ManagementThreshold, PoolId, PoolOwnersSigned,
@@ -34,6 +37,7 @@ pub enum CertificateSlice<'a> {
     VoteCast(PayloadSlice<'a, VoteCast>),
     VoteTally(PayloadSlice<'a, VoteTally>),
     EncryptedVoteTally(PayloadSlice<'a, EncryptedVoteTally>),
+    PrivateVoteTally(PayloadSlice<'a, PrivateVoteTally>),
 }
 
 impl<'a> From<PayloadSlice<'a, StakeDelegation>> for CertificateSlice<'a> {
@@ -89,6 +93,12 @@ impl<'a> From<PayloadSlice<'a, EncryptedVoteTally>> for CertificateSlice<'a> {
     }
 }
 
+impl<'a> From<PayloadSlice<'a, PrivateVoteTally>> for CertificateSlice<'a> {
+    fn from(payload: PayloadSlice<'a, PrivateVoteTally>) -> CertificateSlice<'a> {
+        CertificateSlice::PrivateVoteTally(payload)
+    }
+}
+
 impl<'a> CertificateSlice<'a> {
     pub fn into_owned(self) -> Certificate {
         match self {
@@ -107,6 +117,9 @@ impl<'a> CertificateSlice<'a> {
             CertificateSlice::EncryptedVoteTally(c) => {
                 Certificate::EncryptedVoteTally(c.into_payload())
             }
+            CertificateSlice::PrivateVoteTally(c) => {
+                Certificate::PrivateVoteTally(c.into_payload())
+            }
         }
     }
 }
@@ -122,6 +135,7 @@ pub enum CertificatePayload {
     VoteCast(PayloadData<VoteCast>),
     VoteTally(PayloadData<VoteTally>),
     EncryptedVoteTally(PayloadData<EncryptedVoteTally>),
+    PrivateVoteTally(PayloadData<PrivateVoteTally>),
 }
 
 impl CertificatePayload {
@@ -136,6 +150,7 @@ impl CertificatePayload {
             CertificatePayload::VoteCast(payload) => payload.borrow().into(),
             CertificatePayload::VoteTally(payload) => payload.borrow().into(),
             CertificatePayload::EncryptedVoteTally(payload) => payload.borrow().into(),
+            CertificatePayload::PrivateVoteTally(payload) => payload.borrow().into(),
         }
     }
 }
@@ -166,6 +181,9 @@ impl<'a> From<&'a Certificate> for CertificatePayload {
             Certificate::EncryptedVoteTally(payload) => {
                 CertificatePayload::EncryptedVoteTally(payload.payload_data())
             }
+            Certificate::PrivateVoteTally(payload) => {
+                CertificatePayload::PrivateVoteTally(payload.payload_data())
+            }
         }
     }
 }
@@ -182,6 +200,7 @@ pub enum Certificate {
     VoteCast(VoteCast),
     VoteTally(VoteTally),
     EncryptedVoteTally(EncryptedVoteTally),
+    PrivateVoteTally(PrivateVoteTally),
 }
 
 impl From<StakeDelegation> for Certificate {
@@ -250,6 +269,7 @@ impl Certificate {
             Certificate::VoteCast(_) => <VoteCast as Payload>::HAS_AUTH,
             Certificate::VoteTally(_) => <VoteTally as Payload>::HAS_AUTH,
             Certificate::EncryptedVoteTally(_) => <EncryptedVoteTally as Payload>::HAS_AUTH,
+            Certificate::PrivateVoteTally(_) => <PrivateVoteTally as Payload>::HAS_AUTH,
         }
     }
 }
@@ -287,6 +307,7 @@ mod tests {
             Certificate::VoteCast(_) => false,
             Certificate::VoteTally(_) => true,
             Certificate::EncryptedVoteTally(_) => true,
+            Certificate::PrivateVoteTally(_) => true,
         };
         TestResult::from_bool(certificate.need_auth() == expected_result)
     }

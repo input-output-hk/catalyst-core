@@ -35,6 +35,7 @@ pub enum TallyProof {
     Private {
         id: CommitteeId,
         signature: SingleAccountBindingSignature,
+        shares: Vec<chain_vote::TallyDecryptShare>,
     },
 }
 
@@ -77,9 +78,21 @@ impl TallyProof {
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         match self {
             Self::Public { id, signature } => bb.u8(0).bytes(id.as_ref()).bytes(signature.as_ref()),
-            Self::Private { id, signature } => {
-                bb.u8(1).bytes(id.as_ref()).bytes(signature.as_ref())
-            }
+            Self::Private {
+                id,
+                signature,
+                shares,
+            } => bb
+                .u8(1)
+                .bytes(id.as_ref())
+                .bytes(signature.as_ref())
+                .u64(shares.len() as u64)
+                .bytes(
+                    &shares
+                        .iter()
+                        .flat_map(|share| share.serialize().as_slice().to_vec())
+                        .collect::<Vec<u8>>(),
+                ),
         }
     }
 
@@ -97,7 +110,11 @@ impl TallyProof {
                     signature.verify_slice(&pk, verify_data)
                 }
             }
-            Self::Private { id, signature } => {
+            Self::Private {
+                id,
+                signature,
+                shares: _,
+            } => {
                 if tally_type != PayloadType::Private {
                     Verification::Failed
                 } else {
@@ -162,7 +179,17 @@ impl Readable for TallyProof {
                 let _ = buf.get_u8()?;
                 let id = CommitteeId::read(buf)?;
                 let signature = SingleAccountBindingSignature::read(buf)?;
-                Ok(Self::Private { id, signature })
+                let shares_len = buf.get_u8()?;
+                let mut shares: Vec<chain_vote::TallyDecryptShare> = Vec::new();
+                for _ in 0..shares_len {
+                    shares.push(chain_vote::TallyDecryptShare::read(buf)?);
+                }
+
+                Ok(Self::Private {
+                    id,
+                    signature,
+                    shares,
+                })
             }
             _ => Err(ReadError::StructureInvalid(
                 "Unknown Tally proof type".to_owned(),

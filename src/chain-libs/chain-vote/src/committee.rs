@@ -71,6 +71,7 @@ impl MemberState {
         }
 
         let mut encrypted = Vec::new();
+        #[allow(clippy::needless_range_loop)]
         for i in 0..n {
             // don't generate share for self
             if i == my {
@@ -119,6 +120,18 @@ impl MemberState {
     }
 }
 
+impl MemberSecretKey {
+    pub fn to_bytes(&self) -> [u8; 32] {
+        self.0.sk.to_bytes()
+    }
+}
+
+impl MemberPublicKey {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes()
+    }
+}
+
 impl MemberCommunicationKey {
     pub fn new<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         let sk = SecretKey::generate(rng);
@@ -130,6 +143,19 @@ impl MemberCommunicationKey {
             pk: &GroupElement::generator() * &self.0.sk,
         })
     }
+
+    pub fn to_bytes(&self) -> [u8; 32] {
+        self.0.sk.to_bytes()
+    }
+}
+
+impl MemberCommunicationPublicKey {
+    pub fn from_public_key(pk: PublicKey) -> Self {
+        Self(pk)
+    }
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes()
+    }
 }
 
 impl ElectionPublicKey {
@@ -140,5 +166,9 @@ impl ElectionPublicKey {
             k = k + &pk.0.pk;
         }
         ElectionPublicKey(PublicKey { pk: k })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes()
     }
 }

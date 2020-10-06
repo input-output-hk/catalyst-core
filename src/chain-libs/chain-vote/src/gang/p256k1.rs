@@ -57,13 +57,13 @@ impl GroupElement {
         }
     }
 
-    pub fn sum<'a, I>(mut i: I) -> Self
+    pub fn sum<'a, I>(i: I) -> Self
     where
         I: Iterator<Item = &'a Self>,
     {
         let mut sum = GroupElement::zero();
-        while let Some(v) = i.next() {
-            sum = &sum + v;
+        for v in i {
+            sum = sum + v;
         }
         sum
     }
@@ -151,7 +151,7 @@ impl Scalar {
         I: Iterator<Item = Self>,
     {
         let mut sum = i.next()?;
-        while let Some(v) = i.next() {
+        for v in i {
             sum = &sum + &v;
         }
         Some(sum)

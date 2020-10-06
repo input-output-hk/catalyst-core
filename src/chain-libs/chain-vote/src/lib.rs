@@ -1,10 +1,10 @@
 //! Chain Vote
 
 mod commitment;
-mod committee;
+pub mod committee;
 mod encrypted;
 mod gang;
-mod gargamel;
+pub mod gargamel;
 mod hybrid;
 mod math;
 mod shvzk;
@@ -23,7 +23,7 @@ pub mod debug {
 
 use rand_core::{CryptoRng, RngCore};
 
-pub use committee::{MemberCommunicationKey, MemberState};
+pub use committee::{MemberCommunicationKey, MemberCommunicationPublicKey, MemberState};
 pub use encrypted::EncryptingVote;
 use gang::Scalar;
 pub use gargamel::Ciphertext;
@@ -65,6 +65,7 @@ pub fn encrypt_vote<R: RngCore + CryptoRng>(
 }
 
 /// Verify that the encrypted vote is valid without opening it
+#[allow(clippy::ptr_arg)]
 pub fn verify_vote(
     public_key: &EncryptingVoteKey,
     vote: &EncryptedVote,
@@ -105,6 +106,7 @@ impl Tally {
     ///
     /// Note that the encrypted vote needs to have the exact same number of
     /// options as the tally expect otherwise an assert will trigger
+    #[allow(clippy::ptr_arg)]
     pub fn add(&mut self, vote: &EncryptedVote, weight: u64) {
         assert_eq!(vote.len(), self.r.len());
         for (ri, ci) in self.r.iter_mut().zip(vote.iter()) {
@@ -170,7 +172,7 @@ pub fn result(
                         break;
                     }
 
-                    if &e == &r {
+                    if e == r {
                         found = Some(i);
                         break;
                     }

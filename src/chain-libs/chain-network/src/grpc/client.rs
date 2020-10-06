@@ -7,7 +7,8 @@ use super::legacy;
 
 use crate::data::block::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::data::fragment::{Fragment, FragmentIds};
-use crate::data::{Gossip, Peers};
+use crate::data::p2p::{AuthenticatedNodeId, NodeId};
+use crate::data::{Gossip, HandshakeResponse, Peers};
 use crate::error::{Error, HandshakeError};
 use crate::PROTOCOL_VERSION;
 use futures::prelude::*;
@@ -145,8 +146,10 @@ where
     ///
     /// This method should be called first after establishing the client
     /// connection.
-    pub async fn handshake(&mut self) -> Result<BlockId, HandshakeError> {
-        let req = proto::HandshakeRequest {};
+    pub async fn handshake(&mut self, nonce: &[u8]) -> Result<HandshakeResponse, HandshakeError> {
+        let req = proto::HandshakeRequest {
+            nonce: nonce.into(),
+        };
         let res = self
             .inner
             .handshake(req)
@@ -158,7 +161,27 @@ where
                 res.version.to_string().into(),
             ));
         }
-        BlockId::try_from(&res.block0[..]).map_err(HandshakeError::InvalidBlock0)
+        let block0_id =
+            BlockId::try_from(&res.block0[..]).map_err(HandshakeError::InvalidBlock0)?;
+        let node_id = NodeId::try_from(&res.node_id[..]).map_err(HandshakeError::InvalidNodeId)?;
+        let auth = node_id
+            .authenticated(&res.signature)
+            .map_err(HandshakeError::MalformedSignature)?;
+        let nonce = res.nonce.into();
+        Ok(HandshakeResponse {
+            block0_id,
+            auth,
+            nonce,
+        })
+    }
+
+    pub async fn client_auth(&mut self, auth: AuthenticatedNodeId) -> Result<(), Error> {
+        let req = proto::ClientAuthRequest {
+            node_id: auth.id().as_bytes().into(),
+            signature: auth.signature().into(),
+        };
+        let _res = self.inner.client_auth(req).await?.into_inner();
+        Ok(())
     }
 
     /// One-off request for a list of peers known to the remote node.

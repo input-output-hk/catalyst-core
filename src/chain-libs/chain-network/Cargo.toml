@@ -6,11 +6,12 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
+chain-crypto = { path = "../chain-crypto" }
 async-trait = "0.1"
 futures = "0.3"
 pin-project = "0.4"
 prost = "0.6"
-rand_core = { version = "0.5", optional = true }
+rand_core = { version = "0.5" }
 thiserror = "1.0"
 
 [dependencies.tonic]
@@ -29,5 +30,5 @@ features = ["prost"]
 [features]
 default = ["transport", "legacy"]
 transport = ["tonic/transport", "tonic-build/transport"]
-legacy = ["rand_core"]
+legacy = []
 codegen-rustfmt = ["tonic-build/rustfmt"]

@@ -6,6 +6,7 @@ use super::streaming::{InboundStream, OutboundTryStream};
 use super::legacy;
 
 use crate::core::server::{BlockService, FragmentService, GossipService, Node};
+use crate::data::p2p::NodeId;
 use crate::data::{block, fragment, BlockId, Peer};
 use crate::PROTOCOL_VERSION;
 use tonic::{Code, Status};
@@ -118,13 +119,32 @@ where
 {
     async fn handshake(
         &self,
-        _: tonic::Request<proto::HandshakeRequest>,
+        req: tonic::Request<proto::HandshakeRequest>,
     ) -> Result<tonic::Response<proto::HandshakeResponse>, tonic::Status> {
-        let service = self.block_service()?;
+        let peer = remote_addr_to_peer(req.remote_addr())?;
+        let req = req.into_inner();
+        let nonce = &req.nonce;
+        let hr = self.inner.handshake(peer, nonce).await?;
         let res = proto::HandshakeResponse {
             version: PROTOCOL_VERSION,
-            block0: service.block0().as_bytes().into(),
+            block0: hr.block0_id.as_bytes().into(),
+            node_id: hr.auth.id().as_bytes().into(),
+            signature: hr.auth.signature().into(),
+            nonce: hr.nonce.into(),
         };
+        Ok(tonic::Response::new(res))
+    }
+
+    async fn client_auth(
+        &self,
+        req: tonic::Request<proto::ClientAuthRequest>,
+    ) -> Result<tonic::Response<proto::ClientAuthResponse>, tonic::Status> {
+        let peer = remote_addr_to_peer(req.remote_addr())?;
+        let req = req.into_inner();
+        let node_id = NodeId::try_from(&req.node_id[..])?;
+        let auth = node_id.authenticated(&req.signature)?;
+        self.inner.client_auth(peer, auth).await?;
+        let res = proto::ClientAuthResponse {};
         Ok(tonic::Response::new(res))
     }
 

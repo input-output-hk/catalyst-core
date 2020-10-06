@@ -314,7 +314,7 @@ var plugin = {
      * @param {errorCallback} errorCallback
      */
     proposalNewPrivate: function (votePlanId, index, numChoices, encryptionVoteKey, successCallback, errorCallback) {
-        argscheck.checkArgs('*nnn*ff', 'proposalNewPrivate', arguments);
+        argscheck.checkArgs('*nn*ff', 'proposalNewPrivate', arguments);
         checkUint8Array({ name: 'votePlanId', testee: votePlanId, optLength: VOTE_PLAN_ID_LENGTH });
         checkUint8Array({ name: 'encryptionVoteKey', testee: encryptionVoteKey, optLength: ENCRYPTION_VOTE_KEY_LENGTH });
 

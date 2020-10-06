@@ -21,6 +21,6 @@
     "core-js": "^3.6.5"
   },
   "scripts": {
-    "build": "babel src/main.js --out-file tests.js && browserify tests.js -o tests.js --external wallet-cordova-plugin.wallet -s tests"
+    "build": "babel src/main.js --out-file tests.js && browserify tests.js -o tests.js --external wallet-cordova-plugin.wallet -s tests --debug"
   }
 }

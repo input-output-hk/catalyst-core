@@ -155,6 +155,12 @@ impl Tally {
         (TallyState { r2s }, TallyDecryptShare { r1s: dshares })
     }
 
+    pub fn state(&self) -> TallyState {
+        TallyState {
+            r2s: self.r.iter().map(|r| r.elements().1.clone()).collect(),
+        }
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         use std::io::Write;
         let mut bytes: Vec<u8> = Vec::with_capacity(CIPHERTEXT_BYTES_LEN * self.r.len());

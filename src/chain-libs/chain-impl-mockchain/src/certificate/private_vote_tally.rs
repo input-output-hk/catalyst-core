@@ -14,13 +14,15 @@ use typed_bytes::{ByteArray, ByteBuilder};
 pub struct PrivateVoteTally {
     id: VotePlanId,
     payload: VoteTallyPayload,
+    shares: Vec<Vec<chain_vote::TallyDecryptShare>>,
 }
 
 impl PrivateVoteTally {
-    pub fn new_private(id: VotePlanId) -> Self {
+    pub fn new_private(id: VotePlanId, shares: Vec<Vec<chain_vote::TallyDecryptShare>>) -> Self {
         Self {
             id,
             payload: VoteTallyPayload::Private,
+            shares,
         }
     }
 
@@ -33,8 +35,19 @@ impl PrivateVoteTally {
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        bb.bytes(self.id().as_ref())
+        let mut bb = bb
+            .bytes(self.id().as_ref())
             .u8(self.payload.payload_type() as u8)
+            .u64(self.shares.len() as u64);
+        for shares in &self.shares {
+            bb = bb.u64(shares.len() as u64).bytes(
+                &shares
+                    .iter()
+                    .flat_map(|s| s.serialize().as_slice().to_vec())
+                    .collect::<Vec<u8>>(),
+            );
+        }
+        bb
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {
@@ -97,6 +110,21 @@ impl Readable for PrivateVoteTally {
             PayloadType::Private => VoteTallyPayload::Private,
         };
 
-        Ok(Self { id, payload })
+        let all_shares_len = buf.get_u64()?;
+        let mut all_shares = Vec::with_capacity(all_shares_len as usize);
+        for _ in 0..all_shares_len {
+            let proposal_shares_len = buf.get_u64()?;
+            let mut proposal_shares = Vec::with_capacity(proposal_shares_len as usize);
+            for _ in 0..proposal_shares_len {
+                proposal_shares.push(chain_vote::TallyDecryptShare::read(buf)?);
+            }
+            all_shares.push(proposal_shares);
+        }
+
+        Ok(Self {
+            id,
+            payload,
+            shares: all_shares,
+        })
     }
 }

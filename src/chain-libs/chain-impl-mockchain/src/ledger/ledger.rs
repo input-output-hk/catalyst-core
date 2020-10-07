@@ -953,7 +953,7 @@ impl Ledger {
                 let (new_ledger_, _fee) =
                     new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
 
-                new_ledger = new_ledger_.apply_private_vote_tally(
+                new_ledger = new_ledger_.finalize_private_vote_tally(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
                     tx.payload_auth().into_payload_auth(),
@@ -1196,7 +1196,7 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_private_vote_tally<'a>(
+    pub fn finalize_private_vote_tally<'a>(
         self,
         tally: &certificate::PrivateVoteTally,
         bad: &TransactionBindingAuthData<'a>,
@@ -1210,7 +1210,10 @@ impl Ledger {
 
         let mut _f = |_action: &VoteAction| ();
 
-        // TODO: Decrypt shares here
+        for (id, manager) in self.votes.plans.iter() {
+            // TODO: finallize tally
+            // manager.tally_finish(asdfasdf)
+        }
 
         Ok(self)
     }

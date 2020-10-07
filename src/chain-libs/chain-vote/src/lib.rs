@@ -83,7 +83,7 @@ pub struct Tally {
     r: Vec<Ciphertext>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct TallyDecryptShare {
     r1s: Vec<gang::GroupElement>,
 }

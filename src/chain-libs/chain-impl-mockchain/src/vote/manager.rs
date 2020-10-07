@@ -542,6 +542,8 @@ impl VotePlanManager {
             })
         }
     }
+
+    pub fn tally_finish(&self, shares: &[chain_vote::TallyDecryptShare]) {}
 }
 
 #[cfg(test)]

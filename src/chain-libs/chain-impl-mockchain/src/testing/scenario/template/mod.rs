@@ -121,6 +121,11 @@ impl VotePlanDef {
     pub fn proposal(&self, index: usize) -> ProposalDef {
         self.proposals.get(index).unwrap().clone()
     }
+
+    pub fn id(&self) -> String {
+        let vote_plan: VotePlan = self.clone().into();
+        vote_plan.to_id().to_string() 
+    }
 }
 
 impl Into<VotePlan> for VotePlanDef {

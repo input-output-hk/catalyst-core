@@ -74,3 +74,12 @@ pub fn read_file_as_vector(
 pub fn have_the_same_content<P: AsRef<Path>>(left: P, right: P) -> bool {
     read_file(left) == read_file(right)
 }
+
+pub fn get_file_as_byte_vec<P: AsRef<Path>>(filename: P) -> Vec<u8> {
+    let mut f = File::open(&filename).expect("no file found");
+    let metadata = std::fs::metadata(&filename).expect("unable to read metadata");
+    let mut buffer = vec![0; metadata.len() as usize];
+    f.read(&mut buffer).expect("buffer overflow");
+
+    buffer
+}

@@ -469,25 +469,82 @@ impl BlockStore {
 
     /// Move all blocks up to the provided block ID to the permanent block
     /// storage.
-    pub fn flush_to_permanent_store(&self, to_block: &[u8]) -> Result<(), Error> {
+    ///
+    /// # Arguments
+    ///
+    /// * `to_block` - the ID of the block until which we want to flush blocks
+    ///   to the permanent storage.
+    /// * `min_number` - the minimum number of blocks to be flushed. If less
+    ///   than this number of blocks is available for flushing the function will
+    ///   not trigger.
+    ///
+    /// # Panics
+    ///
+    /// If `min_number` is less than 1.
+    ///
+    /// # Returns
+    ///
+    /// The number of blocks that were flushed.
+    pub fn flush_to_permanent_store(
+        &self,
+        to_block: &[u8],
+        min_number: usize,
+    ) -> Result<usize, Error> {
+        use std::convert::TryInto;
+
+        assert!(min_number > 0);
+
+        // We get the first block and check if we can go deep enough into the
+        // volatile storage.
+        let maybe_block_info = self
+            .get_block_info_volatile(to_block)
+            .map(Some)
+            .or_else(|err| match err {
+                Error::BlockNotFound => Ok(None),
+                e => Err(e),
+            })?;
+
+        let block_info = match maybe_block_info {
+            Some(block_info) => block_info,
+            None => return Ok(0),
+        };
+
+        let chain_length_prefix = match block_info
+            .chain_length()
+            .checked_sub(min_number.try_into().unwrap())
+        {
+            Some(length) => build_chain_length_index_prefix(length),
+            None => return Ok(0),
+        };
+
+        match self
+            .chain_length_index_tree
+            .scan_prefix(chain_length_prefix)
+            .next()
+        {
+            Some(Ok(_)) => {}
+            Some(Err(err)) => return Err(err.into()),
+            None => return Ok(0),
+        }
+
         let mut block_infos = Vec::new();
+        block_infos.push(block_info);
+        let mut current_block_id = block_infos.last().unwrap().parent_id().as_ref();
 
-        let mut current_block_id = to_block;
-
-        while let Some(block_info) =
-            self.get_block_info(current_block_id)
-                .map(Some)
-                .or_else(|err| match err {
-                    Error::BlockNotFound => Ok(None),
-                    e => Err(e),
-                })?
+        while let Some(block_info) = self
+            .get_block_info_volatile(current_block_id)
+            .map(Some)
+            .or_else(|err| match err {
+                Error::BlockNotFound => Ok(None),
+                e => Err(e),
+            })?
         {
             block_infos.push(block_info);
             current_block_id = block_infos.last().unwrap().parent_id().as_ref();
         }
 
-        if block_infos.is_empty() {
-            return Ok(());
+        if block_infos.len() < min_number {
+            return Ok(0);
         }
 
         let blocks = block_infos
@@ -516,7 +573,7 @@ impl BlockStore {
                 .remove(build_chain_length_index(chain_length, key))?;
         }
 
-        Ok(())
+        Ok(block_infos.len())
     }
 
     /// Iterate to the given block starting from the block at the given

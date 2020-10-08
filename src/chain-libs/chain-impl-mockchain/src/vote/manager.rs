@@ -9,7 +9,6 @@ use crate::{
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
 use imhamt::Hamt;
-use std::ops::Div;
 use std::{
     collections::{hash_map::DefaultHasher, HashSet},
     num::NonZeroU64,

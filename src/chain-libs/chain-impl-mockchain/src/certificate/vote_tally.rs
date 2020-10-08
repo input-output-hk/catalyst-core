@@ -35,7 +35,7 @@ pub enum TallyProof {
     Private {
         id: CommitteeId,
         signature: SingleAccountBindingSignature,
-        shares: Vec<chain_vote::TallyDecryptShare>,
+        shares: Vec<Vec<chain_vote::TallyDecryptShare>>,
     },
 }
 
@@ -82,17 +82,23 @@ impl TallyProof {
                 id,
                 signature,
                 shares,
-            } => bb
-                .u8(1)
-                .bytes(id.as_ref())
-                .bytes(signature.as_ref())
-                .u64(shares.len() as u64)
-                .bytes(
-                    &shares
+            } => {
+                let mut bb = bb
+                    .u8(1)
+                    .bytes(id.as_ref())
+                    .bytes(signature.as_ref())
+                    .u64(shares.len() as u64);
+
+                for share in shares {
+                    let proposal_shares_len = share.len();
+                    let as_bytes: Vec<u8> = share
                         .iter()
-                        .flat_map(|share| share.serialize().as_slice().to_vec())
-                        .collect::<Vec<u8>>(),
-                ),
+                        .flat_map(|s| s.serialize().as_slice().to_vec())
+                        .collect();
+                    bb = bb.u64(proposal_shares_len as u64).bytes(&as_bytes);
+                }
+                bb
+            }
         }
     }
 
@@ -179,10 +185,15 @@ impl Readable for TallyProof {
                 let _ = buf.get_u8()?;
                 let id = CommitteeId::read(buf)?;
                 let signature = SingleAccountBindingSignature::read(buf)?;
-                let shares_len = buf.get_u8()?;
-                let mut shares: Vec<chain_vote::TallyDecryptShare> = Vec::new();
+                let shares_len = buf.get_u64()?;
+                let mut shares: Vec<Vec<chain_vote::TallyDecryptShare>> = Vec::new();
                 for _ in 0..shares_len {
-                    shares.push(chain_vote::TallyDecryptShare::read(buf)?);
+                    let mut proposal_shares: Vec<chain_vote::TallyDecryptShare> = Vec::new();
+                    let len = buf.get_u64()?;
+                    for _ in 0..len {
+                        proposal_shares.push(chain_vote::TallyDecryptShare::read(buf)?);
+                    }
+                    shares.push(proposal_shares);
                 }
 
                 Ok(Self::Private {

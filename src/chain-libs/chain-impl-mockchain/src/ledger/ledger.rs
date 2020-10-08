@@ -280,6 +280,8 @@ pub enum Error {
     VotePlanInvalidGovernanceParameters,
     #[error("Vote Tally Proof failed")]
     VoteTallyProofFailed,
+    #[error("Vote tally decryption failed")]
+    VoteTallyDecryptionFailed,
     #[error("Pool update payload signature failed")]
     PoolUpdateSignatureFailed,
     #[error("Pool update last known registration hash doesn't match")]
@@ -1211,8 +1213,9 @@ impl Ledger {
         let mut _f = |_action: &VoteAction| ();
 
         for (id, manager) in self.votes.plans.iter() {
-            // TODO: finallize tally
-            // manager.tally_finish(asdfasdf)
+            manager
+                .tally_finish(id, &tally.shares)
+                .map_err(|_| Error::VoteTallyDecryptionFailed)?;
         }
 
         Ok(self)

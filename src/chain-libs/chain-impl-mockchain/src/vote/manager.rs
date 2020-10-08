@@ -1,6 +1,6 @@
-use crate::vote::{Payload, PayloadType};
+use crate::vote::{Payload, PayloadType, TallyError};
 use crate::{
-    certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
+    certificate::{Proposal, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     ledger::governance::{Governance, GovernanceAcceptanceCriteria},
     rewards::Ratio,
@@ -82,6 +82,9 @@ pub enum VoteError {
 
     #[error("Invalid private vote verification")]
     VoteVerificationError,
+
+    #[error("Error during private tallying {0}")]
+    PrivateTallyError(String),
 }
 
 impl ProposalManager {
@@ -204,9 +207,30 @@ impl ProposalManager {
         Ok(Self {
             votes_by_voters: self.votes_by_voters.clone(),
             options: self.options.clone(),
-            tally: Some(Tally::new_private(tally)),
+            tally: Some(Tally::new_private(tally, None)),
             action: self.action.clone(),
         })
+    }
+
+    pub fn finalize_private_tally(
+        &self,
+        shares: &[chain_vote::TallyDecryptShare],
+    ) -> Result<Self, TallyError> {
+        match &self.tally {
+            Some(Tally::Private { tally, .. }) => {
+                let state = tally.state();
+                // FIXME: Use a proper table size
+                let result =
+                    chain_vote::result(self.votes_by_voters.size() as u64, 1, &state, shares);
+                Ok(Self {
+                    votes_by_voters: self.votes_by_voters.clone(),
+                    options: self.options.clone(),
+                    tally: Some(Tally::new_private(tally.clone(), Some(result))),
+                    action: self.action.clone(),
+                })
+            }
+            _ => Err(TallyError::InvalidPrivacy),
+        }
     }
 
     fn check(&self, total: Stake, governance: &Governance, results: &TallyResult) -> bool {
@@ -367,6 +391,17 @@ impl ProposalManagers {
             proposals.push(proposal.private_tally(stake, governance, f)?);
         }
 
+        Ok(Self(proposals))
+    }
+
+    pub fn finalize_private_tally(
+        &self,
+        shares: &[Vec<chain_vote::TallyDecryptShare>],
+    ) -> Result<Self, VoteError> {
+        let mut proposals = Vec::with_capacity(self.0.len());
+        for (proposal_manager, shares) in self.0.iter().zip(shares) {
+            proposals.push(proposal_manager.finalize_private_tally(shares)?);
+        }
         Ok(Self(proposals))
     }
 }
@@ -543,13 +578,34 @@ impl VotePlanManager {
         }
     }
 
-    pub fn tally_finish(&self, shares: &[chain_vote::TallyDecryptShare]) {}
+    pub fn tally_finish(
+        &self,
+        id: &VotePlanId,
+        shares: &[Vec<chain_vote::TallyDecryptShare>],
+    ) -> Result<Self, VoteError> {
+        if id.clone() != self.plan.to_id() {
+            Err(VoteError::PrivateTallyError(format!(
+                "Expected vote plan id {} but got {}",
+                self.plan.to_id(),
+                id
+            )))
+        } else {
+            Ok(Self {
+                id: id.clone(),
+                plan: self.plan.clone(),
+                committee: self.committee.clone(),
+                proposal_managers: self.proposal_managers.finalize_private_tally(shares)?,
+            })
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::block::BlockDate;
+    use crate::certificate::TallyProof;
+
     use crate::testing::{TestGen, VoteTestGen};
     use chain_core::property::BlockDate as BlockDateProp;
     use quickcheck::TestResult;

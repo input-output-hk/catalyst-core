@@ -270,12 +270,11 @@ pub fn private_tally_sign(
     let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
 
     match payload_type {
-        PayloadType::Public => unreachable!("Encrypted vote tally payload should never be public"),
+        PayloadType::Public => unreachable!("Private vote tally payload should never be public"),
         PayloadType::Private => TallyProof::Private {
             id,
             signature,
-            // TODO: how to get the shares here?
-            shares: vec![],
+            shares: vt.shares.clone(),
         },
     }
 }

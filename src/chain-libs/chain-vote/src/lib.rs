@@ -93,7 +93,7 @@ pub struct TallyState {
     pub r2s: Vec<gang::GroupElement>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TallyResult {
     pub votes: Vec<Option<u64>>,
 }

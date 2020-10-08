@@ -21,16 +21,23 @@ pub struct TallyResult {
     options: Options,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Tally {
-    Public { result: TallyResult },
-    Private { tally: chain_vote::Tally },
+    Public {
+        result: TallyResult,
+    },
+    Private {
+        tally: chain_vote::Tally,
+        result: Option<chain_vote::TallyResult>,
+    },
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum TallyError {
     #[error("Invalid option choice")]
     InvalidChoice { options: Options, choice: Choice },
+    #[error("Invalid privacy")]
+    InvalidPrivacy,
 }
 
 impl Weight {
@@ -48,8 +55,8 @@ impl Tally {
     pub fn new_public(result: TallyResult) -> Self {
         Self::Public { result }
     }
-    pub fn new_private(tally: chain_vote::Tally) -> Self {
-        Self::Private { tally }
+    pub fn new_private(tally: chain_vote::Tally, result: Option<chain_vote::TallyResult>) -> Self {
+        Self::Private { tally, result }
     }
 
     pub fn is_public(&self) -> bool {
@@ -68,7 +75,7 @@ impl Tally {
 
     pub fn private(&self) -> Option<&chain_vote::Tally> {
         match self {
-            Self::Private { tally } => Some(tally),
+            Self::Private { tally, .. } => Some(tally),
             _ => None,
         }
     }

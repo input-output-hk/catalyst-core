@@ -12,9 +12,9 @@ use typed_bytes::{ByteArray, ByteBuilder};
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct PrivateVoteTally {
-    id: VotePlanId,
-    payload: VoteTallyPayload,
-    shares: Vec<Vec<chain_vote::TallyDecryptShare>>,
+    pub id: VotePlanId,
+    pub payload: VoteTallyPayload,
+    pub shares: Vec<Vec<chain_vote::TallyDecryptShare>>,
 }
 
 impl PrivateVoteTally {

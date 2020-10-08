@@ -9,6 +9,7 @@ use crate::{
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
 use imhamt::Hamt;
+use std::ops::Div;
 use std::{
     collections::{hash_map::DefaultHasher, HashSet},
     num::NonZeroU64,
@@ -219,9 +220,11 @@ impl ProposalManager {
         match &self.tally {
             Some(Tally::Private { tally, .. }) => {
                 let state = tally.state();
-                // FIXME: Use a proper table size
-                let result =
-                    chain_vote::result(self.votes_by_voters.size() as u64, 1, &state, shares);
+                let max_votes = self.votes_by_voters.size();
+                let table_size: usize = max_votes
+                    .checked_div(self.options.as_byte() as usize)
+                    .unwrap_or(max_votes / 3);
+                let result = chain_vote::result(max_votes as u64, table_size, &state, shares);
                 Ok(Self {
                     votes_by_voters: self.votes_by_voters.clone(),
                     options: self.options.clone(),

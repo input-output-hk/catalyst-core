@@ -124,6 +124,49 @@ impl Tally {
         }
         (TallyState { r2s }, TallyDecryptShare { r1s: dshares })
     }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        use std::{convert::TryInto, io::Write};
+        let mut bytes: Vec<u8> = Vec::new();
+        for ri in &self.r {
+            let ri_bytes = ri.to_bytes();
+            let ri_len: u64 = ri_bytes.len().try_into().unwrap();
+            bytes.write_all(ri_len.to_le_bytes().as_ref()).unwrap();
+            bytes.write_all(&ri_bytes).unwrap();
+        }
+        bytes
+    }
+
+    pub fn from_bytes(mut bytes: &[u8]) -> Option<Self> {
+        use std::convert::TryInto;
+
+        let mut r: Vec<Ciphertext> = Vec::new();
+
+        loop {
+            if bytes.len() < 8 {
+                return None;
+            }
+            let mut len_bytes_arr = [0u8; 8];
+            len_bytes_arr.copy_from_slice(&bytes[..8]);
+            let len: usize = u64::from_le_bytes(len_bytes_arr).try_into().unwrap();
+
+            bytes = &bytes[8..];
+
+            if bytes.len() < len {
+                return None;
+            }
+            let ri = Ciphertext::from_bytes(&bytes[..len])?;
+            r.push(ri);
+
+            bytes = &bytes[len..];
+
+            if bytes.is_empty() {
+                break;
+            }
+        }
+
+        Some(Self { r })
+    }
 }
 
 pub fn result(

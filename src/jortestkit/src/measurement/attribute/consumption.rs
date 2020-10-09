@@ -66,7 +66,7 @@ impl Consumption {
     }
 
     fn median(mut markers: Vec<u32>) -> u32 {
-        markers.sort();
+        markers.sort_unstable();
         let mid = markers.len() / 2;
         *markers.get(mid).unwrap()
     }

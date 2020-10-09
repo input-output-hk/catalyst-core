@@ -169,6 +169,48 @@ impl Tally {
     }
 }
 
+impl TallyDecryptShare {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        group_elements_to_bytes(&self.r1s)
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        group_elements_from_bytes(bytes).map(|r1s| Self { r1s })
+    }
+}
+
+impl TallyState {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        group_elements_to_bytes(&self.r2s)
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        group_elements_from_bytes(bytes).map(|r2s| Self { r2s })
+    }
+}
+
+fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
+    use std::io::Write;
+    let mut bytes: Vec<u8> = Vec::with_capacity(65 * elements.len());
+    for element in elements {
+        bytes.write(element.to_bytes().as_ref()).unwrap();
+    }
+    bytes
+}
+
+fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
+    if bytes.len() % 65 != 0 {
+        return None;
+    }
+    let len = bytes.len() / 65;
+    let mut elements: Vec<gang::GroupElement> = Vec::with_capacity(len);
+    for i in 0..len {
+        let element = gang::GroupElement::from_bytes(&bytes[(i * 65)..((i + 1) * 65)])?;
+        elements.push(element);
+    }
+    Some(elements)
+}
+
 pub fn result(
     max_votes: u64,
     table_size: usize,

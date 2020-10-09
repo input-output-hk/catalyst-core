@@ -271,11 +271,7 @@ pub fn private_tally_sign(
 
     match payload_type {
         PayloadType::Public => unreachable!("Private vote tally payload should never be public"),
-        PayloadType::Private => TallyProof::Private {
-            id,
-            signature,
-            shares: vt.shares.clone(),
-        },
+        PayloadType::Private => TallyProof::Private { id, signature },
     }
 }
 

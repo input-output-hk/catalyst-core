@@ -35,7 +35,6 @@ pub enum TallyProof {
     Private {
         id: CommitteeId,
         signature: SingleAccountBindingSignature,
-        shares: Vec<Vec<chain_vote::TallyDecryptShare>>,
     },
 }
 
@@ -78,26 +77,8 @@ impl TallyProof {
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         match self {
             Self::Public { id, signature } => bb.u8(0).bytes(id.as_ref()).bytes(signature.as_ref()),
-            Self::Private {
-                id,
-                signature,
-                shares,
-            } => {
-                let mut bb = bb
-                    .u8(1)
-                    .bytes(id.as_ref())
-                    .bytes(signature.as_ref())
-                    .u64(shares.len() as u64);
-
-                for share in shares {
-                    let proposal_shares_len = share.len();
-                    let as_bytes: Vec<u8> = share
-                        .iter()
-                        .flat_map(|s| s.serialize().as_slice().to_vec())
-                        .collect();
-                    bb = bb.u64(proposal_shares_len as u64).bytes(&as_bytes);
-                }
-                bb
+            Self::Private { id, signature } => {
+                bb.u8(1).bytes(id.as_ref()).bytes(signature.as_ref())
             }
         }
     }
@@ -116,11 +97,7 @@ impl TallyProof {
                     signature.verify_slice(&pk, verify_data)
                 }
             }
-            Self::Private {
-                id,
-                signature,
-                shares: _,
-            } => {
+            Self::Private { id, signature } => {
                 if tally_type != PayloadType::Private {
                     Verification::Failed
                 } else {
@@ -185,22 +162,7 @@ impl Readable for TallyProof {
                 let _ = buf.get_u8()?;
                 let id = CommitteeId::read(buf)?;
                 let signature = SingleAccountBindingSignature::read(buf)?;
-                let shares_len = buf.get_u64()?;
-                let mut shares: Vec<Vec<chain_vote::TallyDecryptShare>> = Vec::new();
-                for _ in 0..shares_len {
-                    let mut proposal_shares: Vec<chain_vote::TallyDecryptShare> = Vec::new();
-                    let len = buf.get_u64()?;
-                    for _ in 0..len {
-                        proposal_shares.push(chain_vote::TallyDecryptShare::read(buf)?);
-                    }
-                    shares.push(proposal_shares);
-                }
-
-                Ok(Self::Private {
-                    id,
-                    signature,
-                    shares,
-                })
+                Ok(Self::Private { id, signature })
             }
             _ => Err(ReadError::StructureInvalid(
                 "Unknown Tally proof type".to_owned(),

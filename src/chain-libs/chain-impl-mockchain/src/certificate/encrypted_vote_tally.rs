@@ -49,7 +49,7 @@ impl EncryptedVoteTally {
     pub fn new_private(id: VotePlanId) -> Self {
         Self {
             id,
-            payload: VoteTallyPayload::Public,
+            payload: VoteTallyPayload::Private,
         }
     }
 

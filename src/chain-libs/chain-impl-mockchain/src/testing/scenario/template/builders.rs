@@ -258,6 +258,22 @@ impl VotePlanDefBuilder {
         self
     }
 
+    pub fn vote_phases(&mut self, start_epoch: u32, tally_epoch: u32, end_epoch: u32) -> &mut Self {
+        self.vote_date = Some(BlockDate {
+            epoch: start_epoch,
+            slot_id: 0,
+        });
+        self.tally_date = Some(BlockDate {
+            epoch: tally_epoch,
+            slot_id: 0,
+        });
+        self.end_tally_date = Some(BlockDate {
+            epoch: end_epoch,
+            slot_id: 0,
+        });
+        self
+    }	
+
     pub fn consecutive_epoch_dates(&mut self) -> &mut Self {
         self.vote_date = Some(BlockDate {
             epoch: 0,

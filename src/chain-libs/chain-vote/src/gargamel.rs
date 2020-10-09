@@ -67,16 +67,16 @@ impl Ciphertext {
         }
     }
 
-    pub fn to_bytes(&self) -> Vec<u8> {
-        let mut r = self.e1.to_bytes().to_vec();
-        r.extend_from_slice(&self.e2.to_bytes());
+    pub fn to_bytes(&self) -> [u8; 130] {
+        let mut r = [0u8; 130];
+        &mut r[..65].copy_from_slice(self.e1.to_bytes().as_ref());
+        &mut r[65..].copy_from_slice(self.e2.to_bytes().as_ref());
         r
     }
 
     pub fn from_bytes(slice: &[u8]) -> Option<Ciphertext> {
-        let l = slice.len() / 2;
-        let e1 = GroupElement::from_bytes(&slice[0..l])?;
-        let e2 = GroupElement::from_bytes(&slice[l..])?;
+        let e1 = GroupElement::from_bytes(&slice[..65])?;
+        let e2 = GroupElement::from_bytes(&slice[65..])?;
         Some(Ciphertext { e1, e2 })
     }
 

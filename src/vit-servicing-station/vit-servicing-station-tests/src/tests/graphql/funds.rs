@@ -44,7 +44,7 @@ pub fn fund_without_argument_test() -> Result<(), Box<dyn std::error::Error>> {
     assert!(query_result["errors"][0]["message"]
         .as_str()
         .unwrap()
-        .contains("is required but not provided"));
+        .contains("expected name"));
     Ok(())
 }
 

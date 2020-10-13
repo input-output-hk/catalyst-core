@@ -1,9 +1,8 @@
 use crate::transaction::{SingleAccountBindingSignature, TransactionBindingAuthData};
 use crate::vote::CommitteeId;
 use crate::{
-    certificate::{CertificateSlice, VotePlanId, VoteTallyPayload},
+    certificate::{CertificateSlice, VotePlanId},
     transaction::{Payload, PayloadAuthData, PayloadData, PayloadSlice},
-    vote::{PayloadType, TryFromIntError},
 };
 use chain_core::{
     mempack::{ReadBuf, ReadError, Readable},
@@ -21,7 +20,6 @@ pub struct EncryptedVoteTallyProof {
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct EncryptedVoteTally {
     id: VotePlanId,
-    payload: VoteTallyPayload,
 }
 
 impl EncryptedVoteTallyProof {
@@ -31,39 +29,23 @@ impl EncryptedVoteTallyProof {
             .bytes(self.signature.as_ref())
     }
 
-    pub fn verify<'a>(
-        &self,
-        tally_type: PayloadType,
-        verify_data: &TransactionBindingAuthData<'a>,
-    ) -> Verification {
-        if tally_type != PayloadType::Private {
-            Verification::Failed
-        } else {
-            let pk = self.id.public_key();
-            self.signature.verify_slice(&pk, verify_data)
-        }
+    pub fn verify<'a>(&self, verify_data: &TransactionBindingAuthData<'a>) -> Verification {
+        let pk = self.id.public_key();
+        self.signature.verify_slice(&pk, verify_data)
     }
 }
 
 impl EncryptedVoteTally {
-    pub fn new_private(id: VotePlanId) -> Self {
-        Self {
-            id,
-            payload: VoteTallyPayload::Private,
-        }
+    pub fn new(id: VotePlanId) -> Self {
+        Self { id }
     }
 
     pub fn id(&self) -> &VotePlanId {
         &self.id
     }
 
-    pub fn tally_type(&self) -> PayloadType {
-        self.payload.payload_type()
-    }
-
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         bb.bytes(self.id().as_ref())
-            .u8(self.payload.payload_type() as u8)
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {
@@ -129,21 +111,7 @@ impl Readable for EncryptedVoteTallyProof {
 
 impl Readable for EncryptedVoteTally {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        use std::convert::TryInto as _;
-
         let id = <[u8; 32]>::read(buf)?.into();
-        let payload_type = buf
-            .get_u8()?
-            .try_into()
-            .map_err(|e: TryFromIntError| ReadError::StructureInvalid(e.to_string()))?;
-
-        let payload = match payload_type {
-            PayloadType::Public => {
-                unreachable!("The payload for an encrypted tally should not be public")
-            }
-            PayloadType::Private => VoteTallyPayload::Private,
-        };
-
-        Ok(Self { id, payload })
+        Ok(Self { id })
     }
 }

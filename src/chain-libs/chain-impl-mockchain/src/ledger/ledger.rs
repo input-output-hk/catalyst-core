@@ -1178,7 +1178,7 @@ impl Ledger {
         bad: &TransactionBindingAuthData<'a>,
         sig: certificate::EncryptedVoteTallyProof,
     ) -> Result<Self, Error> {
-        if sig.verify(tally.tally_type(), bad) == Verification::Failed {
+        if sig.verify(bad) == Verification::Failed {
             return Err(Error::VoteTallyProofFailed);
         }
 

@@ -179,7 +179,7 @@ impl TestTxCertBuilder {
                     outputs,
                     make_witness,
                 );
-                let committee_signature = encrypted_tally_sign(&keys, vote_tally, &builder);
+                let committee_signature = encrypted_tally_sign(&keys, &builder);
                 let tx = builder.set_payload_auth(&committee_signature);
                 Fragment::EncryptedVoteTally(tx)
             }
@@ -239,21 +239,14 @@ pub fn tally_sign(
 
 pub fn encrypted_tally_sign(
     keys: &[EitherEd25519SecretKey],
-    vt: &EncryptedVoteTally,
     builder: &TxBuilderState<SetAuthData<EncryptedVoteTally>>,
 ) -> EncryptedVoteTallyProof {
-    let payload_type = vt.tally_type();
-
     let key: EitherEd25519SecretKey = keys[0].clone();
     let id = key.to_public().into();
 
     let auth_data = builder.get_auth_data();
     let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
-
-    match payload_type {
-        PayloadType::Public => unreachable!("Encrypted vote tally payload should never be public"),
-        PayloadType::Private => EncryptedVoteTallyProof { id, signature },
-    }
+    EncryptedVoteTallyProof { id, signature }
 }
 
 pub fn private_tally_sign(

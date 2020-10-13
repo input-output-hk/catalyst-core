@@ -28,7 +28,7 @@ pub enum Tally {
     },
     Private {
         tally: chain_vote::Tally,
-        result: Option<chain_vote::TallyResult>,
+        result: Option<TallyResult>,
     },
 }
 
@@ -38,6 +38,11 @@ pub enum TallyError {
     InvalidChoice { options: Options, choice: Choice },
     #[error("Invalid privacy")]
     InvalidPrivacy,
+    #[error("Choice number in private vote was too high. Maximum of 255 is allowed.")]
+    InvalidPrivateChoiceSize {
+        #[from]
+        source: std::num::TryFromIntError,
+    },
 }
 
 impl Weight {
@@ -55,21 +60,27 @@ impl Tally {
     pub fn new_public(result: TallyResult) -> Self {
         Self::Public { result }
     }
-    pub fn new_private(tally: chain_vote::Tally, result: Option<chain_vote::TallyResult>) -> Self {
+    pub fn new_private(tally: chain_vote::Tally, result: Option<TallyResult>) -> Self {
         Self::Private { tally, result }
     }
 
     pub fn is_public(&self) -> bool {
-        self.public().is_some()
+        match self {
+            Self::Public { .. } => true,
+            _ => false,
+        }
     }
     pub fn is_private(&self) -> bool {
-        self.private().is_some()
+        match self {
+            Self::Private { .. } => true,
+            _ => false,
+        }
     }
 
-    pub fn public(&self) -> Option<&TallyResult> {
+    pub fn result(&self) -> Option<&TallyResult> {
         match self {
             Self::Public { result } => Some(result),
-            _ => None,
+            Self::Private { result, .. } => result.as_ref(),
         }
     }
 
@@ -235,6 +246,6 @@ mod tests {
     #[quickcheck]
     pub fn tally(tally_result: TallyResult) -> TestResult {
         let tally = Tally::new_public(tally_result.clone());
-        TestResult::from_bool(tally.is_public() && (*tally.public().unwrap()) == tally_result)
+        TestResult::from_bool(tally.is_public() && (*tally.result().unwrap()) == tally_result)
     }
 }

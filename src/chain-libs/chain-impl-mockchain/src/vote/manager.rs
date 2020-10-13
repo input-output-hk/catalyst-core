@@ -1,4 +1,4 @@
-use crate::vote::{Payload, PayloadType, TallyError};
+use crate::vote::{Choice, Payload, PayloadType, TallyError};
 use crate::{
     certificate::{Proposal, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
@@ -75,7 +75,6 @@ pub enum VoteError {
 
     #[error("Cannot tally votes")]
     CannotTallyVotes {
-        #[source]
         #[from]
         source: vote::TallyError,
     },
@@ -216,6 +215,7 @@ impl ProposalManager {
         &self,
         shares: &[chain_vote::TallyDecryptShare],
     ) -> Result<Self, TallyError> {
+        use std::convert::TryInto;
         match &self.tally {
             Some(Tally::Private { tally, .. }) => {
                 let state = tally.state();
@@ -223,7 +223,17 @@ impl ProposalManager {
                 let table_size: usize = max_votes
                     .checked_div(self.options.as_byte() as usize)
                     .unwrap_or(max_votes / 3);
-                let result = chain_vote::result(max_votes as u64, table_size, &state, shares);
+                let private_result =
+                    chain_vote::result(max_votes as u64, table_size, &state, shares);
+                let mut result = TallyResult::new(self.options.clone());
+                for (choice, weight) in private_result
+                    .votes
+                    .iter()
+                    .map(|maybe_vote| maybe_vote.unwrap_or_default())
+                    .enumerate()
+                {
+                    result.add_vote(Choice::new(choice.try_into()?), weight)?;
+                }
                 Ok(Self {
                     votes_by_voters: self.votes_by_voters.clone(),
                     options: self.options.clone(),

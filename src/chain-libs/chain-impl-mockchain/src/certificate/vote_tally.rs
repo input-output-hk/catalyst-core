@@ -11,6 +11,7 @@ use chain_core::{
     property,
 };
 use chain_crypto::Verification;
+use chain_vote::TallyDecryptShare;
 use typed_bytes::{ByteArray, ByteBuilder};
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
@@ -22,7 +23,9 @@ pub struct VoteTally {
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub enum VoteTallyPayload {
     Public,
-    Private,
+    Private {
+        shares: Box<[Box<[TallyDecryptShare]>]>,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -42,7 +45,7 @@ impl VoteTallyPayload {
     pub fn payload_type(&self) -> PayloadType {
         match self {
             Self::Public => PayloadType::Public,
-            Self::Private => PayloadType::Private,
+            Self::Private { .. } => PayloadType::Private,
         }
     }
 }
@@ -63,9 +66,28 @@ impl VoteTally {
         self.payload.payload_type()
     }
 
+    pub fn decryption_shares(&self) -> Option<Box<[Box<[TallyDecryptShare]>]>> {
+        match &self.payload {
+            VoteTallyPayload::Public => None,
+            VoteTallyPayload::Private { shares } => Some(shares.clone()),
+        }
+    }
+
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        bb.bytes(self.id().as_ref())
-            .u8(self.payload.payload_type() as u8)
+        use std::convert::TryInto;
+
+        let bb = bb.bytes(self.id().as_ref()).u8(self.tally_type() as u8);
+
+        match &self.payload {
+            VoteTallyPayload::Public => bb,
+            VoteTallyPayload::Private { shares } => {
+                bb.u8(shares.len().try_into().unwrap())
+                    .fold(shares.iter(), |bb, s| {
+                        bb.u8(s.len().try_into().unwrap())
+                            .fold(s.iter(), |bb, s| bb.bytes(s.serialize().as_ref()))
+                    })
+            }
+        }
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {
@@ -183,7 +205,21 @@ impl Readable for VoteTally {
 
         let payload = match payload_type {
             PayloadType::Public => VoteTallyPayload::Public,
-            PayloadType::Private => VoteTallyPayload::Private,
+            PayloadType::Private => {
+                let proposals_number = buf.get_u8()? as usize;
+                let mut proposals = Vec::with_capacity(proposals_number);
+                for _i in 0..proposals_number {
+                    let shares_number = buf.get_u8()? as usize;
+                    let mut shares = Vec::with_capacity(shares_number);
+                    for _j in 0..shares_number {
+                        shares.push(TallyDecryptShare::read(buf)?);
+                    }
+                    proposals.push(shares.into_boxed_slice());
+                }
+                let shares = proposals.into_boxed_slice();
+
+                VoteTallyPayload::Private { shares }
+            }
         };
 
         Ok(Self { id, payload })

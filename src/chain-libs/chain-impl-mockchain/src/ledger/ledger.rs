@@ -481,9 +481,6 @@ impl Ledger {
                 Fragment::EncryptedVoteTally(_) => {
                     return Err(Error::Block0(Block0Error::HasVoteTally));
                 }
-                Fragment::PrivateVoteTally(_) => {
-                    return Err(Error::Block0(Block0Error::HasVoteTally));
-                }
             }
         }
 
@@ -949,18 +946,6 @@ impl Ledger {
                     tx.payload_auth().into_payload_auth(),
                 )?;
             }
-            Fragment::PrivateVoteTally(tx) => {
-                let tx = tx.as_slice();
-
-                let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
-
-                new_ledger = new_ledger_.finalize_private_vote_tally(
-                    &tx.payload().into_payload(),
-                    &tx.transaction_binding_auth_data(),
-                    tx.payload_auth().into_payload_auth(),
-                )?;
-            }
         }
 
         Ok(new_ledger)
@@ -1194,29 +1179,6 @@ impl Ledger {
             sig,
             &mut f,
         )?;
-
-        Ok(self)
-    }
-
-    pub fn finalize_private_vote_tally<'a>(
-        self,
-        tally: &certificate::PrivateVoteTally,
-        bad: &TransactionBindingAuthData<'a>,
-        sig: certificate::TallyProof,
-    ) -> Result<Self, Error> {
-        if sig.verify(tally.tally_type(), bad) == Verification::Failed {
-            return Err(Error::VoteTallyProofFailed);
-        }
-
-        let _stake = StakeControl::new_with(&self.accounts, &self.utxos);
-
-        let mut _f = |_action: &VoteAction| ();
-
-        for (id, manager) in self.votes.plans.iter() {
-            manager
-                .tally_finish(id, &tally.shares)
-                .map_err(|_| Error::VoteTallyDecryptionFailed)?;
-        }
 
         Ok(self)
     }

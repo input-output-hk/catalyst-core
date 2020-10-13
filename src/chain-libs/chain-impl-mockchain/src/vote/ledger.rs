@@ -141,9 +141,15 @@ impl VotePlanLedger {
             TallyProof::Public { id, .. } => id,
             TallyProof::Private { id, .. } => id,
         };
-        let r = self.plans.update(&id, move |v| {
-            v.tally(block_date, stake, governance, committee_id, f)
-                .map(Some)
+        let r = self.plans.update(&id, move |v| match sig {
+            TallyProof::Public { .. } => v
+                .public_tally(block_date, stake, governance, committee_id, f)
+                .map(Some),
+            TallyProof::Private { .. } => {
+                let shares = tally.decryption_shares().unwrap();
+                let shares = shares.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+                v.private_tally_finish(&shares, governance, f).map(Some)
+            }
         });
 
         match r {
@@ -176,7 +182,8 @@ impl VotePlanLedger {
         let id = tally.id().clone();
 
         let r = self.plans.update(&id, move |v| {
-            v.tally(block_date, stake, governance, sig.id, f).map(Some)
+            v.public_tally(block_date, stake, governance, sig.id, f)
+                .map(Some)
         });
 
         match r {

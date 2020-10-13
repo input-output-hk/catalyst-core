@@ -1,4 +1,4 @@
-use crate::certificate::{EncryptedVoteTally, PrivateVoteTally};
+use crate::certificate::{EncryptedVoteTally};
 use crate::{
     certificate::{
         Certificate, CertificatePayload, EncryptedVoteTallyProof, PoolOwnersSigned, PoolSignature,
@@ -183,18 +183,6 @@ impl TestTxCertBuilder {
                 let tx = builder.set_payload_auth(&committee_signature);
                 Fragment::EncryptedVoteTally(tx)
             }
-            Certificate::PrivateVoteTally(private_vote_tally) => {
-                let builder = self.set_initial_ios(
-                    TxBuilder::new().set_payload(private_vote_tally),
-                    &funder,
-                    inputs,
-                    outputs,
-                    make_witness,
-                );
-                let committee_signature = private_tally_sign(&keys, private_vote_tally, &builder);
-                let tx = builder.set_payload_auth(&committee_signature);
-                Fragment::PrivateVoteTally(tx)
-            }
         }
     }
 
@@ -247,25 +235,6 @@ pub fn encrypted_tally_sign(
     let auth_data = builder.get_auth_data();
     let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
     EncryptedVoteTallyProof { id, signature }
-}
-
-pub fn private_tally_sign(
-    keys: &[EitherEd25519SecretKey],
-    vt: &PrivateVoteTally,
-    builder: &TxBuilderState<SetAuthData<PrivateVoteTally>>,
-) -> TallyProof {
-    let payload_type = vt.tally_type();
-
-    let key: EitherEd25519SecretKey = keys[0].clone();
-    let id = key.to_public().into();
-
-    let auth_data = builder.get_auth_data();
-    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
-
-    match payload_type {
-        PayloadType::Public => unreachable!("Private vote tally payload should never be public"),
-        PayloadType::Private => TallyProof::Private { id, signature },
-    }
 }
 
 pub fn plan_sign(

@@ -23,12 +23,18 @@ pub struct TallyResult {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Tally {
-    Public {
-        result: TallyResult,
+    Public { result: TallyResult },
+    Private { state: PrivateTallyState },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum PrivateTallyState {
+    Encrypted {
+        encrypted_tally: chain_vote::Tally,
+        total_stake: Stake,
     },
-    Private {
-        tally: chain_vote::Tally,
-        result: Option<TallyResult>,
+    Decrypted {
+        result: TallyResult,
     },
 }
 
@@ -43,6 +49,10 @@ pub enum TallyError {
         #[from]
         source: std::num::TryFromIntError,
     },
+    #[error("this private tally is already decryptred")]
+    TallyAlreadyDecrypted,
+    #[error("the encrypted tally was not provided yet")]
+    NoEncryptedTally,
 }
 
 impl Weight {
@@ -60,8 +70,14 @@ impl Tally {
     pub fn new_public(result: TallyResult) -> Self {
         Self::Public { result }
     }
-    pub fn new_private(tally: chain_vote::Tally, result: Option<TallyResult>) -> Self {
-        Self::Private { tally, result }
+
+    pub fn new_private(encrypted_tally: chain_vote::Tally, total_stake: Stake) -> Self {
+        Self::Private {
+            state: PrivateTallyState::Encrypted {
+                encrypted_tally,
+                total_stake,
+            },
+        }
     }
 
     pub fn is_public(&self) -> bool {
@@ -80,14 +96,39 @@ impl Tally {
     pub fn result(&self) -> Option<&TallyResult> {
         match self {
             Self::Public { result } => Some(result),
-            Self::Private { result, .. } => result.as_ref(),
+            Self::Private {
+                state: PrivateTallyState::Decrypted { result },
+            } => Some(result),
+            _ => None,
         }
     }
 
-    pub fn private(&self) -> Option<&chain_vote::Tally> {
+    pub fn private_encrypted(&self) -> Result<(&chain_vote::Tally, &Stake), TallyError> {
         match self {
-            Self::Private { tally, .. } => Some(tally),
-            _ => None,
+            Self::Private {
+                state:
+                    PrivateTallyState::Encrypted {
+                        encrypted_tally,
+                        total_stake,
+                    },
+            } => Ok((encrypted_tally, total_stake)),
+            Self::Private {
+                state: PrivateTallyState::Decrypted { .. },
+            } => Err(TallyError::TallyAlreadyDecrypted),
+            Self::Public { .. } => Err(TallyError::InvalidPrivacy),
+        }
+    }
+
+    pub fn private_set_result(mut self, result: TallyResult) -> Result<Self, TallyError> {
+        match &mut self {
+            Self::Private { state } => {
+                if let PrivateTallyState::Decrypted { .. } = state {
+                    return Err(TallyError::TallyAlreadyDecrypted);
+                }
+                *state = PrivateTallyState::Decrypted { result };
+                Ok(self)
+            }
+            _ => Err(TallyError::InvalidPrivacy),
         }
     }
 }

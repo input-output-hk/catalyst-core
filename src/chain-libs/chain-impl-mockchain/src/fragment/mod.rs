@@ -43,7 +43,6 @@ pub enum Fragment {
     VoteCast(Transaction<certificate::VoteCast>),
     VoteTally(Transaction<certificate::VoteTally>),
     EncryptedVoteTally(Transaction<certificate::EncryptedVoteTally>),
-    PrivateVoteTally(Transaction<certificate::PrivateVoteTally>),
 }
 
 impl PartialEq for Fragment {
@@ -70,7 +69,6 @@ pub(super) enum FragmentTag {
     VoteCast = 11,
     VoteTally = 12,
     EncryptedVoteTally = 13,
-    PrivateVoteTally = 14,
 }
 
 impl FragmentTag {
@@ -90,7 +88,6 @@ impl FragmentTag {
             11 => Some(FragmentTag::VoteCast),
             12 => Some(FragmentTag::VoteTally),
             13 => Some(FragmentTag::EncryptedVoteTally),
-            14 => Some(FragmentTag::PrivateVoteTally),
             _ => None,
         }
     }
@@ -114,7 +111,6 @@ impl Fragment {
             Fragment::VoteCast(_) => FragmentTag::VoteCast,
             Fragment::VoteTally(_) => FragmentTag::VoteTally,
             Fragment::EncryptedVoteTally(_) => FragmentTag::EncryptedVoteTally,
-            Fragment::PrivateVoteTally(_) => FragmentTag::PrivateVoteTally,
         }
     }
 
@@ -141,9 +137,6 @@ impl Fragment {
             Fragment::VoteCast(vote_plan) => vote_plan.serialize(&mut codec).unwrap(),
             Fragment::VoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
             Fragment::EncryptedVoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
-            Fragment::PrivateVoteTally(private_vote_tally) => {
-                private_vote_tally.serialize(&mut codec).unwrap()
-            }
         }
         FragmentRaw(codec.into_inner())
     }
@@ -198,9 +191,6 @@ impl Readable for Fragment {
             Some(FragmentTag::VoteTally) => Transaction::read(buf).map(Fragment::VoteTally),
             Some(FragmentTag::EncryptedVoteTally) => {
                 Transaction::read(buf).map(Fragment::EncryptedVoteTally)
-            }
-            Some(FragmentTag::PrivateVoteTally) => {
-                Transaction::read(buf).map(Fragment::PrivateVoteTally)
             }
             None => Err(ReadError::UnknownTag(tag as u32)),
         }

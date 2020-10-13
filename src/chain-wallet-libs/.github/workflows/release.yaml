@@ -126,7 +126,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [nodejs, web]
+        target: [nodejs, web, bundler]
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -138,6 +138,11 @@ jobs:
 
       - name: build
         run: wasm-pack build --release --target ${{ matrix.target }} bindings/wallet-js
+
+      # FIXME: this shouldn't be necessary, investigate further
+      - name: patch package.json missing file
+        working-directory: ./bindings/wallet-js
+        run: sh patch-packaging.sh 
 
       - name: pack
         run: wasm-pack pack bindings/wallet-js

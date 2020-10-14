@@ -23,6 +23,16 @@ impl Arbitrary for BlockVersion {
     }
 }
 
+impl Arbitrary for AnyBlockVersion {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        match g.next_u32() % 1 {
+            0 => AnyBlockVersion::Supported(BlockVersion::from_u16(u16::arbitrary(g) % 3).unwrap()),
+            1 => AnyBlockVersion::Unsupported(u16::arbitrary(g)),
+            _ => unreachable!(),
+        }
+    }
+}
+
 impl Arbitrary for Common {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         Common {

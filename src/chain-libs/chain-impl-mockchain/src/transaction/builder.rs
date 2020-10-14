@@ -43,13 +43,9 @@ impl Default for TxBuilder {
 
 impl TxBuilder {
     /// Create a new Tx builder
-    #[allow(clippy::reversed_empty_ranges)]
     pub fn new() -> Self {
-        let mut data = Vec::new();
         // push empty hole for fragment overhead space
-        for _ in 0..FRAGMENT_OVERHEAD {
-            data.push(0u8);
-        }
+        let data = vec![0u8; FRAGMENT_OVERHEAD];
         TxBuilderState {
             data,
             tstruct: TransactionStruct {

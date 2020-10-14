@@ -67,10 +67,7 @@ where
                         current = tx.get_page(new_current_id).unwrap();
                     } else {
                         break current.as_node(|node: Node<K, &[u8]>| {
-                            let excluded = match range.start_bound() {
-                                Bound::Excluded(_) => true,
-                                _ => false,
-                            };
+                            let excluded = matches!(range.start_bound(), Bound::Excluded(_));
 
                             match node.as_leaf::<V>().keys().binary_search(start) {
                                 Ok(pos) => (current.id(), pos + if excluded { 1 } else { 0 }),

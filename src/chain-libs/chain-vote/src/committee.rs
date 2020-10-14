@@ -135,6 +135,10 @@ impl MemberPublicKey {
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.to_bytes()
     }
+
+    pub fn from_public_key(pk: PublicKey) -> Self {
+        MemberPublicKey(pk)
+    }
 }
 
 impl MemberCommunicationKey {
@@ -147,6 +151,10 @@ impl MemberCommunicationKey {
         MemberCommunicationPublicKey(PublicKey {
             pk: &GroupElement::generator() * &self.0.sk,
         })
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<MemberCommunicationKey> {
+        SecretKey::from_bytes(bytes).map(MemberCommunicationKey)
     }
 
     pub fn to_bytes(&self) -> [u8; 32] {

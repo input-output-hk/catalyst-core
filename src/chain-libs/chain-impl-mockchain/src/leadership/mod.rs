@@ -230,10 +230,7 @@ impl Verification {
     }
     #[inline]
     pub fn success(&self) -> bool {
-        match self {
-            Verification::Success => true,
-            _ => false,
-        }
+        matches!(self, Verification::Success)
     }
     #[inline]
     pub fn failure(&self) -> bool {

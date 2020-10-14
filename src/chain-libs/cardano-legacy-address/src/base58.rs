@@ -161,15 +161,12 @@ fn base_decode(alphabet_s: &str, input: &[u8]) -> Result<Vec<u8>> {
     }
     let leading_zeros = bytes.iter().rev().take_while(|x| **x == 0).count();
     if zcount > leading_zeros {
-        if leading_zeros > 0 {
-            for _ in 0..(zcount - leading_zeros - 1) {
-                bytes.push(0);
-            }
+        let unpad = if leading_zeros > 0 {
+            leading_zeros + 1
         } else {
-            for _ in 0..zcount {
-                bytes.push(0);
-            }
-        }
+            0
+        };
+        bytes.resize(bytes.len() + zcount - unpad, 0);
     }
     bytes.reverse();
     Ok(bytes)

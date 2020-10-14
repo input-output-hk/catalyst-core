@@ -129,7 +129,7 @@ impl Tally {
         use std::io::Write;
         let mut bytes: Vec<u8> = Vec::with_capacity(CIPHERTEXT_BYTES_LEN * self.r.len());
         for ri in &self.r {
-            bytes.write(ri.to_bytes().as_ref()).unwrap();
+            bytes.write_all(ri.to_bytes().as_ref()).unwrap();
         }
         bytes
     }
@@ -170,7 +170,7 @@ fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
     use std::io::Write;
     let mut bytes: Vec<u8> = Vec::with_capacity(GROUP_ELEMENT_BYTES_LEN * elements.len());
     for element in elements {
-        bytes.write(element.to_bytes().as_ref()).unwrap();
+        bytes.write_all(element.to_bytes().as_ref()).unwrap();
     }
     bytes
 }

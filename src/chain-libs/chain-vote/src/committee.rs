@@ -171,4 +171,8 @@ impl ElectionPublicKey {
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.to_bytes()
     }
+
+    pub fn from_bytes(buf: &[u8]) -> Option<Self> {
+        PublicKey::from_bytes(buf).map(ElectionPublicKey)
+    }
 }

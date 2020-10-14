@@ -25,8 +25,8 @@ use rand_core::{CryptoRng, RngCore};
 
 pub use committee::{MemberCommunicationKey, MemberCommunicationPublicKey, MemberState};
 pub use encrypted::EncryptingVote;
-use gang::Scalar;
-pub use gargamel::Ciphertext;
+use gang::{Scalar, GROUP_ELEMENT_BYTES_LEN};
+pub use gargamel::{Ciphertext, CIPHERTEXT_BYTES_LEN};
 pub use unit_vector::UnitVector;
 
 /// Secret key for opening vote
@@ -127,7 +127,7 @@ impl Tally {
 
     pub fn to_bytes(&self) -> Vec<u8> {
         use std::io::Write;
-        let mut bytes: Vec<u8> = Vec::with_capacity(130 * self.r.len());
+        let mut bytes: Vec<u8> = Vec::with_capacity(CIPHERTEXT_BYTES_LEN * self.r.len());
         for ri in &self.r {
             bytes.write(ri.to_bytes().as_ref()).unwrap();
         }
@@ -135,15 +135,13 @@ impl Tally {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        if bytes.len() % 130 != 0 {
+        if bytes.len() % CIPHERTEXT_BYTES_LEN != 0 {
             return None;
         }
-        let len = bytes.len() / 130;
-        let mut r: Vec<Ciphertext> = Vec::with_capacity(len);
-        for i in 0..len {
-            let ri = Ciphertext::from_bytes(&bytes[(i * 130)..((i + 1) * 130)])?;
-            r.push(ri);
-        }
+        let r = bytes
+            .chunks(CIPHERTEXT_BYTES_LEN)
+            .map(Ciphertext::from_bytes)
+            .collect::<Option<Vec<_>>>()?;
         Some(Self { r })
     }
 }
@@ -170,7 +168,7 @@ impl TallyState {
 
 fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
     use std::io::Write;
-    let mut bytes: Vec<u8> = Vec::with_capacity(65 * elements.len());
+    let mut bytes: Vec<u8> = Vec::with_capacity(GROUP_ELEMENT_BYTES_LEN * elements.len());
     for element in elements {
         bytes.write(element.to_bytes().as_ref()).unwrap();
     }
@@ -178,15 +176,13 @@ fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
 }
 
 fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
-    if bytes.len() % 65 != 0 {
+    if bytes.len() % GROUP_ELEMENT_BYTES_LEN != 0 {
         return None;
     }
-    let len = bytes.len() / 65;
-    let mut elements: Vec<gang::GroupElement> = Vec::with_capacity(len);
-    for i in 0..len {
-        let element = gang::GroupElement::from_bytes(&bytes[(i * 65)..((i + 1) * 65)])?;
-        elements.push(element);
-    }
+    let elements = bytes
+        .chunks(GROUP_ELEMENT_BYTES_LEN)
+        .map(gang::GroupElement::from_bytes)
+        .collect::<Option<Vec<_>>>()?;
     Some(elements)
 }
 

@@ -124,6 +124,11 @@ impl MemberSecretKey {
     pub fn to_bytes(&self) -> [u8; 32] {
         self.0.sk.to_bytes()
     }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        let sk = Scalar::from_slice(bytes)?;
+        Some(Self(SecretKey { sk }))
+    }
 }
 
 impl MemberPublicKey {

@@ -1,8 +1,11 @@
 #![allow(dead_code)]
 
-use crate::gang::{GroupElement, Scalar};
+use crate::gang::{GroupElement, Scalar, GROUP_ELEMENT_BYTES_LEN};
 use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul};
+
+/// Size of the byte representation of `Ciphertext`.
+pub const CIPHERTEXT_BYTES_LEN: usize = GROUP_ELEMENT_BYTES_LEN * 2;
 
 // ElGamal Ciphertext
 #[derive(Clone)]
@@ -68,15 +71,16 @@ impl Ciphertext {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut r = self.e1.to_bytes().to_vec();
-        r.extend_from_slice(&self.e2.to_bytes());
+        let mut r = Vec::with_capacity(CIPHERTEXT_BYTES_LEN);
+        r.extend_from_slice(self.e1.to_bytes().as_ref());
+        r.extend_from_slice(self.e2.to_bytes().as_ref());
+        debug_assert_eq!(r.len(), CIPHERTEXT_BYTES_LEN);
         r
     }
 
     pub fn from_bytes(slice: &[u8]) -> Option<Ciphertext> {
-        let l = slice.len() / 2;
-        let e1 = GroupElement::from_bytes(&slice[0..l])?;
-        let e2 = GroupElement::from_bytes(&slice[l..])?;
+        let e1 = GroupElement::from_bytes(&slice[..GROUP_ELEMENT_BYTES_LEN])?;
+        let e2 = GroupElement::from_bytes(&slice[GROUP_ELEMENT_BYTES_LEN..])?;
         Some(Ciphertext { e1, e2 })
     }
 

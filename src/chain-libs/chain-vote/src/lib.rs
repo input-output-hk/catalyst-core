@@ -25,8 +25,8 @@ use rand_core::{CryptoRng, RngCore};
 
 pub use committee::{MemberCommunicationKey, MemberCommunicationPublicKey, MemberState};
 pub use encrypted::EncryptingVote;
-use gang::Scalar;
-pub use gargamel::Ciphertext;
+use gang::{Scalar, GROUP_ELEMENT_BYTES_LEN};
+pub use gargamel::{Ciphertext, CIPHERTEXT_BYTES_LEN};
 pub use unit_vector::UnitVector;
 
 /// Secret key for opening vote
@@ -124,6 +124,66 @@ impl Tally {
         }
         (TallyState { r2s }, TallyDecryptShare { r1s: dshares })
     }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        use std::io::Write;
+        let mut bytes: Vec<u8> = Vec::with_capacity(CIPHERTEXT_BYTES_LEN * self.r.len());
+        for ri in &self.r {
+            bytes.write_all(ri.to_bytes().as_ref()).unwrap();
+        }
+        bytes
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() % CIPHERTEXT_BYTES_LEN != 0 {
+            return None;
+        }
+        let r = bytes
+            .chunks(CIPHERTEXT_BYTES_LEN)
+            .map(Ciphertext::from_bytes)
+            .collect::<Option<Vec<_>>>()?;
+        Some(Self { r })
+    }
+}
+
+impl TallyDecryptShare {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        group_elements_to_bytes(&self.r1s)
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        group_elements_from_bytes(bytes).map(|r1s| Self { r1s })
+    }
+}
+
+impl TallyState {
+    pub fn to_bytes(&self) -> Vec<u8> {
+        group_elements_to_bytes(&self.r2s)
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        group_elements_from_bytes(bytes).map(|r2s| Self { r2s })
+    }
+}
+
+fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
+    use std::io::Write;
+    let mut bytes: Vec<u8> = Vec::with_capacity(GROUP_ELEMENT_BYTES_LEN * elements.len());
+    for element in elements {
+        bytes.write_all(element.to_bytes().as_ref()).unwrap();
+    }
+    bytes
+}
+
+fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
+    if bytes.len() % GROUP_ELEMENT_BYTES_LEN != 0 {
+        return None;
+    }
+    let elements = bytes
+        .chunks(GROUP_ELEMENT_BYTES_LEN)
+        .map(gang::GroupElement::from_bytes)
+        .collect::<Option<Vec<_>>>()?;
+    Some(elements)
 }
 
 pub fn result(

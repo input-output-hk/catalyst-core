@@ -8,6 +8,9 @@ pub struct Scalar(IScalar);
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GroupElement(Point);
 
+/// Size of the byte representation of `GroupElement`.
+pub const GROUP_ELEMENT_BYTES_LEN: usize = 65;
+
 impl GroupElement {
     pub fn generator() -> Self {
         GroupElement(Point::generator())
@@ -32,8 +35,8 @@ impl GroupElement {
         self.0.normalize()
     }
 
-    pub fn to_bytes(&self) -> [u8; 65] {
-        let mut bytes = [0u8; 65];
+    pub fn to_bytes(&self) -> [u8; GROUP_ELEMENT_BYTES_LEN] {
+        let mut bytes = [0u8; GROUP_ELEMENT_BYTES_LEN];
         match self.0.to_affine() {
             None => (),
             Some(pa) => {

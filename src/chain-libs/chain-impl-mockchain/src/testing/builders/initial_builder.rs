@@ -1,4 +1,5 @@
 use crate::{
+    account::DelegationType,
     certificate::{Certificate, PoolUpdate, VoteCast, VotePlan, VoteTally},
     fragment::Fragment,
     key::EitherEd25519SecretKey,
@@ -6,6 +7,7 @@ use crate::{
     testing::{
         builders::*,
         data::{StakePool, Wallet},
+        TestGen,
     },
     transaction::*,
     value::Value,
@@ -73,7 +75,7 @@ pub fn create_initial_transaction(wallet: &Wallet) -> Fragment {
     let tx = TxBuilder::new()
         .set_nopayload()
         .set_ios(&[], &[wallet.make_output()])
-        .set_witnesses(&[])
+        .set_witnesses_unchecked(&[])
         .set_payload_auth(&());
     Fragment::Transaction(tx)
 }
@@ -84,12 +86,19 @@ pub fn create_initial_stake_pool_delegation(stake_pool: &StakePool, wallet: &Wal
     fragment(cert, keys, &[], &[])
 }
 
+pub fn create_initial_stake_pool_owner_delegation(delegation_type: DelegationType) -> Fragment {
+    let cert = build_owner_stake_delegation(delegation_type);
+    fragment(cert, Vec::new(), &[], &[])
+}
+
 fn set_initial_ios<P: Payload>(
     builder: TxBuilderState<SetIOs<P>>,
     inputs: &[Input],
     outputs: &[OutputAddress],
 ) -> TxBuilderState<SetAuthData<P>> {
-    builder.set_ios(inputs, outputs).set_witnesses(&[])
+    builder
+        .set_ios(inputs, outputs)
+        .set_witnesses_unchecked(&[])
 }
 
 fn fragment(
@@ -136,6 +145,11 @@ fn fragment(
             let tx = builder.set_payload_auth(&signature);
             Fragment::VoteTally(tx)
         }
+        Certificate::OwnerStakeDelegation(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
+            let tx = builder.set_payload_auth(&());
+            Fragment::OwnerStakeDelegation(tx)
+        }
         _ => unreachable!(),
     }
 }
@@ -167,5 +181,49 @@ impl InitialFaultTolerantTxCertBuilder {
         let keys = vec![self.funder.private_key()];
         let input = self.funder.make_input_with_value(Value(1));
         fragment(self.cert.clone(), keys, &[input], &[])
+    }
+}
+
+pub struct InitialFaultTolerantTxBuilder {
+    sender: Wallet,
+    reciever: Wallet,
+}
+
+impl InitialFaultTolerantTxBuilder {
+    pub fn new(sender: Wallet, reciever: Wallet) -> Self {
+        Self { sender, reciever }
+    }
+
+    pub fn transaction_with_input_output(&self) -> Fragment {
+        let input = self.sender.make_input_with_value(Value(1));
+        let output = self.reciever.make_output_with_value(Value(1));
+        let tx = TxBuilder::new()
+            .set_nopayload()
+            .set_ios(&[input], &[output])
+            .set_witnesses_unchecked(&[])
+            .set_payload_auth(&());
+        Fragment::Transaction(tx)
+    }
+
+    pub fn transaction_with_input_only(&self) -> Fragment {
+        let input = self.sender.make_input_with_value(Value(1));
+        let tx = TxBuilder::new()
+            .set_nopayload()
+            .set_ios(&[input], &[])
+            .set_witnesses_unchecked(&[])
+            .set_payload_auth(&());
+        Fragment::Transaction(tx)
+    }
+
+    pub fn transaction_with_witness_only(&self) -> Fragment {
+        let tx = TxBuilder::new().set_nopayload().set_ios(&[], &[]);
+        let witness = self
+            .sender
+            .clone()
+            .make_witness(&TestGen::hash(), tx.get_auth_data_for_witness());
+        let witnesses = vec![witness];
+
+        let tx = tx.set_witnesses_unchecked(&witnesses).set_payload_auth(&());
+        Fragment::Transaction(tx)
     }
 }

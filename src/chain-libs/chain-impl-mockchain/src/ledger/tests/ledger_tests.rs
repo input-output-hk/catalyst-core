@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use crate::{
+    chaintypes::ConsensusType,
     config::ConfigParam,
     fragment::{config::ConfigParams, Fragment},
     ledger::{
@@ -10,6 +11,7 @@ use crate::{
         },
         Ledger,
     },
+    milli::Milli,
     testing::{
         arbitrary::{AccountStatesVerifier, ArbitraryValidTransactionData, UtxoVerifier},
         builders::{OldAddressBuilder, TestTxBuilder},
@@ -18,6 +20,7 @@ use crate::{
         TestGen,
     },
 };
+
 use chain_addr::Discrimination;
 use quickcheck::TestResult;
 use quickcheck_macros::quickcheck;
@@ -138,6 +141,137 @@ pub fn ledger_new_no_block_start_time() {
             .unwrap(),
         Block0(Block0Error::InitialMessageNoDate)
     );
+}
+
+#[test]
+pub fn ledger_new_dupicated_initial_fragments() {
+    let leader_pair = TestGen::leader_pair();
+    let header_id = TestGen::hash();
+    let mut ie = ConfigParams::new();
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::SlotDuration(10u8));
+    ie.push(ConfigParam::SlotsPerEpoch(10u32));
+    ie.push(ConfigParam::KESUpdateSpeed(3600));
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+
+    assert_eq!(
+        Ledger::new(
+            header_id,
+            vec![
+                &Fragment::Initial(ie.clone()),
+                &Fragment::Initial(ie.clone())
+            ]
+        )
+        .err()
+        .unwrap(),
+        Block0(Block0Error::InitialMessageMany)
+    );
+}
+
+#[test]
+pub fn ledger_new_duplicated_block0() {
+    let leader_pair = TestGen::leader_pair();
+    let header_id = TestGen::hash();
+    let mut ie = ConfigParams::new();
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::SlotDuration(10u8));
+    ie.push(ConfigParam::SlotsPerEpoch(10u32));
+    ie.push(ConfigParam::KESUpdateSpeed(3600));
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+
+    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+}
+
+#[test]
+pub fn ledger_new_duplicated_discrimination() {
+    let leader_pair = TestGen::leader_pair();
+    let header_id = TestGen::hash();
+    let mut ie = ConfigParams::new();
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::SlotDuration(10u8));
+    ie.push(ConfigParam::SlotsPerEpoch(10u32));
+    ie.push(ConfigParam::KESUpdateSpeed(3600));
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+
+    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+}
+
+#[test]
+pub fn ledger_new_duplicated_consensus_version() {
+    let leader_pair = TestGen::leader_pair();
+    let header_id = TestGen::hash();
+    let mut ie = ConfigParams::new();
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
+    ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::SlotDuration(10u8));
+    ie.push(ConfigParam::SlotsPerEpoch(10u32));
+    ie.push(ConfigParam::KESUpdateSpeed(3600));
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+
+    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+}
+
+#[test]
+pub fn ledger_new_duplicated_slot_duration() {
+    let leader_pair = TestGen::leader_pair();
+    let header_id = TestGen::hash();
+    let mut ie = ConfigParams::new();
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::SlotDuration(10u8));
+    ie.push(ConfigParam::SlotDuration(11u8));
+    ie.push(ConfigParam::SlotsPerEpoch(10u32));
+    ie.push(ConfigParam::KESUpdateSpeed(3600));
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+
+    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+}
+
+#[test]
+pub fn ledger_new_duplicated_epoch_stability_depth() {
+    let leader_pair = TestGen::leader_pair();
+    let header_id = TestGen::hash();
+    let mut ie = ConfigParams::new();
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::SlotDuration(10u8));
+    ie.push(ConfigParam::EpochStabilityDepth(10u32));
+    ie.push(ConfigParam::EpochStabilityDepth(11u32));
+    ie.push(ConfigParam::SlotsPerEpoch(10u32));
+    ie.push(ConfigParam::KESUpdateSpeed(3600));
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+
+    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+}
+
+#[test]
+pub fn ledger_new_duplicated_active_slots_coeff() {
+    let leader_pair = TestGen::leader_pair();
+    let header_id = TestGen::hash();
+    let mut ie = ConfigParams::new();
+    ie.push(ConfigParam::Discrimination(Discrimination::Test));
+    ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::SlotDuration(10u8));
+    ie.push(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(
+        Milli::from_millis(500),
+    ));
+    ie.push(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(
+        Milli::from_millis(600),
+    ));
+    ie.push(ConfigParam::SlotsPerEpoch(10u32));
+    ie.push(ConfigParam::KESUpdateSpeed(3600));
+    ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+
+    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
 }
 
 #[test]

@@ -342,11 +342,18 @@ impl ProposalDefBuilder {
         self
     }
 
-    pub fn action_trasfer_to_rewards(&mut self, value: u64) -> &mut Self {
+    pub fn action_transfer_to_rewards(&mut self, value: u64) -> &mut Self {
         self.action_type = VoteAction::Parameters {
             action: ParametersGovernanceAction::RewardAdd {
                 value: Value(value),
             },
+        };
+        self
+    }
+
+    pub fn action_parameters_no_op(&mut self) -> &mut Self {
+        self.action_type = VoteAction::Parameters {
+            action: ParametersGovernanceAction::NoOp,
         };
         self
     }

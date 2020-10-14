@@ -17,6 +17,130 @@ const STAKE_POOL: &str = "stake_pool";
 const VOTE_PLAN: &str = "fund1";
 
 #[test]
+pub fn vote_cast_action_transfer_to_rewards() {
+    let favorable = Choice::new(1);
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000)),
+        )
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .owns(STAKE_POOL)
+            .committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_transfer_to_rewards(100),
+            )])
+        .build()
+        .unwrap();
+
+    let mut alice = controller.wallet(ALICE).unwrap();
+    let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
+    let proposal = vote_plan.proposal(0);
+
+    controller
+        .cast_vote(
+            &alice,
+            &vote_plan,
+            &proposal.id(),
+            favorable.clone(),
+            &mut ledger,
+        )
+        .unwrap();
+    alice.confirm_transaction();
+
+    ledger.fast_forward_to(BlockDate {
+        epoch: 1,
+        slot_id: 1,
+    });
+
+    controller
+        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .unwrap();
+
+    ledger.fast_forward_to(BlockDate {
+        epoch: 1,
+        slot_id: 1,
+    });
+
+    ledger.apply_protocol_changes().unwrap();
+
+    LedgerStateVerifier::new(ledger.clone().into())
+        .info("rewards pot is increased")
+        .pots()
+        .has_remaining_rewards_equals_to(&Value(1100));
+}
+
+#[test]
+pub fn vote_cast_action_action_parameters_no_op() {
+    let favorable = Choice::new(1);
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000)),
+        )
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .owns(STAKE_POOL)
+            .committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_parameters_no_op(),
+            )])
+        .build()
+        .unwrap();
+
+    let mut alice = controller.wallet(ALICE).unwrap();
+    let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
+    let proposal = vote_plan.proposal(0);
+
+    controller
+        .cast_vote(
+            &alice,
+            &vote_plan,
+            &proposal.id(),
+            favorable.clone(),
+            &mut ledger,
+        )
+        .unwrap();
+    alice.confirm_transaction();
+
+    ledger.fast_forward_to(BlockDate {
+        epoch: 1,
+        slot_id: 1,
+    });
+
+    controller
+        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .unwrap();
+
+    ledger.fast_forward_to(BlockDate {
+        epoch: 1,
+        slot_id: 1,
+    });
+
+    ledger.apply_protocol_changes().unwrap();
+
+    LedgerStateVerifier::new(ledger.clone().into())
+        .info("rewards pot is increased")
+        .pots()
+        .has_remaining_rewards_equals_to(&Value(1000));
+}
+
+#[test]
 pub fn vote_cast_tally_50_percent() {
     let _blank = Choice::new(0);
     let favorable = Choice::new(1);

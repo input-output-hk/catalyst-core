@@ -67,10 +67,11 @@ impl Ciphertext {
         }
     }
 
-    pub fn to_bytes(&self) -> [u8; 130] {
-        let mut r = [0u8; 130];
-        &mut r[..65].copy_from_slice(self.e1.to_bytes().as_ref());
-        &mut r[65..].copy_from_slice(self.e2.to_bytes().as_ref());
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut r = Vec::with_capacity(130);
+        r.extend_from_slice(self.e1.to_bytes().as_ref());
+        r.extend_from_slice(self.e2.to_bytes().as_ref());
+        debug_assert!(r.len(), 130);
         r
     }
 

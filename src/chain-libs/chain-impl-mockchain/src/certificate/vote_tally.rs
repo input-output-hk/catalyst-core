@@ -23,9 +23,7 @@ pub struct VoteTally {
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub enum VoteTallyPayload {
     Public,
-    Private {
-        shares: Box<[Box<[TallyDecryptShare]>]>,
-    },
+    Private { shares: TallyDecryptShares },
 }
 
 #[derive(Debug, Clone)]
@@ -39,6 +37,11 @@ pub enum TallyProof {
         id: CommitteeId,
         signature: SingleAccountBindingSignature,
     },
+}
+
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
+pub struct TallyDecryptShares {
+    inner: Box<[Box<[TallyDecryptShare]>]>,
 }
 
 impl VoteTallyPayload {
@@ -66,10 +69,10 @@ impl VoteTally {
         self.payload.payload_type()
     }
 
-    pub fn decryption_shares(&self) -> Option<Box<[Box<[TallyDecryptShare]>]>> {
+    pub fn decryption_shares(&self) -> Option<&TallyDecryptShares> {
         match &self.payload {
             VoteTallyPayload::Public => None,
-            VoteTallyPayload::Private { shares } => Some(shares.clone()),
+            VoteTallyPayload::Private { shares } => Some(shares),
         }
     }
 
@@ -80,13 +83,12 @@ impl VoteTally {
 
         match &self.payload {
             VoteTallyPayload::Public => bb,
-            VoteTallyPayload::Private { shares } => {
-                bb.u8(shares.len().try_into().unwrap())
-                    .fold(shares.iter(), |bb, s| {
-                        bb.u8(s.len().try_into().unwrap())
-                            .fold(s.iter(), |bb, s| bb.bytes(s.serialize().as_ref()))
-                    })
-            }
+            VoteTallyPayload::Private { shares } => bb
+                .u8(shares.inner.len().try_into().unwrap())
+                .fold(shares.inner.iter(), |bb, s| {
+                    bb.u8(s.len().try_into().unwrap())
+                        .fold(s.iter(), |bb, s| bb.bytes(s.serialize().as_ref()))
+                }),
         }
     }
 
@@ -128,6 +130,26 @@ impl TallyProof {
                 }
             }
         }
+    }
+}
+
+impl TallyDecryptShares {
+    pub fn new(shares: Vec<Vec<TallyDecryptShare>>) -> Self {
+        Self {
+            inner: shares
+                .into_iter()
+                .map(|s| s.into_boxed_slice())
+                .collect::<Vec<_>>()
+                .into_boxed_slice(),
+        }
+    }
+
+    pub fn shares_for_proposal(&self, i: u8) -> Option<&[TallyDecryptShare]> {
+        self.inner.get(i as usize).map(|s| s.as_ref())
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &[TallyDecryptShare]> {
+        self.inner.iter().map(|s| s.as_ref())
     }
 }
 
@@ -216,7 +238,9 @@ impl Readable for VoteTally {
                     }
                     proposals.push(shares.into_boxed_slice());
                 }
-                let shares = proposals.into_boxed_slice();
+                let shares = TallyDecryptShares {
+                    inner: proposals.into_boxed_slice(),
+                };
 
                 VoteTallyPayload::Private { shares }
             }

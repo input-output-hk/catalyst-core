@@ -147,7 +147,6 @@ impl VotePlanLedger {
                 .map(Some),
             TallyProof::Private { .. } => {
                 let shares = tally.decryption_shares().unwrap();
-                let shares = shares.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
                 v.private_tally_finish(&shares, governance, f).map(Some)
             }
         });

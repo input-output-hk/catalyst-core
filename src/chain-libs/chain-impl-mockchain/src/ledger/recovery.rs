@@ -940,11 +940,10 @@ fn pack_committee_public_keys<W: std::io::Write>(
     keys: &[chain_vote::MemberPublicKey],
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    codec.put_u64(keys.len() as u64)?;
+    use std::convert::TryInto;
+    codec.put_u8(keys.len().try_into().unwrap())?;
     for k in keys {
-        let buf = k.to_bytes();
-        codec.put_u64(buf.len() as u64)?;
-        codec.write_all(&buf)?;
+        codec.write_all(&k.to_bytes())?;
     }
     Ok(())
 }
@@ -952,11 +951,10 @@ fn pack_committee_public_keys<W: std::io::Write>(
 fn unpack_committee_public_keys<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<Vec<chain_vote::MemberPublicKey>, std::io::Error> {
-    let size = codec.get_u64()?;
+    let size = codec.get_u8()?;
     let mut result = Vec::new();
     for _ in 0..size {
-        let size = codec.get_u64()?;
-        let buf = codec.get_bytes(size as usize)?;
+        let buf = codec.get_bytes(chain_vote::MEMBER_PUBLIC_KEY_BYTES_LEN)?;
         // It should be safe to unpack here since this is only used with our custom packing too.
         result.push(chain_vote::MemberPublicKey::from_bytes(&buf).unwrap());
     }

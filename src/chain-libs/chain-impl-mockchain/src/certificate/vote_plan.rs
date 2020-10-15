@@ -288,12 +288,6 @@ impl VotePlan {
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        let mut member_keys_buf: ByteBuilder<u8> = ByteBuilder::new();
-        member_keys_buf = member_keys_buf.u64(self.committee_public_keys.len() as u64);
-        for key in &self.committee_public_keys {
-            let buf = key.to_bytes();
-            member_keys_buf = member_keys_buf.u64(buf.len() as u64).bytes(&buf);
-        }
         bb.u32(self.vote_start.epoch)
             .u32(self.vote_start.slot_id)
             .u32(self.vote_end.epoch)
@@ -304,7 +298,10 @@ impl VotePlan {
             .iter8(&mut self.proposals.iter(), |bb, proposal| {
                 proposal.serialize_in(bb)
             })
-            .bytes(member_keys_buf.finalize().as_slice())
+            .iter8(self.committee_public_keys.iter(), |bb, key| {
+                let key_bytes = key.to_bytes();
+                bb.u32(key_bytes.len() as u32).bytes(&key_bytes)
+            })
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {
@@ -443,10 +440,10 @@ impl Readable for VotePlan {
             proposals.proposals.push(proposal);
         }
 
-        let member_keys_len = buf.get_u64()?;
+        let member_keys_len = buf.get_u8()?;
         let mut committee_public_keys = Vec::new();
         for _ in 0..member_keys_len {
-            let key_len = buf.get_u64()?;
+            let key_len = buf.get_u32()?;
             let key_buf = buf.get_slice(key_len as usize)?;
             // Unwrap should be ok here, since we did serialize it ourselves
             committee_public_keys.push(MemberPublicKey::from_bytes(key_buf).ok_or_else(|| {

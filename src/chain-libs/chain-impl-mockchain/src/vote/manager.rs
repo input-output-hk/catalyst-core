@@ -228,7 +228,14 @@ impl ProposalManager {
             .map(|maybe_vote| maybe_vote.unwrap_or_default())
             .enumerate()
         {
-            result.add_vote(Choice::new(choice.try_into()?), weight)?;
+            result.add_vote(
+                Choice::new(choice.try_into().map_err(|_| {
+                    TallyError::InvalidPrivateChoiceSize {
+                        choice: choice as u64,
+                    }
+                })?),
+                weight,
+            )?;
         }
 
         if self.check(*total_stake, governance, &result) {

@@ -44,11 +44,8 @@ pub enum TallyError {
     InvalidChoice { options: Options, choice: Choice },
     #[error("Invalid privacy")]
     InvalidPrivacy,
-    #[error("Choice number in private vote was too high. Maximum of 255 is allowed.")]
-    InvalidPrivateChoiceSize {
-        #[from]
-        source: std::num::TryFromIntError,
-    },
+    #[error("Choice number {choice} in private vote was too high. Maximum of 255 is allowed.")]
+    InvalidPrivateChoiceSize { choice: u64 },
     #[error("this private tally is already decryptred")]
     TallyAlreadyDecrypted,
     #[error("the encrypted tally was not provided yet")]

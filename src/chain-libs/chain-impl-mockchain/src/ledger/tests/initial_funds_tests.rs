@@ -14,11 +14,9 @@ use crate::{
         ledger::{ConfigBuilder, LedgerBuilder},
         InitialFaultTolerantTxBuilder, InitialFaultTolerantTxCertBuilder, VoteTestGen,    },
     value::Value,
-    fragment::Fragment
 };
 use chain_core::property::Fragment as _;
 use chain_addr::Discrimination;
-use chain_core::property::Fragment as _;
 use quickcheck::TestResult;
 use quickcheck_macros::quickcheck;
 use std::iter;

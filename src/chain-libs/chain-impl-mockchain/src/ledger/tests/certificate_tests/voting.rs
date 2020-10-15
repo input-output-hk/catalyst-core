@@ -13,17 +13,10 @@ use crate::{
         },
         data::Wallet,
         ConfigBuilder, LedgerBuilder, ProposalBuilder, SignedProposalBuilder, TestGen, VoteTestGen,
-        ProposalBuilder,TestGen,SignedProposalBuilder,
-        build_vote
     },
-    config::ConfigParam,
     value::*,
-    fragment::Fragment
 };
 use chain_core::property::Fragment as _;
-
-use chain_core::property::Fragment as _;
-
 #[test]
 pub fn vote_plan_in_block0() {
     let alice = Wallet::from_value(Value(100));

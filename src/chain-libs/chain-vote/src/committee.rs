@@ -137,6 +137,12 @@ impl MemberPublicKey {
     }
 }
 
+impl From<PublicKey> for MemberPublicKey {
+    fn from(pk: PublicKey) -> MemberPublicKey {
+        MemberPublicKey(pk)
+    }
+}
+
 impl MemberCommunicationKey {
     pub fn new<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         let sk = SecretKey::generate(rng);
@@ -147,6 +153,10 @@ impl MemberCommunicationKey {
         MemberCommunicationPublicKey(PublicKey {
             pk: &GroupElement::generator() * &self.0.sk,
         })
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<MemberCommunicationKey> {
+        SecretKey::from_bytes(bytes).map(MemberCommunicationKey)
     }
 
     pub fn to_bytes(&self) -> [u8; 32] {

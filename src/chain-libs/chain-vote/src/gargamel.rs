@@ -46,6 +46,10 @@ impl SecretKey {
         let sk = Scalar::random(rng);
         Self { sk }
     }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        Scalar::from_slice(bytes).map(|sk| Self { sk })
+    }
 }
 
 impl Keypair {

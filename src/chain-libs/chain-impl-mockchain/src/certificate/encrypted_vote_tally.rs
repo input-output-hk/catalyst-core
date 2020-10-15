@@ -24,9 +24,7 @@ pub struct EncryptedVoteTally {
 
 impl EncryptedVoteTallyProof {
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        bb.u8(0)
-            .bytes(self.id.as_ref())
-            .bytes(self.signature.as_ref())
+        bb.bytes(self.id.as_ref()).bytes(self.signature.as_ref())
     }
 
     pub fn verify<'a>(&self, verify_data: &TransactionBindingAuthData<'a>) -> Verification {
@@ -95,17 +93,9 @@ impl property::Serialize for EncryptedVoteTally {
 
 impl Readable for EncryptedVoteTallyProof {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        match buf.peek_u8()? {
-            0 => {
-                let _ = buf.get_u8()?;
-                let id = CommitteeId::read(buf)?;
-                let signature = SingleAccountBindingSignature::read(buf)?;
-                Ok(Self { id, signature })
-            }
-            _ => Err(ReadError::StructureInvalid(
-                "Unknown Tally proof type".to_owned(),
-            )),
-        }
+        let id = CommitteeId::read(buf)?;
+        let signature = SingleAccountBindingSignature::read(buf)?;
+        Ok(Self { id, signature })
     }
 }
 

@@ -45,9 +45,7 @@ impl SecretKey {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        use std::convert::TryInto as _;
-        let bytes: [u8; 32] = bytes.try_into().ok()?;
-        Scalar::from_bytes(&bytes).map(|sk| Self { sk })
+        Scalar::from_slice(bytes).map(|sk| Self { sk })
     }
 }
 

@@ -69,7 +69,7 @@ impl VoteTally {
         self.payload.payload_type()
     }
 
-    pub fn decryption_shares(&self) -> Option<&TallyDecryptShares> {
+    pub fn decrypt_shares(&self) -> Option<&TallyDecryptShares> {
         match &self.payload {
             VoteTallyPayload::Public => None,
             VoteTallyPayload::Private { shares } => Some(shares),

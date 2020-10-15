@@ -47,6 +47,13 @@ impl Payload {
         Self::Public { choice }
     }
 
+    pub fn private(encrypted_vote: EncryptedVote, proof: ProofOfCorrectVote) -> Self {
+        Self::Private {
+            encrypted_vote,
+            proof,
+        }
+    }
+
     pub fn payload_type(&self) -> PayloadType {
         match self {
             Self::Public { .. } => PayloadType::Public,
@@ -57,8 +64,10 @@ impl Payload {
     pub(crate) fn serialize_in<T>(&self, bb: ByteBuilder<T>) -> ByteBuilder<T> {
         let payload_type = self.payload_type();
 
+        let bb = bb.u8(payload_type as u8);
+
         match self {
-            Self::Public { choice } => bb.u8(payload_type as u8).u8(choice.as_byte()),
+            Self::Public { choice } => bb.u8(choice.as_byte()),
             Self::Private {
                 encrypted_vote,
                 proof,
@@ -127,17 +136,42 @@ mod tests {
     use quickcheck::{Arbitrary, Gen};
 
     impl Arbitrary for PayloadType {
-        fn arbitrary<G: Gen>(_g: &mut G) -> Self {
-            Self::Public
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            if g.next_u32() % 2 == 0 {
+                Self::Public
+            } else {
+                Self::Private
+            }
         }
     }
 
     impl Arbitrary for Payload {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            use chain_vote::{
+                encrypt_vote, EncryptingVoteKey, MemberCommunicationKey, MemberState, Vote, CRS,
+            };
+            use rand_core::SeedableRng;
+
             match PayloadType::arbitrary(g) {
                 PayloadType::Public => Payload::public(Choice::arbitrary(g)),
                 PayloadType::Private => {
-                    unimplemented!("Arbitrary is not implemented for private votes")
+                    let mut seed = [0u8; 32];
+                    g.fill_bytes(&mut seed);
+                    let mut gen = rand_chacha::ChaCha20Rng::from_seed(seed);
+                    let mc = MemberCommunicationKey::new(&mut gen);
+                    let threshold = 1;
+                    let h = CRS::random(&mut gen);
+                    let m = MemberState::new(&mut gen, threshold, &h, &[mc.to_public()], 0);
+                    let participants = vec![m.public_key()];
+                    let ek = EncryptingVoteKey::from_participants(&participants);
+                    let vote_options = 3;
+                    let choice = g.next_u32() % vote_options;
+                    let (vote, proof) = encrypt_vote(
+                        &mut gen,
+                        &ek,
+                        Vote::new(vote_options as usize, choice as usize),
+                    );
+                    Payload::private(vote, proof)
                 }
             }
         }

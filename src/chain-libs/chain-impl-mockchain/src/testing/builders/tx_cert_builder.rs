@@ -1,4 +1,4 @@
-use crate::certificate::{EncryptedVoteTally};
+use crate::certificate::EncryptedVoteTally;
 use crate::{
     certificate::{
         Certificate, CertificatePayload, EncryptedVoteTallyProof, PoolOwnersSigned, PoolSignature,

@@ -171,13 +171,28 @@ impl Arbitrary for Proposals {
 
 impl Arbitrary for VotePlan {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        use rand_core::SeedableRng;
+
         let vote_start = BlockDate::arbitrary(g);
         let vote_end = BlockDate::arbitrary(g);
         let committee_end = BlockDate::arbitrary(g);
         let proposals = Proposals::arbitrary(g);
         let payload_type = vote::PayloadType::arbitrary(g);
-        // TODO: implement arbitrary for keys
-        let keys = Vec::new();
+
+        let mut keys = Vec::new();
+        // it should have been 256 but is limited for the sake of adequate test times
+        let keys_n = g.next_u32() % 16;
+        let mut seed = [0u8; 32];
+        g.fill_bytes(&mut seed);
+        let mut rng = rand_chacha::ChaCha20Rng::from_seed(seed);
+        let h = chain_vote::CRS::random(&mut rng);
+        for _i in 0..keys_n {
+            let mc = chain_vote::MemberCommunicationKey::new(&mut rng);
+            let threshold = 1;
+            let m1 = chain_vote::MemberState::new(&mut rng, threshold, &h, &[mc.to_public()], 0);
+            keys.push(m1.public_key());
+        }
+
         Self::new(
             vote_start,
             vote_end,

@@ -445,9 +445,8 @@ impl Readable for VotePlan {
         for _ in 0..member_keys_len {
             let key_len = buf.get_u32()?;
             let key_buf = buf.get_slice(key_len as usize)?;
-            // Unwrap should be ok here, since we did serialize it ourselves
             committee_public_keys.push(MemberPublicKey::from_bytes(key_buf).ok_or_else(|| {
-                ReadError::StructureInvalid("could not read a member public key".to_string())
+                ReadError::StructureInvalid("invalid public key format".to_string())
             })?);
         }
 

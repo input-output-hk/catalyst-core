@@ -13,7 +13,7 @@ use chain_core::{
     property,
 };
 use chain_crypto::{digest::DigestOf, Blake2b256, Verification};
-use chain_vote::MemberPublicKey;
+use chain_vote::{MemberPublicKey, MEMBER_PUBLIC_KEY_BYTES_LEN};
 use std::ops::Deref;
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -299,8 +299,7 @@ impl VotePlan {
                 proposal.serialize_in(bb)
             })
             .iter8(self.committee_public_keys.iter(), |bb, key| {
-                let key_bytes = key.to_bytes();
-                bb.u32(key_bytes.len() as u32).bytes(&key_bytes)
+                bb.bytes(key.to_bytes().as_ref())
             })
     }
 
@@ -443,8 +442,7 @@ impl Readable for VotePlan {
         let member_keys_len = buf.get_u8()?;
         let mut committee_public_keys = Vec::new();
         for _ in 0..member_keys_len {
-            let key_len = buf.get_u32()?;
-            let key_buf = buf.get_slice(key_len as usize)?;
+            let key_buf = buf.get_slice(MEMBER_PUBLIC_KEY_BYTES_LEN)?;
             committee_public_keys.push(MemberPublicKey::from_bytes(key_buf).ok_or_else(|| {
                 ReadError::StructureInvalid("invalid public key format".to_string())
             })?);

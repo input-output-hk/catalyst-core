@@ -4,6 +4,7 @@ use crate::gang::{GroupElement, Scalar, GROUP_ELEMENT_BYTES_LEN};
 use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul};
 
+pub const PUBLIC_KEY_BYTES_LEN: usize = GROUP_ELEMENT_BYTES_LEN;
 /// Size of the byte representation of `Ciphertext`.
 pub const CIPHERTEXT_BYTES_LEN: usize = GROUP_ELEMENT_BYTES_LEN * 2;
 

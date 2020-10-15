@@ -24,6 +24,7 @@ pub mod debug {
 use chain_ser::mempack::{ReadBuf, ReadError, Readable};
 pub use committee::{
     MemberCommunicationKey, MemberCommunicationPublicKey, MemberPublicKey, MemberState,
+    MEMBER_PUBLIC_KEY_BYTES_LEN,
 };
 pub use encrypted::EncryptingVote;
 use gang::{Scalar, GROUP_ELEMENT_BYTES_LEN};

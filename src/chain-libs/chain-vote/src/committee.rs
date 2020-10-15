@@ -1,9 +1,11 @@
 use crate::commitment::CommitmentKey;
 use crate::gang::{GroupElement, Scalar};
-use crate::gargamel::{PublicKey, SecretKey};
+use crate::gargamel::{PublicKey, SecretKey, PUBLIC_KEY_BYTES_LEN};
 use crate::hybrid;
 use crate::math::Polynomial;
 use rand_core::{CryptoRng, RngCore};
+
+pub const MEMBER_PUBLIC_KEY_BYTES_LEN: usize = PUBLIC_KEY_BYTES_LEN;
 
 /// Committee member election secret key
 #[derive(Clone)]

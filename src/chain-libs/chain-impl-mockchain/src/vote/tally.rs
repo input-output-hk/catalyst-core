@@ -81,16 +81,11 @@ impl Tally {
     }
 
     pub fn is_public(&self) -> bool {
-        match self {
-            Self::Public { .. } => true,
-            _ => false,
-        }
+        matches!(self, Self::Public { .. })
     }
+
     pub fn is_private(&self) -> bool {
-        match self {
-            Self::Private { .. } => true,
-            _ => false,
-        }
+        matches!(self, Self::Private { .. })
     }
 
     pub fn result(&self) -> Option<&TallyResult> {
@@ -255,10 +250,7 @@ mod tests {
         let choice = Choice::new(4);
         assert_eq!(
             tally_result.add_vote(choice, Weight(1)),
-            Err(TallyError::InvalidChoice {
-                options: options.clone(),
-                choice: choice.clone(),
-            })
+            Err(TallyError::InvalidChoice { options, choice })
         );
     }
 

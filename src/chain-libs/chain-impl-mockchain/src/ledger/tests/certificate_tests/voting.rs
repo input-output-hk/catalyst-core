@@ -13,9 +13,14 @@ use crate::{
         },
         data::Wallet,
         ConfigBuilder, LedgerBuilder, ProposalBuilder, SignedProposalBuilder, TestGen, VoteTestGen,
+        ProposalBuilder,TestGen,SignedProposalBuilder,
+        build_vote
     },
+    config::ConfigParam,
     value::*,
+    fragment::Fragment
 };
+use chain_core::property::Fragment as _;
 
 use chain_core::property::Fragment as _;
 
@@ -47,7 +52,7 @@ pub fn vote_plan_in_block0_with_input() {
         .faucets_wallets(vec![&alice])
         .certs(&[vote_plan_certificate])
         .build();
-    
+
     assert!(result.is_err());
 }
 

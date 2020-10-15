@@ -452,12 +452,15 @@ impl VotePlanManager {
             })
             .collect();
 
+        let committee_public_keys = self.plan().committee_public_keys().to_vec();
+
         VotePlanStatus {
             id: self.id.clone(),
             payload: self.plan().payload_type(),
             vote_start: self.plan().vote_start(),
             vote_end: self.plan().vote_end(),
             committee_end: self.plan().committee_end(),
+            committee_public_keys,
             proposals,
         }
     }

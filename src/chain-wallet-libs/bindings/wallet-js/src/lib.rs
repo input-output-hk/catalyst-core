@@ -1,4 +1,7 @@
+use rand_chacha::rand_core::SeedableRng;
+use rand_chacha::ChaCha20Rng;
 use std::convert::TryInto;
+
 use wasm_bindgen::prelude::*;
 
 mod utils;
@@ -222,6 +225,21 @@ impl Options {
 impl Ed25519ExtendedPrivate {
     pub fn generate() -> Self {
         Self(chain_crypto::SecretKey::<chain_crypto::Ed25519Extended>::generate(rand::rngs::OsRng))
+    }
+
+    /// optional seed to generate the key, for the same entropy the same key will be generated (32
+    /// bytes). This seed will be fed to ChaChaRNG and allow pseudo random key
+    /// generation. Do not use if you are not sure
+    pub fn from_seed(seed: &[u8]) -> Result<Ed25519ExtendedPrivate, JsValue> {
+        let seed: [u8; 32] = seed
+            .try_into()
+            .map_err(|_| JsValue::from_str("Invalid seed, expected 32 bytes"))?;
+
+        let rng = ChaCha20Rng::from_seed(seed);
+
+        Ok(Self(
+            chain_crypto::SecretKey::<chain_crypto::Ed25519Extended>::generate(rng),
+        ))
     }
 
     pub fn public(&self) -> Ed25519Public {

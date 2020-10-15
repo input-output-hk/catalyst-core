@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### wallet-js
+
+- Add Ed25519Extended generation from seed
+
 ## [0.5.0-pre4] - 2020-10-13
 
 ### Added

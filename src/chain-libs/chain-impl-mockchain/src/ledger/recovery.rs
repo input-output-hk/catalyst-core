@@ -936,7 +936,7 @@ fn unpack_payload_type<R: std::io::BufRead>(
         .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))
 }
 
-fn pack_committee_member_public_keys<W: std::io::Write>(
+fn pack_committee_public_keys<W: std::io::Write>(
     keys: &[chain_vote::MemberPublicKey],
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
@@ -949,7 +949,7 @@ fn pack_committee_member_public_keys<W: std::io::Write>(
     Ok(())
 }
 
-fn unpack_committee_member_public_keys<R: std::io::BufRead>(
+fn unpack_committee_public_keys<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<Vec<chain_vote::MemberPublicKey>, std::io::Error> {
     let size = codec.get_u64()?;
@@ -972,7 +972,7 @@ fn pack_vote_plan<W: std::io::Write>(
     pack_block_date(vote_plan.committee_end(), codec)?;
     pack_payload_type(vote_plan.payload_type(), codec)?;
     pack_vote_proposals(vote_plan.proposals(), codec)?;
-    pack_committee_member_public_keys(vote_plan.committee_member_public_keys(), codec)?;
+    pack_committee_public_keys(vote_plan.committee_public_keys(), codec)?;
     Ok(())
 }
 
@@ -982,7 +982,7 @@ fn unpack_vote_plan<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<VotePla
     let committee_end = unpack_block_date(codec)?;
     let payload_type = unpack_payload_type(codec)?;
     let proposals = unpack_proposals(codec)?;
-    let keys = unpack_committee_member_public_keys(codec)?;
+    let keys = unpack_committee_public_keys(codec)?;
     Ok(VotePlan::new(
         vote_start,
         vote_end,

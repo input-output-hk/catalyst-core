@@ -48,7 +48,7 @@ pub struct VotePlan {
     /// vote payload type
     payload_type: vote::PayloadType,
     /// encrypting votes public keys
-    committee_member_public_keys: Vec<chain_vote::MemberPublicKey>,
+    committee_public_keys: Vec<chain_vote::MemberPublicKey>,
 }
 
 #[derive(Debug, Clone)]
@@ -190,7 +190,7 @@ impl VotePlan {
         committee_end: BlockDate,
         proposals: Proposals,
         payload_type: vote::PayloadType,
-        committee_member_public_keys: Vec<chain_vote::MemberPublicKey>,
+        committee_public_keys: Vec<chain_vote::MemberPublicKey>,
     ) -> Self {
         Self {
             vote_start,
@@ -198,7 +198,7 @@ impl VotePlan {
             committee_end,
             proposals,
             payload_type,
-            committee_member_public_keys,
+            committee_public_keys,
         }
     }
 
@@ -244,8 +244,8 @@ impl VotePlan {
         self.payload_type
     }
 
-    pub fn committee_member_public_keys(&self) -> &[chain_vote::MemberPublicKey] {
-        &self.committee_member_public_keys
+    pub fn committee_public_keys(&self) -> &[chain_vote::MemberPublicKey] {
+        &self.committee_public_keys
     }
 
     #[inline]
@@ -289,8 +289,8 @@ impl VotePlan {
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         let mut member_keys_buf: ByteBuilder<u8> = ByteBuilder::new();
-        member_keys_buf = member_keys_buf.u64(self.committee_member_public_keys.len() as u64);
-        for key in &self.committee_member_public_keys {
+        member_keys_buf = member_keys_buf.u64(self.committee_public_keys.len() as u64);
+        for key in &self.committee_public_keys {
             let buf = key.to_bytes();
             member_keys_buf = member_keys_buf.u64(buf.len() as u64).bytes(&buf);
         }
@@ -444,12 +444,12 @@ impl Readable for VotePlan {
         }
 
         let member_keys_len = buf.get_u64()?;
-        let mut committee_member_public_keys = Vec::new();
+        let mut committee_public_keys = Vec::new();
         for _ in 0..member_keys_len {
             let key_len = buf.get_u64()?;
             let key_buf = buf.get_slice(key_len as usize)?;
             // Unwrap should be ok here, since we did serialize it ourselves
-            committee_member_public_keys.push(MemberPublicKey::from_bytes(key_buf).unwrap());
+            committee_public_keys.push(MemberPublicKey::from_bytes(key_buf).unwrap());
         }
 
         Ok(Self {
@@ -458,7 +458,7 @@ impl Readable for VotePlan {
             committee_end,
             proposals,
             payload_type,
-            committee_member_public_keys,
+            committee_public_keys,
         })
     }
 }

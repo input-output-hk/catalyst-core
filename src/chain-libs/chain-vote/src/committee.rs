@@ -135,8 +135,10 @@ impl MemberPublicKey {
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.to_bytes()
     }
+}
 
-    pub fn from_public_key(pk: PublicKey) -> Self {
+impl From<PublicKey> for MemberPublicKey {
+    fn from(pk: PublicKey) -> MemberPublicKey {
         MemberPublicKey(pk)
     }
 }

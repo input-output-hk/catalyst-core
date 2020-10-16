@@ -48,12 +48,14 @@ pub struct ConfigBuilder {
     committees_ids: Vec<CommitteeId>,
     rewards: Value,
     treasury: Value,
+    fees_in_treasury: bool,
     treasury_params: TaxType,
     reward_params: RewardParams,
     block_content_max_size: Option<u32>,
     kes_update_speed: u32,
     block0_date: Block0Date,
     consensus_version: ConsensusVersion,
+    pool_capping_ratio: Ratio,
 }
 
 impl ConfigBuilder {
@@ -68,6 +70,11 @@ impl ConfigBuilder {
             per_certificate_fee: None,
             per_vote_certificate_fee: None,
             committees_ids: Vec::new(),
+            pool_capping_ratio: Ratio {
+                numerator: 0,
+                denominator: NonZeroU64::new(1).unwrap(),
+            },
+            fees_in_treasury: false,
             seed,
             rewards: Value(1_000_000),
             reward_params: RewardParams::Linear {
@@ -100,6 +107,23 @@ impl ConfigBuilder {
 
     pub fn with_treasury(mut self, value: Value) -> Self {
         self.treasury = value;
+        self
+    }
+
+    pub fn with_fees_in_treasury(mut self) -> Self {
+        self.fees_in_treasury = true;
+        self
+    }
+
+    pub fn with_pool_reward_participation_caping(
+        mut self,
+        numerator: u64,
+        denominator: u64,
+    ) -> Self {
+        self.pool_capping_ratio = Ratio {
+            numerator,
+            denominator: NonZeroU64::new(denominator).unwrap(),
+        };
         self
     }
 
@@ -202,6 +226,14 @@ impl ConfigBuilder {
         ie.push(ConfigParam::TreasuryAdd(self.treasury));
         ie.push(ConfigParam::TreasuryParams(self.treasury_params));
         ie.push(ConfigParam::RewardParams(self.reward_params.clone()));
+        ie.push(ConfigParam::FeesInTreasury(self.fees_in_treasury));
+
+        if self.pool_capping_ratio.numerator >= 1 {
+            ie.push(ConfigParam::PoolRewardParticipationCapping((
+                NonZeroU32::new(self.pool_capping_ratio.numerator as u32).unwrap(),
+                NonZeroU32::new(self.pool_capping_ratio.numerator as u32).unwrap(),
+            )));
+        }
 
         if let Some(linear_fee) = self.linear_fee {
             ie.push(ConfigParam::LinearFee(linear_fee));

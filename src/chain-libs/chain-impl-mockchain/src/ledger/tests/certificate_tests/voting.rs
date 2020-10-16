@@ -16,9 +16,7 @@ use crate::{
     },
     value::*,
 };
-
 use chain_core::property::Fragment as _;
-
 #[test]
 pub fn vote_plan_in_block0() {
     let alice = Wallet::from_value(Value(100));
@@ -47,7 +45,7 @@ pub fn vote_plan_in_block0_with_input() {
         .faucets_wallets(vec![&alice])
         .certs(&[vote_plan_certificate])
         .build();
-    
+
     assert!(result.is_err());
 }
 

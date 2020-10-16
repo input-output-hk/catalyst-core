@@ -12,12 +12,11 @@ use crate::{
         data::AddressDataValue,
         data::Wallet,
         ledger::{ConfigBuilder, LedgerBuilder},
-        InitialFaultTolerantTxBuilder, InitialFaultTolerantTxCertBuilder, VoteTestGen,
-    },
+        InitialFaultTolerantTxBuilder, InitialFaultTolerantTxCertBuilder, VoteTestGen,    },
     value::Value,
 };
-use chain_addr::Discrimination;
 use chain_core::property::Fragment as _;
+use chain_addr::Discrimination;
 use quickcheck::TestResult;
 use quickcheck_macros::quickcheck;
 use std::iter;

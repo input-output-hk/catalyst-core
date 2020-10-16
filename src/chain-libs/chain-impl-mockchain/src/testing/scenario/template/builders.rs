@@ -272,7 +272,7 @@ impl VotePlanDefBuilder {
             slot_id: 0,
         });
         self
-    }	
+    }
 
     pub fn consecutive_epoch_dates(&mut self) -> &mut Self {
         self.vote_date = Some(BlockDate {

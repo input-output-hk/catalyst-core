@@ -8,6 +8,7 @@ use crate::{
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
+use chain_vote::EncryptedTally;
 use imhamt::Hamt;
 use std::{
     collections::{hash_map::DefaultHasher, HashSet},
@@ -172,7 +173,7 @@ impl ProposalManager {
 
     #[must_use = "Compute the PrivateTally in a new ProposalManager, does not modify self"]
     pub fn private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
-        let mut tally = chain_vote::Tally::new(self.options.as_byte() as usize);
+        let mut tally = EncryptedTally::new(self.options.as_byte() as usize);
 
         for (id, payload) in self.votes_by_voters.iter() {
             if let Some(account_id) = id.to_single_account() {

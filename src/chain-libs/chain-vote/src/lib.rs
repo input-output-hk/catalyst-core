@@ -80,7 +80,7 @@ pub fn verify_vote(
 
 /// The encrypted tally
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Tally {
+pub struct EncryptedTally {
     r: Vec<Ciphertext>,
 }
 
@@ -126,11 +126,11 @@ impl Readable for TallyDecryptShare {
     }
 }
 
-impl Tally {
+impl EncryptedTally {
     /// Start a new tally with N different options
     pub fn new(options: usize) -> Self {
         let r = vec![Ciphertext::zero(); options];
-        Tally { r }
+        EncryptedTally { r }
     }
 
     /// Add an encrypted vote with a specific weight to the tally
@@ -322,7 +322,7 @@ mod tests {
 
         println!("tallying");
 
-        let mut tally = Tally::new(vote_options);
+        let mut tally = EncryptedTally::new(vote_options);
         tally.add(&e1.0, 6);
         tally.add(&e2.0, 5);
         tally.add(&e3.0, 4);
@@ -372,7 +372,7 @@ mod tests {
         assert!(verify_vote(&ek, &e1, &e1_proof));
         println!("tallying");
 
-        let mut tally = Tally::new(vote_options);
+        let mut tally = EncryptedTally::new(vote_options);
         tally.add(&e1, 1);
         tally.add(&e2.0, 3);
         tally.add(&e3.0, 4);

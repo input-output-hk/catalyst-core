@@ -3,6 +3,7 @@ use crate::{
     value::Value,
     vote::{Choice, Options},
 };
+use chain_vote::EncryptedTally;
 use std::fmt;
 use thiserror::Error;
 
@@ -30,7 +31,7 @@ pub enum Tally {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PrivateTallyState {
     Encrypted {
-        encrypted_tally: chain_vote::Tally,
+        encrypted_tally: EncryptedTally,
         total_stake: Stake,
     },
     Decrypted {
@@ -68,7 +69,7 @@ impl Tally {
         Self::Public { result }
     }
 
-    pub fn new_private(encrypted_tally: chain_vote::Tally, total_stake: Stake) -> Self {
+    pub fn new_private(encrypted_tally: EncryptedTally, total_stake: Stake) -> Self {
         Self::Private {
             state: PrivateTallyState::Encrypted {
                 encrypted_tally,
@@ -95,7 +96,7 @@ impl Tally {
         }
     }
 
-    pub fn private_encrypted(&self) -> Result<(&chain_vote::Tally, &Stake), TallyError> {
+    pub fn private_encrypted(&self) -> Result<(&EncryptedTally, &Stake), TallyError> {
         match self {
             Self::Private {
                 state:

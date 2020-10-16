@@ -14,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Key signing and verification.
 - Add the other kinds of private keys: 
   - Ed25519
-  - Ed25519bip32 (extended + chain code)
 
 ## [0.5.0-pre4] - 2020-10-13
 

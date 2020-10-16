@@ -39,11 +39,17 @@ pub enum PayloadType {
     Public,
 }
 
-#[wasm_bindgen]
-pub struct Ed25519ExtendedPrivate(chain_crypto::SecretKey<chain_crypto::Ed25519Extended>);
+impl_secret_key!(
+    Ed25519ExtendedPrivate,
+    chain_crypto::Ed25519Extended,
+    Ed25519Public
+);
+impl_secret_key!(Ed25519Private, chain_crypto::Ed25519, Ed25519Public);
+
+impl_public_key!(Ed25519Public, chain_crypto::Ed25519);
 
 #[wasm_bindgen]
-pub struct Ed25519Public(chain_crypto::PublicKey<chain_crypto::Ed25519>);
+pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
 
 #[wasm_bindgen]
 impl Wallet {
@@ -222,44 +228,15 @@ impl Options {
 }
 
 #[wasm_bindgen]
-impl Ed25519ExtendedPrivate {
-    pub fn generate() -> Self {
-        Self(chain_crypto::SecretKey::<chain_crypto::Ed25519Extended>::generate(rand::rngs::OsRng))
+impl Ed25519Signature {
+    pub fn from_binary(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
+        chain_crypto::Signature::from_binary(signature)
+            .map(Self)
+            .map_err(|e| JsValue::from_str(&format!("Invalid signature {}", e)))
     }
 
-    /// optional seed to generate the key, for the same entropy the same key will be generated (32
-    /// bytes). This seed will be fed to ChaChaRNG and allow pseudo random key
-    /// generation. Do not use if you are not sure
-    pub fn from_seed(seed: &[u8]) -> Result<Ed25519ExtendedPrivate, JsValue> {
-        let seed: [u8; 32] = seed
-            .try_into()
-            .map_err(|_| JsValue::from_str("Invalid seed, expected 32 bytes"))?;
-
-        let rng = ChaCha20Rng::from_seed(seed);
-
-        Ok(Self(
-            chain_crypto::SecretKey::<chain_crypto::Ed25519Extended>::generate(rng),
-        ))
-    }
-
-    pub fn public(&self) -> Ed25519Public {
-        Ed25519Public(self.0.to_public())
-    }
-
-    pub fn bytes(&self) -> Box<[u8]> {
-        self.0.clone().leak_secret().as_ref().into()
-    }
-}
-
-#[wasm_bindgen]
-impl Ed25519Public {
-    pub fn bytes(&self) -> Box<[u8]> {
+    pub fn to_bytes(&self) -> Box<[u8]> {
         self.0.as_ref().into()
-    }
-
-    pub fn bech32(&self) -> String {
-        use chain_crypto::bech32::Bech32 as _;
-        self.0.to_bech32_str()
     }
 }
 
@@ -273,4 +250,80 @@ pub fn symmetric_encrypt(password: &[u8], data: &[u8]) -> Result<Box<[u8]>, JsVa
 pub fn symmetric_decrypt(password: &[u8], data: &[u8]) -> Result<Box<[u8]>, JsValue> {
     symmetric_cipher::decrypt(password, data)
         .map_err(|e| JsValue::from_str(&format!("decryption failed {}", e)))
+}
+
+#[macro_export]
+macro_rules! impl_public_key {
+    ($name:ident, $wrapped_type:ty) => {
+        #[wasm_bindgen]
+        pub struct $name(chain_crypto::PublicKey<$wrapped_type>);
+
+        #[wasm_bindgen]
+        impl $name {
+            pub fn bytes(&self) -> Box<[u8]> {
+                self.0.as_ref().into()
+            }
+
+            pub fn bech32(&self) -> String {
+                use chain_crypto::bech32::Bech32 as _;
+                self.0.to_bech32_str()
+            }
+
+            pub fn verify(&self, signature: &Ed25519Signature, msg: &[u8]) -> bool {
+                let verification = signature.0.verify_slice(&self.0, msg);
+                match verification {
+                    chain_crypto::Verification::Success => true,
+                    chain_crypto::Verification::Failed => false,
+                }
+            }
+        }
+    };
+}
+
+/// macro arguments:
+///     the exported name of the type
+///     the inner/mangled key type
+///     the name of the exported public key associated type
+#[macro_export]
+macro_rules! impl_secret_key {
+    ($name:ident, $wrapped_type:ty, $public:ident) => {
+        #[wasm_bindgen]
+        pub struct $name(chain_crypto::SecretKey<$wrapped_type>);
+
+        #[wasm_bindgen]
+        impl $name {
+            pub fn generate() -> $name {
+                Self(chain_crypto::SecretKey::<$wrapped_type>::generate(
+                    rand::rngs::OsRng,
+                ))
+            }
+
+            /// optional seed to generate the key, for the same entropy the same key will be generated (32
+            /// bytes). This seed will be fed to ChaChaRNG and allow pseudo random key
+            /// generation. Do not use if you are not sure
+            pub fn from_seed(seed: &[u8]) -> Result<$name, JsValue> {
+                let seed: [u8; 32] = seed
+                    .try_into()
+                    .map_err(|_| JsValue::from_str("Invalid seed, expected 32 bytes"))?;
+
+                let rng = ChaCha20Rng::from_seed(seed);
+
+                Ok(Self(chain_crypto::SecretKey::<$wrapped_type>::generate(
+                    rng,
+                )))
+            }
+
+            pub fn public(&self) -> $public {
+                $public(self.0.to_public())
+            }
+
+            pub fn bytes(&self) -> Box<[u8]> {
+                self.0.clone().leak_secret().as_ref().into()
+            }
+
+            pub fn sign(&self, msg: &[u8]) -> Ed25519Signature {
+                Ed25519Signature::from_binary(self.0.sign(&msg).as_ref()).unwrap()
+            }
+        }
+    };
 }

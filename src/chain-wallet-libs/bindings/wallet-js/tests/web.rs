@@ -67,3 +67,21 @@ fn gen_key_from_invalid_seed_fails() {
     let bad_seed = [2u8; INVALID_SEED_SIZE];
     assert!(Ed25519ExtendedPrivate::from_seed(bad_seed.as_ref()).is_err())
 }
+
+#[wasm_bindgen_test]
+fn sign_verify_extended() {
+    let key = Ed25519ExtendedPrivate::generate();
+    let msg = [1, 2, 3, 4u8];
+    let signature = key.sign(&msg);
+
+    assert!(key.public().verify(&signature, &msg));
+}
+
+#[wasm_bindgen_test]
+fn sign_verify() {
+    let key = Ed25519Private::generate();
+    let msg = [1, 2, 3, 4u8];
+    let signature = key.sign(&msg);
+
+    assert!(key.public().verify(&signature, &msg));
+}

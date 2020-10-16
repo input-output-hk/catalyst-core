@@ -38,7 +38,7 @@ impl ToPayload for ProposalPrivate {
                 let encryption_vote_key =
                     std::slice::from_raw_parts(self.0, ENCRYPTION_VOTE_KEY_SIZE);
                 let encryption_vote_key =
-                    EncryptingVoteKey::from_bytes(encryption_vote_key.as_ref()).unwrap();
+                    EncryptingVoteKey::from_bytes(encryption_vote_key).unwrap();
                 Ok(PayloadTypeConfig::Private(encryption_vote_key))
             }
         }

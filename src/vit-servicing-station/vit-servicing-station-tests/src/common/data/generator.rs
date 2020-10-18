@@ -191,6 +191,7 @@ impl Generator {
             chain_vote_end_time: voteplan.chain_vote_end_time,
             chain_committee_end_time: voteplan.chain_committee_end_time,
             chain_voteplan_payload: voteplan.chain_voteplan_payload.clone(),
+            chain_vote_encryption_key: voteplan.chain_vote_encryption_key.clone(),
             fund_id: fund.id,
         }
     }
@@ -234,6 +235,7 @@ impl Generator {
             chain_vote_end_time: end.timestamp(),
             chain_committee_end_time: next.timestamp(),
             chain_voteplan_payload: "bla".to_string(), //Sentence(3..5).fake::<String>(),
+            chain_vote_encryption_key: "enckey".to_string(),
             fund_id,
         }
     }

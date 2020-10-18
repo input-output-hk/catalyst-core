@@ -21,6 +21,8 @@ pub struct Voteplan {
     pub chain_committee_end_time: i64,
     #[serde(alias = "chainVoteplanPayload")]
     pub chain_voteplan_payload: String,
+    #[serde(alias = "chainVoteEncryptionKey")]
+    pub chain_vote_encryption_key: String,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
 }
@@ -35,6 +37,7 @@ impl Insertable<voteplans::table> for Voteplan {
         diesel::dsl::Eq<voteplans::chain_vote_end_time, i64>,
         diesel::dsl::Eq<voteplans::chain_committee_end_time, i64>,
         diesel::dsl::Eq<voteplans::chain_voteplan_payload, String>,
+        diesel::dsl::Eq<voteplans::chain_vote_encryption_key, String>,
         diesel::dsl::Eq<voteplans::fund_id, i32>,
     );
 
@@ -45,6 +48,7 @@ impl Insertable<voteplans::table> for Voteplan {
             voteplans::chain_vote_end_time.eq(self.chain_vote_end_time),
             voteplans::chain_committee_end_time.eq(self.chain_committee_end_time),
             voteplans::chain_voteplan_payload.eq(self.chain_voteplan_payload),
+            voteplans::chain_vote_encryption_key.eq(self.chain_vote_encryption_key),
             voteplans::fund_id.eq(self.fund_id),
         )
     }
@@ -65,6 +69,7 @@ pub mod test {
             chain_vote_end_time: Utc::now().timestamp(),
             chain_committee_end_time: Utc::now().timestamp(),
             chain_voteplan_payload: "foopayload".to_string(),
+            chain_vote_encryption_key: "enckey".to_string(),
             fund_id,
         }
     }
@@ -77,6 +82,7 @@ pub mod test {
             voteplans::chain_vote_end_time.eq(voteplan.chain_vote_end_time),
             voteplans::chain_committee_end_time.eq(voteplan.chain_committee_end_time),
             voteplans::chain_voteplan_payload.eq(voteplan.chain_voteplan_payload.clone()),
+            voteplans::chain_vote_encryption_key.eq(voteplan.chain_vote_encryption_key.clone()),
             voteplans::fund_id.eq(voteplan.fund_id),
         );
         diesel::insert_into(voteplans::table)

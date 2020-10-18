@@ -27,6 +27,10 @@ impl Voteplan {
         &self.chain_voteplan_payload
     }
 
+    pub async fn chain_vote_encryption_key(&self) -> &str {
+        &self.chain_vote_encryption_key
+    }
+
     pub async fn fund_id(&self) -> i32 {
         self.fund_id
     }

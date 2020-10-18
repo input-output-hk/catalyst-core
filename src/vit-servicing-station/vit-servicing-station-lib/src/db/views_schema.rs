@@ -26,6 +26,7 @@ table! {
         chain_vote_end_time -> BigInt,
         chain_committee_end_time -> BigInt,
         chain_voteplan_payload -> Text,
+        chain_vote_encryption_key -> Text,
         fund_id -> Integer,
     }
 }

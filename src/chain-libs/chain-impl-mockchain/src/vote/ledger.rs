@@ -166,23 +166,17 @@ impl VotePlanLedger {
     /// * if the Committee time has elapsed
     /// * if the tally is not a private tally
     ///
-    pub fn apply_encrypted_vote_tally<F>(
+    pub fn apply_encrypted_vote_tally(
         &self,
         block_date: BlockDate,
         stake: &StakeControl,
-        governance: &Governance,
-        tally: &EncryptedVoteTally,
+        encrypted_tally: &EncryptedVoteTally,
         sig: EncryptedVoteTallyProof,
-        f: &mut F,
-    ) -> Result<Self, VotePlanLedgerError>
-    where
-        F: FnMut(&VoteAction),
-    {
-        let id = tally.id().clone();
+    ) -> Result<Self, VotePlanLedgerError> {
+        let id = encrypted_tally.id().clone();
 
         let r = self.plans.update(&id, move |v| {
-            v.public_tally(block_date, stake, governance, sig.id, f)
-                .map(Some)
+            v.private_tally_start(block_date, stake, sig.id).map(Some)
         });
 
         match r {

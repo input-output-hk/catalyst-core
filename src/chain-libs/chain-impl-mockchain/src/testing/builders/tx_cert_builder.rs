@@ -221,7 +221,7 @@ pub fn tally_sign(
 
     match payload_type {
         PayloadType::Public => TallyProof::Public { id, signature },
-        PayloadType::Private => unreachable!("Vote tally payload should never be private"),
+        PayloadType::Private => TallyProof::Private { id, signature },
     }
 }
 

@@ -1,5 +1,8 @@
 use crate::{
-    certificate::{ExternalProposalId, VoteCast, VotePlan, VoteTally},
+    certificate::{
+        EncryptedVoteTally, ExternalProposalId, Proposal, TallyDecryptShares, VoteCast, VotePlan,
+        VoteTally,
+    },
     fee::LinearFee,
     key::Hash,
     ledger::Error as LedgerError,
@@ -8,7 +11,7 @@ use crate::{
         ledger::TestLedger,
         scenario::template::VotePlanDef,
     },
-    vote::{Choice, Payload},
+    vote::{Choice, Payload, PayloadType},
 };
 
 #[cfg(test)]
@@ -17,6 +20,7 @@ use super::FragmentFactory;
 #[cfg(test)]
 use chain_addr::Discrimination;
 
+use rand_core::{CryptoRng, RngCore};
 use thiserror::Error;
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
@@ -75,16 +79,6 @@ impl Controller {
                 alias: alias.to_owned(),
             })
     }
-
-    /*
-    fn empty_context() -> HeaderContentEvalContext {
-        HeaderContentEvalContext {
-            block_date: BlockDate::first(),
-            chain_length: ChainLength(0),
-            nonce: None,
-        }
-    }
-    */
 
     pub fn initial_stake_pools(&self) -> Vec<StakePool> {
         self.declared_stake_pools.clone()
@@ -204,7 +198,7 @@ impl Controller {
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
-    pub fn cast_vote(
+    pub fn cast_vote_public(
         &self,
         owner: &Wallet,
         vote_plan_def: &VotePlanDef,
@@ -212,21 +206,100 @@ impl Controller {
         choice: Choice,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
+        self.cast_vote(
+            owner,
+            vote_plan_def,
+            id,
+            test_ledger,
+            |vote_plan, _proposal| match vote_plan.payload_type() {
+                PayloadType::Public => Payload::Public { choice },
+                PayloadType::Private => panic!("this is a private vote plan"),
+            },
+        )
+    }
+
+    pub fn cast_vote_private<R>(
+        &self,
+        owner: &Wallet,
+        vote_plan_def: &VotePlanDef,
+        id: &ExternalProposalId,
+        choice: Choice,
+        test_ledger: &mut TestLedger,
+        rng: &mut R,
+    ) -> Result<(), LedgerError>
+    where
+        R: RngCore + CryptoRng,
+    {
+        self.cast_vote(
+            owner,
+            vote_plan_def,
+            id,
+            test_ledger,
+            |vote_plan, proposal| match vote_plan.payload_type() {
+                PayloadType::Public => panic!("this is a public vote plan"),
+                PayloadType::Private => {
+                    let encrypting_key = chain_vote::EncryptingVoteKey::from_participants(
+                        vote_plan.committee_public_keys(),
+                    );
+
+                    let (encrypted_vote, proof) = chain_vote::encrypt_vote(
+                        rng,
+                        &encrypting_key,
+                        chain_vote::Vote::new(
+                            proposal.options().choice_range().clone().max().unwrap() as usize,
+                            choice.as_byte() as usize,
+                        ),
+                    );
+
+                    Payload::Private {
+                        encrypted_vote,
+                        proof,
+                    }
+                }
+            },
+        )
+    }
+
+    fn cast_vote<F>(
+        &self,
+        owner: &Wallet,
+        vote_plan_def: &VotePlanDef,
+        id: &ExternalProposalId,
+        test_ledger: &mut TestLedger,
+        mut payload_producer: F,
+    ) -> Result<(), LedgerError>
+    where
+        F: FnMut(&VotePlan, &Proposal) -> Payload,
+    {
         let vote_plan: VotePlan = vote_plan_def.clone().into();
-        let index = vote_plan
+        let (index, proposal) = vote_plan
             .proposals()
             .iter()
             .enumerate()
             .find(|(_, x)| *x.external_id() == *id)
-            .expect("cannot find proposal")
-            .0 as u8;
-        let vote_cast = VoteCast::new(vote_plan.to_id(), index, Payload::Public { choice });
-
+            .map(|(index, proposal)| (index as u8, proposal))
+            .expect("cannot find proposal");
+        let payload = payload_producer(&vote_plan, proposal);
+        let vote_cast = VoteCast::new(vote_plan.to_id(), index, payload);
         let fragment = self.fragment_factory.vote_cast(owner, vote_cast);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
-    pub fn tally_vote(
+    pub fn encrypted_tally(
+        &self,
+        owner: &Wallet,
+        vote_plan_def: &VotePlanDef,
+        test_ledger: &mut TestLedger,
+    ) -> Result<(), LedgerError> {
+        let vote_plan: VotePlan = vote_plan_def.clone().into();
+        let encrypted_tally = EncryptedVoteTally::new(vote_plan.to_id());
+        let fragment = self
+            .fragment_factory
+            .vote_encrypted_tally(owner, encrypted_tally);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
+    }
+
+    pub fn tally_vote_public(
         &self,
         owner: &Wallet,
         vote_plan_def: &VotePlanDef,
@@ -234,6 +307,20 @@ impl Controller {
     ) -> Result<(), LedgerError> {
         let vote_plan: VotePlan = vote_plan_def.clone().into();
         let vote_tally = VoteTally::new_public(vote_plan.to_id());
+
+        let fragment = self.fragment_factory.vote_tally(owner, vote_tally);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
+    }
+
+    pub fn tally_vote_private(
+        &self,
+        owner: &Wallet,
+        vote_plan_def: &VotePlanDef,
+        shares: TallyDecryptShares,
+        test_ledger: &mut TestLedger,
+    ) -> Result<(), LedgerError> {
+        let vote_plan: VotePlan = vote_plan_def.clone().into();
+        let vote_tally = VoteTally::new_private(vote_plan.to_id(), shares);
 
         let fragment = self.fragment_factory.vote_tally(owner, vote_tally);
         test_ledger.apply_fragment(&fragment, test_ledger.date())

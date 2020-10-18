@@ -9,6 +9,7 @@ use crate::{
 };
 pub use builders::*;
 use chain_crypto::{Ed25519, PublicKey};
+use chain_vote::MemberPublicKey;
 use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Debug)]
@@ -99,9 +100,11 @@ impl StakePoolDef {
 pub struct VotePlanDef {
     alias: String,
     owner_alias: String,
+    payload_type: PayloadType,
     vote_date: BlockDate,
     tally_date: BlockDate,
     end_tally_date: BlockDate,
+    committee_keys: Vec<MemberPublicKey>,
     proposals: Vec<ProposalDef>,
 }
 
@@ -140,9 +143,8 @@ impl Into<VotePlan> for VotePlanDef {
             self.tally_date,
             self.end_tally_date,
             proposals,
-            PayloadType::Public,
-            //TODO: generate keys
-            Vec::new(),
+            self.payload_type,
+            self.committee_keys,
         )
     }
 }

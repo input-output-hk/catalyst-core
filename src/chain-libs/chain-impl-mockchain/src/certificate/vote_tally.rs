@@ -61,6 +61,13 @@ impl VoteTally {
         }
     }
 
+    pub fn new_private(id: VotePlanId, shares: TallyDecryptShares) -> Self {
+        Self {
+            id,
+            payload: VoteTallyPayload::Private { shares },
+        }
+    }
+
     pub fn id(&self) -> &VotePlanId {
         &self.id
     }
@@ -157,7 +164,7 @@ impl TallyDecryptShares {
 
 impl Payload for VoteTally {
     const HAS_DATA: bool = true;
-    const HAS_AUTH: bool = true; // TODO: true it is the Committee signatures
+    const HAS_AUTH: bool = true;
     type Auth = TallyProof;
 
     fn payload_data(&self) -> PayloadData<Self> {
@@ -195,15 +202,13 @@ impl property::Serialize for VoteTally {
 
 impl Readable for TallyProof {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        match buf.peek_u8()? {
+        match buf.get_u8()? {
             0 => {
-                let _ = buf.get_u8()?;
                 let id = CommitteeId::read(buf)?;
                 let signature = SingleAccountBindingSignature::read(buf)?;
                 Ok(Self::Public { id, signature })
             }
             1 => {
-                let _ = buf.get_u8()?;
                 let id = CommitteeId::read(buf)?;
                 let signature = SingleAccountBindingSignature::read(buf)?;
                 Ok(Self::Private { id, signature })

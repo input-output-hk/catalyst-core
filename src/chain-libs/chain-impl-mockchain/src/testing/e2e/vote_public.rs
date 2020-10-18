@@ -47,7 +47,7 @@ pub fn vote_cast_action_transfer_to_rewards() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
+        .cast_vote_public(
             &alice,
             &vote_plan,
             &proposal.id(),
@@ -63,7 +63,7 @@ pub fn vote_cast_action_transfer_to_rewards() {
     });
 
     controller
-        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .tally_vote_public(&alice, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -109,7 +109,7 @@ pub fn vote_cast_action_action_parameters_no_op() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
+        .cast_vote_public(
             &alice,
             &vote_plan,
             &proposal.id(),
@@ -125,7 +125,7 @@ pub fn vote_cast_action_action_parameters_no_op() {
     });
 
     controller
-        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .tally_vote_public(&alice, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -181,7 +181,7 @@ pub fn vote_cast_tally_50_percent() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
+        .cast_vote_public(
             &alice,
             &vote_plan,
             &proposal.id(),
@@ -191,7 +191,7 @@ pub fn vote_cast_tally_50_percent() {
         .unwrap();
     alice.confirm_transaction();
     controller
-        .cast_vote(
+        .cast_vote_public(
             &bob,
             &vote_plan,
             &proposal.id(),
@@ -207,7 +207,7 @@ pub fn vote_cast_tally_50_percent() {
     });
 
     controller
-        .tally_vote(&bob, &vote_plan, &mut ledger)
+        .tally_vote_public(&bob, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -263,7 +263,7 @@ pub fn vote_cast_tally_50_percent_unsuccesful() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
+        .cast_vote_public(
             &alice,
             &vote_plan,
             &proposal.id(),
@@ -273,7 +273,7 @@ pub fn vote_cast_tally_50_percent_unsuccesful() {
         .unwrap();
     alice.confirm_transaction();
     controller
-        .cast_vote(
+        .cast_vote_public(
             &bob,
             &vote_plan,
             &proposal.id(),
@@ -289,7 +289,7 @@ pub fn vote_cast_tally_50_percent_unsuccesful() {
     });
 
     controller
-        .tally_vote(&bob, &vote_plan, &mut ledger)
+        .tally_vote_public(&bob, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -362,7 +362,7 @@ pub fn vote_cast_by_non_committe_member() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
+        .cast_vote_public(
             &bob,
             &vote_plan,
             &proposal.id(),
@@ -371,12 +371,12 @@ pub fn vote_cast_by_non_committe_member() {
         )
         .unwrap();
     assert!(controller
-        .cast_vote(
+        .cast_vote_public(
             &bob,
             &vote_plan,
             &proposal.id(),
             rejection.clone(),
-            &mut ledger
+            &mut ledger,
         )
         .is_err());
 }
@@ -428,7 +428,7 @@ pub fn votes_with_fees() {
     let total_ada_before = ledger.total_funds();
 
     controller
-        .cast_vote(
+        .cast_vote_public(
             &alice,
             &vote_plan,
             &proposal.id(),
@@ -445,7 +445,7 @@ pub fn votes_with_fees() {
     });
 
     controller
-        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .tally_vote_public(&alice, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {

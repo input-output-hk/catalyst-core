@@ -173,7 +173,8 @@ impl ProposalManager {
 
     #[must_use = "Compute the PrivateTally in a new ProposalManager, does not modify self"]
     pub fn private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
-        let mut tally = EncryptedTally::new(self.options.as_byte() as usize);
+        let mut tally =
+            EncryptedTally::new(self.options.choice_range().clone().max().unwrap() as usize);
 
         for (id, payload) in self.votes_by_voters.iter() {
             if let Some(account_id) = id.to_single_account() {
@@ -217,11 +218,10 @@ impl ProposalManager {
         let tally = self.tally.as_ref().ok_or(TallyError::NoEncryptedTally)?;
         let (encrypted_tally, total_stake) = tally.private_encrypted()?;
         let state = encrypted_tally.state();
-        let max_votes = self.votes_by_voters.size();
-        let table_size: usize = max_votes
-            .checked_div(self.options.as_byte() as usize)
-            .unwrap_or(max_votes / 3);
-        let private_result = chain_vote::result(max_votes as u64, table_size, &state, shares);
+        // total voting power + 1
+        let max_votes = total_stake.0 + 1;
+        let table_size = (max_votes / 3) as usize;
+        let private_result = chain_vote::result(max_votes, table_size, &state, shares);
         let mut result = TallyResult::new(self.options.clone());
         for (choice, weight) in private_result
             .votes
@@ -238,6 +238,8 @@ impl ProposalManager {
                 weight,
             )?;
         }
+
+        dbg!(&result);
 
         if self.check(*total_stake, governance, &result) {
             f(&self.action);

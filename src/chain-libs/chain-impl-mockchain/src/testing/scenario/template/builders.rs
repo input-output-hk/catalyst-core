@@ -10,11 +10,13 @@ use crate::{
     testing::data::Wallet,
     testing::scenario::{scenario_builder::ScenarioBuilderError, template::StakePoolDef},
     value::Value,
+    vote::PayloadType,
 };
 use std::{
     collections::{HashMap, HashSet},
     num::NonZeroU64,
 };
+use chain_vote::MemberPublicKey;
 
 #[derive(Clone, Debug)]
 pub struct WalletTemplateBuilder {
@@ -235,9 +237,11 @@ impl StakePoolDefBuilder {
 pub struct VotePlanDefBuilder {
     alias: String,
     owner_alias: Option<String>,
+    payload_type: PayloadType,
     vote_date: Option<BlockDate>,
     tally_date: Option<BlockDate>,
     end_tally_date: Option<BlockDate>,
+    committee_keys: Vec<MemberPublicKey>,
     proposals: Vec<ProposalDef>,
 }
 
@@ -246,15 +250,27 @@ impl VotePlanDefBuilder {
         VotePlanDefBuilder {
             alias: alias.to_owned(),
             owner_alias: Option::None,
+            payload_type: PayloadType::Public,
             vote_date: Option::None,
             tally_date: Option::None,
             end_tally_date: Option::None,
+            committee_keys: Vec::new(),
             proposals: Vec::new(),
         }
     }
 
     pub fn owner(&mut self, owner_alias: &str) -> &mut Self {
         self.owner_alias = Some(owner_alias.to_string());
+        self
+    }
+
+    pub fn payload_type(&mut self, payload_type: PayloadType) -> &mut Self {
+        self.payload_type = payload_type;
+        self
+    }
+
+    pub fn committee_keys(&mut self, committee_keys: Vec<MemberPublicKey>) -> &mut Self {
+        self.committee_keys = committee_keys;
         self
     }
 
@@ -299,10 +315,12 @@ impl VotePlanDefBuilder {
         VotePlanDef {
             alias: self.alias.clone(),
             owner_alias: self.owner_alias.unwrap(),
+            payload_type: self.payload_type,
             vote_date: self.vote_date.unwrap(),
             tally_date: self.tally_date.unwrap(),
             end_tally_date: self.end_tally_date.unwrap(),
             proposals: self.proposals,
+            committee_keys: self.committee_keys,
         }
     }
 }

@@ -1,5 +1,6 @@
 use crate::testing::VoteTestGen;
 use crate::{
+    certificate::{TallyDecryptShares, VotePlan},
     fee::LinearFee,
     header::BlockDate,
     testing::{
@@ -9,9 +10,10 @@ use crate::{
     },
     value::Value,
     vote::{Choice, PayloadType},
-    certificate::{VotePlan, TallyDecryptShares},
 };
-use chain_vote::{committee::MemberSecretKey, MemberCommunicationKey, MemberPublicKey, MemberState, CRS};
+use chain_vote::{
+    committee::MemberSecretKey, MemberCommunicationKey, MemberPublicKey, MemberState, CRS,
+};
 use rand_chacha::ChaCha20Rng;
 use rand_core::{CryptoRng, RngCore, SeedableRng};
 
@@ -111,7 +113,7 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
             &alice,
             &vote_plan,
             &proposal.id(),
-            favorable.clone(),
+            favorable,
             &mut ledger,
             &mut rng,
         )
@@ -139,7 +141,16 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
         .unwrap()
         .proposals
         .iter()
-        .map(|proposal| proposal.tally.as_ref().unwrap().private_encrypted().unwrap().0.clone())
+        .map(|proposal| {
+            proposal
+                .tally
+                .as_ref()
+                .unwrap()
+                .private_encrypted()
+                .unwrap()
+                .0
+                .clone()
+        })
         .map(|encrypted_tally| {
             members
                 .members()
@@ -163,7 +174,7 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
 
     ledger.apply_protocol_changes().unwrap();
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("rewards pot is increased")
         .pots()
         .has_remaining_rewards_equals_to(&Value(1100));

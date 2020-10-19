@@ -1,6 +1,6 @@
 use crate::testing::VoteTestGen;
 use crate::{
-    fee::LinearFee,
+    fee::{LinearFee, PerCertificateFee, PerVoteCertificateFee},
     header::BlockDate,
     testing::{
         ledger::ConfigBuilder,
@@ -10,6 +10,7 @@ use crate::{
     value::Value,
     vote::Choice,
 };
+use core::num::NonZeroU64;
 
 const ALICE: &str = "Alice";
 const BOB: &str = "Bob";
@@ -378,4 +379,90 @@ pub fn vote_cast_by_non_committe_member() {
             &mut ledger
         )
         .is_err());
+}
+
+#[test]
+pub fn votes_with_fees() {
+    let favorable = Choice::new(1);
+    let rewards_add = 100;
+    let initial_rewards = 1000;
+    let mut fees = LinearFee::new(1, 1, 1);
+
+    let cert_fees = PerCertificateFee::new(
+        Some(NonZeroU64::new(1).unwrap()),
+        Some(NonZeroU64::new(1).unwrap()),
+        Some(NonZeroU64::new(1).unwrap()),
+    );
+    fees.per_certificate_fees(cert_fees);
+
+    let vote_fees = PerVoteCertificateFee::new(
+        Some(NonZeroU64::new(1).unwrap()),
+        Some(NonZeroU64::new(1).unwrap()),
+    );
+    fees.per_vote_certificate_fees(vote_fees);
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(fees)
+                .with_rewards(Value(initial_rewards)),
+        )
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .owns(STAKE_POOL)
+            .committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_transfer_to_rewards(rewards_add),
+            )])
+        .build()
+        .unwrap();
+
+    let mut alice = controller.wallet(ALICE).unwrap();
+    let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
+    let proposal = vote_plan.proposal(0);
+    let total_ada_before = ledger.total_funds();
+
+    controller
+        .cast_vote(
+            &alice,
+            &vote_plan,
+            &proposal.id(),
+            favorable.clone(),
+            &mut ledger,
+        )
+        .unwrap();
+
+    alice.confirm_transaction();
+
+    ledger.fast_forward_to(BlockDate {
+        epoch: 1,
+        slot_id: 1,
+    });
+
+    controller
+        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .unwrap();
+
+    ledger.fast_forward_to(BlockDate {
+        epoch: 1,
+        slot_id: 1,
+    });
+
+    ledger.apply_protocol_changes().unwrap();
+
+    LedgerStateVerifier::new(ledger.clone().into())
+        .info("rewards pot is increased")
+        .pots()
+        .has_remaining_rewards_equals_to(&Value(initial_rewards + rewards_add));
+
+    let expected_ada_after = total_ada_before.saturating_add(Value(rewards_add));
+
+    LedgerStateVerifier::new(ledger.clone().into())
+        .info("total value is the same")
+        .total_value_is(&expected_ada_after);
 }

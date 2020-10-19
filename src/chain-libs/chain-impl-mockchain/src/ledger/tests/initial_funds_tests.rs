@@ -12,11 +12,12 @@ use crate::{
         data::AddressDataValue,
         data::Wallet,
         ledger::{ConfigBuilder, LedgerBuilder},
-        InitialFaultTolerantTxBuilder, InitialFaultTolerantTxCertBuilder, VoteTestGen,    },
+        InitialFaultTolerantTxBuilder, InitialFaultTolerantTxCertBuilder, VoteTestGen,
+    },
     value::Value,
 };
-use chain_core::property::Fragment as _;
 use chain_addr::Discrimination;
+use chain_core::property::Fragment as _;
 use quickcheck::TestResult;
 use quickcheck_macros::quickcheck;
 use std::iter;
@@ -203,11 +204,10 @@ pub fn ledger_fails_to_starts_with_cert_with_witness_only() {
     let fragment_with_input =
         InitialFaultTolerantTxBuilder::new(faucet, receiver).transaction_with_witness_only();
 
-
     let _ = LedgerBuilder::from_config(config)
-                .fragments(&[faucet_fragment, fragment_with_input])
-                .build()
-                .unwrap();
+        .fragments(&[faucet_fragment, fragment_with_input])
+        .build()
+        .unwrap();
 }
 
 #[test]

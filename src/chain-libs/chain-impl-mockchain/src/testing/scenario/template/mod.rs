@@ -124,7 +124,7 @@ impl VotePlanDef {
 
     pub fn id(&self) -> String {
         let vote_plan: VotePlan = self.clone().into();
-        vote_plan.to_id().to_string() 
+        vote_plan.to_id().to_string()
     }
 }
 

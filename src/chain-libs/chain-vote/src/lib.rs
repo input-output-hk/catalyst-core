@@ -118,7 +118,7 @@ impl Readable for TallyDecryptShare {
         let len = buf.get_u64()?;
         let mut r1s: Vec<gang::GroupElement> = Vec::new();
         for _ in 0..len {
-            let elem_buf = buf.get_slice(65)?;
+            let elem_buf = buf.get_slice(gang::GROUP_ELEMENT_BYTES_LEN)?;
             r1s.push(gang::GroupElement::from_bytes(elem_buf).unwrap());
         }
 

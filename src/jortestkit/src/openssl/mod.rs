@@ -115,7 +115,7 @@ fn path_to_str(path: &ChildPath) -> String {
     path_buf.as_os_str().to_owned().into_string().unwrap()
 }
 
-pub fn generate_keys(temp_dir: &TempDir) -> (PathBuf, PathBuf) {
+pub fn generate_keys(temp_dir: &TempDir) -> (PathBuf, PathBuf, PathBuf) {
     let openssl = Openssl::new().expect("no openssla installed.");
     let prv_key_file = temp_dir.child("prv.key");
     let pk8_key_file = temp_dir.child("prv.pk8");
@@ -145,5 +145,9 @@ pub fn generate_keys(temp_dir: &TempDir) -> (PathBuf, PathBuf) {
     prv_key_file.assert(file_exists_and_not_empty());
     cert_file.assert(file_exists_and_not_empty());
 
-    (prv_key_file.path().into(), cert_file.path().into())
+    (
+        prv_key_file.path().into(),
+        cert_file.path().into(),
+        der_file.path().into(),
+    )
 }

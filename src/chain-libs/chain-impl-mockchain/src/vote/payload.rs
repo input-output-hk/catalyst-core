@@ -1,6 +1,6 @@
 use crate::vote::Choice;
 use chain_core::mempack::{ReadBuf, ReadError};
-use chain_vote::{EncryptedVote, ProofOfCorrectVote};
+use chain_vote::{Ciphertext, EncryptedVote, ProofOfCorrectVote, CIPHERTEXT_BYTES_LEN};
 use std::convert::{TryFrom, TryInto as _};
 use std::hash::Hash;
 use thiserror::Error;
@@ -76,7 +76,7 @@ impl Payload {
                 let mut bb = bb.u64(size as u64);
                 for ct in encrypted_vote.iter() {
                     let buffer = ct.to_bytes();
-                    bb = bb.u64(buffer.len() as u64).bytes(&buffer);
+                    bb = bb.bytes(&buffer);
                 }
                 proof.serialize_in(bb)
             }
@@ -93,14 +93,12 @@ impl Payload {
             PayloadType::Public => buf.get_u8().map(Choice::new).map(Self::public),
             PayloadType::Private => {
                 let len: usize = buf.get_u64()? as usize;
-                let mut cypher_texts: Vec<chain_vote::Ciphertext> = Vec::new();
+                let mut cypher_texts: Vec<Ciphertext> = Vec::new();
                 for _ in 0..len {
-                    let size = buf.get_u64()? as usize;
-                    cypher_texts.push(
-                        chain_vote::Ciphertext::from_bytes(buf.get_slice(size)?).ok_or_else(
-                            || ReadError::StructureInvalid("Invalid private vote".to_string()),
-                        )?,
-                    );
+                    let ct_buf = buf.get_slice(CIPHERTEXT_BYTES_LEN)?;
+                    cypher_texts.push(Ciphertext::from_bytes(ct_buf).ok_or_else(|| {
+                        ReadError::StructureInvalid("Invalid private vote".to_string())
+                    })?);
                 }
                 let proof = ProofOfCorrectVote::read(buf)?;
                 Ok(Self::Private {

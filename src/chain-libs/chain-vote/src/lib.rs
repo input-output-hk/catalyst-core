@@ -223,7 +223,6 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     Some(elements)
 }
 
-#[allow(clippy::ptr_arg)]
 pub fn result(
     max_votes: u64,
     table_size: usize,

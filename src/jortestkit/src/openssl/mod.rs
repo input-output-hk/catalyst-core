@@ -4,9 +4,9 @@ use assert_fs::{
     fixture::{ChildPath, PathChild},
     TempDir,
 };
-use std::str::FromStr;
-use std::process::Command;
 use std::path::PathBuf;
+use std::process::Command;
+use std::str::FromStr;
 type Error = std::io::Error;
 use crate::process::output_extensions::ProcessOutput;
 
@@ -22,21 +22,25 @@ impl Openssl {
     }
 
     pub fn version(&self) -> Result<String, Error> {
-        Ok(Command::new(self.program.clone()).arg("version").output()?.as_lossy_string())
-
+        Ok(Command::new(self.program.clone())
+            .arg("version")
+            .output()?
+            .as_lossy_string())
     }
 
     pub fn genrsa(&self, length: u32, out_file: &ChildPath) -> Result<String, Error> {
-        Ok(Command::new(self.program.clone()).arg("genrsa")
-        .arg("-out")
-        .arg(path_to_str(out_file))
-        .arg(length.to_string())
-        .output()?
-        .as_lossy_string())
+        Ok(Command::new(self.program.clone())
+            .arg("genrsa")
+            .arg("-out")
+            .arg(path_to_str(out_file))
+            .arg(length.to_string())
+            .output()?
+            .as_lossy_string())
     }
 
     pub fn pkcs8(&self, in_file: &ChildPath, out_file: &ChildPath) -> Result<String, Error> {
-        Ok(Command::new(self.program.clone()).arg("pkcs8")
+        Ok(Command::new(self.program.clone())
+            .arg("pkcs8")
             .arg("-topk8")
             .arg("-inform")
             .arg("PEM")
@@ -53,16 +57,16 @@ impl Openssl {
 
     pub fn req(&self, prv_key: &ChildPath, out_cert: &ChildPath) -> Result<String, Error> {
         Ok(Command::new(self.program.clone())
-          .arg("req")
-          .arg( "-new")
-          .arg( "-nodes")
-          .arg(  "-key")
-          .arg(path_to_str(prv_key))
-          .arg( "-out")
-          .arg(path_to_str(out_cert))
-          .arg("-batch")
-          .output()?
-          .as_lossy_string())
+            .arg("req")
+            .arg("-new")
+            .arg("-nodes")
+            .arg("-key")
+            .arg(path_to_str(prv_key))
+            .arg("-out")
+            .arg(path_to_str(out_cert))
+            .arg("-batch")
+            .output()?
+            .as_lossy_string())
     }
 
     pub fn x509(
@@ -76,11 +80,11 @@ impl Openssl {
             .arg("-req")
             .arg("-days")
             .arg(3650.to_string())
-            .arg( "-in")
+            .arg("-in")
             .arg(path_to_str(in_cert))
             .arg("-signkey")
             .arg(path_to_str(prv_key))
-            .arg( "-out")
+            .arg("-out")
             .arg(path_to_str(out_cert))
             .output()?
             .as_lossy_string())
@@ -119,9 +123,12 @@ pub fn generate_keys(temp_dir: &TempDir) -> (PathBuf, PathBuf) {
     let cert_file = temp_dir.child("cert.crt");
     let der_file = temp_dir.child("cert.der");
 
-    println!("{}",openssl
-        .genrsa(2048, &prv_key_file)
-        .expect("cannot generate private key."));
+    println!(
+        "{}",
+        openssl
+            .genrsa(2048, &prv_key_file)
+            .expect("cannot generate private key.")
+    );
     openssl
         .pkcs8(&prv_key_file, &pk8_key_file)
         .expect("cannot wrap private key in PKC8");

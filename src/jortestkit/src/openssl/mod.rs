@@ -4,82 +4,69 @@ use assert_fs::{
     fixture::{ChildPath, PathChild},
     TempDir,
 };
-use bawawa::{Command, Error, Process, Program, StandardError, StandardOutput};
-use futures::stream::Stream;
 use std::path::PathBuf;
-use tokio_codec::LinesCodec;
+use std::process::Command;
+use std::str::FromStr;
+type Error = std::io::Error;
+use crate::process::output_extensions::ProcessOutput;
+
 pub struct Openssl {
-    program: Program,
+    program: PathBuf,
 }
 
 impl Openssl {
     pub fn new() -> Result<Self, Error> {
         Ok(Openssl {
-            program: Program::new("openssl".to_owned())?,
+            program: PathBuf::from_str("openssl").unwrap(),
         })
     }
 
     pub fn version(&self) -> Result<String, Error> {
-        let mut openssl = Command::new(self.program.clone());
-        openssl.argument("version");
-        self.echo_stdout(openssl)
-    }
-
-    fn echo_stdout(&self, cmd: Command) -> Result<String, Error> {
-        let captured = Process::spawn(cmd.clone())?
-            .capture_stdout(LinesCodec::new())
-            .capture_stderr(LinesCodec::new())
-            .wait();
-        println!("{}", cmd);
-
-        let lines: Vec<String> = captured
-            .map(|r| r.unwrap_or_else(|_| "".to_owned()))
-            .collect();
-        Ok(lines.join("\n"))
+        Ok(Command::new(self.program.clone())
+            .arg("version")
+            .output()?
+            .as_lossy_string())
     }
 
     pub fn genrsa(&self, length: u32, out_file: &ChildPath) -> Result<String, Error> {
-        let mut openssl = Command::new(self.program.clone());
-        openssl.arguments(&[
-            "genrsa",
-            "-out",
-            &path_to_str(out_file),
-            &length.to_string(),
-        ]);
-        self.echo_stdout(openssl)
+        Ok(Command::new(self.program.clone())
+            .arg("genrsa")
+            .arg("-out")
+            .arg(path_to_str(out_file))
+            .arg(length.to_string())
+            .output()?
+            .as_lossy_string())
     }
 
     pub fn pkcs8(&self, in_file: &ChildPath, out_file: &ChildPath) -> Result<String, Error> {
-        let mut openssl = Command::new(self.program.clone());
-        openssl.arguments(&[
-            "pkcs8",
-            "-topk8",
-            "-inform",
-            "PEM",
-            "-outform",
-            "PEM",
-            "-in",
-            &path_to_str(in_file),
-            "-out",
-            &path_to_str(out_file),
-            "-nocrypt",
-        ]);
-        self.echo_stdout(openssl)
+        Ok(Command::new(self.program.clone())
+            .arg("pkcs8")
+            .arg("-topk8")
+            .arg("-inform")
+            .arg("PEM")
+            .arg("-outform")
+            .arg("PEM")
+            .arg("-in")
+            .arg(path_to_str(in_file))
+            .arg("-out")
+            .arg(path_to_str(out_file))
+            .arg("-nocrypt")
+            .output()?
+            .as_lossy_string())
     }
 
     pub fn req(&self, prv_key: &ChildPath, out_cert: &ChildPath) -> Result<String, Error> {
-        let mut openssl = Command::new(self.program.clone());
-        openssl.arguments(&[
-            "req",
-            "-new",
-            "-nodes",
-            "-key",
-            &path_to_str(prv_key),
-            "-out",
-            &path_to_str(out_cert),
-            "-batch",
-        ]);
-        self.echo_stdout(openssl)
+        Ok(Command::new(self.program.clone())
+            .arg("req")
+            .arg("-new")
+            .arg("-nodes")
+            .arg("-key")
+            .arg(path_to_str(prv_key))
+            .arg("-out")
+            .arg(path_to_str(out_cert))
+            .arg("-batch")
+            .output()?
+            .as_lossy_string())
     }
 
     pub fn x509(
@@ -88,20 +75,19 @@ impl Openssl {
         in_cert: &ChildPath,
         out_cert: &ChildPath,
     ) -> Result<String, Error> {
-        let mut openssl = Command::new(self.program.clone());
-        openssl.arguments(&[
-            "x509",
-            "-req",
-            "-days",
-            &3650.to_string(),
-            "-in",
-            &path_to_str(in_cert),
-            "-signkey",
-            &path_to_str(prv_key),
-            "-out",
-            &path_to_str(out_cert),
-        ]);
-        self.echo_stdout(openssl)
+        Ok(Command::new(self.program.clone())
+            .arg("x509")
+            .arg("-req")
+            .arg("-days")
+            .arg(3650.to_string())
+            .arg("-in")
+            .arg(path_to_str(in_cert))
+            .arg("-signkey")
+            .arg(path_to_str(prv_key))
+            .arg("-out")
+            .arg(path_to_str(out_cert))
+            .output()?
+            .as_lossy_string())
     }
 
     pub fn convert_to_der(
@@ -109,19 +95,18 @@ impl Openssl {
         in_cert: &ChildPath,
         out_der: &ChildPath,
     ) -> Result<String, Error> {
-        let mut openssl = Command::new(self.program.clone());
-        openssl.arguments(&[
-            "x509",
-            "-inform",
-            "pem",
-            "-in",
-            &path_to_str(in_cert),
-            "-outform",
-            "der",
-            "-out",
-            &path_to_str(out_der),
-        ]);
-        self.echo_stdout(openssl)
+        Ok(Command::new(self.program.clone())
+            .arg("x509")
+            .arg("-inform")
+            .arg("pem")
+            .arg("-in")
+            .arg(path_to_str(in_cert))
+            .arg("-outform")
+            .arg("der")
+            .arg("-out")
+            .arg(path_to_str(out_der))
+            .output()?
+            .as_lossy_string())
     }
 }
 
@@ -138,9 +123,12 @@ pub fn generate_keys(temp_dir: &TempDir) -> (PathBuf, PathBuf) {
     let cert_file = temp_dir.child("cert.crt");
     let der_file = temp_dir.child("cert.der");
 
-    openssl
-        .genrsa(2048, &prv_key_file)
-        .expect("cannot generate private key.");
+    println!(
+        "{}",
+        openssl
+            .genrsa(2048, &prv_key_file)
+            .expect("cannot generate private key.")
+    );
     openssl
         .pkcs8(&prv_key_file, &pk8_key_file)
         .expect("cannot wrap private key in PKC8");

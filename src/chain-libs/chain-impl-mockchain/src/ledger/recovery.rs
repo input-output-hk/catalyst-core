@@ -65,7 +65,7 @@ use chain_ser::packer::Codec;
 use chain_time::era::{pack_time_era, unpack_time_era};
 use std::collections::HashSet;
 use std::convert::TryFrom;
-use std::io::{Read, Write};
+use std::io::{self, BufRead, Read, Write};
 use std::iter::FromIterator;
 use std::sync::Arc;
 
@@ -948,15 +948,20 @@ fn pack_committee_public_keys<W: std::io::Write>(
     Ok(())
 }
 
-fn unpack_committee_public_keys<R: std::io::BufRead>(
+fn unpack_committee_public_keys<R: BufRead>(
     codec: &mut Codec<R>,
-) -> Result<Vec<chain_vote::MemberPublicKey>, std::io::Error> {
+) -> Result<Vec<chain_vote::MemberPublicKey>, io::Error> {
     let size = codec.get_u8()?;
     let mut result = Vec::new();
     for _ in 0..size {
         let buf = codec.get_bytes(chain_vote::MEMBER_PUBLIC_KEY_BYTES_LEN)?;
-        // It should be safe to unpack here since this is only used with our custom packing too.
-        result.push(chain_vote::MemberPublicKey::from_bytes(&buf).unwrap());
+        let key = chain_vote::MemberPublicKey::from_bytes(&buf).ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "invalid committee member public key in a vote plan",
+            )
+        })?;
+        result.push(key);
     }
     Ok(result)
 }

@@ -1,6 +1,8 @@
-use crate::gang::{GroupElement, Scalar};
+use crate::gang::{GroupElement, Scalar, GROUP_ELEMENT_BYTES_LEN};
 use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul};
+
+pub const COMMITMENT_BYTES_LEN: usize = GROUP_ELEMENT_BYTES_LEN;
 
 /// Pedersen commitment
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

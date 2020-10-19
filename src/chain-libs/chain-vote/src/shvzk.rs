@@ -4,10 +4,10 @@ use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
 
-use crate::commitment::{Commitment, CommitmentKey};
+use crate::commitment::{Commitment, CommitmentKey, COMMITMENT_BYTES_LEN};
 use crate::encrypted::{EncryptingVote, PTP};
 use crate::gang::{GroupElement, Scalar};
-use crate::gargamel::{encrypt, Ciphertext, PublicKey};
+use crate::gargamel::{encrypt, Ciphertext, PublicKey, CIPHERTEXT_BYTES_LEN};
 use crate::math::Polynomial;
 use crate::unit_vector::binrep;
 
@@ -63,18 +63,15 @@ impl IBA {
         let mut bb = bb;
         for component in [&self.i, &self.b, &self.a].iter() {
             let buf = component.to_bytes();
-            bb = bb.u64(buf.len() as u64).bytes(&buf);
+            bb = bb.bytes(&buf);
         }
         bb
     }
 
     pub(crate) fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        let i_size = buf.get_u64()?;
-        let i_buf = buf.get_slice(i_size as usize)?;
-        let b_size = buf.get_u64()?;
-        let b_buf = buf.get_slice(b_size as usize)?;
-        let a_size = buf.get_u64()?;
-        let a_buf = buf.get_slice(a_size as usize)?;
+        let i_buf = buf.get_slice(COMMITMENT_BYTES_LEN)?;
+        let b_buf = buf.get_slice(COMMITMENT_BYTES_LEN)?;
+        let a_buf = buf.get_slice(COMMITMENT_BYTES_LEN)?;
         Ok(Self {
             i: Commitment::from_bytes(i_buf)
                 .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?,
@@ -98,7 +95,7 @@ impl Proof {
         bb = bb.u64(self.ds.len() as u64);
         for ct in self.ds.iter() {
             let buf = ct.to_bytes();
-            bb = bb.u64(buf.len() as u64).bytes(&buf);
+            bb = bb.bytes(&buf);
         }
         // serialize zwvs
         bb = bb.u64(self.zwvs.len() as u64);
@@ -122,12 +119,10 @@ impl Proof {
         let cts_size = buf.get_u64()?;
         let mut ds: Vec<Ciphertext> = Vec::new();
         for _ in 0..cts_size {
-            let size = buf.get_u64()?;
-            ds.push(
-                Ciphertext::from_bytes(buf.get_slice(size as usize)?).ok_or_else(|| {
-                    ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
-                })?,
-            );
+            let ct_buf = buf.get_slice(CIPHERTEXT_BYTES_LEN)?;
+            ds.push(Ciphertext::from_bytes(ct_buf).ok_or_else(|| {
+                ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
+            })?);
         }
 
         let zwvs_size = buf.get_u64()?;

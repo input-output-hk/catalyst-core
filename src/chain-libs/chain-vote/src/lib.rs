@@ -30,7 +30,6 @@ pub use encrypted::EncryptingVote;
 use gang::{Scalar, GROUP_ELEMENT_BYTES_LEN};
 pub use gargamel::{Ciphertext, CIPHERTEXT_BYTES_LEN};
 use rand_core::{CryptoRng, RngCore};
-use std::ops::Range;
 use typed_bytes::{ByteArray, ByteBuilder};
 pub use unit_vector::UnitVector;
 
@@ -98,7 +97,6 @@ pub struct TallyState {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TallyResult {
     pub votes: Vec<Option<u64>>,
-    pub options: Range<usize>,
 }
 
 impl TallyDecryptShare {
@@ -228,9 +226,7 @@ pub fn result(
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
 ) -> TallyResult {
-    let options = 0..tally_state.r2s.len();
-    let ris = options
-        .clone()
+    let ris = (0..tally_state.r2s.len())
         .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
 
     let mut r_results = tally_state
@@ -287,7 +283,7 @@ pub fn result(
             }
         }
     }
-    TallyResult { votes, options }
+    TallyResult { votes }
 }
 
 #[cfg(test)]

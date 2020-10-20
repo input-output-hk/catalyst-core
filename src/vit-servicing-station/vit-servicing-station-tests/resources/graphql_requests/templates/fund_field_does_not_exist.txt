@@ -16,6 +16,7 @@
         chainVoteEndTime,
         chainCommitteeEndTime,
         chainVoteplanPayload,
+        chainVoteEncryptionKey,
         fundId,
       }
     }

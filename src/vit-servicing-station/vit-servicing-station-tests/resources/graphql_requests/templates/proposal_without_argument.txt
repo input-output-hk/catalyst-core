@@ -25,6 +25,7 @@
         chainVoteOptions,
         chainVoteplanId,
         chainVoteplanPayload,
+        chainVoteEncryptionKey,
         chainVoteStartTime,
         chainVoteEndTime,
         chainCommitteeEndTime,

@@ -7,7 +7,7 @@ mod gang;
 pub mod gargamel;
 mod hybrid;
 mod math;
-mod shvzk;
+pub mod shvzk;
 mod unit_vector;
 
 // re-export under a debug module
@@ -21,16 +21,14 @@ pub mod debug {
     }
 }
 
-use chain_ser::mempack::{ReadBuf, ReadError, Readable};
 pub use committee::{
     MemberCommunicationKey, MemberCommunicationPublicKey, MemberPublicKey, MemberState,
-    MEMBER_PUBLIC_KEY_BYTES_LEN,
 };
 pub use encrypted::EncryptingVote;
-use gang::{Scalar, GROUP_ELEMENT_BYTES_LEN};
-pub use gargamel::{Ciphertext, CIPHERTEXT_BYTES_LEN};
+use gang::GroupElement;
+pub use gang::Scalar;
+pub use gargamel::Ciphertext;
 use rand_core::{CryptoRng, RngCore};
-use typed_bytes::{ByteArray, ByteBuilder};
 pub use unit_vector::UnitVector;
 
 /// Secret key for opening vote
@@ -99,29 +97,6 @@ pub struct TallyResult {
     pub votes: Vec<Option<u64>>,
 }
 
-impl TallyDecryptShare {
-    pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        bb.iter8(&self.r1s, |bb, e| bb.bytes(&e.to_bytes()))
-    }
-
-    pub fn serialize(&self) -> ByteArray<Self> {
-        self.serialize_in(ByteBuilder::new()).finalize()
-    }
-}
-
-impl Readable for TallyDecryptShare {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        let len = buf.get_u8()?;
-        let mut r1s: Vec<gang::GroupElement> = Vec::new();
-        for _ in 0..len {
-            let elem_buf = buf.get_slice(gang::GROUP_ELEMENT_BYTES_LEN)?;
-            r1s.push(gang::GroupElement::from_bytes(elem_buf).unwrap());
-        }
-
-        Ok(Self { r1s })
-    }
-}
-
 impl EncryptedTally {
     /// Start a new tally with N different options
     pub fn new(options: usize) -> Self {
@@ -160,7 +135,7 @@ impl EncryptedTally {
 
     pub fn to_bytes(&self) -> Vec<u8> {
         use std::io::Write;
-        let mut bytes: Vec<u8> = Vec::with_capacity(CIPHERTEXT_BYTES_LEN * self.r.len());
+        let mut bytes: Vec<u8> = Vec::with_capacity(Ciphertext::BYTES_LEN * self.r.len());
         for ri in &self.r {
             bytes.write_all(ri.to_bytes().as_ref()).unwrap();
         }
@@ -168,11 +143,11 @@ impl EncryptedTally {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        if bytes.len() % CIPHERTEXT_BYTES_LEN != 0 {
+        if bytes.len() % Ciphertext::BYTES_LEN != 0 {
             return None;
         }
         let r = bytes
-            .chunks(CIPHERTEXT_BYTES_LEN)
+            .chunks(Ciphertext::BYTES_LEN)
             .map(Ciphertext::from_bytes)
             .collect::<Option<Vec<_>>>()?;
         Some(Self { r })
@@ -180,6 +155,18 @@ impl EncryptedTally {
 }
 
 impl TallyDecryptShare {
+    /// Number of voting options this taly decrypt share structure is
+    /// constructed for.
+    pub fn options(&self) -> usize {
+        self.r1s.len()
+    }
+
+    /// Size of the byte representation for a tally decrypt share
+    /// with the given number of options.
+    pub fn bytes_len(options: usize) -> usize {
+        group_elements_bytes_len(options)
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         group_elements_to_bytes(&self.r1s)
     }
@@ -190,6 +177,12 @@ impl TallyDecryptShare {
 }
 
 impl TallyState {
+    /// Size of the byte representation for tally state
+    /// with the given number of options.
+    pub fn bytes_len(options: usize) -> usize {
+        group_elements_bytes_len(options)
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         group_elements_to_bytes(&self.r2s)
     }
@@ -199,9 +192,15 @@ impl TallyState {
     }
 }
 
+fn group_elements_bytes_len(n: usize) -> usize {
+    GroupElement::BYTES_LEN
+        .checked_mul(n)
+        .expect("integer overflow")
+}
+
 fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
     use std::io::Write;
-    let mut bytes: Vec<u8> = Vec::with_capacity(GROUP_ELEMENT_BYTES_LEN * elements.len());
+    let mut bytes: Vec<u8> = Vec::with_capacity(group_elements_bytes_len(elements.len()));
     for element in elements {
         bytes.write_all(element.to_bytes().as_ref()).unwrap();
     }
@@ -209,12 +208,12 @@ fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
 }
 
 fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
-    if bytes.len() % GROUP_ELEMENT_BYTES_LEN != 0 {
+    if bytes.len() % GroupElement::BYTES_LEN != 0 {
         return None;
     }
 
     let elements = bytes
-        .chunks(GROUP_ELEMENT_BYTES_LEN)
+        .chunks(GroupElement::BYTES_LEN)
         .map(gang::GroupElement::from_bytes)
         .collect::<Option<Vec<_>>>()?;
     Some(elements)

@@ -1,8 +1,6 @@
-use crate::gang::{GroupElement, Scalar, GROUP_ELEMENT_BYTES_LEN};
+use crate::gang::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul};
-
-pub const COMMITMENT_BYTES_LEN: usize = GROUP_ELEMENT_BYTES_LEN;
 
 /// Pedersen commitment
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -35,6 +33,8 @@ pub struct Open {
 }
 
 impl Commitment {
+    pub const BYTES_LEN: usize = GroupElement::BYTES_LEN;
+
     pub fn new_open(ck: &CommitmentKey, o: &Open) -> Self {
         let c = GroupElement::generator() * &o.m + &ck.h * &o.r;
         Commitment { c }
@@ -53,9 +53,11 @@ impl Commitment {
             Validity::Invalid
         }
     }
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.c.to_bytes().to_vec()
+
+    pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
+        self.c.to_bytes()
     }
+
     pub fn from_bytes(buf: &[u8]) -> Option<Self> {
         Some(Self {
             c: GroupElement::from_bytes(buf)?,

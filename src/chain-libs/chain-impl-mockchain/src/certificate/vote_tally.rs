@@ -90,12 +90,21 @@ impl VoteTally {
 
         match &self.payload {
             VoteTallyPayload::Public => bb,
-            VoteTallyPayload::Private { shares } => bb
-                .u8(shares.inner.len().try_into().unwrap())
-                .fold(shares.inner.iter(), |bb, s| {
-                    bb.u8(s.len().try_into().unwrap())
-                        .fold(s.iter(), |bb, s| bb.bytes(s.serialize().as_ref()))
-                }),
+            VoteTallyPayload::Private { shares } => {
+                bb.u8(shares.inner.len().try_into().unwrap())
+                    .fold(shares.inner.iter(), |bb, s| {
+                        // Shares per proposal, n_members x n_options
+                        let n_members = s.len().try_into().unwrap();
+                        if n_members == 0 {
+                            bb.u8(0).u8(0)
+                        } else {
+                            let n_options = s[0].options().try_into().unwrap();
+                            bb.u8(n_members)
+                                .u8(n_options)
+                                .fold(s.iter(), |bb, s| bb.bytes(&s.to_bytes()))
+                        }
+                    })
+            }
         }
     }
 
@@ -237,9 +246,17 @@ impl Readable for VoteTally {
                 let mut proposals = Vec::with_capacity(proposals_number);
                 for _i in 0..proposals_number {
                     let shares_number = buf.get_u8()? as usize;
+                    let options_number = buf.get_u8()? as usize;
+                    let share_bytes = TallyDecryptShare::bytes_len(options_number);
                     let mut shares = Vec::with_capacity(shares_number);
                     for _j in 0..shares_number {
-                        shares.push(TallyDecryptShare::read(buf)?);
+                        let s_buf = buf.get_slice(share_bytes)?;
+                        let share = TallyDecryptShare::from_bytes(s_buf).ok_or_else(|| {
+                            ReadError::StructureInvalid(
+                                "invalid decrypt share structure".to_owned(),
+                            )
+                        })?;
+                        shares.push(share);
                     }
                     proposals.push(shares.into_boxed_slice());
                 }

@@ -1,13 +1,11 @@
-use chain_ser::mempack::{ReadBuf, ReadError};
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};
-use typed_bytes::ByteBuilder;
 
-use crate::commitment::{Commitment, CommitmentKey, COMMITMENT_BYTES_LEN};
+use crate::commitment::{Commitment, CommitmentKey};
 use crate::encrypted::{EncryptingVote, PTP};
 use crate::gang::{GroupElement, Scalar};
-use crate::gargamel::{encrypt, Ciphertext, PublicKey, CIPHERTEXT_BYTES_LEN};
+use crate::gargamel::{encrypt, Ciphertext, PublicKey};
 use crate::math::Polynomial;
 use crate::unit_vector::binrep;
 
@@ -35,18 +33,18 @@ impl ABCD {
 
 /// I, B, A commitments
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-struct IBA {
-    pub i: Commitment,
-    pub b: Commitment,
-    pub a: Commitment,
+pub struct IBA {
+    i: Commitment,
+    b: Commitment,
+    a: Commitment,
 }
 
 // Computed z, w, v
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-struct ZWV {
-    pub z: Scalar,
-    pub w: Scalar,
-    pub v: Scalar,
+pub struct ZWV {
+    z: Scalar,
+    w: Scalar,
+    v: Scalar,
 }
 
 /// Proof of unit vector
@@ -59,96 +57,83 @@ pub struct Proof {
 }
 
 impl IBA {
-    pub(crate) fn serialize_in<T>(&self, bb: ByteBuilder<T>) -> ByteBuilder<T> {
-        let mut bb = bb;
-        for component in [&self.i, &self.b, &self.a].iter() {
-            let buf = component.to_bytes();
-            bb = bb.bytes(&buf);
+    pub const BYTES_LEN: usize = Commitment::BYTES_LEN * 3;
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() != Self::BYTES_LEN {
+            return None;
         }
-        bb
+        Some(Self {
+            i: Commitment::from_bytes(&bytes[0..Commitment::BYTES_LEN])?,
+            b: Commitment::from_bytes(&bytes[Commitment::BYTES_LEN..Commitment::BYTES_LEN * 2])?,
+            a: Commitment::from_bytes(&bytes[Commitment::BYTES_LEN * 2..])?,
+        })
     }
 
-    pub(crate) fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        let i_buf = buf.get_slice(COMMITMENT_BYTES_LEN)?;
-        let b_buf = buf.get_slice(COMMITMENT_BYTES_LEN)?;
-        let a_buf = buf.get_slice(COMMITMENT_BYTES_LEN)?;
-        Ok(Self {
-            i: Commitment::from_bytes(i_buf)
-                .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?,
-            b: Commitment::from_bytes(b_buf)
-                .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?,
-            a: Commitment::from_bytes(a_buf)
-                .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?,
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut buf = Vec::with_capacity(Self::BYTES_LEN);
+        for component in [&self.i, &self.b, &self.a].iter() {
+            buf.extend_from_slice(&component.to_bytes());
+        }
+        debug_assert_eq!(buf.len(), Self::BYTES_LEN);
+        buf
+    }
+}
+
+impl ZWV {
+    pub const BYTES_LEN: usize = Scalar::BYTES_LEN * 3;
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() != Self::BYTES_LEN {
+            return None;
+        }
+        Some(Self {
+            z: Scalar::from_bytes(&bytes[0..Scalar::BYTES_LEN])?,
+            w: Scalar::from_bytes(&bytes[Scalar::BYTES_LEN..Scalar::BYTES_LEN * 2])?,
+            v: Scalar::from_bytes(&bytes[Scalar::BYTES_LEN * 2..])?,
         })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut buf = Vec::with_capacity(Self::BYTES_LEN);
+        for component in [&self.z, &self.w, &self.v].iter() {
+            buf.extend_from_slice(&component.to_bytes());
+        }
+        debug_assert_eq!(buf.len(), Self::BYTES_LEN);
+        buf
     }
 }
 
 impl Proof {
-    pub fn serialize_in<T>(&self, bb: ByteBuilder<T>) -> ByteBuilder<T> {
-        assert!(self.ibas.len() < 256);
-        debug_assert_eq!(self.ibas.len(), self.ds.len());
-        debug_assert_eq!(self.ibas.len(), self.zwvs.len());
-
-        let mut bb = bb;
-
-        // Record number of bits determining sizes of the arrays
-        bb = bb.u8(self.ibas.len() as u8);
-
-        // serialize ibas
-        for iba in self.ibas.iter() {
-            bb = iba.serialize_in(bb);
-        }
-        // serialize ciphertexts
-        for ct in self.ds.iter() {
-            let buf = ct.to_bytes();
-            bb = bb.bytes(&buf);
-        }
-        // serialize zwvs
-        for zwv in self.zwvs.iter() {
-            bb = bb.bytes(&zwv.z.to_bytes());
-            bb = bb.bytes(&zwv.w.to_bytes());
-            bb = bb.bytes(&zwv.v.to_bytes());
-        }
-        // serialize r scalar
-        bb = bb.bytes(&self.r.to_bytes());
-        bb
+    /// Constructs the proof structure from constituent parts.
+    ///
+    /// # Panics
+    ///
+    /// The `ibas`, `ds`, and `zwvs` must have the same length, otherwise the function will panic.
+    pub fn from_parts(ibas: Vec<IBA>, ds: Vec<Ciphertext>, zwvs: Vec<ZWV>, r: Scalar) -> Self {
+        assert_eq!(ibas.len(), ds.len());
+        assert_eq!(ibas.len(), zwvs.len());
+        Proof { ibas, ds, zwvs, r }
     }
 
-    pub fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        let bits = buf.get_u8()?;
+    pub fn len(&self) -> usize {
+        self.ibas.len()
+    }
 
-        let mut ibas: Vec<IBA> = Vec::with_capacity(bits as usize);
-        for _ in 0..bits {
-            ibas.push(IBA::read(buf)?);
-        }
+    pub fn ibas(&self) -> impl Iterator<Item = &IBA> {
+        self.ibas.iter()
+    }
 
-        let mut ds: Vec<Ciphertext> = Vec::with_capacity(bits as usize);
-        for _ in 0..bits {
-            let ct_buf = buf.get_slice(CIPHERTEXT_BYTES_LEN)?;
-            ds.push(Ciphertext::from_bytes(ct_buf).ok_or_else(|| {
-                ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
-            })?);
-        }
+    pub fn ds(&self) -> impl Iterator<Item = &Ciphertext> {
+        self.ds.iter()
+    }
 
-        let mut zwvs: Vec<ZWV> = Vec::with_capacity(bits as usize);
-        for _ in 0..bits {
-            zwvs.push(ZWV {
-                z: Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
-                    ReadError::StructureInvalid("Invalid ZWV encoded scalar Z".to_string())
-                })?,
-                w: Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
-                    ReadError::StructureInvalid("Invalid ZWV encoded scalar W".to_string())
-                })?,
-                v: Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
-                    ReadError::StructureInvalid("Invalid ZWV encoded scalar V".to_string())
-                })?,
-            });
-        }
+    pub fn zwvs(&self) -> impl Iterator<Item = &ZWV> {
+        self.zwvs.iter()
+    }
 
-        let r = Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
-            ReadError::StructureInvalid("Invalid Proof encoded R scalar".to_string())
-        })?;
-        Ok(Self { ibas, ds, zwvs, r })
+    pub fn r(&self) -> &Scalar {
+        &self.r
     }
 }
 
@@ -171,7 +156,7 @@ fn commitkey(pk: &PublicKey) -> CommitmentKey {
 }
 
 impl IBA {
-    pub fn new(ck: &CommitmentKey, abcd: &ABCD, index: &Scalar) -> Self {
+    fn new(ck: &CommitmentKey, abcd: &ABCD, index: &Scalar) -> Self {
         assert!(index == &Scalar::zero() || index == &Scalar::one());
 
         // commit index bit: 0 or 1
@@ -226,7 +211,7 @@ impl ChallengeContext {
     }
 }
 
-pub fn prove<R: RngCore + CryptoRng>(
+pub(crate) fn prove<R: RngCore + CryptoRng>(
     rng: &mut R,
     public_key: &PublicKey,
     encrypting_vote: EncryptingVote,
@@ -357,7 +342,7 @@ pub fn prove<R: RngCore + CryptoRng>(
     Proof { ibas, ds, zwvs, r }
 }
 
-pub fn verify(public_key: &PublicKey, ciphertexts: &[Ciphertext], proof: &Proof) -> bool {
+pub(crate) fn verify(public_key: &PublicKey, ciphertexts: &[Ciphertext], proof: &Proof) -> bool {
     let ck = commitkey(&public_key);
 
     let ciphertexts = PTP::new(ciphertexts.to_vec(), Ciphertext::zero);

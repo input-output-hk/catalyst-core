@@ -1,11 +1,9 @@
 use crate::commitment::CommitmentKey;
 use crate::gang::{GroupElement, Scalar};
-use crate::gargamel::{PublicKey, SecretKey, PUBLIC_KEY_BYTES_LEN};
+use crate::gargamel::{PublicKey, SecretKey};
 use crate::hybrid;
 use crate::math::Polynomial;
 use rand_core::{CryptoRng, RngCore};
-
-pub const MEMBER_PUBLIC_KEY_BYTES_LEN: usize = PUBLIC_KEY_BYTES_LEN;
 
 /// Committee member election secret key
 #[derive(Clone)]
@@ -128,12 +126,14 @@ impl MemberSecretKey {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        let sk = Scalar::from_slice(bytes)?;
+        let sk = Scalar::from_bytes(bytes)?;
         Some(Self(SecretKey { sk }))
     }
 }
 
 impl MemberPublicKey {
+    pub const BYTES_LEN: usize = PublicKey::BYTES_LEN;
+
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.to_bytes()
     }

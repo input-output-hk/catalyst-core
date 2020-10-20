@@ -954,7 +954,7 @@ fn unpack_committee_public_keys<R: BufRead>(
     let size = codec.get_u8()?;
     let mut result = Vec::new();
     for _ in 0..size {
-        let buf = codec.get_bytes(chain_vote::MEMBER_PUBLIC_KEY_BYTES_LEN)?;
+        let buf = codec.get_bytes(chain_vote::MemberPublicKey::BYTES_LEN)?;
         let key = chain_vote::MemberPublicKey::from_bytes(&buf).ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::InvalidData,

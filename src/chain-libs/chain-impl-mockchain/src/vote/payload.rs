@@ -1,6 +1,7 @@
 use crate::vote::Choice;
 use chain_core::mempack::{ReadBuf, ReadError};
-use chain_vote::{Ciphertext, EncryptedVote, ProofOfCorrectVote, CIPHERTEXT_BYTES_LEN};
+use chain_vote::shvzk;
+use chain_vote::{Ciphertext, EncryptedVote, ProofOfCorrectVote, Scalar};
 use std::convert::{TryFrom, TryInto as _};
 use std::hash::Hash;
 use thiserror::Error;
@@ -71,13 +72,15 @@ impl Payload {
             Self::Private {
                 encrypted_vote,
                 proof,
-            } => {
-                let bb = bb.iter8(encrypted_vote, |bb, ct| {
+            } => bb
+                .iter8(encrypted_vote, |bb, ct| {
                     let buffer = ct.to_bytes();
                     bb.bytes(&buffer)
-                });
-                proof.serialize_in(bb)
-            }
+                })
+                .fold(proof.ibas(), |bb, iba| bb.bytes(&iba.to_bytes()))
+                .fold(proof.ds(), |bb, d| bb.bytes(&d.to_bytes()))
+                .fold(proof.zwvs(), |bb, zwv| bb.bytes(&zwv.to_bytes()))
+                .bytes(&proof.r().to_bytes()),
         }
     }
 
@@ -93,12 +96,41 @@ impl Payload {
                 let len: usize = buf.get_u8()? as usize;
                 let mut cypher_texts: Vec<Ciphertext> = Vec::new();
                 for _ in 0..len {
-                    let ct_buf = buf.get_slice(CIPHERTEXT_BYTES_LEN)?;
+                    let ct_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
                     cypher_texts.push(Ciphertext::from_bytes(ct_buf).ok_or_else(|| {
                         ReadError::StructureInvalid("Invalid private vote".to_string())
                     })?);
                 }
-                let proof = ProofOfCorrectVote::read(buf)?;
+                let bits = len.next_power_of_two().trailing_zeros() as usize;
+                let mut ibas = Vec::with_capacity(bits);
+                for _ in 0..bits {
+                    let elem_buf = buf.get_slice(shvzk::IBA::BYTES_LEN)?;
+                    let iba = shvzk::IBA::from_bytes(elem_buf).ok_or_else(|| {
+                        ReadError::StructureInvalid("Invalid IBA component".to_string())
+                    })?;
+                    ibas.push(iba);
+                }
+                let mut bs = Vec::with_capacity(bits);
+                for _ in 0..bits {
+                    let elem_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
+                    let ciphertext = Ciphertext::from_bytes(elem_buf).ok_or_else(|| {
+                        ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
+                    })?;
+                    bs.push(ciphertext);
+                }
+                let mut zwvs = Vec::with_capacity(bits);
+                for _ in 0..bits {
+                    let elem_buf = buf.get_slice(shvzk::ZWV::BYTES_LEN)?;
+                    let zwv = shvzk::ZWV::from_bytes(elem_buf).ok_or_else(|| {
+                        ReadError::StructureInvalid("Invalid ZWV component".to_string())
+                    })?;
+                    zwvs.push(zwv);
+                }
+                let r_buf = buf.get_slice(Scalar::BYTES_LEN)?;
+                let r = Scalar::from_bytes(r_buf).ok_or_else(|| {
+                    ReadError::StructureInvalid("Invalid Proof encoded R scalar".to_string())
+                })?;
+                let proof = ProofOfCorrectVote::from_parts(ibas, bs, zwvs, r);
                 Ok(Self::Private {
                     encrypted_vote: cypher_texts,
                     proof,

@@ -1,12 +1,8 @@
 #![allow(dead_code)]
 
-use crate::gang::{GroupElement, Scalar, GROUP_ELEMENT_BYTES_LEN};
+use crate::gang::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul};
-
-pub const PUBLIC_KEY_BYTES_LEN: usize = GROUP_ELEMENT_BYTES_LEN;
-/// Size of the byte representation of `Ciphertext`.
-pub const CIPHERTEXT_BYTES_LEN: usize = GROUP_ELEMENT_BYTES_LEN * 2;
 
 // ElGamal Ciphertext
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -32,9 +28,12 @@ pub struct Ciphertext {
 }
 
 impl PublicKey {
+    pub const BYTES_LEN: usize = GroupElement::BYTES_LEN;
+
     pub fn to_bytes(&self) -> Vec<u8> {
         self.pk.to_bytes().to_vec()
     }
+
     pub fn from_bytes(buf: &[u8]) -> Option<Self> {
         Some(Self {
             pk: GroupElement::from_bytes(buf)?,
@@ -49,7 +48,7 @@ impl SecretKey {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        Scalar::from_slice(bytes).map(|sk| Self { sk })
+        Scalar::from_bytes(bytes).map(|sk| Self { sk })
     }
 }
 
@@ -67,6 +66,9 @@ impl Keypair {
 }
 
 impl Ciphertext {
+    /// Size of the byte representation of `Ciphertext`.
+    pub const BYTES_LEN: usize = GroupElement::BYTES_LEN * 2;
+
     /// the zero ciphertext
     pub fn zero() -> Self {
         Ciphertext {
@@ -76,16 +78,16 @@ impl Ciphertext {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut r = Vec::with_capacity(CIPHERTEXT_BYTES_LEN);
+        let mut r = Vec::with_capacity(Self::BYTES_LEN);
         r.extend_from_slice(self.e1.to_bytes().as_ref());
         r.extend_from_slice(self.e2.to_bytes().as_ref());
-        debug_assert_eq!(r.len(), CIPHERTEXT_BYTES_LEN);
+        debug_assert_eq!(r.len(), Self::BYTES_LEN);
         r
     }
 
     pub fn from_bytes(slice: &[u8]) -> Option<Ciphertext> {
-        let e1 = GroupElement::from_bytes(&slice[..GROUP_ELEMENT_BYTES_LEN])?;
-        let e2 = GroupElement::from_bytes(&slice[GROUP_ELEMENT_BYTES_LEN..])?;
+        let e1 = GroupElement::from_bytes(&slice[..GroupElement::BYTES_LEN])?;
+        let e2 = GroupElement::from_bytes(&slice[GroupElement::BYTES_LEN..])?;
         Some(Ciphertext { e1, e2 })
     }
 

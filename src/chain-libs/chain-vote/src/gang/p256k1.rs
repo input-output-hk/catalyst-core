@@ -9,9 +9,6 @@ pub struct Scalar(IScalar);
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GroupElement(Point);
 
-/// Size of the byte representation of `GroupElement`.
-pub const GROUP_ELEMENT_BYTES_LEN: usize = 65;
-
 #[allow(clippy::derive_hash_xor_eq)]
 impl Hash for GroupElement {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -27,6 +24,9 @@ impl Hash for Scalar {
 }
 
 impl GroupElement {
+    /// Size of the byte representation of `GroupElement`.
+    pub const BYTES_LEN: usize = 65;
+
     pub fn generator() -> Self {
         GroupElement(Point::generator())
     }
@@ -50,8 +50,8 @@ impl GroupElement {
         self.0.normalize()
     }
 
-    pub fn to_bytes(&self) -> [u8; GROUP_ELEMENT_BYTES_LEN] {
-        let mut bytes = [0u8; GROUP_ELEMENT_BYTES_LEN];
+    pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
+        let mut bytes = [0u8; Self::BYTES_LEN];
         match self.0.to_affine() {
             None => (),
             Some(pa) => {
@@ -103,6 +103,8 @@ impl GroupElement {
 }
 
 impl Scalar {
+    pub const BYTES_LEN: usize = 32;
+
     /// additive identity
     pub fn zero() -> Self {
         Scalar(IScalar::zero())
@@ -127,21 +129,11 @@ impl Scalar {
         self.0 = &self.0 + IScalar::one()
     }
 
-    /*
-    pub fn from_random_bytes(slice: [u8; 64]) -> Self {
-        Scalar(IScalar::init_from_wide_bytes(slice))
-    }
-    */
-
-    pub fn from_bytes(bytes: &[u8; 32]) -> Option<Self> {
-        IScalar::from_bytes(bytes).map(Scalar)
-    }
-
-    pub fn to_bytes(&self) -> [u8; 32] {
+    pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
         self.0.to_bytes()
     }
 
-    pub fn from_slice(slice: &[u8]) -> Option<Self> {
+    pub fn from_bytes(slice: &[u8]) -> Option<Self> {
         IScalar::from_slice(slice).map(Scalar)
     }
 

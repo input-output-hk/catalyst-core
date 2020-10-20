@@ -246,7 +246,7 @@ pub fn result(
     }
 
     let mut votes = Vec::new();
-    let mut vote_left = max_votes;
+    let mut votes_left = max_votes;
 
     let table = gang::GroupElement::table(table_size);
     for r in r_results {
@@ -267,7 +267,7 @@ pub fn result(
                 let mut e = &table[table_size - 1] + &gen;
                 let mut i = table_size as u64 + 1;
                 loop {
-                    if i >= vote_left {
+                    if i >= votes_left {
                         break;
                     }
 
@@ -284,7 +284,7 @@ pub fn result(
         match found {
             None => votes.push(None),
             Some(votes_found) => {
-                vote_left -= votes_found;
+                votes_left -= votes_found;
                 votes.push(Some(votes_found))
             }
         }

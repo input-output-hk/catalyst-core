@@ -92,7 +92,7 @@ impl GroupElement {
         let gen = GroupElement::generator();
         let mut r = &gen * Scalar::one();
 
-        for _ in 1..table_size + 1 {
+        for _ in 0..table_size {
             r.normalize();
             let r2 = &r + &gen;
             table.push(r);

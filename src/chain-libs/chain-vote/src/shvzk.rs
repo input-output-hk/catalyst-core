@@ -240,7 +240,6 @@ pub fn prove<R: RngCore + CryptoRng>(
     for _ in 0..bits {
         abcds.push(ABCD::random(rng))
     }
-    assert_eq!(abcds.len(), bits);
 
     let unit_vector = &encrypting_vote.unit_vector;
     let idx = binrep(unit_vector.ith(), bits as u32);
@@ -252,7 +251,7 @@ pub fn prove<R: RngCore + CryptoRng>(
         .zip(idx.iter())
         .map(|(abcd, index)| IBA::new(&ck, abcd, &(*index).into()))
         .collect();
-    assert_eq!(ibas.len(), bits);
+    debug_assert_eq!(ibas.len(), bits);
 
     // Generate First verifier challenge
     let cc = ChallengeContext::new(public_key, ciphers.as_ref(), &ibas);
@@ -316,6 +315,7 @@ pub fn prove<R: RngCore + CryptoRng>(
 
         (ds, rs)
     };
+    debug_assert_eq!(ds.len(), bits);
 
     // Generate second verifier challenge
     let cx = cc.second_challenge(&ds);
@@ -330,7 +330,8 @@ pub fn prove<R: RngCore + CryptoRng>(
             let v = &abcd.alpha * (&cx - &z) + &abcd.delta;
             ZWV { z, w, v }
         })
-        .collect();
+        .collect::<Vec<_>>();
+    debug_assert_eq!(zwvs.len(), bits);
 
     // Compute R
     let r = {

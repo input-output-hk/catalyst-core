@@ -107,6 +107,10 @@ impl Proposal {
         &self.chain_voteplan_payload
     }
 
+    pub async fn chain_vote_encryption_key(&self) -> &str {
+        &self.chain_vote_encryption_key
+    }
+
     pub async fn chain_vote_start_time(&self) -> String {
         unix_timestamp_to_datetime(self.chain_vote_start_time).to_rfc3339()
     }

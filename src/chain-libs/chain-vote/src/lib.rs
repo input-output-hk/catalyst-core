@@ -98,7 +98,7 @@ pub struct TallyState {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TallyResult {
     pub votes: Vec<Option<u64>>,
-    pub options: Range<u8>,
+    pub options: Range<usize>,
 }
 
 impl TallyDecryptShare {
@@ -218,6 +218,7 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     if bytes.len() % GROUP_ELEMENT_BYTES_LEN != 0 {
         return None;
     }
+
     let elements = bytes
         .chunks(GROUP_ELEMENT_BYTES_LEN)
         .map(gang::GroupElement::from_bytes)
@@ -231,9 +232,10 @@ pub fn result(
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
 ) -> TallyResult {
-    let options = tally_state.r2s.len();
-    let ris =
-        (0..options).map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
+    let options = 0..tally_state.r2s.len();
+    let ris = options
+        .clone()
+        .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
 
     let mut r_results = tally_state
         .r2s
@@ -289,10 +291,7 @@ pub fn result(
             }
         }
     }
-    TallyResult {
-        votes,
-        options: (0..options as u8),
-    }
+    TallyResult { votes, options }
 }
 
 #[cfg(test)]

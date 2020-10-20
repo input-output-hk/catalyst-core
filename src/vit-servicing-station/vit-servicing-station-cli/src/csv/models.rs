@@ -79,6 +79,8 @@ pub struct Proposal {
     pub chain_committee_end_time: i64,
     #[serde(alias = "chainVoteplanPayload", default = "Default::default")]
     pub chain_voteplan_payload: String,
+    #[serde(alias = "chainVoteEncryptionKey", default = "Default::default")]
+    pub chain_vote_encryption_key: String,
     #[serde(alias = "fundId", default = "default_fund_id")]
     pub fund_id: i32,
 }
@@ -122,6 +124,7 @@ impl From<Proposal> for proposals::Proposal {
             chain_vote_end_time: proposal.chain_vote_end_time,
             chain_committee_end_time: proposal.chain_committee_end_time,
             chain_voteplan_payload: proposal.chain_voteplan_payload,
+            chain_vote_encryption_key: proposal.chain_vote_encryption_key,
             fund_id: proposal.fund_id,
         }
     }

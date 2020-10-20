@@ -74,6 +74,7 @@ impl<'a> DbInserter<'a> {
                 voteplans::chain_vote_end_time.eq(proposal.chain_vote_end_time),
                 voteplans::chain_committee_end_time.eq(proposal.chain_committee_end_time),
                 voteplans::chain_voteplan_payload.eq(proposal.chain_voteplan_payload.clone()),
+                voteplans::chain_vote_encryption_key.eq(proposal.chain_vote_encryption_key.clone()),
                 voteplans::fund_id.eq(proposal.fund_id),
             );
 
@@ -112,6 +113,8 @@ impl<'a> DbInserter<'a> {
                     voteplans::chain_vote_end_time.eq(voteplan.chain_vote_end_time),
                     voteplans::chain_committee_end_time.eq(voteplan.chain_committee_end_time),
                     voteplans::chain_voteplan_payload.eq(voteplan.chain_voteplan_payload.clone()),
+                    voteplans::chain_vote_encryption_key
+                        .eq(voteplan.chain_vote_encryption_key.clone()),
                     voteplans::fund_id.eq(voteplan.fund_id),
                 );
                 diesel::insert_or_ignore_into(voteplans::table)

@@ -77,6 +77,8 @@ pub struct Proposal {
     pub chain_committee_end_time: i64,
     #[serde(alias = "chainVoteplanPayload")]
     pub chain_voteplan_payload: String,
+    #[serde(alias = "chainVoteEncryptionKey")]
+    pub chain_vote_encryption_key: String,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
 }
@@ -133,7 +135,9 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
         i64,
         // 23 -> chain_voteplan_payload
         String,
-        // 24 -> fund_id
+        // 24 -> chain_vote_encryption_key
+        String,
+        // 25 -> fund_id
         i32,
     );
 
@@ -169,7 +173,8 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_vote_end_time: row.21,
             chain_committee_end_time: row.22,
             chain_voteplan_payload: row.23,
-            fund_id: row.24,
+            chain_vote_encryption_key: row.24,
+            fund_id: row.25,
         }
     }
 }
@@ -268,6 +273,7 @@ pub mod test {
             chain_vote_end_time: Utc::now().timestamp(),
             chain_committee_end_time: Utc::now().timestamp(),
             chain_voteplan_payload: "none".to_string(),
+            chain_vote_encryption_key: "none".to_string(),
             fund_id: 1,
         }
     }
@@ -310,6 +316,7 @@ pub mod test {
             voteplans::chain_vote_end_time.eq(proposal.chain_vote_end_time),
             voteplans::chain_committee_end_time.eq(proposal.chain_committee_end_time),
             voteplans::chain_voteplan_payload.eq(proposal.chain_voteplan_payload.clone()),
+            voteplans::chain_vote_encryption_key.eq(proposal.chain_vote_encryption_key.clone()),
             voteplans::fund_id.eq(proposal.fund_id),
         );
 

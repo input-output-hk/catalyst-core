@@ -85,20 +85,25 @@ impl IBA {
 
 impl Proof {
     pub fn serialize_in<T>(&self, bb: ByteBuilder<T>) -> ByteBuilder<T> {
+        assert!(self.ibas.len() < 256);
+        debug_assert_eq!(self.ibas.len(), self.ds.len());
+        debug_assert_eq!(self.ibas.len(), self.zwvs.len());
+
         let mut bb = bb;
+
+        // Record number of bits determining sizes of the arrays
+        bb = bb.u8(self.ibas.len() as u8);
+
         // serialize ibas
-        bb = bb.u64(self.ibas.len() as u64);
         for iba in self.ibas.iter() {
             bb = iba.serialize_in(bb);
         }
         // serialize ciphertexts
-        bb = bb.u64(self.ds.len() as u64);
         for ct in self.ds.iter() {
             let buf = ct.to_bytes();
             bb = bb.bytes(&buf);
         }
         // serialize zwvs
-        bb = bb.u64(self.zwvs.len() as u64);
         for zwv in self.zwvs.iter() {
             bb = bb.bytes(&zwv.z.to_bytes());
             bb = bb.bytes(&zwv.w.to_bytes());
@@ -110,24 +115,23 @@ impl Proof {
     }
 
     pub fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        let ibas_size = buf.get_u64()?;
-        let mut ibas: Vec<IBA> = Vec::new();
-        for _ in 0..ibas_size {
+        let bits = buf.get_u8()?;
+
+        let mut ibas: Vec<IBA> = Vec::with_capacity(bits as usize);
+        for _ in 0..bits {
             ibas.push(IBA::read(buf)?);
         }
 
-        let cts_size = buf.get_u64()?;
-        let mut ds: Vec<Ciphertext> = Vec::new();
-        for _ in 0..cts_size {
+        let mut ds: Vec<Ciphertext> = Vec::with_capacity(bits as usize);
+        for _ in 0..bits {
             let ct_buf = buf.get_slice(CIPHERTEXT_BYTES_LEN)?;
             ds.push(Ciphertext::from_bytes(ct_buf).ok_or_else(|| {
                 ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
             })?);
         }
 
-        let zwvs_size = buf.get_u64()?;
-        let mut zwvs: Vec<ZWV> = Vec::new();
-        for _ in 0..zwvs_size {
+        let mut zwvs: Vec<ZWV> = Vec::with_capacity(bits as usize);
+        for _ in 0..bits {
             zwvs.push(ZWV {
                 z: Scalar::from_slice(buf.get_slice(32)?).ok_or_else(|| {
                     ReadError::StructureInvalid("Invalid ZWV encoded scalar Z".to_string())

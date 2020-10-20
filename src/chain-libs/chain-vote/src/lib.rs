@@ -92,7 +92,7 @@ pub struct TallyDecryptShare {
 
 #[derive(Clone)]
 pub struct TallyState {
-    pub r2s: Vec<gang::GroupElement>,
+    r2s: Vec<gang::GroupElement>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]

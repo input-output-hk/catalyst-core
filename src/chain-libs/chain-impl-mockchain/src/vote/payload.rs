@@ -72,12 +72,10 @@ impl Payload {
                 encrypted_vote,
                 proof,
             } => {
-                let size = encrypted_vote.len();
-                let mut bb = bb.u64(size as u64);
-                for ct in encrypted_vote.iter() {
+                let bb = bb.iter8(encrypted_vote, |bb, ct| {
                     let buffer = ct.to_bytes();
-                    bb = bb.bytes(&buffer);
-                }
+                    bb.bytes(&buffer)
+                });
                 proof.serialize_in(bb)
             }
         }
@@ -92,7 +90,7 @@ impl Payload {
         match t {
             PayloadType::Public => buf.get_u8().map(Choice::new).map(Self::public),
             PayloadType::Private => {
-                let len: usize = buf.get_u64()? as usize;
+                let len: usize = buf.get_u8()? as usize;
                 let mut cypher_texts: Vec<Ciphertext> = Vec::new();
                 for _ in 0..len {
                     let ct_buf = buf.get_slice(CIPHERTEXT_BYTES_LEN)?;

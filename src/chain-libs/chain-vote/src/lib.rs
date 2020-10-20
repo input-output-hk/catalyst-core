@@ -103,11 +103,7 @@ pub struct TallyResult {
 
 impl TallyDecryptShare {
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        let mut bb = bb.u64(self.r1s.len() as u64);
-        for e in &self.r1s {
-            bb = bb.bytes(&e.to_bytes())
-        }
-        bb
+        bb.iter8(&self.r1s, |bb, e| bb.bytes(&e.to_bytes()))
     }
 
     pub fn serialize(&self) -> ByteArray<Self> {
@@ -117,7 +113,7 @@ impl TallyDecryptShare {
 
 impl Readable for TallyDecryptShare {
     fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
-        let len = buf.get_u64()?;
+        let len = buf.get_u8()?;
         let mut r1s: Vec<gang::GroupElement> = Vec::new();
         for _ in 0..len {
             let elem_buf = buf.get_slice(gang::GROUP_ELEMENT_BYTES_LEN)?;

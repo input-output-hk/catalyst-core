@@ -1,7 +1,8 @@
+use crate::certificate::EncryptedVoteTally;
 use crate::{
     certificate::{
-        Certificate, CertificatePayload, PoolOwnersSigned, PoolSignature, TallyProof, VotePlan,
-        VotePlanProof, VoteTally,
+        Certificate, CertificatePayload, EncryptedVoteTallyProof, PoolOwnersSigned, PoolSignature,
+        TallyProof, VotePlan, VotePlanProof, VoteTally,
     },
     chaintypes::HeaderId,
     fee::FeeAlgorithm,
@@ -170,6 +171,18 @@ impl TestTxCertBuilder {
                 let tx = builder.set_payload_auth(&committee_signature);
                 Fragment::VoteTally(tx)
             }
+            Certificate::EncryptedVoteTally(vote_tally) => {
+                let builder = self.set_initial_ios(
+                    TxBuilder::new().set_payload(vote_tally),
+                    &funder,
+                    inputs,
+                    outputs,
+                    make_witness,
+                );
+                let committee_signature = encrypted_tally_sign(&keys, &builder);
+                let tx = builder.set_payload_auth(&committee_signature);
+                Fragment::EncryptedVoteTally(tx)
+            }
         }
     }
 
@@ -200,18 +213,28 @@ pub fn tally_sign(
 ) -> TallyProof {
     let payload_type = vt.tally_type();
 
+    let key: EitherEd25519SecretKey = keys[0].clone();
+    let id = key.to_public().into();
+
+    let auth_data = builder.get_auth_data();
+    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
+
     match payload_type {
-        PayloadType::Public => {
-            let key: EitherEd25519SecretKey = keys[0].clone();
-            let id = key.to_public().into();
-
-            let auth_data = builder.get_auth_data();
-            let signature =
-                SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
-
-            TallyProof::Public { id, signature }
-        }
+        PayloadType::Public => TallyProof::Public { id, signature },
+        PayloadType::Private => TallyProof::Private { id, signature },
     }
+}
+
+pub fn encrypted_tally_sign(
+    keys: &[EitherEd25519SecretKey],
+    builder: &TxBuilderState<SetAuthData<EncryptedVoteTally>>,
+) -> EncryptedVoteTallyProof {
+    let key: EitherEd25519SecretKey = keys[0].clone();
+    let id = key.to_public().into();
+
+    let auth_data = builder.get_auth_data();
+    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
+    EncryptedVoteTallyProof { id, signature }
 }
 
 pub fn plan_sign(

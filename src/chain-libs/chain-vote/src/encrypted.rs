@@ -18,7 +18,6 @@ impl<A: Clone> PTP<A> {
     pub fn bits(&self) -> usize {
         let len = self.elements.len();
         assert!(len.is_power_of_two());
-        assert!(len.count_ones() == 1);
         len.trailing_zeros() as usize
     }
 

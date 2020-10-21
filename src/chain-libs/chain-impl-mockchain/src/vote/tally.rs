@@ -3,6 +3,7 @@ use crate::{
     value::Value,
     vote::{Choice, Options},
 };
+use chain_vote::EncryptedTally;
 use std::fmt;
 use thiserror::Error;
 
@@ -21,15 +22,35 @@ pub struct TallyResult {
     options: Options,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Tally {
     Public { result: TallyResult },
+    Private { state: PrivateTallyState },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum PrivateTallyState {
+    Encrypted {
+        encrypted_tally: EncryptedTally,
+        total_stake: Stake,
+    },
+    Decrypted {
+        result: TallyResult,
+    },
 }
 
 #[derive(Debug, Error, PartialEq, Eq, Clone)]
 pub enum TallyError {
     #[error("Invalid option choice")]
     InvalidChoice { options: Options, choice: Choice },
+    #[error("Invalid privacy")]
+    InvalidPrivacy,
+    #[error("Choice number {choice} in private vote was too high. Maximum of 255 is allowed.")]
+    InvalidPrivateChoiceSize { choice: u64 },
+    #[error("this private tally is already decryptred")]
+    TallyAlreadyDecrypted,
+    #[error("the encrypted tally was not provided yet")]
+    NoEncryptedTally,
 }
 
 impl Weight {
@@ -48,13 +69,59 @@ impl Tally {
         Self::Public { result }
     }
 
-    pub fn is_public(&self) -> bool {
-        self.public().is_some()
+    pub fn new_private(encrypted_tally: EncryptedTally, total_stake: Stake) -> Self {
+        Self::Private {
+            state: PrivateTallyState::Encrypted {
+                encrypted_tally,
+                total_stake,
+            },
+        }
     }
 
-    pub fn public(&self) -> Option<&TallyResult> {
+    pub fn is_public(&self) -> bool {
+        matches!(self, Self::Public { .. })
+    }
+
+    pub fn is_private(&self) -> bool {
+        matches!(self, Self::Private { .. })
+    }
+
+    pub fn result(&self) -> Option<&TallyResult> {
         match self {
             Self::Public { result } => Some(result),
+            Self::Private {
+                state: PrivateTallyState::Decrypted { result },
+            } => Some(result),
+            _ => None,
+        }
+    }
+
+    pub fn private_encrypted(&self) -> Result<(&EncryptedTally, &Stake), TallyError> {
+        match self {
+            Self::Private {
+                state:
+                    PrivateTallyState::Encrypted {
+                        encrypted_tally,
+                        total_stake,
+                    },
+            } => Ok((encrypted_tally, total_stake)),
+            Self::Private {
+                state: PrivateTallyState::Decrypted { .. },
+            } => Err(TallyError::TallyAlreadyDecrypted),
+            Self::Public { .. } => Err(TallyError::InvalidPrivacy),
+        }
+    }
+
+    pub fn private_set_result(mut self, result: TallyResult) -> Result<Self, TallyError> {
+        match &mut self {
+            Self::Private { state } => {
+                if let PrivateTallyState::Decrypted { .. } = state {
+                    return Err(TallyError::TallyAlreadyDecrypted);
+                }
+                *state = PrivateTallyState::Decrypted { result };
+                Ok(self)
+            }
+            _ => Err(TallyError::InvalidPrivacy),
         }
     }
 }
@@ -181,10 +248,7 @@ mod tests {
         let choice = Choice::new(4);
         assert_eq!(
             tally_result.add_vote(choice, Weight(1)),
-            Err(TallyError::InvalidChoice {
-                options: options.clone(),
-                choice: choice.clone(),
-            })
+            Err(TallyError::InvalidChoice { options, choice })
         );
     }
 
@@ -213,6 +277,6 @@ mod tests {
     #[quickcheck]
     pub fn tally(tally_result: TallyResult) -> TestResult {
         let tally = Tally::new_public(tally_result.clone());
-        TestResult::from_bool(tally.is_public() && (*tally.public().unwrap()) == tally_result)
+        TestResult::from_bool(tally.is_public() && (*tally.result().unwrap()) == tally_result)
     }
 }

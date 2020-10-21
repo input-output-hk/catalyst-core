@@ -13,6 +13,7 @@ use chain_core::{
     property,
 };
 use chain_crypto::{digest::DigestOf, Blake2b256, Verification};
+use chain_vote::MemberPublicKey;
 use std::ops::Deref;
 use typed_bytes::{ByteArray, ByteBuilder};
 
@@ -46,6 +47,8 @@ pub struct VotePlan {
     proposals: Proposals,
     /// vote payload type
     payload_type: vote::PayloadType,
+    /// encrypting votes public keys
+    committee_public_keys: Vec<chain_vote::MemberPublicKey>,
 }
 
 #[derive(Debug, Clone)]
@@ -187,6 +190,7 @@ impl VotePlan {
         committee_end: BlockDate,
         proposals: Proposals,
         payload_type: vote::PayloadType,
+        committee_public_keys: Vec<chain_vote::MemberPublicKey>,
     ) -> Self {
         Self {
             vote_start,
@@ -194,6 +198,7 @@ impl VotePlan {
             committee_end,
             proposals,
             payload_type,
+            committee_public_keys,
         }
     }
 
@@ -237,6 +242,10 @@ impl VotePlan {
 
     pub fn payload_type(&self) -> vote::PayloadType {
         self.payload_type
+    }
+
+    pub fn committee_public_keys(&self) -> &[chain_vote::MemberPublicKey] {
+        &self.committee_public_keys
     }
 
     #[inline]
@@ -288,6 +297,9 @@ impl VotePlan {
             .u8(self.payload_type as u8)
             .iter8(&mut self.proposals.iter(), |bb, proposal| {
                 proposal.serialize_in(bb)
+            })
+            .iter8(self.committee_public_keys.iter(), |bb, key| {
+                bb.bytes(key.to_bytes().as_ref())
             })
     }
 
@@ -427,12 +439,22 @@ impl Readable for VotePlan {
             proposals.proposals.push(proposal);
         }
 
+        let member_keys_len = buf.get_u8()?;
+        let mut committee_public_keys = Vec::new();
+        for _ in 0..member_keys_len {
+            let key_buf = buf.get_slice(MemberPublicKey::BYTES_LEN)?;
+            committee_public_keys.push(MemberPublicKey::from_bytes(key_buf).ok_or_else(|| {
+                ReadError::StructureInvalid("invalid public key format".to_string())
+            })?);
+        }
+
         Ok(Self {
             vote_start,
             vote_end,
             committee_end,
             proposals,
             payload_type,
+            committee_public_keys,
         })
     }
 }
@@ -479,6 +501,7 @@ mod tests {
             committee_finished,
             VoteTestGen::proposals(1),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         assert!(vote_plan.vote_started(vote_start));
@@ -498,6 +521,7 @@ mod tests {
             committee_finished,
             VoteTestGen::proposals(1),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);
@@ -529,6 +553,7 @@ mod tests {
             vote_start,
             VoteTestGen::proposals(1),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let before_voting = BlockDate::from_epoch_slot_id(0, 10);

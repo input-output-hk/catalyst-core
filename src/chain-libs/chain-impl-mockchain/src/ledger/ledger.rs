@@ -280,6 +280,8 @@ pub enum Error {
     VotePlanInvalidGovernanceParameters,
     #[error("Vote Tally Proof failed")]
     VoteTallyProofFailed,
+    #[error("Vote tally decryption failed")]
+    VoteTallyDecryptionFailed,
     #[error("Pool update payload signature failed")]
     PoolUpdateSignatureFailed,
     #[error("Pool update last known registration hash doesn't match")]
@@ -474,6 +476,9 @@ impl Ledger {
                     return Err(Error::Block0(Block0Error::HasVoteCast));
                 }
                 Fragment::VoteTally(_) => {
+                    return Err(Error::Block0(Block0Error::HasVoteTally));
+                }
+                Fragment::EncryptedVoteTally(_) => {
                     return Err(Error::Block0(Block0Error::HasVoteTally));
                 }
             }
@@ -929,6 +934,18 @@ impl Ledger {
                     tx.payload_auth().into_payload_auth(),
                 )?;
             }
+            Fragment::EncryptedVoteTally(tx) => {
+                let tx = tx.as_slice();
+
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+
+                new_ledger = new_ledger_.apply_encrypted_vote_tally(
+                    &tx.payload().into_payload(),
+                    &tx.transaction_binding_auth_data(),
+                    tx.payload_auth().into_payload_auth(),
+                )?;
+            }
         }
 
         Ok(new_ledger)
@@ -1096,7 +1113,7 @@ impl Ledger {
         bad: &TransactionBindingAuthData<'a>,
         sig: certificate::TallyProof,
     ) -> Result<Self, Error> {
-        if sig.verify(tally, bad) == Verification::Failed {
+        if sig.verify(tally.tally_type(), bad) == Verification::Failed {
             return Err(Error::VoteTallyProofFailed);
         }
 
@@ -1136,6 +1153,25 @@ impl Ledger {
                 }
             }
         }
+
+        Ok(self)
+    }
+
+    pub fn apply_encrypted_vote_tally<'a>(
+        mut self,
+        tally: &certificate::EncryptedVoteTally,
+        bad: &TransactionBindingAuthData<'a>,
+        sig: certificate::EncryptedVoteTallyProof,
+    ) -> Result<Self, Error> {
+        if sig.verify(bad) == Verification::Failed {
+            return Err(Error::VoteTallyProofFailed);
+        }
+
+        let stake = StakeControl::new_with(&self.accounts, &self.utxos);
+
+        self.votes = self
+            .votes
+            .apply_encrypted_vote_tally(self.date(), &stake, tally, sig)?;
 
         Ok(self)
     }

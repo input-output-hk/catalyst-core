@@ -18,5 +18,5 @@ pub use self::{
     manager::{VoteError, VotePlanManager},
     payload::{Payload, PayloadType, TryFromIntError},
     status::{VotePlanStatus, VoteProposalStatus},
-    tally::{Tally, TallyError, TallyResult, Weight},
+    tally::{PrivateTallyState, Tally, TallyError, TallyResult, Weight},
 };

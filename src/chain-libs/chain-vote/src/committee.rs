@@ -10,7 +10,7 @@ use rand_core::{CryptoRng, RngCore};
 pub struct MemberSecretKey(pub(crate) SecretKey);
 
 /// Committee member election public key
-#[derive(Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct MemberPublicKey(pub(crate) PublicKey);
 
 #[derive(Clone)]
@@ -126,14 +126,20 @@ impl MemberSecretKey {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        let sk = Scalar::from_slice(bytes)?;
+        let sk = Scalar::from_bytes(bytes)?;
         Some(Self(SecretKey { sk }))
     }
 }
 
 impl MemberPublicKey {
+    pub const BYTES_LEN: usize = PublicKey::BYTES_LEN;
+
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.to_bytes()
+    }
+
+    pub fn from_bytes(buf: &[u8]) -> Option<Self> {
+        Some(Self(PublicKey::from_bytes(buf)?))
     }
 }
 
@@ -168,6 +174,7 @@ impl MemberCommunicationPublicKey {
     pub fn from_public_key(pk: PublicKey) -> Self {
         Self(pk)
     }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.to_bytes()
     }

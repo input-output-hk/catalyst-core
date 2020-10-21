@@ -1,3 +1,4 @@
+use crate::certificate::{EncryptedVoteTally, EncryptedVoteTallyProof};
 use crate::{
     certificate::{TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId, VoteTally},
     date::BlockDate,
@@ -15,6 +16,7 @@ pub struct VotePlanLedger {
     pub(crate) plans: Hamt<DefaultHasher, VotePlanId, VotePlanManager>,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum VotePlanLedgerError {
     #[error("cannot insert the vote plan {id}: {reason:?}")]
@@ -135,8 +137,46 @@ impl VotePlanLedger {
     {
         let id = tally.id().clone();
 
+        let committee_id = match sig {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
+        let r = self.plans.update(&id, move |v| match sig {
+            TallyProof::Public { .. } => v
+                .public_tally(block_date, stake, governance, committee_id, f)
+                .map(Some),
+            TallyProof::Private { .. } => {
+                let shares = tally.decrypt_shares().unwrap();
+                v.private_tally_finish(&shares, governance, f).map(Some)
+            }
+        });
+
+        match r {
+            Err(reason) => Err(VotePlanLedgerError::VoteError { reason, id }),
+            Ok(plans) => Ok(Self { plans }),
+        }
+    }
+
+    /// apply the committee result for the associated vote plan
+    ///
+    /// # Errors
+    ///
+    /// This function may fail:
+    ///
+    /// * if the Committee time has elapsed
+    /// * if the tally is not a private tally
+    ///
+    pub fn apply_encrypted_vote_tally(
+        &self,
+        block_date: BlockDate,
+        stake: &StakeControl,
+        encrypted_tally: &EncryptedVoteTally,
+        sig: EncryptedVoteTallyProof,
+    ) -> Result<Self, VotePlanLedgerError> {
+        let id = encrypted_tally.id().clone();
+
         let r = self.plans.update(&id, move |v| {
-            v.tally(block_date, stake, governance, sig, f).map(Some)
+            v.private_tally_start(block_date, stake, sig.id).map(Some)
         });
 
         match r {

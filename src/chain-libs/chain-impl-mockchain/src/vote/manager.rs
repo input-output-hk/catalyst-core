@@ -1,5 +1,6 @@
+use crate::vote::{Choice, Payload, TallyError};
 use crate::{
-    certificate::{Proposal, TallyProof, VoteAction, VoteCast, VotePlan, VotePlanId},
+    certificate::{Proposal, TallyDecryptShares, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     ledger::governance::{Governance, GovernanceAcceptanceCriteria},
     rewards::Ratio,
@@ -7,6 +8,7 @@ use crate::{
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
+use chain_vote::EncryptedTally;
 use imhamt::Hamt;
 use std::{
     collections::{hash_map::DefaultHasher, HashSet},
@@ -74,10 +76,15 @@ pub enum VoteError {
 
     #[error("Cannot tally votes")]
     CannotTallyVotes {
-        #[source]
         #[from]
         source: vote::TallyError,
     },
+
+    #[error("Invalid private vote verification")]
+    VoteVerificationError,
+
+    #[error("Error during private tallying {0}")]
+    PrivateTallyError(String),
 }
 
 impl ProposalManager {
@@ -141,6 +148,12 @@ impl ProposalManager {
                         vote::Payload::Public { choice } => {
                             results.add_vote(*choice, stake)?;
                         }
+                        vote::Payload::Private { .. } => {
+                            return Err(VoteError::InvalidPayloadType {
+                                expected: vote::PayloadType::Public,
+                                received: vote::PayloadType::Private,
+                            });
+                        }
                     }
                 }
             }
@@ -154,6 +167,90 @@ impl ProposalManager {
             votes_by_voters: self.votes_by_voters.clone(),
             options: self.options.clone(),
             tally: Some(Tally::new_public(results)),
+            action: self.action.clone(),
+        })
+    }
+
+    #[must_use = "Compute the PrivateTally in a new ProposalManager, does not modify self"]
+    pub fn private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
+        let mut tally =
+            EncryptedTally::new(self.options.choice_range().clone().max().unwrap() as usize);
+
+        for (id, payload) in self.votes_by_voters.iter() {
+            if let Some(account_id) = id.to_single_account() {
+                if let Some(stake) = stake.by(&account_id) {
+                    match payload {
+                        vote::Payload::Public { .. } => {
+                            return Err(VoteError::InvalidPayloadType {
+                                expected: vote::PayloadType::Private,
+                                received: vote::PayloadType::Public,
+                            });
+                        }
+                        vote::Payload::Private {
+                            encrypted_vote,
+                            proof: _,
+                        } => {
+                            tally.add(encrypted_vote, stake.0);
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(Self {
+            votes_by_voters: self.votes_by_voters.clone(),
+            options: self.options.clone(),
+            tally: Some(Tally::new_private(tally, stake.assigned())),
+            action: self.action.clone(),
+        })
+    }
+
+    pub fn finalize_private_tally<F>(
+        &self,
+        shares: &[chain_vote::TallyDecryptShare],
+        governance: &Governance,
+        f: &mut F,
+    ) -> Result<Self, TallyError>
+    where
+        F: FnMut(&VoteAction),
+    {
+        use std::convert::TryInto;
+        let tally = self.tally.as_ref().ok_or(TallyError::NoEncryptedTally)?;
+        let (encrypted_tally, total_stake) = tally.private_encrypted()?;
+        let state = encrypted_tally.state();
+        // total voting power + 1
+        let max_votes = total_stake.0 + 1;
+        let table_size = (max_votes / 3) as usize;
+        let private_result = chain_vote::result(max_votes, table_size, &state, shares);
+        let mut result = TallyResult::new(self.options.clone());
+        for (choice, weight) in private_result
+            .votes
+            .iter()
+            .map(|maybe_vote| maybe_vote.unwrap_or_default())
+            .enumerate()
+        {
+            result.add_vote(
+                Choice::new(choice.try_into().map_err(|_| {
+                    TallyError::InvalidPrivateChoiceSize {
+                        choice: choice as u64,
+                    }
+                })?),
+                weight,
+            )?;
+        }
+
+        dbg!(&result);
+
+        if self.check(*total_stake, governance, &result) {
+            f(&self.action);
+        }
+
+        let tally = tally.clone().private_set_result(result)?;
+
+        Ok(Self {
+            votes_by_voters: self.votes_by_voters.clone(),
+            options: self.options.clone(),
+            tally: Some(tally),
             action: self.action.clone(),
         })
     }
@@ -301,6 +398,31 @@ impl ProposalManagers {
 
         Ok(Self(proposals))
     }
+
+    pub fn private_tally_start(&self, stake: &StakeControl) -> Result<Self, VoteError> {
+        let mut proposals = Vec::with_capacity(self.0.len());
+        for proposal in self.0.iter() {
+            proposals.push(proposal.private_tally(stake)?);
+        }
+
+        Ok(Self(proposals))
+    }
+
+    pub fn private_tally_finalize<F>(
+        &self,
+        shares: &TallyDecryptShares,
+        governance: &Governance,
+        f: &mut F,
+    ) -> Result<Self, VoteError>
+    where
+        F: FnMut(&VoteAction),
+    {
+        let mut proposals = Vec::with_capacity(self.0.len());
+        for (proposal_manager, shares) in self.0.iter().zip(shares.iter()) {
+            proposals.push(proposal_manager.finalize_private_tally(shares, governance, f)?);
+        }
+        Ok(Self(proposals))
+    }
 }
 
 impl VotePlanManager {
@@ -340,12 +462,15 @@ impl VotePlanManager {
             })
             .collect();
 
+        let committee_public_keys = self.plan().committee_public_keys().to_vec();
+
         VotePlanStatus {
             id: self.id.clone(),
             payload: self.plan().payload_type(),
             vote_start: self.plan().vote_start(),
             vote_end: self.plan().vote_end(),
             committee_end: self.plan().committee_end(),
+            committee_public_keys,
             proposals,
         }
     }
@@ -369,10 +494,8 @@ impl VotePlanManager {
         self.plan().committee_end() < date
     }
 
-    fn valid_committee(&self, sig: TallyProof) -> bool {
-        match sig {
-            TallyProof::Public { id, signature: _ } => self.committee_set().contains(&id),
-        }
+    fn valid_committee(&self, id: &CommitteeId) -> bool {
+        self.committee_set().contains(id)
     }
 
     /// attempt to apply the vote to one of the proposals
@@ -410,6 +533,24 @@ impl VotePlanManager {
                 expected: self.plan().payload_type(),
                 received: cast.payload().payload_type(),
             })
+        // verify vote if private
+        } else if let Err(e) = match &cast.payload() {
+            Payload::Public { .. } => Ok(()),
+            Payload::Private {
+                encrypted_vote,
+                proof,
+            } => {
+                let pk = chain_vote::EncryptingVoteKey::from_participants(
+                    self.plan.committee_public_keys(),
+                );
+                if !chain_vote::verify_vote(&pk, encrypted_vote, proof) {
+                    Err(VoteError::VoteVerificationError)
+                } else {
+                    Ok(())
+                }
+            }
+        } {
+            Err(e)
         } else {
             let proposal_managers = self.proposal_managers.vote(identifier, cast)?;
 
@@ -422,38 +563,91 @@ impl VotePlanManager {
         }
     }
 
-    pub fn tally<F>(
+    pub fn public_tally<F>(
         &self,
         block_date: BlockDate,
         stake: &StakeControl,
         governance: &Governance,
-        sig: TallyProof,
+        sig: CommitteeId,
         f: &mut F,
     ) -> Result<Self, VoteError>
     where
         F: FnMut(&VoteAction),
     {
         if !self.can_committee(block_date) {
-            Err(VoteError::NotCommitteeTime {
+            return Err(VoteError::NotCommitteeTime {
                 start: self.plan().committee_start(),
                 end: self.plan().committee_end(),
-            })
-        } else if !self.valid_committee(sig) {
-            Err(VoteError::InvalidTallyCommittee)
-        } else {
-            let proposal_managers = match self.plan().payload_type() {
-                vote::PayloadType::Public => {
-                    self.proposal_managers.public_tally(&stake, governance, f)?
-                }
-            };
-
-            Ok(Self {
-                proposal_managers,
-                plan: Arc::clone(&self.plan),
-                id: self.id.clone(),
-                committee: Arc::clone(&self.committee),
-            })
+            });
         }
+
+        if !self.valid_committee(&sig) {
+            return Err(VoteError::InvalidTallyCommittee);
+        }
+
+        if self.plan.payload_type() != vote::PayloadType::Public {
+            return Err(TallyError::InvalidPrivacy.into());
+        }
+
+        let proposal_managers = self.proposal_managers.public_tally(stake, governance, f)?;
+
+        Ok(Self {
+            proposal_managers,
+            plan: Arc::clone(&self.plan),
+            id: self.id.clone(),
+            committee: Arc::clone(&self.committee),
+        })
+    }
+
+    pub fn private_tally_start(
+        &self,
+        block_date: BlockDate,
+        stake: &StakeControl,
+        sig: CommitteeId,
+    ) -> Result<Self, VoteError> {
+        if !self.can_committee(block_date) {
+            return Err(VoteError::NotCommitteeTime {
+                start: self.plan().committee_start(),
+                end: self.plan().committee_end(),
+            });
+        }
+
+        if !self.valid_committee(&sig) {
+            return Err(VoteError::InvalidTallyCommittee);
+        }
+
+        if self.plan.payload_type() != vote::PayloadType::Private {
+            return Err(TallyError::InvalidPrivacy.into());
+        }
+
+        let proposal_managers = self.proposal_managers.private_tally_start(stake)?;
+
+        Ok(Self {
+            proposal_managers,
+            plan: Arc::clone(&self.plan),
+            id: self.id.clone(),
+            committee: Arc::clone(&self.committee),
+        })
+    }
+
+    pub fn private_tally_finish<F>(
+        &self,
+        shares: &TallyDecryptShares,
+        governance: &Governance,
+        f: &mut F,
+    ) -> Result<Self, VoteError>
+    where
+        F: FnMut(&VoteAction),
+    {
+        let proposal_managers = self
+            .proposal_managers
+            .private_tally_finalize(shares, governance, f)?;
+        Ok(Self {
+            proposal_managers,
+            plan: Arc::clone(&self.plan),
+            id: self.id.clone(),
+            committee: Arc::clone(&self.committee),
+        })
     }
 }
 
@@ -461,6 +655,8 @@ impl VotePlanManager {
 mod tests {
     use super::*;
     use crate::block::BlockDate;
+    use crate::certificate::TallyProof;
+
     use crate::testing::{TestGen, VoteTestGen};
     use chain_core::property::BlockDate as BlockDateProp;
     use quickcheck::TestResult;
@@ -532,6 +728,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
@@ -573,6 +770,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let mut committee_ids = HashSet::new();
@@ -611,12 +809,16 @@ mod tests {
         };
 
         let mut action_hit = false;
+        let committee_id = match tally_proof {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
         vote_plan_manager
-            .tally(
+            .public_tally(
                 block_date,
                 &stake_controlled,
                 &governance,
-                tally_proof,
+                committee_id,
                 &mut |_| action_hit = true,
             )
             .unwrap();
@@ -637,6 +839,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let mut committee_ids = HashSet::new();
@@ -655,15 +858,20 @@ mod tests {
             slot_id: 10,
         };
 
+        let committee_id = match tally_proof {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
+
         //invalid committee
         assert_eq!(
             VoteError::InvalidTallyCommittee,
             vote_plan_manager
-                .tally(
+                .public_tally(
                     block_date,
                     &stake_controlled,
                     &governance,
-                    tally_proof,
+                    committee_id,
                     &mut |_| ()
                 )
                 .err()
@@ -685,6 +893,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let mut committee_ids = HashSet::new();
@@ -703,6 +912,11 @@ mod tests {
             slot_id: 10,
         };
 
+        let committee_id = match tally_proof {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
+
         //not in committee time
         assert_eq!(
             VoteError::NotCommitteeTime {
@@ -710,11 +924,11 @@ mod tests {
                 end: vote_plan.committee_end()
             },
             vote_plan_manager
-                .tally(
+                .public_tally(
                     invalid_block_date,
                     &stake_controlled,
                     &governance,
-                    tally_proof,
+                    committee_id,
                     &mut |_| ()
                 )
                 .err()
@@ -756,6 +970,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let mut first_proposal_manager =
@@ -1029,6 +1244,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());
@@ -1059,6 +1275,7 @@ mod tests {
             BlockDate::from_epoch_slot_id(3, 0),
             VoteTestGen::proposals(3),
             vote::PayloadType::Public,
+            Vec::new(),
         );
 
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), HashSet::new());

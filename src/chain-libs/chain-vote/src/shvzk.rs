@@ -32,28 +32,109 @@ impl ABCD {
 }
 
 /// I, B, A commitments
-#[derive(Clone)]
-struct IBA {
-    pub i: Commitment,
-    pub b: Commitment,
-    pub a: Commitment,
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct IBA {
+    i: Commitment,
+    b: Commitment,
+    a: Commitment,
 }
 
 // Computed z, w, v
-#[derive(Clone)]
-struct ZWV {
-    pub z: Scalar,
-    pub w: Scalar,
-    pub v: Scalar,
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct ZWV {
+    z: Scalar,
+    w: Scalar,
+    v: Scalar,
 }
 
 /// Proof of unit vector
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Proof {
     ibas: Vec<IBA>,
     ds: Vec<Ciphertext>,
     zwvs: Vec<ZWV>,
     r: Scalar,
+}
+
+impl IBA {
+    pub const BYTES_LEN: usize = Commitment::BYTES_LEN * 3;
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() != Self::BYTES_LEN {
+            return None;
+        }
+        Some(Self {
+            i: Commitment::from_bytes(&bytes[0..Commitment::BYTES_LEN])?,
+            b: Commitment::from_bytes(&bytes[Commitment::BYTES_LEN..Commitment::BYTES_LEN * 2])?,
+            a: Commitment::from_bytes(&bytes[Commitment::BYTES_LEN * 2..])?,
+        })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut buf = Vec::with_capacity(Self::BYTES_LEN);
+        for component in [&self.i, &self.b, &self.a].iter() {
+            buf.extend_from_slice(&component.to_bytes());
+        }
+        debug_assert_eq!(buf.len(), Self::BYTES_LEN);
+        buf
+    }
+}
+
+impl ZWV {
+    pub const BYTES_LEN: usize = Scalar::BYTES_LEN * 3;
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() != Self::BYTES_LEN {
+            return None;
+        }
+        Some(Self {
+            z: Scalar::from_bytes(&bytes[0..Scalar::BYTES_LEN])?,
+            w: Scalar::from_bytes(&bytes[Scalar::BYTES_LEN..Scalar::BYTES_LEN * 2])?,
+            v: Scalar::from_bytes(&bytes[Scalar::BYTES_LEN * 2..])?,
+        })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut buf = Vec::with_capacity(Self::BYTES_LEN);
+        for component in [&self.z, &self.w, &self.v].iter() {
+            buf.extend_from_slice(&component.to_bytes());
+        }
+        debug_assert_eq!(buf.len(), Self::BYTES_LEN);
+        buf
+    }
+}
+
+impl Proof {
+    /// Constructs the proof structure from constituent parts.
+    ///
+    /// # Panics
+    ///
+    /// The `ibas`, `ds`, and `zwvs` must have the same length, otherwise the function will panic.
+    pub fn from_parts(ibas: Vec<IBA>, ds: Vec<Ciphertext>, zwvs: Vec<ZWV>, r: Scalar) -> Self {
+        assert_eq!(ibas.len(), ds.len());
+        assert_eq!(ibas.len(), zwvs.len());
+        Proof { ibas, ds, zwvs, r }
+    }
+
+    pub fn len(&self) -> usize {
+        self.ibas.len()
+    }
+
+    pub fn ibas(&self) -> impl Iterator<Item = &IBA> {
+        self.ibas.iter()
+    }
+
+    pub fn ds(&self) -> impl Iterator<Item = &Ciphertext> {
+        self.ds.iter()
+    }
+
+    pub fn zwvs(&self) -> impl Iterator<Item = &ZWV> {
+        self.zwvs.iter()
+    }
+
+    pub fn r(&self) -> &Scalar {
+        &self.r
+    }
 }
 
 fn commitkey(pk: &PublicKey) -> CommitmentKey {
@@ -75,7 +156,7 @@ fn commitkey(pk: &PublicKey) -> CommitmentKey {
 }
 
 impl IBA {
-    pub fn new(ck: &CommitmentKey, abcd: &ABCD, index: &Scalar) -> Self {
+    fn new(ck: &CommitmentKey, abcd: &ABCD, index: &Scalar) -> Self {
         assert!(index == &Scalar::zero() || index == &Scalar::one());
 
         // commit index bit: 0 or 1
@@ -130,7 +211,7 @@ impl ChallengeContext {
     }
 }
 
-pub fn prove<R: RngCore + CryptoRng>(
+pub(crate) fn prove<R: RngCore + CryptoRng>(
     rng: &mut R,
     public_key: &PublicKey,
     encrypting_vote: EncryptingVote,
@@ -148,7 +229,6 @@ pub fn prove<R: RngCore + CryptoRng>(
     for _ in 0..bits {
         abcds.push(ABCD::random(rng))
     }
-    assert_eq!(abcds.len(), bits);
 
     let unit_vector = &encrypting_vote.unit_vector;
     let idx = binrep(unit_vector.ith(), bits as u32);
@@ -160,7 +240,7 @@ pub fn prove<R: RngCore + CryptoRng>(
         .zip(idx.iter())
         .map(|(abcd, index)| IBA::new(&ck, abcd, &(*index).into()))
         .collect();
-    assert_eq!(ibas.len(), bits);
+    debug_assert_eq!(ibas.len(), bits);
 
     // Generate First verifier challenge
     let cc = ChallengeContext::new(public_key, ciphers.as_ref(), &ibas);
@@ -224,6 +304,7 @@ pub fn prove<R: RngCore + CryptoRng>(
 
         (ds, rs)
     };
+    debug_assert_eq!(ds.len(), bits);
 
     // Generate second verifier challenge
     let cx = cc.second_challenge(&ds);
@@ -238,7 +319,8 @@ pub fn prove<R: RngCore + CryptoRng>(
             let v = &abcd.alpha * (&cx - &z) + &abcd.delta;
             ZWV { z, w, v }
         })
-        .collect();
+        .collect::<Vec<_>>();
+    debug_assert_eq!(zwvs.len(), bits);
 
     // Compute R
     let r = {
@@ -260,7 +342,7 @@ pub fn prove<R: RngCore + CryptoRng>(
     Proof { ibas, ds, zwvs, r }
 }
 
-pub fn verify(public_key: &PublicKey, ciphertexts: &[Ciphertext], proof: &Proof) -> bool {
+pub(crate) fn verify(public_key: &PublicKey, ciphertexts: &[Ciphertext], proof: &Proof) -> bool {
     let ck = commitkey(&public_key);
 
     let ciphertexts = PTP::new(ciphertexts.to_vec(), Ciphertext::zero);

@@ -65,7 +65,7 @@ use chain_ser::packer::Codec;
 use chain_time::era::{pack_time_era, unpack_time_era};
 use std::collections::HashSet;
 use std::convert::TryFrom;
-use std::io::{Read, Write};
+use std::io::{self, BufRead, Read, Write};
 use std::iter::FromIterator;
 use std::sync::Arc;
 
@@ -936,6 +936,36 @@ fn unpack_payload_type<R: std::io::BufRead>(
         .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))
 }
 
+fn pack_committee_public_keys<W: std::io::Write>(
+    keys: &[chain_vote::MemberPublicKey],
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    use std::convert::TryInto;
+    codec.put_u8(keys.len().try_into().unwrap())?;
+    for k in keys {
+        codec.write_all(&k.to_bytes())?;
+    }
+    Ok(())
+}
+
+fn unpack_committee_public_keys<R: BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<Vec<chain_vote::MemberPublicKey>, io::Error> {
+    let size = codec.get_u8()?;
+    let mut result = Vec::new();
+    for _ in 0..size {
+        let buf = codec.get_bytes(chain_vote::MemberPublicKey::BYTES_LEN)?;
+        let key = chain_vote::MemberPublicKey::from_bytes(&buf).ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "invalid committee member public key in a vote plan",
+            )
+        })?;
+        result.push(key);
+    }
+    Ok(result)
+}
+
 fn pack_vote_plan<W: std::io::Write>(
     vote_plan: &VotePlan,
     codec: &mut Codec<W>,
@@ -945,6 +975,7 @@ fn pack_vote_plan<W: std::io::Write>(
     pack_block_date(vote_plan.committee_end(), codec)?;
     pack_payload_type(vote_plan.payload_type(), codec)?;
     pack_vote_proposals(vote_plan.proposals(), codec)?;
+    pack_committee_public_keys(vote_plan.committee_public_keys(), codec)?;
     Ok(())
 }
 
@@ -954,13 +985,14 @@ fn unpack_vote_plan<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<VotePla
     let committee_end = unpack_block_date(codec)?;
     let payload_type = unpack_payload_type(codec)?;
     let proposals = unpack_proposals(codec)?;
-
+    let keys = unpack_committee_public_keys(codec)?;
     Ok(VotePlan::new(
         vote_start,
         vote_end,
         committee_end,
         proposals,
         payload_type,
+        keys,
     ))
 }
 

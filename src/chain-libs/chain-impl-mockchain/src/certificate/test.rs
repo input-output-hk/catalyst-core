@@ -171,13 +171,36 @@ impl Arbitrary for Proposals {
 
 impl Arbitrary for VotePlan {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        use rand_core::SeedableRng;
+
         let vote_start = BlockDate::arbitrary(g);
         let vote_end = BlockDate::arbitrary(g);
         let committee_end = BlockDate::arbitrary(g);
         let proposals = Proposals::arbitrary(g);
         let payload_type = vote::PayloadType::arbitrary(g);
 
-        Self::new(vote_start, vote_end, committee_end, proposals, payload_type)
+        let mut keys = Vec::new();
+        // it should have been 256 but is limited for the sake of adequate test times
+        let keys_n = g.next_u32() % 16;
+        let mut seed = [0u8; 32];
+        g.fill_bytes(&mut seed);
+        let mut rng = rand_chacha::ChaCha20Rng::from_seed(seed);
+        let h = chain_vote::CRS::random(&mut rng);
+        for _i in 0..keys_n {
+            let mc = chain_vote::MemberCommunicationKey::new(&mut rng);
+            let threshold = 1;
+            let m1 = chain_vote::MemberState::new(&mut rng, threshold, &h, &[mc.to_public()], 0);
+            keys.push(m1.public_key());
+        }
+
+        Self::new(
+            vote_start,
+            vote_end,
+            committee_end,
+            proposals,
+            payload_type,
+            keys,
+        )
     }
 }
 
@@ -216,9 +239,25 @@ impl Arbitrary for TallyProof {
     }
 }
 
+impl Arbitrary for EncryptedVoteTally {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let id = Arbitrary::arbitrary(g);
+        Self::new(id)
+    }
+}
+
+impl Arbitrary for EncryptedVoteTallyProof {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        Self {
+            id: Arbitrary::arbitrary(g),
+            signature: Arbitrary::arbitrary(g),
+        }
+    }
+}
+
 impl Arbitrary for Certificate {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let option = u8::arbitrary(g) % 8;
+        let option = u8::arbitrary(g) % 9;
         match option {
             0 => Certificate::StakeDelegation(Arbitrary::arbitrary(g)),
             1 => Certificate::OwnerStakeDelegation(Arbitrary::arbitrary(g)),
@@ -228,6 +267,7 @@ impl Arbitrary for Certificate {
             5 => Certificate::VotePlan(Arbitrary::arbitrary(g)),
             6 => Certificate::VoteCast(Arbitrary::arbitrary(g)),
             7 => Certificate::VoteTally(Arbitrary::arbitrary(g)),
+            8 => Certificate::EncryptedVoteTally(Arbitrary::arbitrary(g)),
             _ => panic!("unimplemented"),
         }
     }

@@ -48,9 +48,8 @@ impl UnitVector {
                 "out of bounds: unit vector {} accessing index {}",
                 self.size, j
             );
-        } else {
-            j == self.ith
         }
+        j == self.ith
     }
 
     pub fn jth(&self, j: usize) -> Scalar {

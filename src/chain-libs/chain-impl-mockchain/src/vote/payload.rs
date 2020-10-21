@@ -1,6 +1,9 @@
 use crate::vote::Choice;
 use chain_core::mempack::{ReadBuf, ReadError};
+use chain_vote::shvzk;
+use chain_vote::{Ciphertext, EncryptedVote, ProofOfCorrectVote, Scalar};
 use std::convert::{TryFrom, TryInto as _};
+use std::hash::Hash;
 use thiserror::Error;
 use typed_bytes::ByteBuilder;
 
@@ -18,11 +21,18 @@ use typed_bytes::ByteBuilder;
 #[repr(u8)]
 pub enum PayloadType {
     Public = 1,
+    Private = 2,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Payload {
-    Public { choice: Choice },
+    Public {
+        choice: Choice,
+    },
+    Private {
+        encrypted_vote: EncryptedVote,
+        proof: ProofOfCorrectVote,
+    },
 }
 
 #[derive(Debug, Error)]
@@ -38,17 +48,39 @@ impl Payload {
         Self::Public { choice }
     }
 
+    pub fn private(encrypted_vote: EncryptedVote, proof: ProofOfCorrectVote) -> Self {
+        Self::Private {
+            encrypted_vote,
+            proof,
+        }
+    }
+
     pub fn payload_type(&self) -> PayloadType {
         match self {
             Self::Public { .. } => PayloadType::Public,
+            Self::Private { .. } => PayloadType::Private,
         }
     }
 
     pub(crate) fn serialize_in<T>(&self, bb: ByteBuilder<T>) -> ByteBuilder<T> {
         let payload_type = self.payload_type();
 
+        let bb = bb.u8(payload_type as u8);
+
         match self {
-            Self::Public { choice } => bb.u8(payload_type as u8).u8(choice.as_byte()),
+            Self::Public { choice } => bb.u8(choice.as_byte()),
+            Self::Private {
+                encrypted_vote,
+                proof,
+            } => bb
+                .iter8(encrypted_vote, |bb, ct| {
+                    let buffer = ct.to_bytes();
+                    bb.bytes(&buffer)
+                })
+                .fold(proof.ibas(), |bb, iba| bb.bytes(&iba.to_bytes()))
+                .fold(proof.ds(), |bb, d| bb.bytes(&d.to_bytes()))
+                .fold(proof.zwvs(), |bb, zwv| bb.bytes(&zwv.to_bytes()))
+                .bytes(&proof.r().to_bytes()),
         }
     }
 
@@ -60,6 +92,50 @@ impl Payload {
 
         match t {
             PayloadType::Public => buf.get_u8().map(Choice::new).map(Self::public),
+            PayloadType::Private => {
+                let len: usize = buf.get_u8()? as usize;
+                let mut cypher_texts: Vec<Ciphertext> = Vec::new();
+                for _ in 0..len {
+                    let ct_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
+                    cypher_texts.push(Ciphertext::from_bytes(ct_buf).ok_or_else(|| {
+                        ReadError::StructureInvalid("Invalid private vote".to_string())
+                    })?);
+                }
+                let bits = len.next_power_of_two().trailing_zeros() as usize;
+                let mut ibas = Vec::with_capacity(bits);
+                for _ in 0..bits {
+                    let elem_buf = buf.get_slice(shvzk::IBA::BYTES_LEN)?;
+                    let iba = shvzk::IBA::from_bytes(elem_buf).ok_or_else(|| {
+                        ReadError::StructureInvalid("Invalid IBA component".to_string())
+                    })?;
+                    ibas.push(iba);
+                }
+                let mut bs = Vec::with_capacity(bits);
+                for _ in 0..bits {
+                    let elem_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
+                    let ciphertext = Ciphertext::from_bytes(elem_buf).ok_or_else(|| {
+                        ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
+                    })?;
+                    bs.push(ciphertext);
+                }
+                let mut zwvs = Vec::with_capacity(bits);
+                for _ in 0..bits {
+                    let elem_buf = buf.get_slice(shvzk::ZWV::BYTES_LEN)?;
+                    let zwv = shvzk::ZWV::from_bytes(elem_buf).ok_or_else(|| {
+                        ReadError::StructureInvalid("Invalid ZWV component".to_string())
+                    })?;
+                    zwvs.push(zwv);
+                }
+                let r_buf = buf.get_slice(Scalar::BYTES_LEN)?;
+                let r = Scalar::from_bytes(r_buf).ok_or_else(|| {
+                    ReadError::StructureInvalid("Invalid Proof encoded R scalar".to_string())
+                })?;
+                let proof = ProofOfCorrectVote::from_parts(ibas, bs, zwvs, r);
+                Ok(Self::Private {
+                    encrypted_vote: cypher_texts,
+                    proof,
+                })
+            }
         }
     }
 }
@@ -70,6 +146,7 @@ impl TryFrom<u8> for PayloadType {
         match value {
             0 => Err(TryFromIntError::Zero),
             1 => Ok(Self::Public),
+            2 => Ok(Self::Private),
             _ => Err(TryFromIntError::InvalidValue { value }),
         }
     }
@@ -87,15 +164,43 @@ mod tests {
     use quickcheck::{Arbitrary, Gen};
 
     impl Arbitrary for PayloadType {
-        fn arbitrary<G: Gen>(_g: &mut G) -> Self {
-            Self::Public
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            if g.next_u32() % 2 == 0 {
+                Self::Public
+            } else {
+                Self::Private
+            }
         }
     }
 
     impl Arbitrary for Payload {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            use chain_vote::{
+                encrypt_vote, EncryptingVoteKey, MemberCommunicationKey, MemberState, Vote, CRS,
+            };
+            use rand_core::SeedableRng;
+
             match PayloadType::arbitrary(g) {
                 PayloadType::Public => Payload::public(Choice::arbitrary(g)),
+                PayloadType::Private => {
+                    let mut seed = [0u8; 32];
+                    g.fill_bytes(&mut seed);
+                    let mut gen = rand_chacha::ChaCha20Rng::from_seed(seed);
+                    let mc = MemberCommunicationKey::new(&mut gen);
+                    let threshold = 1;
+                    let h = CRS::random(&mut gen);
+                    let m = MemberState::new(&mut gen, threshold, &h, &[mc.to_public()], 0);
+                    let participants = vec![m.public_key()];
+                    let ek = EncryptingVoteKey::from_participants(&participants);
+                    let vote_options = 3;
+                    let choice = g.next_u32() % vote_options;
+                    let (vote, proof) = encrypt_vote(
+                        &mut gen,
+                        &ek,
+                        Vote::new(vote_options as usize, choice as usize),
+                    );
+                    Payload::private(vote, proof)
+                }
             }
         }
     }

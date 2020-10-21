@@ -7,7 +7,7 @@ mod gang;
 pub mod gargamel;
 mod hybrid;
 mod math;
-mod shvzk;
+pub mod shvzk;
 mod unit_vector;
 
 // re-export under a debug module
@@ -21,12 +21,14 @@ pub mod debug {
     }
 }
 
-use rand_core::{CryptoRng, RngCore};
-
-pub use committee::{MemberCommunicationKey, MemberCommunicationPublicKey, MemberState};
+pub use committee::{
+    MemberCommunicationKey, MemberCommunicationPublicKey, MemberPublicKey, MemberState,
+};
 pub use encrypted::EncryptingVote;
-use gang::{Scalar, GROUP_ELEMENT_BYTES_LEN};
-pub use gargamel::{Ciphertext, CIPHERTEXT_BYTES_LEN};
+use gang::GroupElement;
+pub use gang::Scalar;
+pub use gargamel::Ciphertext;
+use rand_core::{CryptoRng, RngCore};
 pub use unit_vector::UnitVector;
 
 /// Secret key for opening vote
@@ -75,31 +77,31 @@ pub fn verify_vote(
 }
 
 /// The encrypted tally
-#[derive(Clone)]
-pub struct Tally {
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EncryptedTally {
     r: Vec<Ciphertext>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct TallyDecryptShare {
     r1s: Vec<gang::GroupElement>,
 }
 
 #[derive(Clone)]
 pub struct TallyState {
-    pub r2s: Vec<gang::GroupElement>,
+    r2s: Vec<gang::GroupElement>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct TallyResult {
     pub votes: Vec<Option<u64>>,
 }
 
-impl Tally {
+impl EncryptedTally {
     /// Start a new tally with N different options
     pub fn new(options: usize) -> Self {
         let r = vec![Ciphertext::zero(); options];
-        Tally { r }
+        EncryptedTally { r }
     }
 
     /// Add an encrypted vote with a specific weight to the tally
@@ -125,9 +127,15 @@ impl Tally {
         (TallyState { r2s }, TallyDecryptShare { r1s: dshares })
     }
 
+    pub fn state(&self) -> TallyState {
+        TallyState {
+            r2s: self.r.iter().map(|r| r.elements().1.clone()).collect(),
+        }
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         use std::io::Write;
-        let mut bytes: Vec<u8> = Vec::with_capacity(CIPHERTEXT_BYTES_LEN * self.r.len());
+        let mut bytes: Vec<u8> = Vec::with_capacity(Ciphertext::BYTES_LEN * self.r.len());
         for ri in &self.r {
             bytes.write_all(ri.to_bytes().as_ref()).unwrap();
         }
@@ -135,11 +143,11 @@ impl Tally {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        if bytes.len() % CIPHERTEXT_BYTES_LEN != 0 {
+        if bytes.len() % Ciphertext::BYTES_LEN != 0 {
             return None;
         }
         let r = bytes
-            .chunks(CIPHERTEXT_BYTES_LEN)
+            .chunks(Ciphertext::BYTES_LEN)
             .map(Ciphertext::from_bytes)
             .collect::<Option<Vec<_>>>()?;
         Some(Self { r })
@@ -147,6 +155,18 @@ impl Tally {
 }
 
 impl TallyDecryptShare {
+    /// Number of voting options this taly decrypt share structure is
+    /// constructed for.
+    pub fn options(&self) -> usize {
+        self.r1s.len()
+    }
+
+    /// Size of the byte representation for a tally decrypt share
+    /// with the given number of options.
+    pub fn bytes_len(options: usize) -> usize {
+        group_elements_bytes_len(options)
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         group_elements_to_bytes(&self.r1s)
     }
@@ -157,6 +177,12 @@ impl TallyDecryptShare {
 }
 
 impl TallyState {
+    /// Size of the byte representation for tally state
+    /// with the given number of options.
+    pub fn bytes_len(options: usize) -> usize {
+        group_elements_bytes_len(options)
+    }
+
     pub fn to_bytes(&self) -> Vec<u8> {
         group_elements_to_bytes(&self.r2s)
     }
@@ -166,9 +192,15 @@ impl TallyState {
     }
 }
 
+fn group_elements_bytes_len(n: usize) -> usize {
+    GroupElement::BYTES_LEN
+        .checked_mul(n)
+        .expect("integer overflow")
+}
+
 fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
     use std::io::Write;
-    let mut bytes: Vec<u8> = Vec::with_capacity(GROUP_ELEMENT_BYTES_LEN * elements.len());
+    let mut bytes: Vec<u8> = Vec::with_capacity(group_elements_bytes_len(elements.len()));
     for element in elements {
         bytes.write_all(element.to_bytes().as_ref()).unwrap();
     }
@@ -176,11 +208,12 @@ fn group_elements_to_bytes(elements: &[gang::GroupElement]) -> Vec<u8> {
 }
 
 fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
-    if bytes.len() % GROUP_ELEMENT_BYTES_LEN != 0 {
+    if bytes.len() % GroupElement::BYTES_LEN != 0 {
         return None;
     }
+
     let elements = bytes
-        .chunks(GROUP_ELEMENT_BYTES_LEN)
+        .chunks(GroupElement::BYTES_LEN)
         .map(gang::GroupElement::from_bytes)
         .collect::<Option<Vec<_>>>()?;
     Some(elements)
@@ -192,9 +225,8 @@ pub fn result(
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
 ) -> TallyResult {
-    let options = tally_state.r2s.len();
-    let ris =
-        (0..options).map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
+    let ris = (0..tally_state.r2s.len())
+        .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
 
     let mut r_results = tally_state
         .r2s
@@ -207,7 +239,7 @@ pub fn result(
     }
 
     let mut votes = Vec::new();
-    let mut vote_left = max_votes;
+    let mut votes_left = max_votes;
 
     let table = gang::GroupElement::table(table_size);
     for r in r_results {
@@ -228,7 +260,7 @@ pub fn result(
                 let mut e = &table[table_size - 1] + &gen;
                 let mut i = table_size as u64 + 1;
                 loop {
-                    if i >= vote_left {
+                    if i >= votes_left {
                         break;
                     }
 
@@ -245,7 +277,7 @@ pub fn result(
         match found {
             None => votes.push(None),
             Some(votes_found) => {
-                vote_left -= votes_found;
+                votes_left -= votes_found;
                 votes.push(Some(votes_found))
             }
         }
@@ -284,7 +316,7 @@ mod tests {
 
         println!("tallying");
 
-        let mut tally = Tally::new(vote_options);
+        let mut tally = EncryptedTally::new(vote_options);
         tally.add(&e1.0, 6);
         tally.add(&e2.0, 5);
         tally.add(&e3.0, 4);
@@ -327,20 +359,21 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let e1 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
+        let (e1, e1_proof) = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
         let e2 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 1));
         let e3 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
 
+        assert!(verify_vote(&ek, &e1, &e1_proof));
         println!("tallying");
 
-        let mut tally = Tally::new(vote_options);
-        tally.add(&e1.0, 1);
+        let mut tally = EncryptedTally::new(vote_options);
+        tally.add(&e1, 1);
         tally.add(&e2.0, 3);
         tally.add(&e3.0, 4);
 
-        let (ts, tds1) = tally.finish(m1.secret_key());
+        let (_, tds1) = tally.finish(m1.secret_key());
         let (_, tds2) = tally.finish(m2.secret_key());
-        let (_, tds3) = tally.finish(m3.secret_key());
+        let (ts, tds3) = tally.finish(m3.secret_key());
 
         let max_votes = 20;
 

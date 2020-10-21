@@ -47,13 +47,7 @@ pub fn vote_cast_action_transfer_to_rewards() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
-            &alice,
-            &vote_plan,
-            &proposal.id(),
-            favorable.clone(),
-            &mut ledger,
-        )
+        .cast_vote_public(&alice, &vote_plan, &proposal.id(), favorable, &mut ledger)
         .unwrap();
     alice.confirm_transaction();
 
@@ -63,7 +57,7 @@ pub fn vote_cast_action_transfer_to_rewards() {
     });
 
     controller
-        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .tally_vote_public(&alice, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -73,7 +67,7 @@ pub fn vote_cast_action_transfer_to_rewards() {
 
     ledger.apply_protocol_changes().unwrap();
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("rewards pot is increased")
         .pots()
         .has_remaining_rewards_equals_to(&Value(1100));
@@ -109,13 +103,7 @@ pub fn vote_cast_action_action_parameters_no_op() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
-            &alice,
-            &vote_plan,
-            &proposal.id(),
-            favorable.clone(),
-            &mut ledger,
-        )
+        .cast_vote_public(&alice, &vote_plan, &proposal.id(), favorable, &mut ledger)
         .unwrap();
     alice.confirm_transaction();
 
@@ -125,7 +113,7 @@ pub fn vote_cast_action_action_parameters_no_op() {
     });
 
     controller
-        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .tally_vote_public(&alice, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -135,7 +123,7 @@ pub fn vote_cast_action_action_parameters_no_op() {
 
     ledger.apply_protocol_changes().unwrap();
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("rewards pot is increased")
         .pots()
         .has_remaining_rewards_equals_to(&Value(1000));
@@ -181,23 +169,11 @@ pub fn vote_cast_tally_50_percent() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
-            &alice,
-            &vote_plan,
-            &proposal.id(),
-            favorable.clone(),
-            &mut ledger,
-        )
+        .cast_vote_public(&alice, &vote_plan, &proposal.id(), favorable, &mut ledger)
         .unwrap();
     alice.confirm_transaction();
     controller
-        .cast_vote(
-            &bob,
-            &vote_plan,
-            &proposal.id(),
-            rejection.clone(),
-            &mut ledger,
-        )
+        .cast_vote_public(&bob, &vote_plan, &proposal.id(), rejection, &mut ledger)
         .unwrap();
     bob.confirm_transaction();
 
@@ -207,7 +183,7 @@ pub fn vote_cast_tally_50_percent() {
     });
 
     controller
-        .tally_vote(&bob, &vote_plan, &mut ledger)
+        .tally_vote_public(&bob, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -217,7 +193,7 @@ pub fn vote_cast_tally_50_percent() {
 
     ledger.apply_protocol_changes().unwrap();
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("rewards pot is increased")
         .pots()
         .has_remaining_rewards_equals_to(&Value(1100));
@@ -263,23 +239,11 @@ pub fn vote_cast_tally_50_percent_unsuccesful() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
-            &alice,
-            &vote_plan,
-            &proposal.id(),
-            rejection.clone(),
-            &mut ledger,
-        )
+        .cast_vote_public(&alice, &vote_plan, &proposal.id(), rejection, &mut ledger)
         .unwrap();
     alice.confirm_transaction();
     controller
-        .cast_vote(
-            &bob,
-            &vote_plan,
-            &proposal.id(),
-            rejection.clone(),
-            &mut ledger,
-        )
+        .cast_vote_public(&bob, &vote_plan, &proposal.id(), rejection, &mut ledger)
         .unwrap();
     bob.confirm_transaction();
 
@@ -289,7 +253,7 @@ pub fn vote_cast_tally_50_percent_unsuccesful() {
     });
 
     controller
-        .tally_vote(&bob, &vote_plan, &mut ledger)
+        .tally_vote_public(&bob, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -299,7 +263,7 @@ pub fn vote_cast_tally_50_percent_unsuccesful() {
 
     ledger.apply_protocol_changes().unwrap();
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("rewards pot is increased")
         .pots()
         .has_remaining_rewards_equals_to(&Value(1000));
@@ -362,22 +326,10 @@ pub fn vote_cast_by_non_committe_member() {
     let proposal = vote_plan.proposal(0);
 
     controller
-        .cast_vote(
-            &bob,
-            &vote_plan,
-            &proposal.id(),
-            favorable.clone(),
-            &mut ledger,
-        )
+        .cast_vote_public(&bob, &vote_plan, &proposal.id(), favorable, &mut ledger)
         .unwrap();
     assert!(controller
-        .cast_vote(
-            &bob,
-            &vote_plan,
-            &proposal.id(),
-            rejection.clone(),
-            &mut ledger
-        )
+        .cast_vote_public(&bob, &vote_plan, &proposal.id(), rejection, &mut ledger,)
         .is_err());
 }
 
@@ -428,13 +380,7 @@ pub fn votes_with_fees() {
     let total_ada_before = ledger.total_funds();
 
     controller
-        .cast_vote(
-            &alice,
-            &vote_plan,
-            &proposal.id(),
-            favorable.clone(),
-            &mut ledger,
-        )
+        .cast_vote_public(&alice, &vote_plan, &proposal.id(), favorable, &mut ledger)
         .unwrap();
 
     alice.confirm_transaction();
@@ -445,7 +391,7 @@ pub fn votes_with_fees() {
     });
 
     controller
-        .tally_vote(&alice, &vote_plan, &mut ledger)
+        .tally_vote_public(&alice, &vote_plan, &mut ledger)
         .unwrap();
 
     ledger.fast_forward_to(BlockDate {
@@ -462,7 +408,7 @@ pub fn votes_with_fees() {
 
     let expected_ada_after = total_ada_before.saturating_add(Value(rewards_add));
 
-    LedgerStateVerifier::new(ledger.clone().into())
+    LedgerStateVerifier::new(ledger.into())
         .info("total value is the same")
         .total_value_is(&expected_ada_after);
 }

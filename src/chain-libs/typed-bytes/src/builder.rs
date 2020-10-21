@@ -65,31 +65,54 @@ impl<T> ByteBuilder<T> {
         l.fold(self, f)
     }
 
-    /// write an iterator of maximum 256 items using the closure F
+    /// Write an iterator of maximum 255 items using the closure `f`.
     ///
-    /// note that the buffer contains a byte to represent the size
-    /// of the list
+    /// Note that the buffer contains a byte to represent the size
+    /// of the list.
     pub fn iter8<F, I>(self, l: I, f: F) -> Self
     where
-        I: Iterator + ExactSizeIterator,
+        I: IntoIterator,
+        I::IntoIter: ExactSizeIterator,
         F: FnMut(Self, I::Item) -> Self,
     {
-        assert!(l.len() < 256);
-        let bb = self.u8(l.len() as u8);
+        let l = l.into_iter();
+        let len = l.len();
+        assert!(len <= u8::MAX as usize);
+        let bb = self.u8(len as u8);
         l.fold(bb, f)
     }
 
-    /// write an iterator of maximum 2^16 items using the closure F
+    /// Write an iterator of maximum 2^16 - 1 items using the closure `f`.
     ///
-    /// note that the buffer contains 2 bytes to represent the size
-    /// of the list
+    /// Note that the buffer contains 2 bytes to represent the size
+    /// of the list.
     pub fn iter16<F, I>(self, l: I, f: F) -> Self
     where
-        I: Iterator + ExactSizeIterator,
+        I: IntoIterator,
+        I::IntoIter: ExactSizeIterator,
         F: FnMut(Self, I::Item) -> Self,
     {
-        assert!(l.len() < 65536);
-        let bb = self.u16(l.len() as u16);
+        let l = l.into_iter();
+        let len = l.len();
+        assert!(len <= u16::MAX as usize);
+        let bb = self.u16(len as u16);
+        l.fold(bb, f)
+    }
+
+    /// Write an iterator of maximum 2^32 - 1 items using the closure `f`.
+    ///
+    /// Note that the buffer contains 4 bytes to represent the size
+    /// of the list.
+    pub fn iter32<F, I>(self, l: I, f: F) -> Self
+    where
+        I: IntoIterator,
+        I::IntoIter: ExactSizeIterator,
+        F: FnMut(Self, I::Item) -> Self,
+    {
+        let l = l.into_iter();
+        let len = l.len();
+        assert!(len <= u32::MAX as usize);
+        let bb = self.u32(len as u32);
         l.fold(bb, f)
     }
 

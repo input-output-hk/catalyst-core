@@ -221,6 +221,53 @@ public class WalletTest {
     }
 
     @Test
+    public void privateVoteCast() throws IOException {
+        final long walletPtr = Wallet.recover(
+                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+
+        final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
+
+        final String hexKey = "04fa1f7356482c094a11420cba35bd3ff76d184b8002f06cfcc9e06867d359eee24c2445958377ddc5e9f978178c01e3003d5c3322b77b6e251aa2699a35ba887e";
+        final byte[] encryptingKey = hexStringToByteArray(hexKey);
+
+        final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
+
+        final byte[] id = new byte[Proposal.ID_SIZE];
+        final long proposalPtr = Proposal.withPrivatePayload(id, 0, 3, encryptingKey);
+
+        Wallet.setState(walletPtr, 10000000, 0);
+        try {
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+
+            final long before = Wallet.pendingTransactions(walletPtr);
+
+            final int sizeBefore = PendingTransactions.len(before);
+
+            assertEquals(sizeBefore, 1);
+
+            final byte[] fragmentId = PendingTransactions.get(before, 0);
+
+            PendingTransactions.delete(before);
+
+            Wallet.confirmTransaction(walletPtr, fragmentId);
+
+            final long after = Wallet.pendingTransactions(walletPtr);
+
+            final int sizeAfter = PendingTransactions.len(after);
+
+            assertEquals(sizeAfter, 0);
+
+            PendingTransactions.delete(after);
+        } catch (final Exception e) {
+            Proposal.delete(proposalPtr);
+            Settings.delete(settingsPtr);
+            Wallet.delete(walletPtr);
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Test
     public void testDecrypt() throws IOException {
         final String hex = "017b938f189c7d1d9e4c75b02710a9c9a6b287b6ca55d624001828cba8aeb3a9d4c2a86261016693c7e05fb281f012fb2d7af44484da09c4d7b2dea6585965a4cc208d2b2fb1aa5ba6338520b3aa9c4f908fdd62816ebe01f496f8b4fc0344892fe245db072d054c3dedff926320589231298e216506c1f6858c5dba915c959a98ba0d0e3995aef91d4216b5172dedf2736b451d452916b81532eb7f8487e9f88a2de4f9261d0a0ddf11698796ad8b6894908024ebc4be9bba985ef9c0f2f71afce0b37520c66938313f6bf81b3fc24f5c93d216cd2528dabc716b8093359fda84db4e58d876d215713f2db000";
 

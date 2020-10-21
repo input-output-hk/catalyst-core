@@ -8,5 +8,7 @@ public class Proposal {
 
     public native static long withPublicPayload(byte [] votePlanId, int index, int numChoices);
 
+    public native static long withPrivatePayload(byte [] votePlanId, int index, int numChoices, byte [] encryptionKey);
+
     public native static void delete(long proposalPtr);
 }

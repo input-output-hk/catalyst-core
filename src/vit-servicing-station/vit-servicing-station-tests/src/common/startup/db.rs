@@ -69,11 +69,6 @@ impl DbBuilder {
         self
     }
 
-    fn create_db_if_not_exists(&self, db_path: &str) -> Result<(), DbBuilderError> {
-        rusqlite::Connection::open(db_path).map_err(DbBuilderError::CannotCreateDatabase)?;
-        Ok(())
-    }
-
     fn do_migration(
         &self,
         connection: &SqliteConnection,
@@ -125,9 +120,7 @@ impl DbBuilder {
             .ok_or_else(|| DbBuilderError::CannotExtractTempPath)?;
         println!("Building db in {:?}...", db_path);
 
-        self.create_db_if_not_exists(db_path)?;
-
-        let connection = SqliteConnection::establish(db_path).unwrap();
+        let connection = SqliteConnection::establish(db_path)?;
         self.try_do_migration(&connection)?;
         self.try_insert_tokens(&connection)?;
         self.try_insert_funds(&connection)?;
@@ -147,7 +140,7 @@ pub enum DbBuilderError {
     #[error("cannot insert data")]
     DbInserterError(#[from] DbInserterError),
     #[error("Cannot open or create database")]
-    CannotCreateDatabase(#[from] rusqlite::Error),
+    CannotCreateDatabase(#[from] diesel::ConnectionError),
     #[error("Cannot initialize on temp directory")]
     CannotExtractTempPath,
     #[error("migration errors")]

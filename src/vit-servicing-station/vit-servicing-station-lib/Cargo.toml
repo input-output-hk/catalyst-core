@@ -30,7 +30,7 @@ warp = { version = "0.2", features = ["tls"] }
 # This solves building on windows when sqlite3lib is not installed or missing in the `$PATH`
 # as it happens with the github actions pipeline associated to this project.
 [target.'cfg(windows)'.dependencies]
-libsqlite3-sys =  { version = "0.18.0", features = ["bundled"] }
+libsqlite3-sys =  { version = "0.9.3", features = ["bundled"] }
 
 [dev-dependencies]
 tempfile = "3"

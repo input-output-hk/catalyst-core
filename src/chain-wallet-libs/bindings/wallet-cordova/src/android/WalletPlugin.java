@@ -358,13 +358,15 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
-    private void proposalNewPrivate(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+    private void proposalNewPrivate(final CordovaArgs args, final CallbackContext callbackContext)
+            throws JSONException {
         final byte[] votePlanId = args.getArrayBuffer(0);
         final Integer index = args.getInt(1);
         final Integer numChoices = args.getInt(2);
+        final byte[] encryptingVoteKey = args.getArrayBuffer(3);
 
         try {
-            long ptr = Proposal.withPublicPayload(votePlanId, index, numChoices);
+            long ptr = Proposal.withPrivatePayload(votePlanId, index, numChoices, encryptingVoteKey);
             callbackContext.success(Long.toString(ptr));
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());

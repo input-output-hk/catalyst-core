@@ -104,6 +104,7 @@ impl ZWV {
     }
 }
 
+#[allow(clippy::len_without_is_empty)]
 impl Proof {
     /// Constructs the proof structure from constituent parts.
     ///

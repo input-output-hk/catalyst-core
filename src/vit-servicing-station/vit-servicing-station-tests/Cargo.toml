@@ -33,7 +33,7 @@ fake = { version = "2.2", features=['chrono','http']}
 
 #diesel doesn't have an way to create empty db
 #rustqlite is used for that purpose
-rusqlite = { version = "0.23.1", features = ["bundled"] }
+rusqlite = { version = "0.14", features = ["bundled"] }
 
 [dependencies.reqwest]
 version = "0.10.6"

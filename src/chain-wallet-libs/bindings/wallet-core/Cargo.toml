@@ -25,3 +25,6 @@ thiserror = {version = "1.0.13", default-features = false}
 wallet = {path = "../../wallet"}
 
 rand = { version = "0.7.3", features = ["getrandom"] }
+
+[dev-dependencies]
+rand_chacha = "0.2.2"

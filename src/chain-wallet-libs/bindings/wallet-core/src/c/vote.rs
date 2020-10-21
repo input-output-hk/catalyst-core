@@ -5,6 +5,7 @@ use crate::{
 };
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options as VoteOptions};
 use std::convert::TryFrom;
+use thiserror::Error;
 pub use wallet::Settings;
 
 const ENCRYPTION_VOTE_KEY_SIZE: usize = 65;
@@ -18,6 +19,10 @@ const ENCRYPTION_VOTE_KEY_SIZE: usize = 65;
 pub struct ProposalPublic;
 #[repr(transparent)]
 pub struct ProposalPrivate(pub *const u8);
+
+#[derive(Error, Debug)]
+#[error("invalid binary format")]
+pub struct InvalidEncryptionKey;
 
 pub trait ToPayload {
     fn to_payload(self) -> Result<PayloadTypeConfig, Error>;
@@ -37,9 +42,12 @@ impl ToPayload for ProposalPrivate {
             unsafe {
                 let encryption_vote_key =
                     std::slice::from_raw_parts(self.0, ENCRYPTION_VOTE_KEY_SIZE);
-                let encryption_vote_key =
-                    EncryptingVoteKey::from_bytes(encryption_vote_key).unwrap();
-                Ok(PayloadTypeConfig::Private(encryption_vote_key))
+
+                EncryptingVoteKey::from_bytes(encryption_vote_key)
+                    .ok_or_else(|| {
+                        Error::invalid_input("encrypting_vote_key").with(InvalidEncryptionKey)
+                    })
+                    .map(PayloadTypeConfig::Private)
             }
         }
     }
@@ -86,4 +94,32 @@ pub unsafe fn proposal_new<P: ToPayload>(
     *non_null_mut!(proposal_out) = Box::into_raw(Box::new(proposal));
 
     AbiResult::success()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cast_private_vote() {
+        use chain_vote::gargamel;
+        use rand::SeedableRng;
+        let vote_plan_id = [0u8; crate::vote::VOTE_PLAN_ID_LENGTH];
+        let mut rng = rand_chacha::ChaCha20Rng::from_seed([1u8; 32]);
+        let sk = gargamel::SecretKey::generate(&mut rng);
+        let pk = gargamel::Keypair::from_secretkey(sk).public_key;
+
+        let encrypting_vote_key = pk.to_bytes();
+        let mut proposal: ProposalPtr = std::ptr::null_mut();
+        unsafe {
+            let result = proposal_new(
+                vote_plan_id.as_ptr(),
+                0,
+                2,
+                ProposalPrivate(encrypting_vote_key.as_ptr()),
+                (&mut proposal) as *mut ProposalPtr,
+            );
+            assert!(result.is_ok());
+        }
+    }
 }

@@ -1,10 +1,14 @@
 use chain_impl_mockchain::{transaction::UtxoPointer, value::Value};
 use chain_path_derivation::DerivationPath;
 use hdkeygen::Key;
-use im_rc::{HashMap, HashSet, OrdMap};
+use im_rc::{HashSet, OrdMap};
+use imhamt::Hamt;
+use std::collections::hash_map::DefaultHasher;
 use std::rc::Rc;
 
 type UTxO = Rc<UtxoPointer>;
+
+type HashMap<K, V> = Hamt<DefaultHasher, K, V>;
 
 pub struct UtxoGroup<KEY> {
     by_value: OrdMap<Value, HashSet<UTxO>>,
@@ -150,7 +154,7 @@ impl<KEY: Groupable> UtxoStore<KEY> {
     /// this allows optimizing the search of inputs and to favors using
     /// inputs of the same key to preserve privacy
     pub fn groups(&self) -> impl Iterator<Item = &GroupRef<KEY>> {
-        self.by_derivation_path.values()
+        self.by_derivation_path.iter().map(|(_, v)| v)
     }
 
     /// get the UTxO, not grouped, ordered by value
@@ -160,7 +164,7 @@ impl<KEY: Groupable> UtxoStore<KEY> {
 
     /// lookup the UTxO group (if any) associated to the given derivation path
     pub fn group(&self, dp: &<KEY as Groupable>::Key) -> Option<&GroupRef<KEY>> {
-        self.by_derivation_path.get(dp)
+        self.by_derivation_path.lookup(dp)
     }
 
     /// create a new UTxOStore with the added value
@@ -170,31 +174,31 @@ impl<KEY: Groupable> UtxoStore<KEY> {
     /// different forks
     #[must_use = "function does not modify the internal state, the returned value is the new state"]
     pub fn add(&self, utxo: UtxoPointer, key: KEY) -> Self {
-        use im_rc::hashmap::Entry::*;
-
         let mut new = self.clone();
         let utxo = Rc::new(utxo);
         let path = key.group_key();
 
         new.total_value = new.total_value.saturating_add(utxo.value);
-        let group = match new.by_derivation_path.entry(path) {
-            Occupied(mut occupied) => {
-                let group = occupied.get().clone();
-                let group = Rc::new(group.add(Rc::clone(&utxo)));
-                *occupied.get_mut() = Rc::clone(&group);
-                group
-            }
-            Vacant(vacant) => {
+
+        new.by_derivation_path = new.by_derivation_path.insert_or_update_simple(
+            path.clone(),
+            {
                 let group = UtxoGroup::new(key);
                 let group = group.add(Rc::clone(&utxo));
 
-                let group = Rc::new(group);
-                vacant.insert(Rc::clone(&group));
+                Rc::new(group)
+            },
+            |group| Some(Rc::new(group.add(Rc::clone(&utxo)))),
+        );
 
-                group
-            }
-        };
-        new.by_utxo.insert(Rc::clone(&utxo), group);
+        // XXX: could be optimized with a mut Option
+        let group = new.by_derivation_path.lookup(&path).unwrap().clone();
+
+        new.by_utxo = new
+            .by_utxo
+            .insert(Rc::clone(&utxo), group)
+            .unwrap_or(new.by_utxo);
+
         new.by_value.entry(utxo.value).or_default().insert(utxo);
 
         new
@@ -208,11 +212,23 @@ impl<KEY: Groupable> UtxoStore<KEY> {
     pub fn remove(&self, utxo: &UtxoPointer) -> Option<Self> {
         let mut new = self.clone();
 
-        let group = new.by_utxo.remove(utxo)?;
-        let path = group.key.group_key();
-        let (utxo, new_group) = new.by_derivation_path.get(&path)?.remove(utxo)?;
+        let utxo = Rc::new(*utxo);
 
-        *new.by_derivation_path.get_mut(&path).unwrap() = Rc::new(new_group);
+        let group = new.by_utxo.lookup(&utxo)?;
+        let path = group.key.group_key();
+
+        new.by_utxo.remove(&Rc::new(*utxo)).ok()?;
+
+        new.by_derivation_path = new
+            .by_derivation_path
+            .update::<_, std::convert::Infallible>(&path, |group| {
+                if let Some((_utxo, group)) = group.remove(&utxo) {
+                    Ok(Some(Rc::new(group)))
+                } else {
+                    Ok(Some(group.clone()))
+                }
+            })
+            .unwrap();
 
         new.by_value.entry(utxo.value).and_modify(|set| {
             set.remove(&utxo);
@@ -227,7 +243,9 @@ impl<KEY: Groupable> UtxoStore<KEY> {
     }
 
     pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<KEY>> {
-        self.by_utxo.get(utxo).map(|group| Rc::clone(&group.key))
+        self.by_utxo
+            .lookup(&Rc::new(utxo.clone()))
+            .map(|group| Rc::clone(&group.key))
     }
 }
 

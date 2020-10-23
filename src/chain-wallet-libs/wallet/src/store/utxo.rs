@@ -255,10 +255,6 @@ impl<KEY: Groupable> UtxoStore<KEY> {
             })
             .unwrap();
 
-        // new.by_value.entry(utxo.value).and_modify(|set| {
-        //     *set = set.remove(&utxo);
-        // });
-
         new.by_value = new
             .by_value
             .update::<_, std::convert::Infallible>(&utxo.value, |set| Ok(Some(set.remove(&utxo))))

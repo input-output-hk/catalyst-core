@@ -239,9 +239,7 @@ impl<K: Groupable> UtxoStore<K> {
     pub fn remove(&self, utxo: &UtxoPointer) -> Option<Self> {
         let mut new = self.clone();
 
-        let utxo = Rc::new(*utxo);
-
-        let group = new.by_utxo.lookup(&utxo)?;
+        let group = new.by_utxo.lookup(utxo)?;
         let path = group.key.group_key();
 
         new.by_utxo.remove(&Rc::new(*utxo)).ok()?;
@@ -255,7 +253,9 @@ impl<K: Groupable> UtxoStore<K> {
 
         new.by_value = new
             .by_value
-            .update::<_, std::convert::Infallible>(&utxo.value, |set| Ok(Some(set.remove(&utxo))))
+            .update::<_, std::convert::Infallible>(&utxo.value, |set| {
+                Ok(Some(set.remove(&Rc::new(utxo.clone()))))
+            })
             .unwrap();
 
         new.total_value = new

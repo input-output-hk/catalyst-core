@@ -3,6 +3,7 @@ use super::super::hash::{HashedKey, LevelIndex};
 use super::super::helper;
 use super::super::operation::*;
 use super::super::sharedref::SharedRef;
+use std::borrow::Borrow;
 
 use std::slice;
 
@@ -305,11 +306,11 @@ pub enum LookupRet<'a, K, V> {
     ContinueIn(&'a Node<K, V>),
 }
 
-pub fn lookup_one<'a, K: PartialEq, V>(
+pub fn lookup_one<'a, Q: PartialEq, K: PartialEq + Borrow<Q>, V>(
     node: &'a Node<K, V>,
     h: &HashedKey,
     lvl: usize,
-    k: &K,
+    k: &Q,
 ) -> LookupRet<'a, K, V> {
     let level_hash = h.level_index(lvl);
     let idx = node.bitmap.get_index_sparse(level_hash);
@@ -318,7 +319,7 @@ pub fn lookup_one<'a, K: PartialEq, V>(
     } else {
         match &(node.get_child(idx)).as_ref() {
             Entry::Leaf(lh, lk, lv) => {
-                if lh == h && lk == k {
+                if lh == h && lk.borrow() == k {
                     LookupRet::Found(lv)
                 } else {
                     LookupRet::NotFound
@@ -328,7 +329,7 @@ pub fn lookup_one<'a, K: PartialEq, V>(
                 if lh != h {
                     LookupRet::NotFound
                 } else {
-                    match col.0.iter().find(|(lk, _)| lk == k) {
+                    match col.0.iter().find(|(lk, _)| lk.borrow() == k) {
                         None => LookupRet::NotFound,
                         Some(lkv) => LookupRet::Found(&lkv.1),
                     }

@@ -4,6 +4,7 @@ use super::node::{
     update_rec, Entry, LookupRet, Node, NodeIter,
 };
 pub use super::operation::{InsertError, RemoveError, ReplaceError, UpdateError};
+use std::borrow::Borrow;
 use std::iter::FromIterator;
 use std::marker::PhantomData;
 use std::mem::swap;
@@ -177,8 +178,12 @@ impl<H: Hasher + Default, K: Eq + Hash + Clone, V: Clone> Hamt<H, K, V> {
 
 impl<H: Hasher + Default, K: Hash + Eq, V> Hamt<H, K, V> {
     /// Try to get the element related to key K
-    pub fn lookup(&self, k: &K) -> Option<&V> {
-        let h = HashedKey::compute(self.hasher, &k);
+    pub fn lookup<Q>(&self, k: &Q) -> Option<&V>
+    where
+        K: Borrow<Q>,
+        Q: Hash + PartialEq,
+    {
+        let h = HashedKey::compute(self.hasher, k.borrow());
         let mut n = &self.root;
         let mut lvl = 0;
         loop {
@@ -193,7 +198,10 @@ impl<H: Hasher + Default, K: Hash + Eq, V> Hamt<H, K, V> {
         }
     }
     /// Check if the key is contained into the HAMT
-    pub fn contains_key(&self, k: &K) -> bool {
+    pub fn contains_key<Q: Hash + PartialEq>(&self, k: &Q) -> bool
+    where
+        K: Borrow<Q>,
+    {
         self.lookup(k).map_or_else(|| false, |_| true)
     }
     pub fn iter(&self) -> HamtIter<K, V> {

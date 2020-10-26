@@ -129,8 +129,6 @@ impl<K> UtxoGroup<K> {
     }
 
     fn remove(&self, utxo: &UtxoPointer) -> Self {
-        // let mut new = self.clone();
-
         let Self {
             by_value,
             mut total_value,

@@ -1,18 +1,26 @@
 use chain_impl_mockchain::{transaction::UtxoPointer, value::Value};
 use chain_path_derivation::DerivationPath;
 use hdkeygen::Key;
-use im_rc::{HashMap, HashSet, OrdMap};
-use std::{cell::RefCell, rc::Rc};
+use imhamt::Hamt;
+use itertools::Itertools as _;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hash;
+use std::rc::Rc;
 
 type UTxO = Rc<UtxoPointer>;
 
-pub struct UtxoGroup<KEY> {
-    by_value: OrdMap<Value, HashSet<UTxO>>,
+type HashMap<K, V> = Hamt<DefaultHasher, K, V>;
+
+#[derive(Clone)]
+struct HashSet<T: Hash + PartialEq + Eq + Clone>(HashMap<T, ()>);
+
+pub struct UtxoGroup<K> {
+    by_value: HashMap<Value, HashSet<UTxO>>,
     total_value: Value,
-    key: Rc<KEY>,
+    key: Rc<K>,
 }
 
-type GroupRef<KEY> = Rc<RefCell<UtxoGroup<KEY>>>;
+type GroupRef<K> = Rc<UtxoGroup<K>>;
 
 /// A UTxO store that can be cheaply updated/cloned
 ///
@@ -35,10 +43,10 @@ type GroupRef<KEY> = Rc<RefCell<UtxoGroup<KEY>>>;
 /// UTxO Stores. For larger UTxO stores it is more interesting to use a different
 /// data structure, tuned for the need.
 ///
-pub struct UtxoStore<KEY: Groupable> {
-    by_utxo: HashMap<UTxO, GroupRef<KEY>>,
-    by_derivation_path: HashMap<<KEY as Groupable>::Key, GroupRef<KEY>>,
-    by_value: OrdMap<Value, HashSet<UTxO>>,
+pub struct UtxoStore<K: Groupable> {
+    by_utxo: HashMap<UTxO, GroupRef<K>>,
+    by_derivation_path: HashMap<<K as Groupable>::Key, GroupRef<K>>,
+    by_value: HashMap<Value, HashSet<UTxO>>,
 
     total_value: Value,
 }
@@ -67,22 +75,26 @@ impl Groupable for chain_crypto::SecretKey<chain_crypto::Ed25519Extended> {
     }
 }
 
-impl<KEY> UtxoGroup<KEY> {
-    fn new(key: KEY) -> Self {
+impl<K> UtxoGroup<K> {
+    fn new(key: K) -> Self {
         Self {
-            by_value: OrdMap::new(),
+            by_value: HashMap::new(),
             total_value: Value::zero(),
             key: Rc::new(key),
         }
     }
 
-    pub fn key(&self) -> &Rc<KEY> {
+    pub fn key(&self) -> &Rc<K> {
         &self.key
     }
 
     /// utxos already ordered by value
     pub fn utxos(&self) -> impl Iterator<Item = &UTxO> {
-        self.by_value.values().flatten()
+        self.by_value
+            .iter()
+            .sorted_by_key(|x| x.0)
+            .map(|(_k, set)| set.iter())
+            .flatten()
     }
 
     /// total value of the given group
@@ -90,37 +102,61 @@ impl<KEY> UtxoGroup<KEY> {
         self.total_value
     }
 
-    fn add(&mut self, utxo: UTxO) {
-        self.total_value = self.total_value.saturating_add(utxo.value);
-        self.by_value.entry(utxo.value).or_default().insert(utxo);
+    fn add(&self, utxo: UTxO) -> Self {
+        let Self {
+            total_value,
+            mut by_value,
+            key,
+        } = self.clone();
+
+        let total_value = total_value.saturating_add(utxo.value);
+
+        by_value = by_value.insert_or_update_simple(
+            utxo.value,
+            {
+                let set = HashSet::new();
+                let set = set.insert(utxo.clone());
+                set
+            },
+            |old| Some(old.insert(utxo.clone())),
+        );
+
+        Self {
+            total_value,
+            by_value,
+            key,
+        }
     }
 
-    fn remove(&mut self, utxo: &UtxoPointer) -> Option<UTxO> {
-        use im_rc::ordmap::Entry::*;
+    fn remove(&self, utxo: &UtxoPointer) -> Self {
+        let Self {
+            by_value,
+            mut total_value,
+            key,
+        } = self.clone();
 
-        if let Occupied(mut occupied) = self.by_value.entry(utxo.value) {
-            if let Some(prev) = occupied.get_mut().remove(utxo) {
-                self.total_value = self
-                    .total_value
-                    .checked_sub(prev.value)
+        let by_value = by_value
+            .update::<_, std::convert::Infallible>(&utxo.value, |set| {
+                let new_set = set.remove(utxo);
+
+                total_value = total_value
+                    .checked_sub(utxo.value)
                     .ok()
                     .unwrap_or_else(Value::zero);
 
-                if occupied.get().is_empty() {
-                    occupied.remove();
-                }
+                Ok(Some(new_set))
+            })
+            .unwrap();
 
-                Some(prev)
-            } else {
-                None
-            }
-        } else {
-            None
+        Self {
+            by_value,
+            total_value,
+            key,
         }
     }
 }
 
-impl<KEY: Groupable> UtxoStore<KEY> {
+impl<K: Groupable> UtxoStore<K> {
     pub fn new() -> Self {
         Self::default()
     }
@@ -136,18 +172,22 @@ impl<KEY: Groupable> UtxoStore<KEY> {
     ///
     /// this allows optimizing the search of inputs and to favors using
     /// inputs of the same key to preserve privacy
-    pub fn groups(&self) -> impl Iterator<Item = std::cell::Ref<'_, UtxoGroup<KEY>>> {
-        self.by_derivation_path.values().map(|r| r.borrow())
+    pub fn groups(&self) -> impl Iterator<Item = &GroupRef<K>> {
+        self.by_derivation_path.iter().map(|(_, v)| v)
     }
 
     /// get the UTxO, not grouped, ordered by value
     pub fn utxos(&self) -> impl Iterator<Item = &UTxO> {
-        self.by_value.values().flatten()
+        self.by_value
+            .iter()
+            .sorted_by_key(|x| x.0)
+            .map(|(_, set)| set.iter())
+            .flatten()
     }
 
     /// lookup the UTxO group (if any) associated to the given derivation path
-    pub fn group(&self, dp: &<KEY as Groupable>::Key) -> Option<&GroupRef<KEY>> {
-        self.by_derivation_path.get(dp)
+    pub fn group(&self, dp: &<K as Groupable>::Key) -> Option<&GroupRef<K>> {
+        self.by_derivation_path.lookup(dp)
     }
 
     /// create a new UTxOStore with the added value
@@ -156,31 +196,37 @@ impl<KEY: Groupable> UtxoStore<KEY> {
     /// to a previous state is a rollback happened or in case of managing
     /// different forks
     #[must_use = "function does not modify the internal state, the returned value is the new state"]
-    pub fn add(&self, utxo: UtxoPointer, key: KEY) -> Self {
-        use im_rc::hashmap::Entry::*;
-
+    pub fn add(&self, utxo: UtxoPointer, key: K) -> Self {
         let mut new = self.clone();
         let utxo = Rc::new(utxo);
         let path = key.group_key();
 
         new.total_value = new.total_value.saturating_add(utxo.value);
-        let group = match new.by_derivation_path.entry(path) {
-            Occupied(occupied) => {
-                let group = occupied.get().clone();
-                group.borrow_mut().add(Rc::clone(&utxo));
-                group
-            }
-            Vacant(vacant) => {
-                let group = Rc::new(RefCell::new(UtxoGroup::new(key)));
-                vacant
-                    .insert(group.clone())
-                    .borrow_mut()
-                    .add(Rc::clone(&utxo));
-                group
-            }
-        };
-        new.by_utxo.insert(Rc::clone(&utxo), group);
-        new.by_value.entry(utxo.value).or_default().insert(utxo);
+
+        new.by_derivation_path = new.by_derivation_path.insert_or_update_simple(
+            path.clone(),
+            {
+                let group = UtxoGroup::new(key);
+                let group = group.add(Rc::clone(&utxo));
+
+                Rc::new(group)
+            },
+            |group| Some(Rc::new(group.add(Rc::clone(&utxo)))),
+        );
+
+        // XXX: could be optimized with a mut Option
+        let group = new.by_derivation_path.lookup(&path).unwrap().clone();
+
+        new.by_utxo = new
+            .by_utxo
+            .insert(Rc::clone(&utxo), group)
+            .unwrap_or(new.by_utxo);
+
+        new.by_value = new.by_value.insert_or_update_simple(
+            utxo.value,
+            HashSet::new().insert(utxo.clone()),
+            |old| Some(old.insert(utxo.clone())),
+        );
 
         new
     }
@@ -193,16 +239,25 @@ impl<KEY: Groupable> UtxoStore<KEY> {
     pub fn remove(&self, utxo: &UtxoPointer) -> Option<Self> {
         let mut new = self.clone();
 
-        let group = new.by_utxo.remove(utxo)?;
-        let path = group.borrow().key.group_key();
-        let utxo = new
+        let group = new.by_utxo.lookup(utxo)?;
+        let path = group.key.group_key();
+
+        new.by_utxo.remove(utxo).ok()?;
+
+        new.by_derivation_path = new
             .by_derivation_path
-            .get_mut(&path)?
-            .borrow_mut()
-            .remove(utxo)?;
-        new.by_value.entry(utxo.value).and_modify(|set| {
-            set.remove(&utxo);
-        });
+            .update::<_, std::convert::Infallible>(&path, |group| {
+                Ok(Some(Rc::new(group.remove(utxo))))
+            })
+            .unwrap();
+
+        new.by_value = new
+            .by_value
+            .update::<_, std::convert::Infallible>(&utxo.value, |set| {
+                Ok(Some(set.remove(&Rc::new(utxo.clone()))))
+            })
+            .unwrap();
+
         new.total_value = new
             .total_value
             .checked_sub(utxo.value)
@@ -212,14 +267,12 @@ impl<KEY: Groupable> UtxoStore<KEY> {
         Some(new)
     }
 
-    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<KEY>> {
-        self.by_utxo
-            .get(utxo)
-            .map(|group| Rc::clone(&group.borrow().key))
+    pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Rc<K>> {
+        self.by_utxo.lookup(utxo).map(|group| Rc::clone(&group.key))
     }
 }
 
-impl<KEY> Clone for UtxoGroup<KEY> {
+impl<K> Clone for UtxoGroup<K> {
     fn clone(&self) -> Self {
         Self {
             by_value: self.by_value.clone(),
@@ -229,7 +282,7 @@ impl<KEY> Clone for UtxoGroup<KEY> {
     }
 }
 
-impl<KEY: Groupable> Clone for UtxoStore<KEY> {
+impl<K: Groupable> Clone for UtxoStore<K> {
     fn clone(&self) -> Self {
         Self {
             by_utxo: self.by_utxo.clone(),
@@ -240,69 +293,185 @@ impl<KEY: Groupable> Clone for UtxoStore<KEY> {
     }
 }
 
-impl<KEY: Groupable> Default for UtxoStore<KEY> {
+impl<K: Groupable> Default for UtxoStore<K> {
     fn default() -> Self {
         Self {
             by_utxo: HashMap::new(),
             by_derivation_path: HashMap::new(),
-            by_value: OrdMap::new(),
+            by_value: HashMap::new(),
             total_value: Value::zero(),
         }
     }
 }
 
+impl<T: Hash + PartialEq + Eq + Clone> HashSet<T> {
+    fn new() -> Self {
+        Self(HashMap::new())
+    }
+
+    fn iter(&self) -> impl Iterator<Item = &T> {
+        self.0.iter().map(|(k, _)| k)
+    }
+
+    #[must_use = "this structure is immutable, the new one is returned"]
+    fn insert(&self, element: T) -> Self {
+        Self(self.0.insert(element, ()).unwrap_or(self.0.clone()))
+    }
+
+    #[must_use = "this structure is immutable, the new one is returned"]
+    fn remove<Q>(&self, element: &Q) -> Self
+    where
+        T: std::borrow::Borrow<Q>,
+        Q: Hash + PartialEq + Eq,
+    {
+        Self(self.0.remove(element).unwrap_or(self.0.clone()))
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    /*     use super::{UTxO, UtxoPointer};
-       use quickcheck_macros::*;
-       use std::collections::HashSet;
+    use super::*;
 
-       struct StoreModel {
-           utxos: HashSet<UTxO>,
-       }
+    #[derive(Copy, Clone)]
+    struct MockKey(u8);
 
-       struct GroupModel {}
+    #[derive(Hash, PartialEq, Eq, Copy, Clone)]
+    struct MockGroupKey(u8);
 
-       type Key = u32;
-       type Scheme = u32;
+    impl Groupable for MockKey {
+        type Key = MockGroupKey;
 
-       impl StoreModel {
-           pub fn new() -> Self {
-               Self {}
-           }
+        fn group_key(&self) -> Self::Key {
+            MockGroupKey(self.0)
+        }
+    }
 
-           pub fn total_value(&self) -> Value {
-               self.total_value
-           }
+    fn by_key(key: &MockKey, store: &UtxoStore<MockKey>) -> Vec<UtxoPointer> {
+        let utxos_by_key = store
+            .group(&key.group_key())
+            .unwrap()
+            .utxos()
+            .map(|utxo| **utxo)
+            .collect::<Vec<_>>();
 
-           pub fn groups(&self) -> impl Iterator<Item = GroupModel> {
-               todo!()
-           }
+        utxos_by_key
+    }
 
-           pub fn utxos(&self) -> impl Iterator<Item = &UTxO> {
-               todo!()
-           }
+    #[test]
+    fn test_add_does_not_share_state() {
+        use chain_impl_mockchain::key::Hash;
+        let key = MockKey(0);
+        let store1 = UtxoStore::<MockKey>::new();
 
-           pub fn group(&self, dp: &Scheme) -> Option<GroupModel> {
-               todo!()
-           }
+        let store2 = store1.add(
+            UtxoPointer {
+                transaction_id: Hash::from_bytes([0u8; 32]),
+                output_index: 0u8,
+                value: Value(100),
+            },
+            key,
+        );
 
-           pub fn add(&self, utxo: UtxoPointer, key: Key) -> Self {
-               todo!()
-           }
+        let store3 = store2.add(
+            UtxoPointer {
+                transaction_id: Hash::from_bytes([1u8; 32]),
+                output_index: 1u8,
+                value: Value(100),
+            },
+            key,
+        );
 
-           pub fn remove(&self, utxo: &UtxoPointer) -> Option<Self> {
-               todo!()
-           }
+        let store4 = store2.add(
+            UtxoPointer {
+                transaction_id: Hash::from_bytes([2u8; 32]),
+                output_index: 2u8,
+                value: Value(1000),
+            },
+            key,
+        );
 
-           pub fn get_signing_key(&self, utxo: &UtxoPointer) -> Option<Key> {
-               todo!()
-           }
-       }
+        assert_eq!(store1.utxos().map(|_| 1).sum::<u8>(), 0);
+        assert!(store1.group(&key.group_key()).is_none());
 
-       #[quickcheck]
-       fn prop(xs: Vec<u32>) -> bool {
-           todo!()
-       }
-    */
+        assert_eq!(store2.utxos().map(|_| 1).sum::<u8>(), 1);
+        assert_eq!(by_key(&key, &store2).len(), 1);
+
+        assert_eq!(store3.utxos().map(|_| 1).sum::<u8>(), 2);
+        assert_eq!(by_key(&key, &store3).len(), 2);
+
+        assert_eq!(store4.utxos().map(|_| 1).sum::<u8>(), 2);
+        assert_eq!(by_key(&key, &store4).len(), 2);
+    }
+
+    #[test]
+    fn test_remove_does_not_share_state() {
+        use chain_impl_mockchain::key::Hash;
+        let key = MockKey(0);
+        let store1 = UtxoStore::<MockKey>::new();
+
+        let utxo1 = UtxoPointer {
+            transaction_id: Hash::from_bytes([0u8; 32]),
+            output_index: 0u8,
+            value: Value(100),
+        };
+
+        let utxo2 = UtxoPointer {
+            transaction_id: Hash::from_bytes([1u8; 32]),
+            output_index: 1u8,
+            value: Value(100),
+        };
+
+        let utxo3 = UtxoPointer {
+            transaction_id: Hash::from_bytes([2u8; 32]),
+            output_index: 2u8,
+            value: Value(1000),
+        };
+
+        let store2 = store1.add(utxo1, key);
+
+        let store3 = store2.add(utxo2, key);
+
+        let store4 = store3.add(utxo3, key);
+
+        assert_eq!(store4.utxos().map(|_| 1).sum::<u8>(), 3);
+        assert_eq!(by_key(&key, &store4).len(), 3);
+
+        let minus_2 = store3.remove(&utxo2).unwrap();
+
+        assert!(!minus_2.utxos().any(|utxo| utxo.as_ref() == &utxo2));
+
+        assert_eq!(store4.utxos().map(|_| 1).sum::<u8>(), 3);
+        assert_eq!(by_key(&key, &store4).len(), 3);
+    }
+
+    #[test]
+    fn test_utxos_are_sorted() {
+        use chain_impl_mockchain::key::Hash;
+        let key = MockKey(0);
+        let store1 = UtxoStore::<MockKey>::new();
+
+        let utxo1 = UtxoPointer {
+            transaction_id: Hash::from_bytes([0u8; 32]),
+            output_index: 0u8,
+            value: Value(100),
+        };
+
+        let utxo2 = UtxoPointer {
+            transaction_id: Hash::from_bytes([1u8; 32]),
+            output_index: 1u8,
+            value: Value(300),
+        };
+
+        let utxo3 = UtxoPointer {
+            transaction_id: Hash::from_bytes([2u8; 32]),
+            output_index: 2u8,
+            value: Value(200),
+        };
+
+        let store2 = store1.add(utxo1, key);
+        let store3 = store2.add(utxo2, key);
+        let store4 = store3.add(utxo3, key);
+
+        itertools::assert_equal(store4.utxos().map(|utxo| utxo.value.0), vec![100, 200, 300]);
+    }
 }

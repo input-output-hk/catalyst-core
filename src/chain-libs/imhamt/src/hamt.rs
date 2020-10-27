@@ -56,7 +56,11 @@ impl<H: Hasher + Default, K: Clone + Eq + Hash, V: Clone> Hamt<H, K, V> {
 }
 
 impl<H: Hasher + Default, K: Eq + Hash + Clone, V: PartialEq + Clone> Hamt<H, K, V> {
-    pub fn remove_match(&self, k: &K, v: &V) -> Result<Self, RemoveError> {
+    pub fn remove_match<Q>(&self, k: &Q, v: &V) -> Result<Self, RemoveError>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
         let h = HashedKey::compute(self.hasher, &k);
         let newroot = remove_eq_rec(&self.root, h, 0, k, v)?;
         match newroot {
@@ -70,8 +74,12 @@ impl<H: Hasher + Default, K: Eq + Hash + Clone, V: PartialEq + Clone> Hamt<H, K,
 }
 
 impl<H: Hasher + Default, K: Clone + Eq + Hash, V: Clone> Hamt<H, K, V> {
-    pub fn remove(&self, k: &K) -> Result<Self, RemoveError> {
-        let h = HashedKey::compute(self.hasher, &k);
+    pub fn remove<Q>(&self, k: &Q) -> Result<Self, RemoveError>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        let h = HashedKey::compute(self.hasher, k);
         let newroot = remove_rec(&self.root, h, 0, k)?;
         match newroot {
             None => Ok(Self::new()),
@@ -181,9 +189,9 @@ impl<H: Hasher + Default, K: Hash + Eq, V> Hamt<H, K, V> {
     pub fn lookup<Q>(&self, k: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
-        Q: Hash + PartialEq,
+        Q: Hash + Eq,
     {
-        let h = HashedKey::compute(self.hasher, k.borrow());
+        let h = HashedKey::compute(self.hasher, k);
         let mut n = &self.root;
         let mut lvl = 0;
         loop {
@@ -197,13 +205,16 @@ impl<H: Hasher + Default, K: Hash + Eq, V> Hamt<H, K, V> {
             }
         }
     }
+
     /// Check if the key is contained into the HAMT
-    pub fn contains_key<Q: Hash + PartialEq>(&self, k: &Q) -> bool
+    pub fn contains_key<Q>(&self, k: &Q) -> bool
     where
         K: Borrow<Q>,
+        Q: Hash + Eq,
     {
-        self.lookup(k).map_or_else(|| false, |_| true)
+        self.lookup(k).is_some()
     }
+
     pub fn iter(&self) -> HamtIter<K, V> {
         HamtIter {
             stack: vec![self.root.iter()],

@@ -190,7 +190,7 @@ impl<H: Hasher + Default, K: Hash + Eq, V> Hamt<H, K, V> {
     pub fn lookup<Q>(&self, k: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
-        Q: Hash + PartialEq,
+        Q: Hash + Eq,
     {
         let h = HashedKey::compute(self.hasher, k);
         let mut n = &self.root;
@@ -206,13 +206,16 @@ impl<H: Hasher + Default, K: Hash + Eq, V> Hamt<H, K, V> {
             }
         }
     }
+
     /// Check if the key is contained into the HAMT
-    pub fn contains_key<Q: Hash + PartialEq>(&self, k: &Q) -> bool
+    pub fn contains_key<Q>(&self, k: &Q) -> bool
     where
         K: Borrow<Q>,
+        Q: Hash + Eq,
     {
-        self.lookup(k).map_or_else(|| false, |_| true)
+        self.lookup(k).is_some()
     }
+
     pub fn iter(&self) -> HamtIter<K, V> {
         HamtIter {
             stack: vec![self.root.iter()],

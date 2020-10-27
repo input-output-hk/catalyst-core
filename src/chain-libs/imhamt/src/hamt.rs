@@ -79,7 +79,6 @@ impl<H: Hasher + Default, K: Clone + Eq + Hash, V: Clone> Hamt<H, K, V> {
         K: Borrow<Q>,
         Q: Hash + Eq,
     {
-        let k = k.borrow();
         let h = HashedKey::compute(self.hasher, k);
         let newroot = remove_rec(&self.root, h, 0, k)?;
         match newroot {

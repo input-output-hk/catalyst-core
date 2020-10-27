@@ -137,7 +137,7 @@ impl<K> UtxoGroup<K> {
 
         let by_value = by_value
             .update::<_, std::convert::Infallible>(&utxo.value, |set| {
-                let new_set = set.remove(&Rc::new(utxo.clone()));
+                let new_set = set.remove(utxo);
 
                 total_value = total_value
                     .checked_sub(utxo.value)
@@ -242,12 +242,12 @@ impl<K: Groupable> UtxoStore<K> {
         let group = new.by_utxo.lookup(utxo)?;
         let path = group.key.group_key();
 
-        new.by_utxo.remove(&Rc::new(*utxo)).ok()?;
+        new.by_utxo.remove(utxo).ok()?;
 
         new.by_derivation_path = new
             .by_derivation_path
             .update::<_, std::convert::Infallible>(&path, |group| {
-                Ok(Some(Rc::new(group.remove(&utxo))))
+                Ok(Some(Rc::new(group.remove(utxo))))
             })
             .unwrap();
 
@@ -319,7 +319,11 @@ impl<T: Hash + PartialEq + Eq + Clone> HashSet<T> {
     }
 
     #[must_use = "this structure is immutable, the new one is returned"]
-    fn remove(&self, element: &T) -> Self {
+    fn remove<Q>(&self, element: &Q) -> Self
+    where
+        T: std::borrow::Borrow<Q>,
+        Q: Hash + PartialEq + Eq,
+    {
         Self(self.0.remove(element).unwrap_or(self.0.clone()))
     }
 }

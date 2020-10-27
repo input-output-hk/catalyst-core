@@ -362,14 +362,13 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)PROPOSAL_NEW:(CDVInvokedUrlCommand*)command
+- (void)PROPOSAL_NEW_PUBLIC:(CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;
 
     NSData* vote_plan_id = [command.arguments objectAtIndex:0];
-    NSString* payload_type_raw = [command.arguments objectAtIndex:1];
-    NSString* index_raw = [command.arguments objectAtIndex:2];
-    NSString* num_choices_raw = [command.arguments objectAtIndex:3];
+    NSString* index_raw = [command.arguments objectAtIndex:1];
+    NSString* num_choices_raw = [command.arguments objectAtIndex:2];
 
     if ([vote_plan_id isEqual:[NSNull null]]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
@@ -378,27 +377,57 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         return;
     }
 
-    int32_t payload_type_num = [payload_type_raw intValue];
-    PayloadType payload_type;
-    switch (payload_type_num) {
-        case 1:
-            payload_type = PayloadType_Public;
-            break;
-        default:
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                             messageAsString:@"invalid payload type"];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-            return;
+    uint8_t index = (uint8_t)[index_raw intValue];
+    uint8_t num_choices = (uint8_t)[num_choices_raw intValue];
+
+    ProposalPtr proposal_out_ptr = nil;
+    ErrorPtr result = iohk_jormungandr_vote_proposal_new_public(vote_plan_id.bytes,
+        index,
+        num_choices,
+        &proposal_out_ptr);
+
+    if (result != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(result);
+    } else {
+        pluginResult = [CDVPluginResult
+            resultWithStatus:CDVCommandStatus_OK
+             messageAsString:[NSString stringWithFormat:@"%ld", (uintptr_t)proposal_out_ptr]];
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)PROPOSAL_NEW_PRIVATE:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+
+    NSData* vote_plan_id = [command.arguments objectAtIndex:0];
+    NSString* index_raw = [command.arguments objectAtIndex:1];
+    NSString* num_choices_raw = [command.arguments objectAtIndex:2];
+    NSData* encrypting_key = [command.arguments objectAtIndex:3];
+
+    if ([vote_plan_id isEqual:[NSNull null]]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    if ([encrypting_key isEqual:[NSNull null]]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
     }
 
     uint8_t index = (uint8_t)[index_raw intValue];
     uint8_t num_choices = (uint8_t)[num_choices_raw intValue];
 
     ProposalPtr proposal_out_ptr = nil;
-    ErrorPtr result = iohk_jormungandr_wallet_vote_proposal(vote_plan_id.bytes,
-        payload_type,
+    ErrorPtr result = iohk_jormungandr_vote_proposal_new_private(vote_plan_id.bytes,
         index,
         num_choices,
+        encrypting_key.bytes,
         &proposal_out_ptr);
 
     if (result != nil) {

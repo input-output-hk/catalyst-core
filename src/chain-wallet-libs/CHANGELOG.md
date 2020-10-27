@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+# Added
+
+## Cordova-android | Java | C
+- vote_proposal_new_public
+- vote_proposal_new_private
+
+# Deprecated
+
+- proposal_new: In favour of the specific functions for each case. This
+function takes an enum, which currently only can be used to cast public
+votes (the internal function still uses rust enums, this is only for non-rust
+apis).
+
 ### Added
 
 #### wallet-js

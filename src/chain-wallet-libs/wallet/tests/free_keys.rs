@@ -93,7 +93,7 @@ fn cast_vote() {
     account.confirm(&fragment.hash());
 
     let vote_plan_id: [u8; 32] = hex::decode(
-        "9bc7103b8f391d409175c2fa52ee43b55a6ab0874b7fbd293dec02ffb062cc5a",
+        "4aa30d9df6d2dfdb45725c0de00d1a73394950c8bf3dabc8285f46f1e25e53fa",
     )
     .unwrap()[..]
         .try_into()

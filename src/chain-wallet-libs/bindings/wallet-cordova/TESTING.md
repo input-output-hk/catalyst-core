@@ -6,6 +6,12 @@ The tests use [cordova-plugin-test-framework](https://github.com/apache/cordova-
 
 ## TLDR
 
+In the tests directory, run (it should be possible to automatize this later).
+
+`npx run build`
+
+In a new directory for a test app.
+
 ```sh
 cd $TEST_APP_DIRECTORY 
 cordova create hello com.example.hello HelloWorld

@@ -5,11 +5,11 @@ use std::{
 };
 pub use wallet::Settings as SettingsRust;
 use wallet_core::c::{
-    symmetric_cipher_decrypt, wallet_convert, wallet_convert_ignored,
+    symmetric_cipher_decrypt, vote, wallet_convert, wallet_convert_ignored,
     wallet_convert_transactions_get, wallet_convert_transactions_size, wallet_delete_conversion,
     wallet_delete_error, wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet,
     wallet_id, wallet_import_keys, wallet_recover, wallet_retrieve_funds, wallet_set_state,
-    wallet_total_value, wallet_vote_cast, wallet_vote_proposal,
+    wallet_total_value, wallet_vote_cast,
 };
 use wallet_core::{
     Conversion as ConversionRust, Error as ErrorRust, Proposal as ProposalRust,
@@ -442,18 +442,53 @@ pub extern "C" fn iohk_jormungandr_wallet_set_state(
 /// the pointers are null. Mind not to put random values in or you may see
 /// unexpected behaviors.
 #[no_mangle]
-pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_proposal(
+pub unsafe extern "C" fn iohk_jormungandr_vote_proposal_new_public(
     vote_plan_id: *const u8,
-    payload_type: PayloadType,
     index: u8,
     num_choices: u8,
     proposal_out: *mut ProposalPtr,
 ) -> ErrorPtr {
-    let r = wallet_vote_proposal(
+    let r = vote::proposal_new(
         vote_plan_id,
-        payload_type.into(),
         index,
         num_choices,
+        vote::ProposalPublic,
+        proposal_out as *mut *mut ProposalRust,
+    );
+
+    r.into_c_api() as ErrorPtr
+}
+
+/// build the proposal object
+///
+/// * `vote_encryption_key`: the vote encryption key argument is expected
+/// to be a 65 bytes array
+///
+/// # Errors
+///
+/// This function may fail if:
+///
+/// * `proposal_out` is null.
+/// * `num_choices` is out of the allowed range.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though the function checks if
+/// the pointers are null. Mind not to put random values in or you may see
+/// unexpected behaviors.
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_vote_proposal_new_private(
+    vote_plan_id: *const u8,
+    index: u8,
+    num_choices: u8,
+    vote_encryption_key: *const u8,
+    proposal_out: *mut ProposalPtr,
+) -> ErrorPtr {
+    let r = vote::proposal_new(
+        vote_plan_id,
+        index,
+        num_choices,
+        vote::ProposalPrivate(vote_encryption_key),
         proposal_out as *mut *mut ProposalRust,
     );
 

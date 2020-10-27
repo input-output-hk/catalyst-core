@@ -1,4 +1,3 @@
-use chain_impl_mockchain::vote::PayloadType;
 use jni::objects::{JClass, JObject, JString, JValue};
 use jni::sys::{jbyte, jbyteArray, jint, jlong};
 use jni::JNIEnv;
@@ -511,11 +510,88 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPublicPayloa
 
     let mut proposal = null_mut();
     let r = unsafe {
-        wallet_vote_proposal(
+        vote::proposal_new(
             buffer.as_ptr() as *const u8,
-            PayloadType::Public,
             index,
             num_choices,
+            vote::ProposalPublic,
+            &mut proposal,
+        )
+    };
+
+    if let Some(error) = r.error() {
+        let _ = env.throw(error.to_string());
+    }
+
+    proposal as jlong
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPrivatePayload(
+    env: JNIEnv,
+    _: JClass,
+    vote_plan_id: jbyteArray,
+    index: jint,
+    num_choices: jint,
+    encryption_key: jbyteArray,
+) -> jlong {
+    let id_size = env.get_array_length(vote_plan_id).expect("invalid array");
+
+    let mut buffer = vec![0i8; id_size as usize];
+    env.get_byte_array_region(vote_plan_id, 0, &mut buffer)
+        .expect("invalid byte arrray read");
+
+    let encryption_key = {
+        let array_size = env.get_array_length(encryption_key).expect("invalid array");
+
+        // FIXME: remove magic number
+        if array_size != 65 {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "encryption vote key should be 65 bytes long",
+            );
+
+            return 0;
+        }
+
+        let mut buffer = [0i8; 65];
+        env.get_byte_array_region(encryption_key, 0, &mut buffer)
+            .expect("invalid byte arrray read");
+
+        buffer
+    };
+
+    let index: u8 = match index.try_into() {
+        Ok(index) => index,
+        Err(_) => {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "index should be a number between 0 and 255",
+            );
+
+            return 0;
+        }
+    };
+
+    let num_choices: u8 = match num_choices.try_into() {
+        Ok(index) => index,
+        Err(_) => {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "numChoices should be a number between 0 and 255",
+            );
+
+            return 0;
+        }
+    };
+
+    let mut proposal = null_mut();
+    let r = unsafe {
+        vote::proposal_new(
+            buffer.as_ptr() as *const u8,
+            index,
+            num_choices,
+            vote::ProposalPrivate(encryption_key.as_ptr().cast::<u8>()),
             &mut proposal,
         )
     };

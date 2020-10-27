@@ -56,7 +56,11 @@ impl<H: Hasher + Default, K: Clone + Eq + Hash, V: Clone> Hamt<H, K, V> {
 }
 
 impl<H: Hasher + Default, K: Eq + Hash + Clone, V: PartialEq + Clone> Hamt<H, K, V> {
-    pub fn remove_match(&self, k: &K, v: &V) -> Result<Self, RemoveError> {
+    pub fn remove_match<Q>(&self, k: &Q, v: &V) -> Result<Self, RemoveError>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
         let h = HashedKey::compute(self.hasher, &k);
         let newroot = remove_eq_rec(&self.root, h, 0, k, v)?;
         match newroot {
@@ -70,8 +74,13 @@ impl<H: Hasher + Default, K: Eq + Hash + Clone, V: PartialEq + Clone> Hamt<H, K,
 }
 
 impl<H: Hasher + Default, K: Clone + Eq + Hash, V: Clone> Hamt<H, K, V> {
-    pub fn remove(&self, k: &K) -> Result<Self, RemoveError> {
-        let h = HashedKey::compute(self.hasher, &k);
+    pub fn remove<Q>(&self, k: &Q) -> Result<Self, RemoveError>
+    where
+        K: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        let k = k.borrow();
+        let h = HashedKey::compute(self.hasher, k);
         let newroot = remove_rec(&self.root, h, 0, k)?;
         match newroot {
             None => Ok(Self::new()),
@@ -183,7 +192,7 @@ impl<H: Hasher + Default, K: Hash + Eq, V> Hamt<H, K, V> {
         K: Borrow<Q>,
         Q: Hash + PartialEq,
     {
-        let h = HashedKey::compute(self.hasher, k.borrow());
+        let h = HashedKey::compute(self.hasher, k);
         let mut n = &self.root;
         let mut lvl = 0;
         loop {

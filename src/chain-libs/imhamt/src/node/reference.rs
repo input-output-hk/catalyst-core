@@ -50,11 +50,22 @@ impl<K: Clone + PartialEq, V: Clone> Collision<K, V> {
         }
     }
 
-    fn get_record_and_pos(&self, k: &K) -> Option<(usize, &(K, V))> {
-        self.0.iter().enumerate().find(|(_, (fk, _))| fk == k)
+    fn get_record_and_pos<Q>(&self, k: &Q) -> Option<(usize, &(K, V))>
+    where
+        K: Borrow<Q>,
+        Q: PartialEq,
+    {
+        self.0
+            .iter()
+            .enumerate()
+            .find(|(_, (fk, _))| fk.borrow() == k)
     }
 
-    pub fn remove(&self, h: HashedKey, k: &K) -> Result<Entry<K, V>, RemoveError> {
+    pub fn remove<Q>(&self, h: HashedKey, k: &Q) -> Result<Entry<K, V>, RemoveError>
+    where
+        K: Borrow<Q>,
+        Q: PartialEq,
+    {
         let (pos, _) = self.get_record_and_pos(k).ok_or(RemoveError::KeyNotFound)?;
         if self.0.len() == 2 {
             let to_keep = if pos == 0 { &self.0[1] } else { &self.0[0] };
@@ -65,8 +76,10 @@ impl<K: Clone + PartialEq, V: Clone> Collision<K, V> {
         }
     }
 
-    pub fn remove_match(&self, h: HashedKey, k: &K, v: &V) -> Result<Entry<K, V>, RemoveError>
+    pub fn remove_match<Q>(&self, h: HashedKey, k: &Q, v: &V) -> Result<Entry<K, V>, RemoveError>
     where
+        K: Borrow<Q>,
+        Q: PartialEq,
         V: PartialEq,
     {
         let (pos, _) = self.get_record_and_pos(k).ok_or(RemoveError::KeyNotFound)?;
@@ -341,13 +354,18 @@ pub fn lookup_one<'a, Q: PartialEq, K: PartialEq + Borrow<Q>, V>(
 }
 
 // recursively try to remove a key with an expected equality value v
-pub fn remove_eq_rec<K: PartialEq + Clone, V: PartialEq + Clone>(
+pub fn remove_eq_rec<Q, K, V>(
     node: &Node<K, V>,
     h: HashedKey,
     lvl: usize,
-    k: &K,
+    k: &Q,
     v: &V,
-) -> Result<Option<Node<K, V>>, RemoveError> {
+) -> Result<Option<Node<K, V>>, RemoveError>
+where
+    Q: PartialEq,
+    K: Borrow<Q> + PartialEq + Clone,
+    V: PartialEq + Clone,
+{
     let level_hash = h.level_index(lvl);
     let idx = node.bitmap.get_index_sparse(level_hash);
     if idx.is_not_found() {
@@ -355,7 +373,7 @@ pub fn remove_eq_rec<K: PartialEq + Clone, V: PartialEq + Clone>(
     } else {
         match &(node.get_child(idx)).as_ref() {
             Entry::Leaf(lh, lk, lv) => {
-                if *lh == h && lk == k {
+                if *lh == h && lk.borrow() == k {
                     if lv == v {
                         Ok(node.clear_at(level_hash))
                     } else {
@@ -382,12 +400,17 @@ pub fn remove_eq_rec<K: PartialEq + Clone, V: PartialEq + Clone>(
 }
 
 // recursively try to remove a key
-pub fn remove_rec<K: Clone + PartialEq, V: Clone>(
+pub fn remove_rec<Q, K, V>(
     node: &Node<K, V>,
     h: HashedKey,
     lvl: usize,
-    k: &K,
-) -> Result<Option<Node<K, V>>, RemoveError> {
+    k: &Q,
+) -> Result<Option<Node<K, V>>, RemoveError>
+where
+    Q: PartialEq,
+    K: Borrow<Q> + PartialEq + Clone,
+    V: Clone,
+{
     let level_hash = h.level_index(lvl);
     let idx = node.bitmap.get_index_sparse(level_hash);
     if idx.is_not_found() {
@@ -395,7 +418,7 @@ pub fn remove_rec<K: Clone + PartialEq, V: Clone>(
     } else {
         match &(node.get_child(idx)).as_ref() {
             Entry::Leaf(lh, lk, _) => {
-                if *lh == h && lk == k {
+                if *lh == h && lk.borrow() == k {
                     Ok(node.clear_at(level_hash))
                 } else {
                     Err(RemoveError::KeyNotFound)

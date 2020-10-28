@@ -224,11 +224,70 @@ async function conversionDelete (successCallback, errorCallback, opts) {
 
 async function proposalDelete (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'string') {
-        const conversionPtr = opts[0];
-        (await wasm).Proposal.__wrap(conversionPtr).free();
+        const proposalPtr = opts[0];
+        (await wasm).Proposal.__wrap(proposalPtr).free();
         successCallback();
     } else {
         errorCallback();
+    }
+}
+
+async function walletPendingTransactions (successCallback, errorCallback, opts) {
+    if (opts && typeof (opts[0]) === 'string') {
+        const walletPtr = opts[0];
+        const wallet = (await wasm).Wallet.__wrap(walletPtr);
+        try {
+            const pending = wallet.pending_transactions();
+            successCallback(pending);
+        } catch (err) {
+            errorCallback(err);
+        }
+    }
+}
+
+async function pendingTransactionsSize (successCallback, errorCallback, opts) {
+    if (opts && Array.isArray(opts[0])) {
+        const pending = opts[0];
+        successCallback(pending.length);
+    } else {
+        errorCallback('pending transactions object is noy Array');
+    }
+}
+
+async function pendingTransactionsGet (successCallback, errorCallback, opts) {
+    if (opts && Array.isArray(opts[0])) {
+        const pending = opts[0];
+        const index = opts[1];
+        successCallback(pending[index].to_bytes());
+    } else {
+        errorCallback('pending transactions object is noy Array');
+    }
+}
+
+async function pendingTransactionsDelete (successCallback, errorCallback, opts) {
+    if (opts && Array.isArray(opts[0])) {
+        const pending = opts[0];
+        pending.forEach(fragmentId => {
+            fragmentId.free();
+        });
+        successCallback(pending.length);
+    } else {
+        errorCallback('pending transactions object is noy Array');
+    }
+}
+
+async function walletConfirmTransaction (successCallback, errorCallback, opts) {
+    const walletPtr = opts[0];
+    const fragmentIdBytes = new Uint8Array(opts[1]);
+
+    const wallet = (await wasm).Wallet.__wrap(walletPtr);
+
+    try {
+        const fragmentId = (await wasm).FragmentId.new_from_bytes(fragmentIdBytes);
+        wallet.confirm_transaction(fragmentId);
+        successCallback();
+    } catch (err) {
+        errorCallback(err);
     }
 }
 
@@ -247,7 +306,12 @@ const bindings = {
     WALLET_DELETE: walletDelete,
     SETTINGS_DELETE: settingsDelete,
     CONVERSION_DELETE: conversionDelete,
-    PROPOSAL_DELETE: proposalDelete
+    PROPOSAL_DELETE: proposalDelete,
+    WALLET_PENDING_TRANSACTIONS: walletPendingTransactions,
+    WALLET_CONFIRM_TRANSACTION: walletConfirmTransaction,
+    PENDING_TRANSACTIONS_GET: pendingTransactionsGet,
+    PENDING_TRANSACTIONS_SIZE: pendingTransactionsSize,
+    PENDING_TRANSACTIONS_DELETE: pendingTransactionsDelete
 };
 
 module.exports = { bindings: bindings, setWasm: loaded };

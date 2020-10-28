@@ -56,6 +56,9 @@ pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed2
 #[wasm_bindgen]
 pub struct FragmentId(wallet_core::FragmentId);
 
+#[wasm_bindgen]
+pub struct EncryptingVoteKey(chain_vote::EncryptingVoteKey);
+
 /// this is used only for giving the Array a type in the typescript generated notation
 #[wasm_bindgen]
 extern "C" {
@@ -76,6 +79,20 @@ impl Wallet {
     /// the mnemonics should be in english
     pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Wallet, JsValue> {
         wallet_core::Wallet::recover(mnemonics, password)
+            .map_err(|e| JsValue::from(e.to_string()))
+            .map(Wallet)
+    }
+
+    pub fn import_keys(account: &[u8], keys: &[u8]) -> Result<Wallet, JsValue> {
+        if keys.len() % 64 != 0 {
+            return Err(JsValue::from_str("invalid keys array length"));
+        }
+
+        let keys: &[[u8; 64]] = unsafe {
+            std::slice::from_raw_parts(keys.as_ptr().cast::<[u8; 64]>(), keys.len() / 64)
+        };
+
+        wallet_core::Wallet::recover_free_keys(account, keys)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Wallet)
     }
@@ -231,6 +248,20 @@ impl Proposal {
             wallet_core::PayloadTypeConfig::Public,
         ))
     }
+
+    pub fn new_private(
+        vote_plan_id: VotePlanId,
+        index: u8,
+        options: Options,
+        encrypting_vote_key: EncryptingVoteKey,
+    ) -> Self {
+        Proposal(wallet_core::Proposal::new_private(
+            vote_plan_id.0.into(),
+            index,
+            options.0,
+            encrypting_vote_key.0,
+        ))
+    }
 }
 
 #[wasm_bindgen]
@@ -354,6 +385,7 @@ macro_rules! impl_secret_key {
     };
 }
 
+#[wasm_bindgen]
 impl FragmentId {
     pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
         let array: [u8; std::mem::size_of::<wallet_core::FragmentId>()] = bytes
@@ -365,5 +397,14 @@ impl FragmentId {
 
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.as_bytes().to_vec()
+    }
+}
+
+#[wasm_bindgen]
+impl EncryptingVoteKey {
+    pub fn from_bytes(bytes: &[u8]) -> Result<EncryptingVoteKey, JsValue> {
+        chain_vote::EncryptingVoteKey::from_bytes(&bytes)
+            .ok_or(JsValue::from_str("invalid binary format"))
+            .map(Self)
     }
 }

@@ -5,7 +5,7 @@ extern crate serde_yaml;
 pub mod output_extensions;
 mod wait;
 
-pub use wait::{Wait, WaitBuilder};
+pub use wait::{Error as WaitError, Wait, WaitBuilder};
 
 use self::output_extensions::ProcessOutput;
 use std::{

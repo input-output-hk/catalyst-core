@@ -20,6 +20,15 @@ async function walletRestore (successCallback, errorCallback, opts) {
     }
 }
 
+async function walletImportKeys (successCallback, errorCallback, opts) {
+    try {
+        const wallet = (await wasm).Wallet.import_keys(new Uint8Array(opts[0]), new Uint8Array(opts[1]));
+        successCallback(wallet.ptr.toString());
+    } catch (err) {
+        errorCallback('error restoring from free keys ' + err);
+    }
+}
+
 async function walletRetrieveFunds (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'string' && opts[1] instanceof ArrayBuffer) {
         const walletPtr = opts[0];
@@ -96,22 +105,54 @@ async function proposalNew (successCallback, errorCallback, opts) {
 
     try {
         const id = (await wasm).VotePlanId.new_from_bytes(new Uint8Array(votePlanId));
-        let payloadType;
 
         if (cordovaPayloadType === 1) {
-            payloadType = (await wasm).PayloadType.Public;
+            const options = (await wasm).Options.new_length(numChoices);
+            const proposal = (await wasm).Proposal.new_public(id, index, options);
+            successCallback(proposal.ptr.toString());
         } else {
             throw new Error('unrecognized payload type');
         }
+    } catch (err) {
+        errorCallback(err);
+    }
+}
+
+async function proposalNewPublic (successCallback, errorCallback, opts) {
+    const votePlanId = opts[0];
+    const index = opts[1];
+    const numChoices = opts[2];
+
+    try {
+        const id = (await wasm).VotePlanId.new_from_bytes(new Uint8Array(votePlanId));
 
         const options = (await wasm).Options.new_length(numChoices);
-        const proposal = (await wasm).Proposal.new(id, payloadType, index, options);
+        const proposal = (await wasm).Proposal.new_public(id, index, options);
         successCallback(proposal.ptr.toString());
     } catch (err) {
         errorCallback(err);
     }
 }
 
+async function proposalNewPrivate (successCallback, errorCallback, opts) {
+    const votePlanId = opts[0];
+    const index = opts[1];
+    const numChoices = opts[2];
+    const encryptionKey = opts[3];
+
+    const m = (await wasm);
+
+    try {
+        const id = m.VotePlanId.new_from_bytes(new Uint8Array(votePlanId));
+
+        const options = m.Options.new_length(numChoices);
+        const key = m.EncryptingVoteKey.from_bytes(new Uint8Array(encryptionKey));
+        const proposal = m.Proposal.new_private(id, index, options, key);
+        successCallback(proposal.ptr.toString());
+    } catch (err) {
+        errorCallback(err);
+    }
+}
 async function walletId (successCallback, errorCallback, opts) {
     if (opts && typeof (opts[0]) === 'string') {
         const walletPtr = opts[0];
@@ -291,27 +332,42 @@ async function walletConfirmTransaction (successCallback, errorCallback, opts) {
     }
 }
 
+async function symmetricCipherDecrypt (successCallback, errorCallback, opts) {
+    const password = opts[0];
+    const data = opts[1];
+    try {
+        const decrypted = (await wasm).symmetric_decrypt(new Uint8Array(password), new Uint8Array(data));
+        successCallback(decrypted);
+    } catch (err) {
+        errorCallback(err);
+    }
+}
+
 const bindings = {
-    WALLET_RESTORE: walletRestore,
-    WALLET_RETRIEVE_FUNDS: walletRetrieveFunds,
-    WALLET_TOTAL_FUNDS: walletTotalFunds,
-    WALLET_ID: walletId,
-    WALLET_SET_STATE: walletSetState,
-    WALLET_VOTE: walletVote,
-    PROPOSAL_NEW: proposalNew,
-    WALLET_CONVERT: walletConvert,
-    CONVERSION_TRANSACTIONS_SIZE: conversionTransactionsSize,
-    CONVERSION_TRANSACTIONS_GET: conversionTransactionsGet,
-    CONVERSION_IGNORED: conversionIgnored,
-    WALLET_DELETE: walletDelete,
-    SETTINGS_DELETE: settingsDelete,
     CONVERSION_DELETE: conversionDelete,
-    PROPOSAL_DELETE: proposalDelete,
-    WALLET_PENDING_TRANSACTIONS: walletPendingTransactions,
-    WALLET_CONFIRM_TRANSACTION: walletConfirmTransaction,
+    CONVERSION_IGNORED: conversionIgnored,
+    CONVERSION_TRANSACTIONS_GET: conversionTransactionsGet,
+    CONVERSION_TRANSACTIONS_SIZE: conversionTransactionsSize,
+    PENDING_TRANSACTIONS_DELETE: pendingTransactionsDelete,
     PENDING_TRANSACTIONS_GET: pendingTransactionsGet,
     PENDING_TRANSACTIONS_SIZE: pendingTransactionsSize,
-    PENDING_TRANSACTIONS_DELETE: pendingTransactionsDelete
+    PROPOSAL_DELETE: proposalDelete,
+    PROPOSAL_NEW: proposalNew,
+    PROPOSAL_NEW_PRIVATE: proposalNewPrivate,
+    PROPOSAL_NEW_PUBLIC: proposalNewPublic,
+    SETTINGS_DELETE: settingsDelete,
+    SYMMETRIC_CIPHER_DECRYPT: symmetricCipherDecrypt,
+    WALLET_CONFIRM_TRANSACTION: walletConfirmTransaction,
+    WALLET_CONVERT: walletConvert,
+    WALLET_DELETE: walletDelete,
+    WALLET_ID: walletId,
+    WALLET_IMPORT_KEYS: walletImportKeys,
+    WALLET_PENDING_TRANSACTIONS: walletPendingTransactions,
+    WALLET_RESTORE: walletRestore,
+    WALLET_RETRIEVE_FUNDS: walletRetrieveFunds,
+    WALLET_SET_STATE: walletSetState,
+    WALLET_TOTAL_FUNDS: walletTotalFunds,
+    WALLET_VOTE: walletVote
 };
 
 module.exports = { bindings: bindings, setWasm: loaded };

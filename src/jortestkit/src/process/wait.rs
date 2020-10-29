@@ -1,14 +1,26 @@
-use std::time::Duration;
+use std::{thread, time::Duration};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("timeout reached after () s")]
+    TimeoutReached { secs: u64 },
+}
 
 #[derive(Clone, Debug)]
 pub struct Wait {
     sleep: Duration,
     attempts: u64,
+    current: u64,
 }
 
 impl Wait {
     pub fn new(sleep: Duration, attempts: u64) -> Self {
-        Wait { sleep, attempts }
+        Wait {
+            sleep,
+            attempts,
+            current: 0u64,
+        }
     }
 
     pub fn sleep_duration(&self) -> Duration {
@@ -17,6 +29,28 @@ impl Wait {
 
     pub fn attempts(&self) -> u64 {
         self.attempts
+    }
+
+    pub fn current(&self) -> u64 {
+        self.current
+    }
+
+    pub fn timeout_reached(&self) -> bool {
+        self.current >= self.attempts
+    }
+
+    pub fn check_timeout(&self) -> Result<(), Error> {
+        if self.timeout_reached() {
+            return Err(Error::TimeoutReached {
+                secs: self.sleep.as_secs(),
+            });
+        }
+        Ok(())
+    }
+
+    pub fn advance(&mut self) {
+        self.attempts += 1;
+        thread::sleep(self.sleep.clone());
     }
 }
 

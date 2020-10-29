@@ -50,7 +50,7 @@ impl Wait {
 
     pub fn advance(&mut self) {
         self.attempts += 1;
-        thread::sleep(self.sleep.clone());
+        thread::sleep(self.sleep);
     }
 }
 

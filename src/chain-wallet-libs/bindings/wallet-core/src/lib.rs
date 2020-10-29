@@ -12,7 +12,8 @@ pub use self::{
 };
 pub use ::wallet::Settings;
 pub use chain_impl_mockchain::{
+    fragment::FragmentId,
     value::Value,
-    vote::{Choice, Options},
+    vote::{Choice, Options, PayloadType},
 };
 pub use vote::{PayloadTypeConfig, VOTE_PLAN_ID_LENGTH};

@@ -1,8 +1,10 @@
+use js_sys::Array;
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use std::convert::TryInto;
 
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast as _;
 
 mod utils;
 
@@ -52,6 +54,19 @@ impl_public_key!(Ed25519Public, chain_crypto::Ed25519);
 pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
 
 #[wasm_bindgen]
+pub struct FragmentId(wallet_core::FragmentId);
+
+#[wasm_bindgen]
+pub struct EncryptingVoteKey(chain_vote::EncryptingVoteKey);
+
+/// this is used only for giving the Array a type in the typescript generated notation
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(typescript_type = "Array<FragmentId>")]
+    pub type FragmentIds;
+}
+
+#[wasm_bindgen]
 impl Wallet {
     /// retrieve a wallet from the given mnemonics and password
     ///
@@ -64,6 +79,20 @@ impl Wallet {
     /// the mnemonics should be in english
     pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Wallet, JsValue> {
         wallet_core::Wallet::recover(mnemonics, password)
+            .map_err(|e| JsValue::from(e.to_string()))
+            .map(Wallet)
+    }
+
+    pub fn import_keys(account: &[u8], keys: &[u8]) -> Result<Wallet, JsValue> {
+        if keys.len() % 64 != 0 {
+            return Err(JsValue::from_str("invalid keys array length"));
+        }
+
+        let keys: &[[u8; 64]] = unsafe {
+            std::slice::from_raw_parts(keys.as_ptr().cast::<[u8; 64]>(), keys.len() / 64)
+        };
+
+        wallet_core::Wallet::recover_free_keys(account, keys)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Wallet)
     }
@@ -148,6 +177,28 @@ impl Wallet {
             )
             .map_err(|e| JsValue::from(e.to_string()))
     }
+
+    /// use this function to confirm a transaction has been properly received
+    ///
+    /// This function will automatically update the state of the wallet
+    ///
+    pub fn confirm_transaction(&mut self, fragment: &FragmentId) {
+        self.0.confirm_transaction(fragment.0);
+    }
+
+    /// get the list of pending transaction ids, which can be used to query
+    /// the status and then using `confirm_transaction` as needed.
+    ///
+    pub fn pending_transactions(&self) -> FragmentIds {
+        self.0
+            .pending_transactions()
+            .iter()
+            .cloned()
+            .map(FragmentId)
+            .map(JsValue::from)
+            .collect::<Array>()
+            .unchecked_into::<FragmentIds>()
+    }
 }
 
 #[wasm_bindgen]
@@ -195,6 +246,20 @@ impl Proposal {
             index,
             options.0,
             wallet_core::PayloadTypeConfig::Public,
+        ))
+    }
+
+    pub fn new_private(
+        vote_plan_id: VotePlanId,
+        index: u8,
+        options: Options,
+        encrypting_vote_key: EncryptingVoteKey,
+    ) -> Self {
+        Proposal(wallet_core::Proposal::new_private(
+            vote_plan_id.0.into(),
+            index,
+            options.0,
+            encrypting_vote_key.0,
         ))
     }
 }
@@ -318,4 +383,28 @@ macro_rules! impl_secret_key {
             }
         }
     };
+}
+
+#[wasm_bindgen]
+impl FragmentId {
+    pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
+        let array: [u8; std::mem::size_of::<wallet_core::FragmentId>()] = bytes
+            .try_into()
+            .map_err(|_| JsValue::from_str("Invalid fragment id"))?;
+
+        Ok(FragmentId(array.into()))
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.as_bytes().to_vec()
+    }
+}
+
+#[wasm_bindgen]
+impl EncryptingVoteKey {
+    pub fn from_bytes(bytes: &[u8]) -> Result<EncryptingVoteKey, JsValue> {
+        chain_vote::EncryptingVoteKey::from_bytes(&bytes)
+            .ok_or(JsValue::from_str("invalid binary format"))
+            .map(Self)
+    }
 }

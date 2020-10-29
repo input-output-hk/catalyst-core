@@ -71,21 +71,21 @@ At the moment, the plugin requires that node integrations are enabled in the app
 | CONVERSION_IGNORED           | ✓       | ✓   | ✓                |
 | CONVERSION_TRANSACTIONS_GET  | ✓       | ✓   | ✓                |
 | CONVERSION_TRANSACTIONS_SIZE | ✓       | ✓   | ✓                |
-| PENDING_TRANSACTIONS_DELETE  | ✓       |     |                  |
-| PENDING_TRANSACTIONS_GET     | ✓       |     |                  |
-| PENDING_TRANSACTIONS_SIZE    | ✓       |     |                  |
+| PENDING_TRANSACTIONS_DELETE  | ✓       |     | ✓                |
+| PENDING_TRANSACTIONS_GET     | ✓       |     | ✓                |
+| PENDING_TRANSACTIONS_SIZE    | ✓       |     | ✓                |
 | PROPOSAL_DELETE              | ✓       | ✓   | ✓                |
 | PROPOSAL_NEW                 | ✓       | ✓   | ✓                |
-| PROPOSAL_NEW_PRIVATE         | ✓       | ✓   |                  |
-| PROPOSAL_NEW_PUBLIC          | ✓       | ✓   |                  |
+| PROPOSAL_NEW_PRIVATE         | ✓       | ✓   | ✓                |
+| PROPOSAL_NEW_PUBLIC          | ✓       | ✓   | ✓                |
 | SETTINGS_DELETE              | ✓       | ✓   | ✓                |
-| SYMMETRIC_CIPHER_DECRYPT     | ✓       | ✓   |                  |
-| WALLET_CONFIRM_TRANSACTION   | ✓       |     |                  |
+| SYMMETRIC_CIPHER_DECRYPT     | ✓       | ✓   | ✓                |
+| WALLET_CONFIRM_TRANSACTION   | ✓       |     | ✓                |
 | WALLET_CONVERT               | ✓       | ✓   | ✓                |
 | WALLET_DELETE                | ✓       | ✓   | ✓                |
 | WALLET_ID                    | ✓       | ✓   | ✓                |
-| WALLET_IMPORT_KEYS           | ✓       | ✓   |                  |
-| WALLET_PENDING_TRANSACTIONS  | ✓       |     |                  |
+| WALLET_IMPORT_KEYS           | ✓       | ✓   | ✓                |
+| WALLET_PENDING_TRANSACTIONS  | ✓       |     | ✓                |
 | WALLET_RESTORE               | ✓       | ✓   | ✓                |
 | WALLET_RETRIEVE_FUNDS        | ✓       | ✓   | ✓                |
 | WALLET_SET_STATE             | ✓       | ✓   | ✓                |

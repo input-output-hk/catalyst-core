@@ -4,13 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
+
+## [0.5.0-pre5] - 2020-10-30
 
 # Added
 
-## Cordova-android | Java | C
+## Cordova-android | Java | C | Electron/Browser
 - vote_proposal_new_public
 - vote_proposal_new_private
+
+## Cordova-electron/browser
+- add confirm/get pending transactions
+- add import keys (free keys)
+- pin decryption (symmetric cipher decrypt)
 
 # Deprecated
 

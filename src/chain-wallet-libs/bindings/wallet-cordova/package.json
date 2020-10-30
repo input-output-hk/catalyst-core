@@ -1,6 +1,6 @@
 {
   "name": "wallet-cordova-plugin",
-  "version": "0.5.0-pre4",
+  "version": "0.5.0-pre5",
   "description": "Jormungandr wallet Cordova Plugin",
   "cordova": {
     "id": "wallet-cordova-plugin",

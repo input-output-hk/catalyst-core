@@ -543,7 +543,7 @@ impl VotePlanManager {
                 let pk = chain_vote::EncryptingVoteKey::from_participants(
                     self.plan.committee_public_keys(),
                 );
-                if !chain_vote::verify_vote(&pk, encrypted_vote, proof) {
+                if !chain_vote::verify_vote(&pk, encrypted_vote, proof.as_inner()) {
                     Err(VoteError::VoteVerificationError)
                 } else {
                     Ok(())

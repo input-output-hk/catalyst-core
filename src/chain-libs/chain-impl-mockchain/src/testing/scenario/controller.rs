@@ -11,7 +11,7 @@ use crate::{
         ledger::TestLedger,
         scenario::template::VotePlanDef,
     },
-    vote::{Choice, Payload, PayloadType},
+    vote::{Choice, Payload, PayloadType, ProofOfCorrectVote},
 };
 
 #[cfg(test)]
@@ -253,7 +253,7 @@ impl Controller {
 
                     Payload::Private {
                         encrypted_vote,
-                        proof,
+                        proof: ProofOfCorrectVote::from_inner(proof),
                     }
                 }
             },

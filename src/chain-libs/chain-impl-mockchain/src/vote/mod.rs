@@ -16,7 +16,7 @@ pub use self::{
     committee::CommitteeId,
     ledger::{VotePlanLedger, VotePlanLedgerError},
     manager::{VoteError, VotePlanManager},
-    payload::{Payload, PayloadType, TryFromIntError},
+    payload::{Payload, PayloadType, ProofOfCorrectVote, TryFromIntError},
     status::{VotePlanStatus, VoteProposalStatus},
     tally::{PrivateTallyState, Tally, TallyError, TallyResult, Weight},
 };

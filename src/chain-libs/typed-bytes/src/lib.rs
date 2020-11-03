@@ -54,6 +54,12 @@ impl<T> From<Vec<u8>> for ByteArray<T> {
     }
 }
 
+impl<T> From<ByteArray<T>> for Vec<u8> {
+    fn from(a: ByteArray<T>) -> Self {
+        a.array.into()
+    }
+}
+
 impl<'a, T> ByteSlice<'a, T> {
     pub fn as_slice(&self) -> &[u8] {
         self.slice

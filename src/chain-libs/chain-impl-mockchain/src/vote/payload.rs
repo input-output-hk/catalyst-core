@@ -1,11 +1,11 @@
 use crate::vote::Choice;
 use chain_core::mempack::{ReadBuf, ReadError};
 use chain_vote::shvzk;
-use chain_vote::{Ciphertext, EncryptedVote, ProofOfCorrectVote, Scalar};
+use chain_vote::{Ciphertext, Scalar};
 use std::convert::{TryFrom, TryInto as _};
 use std::hash::Hash;
 use thiserror::Error;
-use typed_bytes::ByteBuilder;
+use typed_bytes::{ByteArray, ByteBuilder};
 
 /// the `PayloadType` to use for a vote plan
 ///
@@ -34,6 +34,11 @@ pub enum Payload {
         proof: ProofOfCorrectVote,
     },
 }
+
+pub use chain_vote::EncryptedVote;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ProofOfCorrectVote(chain_vote::ProofOfCorrectVote);
 
 #[derive(Debug, Error)]
 pub enum TryFromIntError {
@@ -77,10 +82,7 @@ impl Payload {
                     let buffer = ct.to_bytes();
                     bb.bytes(&buffer)
                 })
-                .fold(proof.ibas(), |bb, iba| bb.bytes(&iba.to_bytes()))
-                .fold(proof.ds(), |bb, d| bb.bytes(&d.to_bytes()))
-                .fold(proof.zwvs(), |bb, zwv| bb.bytes(&zwv.to_bytes()))
-                .bytes(&proof.r().to_bytes()),
+                .sub(|bb| proof.serialize_in(bb)),
         }
     }
 
@@ -101,42 +103,74 @@ impl Payload {
                         ReadError::StructureInvalid("Invalid private vote".to_string())
                     })?);
                 }
-                let bits = len.next_power_of_two().trailing_zeros() as usize;
-                let mut ibas = Vec::with_capacity(bits);
-                for _ in 0..bits {
-                    let elem_buf = buf.get_slice(shvzk::IBA::BYTES_LEN)?;
-                    let iba = shvzk::IBA::from_bytes(elem_buf).ok_or_else(|| {
-                        ReadError::StructureInvalid("Invalid IBA component".to_string())
-                    })?;
-                    ibas.push(iba);
-                }
-                let mut bs = Vec::with_capacity(bits);
-                for _ in 0..bits {
-                    let elem_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
-                    let ciphertext = Ciphertext::from_bytes(elem_buf).ok_or_else(|| {
-                        ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
-                    })?;
-                    bs.push(ciphertext);
-                }
-                let mut zwvs = Vec::with_capacity(bits);
-                for _ in 0..bits {
-                    let elem_buf = buf.get_slice(shvzk::ZWV::BYTES_LEN)?;
-                    let zwv = shvzk::ZWV::from_bytes(elem_buf).ok_or_else(|| {
-                        ReadError::StructureInvalid("Invalid ZWV component".to_string())
-                    })?;
-                    zwvs.push(zwv);
-                }
-                let r_buf = buf.get_slice(Scalar::BYTES_LEN)?;
-                let r = Scalar::from_bytes(r_buf).ok_or_else(|| {
-                    ReadError::StructureInvalid("Invalid Proof encoded R scalar".to_string())
-                })?;
-                let proof = ProofOfCorrectVote::from_parts(ibas, bs, zwvs, r);
+                let proof = ProofOfCorrectVote::read(buf)?;
                 Ok(Self::Private {
                     encrypted_vote: cypher_texts,
                     proof,
                 })
             }
         }
+    }
+}
+
+impl ProofOfCorrectVote {
+    #[cfg(any(test, feature = "property-test-api"))]
+    pub(crate) fn from_inner(proof: chain_vote::ProofOfCorrectVote) -> Self {
+        assert!(
+            proof.len() <= u8::MAX as usize,
+            "number of options is too large in an internally obtained proof"
+        );
+        Self(proof)
+    }
+
+    pub(super) fn as_inner(&self) -> &chain_vote::ProofOfCorrectVote {
+        &self.0
+    }
+
+    pub(crate) fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+        debug_assert!(self.0.len() <= u8::MAX as usize);
+        bb.u8(self.0.len() as u8)
+            .fold(self.0.ibas(), |bb, iba| bb.bytes(&iba.to_bytes()))
+            .fold(self.0.ds(), |bb, d| bb.bytes(&d.to_bytes()))
+            .fold(self.0.zwvs(), |bb, zwv| bb.bytes(&zwv.to_bytes()))
+            .bytes(&self.0.r().to_bytes())
+    }
+
+    pub fn serialize(&self) -> ByteArray<Self> {
+        self.serialize_in(ByteBuilder::new()).finalize()
+    }
+
+    pub(crate) fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        let bits = buf.get_u8()? as usize;
+        let mut ibas = Vec::with_capacity(bits);
+        for _ in 0..bits {
+            let elem_buf = buf.get_slice(shvzk::IBA::BYTES_LEN)?;
+            let iba = shvzk::IBA::from_bytes(elem_buf)
+                .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?;
+            ibas.push(iba);
+        }
+        let mut bs = Vec::with_capacity(bits);
+        for _ in 0..bits {
+            let elem_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
+            let ciphertext = Ciphertext::from_bytes(elem_buf).ok_or_else(|| {
+                ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
+            })?;
+            bs.push(ciphertext);
+        }
+        let mut zwvs = Vec::with_capacity(bits);
+        for _ in 0..bits {
+            let elem_buf = buf.get_slice(shvzk::ZWV::BYTES_LEN)?;
+            let zwv = shvzk::ZWV::from_bytes(elem_buf)
+                .ok_or_else(|| ReadError::StructureInvalid("Invalid ZWV component".to_string()))?;
+            zwvs.push(zwv);
+        }
+        let r_buf = buf.get_slice(Scalar::BYTES_LEN)?;
+        let r = Scalar::from_bytes(r_buf).ok_or_else(|| {
+            ReadError::StructureInvalid("Invalid Proof encoded R scalar".to_string())
+        })?;
+        Ok(Self(chain_vote::ProofOfCorrectVote::from_parts(
+            ibas, bs, zwvs, r,
+        )))
     }
 }
 
@@ -199,7 +233,7 @@ mod tests {
                         &ek,
                         Vote::new(vote_options as usize, choice as usize),
                     );
-                    Payload::private(vote, proof)
+                    Payload::private(vote, ProofOfCorrectVote::from_inner(proof))
                 }
             }
         }

@@ -22,36 +22,45 @@ pub enum RequestSendMode {
 pub type Id = String;
 
 pub trait RequestGenerator {
-    fn next(&mut self) -> Result<Option<Id>, RequestFailure>;
+    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure>;
 }
 
 pub trait RequestStatusProvider {
     fn get_status(&self) -> HashMap<String, RequestStatus>;
 }
 
-pub fn run_request(request: &mut impl RequestGenerator, sync: RequestSendMode) -> Response {
+pub fn run_request(
+    request: &mut impl RequestGenerator,
+    sync: RequestSendMode,
+    responses: &mut Vec<Response>,
+) {
     match sync {
-        RequestSendMode::Sync => run_request_sync(request),
-        RequestSendMode::Async => run_request_async(request),
+        RequestSendMode::Sync => run_request_sync(request, responses),
+        RequestSendMode::Async => run_request_async(request, responses),
     }
 }
 
-pub fn run_request_sync(request: &mut impl RequestGenerator) -> Response {
+pub fn run_request_sync(request: &mut impl RequestGenerator, responses: &mut Vec<Response>) {
     let start = Instant::now();
-    let result = request.next();
-    match result {
-        Ok(id) => Response::success(id, start.elapsed()),
-        Err(failure) => Response::failure(None, failure, start.elapsed()),
-    }
+    match request.next() {
+        Ok(ids) => responses.extend(
+            ids.iter()
+                .map(|id| Response::success(id.clone(), start.elapsed())),
+        ),
+        Err(failure) => responses.push(Response::failure(None, failure, start.elapsed())),
+    };
 }
 
-pub fn run_request_async(request: &mut impl RequestGenerator) -> Response {
+pub fn run_request_async(request: &mut impl RequestGenerator, responses: &mut Vec<Response>) {
     let start = Instant::now();
-    let result = request.next();
-    match result {
-        Ok(id) => Response::pending(id, start.elapsed()),
-        Err(failure) => Response::failure(None, failure, start.elapsed()),
-    }
+
+    match request.next() {
+        Ok(ids) => responses.extend(
+            ids.iter()
+                .map(|id| Response::pending(id.clone(), start.elapsed())),
+        ),
+        Err(failure) => responses.push(Response::failure(None, failure, start.elapsed())),
+    };
 }
 #[derive(Debug, Clone)]
 pub struct Response {

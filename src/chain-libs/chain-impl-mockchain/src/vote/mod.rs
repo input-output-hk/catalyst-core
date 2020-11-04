@@ -8,8 +8,11 @@ mod committee;
 mod ledger;
 mod manager;
 mod payload;
+mod privacy;
 mod status;
 mod tally;
+
+pub use chain_vote::EncryptedVote;
 
 pub use self::{
     choice::{Choice, Options},
@@ -17,6 +20,7 @@ pub use self::{
     ledger::{VotePlanLedger, VotePlanLedgerError},
     manager::{VoteError, VotePlanManager},
     payload::{Payload, PayloadType, ProofOfCorrectVote, TryFromIntError},
+    privacy::encrypt_vote,
     status::{VotePlanStatus, VoteProposalStatus},
     tally::{PrivateTallyState, Tally, TallyError, TallyResult, Weight},
 };

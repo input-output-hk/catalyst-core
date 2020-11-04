@@ -114,7 +114,6 @@ impl Payload {
 }
 
 impl ProofOfCorrectVote {
-    #[cfg(any(test, feature = "property-test-api"))]
     pub(crate) fn from_inner(proof: chain_vote::ProofOfCorrectVote) -> Self {
         assert!(
             proof.len() <= u8::MAX as usize,

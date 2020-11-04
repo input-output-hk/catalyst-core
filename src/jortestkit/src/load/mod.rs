@@ -130,8 +130,8 @@ fn per_thread_strategy(
         let handle = thread::spawn(move || {
             for _ in 0..requests_per_thread {
                 let request_gen = &mut *request_clone.lock().unwrap();
-                let result = run_request(request_gen, request_mode_run);
-                responses_clone.lock().unwrap().push(result);
+                let mut results = &mut *responses_clone.lock().unwrap();
+                run_request(request_gen, request_mode_run, &mut results);
                 thread::sleep(Duration::from_millis(config_clone.step_delay()));
             }
         });
@@ -156,8 +156,8 @@ fn duration_strategy(
             let start = Instant::now();
             while start.elapsed() <= duration {
                 let request_gen = &mut *request_clone.lock().unwrap();
-                let response = run_request(request_gen, request_mode_run);
-                responses_clone.lock().unwrap().push(response);
+                let results = &mut *responses_clone.lock().unwrap();
+                run_request(request_gen, request_mode_run, results);
                 thread::sleep(Duration::from_millis(config_clone.step_delay()));
             }
         });

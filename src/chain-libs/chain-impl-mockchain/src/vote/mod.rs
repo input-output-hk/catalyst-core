@@ -12,6 +12,8 @@ mod privacy;
 mod status;
 mod tally;
 
+pub use chain_vote::EncryptedVote;
+
 pub use self::{
     choice::{Choice, Options},
     committee::CommitteeId,

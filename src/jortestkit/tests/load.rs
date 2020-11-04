@@ -10,10 +10,10 @@ pub struct SampleRequestGenerator {
 }
 
 impl RequestGenerator for SampleRequestGenerator {
-    fn next(&mut self) -> Result<Option<Id>, RequestFailure> {
+    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
         std::thread::sleep(std::time::Duration::from_millis(100));
         self.counter = self.counter + 1;
-        Ok(None)
+        Ok(vec![None])
     }
 }
 
@@ -35,11 +35,11 @@ pub struct AsyncSampleRequestGenerator {
 }
 
 impl RequestGenerator for AsyncSampleRequestGenerator {
-    fn next(&mut self) -> Result<Option<Id>, RequestFailure> {
+    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
         std::thread::sleep(std::time::Duration::from_millis(100));
         let id = self.counter.to_string();
         self.counter = self.counter + 1;
-        Ok(Some(id))
+        Ok(vec![Some(id)])
     }
 }
 

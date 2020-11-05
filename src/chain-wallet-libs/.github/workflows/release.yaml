@@ -144,7 +144,7 @@ jobs:
             --release --target ${{ matrix.target }} \
             bindings/wallet-js
 
-      # FIXME: this shouldn't be necessary, investigate further
+      # https://github.com/rustwasm/wasm-pack/issues/837
       - name: patch package.json missing file
         working-directory: ./bindings/wallet-js
         run: sh patch-packaging.sh 

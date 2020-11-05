@@ -1,10 +1,13 @@
 #[cfg(test)]
 use crate::block::Header;
+#[cfg(test)]
+use crate::header::HeaderDesc;
 use crate::{
     block::{Block, BlockVersion, HeaderRaw},
     fragment::{Contents, ContentsBuilder, Fragment},
-    header::{BftProof, GenesisPraosProof, HeaderBuilderNew, HeaderDesc},
+    header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
 };
+#[cfg(test)]
 use chain_core::property::{Block as _, Deserialize, HasHeader as _, Serialize};
 #[cfg(test)]
 use chain_test_utils::property;
@@ -66,6 +69,7 @@ quickcheck! {
     }
 }
 
+#[cfg(test)]
 fn are_desc_equal(left: HeaderDesc, right: HeaderDesc) -> bool {
     left.id == right.id
 }

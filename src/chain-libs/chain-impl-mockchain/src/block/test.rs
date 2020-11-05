@@ -5,7 +5,10 @@ use crate::{
     fragment::{Contents, ContentsBuilder, Fragment},
     header::{BftProof, GenesisPraosProof, HeaderBuilderNew, HeaderDesc},
 };
+
+#[cfg(test)]
 use chain_core::property::{Block as _, Deserialize, HasHeader as _, Serialize};
+
 #[cfg(test)]
 use chain_test_utils::property;
 #[cfg(test)]
@@ -66,6 +69,7 @@ quickcheck! {
     }
 }
 
+#[cfg(test)]
 fn are_desc_equal(left: HeaderDesc, right: HeaderDesc) -> bool {
     left.id == right.id
 }

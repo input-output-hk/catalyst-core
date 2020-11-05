@@ -42,7 +42,7 @@ impl Wait {
     pub fn check_timeout(&self) -> Result<(), Error> {
         if self.timeout_reached() {
             return Err(Error::TimeoutReached {
-                secs: self.sleep.as_secs(),
+                secs: self.sleep.as_secs() * self.attempts,
             });
         }
         Ok(())

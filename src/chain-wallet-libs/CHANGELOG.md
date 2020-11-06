@@ -8,24 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0-pre5] - 2020-10-30
 
-# Added
-
-## Cordova-android | Java | C | Electron/Browser
-- vote_proposal_new_public
-- vote_proposal_new_private
-
-## Cordova-electron/browser
-- add confirm/get pending transactions
-- add import keys (free keys)
-- pin decryption (symmetric cipher decrypt)
-
-# Deprecated
-
-- proposal_new: In favour of the specific functions for each case. This
-function takes an enum, which currently only can be used to cast public
-votes (the internal function still uses rust enums, this is only for non-rust
-apis).
-
 ### Added
 
 #### wallet-js
@@ -34,6 +16,22 @@ apis).
 - Key signing and verification.
 - Add the other kinds of private keys: 
   - Ed25519
+
+#### Cordova-android | Java | C | Electron/Browser
+- vote_proposal_new_public
+- vote_proposal_new_private
+
+#### Cordova-electron/browser
+- add confirm/get pending transactions
+- add import keys (free keys)
+- pin decryption (symmetric cipher decrypt)
+
+### Deprecated
+
+- proposal_new: In favour of the specific functions for each case. This
+function takes an enum, which currently only can be used to cast public
+votes (the internal function still uses rust enums, this is only for non-rust
+apis).
 
 ## [0.5.0-pre4] - 2020-10-13
 

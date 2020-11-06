@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.0-pre6] - 2020-11-06
+
+### Changed
+
+#### wallet-js
+
+- Put the package into scope as @iohk-jormungandr/wallet-js
+- Change the output file prefix to generate files named `wallet.js` etc.
+
 ## [0.5.0-pre5] - 2020-10-30
 
 ### Added

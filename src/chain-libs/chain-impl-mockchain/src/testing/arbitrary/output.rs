@@ -7,14 +7,12 @@ use std::iter;
 pub struct OutputsWithoutMultisig(pub Vec<Output<Address>>);
 
 impl Arbitrary for OutputsWithoutMultisig {
+    #[allow(clippy::match_like_matches_macro)]
     fn arbitrary<G: Gen>(gen: &mut G) -> Self {
         let n = usize::arbitrary(gen);
         OutputsWithoutMultisig(
             iter::from_fn(|| Some(Output::arbitrary(gen)))
-                .filter(|x| match x.address.1 {
-                    Kind::Multisig { .. } => false,
-                    _ => true,
-                })
+                .filter(|x| !matches!(x.address.1, Kind::Multisig { .. }))
                 .take(n)
                 .collect(),
         )

@@ -35,13 +35,11 @@ impl From<KindTypeWithoutMultisig> for KindType {
 pub struct KindWithoutMultisig(pub Kind);
 
 impl Arbitrary for KindWithoutMultisig {
+    #[allow(clippy::match_like_matches_macro)]
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         KindWithoutMultisig(
             iter::from_fn(|| Some(Kind::arbitrary(g)))
-                .find(|x| match x {
-                    Kind::Multisig { .. } => false,
-                    _ => true,
-                })
+                .find(|x| !matches!(x, Kind::Multisig { .. }))
                 .unwrap(),
         )
     }

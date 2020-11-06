@@ -95,31 +95,24 @@ impl ArbitraryAddressDataValueVec {
         self.0
             .iter()
             .cloned()
-            .filter(|x| match x.address_data.kind() {
-                Kind::Single { .. } => true,
-                _ => false,
-            })
+            .filter(|x| matches!(x.address_data.kind(), Kind::Single { .. }))
             .collect()
     }
+    #[allow(clippy::match_like_matches_macro)]
     pub fn accounts(&self) -> Vec<AddressDataValue> {
         self.0
             .iter()
             .cloned()
-            .filter(|x| match x.address_data.kind() {
-                Kind::Account { .. } => true,
-                _ => false,
-            })
+            .filter(|x| matches!(x.address_data.kind(), Kind::Account { .. }))
             .collect()
     }
 
+    #[allow(clippy::match_like_matches_macro)]
     pub fn delegations(&self) -> Vec<AddressDataValue> {
         self.0
             .iter()
             .cloned()
-            .filter(|x| match x.address_data.kind() {
-                Kind::Group { .. } => true,
-                _ => false,
-            })
+            .filter(|x| matches!(x.address_data.kind(), Kind::Group { .. }))
             .collect()
     }
 }

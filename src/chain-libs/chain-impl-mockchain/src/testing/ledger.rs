@@ -256,7 +256,7 @@ impl ConfigBuilder {
         }
 
         for committee_id in self.committees_ids {
-            ie.push(ConfigParam::AddCommitteeId(committee_id.clone()));
+            ie.push(ConfigParam::AddCommitteeId(committee_id));
         }
 
         ie.push(ConfigParam::Block0Date(self.block0_date));
@@ -503,7 +503,8 @@ impl TestLedger {
     }
 
     pub fn apply_protocol_changes(&mut self) -> Result<(), Error> {
-        Ok(self.ledger = self.ledger.apply_protocol_changes()?)
+        self.ledger = self.ledger.apply_protocol_changes()?;
+        Ok(())
     }
 
     pub fn total_funds(&self) -> Value {

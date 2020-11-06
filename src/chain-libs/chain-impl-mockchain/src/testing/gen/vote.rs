@@ -93,7 +93,7 @@ impl VoteTestGen {
     }
 
     pub fn vote_cast_payload_for(choice: &Choice) -> vote::Payload {
-        vote::Payload::public(choice.clone())
+        vote::Payload::public(*choice)
     }
 
     pub fn vote_cast_payload() -> vote::Payload {

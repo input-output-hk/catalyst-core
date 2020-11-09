@@ -94,8 +94,17 @@ jobs:
         run: find ./target/${{ matrix.config.target }}/release -maxdepth 1 '(' -name "libjormungandrwallet.so" -o -name "libjormungandrwallet.a" ')' -exec cp {} dist/iohk_wallet/lib \;
       - name: copy binary if windows
         if: matrix.config.os == 'windows-latest'
-        run: Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.lib -Destination dist\iohk_wallet; Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.dll -Destination dist\iohk_wallet
-      
+        run: |
+          Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.dll* -Destination dist\iohk_wallet
+          if ( "${{ matrix.config.target }}" -eq "x86_64-pc-windows-gnu" )
+          {
+            Copy-Item target\${{ matrix.config.target }}\release\libjormungandrwallet.* -Destination dist\iohk_wallet
+          }
+          else
+          {
+            Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.lib -Destination dist\iohk_wallet
+          }
+
       - name: Get tag version
         id: get_version
         run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
@@ -158,7 +167,7 @@ jobs:
         shell: bash
 
       - name: rename-tarball
-        run: find ./bindings/wallet-js/pkg -name wallet-js*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
+        run: find ./bindings/wallet-js/pkg -name iohk-jormungandr-wallet-js*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release

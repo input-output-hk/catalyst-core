@@ -158,7 +158,7 @@ mod tests {
 
     #[quickcheck]
     pub fn from_block_version(block_version: BlockVersion) -> TestResult {
-        let right_version = AnyBlockVersion::Supported(block_version.clone());
+        let right_version = AnyBlockVersion::Supported(block_version);
         let left_version: AnyBlockVersion = block_version.into();
         TestResult::from_bool(left_version == right_version)
     }

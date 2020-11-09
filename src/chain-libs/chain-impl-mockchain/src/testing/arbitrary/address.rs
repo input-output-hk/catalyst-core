@@ -98,7 +98,6 @@ impl ArbitraryAddressDataValueVec {
             .filter(|x| matches!(x.address_data.kind(), Kind::Single { .. }))
             .collect()
     }
-    #[allow(clippy::match_like_matches_macro)]
     pub fn accounts(&self) -> Vec<AddressDataValue> {
         self.0
             .iter()
@@ -107,7 +106,6 @@ impl ArbitraryAddressDataValueVec {
             .collect()
     }
 
-    #[allow(clippy::match_like_matches_macro)]
     pub fn delegations(&self) -> Vec<AddressDataValue> {
         self.0
             .iter()

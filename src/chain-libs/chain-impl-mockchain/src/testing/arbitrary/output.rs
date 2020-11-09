@@ -7,7 +7,6 @@ use std::iter;
 pub struct OutputsWithoutMultisig(pub Vec<Output<Address>>);
 
 impl Arbitrary for OutputsWithoutMultisig {
-    #[allow(clippy::match_like_matches_macro)]
     fn arbitrary<G: Gen>(gen: &mut G) -> Self {
         let n = usize::arbitrary(gen);
         OutputsWithoutMultisig(

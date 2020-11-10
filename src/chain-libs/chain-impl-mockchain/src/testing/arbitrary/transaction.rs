@@ -252,17 +252,11 @@ fn find_equal_and_add(x: AddressDataValue, collection: &[AddressDataValue]) -> A
 }
 
 fn filter_accounts(x: &AddressDataValue) -> bool {
-    match x.address_data.kind() {
-        Kind::Account { .. } => true,
-        _ => false,
-    }
+    matches!(x.address_data.kind(), Kind::Account { .. })
 }
 
 fn filter_utxo(x: &AddressDataValue) -> bool {
-    match x.address_data.kind() {
-        Kind::Single { .. } | Kind::Group { .. } => true,
-        _ => false,
-    }
+    matches!(x.address_data.kind(), Kind::Single { .. } | Kind::Group { .. })
 }
 
 pub struct UtxoVerifier(pub ArbitraryValidTransactionData);

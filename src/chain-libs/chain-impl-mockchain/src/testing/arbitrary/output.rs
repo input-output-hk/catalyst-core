@@ -11,10 +11,7 @@ impl Arbitrary for OutputsWithoutMultisig {
         let n = usize::arbitrary(gen);
         OutputsWithoutMultisig(
             iter::from_fn(|| Some(Output::arbitrary(gen)))
-                .filter(|x| match x.address.1 {
-                    Kind::Multisig { .. } => false,
-                    _ => true,
-                })
+                .filter(|x| !matches!(x.address.1, Kind::Multisig { .. }))
                 .take(n)
                 .collect(),
         )

@@ -322,10 +322,7 @@ impl AddressDataValue {
     }
 
     pub fn is_utxo(&self) -> bool {
-        match self.kind() {
-            Kind::Single { .. } | Kind::Group { .. } => true,
-            _ => false,
-        }
+        matches!(self.kind(), Kind::Single { .. } | Kind::Group { .. })
     }
 
     pub fn address(&self) -> Address {

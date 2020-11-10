@@ -404,7 +404,7 @@ impl FragmentId {
 impl EncryptingVoteKey {
     pub fn from_bytes(bytes: &[u8]) -> Result<EncryptingVoteKey, JsValue> {
         chain_vote::EncryptingVoteKey::from_bytes(&bytes)
-            .ok_or(JsValue::from_str("invalid binary format"))
+            .ok_or_else(|| JsValue::from_str("invalid binary format"))
             .map(Self)
     }
 }

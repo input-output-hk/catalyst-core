@@ -115,8 +115,7 @@ impl<K> UtxoGroup<K> {
             utxo.value,
             {
                 let set = HashSet::new();
-                let set = set.insert(utxo.clone());
-                set
+                set.insert(utxo.clone())
             },
             |old| Some(old.insert(utxo.clone())),
         );
@@ -254,7 +253,7 @@ impl<K: Groupable> UtxoStore<K> {
         new.by_value = new
             .by_value
             .update::<_, std::convert::Infallible>(&utxo.value, |set| {
-                Ok(Some(set.remove(&Rc::new(utxo.clone()))))
+                Ok(Some(set.remove(&Rc::new(*utxo))))
             })
             .unwrap();
 
@@ -315,7 +314,11 @@ impl<T: Hash + PartialEq + Eq + Clone> HashSet<T> {
 
     #[must_use = "this structure is immutable, the new one is returned"]
     fn insert(&self, element: T) -> Self {
-        Self(self.0.insert(element, ()).unwrap_or(self.0.clone()))
+        Self(
+            self.0
+                .insert(element, ())
+                .unwrap_or_else(|_| self.0.clone()),
+        )
     }
 
     #[must_use = "this structure is immutable, the new one is returned"]
@@ -324,7 +327,7 @@ impl<T: Hash + PartialEq + Eq + Clone> HashSet<T> {
         T: std::borrow::Borrow<Q>,
         Q: Hash + PartialEq + Eq,
     {
-        Self(self.0.remove(element).unwrap_or(self.0.clone()))
+        Self(self.0.remove(element).unwrap_or_else(|_| self.0.clone()))
     }
 }
 

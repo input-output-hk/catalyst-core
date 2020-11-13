@@ -42,7 +42,17 @@ impl CSVDataCmd {
             .from_path(csv_path)?;
         let mut results = Vec::new();
         for record in reader.deserialize() {
-            results.push(record?);
+            match record {
+                Ok(data) => {
+                    results.push(data);
+                }
+                Err(e) => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidInput,
+                        format!("Error in file {}.\nCause:\n\t{}", csv_path, e),
+                    ))
+                }
+            }
         }
         Ok(results)
     }
@@ -58,7 +68,10 @@ impl CSVDataCmd {
         if funds.len() != 1 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                "Wrong number of input fund, just one fund data can be process at a time",
+                format!(
+                    "Wrong number of input fund in {}, just one fund data can be process at a time",
+                    funds_path
+                ),
             ));
         }
         let mut voteplans = CSVDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;

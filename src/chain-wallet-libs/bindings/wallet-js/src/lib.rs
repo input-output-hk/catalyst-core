@@ -408,3 +408,14 @@ impl EncryptingVoteKey {
             .map(Self)
     }
 }
+
+#[wasm_bindgen]
+pub fn base32_to_base256(input: &[u8]) -> Result<Vec<u8>, JsValue> {
+    let b32 = input
+        .iter()
+        .map(|b| bech32::u5::try_from_u8(*b))
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|err| JsValue::from_str(&format!("{}", err)))?;
+
+    bech32::FromBase32::from_base32(&b32).map_err(|err| JsValue::from_str(&format!("{}", err)))
+}

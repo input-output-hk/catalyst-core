@@ -408,3 +408,11 @@ impl EncryptingVoteKey {
             .map(Self)
     }
 }
+
+#[wasm_bindgen]
+/// decode a bech32 string to a byte array, disregarding the hrp
+pub fn bech32_decode_to_bytes(input: &str) -> Result<Vec<u8>, JsValue> {
+    bech32::decode(input)
+        .and_then(|(_hrp, words)| bech32::FromBase32::from_base32(&words))
+        .map_err(|err| JsValue::from_str(&format!("{}", err)))
+}

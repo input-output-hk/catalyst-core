@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+#### wallet-js
+
+- Expose function to decode bech32 to byte array
+
 ## [0.5.0-pre6] - 2020-11-06
 
 ### Changed

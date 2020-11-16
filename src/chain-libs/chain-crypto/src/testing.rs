@@ -2,8 +2,8 @@ use super::*;
 use crate::digest;
 
 use quickcheck::{Arbitrary, Gen};
-use rand_chacha::ChaChaRng;
-use rand_core::SeedableRng;
+use rand_core::{SeedableRng, RngCore, CryptoRng, Error as RngError};
+use rand::rngs::SmallRng;
 
 /// an Arbitrary friendly cryptographic generator
 ///
@@ -15,6 +15,39 @@ use rand_core::SeedableRng;
 #[derive(Clone, Debug)]
 pub struct TestCryptoGen(pub u64);
 
+/// A faster non-cryptographic RNG to be used in tests. NOTE: this RNG does
+/// implement `CryptoRng`, but it is not really cryptographic. It MUST NOT be
+/// used in the production code.
+pub struct TestCryptoRng(SmallRng);
+
+impl RngCore for TestCryptoRng {
+    fn next_u32(&mut self) -> u32 {
+        self.0.next_u32()
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        self.0.next_u64()
+    }
+
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        self.0.fill_bytes(dest)
+    }
+
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), RngError> {
+        self.0.try_fill_bytes(dest)
+    }
+}
+
+impl SeedableRng for TestCryptoRng {
+    type Seed = <SmallRng as SeedableRng>::Seed;
+
+    fn from_seed(seed: Self::Seed) -> Self {
+        Self(SmallRng::from_seed(seed))
+    }
+}
+
+impl CryptoRng for TestCryptoRng {}
+
 impl Arbitrary for TestCryptoGen {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
         TestCryptoGen(Arbitrary::arbitrary(g))
@@ -23,8 +56,8 @@ impl Arbitrary for TestCryptoGen {
 
 impl TestCryptoGen {
     /// get the nth deterministic RNG
-    pub fn get_rng(&self, idx: u32) -> ChaChaRng {
-        ChaChaRng::seed_from_u64((idx as u64) * 4096 + self.0)
+    pub fn get_rng(&self, idx: u32) -> TestCryptoRng {
+        TestCryptoRng::seed_from_u64((idx as u64) * 4096 + self.0)
     }
 
     /// Get the nth deterministic secret key
@@ -59,7 +92,7 @@ pub fn static_secret_key<A>() -> SecretKey<A>
 where
     A: AsymmetricKey,
 {
-    let rng = ChaChaRng::seed_from_u64(0xfedc_ba98);
+    let rng = TestCryptoRng::seed_from_u64(0xfedc_ba98);
     SecretKey::generate(rng)
 }
 

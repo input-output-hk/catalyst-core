@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### wallet-js
 
-- Expose base32 to base256(byte array) conversion function
+- Expose function to decode bech32 to byte array
 
 ## [0.5.0-pre6] - 2020-11-06
 

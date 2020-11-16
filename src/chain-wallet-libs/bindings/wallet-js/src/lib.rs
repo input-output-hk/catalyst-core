@@ -410,12 +410,9 @@ impl EncryptingVoteKey {
 }
 
 #[wasm_bindgen]
-pub fn base32_to_base256(input: &[u8]) -> Result<Vec<u8>, JsValue> {
-    let b32 = input
-        .iter()
-        .map(|b| bech32::u5::try_from_u8(*b))
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|err| JsValue::from_str(&format!("{}", err)))?;
-
-    bech32::FromBase32::from_base32(&b32).map_err(|err| JsValue::from_str(&format!("{}", err)))
+/// decode a bech32 string to a byte array, disregarding the hrp
+pub fn bech32_decode_to_bytes(input: &str) -> Result<Vec<u8>, JsValue> {
+    bech32::decode(input)
+        .and_then(|(_hrp, words)| bech32::FromBase32::from_base32(&words))
+        .map_err(|err| JsValue::from_str(&format!("{}", err)))
 }

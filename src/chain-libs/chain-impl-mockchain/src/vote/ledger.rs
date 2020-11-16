@@ -5,7 +5,7 @@ use crate::{
     ledger::governance::Governance,
     stake::StakeControl,
     transaction::UnspecifiedAccountIdentifier,
-    vote::{CommitteeId, VoteError, VotePlanManager},
+    vote::{CommitteeId, PayloadType, VoteError, VotePlanManager},
 };
 use imhamt::{Hamt, InsertError, UpdateError};
 use std::collections::{hash_map::DefaultHasher, HashSet};
@@ -39,6 +39,9 @@ pub enum VotePlanLedgerError {
         current_date: BlockDate,
         vote_start: BlockDate,
     },
+
+    #[error("Private vote plan must contain at least one committee member key")]
+    VotePlanMissingCommitteeMemberKey,
 }
 
 impl VotePlanLedger {
@@ -103,6 +106,12 @@ impl VotePlanLedger {
                 current_date,
                 vote_start: vote_plan.vote_start(),
             });
+        }
+
+        if let PayloadType::Private = vote_plan.payload_type() {
+            if vote_plan.committee_public_keys().is_empty() {
+                return Err(VotePlanLedgerError::VotePlanMissingCommitteeMemberKey);
+            }
         }
 
         let id = vote_plan.to_id();

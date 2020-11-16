@@ -179,3 +179,32 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
         .pots()
         .has_remaining_rewards_equals_to(&Value(1100));
 }
+
+#[test]
+#[should_panic]
+pub fn private_vote_plan_without_keys() {
+    let committee_keys = vec![];
+
+    let (_ledger, _controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000)),
+        )
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .owns(STAKE_POOL)
+            .committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .payload_type(PayloadType::Private)
+            .committee_keys(committee_keys)
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_transfer_to_rewards(100),
+            )])
+        .build()
+        .unwrap();
+}

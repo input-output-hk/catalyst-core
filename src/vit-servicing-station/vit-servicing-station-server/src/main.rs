@@ -44,6 +44,11 @@ async fn main() {
         std::process::exit(ApplicationExitCode::LoadSettingsError.into())
     });
 
+    // Check db file exists (should be here only for current sqlite db backend)
+    if !std::path::Path::new(&settings.db_url).exists() {
+        log::error!("DB file {} not found.", &settings.db_url);
+        std::process::exit(ApplicationExitCode::DBConnectionError.into())
+    }
     // load db pool
     let db_pool = db::load_db_connection_pool(&settings.db_url).unwrap_or_else(|e| {
         log::error!("Error connecting to database: {}", e);

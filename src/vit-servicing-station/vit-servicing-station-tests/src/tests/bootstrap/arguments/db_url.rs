@@ -12,3 +12,14 @@ pub fn malformed_path() {
         .failure()
         .code(ApplicationExitCode::DBConnectionError as i32);
 }
+
+#[test]
+pub fn path_doesnt_exist() {
+    let mut command_builder: BootstrapCommandBuilder = Default::default();
+    command_builder
+        .db_url("C:/foo.db")
+        .build()
+        .assert()
+        .failure()
+        .code(ApplicationExitCode::DBConnectionError as i32);
+}

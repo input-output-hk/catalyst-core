@@ -228,6 +228,20 @@ where
         Ok(tonic::Response::new(OutboundTryStream::new(stream)))
     }
 
+    type PullBlocksStream = OutboundTryStream<<T::BlockService as BlockService>::PullBlocksStream>;
+
+    async fn pull_blocks(
+        &self,
+        req: tonic::Request<proto::PullBlocksRequest>,
+    ) -> Result<tonic::Response<Self::PullBlocksStream>, tonic::Status> {
+        let service = self.block_service()?;
+        let req = req.into_inner();
+        let from = BlockId::try_from(&req.from[..])?;
+        let to = BlockId::try_from(&req.to[..])?;
+        let stream = service.pull_blocks(from, to).await?;
+        Ok(tonic::Response::new(OutboundTryStream::new(stream)))
+    }
+
     type PullBlocksToTipStream =
         OutboundTryStream<<T::BlockService as BlockService>::PullBlocksToTipStream>;
 

@@ -8,7 +8,10 @@ edition = "2018"
 
 [dependencies]
 log = "0.4.11"
-logging-lib = { path = "../logging-lib" }
 structopt = "0.3.14"
 tokio = { version = "0.2.21", features = ["macros"] }
+tracing = "0.1.21"
+tracing-futures = "0.2.4"
+tracing-subscriber = { version = "0.2.15", features=["fmt"] }
+tracing-appender = "0.1.1"
 vit-servicing-station-lib = { path = "../vit-servicing-station-lib" }

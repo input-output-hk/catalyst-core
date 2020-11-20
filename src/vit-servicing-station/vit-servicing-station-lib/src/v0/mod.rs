@@ -13,7 +13,9 @@ pub async fn filter(
     let root = warp::path!("api" / "v0" / ..);
 
     // log request statistics
-    let log = warp::log::custom(|info| crate::logging::log_request_elapsed_time(info.elapsed()));
+    let log = warp::log::custom(|info| {
+        tracing::info!("Request elapsed time: {}ms", info.elapsed().as_millis())
+    });
 
     endpoints::filter(root.boxed(), ctx, enable_api_tokens)
         .await

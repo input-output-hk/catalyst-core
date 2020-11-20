@@ -7,7 +7,6 @@ extern crate structopt;
 extern crate diesel_migrations;
 
 pub mod db;
-mod logging;
 pub mod server;
 pub mod utils;
 pub mod v0;

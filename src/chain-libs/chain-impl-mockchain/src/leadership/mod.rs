@@ -285,6 +285,6 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {
     fn cause(&self) -> Option<&dyn std::error::Error> {
-        self.cause.as_ref().map(std::ops::Deref::deref)
+        self.cause.as_deref()
     }
 }

@@ -243,11 +243,11 @@ where
     /// Stream blocks from the provided range.
     pub async fn pull_blocks(
         &mut self,
-        from: BlockId,
+        from: BlockIds,
         to: BlockId,
     ) -> Result<InboundStream<proto::Block, Block>, Error> {
         let req = proto::PullBlocksRequest {
-            from: from.as_ref().to_vec(),
+            from: convert::ids_into_repeated_bytes(from.into_vec()),
             to: to.as_ref().to_vec(),
         };
         let stream = self.inner.pull_blocks(req).await?.into_inner();

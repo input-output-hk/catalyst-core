@@ -48,7 +48,7 @@ pub trait BlockService {
     /// Stream all blocks from the given range.
     async fn pull_blocks(
         &self,
-        from: BlockId,
+        from: BlockIds,
         to: BlockId,
     ) -> Result<Self::PullBlocksStream, Error>;
 

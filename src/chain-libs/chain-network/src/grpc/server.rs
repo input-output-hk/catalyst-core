@@ -236,7 +236,7 @@ where
     ) -> Result<tonic::Response<Self::PullBlocksStream>, tonic::Status> {
         let service = self.block_service()?;
         let req = req.into_inner();
-        let from = BlockId::try_from(&req.from[..])?;
+        let from = block::try_ids_from_iter(req.from)?;
         let to = BlockId::try_from(&req.to[..])?;
         let stream = service.pull_blocks(from, to).await?;
         Ok(tonic::Response::new(OutboundTryStream::new(stream)))

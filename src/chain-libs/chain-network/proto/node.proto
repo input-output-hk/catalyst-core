@@ -106,8 +106,9 @@ message PullBlocksToTipRequest {
 
 // Request message for method PullBlocks
 message PullBlocksRequest {
-  // The identifiers of a starting block.
-  bytes from = 1;
+  // The identifiers of blocks to consider as the starting point in order of
+  // appearance.
+  repeated bytes from = 1;
   // The identifier of the end block
   bytes to = 2;
 }
@@ -188,8 +189,9 @@ service Node {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
 
-  // Requests blocks in the chain in the chronological order, given an
-  // inclusive range specified by PullBlocksRequest.
+  // Requests blocks in the chain in the chronological order, given a selection
+  // of possible starting blocks known by the requester, and the identifier of
+  // the end block to be included in the returned sequence.
   rpc PullBlocks(PullBlocksRequest) returns (stream Block) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }

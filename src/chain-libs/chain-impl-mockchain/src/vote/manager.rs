@@ -939,7 +939,7 @@ mod tests {
     fn get_tally_proof(wallet: &Wallet, id: VotePlanId) -> TallyProof {
         let certificate = build_vote_tally_cert(id);
         let fragment = TestTxCertBuilder::new(TestGen::hash(), LinearFee::new(0, 0, 0))
-            .make_transaction(&[&wallet], &certificate);
+            .make_transaction(Some(wallet), &certificate);
 
         match fragment {
             Fragment::VoteTally(tx) => {

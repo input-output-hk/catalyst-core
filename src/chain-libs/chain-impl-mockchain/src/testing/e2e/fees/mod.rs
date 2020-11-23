@@ -120,7 +120,7 @@ pub fn per_certificate_fees() {
 
     //4. retire stake pool
     controller
-        .retire(&[&alice], &stake_pool, &mut ledger)
+        .retire(Some(&alice), &stake_pool, &mut ledger)
         .unwrap();
     alice.confirm_transaction();
 

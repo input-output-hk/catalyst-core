@@ -19,6 +19,8 @@ use crate::{
     vote::PayloadType,
 };
 
+use std::iter;
+
 pub struct TestTxCertBuilder {
     block0_hash: HeaderId,
     fee: LinearFee,
@@ -186,21 +188,29 @@ impl TestTxCertBuilder {
         }
     }
 
-    pub fn make_transaction(self, signers: &[&Wallet], certificate: &Certificate) -> Fragment {
-        self.make_transaction_different_signers(&signers[0], signers, certificate)
+    pub fn make_transaction<'a, T>(self, signers: T, certificate: &Certificate) -> Fragment
+    where
+        T: IntoIterator<Item = &'a Wallet>,
+    {
+        let mut remainder = signers.into_iter();
+        let funder = remainder.next().expect("needs at least one signer");
+        self.make_transaction_different_signers(
+            funder,
+            iter::once(funder).chain(remainder),
+            certificate,
+        )
     }
 
-    pub fn make_transaction_different_signers(
+    pub fn make_transaction_different_signers<'a, T>(
         self,
-        funder: &Wallet,
-        signers: &[&Wallet],
+        funder: &'a Wallet,
+        signers: T,
         certificate: &Certificate,
-    ) -> Fragment {
-        let keys = signers
-            .iter()
-            .cloned()
-            .map(|owner| owner.private_key())
-            .collect();
+    ) -> Fragment
+    where
+        T: IntoIterator<Item = &'a Wallet>,
+    {
+        let keys = signers.into_iter().map(|x| x.private_key()).collect();
         let input = funder.make_input_with_value(self.fee(certificate));
         self.fragment(certificate, keys, &[input], &[], true, funder)
     }

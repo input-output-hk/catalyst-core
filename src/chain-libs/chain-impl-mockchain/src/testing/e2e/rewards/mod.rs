@@ -313,7 +313,7 @@ pub fn rewards_goes_to_treasury_if_stake_pool_is_retired() {
     assert!(ledger.produce_empty_block(&stake_pool).is_ok());
 
     controller
-        .retire(&[&alice], &stake_pool, &mut ledger)
+        .retire(Some(&alice), &stake_pool, &mut ledger)
         .unwrap();
     ledger.distribute_rewards().unwrap();
 

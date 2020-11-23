@@ -20,7 +20,7 @@ pub fn management_threshold() {
 
     // by default we need owners/2 votes to update pool
     assert!(controller
-        .retire(&[&alice], &stake_pool, &mut ledger)
+        .retire(Some(&alice), &stake_pool, &mut ledger)
         .is_err());
 
     LedgerStateVerifier::new(ledger.clone().into())
@@ -29,7 +29,7 @@ pub fn management_threshold() {
         .is_not_retired(&stake_pool);
 
     assert!(controller
-        .retire(&[&alice, &bob], &stake_pool, &mut ledger)
+        .retire(&[alice, bob], &stake_pool, &mut ledger)
         .is_ok());
 
     LedgerStateVerifier::new(ledger.into())

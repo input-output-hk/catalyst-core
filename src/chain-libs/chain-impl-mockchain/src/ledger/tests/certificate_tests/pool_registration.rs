@@ -39,7 +39,7 @@ pub fn pool_registration_is_accepted() {
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[&alice, &bob, &clarice], &certificate);
+        .make_transaction(&[alice, bob, clarice], &certificate);
     assert!(test_ledger
         .apply_fragment(&fragment, BlockDate::first())
         .is_ok());
@@ -67,7 +67,7 @@ pub fn pool_registration_zero_management_threshold() {
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[&alice, &bob, &clarice], &certificate);
+        .make_transaction(&[alice, bob, clarice], &certificate);
     assert_err!(
         Error::PoolRegistrationManagementThresholdZero,
         test_ledger.apply_fragment(&fragment, BlockDate::first())
@@ -96,7 +96,7 @@ pub fn pool_registration_management_threshold_above() {
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[&alice, &bob, &clarice], &certificate);
+        .make_transaction(&[alice, bob, clarice], &certificate);
     assert_err!(
         Error::PoolRegistrationManagementThresholdAbove,
         test_ledger.apply_fragment(&fragment, BlockDate::first())
@@ -123,7 +123,7 @@ pub fn pool_registration_too_many_owners() {
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[&alice], &certificate);
+        .make_transaction(&[alice], &certificate);
     assert_err!(
         Error::PoolRegistrationHasTooManyOwners,
         test_ledger.apply_fragment(&fragment, BlockDate::first())
@@ -151,7 +151,7 @@ pub fn pool_registration_too_many_operators() {
 
     let certificate = build_stake_pool_registration_cert(&stake_pool.info());
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[&alice], &certificate);
+        .make_transaction(&[alice], &certificate);
     assert_err!(
         Error::PoolRegistrationHasTooManyOperators,
         test_ledger.apply_fragment(&fragment, BlockDate::first())
@@ -193,7 +193,6 @@ pub fn pool_registration_too_many_signatures() {
     let signers: Vec<Wallet> = iter::from_fn(|| Some(Wallet::from_value(Value(1000))))
         .take(CHECK_POOL_REG_MAXIMUM_OWNERS + 1)
         .collect();
-    let signers: Vec<&Wallet> = signers.iter().map(|x| x).collect();
 
     let stake_pool = StakePoolBuilder::new()
         .with_owners(vec![alice.public_key()])

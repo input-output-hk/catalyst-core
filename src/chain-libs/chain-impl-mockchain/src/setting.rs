@@ -28,8 +28,8 @@ pub struct Settings {
     pub epoch_stability_depth: u32,
     pub active_slots_coeff: ActiveSlotsCoeff,
     pub block_content_max_size: BlockContentSize,
-    pub bft_leaders: Arc<Vec<BftLeaderId>>,
-    pub linear_fees: Arc<LinearFee>,
+    pub bft_leaders: Arc<Box<[BftLeaderId]>>,
+    pub linear_fees: LinearFee,
     /// The number of epochs that a proposal remains valid. To be
     /// precise, if a proposal is made at date (epoch_p, slot), then
     /// it expires at the start of epoch 'epoch_p +
@@ -40,8 +40,7 @@ pub struct Settings {
     pub fees_goes_to: FeesGoesTo,
     pub rewards_limit: rewards::Limit,
     pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
-
-    pub committees: Arc<Vec<CommitteeId>>,
+    pub committees: Arc<Box<[CommitteeId]>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -119,20 +118,20 @@ impl Settings {
             epoch_stability_depth: 10, // num of block
             active_slots_coeff: ActiveSlotsCoeff::try_from(Milli::HALF).unwrap(),
             block_content_max_size: 102_400,
-            bft_leaders: Arc::new(Vec::new()),
-            linear_fees: Arc::new(LinearFee::new(0, 0, 0)),
+            bft_leaders: Arc::new(Box::new([])),
+            linear_fees: LinearFee::new(0, 0, 0),
             proposal_expiration: 100,
             reward_params: None,
             treasury_params: None,
             fees_goes_to: FeesGoesTo::Rewards,
             rewards_limit: rewards::Limit::None,
             pool_participation_capping: None,
-            committees: Arc::new(Vec::new()),
+            committees: Arc::new(Box::new([])),
         }
     }
 
     pub fn linear_fees(&self) -> LinearFee {
-        *self.linear_fees
+        self.linear_fees
     }
 
     pub fn apply(&self, changes: &ConfigParams) -> Result<Self, update::Error> {
@@ -171,13 +170,13 @@ impl Settings {
                     // FIXME: O(n)
                     let mut v = new_state.bft_leaders.to_vec();
                     v.push(d.clone());
-                    new_state.bft_leaders = Arc::new(v);
+                    new_state.bft_leaders = Arc::new(v.into());
 
                     // BFT Leader are automatically promoted committee too
                     // FIXME: O(n)
                     let mut v = new_state.committees.to_vec();
                     v.push(d.as_public_key().clone().into());
-                    new_state.committees = Arc::new(v);
+                    new_state.committees = Arc::new(v.into());
                 }
                 ConfigParam::RemoveBftLeader(d) => {
                     new_state.bft_leaders = Arc::new(
@@ -190,7 +189,7 @@ impl Settings {
                     );
                 }
                 ConfigParam::LinearFee(d) => {
-                    new_state.linear_fees = Arc::new(*d);
+                    new_state.linear_fees = *d;
                 }
                 ConfigParam::ProposalExpiration(d) => {
                     new_state.proposal_expiration = *d;
@@ -225,7 +224,7 @@ impl Settings {
                     // FIXME: O(n)
                     let mut v = new_state.committees.to_vec();
                     v.push(*committee_id);
-                    new_state.committees = Arc::new(v);
+                    new_state.committees = Arc::new(v.into());
                 }
                 ConfigParam::RemoveCommitteeId(committee_id) => {
                     new_state.committees = Arc::new(
@@ -234,22 +233,19 @@ impl Settings {
                             .iter()
                             .filter(|cid| *cid != committee_id)
                             .cloned()
-                            .collect(),
+                            .collect::<Vec<_>>()
+                            .into(),
                     );
                 }
             }
         }
 
         if let Some(pcf) = per_certificate_fees {
-            Arc::get_mut(&mut new_state.linear_fees)
-                .unwrap()
-                .per_certificate_fees(*pcf);
+            new_state.linear_fees.per_certificate_fees(*pcf);
         }
 
         if let Some(pcf) = per_vote_certificate_fees {
-            Arc::get_mut(&mut new_state.linear_fees)
-                .unwrap()
-                .per_vote_certificate_fees(*pcf);
+            new_state.linear_fees.per_vote_certificate_fees(*pcf);
         }
 
         Ok(new_state)
@@ -271,7 +267,7 @@ impl Settings {
         for bft_leader in self.bft_leaders.iter() {
             params.push(ConfigParam::AddBftLeader(bft_leader.clone()));
         }
-        params.push(ConfigParam::LinearFee(*self.linear_fees));
+        params.push(ConfigParam::LinearFee(self.linear_fees));
         params.push(ConfigParam::ProposalExpiration(self.proposal_expiration));
 
         match &self.reward_params {

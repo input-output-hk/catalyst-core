@@ -59,7 +59,7 @@ pub struct LedgerParameters {
     /// Where the fees get transfered to during the rewards
     pub fees_goes_to: setting::FeesGoesTo,
     /// List of committee members
-    pub committees: Arc<Vec<CommitteeId>>,
+    pub committees: Arc<Box<[CommitteeId]>>,
 }
 
 /// Overall ledger structure.
@@ -1341,7 +1341,7 @@ impl Ledger {
 
     /// access the ledger static parameters
     pub fn get_static_parameters(&self) -> &LedgerStaticParameters {
-        self.static_params.as_ref()
+        &self.static_params
     }
 
     pub fn accounts(&self) -> &account::Ledger {
@@ -1350,7 +1350,7 @@ impl Ledger {
 
     pub fn get_ledger_parameters(&self) -> LedgerParameters {
         LedgerParameters {
-            fees: *self.settings.linear_fees,
+            fees: self.settings.linear_fees,
             treasury_tax: self
                 .settings
                 .treasury_params
@@ -1359,7 +1359,7 @@ impl Ledger {
             block_content_max_size: self.settings.block_content_max_size,
             epoch_stability_depth: self.settings.epoch_stability_depth,
             fees_goes_to: self.settings.fees_goes_to,
-            committees: Arc::clone(&self.settings.committees),
+            committees: self.settings.committees.clone(),
         }
     }
 
@@ -1763,6 +1763,7 @@ mod tests {
 
     impl Arbitrary for LedgerParameters {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let committees: Vec<CommitteeId> = Arbitrary::arbitrary(g);
             LedgerParameters {
                 fees: Arbitrary::arbitrary(g),
                 treasury_tax: Arbitrary::arbitrary(g),
@@ -1770,7 +1771,7 @@ mod tests {
                 block_content_max_size: Arbitrary::arbitrary(g),
                 epoch_stability_depth: Arbitrary::arbitrary(g),
                 fees_goes_to: Arbitrary::arbitrary(g),
-                committees: Arbitrary::arbitrary(g),
+                committees: Arc::new(committees.into()),
             }
         }
     }
@@ -2213,7 +2214,7 @@ mod tests {
                 block_content_max_size: 10_240,
                 epoch_stability_depth: 1000,
                 fees_goes_to: FeesGoesTo::Rewards,
-                committees: Arc::new(Vec::new()),
+                committees: Arc::new(Box::new([])),
             };
             InternalApplyTransactionTestParams {
                 dyn_params,

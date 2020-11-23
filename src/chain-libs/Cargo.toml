@@ -14,5 +14,4 @@ members = [
     "cardano-legacy-address",
     "sparse-array",
     "typed-bytes",
-    "btree",
 ]

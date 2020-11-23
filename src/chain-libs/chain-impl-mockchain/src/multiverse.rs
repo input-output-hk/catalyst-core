@@ -246,7 +246,7 @@ mod test {
             }
 
             let cur_block = store.get(&cur_hash).unwrap();
-            blocks_to_apply.push(cur_hash.clone());
+            blocks_to_apply.push(cur_hash);
             cur_hash = Hash::deserialize(cur_block.header.block_parent_hash().as_ref()).unwrap();
         };
 
@@ -366,10 +366,10 @@ mod test {
             assert_eq!(state.chain_length().0, i);
             assert_eq!(state.date, block.header.block_date());
             let block_id = block.header.id();
-            store.insert(block_id.clone(), block);
-            _ref = Some(multiverse.add(block_id.clone(), state.clone()));
+            store.insert(block_id, block);
+            _ref = Some(multiverse.add(block_id, state.clone()));
             multiverse.gc(SUFFIX_TO_KEEP);
-            ids.push(block_id.clone());
+            ids.push(block_id);
             parent = block_id;
             assert!(
                 multiverse.nr_states() <= SUFFIX_TO_KEEP as usize + ((i as f32).log2()) as usize

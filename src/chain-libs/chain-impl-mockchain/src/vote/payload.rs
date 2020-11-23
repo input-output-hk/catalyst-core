@@ -35,10 +35,11 @@ pub enum Payload {
     },
 }
 
-pub use chain_vote::EncryptedVote;
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ProofOfCorrectVote(chain_vote::ProofOfCorrectVote);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct EncryptedVote(chain_vote::EncryptedVote);
 
 #[derive(Debug, Error)]
 pub enum TryFromIntError {
@@ -78,10 +79,7 @@ impl Payload {
                 encrypted_vote,
                 proof,
             } => bb
-                .iter8(encrypted_vote, |bb, ct| {
-                    let buffer = ct.to_bytes();
-                    bb.bytes(&buffer)
-                })
+                .sub(|bb| encrypted_vote.serialize_in(bb))
                 .sub(|bb| proof.serialize_in(bb)),
         }
     }
@@ -95,17 +93,10 @@ impl Payload {
         match t {
             PayloadType::Public => buf.get_u8().map(Choice::new).map(Self::public),
             PayloadType::Private => {
-                let len: usize = buf.get_u8()? as usize;
-                let mut cypher_texts: Vec<Ciphertext> = Vec::new();
-                for _ in 0..len {
-                    let ct_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
-                    cypher_texts.push(Ciphertext::from_bytes(ct_buf).ok_or_else(|| {
-                        ReadError::StructureInvalid("Invalid private vote".to_string())
-                    })?);
-                }
+                let encrypted_vote = EncryptedVote::read(buf)?;
                 let proof = ProofOfCorrectVote::read(buf)?;
                 Ok(Self::Private {
-                    encrypted_vote: cypher_texts,
+                    encrypted_vote,
                     proof,
                 })
             }
@@ -173,6 +164,41 @@ impl ProofOfCorrectVote {
     }
 }
 
+impl EncryptedVote {
+    pub(crate) fn from_inner(vote: chain_vote::EncryptedVote) -> Self {
+        Self(vote)
+    }
+
+    pub(super) fn as_inner(&self) -> &chain_vote::EncryptedVote {
+        &self.0
+    }
+
+    pub(crate) fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+        bb.iter8(&self.0, |bb, ct| {
+            let buffer = ct.to_bytes();
+            bb.bytes(&buffer)
+        })
+    }
+
+    pub fn serialize(&self) -> ByteArray<Self> {
+        self.serialize_in(ByteBuilder::new()).finalize()
+    }
+
+    pub(crate) fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+        let len: usize = buf.get_u8()? as usize;
+        let mut cypher_texts: Vec<Ciphertext> = Vec::new();
+        for _ in 0..len {
+            let ct_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
+            cypher_texts.push(
+                Ciphertext::from_bytes(ct_buf).ok_or_else(|| {
+                    ReadError::StructureInvalid("Invalid private vote".to_string())
+                })?,
+            );
+        }
+        Ok(Self(cypher_texts))
+    }
+}
+
 impl TryFrom<u8> for PayloadType {
     type Error = TryFromIntError;
     fn try_from(value: u8) -> Result<Self, Self::Error> {
@@ -232,7 +258,10 @@ mod tests {
                         &ek,
                         Vote::new(vote_options as usize, choice as usize),
                     );
-                    Payload::private(vote, ProofOfCorrectVote::from_inner(proof))
+                    Payload::private(
+                        EncryptedVote::from_inner(vote),
+                        ProofOfCorrectVote::from_inner(proof),
+                    )
                 }
             }
         }

@@ -269,19 +269,19 @@ impl DelegationVerifier {
 
     pub fn is_fully_delegated_to(&self, expected_pool_id: PoolId) -> &Self {
         match &self.delegation_type {
-            DelegationType::NonDelegated => panic!(format!(
+            DelegationType::NonDelegated => panic!(
                 "{}: wrong wrong delegation type NonDelegated, Expected: Full",
                 self.info
-            )),
+            ),
             DelegationType::Full(pool_id) => assert_eq!(
                 *pool_id, expected_pool_id,
                 "{}: wrong pool id. Expected: {}, but got: {}",
                 self.info, expected_pool_id, pool_id
             ),
-            DelegationType::Ratio(_) => panic!(format!(
-                "{}: wrong delegation type: Ratio, , Expected: Full",
+            DelegationType::Ratio(_) => panic!(
+                "{}: wrong delegation type: Ratio, Expected: Full",
                 self.info
-            )),
+            ),
         };
         self
     }

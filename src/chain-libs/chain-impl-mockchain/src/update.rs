@@ -557,7 +557,7 @@ mod tests {
         let leaders = TestGen::leaders_pairs()
             .take(5)
             .collect::<Vec<LeaderPair>>();
-        let proposer = leaders.iter().next().clone().unwrap();
+        let proposer = &leaders[0];
         let settings = TestGen::settings(leaders.clone());
 
         update_state = apply_update_proposal(
@@ -594,7 +594,7 @@ mod tests {
         let leaders = TestGen::leaders_pairs()
             .take(5)
             .collect::<Vec<LeaderPair>>();
-        let proposer = leaders.iter().next().clone().unwrap();
+        let proposer = &leaders[0];
         let settings = TestGen::settings(leaders.clone());
 
         // Apply proposal
@@ -625,7 +625,7 @@ mod tests {
         let leaders = TestGen::leaders_pairs()
             .take(5)
             .collect::<Vec<LeaderPair>>();
-        let proposer = leaders.iter().next().clone().unwrap();
+        let proposer = &leaders[0];
         let settings = TestGen::settings(leaders.clone());
 
         update_state = apply_update_proposal(
@@ -660,7 +660,7 @@ mod tests {
         let leaders = TestGen::leaders_pairs()
             .take(5)
             .collect::<Vec<LeaderPair>>();
-        let proposer = leaders.iter().next().clone().unwrap();
+        let proposer = &leaders[0];
         let settings = TestGen::settings(leaders.clone());
 
         update_state = apply_update_proposal(

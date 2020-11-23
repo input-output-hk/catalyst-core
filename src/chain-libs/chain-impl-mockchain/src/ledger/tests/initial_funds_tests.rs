@@ -114,7 +114,7 @@ pub fn ledger_starts_with_old_utxo_declaration() {
         .clone();
     let (address, value) = (output.address, output.value);
 
-    assert_eq!((address, value), *old_address.addrs.iter().next().unwrap());
+    assert_eq!((address, value), old_address.addrs[0]);
 }
 
 #[test]
@@ -230,5 +230,5 @@ pub fn ledger_fails_to_start_with_old_utxo_declaration() {
         .clone();
     let (address, value) = (output.address, output.value);
 
-    assert_eq!((address, value), *old_address.addrs.iter().next().unwrap());
+    assert_eq!((address, value), old_address.addrs[0]);
 }

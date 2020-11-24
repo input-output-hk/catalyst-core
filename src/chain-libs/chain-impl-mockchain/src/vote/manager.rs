@@ -190,7 +190,7 @@ impl ProposalManager {
                             encrypted_vote,
                             proof: _,
                         } => {
-                            tally.add(encrypted_vote, stake.0);
+                            tally.add(encrypted_vote.as_inner(), stake.0);
                         }
                     }
                 }
@@ -543,7 +543,7 @@ impl VotePlanManager {
                 let pk = chain_vote::EncryptingVoteKey::from_participants(
                     self.plan.committee_public_keys(),
                 );
-                if !chain_vote::verify_vote(&pk, encrypted_vote, proof.as_inner()) {
+                if !chain_vote::verify_vote(&pk, encrypted_vote.as_inner(), proof.as_inner()) {
                     Err(VoteError::VoteVerificationError)
                 } else {
                     Ok(())

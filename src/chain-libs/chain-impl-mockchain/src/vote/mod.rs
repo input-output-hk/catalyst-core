@@ -12,14 +12,12 @@ mod privacy;
 mod status;
 mod tally;
 
-pub use chain_vote::EncryptedVote;
-
 pub use self::{
     choice::{Choice, Options},
     committee::CommitteeId,
     ledger::{VotePlanLedger, VotePlanLedgerError},
     manager::{VoteError, VotePlanManager},
-    payload::{Payload, PayloadType, ProofOfCorrectVote, TryFromIntError},
+    payload::{EncryptedVote, Payload, PayloadType, ProofOfCorrectVote, TryFromIntError},
     privacy::encrypt_vote,
     status::{VotePlanStatus, VoteProposalStatus},
     tally::{PrivateTallyState, Tally, TallyError, TallyResult, Weight},

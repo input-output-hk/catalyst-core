@@ -20,6 +20,7 @@ use super::FragmentFactory;
 #[cfg(test)]
 use chain_addr::Discrimination;
 
+use crate::vote::EncryptedVote;
 use rand_core::{CryptoRng, RngCore};
 use thiserror::Error;
 
@@ -252,7 +253,7 @@ impl Controller {
                     );
 
                     Payload::Private {
-                        encrypted_vote,
+                        encrypted_vote: EncryptedVote::from_inner(encrypted_vote),
                         proof: ProofOfCorrectVote::from_inner(proof),
                     }
                 }

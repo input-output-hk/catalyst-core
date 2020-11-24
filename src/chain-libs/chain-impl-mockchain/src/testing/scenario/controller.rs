@@ -175,22 +175,22 @@ impl Controller {
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
-    pub fn retire(
-        &self,
-        owners: &[&Wallet],
-        stake_pool: &StakePool,
-        test_ledger: &mut TestLedger,
+    pub fn retire<'a>(
+        &'a self,
+        owners: impl IntoIterator<Item = &'a Wallet>,
+        stake_pool: &'a StakePool,
+        test_ledger: &'a mut TestLedger,
     ) -> Result<(), LedgerError> {
         let fragment = self.fragment_factory.stake_pool_retire(owners, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
-    pub fn update(
-        &self,
-        stake_pool: &StakePool,
+    pub fn update<'a>(
+        &'a self,
+        stake_pool: &'a StakePool,
         update: StakePool,
-        owners: Vec<&Wallet>,
-        test_ledger: &mut TestLedger,
+        owners: impl IntoIterator<Item = &'a Wallet>,
+        test_ledger: &'a mut TestLedger,
     ) -> Result<(), LedgerError> {
         let fragment = self
             .fragment_factory
@@ -370,7 +370,7 @@ mod tests {
             .unwrap();
         bob.confirm_transaction();
         controller
-            .retire(&[&clarice], &stake_pool, &mut ledger)
+            .retire(Some(&clarice), &stake_pool, &mut ledger)
             .unwrap();
         clarice.confirm_transaction();
         // unassigned = clarice - fee (becaue thus clarise is an onwer of the stake she did not delegates any stakes)

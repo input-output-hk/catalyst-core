@@ -777,7 +777,7 @@ mod tests {
         committee_ids.insert(committee.public_key().into());
         let mut vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
 
-        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        let governance = governance_50_percent(blank, favorable, rejection);
         let mut stake_controlled = StakeControl::new();
         stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
         //    stake_controlled = stake_controlled.add_unassigned(Stake(49));
@@ -846,7 +846,7 @@ mod tests {
         committee_ids.insert(TestGen::public_key().into());
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
 
-        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        let governance = governance_50_percent(blank, favorable, rejection);
         let mut stake_controlled = StakeControl::new();
         stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
         stake_controlled = stake_controlled.add_unassigned(Stake(49));
@@ -900,7 +900,7 @@ mod tests {
         committee_ids.insert(committee.public_key().into());
         let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
 
-        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        let governance = governance_50_percent(blank, favorable, rejection);
         let mut stake_controlled = StakeControl::new();
         stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
         stake_controlled = stake_controlled.add_unassigned(Stake(49));
@@ -939,7 +939,7 @@ mod tests {
     fn get_tally_proof(wallet: &Wallet, id: VotePlanId) -> TallyProof {
         let certificate = build_vote_tally_cert(id);
         let fragment = TestTxCertBuilder::new(TestGen::hash(), LinearFee::new(0, 0, 0))
-            .make_transaction(&[&wallet], &certificate);
+            .make_transaction(Some(wallet), &certificate);
 
         match fragment {
             Fragment::VoteTally(tx) => {
@@ -1004,16 +1004,16 @@ mod tests {
         stake_controlled = stake_controlled.add_unassigned(Stake(49));
 
         let proposals = ProposalManagers::new(&vote_plan);
-        let _ = proposals.vote(identifier.clone(), first_vote_cast.clone());
-        let _ = proposals.vote(identifier.clone(), second_vote_cast.clone());
+        let _ = proposals.vote(identifier.clone(), first_vote_cast);
+        let _ = proposals.vote(identifier, second_vote_cast);
 
-        let governance = governance_50_percent(&blank, &favorable, &rejection);
+        let governance = governance_50_percent(blank, favorable, rejection);
         proposals_vote_tally_succesful(&proposals, &stake_controlled, &governance);
         vote_tally_succesful(&first_proposal_manager, &stake_controlled, &governance);
         vote_tally_succesful(&second_proposal_manager, &stake_controlled, &governance);
     }
 
-    fn governance_50_percent(blank: &Choice, favorable: &Choice, rejection: &Choice) -> Governance {
+    fn governance_50_percent(blank: Choice, favorable: Choice, rejection: Choice) -> Governance {
         let gov_acceptance_criteria = GovernanceAcceptanceCriteria {
             minimum_stake_participation: Some(Ratio {
                 numerator: 50,
@@ -1023,9 +1023,9 @@ mod tests {
                 numerator: 50,
                 denominator: CENT,
             }),
-            blank: blank.clone(),
-            favorable: favorable.clone(),
-            rejection: rejection.clone(),
+            blank,
+            favorable,
+            rejection,
             options: Options::new_length(3).expect("3 valid choices possible"),
         };
 
@@ -1033,7 +1033,7 @@ mod tests {
         treasury_governance.set_default_acceptance_criteria(gov_acceptance_criteria.clone());
 
         let mut parameters_governance = ParametersGovernance::new();
-        parameters_governance.set_default_acceptance_criteria(gov_acceptance_criteria.clone());
+        parameters_governance.set_default_acceptance_criteria(gov_acceptance_criteria);
         Governance {
             treasury: treasury_governance,
             parameters: parameters_governance,

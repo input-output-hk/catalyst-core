@@ -158,10 +158,7 @@ pub fn ledger_new_dupicated_initial_fragments() {
     assert_eq!(
         Ledger::new(
             header_id,
-            vec![
-                &Fragment::Initial(ie.clone()),
-                &Fragment::Initial(ie.clone())
-            ]
+            vec![&Fragment::Initial(ie.clone()), &Fragment::Initial(ie)]
         )
         .err()
         .unwrap(),
@@ -182,7 +179,7 @@ pub fn ledger_new_duplicated_block0() {
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
 
-    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+    Ledger::new(header_id, vec![&Fragment::Initial(ie)]).unwrap();
 }
 
 #[test]
@@ -198,7 +195,7 @@ pub fn ledger_new_duplicated_discrimination() {
     ie.push(ConfigParam::KESUpdateSpeed(3600));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
 
-    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+    Ledger::new(header_id, vec![&Fragment::Initial(ie)]).unwrap();
 }
 
 #[test]
@@ -215,7 +212,7 @@ pub fn ledger_new_duplicated_consensus_version() {
     ie.push(ConfigParam::KESUpdateSpeed(3600));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
 
-    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+    Ledger::new(header_id, vec![&Fragment::Initial(ie)]).unwrap();
 }
 
 #[test]
@@ -231,7 +228,7 @@ pub fn ledger_new_duplicated_slot_duration() {
     ie.push(ConfigParam::KESUpdateSpeed(3600));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
 
-    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+    Ledger::new(header_id, vec![&Fragment::Initial(ie)]).unwrap();
 }
 
 #[test]
@@ -249,7 +246,7 @@ pub fn ledger_new_duplicated_epoch_stability_depth() {
     ie.push(ConfigParam::KESUpdateSpeed(3600));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
 
-    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+    Ledger::new(header_id, vec![&Fragment::Initial(ie)]).unwrap();
 }
 
 #[test]
@@ -271,7 +268,7 @@ pub fn ledger_new_duplicated_active_slots_coeff() {
     ie.push(ConfigParam::KESUpdateSpeed(3600));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
 
-    Ledger::new(header_id, vec![&Fragment::Initial(ie.clone())]).unwrap();
+    Ledger::new(header_id, vec![&Fragment::Initial(ie)]).unwrap();
 }
 
 #[test]

@@ -114,7 +114,7 @@ pub fn ledger_starts_with_old_utxo_declaration() {
         .clone();
     let (address, value) = (output.address, output.value);
 
-    assert_eq!((address, value), *old_address.addrs.iter().next().unwrap());
+    assert_eq!((address, value), old_address.addrs[0]);
 }
 
 #[test]
@@ -125,8 +125,8 @@ pub fn ledger_fails_to_starts_with_tx_with_input() {
     let receiver = Wallet::new("receiver", Value(10));
 
     let faucet_fragment = create_initial_transaction(&faucet);
-    let fragment_with_input = InitialFaultTolerantTxBuilder::new(faucet.clone(), receiver.clone())
-        .transaction_with_input_output();
+    let fragment_with_input =
+        InitialFaultTolerantTxBuilder::new(faucet, receiver).transaction_with_input_output();
 
     assert_eq!(
         LedgerBuilder::from_config(config)
@@ -230,5 +230,5 @@ pub fn ledger_fails_to_start_with_old_utxo_declaration() {
         .clone();
     let (address, value) = (output.address, output.value);
 
-    assert_eq!((address, value), *old_address.addrs.iter().next().unwrap());
+    assert_eq!((address, value), old_address.addrs[0]);
 }

@@ -6,7 +6,7 @@ pub enum Error {
     Open(#[source] std::io::Error),
     #[error("block not found")]
     BlockNotFound,
-    #[error("database backend error")]
+    #[error("volatile store error")]
     VolatileBackendError(#[from] sled::Error),
     #[error("permanent store error")]
     PermanentBackendError(#[from] data_pile::Error),

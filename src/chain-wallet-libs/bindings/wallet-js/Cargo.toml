@@ -18,8 +18,8 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-chain-crypto = {path = "../../chain-deps/chain-crypto"}
-chain-vote = {path = "../../chain-deps/chain-vote"}
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 getrandom = {version = "0.1.14", features = ["wasm-bindgen"]}
 rand = "0.7.3"
 rand_chacha = "0.2.2"

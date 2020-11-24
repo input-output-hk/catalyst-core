@@ -56,6 +56,6 @@ impl Settings {
     }
 
     pub fn committee(&self) -> &[CommitteeId] {
-        self.parameters.committees.as_slice()
+        &self.parameters.committees
     }
 }

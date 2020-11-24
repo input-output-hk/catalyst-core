@@ -14,9 +14,9 @@ thiserror = { version = "1.0.13", default-features = false }
 chain-path-derivation = { path = "../chain-path-derivation" }
 hex = "0.4.2"
 
-chain-crypto = { path = "../chain-deps/chain-crypto" }
-chain-addr = { path = "../chain-deps/chain-addr" }
-cardano-legacy-address = { path = "../chain-deps/cardano-legacy-address" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+cardano-legacy-address = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 
 [dev-dependencies]
 quickcheck = "0.9"

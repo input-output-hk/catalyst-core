@@ -1,13 +1,19 @@
+use crate::common::startup::server::BootstrapCommandBuilder;
+use assert_cmd::assert::OutputAssertExt;
+
+#[cfg(windows)]
 use crate::common::{
     paths::BLOCK0_BIN,
     startup::{
         empty_db,
-        server::{dump_settings, BootstrapCommandBuilder, ServerSettingsBuilder},
+        server::{dump_settings, ServerSettingsBuilder},
     },
 };
-use assert_cmd::assert::OutputAssertExt;
+#[cfg(windows)]
 use assert_fs::TempDir;
+#[cfg(windows)]
 use std::path::PathBuf;
+#[cfg(windows)]
 use vit_servicing_station_lib::server::exit_codes::ApplicationExitCode;
 
 #[test]

@@ -117,7 +117,7 @@ impl DbBuilder {
         let db_path = db
             .path()
             .to_str()
-            .ok_or_else(|| DbBuilderError::CannotExtractTempPath)?;
+            .ok_or(DbBuilderError::CannotExtractTempPath)?;
         println!("Building db in {:?}...", db_path);
 
         let connection = SqliteConnection::establish(db_path)?;

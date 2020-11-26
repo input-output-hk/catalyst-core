@@ -10,9 +10,5 @@ members = [
     "bindings/wallet-js",
 ]
 
-exclude = [
-    "chain-deps",
-]
-
 [profile.release]
 lto = "yes"

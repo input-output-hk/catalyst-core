@@ -1,6 +1,6 @@
 use chain_impl_mockchain::{
     certificate::{VoteCast, VotePlanId},
-    vote::{Choice, Options, Payload},
+    vote::{self, Choice, Options, Payload},
 };
 pub use chain_vote::EncryptingVoteKey;
 use chain_vote::Vote;
@@ -77,7 +77,7 @@ impl Proposal {
                 let choice = choice.as_byte() - self.options.choice_range().start;
 
                 let vote = Vote::new(length.into(), choice.into());
-                let (encrypted_vote, proof) = chain_vote::encrypt_vote(&mut rng, key, vote);
+                let (encrypted_vote, proof) = vote::encrypt_vote(&mut rng, key, vote);
 
                 Payload::Private {
                     encrypted_vote,

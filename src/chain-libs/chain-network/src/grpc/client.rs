@@ -240,6 +240,20 @@ where
         Ok(InboundStream::new(stream))
     }
 
+    /// Stream blocks from the provided range.
+    pub async fn pull_blocks(
+        &mut self,
+        from: BlockIds,
+        to: BlockId,
+    ) -> Result<InboundStream<proto::Block, Block>, Error> {
+        let req = proto::PullBlocksRequest {
+            from: convert::ids_into_repeated_bytes(from.into_vec()),
+            to: to.as_ref().to_vec(),
+        };
+        let stream = self.inner.pull_blocks(req).await?.into_inner();
+        Ok(InboundStream::new(stream))
+    }
+
     /// Stream blocks from the first of the given starting points
     /// that is found in the peer's chain, to the chain's tip.
     pub async fn pull_blocks_to_tip(

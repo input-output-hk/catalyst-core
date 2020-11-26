@@ -41,6 +41,17 @@ pub trait BlockService {
         to: BlockId,
     ) -> Result<Self::PullHeadersStream, Error>;
 
+    /// The type of an asynchronous stream that provides blocks in responce to
+    /// `pull_blocks` method.
+    type PullBlocksStream: Stream<Item = Result<Block, Error>> + Send + Sync;
+
+    /// Stream all blocks from the given range.
+    async fn pull_blocks(
+        &self,
+        from: BlockIds,
+        to: BlockId,
+    ) -> Result<Self::PullBlocksStream, Error>;
+
     /// The type of an asynchronous stream that provides blocks in
     /// response to `pull_blocks_to_tip` method.
     type PullBlocksToTipStream: Stream<Item = Result<Block, Error>> + Send + Sync;

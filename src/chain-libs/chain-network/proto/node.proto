@@ -104,6 +104,15 @@ message PullBlocksToTipRequest {
   repeated bytes from = 1;
 }
 
+// Request message for method PullBlocks
+message PullBlocksRequest {
+  // The identifiers of blocks to consider as the starting point in order of
+  // appearance.
+  repeated bytes from = 1;
+  // The identifier of the end block
+  bytes to = 2;
+}
+
 // Response message for method PushHeaders.
 message PushHeadersResponse {}
 
@@ -177,6 +186,13 @@ service Node {
   // and the identifier of the end block to be included in the returned
   // sequence.
   rpc PullHeaders(PullHeadersRequest) returns (stream Header) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
+
+  // Requests blocks in the chain in the chronological order, given a selection
+  // of possible starting blocks known by the requester, and the identifier of
+  // the end block to be included in the returned sequence.
+  rpc PullBlocks(PullBlocksRequest) returns (stream Block) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
 

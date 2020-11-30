@@ -1,0 +1,55 @@
+[package]
+authors = ["Enzo Cioppettini <ecioppettini@atixlabs.com>"]
+description = """utility library used to generate and encrypt single utxo
+keys to interact with the wallet from third party applications
+"""
+edition = "2018"
+license = "MIT OR Apache-2.0"
+name = "keygen"
+repository = "https://github.com/input-output-hk/chain-wallet-libs"
+version = "0.5.0-pre7"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies]
+bech32 = "0.7.2"
+chain-crypto = {git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"}
+getrandom = {version = "0.1.14", features = ["wasm-bindgen"]}
+js-sys = "0.3.40"
+rand = "0.7.3"
+rand_chacha = "0.2.2"
+symmetric-cipher = {path = "../symmetric-cipher"}
+wasm-bindgen = "0.2"
+
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = {version = "0.1.1", optional = true}
+
+# `wee_alloc` is a tiny allocator for wasm that is only ~1K in code size
+# compared to the default allocator's ~10K. It is slower than the default
+# allocator, however.
+#
+# Unfortunately, `wee_alloc` requires nightly Rust when targeting wasm for now.
+wee_alloc = {version = "0.4.2", optional = true}
+
+# clear_on_drop is a dependency of ed25519_dalek
+# The default can't be compiled to wasm, so it's necessary to enable either the 'nightly'
+# feature or this one.
+clear_on_drop = {version = "0.2", features = ["no_cc"]}
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"
+
+# See https://github.com/rustwasm/wasm-pack/issues/886
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O4", "--enable-mutable-globals"]

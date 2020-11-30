@@ -45,9 +45,6 @@ impl Ed25519ExtendedPrivate {
 }
 
 #[wasm_bindgen]
-pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
-
-#[wasm_bindgen]
 pub struct Ed25519Public(chain_crypto::PublicKey<chain_crypto::Ed25519>);
 
 #[wasm_bindgen]

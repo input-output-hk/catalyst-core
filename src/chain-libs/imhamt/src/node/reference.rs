@@ -4,6 +4,8 @@ use super::super::helper;
 use super::super::operation::*;
 use super::super::sharedref::SharedRef;
 use std::borrow::Borrow;
+use std::error::Error;
+use std::fmt::Debug;
 
 use std::slice;
 
@@ -97,7 +99,7 @@ impl<K: Clone + PartialEq, V: Clone> Collision<K, V> {
     pub fn update<F, U>(&self, h: HashedKey, k: &K, f: F) -> Result<Entry<K, V>, UpdateError<U>>
     where
         F: FnOnce(&V) -> Result<Option<V>, U>,
-        U: std::error::Error + std::fmt::Debug + 'static,
+        U: Error + Debug + 'static,
     {
         let (pos, (_, v)) = self.get_record_and_pos(k).ok_or(UpdateError::KeyNotFound)?;
         match f(v).map_err(UpdateError::ValueCallbackError)? {
@@ -455,7 +457,7 @@ where
     K: PartialEq + Clone,
     V: Clone,
     F: FnOnce(&V) -> Result<Option<V>, U>,
-    U: std::error::Error + std::fmt::Debug,
+    U: Error + Debug + 'static,
 {
     let level_hash = h.level_index(lvl);
     let idx = node.bitmap.get_index_sparse(level_hash);

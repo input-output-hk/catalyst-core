@@ -24,6 +24,7 @@ mod tests {
     use std::cmp;
     use std::collections::hash_map::DefaultHasher;
     use std::collections::BTreeMap;
+    use std::convert::Infallible;
     use std::hash::Hash;
 
     #[derive(Debug, Clone)]
@@ -139,7 +140,7 @@ mod tests {
     }
 
     #[allow(clippy::trivially_copy_pass_by_ref)]
-    fn next_u32(x: &u32) -> Result<Option<u32>, ()> {
+    fn next_u32(x: &u32) -> Result<Option<u32>, Infallible> {
         Ok(Some(*x + 1))
     }
 
@@ -345,7 +346,7 @@ mod tests {
     where
         K: Hash + Clone + Eq + Ord + Sync,
         V: Clone + PartialEq + Sync,
-        F: Fn(&V) -> Result<Option<V>, ()> + Copy,
+        F: Fn(&V) -> Result<Option<V>, Infallible> + Copy,
         G: Fn(&V) -> V + Copy,
     {
         let mut reference = BTreeMap::new();
@@ -411,7 +412,7 @@ mod tests {
                     None => continue,
                     Some(k) => {
                         reference.remove(&k);
-                        h = h.update::<_, ()>(&k, |_| Ok(None)).unwrap();
+                        h = h.update::<_, Infallible>(&k, |_| Ok(None)).unwrap();
                     }
                 },
             }

@@ -290,12 +290,8 @@ pub enum Error {
     PoolUpdateFeesNotAllowedYet,
     #[error("Update not yet allowed")]
     UpdateNotAllowedYet,
-    #[error("Cannot add the vote plan")]
-    CannotAddVotePlan(
-        #[from]
-        #[source]
-        VotePlanLedgerError,
-    ),
+    #[error("Voting error")]
+    VotePlan(#[from] VotePlanLedgerError),
     #[error("Scripts addresses are not yet supported by the system")]
     ScriptsAddressNotAllowedYet,
 }

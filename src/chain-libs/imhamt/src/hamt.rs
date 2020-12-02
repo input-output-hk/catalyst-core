@@ -5,6 +5,8 @@ use super::node::{
 };
 pub use super::operation::{InsertError, RemoveError, ReplaceError, UpdateError};
 use std::borrow::Borrow;
+use std::error::Error;
+use std::fmt::Debug;
 use std::iter::FromIterator;
 use std::marker::PhantomData;
 use std::mem::swap;
@@ -130,6 +132,7 @@ impl<H: Hasher + Default, K: Eq + Hash + Clone, V: Clone> Hamt<H, K, V> {
     pub fn update<F, U>(&self, k: &K, f: F) -> Result<Self, UpdateError<U>>
     where
         F: FnOnce(&V) -> Result<Option<V>, U>,
+        U: Error + Debug + 'static,
     {
         let h = HashedKey::compute(self.hasher, &k);
         let newroot = update_rec(&self.root, h, 0, k, f)?;
@@ -150,6 +153,7 @@ impl<H: Hasher + Default, K: Eq + Hash + Clone, V: Clone> Hamt<H, K, V> {
     where
         F: FnOnce(&V) -> Result<Option<V>, E>,
         V: Clone,
+        E: Error + Debug + 'static,
     {
         match self.update(&k, f) {
             Ok(new_self) => Ok(new_self),
@@ -173,9 +177,10 @@ impl<H: Hasher + Default, K: Eq + Hash + Clone, V: Clone> Hamt<H, K, V> {
         F: for<'a> FnOnce(&'a V) -> Option<V>,
         V: Clone,
     {
-        match self.update(&k, |x| Ok(f(x))) {
+        use std::convert::Infallible;
+        match self.update(&k, |x| Ok::<_, Infallible>(f(x))) {
             Ok(new_self) => new_self,
-            Err(UpdateError::ValueCallbackError(())) => unreachable!(), // callback always wrapped in Ok
+            Err(UpdateError::ValueCallbackError(_)) => unreachable!(), // callback always wrapped in Ok
             Err(UpdateError::KeyNotFound) => {
                 // unwrap is safe: only error than can be raised is an EntryExist which is fundamentally impossible in this error case handling
                 self.insert(k, v).unwrap()

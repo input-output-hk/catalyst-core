@@ -19,12 +19,17 @@ pub struct VotePlanLedger {
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum VotePlanLedgerError {
-    #[error("cannot insert the vote plan {id}: {reason:?}")]
-    VotePlanInsertionError { id: VotePlanId, reason: InsertError },
+    #[error("cannot insert the vote plan {id}")]
+    VotePlanInsertionError {
+        id: VotePlanId,
+        #[source]
+        reason: InsertError,
+    },
 
-    #[error("cannot insert the vote plan {id}: {reason:?}")]
+    #[error("cannot update the vote plan {id}")]
     VoteError {
         id: VotePlanId,
+        #[source]
         reason: UpdateError<VoteError>,
     },
 

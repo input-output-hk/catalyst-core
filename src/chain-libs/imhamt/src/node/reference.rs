@@ -97,6 +97,7 @@ impl<K: Clone + PartialEq, V: Clone> Collision<K, V> {
     pub fn update<F, U>(&self, h: HashedKey, k: &K, f: F) -> Result<Entry<K, V>, UpdateError<U>>
     where
         F: FnOnce(&V) -> Result<Option<V>, U>,
+        U: std::error::Error + std::fmt::Debug + 'static,
     {
         let (pos, (_, v)) = self.get_record_and_pos(k).ok_or(UpdateError::KeyNotFound)?;
         match f(v).map_err(UpdateError::ValueCallbackError)? {
@@ -443,7 +444,7 @@ where
 // recursively try to update a key.
 //
 // note, an update cannot create a new value, it can only delete or update an existing value.
-pub fn update_rec<K: PartialEq + Clone, V: Clone, F, U>(
+pub fn update_rec<K, V, F, U>(
     node: &Node<K, V>,
     h: HashedKey,
     lvl: usize,
@@ -451,7 +452,10 @@ pub fn update_rec<K: PartialEq + Clone, V: Clone, F, U>(
     f: F,
 ) -> Result<Option<Node<K, V>>, UpdateError<U>>
 where
+    K: PartialEq + Clone,
+    V: Clone,
     F: FnOnce(&V) -> Result<Option<V>, U>,
+    U: std::error::Error + std::fmt::Debug,
 {
     let level_hash = h.level_index(lvl);
     let idx = node.bitmap.get_index_sparse(level_hash);

@@ -9,6 +9,7 @@ use crate::transaction::{Output, TransactionIndex};
 use chain_addr::Address;
 use sparse_array::{FastSparseArray, FastSparseArrayBuilder, FastSparseArrayIter};
 use std::collections::hash_map::DefaultHasher;
+use std::convert::Infallible;
 use std::fmt;
 use thiserror::Error;
 
@@ -30,8 +31,8 @@ impl From<InsertError> for Error {
     }
 }
 
-impl From<UpdateError<()>> for Error {
-    fn from(_: UpdateError<()>) -> Error {
+impl From<UpdateError<Infallible>> for Error {
+    fn from(_: UpdateError<Infallible>) -> Error {
         Error::TransactionNotFound
     }
 }

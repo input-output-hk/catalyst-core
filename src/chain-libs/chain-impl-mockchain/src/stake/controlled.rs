@@ -135,8 +135,10 @@ impl StakeControl {
     /// also update the total stake
     #[must_use = "internal state is not modified"]
     pub fn remove_from(&self, identifier: Identifier, stake: Stake) -> Self {
+        use std::convert::Infallible;
+
         let control = self.control.update(&identifier, |v| {
-            Result::<Option<Stake>, String>::Ok(v.checked_sub(stake))
+            Result::<Option<Stake>, Infallible>::Ok(v.checked_sub(stake))
         });
 
         let control = match control {

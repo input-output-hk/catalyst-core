@@ -179,6 +179,57 @@ jobs:
           file_glob: true
           overwrite: true
 
+  release_keygen:
+    name: Release catalyst keygen/pincode wasm assets
+    needs: initial_release
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [bundler]
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Install wasm pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: build
+        run: |
+          wasm-pack build \
+            --scope iohk-jormungandr \
+            --out-name keygen \
+            --release --target ${{ matrix.target }} \
+           keygen
+
+      # https://github.com/rustwasm/wasm-pack/issues/837
+      - name: patch package.json missing file
+        working-directory: ./keygen
+        run: sh patch-packaging.sh 
+
+      - name: pack
+        run: wasm-pack pack keygen
+
+      - name: Get tag version
+        id: get_version
+        run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
+        shell: bash
+
+      - name: rename-tarball
+        run: find ./keygen/pkg -name iohk-jormungandr-keygen*.tgz -exec mv {} iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.*
+          asset_name: iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
+          tag: ${{ github.ref }}
+          file_glob: true
+          overwrite: true
+
   build_jni_assets:
     name: Build android jni wallet ${{ matrix.config.os }}
     needs: initial_release

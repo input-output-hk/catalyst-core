@@ -37,17 +37,6 @@ fn gen_key() {
 }
 
 #[wasm_bindgen_test]
-fn encrypt_decrypt() {
-    let data = [1u8; 64 * 2];
-    let password = [1u8, 2, 3, 4];
-    let encrypted = symmetric_encrypt(&password, &data).unwrap();
-    assert_eq!(
-        &symmetric_decrypt(&password, &encrypted).unwrap()[..],
-        &data[..]
-    );
-}
-
-#[wasm_bindgen_test]
 fn gen_key_from_seed() {
     let seed1 = [1u8; 32];
     let key1 = Ed25519ExtendedPrivate::from_seed(seed1.as_ref()).unwrap();

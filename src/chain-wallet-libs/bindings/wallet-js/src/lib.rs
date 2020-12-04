@@ -297,18 +297,6 @@ impl Ed25519Signature {
     }
 }
 
-#[wasm_bindgen]
-pub fn symmetric_encrypt(password: &[u8], data: &[u8]) -> Result<Box<[u8]>, JsValue> {
-    symmetric_cipher::encrypt(password, data, rand::rngs::OsRng)
-        .map_err(|e| JsValue::from_str(&format!("encryption failed {}", e)))
-}
-
-#[wasm_bindgen]
-pub fn symmetric_decrypt(password: &[u8], data: &[u8]) -> Result<Box<[u8]>, JsValue> {
-    symmetric_cipher::decrypt(password, data)
-        .map_err(|e| JsValue::from_str(&format!("decryption failed {}", e)))
-}
-
 #[macro_export]
 macro_rules! impl_public_key {
     ($name:ident, $wrapped_type:ty) => {
@@ -407,12 +395,4 @@ impl EncryptingVoteKey {
             .ok_or_else(|| JsValue::from_str("invalid binary format"))
             .map(Self)
     }
-}
-
-#[wasm_bindgen]
-/// decode a bech32 string to a byte array, disregarding the hrp
-pub fn bech32_decode_to_bytes(input: &str) -> Result<Vec<u8>, JsValue> {
-    bech32::decode(input)
-        .and_then(|(_hrp, words)| bech32::FromBase32::from_base32(&words))
-        .map_err(|err| JsValue::from_str(&format!("{}", err)))
 }

@@ -1,13 +1,11 @@
 [package]
 authors = ["Enzo Cioppettini <ecioppettini@atixlabs.com>"]
-description = """Wallet functionalities to interact with Jörmungandr
-
-This package profiles all that is needed to have an healthy and secure
-interaction with Jörmungandr blockchain technology.
+description = """utility library used to generate and encrypt single utxo
+keys to interact with the wallet from third party applications
 """
 edition = "2018"
 license = "MIT OR Apache-2.0"
-name = "wallet-js"
+name = "keygen"
 repository = "https://github.com/input-output-hk/chain-wallet-libs"
 version = "0.5.0-pre8"
 
@@ -18,16 +16,14 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+bech32 = "0.7.2"
+chain-crypto = {git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"}
 getrandom = {version = "0.1.14", features = ["wasm-bindgen"]}
+js-sys = "0.3.40"
 rand = "0.7.3"
 rand_chacha = "0.2.2"
-symmetric-cipher = {path = "../../symmetric-cipher"}
-wallet-core = {path = "../wallet-core"}
+symmetric-cipher = {path = "../symmetric-cipher"}
 wasm-bindgen = "0.2"
-js-sys = "0.3.40"
-bech32 = "0.7.2"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires

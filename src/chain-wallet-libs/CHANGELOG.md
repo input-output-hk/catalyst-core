@@ -6,6 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.0-pre8] - 2020-12-04
+
+#### wallet-js
+
+- Remove `symmetric_encrypt` (moved to *keygen*)
+- Remove `symmetric_decrypt` (moved to *keygen*)
+- Remove `bech32_decode_to_bytes` (moved to *keygen*)
+
+#### keygen
+
+Add specific package used for daedalus catalyst
+
+*Features*
+
+- Generate Ed25519Extended private/public keys.
+- Encrypt keys with pin.
+- Decode bech32 strings.
+
 ## [0.5.0-pre7] - 2020-11-16
 
 #### wallet-js

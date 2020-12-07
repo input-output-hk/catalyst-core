@@ -58,7 +58,7 @@ impl ServerSettingsBuilder {
     }
 
     pub fn with_log_output_path(&mut self, path: PathBuf) -> &mut Self {
-        self.settings.log.log_output_path = Some(path.to_str().unwrap().to_owned());
+        self.settings.log.log_output_path = Some(path);
         self
     }
 

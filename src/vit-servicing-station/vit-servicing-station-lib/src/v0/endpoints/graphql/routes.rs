@@ -44,33 +44,38 @@ mod test {
 
     use crate::db::migrations as db_testing;
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
+    use serde_json::json;
     use warp::{Filter, Rejection, Reply};
 
-    // TODO: This query is not nice to read as documentation for the test. It was taken from the option
-    // in postman to check the curl command. The actual graphql body request is like this:
-    // {
-    //     fund(id: 1) {
-    //         id,
-    //         fundName,
-    //         fundGoal,
-    //         votingPowerInfo,
-    //         rewardsInfo,
-    //         fundStartTime,
-    //         fundEndTime,
-    //         nextFundStartTime,
-    //         chainVotePlans {
-    //             id,
-    //             chainVoteplanId,
-    //             chainVoteStartTime,
-    //             chainVoteEndTime,
-    //             chainCommitteeEndTime,
-    //             chainVoteplanPayload,
-    //             chainVoteEncryptionKey,
-    //             fundId
-    //         },
-    //     }
-    // }
-    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    fund(id: 1) {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        votingPowerThreshold,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEndTime,\\n            chainVoteplanPayload,\\n            chainVoteEncryptionKey,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
+    // FIXME: Why u no understand named queries with variables?
+    //  query fundById($id: Int!) {
+    //      fund(id: $id) {
+    //          ..
+    //      }
+    //  }
+    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = r#"{
+        fund(id: 42) {
+            id,
+            fundName,
+            fundGoal,
+            votingPowerInfo,
+            votingPowerThreshold,
+            rewardsInfo,
+            fundStartTime,
+            fundEndTime,
+            nextFundStartTime,
+            chainVotePlans {
+                id,
+                chainVoteplanId,
+                chainVoteStartTime,
+                chainVoteEndTime,
+                chainCommitteeEndTime,
+                chainVoteplanPayload,
+                chainVoteEncryptionKey,
+                fundId
+            },
+        }
+    }"#;
 
     // TODO: This query is not nice to read as documentation for the test. It was taken from the option
     // in postman to check the curl command. The actual graphql body request is like this:
@@ -224,7 +229,15 @@ mod test {
 
         let result = warp::test::request()
             .method("POST")
-            .body(FUND_BY_ID_ALL_ATTRIBUTES_QUERY.as_bytes())
+            .body(
+                json!({
+                    "query": FUND_BY_ID_ALL_ATTRIBUTES_QUERY,
+                    /* "variables": {
+                        "id": fund.id,
+                    }*/
+                })
+                .to_string(),
+            )
             .reply(&graphql_filter)
             .await;
 
@@ -232,6 +245,10 @@ mod test {
 
         let query_result: serde_json::Value =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+
+        if let Some(errors) = query_result.get("errors") {
+            panic!("query had errors: {}", errors);
+        }
 
         let result_fund = query_result["data"]["fund"].clone();
         let result_fund: Fund = serde_json::from_value(result_fund).unwrap();

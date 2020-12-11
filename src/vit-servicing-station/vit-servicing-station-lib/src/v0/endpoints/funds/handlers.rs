@@ -68,7 +68,7 @@ pub mod test {
 
         let result = warp::test::request()
             .method("GET")
-            .path("/1")
+            .path(&format!("/{}", fund.id))
             .reply(&filter)
             .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);

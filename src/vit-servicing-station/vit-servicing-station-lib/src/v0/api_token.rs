@@ -73,7 +73,11 @@ async fn authorize_token(token: String, context: SharedContext) -> Result<(), Re
     match manager.is_token_valid(api_token).await {
         Ok(true) => Ok(()),
         Ok(false) => {
-            crate::logging::log_rejected_api_key(token);
+            tracing::event!(
+                tracing::Level::INFO,
+                "Unauthorized token received: {}",
+                token
+            );
             Err(warp::reject::custom(HandleError::UnauthorizedToken))
         }
         Err(e) => Err(warp::reject::custom(e)),

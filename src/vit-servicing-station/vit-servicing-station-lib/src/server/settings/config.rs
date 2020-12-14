@@ -3,6 +3,7 @@ use simplelog::LevelFilter;
 use std::io::ErrorKind;
 use std::net::SocketAddr;
 use std::ops::Deref;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::{fmt, fs};
 
@@ -109,16 +110,11 @@ pub enum LogLevel {
 pub struct Log {
     /// Output log file path
     #[structopt(long)]
-    pub log_output_path: Option<String>,
+    pub log_output_path: Option<PathBuf>,
 
     /// Application logging level
     #[structopt(long)]
     pub log_level: Option<LogLevel>,
-
-    /// Mute stdout log
-    #[serde(default)]
-    #[structopt(long)]
-    pub mute_terminal_log: bool,
 }
 
 fn parse_allowed_origins(arg: &str) -> Result<AllowedOrigins, std::io::Error> {
@@ -171,10 +167,6 @@ impl ServiceSettings {
 
         if other_settings.log.log_output_path.is_some() {
             return_settings.log.log_output_path = other_settings.log.log_output_path.clone();
-        }
-
-        if other_settings.log.mute_terminal_log {
-            return_settings.log.mute_terminal_log = other_settings.log.mute_terminal_log;
         }
 
         return_settings.enable_api_tokens = other_settings.enable_api_tokens;
@@ -285,6 +277,19 @@ impl From<LogLevel> for LevelFilter {
     }
 }
 
+impl From<LogLevel> for tracing_subscriber::filter::LevelFilter {
+    fn from(level: LogLevel) -> Self {
+        match level {
+            LogLevel::Disabled => tracing_subscriber::filter::LevelFilter::OFF,
+            LogLevel::Error => tracing_subscriber::filter::LevelFilter::ERROR,
+            LogLevel::Warn => tracing_subscriber::filter::LevelFilter::WARN,
+            LogLevel::Info => tracing_subscriber::filter::LevelFilter::INFO,
+            LogLevel::Debug => tracing_subscriber::filter::LevelFilter::DEBUG,
+            LogLevel::Trace => tracing_subscriber::filter::LevelFilter::TRACE,
+        }
+    }
+}
+
 impl FromStr for LogLevel {
     type Err = std::io::Error;
 
@@ -328,7 +333,6 @@ impl Default for Log {
         Self {
             log_output_path: None,
             log_level: None,
-            mute_terminal_log: false,
         }
     }
 }
@@ -404,7 +408,10 @@ mod test {
         );
         assert_eq!(config.block0_path, "./test/bin.test");
         assert_eq!(config.enable_api_tokens, true);
-        assert_eq!(config.log.log_output_path.unwrap(), "./server.log");
+        assert_eq!(
+            config.log.log_output_path.unwrap(),
+            std::path::PathBuf::from_str("./server.log").unwrap()
+        );
         assert_eq!(config.log.log_level, Some(LogLevel::Error));
         let tls_config = config.tls;
         let cors_config = config.cors;
@@ -467,7 +474,10 @@ mod test {
             allowed_origins[0],
             CorsOrigin("https://foo.test".to_string())
         );
-        assert_eq!(settings.log.log_output_path.unwrap(), "./log.log");
+        assert_eq!(
+            settings.log.log_output_path.unwrap(),
+            std::path::PathBuf::from_str("./log.log").unwrap()
+        );
         assert_eq!(settings.log.log_level, Some(LogLevel::Error));
     }
 

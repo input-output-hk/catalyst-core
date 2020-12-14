@@ -1,11 +1,67 @@
+use std::path::PathBuf;
 use structopt::StructOpt;
 
+use tracing::{error, info};
 use vit_servicing_station_lib::{
     db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
     server::settings::ServiceSettings, v0,
 };
 
-use logging_lib::{config::config_log, *};
+fn check_and_build_proper_path(path: &PathBuf) -> std::io::Result<()> {
+    use std::fs;
+    // create parent dirs if not exists
+    fs::create_dir_all(path.parent().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Cannot create path tree {}", path.to_str().unwrap()),
+        )
+    })?)?;
+    fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .open(&path)?;
+    Ok(())
+}
+
+fn config_tracing(
+    level: server_settings::LogLevel,
+    pathbuf: Option<PathBuf>,
+) -> Result<(), std::io::Error> {
+    if let Some(path) = pathbuf {
+        // check path integrity
+        // we try opening the file since tracing appender would just panic instead of
+        // returning an error
+        check_and_build_proper_path(&path)?;
+
+        let file_appender = tracing_appender::rolling::never(
+            path.parent().ok_or_else(|| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    format!("Log file path `{}` is invalid.", path.display()),
+                )
+            })?,
+            path.file_name().ok_or_else(|| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    format!(
+                        "Log file path `{}` doesn't contain a valid file name.",
+                        path.display()
+                    ),
+                )
+            })?,
+        );
+
+        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+        tracing_subscriber::fmt()
+            .with_writer(non_blocking)
+            .with_max_level(level)
+            .init();
+        Ok(())
+    } else {
+        tracing_subscriber::fmt().with_max_level(level).init();
+        Ok(())
+    }
+}
 
 #[tokio::main]
 async fn main() {
@@ -26,32 +82,30 @@ async fn main() {
     // dump settings and exit if specified
     if let Some(settings_file) = &settings.out_settings_file {
         server_settings::dump_settings_to_file(settings_file, &settings).unwrap_or_else(|e| {
-            log::error!("Error writing settings to file {}: {}", settings_file, e);
+            error!("Error writing settings to file {}: {}", settings_file, e);
             std::process::exit(ApplicationExitCode::WriteSettingsError.into())
         });
         std::process::exit(0);
     }
 
     // setup logging
-    config_log(
-        settings.log.log_level.unwrap_or_default().into(),
+    config_tracing(
+        settings.log.log_level.unwrap_or_default(),
         settings.log.log_output_path.clone(),
-        settings.log.mute_terminal_log,
-        None,
     )
     .unwrap_or_else(|e| {
-        log::error!("Error setting up logging: {}", e);
+        error!("Error setting up logging: {}", e);
         std::process::exit(ApplicationExitCode::LoadSettingsError.into())
     });
 
     // Check db file exists (should be here only for current sqlite db backend)
     if !std::path::Path::new(&settings.db_url).exists() {
-        log::error!("DB file {} not found.", &settings.db_url);
+        error!("DB file {} not found.", &settings.db_url);
         std::process::exit(ApplicationExitCode::DBConnectionError.into())
     }
     // load db pool
     let db_pool = db::load_db_connection_pool(&settings.db_url).unwrap_or_else(|e| {
-        log::error!("Error connecting to database: {}", e);
+        error!("Error connecting to database: {}", e);
         std::process::exit(ApplicationExitCode::DBConnectionError.into())
     });
 

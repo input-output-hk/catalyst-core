@@ -12,6 +12,12 @@ fn config_tracing(
     pathbuf: Option<PathBuf>,
 ) -> Result<(), std::io::Error> {
     if let Some(path) = pathbuf {
+        // check path integrity
+        // we try opening the file since tracing appender would just panic instead of
+        // returning an error
+        {
+            std::fs::File::open(&path)?;
+        }
         let file_appender = tracing_appender::rolling::never(
             path.parent().ok_or_else(|| {
                 std::io::Error::new(

@@ -7,6 +7,22 @@ use vit_servicing_station_lib::{
     server::settings::ServiceSettings, v0,
 };
 
+fn check_and_build_proper_path(path: &PathBuf) -> std::io::Result<()> {
+    use std::fs;
+    // create parent dirs if not exists
+    fs::create_dir_all(path.parent().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("Cannot create path tree {}", path.to_str().unwrap()),
+        )
+    })?)?;
+    fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .open(&path)?;
+    Ok(())
+}
+
 fn config_tracing(
     level: server_settings::LogLevel,
     pathbuf: Option<PathBuf>,
@@ -15,9 +31,8 @@ fn config_tracing(
         // check path integrity
         // we try opening the file since tracing appender would just panic instead of
         // returning an error
-        {
-            std::fs::File::open(&path)?;
-        }
+        check_and_build_proper_path(&path)?;
+
         let file_appender = tracing_appender::rolling::never(
             path.parent().ok_or_else(|| {
                 std::io::Error::new(
@@ -35,6 +50,7 @@ fn config_tracing(
                 )
             })?,
         );
+
         let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
         tracing_subscriber::fmt()
             .with_writer(non_blocking)

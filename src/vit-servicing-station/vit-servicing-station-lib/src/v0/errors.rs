@@ -1,4 +1,4 @@
-use async_graphql::FieldError;
+use async_graphql::{ErrorExtensionValues, FieldError};
 use thiserror::Error;
 use warp::{reply::Response, Rejection, Reply};
 
@@ -55,10 +55,12 @@ impl warp::reject::Reject for HandleError {}
 
 impl async_graphql::ErrorExtensions for HandleError {
     fn extend(&self) -> FieldError {
-        async_graphql::FieldError(
-            self.to_message(),
-            Some(serde_json::json!({"code" : self.to_status_code().as_u16()})),
-        )
+        let mut extensions = ErrorExtensionValues::default();
+        extensions.set("code", self.to_status_code().as_u16());
+        FieldError {
+            message: self.to_message(),
+            extensions: Some(extensions),
+        }
     }
 }
 

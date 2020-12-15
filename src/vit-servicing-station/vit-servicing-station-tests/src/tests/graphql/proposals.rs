@@ -83,6 +83,7 @@ pub fn additional_field_test() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
+#[ignore]
 pub fn aliases_test() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
     let (server, snapshot) = quick_start(&temp_dir).unwrap();

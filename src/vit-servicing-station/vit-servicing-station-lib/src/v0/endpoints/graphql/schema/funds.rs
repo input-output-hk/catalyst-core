@@ -4,7 +4,6 @@ use crate::db::{
     queries::voteplans as voteplans_queries,
 };
 use crate::utils::datetime::unix_timestamp_to_datetime;
-use async_graphql;
 use async_graphql::Context;
 
 #[async_graphql::Object]

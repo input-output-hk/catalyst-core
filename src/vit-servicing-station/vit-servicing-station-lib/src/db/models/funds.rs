@@ -75,6 +75,7 @@ impl Queryable<funds::SqlType, DB> for Fund {
 #[allow(clippy::type_complexity)]
 impl Insertable<funds::table> for Fund {
     type Values = (
+        Option<diesel::dsl::Eq<funds::id, i32>>,
         diesel::dsl::Eq<funds::fund_name, String>,
         diesel::dsl::Eq<funds::fund_goal, String>,
         diesel::dsl::Eq<funds::voting_power_info, String>,
@@ -86,7 +87,13 @@ impl Insertable<funds::table> for Fund {
     );
 
     fn values(self) -> Self::Values {
+        let id_item = if self.id == 0 {
+            None
+        } else {
+            Some(funds::id.eq(self.id))
+        };
         (
+            id_item,
             funds::fund_name.eq(self.fund_name),
             funds::fund_goal.eq(self.fund_goal),
             funds::voting_power_info.eq(self.voting_power_info),
@@ -111,8 +118,9 @@ pub mod test {
     use diesel::{ExpressionMethods, RunQueryDsl};
 
     pub fn get_test_fund() -> Fund {
+        const FUND_ID: i32 = 42;
         Fund {
-            id: 1,
+            id: FUND_ID,
             fund_name: "hey oh let's go".to_string(),
             fund_goal: "test this endpoint".to_string(),
             voting_power_info: ">9000".to_string(),
@@ -121,12 +129,13 @@ pub mod test {
             fund_start_time: Utc::now().timestamp(),
             fund_end_time: Utc::now().timestamp(),
             next_fund_start_time: Utc::now().timestamp(),
-            chain_vote_plans: vec![voteplans_testing::get_test_voteplan_with_fund_id(1)],
+            chain_vote_plans: vec![voteplans_testing::get_test_voteplan_with_fund_id(FUND_ID)],
         }
     }
 
     pub fn populate_db_with_fund(fund: &Fund, pool: &DBConnectionPool) {
         let values = (
+            funds::id.eq(fund.id),
             funds::fund_name.eq(fund.fund_name.clone()),
             funds::fund_goal.eq(fund.fund_goal.clone()),
             funds::voting_power_info.eq(fund.voting_power_info.clone()),

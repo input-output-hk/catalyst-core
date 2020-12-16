@@ -8,52 +8,52 @@ use async_graphql::Context;
 
 #[async_graphql::Object]
 impl Fund {
-    #[field(desc = "Fund ID")]
+    /// Fund ID
     pub async fn id(&self) -> i32 {
         self.id
     }
 
-    #[field(desc = "Fund Name")]
+    /// Fund Name
     pub async fn fund_name(&self) -> &str {
         &self.fund_name
     }
 
-    #[field(desc = "Fund Goal")]
+    /// Fund Goal
     pub async fn fund_goal(&self) -> &str {
         &self.fund_goal
     }
 
-    #[field(desc = "Fund voting information")]
+    /// Fund voting information
     pub async fn voting_power_info(&self) -> &str {
         &self.voting_power_info
     }
 
-    #[field(desc = "Fund voting threshold")]
+    /// Fund voting threshold
     pub async fn voting_power_threshold(&self) -> i64 {
         self.voting_power_threshold
     }
 
-    #[field(desc = "Fund rewards information")]
+    /// Fund rewards information
     pub async fn rewards_info(&self) -> &str {
         &self.rewards_info
     }
 
-    #[field(desc = "Fund start time, rfc3339 formatted")]
+    /// Fund start time, rfc3339 formatted
     pub async fn fund_start_time(&self) -> String {
         unix_timestamp_to_datetime(self.fund_start_time).to_rfc3339()
     }
 
-    #[field(desc = "Fund end time, rfc3339 formatted")]
+    /// Fund end time, rfc3339 formatted
     pub async fn fund_end_time(&self) -> String {
         unix_timestamp_to_datetime(self.fund_end_time).to_rfc3339()
     }
 
-    #[field(desc = "Next fund start time, rfc3339 formatted")]
+    /// Next fund start time, rfc3339 formatted
     pub async fn next_fund_start_time(&self) -> String {
         unix_timestamp_to_datetime(self.next_fund_start_time).to_rfc3339()
     }
 
-    #[field(desc = "Fund chain voteplans")]
+    /// Fund chain voteplans
     pub async fn chain_vote_plans(
         &self,
         ctx: &Context<'_>,

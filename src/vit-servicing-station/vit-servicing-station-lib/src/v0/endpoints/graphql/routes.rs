@@ -1,7 +1,7 @@
 use super::schema::QueryRoot;
 use crate::db;
 use crate::v0::context::SharedContext;
-use async_graphql::{http::GQLResponse, EmptyMutation, EmptySubscription, QueryBuilder, Schema};
+use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use std::convert::Infallible;
 use warp::{filters::BoxedFilter, Filter, Rejection, Reply};
 
@@ -24,11 +24,14 @@ pub async fn filter(
     .finish();
 
     let graph_ql = async_graphql_warp::graphql(schema).and_then(
-        |(schema, builder): (_, QueryBuilder)| async move {
-            // Execute query
-            let resp = builder.execute(&schema).await;
-            // Return result
-            Ok::<_, Infallible>(warp::reply::json(&GQLResponse(resp)).into_response())
+        |(schema, request): (
+            async_graphql::Schema<QueryRoot, EmptyMutation, EmptySubscription>,
+            async_graphql::Request,
+        )| async move {
+            // execute query
+            let response = schema.execute(request).await;
+            // return result
+            Ok::<_, Infallible>(async_graphql_warp::Response::from(response))
         },
     );
 

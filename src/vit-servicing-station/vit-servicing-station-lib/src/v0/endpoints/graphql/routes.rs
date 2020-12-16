@@ -50,14 +50,33 @@ mod test {
     use serde_json::json;
     use warp::{Filter, Rejection, Reply};
 
-    // FIXME: Why u no understand named queries with variables?
-    //  query fundById($id: Int!) {
-    //      fund(id: $id) {
-    //          ..
-    //      }
-    //  }
-    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = r#"{
-        fund(id: 42) {
+    const FUND_BY_ID_ALL_ATTRIBUTES_QUERY: &str = r#"
+        query fundById($fid: Int!) {
+            fund(id: $fid) {
+                id,
+                fundName,
+                fundGoal,
+                votingPowerInfo,
+                votingPowerThreshold,
+                rewardsInfo,
+                fundStartTime,
+                fundEndTime,
+                nextFundStartTime,
+                chainVotePlans {
+                    id,
+                    chainVoteplanId,
+                    chainVoteStartTime,
+                    chainVoteEndTime,
+                    chainCommitteeEndTime,
+                    chainVoteplanPayload,
+                    chainVoteEncryptionKey,
+                    fundId
+                }
+            }
+        }"#;
+
+    const FUNDS_ALL_ATTRIBUTES_QUERY: &str = r#"{
+        funds {
             id,
             fundName,
             fundGoal,
@@ -80,31 +99,43 @@ mod test {
         }
     }"#;
 
-    // TODO: This query is not nice to read as documentation for the test. It was taken from the option
-    // in postman to check the curl command. The actual graphql body request is like this:
-    // {
-    //     funds {
-    //         id,
-    //         fundName,
-    //         fundGoal,
-    //         votingPowerInfo,
-    //         rewardsInfo,
-    //         fundStartTime,
-    //         fundEndTime,
-    //         nextFundStartTime,
-    //         chainVotePlans {
-    //             id,
-    //             chainVoteplanId,
-    //             chainVoteStartTime,
-    //             chainVoteEndTime,
-    //             chainCommitteeEndTime,
-    //             chainVoteplanPayload,
-    //             chainVoteEncryptionKey,
-    //             fundId
-    //         },
-    //     }
-    // }
-    const FUNDS_ALL_ATTRIBUTES_QUERY: &str = "{\"query\":\"{\\n    funds {\\n        id,\\n        fundName,\\n        fundGoal,\\n        votingPowerInfo,\\n        votingPowerThreshold,\\n        rewardsInfo,\\n        fundStartTime,\\n        fundEndTime,\\n        nextFundStartTime,\\n        chainVotePlans {\\n            id,\\n            chainVoteplanId,\\n            chainVoteStartTime,\\n            chainVoteEndTime,\\n            chainCommitteeEndTime,\\n            chainVoteplanPayload,\\n            chainVoteEncryptionKey,\\n            fundId\\n        },\\n    }\\n}\",\"variables\":{}}";
+    const PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY: &str = r#"
+         query proposalById($id: String!) {
+            proposal(proposalId: $id) {
+                internalId,
+                proposalId,
+                category {
+                    categoryId,
+                    categoryName,
+                    categoryDescription,
+                },
+                proposalTitle,
+                proposalSummary,
+                proposalSolution,
+                proposalProblem,
+                proposalPublicKey,
+                proposalFunds,
+                proposalUrl,
+                proposalFilesUrl,
+                proposalImpactScore,
+                proposer {
+                    proposerName,
+                    proposerEmail,
+                    proposerUrl,
+                    proposerRelevantExperience
+                },
+                chainProposalId,
+                chainProposalIndex,
+                chainVoteOptions,
+                chainVoteplanId,
+                chainVoteplanPayload,
+                chainVoteEncryptionKey,
+                chainVoteStartTime,
+                chainVoteEndTime,
+                chainCommitteeEndTime,
+                fundId
+            }
+        }"#;
 
     // TODO: This query is not nice to read as documentation for the test. It was taken from the option
     // in postman to check the curl command. The actual graphql body request is like this:
@@ -140,43 +171,43 @@ mod test {
     //         fundId
     //     }
     // }
-    const PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposal(proposalId: \\\"1\\\") {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposalImpactScore,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n,        proposerRelevantExperience\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteEncryptionKey,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
-
-    // TODO: This query is not nice to read as documentation for the test. It was taken from the option
-    // in postman to check the curl command. The actual graphql body request is like this:
-    //     proposal(proposalId: 1) {
-    //         id,
-    //         proposalId,
-    //         category {
-    //             categoryId,
-    //             categoryName,
-    //             categoryDescription,
-    //         },
-    //         proposalTitle,
-    //         proposalSummary,
-    //         proposalProblem,
-    //         proposalPublicKey,
-    //         proposalFunds,
-    //         proposalUrl,
-    //         proposalFilesUrl,
-    //         proposer {
-    //             proposerName,
-    //             proposerEmail,
-    //             proposerUrl
-    //         },
-    //         chainProposalId,
-    //         chainProposalIndex,
-    //         chainVoteOptions,
-    //         chainVoteplanId,
-    //         chainVoteplanPayload,
-    //         chainVoteEncryptionKey,
-    //         chainVoteStartTime,
-    //         chainVoteEndTime,
-    //         chainCommitteeEndTime,
-    //         fundId
-    //     }
-    // }
-    const PROPOSALS_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposals {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposalImpactScore,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n,        proposerRelevantExperience\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteEncryptionKey,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
+    // const PROPOSALS_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposals {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposalImpactScore,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n,        proposerRelevantExperience\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteEncryptionKey,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
+    const PROPOSALS_ALL_ATTRIBUTES_QUERY: &str = r#"{
+        proposals {
+            internalId,
+            proposalId,
+            category {
+                categoryId,
+                categoryName,
+                categoryDescription,
+            },
+            proposalTitle,
+            proposalSummary,
+            proposalSolution,
+            proposalProblem,
+            proposalPublicKey,
+            proposalFunds,
+            proposalUrl,
+            proposalFilesUrl,
+            proposalImpactScore,
+            proposer {
+                proposerName,
+                proposerEmail,
+                proposerUrl,
+                proposerRelevantExperience
+            },
+            chainProposalId,
+            chainProposalIndex,
+            chainVoteOptions,
+            chainVoteplanId,
+            chainVoteplanPayload,
+            chainVoteEncryptionKey,
+            chainVoteStartTime,
+            chainVoteEndTime,
+            chainCommitteeEndTime,
+            fundId
+        }
+    }"#;
 
     async fn build_fund_test_filter() -> (
         Fund,
@@ -229,18 +260,18 @@ mod test {
     #[tokio::test]
     async fn get_fund_by_id() {
         let (fund, graphql_filter) = build_fund_test_filter().await;
+        let body = json!({
+            "operationName": "fundById",
+            "query": FUND_BY_ID_ALL_ATTRIBUTES_QUERY,
+            "variables": {
+                "fid": fund.id
+            }
+        })
+        .to_string();
 
         let result = warp::test::request()
             .method("POST")
-            .body(
-                json!({
-                    "query": FUND_BY_ID_ALL_ATTRIBUTES_QUERY,
-                    /* "variables": {
-                        "id": fund.id,
-                    }*/
-                })
-                .to_string(),
-            )
+            .body(body)
             .reply(&graphql_filter)
             .await;
 
@@ -263,9 +294,11 @@ mod test {
     async fn get_funds() {
         let (fund, graphql_filter) = build_fund_test_filter().await;
 
+        let body = json!({ "query": FUNDS_ALL_ATTRIBUTES_QUERY }).to_string();
+
         let result = warp::test::request()
             .method("POST")
-            .body(FUNDS_ALL_ATTRIBUTES_QUERY.as_bytes())
+            .body(body)
             .reply(&graphql_filter)
             .await;
 
@@ -273,6 +306,10 @@ mod test {
 
         let query_result: serde_json::Value =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+
+        if let Some(errors) = query_result.get("errors") {
+            panic!("query had errors: {}", errors);
+        }
 
         let result_fund = query_result["data"]["funds"].clone();
         let result_fund: Vec<Fund> = serde_json::from_value(result_fund).unwrap();
@@ -284,9 +321,18 @@ mod test {
     async fn get_proposal_by_id() {
         let (proposal, graphql_filter) = build_proposal_test_filter().await;
 
+        let body = json!({
+            "operationName": "proposalById",
+            "query": PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY,
+            "variables": {
+                "id": proposal.proposal_id
+            }
+        })
+        .to_string();
+
         let result = warp::test::request()
             .method("POST")
-            .body(PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY.as_bytes())
+            .body(body)
             .reply(&graphql_filter)
             .await;
 
@@ -294,6 +340,10 @@ mod test {
 
         let query_result: serde_json::Value =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+
+        if let Some(errors) = query_result.get("errors") {
+            panic!("query had errors: {}", errors);
+        }
 
         let result_proposal = query_result["data"]["proposal"].clone();
         let result_proposal: Proposal = serde_json::from_value(result_proposal).unwrap();
@@ -305,9 +355,11 @@ mod test {
     async fn get_proposals() {
         let (proposal, graphql_filter) = build_proposal_test_filter().await;
 
+        let body = json!({ "query": PROPOSALS_ALL_ATTRIBUTES_QUERY }).to_string();
+
         let result = warp::test::request()
             .method("POST")
-            .body(PROPOSALS_ALL_ATTRIBUTES_QUERY.as_bytes())
+            .body(body)
             .reply(&graphql_filter)
             .await;
 
@@ -315,6 +367,10 @@ mod test {
 
         let query_result: serde_json::Value =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+
+        if let Some(errors) = query_result.get("errors") {
+            panic!("query had errors: {}", errors);
+        }
 
         let result_proposal = query_result["data"]["proposals"].clone();
         let result_proposal: Vec<Proposal> = serde_json::from_value(result_proposal).unwrap();

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.5.0-pre9] - 2020-12-17
+
+- Add explicit link to libdl.so in release process
+
 ## [0.5.0-pre8] - 2020-12-04
 
 #### wallet-js

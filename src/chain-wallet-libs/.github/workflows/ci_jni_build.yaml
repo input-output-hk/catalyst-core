@@ -38,7 +38,7 @@ jobs:
         with:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
-          args: --release --target ${{ matrix.config.target }} -p wallet-jni -- -C lto
+          args: --release --target ${{ matrix.config.target }} -p wallet-jni -- -C lto -C link-args=-ldl
 
       - name: Prepare package
         run: mkdir -p jniLibs/${{ matrix.config.target }}

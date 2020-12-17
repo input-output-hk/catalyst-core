@@ -21,7 +21,7 @@ pub fn genereate_empty_db() {
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_file.path().to_str().unwrap())
-        .start()
+        .start(&temp_dir)
         .unwrap();
 
     std::thread::sleep(std::time::Duration::from_secs(1));

@@ -252,13 +252,6 @@ jobs:
           override: true
           default: true
 
-      - name: Downgrade cross
-        uses: actions-rs/cargo@v1
-        if: ${{ matrix.config.cross }}
-        with:
-          command: install
-          args: --version 0.1.16 cross
-
       - name: Checkout code
         uses: actions/checkout@v1
         with:
@@ -269,7 +262,7 @@ jobs:
         with:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
-          args: --release --target ${{ matrix.config.target }} -p wallet-jni -- -C lto
+          args: --release --target ${{ matrix.config.target }} -p wallet-jni -- -C lto -C link-args=-ldl
 
       - name: Prepare package
         run: mkdir -p jniLibs/${{ matrix.config.target }}

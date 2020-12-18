@@ -10,7 +10,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 
 use self::{db::DbBuilder, server::ServerBootstrapper};
 use crate::common::{data, server::Server};
-use data::{Generator, Snapshot};
+use data::{ArbitraryGenerator, Snapshot};
 use server::ServerBootstrapperError;
 
 pub fn get_exe() -> PathBuf {
@@ -72,7 +72,7 @@ pub fn get_available_port() -> u32 {
 }
 
 pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, Snapshot), ServerBootstrapperError> {
-    let snapshot = Generator::new().snapshot();
+    let snapshot = ArbitraryGenerator::new().snapshot();
 
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 

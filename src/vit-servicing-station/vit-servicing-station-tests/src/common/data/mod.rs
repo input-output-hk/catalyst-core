@@ -16,17 +16,17 @@ pub fn token_hash() -> String {
 }
 
 pub fn proposals() -> Vec<Proposal> {
-    let mut gen = Generator::new();
+    let mut gen = ArbitraryGenerator::new();
     let funds = gen.funds();
     gen.proposals(&funds)
 }
 
 pub fn funds() -> Vec<Fund> {
-    Generator::new().funds()
+    ArbitraryGenerator::new().funds()
 }
 
 pub fn voteplans() -> Vec<Voteplan> {
-    let mut gen = Generator::new();
+    let mut gen = ArbitraryGenerator::new();
     let funds = gen.funds();
     gen.voteplans(&funds)
 }

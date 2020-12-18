@@ -1,14 +1,19 @@
-use crate::common::cli::VitCliCommand;
-use crate::common::data::{CsvConverter, Generator};
-use crate::common::startup::server::ServerBootstrapper;
+use crate::common::{
+    cli::VitCliCommand,
+    data::{ArbitraryGenerator, CsvConverter, ValidVotePlanGenerator, ValidVotePlanParameters},
+    startup::server::ServerBootstrapper,
+};
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
+use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
+use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
+use chrono::NaiveDateTime;
 
 #[test]
 pub fn load_data_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();
     let db_file = temp_dir.child("db.sqlite");
-    let snapshot = Generator::new().snapshot();
+    let snapshot = ArbitraryGenerator::new().snapshot();
     let csv_converter = CsvConverter;
 
     let funds = temp_dir.child("funds.csv");

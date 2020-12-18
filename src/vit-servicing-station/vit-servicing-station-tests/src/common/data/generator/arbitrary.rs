@@ -1,3 +1,4 @@
+use crate::common::data::Snapshot;
 use chrono::{offset::Utc, Duration};
 use vit_servicing_station_lib::{
     db::models::{
@@ -10,8 +11,8 @@ use vit_servicing_station_lib::{
     v0::api_token::APIToken,
 };
 
-use fake::faker::company::en::{Buzzword, CatchPhase, CompanyName, Industry};
 use fake::{
+    faker::company::en::{Buzzword, CatchPhase, CompanyName, Industry},
     faker::lorem::en::*,
     faker::{chrono::en::DateTimeBetween, number::en::NumberWithFormat},
     faker::{internet::en::DomainSuffix, internet::en::SafeEmail, name::en::Name},
@@ -23,60 +24,17 @@ use std::{collections::HashMap, iter};
 use chrono::DateTime;
 type UtcDateTime = DateTime<Utc>;
 
-#[derive(Debug, Clone)]
-pub struct Snapshot {
-    funds: Vec<Fund>,
-    proposals: Vec<Proposal>,
-    tokens: HashMap<String, APITokenData>,
-    voteplans: Vec<Voteplan>,
-}
-
-impl Snapshot {
-    pub fn funds(&self) -> Vec<Fund> {
-        self.funds.clone()
-    }
-
-    pub fn proposals(&self) -> Vec<Proposal> {
-        self.proposals.clone()
-    }
-
-    pub fn tokens(&self) -> HashMap<String, APITokenData> {
-        self.tokens.clone()
-    }
-
-    pub fn voteplans(&self) -> Vec<Voteplan> {
-        self.voteplans.clone()
-    }
-
-    pub fn proposal_by_id(&self, id: &str) -> Option<&Proposal> {
-        self.proposals.iter().find(|x| x.proposal_id.eq(id))
-    }
-
-    pub fn fund_by_id(&self, id: i32) -> Option<&Fund> {
-        self.funds.iter().find(|x| x.id == id)
-    }
-
-    pub fn any_token(&self) -> (String, APITokenData) {
-        let (hash, token) = self.tokens.iter().next().clone().unwrap();
-        (hash.to_string(), token.clone())
-    }
-
-    pub fn token_hash(&self) -> String {
-        self.any_token().0
-    }
-}
-
-pub struct Generator {
+pub struct ArbitraryGenerator {
     id_generator: OsRng,
 }
 
-impl Default for Generator {
+impl Default for ArbitraryGenerator {
     fn default() -> Self {
-        Generator::new()
+        ArbitraryGenerator::new()
     }
 }
 
-impl Generator {
+impl ArbitraryGenerator {
     pub fn new() -> Self {
         Self {
             id_generator: OsRng,
@@ -95,6 +53,10 @@ impl Generator {
 
     pub fn token_hash(&mut self) -> String {
         base64::encode_config(self.bytes().to_vec(), base64::URL_SAFE_NO_PAD)
+    }
+
+    pub fn id(&mut self) -> i32 {
+        self.id_generator.next_u32() as i32
     }
 
     pub fn token(&mut self) -> (String, APITokenData) {
@@ -126,7 +88,7 @@ impl Generator {
     }
 
     fn gen_single_fund(&mut self) -> Fund {
-        let id = self.id_generator.next_u32() as i32;
+        let id = self.id();
         let (start, end, next) = self.consecutive_dates();
 
         Fund {
@@ -143,7 +105,7 @@ impl Generator {
         }
     }
 
-    fn gen_http_address(&self) -> String {
+    pub fn gen_http_address(&self) -> String {
         format!(
             "http://{}.{}",
             CompanyName()
@@ -152,6 +114,31 @@ impl Generator {
                 .replace(" ", "-"),
             DomainSuffix().fake::<String>()
         )
+    }
+
+    pub fn proposer(&mut self) -> Proposer {
+        Proposer {
+            proposer_relevant_experience: self.id_generator.next_u64().to_string(),
+            proposer_name: Name().fake::<String>(),
+            proposer_email: SafeEmail().fake::<String>(),
+            proposer_url: self.gen_http_address(),
+        }
+    }
+    // impact score [100-499]
+    pub fn impact_score(&mut self) -> i64 {
+        (self.id_generator.next_u64() % 400 + 100) as i64
+    }
+
+    pub fn proposal_category(&mut self) -> Category {
+        Category {
+            category_id: "".to_string(),
+            category_name: Industry().fake::<String>(),
+            category_description: "".to_string(),
+        }
+    }
+
+    pub fn proposal_fund(&mut self) -> i64 {
+        (self.id_generator.next_u64() % 200_000 + 5000) as i64
     }
 
     fn gen_single_proposal(&mut self, fund: &Fund) -> Proposal {
@@ -163,26 +150,17 @@ impl Generator {
         Proposal {
             internal_id: id.abs(),
             proposal_id: id.abs().to_string(),
-            proposal_category: Category {
-                category_id: "".to_string(),
-                category_name: Industry().fake::<String>(),
-                category_description: "".to_string(),
-            },
+            proposal_category: self.proposal_category(),
             proposal_title: CatchPhase().fake::<String>(),
             proposal_summary: CatchPhase().fake::<String>(),
             proposal_problem: Buzzword().fake::<String>(),
             proposal_solution: CatchPhase().fake::<String>(),
             proposal_public_key: self.hash(),
-            proposal_funds: (self.id_generator.next_u64() as i64).abs(),
+            proposal_funds: self.proposal_fund(),
             proposal_url: proposal_url.to_string(),
-            proposal_impact_score: self.id_generator.next_u64() as i64,
+            proposal_impact_score: self.impact_score(),
             proposal_files_url: format!("{}/files", proposal_url),
-            proposer: Proposer {
-                proposer_relevant_experience: self.id_generator.next_u64().to_string(),
-                proposer_name: Name().fake::<String>(),
-                proposer_email: SafeEmail().fake::<String>(),
-                proposer_url: self.gen_http_address(),
-            },
+            proposer: self.proposer(),
             chain_proposal_id: self.hash().as_bytes().to_vec(),
             chain_proposal_index: self.id_generator.next_u32() as i64,
             chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
@@ -212,7 +190,7 @@ impl Generator {
         )
     }
 
-    fn hash(&mut self) -> String {
+    pub fn hash(&mut self) -> String {
         let mut hash = [0u8; 32];
         self.id_generator.fill_bytes(&mut hash);
         base64::encode(hash)
@@ -239,8 +217,8 @@ impl Generator {
             chain_vote_start_time: start.timestamp(),
             chain_vote_end_time: end.timestamp(),
             chain_committee_end_time: next.timestamp(),
-            chain_voteplan_payload: "bla".to_string(), //Sentence(3..5).fake::<String>(),
-            chain_vote_encryption_key: "enckey".to_string(),
+            chain_voteplan_payload: "public".to_string(), //Sentence(3..5).fake::<String>(),
+            chain_vote_encryption_key: "".to_string(),
             fund_id,
         }
     }
@@ -251,11 +229,6 @@ impl Generator {
         let voteplans = self.voteplans(&funds);
         let tokens = self.tokens();
 
-        Snapshot {
-            funds,
-            proposals,
-            tokens,
-            voteplans,
-        }
+        Snapshot::new(funds, proposals, tokens, voteplans)
     }
 }

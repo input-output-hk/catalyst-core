@@ -1,8 +1,9 @@
 use jortestkit::csv::CsvFileBuilder;
 use std::path::Path;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::{
-    funds::Fund, proposals::Proposal, voteplans::Voteplan,
+use vit_servicing_station_lib::{
+    db::models::{funds::Fund, proposals::Proposal, voteplans::Voteplan},
+    utils::datetime::unix_timestamp_to_datetime,
 };
 
 #[derive(Debug, Error)]
@@ -42,6 +43,7 @@ impl CsvConverter {
             "chain_vote_end_time",
             "chain_committee_end_time",
             "chain_voteplan_payload",
+            "chain_vote_encryption_key",
             "fund_id",
         ];
         let content: Vec<Vec<String>> = voteplans.iter().map(|x| convert_voteplan(x)).collect();
@@ -128,9 +130,9 @@ fn convert_proposal(proposal: &Proposal) -> Vec<String> {
         "off_chain".to_string(),
         proposal.proposal_id.to_string(),
         proposal.chain_voteplan_id.to_string(),
-        proposal.chain_vote_start_time.to_string(),
-        proposal.chain_vote_end_time.to_string(),
-        proposal.chain_committee_end_time.to_string(),
+        unix_timestamp_to_datetime(proposal.chain_vote_start_time).to_rfc3339(),
+        unix_timestamp_to_datetime(proposal.chain_vote_end_time).to_rfc3339(),
+        unix_timestamp_to_datetime(proposal.chain_committee_end_time).to_rfc3339(),
     ]
 }
 
@@ -142,9 +144,9 @@ fn convert_fund(fund: &Fund) -> Vec<String> {
         fund.fund_goal.to_string(),
         fund.voting_power_info.to_string(),
         fund.rewards_info.to_string(),
-        fund.fund_start_time.to_string(),
-        fund.fund_end_time.to_string(),
-        fund.next_fund_start_time.to_string(),
+        unix_timestamp_to_datetime(fund.fund_start_time).to_rfc3339(),
+        unix_timestamp_to_datetime(fund.fund_end_time).to_rfc3339(),
+        unix_timestamp_to_datetime(fund.next_fund_start_time).to_rfc3339(),
     ]
 }
 
@@ -152,10 +154,11 @@ fn convert_voteplan(voteplan: &Voteplan) -> Vec<String> {
     vec![
         voteplan.id.to_string(),
         voteplan.chain_voteplan_id.to_string(),
-        voteplan.chain_vote_start_time.to_string(),
-        voteplan.chain_vote_end_time.to_string(),
-        voteplan.chain_committee_end_time.to_string(),
+        unix_timestamp_to_datetime(voteplan.chain_vote_start_time).to_rfc3339(),
+        unix_timestamp_to_datetime(voteplan.chain_vote_end_time).to_rfc3339(),
+        unix_timestamp_to_datetime(voteplan.chain_committee_end_time).to_rfc3339(),
         voteplan.chain_voteplan_payload.to_string(),
+        voteplan.chain_vote_encryption_key.to_string(),
         voteplan.fund_id.to_string(),
     ]
 }

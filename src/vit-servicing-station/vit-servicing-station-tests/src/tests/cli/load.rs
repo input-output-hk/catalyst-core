@@ -69,3 +69,47 @@ pub fn load_data_test() {
     std::thread::sleep(std::time::Duration::from_secs(1));
     assert!(server.rest_client().health().is_ok());
 }
+
+#[test]
+pub fn voting_snapshot_build() {
+    let mut vote_plan_builder = VotePlanDefBuilder::new("fund_3");
+    vote_plan_builder.owner("committe_wallet_name");
+    vote_plan_builder.vote_phases(1, 2, 3);
+
+    for _ in 0..10 {
+        let mut proposal_builder = ProposalDefBuilder::new(
+            chain_impl_mockchain::testing::VoteTestGen::external_proposal_id(),
+        );
+        proposal_builder.options(3);
+        proposal_builder.action_off_chain();
+        vote_plan_builder.with_proposal(&mut proposal_builder);
+    }
+
+    let vote_plan = vote_plan_builder.build();
+    let format = "%Y-%m-%d %H:%M:%S";
+    let mut parameters = ValidVotePlanParameters::new(vote_plan);
+    parameters.set_voting_power_threshold(8_000_000_000);
+    parameters.set_voting_start(
+        NaiveDateTime::parse_from_str("2015-09-05 23:56:04", format)
+            .unwrap()
+            .timestamp(),
+    );
+    parameters.set_voting_tally_start(
+        NaiveDateTime::parse_from_str("2015-09-05 23:56:04", format)
+            .unwrap()
+            .timestamp(),
+    );
+    parameters.set_voting_tally_end(
+        NaiveDateTime::parse_from_str("2015-09-05 23:56:04", format)
+            .unwrap()
+            .timestamp(),
+    );
+    parameters.set_next_fund_start_time(
+        NaiveDateTime::parse_from_str("2015-09-12 23:56:04", format)
+            .unwrap()
+            .timestamp(),
+    );
+
+    let generator = ValidVotePlanGenerator::new(parameters);
+    generator.build();
+}

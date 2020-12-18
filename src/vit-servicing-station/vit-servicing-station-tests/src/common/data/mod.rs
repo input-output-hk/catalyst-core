@@ -5,10 +5,12 @@ use vit_servicing_station_lib::db::models::{
 mod csv_converter;
 mod generator;
 pub use csv_converter::CsvConverter;
-pub use generator::{Generator, Snapshot};
+pub use generator::{
+    ArbitraryGenerator, Snapshot, ValidVotePlanGenerator, ValidVotePlanParameters,
+};
 
 pub fn token() -> (String, APITokenData) {
-    Generator::new().token()
+    ArbitraryGenerator::new().token()
 }
 
 pub fn token_hash() -> String {

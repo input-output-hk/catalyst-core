@@ -247,7 +247,7 @@ impl Controller {
                         rng,
                         &encrypting_key,
                         chain_vote::Vote::new(
-                            proposal.options().choice_range().clone().max().unwrap() as usize,
+                            proposal.options().choice_range().clone().max().unwrap() as usize + 1,
                             choice.as_byte() as usize,
                         ),
                     );

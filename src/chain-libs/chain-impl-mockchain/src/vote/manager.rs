@@ -83,6 +83,9 @@ pub enum VoteError {
     #[error("Invalid private vote verification")]
     VoteVerificationError,
 
+    #[error("Invalid private vote size (expected {expected}, got {actual})")]
+    PrivateVoteInvalidSize { actual: usize, expected: usize },
+
     #[error("Error during private tallying {0}")]
     PrivateTallyError(String),
 }
@@ -540,10 +543,24 @@ impl VotePlanManager {
                 encrypted_vote,
                 proof,
             } => {
+                let ciphertext = encrypted_vote.as_inner();
+                let expected_size = self.proposal_managers.0[cast.proposal_index() as usize]
+                    .options
+                    .choice_range()
+                    .clone()
+                    .max()
+                    .unwrap() as usize;
+                let actual_size = ciphertext.len();
+                if expected_size != actual_size {
+                    return Err(VoteError::PrivateVoteInvalidSize {
+                        expected: expected_size,
+                        actual: actual_size,
+                    });
+                }
                 let pk = chain_vote::EncryptingVoteKey::from_participants(
                     self.plan.committee_public_keys(),
                 );
-                if !chain_vote::verify_vote(&pk, encrypted_vote.as_inner(), proof.as_inner()) {
+                if !chain_vote::verify_vote(&pk, ciphertext, proof.as_inner()) {
                     Err(VoteError::VoteVerificationError)
                 } else {
                     Ok(())

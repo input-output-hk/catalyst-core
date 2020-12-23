@@ -129,6 +129,14 @@ impl VotePlanDef {
         let vote_plan: VotePlan = self.clone().into();
         vote_plan.to_id().to_string()
     }
+
+    pub fn committee_keys(&self) -> Vec<MemberPublicKey> {
+        self.committee_keys.clone()
+    }
+
+    pub fn committee_keys_mut(&mut self) -> &mut Vec<MemberPublicKey> {
+        &mut self.committee_keys
+    }
 }
 
 impl Into<VotePlan> for VotePlanDef {

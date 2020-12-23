@@ -12,11 +12,11 @@ use crate::{
     value::Value,
     vote::PayloadType,
 };
+use chain_vote::MemberPublicKey;
 use std::{
     collections::{HashMap, HashSet},
     num::NonZeroU64,
 };
-use chain_vote::MemberPublicKey;
 
 #[derive(Clone, Debug)]
 pub struct WalletTemplateBuilder {

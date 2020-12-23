@@ -177,7 +177,7 @@ impl ProposalManager {
     #[must_use = "Compute the PrivateTally in a new ProposalManager, does not modify self"]
     pub fn private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
         let mut tally =
-            EncryptedTally::new(self.options.choice_range().clone().max().unwrap() as usize);
+            EncryptedTally::new(self.options.choice_range().clone().max().unwrap() as usize + 1);
 
         for (id, payload) in self.votes_by_voters.iter() {
             if let Some(account_id) = id.to_single_account() {
@@ -549,7 +549,8 @@ impl VotePlanManager {
                     .choice_range()
                     .clone()
                     .max()
-                    .unwrap() as usize;
+                    .unwrap() as usize
+                    + 1;
                 let actual_size = ciphertext.len();
                 if expected_size != actual_size {
                     return Err(VoteError::PrivateVoteInvalidSize {

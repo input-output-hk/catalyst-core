@@ -83,6 +83,9 @@ pub enum VoteError {
     #[error("Invalid private vote verification")]
     VoteVerificationError,
 
+    #[error("Invalid private vote size (expected {expected}, got {actual})")]
+    PrivateVoteInvalidSize { actual: usize, expected: usize },
+
     #[error("Error during private tallying {0}")]
     PrivateTallyError(String),
 }
@@ -174,7 +177,7 @@ impl ProposalManager {
     #[must_use = "Compute the PrivateTally in a new ProposalManager, does not modify self"]
     pub fn private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
         let mut tally =
-            EncryptedTally::new(self.options.choice_range().clone().max().unwrap() as usize);
+            EncryptedTally::new(self.options.choice_range().clone().max().unwrap() as usize + 1);
 
         for (id, payload) in self.votes_by_voters.iter() {
             if let Some(account_id) = id.to_single_account() {
@@ -540,10 +543,25 @@ impl VotePlanManager {
                 encrypted_vote,
                 proof,
             } => {
+                let ciphertext = encrypted_vote.as_inner();
+                let expected_size = self.proposal_managers.0[cast.proposal_index() as usize]
+                    .options
+                    .choice_range()
+                    .clone()
+                    .max()
+                    .unwrap() as usize
+                    + 1;
+                let actual_size = ciphertext.len();
+                if expected_size != actual_size {
+                    return Err(VoteError::PrivateVoteInvalidSize {
+                        expected: expected_size,
+                        actual: actual_size,
+                    });
+                }
                 let pk = chain_vote::EncryptingVoteKey::from_participants(
                     self.plan.committee_public_keys(),
                 );
-                if !chain_vote::verify_vote(&pk, encrypted_vote.as_inner(), proof.as_inner()) {
+                if !chain_vote::verify_vote(&pk, ciphertext, proof.as_inner()) {
                     Err(VoteError::VoteVerificationError)
                 } else {
                     Ok(())

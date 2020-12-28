@@ -9,6 +9,8 @@ jobs:
   initial_release:
     name: Create base release
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@master
@@ -119,14 +121,14 @@ jobs:
         run: compress-archive ./dist/iohk_wallet chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.zip
 
       - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.*
-          asset_name: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}
-          tag: ${{ github.ref }}
-          file_glob: true
-          overwrite: true
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.*
+          asset_name: chain-wallet-libs-cordova-${{ steps.get_version.outputs.VERSION }}
+          asset_content_type: application/gzip
 
   release_wasm:
     name: Release wasm assets
@@ -170,16 +172,15 @@ jobs:
         run: find ./bindings/wallet-js/pkg -name iohk-jormungandr-wallet-js*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
 
       - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.*
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.*
           asset_name: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
-          tag: ${{ github.ref }}
-          file_glob: true
-          overwrite: true
 
-  release_keygen:
+  release-keygen:
     name: Release catalyst keygen/pincode wasm assets
     needs: initial_release
     runs-on: ubuntu-latest
@@ -221,14 +222,13 @@ jobs:
         run: find ./keygen/pkg -name iohk-jormungandr-keygen*.tgz -exec mv {} iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
 
       - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.*
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: ./iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.*
           asset_name: iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
-          tag: ${{ github.ref }}
-          file_glob: true
-          overwrite: true
 
   build_jni_assets:
     name: Build android jni wallet ${{ matrix.config.os }}
@@ -306,14 +306,13 @@ jobs:
         run: tar -czvf chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.gz ./bindings/wallet-android/*
 
       - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.gz
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.gz
           asset_name: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}
-          tag: ${{ github.ref }}
-          file_glob: true
-          overwrite: true
 
   build_lipo_asset:
     name: Build universal lib for cordova plugin
@@ -417,11 +416,11 @@ jobs:
         run: find . -name wallet-cordova-plugin*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-cordova.tgz \;
 
       - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v1-release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-cordova.tgz
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: ./chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-cordova.tgz
           asset_name: chain-wallet-libs-cordova-${{ steps.get_version.outputs.VERSION }}
-          tag: ${{ github.ref }}
-          file_glob: true
-          overwrite: true
+          asset_content_type: application/gzip

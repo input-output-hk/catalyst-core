@@ -180,6 +180,7 @@ jobs:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
           asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.*
           asset_name: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
+          asset_content_type: application/gzip
 
   release-keygen:
     name: Release catalyst keygen/pincode wasm assets
@@ -230,6 +231,7 @@ jobs:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
           asset_path: ./iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.*
           asset_name: iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
+          asset_content_type: application/gzip
 
   build_jni_assets:
     name: Build android jni wallet ${{ matrix.config.os }}
@@ -314,6 +316,7 @@ jobs:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
           asset_path: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.gz
           asset_name: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}
+          asset_content_type: application/gzip
 
   build_lipo_asset:
     name: Build universal lib for cordova plugin

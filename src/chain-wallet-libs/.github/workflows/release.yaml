@@ -67,13 +67,6 @@ jobs:
           override: true
           default: true
 
-      - name: Downgrade cross
-        uses: actions-rs/cargo@v1
-        if: ${{ matrix.config.cross }}
-        with:
-          command: install
-          args: --version 0.1.16 cross
-
       - name: Checkout code
         uses: actions/checkout@v1
         with:
@@ -121,14 +114,25 @@ jobs:
         if: matrix.config.os == 'windows-latest'
         run: compress-archive ./dist/iohk_wallet chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.zip
 
+      - name: Get file extension
+        id: get_file_extension
+        run: |
+          if [ ${{ matrix.config.os }} = "windows-latest" ]
+          then
+            echo "::set-output name=EXT::zip"
+          else
+            echo "::set-output name=EXT::tar.gz"
+          fi
+        shell: bash
+
       - name: Upload binaries to release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.*
-          asset_name: chain-wallet-libs-cordova-${{ steps.get_version.outputs.VERSION }}
+          asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.${{ steps.get_file_extension.outputs.EXT }}
+          asset_name: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}
           asset_content_type: application/gzip
 
   release_wasm:
@@ -178,7 +182,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.*
+          asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz
           asset_name: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
           asset_content_type: application/gzip
 
@@ -229,7 +233,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: ./iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.*
+          asset_path: ./iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz
           asset_name: iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
           asset_content_type: application/gzip
 

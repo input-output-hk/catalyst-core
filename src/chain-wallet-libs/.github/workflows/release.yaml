@@ -306,7 +306,7 @@ jobs:
         run: python3 ./rename_targets.py
 
       - name: Compress module
-        run: tar -czvf chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.gz ./bindings/wallet-android/*
+        run: tar -czvf chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.tar.gz ./bindings/wallet-android/*
 
       - name: Upload binaries to release
         uses: actions/upload-release-asset@v1
@@ -314,7 +314,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.gz
+          asset_path: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.tar.gz
           asset_name: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}
           asset_content_type: application/gzip
 

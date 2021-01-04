@@ -23,12 +23,11 @@ serde_json = "1.0.53"
 simplelog = "0.8.0"
 structopt = "0.3.14"
 thiserror = "1.0"
-tokio = { version = "0.3.3", features = ["macros", "signal", "rt"] }
-warp = { version = "0.2.5", features = ["tls"] }
+tokio = { version = "^1.0", features = ["macros", "signal", "rt", "fs", "sync"] }
 tracing = "0.1.21"
 tracing-futures = "0.2.4"
 tracing-subscriber = "0.2.15"
-warp = { version = "0.2", features = ["tls"] }
+warp = { version = "0.2.5", features = ["tls"] }
 
 # This solves building on windows when sqlite3lib is not installed or missing in the `$PATH`
 # as it happens with the github actions pipeline associated to this project.

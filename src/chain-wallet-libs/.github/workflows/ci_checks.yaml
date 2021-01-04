@@ -190,7 +190,9 @@ jobs:
           target: i686-unknown-linux-gnu
         if: matrix.architecture == 'x86'
 
-      - run: sudo apt install gcc-multilib
+      - run: |
+          sudo apt update
+          sudo apt install gcc-multilib
         if: matrix.architecture == 'x86'
 
       - run: python3 ./bindings/wallet-jni/java/run_test.py

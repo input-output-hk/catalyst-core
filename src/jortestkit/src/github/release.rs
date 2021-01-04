@@ -107,4 +107,8 @@ impl AssetDto {
     pub fn download_url(&self) -> String {
         self.browser_download_url.clone()
     }
+
+    pub fn name(&self) -> String {
+        self.name.to_string()
+    }
 }

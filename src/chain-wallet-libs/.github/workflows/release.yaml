@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@master
@@ -25,6 +26,10 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
+
+      - name: Set version output
+        id: get_version
+        run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
 
   release_assets:
     name: Release assets
@@ -101,27 +106,26 @@ jobs:
             Copy-Item target\${{ matrix.config.target }}\release\jormungandrwallet.lib -Destination dist\iohk_wallet
           }
 
-      - name: Get tag version
-        id: get_version
-        run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
-        shell: bash
-
       - name: Pack binaries if unix
         if: matrix.config.os != 'windows-latest'
-        run: tar -C dist -czvf chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.tar.gz iohk_wallet
+        run: |
+          tar \
+            -C dist \
+            -czvf chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{matrix.config.target}}.tar.gz \
+            iohk_wallet
 
       - name: Pack binaries if windows
         if: matrix.config.os == 'windows-latest'
-        run: compress-archive ./dist/iohk_wallet chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.zip
+        run: compress-archive ./dist/iohk_wallet chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.config.target }}.zip
 
       - name: Get file extension
         id: get_file_extension
         run: |
           if [ ${{ matrix.config.os }} = "windows-latest" ]
           then
-            echo "::set-output name=EXT::zip"
+            echo "::set-output name=ext::zip"
           else
-            echo "::set-output name=EXT::tar.gz"
+            echo "::set-output name=ext::tar.gz"
           fi
         shell: bash
 
@@ -131,8 +135,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}.${{ steps.get_file_extension.outputs.EXT }}
-          asset_name: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.target }}
+          asset_path: "chain-wallet-libs\
+            -${{ needs.initial_release.outputs.version }}\
+            -${{ matrix.config.target }}\
+            .${{ steps.get_file_extension.outputs.ext }}"
+          asset_name: "chain-wallet-libs\
+            -${{ needs.initial_release.outputs.version }}\
+            -${{ matrix.config.target }}"
           asset_content_type: application/gzip
 
   release_wasm:
@@ -168,13 +177,11 @@ jobs:
       - name: pack
         run: wasm-pack pack bindings/wallet-js
 
-      - name: Get tag version
-        id: get_version
-        run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
-        shell: bash
-
       - name: rename-tarball
-        run: find ./bindings/wallet-js/pkg -name iohk-jormungandr-wallet-js*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
+        run: | 
+          find ./bindings/wallet-js/pkg \
+            -name iohk-jormungandr-wallet-js*.tgz \
+            -exec mv {} chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz \;
 
       - name: Upload binaries to release
         uses: actions/upload-release-asset@v1
@@ -182,8 +189,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz
-          asset_name: chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
+          asset_path: chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz
+          asset_name: chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}
           asset_content_type: application/gzip
 
   release-keygen:
@@ -219,13 +226,12 @@ jobs:
       - name: pack
         run: wasm-pack pack keygen
 
-      - name: Get tag version
-        id: get_version
-        run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
-        shell: bash
-
       - name: rename-tarball
-        run: find ./keygen/pkg -name iohk-jormungandr-keygen*.tgz -exec mv {} iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz \;
+        run: |
+          find ./keygen/pkg \
+            -name iohk-jormungandr-keygen*.tgz \
+            -exec mv {} \
+            iohk-jormungandr-keygen-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz \;
 
       - name: Upload binaries to release
         uses: actions/upload-release-asset@v1
@@ -233,8 +239,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: ./iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}.tgz
-          asset_name: iohk-jormungandr-keygen-${{ steps.get_version.outputs.VERSION }}-${{ matrix.target }}
+          asset_path: ./iohk-jormungandr-keygen-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz
+          asset_name: iohk-jormungandr-keygen-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}
           asset_content_type: application/gzip
 
   build_jni_assets:
@@ -292,11 +298,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Get tag version
-        id: get_version
-        run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
-        shell: bash
-
       - name: Download builded libs
         uses: actions/download-artifact@v1
         with:
@@ -310,7 +311,11 @@ jobs:
         run: python3 ./rename_targets.py
 
       - name: Compress module
-        run: tar -czvf chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.tar.gz ./bindings/wallet-android/*
+        run: |
+          tar \
+            -czvf \
+            chain-wallet-libs-android-${{ needs.initial_release.outputs.version }}.tar.gz \
+            ./bindings/wallet-android/*
 
       - name: Upload binaries to release
         uses: actions/upload-release-asset@v1
@@ -318,8 +323,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}.tar.gz
-          asset_name: chain-wallet-libs-android-${{ steps.get_version.outputs.VERSION }}
+          asset_path: chain-wallet-libs-android-${{ needs.initial_release.outputs.version }}.tar.gz
+          asset_name: chain-wallet-libs-android-${{ needs.initial_release.outputs.version }}
           asset_content_type: application/gzip
 
   build_lipo_asset:
@@ -361,11 +366,6 @@ jobs:
         uses: actions/checkout@v1
         with:
           submodules: true
-
-      - name: Get tag version
-        id: get_version
-        run: echo ::set-output name=VERSION::``${GITHUB_REF#refs/tags/}``
-        shell: bash
 
       - name: Download builded libs
         uses: actions/download-artifact@v1
@@ -421,7 +421,10 @@ jobs:
         run: npm pack ./bindings/wallet-cordova
 
       - name: rename-tarball
-        run: find . -name wallet-cordova-plugin*.tgz -exec mv {} chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-cordova.tgz \;
+        run: |
+          find . \
+            -name wallet-cordova-plugin*.tgz \
+            -exec mv {} chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz \;
 
       - name: Upload binaries to release
         uses: actions/upload-release-asset@v1
@@ -429,6 +432,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: ./chain-wallet-libs-${{ steps.get_version.outputs.VERSION }}-cordova.tgz
-          asset_name: chain-wallet-libs-cordova-${{ steps.get_version.outputs.VERSION }}
+          asset_path: ./chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz
+          asset_name: chain-wallet-libs-cordova-${{ needs.initial_release.outputs.version }}
           asset_content_type: application/gzip

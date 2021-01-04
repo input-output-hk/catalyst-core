@@ -31,6 +31,10 @@ impl Release {
         self.releases_per_os().get(&compacted_os_type).cloned()
     }
 
+    pub fn assets(&self) -> Vec<AssetDto> {
+        self.releases_per_os.values().cloned().collect()
+    }
+
     /// narrow linux distribution to linux type
     #[allow(clippy::all)]
     fn compact_os_types(&self, os_type: OsType) -> OsType {
@@ -92,6 +96,12 @@ impl Default for GitHubApi {
 }
 
 impl GitHubApi {
+    pub fn for_crate<S: Into<String>>(base_url: S) -> Self {
+        Self {
+            base_url: base_url.into(),
+        }
+    }
+
     pub fn new() -> Self {
         Self {
             base_url: "https://api.github.com/repos/input-output-hk/jormungandr".to_string(),

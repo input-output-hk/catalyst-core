@@ -59,7 +59,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_importKeys(
                 "account key should have 64 bytes",
             );
 
-            return 0 as jlong;
+            return 0;
         }
 
         let mut bytes = vec![0i8; len as usize];
@@ -88,7 +88,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_importKeys(
                 "utxo_keys array is not a multiple of 64 bytes size",
             );
 
-            return 0 as jlong;
+            return 0;
         }
     };
 
@@ -212,7 +212,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_id(
     let wallet_ptr = wallet as WalletPtr;
 
     let array = env
-        .new_byte_array(32 as jint)
+        .new_byte_array(32)
         .expect("Failed to create new byte array");
 
     let mut id_out = [0i8; 32];

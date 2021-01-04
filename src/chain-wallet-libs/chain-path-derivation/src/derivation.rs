@@ -887,9 +887,7 @@ impl str::FromStr for Derivation {
     type Err = ParseDerivationError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.starts_with('\'') {
-            let s = &s[1..];
-
+        if let Some(s) = s.strip_prefix('\'') {
             s.parse::<u32>()
                 .map(|v| v + SOFT_DERIVATION_UPPER_BOUND)
                 .map(Derivation)

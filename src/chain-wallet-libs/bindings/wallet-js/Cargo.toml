@@ -50,10 +50,6 @@ clear_on_drop = {version = "0.2", features = ["no_cc"]}
 [dev-dependencies]
 wasm-bindgen-test = "0.3"
 
-[profile.release]
-# Tell `rustc` to optimize for small code size.
-opt-level = "s"
-
 # See https://github.com/rustwasm/wasm-pack/issues/886
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-O4", "--enable-mutable-globals"]

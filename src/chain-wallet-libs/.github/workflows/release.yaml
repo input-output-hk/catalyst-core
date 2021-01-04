@@ -193,7 +193,7 @@ jobs:
           asset_name: chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}
           asset_content_type: application/gzip
 
-  release-keygen:
+  release_keygen:
     name: Release catalyst keygen/pincode wasm assets
     needs: initial_release
     runs-on: ubuntu-latest

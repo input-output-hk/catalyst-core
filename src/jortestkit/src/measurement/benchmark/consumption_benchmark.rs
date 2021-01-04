@@ -4,6 +4,8 @@ use crate::measurement::{
     thresholds::Thresholds,
 };
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use std::thread::JoinHandle;
 use sysinfo::AsU32;
 use sysinfo::{ProcessExt, SystemExt};
 use thiserror::Error;
@@ -71,8 +73,47 @@ impl ConsumptionBenchmarkDef {
             markers: self.pids.iter().map(|x| (x.clone(), vec![])).collect(),
         }
     }
+
+    pub fn start_async(&self, interval: std::time::Duration) -> ConsumptionBenchmarkRunAsync {
+        let (stop_signal, mut rx) = tokio::sync::oneshot::channel::<()>();
+        let benchmark = Arc::new(Mutex::new(self.start()));
+        let benchmark_clone = Arc::clone(&benchmark);
+
+        let handle = std::thread::spawn(move || loop {
+            if rx.try_recv().is_ok() {
+                break;
+            } else {
+                benchmark_clone.lock().unwrap().snapshot().unwrap();
+                std::thread::sleep(interval);
+            }
+        });
+        ConsumptionBenchmarkRunAsync {
+            stop_signal,
+            benchmark: Arc::clone(&benchmark),
+            handle,
+        }
+    }
 }
 
+pub struct ConsumptionBenchmarkRunAsync {
+    stop_signal: tokio::sync::oneshot::Sender<()>,
+    handle: JoinHandle<()>,
+    benchmark: Arc<Mutex<ConsumptionBenchmarkRun>>,
+}
+
+impl ConsumptionBenchmarkRunAsync {
+    pub fn stop(self) -> ConsumptionBenchmarkFinish {
+        self.stop_signal
+            .send(())
+            .expect("cannot stop memory consumption benchmark thread");
+        self.handle.join().unwrap();
+        let benchmark = self.benchmark.lock().unwrap().clone();
+
+        benchmark.stop()
+    }
+}
+
+#[derive(Clone)]
 pub struct ConsumptionBenchmarkRun {
     definition: ConsumptionBenchmarkDef,
     markers: HashMap<NamedProcess, Vec<ResourcesUsage>>,

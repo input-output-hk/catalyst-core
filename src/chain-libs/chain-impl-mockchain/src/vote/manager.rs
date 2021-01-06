@@ -132,6 +132,26 @@ impl ProposalManager {
         })
     }
 
+    pub fn validate_vote(&self, cast: &VoteCast) -> Result<(), VoteError> {
+        let payload = cast.payload();
+
+        match payload {
+            Payload::Public { .. } => Ok(()),
+            Payload::Private { encrypted_vote, .. } => {
+                let actual_size = encrypted_vote.as_inner().len();
+                let expected_size = self.options.choice_range().len();
+                if actual_size != expected_size {
+                    Err(VoteError::PrivateVoteInvalidSize {
+                        expected: expected_size,
+                        actual: actual_size,
+                    })
+                } else {
+                    Ok(())
+                }
+            }
+        }
+    }
+
     #[must_use = "Compute the PublicTally in a new ProposalManager, does not modify self"]
     pub fn public_tally<F>(
         &self,
@@ -402,6 +422,20 @@ impl ProposalManagers {
         Ok(Self(proposals))
     }
 
+    /// validate the vote against the proposal: verify that the proposal exists
+    /// and the the length of the ciphertext is correct (if applicable)
+    pub fn validate_vote(&self, cast: &VoteCast) -> Result<(), VoteError> {
+        let proposal_index = cast.proposal_index() as usize;
+        if let Some(manager) = self.0.get(proposal_index) {
+            manager.validate_vote(cast)
+        } else {
+            Err(VoteError::InvalidVoteProposal {
+                num_proposals: self.0.len(),
+                vote: cast.clone(),
+            })
+        }
+    }
+
     pub fn private_tally_start(&self, stake: &StakeControl) -> Result<Self, VoteError> {
         let mut proposals = Vec::with_capacity(self.0.len());
         for proposal in self.0.iter() {
@@ -544,20 +578,7 @@ impl VotePlanManager {
                 proof,
             } => {
                 let ciphertext = encrypted_vote.as_inner();
-                let expected_size = self.proposal_managers.0[cast.proposal_index() as usize]
-                    .options
-                    .choice_range()
-                    .clone()
-                    .max()
-                    .unwrap() as usize
-                    + 1;
-                let actual_size = ciphertext.len();
-                if expected_size != actual_size {
-                    return Err(VoteError::PrivateVoteInvalidSize {
-                        expected: expected_size,
-                        actual: actual_size,
-                    });
-                }
+                self.proposal_managers.validate_vote(&cast)?;
                 let pk = chain_vote::EncryptingVoteKey::from_participants(
                     self.plan.committee_public_keys(),
                 );

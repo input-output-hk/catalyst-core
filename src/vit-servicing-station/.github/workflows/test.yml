@@ -119,7 +119,7 @@ jobs:
         continue-on-error: false
         with:
           command: fmt
-          args: --all -- --check
+          args: -- --check
 
       - name: Restore cargo dependencies
         uses: actions/cache@v2

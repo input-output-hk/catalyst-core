@@ -127,8 +127,8 @@ jobs:
           key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/clippy-check@v1
         continue-on-error: false
         with:
-          command: clippy
+          token: ${{ secrets.GITHUB_TOKEN }}
           args: -- --deny warnings

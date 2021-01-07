@@ -272,7 +272,7 @@ impl property::Deserialize for UpdateProposal {
 }
 
 impl Readable for UpdateProposal {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         Ok(Self {
             changes: ConfigParams::read(buf)?,
         })
@@ -297,7 +297,7 @@ impl property::Serialize for UpdateProposalWithProposer {
 }
 
 impl Readable for UpdateProposalWithProposer {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         Ok(Self {
             proposal: Readable::read(buf)?,
             proposer_id: Readable::read(buf)?,
@@ -327,7 +327,7 @@ impl property::Serialize for SignedUpdateProposal {
 }
 
 impl Readable for SignedUpdateProposal {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         Ok(Self {
             proposal: Readable::read(buf)?,
         })
@@ -353,7 +353,7 @@ impl property::Serialize for UpdateVote {
 }
 
 impl Readable for UpdateVote {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let proposal_id = Readable::read(buf)?;
         let voter_id = Readable::read(buf)?;
         Ok(UpdateVote {
@@ -385,7 +385,7 @@ impl property::Serialize for SignedUpdateVote {
 }
 
 impl Readable for SignedUpdateVote {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         Ok(SignedUpdateVote {
             vote: Readable::read(buf)?,
         })

@@ -1425,9 +1425,9 @@ impl Ledger {
         Value::sum(all_utxo_values).map_err(|_| Error::Block0(Block0Error::UtxoTotalValueTooBig))
     }
 
-    fn apply_tx_inputs<'a, Extra: Payload>(
+    fn apply_tx_inputs<Extra: Payload>(
         mut self,
-        tx: &TransactionSlice<'a, Extra>,
+        tx: &TransactionSlice<Extra>,
     ) -> Result<Self, Error> {
         let sign_data_hash = tx.transaction_sign_data_hash();
         for (input, witness) in tx.inputs_and_witnesses().iter() {

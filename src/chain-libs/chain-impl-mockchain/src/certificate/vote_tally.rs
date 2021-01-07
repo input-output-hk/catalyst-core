@@ -210,7 +210,7 @@ impl property::Serialize for VoteTally {
 }
 
 impl Readable for TallyProof {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         match buf.get_u8()? {
             0 => {
                 let id = CommitteeId::read(buf)?;
@@ -230,7 +230,7 @@ impl Readable for TallyProof {
 }
 
 impl Readable for VoteTally {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         use std::convert::TryInto as _;
 
         let id = <[u8; 32]>::read(buf)?.into();

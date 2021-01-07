@@ -378,7 +378,7 @@ impl property::Serialize for VotePlan {
 }
 
 impl Readable for VotePlanProof {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let id = vote::CommitteeId::read(buf)?;
         let signature = SingleAccountBindingSignature::read(buf)?;
         Ok(Self { id, signature })
@@ -386,7 +386,7 @@ impl Readable for VotePlanProof {
 }
 
 impl Readable for VoteAction {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         match buf.get_u8()? {
             0 => Ok(Self::OffChain),
             1 => TreasuryGovernanceAction::read(buf).map(|action| Self::Treasury { action }),
@@ -397,7 +397,7 @@ impl Readable for VoteAction {
 }
 
 impl Readable for VotePlan {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         use std::convert::TryInto as _;
 
         let vote_start = BlockDate {

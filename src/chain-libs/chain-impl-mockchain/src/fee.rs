@@ -99,9 +99,9 @@ impl PerVoteCertificateFee {
 pub trait FeeAlgorithm {
     fn baseline(&self) -> Value;
     fn fees_for_inputs_outputs(&self, inputs: u8, outputs: u8) -> Value;
-    fn fees_for_certificate<'a>(&self, cert: CertificateSlice<'a>) -> Value;
+    fn fees_for_certificate(&self, cert: CertificateSlice) -> Value;
 
-    fn calculate<'a>(&self, cert: Option<CertificateSlice<'a>>, inputs: u8, outputs: u8) -> Value {
+    fn calculate(&self, cert: Option<CertificateSlice>, inputs: u8, outputs: u8) -> Value {
         self.baseline()
             .saturating_add(self.fees_for_inputs_outputs(inputs, outputs))
             .saturating_add(cert.map_or(Value::zero(), |c| self.fees_for_certificate(c)))
@@ -128,7 +128,7 @@ impl FeeAlgorithm for LinearFee {
         )
     }
 
-    fn fees_for_certificate<'a>(&self, cert_slice: CertificateSlice<'a>) -> Value {
+    fn fees_for_certificate(&self, cert_slice: CertificateSlice) -> Value {
         let f1 = self.per_certificate_fees.fees_for_certificate(&cert_slice);
         let f2 = self
             .per_vote_certificate_fees

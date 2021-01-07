@@ -124,7 +124,7 @@ impl property::Deserialize for Value {
     }
 }
 impl Readable for Value {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         buf.get_u64().map(Value)
     }
 }

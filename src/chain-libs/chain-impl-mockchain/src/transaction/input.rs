@@ -229,7 +229,7 @@ impl property::Deserialize for Input {
 }
 
 impl Readable for Input {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let index_or_account = buf.get_u8()?;
         let value = Value::read(buf)?;
         let input_ptr = <[u8; INPUT_PTR_SIZE]>::read(buf)?;

@@ -229,18 +229,18 @@ impl<'a> ReadBuf<'a> {
 }
 
 pub trait Readable: Sized {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError>;
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError>;
 
-    fn read_validate<'a>(buf: &mut ReadBuf<'a>) -> Result<(), ReadError> {
+    fn read_validate(buf: &mut ReadBuf) -> Result<(), ReadError> {
         Self::read(buf).map(|_| ())
     }
 }
 
 impl Readable for () {
-    fn read<'a>(_: &mut ReadBuf<'a>) -> Result<(), ReadError> {
+    fn read(_: &mut ReadBuf) -> Result<(), ReadError> {
         Ok(())
     }
-    fn read_validate<'a>(buf: &mut ReadBuf<'a>) -> Result<(), ReadError> {
+    fn read_validate(buf: &mut ReadBuf) -> Result<(), ReadError> {
         Self::read(buf)
     }
 }
@@ -280,7 +280,7 @@ read_array_impls! {
 }
 
 /// read N times for a T elements in sequences
-pub fn read_vec<'a, T: Readable>(readbuf: &mut ReadBuf<'a>, n: usize) -> Result<Vec<T>, ReadError> {
+pub fn read_vec<T: Readable>(readbuf: &mut ReadBuf, n: usize) -> Result<Vec<T>, ReadError> {
     let mut v = Vec::with_capacity(n);
     for _ in 0..n {
         let t = T::read(readbuf)?;

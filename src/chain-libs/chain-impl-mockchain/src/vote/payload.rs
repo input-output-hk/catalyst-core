@@ -84,7 +84,7 @@ impl Payload {
         }
     }
 
-    pub(crate) fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    pub(crate) fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let t = buf
             .get_u8()?
             .try_into()
@@ -130,7 +130,7 @@ impl ProofOfCorrectVote {
         self.serialize_in(ByteBuilder::new()).finalize()
     }
 
-    pub(crate) fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    pub(crate) fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let bits = buf.get_u8()? as usize;
         let mut ibas = Vec::with_capacity(bits);
         for _ in 0..bits {
@@ -184,7 +184,7 @@ impl EncryptedVote {
         self.serialize_in(ByteBuilder::new()).finalize()
     }
 
-    pub(crate) fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    pub(crate) fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let len: usize = buf.get_u8()? as usize;
         let mut cypher_texts: Vec<Ciphertext> = Vec::new();
         for _ in 0..len {

@@ -219,7 +219,7 @@ impl property::Serialize for Witness {
 }
 
 impl Readable for Witness {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         match buf.get_u8()? {
             WITNESS_TAG_OLDUTXO => {
                 let pk = deserialize_public_key(buf)?;

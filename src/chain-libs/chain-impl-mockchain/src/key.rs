@@ -91,9 +91,7 @@ pub fn serialize_signature<A: VerificationAlgorithm, T, W: std::io::Write>(
     writer.write_all(signature.as_ref())
 }
 #[inline]
-pub fn deserialize_public_key<'a, A>(
-    buf: &mut ReadBuf<'a>,
-) -> Result<crypto::PublicKey<A>, ReadError>
+pub fn deserialize_public_key<A>(buf: &mut ReadBuf) -> Result<crypto::PublicKey<A>, ReadError>
 where
     A: AsymmetricPublicKey,
 {
@@ -102,9 +100,7 @@ where
     crypto::PublicKey::from_binary(&bytes).map_err(chain_crypto_pub_err)
 }
 #[inline]
-pub fn deserialize_signature<'a, A, T>(
-    buf: &mut ReadBuf<'a>,
-) -> Result<crypto::Signature<T, A>, ReadError>
+pub fn deserialize_signature<A, T>(buf: &mut ReadBuf) -> Result<crypto::Signature<T, A>, ReadError>
 where
     A: VerificationAlgorithm,
 {
@@ -187,7 +183,7 @@ where
 }
 
 impl<T: Readable, A: VerificationAlgorithm> Readable for Signed<T, A> {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         Ok(Signed {
             data: T::read(buf)?,
             sig: deserialize_signature(buf)?,
@@ -277,7 +273,7 @@ impl property::Deserialize for Hash {
 }
 
 impl Readable for Hash {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let bytes = <[u8; crypto::Blake2b256::HASH_SIZE]>::read(buf)?;
         Ok(Hash(crypto::Blake2b256::from(bytes)))
     }
@@ -359,7 +355,7 @@ impl property::Deserialize for BftLeaderId {
 }
 
 impl Readable for BftLeaderId {
-    fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(reader: &mut ReadBuf) -> Result<Self, ReadError> {
         deserialize_public_key(reader).map(BftLeaderId)
     }
 }
@@ -395,7 +391,7 @@ impl GenesisPraosLeader {
 }
 
 impl Readable for GenesisPraosLeader {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let vrf_public_key = deserialize_public_key(buf)?;
         let kes_public_key = deserialize_public_key(buf)?;
         Ok(GenesisPraosLeader {

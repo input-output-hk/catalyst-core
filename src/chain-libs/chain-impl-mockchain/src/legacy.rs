@@ -23,7 +23,7 @@ pub fn oldaddress_from_xpub(
 }
 
 impl Readable for UtxoDeclaration {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         use std::convert::TryFrom;
 
         let nb_entries = buf.get_u8()? as usize;

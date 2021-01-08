@@ -87,7 +87,7 @@ impl property::Serialize for VoteCast {
 }
 
 impl Readable for VoteCast {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let vote_plan = <[u8; 32]>::read(buf)?.into();
         let proposal_index = buf.get_u8()?;
         let payload = vote::Payload::read(buf)?;

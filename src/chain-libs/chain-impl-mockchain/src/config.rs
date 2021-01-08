@@ -223,7 +223,7 @@ impl<'a> From<&'a ConfigParam> for Tag {
 }
 
 impl Readable for ConfigParam {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let taglen = TagLen(buf.get_u16()?);
         let bytes = buf.get_slice(taglen.get_len())?;
         match taglen.get_tag().map_err(Into::into)? {

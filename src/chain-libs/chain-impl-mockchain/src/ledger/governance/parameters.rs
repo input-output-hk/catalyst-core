@@ -98,6 +98,7 @@ impl ParametersGovernance {
     }
 
     /// register a new action
+    #[allow(clippy::result_unit_err)]
     pub fn logs_register(&mut self, action: ParametersGovernanceAction) -> Result<(), ()> {
         let entry = self.logs.entry(action.to_type());
 
@@ -114,7 +115,7 @@ impl ParametersGovernance {
 /* Ser/De ******************************************************************* */
 
 impl Readable for ParametersGovernanceAction {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         match buf.get_u8()? {
             0 => Ok(Self::NoOp),
             1 => {

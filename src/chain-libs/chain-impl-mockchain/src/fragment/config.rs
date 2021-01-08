@@ -49,7 +49,7 @@ impl property::Deserialize for ConfigParams {
 }
 
 impl Readable for ConfigParams {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         // FIXME: check canonical order?
         let len = buf.get_u16()?;
         let mut configs: Vec<ConfigParam> = Vec::with_capacity(len as usize);

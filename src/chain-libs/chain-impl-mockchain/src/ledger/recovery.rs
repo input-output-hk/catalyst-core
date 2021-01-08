@@ -66,7 +66,6 @@ use chain_time::era::{pack_time_era, unpack_time_era};
 use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::io::{self, BufRead, Read, Write};
-use std::iter::FromIterator;
 use std::sync::Arc;
 
 #[cfg(test)]
@@ -1195,7 +1194,7 @@ impl Deserialize for Ledger {
         let entries = owned_entries
             .iter()
             .map(|entry_owned| entry_owned.to_entry().unwrap());
-        let ledger: Result<Ledger, crate::ledger::Error> = Result::from_iter(entries);
+        let ledger: Result<Ledger, crate::ledger::Error> = entries.collect();
         match ledger {
             Ok(l) => Ok(l),
             Err(e) => Err(std::io::Error::new(

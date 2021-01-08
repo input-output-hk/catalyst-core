@@ -28,8 +28,8 @@ macro_rules! if_cond_fail_with(
 type LedgerCheck = Result<(), Error>;
 
 // Check that a specific block0 transaction has no inputs and no witnesses
-pub(super) fn valid_block0_transaction_no_inputs<'a, Extra>(
-    tx: &TransactionSlice<'a, Extra>,
+pub(super) fn valid_block0_transaction_no_inputs<Extra>(
+    tx: &TransactionSlice<Extra>,
 ) -> LedgerCheck {
     if_cond_fail_with!(
         tx.nb_inputs() != 0,
@@ -38,9 +38,7 @@ pub(super) fn valid_block0_transaction_no_inputs<'a, Extra>(
 }
 
 // Check that a specific block0 transaction has no outputs
-pub(super) fn valid_block0_cert_transaction<'a, Extra>(
-    tx: &TransactionSlice<'a, Extra>,
-) -> LedgerCheck {
+pub(super) fn valid_block0_cert_transaction<Extra>(tx: &TransactionSlice<Extra>) -> LedgerCheck {
     if_cond_fail_with!(
         tx.nb_inputs() != 0,
         Error::Block0(Block0Error::CertTransactionHasInput)
@@ -64,8 +62,8 @@ pub(super) fn valid_output_value(output: &Output<Address>) -> LedgerCheck {
 /// check that the transaction input/outputs/witnesses is valid for stake_owner_delegation
 ///
 /// * Only 1 input (subsequently 1 witness), no output
-pub(super) fn valid_stake_owner_delegation_transaction<'a>(
-    tx: &TransactionSlice<'a, certificate::OwnerStakeDelegation>,
+pub(super) fn valid_stake_owner_delegation_transaction(
+    tx: &TransactionSlice<certificate::OwnerStakeDelegation>,
 ) -> LedgerCheck {
     if_cond_fail_with!(
         tx.inputs().nb_inputs() != 1
@@ -78,7 +76,7 @@ pub(super) fn valid_stake_owner_delegation_transaction<'a>(
 /// check that the transaction input/outputs/witnesses is valid for stake_owner_delegation
 ///
 /// * Only 1 input (subsequently 1 witness), no output
-pub(super) fn valid_vote_cast<'a>(tx: &TransactionSlice<'a, certificate::VoteCast>) -> LedgerCheck {
+pub(super) fn valid_vote_cast(tx: &TransactionSlice<certificate::VoteCast>) -> LedgerCheck {
     if_cond_fail_with!(
         tx.inputs().nb_inputs() != 1
             || tx.witnesses().nb_witnesses() != 1
@@ -152,8 +150,8 @@ pub enum TxVerifyError {
 }
 
 #[allow(clippy::absurd_extreme_comparisons)]
-pub(super) fn valid_transaction_ios_number<'a, P>(
-    tx: &TransactionSlice<'a, P>,
+pub(super) fn valid_transaction_ios_number<P>(
+    tx: &TransactionSlice<P>,
 ) -> Result<(), TxVerifyError> {
     // note this is always false at the moment, but just in case we change the maximum inputs.
     if tx.nb_inputs() > CHECK_TX_MAXIMUM_INPUTS {

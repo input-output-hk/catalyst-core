@@ -17,7 +17,7 @@ impl<Address: Readable> Output<Address> {
 }
 
 impl<Address: Readable> Readable for Output<Address> {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let address = Address::read(buf)?;
         let value = Value::read(buf)?;
         Ok(Output { address, value })

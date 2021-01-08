@@ -60,7 +60,7 @@ impl AsRef<[u8]> for SingleAccountBindingSignature {
 }
 
 impl Readable for SingleAccountBindingSignature {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         deserialize_signature(buf).map(SingleAccountBindingSignature)
     }
 }
@@ -93,7 +93,7 @@ impl AccountBindingSignature {
 }
 
 impl Readable for AccountBindingSignature {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         match buf.get_u8()? {
             1 => {
                 let sig = deserialize_signature(buf).map(SingleAccountBindingSignature)?;

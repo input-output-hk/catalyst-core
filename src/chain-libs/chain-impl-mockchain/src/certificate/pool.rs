@@ -57,6 +57,8 @@ pub struct PoolPermissions(u64);
 pub type ManagementThreshold = u8;
 
 const MANAGEMENT_THRESHOLD_BITMASK: u64 = 0b11_1111; // only support 32, reserved one for later extension if needed
+
+#[allow(clippy::unusual_byte_groupings)]
 const ALL_USED_BITMASK: u64 =
     0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00111111;
 
@@ -154,7 +156,7 @@ impl PoolUpdate {
 }
 
 impl Readable for PoolUpdate {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let pool_id = <[u8; 32]>::read(buf)?.into();
         let last_pool_reg_hash = <[u8; 32]>::read(buf)?.into();
         let new_pool_reg = PoolRegistration::read(buf)?;
@@ -178,7 +180,7 @@ impl PoolRetirement {
 }
 
 impl Readable for PoolRetirement {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let pool_id = <[u8; 32]>::read(buf)?.into();
         let retirement_time = DurationSeconds::from(buf.get_u64()?).into();
         Ok(PoolRetirement {
@@ -263,7 +265,7 @@ impl property::Serialize for PoolRegistration {
 }
 
 impl Readable for PoolRegistration {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let serial = buf.get_u128()?;
         let start_validity = DurationSeconds::from(buf.get_u64()?).into();
         let permissions = PoolPermissions::from_u64(buf.get_u64()?).ok_or_else(|| {
@@ -418,7 +420,7 @@ impl PoolOwnersSignature {
 }
 
 impl Readable for PoolOwnersSigned {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let sigs_nb = buf.get_u8()? as usize;
         if sigs_nb == 0 {
             return Err(ReadError::StructureInvalid(
@@ -436,7 +438,7 @@ impl Readable for PoolOwnersSigned {
 }
 
 impl Readable for PoolSignature {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         match buf.peek_u8()? {
             0 => {
                 let _ = buf.get_u8()?;

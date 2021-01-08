@@ -211,9 +211,9 @@ impl Leadership {
 
     /// Test that the given leader object is able to create a valid block for the leadership
     /// at a given date.
-    pub fn is_leader_for_date<'a>(
+    pub fn is_leader_for_date(
         &self,
-        leader: &'a Leader,
+        leader: &Leader,
         date: BlockDate,
     ) -> Result<LeaderOutput, Error> {
         self.inner.is_leader(leader, date)

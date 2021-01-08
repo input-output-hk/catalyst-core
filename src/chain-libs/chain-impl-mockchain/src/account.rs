@@ -43,7 +43,7 @@ impl property::Serialize for Identifier {
 }
 
 impl Readable for Identifier {
-    fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(reader: &mut ReadBuf) -> Result<Self, ReadError> {
         deserialize_public_key(reader).map(Identifier)
     }
 }

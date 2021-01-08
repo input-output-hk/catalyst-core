@@ -106,7 +106,7 @@ fn base_encode(alphabet_s: &str, input: &[u8]) -> Vec<u8> {
     let alphabet = alphabet_s.as_bytes();
     let base = alphabet.len() as u32;
 
-    let mut digits = vec![0 as u8];
+    let mut digits = vec![0u8];
     for input in input.iter() {
         let mut carry = *input as u32;
         for digit in digits.iter_mut() {

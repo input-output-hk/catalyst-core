@@ -358,7 +358,7 @@ impl<H: DigestAlg, T> DigestOf<H, T> {
         }
     }
 
-    pub fn digest_byteslice<'a>(byteslice: &ByteSlice<'a, T>) -> Self {
+    pub fn digest_byteslice(byteslice: &ByteSlice<T>) -> Self {
         let mut ctx = Context::new();
         ctx.append_data(byteslice.as_slice());
         DigestOf {

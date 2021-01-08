@@ -300,7 +300,7 @@ impl property::Serialize for Header {
 }
 
 impl Readable for Header {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         Header::from_slice(buf.get_slice_end()).map_err(|e| match e {
             HeaderError::InvalidSize => ReadError::NotEnoughBytes(0, 0),
             HeaderError::UnknownVersion => ReadError::UnknownTag(0),

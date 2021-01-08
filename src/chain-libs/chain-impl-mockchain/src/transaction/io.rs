@@ -194,9 +194,9 @@ impl InputOutputBuilder {
     }
 
     /// Seal the transaction checking that the transaction fits the fee algorithm
-    pub fn seal<'a, P: Payload, F: FeeAlgorithm>(
+    pub fn seal<P: Payload, F: FeeAlgorithm>(
         self,
-        payload: PayloadSlice<'a, P>,
+        payload: PayloadSlice<P>,
         fee_algorithm: &F,
     ) -> Result<InputOutput, Error> {
         match self.get_balance(payload, fee_algorithm) {
@@ -211,9 +211,9 @@ impl InputOutputBuilder {
     ///
     /// Along with the transaction, this return the balance unassigned to output policy
     /// if any
-    pub fn seal_with_output_policy<'a, P: Payload, F: FeeAlgorithm>(
+    pub fn seal_with_output_policy<P: Payload, F: FeeAlgorithm>(
         mut self,
-        payload: PayloadSlice<'a, P>,
+        payload: PayloadSlice<P>,
         fee_algorithm: &F,
         policy: OutputPolicy,
     ) -> Result<(Balance, Vec<Output<Address>>, InputOutput), Error> {

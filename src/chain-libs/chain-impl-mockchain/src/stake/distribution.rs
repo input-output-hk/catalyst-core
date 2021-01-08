@@ -162,20 +162,22 @@ pub fn get_distribution(
     dstate: &PoolsState,
     utxos: &utxo::Ledger<Address>,
 ) -> StakeDistribution {
-    use std::iter::FromIterator;
-
     let mut distribution = StakeDistribution {
         unassigned: Stake::zero(),
         dangling: Stake::zero(),
-        to_pools: HashMap::from_iter(dstate.stake_pools.iter().map(|(id, pool_state)| {
-            (
-                id.clone(),
-                PoolStakeInformation {
-                    registration: Some(pool_state.registration.clone()),
-                    stake: PoolStakeDistribution::new(),
-                },
-            )
-        })),
+        to_pools: dstate
+            .stake_pools
+            .iter()
+            .map(|(id, pool_state)| {
+                (
+                    id.clone(),
+                    PoolStakeInformation {
+                        registration: Some(pool_state.registration.clone()),
+                        stake: PoolStakeDistribution::new(),
+                    },
+                )
+            })
+            .collect(),
     };
 
     for (identifier, account_state) in accounts.iter() {

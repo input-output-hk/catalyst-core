@@ -64,7 +64,7 @@ impl property::Serialize for OwnerStakeDelegation {
 }
 
 impl Readable for OwnerStakeDelegation {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let delegation = deserialize_delegation_type(buf)?;
         Ok(Self { delegation })
     }
@@ -106,7 +106,7 @@ impl property::Serialize for StakeDelegation {
 }
 
 impl Readable for StakeDelegation {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let account_identifier = <[u8; 32]>::read(buf)?;
         let delegation = deserialize_delegation_type(buf)?;
         Ok(StakeDelegation {
@@ -160,7 +160,7 @@ fn serialize_delegation_type(
     }
 }
 
-fn deserialize_delegation_type<'a>(buf: &mut ReadBuf<'a>) -> Result<DelegationType, ReadError> {
+fn deserialize_delegation_type(buf: &mut ReadBuf) -> Result<DelegationType, ReadError> {
     let parts = buf.get_u8()?;
     match parts {
         0 => Ok(DelegationType::NonDelegated),

@@ -136,7 +136,7 @@ impl property::Deserialize for Block {
 }
 
 impl Readable for Block {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let header_size = buf.get_u16()? as usize;
         let mut header_buf = buf.split_to(header_size)?;
         let header = Header::read(&mut header_buf)?;

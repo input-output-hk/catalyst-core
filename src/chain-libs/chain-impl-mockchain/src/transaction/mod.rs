@@ -34,7 +34,7 @@ impl<Extra: Payload> property::Serialize for Transaction<Extra> {
 }
 
 impl<Extra: Payload> Readable for Transaction<Extra> {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let utx = UnverifiedTransactionSlice::from(buf.get_slice_end());
         match utx.check() {
             Ok(tx) => Ok(tx.to_owned()),

@@ -153,7 +153,7 @@ impl Fragment {
 }
 
 impl Readable for Fragment {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let padding_tag = buf.get_u8()?;
         if padding_tag != 0 {
             return Err(ReadError::StructureInvalid(format!(

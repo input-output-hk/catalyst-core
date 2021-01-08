@@ -137,7 +137,7 @@ impl property::Deserialize for NoExtra {
     }
 }
 impl Readable for NoExtra {
-    fn read<'a>(_: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(_: &mut ReadBuf) -> Result<Self, ReadError> {
         Ok(NoExtra)
     }
 }

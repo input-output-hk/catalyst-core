@@ -134,7 +134,7 @@ impl property::Serialize for CommitteeId {
 }
 
 impl Readable for CommitteeId {
-    fn read<'a>(reader: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(reader: &mut ReadBuf) -> Result<Self, ReadError> {
         let slice = reader.get_slice(Self::COMMITTEE_ID_SIZE)?;
         Self::try_from(slice).map_err(|err| ReadError::StructureInvalid(err.to_string()))
     }

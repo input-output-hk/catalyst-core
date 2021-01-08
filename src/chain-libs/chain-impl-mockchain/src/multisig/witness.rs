@@ -57,7 +57,7 @@ impl Witness {
     }
 }
 
-fn deserialize_index<'a>(buf: &mut ReadBuf<'a>) -> Result<TreeIndex, ReadError> {
+fn deserialize_index(buf: &mut ReadBuf) -> Result<TreeIndex, ReadError> {
     let idx = buf.get_u16()?;
     match TreeIndex::unpack(idx) {
         None => Err(ReadError::StructureInvalid("invalid index".to_string())),
@@ -83,7 +83,7 @@ impl property::Serialize for Witness {
 }
 
 impl Readable for Witness {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let len = buf.get_u8()? as usize;
 
         if len == 0 {

@@ -256,7 +256,7 @@ impl Address {
         unsafe { String::from_utf8_unchecked(out) }
     }
 
-    pub fn public_key<'a>(&'a self) -> Option<&'a PublicKey<Ed25519>> {
+    pub fn public_key(&self) -> Option<&PublicKey<Ed25519>> {
         match self.1 {
             Kind::Single(ref pk) => Some(pk),
             Kind::Group(ref pk, _) => Some(pk),
@@ -489,7 +489,7 @@ fn chain_crypto_err(e: chain_crypto::PublicKeyError) -> ReadError {
 }
 
 impl Readable for Address {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let byte = buf.get_u8()?;
         let discr = get_discrimination_value(byte);
         let kind = match get_kind_value(byte) {

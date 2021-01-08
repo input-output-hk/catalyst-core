@@ -92,7 +92,7 @@ impl property::Serialize for EncryptedVoteTally {
 }
 
 impl Readable for EncryptedVoteTallyProof {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let id = CommitteeId::read(buf)?;
         let signature = SingleAccountBindingSignature::read(buf)?;
         Ok(Self { id, signature })
@@ -100,7 +100,7 @@ impl Readable for EncryptedVoteTallyProof {
 }
 
 impl Readable for EncryptedVoteTally {
-    fn read<'a>(buf: &mut ReadBuf<'a>) -> Result<Self, ReadError> {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let id = <[u8; 32]>::read(buf)?.into();
         Ok(Self { id })
     }

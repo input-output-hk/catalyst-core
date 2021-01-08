@@ -101,7 +101,7 @@ impl PoolsState {
         self.stake_pools.lookup(id).map(|x| x.registration.as_ref())
     }
 
-    pub fn stake_pool_ids<'a>(&'a self) -> impl Iterator<Item = PoolId> + 'a {
+    pub fn stake_pool_ids(&self) -> impl Iterator<Item = PoolId> + '_ {
         self.stake_pools.iter().map(|(id, _)| id.clone())
     }
 

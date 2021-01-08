@@ -38,26 +38,14 @@ impl Release {
     /// narrow linux distribution to linux type
     #[allow(clippy::all)]
     fn compact_os_types(&self, os_type: OsType) -> OsType {
-        let os_type = match os_type {
-            OsType::Emscripten => OsType::Linux,
-            OsType::Redhat => OsType::Linux,
-            OsType::RedHatEnterprise => OsType::Linux,
-            OsType::Ubuntu => OsType::Linux,
-            OsType::Debian => OsType::Linux,
-            OsType::Arch => OsType::Linux,
-            OsType::Centos => OsType::Linux,
-            OsType::Fedora => OsType::Linux,
-            OsType::Amazon => OsType::Linux,
-            OsType::SUSE => OsType::Linux,
-            OsType::openSUSE => OsType::Linux,
-            OsType::Alpine => OsType::Linux,
-            //this line fixes issue in rust beta release, which prevents OraceLinux, to be hit.
-            OsType::OracleLinux => {
-                return OsType::Linux;
-            }
-            _ => os_type,
-        };
-        return os_type;
+        match os_type {
+            OsType::Android => OsType::Android,
+            OsType::Macos => OsType::Macos,
+            OsType::Redox => OsType::Redox,
+            OsType::Unknown => OsType::Unknown,
+            OsType::Windows => OsType::Windows,
+            _ => OsType::Linux,
+        }
     }
 
     pub fn releases_per_os(&self) -> &HashMap<OsType, AssetDto> {

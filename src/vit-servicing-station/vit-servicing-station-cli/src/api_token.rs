@@ -4,7 +4,6 @@ use chrono::{Duration, Utc};
 use rand::Rng;
 use std::collections::HashSet;
 use std::io;
-use std::iter::FromIterator;
 use structopt::StructOpt;
 use vit_servicing_station_lib::{
     db::{
@@ -66,7 +65,7 @@ impl APITokenCmd {
 
     fn add_tokens(base64_tokens: &[String], db_conn: &DBConnection) -> io::Result<()> {
         // filter duplicated tokens
-        let base64_tokens: HashSet<String> = HashSet::from_iter(base64_tokens.iter().cloned());
+        let base64_tokens: HashSet<String> = base64_tokens.iter().cloned().collect();
         for base64_token in base64_tokens {
             let token =
                 base64::decode_config(&base64_token, base64::URL_SAFE_NO_PAD).map_err(|e| {

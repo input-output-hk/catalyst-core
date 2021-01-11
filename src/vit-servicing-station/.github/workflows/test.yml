@@ -1,0 +1,138 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+name: CI
+
+jobs:
+
+  update-deps:
+    name: Update dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: cargo-deps
+        name: Cache cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+
+      - if: ${{ steps.cargo-deps.outputs.cache-hit != 'true' }}
+        id: ls-crates-io-index
+        name: Get head commit hash of crates.io registry index
+        run: |
+          commit=$(
+            git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master |
+            cut -f 1
+          )
+          echo "::set-output name=head::$commit"
+      - if: ${{ steps.cargo-deps.outputs.cache-hit != 'true' }}
+        name: Cache cargo registry index
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry/index
+          key: cargo-index-${{ steps.ls-crates-io-index.outputs.head }}
+          restore-keys: |
+            cargo-index-
+
+      - if: ${{ steps.cargo-deps.outputs.cache-hit != 'true' }}
+        name: Fetch dependencies
+        run: cargo fetch --locked
+
+  test:
+    name: Test Suite
+    needs: update-deps
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CARGO_INCREMENTAL: 0
+    steps:
+      - uses: actions/checkout@v2
+
+      - if: ${{ runner.os == 'Windows' }}
+        name: Fix up Cargo.lock hash
+        run: |
+          Get-ChildItem . -Recurse -Filter Cargo.lock |
+          Foreach-Object {
+            ((Get-Content $_.FullName) -join "`n") + "`n" |
+            Set-Content -NoNewline $_.FullName
+          }
+
+      - name: Restore cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install libsqlite3 (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install libsqlite3-dev
+
+      - uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: build
+          args: --locked
+      - uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: test
+          args: --locked
+
+  lints:
+    name: Rust lints
+    needs: update-deps
+    runs-on: ubuntu-latest
+    env:
+      CARGO_INCREMENTAL: 0
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: fmt
+          args: -- --check
+
+      - name: Restore cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run cargo clippy
+        uses: actions-rs/clippy-check@v1
+        continue-on-error: false
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: -- --deny warnings

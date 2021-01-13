@@ -84,7 +84,7 @@ jobs:
           submodules: true
 
       - name: Fetch dependencies and update cargo registry
-        run: cargo fetch --locked
+        run: cargo fetch
 
   tests:
     name: Tests

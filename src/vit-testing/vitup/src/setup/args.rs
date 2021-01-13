@@ -138,7 +138,7 @@ pub struct QuickStartCommandArgs {
     #[structopt(long = "endpoint", default_value = "0.0.0.0:80")]
     endpoint: String,
 
-    /// endopint in format: 127.0.0.1:80
+    /// switch to private voting type
     #[structopt(long = "private")]
     private: bool,
 }

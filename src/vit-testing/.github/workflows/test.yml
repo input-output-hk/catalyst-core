@@ -103,7 +103,7 @@ jobs:
     env:
       RUSTFLAGS: -D warnings
       RUST_BACKTRACE: 1
-      CARGO_FLAGS: --verbose --locked
+      CARGO_FLAGS: --verbose
     steps:
       - uses: actions-rs/toolchain@v1
         with:

@@ -1,0 +1,50 @@
+[package]
+name = "vitup"
+version = "0.1.0"
+authors = ["dkijania <dariusz.kijania@iohk.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+custom_debug = "0.5"
+dialoguer = "0.7.1"
+error-chain = "0.12"
+assert_fs = "1.0"
+chain-core           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto         = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-time           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "iapyx-qr-code" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "iapyx-qr-code" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "iapyx-qr-code" } 
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+iapyx = { path = "../iapyx" }
+poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
+rand = "0.7"
+rand_core = "0.5"
+rand_chacha = "0.2"
+function_name = "0.2.0"
+chrono = "0.4"
+regex = "1.4"
+structopt = "0.3"
+thiserror = "1.0"
+hex = "0.4"
+futures = "0.3.8"
+console = "0.13"
+indicatif = "0.15"
+lazy_static = "1"
+serde_json = "1.0"
+serde_yaml = "0.8"
+yaml-rust = "0.4.4"
+serde = { version="=1.0.118", features = ["derive"] }
+warp = "0.2.5"
+tokio = { version = "0.2", features = ["macros"] }
+
+[dependencies.reqwest]
+version = "0.10.10"
+default-features = false
+features = ["blocking", "rustls-tls"]

@@ -137,7 +137,7 @@ jobs:
           args: -p iapyx ${{ env.CARGO_FLAGS }} ${{ matrix.flags }}
 
       - name: Build vitup
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargov1
         timeout-minutes: 30
         with:
           command: build
@@ -153,6 +153,7 @@ jobs:
       - name: Run tests
         uses: actions-rs/cargo@v1
         timeout-minutes: 30
+        working-directory: ../vit-testing
         with:
           command: test
           args: --tests ${{ env.CARGO_FLAGS }} ${{ matrix.flags }}

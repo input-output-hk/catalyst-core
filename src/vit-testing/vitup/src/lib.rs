@@ -3,7 +3,8 @@ extern crate error_chain;
 
 pub mod error;
 pub mod interactive;
-mod scenario;
+pub mod manager;
+pub mod scenario;
 pub mod setup;
 
 use error::Result;

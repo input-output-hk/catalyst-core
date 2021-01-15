@@ -51,7 +51,7 @@ impl VitControllerBuilder {
 }
 
 impl VitController {
-    fn new(vit_settings: VitSettings) -> Self {
+    pub fn new(vit_settings: VitSettings) -> Self {
         Self { vit_settings }
     }
 

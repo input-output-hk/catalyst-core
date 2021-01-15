@@ -1,30 +1,40 @@
 use crate::interactive::VitInteractiveCommandExec;
 use crate::interactive::VitUserInteractionController;
-use crate::setup::{
+use crate::manager::{ControlContext, ControlContextLock, ManagerService, State};
+use crate::scenario::controller::VitController;
+use crate::setup::quick::{
     QuickVitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, LEADER_4, WALLET_NODE,
 };
+use crate::vit_station::VitStationController;
+use crate::wallet::WalletProxyController;
 use crate::wallet::WalletProxySpawnParams;
 use crate::Result;
 use jormungandr_lib::interfaces::Explorer;
 use jormungandr_scenario_tests::interactive::UserInteractionController;
+use jormungandr_scenario_tests::scenario::Controller;
+use jormungandr_scenario_tests::NodeController;
 use jormungandr_scenario_tests::{
     node::{LeadershipMode, PersistenceMode},
-    scenario::{repository::ScenarioResult, Context},
+    scenario::Context,
 };
 use jormungandr_testing_utils::testing::network_builder::SpawnParams;
 use jortestkit::prelude::UserInteraction;
 use rand_chacha::ChaChaRng;
+use std::path::Path;
+use std::sync::Arc;
+use std::sync::Mutex;
+use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
-#[allow(unreachable_code)]
-#[allow(clippy::empty_loop)]
-pub fn vote_backend(
-    context: Context<ChaChaRng>,
-    mut quick_setup: QuickVitBackendSettingsBuilder,
-    interactive: bool,
+pub fn setup_network(
+    controller: &mut Controller,
+    vit_controller: &mut VitController,
+    vit_parameters: ValidVotePlanParameters,
     endpoint: String,
-) -> Result<ScenarioResult> {
-    let (vit_controller, mut controller, vit_parameters) = quick_setup.build(context)?;
-
+) -> Result<(
+    Vec<NodeController>,
+    VitStationController,
+    WalletProxyController,
+)> {
     // bootstrap network
     let leader_1 = controller.spawn_node_custom(
         SpawnParams::new(LEADER_1)
@@ -69,40 +79,43 @@ pub fn vote_backend(
     wallet_node.wait_for_bootstrap()?;
 
     // start proxy and vit station
-    let vit_station = vit_controller.spawn_vit_station(&mut controller, vit_parameters)?;
+    let vit_station = vit_controller.spawn_vit_station(controller, vit_parameters)?;
     let wallet_proxy = vit_controller.spawn_wallet_proxy_custom(
-        &mut controller,
+        controller,
         WalletProxySpawnParams::new(WALLET_NODE).with_base_address(endpoint),
     )?;
 
-    match interactive {
-        true => {
-            let user_integration = vit_interaction();
-            let mut interaction_controller = UserInteractionController::new(controller);
-            let mut vit_interaction_controller: VitUserInteractionController = Default::default();
-            let nodes = interaction_controller.nodes_mut();
-            nodes.push(leader_1);
-            nodes.push(leader_2);
-            nodes.push(leader_3);
-            nodes.push(leader_4);
-            nodes.push(wallet_node);
-            vit_interaction_controller.proxies_mut().push(wallet_proxy);
-            vit_interaction_controller
-                .vit_stations_mut()
-                .push(vit_station);
+    Ok((
+        vec![leader_1, leader_2, leader_3, leader_4, wallet_node],
+        vit_station,
+        wallet_proxy,
+    ))
+}
 
-            let mut command_exec = VitInteractiveCommandExec {
-                controller: interaction_controller,
-                vit_controller: vit_interaction_controller,
-            };
+pub fn interactive_mode(
+    controller: Controller,
+    nodes_list: Vec<NodeController>,
+    vit_station: VitStationController,
+    wallet_proxy: WalletProxyController,
+) -> Result<()> {
+    let user_integration = vit_interaction();
+    let mut interaction_controller = UserInteractionController::new(controller);
+    let mut vit_interaction_controller: VitUserInteractionController = Default::default();
+    let nodes = interaction_controller.nodes_mut();
+    nodes.extend(nodes_list);
+    vit_interaction_controller.proxies_mut().push(wallet_proxy);
+    vit_interaction_controller
+        .vit_stations_mut()
+        .push(vit_station);
 
-            user_integration.interact(&mut command_exec)?;
-            command_exec.tear_down();
-        }
-        false => loop {},
-    }
+    let mut command_exec = VitInteractiveCommandExec {
+        controller: interaction_controller,
+        vit_controller: vit_interaction_controller,
+    };
 
-    Ok(ScenarioResult::passed(""))
+    user_integration.interact(&mut command_exec)?;
+    command_exec.tear_down();
+    Ok(())
 }
 
 fn vit_interaction() -> UserInteraction {
@@ -120,4 +133,97 @@ fn vit_interaction() -> UserInteraction {
             "- show node stats and data.".to_string(),
         ],
     )
+}
+
+#[allow(clippy::empty_loop)]
+#[allow(unreachable_code)]
+pub fn endless_mode() -> Result<()> {
+    loop {}
+    Ok(())
+}
+
+#[allow(unreachable_code)]
+pub fn service_mode<P: AsRef<Path>>(
+    context: Context<ChaChaRng>,
+    working_dir: P,
+    mut quick_setup: QuickVitBackendSettingsBuilder,
+    endpoint: String,
+) -> Result<()> {
+    let control_context = Arc::new(Mutex::new(ControlContext::new(
+        working_dir,
+        quick_setup.parameters().clone(),
+    )));
+
+    let mut manager = ManagerService::new(control_context.clone());
+    manager.spawn();
+
+    loop {
+        if manager.request_to_start() {
+            let parameters = manager.setup();
+            quick_setup.upload_parameters(parameters);
+            manager.clear_requests();
+            single_run(
+                control_context.clone(),
+                context.clone(),
+                quick_setup.clone(),
+                endpoint.clone(),
+            )?;
+        }
+
+        std::thread::sleep(std::time::Duration::from_secs(30));
+    }
+    Ok(())
+}
+
+pub fn single_run(
+    control_context: ControlContextLock,
+    context: Context<ChaChaRng>,
+    mut quick_setup: QuickVitBackendSettingsBuilder,
+    endpoint: String,
+) -> Result<()> {
+    {
+        let mut control_context = control_context.lock().unwrap();
+        let state = control_context.state_mut();
+        *state = State::Starting;
+    }
+
+    let (mut vit_controller, mut controller, vit_parameters) = quick_setup.build(context)?;
+    let (nodes_list, vit_station, wallet_proxy) = setup_network(
+        &mut controller,
+        &mut vit_controller,
+        vit_parameters,
+        endpoint,
+    )?;
+
+    {
+        let mut control_context = control_context.lock().unwrap();
+        let state = control_context.state_mut();
+        *state = State::Running;
+    }
+
+    loop {
+        if control_context.lock().unwrap().request_to_stop() {
+            {
+                let mut control_context = control_context.lock().unwrap();
+                let state = control_context.state_mut();
+                *state = State::Stopping;
+            }
+
+            vit_station.shutdown();
+            wallet_proxy.shutdown();
+            for node in nodes_list {
+                node.shutdown()?;
+            }
+
+            controller.finalize();
+            {
+                let mut control_context = control_context.lock().unwrap();
+                let state = control_context.state_mut();
+                *state = State::Idle;
+            }
+            return Ok(());
+        }
+
+        std::thread::sleep(std::time::Duration::from_secs(30));
+    }
 }

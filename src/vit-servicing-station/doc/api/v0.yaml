@@ -9,7 +9,7 @@ info:
 
 servers:
   - url: 'http://localhost'
-  
+
 paths:
   /api/v0/fund:
     get:
@@ -55,6 +55,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Proposal"
+
+  /api/v0/challenges:
+    get:
+      summary: Get all available challenges
+      responses:
+        200:
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Challenge"
+
+  /api/v0/challenges/{id}:
+    get:
+      summary: Get challenges by id
+      responses:
+        200:
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Challenge"
 
 components:
   schemas:
@@ -175,3 +198,22 @@ components:
         fund_id:
           type: integer
           format: int32
+
+    Challenge:
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        extended_description:
+          type: string
+        rewards_total:
+          type: integer
+          format: int32
+        fund_id:
+          type: integer
+          format: int32
+        proposal_ids:
+          type: array
+          items:
+            type: string

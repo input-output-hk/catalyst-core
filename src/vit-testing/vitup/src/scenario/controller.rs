@@ -74,7 +74,7 @@ impl VitController {
         };
 
         let backend = WalletBackend::new_from_addresses(
-            wallet_proxy.settings().address(),
+            wallet_proxy.settings().base_address().to_string(),
             wallet_proxy.settings().base_address().to_string(),
             wallet_proxy.settings().base_address().to_string(),
             settings,

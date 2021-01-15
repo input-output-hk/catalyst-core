@@ -60,6 +60,7 @@ impl QuickVitBackendSettingsBuilder {
         self.parameters.initials = initials;
         self
     }
+
     pub fn initials_count(&mut self, initials_count: usize) -> &mut Self {
         let initials: Vec<u64> = std::iter::from_fn(|| Some(10_000))
             .take(initials_count)
@@ -67,6 +68,7 @@ impl QuickVitBackendSettingsBuilder {
         self.initials(initials);
         self
     }
+
     pub fn vote_start_epoch(&mut self, vote_start_epoch: u32) -> &mut Self {
         self.parameters.vote_start = vote_start_epoch as u64;
         self

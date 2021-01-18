@@ -19,7 +19,7 @@ impl DbGenerator {
         let generator = ValidVotePlanGenerator::new(self.parameters);
         let snapshot = generator.build();
 
-        let path = std::path::Path::new(".").join("resources/vit_station/migration");
+        let path = std::path::Path::new("../").join("resources/vit_station/migration");
 
         let temp_dir = TempDir::new().unwrap().into_persistent();
         let temp_db_path = DbBuilder::new()

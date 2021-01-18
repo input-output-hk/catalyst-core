@@ -1,14 +1,17 @@
-use crate::{
-    node::{LeadershipMode, PersistenceMode},
-    test::{utils, Result},
-    Context, ScenarioResult,
-};
-use function_name::named;
 use jormungandr_lib::interfaces::Explorer;
+use jormungandr_scenario_tests::Seed;
+use jormungandr_scenario_tests::{
+    node::{LeadershipMode, PersistenceMode},
+    test::utils,
+    Context,
+};
 use jormungandr_testing_utils::testing::network_builder::SpawnParams;
 use jormungandr_testing_utils::testing::node::time;
-use rand_chacha::ChaChaRng;
-use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
+use jortestkit::prelude::ProgressBarMode;
+use std::path::PathBuf;
+use vitup::scenario::controller::VitController;
+use vitup::scenario::settings::VitSettings;
+use vitup::setup::quick::QuickVitBackendSettingsBuilder;
 const LEADER_1: &str = "Leader1";
 const LEADER_2: &str = "Leader2";
 const LEADER_3: &str = "Leader3";
@@ -33,12 +36,24 @@ pub enum Vote {
     YES = 1,
     NO = 2,
 }
+pub fn context() -> Context {
+    Context::new(
+        Seed::generate(rand::rngs::OsRng),
+        PathBuf::from("jormungandr"),
+        PathBuf::from("jcli"),
+        Some(PathBuf::from("./testing")),
+        true,
+        ProgressBarMode::Standard,
+        "info".to_string(),
+    )
+}
 
-#[named]
-pub fn vote_e2e_flow(mut context: Context<ChaChaRng>) -> Result<ScenarioResult> {
-    let name = function_name!();
+#[test]
+pub fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
+    let mut context = context();
+    let title = "vote_e2e_flow";
     let scenario_settings = prepare_scenario! {
-        name,
+        title,
         &mut context,
         topology [
             LEADER_1,
@@ -69,6 +84,7 @@ pub fn vote_e2e_flow(mut context: Context<ChaChaRng>) -> Result<ScenarioResult> 
         }
     };
 
+    let vit_controller = VitController::new(VitSettings::new(&mut context));
     let mut controller = scenario_settings.build(context)?;
 
     // bootstrap network
@@ -115,13 +131,34 @@ pub fn vote_e2e_flow(mut context: Context<ChaChaRng>) -> Result<ScenarioResult> 
     wallet_node.wait_for_bootstrap()?;
     let fund1_vote_plan = controller.vote_plan("fund1")?;
 
-    // start proxy and vit station
-    let vit_station =
-        controller.spawn_vit_station(ValidVotePlanParameters::new(fund1_vote_plan))?;
-    let wallet_proxy = controller.spawn_wallet_proxy(WALLET_NODE)?;
+    let blockchain_configuration = controller
+        .settings()
+        .network_settings
+        .block0
+        .blockchain_configuration
+        .clone();
 
-    // start mainnet walets
-    let mut david = controller.iapyx_wallet(DAVID_MNEMONICS, &wallet_proxy)?;
+    let mut vote_plan_parameters_builder = QuickVitBackendSettingsBuilder::new();
+    vote_plan_parameters_builder
+        .vote_start_epoch(0)
+        .tally_start_epoch(1)
+        .tally_end_epoch(2)
+        .slot_duration_in_seconds(blockchain_configuration.slot_duration.into())
+        .slots_in_epoch_count(blockchain_configuration.slots_per_epoch.into())
+        .proposals_count(1);
+
+    vote_plan_parameters_builder
+        .recalculate_voting_periods_if_needed(blockchain_configuration.block0_date);
+
+    // start proxy and vit station
+    let vit_station = vit_controller.spawn_vit_station(
+        &mut controller,
+        vote_plan_parameters_builder.vote_plan_parameters(fund1_vote_plan),
+    )?;
+    let wallet_proxy = vit_controller.spawn_wallet_proxy(&mut controller, WALLET_NODE)?;
+
+    // start mainnet wallets
+    let mut david = vit_controller.iapyx_wallet(DAVID_MNEMONICS, &wallet_proxy)?;
     david.retrieve_funds()?;
     david.convert_and_send()?;
 
@@ -130,13 +167,13 @@ pub fn vote_e2e_flow(mut context: Context<ChaChaRng>) -> Result<ScenarioResult> 
     // start voting
     david.vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8)?;
 
-    let mut edgar = controller.iapyx_wallet(EDGAR_MNEMONICS, &wallet_proxy)?;
+    let mut edgar = vit_controller.iapyx_wallet(EDGAR_MNEMONICS, &wallet_proxy)?;
     edgar.retrieve_funds()?;
     edgar.convert_and_send()?;
 
     edgar.vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8)?;
 
-    let mut filip = controller.iapyx_wallet(FILIP_MNEMONICS, &wallet_proxy)?;
+    let mut filip = vit_controller.iapyx_wallet(FILIP_MNEMONICS, &wallet_proxy)?;
     filip.retrieve_funds()?;
     filip.convert_and_send()?;
 
@@ -199,5 +236,5 @@ pub fn vote_e2e_flow(mut context: Context<ChaChaRng>) -> Result<ScenarioResult> 
     leader_2.shutdown()?;
     leader_1.shutdown()?;
     controller.finalize();
-    Ok(ScenarioResult::passed(name))
+    Ok(())
 }

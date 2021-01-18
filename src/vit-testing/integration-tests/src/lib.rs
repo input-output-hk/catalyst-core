@@ -1,7 +1,27 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+cfg_if::cfg_if! {
+    if #[cfg(test)] {
+
+        #[macro_use]
+        extern crate jormungandr_scenario_tests;
+
+        pub mod vote;
     }
+}
+
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("vitup error")]
+    VitupError(#[from] vitup::error::Error),
+    #[error("node error")]
+    NodeError(#[from] jormungandr_scenario_tests::node::Error),
+    #[error("verification error")]
+    VerificationError(#[from] jormungandr_testing_utils::testing::VerificationError),
+    #[error("sender error")]
+    FragmentSenderError(#[from] jormungandr_testing_utils::testing::FragmentSenderError),
+    #[error("scenario error")]
+    ScenarioError(#[from] jormungandr_scenario_tests::scenario::Error),
+    #[error("iapyx error")]
+    IapyxError(#[from] iapyx::ControllerError),
 }

@@ -9,8 +9,10 @@ use chain_impl_mockchain::{
     testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder},
     value::Value,
 };
+use chain_vote::committee::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
+use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
     ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KESUpdateSpeed, Milli,
     NumberOfSlotsPerEpoch, SlotDuration, TopologyBuilder,
@@ -18,6 +20,7 @@ use jormungandr_scenario_tests::scenario::{
 use jormungandr_testing_utils::testing::network_builder::{
     Blockchain, Node, WalletTemplate, WalletType,
 };
+use jormungandr_testing_utils::wallet::ElectionPublicKeyExtension;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub const LEADER_1: &str = "Leader1";
@@ -29,6 +32,7 @@ pub const WALLET_NODE: &str = "Wallet_Node";
 #[derive(Clone)]
 pub struct QuickVitBackendSettingsBuilder {
     parameters: QuickVitBackendParameters,
+    committe_wallet_name: String,
     title: String,
 }
 
@@ -45,6 +49,7 @@ impl QuickVitBackendSettingsBuilder {
         Self {
             parameters: Default::default(),
             title: "vit_backend".to_owned(),
+            committe_wallet_name: "committee".to_owned(),
         }
     }
 
@@ -179,7 +184,11 @@ impl QuickVitBackendSettingsBuilder {
         self.parameters = parameters;
     }
 
-    pub fn vote_plan_parameters(&self, vote_plan: VotePlanDef) -> ValidVotePlanParameters {
+    pub fn vote_plan_parameters(
+        &self,
+        vote_plan: VotePlanDef,
+        settings: &Settings,
+    ) -> ValidVotePlanParameters {
         let mut parameters = ValidVotePlanParameters::new(vote_plan);
         parameters.set_voting_power_threshold(self.parameters.voting_power as i64);
         parameters.set_voting_start(self.parameters.vote_start_timestamp.unwrap().timestamp());
@@ -188,6 +197,25 @@ impl QuickVitBackendSettingsBuilder {
         parameters.set_voting_tally_end(self.parameters.tally_end_timestamp.unwrap().timestamp());
         parameters
             .set_next_fund_start_time(self.parameters.next_vote_start_time.unwrap().timestamp());
+
+        if self.parameters.private {
+            let mut committee_wallet = settings
+                .network_settings
+                .wallets
+                .get(&self.committe_wallet_name)
+                .unwrap()
+                .clone();
+            let identifier = committee_wallet.identifier();
+            let private_key_data = settings
+                .private_vote_plans
+                .values()
+                .next()
+                .unwrap()
+                .get(&identifier.into())
+                .unwrap();
+            let key: ElectionPublicKey = private_key_data.encrypting_vote_key();
+            parameters.set_vote_encryption_key(key.to_base32().unwrap());
+        }
         parameters
     }
 
@@ -195,8 +223,6 @@ impl QuickVitBackendSettingsBuilder {
         &mut self,
         mut context: ContextChaCha,
     ) -> Result<(VitController, Controller, ValidVotePlanParameters)> {
-        let committe_wallet_name = "committee";
-
         let mut builder = VitControllerBuilder::new(&self.title);
         let mut topology_builder = TopologyBuilder::new();
 
@@ -249,7 +275,8 @@ impl QuickVitBackendSettingsBuilder {
         blockchain.add_leader(LEADER_3);
         blockchain.add_leader(LEADER_4);
 
-        let committe_wallet = WalletTemplate::new_account(committe_wallet_name, Value(1_000_000));
+        let committe_wallet =
+            WalletTemplate::new_account(&self.committe_wallet_name, Value(1_000_000));
         blockchain.add_wallet(committe_wallet);
         let mut i = 1u32;
 
@@ -262,10 +289,10 @@ impl QuickVitBackendSettingsBuilder {
             i += 1;
         }
 
-        blockchain.add_committee(committe_wallet_name);
+        blockchain.add_committee(&self.committe_wallet_name);
 
         let mut vote_plan_builder = VotePlanDefBuilder::new(&self.fund_name());
-        vote_plan_builder.owner(committe_wallet_name);
+        vote_plan_builder.owner(&self.committe_wallet_name);
 
         if self.parameters.private {
             vote_plan_builder.payload_type(PayloadType::Private);
@@ -314,10 +341,9 @@ impl QuickVitBackendSettingsBuilder {
                 .blockchain_configuration
                 .block0_date,
         );
-        Ok((
-            vit_controller,
-            controller,
-            self.vote_plan_parameters(vote_plan),
-        ))
+
+        let parameters = self.vote_plan_parameters(vote_plan, &controller.settings());
+
+        Ok((vit_controller, controller, parameters))
     }
 }

@@ -24,7 +24,7 @@ async fn main() {
         server_stub.http_node_address(),
     ));
 
-    let fragment = warp::path!("fragments" / ..).and(reverse_proxy_filter(
+    let fragment = warp::path!("fragment" / "logs").and(reverse_proxy_filter(
         "".to_string(),
         server_stub.http_node_address(),
     ));

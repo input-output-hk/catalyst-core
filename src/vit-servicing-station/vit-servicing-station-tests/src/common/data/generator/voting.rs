@@ -18,6 +18,7 @@ pub struct ValidVotePlanParameters {
     pub voting_tally_start: Option<i64>,
     pub voting_tally_end: Option<i64>,
     pub next_fund_start_time: Option<i64>,
+    pub vote_encryption_key: Option<String>,
 }
 
 impl ValidVotePlanParameters {
@@ -29,11 +30,16 @@ impl ValidVotePlanParameters {
             voting_tally_start: None,
             voting_tally_end: None,
             next_fund_start_time: None,
+            vote_encryption_key: None,
         }
     }
 
     pub fn set_voting_power_threshold(&mut self, voting_power_threshold: i64) {
         self.voting_power_threshold = Some(voting_power_threshold);
+    }
+
+    pub fn set_vote_encryption_key(&mut self, vote_encryption_key: String) {
+        self.vote_encryption_key = Some(vote_encryption_key);
     }
 
     pub fn set_voting_start(&mut self, voting_start: i64) {
@@ -68,9 +74,8 @@ impl ValidVotePlanGenerator {
 
     pub fn build(self) -> Snapshot {
         let mut generator = ArbitraryGenerator::new();
-        let chain_vote_plan_id = Self::convert_to_vote_plan(&self.parameters.vote_plan)
-            .to_id()
-            .to_string();
+        let vote_plan = Self::convert_to_vote_plan(&self.parameters.vote_plan);
+        let chain_vote_plan_id = vote_plan.to_id().to_string();
         let threshold = self.parameters.voting_power_threshold.unwrap();
         let voting_start = self.parameters.voting_start.unwrap();
         let voting_tally_start = self.parameters.voting_tally_start.unwrap();
@@ -78,14 +83,22 @@ impl ValidVotePlanGenerator {
         let next_fund_start_time = self.parameters.next_fund_start_time.unwrap();
         let fund_id = 1;
 
+        let payload_type = match vote_plan.payload_type() {
+            chain_impl_mockchain::vote::PayloadType::Public => "public",
+            chain_impl_mockchain::vote::PayloadType::Private => "private",
+        };
+
         let vote_plan = Voteplan {
             id: generator.id(),
             chain_voteplan_id: chain_vote_plan_id.clone(),
             chain_vote_start_time: voting_start,
             chain_vote_end_time: voting_tally_start,
             chain_committee_end_time: voting_tally_end,
-            chain_voteplan_payload: "public".to_string(),
-            chain_vote_encryption_key: "".to_string(),
+            chain_voteplan_payload: payload_type.to_string(),
+            chain_vote_encryption_key: self
+                .parameters
+                .vote_encryption_key
+                .unwrap_or_else(|| "".to_string()),
             fund_id,
         };
 

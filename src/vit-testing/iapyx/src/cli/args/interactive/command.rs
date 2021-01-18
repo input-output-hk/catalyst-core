@@ -312,6 +312,8 @@ pub enum Recover {
     Mnemonics(RecoverFromMnemonics),
     /// recover wallet funds from qr code
     QR(RecoverFromQR),
+    /// recover wallet funds from private key
+    Secret(RecoverFromSecretKey),
 }
 
 impl Recover {
@@ -319,7 +321,26 @@ impl Recover {
         match self {
             Recover::Mnemonics(mnemonics) => mnemonics.exec(model),
             Recover::QR(qr) => qr.exec(model),
+            Recover::Secret(sk) => sk.exec(model),
         }
+    }
+}
+
+#[derive(StructOpt, Debug)]
+pub struct RecoverFromSecretKey {
+    #[structopt(short = "s", long = "secret")]
+    pub input: PathBuf,
+}
+
+impl RecoverFromSecretKey {
+    pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
+        model.controller = Some(Controller::recover_from_sk(
+            model.backend_address.clone(),
+            &self.input,
+            model.settings.clone(),
+        )?);
+        model.state = WalletState::Recovered;
+        Ok(())
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::SimpleVoteStatus;
 use crate::Wallet;
 use crate::{data::Proposal as VitProposal, WalletBackend};
-use bech32::ToBase32;
+use bech32::FromBase32;
 use bip39::Type;
 use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
@@ -81,16 +81,28 @@ impl Controller {
     ) -> Result<Self, ControllerError> {
         let img = image::open(qr.as_ref())?;
         let secret = KeyQrCode::decode(img, password).unwrap().leak_secret();
-
-        println!(
-            "{}",
-            bech32::encode("ed25519_sk", secret.to_base32()).unwrap()
-        );
         let backend = WalletBackend::new(proxy_address, backend_settings);
         let settings = backend.settings()?;
         Ok(Self {
             backend,
             wallet: Wallet::recover_from_utxo(secret.as_ref().try_into().unwrap())?,
+            settings,
+        })
+    }
+
+    pub fn recover_from_sk<P: AsRef<Path>>(
+        proxy_address: String,
+        private_key: P,
+        backend_settings: RestSettings,
+    ) -> Result<Self, ControllerError> {
+        let (_, data) = read_bech32(private_key)?;
+        let key_bytes = Vec::<u8>::from_base32(&data)?;
+        let data: [u8; 64] = key_bytes.try_into().unwrap();
+        let backend = WalletBackend::new(proxy_address, backend_settings);
+        let settings = backend.settings()?;
+        Ok(Self {
+            backend,
+            wallet: Wallet::recover_from_utxo(&data)?,
             settings,
         })
     }
@@ -274,6 +286,11 @@ impl Controller {
     }
 }
 
+fn read_bech32(path: impl AsRef<Path>) -> Result<(String, Vec<bech32::u5>), ControllerError> {
+    let line = jortestkit::file::read_file(path);
+    bech32::decode(&line).map_err(Into::into)
+}
+
 #[derive(Debug, Error)]
 pub enum ControllerError {
     #[error("wallet error")]
@@ -289,4 +306,6 @@ pub enum ControllerError {
     TransactionsWerePendingForTooLong { fragments: Vec<FragmentId> },
     #[error("cannot read QR code from '{0}' path")]
     CannotReadQrCode(#[from] image::ImageError),
+    #[error("bech32 error")]
+    Bech32(#[from] bech32::Error),
 }

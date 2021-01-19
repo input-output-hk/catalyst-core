@@ -29,7 +29,7 @@ impl Default for QuickVitBackendParameters {
             proposals: 100,
             slot_duration: 20,
             slots_per_epoch: 30,
-            voting_power: 8000_000000,
+            voting_power: 8000,
             vote_start_timestamp: None,
             tally_start_timestamp: None,
             tally_end_timestamp: None,

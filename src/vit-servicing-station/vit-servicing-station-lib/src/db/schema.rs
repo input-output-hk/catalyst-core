@@ -11,7 +11,6 @@ table! {
         id -> Integer,
         title -> Text,
         description -> Text,
-        extended_description -> Text,
         rewards_total -> BigInt,
         fund_id -> Integer,
     }

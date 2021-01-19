@@ -65,7 +65,6 @@ create table challenges
         primary key autoincrement,
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
-    extended_description VARCHAR NOT NULL,
     rewards_total BIGINT NOT NULL,
     fund_id INTEGER NOT NULL
 );

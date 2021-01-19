@@ -220,8 +220,6 @@ components:
           type: string
         description:
           type: string
-        extended_description:
-          type: string
         rewards_total:
           type: integer
           format: int64

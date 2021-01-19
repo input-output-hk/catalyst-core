@@ -101,7 +101,7 @@ pub struct QuickStartCommandArgs {
     pub proposals: u32,
 
     /// voting power threshold for participating in voting
-    #[structopt(long = "voting-power", default_value = "8000000000")]
+    #[structopt(long = "voting-power", default_value = "8000")]
     pub voting_power: u64,
 
     /// interactive mode introduce easy way to interact with backend

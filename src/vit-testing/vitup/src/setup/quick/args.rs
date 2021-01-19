@@ -2,7 +2,7 @@ use super::QuickVitBackendSettingsBuilder;
 use crate::scenario::network::service_mode;
 use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::setup::quick::mode::parse_mode_from_str;
-use crate::setup::quick::Mode;
+use crate::setup::{initials::Initials, quick::Mode};
 use crate::Result;
 use jormungandr_scenario_tests::programs::prepare_command;
 use jormungandr_scenario_tests::{Context, Seed};
@@ -156,7 +156,7 @@ impl QuickStartCommandArgs {
 
         if let Some(mapping) = self.initials_mapping {
             let content = read_file(mapping);
-            let initials: Vec<u64> =
+            let initials: Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
             quick_setup.initials(initials);
         } else if let Some(initials_count) = self.initials {

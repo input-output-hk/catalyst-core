@@ -1,8 +1,9 @@
 use super::QuickVitBackendParameters;
 use crate::scenario::controller::VitController;
 use crate::scenario::controller::VitControllerBuilder;
-use crate::Result;
-use assert_fs::fixture::PathChild;
+use crate::{setup::initials::Initials, Result};
+use assert_fs::fixture::{ChildPath, PathChild};
+use chain_crypto::SecretKey;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::vote::PayloadType;
 use chain_impl_mockchain::{
@@ -15,12 +16,12 @@ use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
     ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KESUpdateSpeed, Milli,
-    NumberOfSlotsPerEpoch, SlotDuration, TopologyBuilder,
+    NumberOfSlotsPerEpoch, SlotDuration, Topology, TopologyBuilder,
 };
 use jormungandr_testing_utils::testing::network_builder::{
     Blockchain, Node, WalletTemplate, WalletType,
 };
-use jormungandr_testing_utils::wallet::ElectionPublicKeyExtension;
+use jormungandr_testing_utils::{qr_code::KeyQrCode, wallet::ElectionPublicKeyExtension};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub const LEADER_1: &str = "Leader1";
@@ -61,16 +62,13 @@ impl QuickVitBackendSettingsBuilder {
         self.title.clone()
     }
 
-    pub fn initials(&mut self, initials: Vec<u64>) -> &mut Self {
+    pub fn initials(&mut self, initials: Initials) -> &mut Self {
         self.parameters.initials = initials;
         self
     }
 
     pub fn initials_count(&mut self, initials_count: usize) -> &mut Self {
-        let initials: Vec<u64> = std::iter::from_fn(|| Some(10_000))
-            .take(initials_count)
-            .collect();
-        self.initials(initials);
+        self.initials(Initials::new_above_threshold(initials_count));
         self
     }
 
@@ -219,11 +217,7 @@ impl QuickVitBackendSettingsBuilder {
         parameters
     }
 
-    pub fn build(
-        &mut self,
-        mut context: ContextChaCha,
-    ) -> Result<(VitController, Controller, ValidVotePlanParameters)> {
-        let mut builder = VitControllerBuilder::new(&self.title);
+    pub fn build_topology(&mut self) -> Topology {
         let mut topology_builder = TopologyBuilder::new();
 
         // Leader 1
@@ -257,40 +251,10 @@ impl QuickVitBackendSettingsBuilder {
 
         topology_builder.register_node(passive);
 
-        builder.set_topology(topology_builder.build());
+        topology_builder.build()
+    }
 
-        let mut blockchain = Blockchain::new(
-            ConsensusVersion::Bft,
-            NumberOfSlotsPerEpoch::new(self.parameters.slots_per_epoch)
-                .expect("valid number of slots per epoch"),
-            SlotDuration::new(self.parameters.slot_duration)
-                .expect("valid slot duration in seconds"),
-            KESUpdateSpeed::new(46800).expect("valid kes update speed in seconds"),
-            ActiveSlotCoefficient::new(Milli::from_millis(700))
-                .expect("active slot coefficient in millis"),
-        );
-
-        blockchain.add_leader(LEADER_1);
-        blockchain.add_leader(LEADER_2);
-        blockchain.add_leader(LEADER_3);
-        blockchain.add_leader(LEADER_4);
-
-        let committe_wallet =
-            WalletTemplate::new_account(&self.committe_wallet_name, Value(1_000_000));
-        blockchain.add_wallet(committe_wallet);
-        let mut i = 1u32;
-
-        let child = context.child_directory(self.title());
-
-        for initial in self.parameters.initials.iter() {
-            let wallet_alias = format!("wallet_{}_with_{}", i, initial);
-            let wallet = WalletTemplate::new_utxo(wallet_alias.clone(), Value(*initial));
-            blockchain.add_wallet(wallet);
-            i += 1;
-        }
-
-        blockchain.add_committee(&self.committe_wallet_name);
-
+    pub fn build_vote_plan(&mut self) -> VotePlanDef {
         let mut vote_plan_builder = VotePlanDefBuilder::new(&self.fund_name());
         vote_plan_builder.owner(&self.committe_wallet_name);
 
@@ -313,23 +277,85 @@ impl QuickVitBackendSettingsBuilder {
             vote_plan_builder.with_proposal(&mut proposal_builder);
         }
 
-        let vote_plan = vote_plan_builder.build();
+        vote_plan_builder.build()
+    }
+
+    pub fn dump_qrs(&self, controller: &Controller, child: &ChildPath) -> Result<()> {
+        let password = "1234";
+
+        let folder = child.child("qr-codes");
+        std::fs::create_dir_all(folder.path())?;
+
+        for (alias, _template) in controller
+            .wallets()
+            .filter(|(_, x)| *x.template().wallet_type() == WalletType::UTxO)
+        {
+            let wallet = controller.wallet(alias)?;
+            let png = folder.child(format!("{}_{}.png", alias, password));
+            wallet.save_qr_code(png.path(), password.as_bytes());
+        }
+
+        for i in 1..(self.parameters.initials.zero_funds_count() + 1) {
+            let sk = SecretKey::generate(rand::thread_rng());
+            let qr = KeyQrCode::generate(sk.clone(), password.as_bytes());
+            let img = qr.to_img();
+            let png = folder.child(format!("zero_funds_{}_{}.png", i, password));
+            img.save(png.path())?;
+        }
+        Ok(())
+    }
+
+    pub fn build(
+        &mut self,
+        mut context: ContextChaCha,
+    ) -> Result<(VitController, Controller, ValidVotePlanParameters)> {
+        let mut builder = VitControllerBuilder::new(&self.title);
+
+        builder.set_topology(self.build_topology());
+
+        let mut blockchain = Blockchain::new(
+            ConsensusVersion::Bft,
+            NumberOfSlotsPerEpoch::new(self.parameters.slots_per_epoch)
+                .expect("valid number of slots per epoch"),
+            SlotDuration::new(self.parameters.slot_duration)
+                .expect("valid slot duration in seconds"),
+            KESUpdateSpeed::new(46800).expect("valid kes update speed in seconds"),
+            ActiveSlotCoefficient::new(Milli::from_millis(700))
+                .expect("active slot coefficient in millis"),
+        );
+
+        blockchain.add_leader(LEADER_1);
+        blockchain.add_leader(LEADER_2);
+        blockchain.add_leader(LEADER_3);
+        blockchain.add_leader(LEADER_4);
+
+        let committe_wallet =
+            WalletTemplate::new_account(&self.committe_wallet_name, Value(1_000_000));
+        blockchain.add_wallet(committe_wallet);
+
+        let child = context.child_directory(self.title());
+
+        for wallet in self
+            .parameters
+            .initials
+            .templates(self.parameters.voting_power)
+            .iter()
+            .cloned()
+            .filter(|x| *x.value() > Value::zero())
+        {
+            blockchain.add_wallet(wallet);
+        }
+
+        blockchain.add_committee(&self.committe_wallet_name);
+
+        let vote_plan = self.build_vote_plan();
         blockchain.add_vote_plan(vote_plan.clone());
         builder.set_blockchain(blockchain);
         builder.build_settings(&mut context);
 
         let (vit_controller, controller) = builder.build_controllers(context)?;
 
-        let password = "1234".to_owned();
-
-        for (alias, _template) in controller
-            .wallets()
-            .filter(|(_, x)| *x.template().wallet_type() == WalletType::UTxO)
-        {
-            let wallet = controller.wallet(alias).unwrap();
-            let png = child.child(format!("{}_{}.png", alias, password));
-            wallet.save_qr_code(png.path(), password.as_bytes());
-        }
+        self.dump_qrs(&controller, &child)?;
 
         controller.settings().dump_private_vote_keys(child);
 

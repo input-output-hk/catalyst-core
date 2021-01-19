@@ -213,6 +213,9 @@ components:
 
     Challenge:
       properties:
+        id:
+          type: integer
+          format: int32
         title:
           type: string
         description:
@@ -221,7 +224,7 @@ components:
           type: string
         rewards_total:
           type: integer
-          format: int32
+          format: int64
         fund_id:
           type: integer
           format: int32

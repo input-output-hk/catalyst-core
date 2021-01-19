@@ -1,8 +1,9 @@
+use crate::setup::initials::Initials;
 use chrono::NaiveDateTime;
 
 #[derive(Clone, Debug)]
 pub struct QuickVitBackendParameters {
-    pub initials: Vec<u64>,
+    pub initials: Initials,
     pub vote_start: u64,
     pub vote_tally: u64,
     pub tally_end: u64,
@@ -20,9 +21,8 @@ pub struct QuickVitBackendParameters {
 
 impl Default for QuickVitBackendParameters {
     fn default() -> Self {
-        let initials: Vec<u64> = std::iter::from_fn(|| Some(10_000)).take(10).collect();
         Self {
-            initials,
+            initials: Default::default(),
             vote_start: 1,
             vote_tally: 2,
             tally_end: 3,

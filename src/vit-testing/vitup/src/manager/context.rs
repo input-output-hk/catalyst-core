@@ -26,7 +26,7 @@ impl ControlContext {
             server_stopper: None,
             setup,
             working_directory: working_dir.as_ref().to_path_buf(),
-            address: ([127, 0, 0, 1], 3030).into(),
+            address: ([0, 0, 0, 0], 3030).into(),
             state: State::Idle,
             should_stop: false,
             should_start: false,

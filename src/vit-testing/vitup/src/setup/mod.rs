@@ -1,3 +1,4 @@
+pub mod initials;
 pub mod quick;
 
 use crate::error::Result;

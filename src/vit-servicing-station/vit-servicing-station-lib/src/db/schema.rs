@@ -7,6 +7,17 @@ table! {
 }
 
 table! {
+    challenges (id) {
+        id -> Integer,
+        title -> Text,
+        description -> Text,
+        extended_description -> Text,
+        rewards_total -> BigInt,
+        fund_id -> Integer,
+    }
+}
+
+table! {
     funds (id) {
         id -> Integer,
         fund_name -> Text,
@@ -42,6 +53,7 @@ table! {
         chain_proposal_index -> BigInt,
         chain_vote_options -> Text,
         chain_voteplan_id -> Text,
+        challenge_id -> Integer,
     }
 }
 
@@ -58,4 +70,4 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(api_tokens, funds, proposals, voteplans,);
+allow_tables_to_appear_in_same_query!(api_tokens, challenges, funds, proposals, voteplans,);

@@ -83,9 +83,15 @@ pub struct Proposal {
     pub chain_vote_encryption_key: String,
     #[serde(alias = "fundId", default = "default_fund_id")]
     pub fund_id: i32,
+    #[serde(alias = "challengeId", default = "default_challenge_id")]
+    pub challenge_id: i32,
 }
 
 fn default_fund_id() -> i32 {
+    -1
+}
+
+fn default_challenge_id() -> i32 {
     -1
 }
 
@@ -126,6 +132,7 @@ impl From<Proposal> for proposals::Proposal {
             chain_voteplan_payload: proposal.chain_voteplan_payload,
             chain_vote_encryption_key: proposal.chain_vote_encryption_key,
             fund_id: proposal.fund_id,
+            challenge_id: proposal.challenge_id,
         }
     }
 }

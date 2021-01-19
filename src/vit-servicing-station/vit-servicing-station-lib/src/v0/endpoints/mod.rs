@@ -1,3 +1,4 @@
+mod challenges;
 mod funds;
 mod genesis;
 mod graphql;
@@ -27,6 +28,10 @@ pub async fn filter(
     let funds_root = warp::path!("fund" / ..);
     let funds_filter = funds::filter(funds_root.boxed(), context.clone()).await;
 
+    // mount challenges endpoint
+    let challenges_root = warp::path!("challenges" / ..);
+    let challenges_filter = challenges::filter(challenges_root.boxed(), context.clone()).await;
+
     // mount genesis endpoint
     let genesis_root = warp::path!("block0" / ..);
     let genesis_filter = genesis::filter(genesis_root.boxed(), context.clone());
@@ -50,7 +55,8 @@ pub async fn filter(
                 .or(genesis_filter)
                 .or(chain_data_filter)
                 .or(funds_filter)
-                .or(graphql_filter),
+                .or(graphql_filter)
+                .or(challenges_filter),
         )),
     )
     .boxed()

@@ -86,38 +86,16 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
         .unwrap();
     alice.confirm_transaction();
 
-    let shares = ledger
-        .ledger
-        .active_vote_plans()
+    let vote_plans = ledger.ledger.active_vote_plans();
+    let vote_plan_status = vote_plans
         .iter()
         .find(|c_vote_plan| {
             let vote_plan: VotePlan = vote_plan.clone().into();
             c_vote_plan.id == vote_plan.to_id()
         })
-        .unwrap()
-        .proposals
-        .iter()
-        .map(|proposal| {
-            proposal
-                .tally
-                .as_ref()
-                .unwrap()
-                .private_encrypted()
-                .unwrap()
-                .0
-                .clone()
-        })
-        .map(|encrypted_tally| {
-            members
-                .members()
-                .iter()
-                .map(|member| member.secret_key())
-                .map(|secret_key| encrypted_tally.finish(secret_key).1)
-                .collect::<Vec<_>>()
-        })
-        .collect::<Vec<_>>();
+        .unwrap();
 
-    let shares = TallyDecryptShares::new(shares);
+    let shares = build_tally_decrypt_share(vote_plan_status, &members);
 
     controller
         .tally_vote_private(&alice, &vote_plan, shares, &mut ledger)

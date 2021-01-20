@@ -1,8 +1,8 @@
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options};
+use jormungandr_testing_utils::wallet::committee::encrypting_key_from_base32;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom, fmt, str};
 pub use wallet_core::{Choice, Value};
-use jormungandr_testing_utils::wallet::committee::encrypting_key_from_base32;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Fund {
@@ -138,19 +138,19 @@ impl Into<wallet_core::Proposal> for Proposal {
         let bytes = &bytes[..vote_plan_id.len()]; // panics if not enough data
         vote_plan_id.copy_from_slice(bytes);
 
-        if self.chain_voteplan_payload == "public"{
+        if self.chain_voteplan_payload == "public" {
             return wallet_core::Proposal::new_public(
                 VotePlanId::try_from(vote_plan_id).unwrap(),
                 chain_proposal_index,
                 Options::new_length(self.chain_vote_options.0.len() as u8).unwrap(),
             );
-        } 
+        }
         wallet_core::Proposal::new_private(
             VotePlanId::try_from(vote_plan_id).unwrap(),
             chain_proposal_index,
             Options::new_length(self.chain_vote_options.0.len() as u8).unwrap(),
-            encrypting_key_from_base32(&self.chain_vote_encryption_key).unwrap()
-        )      
+            encrypting_key_from_base32(&self.chain_vote_encryption_key).unwrap(),
+        )
     }
 }
 

@@ -1,7 +1,8 @@
 use crate::setup::initials::Initials;
 use chrono::NaiveDateTime;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct QuickVitBackendParameters {
     pub initials: Initials,
     pub vote_start: u64,

@@ -3428,6 +3428,7 @@ dependencies = [
  "itertools",
  "libsqlite3-sys",
  "log",
+ "rand 0.8.1",
  "serde",
  "serde_json",
  "simplelog",

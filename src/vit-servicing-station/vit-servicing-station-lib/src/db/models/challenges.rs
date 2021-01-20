@@ -3,12 +3,13 @@ use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
 pub struct Challenge {
     pub id: i32,
     pub title: String,
     pub description: String,
+    #[serde(alias = "rewardsTotal")]
     pub rewards_total: i64,
+    #[serde(alias = "fundId")]
     pub fund_id: i32,
 }
 

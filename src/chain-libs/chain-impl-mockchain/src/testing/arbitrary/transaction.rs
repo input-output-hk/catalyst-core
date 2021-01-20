@@ -256,7 +256,10 @@ fn filter_accounts(x: &AddressDataValue) -> bool {
 }
 
 fn filter_utxo(x: &AddressDataValue) -> bool {
-    matches!(x.address_data.kind(), Kind::Single { .. } | Kind::Group { .. })
+    matches!(
+        x.address_data.kind(),
+        Kind::Single { .. } | Kind::Group { .. }
+    )
 }
 
 pub struct UtxoVerifier(pub ArbitraryValidTransactionData);

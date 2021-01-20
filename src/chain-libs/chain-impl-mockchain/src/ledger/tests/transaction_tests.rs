@@ -63,7 +63,7 @@ pub fn duplicated_account_transaction() {
         Err(err) => panic!("first transaction should be succesful but {}", err),
         Ok(_) => {
             assert_err_match!(
-                ledger::Error::AccountInvalidSignature{..},
+                ledger::Error::AccountInvalidSignature { .. },
                 test_ledger.apply_transaction(fragment2)
             );
         }

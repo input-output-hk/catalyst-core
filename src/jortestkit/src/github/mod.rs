@@ -15,6 +15,8 @@ pub enum GitHubApiError {
     RequestError(#[from] reqwest::Error),
     #[error("cannot find release with version: {0}")]
     CannotFindReleaseWithVersion(String),
+    #[error("API rate limit exceeded")]
+    RateLimitExceeded,
 }
 
 #[derive(Clone, Debug)]
@@ -73,6 +75,36 @@ impl Release {
     }
 }
 
+pub struct CachedReleases {
+    inner: Vec<Release>,
+}
+
+impl CachedReleases {
+    pub fn new(inner: Vec<Release>) -> Self {
+        Self { inner }
+    }
+
+    pub fn get_asset_for_current_os_by_version(
+        &self,
+        version: String,
+    ) -> Result<Option<AssetDto>, GitHubApiError> {
+        let info = os_info::get();
+        match self.inner.iter().find(|x| *x.version == version) {
+            None => Err(GitHubApiError::CannotFindReleaseWithVersion(version)),
+            Some(release) => Ok(release.get_release_for_os(info.os_type())),
+        }
+    }
+}
+
+impl<'a> IntoIterator for &'a CachedReleases {
+    type Item = &'a Release;
+    type IntoIter = std::slice::Iter<'a, Release>;
+
+    fn into_iter(self) -> std::slice::Iter<'a, Release> {
+        self.inner.iter()
+    }
+}
+
 pub struct GitHubApi {
     base_url: String,
 }
@@ -98,35 +130,28 @@ impl GitHubApi {
 
     fn get(&self, path: &str) -> Result<reqwest::blocking::Response, GitHubApiError> {
         let client = reqwest::blocking::Client::new();
-        client
+        let resp = client
             .get(&format!("{}/{}", self.base_url, path))
             .header(USER_AGENT, "request")
             .send()
-            .map_err(GitHubApiError::RequestError)
+            .map_err(GitHubApiError::RequestError)?;
+        if resp.headers().get("X-RateLimit-Remaining") == Some(0.into()).as_ref() {
+            return Err(GitHubApiError::RateLimitExceeded);
+        }
+
+        Ok(resp)
     }
 
-    pub fn describe_releases(&self) -> Result<Vec<Release>, GitHubApiError> {
+    pub fn describe_releases(&self) -> Result<CachedReleases, GitHubApiError> {
         let response_text = self.get("releases")?.text()?;
         let releases: Vec<ReleaseDto> =
             serde_json::from_str(&response_text).map_err(GitHubApiError::CannotDeserialize)?;
-        Ok(releases
-            .iter()
-            .cloned()
-            .map(|release| release.into())
-            .collect())
-    }
-
-    pub fn get_asset_for_current_os_by_version(
-        &self,
-        version: String,
-    ) -> Result<Option<AssetDto>, GitHubApiError> {
-        let info = os_info::get();
-
-        let releases = self.describe_releases()?;
-
-        match releases.iter().find(|x| *x.version == version) {
-            None => Err(GitHubApiError::CannotFindReleaseWithVersion(version)),
-            Some(release) => Ok(release.get_release_for_os(info.os_type())),
-        }
+        Ok(CachedReleases::new(
+            releases
+                .iter()
+                .cloned()
+                .map(|release| release.into())
+                .collect(),
+        ))
     }
 }

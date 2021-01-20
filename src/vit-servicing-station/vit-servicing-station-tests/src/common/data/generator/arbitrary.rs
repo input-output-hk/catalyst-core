@@ -3,6 +3,7 @@ use chrono::{offset::Utc, Duration};
 use vit_servicing_station_lib::{
     db::models::{
         api_tokens::APITokenData,
+        challenges::Challenge,
         funds::Fund,
         proposals::{Category, Proposal, Proposer},
         vote_options::VoteOptions,
@@ -102,6 +103,7 @@ impl ArbitraryGenerator {
             fund_end_time: end.timestamp(),
             next_fund_start_time: next.timestamp(),
             chain_vote_plans: vec![self.voteplan_with_fund_id(id.abs())],
+            challenges: vec![self.challenge_with_fund_id(id.abs())],
         }
     }
 
@@ -176,6 +178,7 @@ impl ArbitraryGenerator {
             chain_voteplan_payload: voteplan.chain_voteplan_payload.clone(),
             chain_vote_encryption_key: voteplan.chain_vote_encryption_key.clone(),
             fund_id: fund.id,
+            challenge_id: fund.challenges.first().unwrap().id,
         }
     }
 
@@ -219,6 +222,18 @@ impl ArbitraryGenerator {
             chain_committee_end_time: next.timestamp(),
             chain_voteplan_payload: "public".to_string(), //Sentence(3..5).fake::<String>(),
             chain_vote_encryption_key: "".to_string(),
+            fund_id,
+        }
+    }
+
+    pub fn challenge_with_fund_id(&mut self, fund_id: i32) -> Challenge {
+        let id = self.id_generator.next_u32() as i32;
+
+        Challenge {
+            id,
+            title: "challenge title".to_string(),
+            description: "challenge description".to_string(),
+            rewards_total: 100500,
             fund_id,
         }
     }

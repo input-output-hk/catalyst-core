@@ -57,3 +57,20 @@ impl Insertable<challenges::table> for Challenge {
         )
     }
 }
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+
+    pub fn get_test_challenge_with_fund_id(fund_id: i32) -> Challenge {
+        const CHALLENGE_ID: i32 = 9001;
+        const REWARDS_TOTAL: i64 = 100500;
+        Challenge {
+            id: CHALLENGE_ID,
+            title: "challenge title".to_string(),
+            description: "challenge description".to_string(),
+            rewards_total: REWARDS_TOTAL,
+            fund_id,
+        }
+    }
+}

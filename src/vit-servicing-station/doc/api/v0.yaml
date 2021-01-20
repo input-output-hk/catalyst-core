@@ -119,6 +119,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VotePlan'
+        challenges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Challenge'
 
     VotePlan:
       properties:

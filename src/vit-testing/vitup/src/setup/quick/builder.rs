@@ -348,8 +348,8 @@ impl QuickVitBackendSettingsBuilder {
 
         blockchain.add_committee(&self.committe_wallet_name);
 
-        let vote_plan = self.build_vote_plan();
-        blockchain.add_vote_plan(vote_plan.clone());
+        let mut vote_plan_def = self.build_vote_plan();
+        blockchain.add_vote_plan(vote_plan_def.clone());
         builder.set_blockchain(blockchain);
         builder.build_settings(&mut context);
 
@@ -368,7 +368,19 @@ impl QuickVitBackendSettingsBuilder {
                 .block0_date,
         );
 
-        let parameters = self.vote_plan_parameters(vote_plan, &controller.settings());
+        let vote_plan = controller
+            .settings()
+            .private_vote_plans
+            .values()
+            .next()
+            .unwrap();
+        let committee_keys = vote_plan_def.committee_keys_mut();
+
+        for key in vote_plan.member_public_keys().iter() {
+            committee_keys.push(key.clone());
+        }
+
+        let parameters = self.vote_plan_parameters(vote_plan_def, &controller.settings());
 
         Ok((vit_controller, controller, parameters))
     }

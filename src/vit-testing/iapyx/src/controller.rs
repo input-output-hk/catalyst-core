@@ -286,7 +286,7 @@ impl Controller {
     }
 }
 
-fn read_bech32(path: impl AsRef<Path>) -> Result<(String, Vec<bech32::u5>), ControllerError> {
+pub fn read_bech32(path: impl AsRef<Path>) -> Result<(String, Vec<bech32::u5>), ControllerError> {
     let line = jortestkit::file::read_file(path);
     bech32::decode(&line).map_err(Into::into)
 }

@@ -144,15 +144,13 @@ impl Into<wallet_core::Proposal> for Proposal {
                 chain_proposal_index,
                 Options::new_length(self.chain_vote_options.0.len() as u8).unwrap(),
             );
-        } else {
-            return wallet_core::Proposal::new_private(
-                VotePlanId::try_from(vote_plan_id).unwrap(),
-                chain_proposal_index,
-                Options::new_length(self.chain_vote_options.0.len() as u8).unwrap(),
-                encrypting_key_from_base32(&self.chain_vote_encryption_key).unwrap()
-            );
-        }
-        
+        } 
+        wallet_core::Proposal::new_private(
+            VotePlanId::try_from(vote_plan_id).unwrap(),
+            chain_proposal_index,
+            Options::new_length(self.chain_vote_options.0.len() as u8).unwrap(),
+            encrypting_key_from_base32(&self.chain_vote_encryption_key).unwrap()
+        )      
     }
 }
 

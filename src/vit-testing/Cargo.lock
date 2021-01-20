@@ -181,9 +181,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql"
-version = "2.4.11"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc917718d313d26782de5e538731700914d3c4eb99b13bb89ef9d8a3bbbc9d3f"
+checksum = "82833e5a5a5c77b8f9ecbc003db996df7432e8afffd6ad8de2fb0dc1436d1f35"
 dependencies = [
  "async-graphql-derive",
  "async-graphql-parser",
@@ -221,9 +221,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql-derive"
-version = "2.4.11"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbdda3212f54a78f3785a4c26f45994aaa2fc3ea54ce18a89123ffd851fe449c"
+checksum = "6ddce4448d5f5f7c5a8ace5f8273725cb904011df9b8a8933345aad333fcbfbd"
 dependencies = [
  "Inflector",
  "async-graphql-parser",
@@ -260,9 +260,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql-warp"
-version = "2.4.11"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba4cee08647948549af80cf689d9664bd389d9c8a30e033c7d71bb528e9ae3d8"
+checksum = "e05242b044bfb1bebf1a3f7e980f8f408d421a60df1d3fd6831b8fe8a2d43416"
 dependencies = [
  "async-graphql",
  "futures-util",
@@ -1673,9 +1673,9 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4060f4657be78b8e766215b02b18a2e862d83745545de804638e2b545e81aee6"
+checksum = "c9495705279e7140bf035dde1f6e750c162df8b625267cd52cc44e0b156732c8"
 dependencies = [
  "cfg-if 1.0.0",
  "libc",
@@ -1804,9 +1804,9 @@ dependencies = [
 
 [[package]]
 name = "half"
-version = "1.6.0"
+version = "1.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d36fab90f82edc3c747f9d438e06cf0a491055896f2a279638bb5beed6c40177"
+checksum = "62aca2aba2d62b4a7f5b33f3712cb1b0692779a56fb510499d5c0aa594daeaf3"
 
 [[package]]
 name = "hashbrown"
@@ -1870,9 +1870,9 @@ dependencies = [
 
 [[package]]
 name = "hermit-abi"
-version = "0.1.17"
+version = "0.1.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aca5565f760fb5b220e499d72710ed156fdb74e631659e99377d9ebfbd13ae8"
+checksum = "322f4de77956e22ed0e5032c359a0f1273f1f7f0d79bfa3b8ffbc730d7fbcc5c"
 dependencies = [
  "libc",
 ]
@@ -2132,6 +2132,21 @@ dependencies = [
 [[package]]
 name = "integration-tests"
 version = "0.1.0"
+dependencies = [
+ "cfg-if 1.0.0",
+ "chain-impl-mockchain",
+ "iapyx",
+ "jormungandr-lib",
+ "jormungandr-scenario-tests",
+ "jormungandr-testing-utils",
+ "jortestkit",
+ "rand 0.7.3",
+ "rand_chacha 0.2.2",
+ "thiserror",
+ "vit-servicing-station-lib",
+ "vit-servicing-station-tests",
+ "vitup",
+]
 
 [[package]]
 name = "iovec"
@@ -2175,7 +2190,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-lib"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#8ac50f0d0125103f8758c8e466803243ed195e66"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#59884244f1e85606928b7bb0e0d9a8cc24530dda"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2203,7 +2218,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#8ac50f0d0125103f8758c8e466803243ed195e66"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#59884244f1e85606928b7bb0e0d9a8cc24530dda"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2244,7 +2259,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#8ac50f0d0125103f8758c8e466803243ed195e66"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#59884244f1e85606928b7bb0e0d9a8cc24530dda"
 dependencies = [
  "assert_fs",
  "bardecoder",
@@ -3349,7 +3364,7 @@ version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c026d7df8b298d90ccbbc5190bd04d85e159eaf5576caeacf8741da93ccbd2e5"
 dependencies = [
- "getrandom 0.2.1",
+ "getrandom 0.2.2",
 ]
 
 [[package]]
@@ -4134,9 +4149,9 @@ dependencies = [
 
 [[package]]
 name = "terminal_size"
-version = "0.1.15"
+version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bd2d183bd3fac5f5fe38ddbeb4dc9aec4a39a9d7d59e7491d900302da01cbe1"
+checksum = "86ca8ced750734db02076f44132d802af0b33b09942331f4459dde8636fd2406"
 dependencies = [
  "libc",
  "winapi 0.3.9",
@@ -4861,7 +4876,7 @@ version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
 dependencies = [
- "getrandom 0.2.1",
+ "getrandom 0.2.2",
  "serde",
 ]
 
@@ -4892,7 +4907,7 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#48ad850badef116585447af3afa6a71451e31c9b"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#c849eb7a117aae841d5603b62d96ba0aca466803"
 dependencies = [
  "async-graphql",
  "async-graphql-warp",
@@ -4920,7 +4935,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#48ad850badef116585447af3afa6a71451e31c9b"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#c849eb7a117aae841d5603b62d96ba0aca466803"
 dependencies = [
  "askama",
  "askama_shared",
@@ -4962,6 +4977,7 @@ dependencies = [
  "chain-crypto",
  "chain-impl-mockchain",
  "chain-time",
+ "chain-vote",
  "chrono",
  "console 0.13.0",
  "custom_debug",

@@ -143,14 +143,14 @@ pub fn endless_mode() -> Result<()> {
 }
 
 #[allow(unreachable_code)]
-pub fn service_mode<P: AsRef<Path>>(
+pub fn service_mode<P: AsRef<Path> + Clone>(
     context: Context<ChaChaRng>,
     working_dir: P,
     mut quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: String,
 ) -> Result<()> {
     let control_context = Arc::new(Mutex::new(ControlContext::new(
-        working_dir,
+        working_dir.clone(),
         quick_setup.parameters().clone(),
     )));
 
@@ -159,6 +159,11 @@ pub fn service_mode<P: AsRef<Path>>(
 
     loop {
         if manager.request_to_start() {
+            let testing_directory = working_dir.as_ref();
+            if testing_directory.exists() {
+                std::fs::remove_dir_all(testing_directory)?;
+            }
+
             let parameters = manager.setup();
             quick_setup.upload_parameters(parameters);
             manager.clear_requests();

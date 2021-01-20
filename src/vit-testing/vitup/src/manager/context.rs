@@ -37,6 +37,10 @@ impl ControlContext {
         self.server_stopper = Some(server_stopper)
     }
 
+    pub fn set_parameters(&mut self, setup: QuickVitBackendParameters) {
+        self.setup = setup;
+    }
+
     pub fn server_stopper(&self) -> &Option<ServerStopper> {
         &self.server_stopper
     }

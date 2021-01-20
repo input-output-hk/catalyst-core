@@ -1,5 +1,5 @@
 use super::State;
-use crate::manager::ControlContextLock;
+use crate::{manager::ControlContextLock, setup::quick::QuickVitBackendParameters};
 use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
 use warp::{Filter, Rejection, Reply};
@@ -27,11 +27,20 @@ pub async fn start_rest_server(context: ControlContextLock) {
 
     let control = {
         let root = warp::path!("control" / ..).boxed();
-        let start = warp::path!("start")
-            .and(warp::post())
+
+        let start_default = warp::path!("default")
             .and(with_context.clone())
-            .and_then(start_handler)
-            .boxed();
+            .and(warp::post())
+            .and_then(start_default_handler);
+        let start_custom = warp::path!("custom")
+            .and(warp::path::end())
+            .and(with_context.clone())
+            .and(warp::post())
+            .and(warp::body::json())
+            .and_then(start_handler);
+
+        let start = warp::path!("start" / ..).and(start_default.or(start_custom));
+
         let stop = warp::path!("stop")
             .and(warp::post())
             .and(with_context.clone())
@@ -54,7 +63,26 @@ pub async fn start_rest_server(context: ControlContextLock) {
     server_fut.await;
 }
 
-pub async fn start_handler(context: ControlContextLock) -> Result<impl Reply, Rejection> {
+pub async fn start_handler(
+    context: ControlContextLock,
+    parameters: QuickVitBackendParameters,
+) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    context_lock.set_parameters(parameters);
+    let state = context_lock.state();
+    if *state == State::Idle {
+        context_lock.start();
+        return Ok("start event received".to_owned()).map(|r| warp::reply::json(&r));
+    }
+    return Ok(format!(
+        "Wrong state to stop operation ('{}'), plase wait until state is '{}'",
+        state,
+        State::Idle
+    ))
+    .map(|r| warp::reply::json(&r));
+}
+
+pub async fn start_default_handler(context: ControlContextLock) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
     let state = context_lock.state();
     if *state == State::Idle {

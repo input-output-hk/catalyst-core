@@ -95,16 +95,3 @@ impl Initials {
         templates
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::Initials;
-    use jortestkit;
-
-    #[test]
-    pub fn test() {
-        let data = jortestkit::file::read_file("C:\\tmp\\text.json");
-        let json: Initials = serde_json::from_str(&data).unwrap();
-        println!("{:?}", json)
-    }
-}

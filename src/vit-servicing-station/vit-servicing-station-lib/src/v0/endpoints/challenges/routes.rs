@@ -19,10 +19,5 @@ pub async fn filter(
         .and(with_context.clone())
         .and_then(get_challenge_by_id);
 
-    let challenge_proposals_by_id = warp::path!(i32 / "proposals")
-        .and(warp::get())
-        .and(with_context)
-        .and_then(get_challenge_proposals_by_id);
-
-    root.and(challenge_proposals_by_id.or(challenge_by_id).or(challenges))
+    root.and(challenge_by_id.or(challenges))
 }

@@ -25,6 +25,12 @@ paths:
   /api/v0/fund/{id}:
     get:
       summary: Get fund by id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
       responses:
         200:
           description: Valid response
@@ -48,6 +54,12 @@ paths:
   /api/v0/proposals/{id}:
     get:
       summary: Get proposal by id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
       responses:
         200:
           description: Valid response
@@ -71,25 +83,19 @@ paths:
   /api/v0/challenges/{id}:
     get:
       summary: Get challenges by id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
       responses:
         200:
           description: Valid response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Challenge"
-
-  /api/v0/challenges/{id}/proposals:
-    get:
-      summary: Get all proposals related to a challenge
-      responses:
-        200:
-          description: Valid response
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: "#/components/schemas/Proposal"
+                $ref: "#/components/schemas/ChallengeWithProposals"
 
 components:
   schemas:
@@ -230,3 +236,13 @@ components:
         fund_id:
           type: integer
           format: int32
+
+    ChallengeWithProposals:
+      allOf:
+        - $ref: '#/components/schemas/Challenge'
+        - type: object
+          properties:
+            proposals:
+              type: array
+              items:
+                $ref: '#/components/schemas/Proposal'

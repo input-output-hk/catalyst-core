@@ -82,7 +82,7 @@ paths:
 
   /api/v0/challenges/{id}:
     get:
-      summary: Get challenges by id
+      summary: Get challenge by id
       parameters:
         - in: path
           name: id

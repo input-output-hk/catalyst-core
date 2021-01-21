@@ -43,8 +43,17 @@ pub struct IapyxLoadCommand {
     pub count: Option<u32>,
 
     /// wallet mnemonics file
-    #[structopt(short = "s", long = "mnemonics")]
-    pub wallet_mnemonics_file: PathBuf,
+    #[structopt(long = "mnemonics")]
+    pub wallet_mnemonics_file: Option<PathBuf>,
+
+    #[structopt(short = "q", long = "qr-codes-folder")]
+    pub qr_codes_folder: Option<PathBuf>,
+
+    #[structopt(short = "s", long = "secrets-folder")]
+    pub secrets_folder: Option<PathBuf>,
+
+    #[structopt(long = "password", default_value = "1234")]
+    pub passwords: String,
 
     /// use https for sending fragments
     #[structopt(short = "h", long = "https")]
@@ -71,8 +80,7 @@ pub struct IapyxLoadCommand {
 impl IapyxLoadCommand {
     pub fn exec(&self) -> Result<(), IapyxLoadCommandError> {
         let config = self.build_config()?;
-        let mnemonics = jortestkit::file::read_file_as_vector(&config.mnemonics_file)
-            .map_err(|_e| IapyxLoadCommandError::CannotReadMnemonicsFile)?;
+
         let backend = config.address;
 
         let settings = RestSettings {
@@ -82,7 +90,39 @@ impl IapyxLoadCommand {
         };
 
         println!("{:?}", settings);
-        let multicontroller = MultiController::recover(&backend, mnemonics, &[], settings).unwrap();
+
+        let multicontroller = {
+            if let Some(mnemonics_file) = &self.wallet_mnemonics_file {
+                let mnemonics = jortestkit::file::read_file_as_vector(&mnemonics_file)
+                    .map_err(|_e| IapyxLoadCommandError::CannotReadMnemonicsFile)?;
+
+                MultiController::recover(&backend, mnemonics, &[], settings).unwrap()
+            } else if let Some(qr_codes) = &self.qr_codes_folder {
+                let qr_codes: Vec<PathBuf> = std::fs::read_dir(qr_codes)
+                    .unwrap()
+                    .into_iter()
+                    .map(|x| x.unwrap().path())
+                    .collect();
+
+                MultiController::recover_from_qrs(
+                    &backend,
+                    &qr_codes,
+                    self.passwords.as_bytes(),
+                    settings,
+                )
+                .unwrap()
+            } else if let Some(secrets_folder) = &self.secrets_folder {
+                let secrets: Vec<PathBuf> = std::fs::read_dir(secrets_folder)
+                    .unwrap()
+                    .into_iter()
+                    .map(|x| x.unwrap().path())
+                    .collect();
+                MultiController::recover_from_sks(&backend, &secrets, settings).unwrap()
+            } else {
+                panic!("source of private keys not selected");
+            }
+        };
+
         let mut request_generator = WalletRequestGen::new(multicontroller);
         request_generator.fill_generator().unwrap();
 
@@ -128,7 +168,6 @@ impl IapyxLoadCommand {
             config,
             self.measure,
             self.address.clone(),
-            self.wallet_mnemonics_file.clone(),
         ))
     }
 }

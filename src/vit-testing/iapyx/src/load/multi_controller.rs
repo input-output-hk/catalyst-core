@@ -1,15 +1,17 @@
+use crate::controller::read_bech32;
 use crate::WalletBackend;
 use crate::{Proposal, Wallet};
+use bech32::FromBase32;
 use bip39::Type;
 use chain_impl_mockchain::fragment::FragmentId;
-use jormungandr_testing_utils::testing::node::RestSettings;
+use jormungandr_testing_utils::{qr_code::KeyQrCode, testing::node::RestSettings};
 use std::iter;
+use std::path::Path;
 use thiserror::Error;
 use wallet::Settings;
 use wallet_core::{Choice, Value};
-
 unsafe impl Send for Wallet {}
-
+use std::convert::TryInto;
 pub struct MultiController {
     backend: WalletBackend,
     wallets: Vec<Wallet>,
@@ -47,6 +49,53 @@ impl MultiController {
             .iter()
             .map(|x| Wallet::recover(x, password).unwrap())
             .collect();
+        Ok(Self {
+            backend,
+            wallets,
+            settings,
+        })
+    }
+
+    pub fn recover_from_qrs<P: AsRef<Path>>(
+        wallet_backend_address: &str,
+        qrs: &[P],
+        password: &[u8],
+        backend_settings: RestSettings,
+    ) -> Result<Self, MultiControllerError> {
+        let backend = WalletBackend::new(wallet_backend_address.to_string(), backend_settings);
+        let settings = backend.settings()?;
+        let wallets = qrs
+            .iter()
+            .map(|x| {
+                let img = image::open(x.as_ref()).unwrap();
+                let secret = KeyQrCode::decode(img, password).unwrap().leak_secret();
+                Wallet::recover_from_utxo(secret.as_ref().try_into().unwrap()).unwrap()
+            })
+            .collect();
+        Ok(Self {
+            backend,
+            wallets,
+            settings,
+        })
+    }
+
+    pub fn recover_from_sks<P: AsRef<Path>>(
+        proxy_address: &str,
+        private_keys: &[P],
+        backend_settings: RestSettings,
+    ) -> Result<Self, MultiControllerError> {
+        let backend = WalletBackend::new(proxy_address.to_string(), backend_settings);
+        let settings = backend.settings()?;
+        let wallets = private_keys
+            .iter()
+            .map(|x| {
+                let (_, data) = read_bech32(x.as_ref()).unwrap();
+                let key_bytes = Vec::<u8>::from_base32(&data).unwrap();
+                let data: [u8; 64] = key_bytes.try_into().unwrap();
+                Wallet::recover_from_utxo(&data).unwrap()
+            })
+            .collect();
+
         Ok(Self {
             backend,
             wallets,
@@ -136,4 +185,6 @@ pub enum MultiControllerError {
     WalletError(#[from] crate::wallet::Error),
     #[error("wallet error")]
     BackendError(#[from] crate::backend::WalletBackendError),
+    #[error("controller error")]
+    ControllerError(#[from] crate::ControllerError),
 }

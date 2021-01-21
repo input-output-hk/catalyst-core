@@ -358,7 +358,7 @@ impl RecoverFromQR {
         model.controller = Some(Controller::recover_from_qr(
             model.backend_address.clone(),
             &self.qr_code,
-            self.password.as_bytes(),
+            &self.password,
             model.settings.clone(),
         )?);
         model.state = WalletState::Recovered;

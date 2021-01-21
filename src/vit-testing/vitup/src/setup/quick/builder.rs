@@ -282,6 +282,7 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn dump_qrs(&self, controller: &Controller, child: &ChildPath) -> Result<()> {
         let password = "1234";
+        let bytes: Vec<u8> = password.chars().map(|x| x.to_digit(10).unwrap() as u8).collect();
 
         let folder = child.child("qr-codes");
         std::fs::create_dir_all(folder.path())?;
@@ -292,12 +293,13 @@ impl QuickVitBackendSettingsBuilder {
         {
             let wallet = controller.wallet(alias)?;
             let png = folder.child(format!("{}_{}.png", alias, password));
-            wallet.save_qr_code(png.path(), password.as_bytes());
+
+            wallet.save_qr_code(png.path(), &bytes);
         }
 
         for i in 1..(self.parameters.initials.zero_funds_count() + 1) {
             let sk = SecretKey::generate(rand::thread_rng());
-            let qr = KeyQrCode::generate(sk.clone(), password.as_bytes());
+            let qr = KeyQrCode::generate(sk.clone(), &bytes);
             let img = qr.to_img();
             let png = folder.child(format!("zero_funds_{}_{}.png", i, password));
             img.save(png.path())?;

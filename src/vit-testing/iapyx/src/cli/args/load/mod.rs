@@ -103,14 +103,12 @@ impl IapyxLoadCommand {
                     .into_iter()
                     .map(|x| x.unwrap().path())
                     .collect();
-
-                MultiController::recover_from_qrs(
-                    &backend,
-                    &qr_codes,
-                    self.passwords.as_bytes(),
-                    settings,
-                )
-                .unwrap()
+                let bytes: Vec<u8> = self
+                    .passwords
+                    .chars()
+                    .map(|x| x.to_digit(10).unwrap() as u8)
+                    .collect();
+                MultiController::recover_from_qrs(&backend, &qr_codes, &bytes, settings).unwrap()
             } else if let Some(secrets_folder) = &self.secrets_folder {
                 let secrets: Vec<PathBuf> = std::fs::read_dir(secrets_folder)
                     .unwrap()

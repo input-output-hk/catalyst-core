@@ -76,11 +76,15 @@ impl Controller {
     pub fn recover_from_qr<P: AsRef<Path>>(
         proxy_address: String,
         qr: P,
-        password: &[u8],
+        password: &str,
         backend_settings: RestSettings,
     ) -> Result<Self, ControllerError> {
         let img = image::open(qr.as_ref())?;
-        let secret = KeyQrCode::decode(img, password).unwrap().leak_secret();
+        let bytes: Vec<u8> = password
+            .chars()
+            .map(|x| x.to_digit(10).unwrap() as u8)
+            .collect();
+        let secret = KeyQrCode::decode(img, &bytes).unwrap().leak_secret();
         let backend = WalletBackend::new(proxy_address, backend_settings);
         let settings = backend.settings()?;
         Ok(Self {

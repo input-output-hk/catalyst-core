@@ -241,10 +241,8 @@ impl ProposalManager {
         let tally = self.tally.as_ref().ok_or(TallyError::NoEncryptedTally)?;
         let (encrypted_tally, total_stake) = tally.private_encrypted()?;
         let state = encrypted_tally.state();
-        // total voting power + 1
-        let max_votes = total_stake.0 + 1;
-        let table_size = (max_votes / 3) as usize;
-        let private_result = chain_vote::result(max_votes, table_size, &state, shares);
+        let table_size = total_stake.0 as usize / self.options.choice_range().len();
+        let private_result = chain_vote::result(total_stake.0, table_size, &state, shares);
         let mut result = TallyResult::new(self.options.clone());
         for (choice, weight) in private_result
             .votes

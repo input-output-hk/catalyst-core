@@ -260,7 +260,7 @@ pub fn result(
                 let mut e = &table[table_size - 1] + &gen;
                 let mut i = table_size as u64 + 1;
                 loop {
-                    if i >= votes_left {
+                    if i > votes_left {
                         break;
                     }
 

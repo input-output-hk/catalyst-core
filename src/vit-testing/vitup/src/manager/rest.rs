@@ -59,7 +59,7 @@ pub async fn start_rest_server(context: ControlContextLock) {
     let api = files.or(control).or(status).boxed();
 
     let server = warp::serve(api);
-    let (_, server_fut) = server.bind_with_graceful_shutdown(([127, 0, 0, 1], 3030), stopper_rx);
+    let (_, server_fut) = server.bind_with_graceful_shutdown(([0, 0, 0, 0], 3030), stopper_rx);
     server_fut.await;
 }
 

@@ -150,10 +150,12 @@ pub fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     vote_plan_parameters_builder
         .recalculate_voting_periods_if_needed(blockchain_configuration.block0_date);
 
+    let settings = controller.settings().clone();
+    let parameters = vote_plan_parameters_builder.vote_plan_parameters(fund1_vote_plan,settings);
     // start proxy and vit station
     let vit_station = vit_controller.spawn_vit_station(
         &mut controller,
-        vote_plan_parameters_builder.vote_plan_parameters(fund1_vote_plan),
+        parameters,
     )?;
     let wallet_proxy = vit_controller.spawn_wallet_proxy(&mut controller, WALLET_NODE)?;
 

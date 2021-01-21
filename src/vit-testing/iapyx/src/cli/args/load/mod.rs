@@ -103,11 +103,11 @@ impl IapyxLoadCommand {
                     .into_iter()
                     .map(|x| x.unwrap().path())
                     .collect();
-
+                let bytes: Vec<u8> = self.passwords.chars().map(|x| x.to_digit(10).unwrap() as u8).collect();
                 MultiController::recover_from_qrs(
                     &backend,
                     &qr_codes,
-                    self.passwords.as_bytes(),
+                    &bytes,
                     settings,
                 )
                 .unwrap()

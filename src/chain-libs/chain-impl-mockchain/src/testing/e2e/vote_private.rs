@@ -1,6 +1,8 @@
+use crate::testing::build_tally_decrypt_share;
+use crate::testing::data::CommitteeMembersManager;
 use crate::testing::VoteTestGen;
 use crate::{
-    certificate::{TallyDecryptShares, VotePlan},
+    certificate::VotePlan,
     fee::LinearFee,
     header::BlockDate,
     testing::{
@@ -11,58 +13,12 @@ use crate::{
     value::Value,
     vote::{Choice, PayloadType},
 };
-use chain_vote::{
-    committee::MemberSecretKey, MemberCommunicationKey, MemberPublicKey, MemberState, CRS,
-};
 use rand_chacha::ChaCha20Rng;
-use rand_core::{CryptoRng, RngCore, SeedableRng};
+use rand_core::SeedableRng;
 
 const ALICE: &str = "Alice";
 const STAKE_POOL: &str = "stake_pool";
 const VOTE_PLAN: &str = "fund1";
-
-struct CommitteeMembersManager {
-    members: Vec<CommitteeMember>,
-}
-
-struct CommitteeMember {
-    state: MemberState,
-}
-
-impl CommitteeMembersManager {
-    pub fn new(rng: &mut (impl RngCore + CryptoRng), threshold: usize, members_no: usize) -> Self {
-        let mut public_keys = Vec::new();
-        for _ in 0..members_no {
-            let private_key = MemberCommunicationKey::new(rng);
-            let public_key = private_key.to_public();
-            public_keys.push(public_key);
-        }
-
-        let crs = CRS::random(rng);
-
-        let mut members = Vec::new();
-        for i in 0..members_no {
-            let state = MemberState::new(rng, threshold, &crs, &public_keys, i);
-            members.push(CommitteeMember { state })
-        }
-
-        Self { members }
-    }
-
-    pub fn members(&self) -> &[CommitteeMember] {
-        &self.members
-    }
-}
-
-impl CommitteeMember {
-    pub fn public_key(&self) -> MemberPublicKey {
-        self.state.public_key()
-    }
-
-    pub fn secret_key(&self) -> &MemberSecretKey {
-        self.state.secret_key()
-    }
-}
 
 #[test]
 pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
@@ -130,38 +86,16 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
         .unwrap();
     alice.confirm_transaction();
 
-    let shares = ledger
-        .ledger
-        .active_vote_plans()
+    let vote_plans = ledger.ledger.active_vote_plans();
+    let vote_plan_status = vote_plans
         .iter()
         .find(|c_vote_plan| {
             let vote_plan: VotePlan = vote_plan.clone().into();
             c_vote_plan.id == vote_plan.to_id()
         })
-        .unwrap()
-        .proposals
-        .iter()
-        .map(|proposal| {
-            proposal
-                .tally
-                .as_ref()
-                .unwrap()
-                .private_encrypted()
-                .unwrap()
-                .0
-                .clone()
-        })
-        .map(|encrypted_tally| {
-            members
-                .members()
-                .iter()
-                .map(|member| member.secret_key())
-                .map(|secret_key| encrypted_tally.finish(secret_key).1)
-                .collect::<Vec<_>>()
-        })
-        .collect::<Vec<_>>();
+        .unwrap();
 
-    let shares = TallyDecryptShares::new(shares);
+    let shares = build_tally_decrypt_share(vote_plan_status, &members);
 
     controller
         .tally_vote_private(&alice, &vote_plan, shares, &mut ledger)

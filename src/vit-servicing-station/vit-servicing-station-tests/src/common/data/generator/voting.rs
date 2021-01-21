@@ -109,7 +109,7 @@ impl ValidVotePlanGenerator {
             fund_end_time: voting_tally_end,
             next_fund_start_time,
             chain_vote_plans: vec![vote_plan.clone()],
-            challenges: vec![challenge],
+            challenges: vec![challenge.clone()],
         };
 
         let mut proposals = vec![];
@@ -146,6 +146,12 @@ impl ValidVotePlanGenerator {
             proposals.push(proposal);
         }
 
-        Snapshot::new(vec![fund], proposals, generator.tokens(), vec![vote_plan])
+        Snapshot::new(
+            vec![fund],
+            proposals,
+            vec![challenge],
+            generator.tokens(),
+            vec![vote_plan],
+        )
     }
 }

@@ -23,6 +23,7 @@ pub fn get_fund_by_id_test() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 pub fn funds_test() -> Result<(), Box<dyn std::error::Error>> {
+    use pretty_assertions::assert_eq;
     let temp_dir = TempDir::new().unwrap();
     let (server, snapshot) = quick_start(&temp_dir).unwrap();
     let graphql_client = server.graphql_client_with_token(&snapshot.token_hash());

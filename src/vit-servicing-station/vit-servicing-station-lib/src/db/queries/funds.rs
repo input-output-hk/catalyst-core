@@ -1,6 +1,9 @@
 use crate::db::{
-    models::{funds::Fund, voteplans::Voteplan},
-    schema::{funds, funds::dsl as fund_dsl, voteplans::dsl as voteplans_dsl},
+    models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
+    schema::{
+        challenges::dsl as challenges_dsl, funds, funds::dsl as fund_dsl,
+        voteplans::dsl as voteplans_dsl,
+    },
     DBConnection, DBConnectionPool,
 };
 use crate::v0::errors::HandleError;
@@ -16,10 +19,14 @@ pub async fn query_fund_by_id(id: i32, pool: &DBConnectionPool) -> Result<Fund, 
             diesel::QueryDsl::filter(voteplans_dsl::voteplans, voteplans_dsl::fund_id.eq(id))
                 .load::<Voteplan>(&db_conn)
                 .map_err(|_e| HandleError::NotFound("Error loading voteplans".to_string())),
+            diesel::QueryDsl::filter(challenges_dsl::challenges, challenges_dsl::fund_id.eq(id))
+                .load::<Challenge>(&db_conn)
+                .map_err(|_e| HandleError::NotFound("Error loading challenges".to_string())),
         );
         match query_results {
-            (Ok(mut fund), Ok(mut voteplans)) => {
+            (Ok(mut fund), Ok(mut voteplans), Ok(mut challenges)) => {
                 fund.chain_vote_plans.append(&mut voteplans);
+                fund.challenges.append(&mut challenges);
                 Ok(fund)
             }
             // Any other combination is not valid
@@ -39,7 +46,7 @@ pub async fn query_fund(pool: &DBConnectionPool) -> Result<Fund, HandleError> {
         let fund = fund_dsl::funds
             .first::<Fund>(&db_conn)
             .map_err(|_e| HandleError::NotFound("fund".to_string()));
-        match fund {
+        let fund = match fund {
             Ok(mut fund) => diesel::QueryDsl::filter(
                 voteplans_dsl::voteplans,
                 voteplans_dsl::fund_id.eq(fund.id),
@@ -48,6 +55,19 @@ pub async fn query_fund(pool: &DBConnectionPool) -> Result<Fund, HandleError> {
             .map_err(|_e| HandleError::NotFound("fund voteplans".to_string()))
             .map(|mut voteplans| {
                 fund.chain_vote_plans.append(&mut voteplans);
+                Ok(fund)
+            }),
+            Err(e) => Err(e),
+        }?;
+        match fund {
+            Ok(mut fund) => diesel::QueryDsl::filter(
+                challenges_dsl::challenges,
+                challenges_dsl::fund_id.eq(fund.id),
+            )
+            .load::<Challenge>(&db_conn)
+            .map_err(|_e| HandleError::NotFound("fund challenges".to_string()))
+            .map(|mut challenges| {
+                fund.challenges.append(&mut challenges);
                 Ok(fund)
             }),
             Err(e) => Err(e),

@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 use vit_servicing_station_lib::db::models::{
-    api_tokens::APITokenData, funds::Fund, proposals::Proposal, voteplans::Voteplan,
+    api_tokens::APITokenData, challenges::Challenge, funds::Fund, proposals::Proposal,
+    voteplans::Voteplan,
 };
 
 #[derive(Debug, Clone)]
 pub struct Snapshot {
     funds: Vec<Fund>,
     proposals: Vec<Proposal>,
+    challenges: Vec<Challenge>,
     tokens: HashMap<String, APITokenData>,
     voteplans: Vec<Voteplan>,
 }
@@ -15,12 +17,14 @@ impl Snapshot {
     pub fn new(
         funds: Vec<Fund>,
         proposals: Vec<Proposal>,
+        challenges: Vec<Challenge>,
         tokens: HashMap<String, APITokenData>,
         voteplans: Vec<Voteplan>,
     ) -> Self {
         Self {
             funds,
             proposals,
+            challenges,
             tokens,
             voteplans,
         }
@@ -69,5 +73,9 @@ impl Snapshot {
 
     pub fn token_hash(&self) -> String {
         self.any_token().0
+    }
+
+    pub fn challenges(&self) -> Vec<Challenge> {
+        self.challenges.clone()
     }
 }

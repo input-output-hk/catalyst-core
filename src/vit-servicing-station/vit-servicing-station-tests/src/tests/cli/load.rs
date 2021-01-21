@@ -40,6 +40,14 @@ pub fn load_data_test() {
         )
         .unwrap();
 
+    let challenges = temp_dir.child("challenges.csv");
+    csv_converter
+        .challenges(
+            snapshot.challenges().iter().cloned().take(1).collect(),
+            challenges.path(),
+        )
+        .unwrap();
+
     let vit_cli: VitCliCommand = Default::default();
     vit_cli
         .db()
@@ -57,6 +65,7 @@ pub fn load_data_test() {
         .funds(funds.path())
         .proposals(proposals.path())
         .voteplans(voteplans.path())
+        .challenges(challenges.path())
         .build()
         .assert()
         .success();

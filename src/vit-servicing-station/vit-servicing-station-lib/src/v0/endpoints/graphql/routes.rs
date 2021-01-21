@@ -71,7 +71,14 @@ mod test {
                     chainVoteplanPayload,
                     chainVoteEncryptionKey,
                     fundId
-                }
+                },
+                challenges {
+                    id
+                    title
+                    description
+                    rewardsTotal
+                    fundId    
+                },
             }
         }"#;
 
@@ -94,6 +101,13 @@ mod test {
                 chainCommitteeEndTime,
                 chainVoteplanPayload,
                 chainVoteEncryptionKey,
+                fundId
+            },
+            challenges {
+                id
+                title
+                description
+                rewardsTotal
                 fundId
             },
         }
@@ -134,6 +148,7 @@ mod test {
                 chainVoteEndTime,
                 chainCommitteeEndTime,
                 fundId
+                challengeId
             }
         }"#;
 
@@ -206,6 +221,7 @@ mod test {
             chainVoteEndTime,
             chainCommitteeEndTime,
             fundId
+            challengeId
         }
     }"#;
 

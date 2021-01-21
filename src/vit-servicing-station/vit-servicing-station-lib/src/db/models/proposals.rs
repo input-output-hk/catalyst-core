@@ -311,6 +311,7 @@ pub mod test {
             proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
+            proposals::challenge_id.eq(proposal.challenge_id.clone()),
         );
         diesel::insert_into(proposals::table)
             .values(values)

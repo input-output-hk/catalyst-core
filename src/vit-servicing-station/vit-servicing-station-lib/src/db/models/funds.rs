@@ -171,5 +171,9 @@ pub mod test {
         for voteplan in &fund.chain_vote_plans {
             voteplans_testing::populate_db_with_voteplan(voteplan, pool);
         }
+
+        for challenge in &fund.challenges {
+            challenges_testing::populate_db_with_challenge(challenge, pool);
+        }
     }
 }

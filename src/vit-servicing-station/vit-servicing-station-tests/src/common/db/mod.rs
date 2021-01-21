@@ -4,7 +4,7 @@ use diesel::SqliteConnection;
 use thiserror::Error;
 use vit_servicing_station_lib::db::{
     models::{api_tokens::APITokenData, funds::Fund, proposals::Proposal},
-    schema::{api_tokens, funds, proposals, voteplans},
+    schema::{api_tokens, challenges, funds, proposals, voteplans},
 };
 
 pub struct DbInserter<'a> {
@@ -62,6 +62,7 @@ impl<'a> DbInserter<'a> {
                 proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
                 proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
                 proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
+                proposals::challenge_id.eq(proposal.challenge_id),
             );
             diesel::insert_into(proposals::table)
                 .values(values)
@@ -118,6 +119,20 @@ impl<'a> DbInserter<'a> {
                     voteplans::fund_id.eq(voteplan.fund_id),
                 );
                 diesel::insert_or_ignore_into(voteplans::table)
+                    .values(values)
+                    .execute(self.connection)
+                    .map_err(DbInserterError::DieselError)?;
+            }
+
+            for challenge in &fund.challenges {
+                let values = (
+                    challenges::id.eq(challenge.id),
+                    challenges::title.eq(challenge.title.clone()),
+                    challenges::description.eq(challenge.description.clone()),
+                    challenges::rewards_total.eq(challenge.rewards_total),
+                    challenges::fund_id.eq(challenge.fund_id),
+                );
+                diesel::insert_or_ignore_into(challenges::table)
                     .values(values)
                     .execute(self.connection)
                     .map_err(DbInserterError::DieselError)?;

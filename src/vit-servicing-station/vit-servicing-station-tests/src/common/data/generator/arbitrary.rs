@@ -206,6 +206,13 @@ impl ArbitraryGenerator {
             .collect()
     }
 
+    pub fn challenges(&mut self, funds: &[Fund]) -> Vec<Challenge> {
+        funds
+            .iter()
+            .map(|x| self.challenge_with_fund_id(x.id))
+            .collect()
+    }
+
     pub fn proposals(&mut self, funds: &[Fund]) -> Vec<Proposal> {
         funds.iter().map(|x| self.gen_single_proposal(x)).collect()
     }
@@ -230,7 +237,7 @@ impl ArbitraryGenerator {
         let id = self.id_generator.next_u32() as i32;
 
         Challenge {
-            id,
+            id: id.abs(),
             title: "challenge title".to_string(),
             description: "challenge description".to_string(),
             rewards_total: 100500,
@@ -242,8 +249,9 @@ impl ArbitraryGenerator {
         let funds = self.funds();
         let proposals = self.proposals(&funds);
         let voteplans = self.voteplans(&funds);
+        let challenges = self.challenges(&funds);
         let tokens = self.tokens();
 
-        Snapshot::new(funds, proposals, tokens, voteplans)
+        Snapshot::new(funds, proposals, challenges, tokens, voteplans)
     }
 }

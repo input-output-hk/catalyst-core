@@ -39,6 +39,7 @@ impl Queryable<challenges::SqlType, DB> for Challenge {
 }
 
 impl Insertable<challenges::table> for Challenge {
+    #[allow(clippy::type_complexity)]
     type Values = (
         diesel::dsl::Eq<challenges::id, i32>,
         diesel::dsl::Eq<challenges::title, String>,
@@ -61,6 +62,8 @@ impl Insertable<challenges::table> for Challenge {
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use crate::db::DBConnectionPool;
+    use diesel::RunQueryDsl;
 
     pub fn get_test_challenge_with_fund_id(fund_id: i32) -> Challenge {
         const CHALLENGE_ID: i32 = 9001;
@@ -72,5 +75,22 @@ pub mod test {
             rewards_total: REWARDS_TOTAL,
             fund_id,
         }
+    }
+
+    pub fn populate_db_with_challenge(challenge: &Challenge, pool: &DBConnectionPool) {
+        let connection = pool.get().unwrap();
+
+        let values = (
+            challenges::id.eq(challenge.id),
+            challenges::title.eq(challenge.title.clone()),
+            challenges::description.eq(challenge.description.clone()),
+            challenges::rewards_total.eq(challenge.rewards_total),
+            challenges::fund_id.eq(challenge.fund_id),
+        );
+
+        diesel::insert_into(challenges::table)
+            .values(values)
+            .execute(&connection)
+            .unwrap();
     }
 }

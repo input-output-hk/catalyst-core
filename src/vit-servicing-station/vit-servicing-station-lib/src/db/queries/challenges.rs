@@ -14,7 +14,7 @@ pub async fn query_all_challenges(pool: &DBConnectionPool) -> Result<Vec<Challen
     tokio::task::spawn_blocking(move || {
         challenges_dsl::challenges
             .load::<Challenge>(&db_conn)
-            .map_err(|_| HandleError::InternalError("Error retrieving funds".to_string()))
+            .map_err(|_| HandleError::InternalError("Error retrieving challenges".to_string()))
     })
     .await
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
@@ -28,7 +28,24 @@ pub async fn query_challenge_by_id(
     tokio::task::spawn_blocking(move || {
         diesel::QueryDsl::filter(challenges_dsl::challenges, challenges_dsl::id.eq(id))
             .first::<Challenge>(&db_conn)
-            .map_err(|_e| HandleError::NotFound("Error loading fund".to_string()))
+            .map_err(|_e| HandleError::NotFound("Error loading challenge".to_string()))
+    })
+    .await
+    .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
+}
+
+pub async fn query_challenges_by_fund_id(
+    fund_id: i32,
+    pool: &DBConnectionPool,
+) -> Result<Vec<Challenge>, HandleError> {
+    let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
+    tokio::task::spawn_blocking(move || {
+        diesel::QueryDsl::filter(
+            challenges_dsl::challenges,
+            challenges_dsl::fund_id.eq(fund_id),
+        )
+        .load::<Challenge>(&db_conn)
+        .map_err(|_e| HandleError::NotFound("Error loading challenges for fund id".to_string()))
     })
     .await
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
@@ -45,7 +62,7 @@ pub async fn query_challenge_proposals_by_id(
             proposals_dsl::challenge_id.eq(id),
         )
         .load::<Proposal>(&db_conn)
-        .map_err(|_e| HandleError::NotFound("Error loading fund".to_string()))
+        .map_err(|_e| HandleError::NotFound("Error loading challenge".to_string()))
     })
     .await
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?

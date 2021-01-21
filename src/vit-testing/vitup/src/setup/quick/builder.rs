@@ -99,7 +99,7 @@ impl QuickVitBackendSettingsBuilder {
         self
     }
     pub fn voting_power(&mut self, voting_power: u64) -> &mut Self {
-        self.parameters.voting_power = voting_power * 1_000_000;
+        self.parameters.voting_power = voting_power;
         self
     }
 
@@ -188,7 +188,7 @@ impl QuickVitBackendSettingsBuilder {
         settings: &Settings,
     ) -> ValidVotePlanParameters {
         let mut parameters = ValidVotePlanParameters::new(vote_plan);
-        parameters.set_voting_power_threshold(self.parameters.voting_power as i64);
+        parameters.set_voting_power_threshold((self.parameters.voting_power * 1_000_000) as i64);
         parameters.set_voting_start(self.parameters.vote_start_timestamp.unwrap().timestamp());
         parameters
             .set_voting_tally_start(self.parameters.tally_start_timestamp.unwrap().timestamp());
@@ -368,18 +368,19 @@ impl QuickVitBackendSettingsBuilder {
                 .block0_date,
         );
 
-        let vote_plan = controller
-            .settings()
-            .private_vote_plans
-            .values()
-            .next()
-            .unwrap();
-        let committee_keys = vote_plan_def.committee_keys_mut();
+        if self.parameters.private {
+            let vote_plan = controller
+                .settings()
+                .private_vote_plans
+                .values()
+                .next()
+                .unwrap();
+            let committee_keys = vote_plan_def.committee_keys_mut();
 
-        for key in vote_plan.member_public_keys().iter() {
-            committee_keys.push(key.clone());
+            for key in vote_plan.member_public_keys().iter() {
+                committee_keys.push(key.clone());
+            }
         }
-
         let parameters = self.vote_plan_parameters(vote_plan_def, &controller.settings());
 
         Ok((vit_controller, controller, parameters))

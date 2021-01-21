@@ -80,7 +80,10 @@ impl Controller {
         backend_settings: RestSettings,
     ) -> Result<Self, ControllerError> {
         let img = image::open(qr.as_ref())?;
-        let bytes: Vec<u8> = password.chars().map(|x| x.to_digit(10).unwrap() as u8).collect();
+        let bytes: Vec<u8> = password
+            .chars()
+            .map(|x| x.to_digit(10).unwrap() as u8)
+            .collect();
         let secret = KeyQrCode::decode(img, &bytes).unwrap().leak_secret();
         let backend = WalletBackend::new(proxy_address, backend_settings);
         let settings = backend.settings()?;

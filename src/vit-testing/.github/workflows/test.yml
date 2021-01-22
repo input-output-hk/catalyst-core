@@ -153,7 +153,7 @@ jobs:
       - name: Run tests
         uses: actions-rs/cargo@v1
         timeout-minutes: 30
-        working-directory: ../vit-testing
+        working-directory: ./vit-testing
         with:
           command: test
           args: --tests ${{ env.CARGO_FLAGS }} ${{ matrix.flags }}

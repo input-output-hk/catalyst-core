@@ -11,6 +11,8 @@ custom_debug = "0.5"
 dialoguer = "0.7.1"
 error-chain = "0.12"
 assert_fs = "1.0"
+glob = "0.3.0"
+walkdir = "2.3.1"
 chain-core           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-crypto         = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
@@ -44,6 +46,7 @@ yaml-rust = "0.4.4"
 serde = { version="=1.0.118", features = ["derive"] }
 warp = "0.2.5"
 tokio = { version = "0.2", features = ["macros"] }
+json = "0.12.4"
 
 [dependencies.reqwest]
 version = "0.10.10"

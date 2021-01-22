@@ -1,11 +1,10 @@
 use super::{ArbitraryGenerator, Snapshot};
 use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
-use vit_servicing_station_lib::db::models::{
-    funds::Fund, proposals::Proposal, vote_options::VoteOptions,
-    voteplans::Voteplan,
-};
 use rand::{rngs::OsRng, RngCore};
+use vit_servicing_station_lib::db::models::{
+    funds::Fund, proposals::Proposal, vote_options::VoteOptions, voteplans::Voteplan,
+};
 
 use fake::{
     faker::company::en::{Buzzword, CatchPhase},
@@ -22,7 +21,7 @@ pub struct ValidVotePlanParameters {
     pub next_fund_start_time: Option<i64>,
     pub vote_encryption_key: Option<String>,
     pub vote_options: VoteOptions,
-    pub challenges_count: usize
+    pub challenges_count: usize,
 }
 
 impl ValidVotePlanParameters {
@@ -36,7 +35,7 @@ impl ValidVotePlanParameters {
             next_fund_start_time: None,
             vote_encryption_key: None,
             vote_options: VoteOptions::parse_coma_separated_value("blank,yes,no"),
-            challenges_count: 4
+            challenges_count: 4,
         }
     }
 
@@ -69,7 +68,7 @@ impl ValidVotePlanParameters {
     }
 
     pub fn set_vote_options(&mut self, vote_options: VoteOptions) {
-        self.vote_options =  vote_options
+        self.vote_options = vote_options
     }
 }
 
@@ -87,7 +86,6 @@ impl ValidVotePlanGenerator {
     }
 
     pub fn build(self) -> Snapshot {
-
         let mut generator = ArbitraryGenerator::new();
         let vote_plan = Self::convert_to_vote_plan(&self.parameters.vote_plan);
         let chain_vote_plan_id = vote_plan.to_id().to_string();
@@ -117,7 +115,9 @@ impl ValidVotePlanGenerator {
             fund_id,
         };
 
-        let challenges = std::iter::from_fn(|| Some(generator.challenge_with_fund_id(fund_id))).take(self.parameters.challenges_count).collect();
+        let challenges = std::iter::from_fn(|| Some(generator.challenge_with_fund_id(fund_id)))
+            .take(self.parameters.challenges_count)
+            .collect();
 
         let mut fund = Fund {
             id: fund_id,
@@ -137,7 +137,6 @@ impl ValidVotePlanGenerator {
         let mut rng = OsRng;
 
         for (index, proposal) in self.parameters.vote_plan.proposals().iter().enumerate() {
-
             let challenge_idx = rng.next_u32() as usize % self.parameters.challenges_count;
             let mut challenge = fund.challenges.get_mut(challenge_idx).unwrap();
 

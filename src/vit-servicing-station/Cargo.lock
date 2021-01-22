@@ -3091,17 +3091,6 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "720ba21c25078711bf456d607987d95bce90f7c3bea5abe1db587862e7a1e87c"
-dependencies = [
- "autocfg",
- "pin-project-lite 0.2.4",
- "tokio-macros 0.3.2",
-]
-
-[[package]]
-name = "tokio"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d258221f566b6c803c7b4714abadc080172b272090cdc5e244a6d4dd13c3a6bd"
@@ -3124,17 +3113,6 @@ name = "tokio-macros"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e44da00bfc73a25f814cd8d7e57a68a5c31b74b3152a0a1d1f590c97ed06265a"
-dependencies = [
- "proc-macro2 1.0.24",
- "quote 1.0.8",
- "syn 1.0.58",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46dfffa59fc3c8aad216ed61bdc2c263d2b9d87a9c8ac9de0c11a813e51b6db7"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
@@ -3619,7 +3597,7 @@ dependencies = [
  "diesel",
  "diesel_migrations",
  "fake",
- "hyper 0.13.9",
+ "hyper 0.14.2",
  "jortestkit",
  "lazy_static",
  "libsqlite3-sys",
@@ -3632,7 +3610,7 @@ dependencies = [
  "structopt",
  "tempfile",
  "thiserror",
- "tokio 0.3.6",
+ "tokio 1.0.1",
  "vit-servicing-station-lib",
 ]
 

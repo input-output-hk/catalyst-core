@@ -15,7 +15,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.53"
 structopt = "0.3.14"
 thiserror = "1.0"
-tokio = { version = "0.3.3", features = ["macros", "sync", "fs"] }
+tokio = { version = "1.0", features = ["macros", "sync", "fs"] }
 diesel_migrations = "1.4.0"
 tempfile = "3"
 rand_core = "0.5"
@@ -23,7 +23,7 @@ assert_fs = "1.0.0"
 assert_cmd = "1.0.1"
 askama = "0.8"
 askama_shared = "0.8"
-hyper = "0.13.6"
+hyper = "0.14.2"
 vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
 lazy_static = "1.4"
 rand = "0.7"

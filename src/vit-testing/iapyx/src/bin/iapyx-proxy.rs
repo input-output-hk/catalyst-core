@@ -13,6 +13,11 @@ async fn main() {
         "".to_string(),
         server_stub.http_vit_address(),
     ));
+    
+    let challenges = warp::path!("challenges"/ .. ).and(reverse_proxy_filter(
+        "".to_string(),
+        server_stub.http_vit_address(),
+    ));
 
     let fund = warp::path!("fund" / ..).and(reverse_proxy_filter(
         "".to_string(),
@@ -50,6 +55,7 @@ async fn main() {
 
     let app = root.and(
         proposals
+            .or(challenges)
             .or(fund)
             .or(account)
             .or(fragment)

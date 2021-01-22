@@ -5103,7 +5103,7 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests#50043b5fb35c3c0ce777e65695a5fe289ae6dea4"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests#641dee2767f35111c3b90c121ac219086061261f"
 dependencies = [
  "async-graphql",
  "async-graphql-warp",
@@ -5159,7 +5159,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests#50043b5fb35c3c0ce777e65695a5fe289ae6dea4"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests#641dee2767f35111c3b90c121ac219086061261f"
 dependencies = [
  "askama",
  "askama_shared",

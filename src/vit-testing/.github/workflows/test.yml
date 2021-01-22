@@ -151,7 +151,6 @@ jobs:
           args: --tests ${{ env.CARGO_FLAGS }} ${{ matrix.flags }}
 
       - name: Run tests
-        uses: actions-rs/cargo@v1
         timeout-minutes: 30
         run: |
           cd integration-tests

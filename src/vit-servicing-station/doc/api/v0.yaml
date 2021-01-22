@@ -38,6 +38,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Fund"
+        404:
+          description: The requested fund was not found
 
   /api/v0/proposals:
     get:
@@ -67,6 +69,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Proposal"
+        404:
+          description: The requested proposal was not found
 
   /api/v0/challenges:
     get:
@@ -96,6 +100,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChallengeWithProposals"
+        404:
+          description: The requested challenge was not found
+
 
 components:
   schemas:

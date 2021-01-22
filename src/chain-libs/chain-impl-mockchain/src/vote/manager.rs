@@ -438,7 +438,7 @@ impl ProposalManagers {
         }
     }
 
-    pub fn private_tally_start(&self, stake: &StakeControl) -> Result<Self, VoteError> {
+    pub fn start_private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
         let mut proposals = Vec::with_capacity(self.0.len());
         for proposal in self.0.iter() {
             proposals.push(proposal.private_tally(stake)?);
@@ -447,7 +447,7 @@ impl ProposalManagers {
         Ok(Self(proposals))
     }
 
-    pub fn private_tally_finalize<F>(
+    pub fn finalize_private_tally<F>(
         &self,
         shares: &TallyDecryptShares,
         governance: &Governance,
@@ -640,7 +640,7 @@ impl VotePlanManager {
         })
     }
 
-    pub fn private_tally_start(
+    pub fn start_private_tally(
         &self,
         block_date: BlockDate,
         stake: &StakeControl,
@@ -661,7 +661,7 @@ impl VotePlanManager {
             return Err(TallyError::InvalidPrivacy.into());
         }
 
-        let proposal_managers = self.proposal_managers.private_tally_start(stake)?;
+        let proposal_managers = self.proposal_managers.start_private_tally(stake)?;
 
         Ok(Self {
             proposal_managers,
@@ -671,7 +671,7 @@ impl VotePlanManager {
         })
     }
 
-    pub fn private_tally_finish<F>(
+    pub fn finalize_private_tally<F>(
         &self,
         shares: &TallyDecryptShares,
         governance: &Governance,
@@ -682,7 +682,7 @@ impl VotePlanManager {
     {
         let proposal_managers = self
             .proposal_managers
-            .private_tally_finalize(shares, governance, f)?;
+            .finalize_private_tally(shares, governance, f)?;
         Ok(Self {
             proposal_managers,
             plan: Arc::clone(&self.plan),

@@ -42,31 +42,34 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
     ~/.cargo/bin/rustup default stable
 
 RUN cd ${ENV_PREFIX} && \
-    git clone --recurse-submodules https://github.com/input-output-hk/jormungandr
+    git clone --recurse-submodules https://github.com/input-output-hk/jormungandr && \
+	cd jormungandr && \
+	git checkout clean_up_jortestkit
 
 RUN cd ${ENV_PREFIX} && \
-    git clone --recurse-submodules https://github.com/input-output-hk/vit-servicing-station
+    git clone --recurse-submodules https://github.com/input-output-hk/vit-servicing-station && \
+	cd vit-servicing-station && \
+	git checkout challenge-api-tests
 	
  RUN cd ${ENV_PREFIX} && \
-    git clone --recurse-submodules https://github.com/input-output-hk/vit-testing
+    git clone --recurse-submodules https://github.com/input-output-hk/vit-testing &&\
+	cd vit-testing && \
+	git checkout challenge
 
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-servicing-station && \
     git submodule update --init --recursive && \
-    ~/.cargo/bin/cargo build --release && \
+    ~/.cargo/bin/cargo build --all --release && \
     ~/.cargo/bin/cargo install --locked --force --path vit-servicing-station-cli && \
     ~/.cargo/bin/cargo install --locked --force --path vit-servicing-station-server
     
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/jormungandr && \
-    git submodule update --init --recursive && \
-    ~/.cargo/bin/cargo build --release && \
-    ~/.cargo/bin/cargo install --locked --path jormungandr && \
-    ~/.cargo/bin/cargo install --locked --path jcli
+    ~/.cargo/bin/cargo build --all --release && \
+    cp ${ENV_PREFIX}/jormungandr/target/release/jormungandr ${ENV_PREFIX}/jormungandr/target/release/jcli ~/.cargo/bin
 
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-testing && \
-    git submodule update --init --recursive && \
     ~/.cargo/bin/cargo build --release && \
     ~/.cargo/bin/cargo install --locked --path vitup && \
     ~/.cargo/bin/cargo install --locked --path iapyx

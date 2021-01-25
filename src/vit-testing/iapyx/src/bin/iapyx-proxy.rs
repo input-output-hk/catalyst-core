@@ -9,12 +9,12 @@ async fn main() {
 
     let root = warp::path!("api" / "v0" / ..);
 
-    let proposals = warp::path!("proposals").and(reverse_proxy_filter(
+    let proposals = warp::path!("proposals" / ..).and(reverse_proxy_filter(
         "".to_string(),
         server_stub.http_vit_address(),
     ));
-    
-    let challenges = warp::path!("challenges"/ .. ).and(reverse_proxy_filter(
+
+    let challenges = warp::path!("challenges" / ..).and(reverse_proxy_filter(
         "".to_string(),
         server_stub.http_vit_address(),
     ));

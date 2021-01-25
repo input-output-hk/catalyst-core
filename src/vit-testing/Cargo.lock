@@ -2222,8 +2222,8 @@ dependencies = [
  "rand 0.7.3",
  "rand_chacha 0.2.2",
  "thiserror",
- "vit-servicing-station-lib 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
- "vit-servicing-station-tests 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
+ "vit-servicing-station-lib",
+ "vit-servicing-station-tests",
  "vitup",
 ]
 
@@ -2269,7 +2269,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-lib"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ab08fb02f905fd448ced9fe9d5b6d3dd276dbe72"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit#fb6cd6cb45383ee089a9cfd69d212367fc902ef9"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2297,7 +2297,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ab08fb02f905fd448ced9fe9d5b6d3dd276dbe72"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit#fb6cd6cb45383ee089a9cfd69d212367fc902ef9"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2332,13 +2332,14 @@ dependencies = [
  "slog",
  "structopt",
  "thiserror",
+ "tokio 0.2.24",
  "yaml-rust",
 ]
 
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#ab08fb02f905fd448ced9fe9d5b6d3dd276dbe72"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit#fb6cd6cb45383ee089a9cfd69d212367fc902ef9"
 dependencies = [
  "assert_fs",
  "bardecoder",
@@ -5129,34 +5130,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "vit-servicing-station-lib"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#c849eb7a117aae841d5603b62d96ba0aca466803"
-dependencies = [
- "async-graphql",
- "async-graphql-warp",
- "async-trait",
- "base64 0.12.3",
- "chrono",
- "diesel",
- "diesel_migrations",
- "dotenv",
- "itertools 0.9.0",
- "libsqlite3-sys",
- "log",
- "serde",
- "serde_json",
- "simplelog",
- "structopt",
- "thiserror",
- "tokio 0.2.24",
- "tracing",
- "tracing-futures",
- "tracing-subscriber",
- "warp 0.2.5",
-]
-
-[[package]]
 name = "vit-servicing-station-tests"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests#641dee2767f35111c3b90c121ac219086061261f"
@@ -5189,42 +5162,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio 0.2.24",
- "vit-servicing-station-lib 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests)",
-]
-
-[[package]]
-name = "vit-servicing-station-tests"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#c849eb7a117aae841d5603b62d96ba0aca466803"
-dependencies = [
- "askama",
- "askama_shared",
- "assert_cmd",
- "assert_fs",
- "base64 0.12.3",
- "cfg-if 0.1.10",
- "chain-addr",
- "chain-crypto",
- "chain-impl-mockchain",
- "chrono",
- "diesel",
- "diesel_migrations",
- "fake",
- "hyper 0.13.9",
- "jortestkit",
- "lazy_static",
- "libsqlite3-sys",
- "predicates",
- "rand 0.7.3",
- "rand_core 0.5.1",
- "reqwest",
- "serde",
- "serde_json",
- "structopt",
- "tempfile",
- "thiserror",
- "tokio 0.2.24",
- "vit-servicing-station-lib 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
+ "vit-servicing-station-lib",
 ]
 
 [[package]]
@@ -5267,8 +5205,8 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio 0.2.24",
- "vit-servicing-station-lib 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests)",
- "vit-servicing-station-tests 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests)",
+ "vit-servicing-station-lib",
+ "vit-servicing-station-tests",
  "walkdir",
  "warp 0.2.5",
  "yaml-rust",

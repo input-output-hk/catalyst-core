@@ -282,7 +282,10 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn dump_qrs(&self, controller: &Controller, child: &ChildPath) -> Result<()> {
         let password = "1234";
-        let bytes: Vec<u8> = password.chars().map(|x| x.to_digit(10).unwrap() as u8).collect();
+        let bytes: Vec<u8> = password
+            .chars()
+            .map(|x| x.to_digit(10).unwrap() as u8)
+            .collect();
 
         let folder = child.child("qr-codes");
         std::fs::create_dir_all(folder.path())?;

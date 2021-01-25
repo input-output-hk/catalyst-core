@@ -129,6 +129,18 @@ jobs:
             ~/.cargo/git/db
           key: cargo-deps-v1-${{ needs.cache_info.outputs.cargo-lock-hash }}
 
+      - name: Checkout jormungandr
+        uses: actions/checkout@master
+        with:
+          path: 'jormungandr'
+          name: input-output-hk/jormungandr
+
+      - name: Checkout vit-servicing-station
+        uses: actions/checkout@master
+        with: $GITHUB_WORKSPACE to place the repository
+          path: 'vit-servicing-station'
+          name: input-output-hk/vit-servicing-station
+         
       - name: Build iapyx
         uses: actions-rs/cargo@v1
         timeout-minutes: 30

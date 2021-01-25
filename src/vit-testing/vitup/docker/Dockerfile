@@ -44,7 +44,7 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
 RUN cd ${ENV_PREFIX} && \
     git clone --recurse-submodules https://github.com/input-output-hk/jormungandr && \
 	cd jormungandr && \
-	git checkout clean_up_jortestkit
+	git checkout master
 
 RUN cd ${ENV_PREFIX} && \
     git clone --recurse-submodules https://github.com/input-output-hk/vit-servicing-station && \

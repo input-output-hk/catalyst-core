@@ -231,7 +231,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
  "thiserror",
 ]
 
@@ -298,7 +298,7 @@ checksum = "25f9db3b38af870bf7e5cc649167533b493928e50744e2c30ae350230b414670"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -309,7 +309,7 @@ checksum = "a3548b8efc9f8e8a5a0a2808c5bd8451a9031b9e5b879a79590304ae928b0a70"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -326,7 +326,7 @@ checksum = "8d3a45e77e34375a7923b1e8febb049bb011f064714a8e17a1a616fef01da13d"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -531,9 +531,9 @@ dependencies = [
 
 [[package]]
 name = "bumpalo"
-version = "3.4.0"
+version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e8c087f005730276d1096a652e92a8bacee2e2472bcc9715a74d2bec38b5820"
+checksum = "f07aa6688c702439a1be0307b6a94dffe1168569e45b9500c1372bc580740d59"
 
 [[package]]
 name = "byte-tools"
@@ -933,16 +933,16 @@ dependencies = [
 
 [[package]]
 name = "criterion"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70daa7ceec6cf143990669a04c7df13391d55fb27bd4079d252fca774ba244d8"
+checksum = "ab327ed7354547cc2ef43cbe20ef68b988e70b4b593cbd66a2a61733123a3d23"
 dependencies = [
  "atty",
  "cast",
  "clap",
  "criterion-plot",
  "csv",
- "itertools 0.9.0",
+ "itertools 0.10.0",
  "lazy_static",
  "num-traits",
  "oorandom",
@@ -1054,7 +1054,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "10bcb9d7dcbf7002aaffbb53eac22906b64cdcc127971dcc387d8eb7c95d5560"
 dependencies = [
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -1086,7 +1086,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b35d34eb004bf2d33c093f1c55ee77829e8654644288d3b6afd8c2d99d23729"
 dependencies = [
  "proc-macro2 1.0.24",
- "syn 1.0.58",
+ "syn 1.0.60",
  "synstructure",
 ]
 
@@ -1111,7 +1111,7 @@ dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
  "strsim 0.9.3",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -1122,7 +1122,7 @@ checksum = "d9b5a2f4ac4969822c62224815d069952656cadc7084fdca9751e6d959189b72"
 dependencies = [
  "darling_core",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -1158,7 +1158,7 @@ checksum = "41cb0e6161ad61ed084a36ba71fbba9e3ac5aee3606fb607fe08da6acbcf3d8c"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -1204,7 +1204,7 @@ checksum = "45f5098f628d02a7a0f68ddba586fb61e80edec3bdc1be3b921f4ceec60858d3"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -1368,7 +1368,7 @@ checksum = "aa4da3c766cd7a0db8242e326e9e4e081edd567072893ed320008189715366a4"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
  "synstructure",
 ]
 
@@ -1598,7 +1598,7 @@ dependencies = [
  "proc-macro-hack",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -1783,7 +1783,7 @@ dependencies = [
  "quote 1.0.8",
  "serde",
  "serde_json",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -1795,7 +1795,7 @@ dependencies = [
  "failure",
  "graphql_client_codegen",
  "proc-macro2 1.0.24",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -1832,7 +1832,7 @@ dependencies = [
  "http",
  "indexmap",
  "slab",
- "tokio 1.0.2",
+ "tokio 1.1.0",
  "tokio-util 0.6.2",
  "tracing",
  "tracing-futures",
@@ -2016,7 +2016,7 @@ dependencies = [
  "itoa",
  "pin-project 1.0.4",
  "socket2",
- "tokio 1.0.2",
+ "tokio 1.1.0",
  "tower-service",
  "tracing",
  "want",
@@ -2032,9 +2032,9 @@ dependencies = [
  "futures-util",
  "hyper 0.13.9",
  "log",
- "rustls",
+ "rustls 0.18.1",
  "tokio 0.2.24",
- "tokio-rustls",
+ "tokio-rustls 0.14.1",
  "webpki",
 ]
 
@@ -2071,8 +2071,8 @@ dependencies = [
  "hex",
  "hyper 0.13.9",
  "image",
- "jormungandr-lib",
- "jormungandr-testing-utils",
+ "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
+ "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
  "jortestkit",
  "rand 0.7.3",
  "rand_core 0.5.1",
@@ -2120,7 +2120,7 @@ dependencies = [
  "memchr",
  "regex 1.4.3",
  "same-file",
- "thread_local 1.1.0",
+ "thread_local 1.1.2",
  "walkdir",
  "winapi-util",
 ]
@@ -2215,15 +2215,15 @@ dependencies = [
  "cfg-if 1.0.0",
  "chain-impl-mockchain",
  "iapyx",
- "jormungandr-lib",
+ "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit)",
  "jormungandr-scenario-tests",
- "jormungandr-testing-utils",
+ "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit)",
  "jortestkit",
  "rand 0.7.3",
  "rand_chacha 0.2.2",
  "thiserror",
- "vit-servicing-station-lib",
- "vit-servicing-station-tests",
+ "vit-servicing-station-lib 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests)",
+ "vit-servicing-station-tests 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests)",
  "vitup",
 ]
 
@@ -2261,6 +2261,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37d572918e350e82412fe766d24b15e6682fb2ed2bbe018280caa810397cb319"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2270,6 +2279,34 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 name = "jormungandr-lib"
 version = "0.10.0-alpha.2"
 source = "git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit#fb6cd6cb45383ee089a9cfd69d212367fc902ef9"
+dependencies = [
+ "base64 0.13.0",
+ "bech32",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "hex",
+ "humantime",
+ "parity-multiaddr",
+ "poldercast",
+ "rand 0.7.3",
+ "rand_chacha 0.2.2",
+ "rand_core 0.5.1",
+ "serde",
+ "thiserror",
+ "typed-bytes",
+ "warp 0.2.5",
+]
+
+[[package]]
+name = "jormungandr-lib"
+version = "0.10.0-alpha.2"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#4773ebb4c0381019c2e3d4d38a46e9b417f7546d"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2314,8 +2351,8 @@ dependencies = [
  "futures 0.3.12",
  "hex",
  "indicatif",
- "jormungandr-lib",
- "jormungandr-testing-utils",
+ "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit)",
+ "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit)",
  "jortestkit",
  "json",
  "lazy_static",
@@ -2363,7 +2400,68 @@ dependencies = [
  "hex",
  "humantime",
  "image",
- "jormungandr-lib",
+ "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit)",
+ "jortestkit",
+ "json",
+ "lazy_static",
+ "os_info 3.0.1",
+ "poldercast",
+ "prost",
+ "qrcodegen",
+ "rand 0.7.3",
+ "rand_chacha 0.2.2",
+ "rand_core 0.5.1",
+ "regex 1.4.3",
+ "reqwest",
+ "semver 0.11.0",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "slog",
+ "slog-async",
+ "slog-json",
+ "symmetric-cipher",
+ "sysinfo 0.15.9",
+ "tar",
+ "thiserror",
+ "tokio 0.2.24",
+ "tokio-codec",
+ "tonic",
+ "tonic-build",
+ "typed-bytes",
+ "url",
+ "zip",
+]
+
+[[package]]
+name = "jormungandr-testing-utils"
+version = "0.10.0-alpha.2"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#4773ebb4c0381019c2e3d4d38a46e9b417f7546d"
+dependencies = [
+ "assert_fs",
+ "bardecoder",
+ "base64 0.13.0",
+ "bech32",
+ "bytesize",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "custom_debug",
+ "flate2",
+ "fs_extra",
+ "futures 0.3.12",
+ "graphql_client",
+ "hex",
+ "humantime",
+ "image",
+ "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
  "jortestkit",
  "json",
  "lazy_static",
@@ -2436,19 +2534,18 @@ dependencies = [
 
 [[package]]
 name = "jpeg-decoder"
-version = "0.1.20"
+version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc797adac5f083b8ff0ca6f6294a999393d76e197c36488e2ef732c4715f6fa3"
+checksum = "d6187dc218616c3a222bae7b78938f5af5e7c27d9cbef4c30ebca709cd680bf8"
 dependencies = [
- "byteorder",
  "rayon",
 ]
 
 [[package]]
 name = "js-sys"
-version = "0.3.46"
+version = "0.3.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf3d7383929f7c9c7c2d0fa596f325832df98c3704f2c60553080f7127a58175"
+checksum = "5cfb73131c35423a367daf8cbd24100af0d077668c8c2943f0e7dd775fef0f65"
 dependencies = [
  "wasm-bindgen",
 ]
@@ -2602,7 +2699,7 @@ dependencies = [
  "migrations_internals",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -3070,7 +3167,7 @@ dependencies = [
  "pest_meta",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -3120,7 +3217,7 @@ checksum = "65ad2ae56b6abe3a1ee25f15ee605bacadb9a764edaba9c2bf4103800d4a1895"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -3131,7 +3228,7 @@ checksum = "caa25a6393f22ce819b0f50e0be89287292fda8d425be38ee0ca14c4931d9e71"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -3160,14 +3257,30 @@ checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
 
 [[package]]
 name = "plotters"
-version = "0.2.15"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d1685fbe7beba33de0330629da9d955ac75bd54f33d7b79f9a895590124f6bb"
+checksum = "45ca0ae5f169d0917a7c7f5a9c1a3d3d9598f18f529dd2b8373ed988efea307a"
 dependencies = [
- "js-sys",
  "num-traits",
+ "plotters-backend",
+ "plotters-svg",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "plotters-backend"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b07fffcddc1cb3a1de753caa4e4df03b79922ba43cf882acc1bdd7e8df9f4590"
+
+[[package]]
+name = "plotters-svg"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b38a02e23bd9604b842a812063aec4ef702b57989c37b655254bb61c471ad211"
+dependencies = [
+ "plotters-backend",
 ]
 
 [[package]]
@@ -3267,7 +3380,7 @@ dependencies = [
  "proc-macro-error-attr",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
  "version_check 0.9.2",
 ]
 
@@ -3350,7 +3463,7 @@ dependencies = [
  "itertools 0.8.2",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -3395,7 +3508,7 @@ checksum = "608c156fd8e97febc07dc9c2e2c80bf74cfc6ef26893eae3daf8bc2bc94a4b7f"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -3580,7 +3693,7 @@ dependencies = [
  "aho-corasick 0.7.15",
  "memchr",
  "regex-syntax 0.6.22",
- "thread_local 1.1.0",
+ "thread_local 1.1.2",
 ]
 
 [[package]]
@@ -3642,12 +3755,12 @@ dependencies = [
  "native-tls",
  "percent-encoding",
  "pin-project-lite 0.2.4",
- "rustls",
+ "rustls 0.18.1",
  "serde",
  "serde_json",
  "serde_urlencoded 0.7.0",
  "tokio 0.2.24",
- "tokio-rustls",
+ "tokio-rustls 0.14.1",
  "tokio-tls",
  "url",
  "wasm-bindgen",
@@ -3703,6 +3816,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d1126dcf58e93cee7d098dbda643b5f92ed724f1f6a63007c1116eed6700c81"
 dependencies = [
  "base64 0.12.3",
+ "log",
+ "ring",
+ "sct",
+ "webpki",
+]
+
+[[package]]
+name = "rustls"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "064fd21ff87c6e87ed4506e68beb42459caa4a0e2eb144932e6776768556980b"
+dependencies = [
+ "base64 0.13.0",
  "log",
  "ring",
  "sct",
@@ -3866,7 +3992,7 @@ checksum = "c84d3526699cd55261af4b941e4e725444df67aa4f9e6a3564f18030d12672df"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -4039,7 +4165,7 @@ dependencies = [
  "crossbeam-channel",
  "slog",
  "take_mut",
- "thread_local 1.1.0",
+ "thread_local 1.1.2",
 ]
 
 [[package]]
@@ -4127,7 +4253,7 @@ dependencies = [
  "proc-macro-error",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -4145,7 +4271,7 @@ dependencies = [
  "heck",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -4177,9 +4303,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.58"
+version = "1.0.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc60a3d73ea6594cd712d830cc1f0390fd71542d8c8cd24e70cc54cdfd5e05d5"
+checksum = "c700597eca8a5a762beb35753ef6b94df201c81cca676604f547495a0d7f0081"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
@@ -4194,7 +4320,7 @@ checksum = "b834f2d66f734cb897113e34aaff2f1ab4719ca946f9a7358dba8f8064148701"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
  "unicode-xid 0.2.1",
 ]
 
@@ -4238,13 +4364,12 @@ checksum = "f764005d11ee5f36500a149ace24e00e3da98b0158b3e2d53a7495660d3f4d60"
 
 [[package]]
 name = "tar"
-version = "0.4.30"
+version = "0.4.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "489997b7557e9a43e192c527face4feacc78bfbe6eed67fd55c4c9e381cba290"
+checksum = "0313546c01d59e29be4f09687bcb4fb6690cec931cc3607b6aec7a0e417f4cc6"
 dependencies = [
  "filetime",
  "libc",
- "redox_syscall 0.1.57",
  "xattr",
 ]
 
@@ -4316,7 +4441,7 @@ checksum = "9be73a2caec27583d0046ef3796c3794f868a5bc813db689eed00c7631275cd1"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -4330,11 +4455,11 @@ dependencies = [
 
 [[package]]
 name = "thread_local"
-version = "1.1.0"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb9bc092d0d51e76b2b19d9d85534ffc9ec2db959a2523cdae0697e2972cd447"
+checksum = "d8208a331e1cb318dd5bd76951d2b8fc48ca38a69f5f4e4af1b6a9f8c6236915"
 dependencies = [
- "lazy_static",
+ "once_cell",
 ]
 
 [[package]]
@@ -4403,22 +4528,26 @@ dependencies = [
  "pin-project-lite 0.1.11",
  "signal-hook-registry",
  "slab",
- "tokio-macros",
+ "tokio-macros 0.2.6",
  "winapi 0.3.9",
 ]
 
 [[package]]
 name = "tokio"
-version = "1.0.2"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ca04cec6ff2474c638057b65798f60ac183e5e79d3448bb7163d36a39cff6ec"
+checksum = "8efab2086f17abcddb8f756117665c958feee6b2e39974c2f1600592ab3a4195"
 dependencies = [
  "autocfg",
  "bytes 1.0.1",
  "libc",
  "memchr",
  "mio 0.7.7",
+ "once_cell",
  "pin-project-lite 0.2.4",
+ "signal-hook-registry",
+ "tokio-macros 1.0.0",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -4451,7 +4580,18 @@ checksum = "e44da00bfc73a25f814cd8d7e57a68a5c31b74b3152a0a1d1f590c97ed06265a"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42517d2975ca3114b22a16192634e8241dc5cc1f130be194645970cc1c371494"
+dependencies = [
+ "proc-macro2 1.0.24",
+ "quote 1.0.8",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -4461,8 +4601,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e12831b255bcfa39dc0436b01e19fea231a37db570686c06ee72c423479f889a"
 dependencies = [
  "futures-core",
- "rustls",
+ "rustls 0.18.1",
  "tokio 0.2.24",
+ "webpki",
+]
+
+[[package]]
+name = "tokio-rustls"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc6844de72e57df1980054b38be3a9f4702aba4858be64dd700181a8a6d0e1b6"
+dependencies = [
+ "rustls 0.19.0",
+ "tokio 1.1.0",
  "webpki",
 ]
 
@@ -4474,7 +4625,7 @@ checksum = "76066865172052eb8796c686f0b441a93df8b08d40a950b062ffb9a426f00edd"
 dependencies = [
  "futures-core",
  "pin-project-lite 0.2.4",
- "tokio 1.0.2",
+ "tokio 1.1.0",
 ]
 
 [[package]]
@@ -4509,7 +4660,7 @@ dependencies = [
  "futures-util",
  "log",
  "pin-project 1.0.4",
- "tokio 1.0.2",
+ "tokio 1.1.0",
  "tungstenite 0.12.0",
 ]
 
@@ -4539,7 +4690,7 @@ dependencies = [
  "futures-sink",
  "log",
  "pin-project-lite 0.2.4",
- "tokio 1.0.2",
+ "tokio 1.1.0",
  "tokio-stream",
 ]
 
@@ -4600,7 +4751,7 @@ dependencies = [
  "proc-macro2 1.0.24",
  "prost-build",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -4753,9 +4904,9 @@ dependencies = [
 
 [[package]]
 name = "tower-service"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e987b6bf443f4b5b3b6f38704195592cca41c5bb7aedd3c3693c7081f8289860"
+checksum = "360dfd1d6d30e05fda32ace2c8c70e9c0a9da713275777f5a4dbb8a1893930c6"
 
 [[package]]
 name = "tower-timeout"
@@ -4802,7 +4953,7 @@ checksum = "80e0ccfc3378da0cce270c946b676a376943f5cd16aeba64568e7939806f4ada"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
 ]
 
 [[package]]
@@ -4860,7 +5011,7 @@ dependencies = [
  "serde_json",
  "sharded-slab",
  "smallvec",
- "thread_local 1.1.0",
+ "thread_local 1.1.2",
  "tracing",
  "tracing-core",
  "tracing-log",
@@ -5130,6 +5281,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "vit-servicing-station-lib"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#9e2442b7dc84881b0f443afe516d48c06f916f85"
+dependencies = [
+ "async-graphql",
+ "async-graphql-warp",
+ "async-trait",
+ "base64 0.12.3",
+ "chrono",
+ "diesel",
+ "diesel_migrations",
+ "dotenv",
+ "itertools 0.9.0",
+ "libsqlite3-sys",
+ "log",
+ "serde",
+ "serde_json",
+ "simplelog",
+ "structopt",
+ "thiserror",
+ "tokio 1.1.0",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
+ "warp 0.3.0",
+]
+
+[[package]]
 name = "vit-servicing-station-tests"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests#641dee2767f35111c3b90c121ac219086061261f"
@@ -5162,7 +5341,42 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio 0.2.24",
- "vit-servicing-station-lib",
+ "vit-servicing-station-lib 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=challenge-api-tests)",
+]
+
+[[package]]
+name = "vit-servicing-station-tests"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#9e2442b7dc84881b0f443afe516d48c06f916f85"
+dependencies = [
+ "askama",
+ "askama_shared",
+ "assert_cmd",
+ "assert_fs",
+ "base64 0.12.3",
+ "cfg-if 0.1.10",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chrono",
+ "diesel",
+ "diesel_migrations",
+ "fake",
+ "hyper 0.14.2",
+ "jortestkit",
+ "lazy_static",
+ "libsqlite3-sys",
+ "predicates",
+ "rand 0.7.3",
+ "rand_core 0.5.1",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "structopt",
+ "tempfile",
+ "thiserror",
+ "tokio 1.1.0",
+ "vit-servicing-station-lib 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
 ]
 
 [[package]]
@@ -5187,9 +5401,9 @@ dependencies = [
  "hex",
  "iapyx",
  "indicatif",
- "jormungandr-lib",
+ "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit)",
  "jormungandr-scenario-tests",
- "jormungandr-testing-utils",
+ "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=clean_up_jortestkit)",
  "jortestkit",
  "json",
  "lazy_static",
@@ -5205,8 +5419,8 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio 0.2.24",
- "vit-servicing-station-lib",
- "vit-servicing-station-tests",
+ "vit-servicing-station-lib 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
+ "vit-servicing-station-tests 0.1.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
  "walkdir",
  "warp 0.2.5",
  "yaml-rust",
@@ -5317,7 +5531,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded 0.6.1",
  "tokio 0.2.24",
- "tokio-rustls",
+ "tokio-rustls 0.14.1",
  "tokio-tungstenite 0.11.0",
  "tower-service",
  "tracing",
@@ -5339,13 +5553,15 @@ dependencies = [
  "log",
  "mime",
  "mime_guess",
+ "multipart",
  "percent-encoding",
  "pin-project 1.0.4",
  "scoped-tls",
  "serde",
  "serde_json",
  "serde_urlencoded 0.7.0",
- "tokio 1.0.2",
+ "tokio 1.1.0",
+ "tokio-rustls 0.22.0",
  "tokio-stream",
  "tokio-tungstenite 0.13.0",
  "tokio-util 0.6.2",
@@ -5382,9 +5598,9 @@ checksum = "93c6c3420963c5c64bca373b25e77acb562081b9bb4dd5bb864187742186cea9"
 
 [[package]]
 name = "wasm-bindgen"
-version = "0.2.69"
+version = "0.2.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cd364751395ca0f68cafb17666eee36b63077fb5ecd972bbcd74c90c4bf736e"
+checksum = "55c0f7123de74f0dab9b7d00fd614e7b19349cd1e2f5252bbe9b1754b59433be"
 dependencies = [
  "cfg-if 1.0.0",
  "serde",
@@ -5394,24 +5610,24 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-backend"
-version = "0.2.69"
+version = "0.2.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1114f89ab1f4106e5b55e688b828c0ab0ea593a1ea7c094b141b14cbaaec2d62"
+checksum = "7bc45447f0d4573f3d65720f636bbcc3dd6ce920ed704670118650bcd47764c7"
 dependencies = [
  "bumpalo",
  "lazy_static",
  "log",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
  "wasm-bindgen-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-futures"
-version = "0.4.19"
+version = "0.4.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1fe9756085a84584ee9457a002b7cdfe0bfff169f45d2591d8be1345a6780e35"
+checksum = "3de431a2910c86679c34283a33f66f4e4abd7e0aec27b6669060148872aadf94"
 dependencies = [
  "cfg-if 1.0.0",
  "js-sys",
@@ -5421,9 +5637,9 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro"
-version = "0.2.69"
+version = "0.2.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a6ac8995ead1f084a8dea1e65f194d0973800c7f571f6edd70adf06ecf77084"
+checksum = "3b8853882eef39593ad4174dd26fc9865a64e84026d223f63bb2c42affcbba2c"
 dependencies = [
  "quote 1.0.8",
  "wasm-bindgen-macro-support",
@@ -5431,28 +5647,28 @@ dependencies = [
 
 [[package]]
 name = "wasm-bindgen-macro-support"
-version = "0.2.69"
+version = "0.2.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5a48c72f299d80557c7c62e37e7225369ecc0c963964059509fbafe917c7549"
+checksum = "4133b5e7f2a531fa413b3a1695e925038a05a71cf67e87dafa295cb645a01385"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-shared"
-version = "0.2.69"
+version = "0.2.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e7811dd7f9398f14cc76efd356f98f03aa30419dea46aa810d71e819fc97158"
+checksum = "dd4945e4943ae02d15c13962b38a5b1e81eadd4b71214eee75af64a4d6a4fd64"
 
 [[package]]
 name = "web-sys"
-version = "0.3.46"
+version = "0.3.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "222b1ef9334f92a21d3fb53dc3fd80f30836959a90f9274a626d7e06315ba3c3"
+checksum = "c40dc691fc48003eba817c38da7113c15698142da971298003cac3ef175680b3"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
@@ -5589,7 +5805,7 @@ checksum = "c3f369ddb18862aba61aa49bf31e74d29f0f162dec753063200e1dc084345d16"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
- "syn 1.0.58",
+ "syn 1.0.60",
  "synstructure",
 ]
 

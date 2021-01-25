@@ -13,11 +13,10 @@ We use [`diesel`](http://diesel.rs/) for database (`sqlite3`) integration. Pleas
 
 Diesel generates rust code based on a *SQL* migration script (`/migrations/*/up.sql`) when running the migration with `diesel_cli`.
 Diesel code generation is configured in the `diesel.toml` file. Right now it just contains the path on where the rust code should be generated.
+Currently we use only one migration and make changes to it as needed. This is due to the fact that for each fund we spin up a new servicing station instance.
 
 Another file to look at is the `.env` file. This file holds the environment variables used by this project sql configuration.
 `diesel` uses a `DATABASE_URL` variable to know where should he generate the database file. 
-
-
 
 ### Server settings
 
@@ -130,4 +129,3 @@ This enables the command to be piped from another command, for example:
 ```bash
 ./vit-servicing-station-cli api-token generate --size 10 --n 10 | ./vit-servicing-station-cli api-token add --db-url ../../db/vit_station_new.db
 ```
-

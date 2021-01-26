@@ -434,8 +434,8 @@ mod tests {
         let second_fragment_id = TestGen::hash();
         let first_address_data = AddressData::utxo(Discrimination::Test).make_output(Value(100));
         let second_address_data = AddressData::utxo(Discrimination::Test).make_output(Value(100));
-        let first_index = 0 as u8;
-        let second_index = 1 as u8;
+        let first_index = 0;
+        let second_index = 1;
 
         ledger = ledger
             .add(

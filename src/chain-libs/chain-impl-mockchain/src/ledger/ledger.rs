@@ -2237,7 +2237,7 @@ mod tests {
         ) -> utxo::Entry<'a, Address> {
             utxo::Entry {
                 fragment_id: self.transaction_id(),
-                output_index: 0 as u8,
+                output_index: 0,
                 output,
             }
         }

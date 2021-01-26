@@ -85,21 +85,6 @@ impl GroupElement {
         }
         sum
     }
-
-    pub fn table(table_size: usize) -> Vec<Self> {
-        let mut table = Vec::with_capacity(table_size);
-
-        let gen = GroupElement::generator();
-        let mut r = &gen * Scalar::one();
-
-        for _ in 0..table_size {
-            r.normalize();
-            let r2 = &r + &gen;
-            table.push(r);
-            r = r2;
-        }
-        table
-    }
 }
 
 impl Scalar {

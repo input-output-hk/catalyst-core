@@ -221,7 +221,6 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
 
 pub fn result(
     max_votes: u64,
-    table_size: usize,
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
 ) -> TallyResult {
@@ -238,51 +237,9 @@ pub fn result(
         r.normalize()
     }
 
-    let mut votes = Vec::new();
-    let mut votes_left = max_votes;
-
-    let table = gang::GroupElement::table(table_size);
-    for r in r_results {
-        let mut found = None;
-
-        if r == gang::GroupElement::zero() {
-            found = Some(0)
-        } else {
-            for (ith, table_elem) in table.iter().enumerate() {
-                if table_elem == &r {
-                    found = Some(ith as u64 + 1);
-                    break;
-                }
-            }
-
-            if found.is_none() {
-                let gen = gang::GroupElement::generator();
-                let mut e = &table[table_size - 1] + &gen;
-                let mut i = table_size as u64 + 1;
-                loop {
-                    if i > votes_left {
-                        break;
-                    }
-
-                    if e == r {
-                        found = Some(i);
-                        break;
-                    }
-                    e = &e + &gen;
-                    i += 1;
-                }
-            }
-        }
-
-        match found {
-            None => votes.push(None),
-            Some(votes_found) => {
-                votes_left -= votes_found;
-                votes.push(Some(votes_found))
-            }
-        }
+    TallyResult {
+        votes: gang::baby_step_giant_step(r_results, max_votes),
     }
-    TallyResult { votes }
 }
 
 #[cfg(test)]
@@ -328,7 +285,7 @@ mod tests {
         let shares = vec![tds1];
 
         println!("resulting");
-        let tr = result(max_votes, 5, &ts, &shares);
+        let tr = result(max_votes, &ts, &shares);
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
@@ -380,7 +337,7 @@ mod tests {
         let shares = vec![tds1, tds2, tds3];
 
         println!("resulting");
-        let tr = result(max_votes, 5, &ts, &shares);
+        let tr = result(max_votes, &ts, &shares);
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);

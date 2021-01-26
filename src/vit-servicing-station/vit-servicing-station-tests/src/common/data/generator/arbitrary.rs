@@ -227,7 +227,7 @@ impl ArbitraryGenerator {
             chain_vote_start_time: start.timestamp(),
             chain_vote_end_time: end.timestamp(),
             chain_committee_end_time: next.timestamp(),
-            chain_voteplan_payload: "public".to_string(), //Sentence(3..5).fake::<String>(),
+            chain_voteplan_payload: "public".to_string(),
             chain_vote_encryption_key: "".to_string(),
             fund_id,
         }
@@ -238,8 +238,8 @@ impl ArbitraryGenerator {
 
         Challenge {
             id: id.abs(),
-            title: "challenge title".to_string(),
-            description: "challenge description".to_string(),
+            title: CatchPhase().fake::<String>(),
+            description: Buzzword().fake::<String>(),
             rewards_total: 100500,
             fund_id,
         }

@@ -93,7 +93,14 @@ impl CsvConverter {
         challenges: Vec<Challenge>,
         path: P,
     ) -> Result<(), Error> {
-        let headers = vec!["id", "title", "description", "rewards_total", "fund_id"];
+        let headers = vec![
+            "id",
+            "title",
+            "description",
+            "rewards_total",
+            "fund_id",
+            "challenge_url",
+        ];
 
         let content: Vec<Vec<String>> = challenges.iter().map(|x| convert_challenge(x)).collect();
         self.build_file(headers, content, path)
@@ -181,5 +188,6 @@ fn convert_challenge(challenge: &Challenge) -> Vec<String> {
         challenge.description.clone(),
         challenge.rewards_total.to_string(),
         challenge.fund_id.to_string(),
+        challenge.challenge_url.clone(),
     ]
 }

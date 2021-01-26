@@ -19,7 +19,14 @@
         chainVoteplanPayload,
         chainVoteEncryptionKey,
         fundId,
-      }
+      },
+      challenges {
+        id,
+        title,
+        description,
+        rewardsTotal,
+        fundId,
+      },
     }
   }"
 }

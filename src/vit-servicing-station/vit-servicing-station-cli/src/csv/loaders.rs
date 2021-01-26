@@ -5,8 +5,8 @@ use serde::de::DeserializeOwned;
 use std::io;
 use structopt::StructOpt;
 use vit_servicing_station_lib::db::{
-    load_db_connection_pool, models::funds::Fund, models::proposals::Proposal,
-    models::voteplans::Voteplan,
+    load_db_connection_pool, models::challenges::Challenge, models::funds::Fund,
+    models::proposals::Proposal, models::voteplans::Voteplan,
 };
 
 #[derive(Debug, PartialEq, StructOpt)]
@@ -28,6 +28,10 @@ pub enum CSVDataCmd {
         /// Path to the csv containing proposals information
         #[structopt(long = "proposals")]
         proposals: String,
+
+        /// Path to the csv containing challenges information
+        #[structopt(long = "challenges")]
+        challenges: String,
     },
 }
 
@@ -62,6 +66,7 @@ impl CSVDataCmd {
         funds_path: &str,
         voteplans_path: &str,
         proposals_path: &str,
+        challenges_path: &str,
     ) -> io::Result<()> {
         db_file_exists(db_url)?;
         let funds = CSVDataCmd::load_from_csv::<Fund>(funds_path)?;
@@ -75,6 +80,7 @@ impl CSVDataCmd {
             ));
         }
         let mut voteplans = CSVDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;
+        let mut challenges = CSVDataCmd::load_from_csv::<Challenge>(challenges_path)?;
         let mut proposals: Vec<Proposal> =
             CSVDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?
                 .iter()
@@ -103,6 +109,11 @@ impl CSVDataCmd {
             proposal.fund_id = fund.id;
         }
 
+        // apply fund id to challenges
+        for challenge in challenges.iter_mut() {
+            challenge.fund_id = fund.id;
+        }
+
         vit_servicing_station_lib::db::queries::voteplans::batch_insert_voteplans(
             &voteplans, &db_conn,
         )
@@ -110,6 +121,12 @@ impl CSVDataCmd {
 
         vit_servicing_station_lib::db::queries::proposals::batch_insert_proposals(
             &proposals, &db_conn,
+        )
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+
+        vit_servicing_station_lib::db::queries::challenges::batch_insert_challenges(
+            &challenges,
+            &db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
@@ -121,9 +138,16 @@ impl CSVDataCmd {
         funds_path: &str,
         voteplans_path: &str,
         proposals_path: &str,
+        challenges_path: &str,
     ) -> io::Result<()> {
         let backup_file = backup_db_file(db_url)?;
-        if let Err(e) = Self::handle_load(db_url, funds_path, voteplans_path, proposals_path) {
+        if let Err(e) = Self::handle_load(
+            db_url,
+            funds_path,
+            voteplans_path,
+            proposals_path,
+            challenges_path,
+        ) {
             restore_db_file(backup_file, db_url)?;
             Err(e)
         } else {
@@ -142,7 +166,8 @@ impl ExecTask for CSVDataCmd {
                 funds,
                 voteplans,
                 proposals,
-            } => Self::handle_load_with_db_backup(db_url, funds, voteplans, proposals),
+                challenges,
+            } => Self::handle_load_with_db_backup(db_url, funds, voteplans, proposals, challenges),
         }
     }
 }

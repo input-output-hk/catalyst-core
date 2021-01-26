@@ -81,6 +81,8 @@ pub struct Proposal {
     pub chain_vote_encryption_key: String,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
+    #[serde(alias = "challengeId")]
+    pub challenge_id: i32,
 }
 
 impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
@@ -139,6 +141,8 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
         String,
         // 25 -> fund_id
         i32,
+        // 26 -> challenge_id
+        i32,
     );
 
     fn build(row: Self::Row) -> Self {
@@ -175,6 +179,7 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_voteplan_payload: row.23,
             chain_vote_encryption_key: row.24,
             fund_id: row.25,
+            challenge_id: row.26,
         }
     }
 }
@@ -203,6 +208,7 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::chain_proposal_index, i64>,
         diesel::dsl::Eq<proposals::chain_vote_options, String>,
         diesel::dsl::Eq<proposals::chain_voteplan_id, String>,
+        diesel::dsl::Eq<proposals::challenge_id, i32>,
     );
 
     fn values(self) -> Self::Values {
@@ -226,6 +232,7 @@ impl Insertable<proposals::table> for Proposal {
             proposals::chain_proposal_index.eq(self.chain_proposal_index),
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(self.chain_voteplan_id),
+            proposals::challenge_id.eq(self.challenge_id),
         )
     }
 }
@@ -275,6 +282,7 @@ pub mod test {
             chain_voteplan_payload: "none".to_string(),
             chain_vote_encryption_key: "none".to_string(),
             fund_id: 1,
+            challenge_id: 1,
         }
     }
 
@@ -303,6 +311,7 @@ pub mod test {
             proposals::chain_proposal_index.eq(proposal.chain_proposal_index),
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
+            proposals::challenge_id.eq(proposal.challenge_id.clone()),
         );
         diesel::insert_into(proposals::table)
             .values(values)

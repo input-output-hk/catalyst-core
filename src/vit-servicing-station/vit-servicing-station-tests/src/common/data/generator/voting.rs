@@ -2,7 +2,8 @@ use super::{ArbitraryGenerator, Snapshot};
 use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use vit_servicing_station_lib::db::models::{
-    funds::Fund, proposals::Proposal, vote_options::VoteOptions, voteplans::Voteplan,
+    challenges::Challenge, funds::Fund, proposals::Proposal, vote_options::VoteOptions,
+    voteplans::Voteplan,
 };
 
 use fake::{
@@ -102,6 +103,14 @@ impl ValidVotePlanGenerator {
             fund_id,
         };
 
+        let challenge = Challenge {
+            id: generator.id(),
+            title: "up for a challenge?".to_string(),
+            description: "hey hey hey it's awesome".to_string(),
+            rewards_total: 100500,
+            fund_id,
+        };
+
         let fund = Fund {
             id: fund_id,
             fund_name: self.parameters.vote_plan.alias(),
@@ -112,7 +121,8 @@ impl ValidVotePlanGenerator {
             fund_start_time: voting_start,
             fund_end_time: voting_tally_end,
             next_fund_start_time,
-            chain_vote_plans: vec![vote_plan.clone()]
+            chain_vote_plans: vec![vote_plan.clone()],
+            challenges: vec![challenge.clone()],
         };
 
         let mut proposals = vec![];
@@ -143,11 +153,18 @@ impl ValidVotePlanGenerator {
                 chain_voteplan_payload: vote_plan.chain_voteplan_payload.clone(),
                 chain_vote_encryption_key: vote_plan.chain_vote_encryption_key.clone(),
                 fund_id: fund.id,
+                challenge_id: fund.challenges.first().unwrap().id,
             };
 
             proposals.push(proposal);
         }
 
-        Snapshot::new(vec![fund], proposals, generator.tokens(), vec![vote_plan])
+        Snapshot::new(
+            vec![fund],
+            proposals,
+            vec![challenge],
+            generator.tokens(),
+            vec![vote_plan],
+        )
     }
 }

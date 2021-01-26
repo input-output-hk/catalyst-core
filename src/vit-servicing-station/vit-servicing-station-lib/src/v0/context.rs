@@ -36,11 +36,19 @@ pub fn new_shared_context(
 
 #[cfg(test)]
 pub mod test {
+    use rand::{distributions::Alphanumeric, thread_rng, Rng};
+
     use super::*;
     use crate::db;
 
     pub fn new_in_memmory_db_test_shared_context() -> SharedContext {
-        let pool = db::load_db_connection_pool("").unwrap();
+        let name: String = thread_rng()
+            .sample_iter(Alphanumeric)
+            .take(5)
+            .map(char::from)
+            .collect();
+        let db_url = format!("file:{}?mode=memory&cache=shared", name);
+        let pool = db::load_db_connection_pool(&db_url).unwrap();
         let block0: Vec<u8> = vec![1, 2, 3, 4, 5];
         Arc::new(RwLock::new(Context::new(pool, "", block0)))
     }

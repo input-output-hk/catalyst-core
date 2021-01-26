@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::{
-    api_tokens::APITokenData, funds::Fund, proposals::Proposal,
+    api_tokens::APITokenData, challenges::Challenge, funds::Fund, proposals::Proposal,
 };
 
 use crate::common::{
@@ -20,6 +20,7 @@ pub struct DbBuilder {
     tokens: Option<Vec<APITokenData>>,
     proposals: Option<Vec<Proposal>>,
     funds: Option<Vec<Fund>>,
+    challenges: Option<Vec<Challenge>>,
 }
 
 impl DbBuilder {
@@ -29,6 +30,7 @@ impl DbBuilder {
             tokens: None,
             proposals: None,
             funds: None,
+            challenges: None,
         }
     }
 
@@ -47,10 +49,16 @@ impl DbBuilder {
         self
     }
 
+    pub fn with_challenges(&mut self, challenges: Vec<Challenge>) -> &mut Self {
+        self.challenges = Some(challenges);
+        self
+    }
+
     pub fn with_snapshot(&mut self, snapshot: &Snapshot) -> &mut Self {
         self.with_proposals(snapshot.proposals());
         self.with_tokens(snapshot.tokens().values().cloned().collect());
         self.with_funds(snapshot.funds());
+        self.with_challenges(snapshot.challenges());
         self
     }
 

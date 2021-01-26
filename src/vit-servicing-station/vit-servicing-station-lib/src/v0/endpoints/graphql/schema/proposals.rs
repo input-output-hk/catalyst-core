@@ -130,4 +130,8 @@ impl Proposal {
     pub async fn fund_id(&self) -> i32 {
         self.fund_id
     }
+
+    pub async fn challenge_id(&self) -> i32 {
+        self.challenge_id
+    }
 }

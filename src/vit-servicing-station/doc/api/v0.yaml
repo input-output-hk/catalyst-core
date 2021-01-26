@@ -9,7 +9,7 @@ info:
 
 servers:
   - url: 'http://localhost'
-  
+
 paths:
   /api/v0/fund:
     get:
@@ -25,6 +25,12 @@ paths:
   /api/v0/fund/{id}:
     get:
       summary: Get fund by id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
       responses:
         200:
           description: Valid response
@@ -32,6 +38,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Fund"
+        404:
+          description: The requested fund was not found
 
   /api/v0/proposals:
     get:
@@ -48,6 +56,12 @@ paths:
   /api/v0/proposals/{id}:
     get:
       summary: Get proposal by id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
       responses:
         200:
           description: Valid response
@@ -55,6 +69,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Proposal"
+        404:
+          description: The requested proposal was not found
+
+  /api/v0/challenges:
+    get:
+      summary: Get all available challenges
+      responses:
+        200:
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Challenge"
+
+  /api/v0/challenges/{id}:
+    get:
+      summary: Get challenge by id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeWithProposals"
+        404:
+          description: The requested challenge was not found
+
 
 components:
   schemas:
@@ -84,6 +132,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VotePlan'
+        challenges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Challenge'
 
     VotePlan:
       properties:
@@ -175,3 +227,29 @@ components:
         fund_id:
           type: integer
           format: int32
+
+    Challenge:
+      properties:
+        id:
+          type: integer
+          format: int32
+        title:
+          type: string
+        description:
+          type: string
+        rewards_total:
+          type: integer
+          format: int64
+        fund_id:
+          type: integer
+          format: int32
+
+    ChallengeWithProposals:
+      allOf:
+        - $ref: '#/components/schemas/Challenge'
+        - type: object
+          properties:
+            proposals:
+              type: array
+              items:
+                $ref: '#/components/schemas/Proposal'

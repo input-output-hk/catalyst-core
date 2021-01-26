@@ -32,7 +32,8 @@
             chainVoteStartTime,
             chainVoteEndTime,
             chainCommitteeEndTime,
-            fundId
+            fundId,
+            challengeId,
         }
     }"
 }

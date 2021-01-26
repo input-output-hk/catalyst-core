@@ -1,7 +1,7 @@
 use crate::db;
 use crate::db::{
-    models::{funds::Fund, voteplans::Voteplan},
-    queries::voteplans as voteplans_queries,
+    models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
+    queries::{challenges as challenges_queries, voteplans as voteplans_queries},
 };
 use crate::utils::datetime::unix_timestamp_to_datetime;
 use async_graphql::Context;
@@ -60,6 +60,18 @@ impl Fund {
     ) -> async_graphql::FieldResult<Vec<Voteplan>> {
         let pool = ctx.data::<db::DBConnectionPool>().unwrap();
         voteplans_queries::query_voteplan_by_id(self.id, pool)
+            .await
+            .map_err(async_graphql::FieldError::from)
+    }
+
+    /// Fund challenges
+    pub async fn challenges(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::FieldResult<Vec<Challenge>> {
+        let pool = ctx.data::<db::DBConnectionPool>().unwrap();
+        println!("requesting challenges for fund id {}", self.id);
+        challenges_queries::query_challenges_by_fund_id(self.id, pool)
             .await
             .map_err(async_graphql::FieldError::from)
     }

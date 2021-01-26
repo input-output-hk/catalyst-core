@@ -2,7 +2,7 @@ use jortestkit::csv::CsvFileBuilder;
 use std::path::Path;
 use thiserror::Error;
 use vit_servicing_station_lib::{
-    db::models::{funds::Fund, proposals::Proposal, voteplans::Voteplan},
+    db::models::{challenges::Challenge, funds::Fund, proposals::Proposal, voteplans::Voteplan},
     utils::datetime::unix_timestamp_to_datetime,
 };
 
@@ -88,6 +88,17 @@ impl CsvConverter {
         self.build_file(headers, content, path)
     }
 
+    pub fn challenges<P: AsRef<Path>>(
+        &self,
+        challenges: Vec<Challenge>,
+        path: P,
+    ) -> Result<(), Error> {
+        let headers = vec!["id", "title", "description", "rewards_total", "fund_id"];
+
+        let content: Vec<Vec<String>> = challenges.iter().map(|x| convert_challenge(x)).collect();
+        self.build_file(headers, content, path)
+    }
+
     fn build_file<P: AsRef<Path>>(
         &self,
         headers: Vec<&str>,
@@ -160,5 +171,15 @@ fn convert_voteplan(voteplan: &Voteplan) -> Vec<String> {
         voteplan.chain_voteplan_payload.to_string(),
         voteplan.chain_vote_encryption_key.to_string(),
         voteplan.fund_id.to_string(),
+    ]
+}
+
+fn convert_challenge(challenge: &Challenge) -> Vec<String> {
+    vec![
+        challenge.id.to_string(),
+        challenge.title.clone(),
+        challenge.description.clone(),
+        challenge.rewards_total.to_string(),
+        challenge.fund_id.to_string(),
     ]
 }

@@ -29,6 +29,11 @@ impl LoadCsvCommand {
         self
     }
 
+    pub fn challenges<P: AsRef<Path>>(mut self, challenges: P) -> Self {
+        self.command.arg("--challenges").arg(challenges.as_ref());
+        self
+    }
+
     pub fn build(self) -> Command {
         self.command
     }

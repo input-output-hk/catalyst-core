@@ -1,4 +1,8 @@
-use crate::db::{models::voteplans::Voteplan, schema::funds, DB};
+use crate::db::{
+    models::{challenges::Challenge, voteplans::Voteplan},
+    schema::funds,
+    DB,
+};
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
@@ -30,6 +34,8 @@ pub struct Fund {
     pub next_fund_start_time: i64,
     #[serde(alias = "chainVotePlans", default = "Vec::new")]
     pub chain_vote_plans: Vec<Voteplan>,
+    #[serde(default = "Vec::new")]
+    pub challenges: Vec<Challenge>,
 }
 
 impl Queryable<funds::SqlType, DB> for Fund {
@@ -66,6 +72,7 @@ impl Queryable<funds::SqlType, DB> for Fund {
             fund_end_time: row.7,
             next_fund_start_time: row.8,
             chain_vote_plans: vec![],
+            challenges: vec![],
         }
     }
 }
@@ -109,7 +116,10 @@ impl Insertable<funds::table> for Fund {
 #[cfg(test)]
 pub mod test {
     use crate::db::{
-        models::{funds::Fund, voteplans::test as voteplans_testing},
+        models::{
+            challenges::test as challenges_testing, funds::Fund,
+            voteplans::test as voteplans_testing,
+        },
         schema::funds,
         DBConnectionPool,
     };
@@ -130,6 +140,7 @@ pub mod test {
             fund_end_time: Utc::now().timestamp(),
             next_fund_start_time: Utc::now().timestamp(),
             chain_vote_plans: vec![voteplans_testing::get_test_voteplan_with_fund_id(FUND_ID)],
+            challenges: vec![challenges_testing::get_test_challenge_with_fund_id(FUND_ID)],
         }
     }
 
@@ -159,6 +170,10 @@ pub mod test {
 
         for voteplan in &fund.chain_vote_plans {
             voteplans_testing::populate_db_with_voteplan(voteplan, pool);
+        }
+
+        for challenge in &fund.challenges {
+            challenges_testing::populate_db_with_challenge(challenge, pool);
         }
     }
 }

@@ -33,6 +33,7 @@ chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.gi
 chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 fake = { version = "2.2", features=['chrono','http']}
+pretty_assertions = "0.6"
 
 [dependencies.reqwest]
 version = "0.10.6"
@@ -47,6 +48,3 @@ libsqlite3-sys =  { version = "0.9.3", features = ["bundled"] }
 [features]
 test-api = []
 non-functional = []
-
-
-

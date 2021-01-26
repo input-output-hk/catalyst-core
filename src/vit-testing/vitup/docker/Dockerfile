@@ -52,9 +52,7 @@ RUN cd ${ENV_PREFIX} && \
 	git checkout master
 	
  RUN cd ${ENV_PREFIX} && \
-    git clone --recurse-submodules https://github.com/input-output-hk/vit-testing &&\
-	cd vit-testing && \
-	git checkout master
+    git clone --recurse-submodules https://github.com/input-output-hk/vit-testing
 
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-servicing-station && \

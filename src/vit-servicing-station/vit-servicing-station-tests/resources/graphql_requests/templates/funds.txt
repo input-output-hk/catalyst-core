@@ -26,6 +26,7 @@
         description,
         rewardsTotal,
         fundId,
+        challengeUrl,
       },
     }
   }"

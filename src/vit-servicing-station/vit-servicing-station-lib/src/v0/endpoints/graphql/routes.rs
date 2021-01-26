@@ -77,7 +77,8 @@ mod test {
                     title
                     description
                     rewardsTotal
-                    fundId    
+                    fundId
+                    challengeUrl
                 },
             }
         }"#;
@@ -109,6 +110,7 @@ mod test {
                 description
                 rewardsTotal
                 fundId
+                challengeUrl
             },
         }
     }"#;
@@ -147,7 +149,7 @@ mod test {
                 chainVoteStartTime,
                 chainVoteEndTime,
                 chainCommitteeEndTime,
-                fundId
+                fundId,
                 challengeId
             }
         }"#;

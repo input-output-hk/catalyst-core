@@ -131,6 +131,7 @@ impl<'a> DbInserter<'a> {
                     challenges::description.eq(challenge.description.clone()),
                     challenges::rewards_total.eq(challenge.rewards_total),
                     challenges::fund_id.eq(challenge.fund_id),
+                    challenges::challenge_url.eq(challenge.challenge_url.clone()),
                 );
                 diesel::insert_or_ignore_into(challenges::table)
                     .values(values)

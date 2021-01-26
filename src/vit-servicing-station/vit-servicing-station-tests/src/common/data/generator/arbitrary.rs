@@ -242,6 +242,7 @@ impl ArbitraryGenerator {
             description: Buzzword().fake::<String>(),
             rewards_total: 100500,
             fund_id,
+            challenge_url: self.gen_http_address(),
         }
     }
 

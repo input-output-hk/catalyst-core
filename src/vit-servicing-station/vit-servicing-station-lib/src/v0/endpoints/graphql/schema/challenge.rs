@@ -26,4 +26,9 @@ impl Challenge {
     pub async fn fund_id(&self) -> i32 {
         self.fund_id
     }
+
+    /// Challenge information link
+    pub async fn challenge_url(&self) -> &str {
+        &self.challenge_url
+    }
 }

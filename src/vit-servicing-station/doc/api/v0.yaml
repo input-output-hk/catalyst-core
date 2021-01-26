@@ -243,6 +243,8 @@ components:
         fund_id:
           type: integer
           format: int32
+        challenge_url:
+          type: string
 
     ChallengeWithProposals:
       allOf:

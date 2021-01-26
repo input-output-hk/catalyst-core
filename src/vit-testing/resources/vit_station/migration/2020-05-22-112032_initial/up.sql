@@ -34,7 +34,8 @@ create table proposals
     chain_proposal_id BLOB NOT NULL,
     chain_proposal_index BIGINT NOT NULL,
     chain_vote_options VARCHAR NOT NULL,
-    chain_voteplan_id VARCHAR NOT NULL
+    chain_voteplan_id VARCHAR NOT NULL,
+    challenge_id INTEGER NOT NULL
 );
 
 create table voteplans
@@ -58,6 +59,16 @@ create table api_tokens
     expire_time BIGINT NOT NULL
 );
 
+create table challenges
+(
+    id INTEGER NOT NULL
+        primary key autoincrement,
+    title VARCHAR NOT NULL,
+    description VARCHAR NOT NULL,
+    rewards_total BIGINT NOT NULL,
+    fund_id INTEGER NOT NULL,
+    challenge_url VARCHAR NOT NULL
+);
 
 CREATE VIEW full_proposals_info
 AS

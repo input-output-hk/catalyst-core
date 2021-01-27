@@ -3,6 +3,7 @@ use super::p256k1::*;
 #[cfg(feature = "zerocaf")]
 use super::zerocaf::*;
 use lazy_static::*;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 
@@ -51,7 +52,7 @@ lazy_static! {
 // Solve the discrete log on ECC using baby step giant step algorithm
 pub fn baby_step_giant_step(points: Vec<GroupElement>, max_votes: u64) -> Vec<Option<u64>> {
     points
-        .into_iter()
+        .into_par_iter()
         .map(|mut p| {
             let mut a = 0;
             loop {

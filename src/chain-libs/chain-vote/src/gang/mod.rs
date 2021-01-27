@@ -1,4 +1,5 @@
-pub(crate) mod babystep;
+#[cfg(not(feature = "zerocaf"))]
+mod babystep;
 #[cfg(not(feature = "zerocaf"))]
 mod p256k1;
 #[cfg(feature = "zerocaf")]
@@ -8,7 +9,8 @@ mod zerocaf;
 pub use self::p256k1::*;
 #[cfg(feature = "zerocaf")]
 pub use self::zerocaf::*;
-pub use babystep::baby_step_giant_step;
+#[cfg(not(feature = "zerocaf"))]
+pub use babystep::{baby_step_giant_step, PrivateTallyTable};
 
 #[cfg(test)]
 mod tests {

@@ -219,10 +219,11 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     Some(elements)
 }
 
-pub fn result(
+pub fn tally_result(
     max_votes: u64,
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
+    table: &gang::PrivateTallyTable,
 ) -> TallyResult {
     let ris = (0..tally_state.r2s.len())
         .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
@@ -238,7 +239,7 @@ pub fn result(
     }
 
     TallyResult {
-        votes: gang::baby_step_giant_step(r_results, max_votes),
+        votes: gang::baby_step_giant_step(r_results, max_votes, table),
     }
 }
 
@@ -285,7 +286,8 @@ mod tests {
         let shares = vec![tds1];
 
         println!("resulting");
-        let tr = result(max_votes, &ts, &shares);
+        let table = gang::PrivateTallyTable::generate_with_balance(max_votes, 1);
+        let tr = tally_result(max_votes, &ts, &shares, &table);
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
@@ -337,7 +339,8 @@ mod tests {
         let shares = vec![tds1, tds2, tds3];
 
         println!("resulting");
-        let tr = result(max_votes, &ts, &shares);
+        let table = gang::PrivateTallyTable::generate_with_balance(max_votes, 1);
+        let tr = tally_result(max_votes, &ts, &shares, &table);
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);

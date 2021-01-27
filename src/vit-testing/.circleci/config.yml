@@ -103,7 +103,6 @@ commands:
       - run:
           name: install iapyx utils
           command: |
-            cd vit-testing
             cargo install --path iapyx
       - run:
           name: Run tests

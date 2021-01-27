@@ -51,7 +51,6 @@ jobs:
           )
           echo "$hash"
           echo "::set-output name=hash::$hash"
-
   update_deps:
     name: Update dependencies
     needs: cache_info
@@ -84,79 +83,9 @@ jobs:
           submodules: true
 
       - name: Fetch dependencies and update cargo registry
-        run: cargo fetch
+        run: cargo fetch --locked
 
-  tests:
-    name: Tests
-    needs: [cache_info, update_deps]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-        flags: ['', '--release']
-        toolchain: [stable]
-        include:
-          - os: ubuntu-latest
-            flags: ''
-            toolchain: nightly
-    env:
-      RUSTFLAGS: -D warnings
-      RUST_BACKTRACE: 1
-      CARGO_FLAGS: --verbose
-    steps:
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.toolchain }}
-          override: true
-          default: true
-          components: rustfmt
 
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Restore cargo registry index
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/registry/index
-          key: cargo-index-${{ needs.cache_info.outputs.crates-io-index-head }}
-
-      - name: Restore cargo dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry/cache
-            ~/.cargo/git/db
-          key: cargo-deps-v1-${{ needs.cache_info.outputs.cargo-lock-hash }}
-
-      - name: Build iapyx
-        uses: actions-rs/cargo@v1
-        timeout-minutes: 30
-        with:
-          command: build
-          args: -p iapyx ${{ env.CARGO_FLAGS }} ${{ matrix.flags }}
-
-      - name: Build vitup
-        uses: actions-rs/cargov1
-        timeout-minutes: 30
-        with:
-          command: build
-          args: -p vitup ${{ env.CARGO_FLAGS }} ${{ matrix.flags }}
-
-      - name: Build tests
-        uses: actions-rs/cargo@v1
-        timeout-minutes: 30
-        with:
-          command: build
-          args: --tests ${{ env.CARGO_FLAGS }} ${{ matrix.flags }}
-
-      - name: Run tests
-        uses: actions-rs/cargo@v1
-        timeout-minutes: 30
-        working-directory: ../vit-testing
-        with:
-          command: test
-          args: --tests ${{ env.CARGO_FLAGS }} ${{ matrix.flags }}
 
   lints:
     name: Lints

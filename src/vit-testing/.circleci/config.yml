@@ -94,8 +94,7 @@ commands:
       - run:
           name: checkout vit-station-service
           command: |
-            git clone 
-            https://github.com/input-output-hk/vit-servicing-station.git
+            git clone https://github.com/input-output-hk/vit-servicing-station.git
       - run:
           name: install jormungandr
           command: |

@@ -96,19 +96,14 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/vit-servicing-station.git
       - run:
-          name: install jormungandr
-          command: |
-            cd vit-servicing-station
-            cargo install --path vit-servicing-station-server
-      - run:
-          name: install iapyx
+          name: install vit-station-service
           command: |
             cd vit-servicing-station
             cargo install --path vit-servicing-station-server
       - run:
           name: install iapyx utils
           command: |
-            cd iapyx
+            cd vit-testing
             cargo install --path iapyx
       - run:
           name: Run tests

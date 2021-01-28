@@ -160,7 +160,7 @@ impl QuickStartCommandArgs {
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
             quick_setup.initials(initials);
         } else if let Some(initials_count) = self.initials {
-            quick_setup.initials_count(initials_count);
+            quick_setup.initials_count(initials_count, "1234");
         }
 
         let vote_timestamps = vec![

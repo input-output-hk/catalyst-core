@@ -254,6 +254,26 @@ pub fn tally_result(
     Ok(DecryptedTally { votes })
 }
 
+/// Verifies that the decrypted tally was correctly obtained from the given
+/// `TallyState` and `TallyDecryptShare` parts.
+///
+/// This can be used for quick online validation for the tallying
+/// performed offline.
+pub fn verify_tally(
+    tally_state: &TallyState,
+    decrypt_shares: &[TallyDecryptShare],
+    result: &DecryptedTally,
+) -> bool {
+    let r_results = result_vector(tally_state, decrypt_shares);
+    let gen = gang::GroupElement::generator();
+    for (i, &w) in result.votes.iter().enumerate() {
+        if &gen * gang::Scalar::from_u64(w) != r_results[i] {
+            return false;
+        }
+    }
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

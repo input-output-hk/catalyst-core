@@ -264,8 +264,6 @@ impl ProposalManager {
             )?;
         }
 
-        dbg!(&result);
-
         if self.check(*total_stake, governance, &result) {
             f(&self.action);
         }

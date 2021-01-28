@@ -396,3 +396,9 @@ impl EncryptingVoteKey {
             .map(Self)
     }
 }
+
+#[wasm_bindgen]
+pub fn symmetric_decrypt(password: &[u8], data: &[u8]) -> Result<Box<[u8]>, JsValue> {
+    symmetric_cipher::decrypt(password, data)
+        .map_err(|e| JsValue::from_str(&format!("decryption failed {}", e)))
+}

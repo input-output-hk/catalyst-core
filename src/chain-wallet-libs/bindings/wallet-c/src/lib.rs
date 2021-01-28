@@ -485,7 +485,7 @@ pub unsafe extern "C" fn iohk_jormungandr_vote_proposal_new_private(
     vote_plan_id: *const u8,
     index: u8,
     num_choices: u8,
-    vote_encryption_key: *const i8,
+    vote_encryption_key: *const std::os::raw::c_char,
     proposal_out: *mut ProposalPtr,
 ) -> ErrorPtr {
     let bech32_str = CStr::from_ptr(vote_encryption_key);

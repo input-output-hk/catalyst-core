@@ -1,48 +1,47 @@
-use super::p256k1::*;
+use super::*;
 use rayon::prelude::*;
 use std::collections::HashMap;
-use std::convert::TryFrom;
 
 // make steps asymmetric, in order to better use caching of baby steps.
 // balance of 2 means that baby steps are 2 time more than sqrt(MAX_VOTES_BSGS)
 const DEFAULT_BALANCE: u64 = 2;
 
 /// Holds precomputed baby steps for the baby-stap giant-step algorithm
-/// for solving discrete log on ECC and tally private votes
-pub struct PrivateTallyTable {
-    table: HashMap<[u8; 32], u64>,
+/// for solving discrete log on ECC
+pub struct BabyStepsTable {
+    table: HashMap<Option<[u8; Coordinate::BYTES_LEN]>, u64>,
     baby_step_size: u64,
     giant_step: GroupElement,
 }
 
-impl PrivateTallyTable {
+impl BabyStepsTable {
     /// Generate the table with asymmetrical steps,
     /// optimized for multiple reuse of the same table.
-    pub fn generate(max_voting_power: u64) -> Self {
-        Self::generate_with_balance(max_voting_power, DEFAULT_BALANCE)
+    pub fn generate(max_value: u64) -> Self {
+        Self::generate_with_balance(max_value, DEFAULT_BALANCE)
     }
 
     /// Generate the table with the given balance. Balance is used to make
     /// steps asymmetrical. If the table is reused multiple times with the same
-    /// max_voting_power it is recommended to set a balance > 1, since this will
+    /// max_value it is recommended to set a balance > 1, since this will
     /// allow to cache more results, at the expense of a higher memory footprint.
     ///
     /// For example, a balance of 2 means that the table will precompute 2 times more
     /// baby steps than the standard O(sqrt(n)), 1 means symmetrical steps.
-    pub fn generate_with_balance(max_voting_power: u64, balance: u64) -> Self {
-        let sqrt_step_size = (max_voting_power as f64).sqrt().ceil() as u64;
+    pub fn generate_with_balance(max_value: u64, balance: u64) -> Self {
+        let sqrt_step_size = (max_value as f64).sqrt().ceil() as u64;
         let baby_step_size = sqrt_step_size * balance;
         let mut bs = HashMap::new();
         let gen = GroupElement::generator();
         let mut e = GroupElement::zero();
-        // use negation trick and store only the x coordinate
+        // With ECC we can use the property that P and -P share a coordinate
         for i in 0..=baby_step_size / 2 {
-            bs.insert(<[u8; 32]>::try_from(&e.to_bytes()[1..33]).unwrap(), i);
+            bs.insert(e.compress().map(|(c, _sign)| c.to_bytes()), i);
             e = &e + &gen;
         }
         Self {
             table: bs,
-            baby_step_size: baby_step_size,
+            baby_step_size,
             giant_step: GroupElement::generator() * Scalar::from_u64(baby_step_size).negate(),
         }
     }
@@ -52,7 +51,7 @@ impl PrivateTallyTable {
 pub fn baby_step_giant_step(
     points: Vec<GroupElement>,
     max_votes: u64,
-    table: &PrivateTallyTable,
+    table: &BabyStepsTable,
 ) -> Vec<Option<u64>> {
     let baby_step_size = table.baby_step_size;
     let giant_step = &table.giant_step;
@@ -62,7 +61,7 @@ pub fn baby_step_giant_step(
         .map(|mut p| {
             let mut a = 0;
             loop {
-                if let Some(x) = table.get(&p.to_bytes()[1..33]) {
+                if let Some(x) = table.get(&p.compress().map(|(c, _sign)| c.to_bytes())) {
                     if Scalar::from_u64(*x) * GroupElement::generator() == p {
                         return Some(a * baby_step_size + x);
                     } else {
@@ -89,7 +88,7 @@ mod tests {
 
     #[test]
     fn bsgs() {
-        let table = PrivateTallyTable::generate_with_balance(25, 1);
+        let table = BabyStepsTable::generate_with_balance(25, 1);
         let p = GroupElement::generator();
         let votes = (0..100).collect::<Vec<_>>();
         let points = votes

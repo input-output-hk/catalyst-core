@@ -26,7 +26,7 @@ pub use committee::{
 };
 pub use encrypted::EncryptingVote;
 use gang::GroupElement;
-pub use gang::Scalar;
+pub use gang::{BabyStepsTable as PrivateTallyTable, Scalar};
 pub use gargamel::Ciphertext;
 use rand_core::{CryptoRng, RngCore};
 pub use unit_vector::UnitVector;
@@ -223,7 +223,7 @@ pub fn tally_result(
     max_votes: u64,
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
-    table: &gang::PrivateTallyTable,
+    table: &PrivateTallyTable,
 ) -> TallyResult {
     let ris = (0..tally_state.r2s.len())
         .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
@@ -286,7 +286,7 @@ mod tests {
         let shares = vec![tds1];
 
         println!("resulting");
-        let table = gang::PrivateTallyTable::generate_with_balance(max_votes, 1);
+        let table = crate::PrivateTallyTable::generate_with_balance(max_votes, 1);
         let tr = tally_result(max_votes, &ts, &shares, &table);
 
         println!("{:?}", tr);
@@ -339,7 +339,7 @@ mod tests {
         let shares = vec![tds1, tds2, tds3];
 
         println!("resulting");
-        let table = gang::PrivateTallyTable::generate_with_balance(max_votes, 1);
+        let table = crate::PrivateTallyTable::generate_with_balance(max_votes, 1);
         let tr = tally_result(max_votes, &ts, &shares, &table);
 
         println!("{:?}", tr);

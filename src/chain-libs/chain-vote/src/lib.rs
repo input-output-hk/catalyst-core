@@ -93,9 +93,13 @@ pub struct TallyState {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct TallyResult {
-    pub votes: Vec<Option<u64>>,
+pub struct DecryptedTally {
+    pub votes: Vec<u64>,
 }
+
+#[derive(Debug, thiserror::Error)]
+#[error("invalid data for private tally")]
+pub struct TallyError;
 
 impl EncryptedTally {
     /// Start a new tally with N different options
@@ -244,12 +248,10 @@ pub fn tally_result(
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
     table: &PrivateTallyTable,
-) -> TallyResult {
+) -> Result<DecryptedTally, TallyError> {
     let r_results = result_vector(tally_state, decrypt_shares);
-
-    TallyResult {
-        votes: gang::baby_step_giant_step(r_results, max_votes, table),
-    }
+    let votes = gang::baby_step_giant_step(r_results, max_votes, table).map_err(|_| TallyError)?;
+    Ok(DecryptedTally { votes })
 }
 
 #[cfg(test)]
@@ -295,13 +297,13 @@ mod tests {
         let shares = vec![tds1];
 
         println!("resulting");
-        let table = crate::PrivateTallyTable::generate_with_balance(max_votes, 1);
-        let tr = tally_result(max_votes, &ts, &shares, &table);
+        let table = PrivateTallyTable::generate_with_balance(max_votes, 1);
+        let tr = tally_result(max_votes, &ts, &shares, &table).unwrap();
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
-        assert_eq!(tr.votes[0], Some(10), "vote for option 0");
-        assert_eq!(tr.votes[1], Some(5), "vote for option 1");
+        assert_eq!(tr.votes[0], 10, "vote for option 0");
+        assert_eq!(tr.votes[1], 5, "vote for option 1");
     }
 
     #[test]
@@ -348,12 +350,12 @@ mod tests {
         let shares = vec![tds1, tds2, tds3];
 
         println!("resulting");
-        let table = crate::PrivateTallyTable::generate_with_balance(max_votes, 1);
-        let tr = tally_result(max_votes, &ts, &shares, &table);
+        let table = PrivateTallyTable::generate_with_balance(max_votes, 1);
+        let tr = tally_result(max_votes, &ts, &shares, &table).unwrap();
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
-        assert_eq!(tr.votes[0], Some(5), "vote for option 0");
-        assert_eq!(tr.votes[1], Some(3), "vote for option 1");
+        assert_eq!(tr.votes[0], 5, "vote for option 0");
+        assert_eq!(tr.votes[1], 3, "vote for option 1");
     }
 }

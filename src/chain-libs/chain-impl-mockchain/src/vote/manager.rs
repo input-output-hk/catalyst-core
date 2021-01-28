@@ -246,14 +246,10 @@ impl ProposalManager {
             &state,
             shares,
             &chain_vote::PrivateTallyTable::generate(total_stake.0),
-        );
+        )
+        .map_err(|_| TallyError::BadDecryptShares)?;
         let mut result = TallyResult::new(self.options.clone());
-        for (choice, weight) in private_result
-            .votes
-            .iter()
-            .map(|maybe_vote| maybe_vote.unwrap_or_default())
-            .enumerate()
-        {
+        for (choice, &weight) in private_result.votes.iter().enumerate() {
             result.add_vote(
                 Choice::new(choice.try_into().map_err(|_| {
                     TallyError::InvalidPrivateChoiceSize {

@@ -51,6 +51,8 @@ pub enum TallyError {
     TallyAlreadyDecrypted,
     #[error("the encrypted tally was not provided yet")]
     NoEncryptedTally,
+    #[error("bad decryption share data")]
+    BadDecryptShares,
 }
 
 impl Weight {

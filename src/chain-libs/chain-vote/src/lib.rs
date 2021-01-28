@@ -219,24 +219,33 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     Some(elements)
 }
 
+fn result_vector(
+    tally_state: &TallyState,
+    decrypt_shares: &[TallyDecryptShare],
+) -> Vec<gang::GroupElement> {
+    let ris = (0..tally_state.r2s.len())
+        .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
+
+    let mut results = tally_state
+        .r2s
+        .iter()
+        .zip(ris)
+        .map(|(r2, r1)| r2 - r1)
+        .collect::<Vec<_>>();
+    for r in results.iter_mut() {
+        r.normalize()
+    }
+
+    results
+}
+
 pub fn tally_result(
     max_votes: u64,
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
     table: &PrivateTallyTable,
 ) -> TallyResult {
-    let ris = (0..tally_state.r2s.len())
-        .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
-
-    let mut r_results = tally_state
-        .r2s
-        .iter()
-        .zip(ris)
-        .map(|(r2, r1)| r2 - r1)
-        .collect::<Vec<_>>();
-    for r in r_results.iter_mut() {
-        r.normalize()
-    }
+    let r_results = result_vector(tally_state, decrypt_shares);
 
     TallyResult {
         votes: gang::baby_step_giant_step(r_results, max_votes, table),

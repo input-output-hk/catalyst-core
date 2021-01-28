@@ -10,12 +10,12 @@ use crate::{
 };
 use chain_vote::EncryptedTally;
 use imhamt::Hamt;
-use std::{
-    collections::{hash_map::DefaultHasher, HashSet},
-    num::NonZeroU64,
-    sync::Arc,
-};
 use thiserror::Error;
+
+use std::collections::{hash_map::DefaultHasher, HashSet};
+use std::convert::TryFrom;
+use std::num::NonZeroU64;
+use std::sync::Arc;
 
 /// Manage the vote plan and the associated votes in the ledger
 ///
@@ -237,7 +237,6 @@ impl ProposalManager {
     where
         F: FnMut(&VoteAction),
     {
-        use std::convert::TryInto;
         let tally = self.tally.as_ref().ok_or(TallyError::NoEncryptedTally)?;
         let (encrypted_tally, total_stake) = tally.private_encrypted()?;
         let state = encrypted_tally.state();
@@ -250,14 +249,7 @@ impl ProposalManager {
         .map_err(|_| TallyError::BadDecryptShares)?;
         let mut result = TallyResult::new(self.options.clone());
         for (choice, &weight) in private_result.votes.iter().enumerate() {
-            result.add_vote(
-                Choice::new(choice.try_into().map_err(|_| {
-                    TallyError::InvalidPrivateChoiceSize {
-                        choice: choice as u64,
-                    }
-                })?),
-                weight,
-            )?;
+            result.add_vote(Choice::new(u8::try_from(choice).unwrap()), weight)?;
         }
 
         if self.check(*total_stake, governance, &result) {

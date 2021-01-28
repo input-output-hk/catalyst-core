@@ -8,6 +8,8 @@ use wasm_bindgen::JsCast as _;
 
 mod utils;
 
+const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
+
 // `set_panic_hook` function can be called at least once during initialization,
 // to get better error messages if the code ever panics.
 pub use utils::set_panic_hook;
@@ -394,5 +396,24 @@ impl EncryptingVoteKey {
         chain_vote::EncryptingVoteKey::from_bytes(&bytes)
             .ok_or_else(|| JsValue::from_str("invalid binary format"))
             .map(Self)
+    }
+
+    pub fn from_bech32(bech32_str: &str) -> Result<EncryptingVoteKey, JsValue> {
+        use bech32::FromBase32;
+
+        bech32::decode(bech32_str)
+            .map_err(|e| JsValue::from_str(&format!("invalid bech32 string {}", e)))
+            .and_then(|(hrp, raw_key)| {
+                if hrp != ENCRYPTION_VOTE_KEY_HRP {
+                    return Err(JsValue::from_str(&format!(
+                        "expected hrp to be {} instead found {}",
+                        ENCRYPTION_VOTE_KEY_HRP, hrp
+                    )));
+                }
+
+                let bytes = Vec::<u8>::from_base32(&raw_key).unwrap();
+
+                Self::from_bytes(&bytes)
+            })
     }
 }

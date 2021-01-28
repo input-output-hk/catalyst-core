@@ -146,7 +146,7 @@ async function proposalNewPrivate (successCallback, errorCallback, opts) {
         const id = m.VotePlanId.new_from_bytes(new Uint8Array(votePlanId));
 
         const options = m.Options.new_length(numChoices);
-        const key = m.EncryptingVoteKey.from_bytes(new Uint8Array(encryptionKey));
+        const key = m.EncryptingVoteKey.from_bech32(encryptionKey);
         const proposal = m.Proposal.new_private(id, index, options, key);
         successCallback(proposal.ptr.toString());
     } catch (err) {

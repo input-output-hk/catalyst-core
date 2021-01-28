@@ -57,6 +57,9 @@ pub enum ErrorCode {
 
     /// authentication failed
     SymmetricCipherInvalidPassword = 7,
+
+    /// invalid bech32 string
+    InvalidBech32Hrp = 8,
 }
 
 #[derive(Debug)]
@@ -86,6 +89,12 @@ pub enum ErrorKind {
 
     /// authentication failed
     SymmetricCipherInvalidPassword,
+
+    /// invalid bech32
+    InvalidBech32Hrp {
+        expected: &'static str,
+        found: String,
+    },
 }
 
 impl ErrorKind {
@@ -102,6 +111,7 @@ impl ErrorKind {
             Self::WalletTransactionBuilding => ErrorCode::WalletTransactionBuilding,
             Self::SymmetricCipherError => ErrorCode::SymmetricCipherError,
             Self::SymmetricCipherInvalidPassword => ErrorCode::SymmetricCipherInvalidPassword,
+            Self::InvalidBech32Hrp { .. } => ErrorCode::InvalidBech32Hrp,
         }
     }
 }
@@ -192,6 +202,13 @@ impl Error {
 
         Self {
             kind,
+            details: None,
+        }
+    }
+
+    pub fn invalid_bech32_hrp(expected: &'static str, found: String) -> Self {
+        Self {
+            kind: ErrorKind::InvalidBech32Hrp { expected, found },
             details: None,
         }
     }
@@ -337,6 +354,13 @@ impl Display for ErrorKind {
             ),
             Self::SymmetricCipherError => f.write_str("malformed encryption or decryption payload"),
             Self::SymmetricCipherInvalidPassword => f.write_str("invalid decryption password"),
+            Self::InvalidBech32Hrp { expected, found } => {
+                write!(
+                    f,
+                    "Expected bech32 string with hrp: '{}' instead the hrp is {}.",
+                    found, expected
+                )
+            }
         }
     }
 }

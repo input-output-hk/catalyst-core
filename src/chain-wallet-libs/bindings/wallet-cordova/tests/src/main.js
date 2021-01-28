@@ -17,7 +17,7 @@ PASSWORD[0] = 1;
 PASSWORD[1] = 2;
 PASSWORD[2] = 3;
 PASSWORD[3] = 4;
-const VOTE_ENCRYPTION_KEY = "04d3286e92e8b1b132aece9f98e38d352558d9b2c0c579db0e7a5db657913571dc04cb587124ac43d9ace007d1eacdfc68085e35217c9a193af83dd75f102e5f3f";
+const VOTE_ENCRYPTION_KEY = "p256k1_votepk1q30fm0td4pavzzellykgce2a6qv2e3gvexy7q0vj9aalumuc9ankvvpcxm5vmy09n650h73srhq30568023lsr9vcfnvnyatttsxwppept8fnt";
 
 let promisifyP = f => promisify(primitives, f)
 const restoreWallet = promisifyP(primitives.walletRestore);
@@ -165,7 +165,7 @@ const tests = [
         const index = 0;
         const numChoices = 3;
 
-        const proposalPtr = await proposalNewPrivate(votePlanId, index, numChoices, hexStringToBytes(VOTE_ENCRYPTION_KEY));
+        const proposalPtr = await proposalNewPrivate(votePlanId, index, numChoices, VOTE_ENCRYPTION_KEY);
         const walletPtr = await restoreWallet(YOROI_WALLET);
         const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
         await walletSetState(walletPtr, 1000000, 1);

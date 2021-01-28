@@ -227,8 +227,7 @@ public class WalletTest {
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
-        final String hexKey = "04fa1f7356482c094a11420cba35bd3ff76d184b8002f06cfcc9e06867d359eee24c2445958377ddc5e9f978178c01e3003d5c3322b77b6e251aa2699a35ba887e";
-        final byte[] encryptingKey = hexStringToByteArray(hexKey);
+        final String encryptingKey = "p256k1_votepk1q30fm0td4pavzzellykgce2a6qv2e3gvexy7q0vj9aalumuc9ankvvpcxm5vmy09n650h73srhq30568023lsr9vcfnvnyatttsxwppept8fnt";
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 

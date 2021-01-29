@@ -58,8 +58,9 @@ pub enum ErrorCode {
     /// authentication failed
     SymmetricCipherInvalidPassword = 7,
 
-    /// invalid bech32 string
-    InvalidBech32Hrp = 8,
+    /// vote encryption key is invalid
+    /// either because is not valid bech32, or because of the underlying bytes
+    InvalidVoteEncryptionKey = 8,
 }
 
 #[derive(Debug)]
@@ -90,11 +91,9 @@ pub enum ErrorKind {
     /// authentication failed
     SymmetricCipherInvalidPassword,
 
-    /// invalid bech32
-    InvalidBech32Hrp {
-        expected: &'static str,
-        found: String,
-    },
+    /// vote encryption key is invalid
+    /// either because is not valid bech32, or because of the underlying bytes
+    InvalidVoteEncryptionKey,
 }
 
 impl ErrorKind {
@@ -111,7 +110,7 @@ impl ErrorKind {
             Self::WalletTransactionBuilding => ErrorCode::WalletTransactionBuilding,
             Self::SymmetricCipherError => ErrorCode::SymmetricCipherError,
             Self::SymmetricCipherInvalidPassword => ErrorCode::SymmetricCipherInvalidPassword,
-            Self::InvalidBech32Hrp { .. } => ErrorCode::InvalidBech32Hrp,
+            Self::InvalidVoteEncryptionKey => ErrorCode::InvalidVoteEncryptionKey,
         }
     }
 }
@@ -206,9 +205,9 @@ impl Error {
         }
     }
 
-    pub fn invalid_bech32_hrp(expected: &'static str, found: String) -> Self {
+    pub fn invalid_vote_encryption_key() -> Self {
         Self {
-            kind: ErrorKind::InvalidBech32Hrp { expected, found },
+            kind: ErrorKind::InvalidVoteEncryptionKey,
             details: None,
         }
     }
@@ -354,13 +353,7 @@ impl Display for ErrorKind {
             ),
             Self::SymmetricCipherError => f.write_str("malformed encryption or decryption payload"),
             Self::SymmetricCipherInvalidPassword => f.write_str("invalid decryption password"),
-            Self::InvalidBech32Hrp { expected, found } => {
-                write!(
-                    f,
-                    "Expected bech32 string with hrp: '{}' instead the hrp is {}.",
-                    found, expected
-                )
-            }
+            Self::InvalidVoteEncryptionKey => f.write_str("invalid vote encryption key"),
         }
     }
 }

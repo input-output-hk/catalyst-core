@@ -6,7 +6,6 @@ use crate::{
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options as VoteOptions};
 use std::convert::TryFrom;
 use std::ffi::CStr;
-use thiserror::Error;
 pub use wallet::Settings;
 
 const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
@@ -19,13 +18,6 @@ const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
 // something else that could work is a new opaque type.
 pub struct ProposalPublic;
 pub struct ProposalPrivate<'a>(pub &'a CStr);
-
-#[derive(Error, Debug)]
-#[error("invalid binary format")]
-pub struct InvalidEncryptionKey;
-#[derive(Error, Debug)]
-#[error("bech32 string is not valid")]
-pub struct InvalidBech32;
 
 pub trait ToPayload {
     fn to_payload(self) -> Result<PayloadTypeConfig, Error>;
@@ -40,26 +32,25 @@ impl ToPayload for ProposalPublic {
 impl<'a> ToPayload for ProposalPrivate<'a> {
     fn to_payload(self) -> Result<PayloadTypeConfig, Error> {
         use bech32::FromBase32;
+
+        const INPUT_NAME: &str = "encrypting_vote_key";
+
         self.0
             .to_str()
-            .map_err(|_| Error::invalid_input("encrypting_vote_key"))
-            .and_then(|s| {
-                bech32::decode(s)
-                    .map_err(|_| Error::invalid_input("encrypting_vote_key").with(InvalidBech32))
-            })
+            .map_err(|_| Error::invalid_input(INPUT_NAME))
+            .and_then(|s| bech32::decode(s).map_err(|_| Error::invalid_vote_encryption_key()))
             .and_then(|(hrp, raw_key)| {
                 if hrp != ENCRYPTION_VOTE_KEY_HRP {
-                    return Err(Error::invalid_bech32_hrp(ENCRYPTION_VOTE_KEY_HRP, hrp));
+                    return Err(Error::invalid_vote_encryption_key());
                 }
 
                 let bytes = Vec::<u8>::from_base32(&raw_key).unwrap();
 
-                EncryptingVoteKey::from_bytes(&bytes).ok_or_else(|| {
-                    Error::invalid_input("encrypting_vote_key").with(InvalidEncryptionKey)
-                })
+                EncryptingVoteKey::from_bytes(&bytes)
+                    .ok_or_else(|| Error::invalid_vote_encryption_key())
             })
             .map(PayloadTypeConfig::Private)
-            .map_err(|_| Error::invalid_input("encrypting_vote_key").with(InvalidEncryptionKey))
+            .map_err(|_| Error::invalid_vote_encryption_key())
     }
 }
 

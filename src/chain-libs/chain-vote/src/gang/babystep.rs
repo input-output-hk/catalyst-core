@@ -8,6 +8,7 @@ const DEFAULT_BALANCE: u64 = 2;
 
 /// Holds precomputed baby steps for the baby-stap giant-step algorithm
 /// for solving discrete log on ECC
+#[derive(Debug, Clone)]
 pub struct BabyStepsTable {
     table: HashMap<Option<[u8; Coordinate::BYTES_LEN]>, u64>,
     baby_step_size: u64,
@@ -39,6 +40,8 @@ impl BabyStepsTable {
             bs.insert(e.compress().map(|(c, _sign)| c.to_bytes()), i);
             e = &e + &gen;
         }
+        assert!(!bs.is_empty());
+        assert!(baby_step_size > 0);
         Self {
             table: bs,
             baby_step_size,
@@ -85,9 +88,19 @@ pub fn baby_step_giant_step(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use smoke::{
+        generator::{self, BoxGenerator},
+        Generator,
+    };
 
     #[test]
-    fn bsgs() {
+    #[should_panic]
+    fn table_not_empty() {
+        let _ = BabyStepsTable::generate_with_balance(0, 1);
+    }
+
+    #[test]
+    fn quick() {
         let table = BabyStepsTable::generate_with_balance(25, 1);
         let p = GroupElement::generator();
         let votes = (0..100).collect::<Vec<_>>();
@@ -103,5 +116,55 @@ mod tests {
             .collect();
         let results = baby_step_giant_step(points, 100, &table).unwrap();
         assert_eq!(votes, results);
+    }
+
+    fn fe_vec_generator() -> BoxGenerator<[(GroupElement, u64); 64]> {
+        generator::Array64::new(generator::num::<u16>().map(|a| {
+            (
+                GroupElement::generator() * Scalar::from_u64(a as u64),
+                a as u64,
+            )
+        }))
+        .into_boxed()
+    }
+
+    fn table_generator_default() -> BoxGenerator<BabyStepsTable> {
+        generator::range::<u16>(1..u16::MAX)
+            .map(|a| BabyStepsTable::generate(a as u64))
+            .into_boxed()
+    }
+
+    fn table_generator_with_balance() -> BoxGenerator<BabyStepsTable> {
+        generator::range::<u16>(1..u16::MAX)
+            .and(generator::range::<u8>(1..u8::MAX))
+            .map(|(n, b)| BabyStepsTable::generate_with_balance(n as u64, b as u64))
+            .into_boxed()
+    }
+
+    #[test]
+    #[ignore]
+    fn bsgs_correctness() {
+        use smoke::{forall, property, run, Testable};
+        run(|ctx| {
+            forall(fe_vec_generator().and(table_generator_default()))
+                .ensure(|(points, table)| {
+                    let (points, ks): (Vec<_>, Vec<_>) = points.to_vec().into_iter().unzip();
+                    let b = property::equal(
+                        ks,
+                        baby_step_giant_step(points.to_vec(), u16::MAX as u64, &table).unwrap(),
+                    );
+                    b
+                })
+                .test(ctx);
+            forall(fe_vec_generator().and(table_generator_with_balance()))
+                .ensure(|(points, table)| {
+                    let (points, ks): (Vec<_>, Vec<_>) = points.to_vec().into_iter().unzip();
+                    property::equal(
+                        ks,
+                        baby_step_giant_step(points.to_vec(), u16::MAX as u64, &table).unwrap(),
+                    )
+                })
+                .test(ctx);
+        });
     }
 }

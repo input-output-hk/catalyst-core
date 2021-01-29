@@ -26,7 +26,7 @@ pub use committee::{
 };
 pub use encrypted::EncryptingVote;
 use gang::GroupElement;
-pub use gang::{BabyStepsTable as PrivateTallyTable, Scalar};
+pub use gang::{BabyStepsTable as TallyOptimizationTable, Scalar};
 pub use gargamel::Ciphertext;
 use rand_core::{CryptoRng, RngCore};
 pub use unit_vector::UnitVector;
@@ -92,8 +92,9 @@ pub struct TallyState {
     r2s: Vec<gang::GroupElement>,
 }
 
+/// Decrypted tally with votes indexed per option.
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct DecryptedTally {
+pub struct Tally {
     pub votes: Vec<u64>,
 }
 
@@ -243,35 +244,33 @@ fn result_vector(
     results
 }
 
-pub fn tally_result(
+pub fn tally(
     max_votes: u64,
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
-    table: &PrivateTallyTable,
-) -> Result<DecryptedTally, TallyError> {
+    table: &TallyOptimizationTable,
+) -> Result<Tally, TallyError> {
     let r_results = result_vector(tally_state, decrypt_shares);
     let votes = gang::baby_step_giant_step(r_results, max_votes, table).map_err(|_| TallyError)?;
-    Ok(DecryptedTally { votes })
+    Ok(Tally { votes })
 }
 
-/// Verifies that the decrypted tally was correctly obtained from the given
-/// `TallyState` and `TallyDecryptShare` parts.
-///
-/// This can be used for quick online validation for the tallying
-/// performed offline.
-pub fn verify_tally(
-    tally_state: &TallyState,
-    decrypt_shares: &[TallyDecryptShare],
-    result: &DecryptedTally,
-) -> bool {
-    let r_results = result_vector(tally_state, decrypt_shares);
-    let gen = gang::GroupElement::generator();
-    for (i, &w) in result.votes.iter().enumerate() {
-        if &gen * gang::Scalar::from_u64(w) != r_results[i] {
-            return false;
+impl Tally {
+    /// Verifies that the decrypted tally was correctly obtained from the given
+    /// `TallyState` and `TallyDecryptShare` parts.
+    ///
+    /// This can be used for quick online validation for the tallying
+    /// performed offline.
+    pub fn verify(&self, tally_state: &TallyState, decrypt_shares: &[TallyDecryptShare]) -> bool {
+        let r_results = result_vector(tally_state, decrypt_shares);
+        let gen = gang::GroupElement::generator();
+        for (i, &w) in self.votes.iter().enumerate() {
+            if &gen * gang::Scalar::from_u64(w) != r_results[i] {
+                return false;
+            }
         }
+        true
     }
-    true
 }
 
 #[cfg(test)]
@@ -317,8 +316,8 @@ mod tests {
         let shares = vec![tds1];
 
         println!("resulting");
-        let table = PrivateTallyTable::generate_with_balance(max_votes, 1);
-        let tr = tally_result(max_votes, &ts, &shares, &table).unwrap();
+        let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
+        let tr = crate::tally(max_votes, &ts, &shares, &table).unwrap();
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
@@ -326,7 +325,7 @@ mod tests {
         assert_eq!(tr.votes[1], 5, "vote for option 1");
 
         println!("verifying");
-        assert!(verify_tally(&ts, &shares, &tr));
+        assert!(tr.verify(&ts, &shares));
     }
 
     #[test]
@@ -373,8 +372,8 @@ mod tests {
         let shares = vec![tds1, tds2, tds3];
 
         println!("resulting");
-        let table = PrivateTallyTable::generate_with_balance(max_votes, 1);
-        let tr = tally_result(max_votes, &ts, &shares, &table).unwrap();
+        let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
+        let tr = crate::tally(max_votes, &ts, &shares, &table).unwrap();
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
@@ -382,6 +381,6 @@ mod tests {
         assert_eq!(tr.votes[1], 3, "vote for option 1");
 
         println!("verifying");
-        assert!(verify_tally(&ts, &shares, &tr));
+        assert!(tr.verify(&ts, &shares));
     }
 }

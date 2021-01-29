@@ -324,6 +324,9 @@ mod tests {
         assert_eq!(tr.votes.len(), vote_options);
         assert_eq!(tr.votes[0], 10, "vote for option 0");
         assert_eq!(tr.votes[1], 5, "vote for option 1");
+
+        println!("verifying");
+        assert!(verify_tally(&ts, &shares, &tr));
     }
 
     #[test]
@@ -377,5 +380,8 @@ mod tests {
         assert_eq!(tr.votes.len(), vote_options);
         assert_eq!(tr.votes[0], 5, "vote for option 0");
         assert_eq!(tr.votes[1], 3, "vote for option 1");
+
+        println!("verifying");
+        assert!(verify_tally(&ts, &shares, &tr));
     }
 }

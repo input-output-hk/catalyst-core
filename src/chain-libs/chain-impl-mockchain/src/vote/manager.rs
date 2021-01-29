@@ -244,7 +244,7 @@ impl ProposalManager {
             total_stake.0,
             &state,
             shares,
-            &chain_vote::TallyOptimizationTable::generate(total_stake.0),
+            &chain_vote::TallyOptimizationTable::generate_with_balance(total_stake.0, 1),
         )
         .map_err(|_| TallyError::BadDecryptShares)?;
         let mut result = TallyResult::new(self.options.clone());

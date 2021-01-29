@@ -26,7 +26,7 @@ pub use committee::{
 };
 pub use encrypted::EncryptingVote;
 use gang::GroupElement;
-pub use gang::Scalar;
+pub use gang::{BabyStepsTable as PrivateTallyTable, Scalar};
 pub use gargamel::Ciphertext;
 use rand_core::{CryptoRng, RngCore};
 pub use unit_vector::UnitVector;
@@ -219,11 +219,11 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     Some(elements)
 }
 
-pub fn result(
+pub fn tally_result(
     max_votes: u64,
-    table_size: usize,
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
+    table: &PrivateTallyTable,
 ) -> TallyResult {
     let ris = (0..tally_state.r2s.len())
         .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
@@ -238,51 +238,9 @@ pub fn result(
         r.normalize()
     }
 
-    let mut votes = Vec::new();
-    let mut votes_left = max_votes;
-
-    let table = gang::GroupElement::table(table_size);
-    for r in r_results {
-        let mut found = None;
-
-        if r == gang::GroupElement::zero() {
-            found = Some(0)
-        } else {
-            for (ith, table_elem) in table.iter().enumerate() {
-                if table_elem == &r {
-                    found = Some(ith as u64 + 1);
-                    break;
-                }
-            }
-
-            if found.is_none() {
-                let gen = gang::GroupElement::generator();
-                let mut e = &table[table_size - 1] + &gen;
-                let mut i = table_size as u64 + 1;
-                loop {
-                    if i > votes_left {
-                        break;
-                    }
-
-                    if e == r {
-                        found = Some(i);
-                        break;
-                    }
-                    e = &e + &gen;
-                    i += 1;
-                }
-            }
-        }
-
-        match found {
-            None => votes.push(None),
-            Some(votes_found) => {
-                votes_left -= votes_found;
-                votes.push(Some(votes_found))
-            }
-        }
+    TallyResult {
+        votes: gang::baby_step_giant_step(r_results, max_votes, table),
     }
-    TallyResult { votes }
 }
 
 #[cfg(test)]
@@ -328,7 +286,8 @@ mod tests {
         let shares = vec![tds1];
 
         println!("resulting");
-        let tr = result(max_votes, 5, &ts, &shares);
+        let table = crate::PrivateTallyTable::generate_with_balance(max_votes, 1);
+        let tr = tally_result(max_votes, &ts, &shares, &table);
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
@@ -380,7 +339,8 @@ mod tests {
         let shares = vec![tds1, tds2, tds3];
 
         println!("resulting");
-        let tr = result(max_votes, 5, &ts, &shares);
+        let table = crate::PrivateTallyTable::generate_with_balance(max_votes, 1);
+        let tr = tally_result(max_votes, &ts, &shares, &table);
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);

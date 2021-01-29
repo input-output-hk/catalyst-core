@@ -1,4 +1,5 @@
 use eccoxide::curve::sec2::p256k1::{FieldElement, Point, PointAffine, Scalar as IScalar};
+use eccoxide::curve::Sign as ISign;
 use rand_core::{CryptoRng, RngCore};
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
@@ -8,6 +9,12 @@ pub struct Scalar(IScalar);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GroupElement(Point);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Coordinate(FieldElement);
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Sign(ISign);
 
 #[allow(clippy::derive_hash_xor_eq)]
 impl Hash for GroupElement {
@@ -20,6 +27,14 @@ impl Hash for GroupElement {
 impl Hash for Scalar {
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write(&self.to_bytes())
+    }
+}
+
+impl Coordinate {
+    pub const BYTES_LEN: usize = FieldElement::SIZE_BYTES;
+
+    pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
+        self.0.to_bytes()
     }
 }
 
@@ -48,6 +63,13 @@ impl GroupElement {
 
     pub fn normalize(&mut self) {
         self.0.normalize()
+    }
+
+    pub(super) fn compress(&self) -> Option<(Coordinate, Sign)> {
+        self.0.to_affine().map(|p| {
+            let (x, sign) = p.compress();
+            (Coordinate(x.clone()), Sign(sign))
+        })
     }
 
     pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
@@ -84,21 +106,6 @@ impl GroupElement {
             sum = sum + v;
         }
         sum
-    }
-
-    pub fn table(table_size: usize) -> Vec<Self> {
-        let mut table = Vec::with_capacity(table_size);
-
-        let gen = GroupElement::generator();
-        let mut r = &gen * Scalar::one();
-
-        for _ in 0..table_size {
-            r.normalize();
-            let r2 = &r + &gen;
-            table.push(r);
-            r = r2;
-        }
-        table
     }
 }
 

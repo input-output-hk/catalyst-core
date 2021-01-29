@@ -3,7 +3,7 @@ version: 2.1
 executors:
   rust-stable:
     docker:
-      - image: inputoutput/rust:stable
+      - image: inputoutput/rust:latest
     working_directory: /home/circleci/build
 
 jobs:
@@ -94,22 +94,15 @@ commands:
       - run:
           name: checkout vit-station-service
           command: |
-            git clone 
-            https://github.com/input-output-hk/vit-servicing-station.git
+            git clone https://github.com/input-output-hk/vit-servicing-station.git
       - run:
-          name: install jormungandr
-          command: |
-            cd vit-servicing-station
-            cargo install --path vit-servicing-station-server
-      - run:
-          name: install iapyx
+          name: install vit-station-service
           command: |
             cd vit-servicing-station
             cargo install --path vit-servicing-station-server
       - run:
           name: install iapyx utils
           command: |
-            cd iapyx
             cargo install --path iapyx
       - run:
           name: Run tests

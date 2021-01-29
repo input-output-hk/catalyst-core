@@ -64,14 +64,37 @@ impl MultiController {
     ) -> Result<Self, MultiControllerError> {
         let backend = WalletBackend::new(wallet_backend_address.to_string(), backend_settings);
         let settings = backend.settings()?;
-        let wallets = qrs
-            .iter()
-            .map(|x| {
-                let img = image::open(x.as_ref()).unwrap();
-                let secret = KeyQrCode::decode(img, password).unwrap().leak_secret();
-                Wallet::recover_from_utxo(secret.as_ref().try_into().unwrap()).unwrap()
-            })
-            .collect();
+        let mut wallets = Vec::new();
+
+        for qr in qrs {
+            let img = match image::open(qr.as_ref()) {
+                Ok(img) => img,
+                Err(err) => {
+                    println!(
+                        "Cannot read qr from file: {:?}, due to {:?}",
+                        qr.as_ref(),
+                        err
+                    );
+                    continue;
+                }
+            };
+
+            let result = std::panic::catch_unwind(|| KeyQrCode::decode(img, password).unwrap());
+
+            let secret = match result {
+                Ok(secret) => secret,
+                Err(err) => {
+                    println!(
+                        "Cannot decode qr from file: {:?}, due to {:?}",
+                        qr.as_ref(),
+                        err
+                    );
+                    continue;
+                }
+            }
+            .leak_secret();
+            wallets.push(Wallet::recover_from_utxo(secret.as_ref().try_into().unwrap()).unwrap())
+        }
         Ok(Self {
             backend,
             wallets,

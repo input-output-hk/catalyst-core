@@ -1,6 +1,7 @@
 use super::{ArbitraryGenerator, Snapshot};
 use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
+use chrono::{DateTime, NaiveDateTime, SecondsFormat, Utc};
 use rand::{rngs::OsRng, RngCore};
 use vit_servicing_station_lib::db::models::{
     funds::Fund, proposals::Proposal, vote_options::VoteOptions, voteplans::Voteplan,
@@ -119,11 +120,14 @@ impl ValidVotePlanGenerator {
             .take(self.parameters.challenges_count)
             .collect();
 
+        let naive = NaiveDateTime::from_timestamp(voting_start, 0);
+        let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+
         let mut fund = Fund {
             id: fund_id,
             fund_name: self.parameters.vote_plan.alias(),
             fund_goal: "How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?".to_string(),
-            voting_power_info: format!(">{}", threshold),
+            voting_power_info: datetime.to_rfc3339_opts(SecondsFormat::Secs, true),
             voting_power_threshold: threshold,
             rewards_info: Sentence(3..5).fake::<String>(),
             fund_start_time: voting_start,

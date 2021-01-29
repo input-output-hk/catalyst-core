@@ -8,7 +8,7 @@ edition = "2018"
 rand_core = "0.5"
 rayon = "1.5"
 thiserror = "1.0"
-cryptoxide = "0.2"
+cryptoxide = "0.3"
 eccoxide = { version = "0.3", optional = true }
 zerocaf = { version = "0.2", optional = true }
 criterion = { version = "0.3", optional = true }

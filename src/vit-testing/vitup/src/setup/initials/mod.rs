@@ -64,15 +64,10 @@ impl Initials {
     }
 
     pub fn new_above_threshold(count: usize, pin: &str) -> Initials {
-        let initials: Vec<Initial> = std::iter::from_fn(|| {
-            Some(Initial::AboveThreshold {
-                above_threshold: count,
-                pin: pin.to_string(),
-            })
-        })
-        .take(count)
-        .collect();
-        Self(initials)
+        Self(vec![Initial::AboveThreshold {
+            above_threshold: count,
+            pin: pin.to_string(),
+        }])
     }
 
     pub fn templates(&self, threshold: u64) -> HashMap<WalletTemplate, String> {

@@ -584,11 +584,11 @@ checksum = "631ae5198c9be5e753e5cc215e1bd73c2b466a3565173db433f52bb9d3e66dba"
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "cbor_event",
  "chain-ser",
- "cryptoxide 0.2.1",
+ "cryptoxide 0.3.0",
  "ed25519-bip32",
 ]
 
@@ -628,20 +628,20 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "bech32",
  "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
- "cryptoxide 0.2.1",
+ "cryptoxide 0.3.0",
  "quickcheck",
 ]
 
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "chain-ser",
 ]
@@ -649,11 +649,11 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "bech32",
  "cfg-if 1.0.0",
- "cryptoxide 0.2.1",
+ "cryptoxide 0.3.0",
  "curve25519-dalek",
  "digest 0.9.0",
  "ed25519-bip32",
@@ -670,7 +670,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "cardano-legacy-address",
  "cfg-if 1.0.0",
@@ -707,12 +707,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "criterion",
  "data-pile",
@@ -725,7 +725,7 @@ dependencies = [
 [[package]]
 name = "chain-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "chain-core",
  "quickcheck",
@@ -735,7 +735,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -745,12 +745,13 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
- "cryptoxide 0.2.1",
+ "cryptoxide 0.3.0",
  "eccoxide",
  "rand_core 0.5.1",
  "rayon",
+ "thiserror",
 ]
 
 [[package]]
@@ -1404,9 +1405,9 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 
 [[package]]
 name = "flate2"
-version = "1.0.19"
+version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7411863d55df97a419aa64cb4d2f167103ea9d767e2c54a1868b7ac3f6b47129"
+checksum = "cd3aec53de10fe96d7d8c565eb17f2c687bb5518a2ec453b5b1252964526abe0"
 dependencies = [
  "cfg-if 1.0.0",
  "crc32fast",
@@ -1818,7 +1819,7 @@ dependencies = [
  "http",
  "indexmap",
  "slab",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tokio-util 0.6.2",
  "tracing",
  "tracing-futures",
@@ -2002,7 +2003,7 @@ dependencies = [
  "itoa",
  "pin-project 1.0.4",
  "socket2",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tower-service",
  "tracing",
  "want",
@@ -2131,7 +2132,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 dependencies = [
  "thiserror",
 ]
@@ -2255,7 +2256,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-lib"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b94db03fdb814bb0d21f2789219054c1234c2f03"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=fix_chain_vote_conversion#a20af2348d6f8df24822fe8125537a200ce99bd1"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2283,7 +2284,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b94db03fdb814bb0d21f2789219054c1234c2f03"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=fix_chain_vote_conversion#a20af2348d6f8df24822fe8125537a200ce99bd1"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2318,14 +2319,14 @@ dependencies = [
  "slog",
  "structopt",
  "thiserror",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "yaml-rust",
 ]
 
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#b94db03fdb814bb0d21f2789219054c1234c2f03"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=fix_chain_vote_conversion#a20af2348d6f8df24822fe8125537a200ce99bd1"
 dependencies = [
  "assert_fs",
  "bardecoder",
@@ -2374,7 +2375,7 @@ dependencies = [
  "sysinfo 0.15.9",
  "tar",
  "thiserror",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tokio-codec",
  "tokio-stream",
  "tonic",
@@ -4078,7 +4079,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 
 [[package]]
 name = "spin"
@@ -4408,9 +4409,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8efab2086f17abcddb8f756117665c958feee6b2e39974c2f1600592ab3a4195"
+checksum = "6714d663090b6b0acb0fa85841c6d66233d150cdb2602c8f9b8abb03370beb3f"
 dependencies = [
  "autocfg",
  "bytes 1.0.1",
@@ -4488,7 +4489,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc6844de72e57df1980054b38be3a9f4702aba4858be64dd700181a8a6d0e1b6"
 dependencies = [
  "rustls 0.19.0",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "webpki",
 ]
 
@@ -4500,7 +4501,7 @@ checksum = "76066865172052eb8796c686f0b441a93df8b08d40a950b062ffb9a426f00edd"
 dependencies = [
  "futures-core",
  "pin-project-lite 0.2.4",
- "tokio 1.1.0",
+ "tokio 1.1.1",
 ]
 
 [[package]]
@@ -4535,7 +4536,7 @@ dependencies = [
  "futures-util",
  "log",
  "pin-project 1.0.4",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tungstenite 0.12.0",
 ]
 
@@ -4565,7 +4566,7 @@ dependencies = [
  "futures-sink",
  "log",
  "pin-project-lite 0.2.4",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tokio-stream",
 ]
 
@@ -4607,7 +4608,7 @@ dependencies = [
  "pin-project 1.0.4",
  "prost",
  "prost-derive",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tokio-stream",
  "tokio-util 0.6.2",
  "tower",
@@ -4640,7 +4641,7 @@ dependencies = [
  "pin-project 1.0.4",
  "rand 0.8.3",
  "slab",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tokio-stream",
  "tower-layer",
  "tower-service",
@@ -4817,7 +4818,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#4e3e05c8f0bc62cbe94359f1e8684c28d1c75863"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#fdf07a4ba5147b24229546aba6e40a01838d487d"
 
 [[package]]
 name = "typenum"
@@ -4982,7 +4983,7 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#85a1ec4fa19e6de40fb8f01abe94cd012b4916f7"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#86b5f5a43f9b70f60ba52dd8102d1b618efbfb7b"
 dependencies = [
  "async-graphql",
  "async-graphql-warp",
@@ -5000,7 +5001,7 @@ dependencies = [
  "simplelog",
  "structopt",
  "thiserror",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
@@ -5010,7 +5011,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#85a1ec4fa19e6de40fb8f01abe94cd012b4916f7"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#86b5f5a43f9b70f60ba52dd8102d1b618efbfb7b"
 dependencies = [
  "askama",
  "askama_shared",
@@ -5039,7 +5040,7 @@ dependencies = [
  "structopt",
  "tempfile",
  "thiserror",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "vit-servicing-station-lib",
 ]
 
@@ -5082,7 +5083,7 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "thiserror",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "walkdir",
@@ -5223,7 +5224,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded 0.7.0",
- "tokio 1.1.0",
+ "tokio 1.1.1",
  "tokio-rustls 0.22.0",
  "tokio-stream",
  "tokio-tungstenite 0.13.0",

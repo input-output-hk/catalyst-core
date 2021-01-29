@@ -19,9 +19,9 @@ chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.gi
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-time           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-vote           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "fix_chain_vote_conversion" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "fix_chain_vote_conversion" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "fix_chain_vote_conversion" } 
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }

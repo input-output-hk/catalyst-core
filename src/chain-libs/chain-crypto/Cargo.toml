@@ -8,7 +8,7 @@ keywords = [ "Crypto", "VRF", "Ed25519", "MMM" ]
 
 [dependencies]
 bech32 = "0.7"
-cryptoxide = "0.2"
+cryptoxide = "0.3"
 curve25519-dalek = "3.0"
 ed25519-dalek = "1.0"
 sha2 = "0.9"

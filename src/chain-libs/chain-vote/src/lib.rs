@@ -26,7 +26,7 @@ pub use committee::{
 };
 pub use encrypted::EncryptingVote;
 use gang::GroupElement;
-pub use gang::{BabyStepsTable as PrivateTallyTable, Scalar};
+pub use gang::{BabyStepsTable as TallyOptimizationTable, Scalar};
 pub use gargamel::Ciphertext;
 use rand_core::{CryptoRng, RngCore};
 pub use unit_vector::UnitVector;
@@ -92,10 +92,15 @@ pub struct TallyState {
     r2s: Vec<gang::GroupElement>,
 }
 
+/// Decrypted tally with votes indexed per option.
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct TallyResult {
-    pub votes: Vec<Option<u64>>,
+pub struct Tally {
+    pub votes: Vec<u64>,
 }
+
+#[derive(Debug, thiserror::Error)]
+#[error("invalid data for private tally")]
+pub struct TallyError;
 
 impl EncryptedTally {
     /// Start a new tally with N different options
@@ -219,27 +224,52 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     Some(elements)
 }
 
-pub fn tally_result(
-    max_votes: u64,
+fn result_vector(
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
-    table: &PrivateTallyTable,
-) -> TallyResult {
+) -> Vec<gang::GroupElement> {
     let ris = (0..tally_state.r2s.len())
         .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
 
-    let mut r_results = tally_state
+    let mut results = tally_state
         .r2s
         .iter()
         .zip(ris)
         .map(|(r2, r1)| r2 - r1)
         .collect::<Vec<_>>();
-    for r in r_results.iter_mut() {
+    for r in results.iter_mut() {
         r.normalize()
     }
 
-    TallyResult {
-        votes: gang::baby_step_giant_step(r_results, max_votes, table),
+    results
+}
+
+pub fn tally(
+    max_votes: u64,
+    tally_state: &TallyState,
+    decrypt_shares: &[TallyDecryptShare],
+    table: &TallyOptimizationTable,
+) -> Result<Tally, TallyError> {
+    let r_results = result_vector(tally_state, decrypt_shares);
+    let votes = gang::baby_step_giant_step(r_results, max_votes, table).map_err(|_| TallyError)?;
+    Ok(Tally { votes })
+}
+
+impl Tally {
+    /// Verifies that the decrypted tally was correctly obtained from the given
+    /// `TallyState` and `TallyDecryptShare` parts.
+    ///
+    /// This can be used for quick online validation for the tallying
+    /// performed offline.
+    pub fn verify(&self, tally_state: &TallyState, decrypt_shares: &[TallyDecryptShare]) -> bool {
+        let r_results = result_vector(tally_state, decrypt_shares);
+        let gen = gang::GroupElement::generator();
+        for (i, &w) in self.votes.iter().enumerate() {
+            if &gen * gang::Scalar::from_u64(w) != r_results[i] {
+                return false;
+            }
+        }
+        true
     }
 }
 
@@ -286,13 +316,16 @@ mod tests {
         let shares = vec![tds1];
 
         println!("resulting");
-        let table = crate::PrivateTallyTable::generate_with_balance(max_votes, 1);
-        let tr = tally_result(max_votes, &ts, &shares, &table);
+        let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
+        let tr = crate::tally(max_votes, &ts, &shares, &table).unwrap();
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
-        assert_eq!(tr.votes[0], Some(10), "vote for option 0");
-        assert_eq!(tr.votes[1], Some(5), "vote for option 1");
+        assert_eq!(tr.votes[0], 10, "vote for option 0");
+        assert_eq!(tr.votes[1], 5, "vote for option 1");
+
+        println!("verifying");
+        assert!(tr.verify(&ts, &shares));
     }
 
     #[test]
@@ -339,12 +372,147 @@ mod tests {
         let shares = vec![tds1, tds2, tds3];
 
         println!("resulting");
-        let table = crate::PrivateTallyTable::generate_with_balance(max_votes, 1);
-        let tr = tally_result(max_votes, &ts, &shares, &table);
+        let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
+        let tr = crate::tally(max_votes, &ts, &shares, &table).unwrap();
 
         println!("{:?}", tr);
         assert_eq!(tr.votes.len(), vote_options);
-        assert_eq!(tr.votes[0], Some(5), "vote for option 0");
-        assert_eq!(tr.votes[1], Some(3), "vote for option 1");
+        assert_eq!(tr.votes[0], 5, "vote for option 0");
+        assert_eq!(tr.votes[1], 3, "vote for option 1");
+
+        println!("verifying");
+        assert!(tr.verify(&ts, &shares));
+    }
+
+    #[test]
+    fn zero_and_max_votes() {
+        let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+
+        let h = CRS::random(&mut rng);
+
+        let mc1 = MemberCommunicationKey::new(&mut rng);
+        let mc = [mc1.to_public()];
+
+        let threshold = 1;
+
+        let m1 = MemberState::new(&mut rng, threshold, &h, &mc, 0);
+
+        let participants = vec![m1.public_key()];
+        let ek = EncryptingVoteKey::from_participants(&participants);
+
+        println!("encrypting vote");
+
+        let vote_options = 2;
+        let (e1, _) = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
+
+        println!("tallying");
+
+        let mut tally = EncryptedTally::new(vote_options);
+        tally.add(&e1, 42);
+
+        let (ts, tds1) = tally.finish(m1.secret_key());
+
+        let max_votes = 42;
+
+        let shares = vec![tds1];
+
+        println!("resulting");
+        let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
+        let tr = crate::tally(max_votes, &ts, &shares, &table).unwrap();
+
+        println!("{:?}", tr);
+        assert_eq!(tr.votes.len(), vote_options);
+        assert_eq!(tr.votes[0], 42, "vote for option 0");
+        assert_eq!(tr.votes[1], 0, "vote for option 1");
+
+        println!("verifying");
+        assert!(tr.verify(&ts, &shares));
+    }
+
+    #[test]
+    fn empty_tally() {
+        let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+
+        let h = CRS::random(&mut rng);
+
+        let mc1 = MemberCommunicationKey::new(&mut rng);
+        let mc = [mc1.to_public()];
+
+        let threshold = 1;
+
+        let m1 = MemberState::new(&mut rng, threshold, &h, &mc, 0);
+
+        let vote_options = 2;
+
+        println!("tallying");
+
+        let tally = EncryptedTally::new(vote_options);
+        let (ts, tds1) = tally.finish(m1.secret_key());
+
+        let max_votes = 2;
+
+        let shares = vec![tds1];
+
+        println!("resulting");
+        let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
+        let tr = crate::tally(max_votes, &ts, &shares, &table).unwrap();
+
+        println!("{:?}", tr);
+        assert_eq!(tr.votes.len(), vote_options);
+        assert_eq!(tr.votes[0], 0, "vote for option 0");
+        assert_eq!(tr.votes[1], 0, "vote for option 1");
+
+        println!("verifying");
+        assert!(tr.verify(&ts, &shares));
+    }
+
+    #[test]
+    fn wrong_max_votes() {
+        let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+
+        let h = CRS::random(&mut rng);
+
+        let mc1 = MemberCommunicationKey::new(&mut rng);
+        let mc2 = MemberCommunicationKey::new(&mut rng);
+        let mc3 = MemberCommunicationKey::new(&mut rng);
+        let mc = [mc1.to_public(), mc2.to_public(), mc3.to_public()];
+
+        let threshold = 3;
+
+        let m1 = MemberState::new(&mut rng, threshold, &h, &mc, 0);
+        let m2 = MemberState::new(&mut rng, threshold, &h, &mc, 1);
+        let m3 = MemberState::new(&mut rng, threshold, &h, &mc, 2);
+
+        let participants = vec![m1.public_key(), m2.public_key(), m3.public_key()];
+        let ek = EncryptingVoteKey::from_participants(&participants);
+
+        println!("encrypting vote");
+
+        let vote_options = 2;
+        let e1 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
+        let e2 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 1));
+        let e3 = encrypt_vote(&mut rng, &ek, Vote::new(vote_options, 0));
+
+        let mut tally = EncryptedTally::new(vote_options);
+        tally.add(&e1.0, 10);
+        tally.add(&e2.0, 3);
+        tally.add(&e3.0, 40);
+
+        let (_, tds1) = tally.finish(m1.secret_key());
+        let (_, tds2) = tally.finish(m2.secret_key());
+        let (ts, tds3) = tally.finish(m3.secret_key());
+
+        let max_votes = 4;
+
+        let shares = vec![tds1, tds2, tds3];
+
+        println!("resulting");
+        let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
+        let res = crate::tally(max_votes, &ts, &shares, &table);
+        assert!(
+            res.is_err(),
+            "unexpected successful tally: {:?}",
+            res.ok().unwrap()
+        );
     }
 }

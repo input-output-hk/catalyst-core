@@ -3,7 +3,7 @@ use rayon::prelude::*;
 use std::collections::HashMap;
 
 // make steps asymmetric, in order to better use caching of baby steps.
-// balance of 2 means that baby steps are 2 time more than sqrt(MAX_VOTES_BSGS)
+// balance of 2 means that baby steps are 2 time more than sqrt(max_votes)
 const DEFAULT_BALANCE: u64 = 2;
 
 /// Holds precomputed baby steps for the baby-stap giant-step algorithm
@@ -47,12 +47,15 @@ impl BabyStepsTable {
     }
 }
 
+#[derive(Debug)]
+pub struct MaxLogExceeded;
+
 // Solve the discrete log on ECC using baby step giant step algorithm
 pub fn baby_step_giant_step(
     points: Vec<GroupElement>,
-    max_votes: u64,
+    max_log: u64,
     table: &BabyStepsTable,
-) -> Vec<Option<u64>> {
+) -> Result<Vec<u64>, MaxLogExceeded> {
     let baby_step_size = table.baby_step_size;
     let giant_step = &table.giant_step;
     let table = &table.table;
@@ -62,22 +65,19 @@ pub fn baby_step_giant_step(
             let mut a = 0;
             loop {
                 if let Some(x) = table.get(&p.compress().map(|(c, _sign)| c.to_bytes())) {
-                    if Scalar::from_u64(*x) * GroupElement::generator() == p {
-                        return Some(a * baby_step_size + x);
+                    let r = if Scalar::from_u64(*x) * GroupElement::generator() == p {
+                        a * baby_step_size + x
                     } else {
-                        return Some(a * baby_step_size - x);
-                    }
+                        a * baby_step_size - x
+                    };
+                    return Ok(r);
                 }
-                // This should not happen if the precomputed range is correctly
-                // sized, set MAX_VOTES_BSGS at compile time for best performances
-                if a * baby_step_size > max_votes {
-                    break;
+                if a * baby_step_size > max_log {
+                    return Err(MaxLogExceeded);
                 }
                 p = p + giant_step;
                 a += 1;
             }
-
-            None
         })
         .collect()
 }
@@ -101,9 +101,7 @@ mod tests {
                 &p * ks
             })
             .collect();
-        assert_eq!(
-            votes.iter().map(|v| Some(*v)).collect::<Vec<_>>(),
-            baby_step_giant_step(points, 100, &table)[..]
-        );
+        let results = baby_step_giant_step(points, 100, &table).unwrap();
+        assert_eq!(votes, results);
     }
 }

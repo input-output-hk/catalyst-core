@@ -10,12 +10,12 @@ use crate::{
 };
 use chain_vote::EncryptedTally;
 use imhamt::Hamt;
-use std::{
-    collections::{hash_map::DefaultHasher, HashSet},
-    num::NonZeroU64,
-    sync::Arc,
-};
 use thiserror::Error;
+
+use std::collections::{hash_map::DefaultHasher, HashSet};
+use std::convert::TryFrom;
+use std::num::NonZeroU64;
+use std::sync::Arc;
 
 /// Manage the vote plan and the associated votes in the ledger
 ///
@@ -237,34 +237,20 @@ impl ProposalManager {
     where
         F: FnMut(&VoteAction),
     {
-        use std::convert::TryInto;
         let tally = self.tally.as_ref().ok_or(TallyError::NoEncryptedTally)?;
         let (encrypted_tally, total_stake) = tally.private_encrypted()?;
         let state = encrypted_tally.state();
-        let private_result = chain_vote::tally_result(
+        let private_result = chain_vote::tally(
             total_stake.0,
             &state,
             shares,
-            &chain_vote::PrivateTallyTable::generate(total_stake.0),
-        );
+            &chain_vote::TallyOptimizationTable::generate(total_stake.0),
+        )
+        .map_err(|_| TallyError::BadDecryptShares)?;
         let mut result = TallyResult::new(self.options.clone());
-        for (choice, weight) in private_result
-            .votes
-            .iter()
-            .map(|maybe_vote| maybe_vote.unwrap_or_default())
-            .enumerate()
-        {
-            result.add_vote(
-                Choice::new(choice.try_into().map_err(|_| {
-                    TallyError::InvalidPrivateChoiceSize {
-                        choice: choice as u64,
-                    }
-                })?),
-                weight,
-            )?;
+        for (choice, &weight) in private_result.votes.iter().enumerate() {
+            result.add_vote(Choice::new(u8::try_from(choice).unwrap()), weight)?;
         }
-
-        dbg!(&result);
 
         if self.check(*total_stake, governance, &result) {
             f(&self.action);
@@ -438,7 +424,7 @@ impl ProposalManagers {
         }
     }
 
-    pub fn private_tally_start(&self, stake: &StakeControl) -> Result<Self, VoteError> {
+    pub fn start_private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
         let mut proposals = Vec::with_capacity(self.0.len());
         for proposal in self.0.iter() {
             proposals.push(proposal.private_tally(stake)?);
@@ -447,7 +433,7 @@ impl ProposalManagers {
         Ok(Self(proposals))
     }
 
-    pub fn private_tally_finalize<F>(
+    pub fn finalize_private_tally<F>(
         &self,
         shares: &TallyDecryptShares,
         governance: &Governance,
@@ -640,7 +626,7 @@ impl VotePlanManager {
         })
     }
 
-    pub fn private_tally_start(
+    pub fn start_private_tally(
         &self,
         block_date: BlockDate,
         stake: &StakeControl,
@@ -661,7 +647,7 @@ impl VotePlanManager {
             return Err(TallyError::InvalidPrivacy.into());
         }
 
-        let proposal_managers = self.proposal_managers.private_tally_start(stake)?;
+        let proposal_managers = self.proposal_managers.start_private_tally(stake)?;
 
         Ok(Self {
             proposal_managers,
@@ -671,7 +657,7 @@ impl VotePlanManager {
         })
     }
 
-    pub fn private_tally_finish<F>(
+    pub fn finalize_private_tally<F>(
         &self,
         shares: &TallyDecryptShares,
         governance: &Governance,
@@ -682,7 +668,7 @@ impl VotePlanManager {
     {
         let proposal_managers = self
             .proposal_managers
-            .private_tally_finalize(shares, governance, f)?;
+            .finalize_private_tally(shares, governance, f)?;
         Ok(Self {
             proposal_managers,
             plan: Arc::clone(&self.plan),

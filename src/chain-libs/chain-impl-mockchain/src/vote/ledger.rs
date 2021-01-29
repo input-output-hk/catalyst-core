@@ -161,7 +161,7 @@ impl VotePlanLedger {
                 .map(Some),
             TallyProof::Private { .. } => {
                 let shares = tally.decrypt_shares().unwrap();
-                v.private_tally_finish(&shares, governance, f).map(Some)
+                v.finalize_private_tally(&shares, governance, f).map(Some)
             }
         });
 
@@ -190,7 +190,7 @@ impl VotePlanLedger {
         let id = encrypted_tally.id().clone();
 
         let r = self.plans.update(&id, move |v| {
-            v.private_tally_start(block_date, stake, sig.id).map(Some)
+            v.start_private_tally(block_date, stake, sig.id).map(Some)
         });
 
         match r {

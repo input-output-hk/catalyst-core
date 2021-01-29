@@ -5,6 +5,7 @@ pub mod cli;
 mod controller;
 mod data;
 mod load;
+mod qr;
 pub mod utils;
 mod wallet;
 
@@ -13,3 +14,4 @@ pub use backend::{ProxyClient, WalletBackend, WalletBackendSettings};
 pub use controller::{Controller, ControllerError};
 pub use data::{Fund, Proposal, SimpleVoteStatus, Voteplan};
 pub use load::{MultiController, VoteStatusProvider, WalletRequestGen};
+pub use qr::{get_pin, pin_to_bytes, PinReadMode, QrReader};

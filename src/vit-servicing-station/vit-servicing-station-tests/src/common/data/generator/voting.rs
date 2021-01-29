@@ -123,7 +123,7 @@ impl ValidVotePlanGenerator {
             id: fund_id,
             fund_name: self.parameters.vote_plan.alias(),
             fund_goal: "How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?".to_string(),
-            voting_power_info: format!(">{}", threshold),
+            voting_power_info: voting_start,
             voting_power_threshold: threshold,
             rewards_info: Sentence(3..5).fake::<String>(),
             fund_start_time: voting_start,

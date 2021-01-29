@@ -306,7 +306,7 @@ var plugin = {
      * @param {Uint8Array} votePlanId a byte array of 32 elements that identifies the voteplan
      * @param {number} index the index of the proposal in the voteplan
      * @param {number} numChoices the number of choices of the proposal, used to validate the choice
-     * @param {Uint8Array} encryptionVoteKey bech32 string representing the
+     * @param {string} encryptionVoteKey bech32 string representing the
      * single key used to encrypt a vote, generated from the public keys
      * from all committee members
      * @param {function} successCallback returns an object with ignored, and value properties

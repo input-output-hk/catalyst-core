@@ -1,15 +1,18 @@
 use crate::controller::read_bech32;
+use crate::qr::PinReadMode;
+use crate::qr::QrReader;
 use crate::WalletBackend;
 use crate::{Proposal, Wallet};
 use bech32::FromBase32;
 use bip39::Type;
 use chain_impl_mockchain::fragment::FragmentId;
-use jormungandr_testing_utils::{qr_code::KeyQrCode, testing::node::RestSettings};
+use jormungandr_testing_utils::testing::node::RestSettings;
 use std::iter;
 use std::path::Path;
 use thiserror::Error;
 use wallet::Settings;
 use wallet_core::{Choice, Value};
+
 unsafe impl Send for Wallet {}
 use std::convert::TryInto;
 pub struct MultiController {
@@ -59,42 +62,23 @@ impl MultiController {
     pub fn recover_from_qrs<P: AsRef<Path>>(
         wallet_backend_address: &str,
         qrs: &[P],
-        password: &[u8],
+        pin_mode: PinReadMode,
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let backend = WalletBackend::new(wallet_backend_address.to_string(), backend_settings);
+        let mut backend = WalletBackend::new(wallet_backend_address.to_string(), backend_settings);
         let settings = backend.settings()?;
-        let mut wallets = Vec::new();
 
-        for qr in qrs {
-            let img = match image::open(qr.as_ref()) {
-                Ok(img) => img,
-                Err(err) => {
-                    println!(
-                        "Cannot read qr from file: {:?}, due to {:?}",
-                        qr.as_ref(),
-                        err
-                    );
-                    continue;
-                }
-            };
+        backend.enable_logs();
+        let pin_reader = QrReader::new(pin_mode);
+        let secrets = pin_reader.read_qrs(qrs, false);
+        let wallets = secrets
+            .into_iter()
+            .map(|secret| {
+                Wallet::recover_from_utxo(secret.leak_secret().as_ref().try_into().unwrap())
+                    .unwrap()
+            })
+            .collect();
 
-            let result = std::panic::catch_unwind(|| KeyQrCode::decode(img, password).unwrap());
-
-            let secret = match result {
-                Ok(secret) => secret,
-                Err(err) => {
-                    println!(
-                        "Cannot decode qr from file: {:?}, due to {:?}",
-                        qr.as_ref(),
-                        err
-                    );
-                    continue;
-                }
-            }
-            .leak_secret();
-            wallets.push(Wallet::recover_from_utxo(secret.as_ref().try_into().unwrap()).unwrap())
-        }
         Ok(Self {
             backend,
             wallets,
@@ -210,4 +194,6 @@ pub enum MultiControllerError {
     BackendError(#[from] crate::backend::WalletBackendError),
     #[error("controller error")]
     ControllerError(#[from] crate::ControllerError),
+    #[error("pin read error")]
+    PinReadError(#[from] crate::qr::PinReadError),
 }

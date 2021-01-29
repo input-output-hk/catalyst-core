@@ -22,6 +22,7 @@ use jormungandr_testing_utils::testing::network_builder::{
     Blockchain, Node, WalletTemplate, WalletType,
 };
 use jormungandr_testing_utils::{qr_code::KeyQrCode, wallet::ElectionPublicKeyExtension};
+use std::collections::HashMap;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub const LEADER_1: &str = "Leader1";
@@ -67,8 +68,11 @@ impl QuickVitBackendSettingsBuilder {
         self
     }
 
-    pub fn initials_count(&mut self, initials_count: usize) -> &mut Self {
-        self.initials(Initials::new_above_threshold(initials_count));
+    pub fn initials_count(&mut self, initials_count: usize, pin: &str) -> &mut Self {
+        self.initials(Initials::new_above_threshold(
+            initials_count,
+            &pin.to_string(),
+        ));
         self
     }
 
@@ -279,14 +283,12 @@ impl QuickVitBackendSettingsBuilder {
 
         vote_plan_builder.build()
     }
-
-    pub fn dump_qrs(&self, controller: &Controller, child: &ChildPath) -> Result<()> {
-        let password = "1234";
-        let bytes: Vec<u8> = password
-            .chars()
-            .map(|x| x.to_digit(10).unwrap() as u8)
-            .collect();
-
+    pub fn dump_qrs(
+        &self,
+        controller: &Controller,
+        initials: &HashMap<WalletTemplate, String>,
+        child: &ChildPath,
+    ) -> Result<()> {
         let folder = child.child("qr-codes");
         std::fs::create_dir_all(folder.path())?;
 
@@ -295,17 +297,33 @@ impl QuickVitBackendSettingsBuilder {
             .filter(|(_, x)| *x.template().wallet_type() == WalletType::UTxO)
         {
             let wallet = controller.wallet(alias)?;
-            let png = folder.child(format!("{}_{}.png", alias, password));
 
-            wallet.save_qr_code(png.path(), &bytes);
+            let pin = initials
+                .iter()
+                .find_map(|(template, pin)| {
+                    if template.alias() == alias {
+                        Some(pin)
+                    } else {
+                        None
+                    }
+                })
+                .unwrap();
+            let png = folder.child(format!("{}_{}.png", alias, pin));
+            wallet.save_qr_code(png.path(), &pin_to_bytes(&pin));
         }
 
-        for i in 1..(self.parameters.initials.zero_funds_count() + 1) {
-            let sk = SecretKey::generate(rand::thread_rng());
-            let qr = KeyQrCode::generate(sk.clone(), &bytes);
-            let img = qr.to_img();
-            let png = folder.child(format!("zero_funds_{}_{}.png", i, password));
-            img.save(png.path())?;
+        let zero_funds_initial_counts = self.parameters.initials.zero_funds_count();
+
+        if zero_funds_initial_counts > 0 {
+            let zero_funds_pin = self.parameters.initials.zero_funds_pin().unwrap();
+
+            for i in 1..zero_funds_initial_counts + 1 {
+                let sk = SecretKey::generate(rand::thread_rng());
+                let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
+                let img = qr.to_img();
+                let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
+                img.save(png.path())?;
+            }
         }
         Ok(())
     }
@@ -340,15 +358,12 @@ impl QuickVitBackendSettingsBuilder {
 
         let child = context.child_directory(self.title());
 
-        for wallet in self
+        let initials = self
             .parameters
             .initials
-            .templates(self.parameters.voting_power)
-            .iter()
-            .cloned()
-            .filter(|x| *x.value() > Value::zero())
-        {
-            blockchain.add_wallet(wallet);
+            .templates(self.parameters.voting_power);
+        for (wallet, _) in initials.iter().filter(|(x, _)| *x.value() > Value::zero()) {
+            blockchain.add_wallet(wallet.clone());
         }
 
         blockchain.add_committee(&self.committe_wallet_name);
@@ -360,7 +375,7 @@ impl QuickVitBackendSettingsBuilder {
 
         let (vit_controller, controller) = builder.build_controllers(context)?;
 
-        self.dump_qrs(&controller, &child)?;
+        self.dump_qrs(&controller, &initials, &child)?;
 
         controller.settings().dump_private_vote_keys(child);
 
@@ -390,4 +405,8 @@ impl QuickVitBackendSettingsBuilder {
 
         Ok((vit_controller, controller, parameters))
     }
+}
+
+pub fn pin_to_bytes(pin: &str) -> Vec<u8> {
+    pin.chars().map(|x| x.to_digit(10).unwrap() as u8).collect()
 }

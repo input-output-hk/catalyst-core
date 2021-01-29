@@ -10,12 +10,6 @@ use warp::{Filter, Rejection, Reply};
 
 impl Reject for file_lister::Error {}
 
-impl From<file_lister::Error> for Rejection {
-    fn from(other: file_lister::Error) -> Self {
-        warp::reject::custom(other)
-    }
-}
-
 #[derive(Clone)]
 pub struct ServerStopper(mpsc::Sender<()>);
 

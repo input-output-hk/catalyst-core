@@ -1,13 +1,14 @@
 mod config;
 
+use crate::load::MultiControllerError;
+use crate::qr::PinReadMode;
+use crate::VoteStatusProvider;
+use crate::{MultiController, WalletRequestGen};
 pub use config::IapyxLoadConfig;
-pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
-
-use jortestkit::load::{self, Configuration, Monitor};
-
-use crate::{MultiController, VoteStatusProvider, WalletRequestGen};
-
 use jormungandr_testing_utils::testing::node::RestSettings;
+pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
+use jortestkit::load;
+use jortestkit::load::{Configuration, Monitor};
 use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;
@@ -18,6 +19,8 @@ pub enum IapyxLoadCommandError {
     NoStrategyDefined,
     #[error("cannot read mnemonics file")]
     CannotReadMnemonicsFile,
+    #[error("internal error")]
+    MultiControllerError(#[from] MultiControllerError),
 }
 
 #[derive(StructOpt, Debug)]
@@ -52,8 +55,11 @@ pub struct IapyxLoadCommand {
     #[structopt(short = "s", long = "secrets-folder")]
     pub secrets_folder: Option<PathBuf>,
 
-    #[structopt(long = "password", default_value = "1234")]
-    pub passwords: String,
+    #[structopt(long = "global-pin", default_value = "1234")]
+    pub global_pin: String,
+
+    #[structopt(long = "read-from-filename")]
+    pub read_pin_from_filename: bool,
 
     /// use https for sending fragments
     #[structopt(short = "h", long = "https")]
@@ -89,6 +95,8 @@ impl IapyxLoadCommand {
             ..Default::default()
         };
 
+        let pin_read_mode = PinReadMode::new(self.read_pin_from_filename, &self.global_pin);
+
         println!("{:?}", settings);
 
         let multicontroller = {
@@ -96,33 +104,28 @@ impl IapyxLoadCommand {
                 let mnemonics = jortestkit::file::read_file_as_vector(&mnemonics_file)
                     .map_err(|_e| IapyxLoadCommandError::CannotReadMnemonicsFile)?;
 
-                MultiController::recover(&backend, mnemonics, &[], settings).unwrap()
+                MultiController::recover(&backend, mnemonics, &[], settings)
             } else if let Some(qr_codes) = &self.qr_codes_folder {
                 let qr_codes: Vec<PathBuf> = std::fs::read_dir(qr_codes)
                     .unwrap()
                     .into_iter()
                     .map(|x| x.unwrap().path())
                     .collect();
-                let bytes: Vec<u8> = self
-                    .passwords
-                    .chars()
-                    .map(|x| x.to_digit(10).unwrap() as u8)
-                    .collect();
 
-                MultiController::recover_from_qrs(&backend, &qr_codes, &bytes, settings).unwrap()
+                MultiController::recover_from_qrs(&backend, &qr_codes, pin_read_mode, settings)
             } else if let Some(secrets_folder) = &self.secrets_folder {
                 let secrets: Vec<PathBuf> = std::fs::read_dir(secrets_folder)
                     .unwrap()
                     .into_iter()
                     .map(|x| x.unwrap().path())
                     .collect();
-                MultiController::recover_from_sks(&backend, &secrets, settings).unwrap()
+                MultiController::recover_from_sks(&backend, &secrets, settings)
             } else {
                 panic!("source of private keys not selected");
             }
         };
 
-        let mut request_generator = WalletRequestGen::new(multicontroller);
+        let mut request_generator = WalletRequestGen::new(multicontroller?);
         request_generator.fill_generator().unwrap();
 
         load::start_async(

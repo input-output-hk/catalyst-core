@@ -1,4 +1,5 @@
 use super::request::{RequestFailure, Response};
+use crate::prelude::{EfficiencyBenchmarkDef, EfficiencyBenchmarkFinish};
 use std::time::Duration;
 
 pub struct Stats {
@@ -29,6 +30,14 @@ impl Stats {
 
     pub fn calculate_tps(&self) -> f64 {
         (self.total_requests_made() as f64) / self.duration.as_secs_f64()
+    }
+
+    pub fn measure(&self, measurement_name: &str, target: u32) -> EfficiencyBenchmarkFinish {
+        EfficiencyBenchmarkDef::new(measurement_name.to_string())
+            .target(target)
+            .start()
+            .increment_by(self.calculate_passrate() as u32)
+            .stop()
     }
 
     pub fn print_summary(&self, title: &str) {

@@ -100,6 +100,14 @@ impl EfficiencyBenchmarkFinish {
     pub fn print(&self) {
         println!("{}", &self);
     }
+
+    pub fn efficiency(&self) -> Efficiency {
+        self.efficiency.clone()
+    }
+
+    pub fn definition(&self) -> EfficiencyBenchmarkDef {
+        self.definition.clone()
+    }
 }
 
 impl fmt::Display for EfficiencyBenchmarkFinish {

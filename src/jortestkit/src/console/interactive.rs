@@ -49,10 +49,7 @@ impl UserInteraction {
     }
 
     fn read_line(&self) -> Result<Vec<String>, InteractiveCommandError> {
-        let input: String = Input::new()
-            .with_prompt(&self.command_prefix)
-            .interact()
-            .unwrap();
+        let input: String = Input::new().with_prompt(&self.command_prefix).interact()?;
         Ok(input
             .split_ascii_whitespace()
             .map(|x| x.to_owned())
@@ -121,4 +118,6 @@ impl ConsoleWriter {
 pub enum InteractiveCommandError {
     #[error("Custom error {0}")]
     UserError(String),
+    #[error("io error")]
+    IoError(#[from] std::io::Error),
 }

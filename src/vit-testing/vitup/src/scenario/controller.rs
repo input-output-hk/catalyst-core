@@ -155,6 +155,7 @@ impl VitController {
             &node_setting,
             &block0_file.as_path(),
             &working_directory.path(),
+            params.protocol.clone(),
         )
         .unwrap();
         Ok(wallet_proxy.controller())

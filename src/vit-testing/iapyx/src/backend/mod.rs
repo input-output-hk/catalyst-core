@@ -16,7 +16,7 @@ use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use jormungandr_testing_utils::testing::node::Explorer;
 pub use jormungandr_testing_utils::testing::node::RestSettings as WalletBackendSettings;
 use node::{RestError as NodeRestError, WalletNodeRestClient};
-pub use proxy::{ProxyClient, ProxyClientError, ProxyServerError, ProxyServerStub};
+pub use proxy::{ProxyClient, ProxyClientError, ProxyServerError, ProxyServerStub, Protocol};
 use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;

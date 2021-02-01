@@ -5171,6 +5171,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded 0.6.1",
  "tokio 0.2.25",
+ "tokio-rustls 0.14.1",
  "tokio-tungstenite 0.11.0",
  "tower-service",
  "tracing",

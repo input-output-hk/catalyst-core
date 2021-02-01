@@ -1,9 +1,11 @@
 use crate::wallet::WalletProxySettings;
+use iapyx::Protocol;
 use std::net::SocketAddr;
 
 pub struct WalletProxySpawnParams {
     pub alias: String,
     pub base_address: Option<SocketAddr>,
+    pub protocol: Protocol,
 }
 
 impl WalletProxySpawnParams {
@@ -11,11 +13,17 @@ impl WalletProxySpawnParams {
         Self {
             alias: alias.into(),
             base_address: None,
+            protocol: Protocol::Http,
         }
     }
 
     pub fn with_base_address<S: Into<String>>(&mut self, base_address: S) -> &mut Self {
         self.base_address = Some(base_address.into().parse().unwrap());
+        self
+    }
+
+    pub fn with_protocol(&mut self, protocol: Protocol) -> &mut Self {
+        self.protocol = protocol;
         self
     }
 

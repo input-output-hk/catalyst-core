@@ -12,6 +12,7 @@ use chain_impl_mockchain::{
 };
 use chain_vote::committee::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
+use iapyx::Protocol;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
@@ -57,6 +58,15 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn parameters(&self) -> &QuickVitBackendParameters {
         &self.parameters
+    }
+
+    pub fn with_protocol(&mut self, protocol: Protocol) -> &mut Self {
+        self.parameters.protocol = protocol;
+        self
+    }
+
+    pub fn protocol(&self) -> &Protocol {
+        &self.parameters.protocol
     }
 
     pub fn title(&self) -> String {

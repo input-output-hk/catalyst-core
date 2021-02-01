@@ -1,4 +1,4 @@
-use iapyx::cli::args::proxy::IapyxProxyCommand;
+use iapyx::{cli::args::proxy::IapyxProxyCommand,Protocol};
 use structopt::StructOpt;
 use warp::Filter;
 use warp_reverse_proxy::reverse_proxy_filter;
@@ -65,5 +65,16 @@ async fn main() {
             .or(block0),
     );
 
-    warp::serve(app).run(server_stub.base_address()).await;
+    match server_stub.protocol() {
+        Protocol::Https{ key_path, cert_path} => {
+            warp::serve(app)
+                .tls()
+                .cert_path(cert_path)
+                .key_path(key_path)
+                .run(server_stub.base_address()).await;
+        },
+        Protocol::Http => {
+            warp::serve(app).run(server_stub.base_address()).await;
+        }
+    }  
 }

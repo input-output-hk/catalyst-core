@@ -88,7 +88,7 @@ impl QrReader {
                     continue;
                 }
             };
-            secrets.push(secret);
+            secrets.push(secret.get(0).unwrap().clone());
         }
         secrets
     }

@@ -1,13 +1,8 @@
-mod config;
-
+use crate::load::IapyxLoad;
+use crate::load::IapyxLoadConfig;
+use crate::load::IapyxLoadError;
 use crate::load::MultiControllerError;
-use crate::qr::PinReadMode;
-use crate::VoteStatusProvider;
-use crate::{MultiController, WalletRequestGen};
-pub use config::IapyxLoadConfig;
-use jormungandr_testing_utils::testing::node::RestSettings;
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
-use jortestkit::load;
 use jortestkit::load::{Configuration, Monitor};
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -17,8 +12,8 @@ use thiserror::Error;
 pub enum IapyxLoadCommandError {
     #[error("duration or requests per thread stategy has to be defined")]
     NoStrategyDefined,
-    #[error("cannot read mnemonics file")]
-    CannotReadMnemonicsFile,
+    #[error("load runner error")]
+    IapyxLoadError(#[from] IapyxLoadError),
     #[error("internal error")]
     MultiControllerError(#[from] MultiControllerError),
 }
@@ -70,8 +65,8 @@ pub struct IapyxLoadCommand {
     pub debug: bool,
 
     // measure
-    #[structopt(short = "m", long = "measure")]
-    pub measure: bool,
+    #[structopt(short = "c", long = "criterion")]
+    pub criterion: Option<u8>,
 
     // show progress
     #[structopt(
@@ -86,54 +81,10 @@ pub struct IapyxLoadCommand {
 impl IapyxLoadCommand {
     pub fn exec(&self) -> Result<(), IapyxLoadCommandError> {
         let config = self.build_config()?;
-
-        let backend = config.address;
-
-        let settings = RestSettings {
-            enable_debug: self.debug,
-            use_https_for_post: self.use_https_for_post,
-            ..Default::default()
-        };
-
-        let pin_read_mode = PinReadMode::new(self.read_pin_from_filename, &self.global_pin);
-
-        println!("{:?}", settings);
-
-        let multicontroller = {
-            if let Some(mnemonics_file) = &self.wallet_mnemonics_file {
-                let mnemonics = jortestkit::file::read_file_as_vector(&mnemonics_file)
-                    .map_err(|_e| IapyxLoadCommandError::CannotReadMnemonicsFile)?;
-
-                MultiController::recover(&backend, mnemonics, &[], settings)
-            } else if let Some(qr_codes) = &self.qr_codes_folder {
-                let qr_codes: Vec<PathBuf> = std::fs::read_dir(qr_codes)
-                    .unwrap()
-                    .into_iter()
-                    .map(|x| x.unwrap().path())
-                    .collect();
-
-                MultiController::recover_from_qrs(&backend, &qr_codes, pin_read_mode, settings)
-            } else if let Some(secrets_folder) = &self.secrets_folder {
-                let secrets: Vec<PathBuf> = std::fs::read_dir(secrets_folder)
-                    .unwrap()
-                    .into_iter()
-                    .map(|x| x.unwrap().path())
-                    .collect();
-                MultiController::recover_from_sks(&backend, &secrets, settings)
-            } else {
-                panic!("source of private keys not selected");
-            }
-        };
-
-        let mut request_generator = WalletRequestGen::new(multicontroller?);
-        request_generator.fill_generator().unwrap();
-
-        load::start_async(
-            request_generator,
-            VoteStatusProvider::new(backend),
-            config.config,
-            "Wallet backend load test",
-        );
+        let iapyx_load = IapyxLoad::new(config);
+        if let Some(stats) = iapyx_load.start()? {
+            stats.print()
+        }
         Ok(())
     }
 
@@ -166,10 +117,17 @@ impl IapyxLoadCommand {
             return Err(IapyxLoadCommandError::NoStrategyDefined);
         };
 
-        Ok(IapyxLoadConfig::new(
+        Ok(IapyxLoadConfig {
             config,
-            self.measure,
-            self.address.clone(),
-        ))
+            criterion: self.criterion,
+            address: self.address.clone(),
+            wallet_mnemonics_file: self.wallet_mnemonics_file.clone(),
+            qr_codes_folder: self.qr_codes_folder.clone(),
+            secrets_folder: self.secrets_folder.clone(),
+            global_pin: self.global_pin.clone(),
+            read_pin_from_filename: self.read_pin_from_filename,
+            use_https_for_post: self.use_https_for_post,
+            debug: self.debug,
+        })
     }
 }

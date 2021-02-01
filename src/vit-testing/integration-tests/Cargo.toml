@@ -7,9 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "fix_chain_vote_conversion" } 
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "fix_chain_vote_conversion" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "fix_chain_vote_conversion" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "change-bardecoder-for-quircs" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "change-bardecoder-for-quircs" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "change-bardecoder-for-quircs" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
@@ -20,3 +20,7 @@ chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.gi
 thiserror = "1.0"
 rand = "0.7"
 cfg-if = "1.0.0"
+assert_fs = "1.0"
+
+[features]
+non-functional = []

@@ -1,9 +1,9 @@
 use crate::setup::initials::Initials;
 use crate::setup::quick::QuickVitBackendSettingsBuilder;
 use crate::Result;
+use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
 use jormungandr_scenario_tests::{Context, Seed};
 use jortestkit::prelude::read_file;
-use jortestkit::prelude::*;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -35,7 +35,7 @@ impl QrCommandArgs {
             PathBuf::new(),
             Some(self.output_directory.clone()),
             false,
-            ProgressBarMode::None,
+            ScenarioProgressBarMode::None,
             "info".to_string(),
         );
 

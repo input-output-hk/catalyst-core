@@ -19,6 +19,7 @@ error_chain! {
         WalletProxyError(WalletProxyError);
         ScenarioError(jormungandr_scenario_tests::scenario::Error);
         GeneralError(jormungandr_scenario_tests::test::Error);
+        ImageReadError(image::error::ImageError);
     }
 
     errors {

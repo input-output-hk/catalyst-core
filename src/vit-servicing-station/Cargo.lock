@@ -3562,7 +3562,7 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 
 [[package]]
 name = "vit-servicing-station-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.12.3",
  "chrono",
@@ -3578,7 +3578,7 @@ dependencies = [
 
 [[package]]
 name = "vit-servicing-station-lib"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-graphql",
  "async-graphql-warp",
@@ -3607,7 +3607,7 @@ dependencies = [
 
 [[package]]
 name = "vit-servicing-station-server"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "log",
  "structopt",
@@ -3621,7 +3621,7 @@ dependencies = [
 
 [[package]]
 name = "vit-servicing-station-tests"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "askama",
  "askama_shared",

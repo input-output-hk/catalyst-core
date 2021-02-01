@@ -46,8 +46,8 @@ pub struct PrivateTallyDecrypted {
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct PrivateTallyDecryptedProposal {
-    shares: Box<[TallyDecryptShare]>,
-    decrypted: Box<[u64]>,
+    pub shares: Box<[TallyDecryptShare]>,
+    pub decrypted: Box<[u64]>,
 }
 
 impl VoteTallyPayload {
@@ -55,6 +55,13 @@ impl VoteTallyPayload {
         match self {
             Self::Public => PayloadType::Public,
             Self::Private { .. } => PayloadType::Private,
+        }
+    }
+
+    pub fn payload_decrypted(&self) -> Option<&PrivateTallyDecrypted> {
+        match self {
+            Self::Public => None,
+            Self::Private { inner } => Some(inner),
         }
     }
 }
@@ -80,6 +87,10 @@ impl VoteTally {
 
     pub fn tally_type(&self) -> PayloadType {
         self.payload.payload_type()
+    }
+
+    pub fn tally_decrypted(&self) -> Option<&PrivateTallyDecrypted> {
+        self.payload.payload_decrypted()
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
@@ -156,6 +167,10 @@ impl PrivateTallyDecrypted {
         Self {
             inner: proposals.into_boxed_slice(),
         }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &PrivateTallyDecryptedProposal> {
+        self.inner.iter()
     }
 }
 

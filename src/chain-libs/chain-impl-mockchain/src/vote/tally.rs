@@ -51,6 +51,8 @@ pub enum TallyError {
     NoEncryptedTally,
     #[error("bad decryption share data")]
     BadDecryptShares,
+    #[error("invalid decrypted tally")]
+    InvalidDecryption,
 }
 
 impl Weight {
@@ -105,6 +107,18 @@ impl Tally {
                         total_stake,
                     },
             } => Ok((encrypted_tally, total_stake)),
+            Self::Private {
+                state: PrivateTallyState::Decrypted { .. },
+            } => Err(TallyError::TallyAlreadyDecrypted),
+            Self::Public { .. } => Err(TallyError::InvalidPrivacy),
+        }
+    }
+
+    pub fn private_total_power(&self) -> Result<u64, TallyError> {
+        match self {
+            Self::Private {
+                state: PrivateTallyState::Encrypted { total_stake, .. },
+            } => Ok(total_stake.0),
             Self::Private {
                 state: PrivateTallyState::Decrypted { .. },
             } => Err(TallyError::TallyAlreadyDecrypted),

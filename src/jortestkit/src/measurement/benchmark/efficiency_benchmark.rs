@@ -1,4 +1,4 @@
-use crate::measurement::{attribute::Efficiency, marker::Counter, thresholds::Thresholds};
+use crate::measurement::{attribute::Efficiency, marker::Counter, thresholds::Thresholds, Status};
 
 use std::fmt;
 #[derive(Clone)]
@@ -107,6 +107,11 @@ impl EfficiencyBenchmarkFinish {
 
     pub fn definition(&self) -> EfficiencyBenchmarkDef {
         self.definition.clone()
+    }
+
+    pub fn status(&self) -> Status {
+        self.efficiency
+            .against(self.definition.thresholds().unwrap())
     }
 }
 

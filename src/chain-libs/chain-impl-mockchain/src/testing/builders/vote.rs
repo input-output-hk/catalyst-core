@@ -39,8 +39,8 @@ pub fn decrypt_tally(
             let tally =
                 chain_vote::tally(max_votes, &tally_state, &decrypt_shares, &table).unwrap();
             PrivateTallyDecryptedProposal {
-                shares: decrypt_shares.into_boxed_slice(),
-                decrypted: tally.votes.into_boxed_slice(),
+                decrypt_shares: decrypt_shares.into_boxed_slice(),
+                tally_result: tally.votes.into_boxed_slice(),
             }
         })
         .collect::<Vec<_>>();

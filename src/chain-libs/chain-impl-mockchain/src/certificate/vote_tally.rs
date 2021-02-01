@@ -46,8 +46,8 @@ pub struct PrivateTallyDecrypted {
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct PrivateTallyDecryptedProposal {
-    pub shares: Box<[TallyDecryptShare]>,
-    pub decrypted: Box<[u64]>,
+    pub decrypt_shares: Box<[TallyDecryptShare]>,
+    pub tally_result: Box<[u64]>,
 }
 
 impl VoteTallyPayload {
@@ -74,10 +74,12 @@ impl VoteTally {
         }
     }
 
-    pub fn new_private(id: VotePlanId, proposals: PrivateTallyDecrypted) -> Self {
+    pub fn new_private(id: VotePlanId, decrypted_tally: PrivateTallyDecrypted) -> Self {
         Self {
             id,
-            payload: VoteTallyPayload::Private { inner: proposals },
+            payload: VoteTallyPayload::Private {
+                inner: decrypted_tally,
+            },
         }
     }
 
@@ -105,15 +107,17 @@ impl VoteTally {
                     proposals.inner.iter(),
                     |bb, proposal| {
                         // Shares per proposal, n_members x n_options
-                        let n_members = proposal.shares.len().try_into().unwrap();
+                        let n_members = proposal.decrypt_shares.len().try_into().unwrap();
                         if n_members == 0 {
                             bb.u8(0).u8(0)
                         } else {
-                            let n_options = proposal.decrypted.len().try_into().unwrap();
+                            let n_options = proposal.tally_result.len().try_into().unwrap();
                             bb.u8(n_members)
                                 .u8(n_options)
-                                .fold(proposal.shares.iter(), |bb, s| bb.bytes(&s.to_bytes()))
-                                .fold(proposal.decrypted.iter(), |bb, count| bb.u64(*count))
+                                .fold(proposal.decrypt_shares.iter(), |bb, s| {
+                                    bb.bytes(&s.to_bytes())
+                                })
+                                .fold(proposal.tally_result.iter(), |bb, count| bb.u64(*count))
                         }
                     },
                 )
@@ -269,7 +273,10 @@ impl Readable for VoteTally {
                     }
                     let shares = shares.into_boxed_slice();
                     let decrypted = decrypted.into_boxed_slice();
-                    proposals.push(PrivateTallyDecryptedProposal { shares, decrypted });
+                    proposals.push(PrivateTallyDecryptedProposal {
+                        decrypt_shares: shares,
+                        tally_result: decrypted,
+                    });
                 }
 
                 VoteTallyPayload::Private {

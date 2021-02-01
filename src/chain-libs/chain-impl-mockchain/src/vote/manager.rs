@@ -245,14 +245,14 @@ impl ProposalManager {
         let state = encrypted_tally.state();
 
         let verifiable_tally = chain_vote::Tally {
-            votes: decrypted_proposal.decrypted.to_vec(),
+            votes: decrypted_proposal.tally_result.to_vec(),
         };
-        if !verifiable_tally.verify(&state, &decrypted_proposal.shares) {
+        if !verifiable_tally.verify(&state, &decrypted_proposal.decrypt_shares) {
             return Err(TallyError::InvalidDecryption);
         }
 
         let mut result = TallyResult::new(self.options.clone());
-        for (choice, &weight) in decrypted_proposal.decrypted.iter().enumerate() {
+        for (choice, &weight) in decrypted_proposal.tally_result.iter().enumerate() {
             result.add_vote(Choice::new(u8::try_from(choice).unwrap()), weight)?;
         }
 

@@ -317,11 +317,11 @@ impl Controller {
         &self,
         owner: &Wallet,
         vote_plan_def: &VotePlanDef,
-        shares: PrivateTallyDecrypted,
+        decrypted_tally: PrivateTallyDecrypted,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
         let vote_plan: VotePlan = vote_plan_def.clone().into();
-        let vote_tally = VoteTally::new_private(vote_plan.to_id(), shares);
+        let vote_tally = VoteTally::new_private(vote_plan.to_id(), decrypted_tally);
 
         let fragment = self.fragment_factory.vote_tally(owner, vote_tally);
         test_ledger.apply_fragment(&fragment, test_ledger.date())

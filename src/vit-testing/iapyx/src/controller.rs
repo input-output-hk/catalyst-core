@@ -84,7 +84,12 @@ impl Controller {
             .chars()
             .map(|x| x.to_digit(10).unwrap() as u8)
             .collect();
-        let secret = KeyQrCode::decode(img, &bytes).unwrap().leak_secret();
+        let secret = KeyQrCode::decode(img, &bytes)
+            .unwrap()
+            .get(0)
+            .unwrap()
+            .clone()
+            .leak_secret();
         let backend = WalletBackend::new(proxy_address, backend_settings);
         let settings = backend.settings()?;
         Ok(Self {

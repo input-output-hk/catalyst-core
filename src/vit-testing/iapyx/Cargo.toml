@@ -22,8 +22,8 @@ rand = "0.7"
 rand_core = "0.5"
 cryptoxide = "0.2.0"
 ed25519-bip32 = "^0.3.1"
-jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", branch = "fix_chain_vote_conversion" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "fix_chain_vote_conversion" }
+jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", branch = "change-bardecoder-for-quircs" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "change-bardecoder-for-quircs" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 hyper = "0.13.6"
 thiserror = "1.0"
@@ -38,7 +38,7 @@ warp = "0.2.5"
 warp-reverse-proxy = "0.1.0"
 tokio = { version = "0.2", features = ["macros"] }
 url = "2.1.1"
-image = "0.22"
+image = "0.23.12"
 
 [dependencies.reqwest]
 version = "0.10.6"

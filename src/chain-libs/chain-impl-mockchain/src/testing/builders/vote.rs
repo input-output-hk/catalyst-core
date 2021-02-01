@@ -1,10 +1,10 @@
 use crate::{
-    certificate::TallyDecryptShares, testing::data::CommitteeMembersManager, vote::VotePlanStatus,
+    certificate::PrivateTallyDecryptedProposal, testing::data::CommitteeMembersManager, vote::VotePlanStatus,
 };
 pub fn build_tally_decrypt_share(
     vote_plan_status: &VotePlanStatus,
     members: &CommitteeMembersManager,
-) -> TallyDecryptShares {
+) -> PrivateTallyDecryptedProposal {
     let shares = vote_plan_status
         .proposals
         .iter()
@@ -28,5 +28,5 @@ pub fn build_tally_decrypt_share(
         })
         .collect::<Vec<_>>();
 
-    TallyDecryptShares::new(shares)
+    PrivateTallyDecryptedProposal::new(shares)
 }

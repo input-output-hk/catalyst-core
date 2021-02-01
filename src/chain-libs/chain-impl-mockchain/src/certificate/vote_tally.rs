@@ -23,7 +23,7 @@ pub struct VoteTally {
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub enum VoteTallyPayload {
     Public,
-    Private { shares: TallyDecryptShares },
+    Private { inner: PrivateTallyDecrypted },
 }
 
 #[derive(Debug, Clone)]
@@ -40,8 +40,14 @@ pub enum TallyProof {
 }
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
-pub struct TallyDecryptShares {
-    inner: Box<[Box<[TallyDecryptShare]>]>,
+pub struct PrivateTallyDecrypted {
+    inner: Box<[PrivateTallyDecryptedProposal]>,
+}
+
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
+pub struct PrivateTallyDecryptedProposal {
+    shares: Box<[TallyDecryptShare]>,
+    decrypted: Box<[u64]>,
 }
 
 impl VoteTallyPayload {
@@ -61,10 +67,10 @@ impl VoteTally {
         }
     }
 
-    pub fn new_private(id: VotePlanId, shares: TallyDecryptShares) -> Self {
+    pub fn new_private(id: VotePlanId, proposals: PrivateTallyDecrypted) -> Self {
         Self {
             id,
-            payload: VoteTallyPayload::Private { shares },
+            payload: VoteTallyPayload::Private { inner: proposals },
         }
     }
 
@@ -76,13 +82,6 @@ impl VoteTally {
         self.payload.payload_type()
     }
 
-    pub fn decrypt_shares(&self) -> Option<&TallyDecryptShares> {
-        match &self.payload {
-            VoteTallyPayload::Public => None,
-            VoteTallyPayload::Private { shares } => Some(shares),
-        }
-    }
-
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         use std::convert::TryInto;
 
@@ -90,20 +89,23 @@ impl VoteTally {
 
         match &self.payload {
             VoteTallyPayload::Public => bb,
-            VoteTallyPayload::Private { shares } => {
-                bb.u8(shares.inner.len().try_into().unwrap())
-                    .fold(shares.inner.iter(), |bb, s| {
+            VoteTallyPayload::Private { inner: proposals } => {
+                bb.u8(proposals.inner.len().try_into().unwrap()).fold(
+                    proposals.inner.iter(),
+                    |bb, proposal| {
                         // Shares per proposal, n_members x n_options
-                        let n_members = s.len().try_into().unwrap();
+                        let n_members = proposal.shares.len().try_into().unwrap();
                         if n_members == 0 {
                             bb.u8(0).u8(0)
                         } else {
-                            let n_options = s[0].options().try_into().unwrap();
+                            let n_options = proposal.decrypted.len().try_into().unwrap();
                             bb.u8(n_members)
                                 .u8(n_options)
-                                .fold(s.iter(), |bb, s| bb.bytes(&s.to_bytes()))
+                                .fold(proposal.shares.iter(), |bb, s| bb.bytes(&s.to_bytes()))
+                                .fold(proposal.decrypted.iter(), |bb, count| bb.u64(*count))
                         }
-                    })
+                    },
+                )
             }
         }
     }
@@ -149,23 +151,11 @@ impl TallyProof {
     }
 }
 
-impl TallyDecryptShares {
-    pub fn new(shares: Vec<Vec<TallyDecryptShare>>) -> Self {
+impl PrivateTallyDecrypted {
+    pub fn new(proposals: Vec<PrivateTallyDecryptedProposal>) -> Self {
         Self {
-            inner: shares
-                .into_iter()
-                .map(|s| s.into_boxed_slice())
-                .collect::<Vec<_>>()
-                .into_boxed_slice(),
+            inner: proposals.into_boxed_slice(),
         }
-    }
-
-    pub fn shares_for_proposal(&self, i: u8) -> Option<&[TallyDecryptShare]> {
-        self.inner.get(i as usize).map(|s| s.as_ref())
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = &[TallyDecryptShare]> {
-        self.inner.iter().map(|s| s.as_ref())
     }
 }
 
@@ -258,13 +248,18 @@ impl Readable for VoteTally {
                         })?;
                         shares.push(share);
                     }
-                    proposals.push(shares.into_boxed_slice());
+                    let mut decrypted = Vec::with_capacity(options_number);
+                    for _j in 0..options_number {
+                        decrypted.push(buf.get_u64()?);
+                    }
+                    let shares = shares.into_boxed_slice();
+                    let decrypted = decrypted.into_boxed_slice();
+                    proposals.push(PrivateTallyDecryptedProposal { shares, decrypted });
                 }
-                let shares = TallyDecryptShares {
-                    inner: proposals.into_boxed_slice(),
-                };
 
-                VoteTallyPayload::Private { shares }
+                VoteTallyPayload::Private {
+                    inner: PrivateTallyDecrypted::new(proposals),
+                }
             }
         };
 

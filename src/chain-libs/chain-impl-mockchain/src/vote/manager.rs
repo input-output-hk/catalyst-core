@@ -1,6 +1,8 @@
 use crate::vote::{Choice, Payload, TallyError};
 use crate::{
-    certificate::{Proposal, TallyDecryptShares, VoteAction, VoteCast, VotePlan, VotePlanId},
+    certificate::{
+        PrivateTallyDecryptedProposal, Proposal, VoteAction, VoteCast, VotePlan, VotePlanId,
+    },
     date::BlockDate,
     ledger::governance::{Governance, GovernanceAcceptanceCriteria},
     rewards::Ratio,
@@ -435,7 +437,7 @@ impl ProposalManagers {
 
     pub fn finalize_private_tally<F>(
         &self,
-        shares: &TallyDecryptShares,
+        shares: &PrivateTallyDecryptedProposal,
         governance: &Governance,
         f: &mut F,
     ) -> Result<Self, VoteError>
@@ -659,7 +661,7 @@ impl VotePlanManager {
 
     pub fn finalize_private_tally<F>(
         &self,
-        shares: &TallyDecryptShares,
+        shares: &PrivateTallyDecryptedProposal,
         governance: &Governance,
         f: &mut F,
     ) -> Result<Self, VoteError>

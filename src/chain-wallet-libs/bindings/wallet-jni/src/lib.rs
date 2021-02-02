@@ -533,7 +533,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPrivatePaylo
     vote_plan_id: jbyteArray,
     index: jint,
     num_choices: jint,
-    encryption_key: jbyteArray,
+    encryption_key: JString,
 ) -> jlong {
     let id_size = env.get_array_length(vote_plan_id).expect("invalid array");
 
@@ -541,25 +541,9 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPrivatePaylo
     env.get_byte_array_region(vote_plan_id, 0, &mut buffer)
         .expect("invalid byte arrray read");
 
-    let encryption_key = {
-        let array_size = env.get_array_length(encryption_key).expect("invalid array");
-
-        // FIXME: remove magic number
-        if array_size != 65 {
-            let _ = env.throw_new(
-                "java/lang/IllegalArgumentException",
-                "encryption vote key should be 65 bytes long",
-            );
-
-            return 0;
-        }
-
-        let mut buffer = [0i8; 65];
-        env.get_byte_array_region(encryption_key, 0, &mut buffer)
-            .expect("invalid byte arrray read");
-
-        buffer
-    };
+    let encryption_key = env
+        .get_string(encryption_key)
+        .expect("Couldn't get bech32 string");
 
     let index: u8 = match index.try_into() {
         Ok(index) => index,
@@ -591,7 +575,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Proposal_withPrivatePaylo
             buffer.as_ptr() as *const u8,
             index,
             num_choices,
-            vote::ProposalPrivate(encryption_key.as_ptr().cast::<u8>()),
+            vote::ProposalPrivate(&encryption_key),
             &mut proposal,
         )
     };

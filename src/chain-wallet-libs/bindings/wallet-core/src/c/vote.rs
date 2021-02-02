@@ -5,10 +5,10 @@ use crate::{
 };
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options as VoteOptions};
 use std::convert::TryFrom;
-use thiserror::Error;
+use std::ffi::CStr;
 pub use wallet::Settings;
 
-const ENCRYPTION_VOTE_KEY_SIZE: usize = 65;
+const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
 
 // using generics in this module is questionable, but it's used just for code
 // re-use, the idea is to have two functions, and then it's exposed that way in
@@ -17,12 +17,7 @@ const ENCRYPTION_VOTE_KEY_SIZE: usize = 65;
 // using the same approach for all the interfaces it's better.
 // something else that could work is a new opaque type.
 pub struct ProposalPublic;
-#[repr(transparent)]
-pub struct ProposalPrivate(pub *const u8);
-
-#[derive(Error, Debug)]
-#[error("invalid binary format")]
-pub struct InvalidEncryptionKey;
+pub struct ProposalPrivate<'a>(pub &'a CStr);
 
 pub trait ToPayload {
     fn to_payload(self) -> Result<PayloadTypeConfig, Error>;
@@ -34,22 +29,28 @@ impl ToPayload for ProposalPublic {
     }
 }
 
-impl ToPayload for ProposalPrivate {
+impl<'a> ToPayload for ProposalPrivate<'a> {
     fn to_payload(self) -> Result<PayloadTypeConfig, Error> {
-        if self.0.is_null() {
-            Err(Error::invalid_input("encrypting_vote_key").with(crate::c::NulPtr))
-        } else {
-            unsafe {
-                let encryption_vote_key =
-                    std::slice::from_raw_parts(self.0, ENCRYPTION_VOTE_KEY_SIZE);
+        use bech32::FromBase32;
 
-                EncryptingVoteKey::from_bytes(encryption_vote_key)
-                    .ok_or_else(|| {
-                        Error::invalid_input("encrypting_vote_key").with(InvalidEncryptionKey)
-                    })
-                    .map(PayloadTypeConfig::Private)
-            }
-        }
+        const INPUT_NAME: &str = "encrypting_vote_key";
+
+        self.0
+            .to_str()
+            .map_err(|_| Error::invalid_input(INPUT_NAME))
+            .and_then(|s| bech32::decode(s).map_err(|_| Error::invalid_vote_encryption_key()))
+            .and_then(|(hrp, raw_key)| {
+                if hrp != ENCRYPTION_VOTE_KEY_HRP {
+                    return Err(Error::invalid_vote_encryption_key());
+                }
+
+                let bytes = Vec::<u8>::from_base32(&raw_key).unwrap();
+
+                EncryptingVoteKey::from_bytes(&bytes)
+                    .ok_or_else(|| Error::invalid_vote_encryption_key())
+            })
+            .map(PayloadTypeConfig::Private)
+            .map_err(|_| Error::invalid_vote_encryption_key())
     }
 }
 
@@ -99,6 +100,7 @@ pub unsafe fn proposal_new<P: ToPayload>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bech32::ToBase32;
 
     #[test]
     fn cast_private_vote() {
@@ -109,14 +111,17 @@ mod tests {
         let sk = gargamel::SecretKey::generate(&mut rng);
         let pk = gargamel::Keypair::from_secretkey(sk).public_key;
 
-        let encrypting_vote_key = pk.to_bytes();
+        let encrypting_vote_key =
+            bech32::encode(ENCRYPTION_VOTE_KEY_HRP, pk.to_bytes().to_base32()).unwrap();
+        let encrypting_vote_key = std::ffi::CString::new(encrypting_vote_key).unwrap();
+
         let mut proposal: ProposalPtr = std::ptr::null_mut();
         unsafe {
             let result = proposal_new(
                 vote_plan_id.as_ptr(),
                 0,
                 2,
-                ProposalPrivate(encrypting_vote_key.as_ptr()),
+                ProposalPrivate(&encrypting_vote_key),
                 (&mut proposal) as *mut ProposalPtr,
             );
             assert!(result.is_ok());

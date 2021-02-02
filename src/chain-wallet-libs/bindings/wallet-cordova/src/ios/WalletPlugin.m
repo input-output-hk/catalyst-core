@@ -404,16 +404,9 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     NSData* vote_plan_id = [command.arguments objectAtIndex:0];
     NSString* index_raw = [command.arguments objectAtIndex:1];
     NSString* num_choices_raw = [command.arguments objectAtIndex:2];
-    NSData* encrypting_key = [command.arguments objectAtIndex:3];
+    NSString* encrypting_key = [command.arguments objectAtIndex:3];
 
     if ([vote_plan_id isEqual:[NSNull null]]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
-                                         messageAsString:@"missing argument"];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        return;
-    }
-
-    if ([encrypting_key isEqual:[NSNull null]]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
                                          messageAsString:@"missing argument"];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -427,7 +420,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     ErrorPtr result = iohk_jormungandr_vote_proposal_new_private(vote_plan_id.bytes,
         index,
         num_choices,
-        encrypting_key.bytes,
+        [encrypting_key UTF8String],
         &proposal_out_ptr);
 
     if (result != nil) {

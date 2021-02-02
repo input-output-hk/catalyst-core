@@ -84,8 +84,8 @@ ErrorPtr iohk_jormungandr_symmetric_cipher_decrypt(const uint8_t *password,
 /**
  * build the proposal object
  *
- * * `vote_encryption_key`: the vote encryption key argument is expected
- * to be a 65 bytes array
+ * * `vote_encryption_key`: a null terminated string (c-string) with the bech32
+ * representation of the encryption vote key
  *
  * # Errors
  *
@@ -103,7 +103,7 @@ ErrorPtr iohk_jormungandr_symmetric_cipher_decrypt(const uint8_t *password,
 ErrorPtr iohk_jormungandr_vote_proposal_new_private(const uint8_t *vote_plan_id,
                                                     uint8_t index,
                                                     uint8_t num_choices,
-                                                    const uint8_t *vote_encryption_key,
+                                                    const char *vote_encryption_key,
                                                     ProposalPtr *proposal_out);
 
 /**

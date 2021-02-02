@@ -23,6 +23,7 @@ hdkeygen = {path = "../../hdkeygen"}
 symmetric-cipher = {path = "../../symmetric-cipher"}
 thiserror = {version = "1.0.13", default-features = false}
 wallet = {path = "../../wallet"}
+bech32 = "0.7.2"
 
 rand = { version = "0.7.3", features = ["getrandom"] }
 

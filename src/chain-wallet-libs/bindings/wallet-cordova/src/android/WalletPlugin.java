@@ -363,7 +363,7 @@ public class WalletPlugin extends CordovaPlugin {
         final byte[] votePlanId = args.getArrayBuffer(0);
         final Integer index = args.getInt(1);
         final Integer numChoices = args.getInt(2);
-        final byte[] encryptingVoteKey = args.getArrayBuffer(3);
+        final String encryptingVoteKey = args.getString(3);
 
         try {
             long ptr = Proposal.withPrivatePayload(votePlanId, index, numChoices, encryptingVoteKey);

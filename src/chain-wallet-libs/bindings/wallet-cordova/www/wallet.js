@@ -29,7 +29,6 @@ const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
 
 const VOTE_PLAN_ID_LENGTH = 32;
 const FRAGMENT_ID_LENGTH = 32;
-const ENCRYPTION_VOTE_KEY_LENGTH = 65;
 const ED25519_EXTENDED_LENGTH = 64;
 
 /**
@@ -307,18 +306,17 @@ var plugin = {
      * @param {Uint8Array} votePlanId a byte array of 32 elements that identifies the voteplan
      * @param {number} index the index of the proposal in the voteplan
      * @param {number} numChoices the number of choices of the proposal, used to validate the choice
-     * @param {Uint8Array} encryptionVoteKey a byte array of 65 elements, this
-     * is the single key used to encrypt a vote, generated from the public keys
+     * @param {string} encryptionVoteKey bech32 string representing the
+     * single key used to encrypt a vote, generated from the public keys
      * from all committee members
      * @param {function} successCallback returns an object with ignored, and value properties
      * @param {errorCallback} errorCallback
      */
     proposalNewPrivate: function (votePlanId, index, numChoices, encryptionVoteKey, successCallback, errorCallback) {
-        argscheck.checkArgs('*nn*ff', 'proposalNewPrivate', arguments);
+        argscheck.checkArgs('*nnsff', 'proposalNewPrivate', arguments);
         checkUint8Array({ name: 'votePlanId', testee: votePlanId, optLength: VOTE_PLAN_ID_LENGTH });
-        checkUint8Array({ name: 'encryptionVoteKey', testee: encryptionVoteKey, optLength: ENCRYPTION_VOTE_KEY_LENGTH });
 
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_PRIVATE_ACTION_TAG, [votePlanId.buffer, index, numChoices, encryptionVoteKey.buffer]);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, PROPOSAL_NEW_PRIVATE_ACTION_TAG, [votePlanId.buffer, index, numChoices, encryptionVoteKey]);
     },
 
     /**

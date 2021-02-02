@@ -27,11 +27,15 @@ pub struct Proposal {}
 #[repr(C)]
 pub struct Error {}
 
+#[repr(C)]
+pub struct EncryptingVoteKey {}
+
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
 pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
+pub type EncryptingVoteKeyPtr = *mut EncryptingVoteKey;
 
 /// Payload type for voting
 #[repr(u8)]
@@ -461,8 +465,8 @@ pub unsafe extern "C" fn iohk_jormungandr_vote_proposal_new_public(
 
 /// build the proposal object
 ///
-/// * `vote_encryption_key`: the vote encryption key argument is expected
-/// to be a 65 bytes array
+/// * `vote_encryption_key`: a null terminated string (c-string) with the bech32
+/// representation of the encryption vote key
 ///
 /// # Errors
 ///
@@ -481,14 +485,16 @@ pub unsafe extern "C" fn iohk_jormungandr_vote_proposal_new_private(
     vote_plan_id: *const u8,
     index: u8,
     num_choices: u8,
-    vote_encryption_key: *const u8,
+    vote_encryption_key: *const std::os::raw::c_char,
     proposal_out: *mut ProposalPtr,
 ) -> ErrorPtr {
+    let bech32_str = CStr::from_ptr(vote_encryption_key);
+
     let r = vote::proposal_new(
         vote_plan_id,
         index,
         num_choices,
-        vote::ProposalPrivate(vote_encryption_key),
+        vote::ProposalPrivate(bech32_str),
         proposal_out as *mut *mut ProposalRust,
     );
 

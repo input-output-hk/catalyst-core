@@ -57,6 +57,10 @@ pub enum ErrorCode {
 
     /// authentication failed
     SymmetricCipherInvalidPassword = 7,
+
+    /// vote encryption key is invalid
+    /// either because is not valid bech32, or because of the underlying bytes
+    InvalidVoteEncryptionKey = 8,
 }
 
 #[derive(Debug)]
@@ -86,6 +90,10 @@ pub enum ErrorKind {
 
     /// authentication failed
     SymmetricCipherInvalidPassword,
+
+    /// vote encryption key is invalid
+    /// either because is not valid bech32, or because of the underlying bytes
+    InvalidVoteEncryptionKey,
 }
 
 impl ErrorKind {
@@ -102,6 +110,7 @@ impl ErrorKind {
             Self::WalletTransactionBuilding => ErrorCode::WalletTransactionBuilding,
             Self::SymmetricCipherError => ErrorCode::SymmetricCipherError,
             Self::SymmetricCipherInvalidPassword => ErrorCode::SymmetricCipherInvalidPassword,
+            Self::InvalidVoteEncryptionKey => ErrorCode::InvalidVoteEncryptionKey,
         }
     }
 }
@@ -192,6 +201,13 @@ impl Error {
 
         Self {
             kind,
+            details: None,
+        }
+    }
+
+    pub fn invalid_vote_encryption_key() -> Self {
+        Self {
+            kind: ErrorKind::InvalidVoteEncryptionKey,
             details: None,
         }
     }
@@ -337,6 +353,7 @@ impl Display for ErrorKind {
             ),
             Self::SymmetricCipherError => f.write_str("malformed encryption or decryption payload"),
             Self::SymmetricCipherInvalidPassword => f.write_str("invalid decryption password"),
+            Self::InvalidVoteEncryptionKey => f.write_str("invalid vote encryption key"),
         }
     }
 }

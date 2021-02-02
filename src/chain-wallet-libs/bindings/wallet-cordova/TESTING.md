@@ -8,7 +8,7 @@ The tests use [cordova-plugin-test-framework](https://github.com/apache/cordova-
 
 In the tests directory, run (it should be possible to automatize this later).
 
-`npx run build`
+`npm run build`
 
 In a new directory for a test app.
 

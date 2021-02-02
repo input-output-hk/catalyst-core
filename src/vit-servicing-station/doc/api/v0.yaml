@@ -151,7 +151,7 @@ components:
         chain_vote_end_time:
           type: string
           format: date-time
-        chain_committee_end:
+        chain_committee_end_time:
           type: string
           format: date-time
         chain_voteplan_payload:

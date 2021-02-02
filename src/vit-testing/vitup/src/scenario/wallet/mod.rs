@@ -31,9 +31,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub use controller::WalletProxyController;
+use iapyx::Protocol;
 pub use jormungandr_testing_utils::testing::network_builder::WalletProxySettings;
 pub use spawn_params::WalletProxySpawnParams;
-
 pub type WalletProxyError = Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -139,6 +139,7 @@ impl WalletProxy {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn spawn<R: RngCore>(
         context: &Context<R>,
         progress_bar: ProgressBar,
@@ -147,6 +148,7 @@ impl WalletProxy {
         node_setting: &NodeSetting,
         block0: &Path,
         working_dir: &Path,
+        protocol: Protocol,
     ) -> Result<Self> {
         let dir = working_dir.join(alias);
         std::fs::DirBuilder::new().recursive(true).create(&dir)?;
@@ -169,6 +171,18 @@ impl WalletProxy {
             .arg(&settings.base_node_backend_address().unwrap().to_string())
             .arg("--block0")
             .arg(block0.to_str().unwrap());
+
+        if let Protocol::Https {
+            key_path,
+            cert_path,
+        } = protocol
+        {
+            command
+                .arg("--cert")
+                .arg(cert_path)
+                .arg("--key")
+                .arg(key_path);
+        }
 
         let wallet_proxy = WalletProxy {
             alias: alias.into(),

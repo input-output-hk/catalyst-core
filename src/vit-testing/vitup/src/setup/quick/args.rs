@@ -4,10 +4,12 @@ use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::setup::quick::mode::parse_mode_from_str;
 use crate::setup::{initials::Initials, quick::Mode};
 use crate::Result;
+use iapyx::Protocol;
 use jormungandr_scenario_tests::programs::prepare_command;
 use jormungandr_scenario_tests::{Context, Seed};
 use jortestkit::prelude::read_file;
 use jortestkit::prelude::{parse_progress_bar_mode_from_str, ProgressBarMode};
+use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -120,6 +122,10 @@ pub struct QuickStartCommandArgs {
     /// switch to private voting type
     #[structopt(long = "private")]
     pub private: bool,
+
+    /// use tls
+    #[structopt(long = "https")]
+    pub https: bool,
 }
 
 impl QuickStartCommandArgs {
@@ -163,6 +169,13 @@ impl QuickStartCommandArgs {
             quick_setup.initials_count(initials_count, "1234");
         }
 
+        if self.https {
+            quick_setup.with_protocol(Protocol::Https {
+                key_path: Path::new("../").join("resources/tls/server.key"),
+                cert_path: Path::new("../").join("resources/tls/server.crt"),
+            });
+        }
+
         let vote_timestamps = vec![
             self.vote_start_timestamp.clone(),
             self.tally_start_timestamp.clone(),
@@ -204,6 +217,7 @@ impl QuickStartCommandArgs {
                     &mut vit_controller,
                     vit_parameters,
                     endpoint,
+                    quick_setup.protocol(),
                 )?;
                 endless_mode()?;
             }
@@ -215,6 +229,7 @@ impl QuickStartCommandArgs {
                     &mut vit_controller,
                     vit_parameters,
                     endpoint,
+                    quick_setup.protocol(),
                 )?;
                 interactive_mode(controller, nodes_list, vit_station, wallet_proxy)?;
             }

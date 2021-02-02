@@ -1,10 +1,12 @@
 use crate::setup::initials::Initials;
 use chrono::NaiveDateTime;
+use iapyx::Protocol;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct QuickVitBackendParameters {
     pub initials: Initials,
+    pub protocol: Protocol,
     pub vote_start: u64,
     pub vote_tally: u64,
     pub tally_end: u64,
@@ -23,6 +25,7 @@ pub struct QuickVitBackendParameters {
 impl Default for QuickVitBackendParameters {
     fn default() -> Self {
         Self {
+            protocol: Protocol::Http,
             initials: Default::default(),
             vote_start: 1,
             vote_tally: 2,

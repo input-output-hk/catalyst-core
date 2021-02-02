@@ -9,6 +9,7 @@ use crate::vit_station::VitStationController;
 use crate::wallet::WalletProxyController;
 use crate::wallet::WalletProxySpawnParams;
 use crate::Result;
+use iapyx::Protocol;
 use jormungandr_lib::interfaces::Explorer;
 use jormungandr_scenario_tests::interactive::UserInteractionController;
 use jormungandr_scenario_tests::scenario::Controller;
@@ -30,6 +31,7 @@ pub fn setup_network(
     vit_controller: &mut VitController,
     vit_parameters: ValidVotePlanParameters,
     endpoint: String,
+    protocol: &Protocol,
 ) -> Result<(
     Vec<NodeController>,
     VitStationController,
@@ -82,7 +84,9 @@ pub fn setup_network(
     let vit_station = vit_controller.spawn_vit_station(controller, vit_parameters)?;
     let wallet_proxy = vit_controller.spawn_wallet_proxy_custom(
         controller,
-        WalletProxySpawnParams::new(WALLET_NODE).with_base_address(endpoint),
+        WalletProxySpawnParams::new(WALLET_NODE)
+            .with_base_address(endpoint)
+            .with_protocol(protocol.clone()),
     )?;
 
     Ok((
@@ -149,6 +153,8 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
     mut quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: String,
 ) -> Result<()> {
+    let protocol = quick_setup.protocol().clone();
+
     let control_context = Arc::new(Mutex::new(ControlContext::new(
         working_dir.clone(),
         quick_setup.parameters().clone(),
@@ -172,6 +178,7 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
                 context.clone(),
                 quick_setup.clone(),
                 endpoint.clone(),
+                &protocol,
             )?;
         }
 
@@ -185,6 +192,7 @@ pub fn single_run(
     context: Context<ChaChaRng>,
     mut quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: String,
+    protocol: &Protocol,
 ) -> Result<()> {
     {
         let mut control_context = control_context.lock().unwrap();
@@ -198,6 +206,7 @@ pub fn single_run(
         &mut vit_controller,
         vit_parameters,
         endpoint,
+        protocol,
     )?;
 
     {

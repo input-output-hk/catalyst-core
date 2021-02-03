@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 use tracing::{error, info};
+use tracing_appender::non_blocking::WorkerGuard;
 use vit_servicing_station_lib::{
     db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
     server::settings::ServiceSettings, v0,
@@ -26,7 +27,7 @@ fn check_and_build_proper_path(path: &PathBuf) -> std::io::Result<()> {
 fn config_tracing(
     level: server_settings::LogLevel,
     pathbuf: Option<PathBuf>,
-) -> Result<(), std::io::Error> {
+) -> Result<WorkerGuard, std::io::Error> {
     if let Some(path) = pathbuf {
         // check path integrity
         // we try opening the file since tracing appender would just panic instead of
@@ -51,15 +52,19 @@ fn config_tracing(
             })?,
         );
 
-        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+        let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
         tracing_subscriber::fmt()
             .with_writer(non_blocking)
             .with_max_level(level)
             .init();
-        Ok(())
+        Ok(guard)
     } else {
-        tracing_subscriber::fmt().with_max_level(level).init();
-        Ok(())
+        let (non_blocking, guard) = tracing_appender::non_blocking(std::io::stdout());
+        tracing_subscriber::fmt()
+            .with_writer(non_blocking)
+            .with_max_level(level)
+            .init();
+        Ok(guard)
     }
 }
 
@@ -89,7 +94,7 @@ async fn main() {
     }
 
     // setup logging
-    config_tracing(
+    let _guard = config_tracing(
         settings.log.log_level.unwrap_or_default(),
         settings.log.log_output_path.clone(),
     )

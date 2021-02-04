@@ -1,11 +1,12 @@
-use crate::setup::initials::Initials;
+use super::initials::Initials;
 use chrono::NaiveDateTime;
 use iapyx::Protocol;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct QuickVitBackendParameters {
+pub struct VitStartParameters {
     pub initials: Initials,
+    #[serde(default = "Protocol::http")]
     pub protocol: Protocol,
     pub vote_start: u64,
     pub vote_tally: u64,
@@ -19,10 +20,11 @@ pub struct QuickVitBackendParameters {
     pub slots_per_epoch: u32,
     pub voting_power: u64,
     pub fund_name: String,
+    pub fund_id: i32,
     pub private: bool,
 }
 
-impl Default for QuickVitBackendParameters {
+impl Default for VitStartParameters {
     fn default() -> Self {
         Self {
             protocol: Protocol::Http,
@@ -40,6 +42,7 @@ impl Default for QuickVitBackendParameters {
             next_vote_start_time: None,
             fund_name: "fund_3".to_owned(),
             private: false,
+            fund_id: 1,
         }
     }
 }

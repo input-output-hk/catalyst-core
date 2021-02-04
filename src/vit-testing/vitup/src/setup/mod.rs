@@ -1,10 +1,9 @@
-pub mod initials;
-pub mod qr;
-pub mod quick;
+pub mod generate;
+pub mod start;
 
 use crate::error::Result;
-use crate::setup::qr::QrCommandArgs;
-use crate::setup::quick::QuickStartCommandArgs;
+use generate::{DataCommandArgs, QrCommandArgs};
+use start::QuickStartCommandArgs;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -42,12 +41,15 @@ impl StartCommand {
 pub enum GenerateCommand {
     /// generate qrs
     Qr(QrCommandArgs),
+    /// generate data only
+    Data(DataCommandArgs),
 }
 
 impl GenerateCommand {
     pub fn exec(self) -> Result<()> {
         match self {
             Self::Qr(quick_start_command) => quick_start_command.exec(),
+            Self::Data(data_start_command) => data_start_command.exec(),
         }
     }
 }

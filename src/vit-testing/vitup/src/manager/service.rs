@@ -1,6 +1,6 @@
 use super::start_rest_server;
+use crate::config::VitStartParameters;
 use crate::manager::ControlContextLock;
-use crate::setup::quick::QuickVitBackendParameters;
 use tokio::runtime::Runtime;
 
 pub struct ManagerService {
@@ -32,7 +32,7 @@ impl ManagerService {
         self.control_context.lock().unwrap().request_to_stop()
     }
 
-    pub fn setup(&self) -> QuickVitBackendParameters {
+    pub fn setup(&self) -> VitStartParameters {
         self.control_context.lock().unwrap().setup().clone()
     }
 

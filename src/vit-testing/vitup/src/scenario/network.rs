@@ -2,7 +2,7 @@ use crate::interactive::VitInteractiveCommandExec;
 use crate::interactive::VitUserInteractionController;
 use crate::manager::{ControlContext, ControlContextLock, ManagerService, State};
 use crate::scenario::controller::VitController;
-use crate::setup::quick::{
+use crate::setup::start::quick::{
     QuickVitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, LEADER_4, WALLET_NODE,
 };
 use crate::vit_station::VitStationController;

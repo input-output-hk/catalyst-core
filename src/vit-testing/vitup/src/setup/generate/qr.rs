@@ -1,5 +1,5 @@
-use crate::setup::initials::Initials;
-use crate::setup::quick::QuickVitBackendSettingsBuilder;
+use crate::config::Initials;
+use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
 use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
 use jormungandr_scenario_tests::{Context, Seed};

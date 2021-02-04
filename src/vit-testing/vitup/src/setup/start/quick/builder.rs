@@ -1,7 +1,7 @@
-use super::QuickVitBackendParameters;
+use crate::config::VitStartParameters;
 use crate::scenario::controller::VitController;
 use crate::scenario::controller::VitControllerBuilder;
-use crate::{setup::initials::Initials, Result};
+use crate::{config::Initials, Result};
 use assert_fs::fixture::{ChildPath, PathChild};
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
@@ -34,7 +34,7 @@ pub const WALLET_NODE: &str = "Wallet_Node";
 
 #[derive(Clone)]
 pub struct QuickVitBackendSettingsBuilder {
-    parameters: QuickVitBackendParameters,
+    parameters: VitStartParameters,
     committe_wallet_name: String,
     title: String,
 }
@@ -56,7 +56,7 @@ impl QuickVitBackendSettingsBuilder {
         }
     }
 
-    pub fn parameters(&self) -> &QuickVitBackendParameters {
+    pub fn parameters(&self) -> &VitStartParameters {
         &self.parameters
     }
 
@@ -186,13 +186,13 @@ impl QuickVitBackendSettingsBuilder {
         if self.parameters.next_vote_start_time.is_none() {
             let timestamp = SecondsSinceUnixEpoch::now().to_secs()
                 + epoch_duration * self.parameters.tally_end
-                + 10;
+                + 10_000;
             self.parameters.next_vote_start_time =
                 Some(NaiveDateTime::from_timestamp(timestamp as i64, 0));
         }
     }
 
-    pub fn upload_parameters(&mut self, parameters: QuickVitBackendParameters) {
+    pub fn upload_parameters(&mut self, parameters: VitStartParameters) {
         self.parameters = parameters;
     }
 
@@ -209,6 +209,7 @@ impl QuickVitBackendSettingsBuilder {
         parameters.set_voting_tally_end(self.parameters.tally_end_timestamp.unwrap().timestamp());
         parameters
             .set_next_fund_start_time(self.parameters.next_vote_start_time.unwrap().timestamp());
+        parameters.set_fund_id(self.parameters.fund_id);
 
         if self.parameters.private {
             let mut committee_wallet = settings

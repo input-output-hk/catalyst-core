@@ -23,6 +23,7 @@ pub struct ValidVotePlanParameters {
     pub vote_encryption_key: Option<String>,
     pub vote_options: VoteOptions,
     pub challenges_count: usize,
+    pub fund_id: i32,
 }
 
 impl ValidVotePlanParameters {
@@ -37,6 +38,7 @@ impl ValidVotePlanParameters {
             vote_encryption_key: None,
             vote_options: VoteOptions::parse_coma_separated_value("blank,yes,no"),
             challenges_count: 4,
+            fund_id: 1,
         }
     }
 
@@ -71,6 +73,10 @@ impl ValidVotePlanParameters {
     pub fn set_vote_options(&mut self, vote_options: VoteOptions) {
         self.vote_options = vote_options
     }
+
+    pub fn set_fund_id(&mut self, fund_id: i32) {
+        self.fund_id = fund_id;
+    }
 }
 
 pub struct ValidVotePlanGenerator {
@@ -95,7 +101,7 @@ impl ValidVotePlanGenerator {
         let voting_tally_start = self.parameters.voting_tally_start.unwrap();
         let voting_tally_end = self.parameters.voting_tally_end.unwrap();
         let next_fund_start_time = self.parameters.next_fund_start_time.unwrap();
-        let fund_id = 1;
+        let fund_id = self.parameters.fund_id;
 
         let payload_type = match vote_plan.payload_type() {
             chain_impl_mockchain::vote::PayloadType::Public => "public",

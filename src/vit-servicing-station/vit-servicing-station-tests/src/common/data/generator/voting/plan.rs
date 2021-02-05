@@ -1,16 +1,11 @@
-use super::{ArbitraryGenerator, Snapshot};
+use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingDataContent};
 use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chrono::{DateTime, NaiveDateTime, SecondsFormat, Utc};
 use rand::{rngs::OsRng, RngCore};
 use vit_servicing_station_lib::db::models::{
-    funds::Fund, proposals::Proposal, vote_options::VoteOptions, voteplans::Voteplan,
-};
-
-use fake::{
-    faker::company::en::{Buzzword, CatchPhase},
-    faker::lorem::en::*,
-    Fake,
+    challenges::Challenge, funds::Fund, proposals::Proposal, vote_options::VoteOptions,
+    voteplans::Voteplan,
 };
 
 pub struct ValidVotePlanParameters {
@@ -81,18 +76,25 @@ impl ValidVotePlanParameters {
 
 pub struct ValidVotePlanGenerator {
     parameters: ValidVotePlanParameters,
+    content_generator: Box<dyn ValidVotingDataContent>,
 }
 
 impl ValidVotePlanGenerator {
-    pub fn new(parameters: ValidVotePlanParameters) -> Self {
-        Self { parameters }
+    pub fn new(
+        parameters: ValidVotePlanParameters,
+        content_generator: Box<dyn ValidVotingDataContent>,
+    ) -> Self {
+        Self {
+            parameters,
+            content_generator,
+        }
     }
 
     fn convert_to_vote_plan(vote_plan_def: &VotePlanDef) -> VotePlan {
         vote_plan_def.clone().into()
     }
 
-    pub fn build(self) -> Snapshot {
+    pub fn build(&mut self) -> Snapshot {
         let mut generator = ArbitraryGenerator::new();
         let vote_plan = Self::convert_to_vote_plan(&self.parameters.vote_plan);
         let chain_vote_plan_id = vote_plan.to_id().to_string();
@@ -118,24 +120,37 @@ impl ValidVotePlanGenerator {
             chain_vote_encryption_key: self
                 .parameters
                 .vote_encryption_key
+                .clone()
                 .unwrap_or_else(|| "".to_string()),
             fund_id,
         };
 
-        let challenges = std::iter::from_fn(|| Some(generator.challenge_with_fund_id(fund_id)))
-            .take(self.parameters.challenges_count)
-            .collect();
+        let count = self.parameters.challenges_count;
+        let challenges = std::iter::from_fn(|| {
+            let challenge_data = self.content_generator.next_challenge();
+            Some(Challenge {
+                id: generator.id().abs(),
+                title: challenge_data.title,
+                description: challenge_data.description,
+                rewards_total: 0,
+                fund_id,
+                challenge_url: challenge_data.challenge_url,
+            })
+        })
+        .take(count)
+        .collect();
 
         let naive = NaiveDateTime::from_timestamp(voting_start, 0);
         let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
 
+        let fund_content = self.content_generator.next_fund();
         let mut fund = Fund {
             id: fund_id,
             fund_name: self.parameters.vote_plan.alias(),
-            fund_goal: "How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?".to_string(),
+            fund_goal: fund_content.goal,
             voting_power_info: datetime.to_rfc3339_opts(SecondsFormat::Secs, true),
             voting_power_threshold: threshold,
-            rewards_info: Sentence(3..5).fake::<String>(),
+            rewards_info: fund_content.rewards_info,
             fund_start_time: voting_start,
             fund_end_time: voting_tally_end,
             next_fund_start_time,
@@ -150,25 +165,25 @@ impl ValidVotePlanGenerator {
             let challenge_idx = rng.next_u32() as usize % self.parameters.challenges_count;
             let mut challenge = fund.challenges.get_mut(challenge_idx).unwrap();
 
-            let proposal_funds = generator.proposal_fund();
+            let proposal_content = self.content_generator.next_proposal();
+            let proposal_funds = proposal_content.funds;
 
             challenge.rewards_total += proposal_funds;
 
-            let proposal_url = generator.gen_http_address();
             let proposal = Proposal {
                 internal_id: index as i32,
                 proposal_id: proposal.id().to_string(),
-                proposal_category: generator.proposal_category(),
-                proposal_title: CatchPhase().fake::<String>(),
-                proposal_summary: CatchPhase().fake::<String>(),
-                proposal_problem: Buzzword().fake::<String>(),
-                proposal_solution: CatchPhase().fake::<String>(),
+                proposal_category: proposal_content.category,
+                proposal_title: proposal_content.title,
+                proposal_summary: proposal_content.summary,
+                proposal_problem: proposal_content.problem,
+                proposal_solution: proposal_content.solution,
                 proposal_public_key: generator.hash(),
                 proposal_funds,
-                proposal_url: proposal_url.to_string(),
-                proposal_impact_score: generator.impact_score(),
-                proposal_files_url: format!("{}/files", proposal_url),
-                proposer: generator.proposer(),
+                proposal_url: proposal_content.url,
+                proposal_impact_score: proposal_content.impact_score,
+                proposal_files_url: proposal_content.files_url,
+                proposer: proposal_content.proposer,
                 chain_proposal_id: proposal.id().to_string().as_bytes().to_vec(),
                 chain_proposal_index: index as i64,
                 chain_vote_options: self.parameters.vote_options.clone(),

@@ -1,6 +1,7 @@
 #[macro_use(error_chain, bail)]
 extern crate error_chain;
 
+pub mod config;
 pub mod error;
 pub mod interactive;
 pub mod manager;

@@ -22,6 +22,10 @@ pub enum Protocol {
     }
 }
 
+impl Protocol {
+    pub fn http() -> Self { Self::Http }
+}
+
 
 pub struct ProxyServerStub {
     protocol: Protocol,

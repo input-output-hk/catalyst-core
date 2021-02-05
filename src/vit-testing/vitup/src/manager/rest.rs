@@ -1,6 +1,7 @@
 use super::file_lister;
 use super::State;
-use crate::{manager::ControlContextLock, setup::quick::QuickVitBackendParameters};
+use crate::config::VitStartParameters;
+use crate::manager::ControlContextLock;
 use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
 use std::convert::Infallible;
@@ -86,7 +87,7 @@ pub async fn file_lister_handler(context: ControlContextLock) -> Result<impl Rep
 
 pub async fn start_handler(
     context: ControlContextLock,
-    parameters: QuickVitBackendParameters,
+    parameters: VitStartParameters,
 ) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
     context_lock.set_parameters(parameters);

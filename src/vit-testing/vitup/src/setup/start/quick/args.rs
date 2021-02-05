@@ -1,8 +1,8 @@
+use super::mode::{parse_mode_from_str, Mode};
 use super::QuickVitBackendSettingsBuilder;
+use crate::config::Initials;
 use crate::scenario::network::service_mode;
 use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
-use crate::setup::quick::mode::parse_mode_from_str;
-use crate::setup::{initials::Initials, quick::Mode};
 use crate::Result;
 use iapyx::Protocol;
 use jormungandr_scenario_tests::programs::prepare_command;

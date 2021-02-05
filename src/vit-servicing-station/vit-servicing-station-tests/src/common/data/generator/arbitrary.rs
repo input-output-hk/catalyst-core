@@ -120,7 +120,7 @@ impl ArbitraryGenerator {
 
     pub fn proposer(&mut self) -> Proposer {
         Proposer {
-            proposer_relevant_experience: self.id_generator.next_u64().to_string(),
+            proposer_relevant_experience: Buzzword().fake::<String>(),
             proposer_name: Name().fake::<String>(),
             proposer_email: SafeEmail().fake::<String>(),
             proposer_url: self.gen_http_address(),

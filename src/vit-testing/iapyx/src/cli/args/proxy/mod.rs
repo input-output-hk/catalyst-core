@@ -31,10 +31,9 @@ pub struct IapyxProxyCommand {
 
     #[structopt(long = "cert")]
     pub cert_path: Option<PathBuf>,
-    
+
     #[structopt(long = "key")]
     pub key_path: Option<PathBuf>,
- 
 }
 
 impl IapyxProxyCommand {
@@ -44,10 +43,11 @@ impl IapyxProxyCommand {
         let node_address = self.node_address.clone();
         let block0_path = self.block0_path.clone();
 
-
         if let Some(cert_path) = &self.cert_path {
-    
-            let key_path = self.key_path.clone().ok_or(IapyxProxyCommandError::UnsufficientHttpConfiguration)?;
+            let key_path = self
+                .key_path
+                .clone()
+                .ok_or(IapyxProxyCommandError::UnsufficientHttpConfiguration)?;
 
             if !key_path.exists() {
                 return Err(IapyxProxyCommandError::KeyFileDoesNotExist);
@@ -65,8 +65,7 @@ impl IapyxProxyCommand {
                 node_address,
                 jortestkit::file::get_file_as_byte_vec(&block0_path),
             ));
-
-        } 
+        }
 
         Ok(ProxyServerStub::new_http(
             proxy_address,

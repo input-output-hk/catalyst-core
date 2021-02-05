@@ -10,6 +10,7 @@ use chain_impl_mockchain::{
     testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder},
     value::Value,
 };
+use jormungandr_testing_utils::wallet::LinearFee;
 use chain_vote::committee::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
 use iapyx::Protocol;
@@ -362,6 +363,7 @@ impl QuickVitBackendSettingsBuilder {
         blockchain.add_leader(LEADER_2);
         blockchain.add_leader(LEADER_3);
         blockchain.add_leader(LEADER_4);
+        blockchain.set_linear_fee(LinearFee::new(0,0,0,));
 
         let committe_wallet =
             WalletTemplate::new_account(&self.committe_wallet_name, Value(1_000_000));

@@ -1,8 +1,8 @@
-mod content;
 mod plan;
+mod template;
 
-pub use content::{
-    ArbitraryValidVotingDataContent, ChallengeContent, FundContent, ProposalContent,
-    ValidVotingDataContent,
-};
 pub use plan::{ValidVotePlanGenerator, ValidVotePlanParameters};
+pub use template::{
+    ArbitraryValidVotingTemplateGenerator, ChallengeTemplate, ExternalValidVotingTemplateGenerator,
+    FundTemplate, ProposalTemplate, ValidVotingTemplateGenerator,
+};

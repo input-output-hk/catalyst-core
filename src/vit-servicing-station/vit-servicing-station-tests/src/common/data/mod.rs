@@ -6,7 +6,9 @@ mod csv_converter;
 mod generator;
 pub use csv_converter::CsvConverter;
 pub use generator::{
-    ArbitraryGenerator, Snapshot, ValidVotePlanGenerator, ValidVotePlanParameters,
+    ArbitraryGenerator, ArbitraryValidVotingTemplateGenerator,
+    ExternalValidVotingTemplateGenerator, Snapshot, ValidVotePlanGenerator,
+    ValidVotePlanParameters,
 };
 
 pub fn token() -> (String, APITokenData) {

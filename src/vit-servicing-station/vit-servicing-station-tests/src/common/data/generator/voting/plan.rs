@@ -1,10 +1,13 @@
-use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingDataContent};
+use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingTemplateGenerator};
 use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chrono::{DateTime, NaiveDateTime, SecondsFormat, Utc};
 use rand::{rngs::OsRng, RngCore};
 use vit_servicing_station_lib::db::models::{
-    challenges::Challenge, funds::Fund, proposals::Proposal, vote_options::VoteOptions,
+    challenges::Challenge,
+    funds::Fund,
+    proposals::{Category, Proposal, Proposer},
+    vote_options::VoteOptions,
     voteplans::Voteplan,
 };
 
@@ -16,9 +19,10 @@ pub struct ValidVotePlanParameters {
     pub voting_tally_end: Option<i64>,
     pub next_fund_start_time: Option<i64>,
     pub vote_encryption_key: Option<String>,
-    pub vote_options: VoteOptions,
+    pub vote_options: Option<VoteOptions>,
     pub challenges_count: usize,
-    pub fund_id: i32,
+    pub fund_id: Option<i32>,
+    pub calculate_challenges_total_funds: bool,
 }
 
 impl ValidVotePlanParameters {
@@ -31,9 +35,10 @@ impl ValidVotePlanParameters {
             voting_tally_end: None,
             next_fund_start_time: None,
             vote_encryption_key: None,
-            vote_options: VoteOptions::parse_coma_separated_value("blank,yes,no"),
+            vote_options: Some(VoteOptions::parse_coma_separated_value("blank,yes,no")),
             challenges_count: 4,
-            fund_id: 1,
+            fund_id: Some(1),
+            calculate_challenges_total_funds: false,
         }
     }
 
@@ -66,27 +71,31 @@ impl ValidVotePlanParameters {
     }
 
     pub fn set_vote_options(&mut self, vote_options: VoteOptions) {
-        self.vote_options = vote_options
+        self.vote_options = Some(vote_options);
     }
 
     pub fn set_fund_id(&mut self, fund_id: i32) {
-        self.fund_id = fund_id;
+        self.fund_id = Some(fund_id);
+    }
+
+    pub fn set_calculate_challenges_total_funds(&mut self, calculate_challenges_total_funds: bool) {
+        self.calculate_challenges_total_funds = calculate_challenges_total_funds;
     }
 }
 
 pub struct ValidVotePlanGenerator {
     parameters: ValidVotePlanParameters,
-    content_generator: Box<dyn ValidVotingDataContent>,
+    template_generator: Box<dyn ValidVotingTemplateGenerator>,
 }
 
 impl ValidVotePlanGenerator {
     pub fn new(
         parameters: ValidVotePlanParameters,
-        content_generator: Box<dyn ValidVotingDataContent>,
+        template_generator: Box<dyn ValidVotingTemplateGenerator>,
     ) -> Self {
         Self {
             parameters,
-            content_generator,
+            template_generator,
         }
     }
 
@@ -103,7 +112,9 @@ impl ValidVotePlanGenerator {
         let voting_tally_start = self.parameters.voting_tally_start.unwrap();
         let voting_tally_end = self.parameters.voting_tally_end.unwrap();
         let next_fund_start_time = self.parameters.next_fund_start_time.unwrap();
-        let fund_id = self.parameters.fund_id;
+
+        let fund_template = self.template_generator.next_fund();
+        let fund_id = self.parameters.fund_id.unwrap_or(fund_template.id);
 
         let payload_type = match vote_plan.payload_type() {
             chain_impl_mockchain::vote::PayloadType::Public => "public",
@@ -127,12 +138,12 @@ impl ValidVotePlanGenerator {
 
         let count = self.parameters.challenges_count;
         let challenges = std::iter::from_fn(|| {
-            let challenge_data = self.content_generator.next_challenge();
+            let challenge_data = self.template_generator.next_challenge();
             Some(Challenge {
-                id: generator.id().abs(),
+                id: challenge_data.id.parse().unwrap(),
                 title: challenge_data.title,
                 description: challenge_data.description,
-                rewards_total: 0,
+                rewards_total: challenge_data.rewards_total.parse().unwrap(),
                 fund_id,
                 challenge_url: challenge_data.challenge_url,
             })
@@ -143,14 +154,13 @@ impl ValidVotePlanGenerator {
         let naive = NaiveDateTime::from_timestamp(voting_start, 0);
         let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
 
-        let fund_content = self.content_generator.next_fund();
         let mut fund = Fund {
             id: fund_id,
             fund_name: self.parameters.vote_plan.alias(),
-            fund_goal: fund_content.goal,
+            fund_goal: fund_template.goal,
             voting_power_info: datetime.to_rfc3339_opts(SecondsFormat::Secs, true),
             voting_power_threshold: threshold,
-            rewards_info: fund_content.rewards_info,
+            rewards_info: fund_template.rewards_info,
             fund_start_time: voting_start,
             fund_end_time: voting_tally_end,
             next_fund_start_time,
@@ -165,28 +175,44 @@ impl ValidVotePlanGenerator {
             let challenge_idx = rng.next_u32() as usize % self.parameters.challenges_count;
             let mut challenge = fund.challenges.get_mut(challenge_idx).unwrap();
 
-            let proposal_content = self.content_generator.next_proposal();
-            let proposal_funds = proposal_content.funds;
+            let proposal_template = self.template_generator.next_proposal();
+            let proposal_funds = proposal_template.proposal_funds.parse().unwrap();
+            let chain_vote_options = proposal_template.chain_vote_options.clone();
 
-            challenge.rewards_total += proposal_funds;
+            if self.parameters.calculate_challenges_total_funds {
+                challenge.rewards_total += proposal_funds;
+            }
+
+            let impact_score = proposal_template.proposal_impact_score_as_integer();
 
             let proposal = Proposal {
-                internal_id: index as i32,
+                internal_id: proposal_template.internal_id.parse().unwrap(),
                 proposal_id: proposal.id().to_string(),
-                proposal_category: proposal_content.category,
-                proposal_title: proposal_content.title,
-                proposal_summary: proposal_content.summary,
-                proposal_problem: proposal_content.problem,
-                proposal_solution: proposal_content.solution,
+                proposal_category: Category {
+                    category_id: "".to_string(),
+                    category_name: proposal_template.category_name,
+                    category_description: "".to_string(),
+                },
+                proposal_title: proposal_template.proposal_title,
+                proposal_summary: proposal_template.proposal_summary,
+                proposal_problem: proposal_template.proposal_problem,
+                proposal_solution: proposal_template.proposal_solution,
                 proposal_public_key: generator.hash(),
                 proposal_funds,
-                proposal_url: proposal_content.url,
-                proposal_impact_score: proposal_content.impact_score,
-                proposal_files_url: proposal_content.files_url,
-                proposer: proposal_content.proposer,
+                proposal_url: proposal_template.proposal_url.clone(),
+                proposal_impact_score: impact_score,
+                proposal_files_url: proposal_template.files_url,
+                proposer: Proposer {
+                    proposer_name: proposal_template.proposer_name,
+                    proposer_email: "".to_string(),
+                    proposer_url: proposal_template.proposer_url,
+                    proposer_relevant_experience: proposal_template.proposer_relevant_experience,
+                },
                 chain_proposal_id: proposal.id().to_string().as_bytes().to_vec(),
                 chain_proposal_index: index as i64,
-                chain_vote_options: self.parameters.vote_options.clone(),
+                chain_vote_options: self.parameters.vote_options.clone().unwrap_or_else(|| {
+                    VoteOptions::parse_coma_separated_value(&chain_vote_options)
+                }),
                 chain_voteplan_id: chain_vote_plan_id.clone(),
                 chain_vote_start_time: vote_plan.chain_vote_start_time,
                 chain_vote_end_time: vote_plan.chain_vote_end_time,
@@ -194,7 +220,11 @@ impl ValidVotePlanGenerator {
                 chain_voteplan_payload: vote_plan.chain_voteplan_payload.clone(),
                 chain_vote_encryption_key: vote_plan.chain_vote_encryption_key.clone(),
                 fund_id: fund.id,
-                challenge_id: challenge.id,
+                challenge_id: proposal_template
+                    .challenge_id
+                    .unwrap_or_else(|| challenge.id.to_string())
+                    .parse()
+                    .unwrap(),
             };
 
             proposals.push(proposal);

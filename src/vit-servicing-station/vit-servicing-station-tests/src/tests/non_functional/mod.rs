@@ -74,7 +74,7 @@ impl VitRestRequestGenerator {
 }
 
 impl RequestGenerator for VitRestRequestGenerator {
-    fn next(&mut self) -> Result<Option<Id>, RequestFailure> {
+    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
         self.rest_client
             .set_api_token(self.snapshot_randomizer.random_token());
         self.graphql_client
@@ -84,43 +84,43 @@ impl RequestGenerator for VitRestRequestGenerator {
             0 => self
                 .rest_client
                 .health()
-                .map(|_| Option::None)
+                .map(|_| vec![Option::None])
                 .map_err(|e| RequestFailure::General(format!("Health: {}", e.to_string()))),
             1 => self
                 .rest_client
                 .proposals()
-                .map(|_| Option::None)
+                .map(|_| vec![Option::None])
                 .map_err(|e| RequestFailure::General(format!("Proposals: {}", e.to_string()))),
             2 => self
                 .graphql_client
                 .proposal_by_id(self.snapshot_randomizer.random_proposal_id() as u32)
-                .map(|_| Option::None)
+                .map(|_| vec![Option::None])
                 .map_err(|e| {
                     RequestFailure::General(format!("GraohQL - Proposals by id: {}", e.to_string()))
                 }),
             3 => self
                 .graphql_client
                 .fund_by_id(self.snapshot_randomizer.random_fund_id())
-                .map(|_| Option::None)
+                .map(|_| vec![Option::None])
                 .map_err(|e| {
                     RequestFailure::General(format!("GraphQL - Fund by id: {}", e.to_string()))
                 }),
             4 => self
                 .rest_client
                 .proposal(&self.snapshot_randomizer.random_proposal_id().to_string())
-                .map(|_| Option::None)
+                .map(|_| vec![Option::None])
                 .map_err(|e| {
                     RequestFailure::General(format!("Proposals by id: {}", e.to_string()))
                 }),
             5 => self
                 .rest_client
                 .fund(&self.snapshot_randomizer.random_fund_id().to_string())
-                .map(|_| Option::None)
+                .map(|_| vec![Option::None])
                 .map_err(|e| RequestFailure::General(format!("Funds by id: {}", e.to_string()))),
             6 => self
                 .graphql_client
                 .funds()
-                .map(|_| Option::None)
+                .map(|_| vec![Option::None])
                 .map_err(|e| RequestFailure::General(format!("Funds: {}", e.to_string()))),
             _ => unreachable!(),
         }

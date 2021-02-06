@@ -182,9 +182,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql"
-version = "2.5.1"
+version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22d4f25567e154225dc45689d9751de8c353df4ff9e278507d997c56f16939dd"
+checksum = "37b42e163bc8d5dc81a43c185916ab24a0ca72636558cadc2ccefe39381695b3"
 dependencies = [
  "async-graphql-derive",
  "async-graphql-parser",
@@ -261,9 +261,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql-warp"
-version = "2.5.1"
+version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91f6b43aeaabea3a6a186ae43f880f26e0eff06d64479f0cf5a4513c7437dfe6"
+checksum = "511f4ab7a330e75756ca8d256201ec053156dc1db5a915561572c50df0c00f4d"
 dependencies = [
  "async-graphql",
  "futures-util",
@@ -1814,7 +1814,7 @@ dependencies = [
  "http",
  "indexmap",
  "slab",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-util 0.6.3",
  "tracing",
  "tracing-futures",
@@ -1958,9 +1958,9 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "hyper"
-version = "0.13.9"
+version = "0.13.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6ad767baac13b44d4529fcf58ba2cd0995e36e7b435bc5b039de6f47e880dbf"
+checksum = "8a6f157065790a3ed2f88679250419b5cdd96e714a0d65f7797fd337186e96bb"
 dependencies = [
  "bytes 0.5.6",
  "futures-channel",
@@ -1982,9 +1982,9 @@ dependencies = [
 
 [[package]]
 name = "hyper"
-version = "0.14.2"
+version = "0.14.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12219dc884514cb4a6a03737f4413c0e01c23a1b059b0156004b23f1e19dccbe"
+checksum = "e8e946c2b1349055e0b72ae281b238baf1a3ea7307c7e9f9d64673bdd9c26ac7"
 dependencies = [
  "bytes 1.0.1",
  "futures-channel",
@@ -1998,7 +1998,7 @@ dependencies = [
  "itoa",
  "pin-project 1.0.5",
  "socket2",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tower-service",
  "tracing",
  "want",
@@ -2012,7 +2012,7 @@ checksum = "37743cc83e8ee85eacfce90f2f4102030d9ff0a95244098d781e9bee4a90abb6"
 dependencies = [
  "bytes 0.5.6",
  "futures-util",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "log",
  "rustls 0.18.1",
  "tokio 0.2.25",
@@ -2027,7 +2027,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d979acc56dcb5b8dddba3917601745e877576475aa046df3226eabdecef78eed"
 dependencies = [
  "bytes 0.5.6",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "native-tls",
  "tokio 0.2.25",
  "tokio-tls",
@@ -2051,10 +2051,10 @@ dependencies = [
  "ed25519-bip32",
  "hdkeygen",
  "hex",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "image",
- "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
- "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
+ "jormungandr-lib",
+ "jormungandr-testing-utils",
  "jortestkit",
  "rand 0.7.3",
  "rand_core 0.5.1",
@@ -2191,9 +2191,9 @@ dependencies = [
  "cfg-if 1.0.0",
  "chain-impl-mockchain",
  "iapyx",
- "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
- "jormungandr-scenario-tests 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
- "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
+ "jormungandr-lib",
+ "jormungandr-scenario-tests",
+ "jormungandr-testing-utils",
  "jortestkit",
  "rand 0.7.3",
  "rand_chacha 0.2.2",
@@ -2245,35 +2245,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-lib"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#961044d92c7792f61aa6b761fbe4eaf49e2d7fd2"
-dependencies = [
- "base64 0.13.0",
- "bech32",
- "cardano-legacy-address",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-time",
- "chain-vote",
- "chrono",
- "hex",
- "http",
- "humantime",
- "parity-multiaddr",
- "poldercast",
- "rand 0.7.3",
- "rand_chacha 0.2.2",
- "rand_core 0.5.1",
- "serde",
- "thiserror",
- "typed-bytes",
-]
-
-[[package]]
-name = "jormungandr-lib"
-version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#0c8fd326c39df2d8469f65375e2afb13d66c6543"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fbeb05dfe6b4b32d4281aba7c5ba1043cd8754b0"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2301,7 +2273,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#961044d92c7792f61aa6b761fbe4eaf49e2d7fd2"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fbeb05dfe6b4b32d4281aba7c5ba1043cd8754b0"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2318,8 +2290,8 @@ dependencies = [
  "futures 0.3.12",
  "hex",
  "indicatif",
- "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee)",
- "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee)",
+ "jormungandr-lib",
+ "jormungandr-testing-utils",
  "jortestkit",
  "json",
  "lazy_static",
@@ -2336,56 +2308,14 @@ dependencies = [
  "slog",
  "structopt",
  "thiserror",
- "tokio 1.1.1",
- "yaml-rust",
-]
-
-[[package]]
-name = "jormungandr-scenario-tests"
-version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#0c8fd326c39df2d8469f65375e2afb13d66c6543"
-dependencies = [
- "assert_fs",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-time",
- "chrono",
- "console 0.13.0",
- "custom_debug",
- "dialoguer 0.7.1",
- "error-chain",
- "function_name",
- "futures 0.3.12",
- "hex",
- "indicatif",
- "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
- "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
- "jortestkit",
- "json",
- "lazy_static",
- "poldercast",
- "rand 0.7.3",
- "rand_chacha 0.2.2",
- "rand_core 0.5.1",
- "regex 1.4.3",
- "reqwest",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_yaml",
- "slog",
- "structopt",
- "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "yaml-rust",
 ]
 
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#961044d92c7792f61aa6b761fbe4eaf49e2d7fd2"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fbeb05dfe6b4b32d4281aba7c5ba1043cd8754b0"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -2408,7 +2338,7 @@ dependencies = [
  "hex",
  "humantime",
  "image",
- "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee)",
+ "jormungandr-lib",
  "jortestkit",
  "json",
  "lazy_static",
@@ -2434,69 +2364,7 @@ dependencies = [
  "sysinfo 0.15.9",
  "tar",
  "thiserror",
- "tokio 1.1.1",
- "tokio-codec",
- "tokio-stream",
- "tonic",
- "tonic-build",
- "typed-bytes",
- "url",
- "zip",
-]
-
-[[package]]
-name = "jormungandr-testing-utils"
-version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#0c8fd326c39df2d8469f65375e2afb13d66c6543"
-dependencies = [
- "assert_fs",
- "base64 0.13.0",
- "bech32",
- "bytesize",
- "cardano-legacy-address",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-storage",
- "chain-time",
- "chain-vote",
- "chrono",
- "custom_debug",
- "flate2",
- "fs_extra",
- "futures 0.3.12",
- "graphql_client",
- "hex",
- "humantime",
- "image",
- "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git)",
- "jortestkit",
- "json",
- "lazy_static",
- "os_info 3.0.1",
- "poldercast",
- "prost",
- "qrcodegen",
- "quircs",
- "rand 0.7.3",
- "rand_chacha 0.2.2",
- "rand_core 0.5.1",
- "regex 1.4.3",
- "reqwest",
- "semver 0.11.0",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_yaml",
- "slog",
- "slog-async",
- "slog-json",
- "symmetric-cipher",
- "sysinfo 0.15.9",
- "tar",
- "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-codec",
  "tokio-stream",
  "tonic",
@@ -3748,7 +3616,7 @@ dependencies = [
  "futures-util",
  "http",
  "http-body 0.3.1",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "hyper-rustls",
  "hyper-tls",
  "ipnet",
@@ -3987,9 +3855,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.61"
+version = "1.0.62"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fceb2595057b6891a4ee808f70054bd2d12f0e97f1cbb78689b59f676df325a"
+checksum = "ea1c6153794552ea7cf7cf63b1231a25de00ec90db326ba6264440fa08e31486"
 dependencies = [
  "indexmap",
  "itoa",
@@ -4519,9 +4387,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.1.1"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6714d663090b6b0acb0fa85841c6d66233d150cdb2602c8f9b8abb03370beb3f"
+checksum = "e8190d04c665ea9e6b6a0dc45523ade572c088d2e6566244c1122671dbf4ae3a"
 dependencies = [
  "autocfg",
  "bytes 1.0.1",
@@ -4599,7 +4467,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc6844de72e57df1980054b38be3a9f4702aba4858be64dd700181a8a6d0e1b6"
 dependencies = [
  "rustls 0.19.0",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "webpki",
 ]
 
@@ -4611,7 +4479,7 @@ checksum = "1981ad97df782ab506a1f43bf82c967326960d278acf3bf8279809648c3ff3ea"
 dependencies = [
  "futures-core",
  "pin-project-lite 0.2.4",
- "tokio 1.1.1",
+ "tokio 1.2.0",
 ]
 
 [[package]]
@@ -4646,7 +4514,7 @@ dependencies = [
  "futures-util",
  "log",
  "pin-project 1.0.5",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tungstenite 0.12.0",
 ]
 
@@ -4675,7 +4543,7 @@ dependencies = [
  "futures-sink",
  "log",
  "pin-project-lite 0.2.4",
- "tokio 1.1.1",
+ "tokio 1.2.0",
 ]
 
 [[package]]
@@ -4711,12 +4579,12 @@ dependencies = [
  "h2 0.3.0",
  "http",
  "http-body 0.4.0",
- "hyper 0.14.2",
+ "hyper 0.14.4",
  "percent-encoding",
  "pin-project 1.0.5",
  "prost",
  "prost-derive",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-stream",
  "tokio-util 0.6.3",
  "tower",
@@ -4749,7 +4617,7 @@ dependencies = [
  "pin-project 1.0.5",
  "rand 0.8.3",
  "slab",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-stream",
  "tower-layer",
  "tower-service",
@@ -5109,7 +4977,7 @@ dependencies = [
  "simplelog",
  "structopt",
  "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
@@ -5134,7 +5002,7 @@ dependencies = [
  "diesel",
  "diesel_migrations",
  "fake",
- "hyper 0.14.2",
+ "hyper 0.14.4",
  "jortestkit",
  "lazy_static",
  "libsqlite3-sys",
@@ -5148,7 +5016,7 @@ dependencies = [
  "structopt",
  "tempfile",
  "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "vit-servicing-station-lib",
 ]
 
@@ -5175,9 +5043,9 @@ dependencies = [
  "iapyx",
  "image",
  "indicatif",
- "jormungandr-lib 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee)",
- "jormungandr-scenario-tests 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee)",
- "jormungandr-testing-utils 0.10.0-alpha.2 (git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee)",
+ "jormungandr-lib",
+ "jormungandr-scenario-tests",
+ "jormungandr-testing-utils",
  "jortestkit",
  "json",
  "lazy_static",
@@ -5192,7 +5060,7 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "walkdir",
@@ -5295,7 +5163,7 @@ dependencies = [
  "futures 0.3.12",
  "headers",
  "http",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "log",
  "mime",
  "mime_guess",
@@ -5324,7 +5192,7 @@ dependencies = [
  "futures 0.3.12",
  "headers",
  "http",
- "hyper 0.14.2",
+ "hyper 0.14.4",
  "log",
  "mime",
  "mime_guess",
@@ -5335,7 +5203,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded 0.7.0",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-rustls 0.22.0",
  "tokio-stream",
  "tokio-tungstenite 0.13.0",
@@ -5352,7 +5220,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78b09d85b4cc956c8ce25422ea55070b15cd9ff889b0a2301c6b9d5d72694191"
 dependencies = [
  "http",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "lazy_static",
  "reqwest",
  "unicase",

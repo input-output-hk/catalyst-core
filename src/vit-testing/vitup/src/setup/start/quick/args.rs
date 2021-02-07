@@ -126,6 +126,10 @@ pub struct QuickStartCommandArgs {
     /// use tls
     #[structopt(long = "https")]
     pub https: bool,
+
+    /// token, only applicable if service mode is used
+    #[structopt(long = "token")]
+    pub token: Option<String>,
 }
 
 impl QuickStartCommandArgs {
@@ -143,6 +147,7 @@ impl QuickStartCommandArgs {
         let log_level = self.log_level;
         let mode = self.mode;
         let endpoint = self.endpoint;
+        let token = self.token;
 
         if mode == Mode::Interactive {
             progress_bar_mode = ProgressBarMode::None;
@@ -208,7 +213,9 @@ impl QuickStartCommandArgs {
             std::fs::remove_dir_all(&testing_directory)?;
         }
         match mode {
-            Mode::Service => service_mode(context, testing_directory, quick_setup, endpoint)?,
+            Mode::Service => {
+                service_mode(context, testing_directory, quick_setup, endpoint, token)?
+            }
             Mode::Endless => {
                 let (mut vit_controller, mut controller, vit_parameters) =
                     quick_setup.build(context)?;

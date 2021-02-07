@@ -2,6 +2,7 @@ use super::{
     element::SingleAccountBindingSignature, AccountBindingSignature, AccountIdentifier, Input,
     NoExtra, Payload, Transaction, TxBuilder, UnspecifiedAccountIdentifier, UtxoPointer, Witness,
 };
+use crate::account::SpendingCounter;
 #[cfg(test)]
 use crate::certificate::OwnerStakeDelegation;
 use crate::date::BlockDate;
@@ -200,7 +201,10 @@ impl Arbitrary for Witness {
         let opt = u8::arbitrary(g) % 3;
         match opt {
             0 => Witness::Utxo(SpendingSignature::arbitrary(g)),
-            1 => Witness::Account(SpendingSignature::arbitrary(g)),
+            1 => Witness::Account(
+                SpendingCounter::arbitrary(g),
+                SpendingSignature::arbitrary(g),
+            ),
             2 => {
                 let sk: SecretKey<Ed25519> = arbitrary_secret_key(g);
                 Witness::OldUtxo(sk.to_public(), [0u8; 32], Signature::arbitrary(g))

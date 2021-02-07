@@ -4,5 +4,5 @@ mod template;
 pub use plan::{ValidVotePlanGenerator, ValidVotePlanParameters};
 pub use template::{
     ArbitraryValidVotingTemplateGenerator, ChallengeTemplate, ExternalValidVotingTemplateGenerator,
-    FundTemplate, ProposalTemplate, ValidVotingTemplateGenerator,
+    FundTemplate, ProposalTemplate, TemplateLoadError, ValidVotingTemplateGenerator,
 };

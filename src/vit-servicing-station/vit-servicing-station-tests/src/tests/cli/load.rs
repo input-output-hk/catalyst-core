@@ -122,9 +122,9 @@ pub fn voting_snapshot_build() {
             .timestamp(),
     );
 
-    let template = ArbitraryValidVotingTemplateGenerator::new();
-    let mut generator = ValidVotePlanGenerator::new(parameters, Box::new(template));
-    let snapshot = generator.build();
+    let mut template = ArbitraryValidVotingTemplateGenerator::new();
+    let mut generator = ValidVotePlanGenerator::new(parameters);
+    let snapshot = generator.build(&mut template);
 
     let mut db_builder = DbBuilder::new();
     db_builder.with_snapshot(&snapshot);

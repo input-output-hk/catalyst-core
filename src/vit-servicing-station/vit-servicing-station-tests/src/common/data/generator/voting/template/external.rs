@@ -21,6 +21,7 @@ impl ValidVotingTemplateGenerator for ExternalValidVotingTemplateGenerator {
     }
 }
 
+#[derive(Clone)]
 pub struct ExternalValidVotingTemplateGenerator {
     proposals: LinkedList<ProposalTemplate>,
     challenges: LinkedList<ChallengeTemplate>,

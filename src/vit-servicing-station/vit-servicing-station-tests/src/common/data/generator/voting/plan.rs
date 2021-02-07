@@ -85,25 +85,18 @@ impl ValidVotePlanParameters {
 
 pub struct ValidVotePlanGenerator {
     parameters: ValidVotePlanParameters,
-    template_generator: Box<dyn ValidVotingTemplateGenerator>,
 }
 
 impl ValidVotePlanGenerator {
-    pub fn new(
-        parameters: ValidVotePlanParameters,
-        template_generator: Box<dyn ValidVotingTemplateGenerator>,
-    ) -> Self {
-        Self {
-            parameters,
-            template_generator,
-        }
+    pub fn new(parameters: ValidVotePlanParameters) -> Self {
+        Self { parameters }
     }
 
     fn convert_to_vote_plan(vote_plan_def: &VotePlanDef) -> VotePlan {
         vote_plan_def.clone().into()
     }
 
-    pub fn build(&mut self) -> Snapshot {
+    pub fn build(&mut self, template_generator: &mut dyn ValidVotingTemplateGenerator) -> Snapshot {
         let mut generator = ArbitraryGenerator::new();
         let vote_plan = Self::convert_to_vote_plan(&self.parameters.vote_plan);
         let chain_vote_plan_id = vote_plan.to_id().to_string();
@@ -113,7 +106,7 @@ impl ValidVotePlanGenerator {
         let voting_tally_end = self.parameters.voting_tally_end.unwrap();
         let next_fund_start_time = self.parameters.next_fund_start_time.unwrap();
 
-        let fund_template = self.template_generator.next_fund();
+        let fund_template = template_generator.next_fund();
         let fund_id = self.parameters.fund_id.unwrap_or(fund_template.id);
 
         let payload_type = match vote_plan.payload_type() {
@@ -138,7 +131,7 @@ impl ValidVotePlanGenerator {
 
         let count = self.parameters.challenges_count;
         let challenges = std::iter::from_fn(|| {
-            let challenge_data = self.template_generator.next_challenge();
+            let challenge_data = template_generator.next_challenge();
             Some(Challenge {
                 id: challenge_data.id.parse().unwrap(),
                 title: challenge_data.title,
@@ -175,7 +168,7 @@ impl ValidVotePlanGenerator {
             let challenge_idx = rng.next_u32() as usize % self.parameters.challenges_count;
             let mut challenge = fund.challenges.get_mut(challenge_idx).unwrap();
 
-            let proposal_template = self.template_generator.next_proposal();
+            let proposal_template = template_generator.next_proposal();
             let proposal_funds = proposal_template.proposal_funds.parse().unwrap();
             let chain_vote_options = proposal_template.chain_vote_options.clone();
 

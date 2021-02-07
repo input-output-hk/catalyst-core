@@ -25,6 +25,7 @@ use std::{collections::HashMap, iter};
 use chrono::DateTime;
 type UtcDateTime = DateTime<Utc>;
 
+#[derive(Clone)]
 pub struct ArbitraryGenerator {
     id_generator: OsRng,
 }

@@ -2,17 +2,17 @@ mod arbitrary;
 mod external;
 
 pub use arbitrary::ArbitraryValidVotingTemplateGenerator;
-pub use external::ExternalValidVotingTemplateGenerator;
+pub use external::{ExternalValidVotingTemplateGenerator, TemplateLoadError};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct FundTemplate {
     pub id: i32,
     pub goal: String,
     pub rewards_info: String,
     pub threshold: Option<u32>,
 }
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ProposalTemplate {
     pub internal_id: String,
     pub category_name: String,
@@ -48,7 +48,7 @@ impl ProposalTemplate {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ChallengeTemplate {
     pub id: String,
     pub title: String,

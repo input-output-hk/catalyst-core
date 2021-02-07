@@ -120,15 +120,15 @@ impl ArbitraryGenerator {
 
     pub fn proposer(&mut self) -> Proposer {
         Proposer {
-            proposer_relevant_experience: self.id_generator.next_u64().to_string(),
+            proposer_relevant_experience: Buzzword().fake::<String>(),
             proposer_name: Name().fake::<String>(),
             proposer_email: SafeEmail().fake::<String>(),
             proposer_url: self.gen_http_address(),
         }
     }
-    // impact score [100-499]
-    pub fn impact_score(&mut self) -> i64 {
-        (self.id_generator.next_u64() % 400 + 100) as i64
+    // impact score [1.00-4.99]
+    pub fn impact_score(&mut self) -> f64 {
+        ((self.id_generator.next_u64() % 400 + 100) / 100) as f64
     }
 
     pub fn proposal_category(&mut self) -> Category {
@@ -160,7 +160,7 @@ impl ArbitraryGenerator {
             proposal_public_key: self.hash(),
             proposal_funds: self.proposal_fund(),
             proposal_url: proposal_url.to_string(),
-            proposal_impact_score: self.impact_score(),
+            proposal_impact_score: (self.impact_score() * 100f64) as i64,
             proposal_files_url: format!("{}/files", proposal_url),
             proposer: self.proposer(),
             chain_proposal_id: self.hash().as_bytes().to_vec(),

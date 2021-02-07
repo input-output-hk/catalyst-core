@@ -1,12 +1,14 @@
 use crate::common::{
     cli::VitCliCommand,
-    data::{ArbitraryGenerator, CsvConverter, ValidVotePlanGenerator, ValidVotePlanParameters},
-    startup::server::ServerBootstrapper,
+    data::{
+        ArbitraryGenerator, ArbitraryValidVotingTemplateGenerator, CsvConverter,
+        ValidVotePlanGenerator, ValidVotePlanParameters,
+    },
+    startup::{db::DbBuilder, server::ServerBootstrapper},
 };
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
-use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
-use chain_impl_mockchain::testing::scenario::template::VotePlanDefBuilder;
+use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder};
 use chrono::NaiveDateTime;
 
 #[test]
@@ -81,6 +83,7 @@ pub fn load_data_test() {
 
 #[test]
 pub fn voting_snapshot_build() {
+    let temp_dir = TempDir::new().unwrap().into_persistent();
     let mut vote_plan_builder = VotePlanDefBuilder::new("fund_3");
     vote_plan_builder.owner("committe_wallet_name");
     vote_plan_builder.vote_phases(1, 2, 3);
@@ -119,6 +122,11 @@ pub fn voting_snapshot_build() {
             .timestamp(),
     );
 
-    let generator = ValidVotePlanGenerator::new(parameters);
-    generator.build();
+    let template = ArbitraryValidVotingTemplateGenerator::new();
+    let mut generator = ValidVotePlanGenerator::new(parameters, Box::new(template));
+    let snapshot = generator.build();
+
+    let mut db_builder = DbBuilder::new();
+    db_builder.with_snapshot(&snapshot);
+    println!("{:?}", db_builder.build(&temp_dir).unwrap());
 }

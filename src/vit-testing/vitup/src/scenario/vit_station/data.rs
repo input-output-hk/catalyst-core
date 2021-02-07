@@ -1,9 +1,10 @@
 use assert_fs::TempDir;
 use std::path::PathBuf;
-use vit_servicing_station_tests::common::data::ValidVotePlanGenerator;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
+use vit_servicing_station_tests::common::data::{
+    ValidVotePlanGenerator, ValidVotingTemplateGenerator,
+};
 use vit_servicing_station_tests::common::startup::db::DbBuilder;
-
 pub struct DbGenerator {
     parameters: ValidVotePlanParameters,
 }
@@ -13,11 +14,15 @@ impl DbGenerator {
         Self { parameters }
     }
 
-    pub fn build(self, db_file: &PathBuf) {
+    pub fn build(
+        self,
+        db_file: &PathBuf,
+        template_generator: &mut dyn ValidVotingTemplateGenerator,
+    ) {
         std::fs::File::create(&db_file).unwrap();
 
-        let generator = ValidVotePlanGenerator::new(self.parameters);
-        let snapshot = generator.build();
+        let mut generator = ValidVotePlanGenerator::new(self.parameters);
+        let snapshot = generator.build(template_generator);
 
         let path = std::path::Path::new("../").join("resources/vit_station/migration");
 

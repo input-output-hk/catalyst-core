@@ -1,18 +1,10 @@
 #![allow(dead_code)]
 
+use super::DbGenerator;
 use jormungandr_scenario_tests::{
     node::{ProgressBarController, Status},
     style, Context,
 };
-
-use super::DbGenerator;
-use std::net::SocketAddr;
-use vit_servicing_station_lib::db::models::proposals::Proposal;
-use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
-use vit_servicing_station_tests::common::{
-    clients::RestClient, startup::server::BootstrapCommandBuilder,
-};
-
 pub use jormungandr_testing_utils::testing::{
     network_builder::{
         LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
@@ -22,6 +14,13 @@ pub use jormungandr_testing_utils::testing::{
         uri_from_socket_addr, JormungandrLogger, JormungandrRest, RestError,
     },
     FragmentNode, MemPoolCheck, NamedProcess,
+};
+use std::net::SocketAddr;
+use vit_servicing_station_lib::db::models::proposals::Proposal;
+use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
+use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
+use vit_servicing_station_tests::common::{
+    clients::RestClient, startup::server::BootstrapCommandBuilder,
 };
 
 pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
@@ -175,6 +174,7 @@ impl VitStation {
     pub fn spawn<R: RngCore>(
         context: &Context<R>,
         parameters: ValidVotePlanParameters,
+        template_generator: &mut dyn ValidVotingTemplateGenerator,
         progress_bar: ProgressBar,
         alias: &str,
         settings: VitStationSettings,
@@ -194,7 +194,7 @@ impl VitStation {
         let db_file = dir.join(STORAGE);
         dump_settings_to_file(&config_file.to_str().unwrap(), &settings).unwrap();
 
-        DbGenerator::new(parameters).build(&db_file);
+        DbGenerator::new(parameters).build(&db_file, template_generator);
 
         let mut command_builder =
             BootstrapCommandBuilder::new(PathBuf::from("vit-servicing-station-server"));

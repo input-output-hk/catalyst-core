@@ -34,6 +34,7 @@ chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", b
 chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 fake = { version = "2.2", features=['chrono','http']}
 pretty_assertions = "0.6"
+dyn-clone = "1.0.4"
 
 [dependencies.reqwest]
 version = "0.10.6"

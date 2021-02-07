@@ -2,7 +2,8 @@ pub mod generate;
 pub mod start;
 
 use crate::error::Result;
-use generate::{DataCommandArgs, QrCommandArgs};
+use crate::setup::generate::QrCommandArgs;
+use generate::DataCommandArgs;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
 

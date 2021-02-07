@@ -25,11 +25,16 @@ use std::path::Path;
 use std::sync::Arc;
 use std::sync::Mutex;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
+use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
+use vit_servicing_station_tests::common::data::{
+    ArbitraryValidVotingTemplateGenerator, ExternalValidVotingTemplateGenerator,
+};
 
 pub fn setup_network(
     controller: &mut Controller,
     vit_controller: &mut VitController,
     vit_parameters: ValidVotePlanParameters,
+    vit_data_generator: &mut dyn ValidVotingTemplateGenerator,
     endpoint: String,
     protocol: &Protocol,
 ) -> Result<(
@@ -81,7 +86,8 @@ pub fn setup_network(
     wallet_node.wait_for_bootstrap()?;
 
     // start proxy and vit station
-    let vit_station = vit_controller.spawn_vit_station(controller, vit_parameters)?;
+    let vit_station =
+        vit_controller.spawn_vit_station(controller, vit_parameters, vit_data_generator)?;
     let wallet_proxy = vit_controller.spawn_wallet_proxy_custom(
         controller,
         WalletProxySpawnParams::new(WALLET_NODE)
@@ -152,6 +158,7 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
     working_dir: P,
     mut quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: String,
+    ideascale: bool,
     token: Option<String>,
 ) -> Result<()> {
     let protocol = quick_setup.protocol().clone();
@@ -172,6 +179,8 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
                 std::fs::remove_dir_all(testing_directory)?;
             }
 
+            let template_generator = Box::leak(build_template_generator(ideascale));
+
             let parameters = manager.setup();
             quick_setup.upload_parameters(parameters);
             manager.clear_requests();
@@ -181,6 +190,7 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
                 quick_setup.clone(),
                 endpoint.clone(),
                 &protocol,
+                template_generator,
             )?;
         }
 
@@ -189,12 +199,25 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
     Ok(())
 }
 
+pub fn build_template_generator(ideascale: bool) -> Box<dyn ValidVotingTemplateGenerator> {
+    if ideascale {
+        let proposals = Path::new("../").join("resources/external/proposals.json");
+        let challenges = Path::new("../").join("resources/external/challenges.json");
+        let funds = Path::new("../").join("resources/external/funds.json");
+        return Box::new(
+            ExternalValidVotingTemplateGenerator::new(proposals, challenges, funds).unwrap(),
+        );
+    }
+    Box::new(ArbitraryValidVotingTemplateGenerator::new())
+}
+
 pub fn single_run(
     control_context: ControlContextLock,
     context: Context<ChaChaRng>,
     mut quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: String,
     protocol: &Protocol,
+    template_generator: &mut dyn ValidVotingTemplateGenerator,
 ) -> Result<()> {
     {
         let mut control_context = control_context.lock().unwrap();
@@ -207,6 +230,7 @@ pub fn single_run(
         &mut controller,
         &mut vit_controller,
         vit_parameters,
+        template_generator,
         endpoint,
         protocol,
     )?;

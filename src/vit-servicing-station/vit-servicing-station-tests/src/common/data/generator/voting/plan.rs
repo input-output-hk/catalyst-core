@@ -96,7 +96,7 @@ impl ValidVotePlanGenerator {
         vote_plan_def.clone().into()
     }
 
-    pub fn build(&mut self, mut template_generator: &dyn ValidVotingTemplateGenerator) -> Snapshot {
+    pub fn build(&mut self, template_generator: &mut dyn ValidVotingTemplateGenerator) -> Snapshot {
         let mut generator = ArbitraryGenerator::new();
         let vote_plan = Self::convert_to_vote_plan(&self.parameters.vote_plan);
         let chain_vote_plan_id = vote_plan.to_id().to_string();

@@ -9,6 +9,7 @@ use fake::{
     Fake,
 };
 
+#[derive(Clone)]
 pub struct ArbitraryValidVotingTemplateGenerator {
     generator: ArbitraryGenerator,
     next_proposal_id: i32,

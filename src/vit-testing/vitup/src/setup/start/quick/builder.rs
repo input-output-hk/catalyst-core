@@ -204,6 +204,7 @@ impl QuickVitBackendSettingsBuilder {
     ) -> ValidVotePlanParameters {
         let mut parameters = ValidVotePlanParameters::new(vote_plan);
         parameters.set_voting_power_threshold((self.parameters.voting_power * 1_000_000) as i64);
+        parameters.set_challenges_count(self.parameters.challenges);
         parameters.set_voting_start(self.parameters.vote_start_timestamp.unwrap().timestamp());
         parameters
             .set_voting_tally_start(self.parameters.tally_start_timestamp.unwrap().timestamp());
@@ -415,7 +416,6 @@ impl QuickVitBackendSettingsBuilder {
             }
         }
         let parameters = self.vote_plan_parameters(vote_plan_def, &controller.settings());
-
         Ok((vit_controller, controller, parameters))
     }
 }

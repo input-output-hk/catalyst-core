@@ -22,6 +22,7 @@ use jormungandr_scenario_tests::scenario::{
 use jormungandr_testing_utils::testing::network_builder::{
     Blockchain, Node, WalletTemplate, WalletType,
 };
+use jormungandr_testing_utils::wallet::LinearFee;
 use jormungandr_testing_utils::{qr_code::KeyQrCode, wallet::ElectionPublicKeyExtension};
 use std::collections::HashMap;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
@@ -362,6 +363,7 @@ impl QuickVitBackendSettingsBuilder {
         blockchain.add_leader(LEADER_2);
         blockchain.add_leader(LEADER_3);
         blockchain.add_leader(LEADER_4);
+        blockchain.set_linear_fee(LinearFee::new(0, 0, 0));
 
         let committe_wallet =
             WalletTemplate::new_account(&self.committe_wallet_name, Value(1_000_000));

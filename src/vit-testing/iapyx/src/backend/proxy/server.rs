@@ -1,7 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
-use serde::{Deserialize,Serialize};
-use thiserror::Error;
 use std::path::PathBuf;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -13,19 +13,20 @@ pub enum Error {
     MalformedNodeRestAddress(String),
 }
 
-#[derive(Clone,Debug,Serialize,Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Protocol {
     Http,
     Https {
         key_path: PathBuf,
         cert_path: PathBuf,
-    }
+    },
 }
 
 impl Protocol {
-    pub fn http() -> Self { Self::Http }
+    pub fn http() -> Self {
+        Self::Http
+    }
 }
-
 
 pub struct ProxyServerStub {
     protocol: Protocol,
@@ -44,9 +45,16 @@ impl ProxyServerStub {
         node_rest_address: String,
         block0: Vec<u8>,
     ) -> Self {
-        Self::new(Protocol::Https{
-            key_path,cert_path
-        },address,vit_address,node_rest_address,block0)
+        Self::new(
+            Protocol::Https {
+                key_path,
+                cert_path,
+            },
+            address,
+            vit_address,
+            node_rest_address,
+            block0,
+        )
     }
 
     pub fn new_http(
@@ -55,7 +63,13 @@ impl ProxyServerStub {
         node_rest_address: String,
         block0: Vec<u8>,
     ) -> Self {
-        Self::new(Protocol::Http,address,vit_address,node_rest_address,block0)
+        Self::new(
+            Protocol::Http,
+            address,
+            vit_address,
+            node_rest_address,
+            block0,
+        )
     }
 
     pub fn protocol(&self) -> &Protocol {

@@ -182,9 +182,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql"
-version = "2.5.1"
+version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22d4f25567e154225dc45689d9751de8c353df4ff9e278507d997c56f16939dd"
+checksum = "37b42e163bc8d5dc81a43c185916ab24a0ca72636558cadc2ccefe39381695b3"
 dependencies = [
  "async-graphql-derive",
  "async-graphql-parser",
@@ -261,9 +261,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql-warp"
-version = "2.5.1"
+version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91f6b43aeaabea3a6a186ae43f880f26e0eff06d64479f0cf5a4513c7437dfe6"
+checksum = "511f4ab7a330e75756ca8d256201ec053156dc1db5a915561572c50df0c00f4d"
 dependencies = [
  "async-graphql",
  "futures-util",
@@ -367,7 +367,7 @@ checksum = "cdcf67bb7ba7797a081cd19009948ab533af7c355d5caf1d08c777582d351e9c"
 [[package]]
 name = "bip39"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#8b3dc4525a7c0eb237e22ca3a0d69b58ec6f74ca"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
 dependencies = [
  "cryptoxide 0.1.3",
  "thiserror",
@@ -693,7 +693,7 @@ dependencies = [
 [[package]]
 name = "chain-path-derivation"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#8b3dc4525a7c0eb237e22ca3a0d69b58ec6f74ca"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
 dependencies = [
  "thiserror",
 ]
@@ -1298,9 +1298,9 @@ checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
 name = "encoding_rs"
-version = "0.8.26"
+version = "0.8.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "801bbab217d7f79c0062f4f7205b5d4427c6d1a7bd7aafdd1475f7c59d62b283"
+checksum = "80df024fbc5ac80f87dfef0d9f5209a252f2a497f7f42944cff24d8253cac065"
 dependencies = [
  "cfg-if 1.0.0",
 ]
@@ -1814,7 +1814,7 @@ dependencies = [
  "http",
  "indexmap",
  "slab",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-util 0.6.3",
  "tracing",
  "tracing-futures",
@@ -1838,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "hdkeygen"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#8b3dc4525a7c0eb237e22ca3a0d69b58ec6f74ca"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -1958,9 +1958,9 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "hyper"
-version = "0.13.9"
+version = "0.13.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6ad767baac13b44d4529fcf58ba2cd0995e36e7b435bc5b039de6f47e880dbf"
+checksum = "8a6f157065790a3ed2f88679250419b5cdd96e714a0d65f7797fd337186e96bb"
 dependencies = [
  "bytes 0.5.6",
  "futures-channel",
@@ -1982,9 +1982,9 @@ dependencies = [
 
 [[package]]
 name = "hyper"
-version = "0.14.2"
+version = "0.14.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12219dc884514cb4a6a03737f4413c0e01c23a1b059b0156004b23f1e19dccbe"
+checksum = "e8e946c2b1349055e0b72ae281b238baf1a3ea7307c7e9f9d64673bdd9c26ac7"
 dependencies = [
  "bytes 1.0.1",
  "futures-channel",
@@ -1998,7 +1998,7 @@ dependencies = [
  "itoa",
  "pin-project 1.0.5",
  "socket2",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tower-service",
  "tracing",
  "want",
@@ -2012,7 +2012,7 @@ checksum = "37743cc83e8ee85eacfce90f2f4102030d9ff0a95244098d781e9bee4a90abb6"
 dependencies = [
  "bytes 0.5.6",
  "futures-util",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "log",
  "rustls 0.18.1",
  "tokio 0.2.25",
@@ -2027,7 +2027,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d979acc56dcb5b8dddba3917601745e877576475aa046df3226eabdecef78eed"
 dependencies = [
  "bytes 0.5.6",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "native-tls",
  "tokio 0.2.25",
  "tokio-tls",
@@ -2051,7 +2051,7 @@ dependencies = [
  "ed25519-bip32",
  "hdkeygen",
  "hex",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "image",
  "jormungandr-lib",
  "jormungandr-testing-utils",
@@ -2080,9 +2080,9 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "idna"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02e2673c30ee86b5b96a9cb52ad15718aa1f966f5ab9ad54a8b95d5ca33120a9"
+checksum = "de910d521f7cc3135c4de8db1cb910e0b5ed1dc6f57c381cd07e8e661ce10094"
 dependencies = [
  "matches",
  "unicode-bidi",
@@ -2102,16 +2102,16 @@ dependencies = [
  "memchr",
  "regex 1.4.3",
  "same-file",
- "thread_local 1.1.2",
+ "thread_local 1.1.3",
  "walkdir",
  "winapi-util",
 ]
 
 [[package]]
 name = "image"
-version = "0.23.12"
+version = "0.23.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ce04077ead78e39ae8610ad26216aed811996b043d47beed5090db674f9e9b5"
+checksum = "293f07a1875fa7e9c5897b51aa68b2d8ed8271b87e1a44cb64b9c3d98aabbc0d"
 dependencies = [
  "bytemuck",
  "byteorder",
@@ -2245,7 +2245,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-lib"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#1ae293316d36340649660b484a8dcc5aeb9c4e50"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fbeb05dfe6b4b32d4281aba7c5ba1043cd8754b0"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2258,6 +2258,7 @@ dependencies = [
  "chain-vote",
  "chrono",
  "hex",
+ "http",
  "humantime",
  "parity-multiaddr",
  "poldercast",
@@ -2267,13 +2268,12 @@ dependencies = [
  "serde",
  "thiserror",
  "typed-bytes",
- "warp 0.3.0",
 ]
 
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#1ae293316d36340649660b484a8dcc5aeb9c4e50"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fbeb05dfe6b4b32d4281aba7c5ba1043cd8754b0"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2308,14 +2308,14 @@ dependencies = [
  "slog",
  "structopt",
  "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "yaml-rust",
 ]
 
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#1ae293316d36340649660b484a8dcc5aeb9c4e50"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#fbeb05dfe6b4b32d4281aba7c5ba1043cd8754b0"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -2364,7 +2364,7 @@ dependencies = [
  "sysinfo 0.15.9",
  "tar",
  "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-codec",
  "tokio-stream",
  "tonic",
@@ -2501,9 +2501,9 @@ dependencies = [
 
 [[package]]
 name = "lru"
-version = "0.6.3"
+version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3aae342b73d57ad0b8b364bd12584819f2c1fe9114285dfcf8b0722607671635"
+checksum = "fe2382d8ed3918ea4ba70d98d5b74e47a168e0331965f3f17cdbc748bdebc5a3"
 dependencies = [
  "hashbrown",
 ]
@@ -3566,7 +3566,7 @@ dependencies = [
  "aho-corasick 0.7.15",
  "memchr",
  "regex-syntax 0.6.22",
- "thread_local 1.1.2",
+ "thread_local 1.1.3",
 ]
 
 [[package]]
@@ -3616,7 +3616,7 @@ dependencies = [
  "futures-util",
  "http",
  "http-body 0.3.1",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "hyper-rustls",
  "hyper-tls",
  "ipnet",
@@ -3855,9 +3855,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.61"
+version = "1.0.62"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fceb2595057b6891a4ee808f70054bd2d12f0e97f1cbb78689b59f676df325a"
+checksum = "ea1c6153794552ea7cf7cf63b1231a25de00ec90db326ba6264440fa08e31486"
 dependencies = [
  "indexmap",
  "itoa",
@@ -4023,7 +4023,7 @@ dependencies = [
  "crossbeam-channel",
  "slog",
  "take_mut",
- "thread_local 1.1.2",
+ "thread_local 1.1.3",
 ]
 
 [[package]]
@@ -4141,7 +4141,7 @@ checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
 [[package]]
 name = "symmetric-cipher"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#8b3dc4525a7c0eb237e22ca3a0d69b58ec6f74ca"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
 dependencies = [
  "cryptoxide 0.2.1",
  "rand 0.7.3",
@@ -4313,9 +4313,9 @@ dependencies = [
 
 [[package]]
 name = "thread_local"
-version = "1.1.2"
+version = "1.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8208a331e1cb318dd5bd76951d2b8fc48ca38a69f5f4e4af1b6a9f8c6236915"
+checksum = "8018d24e04c95ac8790716a5987d0fec4f8b27249ffa0f7d33f1369bdfb88cbd"
 dependencies = [
  "once_cell",
 ]
@@ -4387,9 +4387,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.1.1"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6714d663090b6b0acb0fa85841c6d66233d150cdb2602c8f9b8abb03370beb3f"
+checksum = "e8190d04c665ea9e6b6a0dc45523ade572c088d2e6566244c1122671dbf4ae3a"
 dependencies = [
  "autocfg",
  "bytes 1.0.1",
@@ -4400,7 +4400,7 @@ dependencies = [
  "once_cell",
  "pin-project-lite 0.2.4",
  "signal-hook-registry",
- "tokio-macros 1.0.0",
+ "tokio-macros 1.1.0",
  "winapi 0.3.9",
 ]
 
@@ -4439,9 +4439,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-macros"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42517d2975ca3114b22a16192634e8241dc5cc1f130be194645970cc1c371494"
+checksum = "caf7b11a536f46a809a8a9f0bb4237020f70ecbf115b842360afb127ea2fda57"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
@@ -4467,19 +4467,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc6844de72e57df1980054b38be3a9f4702aba4858be64dd700181a8a6d0e1b6"
 dependencies = [
  "rustls 0.19.0",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "webpki",
 ]
 
 [[package]]
 name = "tokio-stream"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76066865172052eb8796c686f0b441a93df8b08d40a950b062ffb9a426f00edd"
+checksum = "1981ad97df782ab506a1f43bf82c967326960d278acf3bf8279809648c3ff3ea"
 dependencies = [
  "futures-core",
  "pin-project-lite 0.2.4",
- "tokio 1.1.1",
+ "tokio 1.2.0",
 ]
 
 [[package]]
@@ -4514,7 +4514,7 @@ dependencies = [
  "futures-util",
  "log",
  "pin-project 1.0.5",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tungstenite 0.12.0",
 ]
 
@@ -4543,7 +4543,7 @@ dependencies = [
  "futures-sink",
  "log",
  "pin-project-lite 0.2.4",
- "tokio 1.1.1",
+ "tokio 1.2.0",
 ]
 
 [[package]]
@@ -4579,12 +4579,12 @@ dependencies = [
  "h2 0.3.0",
  "http",
  "http-body 0.4.0",
- "hyper 0.14.2",
+ "hyper 0.14.4",
  "percent-encoding",
  "pin-project 1.0.5",
  "prost",
  "prost-derive",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-stream",
  "tokio-util 0.6.3",
  "tower",
@@ -4617,7 +4617,7 @@ dependencies = [
  "pin-project 1.0.5",
  "rand 0.8.3",
  "slab",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-stream",
  "tower-layer",
  "tower-service",
@@ -4638,9 +4638,9 @@ checksum = "360dfd1d6d30e05fda32ace2c8c70e9c0a9da713275777f5a4dbb8a1893930c6"
 
 [[package]]
 name = "tracing"
-version = "0.1.22"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f47026cdc4080c07e49b37087de021820269d996f581aac150ef9e5583eefe3"
+checksum = "f7d40a22fd029e33300d8d89a5cc8ffce18bb7c587662f54629e94c9de5487f3"
 dependencies = [
  "cfg-if 1.0.0",
  "log",
@@ -4651,9 +4651,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-attributes"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80e0ccfc3378da0cce270c946b676a376943f5cd16aeba64568e7939806f4ada"
+checksum = "43f080ea7e4107844ef4766459426fa2d5c1ada2e47edba05dc7fa99d9629f47"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
@@ -4715,7 +4715,7 @@ dependencies = [
  "serde_json",
  "sharded-slab",
  "smallvec",
- "thread_local 1.1.2",
+ "thread_local 1.1.3",
  "tracing",
  "tracing-core",
  "tracing-log",
@@ -4959,7 +4959,7 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=voting_data#6b540af45139c4d3159e570688213dff5c1648d5"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#88f9dd930943e85f5a50136017a62fff8c57c3f8"
 dependencies = [
  "async-graphql",
  "async-graphql-warp",
@@ -4977,7 +4977,7 @@ dependencies = [
  "simplelog",
  "structopt",
  "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tracing",
  "tracing-futures",
  "tracing-subscriber",
@@ -4987,7 +4987,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=voting_data#6b540af45139c4d3159e570688213dff5c1648d5"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#88f9dd930943e85f5a50136017a62fff8c57c3f8"
 dependencies = [
  "askama",
  "askama_shared",
@@ -5002,7 +5002,7 @@ dependencies = [
  "diesel",
  "diesel_migrations",
  "fake",
- "hyper 0.14.2",
+ "hyper 0.14.4",
  "jortestkit",
  "lazy_static",
  "libsqlite3-sys",
@@ -5016,7 +5016,7 @@ dependencies = [
  "structopt",
  "tempfile",
  "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "vit-servicing-station-lib",
 ]
 
@@ -5060,7 +5060,7 @@ dependencies = [
  "serde_yaml",
  "structopt",
  "thiserror",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "walkdir",
@@ -5103,7 +5103,7 @@ dependencies = [
 [[package]]
 name = "wallet"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#8b3dc4525a7c0eb237e22ca3a0d69b58ec6f74ca"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -5124,8 +5124,8 @@ dependencies = [
 
 [[package]]
 name = "wallet-core"
-version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#8b3dc4525a7c0eb237e22ca3a0d69b58ec6f74ca"
+version = "0.6.0-pre1"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
 dependencies = [
  "bech32",
  "bip39",
@@ -5163,7 +5163,7 @@ dependencies = [
  "futures 0.3.12",
  "headers",
  "http",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "log",
  "mime",
  "mime_guess",
@@ -5192,7 +5192,7 @@ dependencies = [
  "futures 0.3.12",
  "headers",
  "http",
- "hyper 0.14.2",
+ "hyper 0.14.4",
  "log",
  "mime",
  "mime_guess",
@@ -5203,7 +5203,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded 0.7.0",
- "tokio 1.1.1",
+ "tokio 1.2.0",
  "tokio-rustls 0.22.0",
  "tokio-stream",
  "tokio-tungstenite 0.13.0",
@@ -5220,7 +5220,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78b09d85b4cc956c8ce25422ea55070b15cd9ff889b0a2301c6b9d5d72694191"
 dependencies = [
  "http",
- "hyper 0.13.9",
+ "hyper 0.13.10",
  "lazy_static",
  "reqwest",
  "unicase",

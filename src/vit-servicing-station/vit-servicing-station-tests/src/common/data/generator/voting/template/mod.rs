@@ -2,7 +2,7 @@ mod arbitrary;
 mod external;
 
 pub use arbitrary::ArbitraryValidVotingTemplateGenerator;
-pub use external::ExternalValidVotingTemplateGenerator;
+pub use external::{ExternalValidVotingTemplateGenerator, TemplateLoadError};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

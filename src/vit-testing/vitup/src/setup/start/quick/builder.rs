@@ -365,9 +365,13 @@ impl QuickVitBackendSettingsBuilder {
         blockchain.add_leader(LEADER_3);
         blockchain.add_leader(LEADER_4);
         blockchain.set_linear_fee(LinearFee::new(0, 0, 0));
+        blockchain.set_discrimination(chain_addr::Discrimination::Production);
 
-        let committe_wallet =
-            WalletTemplate::new_account(&self.committe_wallet_name, Value(1_000_000));
+        let committe_wallet = WalletTemplate::new_account(
+            &self.committe_wallet_name,
+            Value(1_000_000),
+            blockchain.discrimination(),
+        );
         blockchain.add_wallet(committe_wallet);
 
         let child = context.child_directory(self.title());
@@ -375,7 +379,7 @@ impl QuickVitBackendSettingsBuilder {
         let initials = self
             .parameters
             .initials
-            .templates(self.parameters.voting_power);
+            .templates(self.parameters.voting_power, blockchain.discrimination());
         for (wallet, _) in initials.iter().filter(|(x, _)| *x.value() > Value::zero()) {
             blockchain.add_wallet(wallet.clone());
         }

@@ -1,3 +1,4 @@
+use chain_addr::Discrimination;
 use chain_impl_mockchain::value::Value;
 use jormungandr_testing_utils::testing::network_builder::WalletTemplate;
 use rand::Rng;
@@ -70,7 +71,11 @@ impl Initials {
         }])
     }
 
-    pub fn templates(&self, threshold: u64) -> HashMap<WalletTemplate, String> {
+    pub fn templates(
+        &self,
+        threshold: u64,
+        discrimination: Discrimination,
+    ) -> HashMap<WalletTemplate, String> {
         let mut rand = rand::thread_rng();
         let mut above_threshold_index = 0;
         let mut below_threshold_index = 0;
@@ -89,7 +94,11 @@ impl Initials {
                             format!("wallet_{}_above_{}", above_threshold_index, threshold);
                         let value: u64 = rand.gen_range(GRACE_VALUE, threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplate::new_utxo(wallet_alias, Value(threshold + value)),
+                            WalletTemplate::new_utxo(
+                                wallet_alias,
+                                Value(threshold + value),
+                                discrimination,
+                            ),
                             pin.to_string(),
                         );
                     }
@@ -104,7 +113,11 @@ impl Initials {
                             format!("wallet_{}_below_{}", below_threshold_index, threshold);
                         let value: u64 = rand.gen_range(GRACE_VALUE, threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplate::new_utxo(wallet_alias, Value(threshold - value)),
+                            WalletTemplate::new_utxo(
+                                wallet_alias,
+                                Value(threshold - value),
+                                discrimination,
+                            ),
                             pin.to_string(),
                         );
                     }
@@ -115,7 +128,11 @@ impl Initials {
                 Initial::Wallet { name, funds, pin } => {
                     let wallet_alias = format!("wallet_{}", name);
                     templates.insert(
-                        WalletTemplate::new_utxo(wallet_alias, Value(*funds as u64)),
+                        WalletTemplate::new_utxo(
+                            wallet_alias,
+                            Value(*funds as u64),
+                            discrimination,
+                        ),
                         pin.to_string(),
                     );
                 }

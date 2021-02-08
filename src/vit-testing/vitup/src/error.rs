@@ -42,8 +42,13 @@ error_chain! {
         }
 
         ProxyNotFound(alias: String) {
-            description(" proxy not found"),
+            description("proxy not found"),
             display("proxy with alias: {} not found", alias),
+        }
+
+        SnapshotIntialReadError {
+            description("wrong format for snapshot data"),
+            display("wrong format for snapshot data"),
         }
     }
 }

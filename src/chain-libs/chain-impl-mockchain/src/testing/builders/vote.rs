@@ -1,5 +1,5 @@
 use crate::{
-    certificate::{PrivateTallyDecrypted, PrivateTallyDecryptedProposal},
+    certificate::{DecryptedPrivateTally, DecryptedPrivateTallyProposal},
     testing::data::CommitteeMembersManager,
     vote::VotePlanStatus,
 };
@@ -7,7 +7,7 @@ use crate::{
 pub fn decrypt_tally(
     vote_plan_status: &VotePlanStatus,
     members: &CommitteeMembersManager,
-) -> PrivateTallyDecrypted {
+) -> DecryptedPrivateTally {
     let encrypted_tally = vote_plan_status
         .proposals
         .iter()
@@ -38,12 +38,12 @@ pub fn decrypt_tally(
             let tally_state = encrypted_tally.state();
             let tally =
                 chain_vote::tally(max_votes, &tally_state, &decrypt_shares, &table).unwrap();
-            PrivateTallyDecryptedProposal {
+            DecryptedPrivateTallyProposal {
                 decrypt_shares: decrypt_shares.into_boxed_slice(),
                 tally_result: tally.votes.into_boxed_slice(),
             }
         })
         .collect::<Vec<_>>();
 
-    PrivateTallyDecrypted::new(proposals)
+    DecryptedPrivateTally::new(proposals)
 }

@@ -17,7 +17,7 @@ pub use self::vote_plan::{
     VotePlan, VotePlanId, VotePlanProof,
 };
 pub use self::vote_tally::{
-    PrivateTallyDecrypted, PrivateTallyDecryptedProposal, TallyProof, VoteTally, VoteTallyPayload,
+    DecryptedPrivateTally, DecryptedPrivateTallyProposal, TallyProof, VoteTally, VoteTallyPayload,
 };
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
 pub use pool::{

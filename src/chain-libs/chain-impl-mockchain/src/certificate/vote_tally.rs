@@ -23,7 +23,7 @@ pub struct VoteTally {
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub enum VoteTallyPayload {
     Public,
-    Private { inner: PrivateTallyDecrypted },
+    Private { inner: DecryptedPrivateTally },
 }
 
 #[derive(Debug, Clone)]
@@ -40,12 +40,12 @@ pub enum TallyProof {
 }
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
-pub struct PrivateTallyDecrypted {
-    inner: Box<[PrivateTallyDecryptedProposal]>,
+pub struct DecryptedPrivateTally {
+    inner: Box<[DecryptedPrivateTallyProposal]>,
 }
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
-pub struct PrivateTallyDecryptedProposal {
+pub struct DecryptedPrivateTallyProposal {
     pub decrypt_shares: Box<[TallyDecryptShare]>,
     pub tally_result: Box<[u64]>,
 }
@@ -58,7 +58,7 @@ impl VoteTallyPayload {
         }
     }
 
-    pub fn payload_decrypted(&self) -> Option<&PrivateTallyDecrypted> {
+    pub fn payload_decrypted(&self) -> Option<&DecryptedPrivateTally> {
         match self {
             Self::Public => None,
             Self::Private { inner } => Some(inner),
@@ -74,7 +74,7 @@ impl VoteTally {
         }
     }
 
-    pub fn new_private(id: VotePlanId, decrypted_tally: PrivateTallyDecrypted) -> Self {
+    pub fn new_private(id: VotePlanId, decrypted_tally: DecryptedPrivateTally) -> Self {
         Self {
             id,
             payload: VoteTallyPayload::Private {
@@ -91,7 +91,7 @@ impl VoteTally {
         self.payload.payload_type()
     }
 
-    pub fn tally_decrypted(&self) -> Option<&PrivateTallyDecrypted> {
+    pub fn tally_decrypted(&self) -> Option<&DecryptedPrivateTally> {
         self.payload.payload_decrypted()
     }
 
@@ -166,14 +166,14 @@ impl TallyProof {
     }
 }
 
-impl PrivateTallyDecrypted {
-    pub fn new(proposals: Vec<PrivateTallyDecryptedProposal>) -> Self {
+impl DecryptedPrivateTally {
+    pub fn new(proposals: Vec<DecryptedPrivateTallyProposal>) -> Self {
         Self {
             inner: proposals.into_boxed_slice(),
         }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &PrivateTallyDecryptedProposal> {
+    pub fn iter(&self) -> impl Iterator<Item = &DecryptedPrivateTallyProposal> {
         self.inner.iter()
     }
 }
@@ -273,14 +273,14 @@ impl Readable for VoteTally {
                     }
                     let shares = shares.into_boxed_slice();
                     let decrypted = decrypted.into_boxed_slice();
-                    proposals.push(PrivateTallyDecryptedProposal {
+                    proposals.push(DecryptedPrivateTallyProposal {
                         decrypt_shares: shares,
                         tally_result: decrypted,
                     });
                 }
 
                 VoteTallyPayload::Private {
-                    inner: PrivateTallyDecrypted::new(proposals),
+                    inner: DecryptedPrivateTally::new(proposals),
                 }
             }
         };

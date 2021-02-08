@@ -1,7 +1,7 @@
 use crate::{
     certificate::{
-        EncryptedVoteTally, ExternalProposalId, Proposal, PrivateTallyDecrypted, VoteCast, VotePlan,
-        VoteTally,
+        DecryptedPrivateTally, EncryptedVoteTally, ExternalProposalId, Proposal, VoteCast,
+        VotePlan, VoteTally,
     },
     fee::LinearFee,
     key::Hash,
@@ -317,7 +317,7 @@ impl Controller {
         &self,
         owner: &Wallet,
         vote_plan_def: &VotePlanDef,
-        decrypted_tally: PrivateTallyDecrypted,
+        decrypted_tally: DecryptedPrivateTally,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
         let vote_plan: VotePlan = vote_plan_def.clone().into();

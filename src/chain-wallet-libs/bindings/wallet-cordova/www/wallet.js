@@ -53,15 +53,6 @@ var plugin = {
      */
 
     /**
-     * @deprecated since version 0.6.0
-     * @readonly
-     * @enum {number}
-     */
-    PayloadType: {
-        PUBLIC: 1
-    },
-
-    /**
      * @param {string} mnemonics a string with the mnemonic phrase
      * @param {pointerCallback} successCallback on success returns a pointer to a Wallet object
      * @param {errorCallback} errorCallback this function can fail if the mnemonics are invalid
@@ -260,28 +251,6 @@ var plugin = {
     conversionGetIgnored: function (ptr, successCallback, errorCallback) {
         argscheck.checkArgs('sff', 'conversionGetIgnored', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, CONVERSION_IGNORED_GET_ACTION_TAG, [ptr]);
-    },
-
-    /**
-     * @deprecated since version 0.6.0: use proposalNewPublic for public vote
-     * Get a proposal object, used to validate the vote on `walletVote`
-     *
-     * @param {Uint8Array} votePlanId a byte array of 32 elements that identifies the voteplan
-     * @param {PayloadType} payloadType
-     * @param {number} index the index of the proposal in the voteplan
-     * @param {number} numChoices the number of choices of the proposal, used to validate the choice
-     * @param {function} successCallback returns an object with ignored, and value properties
-     * @param {errorCallback} errorCallback
-     */
-    proposalNew: function (votePlanId, payloadType, index, numChoices, successCallback, errorCallback) {
-        argscheck.checkArgs('*nnnff', 'proposalNew', arguments);
-        checkUint8Array({ name: 'votePlanId', testee: votePlanId, optLength: VOTE_PLAN_ID_LENGTH });
-
-        if (payloadType === this.PayloadType.PUBLIC) {
-            this.proposalNewPublic(votePlanId, index, numChoices, successCallback, errorCallback);
-        } else {
-            throw Error('unsupported operation');
-        }
     },
 
     /**

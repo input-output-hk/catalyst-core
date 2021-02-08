@@ -1,4 +1,4 @@
-use super::{encode, read_config, read_genesis_yaml, write_genesis_yaml};
+use super::{encode, read_config, read_genesis_yaml, read_initials, write_genesis_yaml};
 use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
 use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
@@ -29,6 +29,9 @@ pub struct ExternalDataCommandArgs {
     /// funds import json
     #[structopt(long = "funds")]
     pub funds: PathBuf,
+
+    #[structopt(long = "snapshot")]
+    pub snapshot: Option<PathBuf>,
 }
 
 impl ExternalDataCommandArgs {
@@ -94,6 +97,11 @@ impl ExternalDataCommandArgs {
         }
         if !config.additions.is_empty() {
             block0_configuration.initial.extend(config.additions);
+        }
+
+        if let Some(snapshot_file) = self.snapshot {
+            let snapshot = read_initials(&snapshot_file)?;
+            block0_configuration.initial.extend(snapshot);
         }
 
         write_genesis_yaml(block0_configuration, &genesis)?;

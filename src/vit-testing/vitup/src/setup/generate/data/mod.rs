@@ -2,10 +2,11 @@ mod external;
 mod random;
 
 pub use external::ExternalDataCommandArgs;
+pub use jormungandr_lib::interfaces::Initial;
 pub use random::RandomDataCommandArgs;
 
 use crate::config::DataGenerationConfig;
-use crate::Result;
+use crate::{error::ErrorKind, Result};
 use chain_core::property::Block;
 use chain_core::property::Serialize;
 use chain_impl_mockchain::ledger::Ledger;
@@ -39,6 +40,13 @@ pub fn read_config<P: AsRef<Path>>(config: P) -> Result<DataGenerationConfig> {
 pub fn read_genesis_yaml<P: AsRef<Path>>(genesis: P) -> Result<Block0Configuration> {
     let contents = std::fs::read_to_string(&genesis)?;
     serde_yaml::from_str(&contents).map_err(Into::into)
+}
+
+pub fn read_initials<P: AsRef<Path>>(initials: P) -> Result<Vec<Initial>> {
+    let contents = std::fs::read_to_string(&initials)?;
+    let value: serde_json::Value = serde_json::from_str(&contents)?;
+    let initial = serde_json::to_string(&value["initial"])?;
+    serde_json::from_str(&initial).map_err(Into::into)
 }
 
 pub fn write_genesis_yaml<P: AsRef<Path>>(genesis: Block0Configuration, path: P) -> Result<()> {

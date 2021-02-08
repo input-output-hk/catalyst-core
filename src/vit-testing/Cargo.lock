@@ -5025,6 +5025,7 @@ name = "vitup"
 version = "0.1.0"
 dependencies = [
  "assert_fs",
+ "base64 0.12.3",
  "chain-addr",
  "chain-core",
  "chain-crypto",

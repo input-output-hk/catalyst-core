@@ -48,7 +48,7 @@ warp = "0.3"
 tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
 json = "0.12.4"
 image = "0.23.12"
-
+base64 = "0.12.1"
 
 [dependencies.reqwest]
 version = "0.10.10"

@@ -1,14 +1,14 @@
 use super::file_lister;
-use super::State;
+use super::{authorize_token, State};
 use crate::config::VitStartParameters;
 use crate::manager::ControlContextLock;
+use crate::manager::API_TOKEN_HEADER;
 use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
 use std::convert::Infallible;
 use warp::http::StatusCode;
 use warp::reject::Reject;
 use warp::{Filter, Rejection, Reply};
-
 impl Reject for file_lister::Error {}
 
 #[derive(Clone)]
@@ -29,6 +29,8 @@ pub async fn start_rest_server(context: ControlContextLock) {
         .set_server_stopper(ServerStopper(stopper_tx));
 
     let working_dir = context.lock().unwrap().working_directory().clone();
+    let is_token_enabled = context.lock().unwrap().api_token().is_some();
+
     let with_context = warp::any().map(move || context.clone());
 
     let files = {
@@ -64,7 +66,18 @@ pub async fn start_rest_server(context: ControlContextLock) {
             .and_then(stop_handler)
             .boxed();
 
-        root.and(start.or(stop)).boxed()
+        let api_token_filter = if is_token_enabled {
+            warp::header::header(API_TOKEN_HEADER)
+                .and(with_context.clone())
+                .and_then(authorize_token)
+                .and(warp::any())
+                .untuple_one()
+                .boxed()
+        } else {
+            warp::any().boxed()
+        };
+
+        root.and(api_token_filter).and(start.or(stop)).boxed()
     };
 
     let status = warp::path!("status")

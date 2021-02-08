@@ -17,10 +17,15 @@ pub struct ControlContext {
     state: State,
     should_stop: bool,
     should_start: bool,
+    api_token: Option<String>,
 }
 
 impl ControlContext {
-    pub fn new<P: AsRef<Path>>(working_dir: P, setup: VitStartParameters) -> Self {
+    pub fn new<P: AsRef<Path>>(
+        working_dir: P,
+        setup: VitStartParameters,
+        api_token: Option<String>,
+    ) -> Self {
         Self {
             server_stopper: None,
             setup,
@@ -29,6 +34,7 @@ impl ControlContext {
             state: State::Idle,
             should_stop: false,
             should_start: false,
+            api_token,
         }
     }
 
@@ -82,6 +88,14 @@ impl ControlContext {
 
     pub fn stop(&mut self) {
         self.should_stop = true;
+    }
+
+    pub fn api_token(&self) -> Option<String> {
+        self.api_token.clone()
+    }
+
+    pub fn api_token_mut(&mut self, api_token: String) {
+        self.api_token = Some(api_token);
     }
 
     pub fn clear_requests(&mut self) {

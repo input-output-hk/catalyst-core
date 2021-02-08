@@ -152,12 +152,14 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
     working_dir: P,
     mut quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: String,
+    token: Option<String>,
 ) -> Result<()> {
     let protocol = quick_setup.protocol().clone();
 
     let control_context = Arc::new(Mutex::new(ControlContext::new(
         working_dir.clone(),
         quick_setup.parameters().clone(),
+        token,
     )));
 
     let mut manager = ManagerService::new(control_context.clone());

@@ -220,9 +220,14 @@ impl QuickStartCommandArgs {
             std::fs::remove_dir_all(&testing_directory)?;
         }
         match mode {
-            Mode::Service => {
-                service_mode(context, testing_directory, quick_setup, endpoint, ideascale, token)?
-            }
+            Mode::Service => service_mode(
+                context,
+                testing_directory,
+                quick_setup,
+                endpoint,
+                ideascale,
+                token,
+            )?,
             Mode::Endless => {
                 let (mut vit_controller, mut controller, vit_parameters) =
                     quick_setup.build(context)?;

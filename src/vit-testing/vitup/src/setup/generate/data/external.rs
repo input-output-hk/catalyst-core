@@ -96,9 +96,11 @@ impl ExternalDataCommandArgs {
             block0_configuration.initial.extend(config.additions);
         }
 
-        println!("{:?}", block0_configuration);
-
         write_genesis_yaml(block0_configuration, &genesis)?;
-        encode(&genesis, &block0)
+        println!("genesis.yaml: {:?}", std::fs::canonicalize(&genesis)?);
+        encode(&genesis, &block0)?;
+        println!("block0: {:?}", std::fs::canonicalize(&block0)?);
+
+        Ok(())
     }
 }

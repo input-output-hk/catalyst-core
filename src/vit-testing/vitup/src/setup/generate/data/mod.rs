@@ -42,20 +42,10 @@ pub fn read_genesis_yaml<P: AsRef<Path>>(genesis: P) -> Result<Block0Configurati
 }
 
 pub fn write_genesis_yaml<P: AsRef<Path>>(genesis: Block0Configuration, path: P) -> Result<()> {
-    use std::fs::OpenOptions;
-    use std::io::{prelude::*, Seek, SeekFrom};
-
-    let mut file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(&path)
-        .unwrap();
-
+    use std::io::Write;
     let content = serde_yaml::to_string(&genesis)?;
-
-    file.seek(SeekFrom::Start(0))?;
-    file.write_all(&content.as_bytes())?;
+    let mut file = std::fs::File::create(&path)?;
+    file.write_all(content.as_bytes())?;
     Ok(())
 }
 

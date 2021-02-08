@@ -1,4 +1,4 @@
-use crate::testing::build_tally_decrypt_share;
+use crate::testing::decrypt_tally;
 use crate::testing::data::CommitteeMembersManager;
 use crate::testing::VoteTestGen;
 use crate::{
@@ -95,7 +95,7 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
         })
         .unwrap();
 
-    let shares = build_tally_decrypt_share(vote_plan_status, &members);
+    let shares = decrypt_tally(vote_plan_status, &members);
 
     controller
         .tally_vote_private(&alice, &vote_plan, shares, &mut ledger)

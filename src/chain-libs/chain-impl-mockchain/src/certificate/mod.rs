@@ -16,7 +16,9 @@ pub use self::vote_plan::{
     ExternalProposalDocument, ExternalProposalId, Proposal, Proposals, PushProposal, VoteAction,
     VotePlan, VotePlanId, VotePlanProof,
 };
-pub use self::vote_tally::{TallyDecryptShares, TallyProof, VoteTally, VoteTallyPayload};
+pub use self::vote_tally::{
+    DecryptedPrivateTally, DecryptedPrivateTallyProposal, TallyProof, VoteTally, VoteTallyPayload,
+};
 pub use delegation::{OwnerStakeDelegation, StakeDelegation};
 pub use pool::{
     GenesisPraosLeaderHash, IndexSignatures, ManagementThreshold, PoolId, PoolOwnersSigned,

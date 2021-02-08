@@ -1,6 +1,9 @@
-use crate::vote::{Choice, Payload, TallyError};
 use crate::{
-    certificate::{Proposal, TallyDecryptShares, VoteAction, VoteCast, VotePlan, VotePlanId},
+    certificate::DecryptedPrivateTallyProposal,
+    vote::{Choice, Payload, TallyError},
+};
+use crate::{
+    certificate::{DecryptedPrivateTally, Proposal, VoteAction, VoteCast, VotePlan, VotePlanId},
     date::BlockDate,
     ledger::governance::{Governance, GovernanceAcceptanceCriteria},
     rewards::Ratio,
@@ -230,7 +233,7 @@ impl ProposalManager {
 
     pub fn finalize_private_tally<F>(
         &self,
-        shares: &[chain_vote::TallyDecryptShare],
+        decrypted_proposal: &DecryptedPrivateTallyProposal,
         governance: &Governance,
         f: &mut F,
     ) -> Result<Self, TallyError>
@@ -240,15 +243,16 @@ impl ProposalManager {
         let tally = self.tally.as_ref().ok_or(TallyError::NoEncryptedTally)?;
         let (encrypted_tally, total_stake) = tally.private_encrypted()?;
         let state = encrypted_tally.state();
-        let private_result = chain_vote::tally(
-            total_stake.0,
-            &state,
-            shares,
-            &chain_vote::TallyOptimizationTable::generate_with_balance(total_stake.0, 1),
-        )
-        .map_err(|_| TallyError::BadDecryptShares)?;
+
+        let verifiable_tally = chain_vote::Tally {
+            votes: decrypted_proposal.tally_result.to_vec(),
+        };
+        if !verifiable_tally.verify(&state, &decrypted_proposal.decrypt_shares) {
+            return Err(TallyError::InvalidDecryption);
+        }
+
         let mut result = TallyResult::new(self.options.clone());
-        for (choice, &weight) in private_result.votes.iter().enumerate() {
+        for (choice, &weight) in decrypted_proposal.tally_result.iter().enumerate() {
             result.add_vote(Choice::new(u8::try_from(choice).unwrap()), weight)?;
         }
 
@@ -435,7 +439,7 @@ impl ProposalManagers {
 
     pub fn finalize_private_tally<F>(
         &self,
-        shares: &TallyDecryptShares,
+        decrypted_tally: &DecryptedPrivateTally,
         governance: &Governance,
         f: &mut F,
     ) -> Result<Self, VoteError>
@@ -443,8 +447,12 @@ impl ProposalManagers {
         F: FnMut(&VoteAction),
     {
         let mut proposals = Vec::with_capacity(self.0.len());
-        for (proposal_manager, shares) in self.0.iter().zip(shares.iter()) {
-            proposals.push(proposal_manager.finalize_private_tally(shares, governance, f)?);
+        for (proposal_manager, decrypted_proposal) in self.0.iter().zip(decrypted_tally.iter()) {
+            proposals.push(proposal_manager.finalize_private_tally(
+                decrypted_proposal,
+                governance,
+                f,
+            )?);
         }
         Ok(Self(proposals))
     }
@@ -659,16 +667,16 @@ impl VotePlanManager {
 
     pub fn finalize_private_tally<F>(
         &self,
-        shares: &TallyDecryptShares,
+        decrypted_tally: &DecryptedPrivateTally,
         governance: &Governance,
         f: &mut F,
     ) -> Result<Self, VoteError>
     where
         F: FnMut(&VoteAction),
     {
-        let proposal_managers = self
-            .proposal_managers
-            .finalize_private_tally(shares, governance, f)?;
+        let proposal_managers =
+            self.proposal_managers
+                .finalize_private_tally(decrypted_tally, governance, f)?;
         Ok(Self {
             proposal_managers,
             plan: Arc::clone(&self.plan),

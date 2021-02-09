@@ -9,6 +9,7 @@ use jormungandr_testing_utils::testing::network_builder::SpawnParams;
 use jormungandr_testing_utils::testing::node::time;
 use jortestkit::prelude::ProgressBarMode;
 use std::path::PathBuf;
+use tokio;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::scenario::controller::VitController;
 use vitup::scenario::settings::VitSettings;
@@ -49,8 +50,8 @@ pub fn context() -> Context {
     )
 }
 
-#[test]
-pub fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
+#[tokio::test]
+pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let mut context = context();
     let title = "vote_e2e_flow";
     let scenario_settings = prepare_scenario! {

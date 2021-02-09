@@ -22,7 +22,7 @@ pub struct VitStartParameters {
     pub voting_power: u64,
     pub fund_name: String,
     pub fund_id: i32,
-    pub private: bool,    
+    pub private: bool,
 }
 
 impl Default for VitStartParameters {

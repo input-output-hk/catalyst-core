@@ -1,20 +1,20 @@
-use crate::setup::start::quick::Mode;
-use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
-use crate::setup::start::quick::parse_mode_from_str;
+use crate::manager::ControlContext;
 use crate::manager::ManagerService;
 use crate::scenario::network::single_run;
-use crate::manager::ControlContext;
+use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::setup::generate::read_config;
+use crate::setup::start::quick::parse_mode_from_str;
+use crate::setup::start::quick::Mode;
 use crate::setup::start::QuickVitBackendSettingsBuilder;
-use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
-use std::sync::Arc;
-use std::sync::Mutex;
 use crate::Result;
 use jormungandr_scenario_tests::programs::prepare_command;
 use jormungandr_scenario_tests::{Context, Seed};
 use jortestkit::prelude::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use std::path::PathBuf;
+use std::sync::Arc;
+use std::sync::Mutex;
 use structopt::StructOpt;
+use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
@@ -123,14 +123,12 @@ impl AdvancedStartCommandArgs {
 
         let config = read_config(&self.config)?;
 
-
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
         quick_setup.upload_parameters(config.params);
 
         let mut template_generator =
-        ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)
-            .unwrap();
-
+            ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)
+                .unwrap();
 
         testing_directory.push(quick_setup.title());
         if testing_directory.exists() {
@@ -138,7 +136,6 @@ impl AdvancedStartCommandArgs {
         }
         match mode {
             Mode::Service => {
-
                 let protocol = quick_setup.protocol().clone();
 
                 let control_context = Arc::new(Mutex::new(ControlContext::new(
@@ -146,18 +143,18 @@ impl AdvancedStartCommandArgs {
                     quick_setup.parameters().clone(),
                     token,
                 )));
-            
+
                 let mut manager = ManagerService::new(control_context.clone());
                 manager.spawn();
-            
+
                 loop {
                     if manager.request_to_start() {
                         if testing_directory.exists() {
                             std::fs::remove_dir_all(testing_directory.clone())?;
                         }
-            
+
                         let mut generator = template_generator.clone();
-            
+
                         let parameters = manager.setup();
                         quick_setup.upload_parameters(parameters);
                         manager.clear_requests();
@@ -170,10 +167,10 @@ impl AdvancedStartCommandArgs {
                             &mut generator,
                         )?;
                     }
-            
+
                     std::thread::sleep(std::time::Duration::from_secs(30));
                 }
-            },
+            }
             Mode::Endless => {
                 let (mut vit_controller, mut controller, vit_parameters) =
                     quick_setup.build(context)?;

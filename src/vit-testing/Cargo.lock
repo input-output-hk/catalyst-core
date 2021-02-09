@@ -2204,6 +2204,7 @@ dependencies = [
  "rand 0.7.3",
  "rand_chacha 0.2.2",
  "thiserror",
+ "tokio 1.2.0",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "vitup",

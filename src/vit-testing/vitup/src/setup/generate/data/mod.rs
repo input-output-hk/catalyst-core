@@ -6,7 +6,7 @@ pub use jormungandr_lib::interfaces::Initial;
 pub use random::RandomDataCommandArgs;
 
 use crate::config::DataGenerationConfig;
-use crate::{error::ErrorKind, Result};
+use crate::Result;
 use chain_core::property::Block;
 use chain_core::property::Serialize;
 use chain_impl_mockchain::ledger::Ledger;

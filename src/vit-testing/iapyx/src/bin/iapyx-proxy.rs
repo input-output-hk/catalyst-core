@@ -49,6 +49,12 @@ async fn main() {
         server_stub.http_node_address(),
     ));
 
+    let explorer = warp::path!("vote" / "active" / ..).and(reverse_proxy_filter(
+        "".to_string(),
+        server_stub.http_node_address(),
+    ));
+
+
     let block0_content = server_stub.block0();
 
     let block0 = warp::path!("block0").map(move || Ok(block0_content.clone()));

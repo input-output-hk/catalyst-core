@@ -7,7 +7,7 @@ use crate::{
     },
     v0::errors::HandleError,
 };
-use diesel::{ExpressionMethods, Insertable, QueryResult, RunQueryDsl};
+use diesel::{ExpressionMethods, QueryResult, RunQueryDsl};
 
 pub async fn query_all_challenges(pool: &DBConnectionPool) -> Result<Vec<Challenge>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
@@ -73,12 +73,6 @@ pub fn batch_insert_challenges(
     db_conn: &DBConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(challenges::table)
-        .values(
-            challenges_slice
-                .iter()
-                .cloned()
-                .map(|challenge| challenge.values())
-                .collect::<Vec<_>>(),
-        )
+        .values(challenges_slice)
         .execute(db_conn)
 }

@@ -226,12 +226,25 @@ components:
         fund_id:
           type: integer
           format: int32
+        challenge_id:
+          type: integer
+          format: int32
+        challenge_type:
+          $ref: "#/components/schemas/ChallengeType"
+
+    ChallengeType:
+      type: string
+      enum:
+        - regular
+        - community-choice
 
     Challenge:
       properties:
         id:
           type: integer
           format: int32
+        challenge_type:
+          $ref: "#/components/schemas/ChallengeType"
         title:
           type: string
         description:

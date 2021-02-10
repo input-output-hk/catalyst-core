@@ -51,7 +51,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: "#/components/schemas/Proposal"
+                $ref: "#/components/schemas/ProposalWithChallengeInfo"
 
   /api/v0/proposals/{id}:
     get:
@@ -68,7 +68,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Proposal"
+                $ref: "#/components/schemas/ProposalWithChallengeInfo"
         404:
           description: The requested proposal was not found
 
@@ -160,11 +160,6 @@ components:
           format: int32
 
     Proposal:
-      discriminator:
-        propertyName: challenge_type
-        mapping:
-          simple: SimpleProposal
-          community-choice: CommunityChoiceProposal
       properties:
         internal_id:
           type: integer
@@ -224,18 +219,29 @@ components:
           format: date-time
         chain_voteplan_payload:
           type: string
-        fund_id:
-          type: integer
-          format: int32
-        challenge_id:
-          type: integer
-          format: int32
-        challenge_type:
-          $ref: "#/components/schemas/ChallengeType"
+
+    ProposalWithChallengeInfo:
+      discriminator:
+        propertyName: challenge_type
+        mapping:
+          simple: SimpleProposal
+          community-choice: CommunityChoiceProposal
+      allOf:
+        - $ref: "#/components/schemas/Proposal"
+        - type: object
+          properties:
+            fund_id:
+              type: integer
+              format: int32
+            challenge_id:
+              type: integer
+              format: int32
+            challenge_type:
+              $ref: "#/components/schemas/ChallengeType"
 
     SimpleProposal:
       allOf:
-        - $ref: "#/components/schemas/Proposal"
+        - $ref: "#/components/schemas/ProposalWithChallengeInfo"
         - type: object
           properties:
             proposal_solution:
@@ -243,7 +249,7 @@ components:
 
     CommunityChoiceProposal:
       allOf:
-        - $ref: "#/components/schemas/Proposal"
+        - $ref: "#/components/schemas/ProposalWithChallengeInfo"
         - type: object
           properties:
             proposal_brief:

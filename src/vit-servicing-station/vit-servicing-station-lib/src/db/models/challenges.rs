@@ -19,7 +19,7 @@ pub struct Challenge {
 pub mod test {
     use super::*;
     use crate::db::DBConnectionPool;
-    use diesel::RunQueryDsl;
+    use diesel::{ExpressionMethods, RunQueryDsl};
 
     pub fn get_test_challenge_with_fund_id(fund_id: i32) -> Challenge {
         const CHALLENGE_ID: i32 = 9001;

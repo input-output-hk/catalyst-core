@@ -220,6 +220,12 @@ components:
         chain_voteplan_payload:
           type: string
 
+    ChallengeType:
+      type: string
+      enum:
+        - simple
+        - community-choice
+
     ProposalWithChallengeInfo:
       discriminator:
         propertyName: challenge_type
@@ -260,12 +266,6 @@ components:
               type: string
             proposal_metrics:
               type: string
-
-    ChallengeType:
-      type: string
-      enum:
-        - simple
-        - community-choice
 
     Challenge:
       properties:

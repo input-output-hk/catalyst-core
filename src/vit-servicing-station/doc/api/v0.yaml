@@ -5,10 +5,10 @@ info:
   description: Voting Implementation Testnet Rest API v0
   version: 0.2.0
   contact:
-    url: ''
+    url: "http://github.com/input-output-hk/vit-servicing-station"
 
 servers:
-  - url: 'http://localhost'
+  - url: "http://localhost"
 
 paths:
   /api/v0/fund:
@@ -103,7 +103,6 @@ paths:
         404:
           description: The requested challenge was not found
 
-
 components:
   schemas:
     Fund:
@@ -131,11 +130,11 @@ components:
         chain_vote_plans:
           type: array
           items:
-            $ref: '#/components/schemas/VotePlan'
+            $ref: "#/components/schemas/VotePlan"
         challenges:
           type: array
           items:
-            $ref: '#/components/schemas/Challenge'
+            $ref: "#/components/schemas/Challenge"
 
     VotePlan:
       properties:
@@ -248,10 +247,10 @@ components:
 
     ChallengeWithProposals:
       allOf:
-        - $ref: '#/components/schemas/Challenge'
+        - $ref: "#/components/schemas/Challenge"
         - type: object
           properties:
             proposals:
               type: array
               items:
-                $ref: '#/components/schemas/Proposal'
+                $ref: "#/components/schemas/Proposal"

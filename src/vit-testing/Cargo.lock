@@ -367,7 +367,7 @@ checksum = "cdcf67bb7ba7797a081cd19009948ab533af7c355d5caf1d08c777582d351e9c"
 [[package]]
 name = "bip39"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
 dependencies = [
  "cryptoxide 0.1.3",
  "thiserror",
@@ -582,7 +582,7 @@ source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#d0
 dependencies = [
  "cbor_event",
  "chain-ser",
- "cryptoxide 0.3.0",
+ "cryptoxide 0.3.1",
  "ed25519-bip32",
 ]
 
@@ -628,7 +628,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
- "cryptoxide 0.3.0",
+ "cryptoxide 0.3.1",
  "quickcheck",
 ]
 
@@ -647,7 +647,7 @@ source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#d0
 dependencies = [
  "bech32",
  "cfg-if 1.0.0",
- "cryptoxide 0.3.0",
+ "cryptoxide 0.3.1",
  "curve25519-dalek",
  "digest 0.9.0",
  "ed25519-bip32",
@@ -693,7 +693,7 @@ dependencies = [
 [[package]]
 name = "chain-path-derivation"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
 dependencies = [
  "thiserror",
 ]
@@ -741,7 +741,7 @@ name = "chain-vote"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#d081f0bebc32cedc56dc867177e78abf23c91038"
 dependencies = [
- "cryptoxide 0.3.0",
+ "cryptoxide 0.3.1",
  "eccoxide",
  "rand_core 0.5.1",
  "rayon",
@@ -1002,9 +1002,9 @@ checksum = "da24927b5b899890bcb29205436c957b7892ec3a3fbffce81d710b9611e77778"
 
 [[package]]
 name = "cryptoxide"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2824e117f942b77e942b14162316711d66f07d14b0f37a44fa4b4cad592b8fa"
+checksum = "d72d614cd84f5e3a5611f09abcf5cc2fe07a37bf05ff864b85119ea61db9f5fe"
 
 [[package]]
 name = "csv"
@@ -1273,7 +1273,7 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8827180a2b511141fbe49141e50b31a8d542465e0fb572f81f36feea2addfe92"
 dependencies = [
- "cryptoxide 0.3.0",
+ "cryptoxide 0.3.1",
 ]
 
 [[package]]
@@ -1844,7 +1844,7 @@ dependencies = [
 [[package]]
 name = "hdkeygen"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -2252,7 +2252,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-lib"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#8bc5d27a528b1578948598f21cb8400b570810cd"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#218e3bd64cc9cbf07f2d55f32f8e415af157ac3e"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2280,7 +2280,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#8bc5d27a528b1578948598f21cb8400b570810cd"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#218e3bd64cc9cbf07f2d55f32f8e415af157ac3e"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2322,7 +2322,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#8bc5d27a528b1578948598f21cb8400b570810cd"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#218e3bd64cc9cbf07f2d55f32f8e415af157ac3e"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -2466,9 +2466,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.85"
+version = "0.2.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ccac4b00700875e6a07c6cde370d44d32fa01c5a65cdd2fca6858c479d28bb3"
+checksum = "b7282d924be3275cec7f6756ff4121987bc6481325397dde6ba3e7802b1a8b1c"
 
 [[package]]
 name = "libsqlite3-sys"
@@ -4148,7 +4148,7 @@ checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
 [[package]]
 name = "symmetric-cipher"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
 dependencies = [
  "cryptoxide 0.2.1",
  "rand 0.7.3",
@@ -4847,9 +4847,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-normalization"
-version = "0.1.16"
+version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a13e63ab62dbe32aeee58d1c5408d35c36c392bba5d9d3142287219721afe606"
+checksum = "07fbfce1c8a97d547e8b5334978438d9d6ec8c20e38f56d4a4374d181493eaef"
 dependencies = [
  "tinyvec",
 ]
@@ -5112,7 +5112,7 @@ dependencies = [
 [[package]]
 name = "wallet"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -5134,7 +5134,7 @@ dependencies = [
 [[package]]
 name = "wallet-core"
 version = "0.6.0-pre1"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#3cdbb0a7aee33f238fb5701f7b0c7d6d4fdb91f7"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
 dependencies = [
  "bech32",
  "bip39",

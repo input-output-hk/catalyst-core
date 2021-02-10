@@ -109,6 +109,12 @@ impl ExternalDataCommandArgs {
         encode(&genesis, &block0)?;
         println!("block0: {:?}", std::fs::canonicalize(&block0)?);
 
+
+        println!("Fund id: {}",quick_setup.parameters().fund_id);
+        println!("vote start timestamp: {:?}",quick_setup.parameters().vote_start_timestamp);
+        println!("tally start timestamp: {:?}",quick_setup.parameters().tally_start_timestamp);
+        println!("tally end timestamp: {:?}",quick_setup.parameters().tally_end_timestamp);
+        println!("next vote start time: {:?}",quick_setup.parameters().next_vote_start_time);
         Ok(())
     }
 }

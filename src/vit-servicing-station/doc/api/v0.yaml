@@ -252,6 +252,38 @@ components:
           properties:
             proposal_solution:
               type: string
+      example:
+        {
+          "internal_id": 22,
+          "proposal_id": "4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e",
+          "proposal_title": "Authentication for DeepFake Defense",
+          "proposal_summary": "Deepfake videos are dangerous.",
+          "proposal_solution": "We will create a cryptographic proof on Cardano that verifies videos are real by connecting their blockchain ID.",
+          "proposal_public_key": "Fvd8zI3DH85qnaChQE6Aymt1diMJP32LB0AdpheZh/Q=",
+          "proposal_funds": 12000,
+          "proposal_url": "http://ideascale.com/t/UM5UZBd2t",
+          "proposal_files_url": "",
+          "proposal_impact_score": 0,
+          "proposer":
+            {
+              "proposer_name": "Community Member",
+              "proposer_email": "example@vit.iohk.io",
+              "proposer_url": "",
+              "proposer_relevant_experience": "Cryptography student, website development, blockchain technologist.",
+            },
+          "chain_proposal_id": "4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e",
+          "chain_proposal_index": 0,
+          "chain_vote_options": { "blank": 0, "yes": 1, "no": 2 },
+          "chain_voteplan_id": "b1eeb620baf1445672f6c9422481aff0f6babaf775760d187a7703027e098166",
+          "chain_vote_start_time": "2021-02-10T14:40:27+00:00",
+          "chain_vote_end_time": "2021-02-11T10:10:27+00:00",
+          "chain_committee_end_time": "2021-02-11T11:40:27+00:00",
+          "chain_voteplan_payload": "public",
+          "chain_vote_encryption_key": "",
+          "fund_id": 20,
+          "challenge_id": 2,
+          "challenge_type": "simple",
+        }
 
     CommunityChoiceProposal:
       allOf:
@@ -266,6 +298,41 @@ components:
               type: string
             proposal_metrics:
               type: string
+      example:
+        {
+          "internal_id": 31,
+          "proposal_id": "494d8d685e3b195eb5610494f1721db7747df0517cb1b6a705bb3cebfef3c998",
+          "proposal_title": "A for ADA Cryptoalphabet 4 children",
+          "proposal_summary": "How to increase general awareness about Cardano and cryptocurrencies?\nHow to make fun community-building incentives?",
+          "proposal_brief": "A for ADA",
+          "proposal_importance": "We need to get them while they're young.",
+          "proposal_goal": "Nebulous.",
+          "proposal_metrics": "\\- Number of people engaged into the creation of Cryptoalphabet",
+          "proposal_public_key": "zqUCWwguCt6+NHYjkpvasvccuA7l2SuabE+1C0bzf3Y=",
+          "proposal_funds": 4800,
+          "proposal_url": "http://ideascale.com/t/UM5UZBd1p",
+          "proposal_files_url": "",
+          "proposal_impact_score": 133,
+          "proposer":
+            {
+              "proposer_name": "Community Member",
+              "proposer_email": "example@vit.iohk.io",
+              "proposer_url": "",
+              "proposer_relevant_experience": "",
+            },
+          "chain_proposal_id": "494d8d685e3b195eb5610494f1721db7747df0517cb1b6a705bb3cebfef3c998",
+          "chain_proposal_index": 9,
+          "chain_vote_options": { "no": 2, "yes": 1, "blank": 0 },
+          "chain_voteplan_id": "b1eeb620baf1445672f6c9422481aff0f6babaf775760d187a7703027e098166",
+          "chain_vote_start_time": "2021-02-10T14:40:27+00:00",
+          "chain_vote_end_time": "2021-02-11T10:10:27+00:00",
+          "chain_committee_end_time": "2021-02-11T11:40:27+00:00",
+          "chain_voteplan_payload": "public",
+          "chain_vote_encryption_key": "",
+          "fund_id": 20,
+          "challenge_id": 1,
+          "challenge_type": "community-choice",
+        }
 
     Challenge:
       properties:

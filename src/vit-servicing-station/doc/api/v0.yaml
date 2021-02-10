@@ -51,7 +51,7 @@ paths:
             application/json:
               schema:
                 items:
-                $ref: "#/components/schemas/ProposalWithChallengeInfo"
+                  $ref: "#/components/schemas/ProposalWithChallengeInfo"
 
   /api/v0/proposals/{id}:
     get:

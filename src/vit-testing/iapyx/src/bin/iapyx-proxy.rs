@@ -49,11 +49,10 @@ async fn main() {
         server_stub.http_node_address(),
     ));
 
-    let explorer = warp::path!("vote" / "active" / ..).and(reverse_proxy_filter(
+    let vote = warp::path!("vote" / "active" / ..).and(reverse_proxy_filter(
         "".to_string(),
         server_stub.http_node_address(),
     ));
-
 
     let block0_content = server_stub.block0();
 
@@ -68,6 +67,7 @@ async fn main() {
             .or(message)
             .or(settings)
             .or(explorer)
+            .or(vote)
             .or(block0),
     );
 

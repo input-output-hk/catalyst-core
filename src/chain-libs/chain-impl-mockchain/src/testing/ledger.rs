@@ -344,13 +344,17 @@ impl LedgerBuilder {
         self.fragment(Fragment::Transaction(tx))
     }
 
-    pub fn prefill_outputs(self, outputs: &[Output<Address>]) -> Self {
-        let tx = TxBuilder::new()
-            .set_nopayload()
-            .set_ios(&[], outputs)
-            .set_witnesses(&[])
-            .set_payload_auth(&());
-        self.fragment(Fragment::Transaction(tx))
+    pub fn prefill_outputs(mut self, outputs: &[Output<Address>]) -> Self {
+        for outputs_chunk in outputs.chunks(255) {
+            let tx = TxBuilder::new()
+                .set_nopayload()
+                .set_ios(&[], outputs_chunk)
+                .set_witnesses(&[])
+                .set_payload_auth(&());
+            self = self.fragment(Fragment::Transaction(tx));
+        }
+
+        self
     }
 
     pub fn faucet_value(mut self, value: Value) -> Self {

@@ -21,7 +21,6 @@ use rand_core::SeedableRng;
 const ALICE: &str = "Alice";
 const STAKE_POOL: &str = "stake_pool";
 const VOTE_PLAN: &str = "fund1";
-const VOTERS_COUNT: usize = 250;
 
 fn voters_aliases(count: usize) -> Vec<String> {
     let mut counter = 0;
@@ -33,7 +32,7 @@ fn voters_aliases(count: usize) -> Vec<String> {
     .collect()
 }
 
-fn tally_benchmark(c: &mut Criterion) {
+fn tally_benchmark(voters_count: usize, voting_power_per_voter: u64, c: &mut Criterion) {
     const MEMBERS_NO: usize = 3;
     const THRESHOLD: usize = 2;
     let favorable = Choice::new(1);
@@ -47,12 +46,12 @@ fn tally_benchmark(c: &mut Criterion) {
         .committee_member();
     wallets.push(&mut alice_wallet_builder);
 
-    let voters_aliases = voters_aliases(VOTERS_COUNT);
+    let voters_aliases = voters_aliases(voters_count);
     let mut wallet_builders: Vec<WalletTemplateBuilder> =
         voters_aliases.iter().map(|alias| wallet(alias)).collect();
 
     for wallet_builder in wallet_builders.iter_mut() {
-        wallet_builder.with(10);
+        wallet_builder.with(voting_power_per_voter);
         wallets.push(wallet_builder);
     }
 
@@ -120,7 +119,9 @@ fn tally_benchmark(c: &mut Criterion) {
     let parameters = ledger.parameters.clone();
     let date = ledger.date();
 
-    c.bench_function("vote_encrypted_tally", |b| {
+    let bench_name_suffix = format!("_{}_voters_{}_ada", voters_count, voting_power_per_voter);
+
+    c.bench_function(&format!("vote_encrypted_tally{}", bench_name_suffix), |b| {
         b.iter(|| {
             ledger
                 .ledger
@@ -141,7 +142,7 @@ fn tally_benchmark(c: &mut Criterion) {
         })
         .unwrap();
 
-    c.bench_function("decrypt_tally", |b| {
+    c.bench_function(&format!("decrypt_tally{}", bench_name_suffix), |b| {
         b.iter(|| {
             decrypt_tally(vote_plan_status, &members);
         })
@@ -154,7 +155,7 @@ fn tally_benchmark(c: &mut Criterion) {
         .fragment_factory()
         .vote_tally(&alice, decrypted_tally);
 
-    c.bench_function("vote_tally", |b| {
+    c.bench_function(&format!("vote_tally{}", bench_name_suffix), |b| {
         b.iter(|| {
             ledger
                 .ledger
@@ -166,5 +167,22 @@ fn tally_benchmark(c: &mut Criterion) {
     ledger.apply_fragment(&fragment, ledger.date()).unwrap();
 }
 
-criterion_group!(benches, tally_benchmark);
+fn tally_benchmark_128_voters_1000_ada(c: &mut Criterion) {
+    tally_benchmark(128, 1000, c);
+}
+
+fn tally_benchmark_200_voters_1000_ada(c: &mut Criterion) {
+    tally_benchmark(200, 1000, c);
+}
+
+fn tally_benchmark_200_voters_1_000_000_ada(c: &mut Criterion) {
+    tally_benchmark(200, 1_000_000, c);
+}
+
+criterion_group!(
+    benches,
+    tally_benchmark_128_voters_1000_ada,
+    tally_benchmark_200_voters_1000_ada,
+    tally_benchmark_200_voters_1_000_000_ada
+);
 criterion_main!(benches);

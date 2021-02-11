@@ -12,7 +12,8 @@ use crate::{
     key::BftLeaderId,
     leadership::genesis::LeadershipData,
     ledger::{
-        Error, LeadersParticipationRecord, Ledger, LedgerParameters, Pots, RewardsInfoParameters,
+        check::CHECK_TX_MAXIMUM_INPUTS, Error, LeadersParticipationRecord, Ledger,
+        LedgerParameters, Pots, RewardsInfoParameters,
     },
     milli::Milli,
     rewards::{Ratio, TaxType},
@@ -345,7 +346,7 @@ impl LedgerBuilder {
     }
 
     pub fn prefill_outputs(mut self, outputs: &[Output<Address>]) -> Self {
-        for outputs_chunk in outputs.chunks(255) {
+        for outputs_chunk in outputs.chunks(CHECK_TX_MAXIMUM_INPUTS.into()) {
             let tx = TxBuilder::new()
                 .set_nopayload()
                 .set_ios(&[], outputs_chunk)

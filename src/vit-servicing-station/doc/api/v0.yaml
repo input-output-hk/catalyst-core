@@ -2,20 +2,32 @@ openapi: 3.0.3
 
 info:
   title: VIT as a Service Rest API
-  description: VaaS Rest API v0
-  version: 0.1.1
+  description: Voting Implementation Testnet Rest API v0
+  version: 0.2.0
   contact:
-    url: ''
+    url: "http://github.com/input-output-hk/vit-servicing-station"
+
+tags:
+  - name: fund
+    description: Information on treasury fund campaigns.
+  - name: challenge
+    description: Information on challenges, structuring proposals within a fund.
+  - name: proposal
+    description: Information on funding proposals.
 
 servers:
-  - url: 'http://localhost'
+  - url: "http://localhost"
 
 paths:
   /api/v0/fund:
     get:
+      operationId: getCurrentFund
       summary: Get available fund
+      tags: [fund]
+      description: |
+        Retrieves information on the current treasury fund campaign.
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
@@ -24,7 +36,11 @@ paths:
 
   /api/v0/fund/{id}:
     get:
+      operationId: getFund
       summary: Get fund by id
+      tags: [fund]
+      description: |
+        Retrieves information on the identified treasury fund campaign.
       parameters:
         - in: path
           name: id
@@ -32,30 +48,38 @@ paths:
             type: integer
           required: true
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Fund"
-        404:
+        "404":
           description: The requested fund was not found
 
   /api/v0/proposals:
     get:
+      operationId: getAllProposals
       summary: Get all available proposals
+      tags: [proposal]
+      description: |
+        Lists all available proposals.
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
               schema:
                 items:
-                  $ref: "#/components/schemas/Proposal"
+                  $ref: "#/components/schemas/ProposalWithChallengeInfo"
 
   /api/v0/proposals/{id}:
     get:
+      operationId: getProposal
       summary: Get proposal by id
+      tags: [proposal]
+      description: |
+        Retrieves information on the identified proposal.
       parameters:
         - in: path
           name: id
@@ -63,20 +87,24 @@ paths:
             type: integer
           required: true
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Proposal"
-        404:
+                $ref: "#/components/schemas/ProposalWithChallengeInfo"
+        "404":
           description: The requested proposal was not found
 
   /api/v0/challenges:
     get:
+      operationId: getAllChallenges
       summary: Get all available challenges
+      tags: [challenge]
+      description: |
+        Lists all available challenges.
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
@@ -86,7 +114,12 @@ paths:
 
   /api/v0/challenges/{id}:
     get:
+      operationId: getChallenge
       summary: Get challenge by id
+      tags: [challenge]
+      description: |
+        Retrieves information on the identified challenge,
+        including the proposals submitted for it.
       parameters:
         - in: path
           name: id
@@ -94,15 +127,14 @@ paths:
             type: integer
           required: true
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChallengeWithProposals"
-        404:
+        "404":
           description: The requested challenge was not found
-
 
 components:
   schemas:
@@ -131,11 +163,11 @@ components:
         chain_vote_plans:
           type: array
           items:
-            $ref: '#/components/schemas/VotePlan'
+            $ref: "#/components/schemas/VotePlan"
         challenges:
           type: array
           items:
-            $ref: '#/components/schemas/Challenge'
+            $ref: "#/components/schemas/Challenge"
 
     VotePlan:
       properties:
@@ -180,10 +212,6 @@ components:
           type: string
         proposal_summary:
           type: string
-        proposal_problem:
-          type: string
-        proposal_solution:
-          type: string
         proposal_public_key:
           type: string
           format: binary
@@ -224,15 +252,128 @@ components:
           format: date-time
         chain_voteplan_payload:
           type: string
-        fund_id:
-          type: integer
-          format: int32
+
+    ChallengeType:
+      type: string
+      enum:
+        - simple
+        - community-choice
+
+    ProposalWithChallengeInfo:
+      discriminator:
+        propertyName: challenge_type
+        mapping:
+          simple: "#/components/schemas/SimpleProposal"
+          community-choice: "#/components/schemas/CommunityChoiceProposal"
+      allOf:
+        - $ref: "#/components/schemas/Proposal"
+        - type: object
+          properties:
+            fund_id:
+              type: integer
+              format: int32
+            challenge_id:
+              type: integer
+              format: int32
+            challenge_type:
+              $ref: "#/components/schemas/ChallengeType"
+
+    SimpleProposal:
+      allOf:
+        - $ref: "#/components/schemas/ProposalWithChallengeInfo"
+        - type: object
+          properties:
+            proposal_solution:
+              type: string
+      example:
+        {
+          "internal_id": 22,
+          "proposal_id": "4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e",
+          "proposal_title": "Authentication for DeepFake Defense",
+          "proposal_summary": "Deepfake videos are dangerous.",
+          "proposal_solution": "We will create a cryptographic proof on Cardano that verifies videos are real by connecting their blockchain ID.",
+          "proposal_public_key": "Fvd8zI3DH85qnaChQE6Aymt1diMJP32LB0AdpheZh/Q=",
+          "proposal_funds": 12000,
+          "proposal_url": "http://ideascale.com/t/UM5UZBd2t",
+          "proposal_files_url": "",
+          "proposal_impact_score": 0,
+          "proposer":
+            {
+              "proposer_name": "Community Member",
+              "proposer_email": "example@vit.iohk.io",
+              "proposer_url": "",
+              "proposer_relevant_experience": "Cryptography student, website development, blockchain technologist.",
+            },
+          "chain_proposal_id": "4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e",
+          "chain_proposal_index": 0,
+          "chain_vote_options": { "blank": 0, "yes": 1, "no": 2 },
+          "chain_voteplan_id": "b1eeb620baf1445672f6c9422481aff0f6babaf775760d187a7703027e098166",
+          "chain_vote_start_time": "2021-02-10T14:40:27+00:00",
+          "chain_vote_end_time": "2021-02-11T10:10:27+00:00",
+          "chain_committee_end_time": "2021-02-11T11:40:27+00:00",
+          "chain_voteplan_payload": "public",
+          "chain_vote_encryption_key": "",
+          "fund_id": 20,
+          "challenge_id": 2,
+          "challenge_type": "simple",
+        }
+
+    CommunityChoiceProposal:
+      allOf:
+        - $ref: "#/components/schemas/ProposalWithChallengeInfo"
+        - type: object
+          properties:
+            proposal_brief:
+              type: string
+            proposal_importance:
+              type: string
+            proposal_goal:
+              type: string
+            proposal_metrics:
+              type: string
+      example:
+        {
+          "internal_id": 31,
+          "proposal_id": "494d8d685e3b195eb5610494f1721db7747df0517cb1b6a705bb3cebfef3c998",
+          "proposal_title": "A for ADA Cryptoalphabet 4 children",
+          "proposal_summary": "How to increase general awareness about Cardano and cryptocurrencies?\nHow to make fun community-building incentives?",
+          "proposal_brief": "A for ADA",
+          "proposal_importance": "We need to get them while they're young.",
+          "proposal_goal": "Nebulous.",
+          "proposal_metrics": "\\- Number of people engaged into the creation of Cryptoalphabet",
+          "proposal_public_key": "zqUCWwguCt6+NHYjkpvasvccuA7l2SuabE+1C0bzf3Y=",
+          "proposal_funds": 4800,
+          "proposal_url": "http://ideascale.com/t/UM5UZBd1p",
+          "proposal_files_url": "",
+          "proposal_impact_score": 133,
+          "proposer":
+            {
+              "proposer_name": "Community Member",
+              "proposer_email": "example@vit.iohk.io",
+              "proposer_url": "",
+              "proposer_relevant_experience": "",
+            },
+          "chain_proposal_id": "494d8d685e3b195eb5610494f1721db7747df0517cb1b6a705bb3cebfef3c998",
+          "chain_proposal_index": 9,
+          "chain_vote_options": { "no": 2, "yes": 1, "blank": 0 },
+          "chain_voteplan_id": "b1eeb620baf1445672f6c9422481aff0f6babaf775760d187a7703027e098166",
+          "chain_vote_start_time": "2021-02-10T14:40:27+00:00",
+          "chain_vote_end_time": "2021-02-11T10:10:27+00:00",
+          "chain_committee_end_time": "2021-02-11T11:40:27+00:00",
+          "chain_voteplan_payload": "public",
+          "chain_vote_encryption_key": "",
+          "fund_id": 20,
+          "challenge_id": 1,
+          "challenge_type": "community-choice",
+        }
 
     Challenge:
       properties:
         id:
           type: integer
           format: int32
+        challenge_type:
+          $ref: "#/components/schemas/ChallengeType"
         title:
           type: string
         description:
@@ -248,10 +389,10 @@ components:
 
     ChallengeWithProposals:
       allOf:
-        - $ref: '#/components/schemas/Challenge'
+        - $ref: "#/components/schemas/Challenge"
         - type: object
           properties:
             proposals:
               type: array
               items:
-                $ref: '#/components/schemas/Proposal'
+                $ref: "#/components/schemas/Proposal"

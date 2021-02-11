@@ -119,12 +119,11 @@ impl APITokenCmd {
         }
     }
 
-    fn handle_generate(n: usize, size: usize) -> io::Result<()> {
+    fn handle_generate(n: usize, size: usize) {
         let tokens = APITokenCmd::generate(n, size);
         for token in tokens {
             println!("{}", token);
         }
-        Ok(())
     }
 }
 
@@ -136,7 +135,10 @@ impl ExecTask for APITokenCmd {
             APITokenCmd::Add { tokens, db_url } => {
                 APITokenCmd::handle_api_token_add_whith_db_backup(tokens, db_url)
             }
-            APITokenCmd::Generate { n, size } => APITokenCmd::handle_generate(*n, *size),
+            APITokenCmd::Generate { n, size } => {
+                APITokenCmd::handle_generate(*n, *size);
+                Ok(())
+            }
         }
     }
 }

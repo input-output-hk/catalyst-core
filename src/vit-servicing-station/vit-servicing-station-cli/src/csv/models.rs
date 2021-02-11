@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use vit_servicing_station_lib::db::models::proposals;
 use vit_servicing_station_lib::db::models::proposals::{Category, Proposer};
+use vit_servicing_station_lib::db::models::proposals_challenge_info::ChallengeType;
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
 #[derive(Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -19,10 +20,6 @@ pub struct Proposal {
     pub proposal_title: String,
     #[serde(alias = "proposalSummary")]
     pub proposal_summary: String,
-    #[serde(alias = "proposalProblem")]
-    pub proposal_problem: String,
-    #[serde(alias = "proposalSolution")]
-    pub proposal_solution: String,
     #[serde(alias = "proposalPublicKey")]
     pub proposal_public_key: String,
     #[serde(alias = "proposalFunds")]
@@ -85,6 +82,18 @@ pub struct Proposal {
     pub fund_id: i32,
     #[serde(alias = "challengeId", default = "default_challenge_id")]
     pub challenge_id: i32,
+    #[serde(alias = "challengeType")]
+    pub challenge_type: ChallengeType,
+    #[serde(alias = "proposalSolution", default)]
+    proposal_solution: Option<String>,
+    #[serde(alias = "proposalBrief", default)]
+    proposal_brief: Option<String>,
+    #[serde(alias = "proposalImportance", default)]
+    proposal_importance: Option<String>,
+    #[serde(alias = "proposalGoal", default)]
+    proposal_goal: Option<String>,
+    #[serde(alias = "proposalMetrics", default)]
+    proposal_metrics: Option<String>,
 }
 
 fn default_fund_id() -> i32 {
@@ -107,8 +116,6 @@ impl From<Proposal> for proposals::Proposal {
             },
             proposal_title: proposal.proposal_title,
             proposal_summary: proposal.proposal_summary,
-            proposal_problem: proposal.proposal_problem,
-            proposal_solution: proposal.proposal_solution,
             proposal_public_key: proposal.proposal_public_key,
             proposal_funds: proposal.proposal_funds,
             proposal_url: proposal.proposal_url,
@@ -133,6 +140,12 @@ impl From<Proposal> for proposals::Proposal {
             chain_vote_encryption_key: proposal.chain_vote_encryption_key,
             fund_id: proposal.fund_id,
             challenge_id: proposal.challenge_id,
+            challenge_type: proposal.challenge_type,
+            proposal_solution: proposal.proposal_solution,
+            proposal_brief: proposal.proposal_brief,
+            proposal_importance: proposal.proposal_importance,
+            proposal_goal: proposal.proposal_goal,
+            proposal_metrics: proposal.proposal_metrics,
         }
     }
 }

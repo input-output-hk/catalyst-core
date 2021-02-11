@@ -7,8 +7,6 @@ table! {
         proposal_category -> Text,
         proposal_title -> Text,
         proposal_summary -> Text,
-        proposal_problem -> Text,
-        proposal_solution -> Text,
         proposal_public_key -> Text,
         proposal_funds -> BigInt,
         proposal_url -> Text,
@@ -29,5 +27,11 @@ table! {
         chain_vote_encryption_key -> Text,
         fund_id -> Integer,
         challenge_id -> Integer,
+        challenge_type -> Text,
+        proposal_solution -> Nullable<Text>,
+        proposal_brief -> Nullable<Text>,
+        proposal_importance -> Nullable<Text>,
+        proposal_goal -> Nullable<Text>,
+        proposal_metrics -> Nullable<Text>,
     }
 }

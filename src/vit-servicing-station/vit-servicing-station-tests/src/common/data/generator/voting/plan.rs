@@ -172,6 +172,9 @@ impl ValidVotePlanGenerator {
             let proposal_funds = proposal_template.proposal_funds.parse().unwrap();
             let chain_vote_options = proposal_template.chain_vote_options.clone();
 
+            let proposal_challenge_info_template =
+                template_generator.next_proposal_challenge_info();
+
             if self.parameters.calculate_challenges_total_funds {
                 challenge.rewards_total += proposal_funds;
             }
@@ -188,8 +191,6 @@ impl ValidVotePlanGenerator {
                 },
                 proposal_title: proposal_template.proposal_title,
                 proposal_summary: proposal_template.proposal_summary,
-                proposal_problem: proposal_template.proposal_problem,
-                proposal_solution: proposal_template.proposal_solution,
                 proposal_public_key: generator.hash(),
                 proposal_funds,
                 proposal_url: proposal_template.proposal_url.clone(),
@@ -218,6 +219,12 @@ impl ValidVotePlanGenerator {
                     .unwrap_or_else(|| challenge.id.to_string())
                     .parse()
                     .unwrap(),
+                challenge_type: proposal_challenge_info_template.challenge_type,
+                proposal_solution: proposal_challenge_info_template.proposal_solution,
+                proposal_brief: proposal_challenge_info_template.proposal_brief,
+                proposal_importance: proposal_challenge_info_template.proposal_importance,
+                proposal_goal: proposal_challenge_info_template.proposal_goal,
+                proposal_metrics: proposal_challenge_info_template.proposal_metrics,
             };
 
             proposals.push(proposal);

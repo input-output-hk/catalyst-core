@@ -1,4 +1,5 @@
 use super::{ChallengeTemplate, FundTemplate, ProposalTemplate, ValidVotingTemplateGenerator};
+use crate::common::data::generator::voting::template::ProposalChallengeInfoTemplate;
 use crate::common::data::ArbitraryGenerator;
 use fake::{
     faker::lorem::en::*,
@@ -8,6 +9,7 @@ use fake::{
     },
     Fake,
 };
+use vit_servicing_station_lib::db::models::proposals_challenge_info::ChallengeType;
 
 #[derive(Clone)]
 pub struct ArbitraryValidVotingTemplateGenerator {
@@ -86,6 +88,32 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             goal: "How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?".to_string(),
             rewards_info: Sentence(3..5).fake::<String>(),
             threshold: None,
+        }
+    }
+
+    fn next_proposal_challenge_info(&mut self) -> ProposalChallengeInfoTemplate {
+        match self.generator.id().abs() % 2 {
+            0 => ProposalChallengeInfoTemplate {
+                id: self.generator.id().abs(),
+                challenge_id: self.next_challenge_id(),
+                challenge_type: ChallengeType::Simple,
+                proposal_solution: Some(CatchPhase().fake::<String>()),
+                proposal_brief: None,
+                proposal_importance: None,
+                proposal_goal: None,
+                proposal_metrics: None,
+            },
+            1 => ProposalChallengeInfoTemplate {
+                id: self.generator.id().abs(),
+                challenge_id: self.next_challenge_id(),
+                challenge_type: ChallengeType::CommunityChoice,
+                proposal_solution: None,
+                proposal_brief: Some(CatchPhase().fake::<String>()),
+                proposal_importance: Some(CatchPhase().fake::<String>()),
+                proposal_goal: Some(CatchPhase().fake::<String>()),
+                proposal_metrics: Some(CatchPhase().fake::<String>()),
+            },
+            _ => unreachable!(),
         }
     }
 }

@@ -73,11 +73,11 @@ mod test {
                     fundId
                 },
                 challenges {
-                    id
-                    title
-                    description
-                    rewardsTotal
-                    fundId
+                    id,
+                    title,
+                    description,
+                    rewardsTotal,
+                    fundId,
                     challengeUrl
                 },
             }
@@ -105,11 +105,11 @@ mod test {
                 fundId
             },
             challenges {
-                id
-                title
-                description
-                rewardsTotal
-                fundId
+                id,
+                title,
+                description,
+                rewardsTotal,
+                fundId,
                 challengeUrl
             },
         }
@@ -127,8 +127,6 @@ mod test {
                 },
                 proposalTitle,
                 proposalSummary,
-                proposalSolution,
-                proposalProblem,
                 proposalPublicKey,
                 proposalFunds,
                 proposalUrl,
@@ -151,44 +149,15 @@ mod test {
                 chainCommitteeEndTime,
                 fundId,
                 challengeId
+                challengeType,
+                proposalSolution,
+                proposalBrief,
+                proposalImportance,
+                proposalGoal,
+                proposalMetrics
             }
         }"#;
 
-    // TODO: This query is not nice to read as documentation for the test. It was taken from the option
-    // in postman to check the curl command. The actual graphql body request is like this:
-    //     proposal(proposalId: 1) {
-    //         id,
-    //         proposalId,
-    //         category {
-    //             categoryId,
-    //             categoryName,
-    //             categoryDescription,
-    //         },
-    //         proposalTitle,
-    //         proposalSummary,
-    //         proposalProblem,
-    //         proposalPublicKey,
-    //         proposalFunds,
-    //         proposalUrl,
-    //         proposalFilesUrl,
-    //         proposer {
-    //             proposerName,
-    //             proposerEmail,
-    //             proposerUrl
-    //         },
-    //         chainProposalId,
-    //         chainProposalIndex,
-    //         chainVoteOptions,
-    //         chainVoteplanId,
-    //         chainVoteplanPayload,
-    //         chainVoteEncryptionKey,
-    //         chainVoteStartTime,
-    //         chainVoteEndTime,
-    //         chainCommitteeEndTime,
-    //         fundId
-    //     }
-    // }
-    // const PROPOSALS_ALL_ATTRIBUTES_QUERY: &str =  "{\"query\":\"{\\n    proposals {\\n        internalId,\\n        proposalId,\\n        category {\\n            categoryId,\\n            categoryName,\\n            categoryDescription,\\n        },\\n        proposalTitle,\\n        proposalSummary,\\n        proposalSolution,\\n        proposalProblem,\\n        proposalPublicKey,\\n        proposalFunds,\\n        proposalUrl,\\n        proposalFilesUrl,\\n        proposalImpactScore,\\n        proposer {\\n            proposerName,\\n            proposerEmail,\\n            proposerUrl\\n,        proposerRelevantExperience\\n        },\\n        chainProposalId,\\n        chainProposalIndex,\\n        chainVoteOptions,\\n        chainVoteplanId,\\n        chainVoteplanPayload,\\n        chainVoteEncryptionKey,\\n        chainVoteStartTime,\\n        chainVoteEndTime,\\n        chainCommitteeEndTime,\\n        fundId\\n    }\\n}\",\"variables\":{}}";
     const PROPOSALS_ALL_ATTRIBUTES_QUERY: &str = r#"{
         proposals {
             internalId,
@@ -200,8 +169,6 @@ mod test {
             },
             proposalTitle,
             proposalSummary,
-            proposalSolution,
-            proposalProblem,
             proposalPublicKey,
             proposalFunds,
             proposalUrl,
@@ -222,8 +189,14 @@ mod test {
             chainVoteStartTime,
             chainVoteEndTime,
             chainCommitteeEndTime,
-            fundId
-            challengeId
+            fundId,
+            challengeId,
+            challengeType,
+            proposalSolution,
+            proposalBrief,
+            proposalImportance,
+            proposalGoal,
+            proposalMetrics
         }
     }"#;
 
@@ -364,6 +337,7 @@ mod test {
         }
 
         let result_proposal = query_result["data"]["proposal"].clone();
+        println!("{}", result_proposal);
         let result_proposal: Proposal = serde_json::from_value(result_proposal).unwrap();
 
         assert_eq!(proposal, result_proposal);

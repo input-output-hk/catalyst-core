@@ -61,8 +61,6 @@ impl CsvConverter {
             "proposal_id",
             "proposal_title",
             "proposal_summary",
-            "proposal_problem",
-            "proposal_solution",
             "proposal_url",
             "proposal_files_url",
             "proposal_public_key",
@@ -82,6 +80,13 @@ impl CsvConverter {
             "chain_vote_start_time",
             "chain_vote_end_time",
             "chain_committe",
+            "challenge_id",
+            "challenge_type",
+            "proposal_solution",
+            "proposal_brief",
+            "proposal_importance",
+            "proposal_goal",
+            "proposal_metrics",
         ];
 
         let content: Vec<Vec<String>> = proposals.iter().map(|x| convert_proposal(x)).collect();
@@ -128,8 +133,6 @@ fn convert_proposal(proposal: &Proposal) -> Vec<String> {
         proposal.proposal_id.to_string(),
         proposal.proposal_title.to_string(),
         proposal.proposal_summary.to_string(),
-        proposal.proposal_problem.to_string(),
-        proposal.proposal_solution.to_string(),
         proposal.proposal_url.to_string(),
         proposal.proposal_files_url.to_string(),
         proposal.proposal_public_key.to_string(),
@@ -151,6 +154,28 @@ fn convert_proposal(proposal: &Proposal) -> Vec<String> {
         unix_timestamp_to_datetime(proposal.chain_vote_start_time).to_rfc3339(),
         unix_timestamp_to_datetime(proposal.chain_vote_end_time).to_rfc3339(),
         unix_timestamp_to_datetime(proposal.chain_committee_end_time).to_rfc3339(),
+        proposal.challenge_id.to_string(),
+        proposal.challenge_type.to_string(),
+        proposal
+            .proposal_solution
+            .clone()
+            .unwrap_or_else(Default::default),
+        proposal
+            .proposal_brief
+            .clone()
+            .unwrap_or_else(Default::default),
+        proposal
+            .proposal_importance
+            .clone()
+            .unwrap_or_else(Default::default),
+        proposal
+            .proposal_goal
+            .clone()
+            .unwrap_or_else(Default::default),
+        proposal
+            .proposal_metrics
+            .clone()
+            .unwrap_or_else(Default::default),
     ]
 }
 

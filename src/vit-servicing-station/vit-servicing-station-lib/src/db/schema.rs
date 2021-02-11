@@ -38,8 +38,6 @@ table! {
         proposal_category -> Text,
         proposal_title -> Text,
         proposal_summary -> Text,
-        proposal_problem -> Text,
-        proposal_solution -> Text,
         proposal_public_key -> Text,
         proposal_funds -> BigInt,
         proposal_url -> Text,
@@ -58,6 +56,19 @@ table! {
 }
 
 table! {
+    proposals_challenge_info (id) {
+        id -> Integer,
+        challenge_id -> Integer,
+        challenge_type -> Text,
+        proposal_solution -> Nullable<Text>,
+        proposal_brief -> Nullable<Text>,
+        proposal_importance -> Nullable<Text>,
+        proposal_goal -> Nullable<Text>,
+        proposal_metrics -> Nullable<Text>,
+    }
+}
+
+table! {
     voteplans (id) {
         id -> Integer,
         chain_voteplan_id -> Text,
@@ -70,4 +81,11 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(api_tokens, challenges, funds, proposals, voteplans,);
+allow_tables_to_appear_in_same_query!(
+    api_tokens,
+    challenges,
+    funds,
+    proposals,
+    proposals_challenge_info,
+    voteplans,
+);

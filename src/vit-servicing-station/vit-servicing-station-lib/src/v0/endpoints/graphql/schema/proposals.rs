@@ -59,14 +59,6 @@ impl Proposal {
         &self.proposal_summary
     }
 
-    pub async fn proposal_problem(&self) -> &str {
-        &self.proposal_problem
-    }
-
-    pub async fn proposal_solution(&self) -> &str {
-        &self.proposal_solution
-    }
-
     pub async fn proposal_public_key(&self) -> &str {
         &self.proposal_public_key
     }
@@ -133,5 +125,29 @@ impl Proposal {
 
     pub async fn challenge_id(&self) -> i32 {
         self.challenge_id
+    }
+
+    pub async fn challenge_type(&self) -> String {
+        self.challenge_type.to_string()
+    }
+
+    pub async fn proposal_solution(&self) -> Option<String> {
+        self.proposal_solution.clone()
+    }
+
+    pub async fn proposal_brief(&self) -> Option<String> {
+        self.proposal_brief.clone()
+    }
+
+    pub async fn proposal_importance(&self) -> Option<String> {
+        self.proposal_importance.clone()
+    }
+
+    pub async fn proposal_goal(&self) -> Option<String> {
+        self.proposal_goal.clone()
+    }
+
+    pub async fn proposal_metrics(&self) -> Option<String> {
+        self.proposal_metrics.clone()
     }
 }

@@ -9,10 +9,8 @@
         }
         proposalTitle,
         proposalSummary,
-        proposalProblem,
         proposalPublicKey,
         proposalFunds,
-        proposalSolution,
         proposalUrl,
         proposalFilesUrl,
         proposer {
@@ -29,7 +27,14 @@
         chainVoteStartTime,
         chainVoteEndTime,
         chainCommitteeEndTime,
-        fundId
+        fundId,
+        challengeId,
+        challengeType,
+        proposalSolution,
+        proposalBrief,
+        proposalImportance,
+        proposalGoal,
+        proposalMetrics
       }
   }"
 }

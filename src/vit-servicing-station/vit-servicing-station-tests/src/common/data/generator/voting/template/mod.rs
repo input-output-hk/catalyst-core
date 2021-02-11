@@ -4,6 +4,7 @@ mod external;
 pub use arbitrary::ArbitraryValidVotingTemplateGenerator;
 pub use external::{ExternalValidVotingTemplateGenerator, TemplateLoadError};
 use serde::{Deserialize, Serialize};
+use vit_servicing_station_lib::db::models::proposals_challenge_info::ChallengeType;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FundTemplate {
@@ -58,8 +59,21 @@ pub struct ChallengeTemplate {
     pub fund_id: Option<String>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ProposalChallengeInfoTemplate {
+    pub id: i32,
+    pub challenge_id: i32,
+    pub challenge_type: ChallengeType,
+    pub proposal_solution: Option<String>,
+    pub proposal_brief: Option<String>,
+    pub proposal_importance: Option<String>,
+    pub proposal_goal: Option<String>,
+    pub proposal_metrics: Option<String>,
+}
+
 pub trait ValidVotingTemplateGenerator {
     fn next_proposal(&mut self) -> ProposalTemplate;
     fn next_challenge(&mut self) -> ChallengeTemplate;
     fn next_fund(&mut self) -> FundTemplate;
+    fn next_proposal_challenge_info(&mut self) -> ProposalChallengeInfoTemplate;
 }

@@ -188,8 +188,6 @@ impl ValidVotePlanGenerator {
                 },
                 proposal_title: proposal_template.proposal_title,
                 proposal_summary: proposal_template.proposal_summary,
-                proposal_problem: proposal_template.proposal_problem,
-                proposal_solution: proposal_template.proposal_solution,
                 proposal_public_key: generator.hash(),
                 proposal_funds,
                 proposal_url: proposal_template.proposal_url.clone(),

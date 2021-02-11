@@ -59,14 +59,6 @@ impl Proposal {
         &self.proposal_summary
     }
 
-    pub async fn proposal_problem(&self) -> &str {
-        &self.proposal_problem
-    }
-
-    pub async fn proposal_solution(&self) -> &str {
-        &self.proposal_solution
-    }
-
     pub async fn proposal_public_key(&self) -> &str {
         &self.proposal_public_key
     }

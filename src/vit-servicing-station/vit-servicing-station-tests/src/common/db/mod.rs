@@ -46,8 +46,6 @@ impl<'a> DbInserter<'a> {
                 proposals::proposal_category.eq(proposal.proposal_category.category_name.clone()),
                 proposals::proposal_title.eq(proposal.proposal_title.clone()),
                 proposals::proposal_summary.eq(proposal.proposal_summary.clone()),
-                proposals::proposal_problem.eq(proposal.proposal_problem.clone()),
-                proposals::proposal_solution.eq(proposal.proposal_solution.clone()),
                 proposals::proposal_public_key.eq(proposal.proposal_public_key.clone()),
                 proposals::proposal_funds.eq(proposal.proposal_funds),
                 proposals::proposal_url.eq(proposal.proposal_url.clone()),

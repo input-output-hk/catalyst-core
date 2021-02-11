@@ -38,10 +38,6 @@ pub struct Proposal {
     pub proposal_title: String,
     #[serde(alias = "proposalSummary")]
     pub proposal_summary: String,
-    #[serde(alias = "proposalProblem")]
-    pub proposal_problem: String,
-    #[serde(alias = "proposalSolution")]
-    pub proposal_solution: String,
     #[serde(alias = "proposalPublicKey")]
     pub proposal_public_key: String,
     #[serde(alias = "proposalFunds")]
@@ -99,49 +95,45 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
         String,
         // 4 -> proposal_summary
         String,
-        // 5 -> proposal_problem
+        // 6 -> proposal_public_key
         String,
-        // 6 -> proposal_solution
-        String,
-        // 7 -> proposal_public_key
-        String,
-        // 8 -> proposal_funds
+        // 7 -> proposal_funds
         i64,
-        // 9 -> proposal_url
+        // 8 -> proposal_url
         String,
-        // 10 -> proposal_files_url,
+        // 9 -> proposal_files_url,
         String,
-        // 11 -> proposal_impact_score
+        // 10 -> proposal_impact_score
         i64,
-        // 12 -> proposer_name
+        // 11 -> proposer_name
         String,
-        // 13 -> proposer_contact
+        // 12 -> proposer_contact
         String,
-        // 14 -> proposer_url
+        // 13 -> proposer_url
         String,
-        // 15 -> proposer_relevant_experience
+        // 14 -> proposer_relevant_experience
         String,
-        // 16 -> chain_proposal_id
+        // 15 -> chain_proposal_id
         Vec<u8>,
-        // 17 -> chain_proposal_index
+        // 16 -> chain_proposal_index
         i64,
-        // 18 -> chain_vote_options
+        // 17 -> chain_vote_options
         String,
-        // 19 -> chain_voteplan_id
+        // 18 -> chain_voteplan_id
         String,
-        // 20 -> chain_vote_starttime
+        // 19 -> chain_vote_starttime
         i64,
-        // 21 -> chain_vote_endtime
+        // 20 -> chain_vote_endtime
         i64,
-        // 22 -> chain_committee_end_time
+        // 21 -> chain_committee_end_time
         i64,
-        // 23 -> chain_voteplan_payload
+        // 22 -> chain_voteplan_payload
         String,
-        // 24 -> chain_vote_encryption_key
+        // 23 -> chain_vote_encryption_key
         String,
-        // 25 -> fund_id
+        // 24 -> fund_id
         i32,
-        // 26 -> challenge_id
+        // 25 -> challenge_id
         i32,
     );
 
@@ -156,30 +148,28 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             },
             proposal_title: row.3,
             proposal_summary: row.4,
-            proposal_problem: row.5,
-            proposal_solution: row.6,
-            proposal_public_key: row.7,
-            proposal_funds: row.8,
-            proposal_url: row.9,
-            proposal_files_url: row.10,
-            proposal_impact_score: row.11,
+            proposal_public_key: row.5,
+            proposal_funds: row.6,
+            proposal_url: row.7,
+            proposal_files_url: row.8,
+            proposal_impact_score: row.9,
             proposer: Proposer {
-                proposer_name: row.12,
-                proposer_email: row.13,
-                proposer_url: row.14,
-                proposer_relevant_experience: row.15,
+                proposer_name: row.10,
+                proposer_email: row.11,
+                proposer_url: row.12,
+                proposer_relevant_experience: row.13,
             },
-            chain_proposal_id: row.16,
-            chain_proposal_index: row.17,
-            chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.18),
-            chain_voteplan_id: row.19,
-            chain_vote_start_time: row.20,
-            chain_vote_end_time: row.21,
-            chain_committee_end_time: row.22,
-            chain_voteplan_payload: row.23,
-            chain_vote_encryption_key: row.24,
-            fund_id: row.25,
-            challenge_id: row.26,
+            chain_proposal_id: row.14,
+            chain_proposal_index: row.15,
+            chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.16),
+            chain_voteplan_id: row.17,
+            chain_vote_start_time: row.18,
+            chain_vote_end_time: row.19,
+            chain_committee_end_time: row.20,
+            chain_voteplan_payload: row.21,
+            chain_vote_encryption_key: row.22,
+            fund_id: row.23,
+            challenge_id: row.24,
         }
     }
 }
@@ -193,8 +183,6 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::proposal_category, String>,
         diesel::dsl::Eq<proposals::proposal_title, String>,
         diesel::dsl::Eq<proposals::proposal_summary, String>,
-        diesel::dsl::Eq<proposals::proposal_problem, String>,
-        diesel::dsl::Eq<proposals::proposal_solution, String>,
         diesel::dsl::Eq<proposals::proposal_public_key, String>,
         diesel::dsl::Eq<proposals::proposal_funds, i64>,
         diesel::dsl::Eq<proposals::proposal_url, String>,
@@ -217,8 +205,6 @@ impl Insertable<proposals::table> for Proposal {
             proposals::proposal_category.eq(self.proposal_category.category_name),
             proposals::proposal_title.eq(self.proposal_title),
             proposals::proposal_summary.eq(self.proposal_summary),
-            proposals::proposal_problem.eq(self.proposal_problem),
-            proposals::proposal_solution.eq(self.proposal_solution),
             proposals::proposal_public_key.eq(self.proposal_public_key),
             proposals::proposal_funds.eq(self.proposal_funds),
             proposals::proposal_url.eq(self.proposal_url),
@@ -259,8 +245,6 @@ pub mod test {
             },
             proposal_title: "the proposal".to_string(),
             proposal_summary: "the proposal summary".to_string(),
-            proposal_problem: "the proposal problem".to_string(),
-            proposal_solution: "the proposal solution".to_string(),
             proposal_public_key: "pubkey".to_string(),
             proposal_funds: 10000,
             proposal_url: "http://foo.bar".to_string(),
@@ -295,8 +279,6 @@ pub mod test {
             proposals::proposal_category.eq(proposal.proposal_category.category_name.clone()),
             proposals::proposal_title.eq(proposal.proposal_title.clone()),
             proposals::proposal_summary.eq(proposal.proposal_summary.clone()),
-            proposals::proposal_problem.eq(proposal.proposal_problem.clone()),
-            proposals::proposal_solution.eq(proposal.proposal_solution.clone()),
             proposals::proposal_public_key.eq(proposal.proposal_public_key.clone()),
             proposals::proposal_funds.eq(proposal.proposal_funds.clone()),
             proposals::proposal_url.eq(proposal.proposal_url.clone()),

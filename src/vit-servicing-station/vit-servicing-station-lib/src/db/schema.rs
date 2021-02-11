@@ -38,8 +38,6 @@ table! {
         proposal_category -> Text,
         proposal_title -> Text,
         proposal_summary -> Text,
-        proposal_problem -> Text,
-        proposal_solution -> Text,
         proposal_public_key -> Text,
         proposal_funds -> BigInt,
         proposal_url -> Text,
@@ -70,4 +68,10 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(api_tokens, challenges, funds, proposals, voteplans,);
+allow_tables_to_appear_in_same_query!(
+    api_tokens,
+    challenges,
+    funds,
+    proposals,
+    voteplans,
+);

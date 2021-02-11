@@ -156,8 +156,6 @@ impl ArbitraryGenerator {
             proposal_category: self.proposal_category(),
             proposal_title: CatchPhase().fake::<String>(),
             proposal_summary: CatchPhase().fake::<String>(),
-            proposal_problem: Buzzword().fake::<String>(),
-            proposal_solution: CatchPhase().fake::<String>(),
             proposal_public_key: self.hash(),
             proposal_funds: self.proposal_fund(),
             proposal_url: proposal_url.to_string(),

@@ -128,8 +128,6 @@ fn convert_proposal(proposal: &Proposal) -> Vec<String> {
         proposal.proposal_id.to_string(),
         proposal.proposal_title.to_string(),
         proposal.proposal_summary.to_string(),
-        proposal.proposal_problem.to_string(),
-        proposal.proposal_solution.to_string(),
         proposal.proposal_url.to_string(),
         proposal.proposal_files_url.to_string(),
         proposal.proposal_public_key.to_string(),

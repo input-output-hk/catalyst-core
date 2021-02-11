@@ -19,10 +19,6 @@ pub struct Proposal {
     pub proposal_title: String,
     #[serde(alias = "proposalSummary")]
     pub proposal_summary: String,
-    #[serde(alias = "proposalProblem")]
-    pub proposal_problem: String,
-    #[serde(alias = "proposalSolution")]
-    pub proposal_solution: String,
     #[serde(alias = "proposalPublicKey")]
     pub proposal_public_key: String,
     #[serde(alias = "proposalFunds")]
@@ -107,8 +103,6 @@ impl From<Proposal> for proposals::Proposal {
             },
             proposal_title: proposal.proposal_title,
             proposal_summary: proposal.proposal_summary,
-            proposal_problem: proposal.proposal_problem,
-            proposal_solution: proposal.proposal_solution,
             proposal_public_key: proposal.proposal_public_key,
             proposal_funds: proposal.proposal_funds,
             proposal_url: proposal.proposal_url,

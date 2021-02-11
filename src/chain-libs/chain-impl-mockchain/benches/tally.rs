@@ -4,8 +4,8 @@ use chain_impl_mockchain::{
     fee::LinearFee,
     header::BlockDate,
     testing::{
-        build_tally_decrypt_share,
         data::CommitteeMembersManager,
+        decrypt_tally,
         ledger::ConfigBuilder,
         scenario::{prepare_scenario, proposal, vote_plan, wallet},
         VoteTestGen,
@@ -141,16 +141,18 @@ fn tally_benchmark(c: &mut Criterion) {
         })
         .unwrap();
 
-    c.bench_function("build_tally_decrypt_share", |b| {
+    c.bench_function("decrypt_tally", |b| {
         b.iter(|| {
-            build_tally_decrypt_share(vote_plan_status, &members);
+            decrypt_tally(vote_plan_status, &members);
         })
     });
 
-    let shares = build_tally_decrypt_share(vote_plan_status, &members);
+    let shares = decrypt_tally(vote_plan_status, &members);
 
-    let vote_tally = VoteTally::new_private(vote_plan.to_id(), shares);
-    let fragment = controller.fragment_factory().vote_tally(&alice, vote_tally);
+    let decrypted_tally = VoteTally::new_private(vote_plan.to_id(), shares);
+    let fragment = controller
+        .fragment_factory()
+        .vote_tally(&alice, decrypted_tally);
 
     c.bench_function("vote_tally", |b| {
         b.iter(|| {

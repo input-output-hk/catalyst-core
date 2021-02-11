@@ -230,8 +230,8 @@ components:
       discriminator:
         propertyName: challenge_type
         mapping:
-          simple: SimpleProposal
-          community-choice: CommunityChoiceProposal
+          simple: "#/components/schemas/SimpleProposal"
+          community-choice: "#/components/schemas/CommunityChoiceProposal"
       allOf:
         - $ref: "#/components/schemas/Proposal"
         - type: object

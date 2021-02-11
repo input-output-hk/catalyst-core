@@ -7,6 +7,14 @@ info:
   contact:
     url: "http://github.com/input-output-hk/vit-servicing-station"
 
+tags:
+  - name: fund
+    description: Information on treasury fund campaigns.
+  - name: challenge
+    description: Information on challenges, structuring proposals within a fund.
+  - name: proposal
+    description: Information on funding proposals.
+
 servers:
   - url: "http://localhost"
 
@@ -17,7 +25,7 @@ paths:
       summary: Get available fund
       tags: [fund]
       description: |
-        Retrieves information on the current round of treasury fund voting.
+        Retrieves information on the current treasury fund campaign.
       responses:
         "200":
           description: Valid response
@@ -32,7 +40,7 @@ paths:
       summary: Get fund by id
       tags: [fund]
       description: |
-        Retrieves information on the identified round of treasury fund voting.
+        Retrieves information on the identified treasury fund campaign.
       parameters:
         - in: path
           name: id

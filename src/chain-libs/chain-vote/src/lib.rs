@@ -159,6 +159,21 @@ impl EncryptedTally {
     }
 }
 
+impl std::ops::Add for EncryptedTally {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        assert_eq!(self.r.len(), rhs.r.len());
+        let r = self
+            .r
+            .iter()
+            .zip(rhs.r.iter())
+            .map(|(left, right)| left + right)
+            .collect();
+        Self { r }
+    }
+}
+
 impl TallyDecryptShare {
     /// Number of voting options this taly decrypt share structure is
     /// constructed for.

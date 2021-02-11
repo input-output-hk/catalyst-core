@@ -2,10 +2,8 @@
   "query": "proposal {
     proposalTitle
     proposalSummary
-    proposalProblem
     proposalPublicKey
     proposalFunds
-    proposalSolution
     proposalUrl
     proposalFilesUrl
     chainProposalId
@@ -18,5 +16,7 @@
     chainVoteEndTime
     chainCommitteeEndTime
     fundId
+    challengeId
+    challengeType
   }"
 }

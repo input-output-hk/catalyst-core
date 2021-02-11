@@ -96,7 +96,7 @@ impl<'a> DbInserter<'a> {
             diesel::insert_or_ignore_into(proposals_challenge_info::table)
                 .values(proposal_challenge_info_values)
                 .execute(self.connection)
-                .unwrap();
+                .map_err(DbInserterError::DieselError)?;
         }
         Ok(())
     }

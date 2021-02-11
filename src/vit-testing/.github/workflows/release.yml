@@ -105,7 +105,7 @@ jobs:
           submodules: true
 
       - name: Fetch dependencies and update cargo registry
-        run: cargo fetch --locked
+        run: cargo fetch
 
   build_assets:
     name: Build assets
@@ -189,7 +189,6 @@ jobs:
             --manifest-path vitup/Cargo.toml
             --bin vitup
             --verbose
-            --locked
             --release
             --target ${{ matrix.config.target }}
 

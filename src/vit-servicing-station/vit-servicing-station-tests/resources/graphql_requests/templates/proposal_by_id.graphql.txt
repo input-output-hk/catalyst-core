@@ -10,7 +10,7 @@
             },
             proposalTitle,
             proposalSummary,
-            proposalProblem,
+            proposalBrief,
             proposalPublicKey,
             proposalFunds,
             proposalImpactScore,
@@ -23,6 +23,7 @@
                 proposerUrl,
                 proposerRelevantExperience
             },
+            challengeType,
             chainProposalId,
             chainProposalIndex,
             chainVoteOptions,

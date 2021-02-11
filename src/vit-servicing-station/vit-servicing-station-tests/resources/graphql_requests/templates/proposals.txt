@@ -9,7 +9,7 @@
         }
         proposalTitle,
         proposalSummary,
-        proposalProblem,
+        proposalBrief,
         proposalPublicKey,
         proposalFunds,
         proposalSolution,

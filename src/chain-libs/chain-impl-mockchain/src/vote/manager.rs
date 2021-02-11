@@ -446,11 +446,12 @@ impl ProposalManagers {
     }
 
     pub fn start_private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
-        let mut proposals = Vec::with_capacity(self.0.len());
-        for proposal in self.0.iter() {
-            proposals.push(proposal.private_tally(stake)?);
-        }
-
+        use rayon::prelude::*;
+        let proposals = self
+            .0
+            .par_iter()
+            .map(|proposal| proposal.private_tally(stake))
+            .collect::<Result<_, _>>()?;
         Ok(Self(proposals))
     }
 

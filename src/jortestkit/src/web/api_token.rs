@@ -1,8 +1,5 @@
-use crate::manager::ControlContext;
-use std::sync::Arc;
 use thiserror::Error;
-use warp::Reply;
-use warp::{reply::Response, Rejection};
+use warp::{Reply,reply::Response};
 /// Header where token should be present in requests
 pub const API_TOKEN_HEADER: &str = "API-Token";
 
@@ -41,7 +38,7 @@ impl APIToken {
 }
 
 impl APITokenManager {
-    fn new(token: String) -> Result<Self, TokenError> {
+    pub fn new(token: String) -> Result<Self, TokenError> {
         Ok(Self {
             verification_token: APIToken::from_string(token)?,
         })
@@ -50,25 +47,6 @@ impl APITokenManager {
     pub fn is_token_valid(&self, token: APIToken) -> bool {
         self.verification_token == token
     }
-}
-
-pub async fn authorize_token(
-    token: String,
-    context: Arc<std::sync::Mutex<ControlContext>>,
-) -> Result<(), Rejection> {
-    let api_token = APIToken::from_string(token).map_err(warp::reject::custom)?;
-
-    if context.lock().unwrap().api_token().is_none() {
-        return Ok(());
-    }
-
-    let manager = APITokenManager::new(context.lock().unwrap().api_token().unwrap())
-        .map_err(warp::reject::custom)?;
-
-    if !manager.is_token_valid(api_token) {
-        return Err(warp::reject::custom(TokenError::UnauthorizedToken));
-    }
-    Ok(())
 }
 
 #[derive(Debug, Error)]

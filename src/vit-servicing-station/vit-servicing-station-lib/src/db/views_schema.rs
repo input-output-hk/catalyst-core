@@ -27,5 +27,11 @@ table! {
         chain_vote_encryption_key -> Text,
         fund_id -> Integer,
         challenge_id -> Integer,
+        challenge_type -> Text,
+        proposal_solution -> Nullable<Text>,
+        proposal_brief -> Nullable<Text>,
+        proposal_importance -> Nullable<Text>,
+        proposal_goal -> Nullable<Text>,
+        proposal_metrics -> Nullable<Text>,
     }
 }

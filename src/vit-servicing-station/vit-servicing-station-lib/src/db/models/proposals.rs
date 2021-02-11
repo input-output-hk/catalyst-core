@@ -1,4 +1,5 @@
 use super::vote_options;
+use crate::db::models::proposals_challenge_info::ChallengeType;
 use crate::db::models::vote_options::VoteOptions;
 use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
 use diesel::{ExpressionMethods, Insertable, Queryable};
@@ -79,6 +80,38 @@ pub struct Proposal {
     pub fund_id: i32,
     #[serde(alias = "challengeId")]
     pub challenge_id: i32,
+    #[serde(alias = "challengeType")]
+    pub challenge_type: ChallengeType,
+    #[serde(
+        alias = "proposalSolution",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub proposal_solution: Option<String>,
+    #[serde(
+        alias = "proposalBrief",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub proposal_brief: Option<String>,
+    #[serde(
+        alias = "proposalImportance",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub proposal_importance: Option<String>,
+    #[serde(
+        alias = "proposalGoal",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub proposal_goal: Option<String>,
+    #[serde(
+        alias = "proposalMetrics",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub proposal_metrics: Option<String>,
 }
 
 impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
@@ -135,6 +168,18 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
         i32,
         // 25 -> challenge_id
         i32,
+        // 26 -> challenge_type
+        String,
+        // 27 -> proposal_solution
+        Option<String>,
+        // 28 -> proposal_brief
+        Option<String>,
+        // 29 -> proposal_importance
+        Option<String>,
+        // 30 -> proposal_goal
+        Option<String>,
+        // 31 -> proposal_metrics
+        Option<String>,
     );
 
     fn build(row: Self::Row) -> Self {
@@ -170,6 +215,12 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_vote_encryption_key: row.22,
             fund_id: row.23,
             challenge_id: row.24,
+            challenge_type: serde_json::from_str(&format!("\"{}\"", row.25.as_str())).unwrap(),
+            proposal_solution: row.26,
+            proposal_brief: row.27,
+            proposal_importance: row.28,
+            proposal_goal: row.29,
+            proposal_metrics: row.30,
         }
     }
 }
@@ -228,7 +279,7 @@ pub mod test {
     use super::*;
     use crate::db::{
         models::vote_options::VoteOptions,
-        schema::{proposals, voteplans},
+        schema::{proposals, proposals_challenge_info, voteplans},
         DBConnectionPool,
     };
     use chrono::Utc;
@@ -267,6 +318,14 @@ pub mod test {
             chain_vote_encryption_key: "none".to_string(),
             fund_id: 1,
             challenge_id: 1,
+            challenge_type: ChallengeType::CommunityChoice,
+            proposal_solution: None,
+            proposal_brief: Some("A for ADA".to_string()),
+            proposal_importance: Some("We need to get them while they're young.".to_string()),
+            proposal_goal: Some("Nebulous".to_string()),
+            proposal_metrics: Some(
+                "\\- Number of people engaged into the creation of Cryptoalphabet".to_string(),
+            ),
         }
     }
 
@@ -295,6 +354,7 @@ pub mod test {
             proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
             proposals::challenge_id.eq(proposal.challenge_id.clone()),
         );
+
         diesel::insert_into(proposals::table)
             .values(values)
             .execute(&connection)
@@ -313,6 +373,21 @@ pub mod test {
 
         diesel::insert_into(voteplans::table)
             .values(voteplan_values)
+            .execute(&connection)
+            .unwrap();
+
+        let proposal_challenge_info_values = (
+            proposals_challenge_info::challenge_id.eq(proposal.challenge_id),
+            proposals_challenge_info::challenge_type.eq(proposal.challenge_type.to_string()),
+            proposals_challenge_info::proposal_solution.eq(proposal.proposal_solution.clone()),
+            proposals_challenge_info::proposal_brief.eq(proposal.proposal_brief.clone()),
+            proposals_challenge_info::proposal_importance.eq(proposal.proposal_importance.clone()),
+            proposals_challenge_info::proposal_goal.eq(proposal.proposal_goal.clone()),
+            proposals_challenge_info::proposal_metrics.eq(proposal.proposal_metrics.clone()),
+        );
+
+        diesel::insert_into(proposals_challenge_info::table)
+            .values(proposal_challenge_info_values)
             .execute(&connection)
             .unwrap();
     }

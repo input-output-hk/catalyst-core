@@ -13,9 +13,13 @@ servers:
 paths:
   /api/v0/fund:
     get:
+      operationId: getCurrentFund
       summary: Get available fund
+      tags: [fund]
+      description: |
+        Retrieves information on the current round of treasury fund voting.
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
@@ -24,7 +28,11 @@ paths:
 
   /api/v0/fund/{id}:
     get:
+      operationId: getFund
       summary: Get fund by id
+      tags: [fund]
+      description: |
+        Retrieves information on the identified round of treasury fund voting.
       parameters:
         - in: path
           name: id
@@ -32,20 +40,24 @@ paths:
             type: integer
           required: true
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Fund"
-        404:
+        "404":
           description: The requested fund was not found
 
   /api/v0/proposals:
     get:
+      operationId: getAllProposals
       summary: Get all available proposals
+      tags: [proposal]
+      description: |
+        Lists all available proposals.
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
@@ -55,7 +67,11 @@ paths:
 
   /api/v0/proposals/{id}:
     get:
+      operationId: getProposal
       summary: Get proposal by id
+      tags: [proposal]
+      description: |
+        Retrieves information on the identified proposal.
       parameters:
         - in: path
           name: id
@@ -63,20 +79,24 @@ paths:
             type: integer
           required: true
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProposalWithChallengeInfo"
-        404:
+        "404":
           description: The requested proposal was not found
 
   /api/v0/challenges:
     get:
+      operationId: getAllChallenges
       summary: Get all available challenges
+      tags: [challenge]
+      description: |
+        Lists all available challenges.
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
@@ -86,7 +106,12 @@ paths:
 
   /api/v0/challenges/{id}:
     get:
+      operationId: getChallenge
       summary: Get challenge by id
+      tags: [challenge]
+      description: |
+        Retrieves information on the identified challenge,
+        including the proposals submitted for it.
       parameters:
         - in: path
           name: id
@@ -94,13 +119,13 @@ paths:
             type: integer
           required: true
       responses:
-        200:
+        "200":
           description: Valid response
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChallengeWithProposals"
-        404:
+        "404":
           description: The requested challenge was not found
 
 components:

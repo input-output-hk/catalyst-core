@@ -1,5 +1,5 @@
 use thiserror::Error;
-use warp::{Reply,reply::Response};
+use warp::{reply::Response, Reply};
 /// Header where token should be present in requests
 pub const API_TOKEN_HEADER: &str = "API-Token";
 

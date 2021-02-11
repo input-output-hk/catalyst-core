@@ -179,10 +179,15 @@ fn tally_benchmark_200_voters_1_000_000_ada(c: &mut Criterion) {
     tally_benchmark(200, 1_000_000, c);
 }
 
+fn tally_benchmark_1000_voters_1000_ada(c: &mut Criterion) {
+    tally_benchmark(1000, 1000, c);
+}
+
 criterion_group!(
     benches,
     tally_benchmark_128_voters_1000_ada,
     tally_benchmark_200_voters_1000_ada,
-    tally_benchmark_200_voters_1_000_000_ada
+    tally_benchmark_200_voters_1_000_000_ada,
+    tally_benchmark_1000_voters_1000_ada,
 );
 criterion_main!(benches);

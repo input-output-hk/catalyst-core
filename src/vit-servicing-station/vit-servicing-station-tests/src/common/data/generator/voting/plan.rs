@@ -156,7 +156,7 @@ impl ValidVotePlanGenerator {
             voting_power_threshold: threshold,
             rewards_info: fund_template.rewards_info,
             fund_start_time: voting_start,
-            fund_end_time: voting_tally_end,
+            fund_end_time: voting_tally_start,
             next_fund_start_time,
             chain_vote_plans: vec![vote_plan.clone()],
             challenges,

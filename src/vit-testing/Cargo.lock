@@ -367,9 +367,9 @@ checksum = "cdcf67bb7ba7797a081cd19009948ab533af7c355d5caf1d08c777582d351e9c"
 [[package]]
 name = "bip39"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#456bdff178d45ad55c1d74db77db59a67500c25c"
 dependencies = [
- "cryptoxide 0.1.3",
+ "cryptoxide 0.3.1",
  "thiserror",
 ]
 
@@ -693,7 +693,7 @@ dependencies = [
 [[package]]
 name = "chain-path-derivation"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#456bdff178d45ad55c1d74db77db59a67500c25c"
 dependencies = [
  "thiserror",
 ]
@@ -987,12 +987,6 @@ dependencies = [
  "cfg-if 1.0.0",
  "lazy_static",
 ]
-
-[[package]]
-name = "cryptoxide"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e35f15e1a0699dd988fed910dd78fdc6407f44654cd12589c91fa44ea67d9159"
 
 [[package]]
 name = "cryptoxide"
@@ -1844,7 +1838,7 @@ dependencies = [
 [[package]]
 name = "hdkeygen"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#456bdff178d45ad55c1d74db77db59a67500c25c"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -1852,7 +1846,7 @@ dependencies = [
  "chain-addr",
  "chain-crypto",
  "chain-path-derivation",
- "cryptoxide 0.2.1",
+ "cryptoxide 0.3.1",
  "ed25519-bip32",
  "hex",
  "thiserror",
@@ -2205,8 +2199,8 @@ dependencies = [
  "rand_chacha 0.2.2",
  "thiserror",
  "tokio 1.2.0",
- "vit-servicing-station-lib",
- "vit-servicing-station-tests",
+ "vit-servicing-station-lib 0.2.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
+ "vit-servicing-station-tests 0.2.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
  "vitup",
 ]
 
@@ -3898,9 +3892,9 @@ dependencies = [
 
 [[package]]
 name = "serde_yaml"
-version = "0.8.16"
+version = "0.8.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdd2af560da3c1fdc02cb80965289254fc35dff869810061e2d8290ee48848ae"
+checksum = "15654ed4ab61726bf918a39cb8d98a2e2995b002387807fa6ba58fdf7f59bb23"
 dependencies = [
  "dtoa",
  "linked-hash-map",
@@ -4148,9 +4142,9 @@ checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
 [[package]]
 name = "symmetric-cipher"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#456bdff178d45ad55c1d74db77db59a67500c25c"
 dependencies = [
- "cryptoxide 0.2.1",
+ "cryptoxide 0.3.1",
  "rand 0.7.3",
  "thiserror",
 ]
@@ -4614,9 +4608,9 @@ dependencies = [
 
 [[package]]
 name = "tower"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fd7b451959622e21de79261673d658a0944b835012c58c51878ea55957fb51a"
+checksum = "713c629c07a3a97f741c140e474e7304294fabec66a43a33f0832e98315ab07f"
 dependencies = [
  "futures-core",
  "futures-util",
@@ -4626,6 +4620,7 @@ dependencies = [
  "slab",
  "tokio 1.2.0",
  "tokio-stream",
+ "tokio-util 0.6.3",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -4966,7 +4961,35 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#bd42e1d48280190ba64e4ad6edb2762a6a0c7551"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data#fda4406fa5d30a185e75dad347e6e93127185ed2"
+dependencies = [
+ "async-graphql",
+ "async-graphql-warp",
+ "async-trait",
+ "base64 0.12.3",
+ "chrono",
+ "diesel",
+ "diesel_migrations",
+ "dotenv",
+ "itertools 0.9.0",
+ "libsqlite3-sys",
+ "log",
+ "serde",
+ "serde_json",
+ "simplelog",
+ "structopt",
+ "thiserror",
+ "tokio 1.2.0",
+ "tracing",
+ "tracing-futures",
+ "tracing-subscriber",
+ "warp 0.3.0",
+]
+
+[[package]]
+name = "vit-servicing-station-lib"
+version = "0.2.0"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#efe218ad5bb4bc892671cd1944e7d69cfaac1e15"
 dependencies = [
  "async-graphql",
  "async-graphql-warp",
@@ -4994,7 +5017,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#bd42e1d48280190ba64e4ad6edb2762a6a0c7551"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data#fda4406fa5d30a185e75dad347e6e93127185ed2"
 dependencies = [
  "askama",
  "askama_shared",
@@ -5025,7 +5048,44 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio 1.2.0",
- "vit-servicing-station-lib",
+ "vit-servicing-station-lib 0.2.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data)",
+]
+
+[[package]]
+name = "vit-servicing-station-tests"
+version = "0.2.0"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#efe218ad5bb4bc892671cd1944e7d69cfaac1e15"
+dependencies = [
+ "askama",
+ "askama_shared",
+ "assert_cmd",
+ "assert_fs",
+ "base64 0.12.3",
+ "cfg-if 0.1.10",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chrono",
+ "diesel",
+ "diesel_migrations",
+ "dyn-clone",
+ "fake",
+ "hyper 0.14.4",
+ "jortestkit",
+ "lazy_static",
+ "libsqlite3-sys",
+ "predicates",
+ "pretty_assertions",
+ "rand 0.7.3",
+ "rand_core 0.5.1",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "structopt",
+ "tempfile",
+ "thiserror",
+ "tokio 1.2.0",
+ "vit-servicing-station-lib 0.2.0 (git+https://github.com/input-output-hk/vit-servicing-station.git)",
 ]
 
 [[package]]
@@ -5070,8 +5130,8 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio 1.2.0",
- "vit-servicing-station-lib",
- "vit-servicing-station-tests",
+ "vit-servicing-station-lib 0.2.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data)",
+ "vit-servicing-station-tests 0.2.0 (git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data)",
  "walkdir",
  "warp 0.3.0",
  "yaml-rust",
@@ -5112,7 +5172,7 @@ dependencies = [
 [[package]]
 name = "wallet"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#456bdff178d45ad55c1d74db77db59a67500c25c"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -5122,7 +5182,7 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-path-derivation",
  "chain-time",
- "cryptoxide 0.2.1",
+ "cryptoxide 0.3.1",
  "ed25519-bip32",
  "hdkeygen",
  "hex",
@@ -5134,7 +5194,7 @@ dependencies = [
 [[package]]
 name = "wallet-core"
 version = "0.6.0-pre1"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#33092a0f5d0a292e59020eb33f170d782ecda21b"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#456bdff178d45ad55c1d74db77db59a67500c25c"
 dependencies = [
  "bech32",
  "bip39",

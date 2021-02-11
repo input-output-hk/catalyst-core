@@ -81,7 +81,3 @@ SELECT
 FROM
     proposals
         INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
-
-
-    (i32, std::string::String, std::string::String, std::string::String, std::string::String, std::string::String, i64, std::string::String, std::string::String, i64, std::string::String, std::string::String, std::string::String, std::string::String, Vec<u8>, i64, std::string::String, std::string::String, i64, i64, i64, std::string::String, std::string::String, i32, i32)
-    (diesel::sql_types::Integer, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::BigInt, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::BigInt, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Binary, diesel::sql_types::BigInt, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::BigInt, diesel::sql_types::BigInt, diesel::sql_types::BigInt, diesel::sql_types::Text, diesel::sql_types::Text, diesel::sql_types::Integer, diesel::sql_types::Integer)

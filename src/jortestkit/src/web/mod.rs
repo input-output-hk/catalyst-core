@@ -4,6 +4,8 @@ use std::io;
 use std::path::Path;
 use thiserror::Error;
 
+pub mod api_token;
+
 #[derive(Debug, Error)]
 pub enum WebError {
     #[error("could not download file")]

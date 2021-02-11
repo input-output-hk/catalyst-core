@@ -17,6 +17,7 @@ error_chain! {
         ExplorerError(jormungandr_testing_utils::testing::node::ExplorerError);
         VitStationControllerError(VitStationControllerError);
         WalletProxyError(WalletProxyError);
+        TemplateLoadError(vit_servicing_station_tests::common::data::TemplateLoadError);
         SerdeError(serde_json::Error);
         SerdeYamlError(serde_yaml::Error);
         Block0EncodeError(chain_impl_mockchain::ledger::Error);
@@ -41,8 +42,13 @@ error_chain! {
         }
 
         ProxyNotFound(alias: String) {
-            description(" proxy not found"),
+            description("proxy not found"),
             display("proxy with alias: {} not found", alias),
+        }
+
+        SnapshotIntialReadError {
+            description("wrong format for snapshot data"),
+            display("wrong format for snapshot data"),
         }
     }
 }

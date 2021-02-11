@@ -7,15 +7,16 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" } 
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "expose_linear_fee" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "expose_linear_fee" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "expose_linear_fee" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
 rand_chacha = "0.2"
+tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 thiserror = "1.0"
 rand = "0.7"

@@ -1,5 +1,5 @@
 use assert_fs::TempDir;
-use iapyx::{IapyxLoad, IapyxLoadConfig};
+use iapyx::{IapyxLoad, IapyxLoadConfig, Protocol};
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::scenario::Controller;
 use jormungandr_scenario_tests::Context;
@@ -12,10 +12,11 @@ use jortestkit::{
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
+use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vitup::scenario::controller::VitController;
 use vitup::scenario::network::setup_network;
-use vitup::setup::quick::QuickVitBackendSettingsBuilder;
+use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 #[test]
 pub fn load_test_public_100_000_votes() {
@@ -25,6 +26,7 @@ pub fn load_test_public_100_000_votes() {
     let no_of_threads = 5;
     let no_of_wallets = 3_000;
 
+    let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
     let (mut vit_controller, mut controller, vit_parameters, _fund_name) =
         vitup_setup(false, no_of_wallets, testing_directory.path().to_path_buf());
 
@@ -32,7 +34,9 @@ pub fn load_test_public_100_000_votes() {
         &mut controller,
         &mut vit_controller,
         vit_parameters,
+        &mut template_generator,
         endpoint.to_string(),
+        &Protocol::Http,
     )
     .unwrap();
 
@@ -87,13 +91,16 @@ pub fn load_test_private_30_000_votes() {
     let no_of_threads = 5;
     let no_of_wallets = 3_000;
 
+    let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
     let (mut vit_controller, mut controller, vit_parameters, fund_name) =
         vitup_setup(true, no_of_wallets, testing_directory.path().to_path_buf());
     let (nodes, vit_station, wallet_proxy) = setup_network(
         &mut controller,
         &mut vit_controller,
         vit_parameters,
+        &mut template_generator,
         endpoint.to_string(),
+        &Protocol::Http,
     )
     .unwrap();
 

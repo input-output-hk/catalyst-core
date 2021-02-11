@@ -2,7 +2,9 @@ pub mod generate;
 pub mod start;
 
 use crate::error::Result;
-use generate::{DataCommandArgs, QrCommandArgs};
+use crate::setup::generate::QrCommandArgs;
+use crate::setup::start::AdvancedStartCommandArgs;
+use generate::DataCommandArgs;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
 
@@ -27,12 +29,15 @@ impl VitCliCommand {
 pub enum StartCommand {
     /// start backend from scratch
     Quick(QuickStartCommandArgs),
+    /// start advanced backend from scratch
+    Advanced(AdvancedStartCommandArgs),
 }
 
 impl StartCommand {
     pub fn exec(self) -> Result<()> {
         match self {
             Self::Quick(quick_start_command) => quick_start_command.exec(),
+            Self::Advanced(advanced_start_command) => advanced_start_command.exec(),
         }
     }
 }

@@ -1,0 +1,30 @@
+[{
+    "id": 1,
+    "challenge_id": 1,
+    "challenge_type": "community-choice",
+    "proposal_solution": "We will create a cryptographic proof on Cardano that verifies videos are real by connecting their blockchain ID.",
+    "proposal_brief": "De-engineered background installation",
+    "proposal_importance": "Big",
+    "proposal_goal": "De-engineered background installation",
+    "proposal_metrics": "De-engineered background installation"
+},
+{
+    "id": 2,
+    "challenge_id": 2,
+    "challenge_type": "simple",
+    "proposal_solution": "Broadcast Media",
+    "proposal_brief": "Broadcast Media",
+    "proposal_importance": "Medium",
+    "proposal_goal": "Broadcast Media",
+    "proposal_metrics": "Broadcast Media"      
+},
+{
+    "id": 3,
+    "challenge_id": 3,
+    "challenge_type": "simple",
+    "proposal_solution": "Team-oriented mission-critical matrices",
+    "proposal_brief": "Team-oriented mission-critical matrices",
+    "proposal_importance": "Big",
+    "proposal_goal": "Team-oriented mission-critical matrices",
+    "proposal_metrics": "Team-oriented mission-critical matrices"    
+}]

@@ -1,17 +1,15 @@
-use crate::config::DataGenerationConfig;
+use super::{encode, read_config, read_genesis_yaml, read_initials, write_genesis_yaml};
 use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
-use chain_core::property::Block;
-use chain_core::property::Serialize;
-use chain_impl_mockchain::ledger::Ledger;
-use jormungandr_lib::interfaces::Block0Configuration;
 use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
 use jormungandr_scenario_tests::{Context, Seed};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use structopt::StructOpt;
+use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
+
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
-pub struct DataCommandArgs {
+pub struct ExternalDataCommandArgs {
     /// Careful! directory would be removed before export
     #[structopt(long = "output", default_value = "./data")]
     pub output_directory: PathBuf,
@@ -19,60 +17,28 @@ pub struct DataCommandArgs {
     /// how many qr to generate
     #[structopt(long = "config")]
     pub config: PathBuf,
+
+    /// proposals import json
+    #[structopt(long = "proposals")]
+    pub proposals: PathBuf,
+
+    /// challenges import json
+    #[structopt(long = "challenges")]
+    pub challenges: PathBuf,
+
+    /// funds import json
+    #[structopt(long = "funds")]
+    pub funds: PathBuf,
+
+    /// proposal challenges import json
+    #[structopt(long = "proposals-challenges")]
+    pub proposals_challenges: PathBuf,
+
+    #[structopt(long = "snapshot")]
+    pub snapshot: Option<PathBuf>,
 }
 
-pub fn read_config<P: AsRef<Path>>(config: P) -> Result<DataGenerationConfig> {
-    let contents = std::fs::read_to_string(&config)?;
-    serde_json::from_str(&contents).map_err(Into::into)
-}
-
-pub fn read_genesis_yaml<P: AsRef<Path>>(genesis: P) -> Result<Block0Configuration> {
-    let contents = std::fs::read_to_string(&genesis)?;
-    serde_yaml::from_str(&contents).map_err(Into::into)
-}
-
-pub fn write_genesis_yaml<P: AsRef<Path>>(genesis: Block0Configuration, path: P) -> Result<()> {
-    use std::fs::OpenOptions;
-    use std::io::{prelude::*, Seek, SeekFrom};
-
-    let mut file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .open(&path)
-        .unwrap();
-
-    let content = serde_yaml::to_string(&genesis)?;
-
-    file.seek(SeekFrom::Start(0))?;
-    file.write_all(&content.as_bytes())?;
-    Ok(())
-}
-
-pub fn encode<P: AsRef<Path>, Q: AsRef<Path>>(genesis: P, block0: Q) -> Result<()> {
-    let input: std::fs::File = std::fs::OpenOptions::new()
-        .create(false)
-        .write(false)
-        .read(true)
-        .append(false)
-        .truncate(false)
-        .open(&genesis)?;
-
-    let output: std::fs::File = std::fs::OpenOptions::new()
-        .create(true)
-        .write(true)
-        .read(false)
-        .append(false)
-        .truncate(true)
-        .open(&block0)?;
-
-    let genesis: Block0Configuration = serde_yaml::from_reader(input)?;
-    let block = genesis.to_block();
-    Ledger::new(block.id(), block.fragments())?;
-    block.serialize(&output).map_err(Into::into)
-}
-
-impl DataCommandArgs {
+impl ExternalDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
@@ -98,8 +64,20 @@ impl DataCommandArgs {
         let title = quick_setup.title();
         let (vit_controller, mut controller, vit_parameters) = quick_setup.build(context)?;
 
+        let mut template_generator = ExternalValidVotingTemplateGenerator::new(
+            self.proposals,
+            self.challenges,
+            self.funds,
+            self.proposals_challenges,
+        )
+        .unwrap();
+
         // generate vit station data
-        let vit_station = vit_controller.spawn_vit_station(&mut controller, vit_parameters)?;
+        let vit_station = vit_controller.spawn_vit_station(
+            &mut controller,
+            vit_parameters,
+            &mut template_generator,
+        )?;
         vit_station.shutdown();
 
         let mut root_directory = self.output_directory;
@@ -129,9 +107,33 @@ impl DataCommandArgs {
             block0_configuration.initial.extend(config.additions);
         }
 
-        println!("{:?}", block0_configuration);
+        if let Some(snapshot_file) = self.snapshot {
+            let snapshot = read_initials(&snapshot_file)?;
+            block0_configuration.initial.extend(snapshot);
+        }
 
         write_genesis_yaml(block0_configuration, &genesis)?;
-        encode(&genesis, &block0)
+        println!("genesis.yaml: {:?}", std::fs::canonicalize(&genesis)?);
+        encode(&genesis, &block0)?;
+        println!("block0: {:?}", std::fs::canonicalize(&block0)?);
+
+        println!("Fund id: {}", quick_setup.parameters().fund_id);
+        println!(
+            "vote start timestamp: {:?}",
+            quick_setup.parameters().vote_start_timestamp
+        );
+        println!(
+            "tally start timestamp: {:?}",
+            quick_setup.parameters().tally_start_timestamp
+        );
+        println!(
+            "tally end timestamp: {:?}",
+            quick_setup.parameters().tally_end_timestamp
+        );
+        println!(
+            "next vote start time: {:?}",
+            quick_setup.parameters().next_vote_start_time
+        );
+        Ok(())
     }
 }

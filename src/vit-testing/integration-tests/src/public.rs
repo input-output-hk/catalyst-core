@@ -9,9 +9,11 @@ use jormungandr_testing_utils::testing::network_builder::SpawnParams;
 use jormungandr_testing_utils::testing::node::time;
 use jortestkit::prelude::ProgressBarMode;
 use std::path::PathBuf;
+use tokio;
+use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::scenario::controller::VitController;
 use vitup::scenario::settings::VitSettings;
-use vitup::setup::quick::QuickVitBackendSettingsBuilder;
+use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 const LEADER_1: &str = "Leader1";
 const LEADER_2: &str = "Leader2";
 const LEADER_3: &str = "Leader3";
@@ -48,8 +50,8 @@ pub fn context() -> Context {
     )
 }
 
-#[test]
-pub fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
+#[tokio::test]
+pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let mut context = context();
     let title = "vote_e2e_flow";
     let scenario_settings = prepare_scenario! {
@@ -153,7 +155,9 @@ pub fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let settings = controller.settings().clone();
     let parameters = vote_plan_parameters_builder.vote_plan_parameters(fund1_vote_plan, settings);
     // start proxy and vit station
-    let vit_station = vit_controller.spawn_vit_station(&mut controller, parameters)?;
+    let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
+    let vit_station =
+        vit_controller.spawn_vit_station(&mut controller, parameters, &mut template_generator)?;
     let wallet_proxy = vit_controller.spawn_wallet_proxy(&mut controller, WALLET_NODE)?;
 
     // start mainnet wallets

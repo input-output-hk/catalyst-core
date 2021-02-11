@@ -6,12 +6,12 @@ use crate::scenario::{
     },
 };
 use crate::{error::ErrorKind, Result};
-use jormungandr_scenario_tests::scenario::{ContextChaCha, Controller, ControllerBuilder};
-
 use iapyx::WalletBackend;
 use indicatif::ProgressBar;
+use jormungandr_scenario_tests::scenario::{ContextChaCha, Controller, ControllerBuilder};
 use jormungandr_testing_utils::testing::network_builder::{Blockchain, Topology};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
+use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 
 pub struct VitControllerBuilder {
     controller_builder: ControllerBuilder,
@@ -87,6 +87,7 @@ impl VitController {
         &self,
         controller: &mut Controller,
         vote_plan_parameters: ValidVotePlanParameters,
+        template_generator: &mut dyn ValidVotingTemplateGenerator,
     ) -> Result<VitStationController> {
         let (alias, settings) = self
             .vit_settings
@@ -104,6 +105,7 @@ impl VitController {
         let vit_station = VitStation::spawn(
             controller.context(),
             vote_plan_parameters,
+            template_generator,
             pb,
             alias,
             settings.clone(),

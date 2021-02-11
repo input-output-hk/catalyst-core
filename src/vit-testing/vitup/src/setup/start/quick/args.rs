@@ -1,6 +1,7 @@
 use super::mode::{parse_mode_from_str, Mode};
 use super::QuickVitBackendSettingsBuilder;
 use crate::config::Initials;
+use crate::scenario::network::build_template_generator;
 use crate::scenario::network::service_mode;
 use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::Result;
@@ -127,6 +128,9 @@ pub struct QuickStartCommandArgs {
     #[structopt(long = "https")]
     pub https: bool,
 
+    #[structopt(long = "ideascale")]
+    pub ideascale: bool,
+
     /// token, only applicable if service mode is used
     #[structopt(long = "token")]
     pub token: Option<String>,
@@ -147,6 +151,7 @@ impl QuickStartCommandArgs {
         let log_level = self.log_level;
         let mode = self.mode;
         let endpoint = self.endpoint;
+        let ideascale = self.ideascale;
         let token = self.token;
 
         if mode == Mode::Interactive {
@@ -208,14 +213,21 @@ impl QuickStartCommandArgs {
 
         jormungandr_scenario_tests::introduction::print(&context, "VOTING BACKEND");
 
+        let template_generator = Box::leak(build_template_generator(ideascale));
+
         testing_directory.push(quick_setup.title());
         if testing_directory.exists() {
             std::fs::remove_dir_all(&testing_directory)?;
         }
         match mode {
-            Mode::Service => {
-                service_mode(context, testing_directory, quick_setup, endpoint, token)?
-            }
+            Mode::Service => service_mode(
+                context,
+                testing_directory,
+                quick_setup,
+                endpoint,
+                ideascale,
+                token,
+            )?,
             Mode::Endless => {
                 let (mut vit_controller, mut controller, vit_parameters) =
                     quick_setup.build(context)?;
@@ -223,6 +235,7 @@ impl QuickStartCommandArgs {
                     &mut controller,
                     &mut vit_controller,
                     vit_parameters,
+                    template_generator,
                     endpoint,
                     quick_setup.protocol(),
                 )?;
@@ -231,10 +244,12 @@ impl QuickStartCommandArgs {
             Mode::Interactive => {
                 let (mut vit_controller, mut controller, vit_parameters) =
                     quick_setup.build(context)?;
+
                 let (nodes_list, vit_station, wallet_proxy) = setup_network(
                     &mut controller,
                     &mut vit_controller,
                     vit_parameters,
+                    template_generator,
                     endpoint,
                     quick_setup.protocol(),
                 )?;

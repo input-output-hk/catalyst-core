@@ -30,6 +30,10 @@ pub struct ExternalDataCommandArgs {
     #[structopt(long = "funds")]
     pub funds: PathBuf,
 
+    /// proposal challenges import json
+    #[structopt(long = "proposals-challenges")]
+    pub proposals_challenges: PathBuf,
+
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 }
@@ -60,9 +64,13 @@ impl ExternalDataCommandArgs {
         let title = quick_setup.title();
         let (vit_controller, mut controller, vit_parameters) = quick_setup.build(context)?;
 
-        let mut template_generator =
-            ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)
-                .unwrap();
+        let mut template_generator = ExternalValidVotingTemplateGenerator::new(
+            self.proposals,
+            self.challenges,
+            self.funds,
+            self.proposals_challenges,
+        )
+        .unwrap();
 
         // generate vit station data
         let vit_station = vit_controller.spawn_vit_station(
@@ -109,12 +117,23 @@ impl ExternalDataCommandArgs {
         encode(&genesis, &block0)?;
         println!("block0: {:?}", std::fs::canonicalize(&block0)?);
 
-
-        println!("Fund id: {}",quick_setup.parameters().fund_id);
-        println!("vote start timestamp: {:?}",quick_setup.parameters().vote_start_timestamp);
-        println!("tally start timestamp: {:?}",quick_setup.parameters().tally_start_timestamp);
-        println!("tally end timestamp: {:?}",quick_setup.parameters().tally_end_timestamp);
-        println!("next vote start time: {:?}",quick_setup.parameters().next_vote_start_time);
+        println!("Fund id: {}", quick_setup.parameters().fund_id);
+        println!(
+            "vote start timestamp: {:?}",
+            quick_setup.parameters().vote_start_timestamp
+        );
+        println!(
+            "tally start timestamp: {:?}",
+            quick_setup.parameters().tally_start_timestamp
+        );
+        println!(
+            "tally end timestamp: {:?}",
+            quick_setup.parameters().tally_end_timestamp
+        );
+        println!(
+            "next vote start time: {:?}",
+            quick_setup.parameters().next_vote_start_time
+        );
         Ok(())
     }
 }

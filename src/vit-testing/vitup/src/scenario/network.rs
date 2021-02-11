@@ -204,8 +204,16 @@ pub fn build_template_generator(ideascale: bool) -> Box<dyn ValidVotingTemplateG
         let proposals = Path::new("../").join("resources/external/proposals.json");
         let challenges = Path::new("../").join("resources/external/challenges.json");
         let funds = Path::new("../").join("resources/external/funds.json");
+        let proposals_challenges =
+            Path::new("../").join("resources/external/proposal_challenges.json");
         return Box::new(
-            ExternalValidVotingTemplateGenerator::new(proposals, challenges, funds).unwrap(),
+            ExternalValidVotingTemplateGenerator::new(
+                proposals,
+                challenges,
+                funds,
+                proposals_challenges,
+            )
+            .unwrap(),
         );
     }
     Box::new(ArbitraryValidVotingTemplateGenerator::new())

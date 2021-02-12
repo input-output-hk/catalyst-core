@@ -39,7 +39,7 @@ impl Queryable<challenges::SqlType, DB> for Challenge {
     fn build(row: Self::Row) -> Self {
         Challenge {
             id: row.0,
-            challenge_type: serde_json::from_str(&format!("\"{}\"", row.1.as_str())).unwrap(),
+            challenge_type: row.1.parse().unwrap(),
             title: row.2,
             description: row.3,
             rewards_total: row.4,

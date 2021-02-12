@@ -33,6 +33,21 @@ pub enum ChallengeType {
     CommunityChoice,
 }
 
+impl std::str::FromStr for ChallengeType {
+    type Err = std::io::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "simple" => Ok(ChallengeType::Simple),
+            "community-choice" => Ok(ChallengeType::CommunityChoice),
+            s => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Expected any of [simple | community-choice], found: {}", s),
+            )),
+        }
+    }
+}
+
 impl std::fmt::Display for ChallengeType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // should be implemented and safe to unwrap here
@@ -229,7 +244,7 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_vote_encryption_key: row.22,
             fund_id: row.23,
             challenge_id: row.24,
-            challenge_type: serde_json::from_str(&format!("\"{}\"", row.25.as_str())).unwrap(),
+            challenge_type: row.25.parse().unwrap(),
             proposal_solution: row.26,
             proposal_brief: row.27,
             proposal_importance: row.28,

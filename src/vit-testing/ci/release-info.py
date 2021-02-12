@@ -46,10 +46,10 @@ elif event_name == 'schedule':
 else:
     raise ValueError('unexpected event name ' + event_name)
 
-version = read_version('vit-servicing-station-server/Cargo.toml', ref)
+version = read_version('vitup/Cargo.toml', ref)
 release_flags = ''
 if release_type == 'tagged':
-    read_version('vit-servicing-station-cli/Cargo.toml', ref)
+    read_version('iapyx/Cargo.toml', ref)
     tag = 'v' + version
 elif release_type == 'nightly':
     version = re.sub(

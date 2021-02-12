@@ -28,7 +28,6 @@ pub struct ExternalValidVotingTemplateGenerator {
     proposals: LinkedList<ProposalTemplate>,
     challenges: LinkedList<ChallengeTemplate>,
     funds: LinkedList<FundTemplate>,
-    proposals_challenge_info: LinkedList<ProposalChallengeInfoTemplate>,
 }
 
 impl ExternalValidVotingTemplateGenerator {
@@ -36,13 +35,11 @@ impl ExternalValidVotingTemplateGenerator {
         proposals: PathBuf,
         challenges: PathBuf,
         funds: PathBuf,
-        proposals_challenge_info: PathBuf,
     ) -> Result<Self, TemplateLoadError> {
         Ok(Self {
             proposals: parse_proposals(proposals)?,
             challenges: parse_challenges(challenges)?,
             funds: parse_funds(funds)?,
-            proposals_challenge_info: parse_proposals_challenge_info(proposals_challenge_info)?,
         })
     }
 
@@ -74,13 +71,6 @@ pub fn parse_funds(funds: PathBuf) -> Result<LinkedList<FundTemplate>, TemplateL
         .map_err(|err| TemplateLoadError::FundTemplate(err.to_string()))
 }
 
-pub fn parse_proposals_challenge_info(
-    funds: PathBuf,
-) -> Result<LinkedList<ProposalChallengeInfoTemplate>, TemplateLoadError> {
-    serde_json::from_str(&jortestkit::file::read_file(&funds))
-        .map_err(|err| TemplateLoadError::ProposalsChallengeInfo(err.to_string()))
-}
-
 #[derive(Debug, Error)]
 pub enum TemplateLoadError {
     #[error("cannot parse proposals, due to {0}")]
@@ -89,6 +79,4 @@ pub enum TemplateLoadError {
     ChallengeTemplate(String),
     #[error("cannot parse funds, due to: {0}")]
     FundTemplate(String),
-    #[error("cannot parse proposals challenge info, due to: {0}")]
-    ProposalsChallengeInfo(String),
 }

@@ -15,7 +15,10 @@ pub mod test {
     use super::*;
     use crate::db::{
         migrations as db_testing,
-        models::proposals::{test as proposals_testing, *},
+        models::{
+            challenges::{test as challenges_testing, Challenge},
+            proposals::{test as proposals_testing, *},
+        },
     };
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use warp::Filter;
@@ -32,7 +35,9 @@ pub mod test {
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let proposal: Proposal = proposals_testing::get_test_proposal();
         proposals_testing::populate_db_with_proposal(&proposal, &pool);
-
+        let challenge: Challenge =
+            challenges_testing::get_test_challenge_with_fund_id(proposal.fund_id);
+        challenges_testing::populate_db_with_challenge(&challenge, &pool);
         // build filter
         let filter = warp::path!(i32)
             .and(warp::get())
@@ -63,7 +68,9 @@ pub mod test {
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let proposal: Proposal = proposals_testing::get_test_proposal();
         proposals_testing::populate_db_with_proposal(&proposal, &pool);
-
+        let challenge: Challenge =
+            challenges_testing::get_test_challenge_with_fund_id(proposal.fund_id);
+        challenges_testing::populate_db_with_challenge(&challenge, &pool);
         // build filter
         let filter = warp::any()
             .and(warp::get())

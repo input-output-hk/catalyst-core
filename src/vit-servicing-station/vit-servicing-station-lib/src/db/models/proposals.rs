@@ -1,5 +1,4 @@
 use super::vote_options;
-use crate::db::models::proposals_challenge_info::ChallengeType;
 use crate::db::models::vote_options::VoteOptions;
 use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
 use diesel::{ExpressionMethods, Insertable, Queryable};
@@ -25,6 +24,36 @@ pub struct Proposer {
     pub proposer_url: String,
     #[serde(alias = "proposerRelevantExperience")]
     pub proposer_relevant_experience: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum ChallengeType {
+    Simple,
+    CommunityChoice,
+}
+
+impl std::str::FromStr for ChallengeType {
+    type Err = std::io::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "simple" => Ok(ChallengeType::Simple),
+            "community-choice" => Ok(ChallengeType::CommunityChoice),
+            s => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Expected any of [simple | community-choice], found: {}", s),
+            )),
+        }
+    }
+}
+
+impl std::fmt::Display for ChallengeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // should be implemented and safe to unwrap here
+        let repr = serde_json::to_string(&self).unwrap();
+        write!(f, "{}", repr.trim_matches('"'))
+    }
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -215,7 +244,7 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_vote_encryption_key: row.22,
             fund_id: row.23,
             challenge_id: row.24,
-            challenge_type: serde_json::from_str(&format!("\"{}\"", row.25.as_str())).unwrap(),
+            challenge_type: row.25.parse().unwrap(),
             proposal_solution: row.26,
             proposal_brief: row.27,
             proposal_importance: row.28,
@@ -248,6 +277,11 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::chain_vote_options, String>,
         diesel::dsl::Eq<proposals::chain_voteplan_id, String>,
         diesel::dsl::Eq<proposals::challenge_id, i32>,
+        diesel::dsl::Eq<proposals::proposal_solution, Option<String>>,
+        diesel::dsl::Eq<proposals::proposal_brief, Option<String>>,
+        diesel::dsl::Eq<proposals::proposal_importance, Option<String>>,
+        diesel::dsl::Eq<proposals::proposal_goal, Option<String>>,
+        diesel::dsl::Eq<proposals::proposal_metrics, Option<String>>,
     );
 
     fn values(self) -> Self::Values {
@@ -270,6 +304,11 @@ impl Insertable<proposals::table> for Proposal {
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(self.chain_voteplan_id),
             proposals::challenge_id.eq(self.challenge_id),
+            proposals::proposal_solution.eq(self.proposal_solution),
+            proposals::proposal_brief.eq(self.proposal_brief),
+            proposals::proposal_importance.eq(self.proposal_importance),
+            proposals::proposal_goal.eq(self.proposal_goal),
+            proposals::proposal_metrics.eq(self.proposal_metrics),
         )
     }
 }
@@ -279,13 +318,15 @@ pub mod test {
     use super::*;
     use crate::db::{
         models::vote_options::VoteOptions,
-        schema::{proposals, proposals_challenge_info, voteplans},
+        schema::{proposals, voteplans},
         DBConnectionPool,
     };
     use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
 
     pub fn get_test_proposal() -> Proposal {
+        const CHALLENGE_ID: i32 = 9001;
+
         Proposal {
             internal_id: 1,
             proposal_id: "1".to_string(),
@@ -317,8 +358,8 @@ pub mod test {
             chain_voteplan_payload: "none".to_string(),
             chain_vote_encryption_key: "none".to_string(),
             fund_id: 1,
-            challenge_id: 1,
-            challenge_type: ChallengeType::CommunityChoice,
+            challenge_id: CHALLENGE_ID,
+            challenge_type: ChallengeType::Simple,
             proposal_solution: None,
             proposal_brief: Some("A for ADA".to_string()),
             proposal_importance: Some("We need to get them while they're young.".to_string()),
@@ -353,6 +394,11 @@ pub mod test {
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
             proposals::challenge_id.eq(proposal.challenge_id.clone()),
+            proposals::proposal_solution.eq(proposal.proposal_solution.clone()),
+            proposals::proposal_brief.eq(proposal.proposal_brief.clone()),
+            proposals::proposal_importance.eq(proposal.proposal_importance.clone()),
+            proposals::proposal_goal.eq(proposal.proposal_goal.clone()),
+            proposals::proposal_metrics.eq(proposal.proposal_metrics.clone()),
         );
 
         diesel::insert_into(proposals::table)
@@ -373,21 +419,6 @@ pub mod test {
 
         diesel::insert_into(voteplans::table)
             .values(voteplan_values)
-            .execute(&connection)
-            .unwrap();
-
-        let proposal_challenge_info_values = (
-            proposals_challenge_info::challenge_id.eq(proposal.challenge_id),
-            proposals_challenge_info::challenge_type.eq(proposal.challenge_type.to_string()),
-            proposals_challenge_info::proposal_solution.eq(proposal.proposal_solution.clone()),
-            proposals_challenge_info::proposal_brief.eq(proposal.proposal_brief.clone()),
-            proposals_challenge_info::proposal_importance.eq(proposal.proposal_importance.clone()),
-            proposals_challenge_info::proposal_goal.eq(proposal.proposal_goal.clone()),
-            proposals_challenge_info::proposal_metrics.eq(proposal.proposal_metrics.clone()),
-        );
-
-        diesel::insert_into(proposals_challenge_info::table)
-            .values(proposal_challenge_info_values)
             .execute(&connection)
             .unwrap();
     }

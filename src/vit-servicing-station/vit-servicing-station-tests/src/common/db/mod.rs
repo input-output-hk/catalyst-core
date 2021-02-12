@@ -2,9 +2,10 @@ use diesel::expression_methods::ExpressionMethods;
 use diesel::query_dsl::RunQueryDsl;
 use diesel::SqliteConnection;
 use thiserror::Error;
+use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::{
     models::{api_tokens::APITokenData, funds::Fund, proposals::Proposal},
-    schema::{api_tokens, challenges, funds, proposals, proposals_challenge_info, voteplans},
+    schema::{api_tokens, challenges, funds, proposals, voteplans},
 };
 
 pub struct DbInserter<'a> {
@@ -61,6 +62,11 @@ impl<'a> DbInserter<'a> {
                 proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
                 proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
                 proposals::challenge_id.eq(proposal.challenge_id),
+                proposals::proposal_solution.eq(proposal.proposal_solution.clone()),
+                proposals::proposal_brief.eq(proposal.proposal_brief.clone()),
+                proposals::proposal_importance.eq(proposal.proposal_importance.clone()),
+                proposals::proposal_goal.eq(proposal.proposal_goal.clone()),
+                proposals::proposal_metrics.eq(proposal.proposal_metrics.clone()),
             );
             diesel::insert_into(proposals::table)
                 .values(values)
@@ -79,22 +85,6 @@ impl<'a> DbInserter<'a> {
 
             diesel::insert_or_ignore_into(voteplans::table)
                 .values(voteplan_values)
-                .execute(self.connection)
-                .map_err(DbInserterError::DieselError)?;
-
-            let proposal_challenge_info_values = (
-                proposals_challenge_info::challenge_id.eq(proposal.challenge_id),
-                proposals_challenge_info::challenge_type.eq(proposal.challenge_type.to_string()),
-                proposals_challenge_info::proposal_solution.eq(proposal.proposal_solution.clone()),
-                proposals_challenge_info::proposal_brief.eq(proposal.proposal_brief.clone()),
-                proposals_challenge_info::proposal_importance
-                    .eq(proposal.proposal_importance.clone()),
-                proposals_challenge_info::proposal_goal.eq(proposal.proposal_goal.clone()),
-                proposals_challenge_info::proposal_metrics.eq(proposal.proposal_metrics.clone()),
-            );
-
-            diesel::insert_or_ignore_into(proposals_challenge_info::table)
-                .values(proposal_challenge_info_values)
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
         }
@@ -141,6 +131,7 @@ impl<'a> DbInserter<'a> {
             for challenge in &fund.challenges {
                 let values = (
                     challenges::id.eq(challenge.id),
+                    challenges::challenge_type.eq(challenge.challenge_type.to_string()),
                     challenges::title.eq(challenge.title.clone()),
                     challenges::description.eq(challenge.description.clone()),
                     challenges::rewards_total.eq(challenge.rewards_total),
@@ -152,6 +143,25 @@ impl<'a> DbInserter<'a> {
                     .execute(self.connection)
                     .map_err(DbInserterError::DieselError)?;
             }
+        }
+        Ok(())
+    }
+
+    pub fn insert_challenges(&self, challenges: &[Challenge]) -> Result<(), DbInserterError> {
+        for challenge in challenges {
+            let values = (
+                challenges::id.eq(challenge.id),
+                challenges::challenge_type.eq(challenge.challenge_type.to_string()),
+                challenges::title.eq(challenge.title.clone()),
+                challenges::description.eq(challenge.description.clone()),
+                challenges::rewards_total.eq(challenge.rewards_total),
+                challenges::fund_id.eq(challenge.fund_id),
+                challenges::challenge_url.eq(challenge.challenge_url.clone()),
+            );
+            diesel::insert_or_ignore_into(challenges::table)
+                .values(values)
+                .execute(self.connection)
+                .map_err(DbInserterError::DieselError)?;
         }
         Ok(())
     }

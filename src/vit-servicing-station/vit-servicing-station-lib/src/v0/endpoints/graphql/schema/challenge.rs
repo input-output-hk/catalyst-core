@@ -7,6 +7,11 @@ impl Challenge {
         self.id
     }
 
+    /// Challenge Type
+    pub async fn challenge_type(&self) -> String {
+        self.challenge_type.to_string()
+    }
+
     /// Challenge title
     pub async fn title(&self) -> &str {
         &self.title

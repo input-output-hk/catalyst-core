@@ -91,7 +91,7 @@ impl<'a, P: Payload> PayloadAuthSlice<'a, P> {
 }
 
 impl<'a, P: Payload> PayloadSlice<'a, P> {
-    pub fn inpayload_to_certificate_slice(self) -> Option<CertificateSlice<'a>> {
+    pub fn into_certificate_slice(self) -> Option<CertificateSlice<'a>> {
         <P as Payload>::payload_to_certificate_slice(self)
     }
 }

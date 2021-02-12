@@ -109,7 +109,7 @@ pub trait FeeAlgorithm {
 
     fn calculate_tx<P: tx::Payload>(&self, tx: &tx::TransactionSlice<P>) -> Value {
         self.calculate(
-            tx.payload().inpayload_to_certificate_slice(),
+            tx.payload().into_certificate_slice(),
             tx.nb_inputs(),
             tx.nb_outputs(),
         )

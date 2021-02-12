@@ -114,7 +114,7 @@ impl LeadershipConsensus {
         match self {
             LeadershipConsensus::Bft(bft) => match leader.bft_leader {
                 Some(ref bft_leader) => {
-                    let bft_leader_id = bft.get_leader_at(date)?;
+                    let bft_leader_id = bft.get_leader_at(date);
                     if bft_leader_id == bft_leader.sig_key.to_public().into() {
                         Ok(LeaderOutput::Bft(bft_leader_id))
                     } else {

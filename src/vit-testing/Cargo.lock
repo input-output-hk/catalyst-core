@@ -2519,9 +2519,9 @@ dependencies = [
 
 [[package]]
 name = "lru"
-version = "0.6.4"
+version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe2382d8ed3918ea4ba70d98d5b74e47a168e0331965f3f17cdbc748bdebc5a3"
+checksum = "1f374d42cdfc1d7dbf3d3dec28afab2eb97ffbf43a3234d795b5986dbf4b90ba"
 dependencies = [
  "hashbrown",
 ]
@@ -5013,7 +5013,7 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data#d17c192fe7341bac6b321718d8442f08105f6f7a"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data#a78fe26c35a325f8083e524f413ce60b961422f7"
 dependencies = [
  "async-graphql",
  "async-graphql-warp",
@@ -5069,7 +5069,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data#d17c192fe7341bac6b321718d8442f08105f6f7a"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=bind_data#a78fe26c35a325f8083e524f413ce60b961422f7"
 dependencies = [
  "askama",
  "askama_shared",

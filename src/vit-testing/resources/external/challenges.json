@@ -5,6 +5,7 @@
             "description": "Which challenges should be launched during Fund5 (March 31st) in order to fulfill Cardano's mission?",
             "rewards_total": "500000",
             "fund_id": "3",
+            "challenge_type":"community-choice",
             "challenge_url": "https://cardano.ideascale.com/a/campaign-home/25800"
         },
         {
@@ -13,6 +14,7 @@
             "description": "What DApps should be built to drive user adoption?",
             "rewards_total": "250000",
             "fund_id": "3",
+            "challenge_type":"simple",
             "challenge_url": "https://cardano.ideascale.com/a/campaign-home/25797"
         },
         {
@@ -21,6 +23,7 @@
             "description": "How can we encourage developers to build Dapps on top of Cardano?",
             "rewards_total": "250000",
             "fund_id": "3",
+            "challenge_type":"simple",
             "challenge_url": "https://cardano.ideascale.com/a/campaign-home/25805"
         }
 ]

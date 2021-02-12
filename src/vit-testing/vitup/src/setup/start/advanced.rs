@@ -86,10 +86,6 @@ pub struct AdvancedStartCommandArgs {
     #[structopt(long = "funds")]
     pub funds: PathBuf,
 
-    /// proposal challenges import json
-    #[structopt(long = "proposals-challenges")]
-    pub proposals_challenges: PathBuf,
-
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 }
@@ -130,13 +126,9 @@ impl AdvancedStartCommandArgs {
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
         quick_setup.upload_parameters(config.params);
 
-        let mut template_generator = ExternalValidVotingTemplateGenerator::new(
-            self.proposals,
-            self.challenges,
-            self.funds,
-            self.proposals_challenges,
-        )
-        .unwrap();
+        let mut template_generator =
+            ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)
+                .unwrap();
 
         testing_directory.push(quick_setup.title());
         if testing_directory.exists() {

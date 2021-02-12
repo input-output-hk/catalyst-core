@@ -212,7 +212,7 @@ impl ProposalManager {
                     if let Some(stake) = stake.by(&account_id) {
                         match payload {
                             vote::Payload::Public { .. } => {
-                                Some(Err(VoteError::InvalidPayloadType {
+                                return Some(Err(VoteError::InvalidPayloadType {
                                     expected: vote::PayloadType::Private,
                                     received: vote::PayloadType::Public,
                                 }))
@@ -220,14 +220,11 @@ impl ProposalManager {
                             vote::Payload::Private {
                                 encrypted_vote,
                                 proof: _,
-                            } => Some(Ok((encrypted_vote.as_inner(), stake.0))),
+                            } => return Some(Ok((encrypted_vote.as_inner(), stake.0))),
                         }
-                    } else {
-                        None
                     }
-                } else {
-                    None
                 }
+                None
             })
             .try_fold_with(
                 EncryptedTally::new(tally_size),

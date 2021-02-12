@@ -32,6 +32,10 @@ impl LeadershipData {
         self.leaders.len()
     }
 
+    pub fn leaders(&self) -> &[BftLeaderId] {
+        self.leaders.as_ref()
+    }
+
     #[inline]
     fn offset(&self, block_number: u64) -> BftRoundRobinIndex {
         let max = self.number_of_leaders() as u64;

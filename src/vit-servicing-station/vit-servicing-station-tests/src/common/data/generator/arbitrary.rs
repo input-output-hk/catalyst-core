@@ -5,8 +5,7 @@ use vit_servicing_station_lib::{
         api_tokens::APITokenData,
         challenges::Challenge,
         funds::Fund,
-        proposals::{Category, Proposal, Proposer},
-        proposals_challenge_info::{ChallengeType, ProposalChallengeInfo},
+        proposals::{Category, ChallengeType, Proposal, Proposer},
         vote_options::VoteOptions,
         voteplans::Voteplan,
     },
@@ -26,6 +25,15 @@ use std::{collections::HashMap, iter};
 use chrono::DateTime;
 
 type UtcDateTime = DateTime<Utc>;
+
+struct ProposalChallengeInfo {
+    pub challenge_type: ChallengeType,
+    pub proposal_solution: Option<String>,
+    pub proposal_brief: Option<String>,
+    pub proposal_importance: Option<String>,
+    pub proposal_goal: Option<String>,
+    pub proposal_metrics: Option<String>,
+}
 
 #[derive(Clone)]
 pub struct ArbitraryGenerator {
@@ -154,12 +162,9 @@ impl ArbitraryGenerator {
         }
     }
 
-    pub fn proposals_challenge_info(&mut self, challenge_id: i32) -> ProposalChallengeInfo {
-        let id = self.id().abs();
+    fn proposals_challenge_info(&mut self) -> ProposalChallengeInfo {
         match self.challenge_type() {
             ChallengeType::Simple => ProposalChallengeInfo {
-                id,
-                challenge_id,
                 challenge_type: ChallengeType::Simple,
                 proposal_solution: Some(CatchPhase().fake::<String>()),
                 proposal_brief: None,
@@ -168,8 +173,6 @@ impl ArbitraryGenerator {
                 proposal_metrics: None,
             },
             ChallengeType::CommunityChoice => ProposalChallengeInfo {
-                id,
-                challenge_id,
                 challenge_type: ChallengeType::CommunityChoice,
                 proposal_solution: None,
                 proposal_brief: Some(CatchPhase().fake::<String>()),
@@ -186,7 +189,7 @@ impl ArbitraryGenerator {
 
         let voteplan = fund.chain_vote_plans.first().unwrap();
         let challenge_id = fund.challenges.first().unwrap().id;
-        let proposal_challenge_info = self.proposals_challenge_info(challenge_id);
+        let proposal_challenge_info = self.proposals_challenge_info();
         Proposal {
             internal_id: id.abs(),
             proposal_id: id.abs().to_string(),

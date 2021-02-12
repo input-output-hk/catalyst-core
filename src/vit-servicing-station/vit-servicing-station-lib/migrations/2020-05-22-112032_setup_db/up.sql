@@ -33,7 +33,13 @@ create table proposals
     chain_proposal_index BIGINT NOT NULL,
     chain_vote_options VARCHAR NOT NULL,
     chain_voteplan_id VARCHAR NOT NULL,
-    challenge_id INTEGER NOT NULL
+    challenge_id INTEGER NOT NULL,
+    challenge_type VARCHAR NOT NULL,
+    proposal_solution VARCHAR,
+    proposal_brief VARCHAR,
+    proposal_importance VARCHAR,
+    proposal_goal VARCHAR,
+    proposal_metrics VARCHAR
 );
 
 create table voteplans
@@ -68,36 +74,16 @@ create table challenges
     challenge_url VARCHAR NOT NULL
 );
 
-create table proposals_challenge_info
-(
-    id INTEGER NOT NULL
-        primary key autoincrement,
-    challenge_id INTEGER NOT NULL,
-    challenge_type VARCHAR NOT NULL,
-    proposal_solution VARCHAR,
-    proposal_brief VARCHAR,
-    proposal_importance VARCHAR,
-    proposal_goal VARCHAR,
-    proposal_metrics VARCHAR
-);
-
 CREATE VIEW full_proposals_info
 AS
 SELECT
     proposals.*,
-    voteplans.chain_voteplan_payload,
     voteplans.chain_vote_start_time,
     voteplans.chain_vote_end_time,
     voteplans.chain_committee_end_time,
+    voteplans.chain_voteplan_payload,
     voteplans.chain_vote_encryption_key,
-    voteplans.fund_id,
-    proposals_challenge_info.challenge_type,
-    proposals_challenge_info.proposal_solution,
-    proposals_challenge_info.proposal_brief,
-    proposals_challenge_info.proposal_importance,
-    proposals_challenge_info.proposal_goal,
-    proposals_challenge_info.proposal_metrics
+    voteplans.fund_id
 FROM
     proposals
         INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
-        INNER JOIN proposals_challenge_info ON proposals.challenge_id = proposals_challenge_info.challenge_id

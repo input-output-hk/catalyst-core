@@ -52,13 +52,6 @@ table! {
         chain_vote_options -> Text,
         chain_voteplan_id -> Text,
         challenge_id -> Integer,
-    }
-}
-
-table! {
-    proposals_challenge_info (id) {
-        id -> Integer,
-        challenge_id -> Integer,
         challenge_type -> Text,
         proposal_solution -> Nullable<Text>,
         proposal_brief -> Nullable<Text>,
@@ -86,6 +79,5 @@ allow_tables_to_appear_in_same_query!(
     challenges,
     funds,
     proposals,
-    proposals_challenge_info,
     voteplans,
 );

@@ -1,7 +1,6 @@
 use serde::Deserialize;
 use vit_servicing_station_lib::db::models::proposals;
-use vit_servicing_station_lib::db::models::proposals::{Category, Proposer};
-use vit_servicing_station_lib::db::models::proposals_challenge_info::ChallengeType;
+use vit_servicing_station_lib::db::models::proposals::{Category, ChallengeType, Proposer};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
 #[derive(Deserialize, PartialEq, Eq, Debug, Clone)]

@@ -9,7 +9,7 @@ use fake::{
     },
     Fake,
 };
-use vit_servicing_station_lib::db::models::proposals_challenge_info::ChallengeType;
+use vit_servicing_station_lib::db::models::proposals::ChallengeType;
 
 #[derive(Clone)]
 pub struct ArbitraryValidVotingTemplateGenerator {

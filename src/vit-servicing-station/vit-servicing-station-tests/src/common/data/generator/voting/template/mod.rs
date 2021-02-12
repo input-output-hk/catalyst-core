@@ -21,9 +21,6 @@ pub struct ProposalTemplate {
     pub proposal_title: String,
     #[serde(default)]
     pub proposal_summary: String,
-    pub proposal_problem: String,
-    #[serde(default)]
-    pub proposal_solution: String,
     pub proposal_funds: String,
     pub proposal_url: String,
     pub proposal_impact_score: String,
@@ -37,6 +34,12 @@ pub struct ProposalTemplate {
     pub chain_vote_options: String,
     pub chain_vote_type: String,
     pub challenge_id: Option<String>,
+    pub challenge_type: ChallengeType,
+    pub proposal_solution: Option<String>,
+    pub proposal_brief: Option<String>,
+    pub proposal_importance: Option<String>,
+    pub proposal_goal: Option<String>,
+    pub proposal_metrics: Option<String>,
 }
 
 impl ProposalTemplate {
@@ -62,18 +65,10 @@ pub struct ChallengeTemplate {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProposalChallengeInfoTemplate {
     pub id: i32,
-    pub challenge_id: i32,
-    pub challenge_type: ChallengeType,
-    pub proposal_solution: Option<String>,
-    pub proposal_brief: Option<String>,
-    pub proposal_importance: Option<String>,
-    pub proposal_goal: Option<String>,
-    pub proposal_metrics: Option<String>,
 }
 
 pub trait ValidVotingTemplateGenerator {
     fn next_proposal(&mut self) -> ProposalTemplate;
     fn next_challenge(&mut self) -> ChallengeTemplate;
     fn next_fund(&mut self) -> FundTemplate;
-    fn next_proposal_challenge_info(&mut self) -> ProposalChallengeInfoTemplate;
 }

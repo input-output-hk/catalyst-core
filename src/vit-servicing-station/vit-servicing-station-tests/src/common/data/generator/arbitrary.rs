@@ -26,7 +26,7 @@ use chrono::DateTime;
 
 type UtcDateTime = DateTime<Utc>;
 
-struct ProposalChallengeInfo {
+pub struct ProposalChallengeInfo {
     pub challenge_type: ChallengeType,
     pub proposal_solution: Option<String>,
     pub proposal_brief: Option<String>,
@@ -162,7 +162,7 @@ impl ArbitraryGenerator {
         }
     }
 
-    fn proposals_challenge_info(&mut self) -> ProposalChallengeInfo {
+    pub fn proposals_challenge_info(&mut self) -> ProposalChallengeInfo {
         match self.challenge_type() {
             ChallengeType::Simple => ProposalChallengeInfo {
                 challenge_type: ChallengeType::Simple,

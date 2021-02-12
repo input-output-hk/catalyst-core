@@ -21,12 +21,6 @@ impl ValidVotingTemplateGenerator for ExternalValidVotingTemplateGenerator {
             .pop_front()
             .unwrap_or_else(|| panic!("no more funds"))
     }
-
-    fn next_proposal_challenge_info(&mut self) -> ProposalChallengeInfoTemplate {
-        self.proposals_challenge_info
-            .pop_front()
-            .unwrap_or_else(|| panic!("no more proposals challenge info"))
-    }
 }
 
 #[derive(Clone)]

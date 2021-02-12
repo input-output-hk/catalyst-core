@@ -258,7 +258,8 @@ impl ArbitraryGenerator {
     pub fn challenges(&mut self, funds: &[Fund]) -> Vec<Challenge> {
         funds
             .iter()
-            .map(|x| self.challenge_with_fund_id(x.id))
+            .map(|x| x.challenges.first().unwrap())
+            .cloned()
             .collect()
     }
 

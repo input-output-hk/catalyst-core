@@ -19,12 +19,16 @@ pub fn get_proposals_list_is_not_empty() {
 #[test]
 pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let expected_proposal = data::proposals().first().unwrap().clone();
+    let mut expected_proposal = data::proposals().first().unwrap().clone();
+    let expected_challenge = data::challenges().first().unwrap().clone();
+    expected_proposal.challenge_id = expected_challenge.id;
+    expected_proposal.challenge_type = expected_challenge.challenge_type.clone();
     let (hash, token) = data::token();
 
     let db_path = DbBuilder::new()
         .with_token(token)
         .with_proposals(vec![expected_proposal.clone()])
+        .with_challenges(vec![expected_challenge.clone()])
         .build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()

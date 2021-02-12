@@ -34,7 +34,6 @@ create table proposals
     chain_vote_options VARCHAR NOT NULL,
     chain_voteplan_id VARCHAR NOT NULL,
     challenge_id INTEGER NOT NULL,
-    challenge_type VARCHAR NOT NULL,
     proposal_solution VARCHAR,
     proposal_brief VARCHAR,
     proposal_importance VARCHAR,
@@ -67,6 +66,7 @@ create table challenges
 (
     id INTEGER NOT NULL
         primary key autoincrement,
+    challenge_type VARCHAR NOT NULL,
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
     rewards_total BIGINT NOT NULL,
@@ -83,7 +83,9 @@ SELECT
     voteplans.chain_committee_end_time,
     voteplans.chain_voteplan_payload,
     voteplans.chain_vote_encryption_key,
-    voteplans.fund_id
+    voteplans.fund_id,
+    challenges.challenge_type
 FROM
     proposals
         INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
+        INNER JOIN challenges on challenges.id = proposals.challenge_id

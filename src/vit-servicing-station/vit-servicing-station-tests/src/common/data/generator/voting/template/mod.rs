@@ -55,6 +55,7 @@ impl ProposalTemplate {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ChallengeTemplate {
     pub id: String,
+    pub challenge_type: ChallengeType,
     pub title: String,
     pub description: String,
     pub rewards_total: String,

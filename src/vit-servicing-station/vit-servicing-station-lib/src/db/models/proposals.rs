@@ -262,7 +262,6 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::chain_vote_options, String>,
         diesel::dsl::Eq<proposals::chain_voteplan_id, String>,
         diesel::dsl::Eq<proposals::challenge_id, i32>,
-        diesel::dsl::Eq<proposals::challenge_type, String>,
         diesel::dsl::Eq<proposals::proposal_solution, Option<String>>,
         diesel::dsl::Eq<proposals::proposal_brief, Option<String>>,
         diesel::dsl::Eq<proposals::proposal_importance, Option<String>>,
@@ -290,7 +289,6 @@ impl Insertable<proposals::table> for Proposal {
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(self.chain_voteplan_id),
             proposals::challenge_id.eq(self.challenge_id),
-            proposals::challenge_type.eq(self.challenge_type.to_string()),
             proposals::proposal_solution.eq(self.proposal_solution),
             proposals::proposal_brief.eq(self.proposal_brief),
             proposals::proposal_importance.eq(self.proposal_importance),
@@ -312,6 +310,8 @@ pub mod test {
     use diesel::{ExpressionMethods, RunQueryDsl};
 
     pub fn get_test_proposal() -> Proposal {
+        const CHALLENGE_ID: i32 = 9001;
+
         Proposal {
             internal_id: 1,
             proposal_id: "1".to_string(),
@@ -343,8 +343,8 @@ pub mod test {
             chain_voteplan_payload: "none".to_string(),
             chain_vote_encryption_key: "none".to_string(),
             fund_id: 1,
-            challenge_id: 1,
-            challenge_type: ChallengeType::CommunityChoice,
+            challenge_id: CHALLENGE_ID,
+            challenge_type: ChallengeType::Simple,
             proposal_solution: None,
             proposal_brief: Some("A for ADA".to_string()),
             proposal_importance: Some("We need to get them while they're young.".to_string()),
@@ -379,7 +379,6 @@ pub mod test {
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
             proposals::challenge_id.eq(proposal.challenge_id.clone()),
-            proposals::challenge_type.eq(proposal.challenge_type.to_string()),
             proposals::proposal_solution.eq(proposal.proposal_solution.clone()),
             proposals::proposal_brief.eq(proposal.proposal_brief.clone()),
             proposals::proposal_importance.eq(proposal.proposal_importance.clone()),

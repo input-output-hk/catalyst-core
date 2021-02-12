@@ -100,6 +100,7 @@ impl CsvConverter {
     ) -> Result<(), Error> {
         let headers = vec![
             "id",
+            "challenge_type",
             "title",
             "description",
             "rewards_total",
@@ -209,6 +210,7 @@ fn convert_voteplan(voteplan: &Voteplan) -> Vec<String> {
 fn convert_challenge(challenge: &Challenge) -> Vec<String> {
     vec![
         challenge.id.to_string(),
+        challenge.challenge_type.to_string(),
         challenge.title.clone(),
         challenge.description.clone(),
         challenge.rewards_total.to_string(),

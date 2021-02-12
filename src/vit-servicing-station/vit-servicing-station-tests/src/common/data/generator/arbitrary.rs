@@ -162,8 +162,11 @@ impl ArbitraryGenerator {
         }
     }
 
-    pub fn proposals_challenge_info(&mut self) -> ProposalChallengeInfo {
-        match self.challenge_type() {
+    pub fn proposals_challenge_info(
+        &mut self,
+        challenge_type: &ChallengeType,
+    ) -> ProposalChallengeInfo {
+        match challenge_type {
             ChallengeType::Simple => ProposalChallengeInfo {
                 challenge_type: ChallengeType::Simple,
                 proposal_solution: Some(CatchPhase().fake::<String>()),
@@ -188,8 +191,9 @@ impl ArbitraryGenerator {
         let proposal_url = self.gen_http_address();
 
         let voteplan = fund.chain_vote_plans.first().unwrap();
-        let challenge_id = fund.challenges.first().unwrap().id;
-        let proposal_challenge_info = self.proposals_challenge_info();
+        let challenge = fund.challenges.first().unwrap();
+        let challenge_id = challenge.id;
+        let proposal_challenge_info = self.proposals_challenge_info(&challenge.challenge_type);
         Proposal {
             internal_id: id.abs(),
             proposal_id: id.abs().to_string(),
@@ -283,6 +287,7 @@ impl ArbitraryGenerator {
 
         Challenge {
             id: id.abs(),
+            challenge_type: self.challenge_type(),
             title: CatchPhase().fake::<String>(),
             description: Buzzword().fake::<String>(),
             rewards_total: 100500,
@@ -293,9 +298,9 @@ impl ArbitraryGenerator {
 
     pub fn snapshot(&mut self) -> Snapshot {
         let funds = self.funds();
-        let proposals = self.proposals(&funds);
         let voteplans = self.voteplans(&funds);
         let challenges = self.challenges(&funds);
+        let proposals = self.proposals(&funds);
         let tokens = self.tokens();
 
         Snapshot::new(funds, proposals, challenges, tokens, voteplans)

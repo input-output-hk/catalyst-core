@@ -47,7 +47,8 @@ impl ArbitraryValidVotingTemplateGenerator {
 impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
     fn next_proposal(&mut self) -> ProposalTemplate {
         let proposal_url = self.generator.gen_http_address();
-        let proposal_challenge_info = self.generator.proposals_challenge_info();
+        let challenge_type = self.generator.challenge_type();
+        let proposal_challenge_info = self.generator.proposals_challenge_info(&challenge_type);
         ProposalTemplate {
             proposal_id: self.next_proposal_id().to_string(),
             internal_id: self.generator.id().to_string(),
@@ -77,6 +78,7 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
     fn next_challenge(&mut self) -> ChallengeTemplate {
         ChallengeTemplate {
             id: self.next_challenge_id().to_string(),
+            challenge_type: self.generator.challenge_type(),
             title: CatchPhase().fake::<String>(),
             description: Buzzword().fake::<String>(),
             rewards_total: "0".to_string(),

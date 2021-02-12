@@ -134,6 +134,7 @@ impl ValidVotePlanGenerator {
             let challenge_data = template_generator.next_challenge();
             Some(Challenge {
                 id: challenge_data.id.parse().unwrap(),
+                challenge_type: challenge_data.challenge_type,
                 title: challenge_data.title,
                 description: challenge_data.description,
                 rewards_total: challenge_data.rewards_total.parse().unwrap(),

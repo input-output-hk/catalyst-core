@@ -81,8 +81,6 @@ pub struct Proposal {
     pub fund_id: i32,
     #[serde(alias = "challengeId", default = "default_challenge_id")]
     pub challenge_id: i32,
-    #[serde(alias = "challengeType")]
-    pub challenge_type: ChallengeType,
     #[serde(alias = "proposalSolution", default)]
     proposal_solution: Option<String>,
     #[serde(alias = "proposalBrief", default)]
@@ -139,7 +137,8 @@ impl From<Proposal> for proposals::Proposal {
             chain_vote_encryption_key: proposal.chain_vote_encryption_key,
             fund_id: proposal.fund_id,
             challenge_id: proposal.challenge_id,
-            challenge_type: proposal.challenge_type,
+            // this is hardcoded here, it is not used since the value will not be saved into DB
+            challenge_type: ChallengeType::Simple,
             proposal_solution: proposal.proposal_solution,
             proposal_brief: proposal.proposal_brief,
             proposal_importance: proposal.proposal_importance,

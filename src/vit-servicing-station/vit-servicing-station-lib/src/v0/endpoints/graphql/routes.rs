@@ -41,6 +41,7 @@ pub async fn filter(
 #[cfg(test)]
 mod test {
     use crate::db::models::{
+        challenges::{test as challenges_testing, Challenge},
         funds::{test as funds_testing, Fund},
         proposals::{test as proposal_testing, Proposal},
     };
@@ -74,6 +75,7 @@ mod test {
                 },
                 challenges {
                     id,
+                    challengeType,
                     title,
                     description,
                     rewardsTotal,
@@ -106,6 +108,7 @@ mod test {
             },
             challenges {
                 id,
+                challengeType,
                 title,
                 description,
                 rewardsTotal,
@@ -236,6 +239,9 @@ mod test {
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
         let proposal: Proposal = proposal_testing::get_test_proposal();
         proposal_testing::populate_db_with_proposal(&proposal, &pool);
+        let challenge: Challenge =
+            challenges_testing::get_test_challenge_with_fund_id(proposal.fund_id);
+        challenges_testing::populate_db_with_challenge(&challenge, &pool);
 
         // return filter
         (

@@ -150,7 +150,7 @@ impl InputOutputBuilder {
         fee_algorithm: &F,
     ) -> Value {
         fee_algorithm.calculate(
-            payload.into_certificate_slice(),
+            payload.inpayload_to_certificate_slice(),
             self.inputs.len() as u8,
             self.outputs.len() as u8,
         )
@@ -184,7 +184,11 @@ impl InputOutputBuilder {
         let nb_inputs = self.inputs.len() as u8 + inputs_placeholders;
         let nb_outputs = self.outputs.len() as u8 + outputs_placeholders;
 
-        let fee = fee_algorithm.calculate(payload.into_certificate_slice(), nb_inputs, nb_outputs);
+        let fee = fee_algorithm.calculate(
+            payload.inpayload_to_certificate_slice(),
+            nb_inputs,
+            nb_outputs,
+        );
         self.balance(fee).map_err(Error::MathErr)
     }
 

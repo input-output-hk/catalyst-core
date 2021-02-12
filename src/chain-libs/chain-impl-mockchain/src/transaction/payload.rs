@@ -15,7 +15,7 @@ pub trait Payload: Readable {
 
     fn payload_auth_data(auth: &Self::Auth) -> PayloadAuthData<Self>;
 
-    fn to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>>;
+    fn payload_to_certificate_slice(p: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>>;
 }
 
 /// Owned binary representation of a payload
@@ -91,8 +91,8 @@ impl<'a, P: Payload> PayloadAuthSlice<'a, P> {
 }
 
 impl<'a, P: Payload> PayloadSlice<'a, P> {
-    pub fn into_certificate_slice(self) -> Option<CertificateSlice<'a>> {
-        <P as Payload>::to_certificate_slice(self)
+    pub fn inpayload_to_certificate_slice(self) -> Option<CertificateSlice<'a>> {
+        <P as Payload>::payload_to_certificate_slice(self)
     }
 }
 
@@ -154,7 +154,7 @@ impl Payload for NoExtra {
         PayloadAuthData(Vec::with_capacity(0).into(), PhantomData)
     }
 
-    fn to_certificate_slice(_: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
+    fn payload_to_certificate_slice(_: PayloadSlice<'_, Self>) -> Option<CertificateSlice<'_>> {
         None
     }
 }

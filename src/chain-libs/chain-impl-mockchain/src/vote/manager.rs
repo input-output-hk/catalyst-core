@@ -199,29 +199,43 @@ impl ProposalManager {
 
     #[must_use = "Compute the PrivateTally in a new ProposalManager, does not modify self"]
     pub fn private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
-        let mut tally =
-            EncryptedTally::new(self.options.choice_range().clone().max().unwrap() as usize + 1);
+        use rayon::prelude::*;
 
-        for (id, payload) in self.votes_by_voters.iter() {
-            if let Some(account_id) = id.to_single_account() {
-                if let Some(stake) = stake.by(&account_id) {
-                    match payload {
-                        vote::Payload::Public { .. } => {
-                            return Err(VoteError::InvalidPayloadType {
-                                expected: vote::PayloadType::Private,
-                                received: vote::PayloadType::Public,
-                            });
-                        }
-                        vote::Payload::Private {
-                            encrypted_vote,
-                            proof: _,
-                        } => {
-                            tally.add(encrypted_vote.as_inner(), stake.0);
+        let tally_size = self.options.choice_range().clone().max().unwrap() as usize + 1;
+
+        let tally = self
+            .votes_by_voters
+            .iter()
+            .par_bridge()
+            .filter_map(|(id, payload)| {
+                if let Some(account_id) = id.to_single_account() {
+                    if let Some(stake) = stake.by(&account_id) {
+                        match payload {
+                            vote::Payload::Public { .. } => {
+                                return Some(Err(VoteError::InvalidPayloadType {
+                                    expected: vote::PayloadType::Private,
+                                    received: vote::PayloadType::Public,
+                                }))
+                            }
+                            vote::Payload::Private {
+                                encrypted_vote,
+                                proof: _,
+                            } => return Some(Ok((encrypted_vote.as_inner(), stake.0))),
                         }
                     }
                 }
-            }
-        }
+                None
+            })
+            .try_fold_with(
+                EncryptedTally::new(tally_size),
+                |mut tally, vote_with_stake| {
+                    vote_with_stake.map(|(encrypted_vote, stake)| {
+                        tally.add(encrypted_vote, stake);
+                        tally
+                    })
+                },
+            )
+            .try_reduce(|| EncryptedTally::new(tally_size), |a, b| Ok(a + b))?;
 
         Ok(Self {
             votes_by_voters: self.votes_by_voters.clone(),
@@ -429,11 +443,12 @@ impl ProposalManagers {
     }
 
     pub fn start_private_tally(&self, stake: &StakeControl) -> Result<Self, VoteError> {
-        let mut proposals = Vec::with_capacity(self.0.len());
-        for proposal in self.0.iter() {
-            proposals.push(proposal.private_tally(stake)?);
-        }
-
+        use rayon::prelude::*;
+        let proposals = self
+            .0
+            .par_iter()
+            .map(|proposal| proposal.private_tally(stake))
+            .collect::<Result<_, _>>()?;
         Ok(Self(proposals))
     }
 

@@ -33,20 +33,17 @@ pub enum Show {
 impl Show {
     pub fn exec(&self, command: &mut VitInteractiveCommandExec) -> Result<()> {
         match self {
-            Show::Status(status) => status.exec(command),
-            Show::Stats(stats) => Ok(stats.exec(command.controller_mut())),
-            Show::FragmentCount(fragment_counts) => {
-                Ok(fragment_counts.exec(command.controller_mut()))
-            }
-            Show::Fragments(fragments) => Ok(fragments.exec(command.controller_mut())),
-            Show::BlockHeight(block_height) => Ok(block_height.exec(command.controller_mut())),
-            Show::PeerStats(peer_stats) => Ok(peer_stats.exec(command.controller_mut())),
-            Show::Logs(logs) => Ok(logs.exec(command.controller_mut())),
-            Show::VotePlans(active_vote_plan) => {
-                Ok(active_vote_plan.exec(command.controller_mut()))
-            }
-            Show::VoteTime(vote_status) => vote_status.exec(command),
-        }
+            Show::Status(status) => status.exec(command)?,
+            Show::Stats(stats) => stats.exec(command.controller_mut()),
+            Show::FragmentCount(fragment_counts) => fragment_counts.exec(command.controller_mut()),
+            Show::Fragments(fragments) => fragments.exec(command.controller_mut()),
+            Show::BlockHeight(block_height) => block_height.exec(command.controller_mut()),
+            Show::PeerStats(peer_stats) => peer_stats.exec(command.controller_mut()),
+            Show::Logs(logs) => logs.exec(command.controller_mut()),
+            Show::VotePlans(active_vote_plan) => active_vote_plan.exec(command.controller_mut()),
+            Show::VoteTime(vote_status) => vote_status.exec(command)?,
+        };
+        Ok(())
     }
 }
 

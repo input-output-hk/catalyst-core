@@ -1,11 +1,13 @@
 use chain_impl_mockchain::testing::scenario::template::WalletTemplateBuilder;
 use chain_impl_mockchain::{
-    certificate::{EncryptedVoteTally, VotePlan, VoteTally},
+    certificate::{
+        DecryptedPrivateTally, DecryptedPrivateTallyProposal, EncryptedVoteTally, VotePlan,
+        VoteTally,
+    },
     fee::LinearFee,
     header::BlockDate,
     testing::{
         data::CommitteeMembersManager,
-        decrypt_tally,
         ledger::ConfigBuilder,
         scenario::{prepare_scenario, proposal, vote_plan, wallet},
         VoteTestGen,
@@ -142,15 +144,47 @@ fn tally_benchmark(voters_count: usize, voting_power_per_voter: u64, c: &mut Cri
         })
         .unwrap();
 
-    c.bench_function(&format!("decrypt_tally{}", bench_name_suffix), |b| {
+    c.bench_function(&format!("tally_decrypt_share{}", bench_name_suffix), |b| {
         b.iter(|| {
-            decrypt_tally(vote_plan_status, &members);
+            members.members()[0].produce_decrypt_shares(&vote_plan_status);
         })
     });
 
-    let shares = decrypt_tally(vote_plan_status, &members);
+    let decrypt_shares: Vec<_> = members
+        .members()
+        .iter()
+        // We use only one proposal in this benchmark so here's a bit of a dirty hack.
+        .map(|member| member.produce_decrypt_shares(&vote_plan_status).into_iter())
+        .flatten()
+        .collect();
 
-    let decrypted_tally = VoteTally::new_private(vote_plan.to_id(), shares);
+    let decrypt_tally = || {
+        let total_votes = voters_count as u64 * voting_power_per_voter;
+        let tally_state = vote_plan_status.proposals[0]
+            .tally
+            .clone()
+            .unwrap()
+            .private_encrypted()
+            .unwrap()
+            .0
+            .state();
+        let table = chain_vote::TallyOptimizationTable::generate_with_balance(total_votes, 1);
+        chain_vote::tally(total_votes, &tally_state, &decrypt_shares, &table).unwrap()
+    };
+
+    c.bench_function(
+        &format!("decrypt_private_tally{}", bench_name_suffix),
+        |b| b.iter(decrypt_tally),
+    );
+
+    let tally = decrypt_tally();
+    let shares = DecryptedPrivateTallyProposal {
+        decrypt_shares: decrypt_shares.into_boxed_slice(),
+        tally_result: tally.votes.into_boxed_slice(),
+    };
+
+    let decrypted_tally =
+        VoteTally::new_private(vote_plan.to_id(), DecryptedPrivateTally::new(vec![shares]));
     let fragment = controller
         .fragment_factory()
         .vote_tally(&alice, decrypted_tally);

@@ -127,10 +127,6 @@ impl Proposal {
         self.challenge_id
     }
 
-    pub async fn challenge_type(&self) -> String {
-        self.challenge_type.to_string()
-    }
-
     pub async fn proposal_solution(&self) -> Option<String> {
         self.proposal_solution.clone()
     }

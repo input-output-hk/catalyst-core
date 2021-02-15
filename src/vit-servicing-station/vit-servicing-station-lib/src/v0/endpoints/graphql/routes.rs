@@ -152,7 +152,6 @@ mod test {
                 chainCommitteeEndTime,
                 fundId,
                 challengeId
-                challengeType,
                 proposalSolution,
                 proposalBrief,
                 proposalImportance,
@@ -194,7 +193,6 @@ mod test {
             chainCommitteeEndTime,
             fundId,
             challengeId,
-            challengeType,
             proposalSolution,
             proposalBrief,
             proposalImportance,

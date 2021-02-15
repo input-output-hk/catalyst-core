@@ -1,7 +1,7 @@
 use askama::Template;
 
 #[derive(Template)]
-#[template(path = "proposal_by_id.graphql.txt")]
+#[template(path = "proposal_by_id.txt")]
 pub struct ProposalById {
     pub id: u32,
 }

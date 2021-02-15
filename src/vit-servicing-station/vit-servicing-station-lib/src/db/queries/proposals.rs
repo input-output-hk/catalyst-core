@@ -1,5 +1,6 @@
+use crate::db::models::proposals::{FullProposalInfo, Proposal};
+use crate::db::schema::proposals;
 use crate::db::{
-    models::proposals::Proposal, schema::proposals,
     views_schema::full_proposals_info::dsl as full_proposal_dsl,
     views_schema::full_proposals_info::dsl::full_proposals_info, DBConnection, DBConnectionPool,
 };
@@ -7,11 +8,13 @@ use crate::v0::errors::HandleError;
 use diesel::query_dsl::filter_dsl::FilterDsl;
 use diesel::{ExpressionMethods, Insertable, QueryResult, RunQueryDsl};
 
-pub async fn query_all_proposals(pool: &DBConnectionPool) -> Result<Vec<Proposal>, HandleError> {
+pub async fn query_all_proposals(
+    pool: &DBConnectionPool,
+) -> Result<Vec<FullProposalInfo>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         full_proposals_info
-            .load::<Proposal>(&db_conn)
+            .load::<FullProposalInfo>(&db_conn)
             .map_err(|_e| HandleError::NotFound("proposals".to_string()))
     })
     .await
@@ -21,12 +24,12 @@ pub async fn query_all_proposals(pool: &DBConnectionPool) -> Result<Vec<Proposal
 pub async fn query_proposal_by_id(
     id: i32,
     pool: &DBConnectionPool,
-) -> Result<Proposal, HandleError> {
+) -> Result<FullProposalInfo, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         full_proposals_info
             .filter(full_proposal_dsl::id.eq(id))
-            .first::<Proposal>(&db_conn)
+            .first::<FullProposalInfo>(&db_conn)
             .map_err(|_e| HandleError::NotFound(format!("proposal with id {}", id)))
     })
     .await

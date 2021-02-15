@@ -81,7 +81,6 @@ impl CsvConverter {
             "chain_vote_end_time",
             "chain_committe",
             "challenge_id",
-            "challenge_type",
             "proposal_solution",
             "proposal_brief",
             "proposal_importance",
@@ -156,7 +155,6 @@ fn convert_proposal(proposal: &Proposal) -> Vec<String> {
         unix_timestamp_to_datetime(proposal.chain_vote_end_time).to_rfc3339(),
         unix_timestamp_to_datetime(proposal.chain_committee_end_time).to_rfc3339(),
         proposal.challenge_id.to_string(),
-        proposal.challenge_type.to_string(),
         proposal
             .proposal_solution
             .clone()

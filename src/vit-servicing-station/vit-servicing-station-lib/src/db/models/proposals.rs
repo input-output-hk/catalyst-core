@@ -109,8 +109,6 @@ pub struct Proposal {
     pub fund_id: i32,
     #[serde(alias = "challengeId")]
     pub challenge_id: i32,
-    #[serde(alias = "challengeType")]
-    pub challenge_type: ChallengeType,
     #[serde(
         alias = "proposalSolution",
         default,
@@ -143,73 +141,81 @@ pub struct Proposal {
     pub proposal_metrics: Option<String>,
 }
 
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
+pub struct FullProposalInfo {
+    #[serde(flatten)]
+    pub proposal: Proposal,
+    #[serde(alias = "challengeType")]
+    pub challenge_type: ChallengeType,
+}
+
+type FullProposalsInfoRow = (
+    // 0 ->id
+    i32,
+    // 1 -> proposal_id
+    String,
+    // 2-> category_name
+    String,
+    // 3 -> proposal_title
+    String,
+    // 4 -> proposal_summary
+    String,
+    // 5 -> proposal_public_key
+    String,
+    // 6 -> proposal_funds
+    i64,
+    // 7 -> proposal_url
+    String,
+    // 8 -> proposal_files_url,
+    String,
+    // 9 -> proposal_impact_score
+    i64,
+    // 10 -> proposer_name
+    String,
+    // 11 -> proposer_contact
+    String,
+    // 12 -> proposer_url
+    String,
+    // 13 -> proposer_relevant_experience
+    String,
+    // 14 -> chain_proposal_id
+    Vec<u8>,
+    // 15 -> chain_proposal_index
+    i64,
+    // 16 -> chain_vote_options
+    String,
+    // 17 -> chain_voteplan_id
+    String,
+    // 18 -> chain_vote_starttime
+    i64,
+    // 19 -> chain_vote_endtime
+    i64,
+    // 20 -> chain_committee_end_time
+    i64,
+    // 21 -> chain_voteplan_payload
+    String,
+    // 22 -> chain_vote_encryption_key
+    String,
+    // 23 -> fund_id
+    i32,
+    // 24 -> challenge_id
+    i32,
+    // 25 -> challenge_type
+    String,
+    // 26 -> proposal_solution
+    Option<String>,
+    // 27 -> proposal_brief
+    Option<String>,
+    // 28 -> proposal_importance
+    Option<String>,
+    // 29 -> proposal_goal
+    Option<String>,
+    // 30 -> proposal_metrics
+    Option<String>,
+);
+
 impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
-    // The row is the row, for now it cannot be any other type, may change when the DB schema changes
-    #[allow(clippy::type_complexity)]
-    type Row = (
-        // 0 ->id
-        i32,
-        // 1 -> proposal_id
-        String,
-        // 2-> category_name
-        String,
-        // 3 -> proposal_title
-        String,
-        // 4 -> proposal_summary
-        String,
-        // 6 -> proposal_public_key
-        String,
-        // 7 -> proposal_funds
-        i64,
-        // 8 -> proposal_url
-        String,
-        // 9 -> proposal_files_url,
-        String,
-        // 10 -> proposal_impact_score
-        i64,
-        // 11 -> proposer_name
-        String,
-        // 12 -> proposer_contact
-        String,
-        // 13 -> proposer_url
-        String,
-        // 14 -> proposer_relevant_experience
-        String,
-        // 15 -> chain_proposal_id
-        Vec<u8>,
-        // 16 -> chain_proposal_index
-        i64,
-        // 17 -> chain_vote_options
-        String,
-        // 18 -> chain_voteplan_id
-        String,
-        // 19 -> chain_vote_starttime
-        i64,
-        // 20 -> chain_vote_endtime
-        i64,
-        // 21 -> chain_committee_end_time
-        i64,
-        // 22 -> chain_voteplan_payload
-        String,
-        // 23 -> chain_vote_encryption_key
-        String,
-        // 24 -> fund_id
-        i32,
-        // 25 -> challenge_id
-        i32,
-        // 26 -> challenge_type
-        String,
-        // 27 -> proposal_solution
-        Option<String>,
-        // 28 -> proposal_brief
-        Option<String>,
-        // 29 -> proposal_importance
-        Option<String>,
-        // 30 -> proposal_goal
-        Option<String>,
-        // 31 -> proposal_metrics
-        Option<String>,
-    );
+    type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
         Proposal {
@@ -244,12 +250,23 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_vote_encryption_key: row.22,
             fund_id: row.23,
             challenge_id: row.24,
-            challenge_type: row.25.parse().unwrap(),
             proposal_solution: row.26,
             proposal_brief: row.27,
             proposal_importance: row.28,
             proposal_goal: row.29,
             proposal_metrics: row.30,
+        }
+    }
+}
+
+impl Queryable<full_proposals_info::SqlType, DB> for FullProposalInfo {
+    type Row = FullProposalsInfoRow;
+
+    fn build(row: Self::Row) -> Self {
+        let challenge_type = row.25.parse().unwrap();
+        FullProposalInfo {
+            proposal: Proposal::build(row),
+            challenge_type,
         }
     }
 }
@@ -359,7 +376,6 @@ pub mod test {
             chain_vote_encryption_key: "none".to_string(),
             fund_id: 1,
             challenge_id: CHALLENGE_ID,
-            challenge_type: ChallengeType::Simple,
             proposal_solution: None,
             proposal_brief: Some("A for ADA".to_string()),
             proposal_importance: Some("We need to get them while they're young.".to_string()),

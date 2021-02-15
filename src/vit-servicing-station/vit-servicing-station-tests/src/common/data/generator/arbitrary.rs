@@ -222,7 +222,6 @@ impl ArbitraryGenerator {
             chain_vote_encryption_key: voteplan.chain_vote_encryption_key.clone(),
             fund_id: fund.id,
             challenge_id,
-            challenge_type: proposal_challenge_info.challenge_type,
             proposal_solution: proposal_challenge_info.proposal_solution,
             proposal_brief: proposal_challenge_info.proposal_brief,
             proposal_importance: proposal_challenge_info.proposal_importance,

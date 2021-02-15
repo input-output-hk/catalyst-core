@@ -22,7 +22,6 @@
                 proposerUrl,
                 proposerRelevantExperience
             },
-            challengeType,
             chainProposalId,
             chainProposalIndex,
             chainVoteOptions,
@@ -34,7 +33,6 @@
             chainCommitteeEndTime,
             fundId,
             challengeId,
-            challengeType,
             proposalSolution,
             proposalBrief,
             proposalImportance,

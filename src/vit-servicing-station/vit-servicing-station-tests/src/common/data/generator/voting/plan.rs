@@ -177,8 +177,6 @@ impl ValidVotePlanGenerator {
                 challenge.rewards_total += proposal_funds;
             }
 
-            let impact_score = proposal_template.proposal_impact_score_as_integer();
-
             let proposal = Proposal {
                 internal_id: proposal_template.internal_id.parse().unwrap(),
                 proposal_id: proposal.id().to_string(),
@@ -192,7 +190,10 @@ impl ValidVotePlanGenerator {
                 proposal_public_key: generator.hash(),
                 proposal_funds,
                 proposal_url: proposal_template.proposal_url.clone(),
-                proposal_impact_score: impact_score,
+                proposal_impact_score: proposal_template
+                    .proposal_impact_score
+                    .parse()
+                    .unwrap_or_else(|_| panic!("cannot convert impact score to integer")),
                 proposal_files_url: proposal_template.files_url,
                 proposer: Proposer {
                     proposer_name: proposal_template.proposer_name,

@@ -12,7 +12,7 @@
           pname = "vit-servicing-station";
           version = "HEAD";
           src = ./.;
-          cargoSha256 = "sha256-U7wtPdIGuwbF2GEanVi2zUDz+gFM26ttT3OB7vQ3Ar4=";
+          cargoSha256 = "sha256-Y8bh+m3AzkCzL3ZfFDUXjnX6lFiR4f0xHVGDiojjbCw=";
           nativeBuildInputs = [ pkg-config protobuf rustfmt ];
           buildInputs = [ openssl ];
           configurePhase =''

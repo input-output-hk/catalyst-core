@@ -1204,7 +1204,6 @@ impl Ledger {
         bad: &TransactionBindingAuthData<'a>,
         sig: certificate::PoolSignature,
     ) -> Result<Self, Error> {
-        check::valid_pool_retirement_certificate(auth_cert)?;
         check::valid_pool_signature(&sig)?;
 
         let reg = self.delegation.stake_pool_get(&auth_cert.pool_id)?;

@@ -110,28 +110,27 @@ impl LeadershipConsensus {
     }
 
     #[inline]
-    fn is_leader(&self, leader: &Leader, date: BlockDate) -> Result<LeaderOutput, Error> {
+    fn is_leader(&self, leader: &Leader, date: BlockDate) -> LeaderOutput {
         match self {
             LeadershipConsensus::Bft(bft) => match leader.bft_leader {
                 Some(ref bft_leader) => {
-                    let bft_leader_id = bft.get_leader_at(date)?;
+                    let bft_leader_id = bft.get_leader_at(date);
                     if bft_leader_id == bft_leader.sig_key.to_public().into() {
-                        Ok(LeaderOutput::Bft(bft_leader_id))
+                        LeaderOutput::Bft(bft_leader_id)
                     } else {
-                        Ok(LeaderOutput::None)
+                        LeaderOutput::None
                     }
                 }
-                None => Ok(LeaderOutput::None),
+                None => LeaderOutput::None,
             },
             LeadershipConsensus::GenesisPraos(genesis_praos) => match leader.genesis_leader {
-                None => Ok(LeaderOutput::None),
+                None => LeaderOutput::None,
                 Some(ref gen_leader) => {
                     match genesis_praos.leader(&gen_leader.node_id, &gen_leader.vrf_key, date) {
-                        Ok(Some(witness)) => Ok(LeaderOutput::GenesisPraos(
-                            gen_leader.node_id.clone(),
-                            witness,
-                        )),
-                        _ => Ok(LeaderOutput::None),
+                        Ok(Some(witness)) => {
+                            LeaderOutput::GenesisPraos(gen_leader.node_id.clone(), witness)
+                        }
+                        _ => LeaderOutput::None,
                     }
                 }
             },
@@ -211,11 +210,7 @@ impl Leadership {
 
     /// Test that the given leader object is able to create a valid block for the leadership
     /// at a given date.
-    pub fn is_leader_for_date(
-        &self,
-        leader: &Leader,
-        date: BlockDate,
-    ) -> Result<LeaderOutput, Error> {
+    pub fn is_leader_for_date(&self, leader: &Leader, date: BlockDate) -> LeaderOutput {
         self.inner.is_leader(leader, date)
     }
 }

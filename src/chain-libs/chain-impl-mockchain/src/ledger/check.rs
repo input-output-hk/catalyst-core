@@ -134,13 +134,8 @@ pub(super) fn valid_pool_signature(ps: &certificate::PoolSignature) -> LedgerChe
     }
 }
 
-pub(super) fn valid_pool_retirement_certificate(_: &certificate::PoolRetirement) -> LedgerCheck {
-    Ok(())
-}
-
 pub(super) fn valid_pool_update_certificate(reg: &certificate::PoolUpdate) -> LedgerCheck {
-    valid_pool_registration_certificate(&reg.new_pool_reg)?;
-    Ok(())
+    valid_pool_registration_certificate(&reg.new_pool_reg)
 }
 
 #[derive(Debug, Error, Clone, PartialEq, Eq)]

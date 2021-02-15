@@ -44,23 +44,20 @@ impl LeadershipData {
 
     pub(crate) fn verify(&self, block_header: &Header) -> Verification {
         match &block_header.proof() {
-            Proof::Bft(bft_proof) => match self.get_leader_at(block_header.block_date()) {
-                Ok(leader_at) => {
-                    if bft_proof.leader_id != leader_at {
-                        Verification::Failure(Error::new(ErrorKind::InvalidLeader))
-                    } else {
-                        Verification::Success
-                    }
+            Proof::Bft(bft_proof) => {
+                if bft_proof.leader_id != self.get_leader_at(block_header.block_date()) {
+                    Verification::Failure(Error::new(ErrorKind::InvalidLeader))
+                } else {
+                    Verification::Success
                 }
-                Err(error) => Verification::Failure(error),
-            },
+            }
             _ => Verification::Failure(Error::new(ErrorKind::InvalidLeaderSignature)),
         }
     }
 
     #[inline]
-    pub(crate) fn get_leader_at(&self, date: BlockDate) -> Result<BftLeaderId, Error> {
+    pub(crate) fn get_leader_at(&self, date: BlockDate) -> BftLeaderId {
         let BftRoundRobinIndex(ofs) = self.offset(date.slot_id as u64);
-        Ok(self.leaders[ofs as usize].clone())
+        self.leaders[ofs as usize].clone()
     }
 }

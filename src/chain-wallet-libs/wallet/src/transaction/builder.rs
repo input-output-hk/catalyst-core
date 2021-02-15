@@ -66,7 +66,10 @@ impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
     #[inline]
     pub fn estimate_fee_with(&self, extra_inputs: u8, extra_outputs: u8) -> Value {
         self.settings.parameters.fees.calculate(
-            Payload::to_certificate_slice(self.payload.payload_data().borrow()),
+            self.payload
+                .payload_data()
+                .borrow()
+                .into_certificate_slice(),
             self.inputs.len() as u8 + extra_inputs,
             self.outputs.len() as u8 + extra_outputs,
         )

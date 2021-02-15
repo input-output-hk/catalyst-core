@@ -29,7 +29,7 @@ pub enum Initial {
     },
 }
 
-pub const GRACE_VALUE: u64 = 100;
+pub const GRACE_VALUE: u64 = 1;
 
 impl Default for Initials {
     fn default() -> Self {

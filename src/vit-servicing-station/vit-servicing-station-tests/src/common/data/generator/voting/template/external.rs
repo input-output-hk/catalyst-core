@@ -1,5 +1,4 @@
 use super::{ChallengeTemplate, FundTemplate, ProposalTemplate, ValidVotingTemplateGenerator};
-use crate::common::data::generator::voting::template::ProposalChallengeInfoTemplate;
 use std::{collections::LinkedList, path::PathBuf};
 use thiserror::Error;
 

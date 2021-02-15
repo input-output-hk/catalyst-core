@@ -203,7 +203,6 @@ jobs:
             --manifest-path iapyx/Cargo.toml
             --bin iapyx
             --verbose
-            --locked
             --release
             --target ${{ matrix.config.target }}
 

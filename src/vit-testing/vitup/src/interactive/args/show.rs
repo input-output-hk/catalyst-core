@@ -33,7 +33,7 @@ pub enum Show {
 impl Show {
     pub fn exec(&self, command: &mut VitInteractiveCommandExec) -> Result<()> {
         match self {
-            Show::Status(status) => status.exec(command),
+            Show::Status(status) => status.exec(command)?,
             Show::Stats(stats) => stats.exec(command.controller_mut()),
             Show::FragmentCount(fragment_counts) => fragment_counts.exec(command.controller_mut()),
             Show::Fragments(fragments) => fragments.exec(command.controller_mut()),
@@ -41,8 +41,9 @@ impl Show {
             Show::PeerStats(peer_stats) => peer_stats.exec(command.controller_mut()),
             Show::Logs(logs) => logs.exec(command.controller_mut()),
             Show::VotePlans(active_vote_plan) => active_vote_plan.exec(command.controller_mut()),
-            Show::VoteTime(vote_stauts) => vote_stauts.exec(command),
-        }
+            Show::VoteTime(vote_status) => vote_status.exec(command)?,
+        };
+        Ok(())
     }
 }
 
@@ -58,7 +59,7 @@ impl ShowStatus {
             alias: self.alias.clone(),
         };
 
-        basic_show_status.exec(command.controller_mut())?;
+        basic_show_status.exec(command.controller_mut());
 
         for vit_station in command.vit_controller.vit_stations() {
             println!("{} is up", vit_station.alias());

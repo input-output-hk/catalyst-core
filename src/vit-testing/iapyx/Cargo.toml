@@ -8,9 +8,9 @@ edition = "2018"
 
 [dependencies]
 bech32 = "0.7"
-wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "adjust_payload_data" }
-wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "adjust_payload_data" }
-hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "adjust_payload_data" }
+wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 bip39 = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

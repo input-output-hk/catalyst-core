@@ -367,16 +367,7 @@ checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
 [[package]]
 name = "bip39"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data#2b01e5cea7c4327388cc65e29b23b538db12faba"
-dependencies = [
- "cryptoxide 0.3.2",
- "thiserror",
-]
-
-[[package]]
-name = "bip39"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#456bdff178d45ad55c1d74db77db59a67500c25c"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#ef877f6e239dcf920bdccf94149a969079fafe5d"
 dependencies = [
  "cryptoxide 0.3.2",
  "thiserror",
@@ -704,7 +695,7 @@ dependencies = [
 [[package]]
 name = "chain-path-derivation"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data#2b01e5cea7c4327388cc65e29b23b538db12faba"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#ef877f6e239dcf920bdccf94149a969079fafe5d"
 dependencies = [
  "thiserror",
 ]
@@ -1849,9 +1840,9 @@ dependencies = [
 [[package]]
 name = "hdkeygen"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data#2b01e5cea7c4327388cc65e29b23b538db12faba"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#ef877f6e239dcf920bdccf94149a969079fafe5d"
 dependencies = [
- "bip39 0.1.0 (git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data)",
+ "bip39",
  "cardano-legacy-address",
  "cbor_event",
  "chain-addr",
@@ -2064,7 +2055,7 @@ name = "iapyx"
 version = "0.2.1"
 dependencies = [
  "bech32",
- "bip39 0.1.0 (git+https://github.com/input-output-hk/chain-wallet-libs.git)",
+ "bip39",
  "chain-addr",
  "chain-core",
  "chain-crypto",
@@ -2272,7 +2263,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-lib"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#43b626771080c5f32808878d8c3be5cf6250d7d1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#6152df4f6c9d1a9fee3a336f0a1dd9a7aba1f386"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2300,7 +2291,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#43b626771080c5f32808878d8c3be5cf6250d7d1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#6152df4f6c9d1a9fee3a336f0a1dd9a7aba1f386"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2327,7 +2318,7 @@ dependencies = [
  "rand_chacha 0.2.2",
  "rand_core 0.5.1",
  "regex 1.4.3",
- "reqwest 0.11.0",
+ "reqwest 0.10.10",
  "serde",
  "serde_derive",
  "serde_json",
@@ -2342,7 +2333,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.10.0-alpha.2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#43b626771080c5f32808878d8c3be5cf6250d7d1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=expose_linear_fee#6152df4f6c9d1a9fee3a336f0a1dd9a7aba1f386"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -2378,7 +2369,7 @@ dependencies = [
  "rand_chacha 0.2.2",
  "rand_core 0.5.1",
  "regex 1.4.3",
- "reqwest 0.11.0",
+ "reqwest 0.10.10",
  "semver 0.11.0",
  "serde",
  "serde_derive",
@@ -2387,7 +2378,7 @@ dependencies = [
  "slog",
  "slog-async",
  "slog-json",
- "symmetric-cipher 0.5.0 (git+https://github.com/input-output-hk/chain-wallet-libs.git)",
+ "symmetric-cipher",
  "sysinfo 0.15.9",
  "tar",
  "thiserror",
@@ -3653,6 +3644,7 @@ dependencies = [
  "pin-project-lite 0.2.4",
  "rustls 0.18.1",
  "serde",
+ "serde_json",
  "serde_urlencoded 0.7.0",
  "tokio 0.2.25",
  "tokio-rustls 0.14.1",
@@ -3689,7 +3681,6 @@ dependencies = [
  "pin-project-lite 0.2.4",
  "rustls 0.19.0",
  "serde",
- "serde_json",
  "serde_urlencoded 0.7.0",
  "tokio 1.2.0",
  "tokio-rustls 0.22.0",
@@ -4199,17 +4190,7 @@ checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
 [[package]]
 name = "symmetric-cipher"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data#2b01e5cea7c4327388cc65e29b23b538db12faba"
-dependencies = [
- "cryptoxide 0.3.2",
- "rand 0.7.3",
- "thiserror",
-]
-
-[[package]]
-name = "symmetric-cipher"
-version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#456bdff178d45ad55c1d74db77db59a67500c25c"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#ef877f6e239dcf920bdccf94149a969079fafe5d"
 dependencies = [
  "cryptoxide 0.3.2",
  "rand 0.7.3",
@@ -5174,9 +5155,9 @@ dependencies = [
 [[package]]
 name = "wallet"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data#2b01e5cea7c4327388cc65e29b23b538db12faba"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#ef877f6e239dcf920bdccf94149a969079fafe5d"
 dependencies = [
- "bip39 0.1.0 (git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data)",
+ "bip39",
  "cardano-legacy-address",
  "cbor_event",
  "chain-addr",
@@ -5196,10 +5177,10 @@ dependencies = [
 [[package]]
 name = "wallet-core"
 version = "0.6.0-pre1"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data#2b01e5cea7c4327388cc65e29b23b538db12faba"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#ef877f6e239dcf920bdccf94149a969079fafe5d"
 dependencies = [
  "bech32",
- "bip39 0.1.0 (git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data)",
+ "bip39",
  "chain-addr",
  "chain-core",
  "chain-crypto",
@@ -5209,7 +5190,7 @@ dependencies = [
  "chain-vote",
  "hdkeygen",
  "rand 0.7.3",
- "symmetric-cipher 0.5.0 (git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=adjust_payload_data)",
+ "symmetric-cipher",
  "thiserror",
  "wallet",
 ]

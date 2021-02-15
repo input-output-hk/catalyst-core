@@ -42,16 +42,6 @@ pub struct ProposalTemplate {
     pub proposal_metrics: Option<String>,
 }
 
-impl ProposalTemplate {
-    pub fn proposal_impact_score_as_integer(&self) -> i64 {
-        (self.proposal_impact_score_as_float() * 100f64) as i64
-    }
-
-    pub fn proposal_impact_score_as_float(&self) -> f64 {
-        serde_json::from_str(&self.proposal_impact_score).unwrap()
-    }
-}
-
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ChallengeTemplate {
     pub id: String,

@@ -85,7 +85,7 @@ pub mod test {
         const REWARDS_TOTAL: i64 = 100500;
         Challenge {
             id: CHALLENGE_ID,
-            challenge_type: ChallengeType::Simple,
+            challenge_type: ChallengeType::CommunityChoice,
             title: "challenge title".to_string(),
             description: "challenge description".to_string(),
             rewards_total: REWARDS_TOTAL,

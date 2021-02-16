@@ -75,7 +75,7 @@ impl QuickVitBackendSettingsBuilder {
     }
 
     pub fn initials(&mut self, initials: Initials) -> &mut Self {
-        self.parameters.initials = initials;
+        self.parameters.initials = Some(initials);
         self
     }
 
@@ -325,17 +325,19 @@ impl QuickVitBackendSettingsBuilder {
             wallet.save_qr_code(png.path(), &pin_to_bytes(&pin));
         }
 
-        let zero_funds_initial_counts = self.parameters.initials.zero_funds_count();
+        if let Some(initials) = &self.parameters.initials {
+            let zero_funds_initial_counts = initials.zero_funds_count();
 
-        if zero_funds_initial_counts > 0 {
-            let zero_funds_pin = self.parameters.initials.zero_funds_pin().unwrap();
+            if zero_funds_initial_counts > 0 {
+                let zero_funds_pin = initials.zero_funds_pin().unwrap();
 
-            for i in 1..zero_funds_initial_counts + 1 {
-                let sk = SecretKey::generate(rand::thread_rng());
+                for i in 1..zero_funds_initial_counts + 1 {
+                    let sk = SecretKey::generate(rand::thread_rng());
                 let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
                 let img = qr.to_img();
                 let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
-                img.save(png.path())?;
+                    img.save(png.path())?;
+                }
             }
         }
         Ok(())
@@ -393,7 +395,7 @@ impl QuickVitBackendSettingsBuilder {
 
         let (vit_controller, controller) = builder.build_controllers(context)?;
 
-        self.dump_qrs(&controller, &initials, &child)?;
+        self.dump_qrs(&controller, &templates, &child)?;
 
         controller.settings().dump_private_vote_keys(child);
 

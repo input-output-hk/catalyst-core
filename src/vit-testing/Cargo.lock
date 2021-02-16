@@ -5009,7 +5009,7 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#99ac12e6ee9d8682f65c82007a5948cd922895fc"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#ec57b398cb21d16b5a97862c27e5e7d805083996"
 dependencies = [
  "async-graphql",
  "async-graphql-warp",
@@ -5037,7 +5037,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#99ac12e6ee9d8682f65c82007a5948cd922895fc"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#ec57b398cb21d16b5a97862c27e5e7d805083996"
 dependencies = [
  "askama",
  "askama_shared",

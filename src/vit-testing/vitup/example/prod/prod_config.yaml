@@ -1,0 +1,24 @@
+{
+  "vote_start": 17,
+  "vote_tally": 36,
+  "tally_end": 45,
+  "next_vote_start_time": "2021-03-31T20:00:00",
+  "proposals": 152,
+  "challenges": 3,
+  "slot_duration": 20,
+  "slots_per_epoch": 4320,
+  "voting_power": 2950,
+  "fund_name": "Fund3",
+  "private": false,
+  "fund_id":2,
+  "linear_fees": {
+    "constant": 0,
+    "coefficient": 0,
+    "certificate": 0
+  },
+  "consensus_leader_ids": [
+    "ed25519_pk1qylzvajzrkdlmrmq943vnefew6wtqcd59lm033fsc9spm0qcp7hqt7vdqa",
+    "ed25519_pk14fwxgqy0thup60equ06wmdhg87ut8vjumcr59lgeg23mjjgp50dst60xvu",
+    "ed25519_pk1gxkygz77apau05dpwljv0knzukjsvtwcn0zcf8h5ge6zwakdg0uszg7jqu"
+  ]
+}

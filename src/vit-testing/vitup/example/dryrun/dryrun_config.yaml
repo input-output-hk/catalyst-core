@@ -1,26 +1,16 @@
 {
-  "initials": [
-    {
-      "above_threshold": 10,
-      "pin": "1234"
-    },
-    {
-      "name": "mikhail",
-      "pin": "1234",
-      "funds": 10000
-    }
-  ],
-  "vote_start": 9,
-  "vote_tally": 87,
-  "tally_end": 93,
-  "proposals": 134,
+  "vote_start": 17,
+  "vote_tally": 36,
+  "tally_end": 45,
+  "next_vote_start_time": "2021-03-31T20:00:00",
+  "proposals": 152,
   "challenges": 3,
   "slot_duration": 20,
-  "slots_per_epoch": 45,
-  "voting_power": 8000,
-  "fund_name": "Fund 3",
+  "slots_per_epoch": 4320,
+  "voting_power": 2950,
+  "fund_name": "Fund3",
   "private": false,
-  "fund_id":20,
+  "fund_id":2,
   "linear_fees": {
     "constant": 0,
     "coefficient": 0,

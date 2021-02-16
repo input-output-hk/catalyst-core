@@ -36,7 +36,7 @@ pub const WALLET_NODE: &str = "Wallet_Node";
 #[derive(Clone)]
 pub struct QuickVitBackendSettingsBuilder {
     parameters: VitStartParameters,
-    committe_wallet_name: String,
+    committe_wallet_names: Vec<String>,
     title: String,
 }
 
@@ -53,7 +53,11 @@ impl QuickVitBackendSettingsBuilder {
         Self {
             parameters: Default::default(),
             title: "vit_backend".to_owned(),
-            committe_wallet_name: "committee".to_owned(),
+            committe_wallet_names: vec![
+                "committee_1".to_owned(),
+                "committee_2".to_owned(),
+                "committee_3".to_owned(),
+            ],
         }
     }
 
@@ -217,7 +221,7 @@ impl QuickVitBackendSettingsBuilder {
             let mut committee_wallet = settings
                 .network_settings
                 .wallets
-                .get(&self.committe_wallet_name)
+                .get(self.committe_wallet_names.first().unwrap())
                 .unwrap()
                 .clone();
             let identifier = committee_wallet.identifier();
@@ -273,7 +277,7 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn build_vote_plan(&mut self) -> VotePlanDef {
         let mut vote_plan_builder = VotePlanDefBuilder::new(&self.fund_name());
-        vote_plan_builder.owner(&self.committe_wallet_name);
+        vote_plan_builder.owner(&self.committe_wallet_names.first().unwrap());
 
         if self.parameters.private {
             vote_plan_builder.payload_type(PayloadType::Private);
@@ -333,9 +337,9 @@ impl QuickVitBackendSettingsBuilder {
 
                 for i in 1..zero_funds_initial_counts + 1 {
                     let sk = SecretKey::generate(rand::thread_rng());
-                let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
-                let img = qr.to_img();
-                let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
+                    let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
+                    let img = qr.to_img();
+                    let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
                     img.save(png.path())?;
                 }
             }
@@ -369,24 +373,26 @@ impl QuickVitBackendSettingsBuilder {
         blockchain.set_linear_fee(LinearFee::new(0, 0, 0));
         blockchain.set_discrimination(chain_addr::Discrimination::Production);
 
-        let committe_wallet = WalletTemplate::new_account(
-            &self.committe_wallet_name,
-            Value(1_000_000),
-            blockchain.discrimination(),
-        );
-        blockchain.add_wallet(committe_wallet);
+        for committe_wallet_name in &self.committe_wallet_names {
+            let committe_wallet = WalletTemplate::new_account(
+                committe_wallet_name,
+                Value(1_000_000),
+                blockchain.discrimination(),
+            );
+            blockchain.add_wallet(committe_wallet);
+            blockchain.add_committee(committe_wallet_name);
+        }
 
         let child = context.child_directory(self.title());
 
-        let initials = self
-            .parameters
-            .initials
-            .templates(self.parameters.voting_power, blockchain.discrimination());
-        for (wallet, _) in initials.iter().filter(|(x, _)| *x.value() > Value::zero()) {
-            blockchain.add_wallet(wallet.clone());
+        let templates = HashMap::new();
+        if let Some(initials) = &self.parameters.initials {
+            let templates =
+                initials.templates(self.parameters.voting_power, blockchain.discrimination());
+            for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
+                blockchain.add_wallet(wallet.clone());
+            }
         }
-
-        blockchain.add_committee(&self.committe_wallet_name);
 
         let mut vote_plan_def = self.build_vote_plan();
         blockchain.add_vote_plan(vote_plan_def.clone());

@@ -218,7 +218,6 @@ impl ValidVotePlanGenerator {
                     .unwrap_or_else(|| challenge.id.to_string())
                     .parse()
                     .unwrap(),
-                challenge_type: proposal_template.challenge_type,
                 proposal_solution: proposal_template.proposal_solution,
                 proposal_brief: proposal_template.proposal_brief,
                 proposal_importance: proposal_template.proposal_importance,

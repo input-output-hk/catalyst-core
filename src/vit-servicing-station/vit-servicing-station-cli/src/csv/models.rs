@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use vit_servicing_station_lib::db::models::proposals;
-use vit_servicing_station_lib::db::models::proposals::{Category, ChallengeType, Proposer};
+use vit_servicing_station_lib::db::models::proposals::{Category, Proposer};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
 #[derive(Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -137,8 +137,6 @@ impl From<Proposal> for proposals::Proposal {
             chain_vote_encryption_key: proposal.chain_vote_encryption_key,
             fund_id: proposal.fund_id,
             challenge_id: proposal.challenge_id,
-            // this is hardcoded here, it is not used since the value will not be saved into DB
-            challenge_type: ChallengeType::Simple,
             proposal_solution: proposal.proposal_solution,
             proposal_brief: proposal.proposal_brief,
             proposal_importance: proposal.proposal_importance,

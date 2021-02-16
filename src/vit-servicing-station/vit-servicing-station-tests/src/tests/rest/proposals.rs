@@ -22,7 +22,8 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
     let mut expected_proposal = data::proposals().first().unwrap().clone();
     let expected_challenge = data::challenges().first().unwrap().clone();
     expected_proposal.challenge_id = expected_challenge.id;
-    expected_proposal.challenge_type = expected_challenge.challenge_type.clone();
+    // TODO: challenge_type should be retrieved from the view data
+    // and checked against expected_challenge
     let (hash, token) = data::token();
 
     let db_path = DbBuilder::new()

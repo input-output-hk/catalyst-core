@@ -1,3 +1,4 @@
+use chain_crypto::testing::TestCryptoRng;
 use chain_impl_mockchain::testing::scenario::template::WalletTemplateBuilder;
 use chain_impl_mockchain::{
     certificate::{
@@ -17,7 +18,6 @@ use chain_impl_mockchain::{
 };
 use criterion::{criterion_group, criterion_main, Criterion};
 
-use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;
 
 const ALICE: &str = "Alice";
@@ -57,7 +57,7 @@ fn tally_benchmark(voters_count: usize, voting_power_per_voter: u64, c: &mut Cri
         wallets.push(wallet_builder);
     }
 
-    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    let mut rng = TestCryptoRng::from_seed([0u8; 16]);
     let members = CommitteeMembersManager::new(&mut rng, THRESHOLD, MEMBERS_NO);
 
     let committee_keys = members

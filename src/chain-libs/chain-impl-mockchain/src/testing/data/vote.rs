@@ -1,5 +1,7 @@
+use crate::vote::VotePlanStatus;
 use chain_vote::{
-    committee::MemberSecretKey, MemberCommunicationKey, MemberPublicKey, MemberState, CRS,
+    committee::MemberSecretKey, MemberCommunicationKey, MemberPublicKey, MemberState,
+    TallyDecryptShare, CRS,
 };
 use rand_core::CryptoRng;
 use rand_core::RngCore;
@@ -44,5 +46,20 @@ impl CommitteeMember {
 
     pub fn secret_key(&self) -> &MemberSecretKey {
         self.state.secret_key()
+    }
+
+    pub fn produce_decrypt_shares(
+        &self,
+        vote_plan_status: &VotePlanStatus,
+    ) -> Vec<TallyDecryptShare> {
+        vote_plan_status
+            .proposals
+            .iter()
+            .map(|proposal| {
+                let tally_state = proposal.tally.as_ref().unwrap();
+                let encrypted_tally = tally_state.private_encrypted().unwrap().0.clone();
+                encrypted_tally.finish(self.secret_key()).1
+            })
+            .collect()
     }
 }

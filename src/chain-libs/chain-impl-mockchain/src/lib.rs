@@ -40,7 +40,7 @@ cfg_if! {
     if #[cfg(test)] {
         pub mod testing;
         extern crate ed25519_bip32;
-    } else if #[cfg(feature = "property-test-api")] {
+    } else if #[cfg(any(feature = "property-test-api",feature = "with-bench"))] {
         pub mod testing;
         extern crate ed25519_bip32;
     }

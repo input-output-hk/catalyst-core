@@ -4,7 +4,6 @@ use crate::fragment::Fragment;
 use crate::testing::OldAddressBuilder;
 use crate::{
     accounting::account::DelegationType,
-    ledger::check::CHECK_TX_MAXIMUM_INPUTS,
     ledger::{Block0Error, Error::Block0},
     testing::{
         arbitrary::address::ArbitraryAddressDataValueVec,
@@ -20,7 +19,6 @@ use chain_addr::Discrimination;
 use chain_core::property::Fragment as _;
 use quickcheck::TestResult;
 use quickcheck_macros::quickcheck;
-use std::iter;
 
 #[quickcheck]
 pub fn ledger_verifies_value_of_initial_funds(
@@ -66,20 +64,6 @@ pub fn ledger_fails_to_start_when_utxo_ammount_is_too_big() {
             .unwrap(),
         Block0(Block0Error::UtxoTotalValueTooBig)
     );
-}
-
-#[test]
-#[should_panic]
-pub fn ledger_fails_to_start_when_there_are_more_than_255_initials() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
-    let addresses: Vec<AddressDataValue> =
-        iter::from_fn(|| Some(AddressDataValue::account(Discrimination::Test, Value(10))))
-            .take(CHECK_TX_MAXIMUM_INPUTS as usize + 1)
-            .collect();
-    LedgerBuilder::from_config(config)
-        .faucets(&addresses)
-        .build()
-        .unwrap();
 }
 
 #[test]

@@ -5,6 +5,7 @@ executors:
     docker:
       - image: inputoutput/rust:latest
     working_directory: /home/circleci/build
+    resource_class: xlarge
 
 jobs:
   cargo_fetch:

@@ -14,7 +14,7 @@ pub struct QrCommandArgs {
     #[structopt(long = "root-dir", default_value = "./data")]
     pub output_directory: PathBuf,
 
-    /// how many qr to generate
+    /// how many addresses to generate
     #[structopt(long = "count")]
     pub initials: Option<usize>,
 
@@ -55,10 +55,8 @@ impl QrCommandArgs {
         }
 
         println!("{:?}", quick_setup.parameters().initials);
-        quick_setup.build(context)?;
-
-        self.output_directory.
-
+        let (_vit_controller, mut controller, vit_parameters) = quick_setup.build(context)?;
+       
         println!("Qrs dumped into {:?}", self.output_directory);
         Ok(())
     }

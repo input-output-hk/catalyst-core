@@ -137,11 +137,6 @@ impl From<Proposal> for proposals::Proposal {
             chain_vote_encryption_key: proposal.chain_vote_encryption_key,
             fund_id: proposal.fund_id,
             challenge_id: proposal.challenge_id,
-            proposal_solution: proposal.proposal_solution,
-            proposal_brief: proposal.proposal_brief,
-            proposal_importance: proposal.proposal_importance,
-            proposal_goal: proposal.proposal_goal,
-            proposal_metrics: proposal.proposal_metrics,
         }
     }
 }

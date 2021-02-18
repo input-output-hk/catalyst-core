@@ -30,11 +30,6 @@
         fundId,
         challengeId,
         challengeType,
-        proposalSolution,
-        proposalBrief,
-        proposalImportance,
-        proposalGoal,
-        proposalMetrics
       }
   }"
 }

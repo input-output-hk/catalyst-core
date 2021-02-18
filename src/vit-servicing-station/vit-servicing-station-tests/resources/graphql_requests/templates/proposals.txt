@@ -31,11 +31,7 @@
         chainCommitteeEndTime,
         fundId
         challengeId
-        proposalSolution
-        proposalBrief
-        proposalImportance
-        proposalGoal
-        proposalMetrics
+        challengeType
       }
   }"
 }

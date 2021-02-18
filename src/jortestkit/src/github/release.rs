@@ -1,4 +1,4 @@
-use crate::github::Release;
+use crate::github::{Asset, Release};
 use chrono::{DateTime, Utc};
 use os_info::Type as OsType;
 use serde::{Deserialize, Serialize};
@@ -38,15 +38,11 @@ pub struct ReleaseDto {
 
 impl Into<Release> for ReleaseDto {
     fn into(self) -> Release {
+        let assets = Asset::assets_from_dtos(self.assets);
         Release {
             version: self.tag_name.clone(),
             released_date: self.published_at.into(),
-            releases_per_os: self
-                .assets
-                .iter()
-                .cloned()
-                .map(|x| (x.os_type(), x))
-                .collect(),
+            releases_per_os: assets.iter().cloned().map(|x| (x.os_type(), x)).collect(),
             prerelease: self.prerelease,
         }
     }

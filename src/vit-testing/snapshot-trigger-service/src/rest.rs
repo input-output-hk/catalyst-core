@@ -44,7 +44,7 @@ pub async fn start_rest_server(context: ContextLock) {
     let working_dir = context.lock().unwrap().working_directory().clone();
     let with_context = warp::any().map(move || context.clone());
 
-    let root = warp::path!("job" / ..).boxed();
+    let root = warp::path!("api" / ..).boxed();
 
     let files = {
         let root = warp::path!("files" / ..).boxed();
@@ -58,34 +58,42 @@ pub async fn start_rest_server(context: ContextLock) {
         root.and(get.or(list)).boxed()
     };
 
-    let status = warp::path!("status" / String)
+    let health = warp::path!("health")
         .and(warp::get())
-        .and(with_context.clone())
-        .and_then(job_status_handler)
+        .and_then(health_handler)
         .boxed();
 
-    let new = warp::path!("new")
-        .and(warp::post())
-        .and(with_context.clone())
-        .and_then(job_new_handler)
-        .boxed();
+    let job = {
+        let root = warp::path!("job" / ..).boxed();
 
-    let api_token_filter = if is_token_enabled {
-        warp::header::header(API_TOKEN_HEADER)
+        let new = warp::path!("new")
+            .and(warp::post())
             .and(with_context.clone())
-            .and_then(authorize_token)
-            .and(warp::any())
-            .untuple_one()
-            .boxed()
-    } else {
-        warp::any().boxed()
-    };
+            .and_then(job_new_handler)
+            .boxed();
 
-    let api = root
-        .and(api_token_filter)
-        .and(files.or(status).or(new))
-        .recover(report_invalid)
-        .boxed();
+        let status = warp::path!("status" / String)
+            .and(warp::get())
+            .and(with_context.clone())
+            .and_then(job_status_handler)
+            .boxed();
+
+        let api_token_filter = if is_token_enabled {
+            warp::header::header(API_TOKEN_HEADER)
+                .and(with_context.clone())
+                .and_then(authorize_token)
+                .and(warp::any())
+                .untuple_one()
+                .boxed()
+        } else {
+            warp::any().boxed()
+        };
+
+        root.and(api_token_filter)
+            .and(files.or(status).or(new))
+            .boxed()
+    };
+    let api = root.and(health.or(job)).recover(report_invalid).boxed();
 
     let server = warp::serve(api);
 
@@ -103,6 +111,10 @@ pub async fn job_new_handler(context: ContextLock) -> Result<impl Reply, Rejecti
     let mut context_lock = context.lock().unwrap();
     let id = context_lock.new_run()?;
     Ok(id).map(|r| warp::reply::json(&r))
+}
+
+pub async fn health_handler() -> Result<impl Reply, Rejection> {
+    Ok(warp::reply())
 }
 
 pub async fn files_handler(context: ContextLock) -> Result<impl Reply, Rejection> {

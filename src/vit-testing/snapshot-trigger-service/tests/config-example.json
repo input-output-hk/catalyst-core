@@ -1,0 +1,9 @@
+{
+	"port": 8080,
+	"result_dir": "./data",
+	"command": {
+		"bin": "C:\\tmp\\test\\example.bat",
+		"args": ["{{RESULT_DIR}}\\datetime.txt"]
+	},
+	"token":"gdsDA_nqi8asgw"
+}

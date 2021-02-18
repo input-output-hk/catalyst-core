@@ -1,11 +1,14 @@
 use super::file_lister;
-use super::{authorize_token, State};
+use super::State;
 use crate::config::VitStartParameters;
-use crate::manager::ControlContextLock;
-use crate::manager::API_TOKEN_HEADER;
+use crate::manager::{
+    APIToken, APITokenManager, ControlContext, ControlContextLock, API_TOKEN_HEADER,
+};
 use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
+use jortestkit::web::api_token::TokenError;
 use std::convert::Infallible;
+use std::sync::Arc;
 use warp::http::StatusCode;
 use warp::reject::Reject;
 use warp::{Filter, Rejection, Reply};
@@ -167,4 +170,23 @@ async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
             StatusCode::INTERNAL_SERVER_ERROR,
         ))
     }
+}
+
+pub async fn authorize_token(
+    token: String,
+    context: Arc<std::sync::Mutex<ControlContext>>,
+) -> Result<(), Rejection> {
+    let api_token = APIToken::from_string(token).map_err(warp::reject::custom)?;
+
+    if context.lock().unwrap().api_token().is_none() {
+        return Ok(());
+    }
+
+    let manager = APITokenManager::new(context.lock().unwrap().api_token().unwrap())
+        .map_err(warp::reject::custom)?;
+
+    if !manager.is_token_valid(api_token) {
+        return Err(warp::reject::custom(TokenError::UnauthorizedToken));
+    }
+    Ok(())
 }

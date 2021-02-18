@@ -1,0 +1,25 @@
+{
+	"port": 8080,
+	"result_dir": "./data",
+	"command": {
+		"bin": "nix",
+		"args": [
+			"run",
+			"github:input-output-hk/voting-tools#voting-tools",		
+			"--",		
+			"genesis",
+			"--testnet-magic",
+			"--db",
+			"cexplorer",
+			"--db-user",
+			"cexplorer",	
+			"--db-host",
+			"/var/lib/nomad/alloc",
+			"--out-file",
+			"{{RESULT_DIR}}/genesis.yaml",
+			"--scale",
+			"1000000"
+		],
+	},
+	"token":"RBj0OfHw5jT87A"
+}

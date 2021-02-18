@@ -1,3 +1,4 @@
+use chain_impl_mockchain::block::BlockDate;
 use jormungandr_lib::interfaces::Explorer;
 use jormungandr_scenario_tests::Seed;
 use jormungandr_scenario_tests::{
@@ -5,6 +6,7 @@ use jormungandr_scenario_tests::{
     test::utils,
     Context,
 };
+
 use jormungandr_testing_utils::testing::network_builder::SpawnParams;
 use jormungandr_testing_utils::testing::node::time;
 use jortestkit::prelude::ProgressBarMode;
@@ -185,7 +187,11 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
 
     filip.vote_for(fund1_vote_plan.id(), 0, Vote::NO as u8)?;
 
-    time::wait_for_epoch(1, leader_1.explorer());
+    let target_date = BlockDate {
+        epoch: 2,
+        slot_id: 30,
+    };
+    time::wait_for_date(target_date.into(), leader_1.explorer());
 
     //tally the vote and observe changes
     let rewards_before = leader_1

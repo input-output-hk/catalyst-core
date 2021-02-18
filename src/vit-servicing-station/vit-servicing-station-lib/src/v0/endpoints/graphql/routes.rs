@@ -47,6 +47,7 @@ mod test {
     };
 
     use crate::db::migrations as db_testing;
+    use crate::db::models::proposals::{ChallengeType, Proposal, ProposalChallengeInfo};
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use serde_json::json;
     use warp::{Filter, Rejection, Reply};
@@ -335,10 +336,27 @@ mod test {
 
         let result_proposal = query_result["data"]["proposal"].clone();
         println!("{}", result_proposal);
-        println!("{}", result_proposal.get("internalId").unwrap());
-        let result_proposal: FullProposalInfo = serde_json::from_value(result_proposal).unwrap();
 
-        assert_eq!(proposal, result_proposal);
+        // due to the error in serde where flatten+alias do not work as expected,
+        // https://github.com/serde-rs/serde/issues/1504
+        // we need to manually deserialize the proposal parts
+        let inner_proposal: Proposal = serde_json::from_value(result_proposal.clone()).unwrap();
+
+        let challenge_type: ChallengeType =
+            serde_json::from_value(result_proposal.get("challengeType").unwrap().clone()).unwrap();
+
+        // this is not supported by GraphQL still, but is should be checked once it is implmented
+        // let proposal_challenge_data: ProposalChallengeInfo =
+        //     serde_json::from_value(result_proposal.clone()).unwrap();
+        //
+        // let result_proposal: FullProposalInfo = FullProposalInfo {
+        //     proposal: inner_proposal,
+        //     proposal_challenge_specific_data: proposal_challenge_data,
+        //     challenge_type,
+        // };
+
+        assert_eq!(proposal.proposal, inner_proposal);
+        assert_eq!(proposal.challenge_type, challenge_type);
     }
 
     #[tokio::test]
@@ -363,9 +381,8 @@ mod test {
         }
 
         let result_proposal = query_result["data"]["proposals"].clone();
-        let result_proposal: Vec<FullProposalInfo> =
-            serde_json::from_value(result_proposal).unwrap();
+        let result_proposal: Vec<Proposal> = serde_json::from_value(result_proposal).unwrap();
 
-        assert_eq!(vec![proposal], result_proposal);
+        assert_eq!(vec![proposal.proposal], result_proposal);
     }
 }

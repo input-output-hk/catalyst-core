@@ -1,6 +1,7 @@
 use hyper::StatusCode;
 use reqwest::blocking::Response;
 use thiserror::Error;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::{
     db::models::{funds::Fund, proposals::Proposal},
     v0::api_token::API_TOKEN_HEADER,
@@ -119,7 +120,7 @@ impl RestClient {
             .map_err(RestError::RequestError)
     }
 
-    pub fn proposal(&self, id: &str) -> Result<Proposal, RestError> {
+    pub fn proposal(&self, id: &str) -> Result<FullProposalInfo, RestError> {
         let response = self.proposal_raw(id)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;

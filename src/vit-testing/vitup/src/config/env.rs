@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct VitStartParameters {
-    pub initials: Initials,
+    pub initials: Option<Initials>,
     #[serde(default = "Protocol::http")]
     pub protocol: Protocol,
     pub vote_start: u64,

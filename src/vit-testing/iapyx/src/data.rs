@@ -89,7 +89,7 @@ pub struct Proposal {
     #[serde(alias = "proposalProblem")]
     pub proposal_problem: Option<String>,
     #[serde(alias = "proposalSolution")]
-    pub proposal_solution: String,
+    pub proposal_solution: Option<String>,
     #[serde(alias = "proposalPublicKey")]
     pub proposal_public_key: String,
     #[serde(alias = "proposalFunds")]

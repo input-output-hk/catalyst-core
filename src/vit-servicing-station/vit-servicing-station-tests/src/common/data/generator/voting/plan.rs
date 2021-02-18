@@ -3,6 +3,10 @@ use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chrono::{DateTime, NaiveDateTime, SecondsFormat, Utc};
 use rand::{rngs::OsRng, RngCore};
+use vit_servicing_station_lib::db::models::proposals::{
+    ChallengeType, CommunityChallengeProposal, FullProposalInfo, ProposalChallengeInfo,
+    SimpleChallengeProposal,
+};
 use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
     funds::Fund,
@@ -218,14 +222,13 @@ impl ValidVotePlanGenerator {
                     .unwrap_or_else(|| challenge.id.to_string())
                     .parse()
                     .unwrap(),
-                proposal_solution: proposal_template.proposal_solution,
-                proposal_brief: proposal_template.proposal_brief,
-                proposal_importance: proposal_template.proposal_importance,
-                proposal_goal: proposal_template.proposal_goal,
-                proposal_metrics: proposal_template.proposal_metrics,
             };
 
-            proposals.push(proposal);
+            proposals.push(FullProposalInfo {
+                proposal,
+                proposal_challenge_specific_data: proposal_template.proposal_challenge_info,
+                challenge_type: challenge.challenge_type.clone(),
+            });
         }
 
         let challenges = fund.challenges.clone();

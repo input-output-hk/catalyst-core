@@ -18,12 +18,12 @@ pub fn get_proposals_list_is_not_empty() {
 
 #[test]
 pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
-    let temp_dir = TempDir::new().unwrap();
+    let temp_dir = TempDir::new().unwrap().into_persistent();
     let mut expected_proposal = data::proposals().first().unwrap().clone();
-    let expected_challenge = data::challenges().first().unwrap().clone();
-    expected_proposal.challenge_id = expected_challenge.id;
-    // TODO: challenge_type should be retrieved from the view data
-    // and checked against expected_challenge
+    let mut expected_challenge = data::challenges().first().unwrap().clone();
+    expected_proposal.proposal.challenge_id = expected_challenge.id;
+    expected_challenge.challenge_type = expected_proposal.challenge_type.clone();
+
     let (hash, token) = data::token();
 
     let db_path = DbBuilder::new()
@@ -39,7 +39,8 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
 
     let rest_client = server.rest_client_with_token(&hash);
 
-    let actual_proposal = rest_client.proposal(&expected_proposal.internal_id.to_string())?;
+    let actual_proposal =
+        rest_client.proposal(&expected_proposal.proposal.internal_id.to_string())?;
     assert_eq!(actual_proposal, expected_proposal);
 
     // non existing

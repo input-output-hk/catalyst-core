@@ -23,17 +23,11 @@ use rand::{rngs::OsRng, RngCore};
 use std::{collections::HashMap, iter};
 
 use chrono::DateTime;
+use vit_servicing_station_lib::db::models::proposals::{
+    CommunityChallengeProposal, FullProposalInfo, ProposalChallengeInfo, SimpleChallengeProposal,
+};
 
 type UtcDateTime = DateTime<Utc>;
-
-pub struct ProposalChallengeInfo {
-    pub challenge_type: ChallengeType,
-    pub proposal_solution: Option<String>,
-    pub proposal_brief: Option<String>,
-    pub proposal_importance: Option<String>,
-    pub proposal_goal: Option<String>,
-    pub proposal_metrics: Option<String>,
-}
 
 #[derive(Clone)]
 pub struct ArbitraryGenerator {
@@ -167,26 +161,21 @@ impl ArbitraryGenerator {
         challenge_type: &ChallengeType,
     ) -> ProposalChallengeInfo {
         match challenge_type {
-            ChallengeType::Simple => ProposalChallengeInfo {
-                challenge_type: ChallengeType::Simple,
-                proposal_solution: Some(CatchPhase().fake::<String>()),
-                proposal_brief: None,
-                proposal_importance: None,
-                proposal_goal: None,
-                proposal_metrics: None,
-            },
-            ChallengeType::CommunityChoice => ProposalChallengeInfo {
-                challenge_type: ChallengeType::CommunityChoice,
-                proposal_solution: None,
-                proposal_brief: Some(CatchPhase().fake::<String>()),
-                proposal_importance: Some(CatchPhase().fake::<String>()),
-                proposal_goal: Some(CatchPhase().fake::<String>()),
-                proposal_metrics: Some(CatchPhase().fake::<String>()),
-            },
+            ChallengeType::Simple => ProposalChallengeInfo::Simple(SimpleChallengeProposal {
+                proposal_solution: CatchPhase().fake::<String>(),
+            }),
+            ChallengeType::CommunityChoice => {
+                ProposalChallengeInfo::Community(CommunityChallengeProposal {
+                    proposal_brief: CatchPhase().fake::<String>(),
+                    proposal_importance: CatchPhase().fake::<String>(),
+                    proposal_goal: CatchPhase().fake::<String>(),
+                    proposal_metrics: CatchPhase().fake::<String>(),
+                })
+            }
         }
     }
 
-    fn gen_single_proposal(&mut self, fund: &Fund) -> Proposal {
+    fn gen_single_proposal(&mut self, fund: &Fund) -> FullProposalInfo {
         let id = self.id_generator.next_u32() as i32;
         let proposal_url = self.gen_http_address();
 
@@ -194,7 +183,7 @@ impl ArbitraryGenerator {
         let challenge = fund.challenges.first().unwrap();
         let challenge_id = challenge.id;
         let proposal_challenge_info = self.proposals_challenge_info(&challenge.challenge_type);
-        Proposal {
+        let proposal = Proposal {
             internal_id: id.abs(),
             proposal_id: id.abs().to_string(),
             proposal_category: self.proposal_category(),
@@ -222,11 +211,12 @@ impl ArbitraryGenerator {
             chain_vote_encryption_key: voteplan.chain_vote_encryption_key.clone(),
             fund_id: fund.id,
             challenge_id,
-            proposal_solution: proposal_challenge_info.proposal_solution,
-            proposal_brief: proposal_challenge_info.proposal_brief,
-            proposal_importance: proposal_challenge_info.proposal_importance,
-            proposal_goal: proposal_challenge_info.proposal_goal,
-            proposal_metrics: proposal_challenge_info.proposal_metrics,
+        };
+
+        FullProposalInfo {
+            proposal,
+            proposal_challenge_specific_data: proposal_challenge_info,
+            challenge_type: challenge.challenge_type.clone(),
         }
     }
 
@@ -262,7 +252,7 @@ impl ArbitraryGenerator {
             .collect()
     }
 
-    pub fn proposals(&mut self, funds: &[Fund]) -> Vec<Proposal> {
+    pub fn proposals(&mut self, funds: &[Fund]) -> Vec<FullProposalInfo> {
         funds.iter().map(|x| self.gen_single_proposal(x)).collect()
     }
 

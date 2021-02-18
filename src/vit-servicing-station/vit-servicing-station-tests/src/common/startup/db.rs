@@ -14,11 +14,12 @@ use crate::common::{
     db::{DbInserter, DbInserterError},
     paths::MIGRATION_DIR,
 };
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 pub struct DbBuilder {
     migrations_folder: Option<PathBuf>,
     tokens: Option<Vec<APITokenData>>,
-    proposals: Option<Vec<Proposal>>,
+    proposals: Option<Vec<FullProposalInfo>>,
     funds: Option<Vec<Fund>>,
     challenges: Option<Vec<Challenge>>,
 }
@@ -44,7 +45,7 @@ impl DbBuilder {
         self
     }
 
-    pub fn with_proposals(&mut self, proposals: Vec<Proposal>) -> &mut Self {
+    pub fn with_proposals(&mut self, proposals: Vec<FullProposalInfo>) -> &mut Self {
         self.proposals = Some(proposals);
         self
     }

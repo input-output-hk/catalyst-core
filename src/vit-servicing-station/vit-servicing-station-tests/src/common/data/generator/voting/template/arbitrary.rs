@@ -66,12 +66,8 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             proposer_url: self.generator.gen_http_address(),
             chain_vote_type: "public".to_string(),
             challenge_id: None,
-            challenge_type: proposal_challenge_info.challenge_type,
-            proposal_metrics: proposal_challenge_info.proposal_metrics,
-            proposal_solution: proposal_challenge_info.proposal_solution,
-            proposal_brief: proposal_challenge_info.proposal_brief,
-            proposal_importance: proposal_challenge_info.proposal_importance,
-            proposal_goal: proposal_challenge_info.proposal_goal,
+            challenge_type,
+            proposal_challenge_info,
         }
     }
 

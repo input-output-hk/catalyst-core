@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
     api_tokens::APITokenData, challenges::Challenge, funds::Fund, proposals::Proposal,
     voteplans::Voteplan,
@@ -7,7 +8,7 @@ use vit_servicing_station_lib::db::models::{
 #[derive(Debug, Clone)]
 pub struct Snapshot {
     funds: Vec<Fund>,
-    proposals: Vec<Proposal>,
+    proposals: Vec<FullProposalInfo>,
     challenges: Vec<Challenge>,
     tokens: HashMap<String, APITokenData>,
     voteplans: Vec<Voteplan>,
@@ -16,7 +17,7 @@ pub struct Snapshot {
 impl Snapshot {
     pub fn new(
         funds: Vec<Fund>,
-        proposals: Vec<Proposal>,
+        proposals: Vec<FullProposalInfo>,
         challenges: Vec<Challenge>,
         tokens: HashMap<String, APITokenData>,
         voteplans: Vec<Voteplan>,
@@ -34,7 +35,7 @@ impl Snapshot {
         self.funds.clone()
     }
 
-    pub fn proposals(&self) -> Vec<Proposal> {
+    pub fn proposals(&self) -> Vec<FullProposalInfo> {
         self.proposals.clone()
     }
 
@@ -50,7 +51,7 @@ impl Snapshot {
         &mut self.funds
     }
 
-    pub fn proposals_mut(&mut self) -> &mut Vec<Proposal> {
+    pub fn proposals_mut(&mut self) -> &mut Vec<FullProposalInfo> {
         &mut self.proposals
     }
 
@@ -58,8 +59,10 @@ impl Snapshot {
         &mut self.voteplans
     }
 
-    pub fn proposal_by_id(&self, id: &str) -> Option<&Proposal> {
-        self.proposals.iter().find(|x| x.proposal_id.eq(id))
+    pub fn proposal_by_id(&self, id: &str) -> Option<&FullProposalInfo> {
+        self.proposals
+            .iter()
+            .find(|x| x.proposal.proposal_id.eq(id))
     }
 
     pub fn fund_by_id(&self, id: i32) -> Option<&Fund> {

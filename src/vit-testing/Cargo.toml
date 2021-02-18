@@ -2,5 +2,6 @@
 members = [
   "iapyx",
   "vitup",
-  "integration-tests"
+  "integration-tests",
+  "snapshot-trigger-service"
 ]

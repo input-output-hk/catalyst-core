@@ -1,6 +1,9 @@
 use serde::Deserialize;
+use std::convert::TryFrom;
 use vit_servicing_station_lib::db::models::proposals;
-use vit_servicing_station_lib::db::models::proposals::{Category, Proposer};
+use vit_servicing_station_lib::db::models::proposals::{
+    Category, CommunityChallengeProposal, ProposalChallengeInfo, Proposer, SimpleChallengeProposal,
+};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
 #[derive(Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -137,6 +140,48 @@ impl From<Proposal> for proposals::Proposal {
             chain_vote_encryption_key: proposal.chain_vote_encryption_key,
             fund_id: proposal.fund_id,
             challenge_id: proposal.challenge_id,
+        }
+    }
+}
+
+impl TryFrom<Proposal> for ProposalChallengeInfo {
+    type Error = std::io::Error;
+
+    fn try_from(p: Proposal) -> Result<Self, Self::Error> {
+        let values = (
+            p.proposal_solution,
+            p.proposal_brief,
+            p.proposal_importance,
+            p.proposal_goal,
+            p.proposal_metrics,
+        );
+
+        match values {
+            (Some(proposal_solution), None, None, None, None) => {
+                Ok(ProposalChallengeInfo::Simple(SimpleChallengeProposal {
+                    proposal_solution,
+                }))
+            }
+            (
+                None,
+                Some(proposal_brief),
+                Some(proposal_importance),
+                Some(proposal_goal),
+                Some(proposal_metrics),
+            ) => Ok(ProposalChallengeInfo::Community(CommunityChallengeProposal {
+                proposal_brief,
+                proposal_importance,
+                proposal_goal,
+                proposal_metrics
+            })),
+            values => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!(
+                    "Cannot match proposal challenge info. Not `proposal_solution` + any other variable attribute is allowed. Found values {:?}"
+                    ,
+                    values
+                ),
+            )),
         }
     }
 }

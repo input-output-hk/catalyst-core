@@ -1,6 +1,10 @@
 use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
-use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
+use crate::db::{
+    schema::{proposal_community_choice_challenge, proposal_simple_challenge, proposals},
+    views_schema::full_proposals_info,
+    DB,
+};
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
@@ -144,6 +148,19 @@ pub struct FullProposalInfo {
     #[serde(alias = "challengeType")]
     pub challenge_type: ChallengeType,
 }
+
+pub type SimpleChallengeProposalValues = (
+    diesel::dsl::Eq<proposal_simple_challenge::proposal_id, String>,
+    diesel::dsl::Eq<proposal_simple_challenge::proposal_solution, String>,
+);
+
+pub type CommunityChallengeProposalValues = (
+    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_id, String>,
+    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_brief, String>,
+    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_importance, String>,
+    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_goal, String>,
+    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_metrics, String>,
+);
 
 type FullProposalsInfoRow = (
     // 0 ->id
@@ -328,6 +345,34 @@ impl Insertable<proposals::table> for Proposal {
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(self.chain_voteplan_id),
             proposals::challenge_id.eq(self.challenge_id),
+        )
+    }
+}
+
+impl SimpleChallengeProposal {
+    pub fn to_sql_values_with_proposal_id(
+        &self,
+        proposal_id: &str,
+    ) -> SimpleChallengeProposalValues {
+        (
+            proposal_simple_challenge::proposal_id.eq(proposal_id.to_string()),
+            proposal_simple_challenge::proposal_solution.eq(self.proposal_solution.clone()),
+        )
+    }
+}
+
+impl CommunityChallengeProposal {
+    pub fn to_sql_values_with_proposal_id(
+        &self,
+        proposal_id: &str,
+    ) -> CommunityChallengeProposalValues {
+        (
+            proposal_community_choice_challenge::proposal_id.eq(proposal_id.to_string()),
+            proposal_community_choice_challenge::proposal_brief.eq(self.proposal_brief.clone()),
+            proposal_community_choice_challenge::proposal_importance
+                .eq(self.proposal_importance.clone()),
+            proposal_community_choice_challenge::proposal_goal.eq(self.proposal_goal.clone()),
+            proposal_community_choice_challenge::proposal_metrics.eq(self.proposal_metrics.clone()),
         )
     }
 }

@@ -47,7 +47,7 @@ mod test {
     };
 
     use crate::db::migrations as db_testing;
-    use crate::db::models::proposals::{ChallengeType, Proposal, ProposalChallengeInfo};
+    use crate::db::models::proposals::{ChallengeType, Proposal};
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use serde_json::json;
     use warp::{Filter, Rejection, Reply};

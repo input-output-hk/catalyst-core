@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
-    api_tokens::APITokenData, challenges::Challenge, funds::Fund, proposals::Proposal,
-    voteplans::Voteplan,
+    api_tokens::APITokenData, challenges::Challenge, funds::Fund, voteplans::Voteplan,
 };
 
 #[derive(Debug, Clone)]

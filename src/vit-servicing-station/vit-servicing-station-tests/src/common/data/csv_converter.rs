@@ -3,7 +3,7 @@ use std::path::Path;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::proposals::{FullProposalInfo, ProposalChallengeInfo};
 use vit_servicing_station_lib::{
-    db::models::{challenges::Challenge, funds::Fund, proposals::Proposal, voteplans::Voteplan},
+    db::models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
     utils::datetime::unix_timestamp_to_datetime,
 };
 

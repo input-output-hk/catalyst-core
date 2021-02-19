@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::{
-    api_tokens::APITokenData, challenges::Challenge, funds::Fund, proposals::Proposal,
+    api_tokens::APITokenData, challenges::Challenge, funds::Fund,
 };
 
 use crate::common::{

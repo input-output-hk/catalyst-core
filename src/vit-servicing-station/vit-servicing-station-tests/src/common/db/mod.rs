@@ -7,7 +7,7 @@ use vit_servicing_station_lib::db::{
         api_tokens::APITokenData,
         challenges::Challenge,
         funds::Fund,
-        proposals::{FullProposalInfo, Proposal, ProposalChallengeInfo},
+        proposals::{FullProposalInfo, ProposalChallengeInfo},
     },
     schema::{
         api_tokens, challenges, funds, proposal_community_choice_challenge,

@@ -65,6 +65,16 @@ impl CSVDataCmd {
         Ok(results)
     }
 
+    fn proposals_info_from_csv_proposals(
+        proposals: &[super::models::Proposal],
+    ) -> io::Result<Vec<ProposalChallengeInfo>> {
+        let mut res = Vec::new();
+        for proposal in proposals {
+            res.push(ProposalChallengeInfo::try_from(proposal.clone())?);
+        }
+        Ok(res)
+    }
+
     fn handle_load(
         db_url: &str,
         funds_path: &str,
@@ -87,12 +97,8 @@ impl CSVDataCmd {
         let mut challenges = CSVDataCmd::load_from_csv::<Challenge>(challenges_path)?;
         let csv_proposals = CSVDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?;
         let mut proposals: Vec<Proposal> = csv_proposals.iter().cloned().map(Into::into).collect();
-
-        let proposals_challenge_info: Vec<ProposalChallengeInfo> = csv_proposals
-            .iter()
-            .cloned()
-            .map(|p| ProposalChallengeInfo::try_from(p).unwrap())
-            .collect();
+        let proposals_challenge_info =
+            CSVDataCmd::proposals_info_from_csv_proposals(&csv_proposals)?;
 
         let simple_proposals_data: Vec<SimpleChallengeProposalValues> = proposals_challenge_info
             .iter()

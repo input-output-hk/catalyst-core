@@ -34,11 +34,6 @@ create table proposals
     chain_vote_options VARCHAR NOT NULL,
     chain_voteplan_id VARCHAR NOT NULL,
     challenge_id INTEGER NOT NULL
---     proposal_solution VARCHAR,
---     proposal_brief VARCHAR,
---     proposal_importance VARCHAR,
---     proposal_goal VARCHAR,
---     proposal_metrics VARCHAR
 );
 
 create table proposal_simple_challenge (

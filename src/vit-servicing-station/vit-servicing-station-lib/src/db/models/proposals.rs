@@ -263,11 +263,6 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_vote_encryption_key: row.22,
             fund_id: row.23,
             challenge_id: row.24,
-            // proposal_solution: row.26,
-            // proposal_brief: row.27,
-            // proposal_importance: row.28,
-            // proposal_goal: row.29,
-            // proposal_metrics: row.30,
         }
     }
 }

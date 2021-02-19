@@ -163,7 +163,7 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let wallet_proxy = vit_controller.spawn_wallet_proxy(&mut controller, WALLET_NODE)?;
 
     // wait for spin off
-    std::thread::sleep(std::time::Duration::from_secs(30));
+    std::thread::sleep(std::time::Duration::from_secs(1));
 
     // start mainnet wallets
     let mut david = vit_controller.iapyx_wallet(DAVID_MNEMONICS, &wallet_proxy)?;

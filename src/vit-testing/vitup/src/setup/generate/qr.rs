@@ -4,7 +4,7 @@ use crate::Result;
 use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
 use jormungandr_scenario_tests::{Context, Seed};
 use jortestkit::prelude::read_file;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -52,12 +52,18 @@ impl QrCommandArgs {
 
         if !self.output_directory.exists() {
             std::fs::create_dir_all(&self.output_directory)?;
+        } else {
+            std::fs::remove_dir_all(&self.output_directory)?;
         }
 
         println!("{:?}", quick_setup.parameters().initials);
         quick_setup.build(context)?;
 
-        self.output_directory.
+        //remove block0.bin
+        let block0 = Path::new(&self.output_directory)
+            .join(quick_setup.title())
+            .join("block0.bin");
+        std::fs::remove_file(block0)?;
 
         println!("Qrs dumped into {:?}", self.output_directory);
         Ok(())

@@ -385,9 +385,9 @@ impl QuickVitBackendSettingsBuilder {
 
         let child = context.child_directory(self.title());
 
-        let templates = HashMap::new();
+        let mut templates = HashMap::new();
         if let Some(initials) = &self.parameters.initials {
-            let templates =
+            templates =
                 initials.templates(self.parameters.voting_power, blockchain.discrimination());
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
                 blockchain.add_wallet(wallet.clone());

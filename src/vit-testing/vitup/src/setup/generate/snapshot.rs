@@ -98,7 +98,7 @@ impl SnapshotCommandArgs {
 
             let wallet = controller.wallet(&file_name)?;
             let new_file_name = format!("{}_{}_{}.png", i, wallet.address(), self.global_pin);
-            i = i+1;
+            i = i + 1;
             std::fs::rename(
                 path.clone(),
                 std::path::Path::new(path.parent().unwrap()).join(&new_file_name),
@@ -125,7 +125,7 @@ impl SnapshotCommandArgs {
 
         println!("Snapshot dumped into {:?}", file);
         println!("Qr codes dumped into {:?}", qr_codes);
-       
+
         Ok(())
     }
 }

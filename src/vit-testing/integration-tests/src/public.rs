@@ -92,46 +92,56 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let mut controller = scenario_settings.build(context).unwrap();
 
     // bootstrap network
-    let leader_1 = controller.spawn_node_custom(
-        SpawnParams::new(LEADER_1)
-            .leader()
-            .persistence_mode(PersistenceMode::Persistent)
-            .explorer(Explorer { enabled: true }),
-    ).unwrap();
+    let leader_1 = controller
+        .spawn_node_custom(
+            SpawnParams::new(LEADER_1)
+                .leader()
+                .persistence_mode(PersistenceMode::Persistent)
+                .explorer(Explorer { enabled: true }),
+        )
+        .unwrap();
     leader_1.wait_for_bootstrap().unwrap();
     controller.monitor_nodes();
 
     //start bft node 2
-    let leader_2 = controller.spawn_node(
-        LEADER_2,
-        LeadershipMode::Leader,
-        PersistenceMode::Persistent,
-    ).unwrap();
+    let leader_2 = controller
+        .spawn_node(
+            LEADER_2,
+            LeadershipMode::Leader,
+            PersistenceMode::Persistent,
+        )
+        .unwrap();
     leader_2.wait_for_bootstrap().unwrap();
 
     //start bft node 3
-    let leader_3 = controller.spawn_node(
-        LEADER_3,
-        LeadershipMode::Leader,
-        PersistenceMode::Persistent,
-    ).unwrap();
+    let leader_3 = controller
+        .spawn_node(
+            LEADER_3,
+            LeadershipMode::Leader,
+            PersistenceMode::Persistent,
+        )
+        .unwrap();
     leader_3.wait_for_bootstrap().unwrap();
 
     //start bft node 4
-    let leader_4 = controller.spawn_node(
-        LEADER_4,
-        LeadershipMode::Leader,
-        PersistenceMode::Persistent,
-    ).unwrap();
+    let leader_4 = controller
+        .spawn_node(
+            LEADER_4,
+            LeadershipMode::Leader,
+            PersistenceMode::Persistent,
+        )
+        .unwrap();
     leader_4.wait_for_bootstrap().unwrap();
 
     // start passive node
-    let wallet_node = controller.spawn_node_custom(
-        SpawnParams::new(WALLET_NODE)
-            .passive()
-            .persistence_mode(PersistenceMode::Persistent)
-            .explorer(Explorer { enabled: true }),
-    ).unwrap();
+    let wallet_node = controller
+        .spawn_node_custom(
+            SpawnParams::new(WALLET_NODE)
+                .passive()
+                .persistence_mode(PersistenceMode::Persistent)
+                .explorer(Explorer { enabled: true }),
+        )
+        .unwrap();
     wallet_node.wait_for_bootstrap().unwrap();
     let fund1_vote_plan = controller.vote_plan("fund1").unwrap();
 
@@ -158,34 +168,49 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let parameters = vote_plan_parameters_builder.vote_plan_parameters(fund1_vote_plan, settings);
     // start proxy and vit station
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let vit_station =
-        vit_controller.spawn_vit_station(&mut controller, parameters, &mut template_generator).unwrap();
-    let wallet_proxy = vit_controller.spawn_wallet_proxy(&mut controller, WALLET_NODE).unwrap();
+    let vit_station = vit_controller
+        .spawn_vit_station(&mut controller, parameters, &mut template_generator)
+        .unwrap();
+    let wallet_proxy = vit_controller
+        .spawn_wallet_proxy(&mut controller, WALLET_NODE)
+        .unwrap();
 
     // wait for spin off
     std::thread::sleep(std::time::Duration::from_secs(1));
 
     // start mainnet wallets
-    let mut david = vit_controller.iapyx_wallet(DAVID_MNEMONICS, &wallet_proxy).unwrap();
+    let mut david = vit_controller
+        .iapyx_wallet(DAVID_MNEMONICS, &wallet_proxy)
+        .unwrap();
     david.retrieve_funds().unwrap();
     david.convert_and_send().unwrap();
 
     let fund1_vote_plan = controller.vote_plan("fund1").unwrap();
 
     // start voting
-    david.vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8).unwrap();
+    david
+        .vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8)
+        .unwrap();
 
-    let mut edgar = vit_controller.iapyx_wallet(EDGAR_MNEMONICS, &wallet_proxy).unwrap();
+    let mut edgar = vit_controller
+        .iapyx_wallet(EDGAR_MNEMONICS, &wallet_proxy)
+        .unwrap();
     edgar.retrieve_funds().unwrap();
     edgar.convert_and_send().unwrap();
 
-    edgar.vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8).unwrap();
+    edgar
+        .vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8)
+        .unwrap();
 
-    let mut filip = vit_controller.iapyx_wallet(FILIP_MNEMONICS, &wallet_proxy).unwrap();
+    let mut filip = vit_controller
+        .iapyx_wallet(FILIP_MNEMONICS, &wallet_proxy)
+        .unwrap();
     filip.retrieve_funds().unwrap();
     filip.convert_and_send().unwrap();
 
-    filip.vote_for(fund1_vote_plan.id(), 0, Vote::NO as u8).unwrap();
+    filip
+        .vote_for(fund1_vote_plan.id(), 0, Vote::NO as u8)
+        .unwrap();
 
     let target_date = BlockDate {
         epoch: 1,
@@ -209,11 +234,10 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
         .unwrap();
 
     let mut alice = controller.wallet("Alice").unwrap();
-    controller.fragment_sender().send_public_vote_tally(
-        &mut alice,
-        &fund1_vote_plan.into(),
-        &wallet_node,
-    ).unwrap();
+    controller
+        .fragment_sender()
+        .send_public_vote_tally(&mut alice, &fund1_vote_plan.into(), &wallet_node)
+        .unwrap();
 
     time::wait_for_epoch(2, leader_1.explorer());
 
@@ -238,7 +262,8 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
             "{} <> {} rewards were not increased",
             rewards_before, rewards_after
         ),
-    ).unwrap();
+    )
+    .unwrap();
 
     wallet_node.shutdown().unwrap();
     vit_station.shutdown();

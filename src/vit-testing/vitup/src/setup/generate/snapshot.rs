@@ -84,6 +84,7 @@ impl SnapshotCommandArgs {
 
         //rename qr codes to {address}_{pin}.png syntax
         let qr_codes = Path::new(&result_dir).join("qr-codes");
+        let mut i = 1;
         for entry in std::fs::read_dir(&qr_codes)? {
             let entry = entry?;
             let path = entry.path();
@@ -96,7 +97,8 @@ impl SnapshotCommandArgs {
                 .replace(&format!("_{}", self.global_pin), "");
 
             let wallet = controller.wallet(&file_name)?;
-            let new_file_name = format!("{}_{}.png", wallet.address(), self.global_pin);
+            let new_file_name = format!("{}_{}_{}.png", i, wallet.address(), self.global_pin);
+            i = i+1;
             std::fs::rename(
                 path.clone(),
                 std::path::Path::new(path.parent().unwrap()).join(&new_file_name),

@@ -2,7 +2,8 @@ use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
 use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
 use diesel::{ExpressionMethods, Insertable, Queryable};
-use serde::{Deserialize, Serialize};
+use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
+use std::convert::{TryFrom, TryInto};
 
 pub mod community_choice;
 pub mod simple;
@@ -114,10 +115,18 @@ pub struct Proposal {
     pub challenge_id: i32,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub enum ProposalChallengeInfo {
     Simple(simple::ChallengeInfo),
     CommunityChoice(community_choice::ChallengeInfo),
+}
+
+#[derive(Serialize, Deserialize)]
+struct SerdeProposalChallengeInfo {
+    #[serde(flatten, default, skip_serializing_if = "Option::is_none")]
+    simple: Option<simple::ChallengeInfo>,
+    #[serde(flatten, default, skip_serializing_if = "Option::is_none")]
+    community: Option<community_choice::ChallengeInfo>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -128,6 +137,29 @@ pub struct FullProposalInfo {
     pub challenge_info: ProposalChallengeInfo,
     #[serde(alias = "challengeType")]
     pub challenge_type: ChallengeType,
+}
+
+impl Serialize for ProposalChallengeInfo {
+    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
+    where
+        S: Serializer,
+    {
+        let serde_data: SerdeProposalChallengeInfo = self.clone().into();
+        serde_data.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for ProposalChallengeInfo {
+    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let serde_data: SerdeProposalChallengeInfo =
+            SerdeProposalChallengeInfo::deserialize(deserializer)?;
+        serde_data.try_into().map_err(|_| {
+            <D as Deserializer<'de>>::Error::custom("Invalid data for ProposalChallengeInfo")
+        })
+    }
 }
 
 type FullProposalsInfoRow = (
@@ -309,6 +341,36 @@ impl Insertable<proposals::table> for Proposal {
             proposals::chain_voteplan_id.eq(self.chain_voteplan_id),
             proposals::challenge_id.eq(self.challenge_id),
         )
+    }
+}
+
+impl TryFrom<SerdeProposalChallengeInfo> for ProposalChallengeInfo {
+    type Error = ();
+
+    fn try_from(data: SerdeProposalChallengeInfo) -> Result<Self, Self::Error> {
+        let SerdeProposalChallengeInfo { simple, community } = data;
+        match (simple, community) {
+            (None, None) | (Some(_), Some(_)) => Err(()),
+            (Some(simple), None) => Ok(ProposalChallengeInfo::Simple(simple)),
+            (None, Some(community_challenge)) => {
+                Ok(ProposalChallengeInfo::CommunityChoice(community_challenge))
+            }
+        }
+    }
+}
+
+impl From<ProposalChallengeInfo> for SerdeProposalChallengeInfo {
+    fn from(data: ProposalChallengeInfo) -> Self {
+        match data {
+            ProposalChallengeInfo::Simple(simple) => SerdeProposalChallengeInfo {
+                simple: Some(simple),
+                community: None,
+            },
+            ProposalChallengeInfo::CommunityChoice(community) => SerdeProposalChallengeInfo {
+                simple: None,
+                community: Some(community),
+            },
+        }
     }
 }
 

@@ -2,7 +2,7 @@ pub mod generate;
 pub mod start;
 
 use crate::error::Result;
-use crate::setup::generate::QrCommandArgs;
+use crate::setup::generate::{QrCommandArgs, SnapshotCommandArgs};
 use crate::setup::start::AdvancedStartCommandArgs;
 use generate::DataCommandArgs;
 use start::QuickStartCommandArgs;
@@ -48,6 +48,8 @@ pub enum GenerateCommand {
     Qr(QrCommandArgs),
     /// generate data only
     Data(DataCommandArgs),
+    /// generate snapshot data only
+    Snapshot(SnapshotCommandArgs),
 }
 
 impl GenerateCommand {
@@ -55,6 +57,7 @@ impl GenerateCommand {
         match self {
             Self::Qr(quick_start_command) => quick_start_command.exec(),
             Self::Data(data_start_command) => data_start_command.exec(),
+            Self::Snapshot(snapshot_start_command) => snapshot_start_command.exec(),
         }
     }
 }

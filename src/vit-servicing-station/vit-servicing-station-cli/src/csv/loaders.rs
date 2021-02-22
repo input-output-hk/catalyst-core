@@ -97,10 +97,12 @@ impl CSVDataCmd {
         for proposal in csv_proposals {
             let challenge_type = challenges
                 .get(&proposal.challenge_id)
-                .ok_or(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    format!("Challenge with id {} not found", proposal.challenge_id),
-                ))?
+                .ok_or_else(|| {
+                    std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        format!("Challenge with id {} not found", proposal.challenge_id),
+                    )
+                })?
                 .challenge_type
                 .clone();
             let (proposal, challenge_info) =

@@ -149,10 +149,8 @@ impl Proposal {
                 None => {
                     return Err(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
-                        format!(
-                            "cannot match simple proposal's challenge information fields:\
-                            expected a value in `proposal_solution` column, found none"
-                        ),
+                        "cannot match simple proposal's challenge information fields:\
+                            expected a value in `proposal_solution` column, found none",
                     ));
                 }
             },

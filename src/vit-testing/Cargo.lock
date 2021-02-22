@@ -2052,7 +2052,7 @@ dependencies = [
 
 [[package]]
 name = "iapyx"
-version = "0.2.1"
+version = "0.0.1"
 dependencies = [
  "bech32",
  "bip39",
@@ -2075,7 +2075,7 @@ dependencies = [
  "jortestkit",
  "rand 0.7.3",
  "rand_core 0.5.1",
- "regex 1.4.3",
+ "regex 0.2.11",
  "reqwest 0.10.10",
  "serde",
  "serde_json",
@@ -5094,7 +5094,7 @@ dependencies = [
 
 [[package]]
 name = "vitup"
-version = "0.2.1"
+version = "0.0.1"
 dependencies = [
  "assert_fs",
  "base64 0.12.3",

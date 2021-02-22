@@ -5,7 +5,7 @@ BEGIN {
 }
 
 if (/^\[\[package\]\]/ .. ($ln == 2)) {
-    if (/^name = "vit-servicing-station-.*"/) {
+    if (/^name = "vit-testing-.*"/) {
         $ours = 1;
     } else {
         s/^version =.*// if $ours;

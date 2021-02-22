@@ -1,6 +1,6 @@
 [package]
 name = "iapyx"
-version = "0.2.1"
+version = "0.0.1"
 authors = ["dkijania <dariusz.kijania@iohk.io>"]
 edition = "2018"
 

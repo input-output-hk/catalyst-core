@@ -136,7 +136,7 @@ fn convert_proposal(proposal: &FullProposalInfo) -> Vec<String> {
             "".to_string(),
             "".to_string(),
         ),
-        ProposalChallengeInfo::CommunityChallenge(data) => (
+        ProposalChallengeInfo::CommunityChoice(data) => (
             "".to_string(),
             data.proposal_brief.clone(),
             data.proposal_importance.clone(),

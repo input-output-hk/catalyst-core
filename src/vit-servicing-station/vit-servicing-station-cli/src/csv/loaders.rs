@@ -6,7 +6,7 @@ use std::convert::TryFrom;
 use std::io;
 use structopt::StructOpt;
 use vit_servicing_station_lib::db::models::proposals::{
-    community_challenge, simple, ProposalChallengeInfo,
+    community_choice, simple, ProposalChallengeInfo,
 };
 use vit_servicing_station_lib::db::{
     load_db_connection_pool, models::challenges::Challenge, models::funds::Fund,
@@ -107,17 +107,17 @@ impl CSVDataCmd {
                 ProposalChallengeInfo::Simple(res) => {
                     Some(res.to_sql_values_with_proposal_id(&proposal.proposal_id))
                 }
-                ProposalChallengeInfo::CommunityChallenge(_) => None,
+                ProposalChallengeInfo::CommunityChoice(_) => None,
             })
             .collect();
 
-        let community_proposals_data: Vec<community_challenge::ChallengeSqlValues> =
+        let community_proposals_data: Vec<community_choice::ChallengeSqlValues> =
             proposals_challenge_info
                 .iter()
                 .zip(proposals.iter())
                 .filter_map(|(data, proposal)| match data {
                     ProposalChallengeInfo::Simple(_) => None,
-                    ProposalChallengeInfo::CommunityChallenge(res) => {
+                    ProposalChallengeInfo::CommunityChoice(res) => {
                         Some(res.to_sql_values_with_proposal_id(&proposal.proposal_id))
                     }
                 })

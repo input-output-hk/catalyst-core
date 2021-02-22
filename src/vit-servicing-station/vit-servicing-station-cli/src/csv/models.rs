@@ -2,7 +2,7 @@ use serde::Deserialize;
 use std::convert::TryFrom;
 use vit_servicing_station_lib::db::models::proposals;
 use vit_servicing_station_lib::db::models::proposals::{
-    community_challenge, simple, Category, ProposalChallengeInfo, Proposer,
+    community_choice, simple, Category, ProposalChallengeInfo, Proposer,
 };
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
@@ -168,7 +168,7 @@ impl TryFrom<Proposal> for ProposalChallengeInfo {
                 Some(proposal_importance),
                 Some(proposal_goal),
                 Some(proposal_metrics),
-            ) => Ok(ProposalChallengeInfo::CommunityChallenge(community_challenge::ChallengeInfo {
+            ) => Ok(ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
                 proposal_brief,
                 proposal_importance,
                 proposal_goal,

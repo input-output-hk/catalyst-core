@@ -4,7 +4,7 @@ use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
-pub mod community_challenge;
+pub mod community_choice;
 pub mod simple;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -117,7 +117,7 @@ pub struct Proposal {
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub enum ProposalChallengeInfo {
     Simple(simple::ChallengeInfo),
-    CommunityChallenge(community_challenge::ChallengeInfo),
+    CommunityChoice(community_choice::ChallengeInfo),
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -247,7 +247,7 @@ impl Queryable<full_proposals_info::SqlType, DB> for FullProposalInfo {
                 proposal_solution: row.26.clone().unwrap(),
             }),
             ChallengeType::CommunityChoice => {
-                ProposalChallengeInfo::CommunityChallenge(community_challenge::ChallengeInfo {
+                ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
                     proposal_brief: row.27.clone().unwrap(),
                     proposal_importance: row.28.clone().unwrap(),
                     proposal_goal: row.29.clone().unwrap(),
@@ -362,8 +362,8 @@ pub mod test {
                 fund_id: 1,
                 challenge_id: CHALLENGE_ID,
             },
-            challenge_info: ProposalChallengeInfo::CommunityChallenge(
-                community_challenge::ChallengeInfo {
+            challenge_info: ProposalChallengeInfo::CommunityChoice(
+                community_choice::ChallengeInfo {
                     proposal_brief: "A for ADA".to_string(),
                     proposal_importance: "We need to get them while they're young.".to_string(),
                     proposal_goal: "Nebulous".to_string(),
@@ -434,7 +434,7 @@ pub mod test {
                     .execute(&connection)
                     .unwrap();
             }
-            ProposalChallengeInfo::CommunityChallenge(data) => {
+            ProposalChallengeInfo::CommunityChoice(data) => {
                 let community_values = (
                     proposal_community_choice_challenge::proposal_id
                         .eq(proposal.proposal_id.clone()),

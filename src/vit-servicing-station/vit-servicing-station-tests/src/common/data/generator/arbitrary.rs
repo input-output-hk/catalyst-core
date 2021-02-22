@@ -24,7 +24,7 @@ use std::{collections::HashMap, iter};
 
 use chrono::DateTime;
 use vit_servicing_station_lib::db::models::proposals::{
-    community_challenge, simple, FullProposalInfo, ProposalChallengeInfo,
+    community_choice, simple, FullProposalInfo, ProposalChallengeInfo,
 };
 
 type UtcDateTime = DateTime<Utc>;
@@ -165,7 +165,7 @@ impl ArbitraryGenerator {
                 proposal_solution: CatchPhase().fake::<String>(),
             }),
             ChallengeType::CommunityChoice => {
-                ProposalChallengeInfo::CommunityChallenge(community_challenge::ChallengeInfo {
+                ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
                     proposal_brief: CatchPhase().fake::<String>(),
                     proposal_importance: CatchPhase().fake::<String>(),
                     proposal_goal: CatchPhase().fake::<String>(),

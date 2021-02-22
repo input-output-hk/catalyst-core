@@ -113,7 +113,7 @@ impl<'a> DbInserter<'a> {
                         .execute(self.connection)
                         .map_err(DbInserterError::DieselError)?;
                 }
-                ProposalChallengeInfo::CommunityChallenge(data) => {
+                ProposalChallengeInfo::CommunityChoice(data) => {
                     let community_values = (
                         proposal_community_choice_challenge::proposal_id
                             .eq(proposal.proposal.proposal_id.clone()),

@@ -1,4 +1,4 @@
-use crate::db::models::proposals::{community_challenge, simple, FullProposalInfo, Proposal};
+use crate::db::models::proposals::{community_choice, simple, FullProposalInfo, Proposal};
 use crate::db::schema::proposals;
 use crate::db::{
     schema::{
@@ -63,7 +63,7 @@ pub fn batch_insert_proposals(
 }
 
 pub fn batch_insert_community_choice_challenge_data(
-    values: &[community_challenge::ChallengeSqlValues],
+    values: &[community_choice::ChallengeSqlValues],
     db_conn: &DBConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(community_choice_proposal_dsl::table)

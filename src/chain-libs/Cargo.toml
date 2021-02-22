@@ -15,3 +15,8 @@ members = [
     "sparse-array",
     "typed-bytes",
 ]
+
+[profile.bench]
+# Embed debuginfo into benchmarks for profiling. All other settings remain the
+# same and are similar to the `release` profile.
+debug = true

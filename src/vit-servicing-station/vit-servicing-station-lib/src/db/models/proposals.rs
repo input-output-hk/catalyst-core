@@ -344,13 +344,15 @@ impl Insertable<proposals::table> for Proposal {
     }
 }
 
+struct SerdeToProposalChallengeInfoError;
+
 impl TryFrom<SerdeProposalChallengeInfo> for ProposalChallengeInfo {
-    type Error = ();
+    type Error = SerdeToProposalChallengeInfoError;
 
     fn try_from(data: SerdeProposalChallengeInfo) -> Result<Self, Self::Error> {
         let SerdeProposalChallengeInfo { simple, community } = data;
         match (simple, community) {
-            (None, None) | (Some(_), Some(_)) => Err(()),
+            (None, None) | (Some(_), Some(_)) => Err(SerdeToProposalChallengeInfoError),
             (Some(simple), None) => Ok(ProposalChallengeInfo::Simple(simple)),
             (None, Some(community_challenge)) => {
                 Ok(ProposalChallengeInfo::CommunityChoice(community_challenge))

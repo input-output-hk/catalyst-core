@@ -3,8 +3,9 @@ version: 2.1
 executors:
   rust-stable:
     docker:
-      - image: inputoutput/rust:latest
+      - image: inputoutput/rust:stable
     working_directory: /home/circleci/build
+    resource_class: xlarge
 
 jobs:
   cargo_fetch:

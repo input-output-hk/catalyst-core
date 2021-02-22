@@ -1,7 +1,7 @@
 pub mod funds;
 pub mod proposals;
 
-use crate::db::{models::funds::Fund, models::proposals::Proposal};
+use crate::db::{models::funds::Fund, models::proposals::FullProposalInfo};
 use crate::v0::endpoints::graphql::schema::QueryRoot;
 use async_graphql::Context;
 
@@ -11,7 +11,7 @@ impl QueryRoot {
     async fn proposals<'ctx>(
         &self,
         _ctx: &Context<'_>,
-    ) -> async_graphql::FieldResult<Vec<Proposal>> {
+    ) -> async_graphql::FieldResult<Vec<FullProposalInfo>> {
         proposals::proposals(&self, _ctx).await
     }
 
@@ -20,7 +20,7 @@ impl QueryRoot {
         &self,
         _ctx: &Context<'_>,
         proposal_id: String,
-    ) -> async_graphql::FieldResult<Proposal> {
+    ) -> async_graphql::FieldResult<FullProposalInfo> {
         proposals::proposal(&self, proposal_id, _ctx).await
     }
 

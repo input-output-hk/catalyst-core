@@ -1,8 +1,13 @@
-use crate::db::models::proposals::{FullProposalInfo, Proposal};
+use crate::db::models::proposals::{community_choice, simple, FullProposalInfo, Proposal};
 use crate::db::schema::proposals;
 use crate::db::{
+    schema::{
+        proposal_community_choice_challenge as community_choice_proposal_dsl,
+        proposal_simple_challenge as simple_proposal_dsl,
+    },
     views_schema::full_proposals_info::dsl as full_proposal_dsl,
-    views_schema::full_proposals_info::dsl::full_proposals_info, DBConnection, DBConnectionPool,
+    views_schema::full_proposals_info::dsl::full_proposals_info,
+    DBConnection, DBConnectionPool,
 };
 use crate::v0::errors::HandleError;
 use diesel::query_dsl::filter_dsl::FilterDsl;
@@ -54,5 +59,23 @@ pub fn batch_insert_proposals(
                 .map(|proposal| proposal.values())
                 .collect::<Vec<_>>(),
         )
+        .execute(db_conn)
+}
+
+pub fn batch_insert_community_choice_challenge_data(
+    values: &[community_choice::ChallengeSqlValues],
+    db_conn: &DBConnection,
+) -> QueryResult<usize> {
+    diesel::insert_into(community_choice_proposal_dsl::table)
+        .values(values)
+        .execute(db_conn)
+}
+
+pub fn batch_insert_simple_challenge_data(
+    values: &[simple::ChallengeSqlValues],
+    db_conn: &DBConnection,
+) -> QueryResult<usize> {
+    diesel::insert_into(simple_proposal_dsl::table)
+        .values(values)
         .execute(db_conn)
 }

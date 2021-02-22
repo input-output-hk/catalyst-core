@@ -1,8 +1,9 @@
 use jortestkit::csv::CsvFileBuilder;
 use std::path::Path;
 use thiserror::Error;
+use vit_servicing_station_lib::db::models::proposals::{FullProposalInfo, ProposalChallengeInfo};
 use vit_servicing_station_lib::{
-    db::models::{challenges::Challenge, funds::Fund, proposals::Proposal, voteplans::Voteplan},
+    db::models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
     utils::datetime::unix_timestamp_to_datetime,
 };
 
@@ -52,7 +53,7 @@ impl CsvConverter {
 
     pub fn proposals<P: AsRef<Path>>(
         &self,
-        proposals: Vec<Proposal>,
+        proposals: Vec<FullProposalInfo>,
         path: P,
     ) -> Result<(), Error> {
         let headers = vec![
@@ -126,7 +127,25 @@ impl CsvConverter {
     }
 }
 
-fn convert_proposal(proposal: &Proposal) -> Vec<String> {
+fn convert_proposal(proposal: &FullProposalInfo) -> Vec<String> {
+    let (solution, brief, importance, goal, metrics) = match &proposal.challenge_info {
+        ProposalChallengeInfo::Simple(data) => (
+            data.proposal_solution.clone(),
+            "".to_string(),
+            "".to_string(),
+            "".to_string(),
+            "".to_string(),
+        ),
+        ProposalChallengeInfo::CommunityChoice(data) => (
+            "".to_string(),
+            data.proposal_brief.clone(),
+            data.proposal_importance.clone(),
+            data.proposal_goal.clone(),
+            data.proposal_metrics.clone(),
+        ),
+    };
+    let proposal = &proposal.proposal;
+
     vec![
         proposal.internal_id.to_string(),
         proposal.proposal_category.category_name.to_string(),
@@ -155,26 +174,11 @@ fn convert_proposal(proposal: &Proposal) -> Vec<String> {
         unix_timestamp_to_datetime(proposal.chain_vote_end_time).to_rfc3339(),
         unix_timestamp_to_datetime(proposal.chain_committee_end_time).to_rfc3339(),
         proposal.challenge_id.to_string(),
-        proposal
-            .proposal_solution
-            .clone()
-            .unwrap_or_else(Default::default),
-        proposal
-            .proposal_brief
-            .clone()
-            .unwrap_or_else(Default::default),
-        proposal
-            .proposal_importance
-            .clone()
-            .unwrap_or_else(Default::default),
-        proposal
-            .proposal_goal
-            .clone()
-            .unwrap_or_else(Default::default),
-        proposal
-            .proposal_metrics
-            .clone()
-            .unwrap_or_else(Default::default),
+        solution,
+        brief,
+        importance,
+        goal,
+        metrics,
     ]
 }
 

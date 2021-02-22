@@ -13,7 +13,7 @@ use chrono::NaiveDateTime;
 
 #[test]
 pub fn load_data_test() {
-    let temp_dir = TempDir::new().unwrap().into_persistent();
+    let temp_dir = TempDir::new().unwrap();
     let db_file = temp_dir.child("db.sqlite");
     let snapshot = ArbitraryGenerator::new().snapshot();
     let csv_converter = CsvConverter;

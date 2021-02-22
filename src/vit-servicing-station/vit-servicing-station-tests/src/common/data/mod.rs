@@ -1,5 +1,5 @@
 use vit_servicing_station_lib::db::models::{
-    api_tokens::APITokenData, challenges::Challenge, funds::Fund, proposals::Proposal,
+    api_tokens::APITokenData, challenges::Challenge, funds::Fund, proposals::FullProposalInfo,
     voteplans::Voteplan,
 };
 
@@ -20,7 +20,7 @@ pub fn token_hash() -> String {
     token().0
 }
 
-pub fn proposals() -> Vec<Proposal> {
+pub fn proposals() -> Vec<FullProposalInfo> {
     let mut gen = ArbitraryGenerator::new();
     let funds = gen.funds();
     gen.proposals(&funds)

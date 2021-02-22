@@ -1,6 +1,7 @@
 use serde::Deserialize;
-use vit_servicing_station_lib::db::models::proposals;
-use vit_servicing_station_lib::db::models::proposals::{Category, Proposer};
+use vit_servicing_station_lib::db::models::proposals::{
+    self, community_choice, simple, Category, ChallengeType, ProposalChallengeInfo, Proposer,
+};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
 #[derive(Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -101,47 +102,89 @@ fn default_challenge_id() -> i32 {
     -1
 }
 
-impl From<Proposal> for proposals::Proposal {
-    fn from(proposal: Proposal) -> Self {
-        Self {
-            internal_id: proposal.internal_id,
-            proposal_id: proposal.proposal_id,
+impl Proposal {
+    pub fn into_db_proposal_and_challenge_info(
+        self,
+        challenge_type: ChallengeType,
+    ) -> Result<(proposals::Proposal, proposals::ProposalChallengeInfo), std::io::Error> {
+        let proposal = proposals::Proposal {
+            internal_id: self.internal_id,
+            proposal_id: self.proposal_id,
             proposal_category: Category {
-                category_id: proposal.category_id,
-                category_name: proposal.category_name,
-                category_description: proposal.category_description,
+                category_id: self.category_id,
+                category_name: self.category_name,
+                category_description: self.category_description,
             },
-            proposal_title: proposal.proposal_title,
-            proposal_summary: proposal.proposal_summary,
-            proposal_public_key: proposal.proposal_public_key,
-            proposal_funds: proposal.proposal_funds,
-            proposal_url: proposal.proposal_url,
-            proposal_files_url: proposal.proposal_files_url,
-            proposal_impact_score: proposal.proposal_impact_score,
+            proposal_title: self.proposal_title,
+            proposal_summary: self.proposal_summary,
+            proposal_public_key: self.proposal_public_key,
+            proposal_funds: self.proposal_funds,
+            proposal_url: self.proposal_url,
+            proposal_files_url: self.proposal_files_url,
+            proposal_impact_score: self.proposal_impact_score,
             proposer: Proposer {
-                proposer_name: proposal.proposer_name,
-                proposer_email: proposal.proposer_email,
-                proposer_url: proposal.proposer_url,
-                proposer_relevant_experience: proposal.proposer_relevant_experience,
+                proposer_name: self.proposer_name,
+                proposer_email: self.proposer_email,
+                proposer_url: self.proposer_url,
+                proposer_relevant_experience: self.proposer_relevant_experience,
             },
-            chain_proposal_id: proposal.chain_proposal_id,
-            chain_proposal_index: proposal.chain_proposal_index,
-            chain_vote_options: VoteOptions::parse_coma_separated_value(
-                &proposal.chain_vote_options,
-            ),
-            chain_voteplan_id: proposal.chain_voteplan_id,
-            chain_vote_start_time: proposal.chain_vote_start_time,
-            chain_vote_end_time: proposal.chain_vote_end_time,
-            chain_committee_end_time: proposal.chain_committee_end_time,
-            chain_voteplan_payload: proposal.chain_voteplan_payload,
-            chain_vote_encryption_key: proposal.chain_vote_encryption_key,
-            fund_id: proposal.fund_id,
-            challenge_id: proposal.challenge_id,
-            proposal_solution: proposal.proposal_solution,
-            proposal_brief: proposal.proposal_brief,
-            proposal_importance: proposal.proposal_importance,
-            proposal_goal: proposal.proposal_goal,
-            proposal_metrics: proposal.proposal_metrics,
-        }
+            chain_proposal_id: self.chain_proposal_id,
+            chain_proposal_index: self.chain_proposal_index,
+            chain_vote_options: VoteOptions::parse_coma_separated_value(&self.chain_vote_options),
+            chain_voteplan_id: self.chain_voteplan_id,
+            chain_vote_start_time: self.chain_vote_start_time,
+            chain_vote_end_time: self.chain_vote_end_time,
+            chain_committee_end_time: self.chain_committee_end_time,
+            chain_voteplan_payload: self.chain_voteplan_payload,
+            chain_vote_encryption_key: self.chain_vote_encryption_key,
+            fund_id: self.fund_id,
+            challenge_id: self.challenge_id,
+        };
+
+        let challenge_info = match challenge_type {
+            ChallengeType::Simple => match self.proposal_solution {
+                Some(proposal_solution) => {
+                    ProposalChallengeInfo::Simple(simple::ChallengeInfo { proposal_solution })
+                }
+                None => {
+                    return Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        "cannot match simple proposal's challenge information fields:\
+                            expected a value in `proposal_solution` column, found none",
+                    ));
+                }
+            },
+            ChallengeType::CommunityChoice => {
+                match (
+                    self.proposal_brief,
+                    self.proposal_importance,
+                    self.proposal_goal,
+                    self.proposal_metrics,
+                ) {
+                    (
+                        Some(proposal_brief),
+                        Some(proposal_importance),
+                        Some(proposal_goal),
+                        Some(proposal_metrics),
+                    ) => ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
+                        proposal_brief,
+                        proposal_importance,
+                        proposal_goal,
+                        proposal_metrics,
+                    }),
+                    values => {
+                        return Err(std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            format!(
+                                "cannot match community choice proposal's challenge information fields:\
+                                expected values in columns `proposal_brief`, `proposal_importance`, `proposal_goal`, `proposal_metrics`, found: {:?}",
+                                values
+                            ),
+                        ));
+                    }
+                }
+            }
+        };
+        Ok((proposal, challenge_info))
     }
 }

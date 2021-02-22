@@ -1,4 +1,4 @@
-use crate::db::models::proposals::{Category, Proposal, Proposer};
+use crate::db::models::proposals::{Category, FullProposalInfo, Proposer};
 use crate::db::models::vote_options::VoteOptions;
 use crate::utils::datetime::unix_timestamp_to_datetime;
 use async_graphql::OutputJson;
@@ -38,112 +38,96 @@ impl Proposer {
 }
 
 #[async_graphql::Object]
-impl Proposal {
+impl FullProposalInfo {
     pub async fn internal_id(&self) -> i32 {
-        self.internal_id
+        self.proposal.internal_id
     }
 
     pub async fn category(&self) -> &Category {
-        &self.proposal_category
+        &self.proposal.proposal_category
     }
 
     pub async fn proposal_id(&self) -> &str {
-        &self.proposal_id
+        &self.proposal.proposal_id
     }
 
     pub async fn proposal_title(&self) -> &str {
-        &self.proposal_title
+        &self.proposal.proposal_title
     }
 
     pub async fn proposal_summary(&self) -> &str {
-        &self.proposal_summary
+        &self.proposal.proposal_summary
     }
 
     pub async fn proposal_public_key(&self) -> &str {
-        &self.proposal_public_key
+        &self.proposal.proposal_public_key
     }
 
     pub async fn proposal_funds(&self) -> i64 {
-        self.proposal_funds
+        self.proposal.proposal_funds
     }
 
     pub async fn proposal_url(&self) -> &str {
-        &self.proposal_url
+        &self.proposal.proposal_url
     }
 
     pub async fn proposal_files_url(&self) -> &str {
-        &self.proposal_files_url
+        &self.proposal.proposal_files_url
     }
 
     pub async fn proposal_impact_score(&self) -> i64 {
-        self.proposal_impact_score
+        self.proposal.proposal_impact_score
     }
 
     pub async fn proposer(&self) -> &Proposer {
-        &self.proposer
+        &self.proposal.proposer
     }
 
     pub async fn chain_proposal_id(&self) -> String {
-        String::from_utf8(self.chain_proposal_id.clone()).unwrap()
+        String::from_utf8(self.proposal.chain_proposal_id.clone()).unwrap()
     }
 
     pub async fn chain_voteplan_id(&self) -> &str {
-        &self.chain_voteplan_id
+        &self.proposal.chain_voteplan_id
     }
 
     pub async fn chain_proposal_index(&self) -> i64 {
-        self.chain_proposal_index
+        self.proposal.chain_proposal_index
     }
 
     pub async fn chain_voteplan_payload(&self) -> &str {
-        &self.chain_voteplan_payload
+        &self.proposal.chain_voteplan_payload
     }
 
     pub async fn chain_vote_encryption_key(&self) -> &str {
-        &self.chain_vote_encryption_key
+        &self.proposal.chain_vote_encryption_key
     }
 
     pub async fn chain_vote_start_time(&self) -> String {
-        unix_timestamp_to_datetime(self.chain_vote_start_time).to_rfc3339()
+        unix_timestamp_to_datetime(self.proposal.chain_vote_start_time).to_rfc3339()
     }
 
     pub async fn chain_vote_end_time(&self) -> String {
-        unix_timestamp_to_datetime(self.chain_vote_end_time).to_rfc3339()
+        unix_timestamp_to_datetime(self.proposal.chain_vote_end_time).to_rfc3339()
     }
 
     pub async fn chain_committee_end_time(&self) -> String {
-        unix_timestamp_to_datetime(self.chain_committee_end_time).to_rfc3339()
+        unix_timestamp_to_datetime(self.proposal.chain_committee_end_time).to_rfc3339()
     }
 
     pub async fn chain_vote_options(&self) -> OutputJson<&VoteOptions> {
-        OutputJson(&self.chain_vote_options)
+        OutputJson(&self.proposal.chain_vote_options)
     }
 
     pub async fn fund_id(&self) -> i32 {
-        self.fund_id
+        self.proposal.fund_id
     }
 
     pub async fn challenge_id(&self) -> i32 {
-        self.challenge_id
+        self.proposal.challenge_id
     }
 
-    pub async fn proposal_solution(&self) -> Option<String> {
-        self.proposal_solution.clone()
-    }
-
-    pub async fn proposal_brief(&self) -> Option<String> {
-        self.proposal_brief.clone()
-    }
-
-    pub async fn proposal_importance(&self) -> Option<String> {
-        self.proposal_importance.clone()
-    }
-
-    pub async fn proposal_goal(&self) -> Option<String> {
-        self.proposal_goal.clone()
-    }
-
-    pub async fn proposal_metrics(&self) -> Option<String> {
-        self.proposal_metrics.clone()
+    pub async fn challenge_type(&self) -> String {
+        self.challenge_type.to_string()
     }
 }

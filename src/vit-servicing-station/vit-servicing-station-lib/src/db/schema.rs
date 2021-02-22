@@ -33,6 +33,23 @@ table! {
 }
 
 table! {
+    proposal_community_choice_challenge (proposal_id) {
+        proposal_id -> Text,
+        proposal_brief -> Nullable<Text>,
+        proposal_importance -> Nullable<Text>,
+        proposal_goal -> Nullable<Text>,
+        proposal_metrics -> Nullable<Text>,
+    }
+}
+
+table! {
+    proposal_simple_challenge (proposal_id) {
+        proposal_id -> Text,
+        proposal_solution -> Nullable<Text>,
+    }
+}
+
+table! {
     proposals (id) {
         id -> Integer,
         proposal_id -> Text,
@@ -53,11 +70,6 @@ table! {
         chain_vote_options -> Text,
         chain_voteplan_id -> Text,
         challenge_id -> Integer,
-        proposal_solution -> Nullable<Text>,
-        proposal_brief -> Nullable<Text>,
-        proposal_importance -> Nullable<Text>,
-        proposal_goal -> Nullable<Text>,
-        proposal_metrics -> Nullable<Text>,
     }
 }
 
@@ -74,4 +86,12 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(api_tokens, challenges, funds, proposals, voteplans,);
+allow_tables_to_appear_in_same_query!(
+    api_tokens,
+    challenges,
+    funds,
+    proposal_community_choice_challenge,
+    proposal_simple_challenge,
+    proposals,
+    voteplans,
+);

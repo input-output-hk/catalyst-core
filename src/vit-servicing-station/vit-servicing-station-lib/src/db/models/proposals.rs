@@ -2,7 +2,11 @@ use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
 use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
 use diesel::{ExpressionMethods, Insertable, Queryable};
-use serde::{Deserialize, Serialize};
+use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
+use std::convert::{TryFrom, TryInto};
+
+pub mod community_choice;
+pub mod simple;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Category {
@@ -109,44 +113,53 @@ pub struct Proposal {
     pub fund_id: i32,
     #[serde(alias = "challengeId")]
     pub challenge_id: i32,
-    #[serde(
-        alias = "proposalSolution",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub proposal_solution: Option<String>,
-    #[serde(
-        alias = "proposalBrief",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub proposal_brief: Option<String>,
-    #[serde(
-        alias = "proposalImportance",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub proposal_importance: Option<String>,
-    #[serde(
-        alias = "proposalGoal",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub proposal_goal: Option<String>,
-    #[serde(
-        alias = "proposalMetrics",
-        default,
-        skip_serializing_if = "Option::is_none"
-    )]
-    pub proposal_metrics: Option<String>,
+}
+
+#[derive(PartialEq, Eq, Debug, Clone)]
+pub enum ProposalChallengeInfo {
+    Simple(simple::ChallengeInfo),
+    CommunityChoice(community_choice::ChallengeInfo),
+}
+
+#[derive(Serialize, Deserialize)]
+struct SerdeProposalChallengeInfo {
+    #[serde(flatten, default, skip_serializing_if = "Option::is_none")]
+    simple: Option<simple::ChallengeInfo>,
+    #[serde(flatten, default, skip_serializing_if = "Option::is_none")]
+    community: Option<community_choice::ChallengeInfo>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct FullProposalInfo {
     #[serde(flatten)]
     pub proposal: Proposal,
+    #[serde(flatten)]
+    pub challenge_info: ProposalChallengeInfo,
     #[serde(alias = "challengeType")]
     pub challenge_type: ChallengeType,
+}
+
+impl Serialize for ProposalChallengeInfo {
+    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
+    where
+        S: Serializer,
+    {
+        let serde_data: SerdeProposalChallengeInfo = self.clone().into();
+        serde_data.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for ProposalChallengeInfo {
+    fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let serde_data: SerdeProposalChallengeInfo =
+            SerdeProposalChallengeInfo::deserialize(deserializer)?;
+        serde_data.try_into().map_err(|_| {
+            <D as Deserializer<'de>>::Error::custom("Invalid data for ProposalChallengeInfo")
+        })
+    }
 }
 
 type FullProposalsInfoRow = (
@@ -250,11 +263,6 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
             chain_vote_encryption_key: row.22,
             fund_id: row.23,
             challenge_id: row.24,
-            proposal_solution: row.26,
-            proposal_brief: row.27,
-            proposal_importance: row.28,
-            proposal_goal: row.29,
-            proposal_metrics: row.30,
         }
     }
 }
@@ -264,8 +272,24 @@ impl Queryable<full_proposals_info::SqlType, DB> for FullProposalInfo {
 
     fn build(row: Self::Row) -> Self {
         let challenge_type = row.25.parse().unwrap();
+        // It should be safe to unwrap this values here if DB is sanitized and hence tables have data
+        // relative to the challenge type.
+        let challenge_info = match challenge_type {
+            ChallengeType::Simple => ProposalChallengeInfo::Simple(simple::ChallengeInfo {
+                proposal_solution: row.26.clone().unwrap(),
+            }),
+            ChallengeType::CommunityChoice => {
+                ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
+                    proposal_brief: row.27.clone().unwrap(),
+                    proposal_importance: row.28.clone().unwrap(),
+                    proposal_goal: row.29.clone().unwrap(),
+                    proposal_metrics: row.30.clone().unwrap(),
+                })
+            }
+        };
         FullProposalInfo {
             proposal: Proposal::build(row),
+            challenge_info,
             challenge_type,
         }
     }
@@ -294,11 +318,6 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::chain_vote_options, String>,
         diesel::dsl::Eq<proposals::chain_voteplan_id, String>,
         diesel::dsl::Eq<proposals::challenge_id, i32>,
-        diesel::dsl::Eq<proposals::proposal_solution, Option<String>>,
-        diesel::dsl::Eq<proposals::proposal_brief, Option<String>>,
-        diesel::dsl::Eq<proposals::proposal_importance, Option<String>>,
-        diesel::dsl::Eq<proposals::proposal_goal, Option<String>>,
-        diesel::dsl::Eq<proposals::proposal_metrics, Option<String>>,
     );
 
     fn values(self) -> Self::Values {
@@ -321,12 +340,39 @@ impl Insertable<proposals::table> for Proposal {
             proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(self.chain_voteplan_id),
             proposals::challenge_id.eq(self.challenge_id),
-            proposals::proposal_solution.eq(self.proposal_solution),
-            proposals::proposal_brief.eq(self.proposal_brief),
-            proposals::proposal_importance.eq(self.proposal_importance),
-            proposals::proposal_goal.eq(self.proposal_goal),
-            proposals::proposal_metrics.eq(self.proposal_metrics),
         )
+    }
+}
+
+struct SerdeToProposalChallengeInfoError;
+
+impl TryFrom<SerdeProposalChallengeInfo> for ProposalChallengeInfo {
+    type Error = SerdeToProposalChallengeInfoError;
+
+    fn try_from(data: SerdeProposalChallengeInfo) -> Result<Self, Self::Error> {
+        let SerdeProposalChallengeInfo { simple, community } = data;
+        match (simple, community) {
+            (None, None) | (Some(_), Some(_)) => Err(SerdeToProposalChallengeInfoError),
+            (Some(simple), None) => Ok(ProposalChallengeInfo::Simple(simple)),
+            (None, Some(community_challenge)) => {
+                Ok(ProposalChallengeInfo::CommunityChoice(community_challenge))
+            }
+        }
+    }
+}
+
+impl From<ProposalChallengeInfo> for SerdeProposalChallengeInfo {
+    fn from(data: ProposalChallengeInfo) -> Self {
+        match data {
+            ProposalChallengeInfo::Simple(simple) => SerdeProposalChallengeInfo {
+                simple: Some(simple),
+                community: None,
+            },
+            ProposalChallengeInfo::CommunityChoice(community) => SerdeProposalChallengeInfo {
+                simple: None,
+                community: Some(community),
+            },
+        }
     }
 }
 
@@ -335,60 +381,68 @@ pub mod test {
     use super::*;
     use crate::db::{
         models::vote_options::VoteOptions,
-        schema::{proposals, voteplans},
+        schema::{
+            proposal_community_choice_challenge, proposal_simple_challenge, proposals, voteplans,
+        },
         DBConnectionPool,
     };
     use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
 
-    pub fn get_test_proposal() -> Proposal {
+    pub fn get_test_proposal() -> FullProposalInfo {
         const CHALLENGE_ID: i32 = 9001;
 
-        Proposal {
-            internal_id: 1,
-            proposal_id: "1".to_string(),
-            proposal_category: Category {
-                category_id: "".to_string(),
-                category_name: "foo_category_name".to_string(),
-                category_description: "".to_string(),
+        FullProposalInfo {
+            proposal: Proposal {
+                internal_id: 1,
+                proposal_id: "1".to_string(),
+                proposal_category: Category {
+                    category_id: "".to_string(),
+                    category_name: "foo_category_name".to_string(),
+                    category_description: "".to_string(),
+                },
+                proposal_title: "the proposal".to_string(),
+                proposal_summary: "the proposal summary".to_string(),
+                proposal_public_key: "pubkey".to_string(),
+                proposal_funds: 10000,
+                proposal_url: "http://foo.bar".to_string(),
+                proposal_files_url: "http://foo.bar/files".to_string(),
+                proposal_impact_score: 100,
+                proposer: Proposer {
+                    proposer_name: "tester".to_string(),
+                    proposer_email: "tester@tester.tester".to_string(),
+                    proposer_url: "http://tester.tester".to_string(),
+                    proposer_relevant_experience: "ilumination".to_string(),
+                },
+                chain_proposal_id: b"foobar".to_vec(),
+                chain_proposal_index: 0,
+                chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
+                chain_voteplan_id: "voteplain_id".to_string(),
+                chain_vote_start_time: Utc::now().timestamp(),
+                chain_vote_end_time: Utc::now().timestamp(),
+                chain_committee_end_time: Utc::now().timestamp(),
+                chain_voteplan_payload: "none".to_string(),
+                chain_vote_encryption_key: "none".to_string(),
+                fund_id: 1,
+                challenge_id: CHALLENGE_ID,
             },
-            proposal_title: "the proposal".to_string(),
-            proposal_summary: "the proposal summary".to_string(),
-            proposal_public_key: "pubkey".to_string(),
-            proposal_funds: 10000,
-            proposal_url: "http://foo.bar".to_string(),
-            proposal_files_url: "http://foo.bar/files".to_string(),
-            proposal_impact_score: 100,
-            proposer: Proposer {
-                proposer_name: "tester".to_string(),
-                proposer_email: "tester@tester.tester".to_string(),
-                proposer_url: "http://tester.tester".to_string(),
-                proposer_relevant_experience: "ilumination".to_string(),
-            },
-            chain_proposal_id: b"foobar".to_vec(),
-            chain_proposal_index: 0,
-            chain_vote_options: VoteOptions::parse_coma_separated_value("b,a,r"),
-            chain_voteplan_id: "voteplain_id".to_string(),
-            chain_vote_start_time: Utc::now().timestamp(),
-            chain_vote_end_time: Utc::now().timestamp(),
-            chain_committee_end_time: Utc::now().timestamp(),
-            chain_voteplan_payload: "none".to_string(),
-            chain_vote_encryption_key: "none".to_string(),
-            fund_id: 1,
-            challenge_id: CHALLENGE_ID,
-            proposal_solution: None,
-            proposal_brief: Some("A for ADA".to_string()),
-            proposal_importance: Some("We need to get them while they're young.".to_string()),
-            proposal_goal: Some("Nebulous".to_string()),
-            proposal_metrics: Some(
-                "\\- Number of people engaged into the creation of Cryptoalphabet".to_string(),
+            challenge_info: ProposalChallengeInfo::CommunityChoice(
+                community_choice::ChallengeInfo {
+                    proposal_brief: "A for ADA".to_string(),
+                    proposal_importance: "We need to get them while they're young.".to_string(),
+                    proposal_goal: "Nebulous".to_string(),
+                    proposal_metrics:
+                        "\\- Number of people engaged into the creation of Cryptoalphabet"
+                            .to_string(),
+                },
             ),
+            challenge_type: ChallengeType::CommunityChoice,
         }
     }
 
-    pub fn populate_db_with_proposal(proposal: &Proposal, pool: &DBConnectionPool) {
+    pub fn populate_db_with_proposal(full_proposal: &FullProposalInfo, pool: &DBConnectionPool) {
         let connection = pool.get().unwrap();
-
+        let proposal = &full_proposal.proposal;
         // insert the proposal information
         let values = (
             proposals::proposal_id.eq(proposal.proposal_id.clone()),
@@ -410,11 +464,6 @@ pub mod test {
             proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
             proposals::chain_voteplan_id.eq(proposal.chain_voteplan_id.clone()),
             proposals::challenge_id.eq(proposal.challenge_id.clone()),
-            proposals::proposal_solution.eq(proposal.proposal_solution.clone()),
-            proposals::proposal_brief.eq(proposal.proposal_brief.clone()),
-            proposals::proposal_importance.eq(proposal.proposal_importance.clone()),
-            proposals::proposal_goal.eq(proposal.proposal_goal.clone()),
-            proposals::proposal_metrics.eq(proposal.proposal_metrics.clone()),
         );
 
         diesel::insert_into(proposals::table)
@@ -437,5 +486,36 @@ pub mod test {
             .values(voteplan_values)
             .execute(&connection)
             .unwrap();
+
+        match &full_proposal.challenge_info {
+            ProposalChallengeInfo::Simple(data) => {
+                let simple_values = (
+                    proposal_simple_challenge::proposal_id.eq(proposal.proposal_id.clone()),
+                    proposal_simple_challenge::proposal_solution.eq(data.proposal_solution.clone()),
+                );
+                diesel::insert_into(proposal_simple_challenge::table)
+                    .values(simple_values)
+                    .execute(&connection)
+                    .unwrap();
+            }
+            ProposalChallengeInfo::CommunityChoice(data) => {
+                let community_values = (
+                    proposal_community_choice_challenge::proposal_id
+                        .eq(proposal.proposal_id.clone()),
+                    proposal_community_choice_challenge::proposal_brief
+                        .eq(data.proposal_brief.clone()),
+                    proposal_community_choice_challenge::proposal_importance
+                        .eq(data.proposal_importance.clone()),
+                    proposal_community_choice_challenge::proposal_goal
+                        .eq(data.proposal_goal.clone()),
+                    proposal_community_choice_challenge::proposal_metrics
+                        .eq(data.proposal_metrics.clone()),
+                );
+                diesel::insert_into(proposal_community_choice_challenge::table)
+                    .values(community_values)
+                    .execute(&connection)
+                    .unwrap();
+            }
+        };
     }
 }

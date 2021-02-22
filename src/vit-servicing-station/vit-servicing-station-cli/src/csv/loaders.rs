@@ -2,8 +2,12 @@ use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
 use csv::Trim;
 use serde::de::DeserializeOwned;
+use std::collections::HashMap;
 use std::io;
 use structopt::StructOpt;
+use vit_servicing_station_lib::db::models::proposals::{
+    community_choice, simple, ProposalChallengeInfo,
+};
 use vit_servicing_station_lib::db::{
     load_db_connection_pool, models::challenges::Challenge, models::funds::Fund,
     models::proposals::Proposal, models::voteplans::Voteplan,
@@ -80,13 +84,40 @@ impl CSVDataCmd {
             ));
         }
         let mut voteplans = CSVDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;
-        let mut challenges = CSVDataCmd::load_from_csv::<Challenge>(challenges_path)?;
-        let mut proposals: Vec<Proposal> =
-            CSVDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?
-                .iter()
-                .cloned()
-                .map(Into::into)
+        let mut challenges: HashMap<i32, Challenge> =
+            CSVDataCmd::load_from_csv::<Challenge>(challenges_path)?
+                .into_iter()
+                .map(|c| (c.id, c))
                 .collect();
+        let csv_proposals = CSVDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?;
+        let mut proposals: Vec<Proposal> = Vec::new();
+        let mut simple_proposals_data: Vec<simple::ChallengeSqlValues> = Vec::new();
+        let mut community_proposals_data: Vec<community_choice::ChallengeSqlValues> = Vec::new();
+
+        for proposal in csv_proposals {
+            let challenge_type = challenges
+                .get(&proposal.challenge_id)
+                .ok_or_else(|| {
+                    std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        format!("Challenge with id {} not found", proposal.challenge_id),
+                    )
+                })?
+                .challenge_type
+                .clone();
+            let (proposal, challenge_info) =
+                proposal.into_db_proposal_and_challenge_info(challenge_type)?;
+            match challenge_info {
+                ProposalChallengeInfo::Simple(simple) => simple_proposals_data
+                    .push(simple.to_sql_values_with_proposal_id(&proposal.proposal_id)),
+                ProposalChallengeInfo::CommunityChoice(community_choice) => {
+                    community_proposals_data.push(
+                        community_choice.to_sql_values_with_proposal_id(&proposal.proposal_id),
+                    )
+                }
+            };
+        }
+
         // start db connection
         let pool = load_db_connection_pool(db_url)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;
@@ -110,7 +141,7 @@ impl CSVDataCmd {
         }
 
         // apply fund id to challenges
-        for challenge in challenges.iter_mut() {
+        for challenge in challenges.values_mut() {
             challenge.fund_id = fund.id;
         }
 
@@ -124,8 +155,20 @@ impl CSVDataCmd {
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
+        vit_servicing_station_lib::db::queries::proposals::batch_insert_simple_challenge_data(
+            &simple_proposals_data,
+            &db_conn,
+        )
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+
+        vit_servicing_station_lib::db::queries::proposals::batch_insert_community_choice_challenge_data(
+            &community_proposals_data,
+            &db_conn,
+        )
+        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+
         vit_servicing_station_lib::db::queries::challenges::batch_insert_challenges(
-            &challenges,
+            &challenges.values().cloned().collect::<Vec<Challenge>>(),
             &db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;

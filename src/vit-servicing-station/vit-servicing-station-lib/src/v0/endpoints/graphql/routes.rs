@@ -43,10 +43,11 @@ mod test {
     use crate::db::models::{
         challenges::{test as challenges_testing, Challenge},
         funds::{test as funds_testing, Fund},
-        proposals::{test as proposal_testing, Proposal},
+        proposals::{test as proposal_testing, FullProposalInfo},
     };
 
     use crate::db::migrations as db_testing;
+    use crate::db::models::proposals::{ChallengeType, Proposal};
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use serde_json::json;
     use warp::{Filter, Rejection, Reply};
@@ -151,12 +152,8 @@ mod test {
                 chainVoteEndTime,
                 chainCommitteeEndTime,
                 fundId,
-                challengeId
-                proposalSolution,
-                proposalBrief,
-                proposalImportance,
-                proposalGoal,
-                proposalMetrics
+                challengeId,
+                challengeType
             }
         }"#;
 
@@ -193,11 +190,7 @@ mod test {
             chainCommitteeEndTime,
             fundId,
             challengeId,
-            proposalSolution,
-            proposalBrief,
-            proposalImportance,
-            proposalGoal,
-            proposalMetrics
+            challengeType
         }
     }"#;
 
@@ -226,7 +219,7 @@ mod test {
     }
 
     async fn build_proposal_test_filter() -> (
-        Proposal,
+        FullProposalInfo,
         impl Filter<Extract = impl Reply, Error = Rejection> + Clone,
     ) {
         // build context
@@ -235,15 +228,16 @@ mod test {
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
-        let proposal: Proposal = proposal_testing::get_test_proposal();
-        proposal_testing::populate_db_with_proposal(&proposal, &pool);
+        let full_proposal: FullProposalInfo = proposal_testing::get_test_proposal();
+        let proposal = &full_proposal.proposal;
+        proposal_testing::populate_db_with_proposal(&full_proposal, &pool);
         let challenge: Challenge =
             challenges_testing::get_test_challenge_with_fund_id(proposal.fund_id);
         challenges_testing::populate_db_with_challenge(&challenge, &pool);
 
         // return filter
         (
-            proposal,
+            full_proposal,
             super::filter(
                 warp::any().and(warp::post()).boxed(),
                 shared_context.clone(),
@@ -320,7 +314,7 @@ mod test {
             "operationName": "proposalById",
             "query": PROPOSAL_BY_ID_ALL_ATTRIBUTES_QUERY,
             "variables": {
-                "id": proposal.proposal_id
+                "id": proposal.proposal.proposal_id
             }
         })
         .to_string();
@@ -342,9 +336,27 @@ mod test {
 
         let result_proposal = query_result["data"]["proposal"].clone();
         println!("{}", result_proposal);
-        let result_proposal: Proposal = serde_json::from_value(result_proposal).unwrap();
 
-        assert_eq!(proposal, result_proposal);
+        // due to the error in serde where flatten+alias do not work as expected,
+        // https://github.com/serde-rs/serde/issues/1504
+        // we need to manually deserialize the proposal parts
+        let inner_proposal: Proposal = serde_json::from_value(result_proposal.clone()).unwrap();
+
+        let challenge_type: ChallengeType =
+            serde_json::from_value(result_proposal.get("challengeType").unwrap().clone()).unwrap();
+
+        // this is not supported by GraphQL still, but is should be checked once it is implmented
+        // let proposal_challenge_data: ProposalChallengeInfo =
+        //     serde_json::from_value(result_proposal.clone()).unwrap();
+        //
+        // let result_proposal: FullProposalInfo = FullProposalInfo {
+        //     proposal: inner_proposal,
+        //     proposal_challenge_specific_data: proposal_challenge_data,
+        //     challenge_type,
+        // };
+
+        assert_eq!(proposal.proposal, inner_proposal);
+        assert_eq!(proposal.challenge_type, challenge_type);
     }
 
     #[tokio::test]
@@ -371,6 +383,6 @@ mod test {
         let result_proposal = query_result["data"]["proposals"].clone();
         let result_proposal: Vec<Proposal> = serde_json::from_value(result_proposal).unwrap();
 
-        assert_eq!(vec![proposal], result_proposal);
+        assert_eq!(vec![proposal.proposal], result_proposal);
     }
 }

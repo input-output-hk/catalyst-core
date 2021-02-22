@@ -33,8 +33,16 @@ create table proposals
     chain_proposal_index BIGINT NOT NULL,
     chain_vote_options VARCHAR NOT NULL,
     chain_voteplan_id VARCHAR NOT NULL,
-    challenge_id INTEGER NOT NULL,
-    proposal_solution VARCHAR,
+    challenge_id INTEGER NOT NULL
+);
+
+create table proposal_simple_challenge (
+    proposal_id VARCHAR NOT NULL primary key,
+    proposal_solution VARCHAR
+);
+
+create table proposal_community_choice_challenge (
+    proposal_id VARCHAR NOT NULL primary key,
     proposal_brief VARCHAR,
     proposal_importance VARCHAR,
     proposal_goal VARCHAR,
@@ -78,6 +86,11 @@ CREATE VIEW full_proposals_info
 AS
 SELECT
     proposals.*,
+    proposal_simple_challenge.proposal_solution,
+    proposal_community_choice_challenge.proposal_brief,
+    proposal_community_choice_challenge.proposal_importance,
+    proposal_community_choice_challenge.proposal_goal,
+    proposal_community_choice_challenge.proposal_metrics,
     voteplans.chain_vote_start_time,
     voteplans.chain_vote_end_time,
     voteplans.chain_committee_end_time,
@@ -89,3 +102,9 @@ FROM
     proposals
         INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
         INNER JOIN challenges on challenges.id = proposals.challenge_id
+        LEFT JOIN proposal_simple_challenge
+            on proposals.proposal_id = proposal_simple_challenge.proposal_id
+            and challenges.challenge_type = 'simple'
+        LEFT JOIN proposal_community_choice_challenge
+            on proposals.proposal_id = proposal_community_choice_challenge.proposal_id
+            and challenges.challenge_type = 'community-choice'

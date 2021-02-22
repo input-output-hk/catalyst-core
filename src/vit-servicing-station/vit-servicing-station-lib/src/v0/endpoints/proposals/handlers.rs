@@ -33,10 +33,10 @@ pub mod test {
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
-        let proposal: Proposal = proposals_testing::get_test_proposal();
+        let proposal: FullProposalInfo = proposals_testing::get_test_proposal();
         proposals_testing::populate_db_with_proposal(&proposal, &pool);
         let challenge: Challenge =
-            challenges_testing::get_test_challenge_with_fund_id(proposal.fund_id);
+            challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
         challenges_testing::populate_db_with_challenge(&challenge, &pool);
         // build filter
         let filter = warp::path!(i32)
@@ -51,7 +51,7 @@ pub mod test {
             .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         println!("{}", String::from_utf8(result.body().to_vec()).unwrap());
-        let result_proposal: Proposal =
+        let result_proposal: FullProposalInfo =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
         assert_eq!(proposal, result_proposal);
     }
@@ -66,10 +66,10 @@ pub mod test {
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
-        let proposal: Proposal = proposals_testing::get_test_proposal();
+        let proposal: FullProposalInfo = proposals_testing::get_test_proposal();
         proposals_testing::populate_db_with_proposal(&proposal, &pool);
         let challenge: Challenge =
-            challenges_testing::get_test_challenge_with_fund_id(proposal.fund_id);
+            challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
         challenges_testing::populate_db_with_challenge(&challenge, &pool);
         // build filter
         let filter = warp::any()
@@ -79,7 +79,7 @@ pub mod test {
 
         let result = warp::test::request().method("GET").reply(&filter).await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
-        let result_proposals: Vec<Proposal> =
+        let result_proposals: Vec<FullProposalInfo> =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
         assert_eq!(vec![proposal], result_proposals);
     }

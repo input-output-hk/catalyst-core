@@ -19,8 +19,8 @@ use chain_impl_mockchain::{
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use rand::{
-    distributions::{Distribution, WeightedIndex},
-    SeedableRng,
+    distributions::{Distribution, Uniform, WeightedIndex},
+    Rng, SeedableRng,
 };
 
 const ALICE: &str = "Alice";
@@ -33,6 +33,7 @@ fn tally_benchmark(
     n_proposals: usize,
     voters_count: usize,
     proposals_per_voter_ratio: f64,
+    yes_votes_ratio: f64,
     voting_power_distribution: impl Distribution<u64>,
     c: &mut Criterion,
 ) {
@@ -106,13 +107,13 @@ fn tally_benchmark(
         .unwrap();
 
     // cast votes
-    let favorable = Choice::new(1);
-
     let vote_plan_def = controller.vote_plan(VOTE_PLAN).unwrap();
     let vote_plan: VotePlan = vote_plan_def.clone().into();
 
     let should_vote_distribution =
         WeightedIndex::new(&[1.0 - proposals_per_voter_ratio, proposals_per_voter_ratio]).unwrap();
+    let votes_distribution =
+        WeightedIndex::new(&[yes_votes_ratio, 1.0 - yes_votes_ratio, 0.0]).unwrap();
 
     let mut total_votes_per_proposal = vec![0; n_proposals];
 
@@ -124,12 +125,13 @@ fn tally_benchmark(
             }
 
             let mut private_voter = controller.wallet(&alias).unwrap();
+            let choice = Choice::new(votes_distribution.sample(&mut rng) as u8);
             controller
                 .cast_vote_private(
                     &private_voter,
                     &vote_plan_def,
                     &proposal.external_id(),
-                    favorable,
+                    choice,
                     &mut ledger,
                     &mut rng,
                 )
@@ -264,7 +266,7 @@ fn tally_benchmark_flat_distribution(
     let voting_power_distribution = rand::distributions::uniform::Uniform::from(
         voting_power_per_voter..voting_power_per_voter + 1,
     );
-    tally_benchmark(1, voters_count, 1.0, voting_power_distribution, c);
+    tally_benchmark(1, voters_count, 1.0, 0.5, voting_power_distribution, c);
 }
 
 fn tally_benchmark_128_voters_1000_ada(c: &mut Criterion) {
@@ -283,11 +285,103 @@ fn tally_benchmark_1000_voters_1000_ada(c: &mut Criterion) {
     tally_benchmark_flat_distribution(1000, 1000, c);
 }
 
+struct FundDistribution<'a, 'b> {
+    threshold: u64,
+    ranges_bounds: &'a [u64],
+    ranges_weights: &'b [f64],
+}
+
+impl<'a, 'b> Distribution<u64> for FundDistribution<'a, 'b> {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u64 {
+        assert_eq!(self.ranges_weights.len(), self.ranges_bounds.len());
+        let ranges_sampler = WeightedIndex::new(self.ranges_weights).unwrap();
+        let range_no = ranges_sampler.sample(rng);
+        let lower_bound = range_no
+            .checked_sub(1)
+            .map(|i| self.ranges_bounds[i])
+            .unwrap_or(self.threshold);
+        let current_range_sampler = self
+            .ranges_bounds
+            .get(range_no)
+            .copied()
+            .map(|upper_bound| Uniform::from(lower_bound..upper_bound))
+            .unwrap();
+        current_range_sampler.sample(rng)
+    }
+}
+
+fn tally_benchmark_fund3_scenario(c: &mut Criterion) {
+    // 15k voters
+    // 150 proposals
+    // Each voter to vote on 75% of proposals
+    // Distribution: 20% users over 1 million, 40% between 1 million to 200k, 40% below 200k
+    // 65% no, 35% yes. 0% abstain
+    // Threshold: 3000
+    let voters_count = 15_000;
+    let n_proposals = 150;
+    let proposals_per_voter_ratio = 0.75;
+    let ranges_bounds = &[200_000, 1_000_000, 10_000_000];
+    let ranges_weights = &[0.4, 0.4, 0.2];
+    let yes_votes_ratio = 0.35;
+    let threshold = 3000;
+
+    let voting_power_distribution = FundDistribution {
+        threshold,
+        ranges_bounds,
+        ranges_weights,
+    };
+
+    tally_benchmark(
+        n_proposals,
+        voters_count,
+        proposals_per_voter_ratio,
+        yes_votes_ratio,
+        voting_power_distribution,
+        c,
+    );
+}
+
+fn tally_benchmark_fund4_scenario(c: &mut Criterion) {
+    // 30k voters
+    // 300 proposals
+    // Each voter to vote on 75% of proposals
+    // Distribution: 20% users over 1 million, 40% between 1 million to 200k, 40% below 200k
+    // 65% no, 35% yes. 0% abstain
+    // Threshold: 3000
+    let voters_count = 30_000;
+    let n_proposals = 300;
+    let proposals_per_voter_ratio = 0.75;
+    let ranges_bounds = &[200_000, 1_000_000, 10_000_000];
+    let ranges_weights = &[0.4, 0.4, 0.2];
+    let yes_votes_ratio = 0.35;
+    let threshold = 3000;
+
+    let voting_power_distribution = FundDistribution {
+        threshold,
+        ranges_bounds,
+        ranges_weights,
+    };
+
+    tally_benchmark(
+        n_proposals,
+        voters_count,
+        proposals_per_voter_ratio,
+        yes_votes_ratio,
+        voting_power_distribution,
+        c,
+    );
+}
+
 criterion_group!(
-    benches,
+    fast_bench,
     tally_benchmark_128_voters_1000_ada,
     tally_benchmark_200_voters_1000_ada,
     tally_benchmark_200_voters_1_000_000_ada,
     tally_benchmark_1000_voters_1000_ada,
 );
-criterion_main!(benches);
+criterion_group!(
+    big_bench,
+    tally_benchmark_fund3_scenario,
+    tally_benchmark_fund4_scenario,
+);
+criterion_main!(fast_benches, realistic_benches);

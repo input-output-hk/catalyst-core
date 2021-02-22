@@ -1,7 +1,6 @@
 mod challenges;
 mod funds;
 mod genesis;
-mod graphql;
 mod health;
 mod proposals;
 
@@ -36,13 +35,6 @@ pub async fn filter(
     let genesis_root = warp::path!("block0" / ..);
     let genesis_filter = genesis::filter(genesis_root.boxed(), context.clone());
 
-    // mount graphql endpoint
-    let graphql_root = warp::path!("graphql" / ..);
-    let graphql_filter = graphql::filter(graphql_root.boxed(), context.clone()).await;
-
-    let playground_root = warp::path!("graphql" / ..);
-    let playground_filter = graphql::playground::filter(playground_root.boxed());
-
     let api_token_filter = if enable_api_tokens {
         api_token::api_token_filter(context).await.boxed()
     } else {
@@ -50,14 +42,13 @@ pub async fn filter(
     };
 
     root.and(
-        playground_filter.or(api_token_filter.and(
+        api_token_filter.and(
             health_filter
                 .or(genesis_filter)
                 .or(chain_data_filter)
                 .or(funds_filter)
-                .or(graphql_filter)
                 .or(challenges_filter),
-        )),
+        ),
     )
     .boxed()
 }

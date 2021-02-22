@@ -100,7 +100,7 @@ impl<'a> DbInserter<'a> {
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
 
-            match &proposal.proposal_challenge_specific_data {
+            match &proposal.challenge_info {
                 ProposalChallengeInfo::Simple(data) => {
                     let simple_values = (
                         proposal_simple_challenge::proposal_id
@@ -113,7 +113,7 @@ impl<'a> DbInserter<'a> {
                         .execute(self.connection)
                         .map_err(DbInserterError::DieselError)?;
                 }
-                ProposalChallengeInfo::Community(data) => {
+                ProposalChallengeInfo::CommunityChallenge(data) => {
                     let community_values = (
                         proposal_community_choice_challenge::proposal_id
                             .eq(proposal.proposal.proposal_id.clone()),

@@ -128,23 +128,22 @@ impl CsvConverter {
 }
 
 fn convert_proposal(proposal: &FullProposalInfo) -> Vec<String> {
-    let (solution, brief, importance, goal, metrics) =
-        match &proposal.proposal_challenge_specific_data {
-            ProposalChallengeInfo::Simple(data) => (
-                data.proposal_solution.clone(),
-                "".to_string(),
-                "".to_string(),
-                "".to_string(),
-                "".to_string(),
-            ),
-            ProposalChallengeInfo::Community(data) => (
-                "".to_string(),
-                data.proposal_brief.clone(),
-                data.proposal_importance.clone(),
-                data.proposal_goal.clone(),
-                data.proposal_metrics.clone(),
-            ),
-        };
+    let (solution, brief, importance, goal, metrics) = match &proposal.challenge_info {
+        ProposalChallengeInfo::Simple(data) => (
+            data.proposal_solution.clone(),
+            "".to_string(),
+            "".to_string(),
+            "".to_string(),
+            "".to_string(),
+        ),
+        ProposalChallengeInfo::CommunityChallenge(data) => (
+            "".to_string(),
+            data.proposal_brief.clone(),
+            data.proposal_importance.clone(),
+            data.proposal_goal.clone(),
+            data.proposal_metrics.clone(),
+        ),
+    };
     let proposal = &proposal.proposal;
 
     vec![

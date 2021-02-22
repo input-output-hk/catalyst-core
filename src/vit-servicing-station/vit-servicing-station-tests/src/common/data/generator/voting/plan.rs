@@ -223,7 +223,7 @@ impl ValidVotePlanGenerator {
 
             proposals.push(FullProposalInfo {
                 proposal,
-                proposal_challenge_specific_data: proposal_template.proposal_challenge_info,
+                challenge_info: proposal_template.proposal_challenge_info,
                 challenge_type: challenge.challenge_type.clone(),
             });
         }

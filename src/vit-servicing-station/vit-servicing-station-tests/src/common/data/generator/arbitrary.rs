@@ -24,7 +24,7 @@ use std::{collections::HashMap, iter};
 
 use chrono::DateTime;
 use vit_servicing_station_lib::db::models::proposals::{
-    CommunityChallengeProposal, FullProposalInfo, ProposalChallengeInfo, SimpleChallengeProposal,
+    community_challenge, simple, FullProposalInfo, ProposalChallengeInfo,
 };
 
 type UtcDateTime = DateTime<Utc>;
@@ -161,11 +161,11 @@ impl ArbitraryGenerator {
         challenge_type: &ChallengeType,
     ) -> ProposalChallengeInfo {
         match challenge_type {
-            ChallengeType::Simple => ProposalChallengeInfo::Simple(SimpleChallengeProposal {
+            ChallengeType::Simple => ProposalChallengeInfo::Simple(simple::ChallengeInfo {
                 proposal_solution: CatchPhase().fake::<String>(),
             }),
             ChallengeType::CommunityChoice => {
-                ProposalChallengeInfo::Community(CommunityChallengeProposal {
+                ProposalChallengeInfo::CommunityChallenge(community_challenge::ChallengeInfo {
                     proposal_brief: CatchPhase().fake::<String>(),
                     proposal_importance: CatchPhase().fake::<String>(),
                     proposal_goal: CatchPhase().fake::<String>(),
@@ -182,7 +182,7 @@ impl ArbitraryGenerator {
         let voteplan = fund.chain_vote_plans.first().unwrap();
         let challenge = fund.challenges.first().unwrap();
         let challenge_id = challenge.id;
-        let proposal_challenge_info = self.proposals_challenge_info(&challenge.challenge_type);
+        let challenge_info = self.proposals_challenge_info(&challenge.challenge_type);
         let proposal = Proposal {
             internal_id: id.abs(),
             proposal_id: id.abs().to_string(),
@@ -215,7 +215,7 @@ impl ArbitraryGenerator {
 
         FullProposalInfo {
             proposal,
-            proposal_challenge_specific_data: proposal_challenge_info,
+            challenge_info,
             challenge_type: challenge.challenge_type.clone(),
         }
     }

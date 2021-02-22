@@ -1,12 +1,11 @@
 use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
-use crate::db::{
-    schema::{proposal_community_choice_challenge, proposal_simple_challenge, proposals},
-    views_schema::full_proposals_info,
-    DB,
-};
+use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
+
+pub mod community_challenge;
+pub mod simple;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub struct Category {
@@ -116,27 +115,9 @@ pub struct Proposal {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
-pub struct SimpleChallengeProposal {
-    #[serde(alias = "proposalSolution")]
-    pub proposal_solution: String,
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
-pub struct CommunityChallengeProposal {
-    #[serde(alias = "proposalBrief")]
-    pub proposal_brief: String,
-    #[serde(alias = "proposalImportance")]
-    pub proposal_importance: String,
-    #[serde(alias = "proposalGoal")]
-    pub proposal_goal: String,
-    #[serde(alias = "proposalMetrics")]
-    pub proposal_metrics: String,
-}
-
-#[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
 pub enum ProposalChallengeInfo {
-    Simple(SimpleChallengeProposal),
-    Community(CommunityChallengeProposal),
+    Simple(simple::ChallengeInfo),
+    CommunityChallenge(community_challenge::ChallengeInfo),
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -144,23 +125,10 @@ pub struct FullProposalInfo {
     #[serde(flatten)]
     pub proposal: Proposal,
     #[serde(flatten)]
-    pub proposal_challenge_specific_data: ProposalChallengeInfo,
+    pub challenge_info: ProposalChallengeInfo,
     #[serde(alias = "challengeType")]
     pub challenge_type: ChallengeType,
 }
-
-pub type SimpleChallengeProposalValues = (
-    diesel::dsl::Eq<proposal_simple_challenge::proposal_id, String>,
-    diesel::dsl::Eq<proposal_simple_challenge::proposal_solution, String>,
-);
-
-pub type CommunityChallengeProposalValues = (
-    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_id, String>,
-    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_brief, String>,
-    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_importance, String>,
-    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_goal, String>,
-    diesel::dsl::Eq<proposal_community_choice_challenge::proposal_metrics, String>,
-);
 
 type FullProposalsInfoRow = (
     // 0 ->id
@@ -274,12 +242,12 @@ impl Queryable<full_proposals_info::SqlType, DB> for FullProposalInfo {
         let challenge_type = row.25.parse().unwrap();
         // It should be safe to unwrap this values here if DB is sanitized and hence tables have data
         // relative to the challenge type.
-        let proposal_challenge_info = match challenge_type {
-            ChallengeType::Simple => ProposalChallengeInfo::Simple(SimpleChallengeProposal {
+        let challenge_info = match challenge_type {
+            ChallengeType::Simple => ProposalChallengeInfo::Simple(simple::ChallengeInfo {
                 proposal_solution: row.26.clone().unwrap(),
             }),
             ChallengeType::CommunityChoice => {
-                ProposalChallengeInfo::Community(CommunityChallengeProposal {
+                ProposalChallengeInfo::CommunityChallenge(community_challenge::ChallengeInfo {
                     proposal_brief: row.27.clone().unwrap(),
                     proposal_importance: row.28.clone().unwrap(),
                     proposal_goal: row.29.clone().unwrap(),
@@ -289,7 +257,7 @@ impl Queryable<full_proposals_info::SqlType, DB> for FullProposalInfo {
         };
         FullProposalInfo {
             proposal: Proposal::build(row),
-            proposal_challenge_specific_data: proposal_challenge_info,
+            challenge_info,
             challenge_type,
         }
     }
@@ -344,34 +312,6 @@ impl Insertable<proposals::table> for Proposal {
     }
 }
 
-impl SimpleChallengeProposal {
-    pub fn to_sql_values_with_proposal_id(
-        &self,
-        proposal_id: &str,
-    ) -> SimpleChallengeProposalValues {
-        (
-            proposal_simple_challenge::proposal_id.eq(proposal_id.to_string()),
-            proposal_simple_challenge::proposal_solution.eq(self.proposal_solution.clone()),
-        )
-    }
-}
-
-impl CommunityChallengeProposal {
-    pub fn to_sql_values_with_proposal_id(
-        &self,
-        proposal_id: &str,
-    ) -> CommunityChallengeProposalValues {
-        (
-            proposal_community_choice_challenge::proposal_id.eq(proposal_id.to_string()),
-            proposal_community_choice_challenge::proposal_brief.eq(self.proposal_brief.clone()),
-            proposal_community_choice_challenge::proposal_importance
-                .eq(self.proposal_importance.clone()),
-            proposal_community_choice_challenge::proposal_goal.eq(self.proposal_goal.clone()),
-            proposal_community_choice_challenge::proposal_metrics.eq(self.proposal_metrics.clone()),
-        )
-    }
-}
-
 #[cfg(test)]
 pub mod test {
     use super::*;
@@ -422,8 +362,8 @@ pub mod test {
                 fund_id: 1,
                 challenge_id: CHALLENGE_ID,
             },
-            proposal_challenge_specific_data: ProposalChallengeInfo::Community(
-                CommunityChallengeProposal {
+            challenge_info: ProposalChallengeInfo::CommunityChallenge(
+                community_challenge::ChallengeInfo {
                     proposal_brief: "A for ADA".to_string(),
                     proposal_importance: "We need to get them while they're young.".to_string(),
                     proposal_goal: "Nebulous".to_string(),
@@ -483,7 +423,7 @@ pub mod test {
             .execute(&connection)
             .unwrap();
 
-        match &full_proposal.proposal_challenge_specific_data {
+        match &full_proposal.challenge_info {
             ProposalChallengeInfo::Simple(data) => {
                 let simple_values = (
                     proposal_simple_challenge::proposal_id.eq(proposal.proposal_id.clone()),
@@ -494,7 +434,7 @@ pub mod test {
                     .execute(&connection)
                     .unwrap();
             }
-            ProposalChallengeInfo::Community(data) => {
+            ProposalChallengeInfo::CommunityChallenge(data) => {
                 let community_values = (
                     proposal_community_choice_challenge::proposal_id
                         .eq(proposal.proposal_id.clone()),

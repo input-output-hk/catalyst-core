@@ -1,6 +1,6 @@
 use chain_addr::Discrimination;
 use chain_impl_mockchain::value::Value;
-use jormungandr_testing_utils::testing::network_builder::WalletTemplate;
+use jormungandr_testing_utils::testing::network_builder::{ExternalWalletTemplate, WalletTemplate};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -26,6 +26,10 @@ pub enum Initial {
         name: String,
         funds: usize,
         pin: String,
+    },
+    External {
+        address: String,
+        funds: usize,
     },
 }
 
@@ -69,6 +73,20 @@ impl Initials {
             above_threshold: count,
             pin: pin.to_string(),
         }])
+    }
+
+    pub fn external_templates(&self) -> Vec<ExternalWalletTemplate> {
+        let mut templates = Vec::new();
+        for (index, initial) in self.0.iter().enumerate() {
+            if let Initial::External { address, funds } = initial {
+                templates.push(ExternalWalletTemplate::new(
+                    format!("wallet_{}", index + 1),
+                    Value(*funds as u64),
+                    address.to_string(),
+                ));
+            }
+        }
+        templates
     }
 
     pub fn templates(
@@ -122,9 +140,6 @@ impl Initials {
                         );
                     }
                 }
-                Initial::ZeroFunds { .. } => {
-                    //skip
-                }
                 Initial::Wallet { name, funds, pin } => {
                     let wallet_alias = format!("wallet_{}", name);
                     templates.insert(
@@ -135,6 +150,9 @@ impl Initials {
                         ),
                         pin.to_string(),
                     );
+                }
+                _ => {
+                    //skip
                 }
             }
         }

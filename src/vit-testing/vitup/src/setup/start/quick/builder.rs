@@ -387,6 +387,8 @@ impl QuickVitBackendSettingsBuilder {
 
         let mut templates = HashMap::new();
         if let Some(initials) = &self.parameters.initials {
+            blockchain.set_external_wallets(initials.external_templates());
+
             templates =
                 initials.templates(self.parameters.voting_power, blockchain.discrimination());
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {

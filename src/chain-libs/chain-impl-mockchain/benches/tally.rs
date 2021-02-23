@@ -30,6 +30,7 @@ const MEMBERS_NO: usize = 3;
 const THRESHOLD: usize = 2;
 
 fn tally_benchmark(
+    benchmark_name: &str,
     n_proposals: usize,
     voters_count: usize,
     proposals_per_voter_ratio: f64,
@@ -159,7 +160,7 @@ fn tally_benchmark(
     let date = ledger.date();
 
     // benchmark the creation of encrypted tally
-    c.bench_function("vote_encrypted_tally", |b| {
+    c.bench_function(&format!("vote_encrypted_tally_{}", benchmark_name), |b| {
         b.iter(|| {
             ledger
                 .ledger
@@ -181,7 +182,7 @@ fn tally_benchmark(
             c_vote_plan.id == vote_plan.to_id()
         })
         .unwrap();
-    c.bench_function("tally_decrypt_share", |b| {
+    c.bench_function(&format!("tally_decrypt_share_{}", benchmark_name), |b| {
         b.iter(|| {
             members.members()[0].produce_decrypt_shares(&vote_plan_status);
         })
@@ -229,7 +230,9 @@ fn tally_benchmark(
             .collect::<Vec<_>>()
     };
 
-    c.bench_function("decrypt_private_tally", |b| b.iter(decrypt_tally));
+    c.bench_function(&format!("decrypt_private_tally_{}", benchmark_name), |b| {
+        b.iter(decrypt_tally)
+    });
 
     let shares = decrypt_tally()
         .into_iter()
@@ -246,7 +249,7 @@ fn tally_benchmark(
         .fragment_factory()
         .vote_tally(&alice, decrypted_tally);
 
-    c.bench_function("vote_tally", |b| {
+    c.bench_function(&format!("vote_tally_{}", benchmark_name), |b| {
         b.iter(|| {
             ledger
                 .ledger
@@ -259,6 +262,7 @@ fn tally_benchmark(
 }
 
 fn tally_benchmark_flat_distribution(
+    benchmark_name: &str,
     voters_count: usize,
     voting_power_per_voter: u64,
     c: &mut Criterion,
@@ -266,23 +270,31 @@ fn tally_benchmark_flat_distribution(
     let voting_power_distribution = rand::distributions::uniform::Uniform::from(
         voting_power_per_voter..voting_power_per_voter + 1,
     );
-    tally_benchmark(1, voters_count, 1.0, 0.5, voting_power_distribution, c);
+    tally_benchmark(
+        benchmark_name,
+        1,
+        voters_count,
+        1.0,
+        0.5,
+        voting_power_distribution,
+        c,
+    );
 }
 
 fn tally_benchmark_128_voters_1000_ada(c: &mut Criterion) {
-    tally_benchmark_flat_distribution(128, 1000, c);
+    tally_benchmark_flat_distribution("128_voters_1000_ada", 128, 1000, c);
 }
 
 fn tally_benchmark_200_voters_1000_ada(c: &mut Criterion) {
-    tally_benchmark_flat_distribution(200, 1000, c);
+    tally_benchmark_flat_distribution("200_voters_1000_ada", 200, 1000, c);
 }
 
 fn tally_benchmark_200_voters_1_000_000_ada(c: &mut Criterion) {
-    tally_benchmark_flat_distribution(200, 1_000_000, c);
+    tally_benchmark_flat_distribution("200_voters_1_000_000_ada", 200, 1_000_000, c);
 }
 
 fn tally_benchmark_1000_voters_1000_ada(c: &mut Criterion) {
-    tally_benchmark_flat_distribution(1000, 1000, c);
+    tally_benchmark_flat_distribution("1000_voters_1000_ada", 1000, 1000, c);
 }
 
 struct FundDistribution<'a, 'b> {
@@ -332,6 +344,7 @@ fn tally_benchmark_fund3_scenario(c: &mut Criterion) {
     };
 
     tally_benchmark(
+        "fund3_scenario",
         n_proposals,
         voters_count,
         proposals_per_voter_ratio,
@@ -363,6 +376,7 @@ fn tally_benchmark_fund4_scenario(c: &mut Criterion) {
     };
 
     tally_benchmark(
+        "fund4_scenario",
         n_proposals,
         voters_count,
         proposals_per_voter_ratio,
@@ -384,4 +398,4 @@ criterion_group!(
     tally_benchmark_fund3_scenario,
     tally_benchmark_fund4_scenario,
 );
-criterion_main!(fast_benches, realistic_benches);
+criterion_main!(fast_bench, big_bench);

@@ -7,69 +7,86 @@ use warp_reverse_proxy::reverse_proxy_filter;
 async fn main() {
     let server_stub = IapyxProxyCommand::from_args().build().unwrap();
 
-    let root = warp::path!("api" / "v0" / ..);
+    let api = warp::path!("api" / ..);
 
-    let proposals = warp::path!("proposals" / ..).and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_vit_address(),
-    ));
+    let v0 = {
+        let root = warp::path!("v0" / ..);
 
-    let challenges = warp::path!("challenges" / ..).and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_vit_address(),
-    ));
+        let proposals = warp::path!("proposals" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_vit_address(),
+        ));
 
-    let fund = warp::path!("fund" / ..).and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_vit_address(),
-    ));
+        let challenges = warp::path!("challenges" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_vit_address(),
+        ));
 
-    let account = warp::path!("account" / ..).and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_node_address(),
-    ));
+        let fund = warp::path!("fund" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_vit_address(),
+        ));
 
-    let fragment = warp::path!("fragment" / "logs").and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_node_address(),
-    ));
+        let account = warp::path!("account" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
 
-    let message = warp::path!("message" / ..).and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_node_address(),
-    ));
+        let fragment = warp::path!("fragment" / "logs").and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
 
-    let settings = warp::path!("settings" / ..).and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_node_address(),
-    ));
+        let message = warp::path!("message" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
 
-    let explorer = warp::path!("explorer" / "graphql").and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_node_address(),
-    ));
+        let settings = warp::path!("settings" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
 
-    let vote = warp::path!("vote" / "active" / ..).and(reverse_proxy_filter(
-        "".to_string(),
-        server_stub.http_node_address(),
-    ));
+        let explorer = warp::path!("explorer" / "graphql").and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
 
-    let block0_content = server_stub.block0();
+        let vote = warp::path!("vote" / "active" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
 
-    let block0 = warp::path!("block0").map(move || Ok(block0_content.clone()));
+        let block0_content = server_stub.block0();
 
-    let app = root.and(
-        proposals
-            .or(challenges)
-            .or(fund)
-            .or(account)
-            .or(fragment)
-            .or(message)
-            .or(settings)
-            .or(explorer)
-            .or(vote)
-            .or(block0),
-    );
+        let block0 = warp::path!("block0").map(move || Ok(block0_content.clone()));
+
+        root.and(
+            proposals
+                .or(challenges)
+                .or(fund)
+                .or(account)
+                .or(fragment)
+                .or(message)
+                .or(settings)
+                .or(explorer)
+                .or(vote)
+                .or(block0),
+        )
+    };
+
+    let v1 = {
+        let root = warp::path!("v1" / ..);
+
+        let fragments = warp::path!("fragments" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
+
+        root.and(fragments)
+    };
+
+    let app = api.and(v0.or(v1));
 
     match server_stub.protocol() {
         Protocol::Https {

@@ -89,4 +89,12 @@ impl Configuration {
     pub fn shutdown_grace_period(&self) -> u32 {
         self.shutdown_grace_period
     }
+
+    pub fn total_votes(&self) -> u32 {
+        match self.strategy() {
+            Strategy::Duration(duration) => (duration.as_millis() / self.step_delay as u128) as u32,
+            Strategy::PerThread(per_thread) => self.thread_no() as u32 * per_thread,
+            Strategy::Overall(overall) => *overall,
+        }
+    }
 }

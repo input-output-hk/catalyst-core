@@ -46,6 +46,68 @@ pub fn start_sync(
     stats
 }
 
+pub struct BackgroundLoadProcess {
+    responses: Arc<Mutex<Vec<Response>>>,
+    threads: Vec<JoinHandle<()>>,
+    monitor: MonitorThread,
+    status_updater: StatusUpdaterThread,
+    start: Instant,
+}
+
+impl BackgroundLoadProcess {
+    pub fn stats(&self) -> Stats {
+        let lock_request = &mut self.responses.lock().unwrap();
+        Stats::new(lock_request.to_vec(), self.start.elapsed())
+    }
+
+    pub fn wait_for_finish(self) -> Stats {
+        let stats = self.stats();
+
+        for t in self.threads.into_iter() {
+            let _child_threads = t.join();
+        }
+
+        self.monitor.stop();
+        self.status_updater.stop();
+
+        stats
+    }
+}
+
+pub fn start_background_async(
+    request_generator: impl RequestGenerator + Send + Sized + 'static,
+    status_provider: impl RequestStatusProvider + Send + Sized + Sync + 'static,
+    config: Configuration,
+    title: &str,
+) -> BackgroundLoadProcess {
+    let responses = Arc::new(Mutex::new(Vec::new()));
+    let request_generator = Arc::new(Mutex::new(request_generator));
+    let start = Instant::now();
+    let child_threads = get_threads(
+        &request_generator,
+        &config,
+        RequestSendMode::Async,
+        &responses,
+    );
+    let monitor = MonitorThread::start(&responses, config.monitor().clone(), title);
+    let request_provider = Arc::new(Mutex::new(status_provider));
+    let status_updater = StatusUpdaterThread::spawn(
+        &responses,
+        &request_provider,
+        config.monitor().clone(),
+        title,
+        config.shutdown_grace_period(),
+    );
+
+    BackgroundLoadProcess {
+        responses,
+        threads: child_threads,
+        monitor,
+        status_updater,
+        start,
+    }
+}
+
 pub fn start_async(
     request_generator: impl RequestGenerator + Send + Sized + 'static,
     status_provider: impl RequestStatusProvider + Send + Sized + Sync + 'static,

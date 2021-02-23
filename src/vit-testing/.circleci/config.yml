@@ -88,7 +88,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout fix_comp_enclave
+            git checkout master
       - run:
           name: install jormungandr
           command: |

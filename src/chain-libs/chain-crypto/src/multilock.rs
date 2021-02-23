@@ -23,10 +23,10 @@
 use cryptoxide::chacha20poly1305::ChaCha20Poly1305;
 use cryptoxide::hkdf::hkdf_expand;
 use cryptoxide::sha2;
-use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
-use curve25519_dalek::ristretto::CompressedRistretto;
-use curve25519_dalek::ristretto::RistrettoPoint;
-use curve25519_dalek::scalar::Scalar;
+use curve25519_dalek_ng::constants::RISTRETTO_BASEPOINT_POINT;
+use curve25519_dalek_ng::ristretto::CompressedRistretto;
+use curve25519_dalek_ng::ristretto::RistrettoPoint;
+use curve25519_dalek_ng::scalar::Scalar;
 use rand_core::{CryptoRng, RngCore};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

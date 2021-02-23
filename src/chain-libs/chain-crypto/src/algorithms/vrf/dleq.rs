@@ -1,5 +1,5 @@
-use curve25519_dalek::ristretto::RistrettoPoint;
-use curve25519_dalek::scalar::Scalar;
+use curve25519_dalek_ng::ristretto::RistrettoPoint;
+use curve25519_dalek_ng::scalar::Scalar;
 use sha2::{Digest, Sha512};
 
 type Point = RistrettoPoint;
@@ -82,8 +82,8 @@ pub fn verify(dleq: &DLEQ, proof: &Proof) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
-    use curve25519_dalek::{ristretto::RistrettoPoint, scalar::Scalar};
+    use curve25519_dalek_ng::constants::RISTRETTO_BASEPOINT_POINT;
+    use curve25519_dalek_ng::{ristretto::RistrettoPoint, scalar::Scalar};
     use rand_core::OsRng;
     use sha2::Sha512;
 

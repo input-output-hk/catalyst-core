@@ -13,7 +13,7 @@ chain-ser = { path = "../chain-ser" }
 chain-time = { path = "../chain-time" }
 chain-vote = { path = "../chain-vote" }
 typed-bytes = { path = "../typed-bytes" }
-rand_core = "0.5"
+rand_core = "0.6"
 imhamt = { path = "../imhamt" }
 sparse-array = { path = "../sparse-array" }
 strum = "0.19.2"
@@ -26,7 +26,7 @@ ed25519-bip32 = { version = "0.3", optional = true }
 thiserror = "1.0"
 lazy_static = { version = "1.3.0", optional = true }
 cardano-legacy-address = { path= "../cardano-legacy-address" }
-rand_chacha = { version = "0.2", optional = true }
+rand_chacha = { version = "0.3", optional = true }
 chain-test-utils = { path = "../chain-test-utils", optional = true }
 rayon = "1.5.0"
 criterion = { version = "0.3.0", optional = true }
@@ -44,7 +44,7 @@ chain-crypto = { path = "../chain-crypto", features=["property-test-api"]}
 chain-time = { path = "../chain-time", features=["property-test-api"]}
 chain-addr = { path = "../chain-addr", features=["property-test-api"]}
 ed25519-bip32 = "0.3"
-rand_chacha = "0.2"
+rand_chacha = "0.3"
 lazy_static = "1.3.0"
 tempfile = "3.1.0"
 

@@ -184,7 +184,7 @@ impl ValidVotePlanGenerator {
             .iter()
             .enumerate()
             .filter_map(|(idx, challenge)| {
-                if challenge.challenge_type == ChallengeType::Simple {
+                if challenge.challenge_type == ChallengeType::CommunityChoice {
                     Some(idx)
                 } else {
                     None

@@ -111,11 +111,6 @@ fn tally_benchmark(
     let vote_plan_def = controller.vote_plan(VOTE_PLAN).unwrap();
     let vote_plan: VotePlan = vote_plan_def.clone().into();
 
-    let should_vote_distribution =
-        WeightedIndex::new(&[1.0 - proposals_per_voter_ratio, proposals_per_voter_ratio]).unwrap();
-    let votes_distribution =
-        WeightedIndex::new(&[yes_votes_ratio, 1.0 - yes_votes_ratio, 0.0]).unwrap();
-
     let mut total_votes_per_proposal = vec![0; n_proposals];
     let mut voters_and_powers: Vec<_> = voters_aliases
         .iter()
@@ -125,12 +120,13 @@ fn tally_benchmark(
 
     for (i, proposal) in vote_plan.proposals().iter().enumerate() {
         for (private_voter, voting_power) in voters_and_powers.iter_mut() {
-            let should_vote = should_vote_distribution.sample(&mut rng);
-            if should_vote == 0 {
+            let should_vote = rng.gen_bool(proposals_per_voter_ratio);
+            if should_vote {
                 continue;
             }
 
-            let choice = Choice::new(votes_distribution.sample(&mut rng) as u8);
+            let choice = Choice::new(rng.gen_bool(yes_votes_ratio) as u8);
+
             controller
                 .cast_vote_private(
                     private_voter,

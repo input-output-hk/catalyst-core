@@ -62,15 +62,15 @@ pub fn load_test_public_100_000_votes() {
             .status
     );
 
-     time::wait_for_epoch(10, nodes.get(0).unwrap().explorer());
+    time::wait_for_epoch(10, nodes.get(0).unwrap().explorer());
 
-        let mut committee = controller.wallet("committee").unwrap();
-        let vote_plan = controller.vote_plan(&fund_name).unwrap();
+    let mut committee = controller.wallet("committee").unwrap();
+    let vote_plan = controller.vote_plan(&fund_name).unwrap();
 
-        controller
-            .fragment_sender()
-            .send_public_vote_tally(&mut committee, &vote_plan.into(), nodes.get(0).unwrap())
-            .unwrap();
+    controller
+        .fragment_sender()
+        .send_public_vote_tally(&mut committee, &vote_plan.into(), nodes.get(0).unwrap())
+        .unwrap();
 
     vit_station.shutdown();
     wallet_proxy.shutdown();
@@ -87,9 +87,9 @@ pub fn load_test_public_100_000_votes() {
 pub fn load_test_private_30_000_votes() {
     let endpoint = "127.0.0.1:8080";
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let no_of_votes = 100_000;
+    let no_of_votes = 30_000;
     let no_of_threads = 5;
-    let no_of_wallets = 3_000;
+    let no_of_wallets = 1_000;
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
     let (mut vit_controller, mut controller, vit_parameters, fund_name) =

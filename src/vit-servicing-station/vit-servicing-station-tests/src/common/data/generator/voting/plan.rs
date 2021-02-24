@@ -3,7 +3,7 @@ use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chrono::{DateTime, NaiveDateTime, SecondsFormat, Utc};
 use rand::{rngs::OsRng, RngCore};
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+use vit_servicing_station_lib::db::models::proposals::{FullProposalInfo, ProposalChallengeInfo};
 use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
     funds::Fund,
@@ -184,7 +184,7 @@ impl ValidVotePlanGenerator {
             .iter()
             .enumerate()
             .filter_map(|(idx, challenge)| {
-                if challenge.challenge_type == ChallengeType::Simple {
+                if challenge.challenge_type == ChallengeType::CommunityChoice {
                     Some(idx)
                 } else {
                     None

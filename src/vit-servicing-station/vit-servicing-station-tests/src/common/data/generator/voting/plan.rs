@@ -7,7 +7,7 @@ use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
     funds::Fund,
-    proposals::{Category, Proposal, Proposer},
+    proposals::{Category, ChallengeType, Proposal, Proposer},
     vote_options::VoteOptions,
     voteplans::Voteplan,
 };
@@ -166,11 +166,49 @@ impl ValidVotePlanGenerator {
         let mut proposals = vec![];
         let mut rng = OsRng;
 
+        let simple_challenges_idx: Vec<usize> = fund
+            .challenges
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, challenge)| {
+                if challenge.challenge_type == ChallengeType::Simple {
+                    Some(idx)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        let community_choice_challenges_idx: Vec<usize> = fund
+            .challenges
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, challenge)| {
+                if challenge.challenge_type == ChallengeType::Simple {
+                    Some(idx)
+                } else {
+                    None
+                }
+            })
+            .collect();
+
         for (index, proposal) in self.parameters.vote_plan.proposals().iter().enumerate() {
-            let challenge_idx = rng.next_u32() as usize % self.parameters.challenges_count;
+            let proposal_template = template_generator.next_proposal();
+            // ensure we chose a challenge with the desired challenge type
+            let challenge_idx: usize = match proposal_template.challenge_type {
+                ChallengeType::Simple => {
+                    let challenge_idx = rng.next_u32() as usize % simple_challenges_idx.len();
+                    *simple_challenges_idx.get(challenge_idx).unwrap()
+                }
+                ChallengeType::CommunityChoice => {
+                    let challenge_idx =
+                        rng.next_u32() as usize % community_choice_challenges_idx.len();
+                    *community_choice_challenges_idx.get(challenge_idx).unwrap()
+                }
+            };
+
             let mut challenge = fund.challenges.get_mut(challenge_idx).unwrap();
 
-            let proposal_template = template_generator.next_proposal();
             let proposal_funds = proposal_template.proposal_funds.parse().unwrap();
             let chain_vote_options = proposal_template.chain_vote_options.clone();
 
@@ -214,11 +252,7 @@ impl ValidVotePlanGenerator {
                 chain_voteplan_payload: vote_plan.chain_voteplan_payload.clone(),
                 chain_vote_encryption_key: vote_plan.chain_vote_encryption_key.clone(),
                 fund_id: fund.id,
-                challenge_id: proposal_template
-                    .challenge_id
-                    .unwrap_or_else(|| challenge.id.to_string())
-                    .parse()
-                    .unwrap(),
+                challenge_id: challenge.id,
             };
 
             proposals.push(FullProposalInfo {

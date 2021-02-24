@@ -93,16 +93,18 @@ commands:
           name: install jormungandr
           command: |
             cd jormungandr
-            cargo install --path jormungandr
+            cargo install --path jormungandr --locked
       - run:
           name: checkout vit-station-service
           command: |
             git clone https://github.com/input-output-hk/vit-servicing-station.git
+            cd vit-station-service
+            git checkout 700c4d06b366c920e6daf46885d98d74d3791d0a
       - run:
           name: install vit-station-service
           command: |
             cd vit-servicing-station
-            cargo install --path vit-servicing-station-server
+            cargo install --path vit-servicing-station-server --locked
       - run:
           name: install iapyx utils
           command: |

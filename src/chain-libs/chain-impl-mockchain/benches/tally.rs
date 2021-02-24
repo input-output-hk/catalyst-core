@@ -297,28 +297,31 @@ fn tally_benchmark_1000_voters_1000_ada(c: &mut Criterion) {
     tally_benchmark_flat_distribution("1000_voters_1000_ada", 1000, 1000, c);
 }
 
-struct FundDistribution<'a, 'b> {
-    threshold: u64,
-    ranges_bounds: &'a [u64],
-    ranges_weights: &'b [f64],
+struct FundDistribution {
+    ranges_no_sampler: WeightedIndex<f64>,
+    ranges_values_samplers: Vec<Uniform<u64>>,
 }
 
-impl<'a, 'b> Distribution<u64> for FundDistribution<'a, 'b> {
+impl FundDistribution {
+    pub fn new(ranges_bounds: &[u64], ranges_weights: &[f64]) -> Self {
+        assert_eq!(ranges_bounds.len() + 1, ranges_weights.len());
+        let ranges_no_sampler = WeightedIndex::new(ranges_weights).unwrap();
+        let ranges_values_samplers = ranges_bounds
+            .windows(2)
+            .map(|bounds| Uniform::from(bounds[0]..bounds[1]))
+            .collect();
+        Self {
+            ranges_no_sampler,
+            ranges_values_samplers,
+        }
+    }
+}
+
+impl Distribution<u64> for FundDistribution {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u64 {
-        assert_eq!(self.ranges_weights.len(), self.ranges_bounds.len());
-        let ranges_sampler = WeightedIndex::new(self.ranges_weights).unwrap();
-        let range_no = ranges_sampler.sample(rng);
-        let lower_bound = range_no
-            .checked_sub(1)
-            .map(|i| self.ranges_bounds[i])
-            .unwrap_or(self.threshold);
-        let current_range_sampler = self
-            .ranges_bounds
-            .get(range_no)
-            .copied()
-            .map(|upper_bound| Uniform::from(lower_bound..upper_bound))
-            .unwrap();
-        current_range_sampler.sample(rng)
+        let range_no = self.ranges_no_sampler.sample(rng);
+        let value = self.ranges_values_samplers[range_no].sample(rng);
+        value
     }
 }
 
@@ -332,16 +335,11 @@ fn tally_benchmark_fund3_scenario(c: &mut Criterion) {
     let voters_count = 15_000;
     let n_proposals = 150;
     let proposals_per_voter_ratio = 0.75;
-    let ranges_bounds = &[200_000, 1_000_000, 10_000_000];
+    let ranges_bounds = &[3_000, 200_000, 1_000_000, 10_000_000];
     let ranges_weights = &[0.4, 0.4, 0.2];
     let yes_votes_ratio = 0.35;
-    let threshold = 3000;
 
-    let voting_power_distribution = FundDistribution {
-        threshold,
-        ranges_bounds,
-        ranges_weights,
-    };
+    let voting_power_distribution = FundDistribution::new(ranges_bounds, ranges_weights);
 
     tally_benchmark(
         "fund3_scenario",
@@ -364,16 +362,11 @@ fn tally_benchmark_fund4_scenario(c: &mut Criterion) {
     let voters_count = 30_000;
     let n_proposals = 300;
     let proposals_per_voter_ratio = 0.75;
-    let ranges_bounds = &[200_000, 1_000_000, 10_000_000];
+    let ranges_bounds = &[3_000, 200_000, 1_000_000, 10_000_000];
     let ranges_weights = &[0.4, 0.4, 0.2];
     let yes_votes_ratio = 0.35;
-    let threshold = 3000;
 
-    let voting_power_distribution = FundDistribution {
-        threshold,
-        ranges_bounds,
-        ranges_weights,
-    };
+    let voting_power_distribution = FundDistribution::new(ranges_bounds, ranges_weights);
 
     tally_benchmark(
         "fund4_scenario",

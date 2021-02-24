@@ -108,7 +108,7 @@ commands:
       - run:
           name: install iapyx utils
           command: |
-            cargo install --path iapyx
+            cargo install --path iapyx --locked
       - run:
           name: Run tests
           environment:

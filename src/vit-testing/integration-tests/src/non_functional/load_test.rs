@@ -27,7 +27,7 @@ pub fn load_test_public_100_000_votes() {
     let no_of_wallets = 3_000;
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, _fund_name) =
+    let (mut vit_controller, mut controller, vit_parameters, fund_name) =
         vitup_setup(false, no_of_wallets, testing_directory.path().to_path_buf());
 
     let (nodes, vit_station, wallet_proxy) = setup_network(
@@ -62,7 +62,7 @@ pub fn load_test_public_100_000_votes() {
             .status
     );
 
-    /* time::wait_for_epoch(10, nodes.get(0).unwrap().explorer());
+     time::wait_for_epoch(10, nodes.get(0).unwrap().explorer());
 
         let mut committee = controller.wallet("committee").unwrap();
         let vote_plan = controller.vote_plan(&fund_name).unwrap();
@@ -71,7 +71,7 @@ pub fn load_test_public_100_000_votes() {
             .fragment_sender()
             .send_public_vote_tally(&mut committee, &vote_plan.into(), nodes.get(0).unwrap())
             .unwrap();
-    */
+
     vit_station.shutdown();
     wallet_proxy.shutdown();
     for node in nodes {

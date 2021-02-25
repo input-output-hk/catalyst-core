@@ -121,7 +121,7 @@ fn tally_benchmark(
     for (i, proposal) in vote_plan.proposals().iter().enumerate() {
         for (private_voter, voting_power) in voters_and_powers.iter_mut() {
             let should_vote = rng.gen_bool(proposals_per_voter_ratio);
-            if should_vote {
+            if !should_vote {
                 continue;
             }
 

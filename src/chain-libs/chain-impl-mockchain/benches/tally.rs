@@ -304,7 +304,7 @@ struct FundDistribution {
 
 impl FundDistribution {
     pub fn new(ranges_bounds: &[u64], ranges_weights: &[f64]) -> Self {
-        assert_eq!(ranges_bounds.len() + 1, ranges_weights.len());
+        assert_eq!(ranges_bounds.len(), ranges_weights.len() + 1);
         let ranges_no_sampler = WeightedIndex::new(ranges_weights).unwrap();
         let ranges_values_samplers = ranges_bounds
             .windows(2)

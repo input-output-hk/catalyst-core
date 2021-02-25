@@ -199,6 +199,8 @@ impl RestClient {
         self.origin = Some(origin.into());
     }
 
+    // this is kept as part of the client even if not used
+    #[allow(dead_code)]
     fn post(&self, path: &str, data: String) -> Result<serde_json::Value, RestError> {
         let client = reqwest::blocking::Client::new();
         let mut res = client.post(path).body(String::into_bytes(data.clone()));

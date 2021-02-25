@@ -91,7 +91,7 @@ fn tally_benchmark(
         .committee_keys(committee_keys);
     for _ in 0..n_proposals {
         let mut proposal_builder = proposal(VoteTestGen::external_proposal_id());
-        proposal_builder.options(3).action_parameters_no_op();
+        proposal_builder.options(3).action_off_chain();
         vote_plan_builder.with_proposal(&mut proposal_builder);
     }
 

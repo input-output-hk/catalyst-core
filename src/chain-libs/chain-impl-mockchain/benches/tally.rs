@@ -17,11 +17,11 @@ use chain_impl_mockchain::{
     vote::{Choice, PayloadType},
 };
 use criterion::{criterion_group, criterion_main, Criterion};
-
 use rand::{
     distributions::{Distribution, Uniform, WeightedIndex},
     Rng, SeedableRng,
 };
+use rayon::prelude::*;
 
 const ALICE: &str = "Alice";
 const STAKE_POOL: &str = "stake_pool";
@@ -208,7 +208,7 @@ fn tally_benchmark(
         let table = chain_vote::TallyOptimizationTable::generate_with_balance(total_votes, 1);
         vote_plan_status
             .proposals
-            .iter()
+            .par_iter()
             .enumerate()
             .map(|(i, proposal)| {
                 let tally_state = proposal

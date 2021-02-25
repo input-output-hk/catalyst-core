@@ -209,34 +209,57 @@ impl<'a> IntoIterator for &'a CachedReleases {
 
 pub struct GitHubApi {
     base_url: String,
+    token: Option<String>,
 }
 
-impl Default for GitHubApi {
+pub struct GitHubApiBuilder {
+    url: String,
+    token: Option<String>,
+}
+
+impl Default for GitHubApiBuilder {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl GitHubApi {
-    pub fn for_crate<S: Into<String>>(base_url: S) -> Self {
+impl GitHubApiBuilder {
+    pub fn new() -> Self {
         Self {
-            base_url: base_url.into(),
+            url: "https://api.github.com/repos/input-output-hk/jormungandr".into(),
+            token: None,
         }
     }
 
-    pub fn new() -> Self {
-        Self {
-            base_url: "https://api.github.com/repos/input-output-hk/jormungandr".to_string(),
-        }
+    pub fn with_endpoint_url<S: Into<String>>(mut self, url: S) -> Self {
+        self.url = url.into();
+        self
+    }
+
+    pub fn with_token<S: Into<String>>(mut self, token: Option<S>) -> Self {
+        self.token = token.map(|t| t.into());
+        self
+    }
+
+    pub fn build(self) -> GitHubApi {
+        GitHubApi::new(self.url, self.token)
+    }
+}
+
+impl GitHubApi {
+    pub fn new(base_url: String, token: Option<String>) -> Self {
+        Self { base_url, token }
     }
 
     fn get(&self, path: &str) -> Result<reqwest::blocking::Response, GitHubApiError> {
         let client = reqwest::blocking::Client::new();
-        let resp = client
+        let mut req = client
             .get(&format!("{}/{}", self.base_url, path))
-            .header(USER_AGENT, "request")
-            .send()
-            .map_err(GitHubApiError::RequestError)?;
+            .header(USER_AGENT, "request");
+        if let Some(token) = &self.token {
+            req = req.bearer_auth(token);
+        }
+        let resp = req.send().map_err(GitHubApiError::RequestError)?;
         if resp.headers().get("X-RateLimit-Remaining") == Some(0.into()).as_ref() {
             return Err(GitHubApiError::RateLimitExceeded);
         }

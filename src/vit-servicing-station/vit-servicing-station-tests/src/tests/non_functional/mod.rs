@@ -1,7 +1,6 @@
 use crate::common::{clients::RestClient, startup::quick_start};
 use assert_fs::TempDir;
 
-use crate::common::clients::graphql::GraphqlClient;
 use crate::common::data::Snapshot;
 use jortestkit::load::{self, Configuration, Id, Monitor, RequestFailure, RequestGenerator};
 use rand_core::{OsRng, RngCore};

@@ -218,20 +218,8 @@ impl QuickVitBackendSettingsBuilder {
         parameters.set_fund_id(self.parameters.fund_id);
 
         if self.parameters.private {
-            let mut committee_wallet = settings
-                .network_settings
-                .wallets
-                .get(self.committe_wallet_names.first().unwrap())
-                .unwrap()
-                .clone();
-            let identifier = committee_wallet.identifier();
-            let private_key_data = settings
-                .private_vote_plans
-                .values()
-                .next()
-                .unwrap()
-                .get(&identifier.into())
-                .unwrap();
+            let private_key_data = settings.private_vote_plans.get(&self.fund_name()).unwrap();
+
             let key: ElectionPublicKey = private_key_data.encrypting_vote_key();
             parameters.set_vote_encryption_key(key.to_base32().unwrap());
         }
@@ -416,19 +404,7 @@ impl QuickVitBackendSettingsBuilder {
                 .block0_date,
         );
 
-        if self.parameters.private {
-            let vote_plan = controller
-                .settings()
-                .private_vote_plans
-                .values()
-                .next()
-                .unwrap();
-            let committee_keys = vote_plan_def.committee_keys_mut();
-
-            for key in vote_plan.member_public_keys().iter() {
-                committee_keys.push(key.clone());
-            }
-        }
+        vote_plan_def = controller.vote_plan(&self.fund_name()).unwrap();
         let parameters = self.vote_plan_parameters(vote_plan_def, &controller.settings());
         Ok((vit_controller, controller, parameters))
     }

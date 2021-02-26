@@ -10,6 +10,7 @@ use iapyx::WalletBackend;
 use indicatif::ProgressBar;
 use jormungandr_scenario_tests::scenario::{ContextChaCha, Controller, ControllerBuilder};
 use jormungandr_testing_utils::testing::network_builder::{Blockchain, Topology};
+use std::path::Path;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 
@@ -81,6 +82,30 @@ impl VitController {
         );
 
         Ok(iapyx::Controller::recover_with_backend(backend, mnemonics, &[]).unwrap())
+    }
+
+    /// iapyx wallet is a mock mobile wallet
+    /// it uses some production code while handling wallet operation
+    // therefore controller has separate method to build such wallet
+    pub fn iapyx_wallet_from_qr<P: AsRef<Path>>(
+        &self,
+        qr: P,
+        password: &str,
+        wallet_proxy: &WalletProxyController,
+    ) -> Result<iapyx::Controller> {
+        let settings = iapyx::WalletBackendSettings {
+            use_https_for_post: false,
+            enable_debug: true,
+            certificate: None,
+        };
+
+        Ok(iapyx::Controller::recover_from_qr(
+            wallet_proxy.settings().base_address().to_string(),
+            qr,
+            password,
+            settings,
+        )
+        .unwrap())
     }
 
     pub fn spawn_vit_station(

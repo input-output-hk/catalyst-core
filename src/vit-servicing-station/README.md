@@ -80,20 +80,6 @@ An example of the contents of the file would be like this:
 There is an option to dump a configuration into a `JSON` file with the `--out-settings-file` providing the path to the out file.
 This option will dump the configuration with the defaults, already set environment variables or provided flags into the file.
 
-
-## Playground
-
-The VIT servicing station offers a **GraphQL** playground endpoint (`api/v0/graphql/playground`) designed to offer a user friendly approach to the API.
-
-![playground](https://user-images.githubusercontent.com/1133113/86589565-2da0de00-bf8e-11ea-89e3-bbd19f5c29b4.png)
-
-Some considerations when using the playground:
-
-* There is no need of an `API-Token` for accessing it. But, the token is needed for any request performed by the playground.
-In order to use your API-Token just add it inside the json configuration for headers in the bottom left part of the webpage. For example: `{ "API-Token" : "your api token here" }`
-* Since the API-Token is needed for any request. Both the **docs** and the **schema** will not be available till the header is filled.
-* Depending on the deployment and/or  your server configuration you may need to configure properly the **CORS** settings in order to make the playground work as expected.
-
 ## CLI
 
 The `vit-servicing-station-cli` is an accompanying tool to interact with some of the ecosystem.

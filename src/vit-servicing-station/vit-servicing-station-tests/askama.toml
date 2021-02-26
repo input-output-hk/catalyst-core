@@ -1,7 +1,0 @@
-[general]
-# Directories to search for templates, relative to the crate root.
-dirs = ["resources/graphql_requests/templates"]
-
-[[escaper]]
-path = "::graphql_escape::graphql"
-extensions = ["graphql"]

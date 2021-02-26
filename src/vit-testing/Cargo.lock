@@ -2075,8 +2075,8 @@ dependencies = [
  "hex",
  "hyper 0.13.10",
  "image",
- "jormungandr-lib",
- "jormungandr-testing-utils",
+ "jormungandr-lib 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=7a201c6694118561f08e9140b9899888e6c6d993)",
+ "jormungandr-testing-utils 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=7a201c6694118561f08e9140b9899888e6c6d993)",
  "jortestkit",
  "rand 0.7.3",
  "rand_core 0.5.1",
@@ -2213,9 +2213,9 @@ dependencies = [
  "cfg-if 1.0.0",
  "chain-impl-mockchain",
  "iapyx",
- "jormungandr-lib",
+ "jormungandr-lib 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e)",
  "jormungandr-scenario-tests",
- "jormungandr-testing-utils",
+ "jormungandr-testing-utils 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e)",
  "jortestkit",
  "rand 0.7.3",
  "rand_chacha 0.2.2",
@@ -2268,6 +2268,34 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-lib"
 version = "0.10.0-alpha.3"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e#04e065d055d6ca7bb0b0237a60ac5036c190569e"
+dependencies = [
+ "base64 0.13.0",
+ "bech32",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "hex",
+ "http",
+ "humantime",
+ "parity-multiaddr",
+ "poldercast",
+ "rand 0.7.3",
+ "rand_chacha 0.2.2",
+ "rand_core 0.5.1",
+ "serde",
+ "thiserror",
+ "typed-bytes",
+]
+
+[[package]]
+name = "jormungandr-lib"
+version = "0.10.0-alpha.3"
 source = "git+https://github.com/input-output-hk/jormungandr.git?rev=7a201c6694118561f08e9140b9899888e6c6d993#7a201c6694118561f08e9140b9899888e6c6d993"
 dependencies = [
  "base64 0.13.0",
@@ -2296,7 +2324,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.10.0-alpha.3"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=7a201c6694118561f08e9140b9899888e6c6d993#7a201c6694118561f08e9140b9899888e6c6d993"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e#04e065d055d6ca7bb0b0237a60ac5036c190569e"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2313,8 +2341,8 @@ dependencies = [
  "futures 0.3.13",
  "hex",
  "indicatif",
- "jormungandr-lib",
- "jormungandr-testing-utils",
+ "jormungandr-lib 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e)",
+ "jormungandr-testing-utils 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e)",
  "jortestkit",
  "json",
  "lazy_static",
@@ -2333,6 +2361,68 @@ dependencies = [
  "thiserror",
  "tokio 1.2.0",
  "yaml-rust",
+]
+
+[[package]]
+name = "jormungandr-testing-utils"
+version = "0.10.0-alpha.3"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e#04e065d055d6ca7bb0b0237a60ac5036c190569e"
+dependencies = [
+ "assert_fs",
+ "base64 0.13.0",
+ "bech32",
+ "bytesize",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "custom_debug",
+ "flate2",
+ "fs_extra",
+ "futures 0.3.13",
+ "graphql_client",
+ "hex",
+ "humantime",
+ "image",
+ "jormungandr-lib 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e)",
+ "jortestkit",
+ "json",
+ "lazy_static",
+ "os_info 3.0.1",
+ "poldercast",
+ "prost",
+ "qrcodegen",
+ "quircs",
+ "rand 0.7.3",
+ "rand_chacha 0.2.2",
+ "rand_core 0.5.1",
+ "regex 1.4.3",
+ "reqwest 0.10.10",
+ "semver 0.11.0",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "slog",
+ "slog-async",
+ "slog-json",
+ "symmetric-cipher",
+ "sysinfo 0.15.9",
+ "tar",
+ "thiserror",
+ "tokio 1.2.0",
+ "tokio-codec",
+ "tokio-stream",
+ "tonic",
+ "tonic-build",
+ "typed-bytes",
+ "url",
+ "zip",
 ]
 
 [[package]]
@@ -2361,7 +2451,7 @@ dependencies = [
  "hex",
  "humantime",
  "image",
- "jormungandr-lib",
+ "jormungandr-lib 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=7a201c6694118561f08e9140b9899888e6c6d993)",
  "jortestkit",
  "json",
  "lazy_static",
@@ -5138,9 +5228,9 @@ dependencies = [
  "iapyx",
  "image",
  "indicatif",
- "jormungandr-lib",
+ "jormungandr-lib 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e)",
  "jormungandr-scenario-tests",
- "jormungandr-testing-utils",
+ "jormungandr-testing-utils 0.10.0-alpha.3 (git+https://github.com/input-output-hk/jormungandr.git?rev=04e065d055d6ca7bb0b0237a60ac5036c190569e)",
  "jortestkit",
  "json",
  "lazy_static",

@@ -14,7 +14,6 @@ struct SnapshotRandomizer {
 #[derive(Clone, Debug)]
 struct VitRestRequestGenerator {
     rest_client: RestClient,
-    graphql_client: GraphqlClient,
     snapshot_randomizer: SnapshotRandomizer,
 }
 
@@ -56,18 +55,12 @@ impl SnapshotRandomizer {
 }
 
 impl VitRestRequestGenerator {
-    pub fn new(
-        snapshot: Snapshot,
-        mut rest_client: RestClient,
-        mut graphql_client: GraphqlClient,
-    ) -> Self {
+    pub fn new(snapshot: Snapshot, mut rest_client: RestClient) -> Self {
         rest_client.disable_log();
-        graphql_client.disable_log();
 
         Self {
             snapshot_randomizer: SnapshotRandomizer::new(snapshot),
             rest_client,
-            graphql_client,
         }
     }
 }
@@ -75,8 +68,6 @@ impl VitRestRequestGenerator {
 impl RequestGenerator for VitRestRequestGenerator {
     fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
         self.rest_client
-            .set_api_token(self.snapshot_randomizer.random_token());
-        self.graphql_client
             .set_api_token(self.snapshot_randomizer.random_token());
 
         match self.snapshot_randomizer.random_usize() % 7 {
@@ -91,36 +82,17 @@ impl RequestGenerator for VitRestRequestGenerator {
                 .map(|_| vec![Option::None])
                 .map_err(|e| RequestFailure::General(format!("Proposals: {}", e.to_string()))),
             2 => self
-                .graphql_client
-                .proposal_by_id(self.snapshot_randomizer.random_proposal_id() as u32)
-                .map(|_| vec![Option::None])
-                .map_err(|e| {
-                    RequestFailure::General(format!("GraohQL - Proposals by id: {}", e.to_string()))
-                }),
-            3 => self
-                .graphql_client
-                .fund_by_id(self.snapshot_randomizer.random_fund_id())
-                .map(|_| vec![Option::None])
-                .map_err(|e| {
-                    RequestFailure::General(format!("GraphQL - Fund by id: {}", e.to_string()))
-                }),
-            4 => self
                 .rest_client
                 .proposal(&self.snapshot_randomizer.random_proposal_id().to_string())
                 .map(|_| vec![Option::None])
                 .map_err(|e| {
                     RequestFailure::General(format!("Proposals by id: {}", e.to_string()))
                 }),
-            5 => self
+            3 => self
                 .rest_client
                 .fund(&self.snapshot_randomizer.random_fund_id().to_string())
                 .map(|_| vec![Option::None])
                 .map_err(|e| RequestFailure::General(format!("Funds by id: {}", e.to_string()))),
-            6 => self
-                .graphql_client
-                .funds()
-                .map(|_| vec![Option::None])
-                .map_err(|e| RequestFailure::General(format!("Funds: {}", e.to_string()))),
             _ => unreachable!(),
         }
     }
@@ -132,9 +104,8 @@ pub fn rest_load_quick() {
     let (server, snapshot) = quick_start(&temp_dir).unwrap();
 
     let rest_client = server.rest_client();
-    let graphql_client = server.graphql_client();
 
-    let request = VitRestRequestGenerator::new(snapshot, rest_client, graphql_client);
+    let request = VitRestRequestGenerator::new(snapshot, rest_client);
     let config = Configuration::duration(
         10,
         std::time::Duration::from_secs(40),
@@ -152,9 +123,8 @@ pub fn rest_load_long() {
     let (server, snapshot) = quick_start(&temp_dir).unwrap();
 
     let rest_client = server.rest_client();
-    let graphql_client = server.graphql_client();
 
-    let request = VitRestRequestGenerator::new(snapshot, rest_client, graphql_client);
+    let request = VitRestRequestGenerator::new(snapshot, rest_client);
     let config = Configuration::duration(
         3,
         std::time::Duration::from_secs(18_000),

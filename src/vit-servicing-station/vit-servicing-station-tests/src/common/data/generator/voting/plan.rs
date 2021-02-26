@@ -131,7 +131,7 @@ impl ValidVotePlanGenerator {
         };
 
         let count = self.parameters.challenges_count;
-        let challenges = std::iter::from_fn(|| {
+        let challenges: Vec<Challenge> = std::iter::from_fn(|| {
             let challenge_data = template_generator.next_challenge();
             Some(Challenge {
                 id: challenge_data.id.parse().unwrap(),
@@ -166,31 +166,8 @@ impl ValidVotePlanGenerator {
         let mut proposals = vec![];
         let mut rng = OsRng;
 
-        let simple_challenges_idx: Vec<usize> = fund
-            .challenges
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, challenge)| {
-                if challenge.challenge_type == ChallengeType::Simple {
-                    Some(idx)
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        let community_choice_challenges_idx: Vec<usize> = fund
-            .challenges
-            .iter()
-            .enumerate()
-            .filter_map(|(idx, challenge)| {
-                if challenge.challenge_type == ChallengeType::CommunityChoice {
-                    Some(idx)
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let (simple_challenges_idx, community_choice_challenges_idx) =
+            get_ensured_challenge_types_indexes(&mut fund.challenges);
 
         for (index, proposal) in self.parameters.vote_plan.proposals().iter().enumerate() {
             let proposal_template = template_generator.next_proposal();
@@ -272,4 +249,46 @@ impl ValidVotePlanGenerator {
             vec![vote_plan],
         )
     }
+}
+
+fn get_indexes_by_challenge_type(
+    challenges: &[Challenge],
+    challenge_type: ChallengeType,
+) -> Vec<usize> {
+    challenges
+        .iter()
+        .enumerate()
+        .filter_map(|(idx, challenge)| {
+            if challenge.challenge_type == challenge_type {
+                Some(idx)
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+fn get_ensured_challenge_types_indexes(challenges: &mut [Challenge]) -> (Vec<usize>, Vec<usize>) {
+    let mut simple_challenges_idx: Vec<usize> =
+        get_indexes_by_challenge_type(&challenges, ChallengeType::Simple);
+
+    let mut community_choice_challenges_idx: Vec<usize> =
+        get_indexes_by_challenge_type(&challenges, ChallengeType::CommunityChoice);
+
+    // Ensure no idx set is empty, at least one of each
+    if simple_challenges_idx.is_empty() {
+        // safe to unwrap, if simple is empty all challgeges are in the community choice
+        let idx = community_choice_challenges_idx.pop().unwrap();
+        challenges.get_mut(idx).unwrap().challenge_type = ChallengeType::Simple;
+        simple_challenges_idx.push(idx);
+    }
+
+    if community_choice_challenges_idx.is_empty() {
+        // safe to unwrap, if community is empty all challenges are in the community choice
+        let idx = simple_challenges_idx.pop().unwrap();
+        challenges.get_mut(idx).unwrap().challenge_type = ChallengeType::CommunityChoice;
+        community_choice_challenges_idx.push(idx);
+    }
+
+    (simple_challenges_idx, community_choice_challenges_idx)
 }

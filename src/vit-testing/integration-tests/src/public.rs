@@ -1,38 +1,17 @@
+use crate::setup::*;
+use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
-use jormungandr_lib::interfaces::Explorer;
-use jormungandr_scenario_tests::Seed;
-use jormungandr_scenario_tests::{
-    node::{LeadershipMode, PersistenceMode},
-    test::utils,
-    Context,
-};
-
-use jormungandr_testing_utils::testing::network_builder::SpawnParams;
+use chain_impl_mockchain::key::Hash;
+use iapyx::Protocol;
 use jormungandr_testing_utils::testing::node::time;
-use jortestkit::prelude::ProgressBarMode;
-use std::path::PathBuf;
+use rand::rngs::OsRng;
+use std::path::Path;
+use std::str::FromStr;
 use tokio;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
-use vitup::scenario::controller::VitController;
-use vitup::scenario::settings::VitSettings;
+use vitup::config::{InitialEntry, Initials};
+use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
-const LEADER_1: &str = "Leader1";
-const LEADER_2: &str = "Leader2";
-const LEADER_3: &str = "Leader3";
-const LEADER_4: &str = "Leader4";
-const WALLET_NODE: &str = "Wallet_Node";
-
-const DAVID_ADDRESS: &str = "DdzFFzCqrhsktawSMCWJJy3Dpp9BCjYPVecgsMb5U2G7d1ErUUmwSZvfSY3Yjn5njNadfwvebpVNS5cD4acEKSQih2sR76wx2kF4oLXT";
-const DAVID_MNEMONICS: &str =
-    "tired owner misery large dream glad upset welcome shuffle eagle pulp time";
-
-const EDGAR_ADDRESS: &str = "DdzFFzCqrhsf2sWcZLzXhyLoLZcmw3Zf3UcJ2ozG1EKTwQ6wBY1wMG1tkXtPvEgvE5PKUFmoyzkP8BL4BwLmXuehjRHJtnPj73E5RPMx";
-const EDGAR_MNEMONICS: &str =
-    "edge club wrap where juice nephew whip entry cover bullet cause jeans";
-
-const FILIP_MNEMONICS: &str =
-    "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone";
-const FILIP_ADDRESS: &str = "Ae2tdPwUPEZ8og5u4WF5rmSyme5Gvp8RYiLM2u7Vm8CyDQzLN3VYTN895Wk";
 
 #[allow(dead_code)]
 pub enum Vote {
@@ -40,152 +19,73 @@ pub enum Vote {
     YES = 1,
     NO = 2,
 }
-pub fn context() -> Context {
-    Context::new(
-        Seed::generate(rand::rngs::OsRng),
-        PathBuf::from("jormungandr"),
-        PathBuf::from("jcli"),
-        Some(PathBuf::from("./testing")),
-        true,
-        ProgressBarMode::Standard,
-        "info".to_string(),
-    )
-}
 
 #[tokio::test]
-pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
-    let mut context = context();
-    let title = "vote_e2e_flow";
-    let scenario_settings = prepare_scenario! {
-        title,
-        &mut context,
-        topology [
-            LEADER_1,
-            LEADER_2 -> LEADER_1,
-            LEADER_3 -> LEADER_1,
-            LEADER_4 -> LEADER_1,
-            WALLET_NODE -> LEADER_1,LEADER_2,LEADER_3,LEADER_4
-        ]
-        blockchain {
-            consensus = Bft,
-            number_of_slots_per_epoch = 60,
-            slot_duration = 1,
-            leaders = [ LEADER_1, LEADER_2, LEADER_3, LEADER_4 ],
-            initials = [
-                "account" "Alice" with 500_000_000,
-            ],
-            committees = [ "Alice" ],
-            legacy = [
-                "David" address DAVID_ADDRESS mnemonics DAVID_MNEMONICS with 500_000_000,
-                "Edgar" address EDGAR_ADDRESS mnemonics EDGAR_MNEMONICS with 500_000_000,
-                "Filip" address FILIP_ADDRESS mnemonics FILIP_MNEMONICS with 500_000_000,
-            ],
-            vote_plans = [
-                "fund1" from "Alice" through epochs 0->1->2 as "public" contains proposals = [
-                    proposal adds 100 to "rewards" with 3 vote options,
-                ]
-            ],
-        }
-    };
-
-    let vit_controller = VitController::new(VitSettings::new(&mut context));
-    let mut controller = scenario_settings.build(context).unwrap();
-
-    // bootstrap network
-    let leader_1 = controller
-        .spawn_node_custom(
-            SpawnParams::new(LEADER_1)
-                .leader()
-                .persistence_mode(PersistenceMode::Persistent)
-                .explorer(Explorer { enabled: true }),
-        )
-        .unwrap();
-    leader_1.wait_for_bootstrap().unwrap();
-    controller.monitor_nodes();
-
-    //start bft node 2
-    let leader_2 = controller
-        .spawn_node(
-            LEADER_2,
-            LeadershipMode::Leader,
-            PersistenceMode::Persistent,
-        )
-        .unwrap();
-    leader_2.wait_for_bootstrap().unwrap();
-
-    //start bft node 3
-    let leader_3 = controller
-        .spawn_node(
-            LEADER_3,
-            LeadershipMode::Leader,
-            PersistenceMode::Persistent,
-        )
-        .unwrap();
-    leader_3.wait_for_bootstrap().unwrap();
-
-    //start bft node 4
-    let leader_4 = controller
-        .spawn_node(
-            LEADER_4,
-            LeadershipMode::Leader,
-            PersistenceMode::Persistent,
-        )
-        .unwrap();
-    leader_4.wait_for_bootstrap().unwrap();
-
-    // start passive node
-    let wallet_node = controller
-        .spawn_node_custom(
-            SpawnParams::new(WALLET_NODE)
-                .passive()
-                .persistence_mode(PersistenceMode::Persistent)
-                .explorer(Explorer { enabled: true }),
-        )
-        .unwrap();
-    wallet_node.wait_for_bootstrap().unwrap();
-    let fund1_vote_plan = controller.vote_plan("fund1").unwrap();
-
-    let blockchain_configuration = controller
-        .settings()
-        .network_settings
-        .block0
-        .blockchain_configuration
-        .clone();
-
-    let mut vote_plan_parameters_builder = QuickVitBackendSettingsBuilder::new();
-    vote_plan_parameters_builder
+pub async fn public_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
+    let endpoint = "127.0.0.1:8080";
+    let testing_directory = TempDir::new().unwrap().into_persistent();
+    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    quick_setup
+        .initials(Initials(vec![
+            InitialEntry::Wallet {
+                name: "david".to_string(),
+                funds: 10_000,
+                pin: "1234".to_string(),
+            },
+            InitialEntry::Wallet {
+                name: "edgar".to_string(),
+                funds: 10_000,
+                pin: "1234".to_string(),
+            },
+            InitialEntry::Wallet {
+                name: "filip".to_string(),
+                funds: 10_000,
+                pin: "1234".to_string(),
+            },
+        ]))
         .vote_start_epoch(0)
         .tally_start_epoch(1)
         .tally_end_epoch(2)
-        .slot_duration_in_seconds(blockchain_configuration.slot_duration.into())
-        .slots_in_epoch_count(blockchain_configuration.slots_per_epoch.into())
-        .proposals_count(1);
+        .slot_duration_in_seconds(2)
+        .slots_in_epoch_count(30)
+        .proposals_count(10)
+        .voting_power(8_000)
+        .private(false);
 
-    vote_plan_parameters_builder
-        .recalculate_voting_periods_if_needed(blockchain_configuration.block0_date);
-
-    let settings = controller.settings().clone();
-    let parameters = vote_plan_parameters_builder.vote_plan_parameters(fund1_vote_plan, settings);
-    // start proxy and vit station
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let vit_station = vit_controller
-        .spawn_vit_station(&mut controller, parameters, &mut template_generator)
-        .unwrap();
-    let wallet_proxy = vit_controller
-        .spawn_wallet_proxy(&mut controller, WALLET_NODE)
-        .unwrap();
 
-    // wait for spin off
-    std::thread::sleep(std::time::Duration::from_secs(1));
+    let (mut vit_controller, mut controller, vit_parameters, fund_name) =
+        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (nodes, vit_station, wallet_proxy) = setup_network(
+        &mut controller,
+        &mut vit_controller,
+        vit_parameters,
+        &mut template_generator,
+        endpoint.to_string(),
+        &Protocol::Http,
+    )
+    .unwrap();
+
+    let leader_1 = &nodes[0];
+    let wallet_node = &nodes[4];
+    let mut committee = controller.wallet("committee_1").unwrap();
+
+    let mut qr_codes_folder = testing_directory.path().to_path_buf();
+    qr_codes_folder.push("vit_backend/qr-codes");
+    wait_until_folder_contains_all_qrs(3, &qr_codes_folder);
+
+    let david_qr_code = Path::new(&qr_codes_folder).join("wallet_david_1234.png");
+    let edgar_qr_code = Path::new(&qr_codes_folder).join("wallet_edgar_1234.png");
+    let filip_qr_code = Path::new(&qr_codes_folder).join("wallet_filip_1234.png");
 
     // start mainnet wallets
     let mut david = vit_controller
-        .iapyx_wallet(DAVID_MNEMONICS, &wallet_proxy)
+        .iapyx_wallet_from_qr(&david_qr_code, "1234", &wallet_proxy)
         .unwrap();
     david.retrieve_funds().unwrap();
     david.convert_and_send().unwrap();
 
-    let fund1_vote_plan = controller.vote_plan("fund1").unwrap();
+    let fund1_vote_plan = controller.vote_plan(&fund_name).unwrap();
 
     // start voting
     david
@@ -193,7 +93,7 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
         .unwrap();
 
     let mut edgar = vit_controller
-        .iapyx_wallet(EDGAR_MNEMONICS, &wallet_proxy)
+        .iapyx_wallet_from_qr(&edgar_qr_code, "1234", &wallet_proxy)
         .unwrap();
     edgar.retrieve_funds().unwrap();
     edgar.convert_and_send().unwrap();
@@ -203,7 +103,7 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
         .unwrap();
 
     let mut filip = vit_controller
-        .iapyx_wallet(FILIP_MNEMONICS, &wallet_proxy)
+        .iapyx_wallet_from_qr(&filip_qr_code, "1234", &wallet_proxy)
         .unwrap();
     filip.retrieve_funds().unwrap();
     filip.convert_and_send().unwrap();
@@ -218,60 +118,201 @@ pub async fn vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     };
     time::wait_for_date(target_date.into(), leader_1.explorer());
 
-    //tally the vote and observe changes
-    let rewards_before = leader_1
-        .explorer()
-        .status()
-        .unwrap()
-        .data
-        .unwrap()
-        .status
-        .latest_block
-        .treasury
-        .unwrap()
-        .rewards
-        .parse::<u64>()
-        .unwrap();
-
-    let mut alice = controller.wallet("Alice").unwrap();
     controller
         .fragment_sender()
-        .send_public_vote_tally(&mut alice, &fund1_vote_plan.into(), &wallet_node)
+        .send_public_vote_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
         .unwrap();
 
     time::wait_for_epoch(2, leader_1.explorer());
 
-    let rewards_after = leader_1
-        .explorer()
-        .status()
-        .unwrap()
-        .data
-        .unwrap()
-        .status
-        .latest_block
-        .treasury
-        .unwrap()
-        .rewards
-        .parse::<u64>()
+    let active_vote_plans = leader_1.vote_plans().unwrap();
+    let vote_plan_status = active_vote_plans
+        .iter()
+        .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&fund1_vote_plan.id()).unwrap().into())
         .unwrap();
 
-    utils::assert_equals(
-        &rewards_before,
-        &(rewards_after - 100),
-        &format!(
-            "{} <> {} rewards were not increased",
-            rewards_before, rewards_after
-        ),
+    for proposal in vote_plan_status.proposals.iter() {
+        assert!(
+            proposal.tally.is_some(),
+            "Proposal is not tallied {:?}",
+            proposal
+        );
+    }
+
+    vit_station.shutdown();
+    wallet_proxy.shutdown();
+    for node in nodes {
+        node.shutdown()?;
+    }
+    controller.finalize();
+    Ok(())
+}
+
+#[tokio::test]
+pub async fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
+    let endpoint = "127.0.0.1:8080";
+    let testing_directory = TempDir::new().unwrap().into_persistent();
+    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    quick_setup
+        .initials(Initials(vec![
+            InitialEntry::Wallet {
+                name: "david".to_string(),
+                funds: 10_000,
+                pin: "1234".to_string(),
+            },
+            InitialEntry::Wallet {
+                name: "edgar".to_string(),
+                funds: 10_000,
+                pin: "1234".to_string(),
+            },
+            InitialEntry::Wallet {
+                name: "filip".to_string(),
+                funds: 10_000,
+                pin: "1234".to_string(),
+            },
+        ]))
+        .vote_start_epoch(0)
+        .tally_start_epoch(1)
+        .tally_end_epoch(2)
+        .slot_duration_in_seconds(2)
+        .slots_in_epoch_count(60)
+        .proposals_count(1)
+        .voting_power(8_000)
+        .private(true);
+
+    let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
+    let (mut vit_controller, mut controller, vit_parameters, fund_name) =
+        vitup_setup(quick_setup, testing_directory.path().to_path_buf());
+    let (nodes, vit_station, wallet_proxy) = setup_network(
+        &mut controller,
+        &mut vit_controller,
+        vit_parameters,
+        &mut template_generator,
+        endpoint.to_string(),
+        &Protocol::Http,
     )
     .unwrap();
 
-    wallet_node.shutdown().unwrap();
+    let mut committee = controller.wallet("committee_1").unwrap();
+
+    let leader_1 = &nodes[0];
+    let wallet_node = &nodes[4];
+
+    let mut qr_codes_folder = testing_directory.path().to_path_buf();
+    qr_codes_folder.push("vit_backend/qr-codes");
+    wait_until_folder_contains_all_qrs(3, &qr_codes_folder);
+    let david_qr_code = Path::new(&qr_codes_folder).join("wallet_david_1234.png");
+    let edgar_qr_code = Path::new(&qr_codes_folder).join("wallet_edgar_1234.png");
+    let filip_qr_code = Path::new(&qr_codes_folder).join("wallet_filip_1234.png");
+
+    // start mainnet wallets
+    let mut david = vit_controller
+        .iapyx_wallet_from_qr(&david_qr_code, "1234", &wallet_proxy)
+        .unwrap();
+    david.retrieve_funds().unwrap();
+    david.convert_and_send().unwrap();
+
+    let fund1_vote_plan = controller.vote_plan(&fund_name).unwrap();
+
+    println!(
+        "Controller: {}: {:?}",
+        fund1_vote_plan.id(),
+        fund1_vote_plan
+    );
+
+    let vote_plan = &leader_1.vote_plans().unwrap()[0];
+    println!("Blockchain: {:?}", vote_plan);
+
+    // start voting
+    david
+        .vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8)
+        .unwrap();
+
+    let mut edgar = vit_controller
+        .iapyx_wallet_from_qr(&edgar_qr_code, "1234", &wallet_proxy)
+        .unwrap();
+    edgar.retrieve_funds().unwrap();
+    edgar.convert_and_send().unwrap();
+
+    edgar
+        .vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8)
+        .unwrap();
+
+    let mut filip = vit_controller
+        .iapyx_wallet_from_qr(&filip_qr_code, "1234", &wallet_proxy)
+        .unwrap();
+    filip.retrieve_funds().unwrap();
+    filip.convert_and_send().unwrap();
+
+    filip
+        .vote_for(fund1_vote_plan.id(), 0, Vote::NO as u8)
+        .unwrap();
+
+    let target_date = BlockDate {
+        epoch: 1,
+        slot_id: 5,
+    };
+    time::wait_for_date(target_date.into(), leader_1.explorer());
+
+    controller
+        .fragment_sender()
+        .send_encrypted_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
+        .unwrap();
+
+    let target_date = BlockDate {
+        epoch: 1,
+        slot_id: 30,
+    };
+    time::wait_for_date(target_date.into(), leader_1.explorer());
+
+    let active_vote_plans = leader_1.vote_plans().unwrap();
+    let vote_plan_status = active_vote_plans
+        .iter()
+        .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&fund1_vote_plan.id()).unwrap().into())
+        .unwrap();
+
+    println!("{:?}", active_vote_plans);
+
+    println!("{:?}", leader_1.fragment_logs().unwrap());
+
+    let shares = controller
+        .settings()
+        .private_vote_plans
+        .get(&fund_name)
+        .unwrap()
+        .decrypt_tally(&vote_plan_status.clone().into());
+
+    controller
+        .fragment_sender()
+        .send_private_vote_tally(
+            &mut committee,
+            &fund1_vote_plan.clone().into(),
+            shares,
+            wallet_node,
+        )
+        .unwrap();
+
+    time::wait_for_epoch(2, leader_1.explorer());
+
+    let active_vote_plans = leader_1.vote_plans().unwrap();
+    let vote_plan_status = active_vote_plans
+        .iter()
+        .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&fund1_vote_plan.id()).unwrap().into())
+        .unwrap();
+
+    for proposal in vote_plan_status.proposals.iter() {
+        assert!(
+            proposal.tally.is_some(),
+            "Proposal is not tallied {:?}",
+            proposal
+        );
+    }
+
     vit_station.shutdown();
     wallet_proxy.shutdown();
-    leader_4.shutdown().unwrap();
-    leader_3.shutdown().unwrap();
-    leader_2.shutdown().unwrap();
-    leader_1.shutdown().unwrap();
+    for node in nodes {
+        node.shutdown()?;
+    }
     controller.finalize();
     Ok(())
 }

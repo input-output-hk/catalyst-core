@@ -94,6 +94,7 @@ commands:
           command: |
             cd jormungandr
             cargo install --path jormungandr --locked
+            cargo install --path jcli --locked
       - run:
           name: checkout vit-station-service
           command: |

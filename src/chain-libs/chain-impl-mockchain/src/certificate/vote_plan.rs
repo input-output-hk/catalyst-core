@@ -209,10 +209,12 @@ impl VotePlan {
     }
 
     pub fn is_governance(&self) -> bool {
-        self.proposals().iter().any(|proposal| {
-            matches!(proposal.action(), VoteAction::Parameters { .. })
-                || matches!(proposal.action(), VoteAction::Treasury { .. })
-        })
+        self.proposals()
+            .iter()
+            .any(|proposal| match proposal.action() {
+                VoteAction::OffChain => false,
+                VoteAction::Parameters { .. } | VoteAction::Treasury { .. } => true,
+            })
     }
 
     pub fn vote_start(&self) -> BlockDate {

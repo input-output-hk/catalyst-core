@@ -3,10 +3,10 @@
 //! defined in the Ouroboros Praos paper
 
 use crate::hash::Blake2b256;
-use curve25519_dalek_ng::constants::RISTRETTO_BASEPOINT_POINT;
-use curve25519_dalek_ng::ristretto::CompressedRistretto;
-use curve25519_dalek_ng::ristretto::RistrettoPoint;
-pub use curve25519_dalek_ng::scalar::Scalar;
+use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
+use curve25519_dalek::ristretto::CompressedRistretto;
+use curve25519_dalek::ristretto::RistrettoPoint;
+pub use curve25519_dalek::scalar::Scalar;
 use rand_core::{CryptoRng, RngCore};
 use sha2::Digest;
 use sha2::Sha512;

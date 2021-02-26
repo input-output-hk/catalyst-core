@@ -268,6 +268,19 @@ fn get_indexes_by_challenge_type(
         .collect()
 }
 
+fn ensure_non_empty_indexes(
+    source: &mut Vec<usize>,
+    target: &mut Vec<usize>,
+    challenges: &mut [Challenge],
+    challenge_type: ChallengeType,
+) {
+    if source.is_empty() {
+        let idx = target.pop().unwrap();
+        challenges.get_mut(idx).unwrap().challenge_type = challenge_type;
+        source.push(idx);
+    }
+}
+
 fn get_ensured_challenge_types_indexes(challenges: &mut [Challenge]) -> (Vec<usize>, Vec<usize>) {
     let mut simple_challenges_idx: Vec<usize> =
         get_indexes_by_challenge_type(&challenges, ChallengeType::Simple);
@@ -275,20 +288,19 @@ fn get_ensured_challenge_types_indexes(challenges: &mut [Challenge]) -> (Vec<usi
     let mut community_choice_challenges_idx: Vec<usize> =
         get_indexes_by_challenge_type(&challenges, ChallengeType::CommunityChoice);
 
-    // Ensure no idx set is empty, at least one of each
-    if simple_challenges_idx.is_empty() {
-        // safe to unwrap, if simple is empty all challgeges are in the community choice
-        let idx = community_choice_challenges_idx.pop().unwrap();
-        challenges.get_mut(idx).unwrap().challenge_type = ChallengeType::Simple;
-        simple_challenges_idx.push(idx);
-    }
+    ensure_non_empty_indexes(
+        &mut simple_challenges_idx,
+        &mut community_choice_challenges_idx,
+        challenges,
+        ChallengeType::Simple,
+    );
 
-    if community_choice_challenges_idx.is_empty() {
-        // safe to unwrap, if community is empty all challenges are in the community choice
-        let idx = simple_challenges_idx.pop().unwrap();
-        challenges.get_mut(idx).unwrap().challenge_type = ChallengeType::CommunityChoice;
-        community_choice_challenges_idx.push(idx);
-    }
+    ensure_non_empty_indexes(
+        &mut community_choice_challenges_idx,
+        &mut simple_challenges_idx,
+        challenges,
+        ChallengeType::CommunityChoice,
+    );
 
     (simple_challenges_idx, community_choice_challenges_idx)
 }

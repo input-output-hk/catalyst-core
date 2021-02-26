@@ -4,7 +4,6 @@ use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
 use iapyx::Protocol;
 use jormungandr_testing_utils::testing::node::time;
-use rand::rngs::OsRng;
 use std::path::Path;
 use std::str::FromStr;
 use tokio;

@@ -530,4 +530,12 @@ mod tests {
             res.ok().unwrap()
         );
     }
+
+    #[test]
+    fn zero_encrypted_tally_serialization_sanity() {
+        let tally = EncryptedTally::new(3);
+        let bytes = tally.to_bytes();
+        let deserialized_tally = EncryptedTally::from_bytes(&bytes).unwrap();
+        assert_eq!(tally, deserialized_tally);
+    }
 }

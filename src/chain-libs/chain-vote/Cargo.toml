@@ -5,16 +5,17 @@ authors = ["Vincent Hanquez <vincent.hanquez@iohk.io>"]
 edition = "2018"
 
 [dependencies]
-rand_core = "0.6"
+rand_core = "0.5"
 rayon = "1.5"
 thiserror = "1.0"
 cryptoxide = "0.3"
 eccoxide = { version = "0.3", optional = true }
 zerocaf = { version = "0.2", optional = true }
 criterion = { version = "0.3", optional = true }
+rand_chacha = { version = "0.2", optional = true }
 
 [dev-dependencies]
-rand_chacha = "0.3"
+rand_chacha = "0.2"
 smoke = "^0.2.1"
 
 [features]

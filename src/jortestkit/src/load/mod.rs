@@ -20,7 +20,7 @@ pub use stats::Stats;
 pub use status::{RequestStatusProvider, Status, StatusUpdaterThread};
 
 pub fn start_sync(
-    request_generator: impl RequestGenerator + Clone + Send + Sized + 'static,
+    request_generator: impl RequestGenerator + Send + Sized + 'static,
     config: Configuration,
     title: &str,
 ) -> Stats {

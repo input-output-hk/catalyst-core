@@ -110,7 +110,7 @@ pub fn start_background_async(
 
 pub fn start_async(
     request_generator: impl RequestGenerator + Send + Sized + 'static,
-    status_provider: impl RequestStatusProvider + Send + Sized + Sync + 'static,
+    status_provider: impl RequestStatusProvider + Send + 'static,
     config: Configuration,
     title: &str,
 ) -> Stats {
@@ -146,7 +146,7 @@ pub fn start_async(
 }
 
 fn get_threads(
-    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
+    request_generator: &Arc<Mutex<impl RequestGenerator + Send + 'static>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
     responses: &Arc<Mutex<Vec<Response>>>,
@@ -182,7 +182,7 @@ fn per_thread_strategy(
     responses: &Arc<Mutex<Vec<Response>>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
-    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
+    request_generator: &Arc<Mutex<impl RequestGenerator + Send + 'static>>,
 ) -> Vec<JoinHandle<()>> {
     let mut child_threads = Vec::new();
     for _ in 0..config.thread_no() {
@@ -207,7 +207,7 @@ fn duration_strategy(
     responses: &Arc<Mutex<Vec<Response>>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
-    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
+    request_generator: &Arc<Mutex<impl RequestGenerator + Send + 'static>>,
 ) -> Vec<JoinHandle<()>> {
     let mut child_threads = Vec::new();
     for _ in 0..config.thread_no() {

@@ -1,9 +1,6 @@
 cfg_if::cfg_if! {
     if #[cfg(test)] {
-
-        #[macro_use]
-        extern crate jormungandr_scenario_tests;
-
+        pub mod setup;
         pub mod public;
         #[cfg(feature = "non-functional")]
         pub mod non_functional;

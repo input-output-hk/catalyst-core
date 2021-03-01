@@ -27,7 +27,7 @@ pub fn load_test_public_100_000_votes() {
     let no_of_wallets = 3_000;
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-    let (mut vit_controller, mut controller, vit_parameters, fund_name) =
+    let (mut vit_controller, mut controller, vit_parameters, _fund_name) =
         vitup_setup(false, no_of_wallets, testing_directory.path().to_path_buf());
 
     let (nodes, vit_station, wallet_proxy) = setup_network(

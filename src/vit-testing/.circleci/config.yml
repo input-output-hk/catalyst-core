@@ -94,6 +94,7 @@ commands:
           command: |
             cd jormungandr
             cargo install --path jormungandr --locked
+            cargo install --path jcli --locked
       - run:
           name: checkout vit-station-service
           command: |
@@ -114,7 +115,7 @@ commands:
           environment:
             RUST_BACKTRACE: 1
           command: |
-            cargo test 
+            cargo test -- --test-threads=1
 
 workflows:
   version: 2

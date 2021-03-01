@@ -172,16 +172,26 @@ impl ValidVotePlanGenerator {
         for (index, proposal) in self.parameters.vote_plan.proposals().iter().enumerate() {
             let proposal_template = template_generator.next_proposal();
             // ensure we chose a challenge with the desired challenge type
-            let challenge_idx: usize = match proposal_template.challenge_type {
-                ChallengeType::Simple => {
-                    let challenge_idx = rng.next_u32() as usize % simple_challenges_idx.len();
-                    *simple_challenges_idx.get(challenge_idx).unwrap()
+            let challenge_idx: usize = if fund.challenges.len() > 1 {
+                // chose from the correct generated challenge type for the proposal challenge
+                match proposal_template.challenge_type {
+                    ChallengeType::Simple => {
+                        let challenge_idx = rng.next_u32() as usize % simple_challenges_idx.len();
+                        *simple_challenges_idx.get(challenge_idx).unwrap()
+                    }
+                    ChallengeType::CommunityChoice => {
+                        let challenge_idx =
+                            rng.next_u32() as usize % community_choice_challenges_idx.len();
+                        *community_choice_challenges_idx.get(challenge_idx).unwrap()
+                    }
                 }
-                ChallengeType::CommunityChoice => {
-                    let challenge_idx =
-                        rng.next_u32() as usize % community_choice_challenges_idx.len();
-                    *community_choice_challenges_idx.get(challenge_idx).unwrap()
-                }
+            } else {
+                // if we have only one challenge, ensure its type is of the proposal type
+                // challenges shouldn't be empty
+                assert!(!fund.challenges.is_empty());
+                let challenge = fund.challenges.get_mut(0).unwrap();
+                challenge.challenge_type = proposal_template.challenge_type;
+                0
             };
 
             let mut challenge = fund.challenges.get_mut(challenge_idx).unwrap();
@@ -288,19 +298,23 @@ fn get_ensured_challenge_types_indexes(challenges: &mut [Challenge]) -> (Vec<usi
     let mut community_choice_challenges_idx: Vec<usize> =
         get_indexes_by_challenge_type(&challenges, ChallengeType::CommunityChoice);
 
-    ensure_non_empty_indexes(
-        &mut simple_challenges_idx,
-        &mut community_choice_challenges_idx,
-        challenges,
-        ChallengeType::Simple,
-    );
+    if challenges.len() > 1 {
+        ensure_non_empty_indexes(
+            &mut simple_challenges_idx,
+            &mut community_choice_challenges_idx,
+            challenges,
+            ChallengeType::Simple,
+        );
 
-    ensure_non_empty_indexes(
-        &mut community_choice_challenges_idx,
-        &mut simple_challenges_idx,
-        challenges,
-        ChallengeType::CommunityChoice,
-    );
+        ensure_non_empty_indexes(
+            &mut community_choice_challenges_idx,
+            &mut simple_challenges_idx,
+            challenges,
+            ChallengeType::CommunityChoice,
+        );
 
-    (simple_challenges_idx, community_choice_challenges_idx)
+        (simple_challenges_idx, community_choice_challenges_idx)
+    } else {
+        (simple_challenges_idx, community_choice_challenges_idx)
+    }
 }

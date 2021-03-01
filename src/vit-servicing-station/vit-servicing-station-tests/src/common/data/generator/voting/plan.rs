@@ -188,7 +188,10 @@ impl ValidVotePlanGenerator {
             } else {
                 // if we have only one challenge, ensure its type is of the proposal type
                 // challenges shouldn't be empty
-                assert!(!fund.challenges.is_empty());
+                assert!(
+                    !fund.challenges.is_empty(),
+                    "At least one challenge is required for plan generation"
+                );
                 let challenge = fund.challenges.get_mut(0).unwrap();
                 challenge.challenge_type = proposal_template.challenge_type;
                 0

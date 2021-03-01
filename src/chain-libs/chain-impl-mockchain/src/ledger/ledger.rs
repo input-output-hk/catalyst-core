@@ -1677,7 +1677,7 @@ fn input_single_account_verify<'a>(
     ledger = new_ledger;
 
     let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
-    let verified = witness.verify(&account.clone().into(), &tidsc);
+    let verified = witness.verify(account.as_ref(), &tidsc);
     if verified == chain_crypto::Verification::Failed {
         return Err(Error::AccountInvalidSignature {
             account: account.clone(),

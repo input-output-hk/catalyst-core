@@ -42,33 +42,29 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
     ~/.cargo/bin/rustup default stable
 
 RUN cd ${ENV_PREFIX} && \
-    git clone --recurse-submodules https://github.com/input-output-hk/jormungandr && \
+    git clone https://github.com/input-output-hk/jormungandr && \
 	cd jormungandr && \
-	git checkout master
+	git checkout 58600c672fcd80279426331c2e16fa2143f2cb9b
 
 RUN cd ${ENV_PREFIX} && \
-    git clone --recurse-submodules https://github.com/input-output-hk/vit-servicing-station && \
+    git clone https://github.com/input-output-hk/vit-servicing-station && \
 	cd vit-servicing-station && \
-	git checkout master
+	git checkout 160f09c7a26fe31628b7573e8c326e3d90f1ab47
 	
  RUN cd ${ENV_PREFIX} && \
-    git clone --recurse-submodules https://github.com/input-output-hk/vit-testing
+    git clone https://github.com/input-output-hk/vit-testing
 
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-servicing-station && \
-    git submodule update --init --recursive && \
-    ~/.cargo/bin/cargo build --all --release && \
-    ~/.cargo/bin/cargo install --locked --force --path vit-servicing-station-cli && \
     ~/.cargo/bin/cargo install --locked --force --path vit-servicing-station-server
     
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/jormungandr && \
-    ~/.cargo/bin/cargo build --all --release && \
-    cp ${ENV_PREFIX}/jormungandr/target/release/jormungandr ${ENV_PREFIX}/jormungandr/target/release/jcli ~/.cargo/bin
+    ~/.cargo/bin/cargo install --locked --path jormungandr && \
+    ~/.cargo/bin/cargo install --locked --path jcli
 
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-testing && \
-    ~/.cargo/bin/cargo build --release && \
     ~/.cargo/bin/cargo install --locked --path vitup && \
     ~/.cargo/bin/cargo install --locked --path iapyx
 

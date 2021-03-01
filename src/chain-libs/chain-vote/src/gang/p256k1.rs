@@ -42,6 +42,9 @@ impl GroupElement {
     /// Size of the byte representation of `GroupElement`.
     pub const BYTES_LEN: usize = 65;
 
+    /// Serialized GroupElement::zero
+    const BYTES_ZERO: [u8; Self::BYTES_LEN] = [0; Self::BYTES_LEN];
+
     pub fn generator() -> Self {
         GroupElement(Point::generator())
     }
@@ -73,17 +76,17 @@ impl GroupElement {
     }
 
     pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
-        let mut bytes = [0u8; Self::BYTES_LEN];
         match self.0.to_affine() {
-            None => (),
+            None => Self::BYTES_ZERO,
             Some(pa) => {
+                let mut bytes = [0u8; Self::BYTES_LEN];
                 let (x, y) = pa.to_coordinate();
                 bytes[0] = 0x4;
                 x.to_slice(&mut bytes[1..33]);
                 y.to_slice(&mut bytes[33..65]);
+                bytes
             }
-        };
-        bytes
+        }
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
@@ -92,6 +95,8 @@ impl GroupElement {
             let y = FieldElement::from_slice(&bytes[33..65])?;
             let p = PointAffine::from_coordinate(&x, &y)?;
             Some(GroupElement(Point::from_affine(&p)))
+        } else if bytes == Self::BYTES_ZERO {
+            Some(Self::zero())
         } else {
             None
         }

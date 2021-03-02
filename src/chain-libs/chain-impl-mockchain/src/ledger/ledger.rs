@@ -26,6 +26,8 @@ use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
 use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
+use std::collections::HashSet;
+use std::convert::TryInto;
 use std::mem::swap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
@@ -1004,28 +1006,20 @@ impl Ledger {
             return Err(Error::VotePlanInvalidGovernanceParameters);
         }
 
-        let committee: std::collections::HashSet<CommitteeId> = {
-            let mut vec = Vec::with_capacity(tx.nb_inputs() as usize);
-
-            if !vote_plan.is_governance() {
-                for input in tx.inputs().iter() {
-                    match input.to_enum() {
-                        InputEnum::UtxoInput(_) => {
-                            return Err(Error::VoteCastInvalidTransaction);
-                        }
-                        InputEnum::AccountInput(account_id, _value) => {
-                            use std::convert::TryInto as _;
-
-                            vec.push(account_id.as_ref().try_into().unwrap());
-                        }
+        let mut committee = HashSet::new();
+        if !vote_plan.is_governance() {
+            for input in tx.inputs().iter() {
+                match input.to_enum() {
+                    InputEnum::UtxoInput(_) => {
+                        return Err(Error::VoteCastInvalidTransaction);
+                    }
+                    InputEnum::AccountInput(account_id, _value) => {
+                        committee.insert(account_id.as_ref().try_into().unwrap());
                     }
                 }
             }
-
-            vec.into_iter()
-                .chain(dyn_params.committees.iter().cloned())
-                .collect()
-        };
+        }
+        committee.extend(dyn_params.committees.iter());
 
         if !committee.contains(&sig.id) {
             return Err(Error::VotePlanProofInvalidCommittee);
@@ -1117,15 +1111,13 @@ impl Ledger {
 
         let mut actions = Vec::new();
 
-        let mut f = |action: &VoteAction| actions.push(action.clone());
-
         self.votes = self.votes.apply_committee_result(
             self.date(),
             &stake,
             &self.governance,
             tally,
             sig,
-            &mut f,
+            |action: &VoteAction| actions.push(action.clone()),
         )?;
 
         for action in actions {
@@ -1167,7 +1159,7 @@ impl Ledger {
 
         self.votes = self
             .votes
-            .apply_encrypted_vote_tally(self.date(), &stake, tally, sig)?;
+            .apply_encrypted_vote_tally(self.date(), &stake, tally, sig.id)?;
 
         Ok(self)
     }
@@ -1683,7 +1675,7 @@ fn input_single_account_verify<'a>(
     ledger = new_ledger;
 
     let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
-    let verified = witness.verify(&account.clone().into(), &tidsc);
+    let verified = witness.verify(account.as_ref(), &tidsc);
     if verified == chain_crypto::Verification::Failed {
         return Err(Error::AccountInvalidSignature {
             account: account.clone(),

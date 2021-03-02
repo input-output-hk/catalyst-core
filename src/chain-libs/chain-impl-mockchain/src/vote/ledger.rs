@@ -144,7 +144,7 @@ impl VotePlanLedger {
         governance: &Governance,
         tally: &VoteTally,
         sig: TallyProof,
-        f: &mut F,
+        f: F,
     ) -> Result<Self, VotePlanLedgerError>
     where
         F: FnMut(&VoteAction),

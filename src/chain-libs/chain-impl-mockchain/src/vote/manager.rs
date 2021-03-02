@@ -160,7 +160,7 @@ impl ProposalManager {
         &self,
         stake: &StakeControl,
         governance: &Governance,
-        f: &mut F,
+        mut f: F,
     ) -> Result<Self, VoteError>
     where
         F: FnMut(&VoteAction),
@@ -249,7 +249,7 @@ impl ProposalManager {
         &self,
         decrypted_proposal: &DecryptedPrivateTallyProposal,
         governance: &Governance,
-        f: &mut F,
+        mut f: F,
     ) -> Result<Self, TallyError>
     where
         F: FnMut(&VoteAction),
@@ -415,14 +415,14 @@ impl ProposalManagers {
         &self,
         stake: &StakeControl,
         governance: &Governance,
-        f: &mut F,
+        mut f: F,
     ) -> Result<Self, VoteError>
     where
         F: FnMut(&VoteAction),
     {
         let mut proposals = Vec::with_capacity(self.0.len());
         for proposal in self.0.iter() {
-            proposals.push(proposal.public_tally(stake, governance, f)?);
+            proposals.push(proposal.public_tally(stake, governance, &mut f)?);
         }
 
         Ok(Self(proposals))
@@ -456,7 +456,7 @@ impl ProposalManagers {
         &self,
         decrypted_tally: &DecryptedPrivateTally,
         governance: &Governance,
-        f: &mut F,
+        mut f: F,
     ) -> Result<Self, VoteError>
     where
         F: FnMut(&VoteAction),
@@ -466,7 +466,7 @@ impl ProposalManagers {
             proposals.push(proposal_manager.finalize_private_tally(
                 decrypted_proposal,
                 governance,
-                f,
+                &mut f,
             )?);
         }
         Ok(Self(proposals))
@@ -619,7 +619,7 @@ impl VotePlanManager {
         stake: &StakeControl,
         governance: &Governance,
         sig: CommitteeId,
-        f: &mut F,
+        f: F,
     ) -> Result<Self, VoteError>
     where
         F: FnMut(&VoteAction),
@@ -684,7 +684,7 @@ impl VotePlanManager {
         &self,
         decrypted_tally: &DecryptedPrivateTally,
         governance: &Governance,
-        f: &mut F,
+        f: F,
     ) -> Result<Self, VoteError>
     where
         F: FnMut(&VoteAction),
@@ -869,7 +869,7 @@ mod tests {
                 &stake_controlled,
                 &governance,
                 committee_id,
-                &mut |_| action_hit = true,
+                |_| action_hit = true,
             )
             .unwrap();
         assert!(action_hit)
@@ -922,7 +922,7 @@ mod tests {
                     &stake_controlled,
                     &governance,
                     committee_id,
-                    &mut |_| ()
+                    |_| ()
                 )
                 .err()
                 .unwrap()
@@ -979,7 +979,7 @@ mod tests {
                     &stake_controlled,
                     &governance,
                     committee_id,
-                    &mut |_| ()
+                    |_| ()
                 )
                 .err()
                 .unwrap()
@@ -1097,7 +1097,7 @@ mod tests {
     ) {
         let mut vote_action_hit = false;
         proposal_managers
-            .public_tally(&stake_controlled, &governance, &mut |_vote_action| {
+            .public_tally(&stake_controlled, &governance, |_vote_action| {
                 vote_action_hit = true;
             })
             .unwrap();
@@ -1110,7 +1110,7 @@ mod tests {
     ) {
         let mut vote_action_hit = false;
         proposal_manager
-            .public_tally(&stake_controlled, &governance, &mut |_vote_action| {
+            .public_tally(&stake_controlled, &governance, |_vote_action| {
                 vote_action_hit = true;
             })
             .unwrap();

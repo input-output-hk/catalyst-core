@@ -1111,15 +1111,13 @@ impl Ledger {
 
         let mut actions = Vec::new();
 
-        let mut f = |action: &VoteAction| actions.push(action.clone());
-
         self.votes = self.votes.apply_committee_result(
             self.date(),
             &stake,
             &self.governance,
             tally,
             sig,
-            &mut f,
+            |action: &VoteAction| actions.push(action.clone()),
         )?;
 
         for action in actions {

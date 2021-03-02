@@ -59,6 +59,26 @@ impl Initials {
         0
     }
 
+    pub fn count(&self) -> usize {
+        let mut sum = 0;
+        for initial in self.0.iter() {
+            match initial {
+                Initial::ZeroFunds { zero_funds, pin: _ } => sum += *zero_funds,
+                Initial::BelowThreshold {
+                    below_threshold,
+                    pin: _,
+                } => sum += below_threshold,
+                Initial::AboveThreshold {
+                    above_threshold,
+                    pin: _,
+                } => sum += above_threshold,
+                Initial::Wallet { .. } => sum += 1,
+                _ => {}
+            }
+        }
+        sum
+    }
+
     pub fn zero_funds_pin(&self) -> Option<String> {
         for initial in self.0.iter() {
             if let Initial::ZeroFunds { zero_funds: _, pin } = initial {

@@ -24,4 +24,5 @@ cfg-if = "1.0.0"
 assert_fs = "1.0"
 
 [features]
-non-functional = []
+load-tests = []
+soak-tests = []

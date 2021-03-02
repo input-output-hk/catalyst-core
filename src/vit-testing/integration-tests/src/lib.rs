@@ -2,7 +2,7 @@ cfg_if::cfg_if! {
     if #[cfg(test)] {
         pub mod setup;
         pub mod public;
-        #[cfg(feature = "non-functional")]
+        pub mod private;
         pub mod non_functional;
     }
 }
@@ -23,4 +23,11 @@ pub enum Error {
     ScenarioError(#[from] jormungandr_scenario_tests::scenario::Error),
     #[error("iapyx error")]
     IapyxError(#[from] iapyx::ControllerError),
+}
+
+#[allow(dead_code)]
+pub enum Vote {
+    BLANK = 0,
+    YES = 1,
+    NO = 2,
 }

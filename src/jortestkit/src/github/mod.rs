@@ -15,7 +15,10 @@ use sha1::Digest as _;
 #[derive(Debug, Error)]
 pub enum GitHubApiError {
     #[error("could not deserialize response")]
-    CannotDeserialize(#[from] serde_json::Error),
+    CannotDeserialize {
+        error: serde_json::Error,
+        response: String,
+    },
     #[error("could not send reqeuest")]
     RequestError(#[from] reqwest::Error),
     #[error("cannot find release with version: {0}")]
@@ -269,8 +272,12 @@ impl GitHubApi {
 
     pub fn describe_releases(&self) -> Result<CachedReleases, GitHubApiError> {
         let response_text = self.get("releases")?.text()?;
-        let releases: Vec<ReleaseDto> =
-            serde_json::from_str(&response_text).map_err(GitHubApiError::CannotDeserialize)?;
+        let releases: Vec<ReleaseDto> = serde_json::from_str(&response_text).map_err(|error| {
+            GitHubApiError::CannotDeserialize {
+                error,
+                response: response_text,
+            }
+        })?;
         Ok(CachedReleases::new(
             releases
                 .iter()

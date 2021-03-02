@@ -205,7 +205,7 @@ fn tally_benchmark(
         .collect();
 
     let decrypt_tally = || {
-        let table = chain_vote::TallyOptimizationTable::generate_with_balance(total_votes, 1);
+        let table = chain_vote::TallyOptimizationTable::generate(total_votes);
         vote_plan_status
             .proposals
             .par_iter()

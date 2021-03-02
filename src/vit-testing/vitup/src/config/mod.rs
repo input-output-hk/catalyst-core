@@ -2,7 +2,7 @@ mod env;
 mod initials;
 
 pub use env::VitStartParameters;
-pub use initials::{Initials, Initial as InitialEntry};
+pub use initials::{Initial as InitialEntry, Initials};
 
 use chain_impl_mockchain::fee::LinearFee;
 use jormungandr_lib::interfaces::{CommitteeIdDef, ConsensusLeaderId, Initial, LinearFeeDef};

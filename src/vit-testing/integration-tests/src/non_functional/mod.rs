@@ -17,6 +17,7 @@ use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGener
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
+#[allow(dead_code)]
 fn private_vote_test_scenario(
     quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: &str,
@@ -79,6 +80,7 @@ fn private_vote_test_scenario(
     controller.finalize();
 }
 
+#[allow(dead_code)]
 fn build_load_config(
     address: &str,
     qr_codes_folder: PathBuf,

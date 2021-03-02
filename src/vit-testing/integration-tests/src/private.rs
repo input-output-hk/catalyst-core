@@ -14,7 +14,7 @@ use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 #[tokio::test]
-pub async fn public_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
+pub async fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let endpoint = "127.0.0.1:8080";
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
@@ -40,13 +40,12 @@ pub async fn public_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
         .tally_start_epoch(1)
         .tally_end_epoch(2)
         .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(30)
-        .proposals_count(10)
+        .slots_in_epoch_count(60)
+        .proposals_count(1)
         .voting_power(8_000)
-        .private(false);
+        .private(true);
 
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-
     let (mut vit_controller, mut controller, vit_parameters, fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
     let (nodes, vit_station, wallet_proxy) = setup_network(
@@ -59,14 +58,14 @@ pub async fn public_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     )
     .unwrap();
 
+    let mut committee = controller.wallet("committee_1").unwrap();
+
     let leader_1 = &nodes[0];
     let wallet_node = &nodes[4];
-    let mut committee = controller.wallet("committee_1").unwrap();
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
     qr_codes_folder.push("vit_backend/qr-codes");
     wait_until_folder_contains_all_qrs(3, &qr_codes_folder);
-
     let david_qr_code = Path::new(&qr_codes_folder).join("wallet_david_1234.png");
     let edgar_qr_code = Path::new(&qr_codes_folder).join("wallet_edgar_1234.png");
     let filip_qr_code = Path::new(&qr_codes_folder).join("wallet_filip_1234.png");
@@ -79,6 +78,15 @@ pub async fn public_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     david.convert_and_send().unwrap();
 
     let fund1_vote_plan = controller.vote_plan(&fund_name).unwrap();
+
+    println!(
+        "Controller: {}: {:?}",
+        fund1_vote_plan.id(),
+        fund1_vote_plan
+    );
+
+    let vote_plan = &leader_1.vote_plans().unwrap()[0];
+    println!("Blockchain: {:?}", vote_plan);
 
     // start voting
     david
@@ -113,7 +121,40 @@ pub async fn public_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
 
     controller
         .fragment_sender()
-        .send_public_vote_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
+        .send_encrypted_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
+        .unwrap();
+
+    let target_date = BlockDate {
+        epoch: 1,
+        slot_id: 30,
+    };
+    time::wait_for_date(target_date.into(), leader_1.explorer());
+
+    let active_vote_plans = leader_1.vote_plans().unwrap();
+    let vote_plan_status = active_vote_plans
+        .iter()
+        .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&fund1_vote_plan.id()).unwrap().into())
+        .unwrap();
+
+    println!("{:?}", active_vote_plans);
+
+    println!("{:?}", leader_1.fragment_logs().unwrap());
+
+    let shares = controller
+        .settings()
+        .private_vote_plans
+        .get(&fund_name)
+        .unwrap()
+        .decrypt_tally(&vote_plan_status.clone().into());
+
+    controller
+        .fragment_sender()
+        .send_private_vote_tally(
+            &mut committee,
+            &fund1_vote_plan.clone().into(),
+            shares,
+            wallet_node,
+        )
         .unwrap();
 
     time::wait_for_epoch(2, leader_1.explorer());

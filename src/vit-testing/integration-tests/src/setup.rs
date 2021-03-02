@@ -37,7 +37,7 @@ pub fn context(testing_directory: &PathBuf) -> Context {
         jcli,
         Some(testing_directory.clone()),
         generate_documentation,
-        ProgressBarMode::Standard,
+        ProgressBarMode::None,
         log_level,
     )
 }
@@ -56,7 +56,7 @@ pub fn vitup_setup_default(
         .tally_end_epoch(21)
         .slot_duration_in_seconds(5)
         .slots_in_epoch_count(10)
-        .proposals_count(1)
+        .proposals_count(100)
         .voting_power(8_000)
         .private(private);
 

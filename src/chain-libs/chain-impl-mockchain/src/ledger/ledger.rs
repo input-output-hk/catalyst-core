@@ -1159,7 +1159,7 @@ impl Ledger {
 
         self.votes = self
             .votes
-            .apply_encrypted_vote_tally(self.date(), &stake, tally, sig)?;
+            .apply_encrypted_vote_tally(self.date(), &stake, tally, sig.id)?;
 
         Ok(self)
     }

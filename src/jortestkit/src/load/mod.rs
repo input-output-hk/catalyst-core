@@ -19,11 +19,10 @@ pub use request::{Id, RequestFailure, RequestGenerator, RequestSendMode, Request
 pub use stats::Stats;
 pub use status::{RequestStatusProvider, Status, StatusUpdaterThread};
 
-pub fn start_sync(
-    request_generator: impl RequestGenerator + Clone + Send + Sized + 'static,
-    config: Configuration,
-    title: &str,
-) -> Stats {
+pub fn start_sync<R>(request_generator: R, config: Configuration, title: &str) -> Stats
+where
+    R: RequestGenerator + Send + 'static,
+{
     let responses = Arc::new(Mutex::new(Vec::new()));
     let request_generator = Arc::new(Mutex::new(request_generator));
     let start = Instant::now();
@@ -74,12 +73,16 @@ impl BackgroundLoadProcess {
     }
 }
 
-pub fn start_background_async(
-    request_generator: impl RequestGenerator + Send + Sized + 'static,
-    status_provider: impl RequestStatusProvider + Send + Sized + Sync + 'static,
+pub fn start_background_async<R, S>(
+    request_generator: R,
+    status_provider: S,
     config: Configuration,
     title: &str,
-) -> BackgroundLoadProcess {
+) -> BackgroundLoadProcess
+where
+    R: RequestGenerator + Send + 'static,
+    S: RequestStatusProvider + Send + 'static,
+{
     let responses = Arc::new(Mutex::new(Vec::new()));
     let request_generator = Arc::new(Mutex::new(request_generator));
     let start = Instant::now();
@@ -108,12 +111,16 @@ pub fn start_background_async(
     }
 }
 
-pub fn start_async(
-    request_generator: impl RequestGenerator + Send + Sized + 'static,
-    status_provider: impl RequestStatusProvider + Send + Sized + Sync + 'static,
+pub fn start_async<R, S>(
+    request_generator: R,
+    status_provider: S,
     config: Configuration,
     title: &str,
-) -> Stats {
+) -> Stats
+where
+    R: RequestGenerator + Send + 'static,
+    S: RequestStatusProvider + Send + 'static,
+{
     let responses = Arc::new(Mutex::new(Vec::new()));
     let request_generator = Arc::new(Mutex::new(request_generator));
     let start = Instant::now();
@@ -145,12 +152,15 @@ pub fn start_async(
     stats
 }
 
-fn get_threads(
-    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
+fn get_threads<R>(
+    request_generator: &Arc<Mutex<R>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
     responses: &Arc<Mutex<Vec<Response>>>,
-) -> Vec<JoinHandle<()>> {
+) -> Vec<JoinHandle<()>>
+where
+    R: RequestGenerator + Send + 'static,
+{
     println!("Running load using {:?}", config.strategy());
     match config.strategy() {
         Strategy::PerThread(per_thread) => per_thread_strategy(
@@ -177,13 +187,16 @@ fn get_threads(
     }
 }
 
-fn per_thread_strategy(
+fn per_thread_strategy<R>(
     requests_per_thread: u32,
     responses: &Arc<Mutex<Vec<Response>>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
-    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
-) -> Vec<JoinHandle<()>> {
+    request_generator: &Arc<Mutex<R>>,
+) -> Vec<JoinHandle<()>>
+where
+    R: RequestGenerator + Send + 'static,
+{
     let mut child_threads = Vec::new();
     for _ in 0..config.thread_no() {
         let responses_clone = Arc::clone(&responses);
@@ -202,13 +215,16 @@ fn per_thread_strategy(
     child_threads
 }
 
-fn duration_strategy(
+fn duration_strategy<R>(
     duration: Duration,
     responses: &Arc<Mutex<Vec<Response>>>,
     config: &Configuration,
     request_mode_run: RequestSendMode,
-    request_generator: &Arc<Mutex<impl RequestGenerator + Send + Sized + 'static>>,
-) -> Vec<JoinHandle<()>> {
+    request_generator: &Arc<Mutex<R>>,
+) -> Vec<JoinHandle<()>>
+where
+    R: RequestGenerator + Send + 'static,
+{
     let mut child_threads = Vec::new();
     for _ in 0..config.thread_no() {
         let responses_clone = Arc::clone(&responses);

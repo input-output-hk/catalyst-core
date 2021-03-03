@@ -7,7 +7,7 @@ edition = "2018"
 keywords = [ "Cardano", "Wallet", "Crypto", "Address" ]
 
 [features]
-property-test-api = ["quickcheck"]
+property-test-api = ["chain-crypto/property-test-api", "quickcheck"]
 
 [dependencies]
 bech32 = "0.7"

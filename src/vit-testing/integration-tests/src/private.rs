@@ -136,10 +136,6 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
         .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&fund1_vote_plan.id()).unwrap().into())
         .unwrap();
 
-    println!("{:?}", active_vote_plans);
-
-    println!("{:?}", leader_1.fragment_logs().unwrap());
-
     let shares = controller
         .settings()
         .private_vote_plans

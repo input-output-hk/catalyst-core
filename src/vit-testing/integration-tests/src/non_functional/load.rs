@@ -17,17 +17,18 @@ pub fn load_test_public_100_000_votes() {
 
     let no_of_votes = 100_000;
     let no_of_threads = 10;
-    let no_of_wallets = 4_000;
+    let no_of_wallets = 40_000;
+    let vote_timing = [0, 30, 34];
 
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(0)
-        .tally_start_epoch(3)
-        .tally_end_epoch(4)
+        .vote_start_epoch(vote_timing[0])
+        .tally_start_epoch(vote_timing[1])
+        .tally_end_epoch(vote_timing[2])
         .slot_duration_in_seconds(2)
         .slots_in_epoch_count(60)
-        .proposals_count(250)
+        .proposals_count(1)
         .voting_power(31_000)
         .private(false);
 
@@ -87,11 +88,11 @@ pub fn load_test_private_pesimistic() {
     quick_setup
         .initials_count(no_of_wallets, "1234")
         .vote_start_epoch(0)
-        .tally_start_epoch(3)
-        .tally_end_epoch(4)
+        .tally_start_epoch(10)
+        .tally_end_epoch(12)
         .slot_duration_in_seconds(2)
         .slots_in_epoch_count(60)
-        .proposals_count(250)
+        .proposals_count(1)
         .voting_power(31_000)
         .private(true);
 
@@ -109,11 +110,11 @@ pub fn load_test_private_optimistic() {
     quick_setup
         .initials_count(no_of_wallets, "1234")
         .vote_start_epoch(0)
-        .tally_start_epoch(6)
-        .tally_end_epoch(7)
+        .tally_start_epoch(40)
+        .tally_end_epoch(42)
         .slot_duration_in_seconds(2)
         .slots_in_epoch_count(60)
-        .proposals_count(250)
+        .proposals_count(1)
         .voting_power(31_000)
         .private(true);
 

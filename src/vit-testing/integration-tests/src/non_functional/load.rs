@@ -18,7 +18,7 @@ pub fn load_test_public_100_000_votes() {
     let no_of_votes = 100_000;
     let no_of_threads = 10;
     let no_of_wallets = 40_000;
-    let vote_timing = [0, 30, 34];
+    let vote_timing = [0, 100, 102];
 
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
     quick_setup

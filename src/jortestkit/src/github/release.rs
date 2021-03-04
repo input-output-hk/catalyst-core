@@ -9,21 +9,22 @@ mod serializer {
 
     const FORMAT: &str = "%Y-%m-%dT%H:%M:%SZ";
 
-    pub fn serialize<S>(date: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(date: &Option<DateTime<Utc>>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let s = format!("{}", date.format(FORMAT));
-        serializer.serialize_str(&s)
+        match date {
+            Some(date) => serializer.serialize_some(&format!("{}", date.format(FORMAT))),
+            None => serializer.serialize_none(),
+        }
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<DateTime<Utc>>, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
-        Utc.datetime_from_str(&s, FORMAT)
-            .map_err(serde::de::Error::custom)
+        let s = Option::<String>::deserialize(deserializer)?;
+        Ok(s.map(|s| Utc.datetime_from_str(s.as_str(), FORMAT).unwrap()))
     }
 }
 
@@ -31,9 +32,10 @@ mod serializer {
 pub struct ReleaseDto {
     tag_name: String,
     #[serde(with = "serializer")]
-    published_at: DateTime<Utc>,
+    published_at: Option<DateTime<Utc>>,
     assets: Vec<AssetDto>,
     prerelease: bool,
+    draft: bool,
 }
 
 impl Into<Release> for ReleaseDto {
@@ -41,9 +43,10 @@ impl Into<Release> for ReleaseDto {
         let assets = Asset::assets_from_dtos(self.assets);
         Release {
             version: self.tag_name.clone(),
-            released_date: self.published_at.into(),
+            released_date: self.published_at.map(|dt| dt.into()),
             releases_per_os: assets.iter().cloned().map(|x| (x.os_type(), x)).collect(),
             prerelease: self.prerelease,
+            draft: self.draft,
         }
     }
 }
@@ -53,8 +56,8 @@ impl ReleaseDto {
         self.tag_name
     }
 
-    pub fn published_at(&self) -> &DateTime<Utc> {
-        &self.published_at
+    pub fn published_at(&self) -> Option<&DateTime<Utc>> {
+        self.published_at.as_ref()
     }
 
     pub fn assets(&self) -> &Vec<AssetDto> {

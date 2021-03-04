@@ -1,4 +1,5 @@
 use jormungandr_testing_utils::qr_code::KeyQrCode;
+use jormungandr_testing_utils::qr_code::KeyQrCodeError;
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -26,8 +27,14 @@ pub enum PinReadError {
     UnableToDetectFileName(PathBuf),
     #[error("cannot read file name from path {0:?}")]
     UnableToReadFileName(PathBuf),
-    #[error("cannot divie file name  from path {0:?}")]
+    #[error("cannot split file name  from path {0:?}")]
     UnableToSplitFileName(PathBuf),
+    #[error("Cannot read qr from file")]
+    UnableToReadQR(#[from] std::io::Error),
+    #[error("Cannot decode qr from file")]
+    UnableToDecodeQR(#[from] KeyQrCodeError),
+    #[error("cannot open image")]
+    UnableToOpenImage(#[from] image::ImageError),
 }
 
 #[derive(Debug)]
@@ -38,6 +45,17 @@ pub struct QrReader {
 impl QrReader {
     pub fn new(pin_read_mode: PinReadMode) -> Self {
         Self { pin_read_mode }
+    }
+
+    pub fn read_qr<P: AsRef<Path>>(
+        &self,
+        qr: P,
+    ) -> Result<chain_crypto::SecretKey<chain_crypto::Ed25519Extended>, PinReadError> {
+        let pin = get_pin(&self.pin_read_mode, &qr)?;
+        let pin = pin_to_bytes(&pin);
+        let img = image::open(qr.as_ref())?;
+        let secret = KeyQrCode::decode(img, &pin)?;
+        Ok(secret.first().unwrap().clone())
     }
 
     pub fn read_qrs<P: AsRef<Path>>(

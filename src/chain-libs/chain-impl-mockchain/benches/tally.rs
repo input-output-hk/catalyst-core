@@ -18,7 +18,7 @@ use chain_impl_mockchain::{
 };
 use criterion::{criterion_group, criterion_main, Criterion};
 use rand::{
-    distributions::{Distribution, Uniform, WeightedIndex},
+    distributions::{Bernoulli, Distribution, Uniform, WeightedIndex},
     Rng, SeedableRng,
 };
 use rayon::prelude::*;
@@ -109,7 +109,7 @@ fn tally_benchmark(
 
     // cast votes
     let vote_plan_def = controller.vote_plan(VOTE_PLAN).unwrap();
-    let vote_plan: VotePlan = vote_plan_def.clone().into();
+    let vote_plan: VotePlan = vote_plan_def.into();
 
     let mut total_votes_per_proposal = vec![0; n_proposals];
     let mut voters_and_powers: Vec<_> = voters_aliases
@@ -178,7 +178,7 @@ fn tally_benchmark(
     let vote_plan_status = vote_plans
         .iter()
         .find(|c_vote_plan| {
-            let vote_plan: VotePlan = vote_plan.clone().into();
+            let vote_plan: VotePlan = vote_plan.clone();
             c_vote_plan.id == vote_plan.to_id()
         })
         .unwrap();
@@ -320,8 +320,7 @@ impl FundDistribution {
 impl Distribution<u64> for FundDistribution {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u64 {
         let range_no = self.ranges_no_sampler.sample(rng);
-        let value = self.ranges_values_samplers[range_no].sample(rng);
-        value
+        self.ranges_values_samplers[range_no].sample(rng)
     }
 }
 

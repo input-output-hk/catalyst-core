@@ -2,8 +2,8 @@ use chain_crypto::testing::TestCryptoRng;
 use chain_impl_mockchain::testing::scenario::template::WalletTemplateBuilder;
 use chain_impl_mockchain::{
     certificate::{
-        DecryptedPrivateTally, DecryptedPrivateTallyProposal, EncryptedVoteTally, VotePlan,
-        VoteTally,
+        DecryptedPrivateTally, DecryptedPrivateTallyProposal, EncryptedVoteTally, VoteCast,
+        VotePlan, VoteTally,
     },
     fee::LinearFee,
     header::BlockDate,
@@ -117,29 +117,47 @@ fn tally_benchmark(
         .map(|alias| controller.wallet(alias).unwrap())
         .zip(voting_powers.into_iter())
         .collect();
+    let vote_fragments = {
+        let mut res = Vec::new();
+        for (proposal_idx, proposal) in vote_plan.proposals().iter().enumerate() {
+            for (private_voter, voting_power) in voters_and_powers.iter_mut() {
+                let should_vote = rng.gen_bool(proposals_per_voter_ratio);
+                if !should_vote {
+                    continue;
+                }
 
-    for (i, proposal) in vote_plan.proposals().iter().enumerate() {
-        for (private_voter, voting_power) in voters_and_powers.iter_mut() {
-            let should_vote = rng.gen_bool(proposals_per_voter_ratio);
-            if !should_vote {
-                continue;
-            }
+                let choice = Choice::new(rng.gen_bool(yes_votes_ratio) as u8);
+                let payload = VoteTestGen::private_vote_cast_payload_for(
+                    &vote_plan, proposal, choice, &mut rng,
+                );
 
-            let choice = Choice::new(rng.gen_bool(yes_votes_ratio) as u8);
-
-            controller
-                .cast_vote_private(
+                res.push(controller.fragment_factory().vote_cast(
                     private_voter,
-                    &vote_plan_def,
-                    &proposal.external_id(),
-                    choice,
-                    &mut ledger,
-                    &mut rng,
-                )
-                .unwrap();
-            private_voter.confirm_transaction();
-            total_votes_per_proposal[i] += *voting_power;
+                    VoteCast::new(vote_plan.to_id(), proposal_idx as u8, payload),
+                ));
+                total_votes_per_proposal[proposal_idx] += *voting_power;
+            }
         }
+        res
+    };
+
+    // Vote casting is an order of magnitude slower than other operations so
+    // let's use just 10 samples
+    let mut vote_casting_bench = c.benchmark_group("vote_casting");
+    vote_casting_bench.sample_size(10);
+    vote_casting_bench.bench_function(&format!("vote_cast_{}", benchmark_name), |b| {
+        b.iter(|| {
+            let mut ledger = ledger.clone();
+            for vote in &vote_fragments {
+                ledger.apply_fragment(vote, ledger.date()).unwrap();
+            }
+        })
+    });
+    vote_casting_bench.finish();
+
+    // apply votes
+    for vote in vote_fragments {
+        ledger.apply_fragment(&vote, ledger.date()).unwrap();
     }
 
     // Proceed to tally

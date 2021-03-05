@@ -1,6 +1,7 @@
 mod address;
 mod verify;
 use address::GetAddressFromQRCommand;
+use jormungandr_lib::interfaces::Block0ConfigurationError;
 use structopt::StructOpt;
 use thiserror::Error;
 use verify::VerifyQrCommand;
@@ -26,4 +27,12 @@ pub enum IapyxQrCommandError {
     ProxyError(#[from] crate::backend::ProxyServerError),
     #[error("pin error")]
     PinError(#[from] crate::qr::PinReadError),
+    #[error("reqwest error")]
+    IapyxQrCommandError(#[from] reqwest::Error),
+    #[error("block0 parse error")]
+    Block0ParseError(#[from] Block0ConfigurationError),
+    #[error("io error")]
+    IoError(#[from] std::io::Error),
+    #[error("read error")]
+    ReadError(#[from] chain_core::mempack::ReadError),
 }

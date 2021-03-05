@@ -127,9 +127,10 @@ impl Asset {
 #[derive(Clone, Debug)]
 pub struct Release {
     version: String,
-    released_date: SystemTime,
+    released_date: Option<SystemTime>,
     releases_per_os: HashMap<OsType, Asset>,
     prerelease: bool,
+    draft: bool,
 }
 
 impl Release {
@@ -177,6 +178,10 @@ impl Release {
 
     pub fn prerelease(&self) -> bool {
         self.prerelease
+    }
+
+    pub fn draft(&self) -> bool {
+        self.draft
     }
 }
 
@@ -280,9 +285,9 @@ impl GitHubApi {
         })?;
         Ok(CachedReleases::new(
             releases
-                .iter()
-                .cloned()
+                .into_iter()
                 .map(|release| release.into())
+                .filter(|release: &Release| !release.draft)
                 .collect(),
         ))
     }

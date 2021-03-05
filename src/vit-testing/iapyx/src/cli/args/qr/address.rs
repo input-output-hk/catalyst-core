@@ -64,7 +64,6 @@ impl GetAddressFromQRCommand {
                         .open(block0_path)?;
                     let reader = BufReader::new(reader);
                     Block::deserialize(reader)?
-
                 } else if Url::parse(block0_path).is_ok() {
                     let response = reqwest::blocking::get(block0_path)?;
                     let block0_bytes = response.bytes()?.to_vec();

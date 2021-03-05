@@ -1,3 +1,4 @@
+use crate::config::JobParameters;
 use crate::context::{Context, ContextLock};
 use crate::file_lister;
 use futures::FutureExt;
@@ -29,6 +30,11 @@ impl ServerStopper {
     pub fn stop(&self) {
         self.0.clone().try_send(()).unwrap();
     }
+}
+
+fn job_prameters_json_body(
+) -> impl Filter<Extract = (JobParameters,), Error = warp::Rejection> + Clone {
+    warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }
 
 pub async fn start_rest_server(context: ContextLock) {
@@ -69,6 +75,7 @@ pub async fn start_rest_server(context: ContextLock) {
         let new = warp::path!("new")
             .and(warp::post())
             .and(with_context.clone())
+            .and(job_prameters_json_body())
             .and_then(job_new_handler)
             .boxed();
 
@@ -107,9 +114,12 @@ pub async fn job_status_handler(id: String, context: ContextLock) -> Result<impl
     Ok(context_lock.status_by_id(uuid)).map(|r| warp::reply::json(&r))
 }
 
-pub async fn job_new_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
+pub async fn job_new_handler(
+    context: ContextLock,
+    params: JobParameters,
+) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
-    let id = context_lock.new_run()?;
+    let id = context_lock.new_run(params)?;
     Ok(id).map(|r| warp::reply::json(&r))
 }
 

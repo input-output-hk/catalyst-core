@@ -34,12 +34,12 @@ impl TriggerServiceCommand {
         manager.spawn();
 
         loop {
-            if let Some(job_id) = manager.request_to_start() {
+            if let Some((job_id, params)) = manager.request_to_start() {
                 let mut job_result_dir = configuration.result_dir.clone();
                 job_result_dir.push(job_id.to_string());
                 std::fs::create_dir_all(job_result_dir.clone())?;
 
-                let mut child = configuration.spawn_command(job_id).unwrap();
+                let mut child = configuration.spawn_command(job_id, params).unwrap();
 
                 control_context.lock().unwrap().run_started().unwrap();
 

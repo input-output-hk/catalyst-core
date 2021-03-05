@@ -1,3 +1,4 @@
+use crate::config::JobParameters;
 use crate::context::{ContextLock, State};
 use crate::rest::start_rest_server;
 use tokio::runtime::Runtime;
@@ -24,9 +25,9 @@ impl ManagerService {
         });
     }
 
-    pub fn request_to_start(&self) -> Option<Uuid> {
+    pub fn request_to_start(&self) -> Option<(Uuid, JobParameters)> {
         match self.context.lock().unwrap().state() {
-            State::RequestToStart { job_id } => Some(*job_id),
+            State::RequestToStart { job_id, parameters } => Some((*job_id, *parameters)),
             _ => None,
         }
     }

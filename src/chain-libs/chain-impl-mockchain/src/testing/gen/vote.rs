@@ -6,10 +6,11 @@ use crate::{
         VoteTally,
     },
     ledger::governance::{ParametersGovernance, TreasuryGovernance},
-    vote::{self, Choice},
+    vote::{self, Choice, EncryptedVote, Payload, ProofOfCorrectVote},
 };
 use chain_core::property::BlockDate as BlockDateProp;
 use chain_crypto::digest::DigestOf;
+use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
 
 pub struct VoteTestGen;
@@ -94,6 +95,30 @@ impl VoteTestGen {
 
     pub fn vote_cast_payload_for(choice: &Choice) -> vote::Payload {
         vote::Payload::public(*choice)
+    }
+
+    pub fn private_vote_cast_payload_for<R: RngCore + CryptoRng>(
+        vote_plan: &VotePlan,
+        proposal: &Proposal,
+        choice: Choice,
+        rng: &mut R,
+    ) -> Payload {
+        let encrypting_key =
+            chain_vote::EncryptingVoteKey::from_participants(vote_plan.committee_public_keys());
+
+        let (encrypted_vote, proof) = chain_vote::encrypt_vote(
+            rng,
+            &encrypting_key,
+            chain_vote::Vote::new(
+                proposal.options().choice_range().clone().max().unwrap() as usize + 1,
+                choice.as_byte() as usize,
+            ),
+        );
+
+        Payload::Private {
+            encrypted_vote: EncryptedVote::from_inner(encrypted_vote),
+            proof: ProofOfCorrectVote::from_inner(proof),
+        }
     }
 
     pub fn vote_cast_payload() -> vote::Payload {

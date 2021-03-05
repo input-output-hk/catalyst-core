@@ -10,8 +10,9 @@ use crate::{
         data::{StakePool, Wallet},
         ledger::TestLedger,
         scenario::template::VotePlanDef,
+        VoteTestGen,
     },
-    vote::{Choice, Payload, PayloadType, ProofOfCorrectVote},
+    vote::{Choice, Payload, PayloadType},
 };
 
 #[cfg(test)]
@@ -20,7 +21,6 @@ use super::FragmentFactory;
 #[cfg(test)]
 use chain_addr::Discrimination;
 
-use crate::vote::EncryptedVote;
 use rand_core::{CryptoRng, RngCore};
 use thiserror::Error;
 
@@ -59,6 +59,10 @@ impl Controller {
             declared_vote_plans,
             fragment_factory: FragmentFactory::new(block0_hash, fee),
         }
+    }
+
+    pub fn wallets(&self) -> Vec<Wallet> {
+        self.declared_wallets.clone()
     }
 
     pub fn wallet(&self, alias: &str) -> Result<Wallet, ControllerError> {
@@ -239,23 +243,7 @@ impl Controller {
             |vote_plan, proposal| match vote_plan.payload_type() {
                 PayloadType::Public => panic!("this is a public vote plan"),
                 PayloadType::Private => {
-                    let encrypting_key = chain_vote::EncryptingVoteKey::from_participants(
-                        vote_plan.committee_public_keys(),
-                    );
-
-                    let (encrypted_vote, proof) = chain_vote::encrypt_vote(
-                        rng,
-                        &encrypting_key,
-                        chain_vote::Vote::new(
-                            proposal.options().choice_range().clone().max().unwrap() as usize + 1,
-                            choice.as_byte() as usize,
-                        ),
-                    );
-
-                    Payload::Private {
-                        encrypted_vote: EncryptedVote::from_inner(encrypted_vote),
-                        proof: ProofOfCorrectVote::from_inner(proof),
-                    }
+                    VoteTestGen::private_vote_cast_payload_for(vote_plan, proposal, choice, rng)
                 }
             },
         )

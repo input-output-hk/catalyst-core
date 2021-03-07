@@ -1,5 +1,7 @@
 mod address;
+mod secret;
 mod verify;
+use crate::cli::args::qr::secret::GetSecretFromQRCommand;
 use address::GetAddressFromQRCommand;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
 use structopt::StructOpt;
@@ -10,6 +12,7 @@ use verify::VerifyQrCommand;
 pub enum IapyxQrCommand {
     Verify(VerifyQrCommand),
     CheckAddress(GetAddressFromQRCommand),
+    Secret(GetSecretFromQRCommand),
 }
 
 impl IapyxQrCommand {
@@ -17,6 +20,7 @@ impl IapyxQrCommand {
         match self {
             Self::Verify(verify) => verify.exec(),
             Self::CheckAddress(check_address) => check_address.exec(),
+            Self::Secret(secret) => secret.exec(),
         }
     }
 }
@@ -35,4 +39,6 @@ pub enum IapyxQrCommandError {
     IoError(#[from] std::io::Error),
     #[error("read error")]
     ReadError(#[from] chain_core::mempack::ReadError),
+    #[error("bech32 error")]
+    Bech32Error(#[from] bech32::Error),
 }

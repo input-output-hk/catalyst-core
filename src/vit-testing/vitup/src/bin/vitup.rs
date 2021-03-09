@@ -4,5 +4,5 @@ use vitup::setup::VitCliCommand;
 
 #[tokio::main]
 pub async fn main() -> Result<()> {
-    VitCliCommand::from_args().exec()
+    VitCliCommand::from_args().exec().await
 }

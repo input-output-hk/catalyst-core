@@ -4412,6 +4412,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "tracing-appender"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9965507e507f12c8901432a33e31131222abac31edd90cabbcf85cf544b7127a"
+dependencies = [
+ "chrono",
+ "crossbeam-channel",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "tracing-attributes"
 version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4782,10 +4793,15 @@ dependencies = [
  "structopt",
  "thiserror",
  "tokio 1.2.0",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "uuid",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "walkdir",
  "warp",
+ "warp-reverse-proxy",
  "yaml-rust",
 ]
 

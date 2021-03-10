@@ -2,6 +2,7 @@ pub mod generate;
 pub mod start;
 
 use crate::error::Result;
+use crate::mock::MockStartCommandArgs;
 use crate::setup::generate::{QrCommandArgs, SnapshotCommandArgs};
 use crate::setup::start::AdvancedStartCommandArgs;
 use generate::DataCommandArgs;
@@ -17,9 +18,9 @@ pub enum VitCliCommand {
 }
 
 impl VitCliCommand {
-    pub fn exec(self) -> Result<()> {
+    pub async fn exec(self) -> Result<()> {
         match self {
-            Self::Start(start_command) => start_command.exec(),
+            Self::Start(start_command) => start_command.exec().await,
             Self::Generate(generate_command) => generate_command.exec(),
         }
     }
@@ -31,13 +32,16 @@ pub enum StartCommand {
     Quick(QuickStartCommandArgs),
     /// start advanced backend from scratch
     Advanced(AdvancedStartCommandArgs),
+    // start mock env
+    Mock(MockStartCommandArgs),
 }
 
 impl StartCommand {
-    pub fn exec(self) -> Result<()> {
+    pub async fn exec(self) -> Result<()> {
         match self {
             Self::Quick(quick_start_command) => quick_start_command.exec(),
             Self::Advanced(advanced_start_command) => advanced_start_command.exec(),
+            Self::Mock(mock_start_command) => mock_start_command.exec().await.map_err(Into::into),
         }
     }
 }

@@ -5,6 +5,7 @@ pub mod config;
 pub mod error;
 pub mod interactive;
 pub mod manager;
+mod mock;
 pub mod scenario;
 pub mod setup;
 

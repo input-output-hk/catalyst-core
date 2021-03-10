@@ -64,6 +64,10 @@ pub struct IapyxLoadCommand {
     #[structopt(short = "d", long = "debug")]
     pub debug: bool,
 
+    /// use https for sending fragments
+    #[structopt(short = "r", long = "reuse_accounts")]
+    pub reuse_accounts: bool,
+
     // measure
     #[structopt(short = "c", long = "criterion")]
     pub criterion: Option<u8>,
@@ -123,6 +127,7 @@ impl IapyxLoadCommand {
             address: self.address.clone(),
             wallet_mnemonics_file: self.wallet_mnemonics_file.clone(),
             qr_codes_folder: self.qr_codes_folder.clone(),
+            reuse_accounts: self.reuse_accounts,
             secrets_folder: self.secrets_folder.clone(),
             global_pin: self.global_pin.clone(),
             read_pin_from_filename: self.read_pin_from_filename,

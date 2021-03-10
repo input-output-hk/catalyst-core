@@ -13,7 +13,7 @@ use std::convert::TryInto;
 use std::path::Path;
 use thiserror::Error;
 use wallet::{AccountId, Settings};
-use wallet_core::{Choice, Conversion, Proposal, Value};
+use wallet_core::{Choice, Conversion, Value};
 
 pub struct Controller {
     backend: WalletBackend,
@@ -257,17 +257,6 @@ impl Controller {
             self.wallet
                 .vote(self.settings.clone(), &proposal.clone().into(), choice)?;
         Ok(self.backend.send_fragment(transaction.to_vec())?)
-    }
-
-    pub fn update_proposals(&mut self) -> Result<(), ControllerError> {
-        let proposals = self
-            .get_proposals()?
-            .iter()
-            .cloned()
-            .map(|x| x.into())
-            .collect::<Vec<Proposal>>();
-        self.wallet.set_proposals(proposals);
-        Ok(())
     }
 
     pub fn get_proposals(&mut self) -> Result<Vec<VitProposal>, ControllerError> {

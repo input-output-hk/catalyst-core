@@ -31,7 +31,6 @@ pub enum Error {
 }
 
 pub struct Wallet {
-    proposals: Vec<Proposal>,
     inner: Inner,
 }
 
@@ -46,7 +45,6 @@ impl Wallet {
         Ok(Self {
             inner: Inner::recover(mnemonics, password)
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
-            proposals: vec![],
         })
     }
 
@@ -54,7 +52,6 @@ impl Wallet {
         Ok(Self {
             inner: Inner::recover_free_keys(secret_key, &[])
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
-            proposals: vec![],
         })
     }
 
@@ -62,7 +59,6 @@ impl Wallet {
         Ok(Self {
             inner: Inner::recover_free_keys(secret_key, &[*secret_key])
                 .map_err(|e| Error::CannotRecover(e.to_string()))?,
-            proposals: vec![],
         })
     }
 
@@ -132,10 +128,6 @@ impl Wallet {
         self.inner
             .vote(settings, proposal, choice)
             .map_err(|e| Error::CannotSendVote(e.to_string()))
-    }
-
-    pub fn set_proposals(&mut self, proposals: Vec<Proposal>) {
-        self.proposals = proposals;
     }
 
     pub fn identifier(&self) -> AccountIdentifier {

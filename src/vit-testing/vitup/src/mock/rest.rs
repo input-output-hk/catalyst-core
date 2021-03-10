@@ -610,7 +610,7 @@ pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
 
     let funds: Vec<Fund> = context.lock().unwrap().state().vit().funds().to_vec();
 
-    Ok(HandlerResult(Ok(funds)))
+    Ok(HandlerResult(Ok(funds.first().unwrap().clone())))
 }
 
 pub async fn get_settings(context: ContextLock) -> Result<impl Reply, Rejection> {

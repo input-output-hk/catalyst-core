@@ -578,7 +578,7 @@ pub async fn get_proposal(id: i32, context: ContextLock) -> Result<impl Reply, R
         .vit()
         .proposals()
         .iter()
-        .find(|x| x.proposal.proposal_id == id.to_string())
+        .find(|x| x.proposal.internal_id == id.to_string())
         .map(|x| x.proposal.clone())
         .unwrap();
 

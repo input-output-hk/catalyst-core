@@ -4,6 +4,7 @@ use crate::mock::config::Configuration;
 use crate::mock::mock_state::MockState;
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use thiserror::Error;
@@ -25,6 +26,10 @@ impl Context {
 
     pub fn block0_bin(&self) -> Vec<u8> {
         self.state.ledger().block0_bin()
+    }
+
+    pub fn working_dir(&self) -> PathBuf {
+        self.config.working_dir.clone()
     }
 
     pub fn available(&self) -> bool {

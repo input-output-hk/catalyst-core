@@ -19,6 +19,7 @@ use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{http::StatusCode, reject::Reject, Filter, Rejection, Reply};
 impl Reject for crate::mock::context::Error {}
+use crate::manager::file_lister::dump_json;
 use crate::mock::context::Error::AccountDoesNotExist;
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
@@ -38,7 +39,7 @@ pub async fn start_rest_server(context: ContextLock) {
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();
     let block0_content = context.lock().unwrap().block0_bin();
-
+    let working_dir = context.lock().unwrap().working_dir();
     let with_context = warp::any().map(move || context.clone());
 
     let (non_block, _guard) = tracing_appender::non_blocking(File::create("vole.trace").unwrap());
@@ -64,6 +65,18 @@ pub async fn start_rest_server(context: ContextLock) {
                 .boxed()
         } else {
             warp::any().boxed()
+        };
+
+        let files = {
+            let root = warp::path!("files" / ..).boxed();
+
+            let get = warp::path("get").and(warp::fs::dir(working_dir));
+            let list = warp::path!("list")
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(file_lister_handler);
+
+            root.and(get.or(list)).boxed()
         };
 
         let command = {
@@ -108,7 +121,7 @@ pub async fn start_rest_server(context: ContextLock) {
             root.and(availability.or(fund_id).or(fragment_strategy))
                 .boxed()
         };
-        root.and(api_token_filter).and(command).boxed()
+        root.and(api_token_filter).and(command.or(files)).boxed()
     };
 
     let health = warp::path!("health")
@@ -273,6 +286,11 @@ pub async fn start_rest_server(context: ContextLock) {
 
     let server_fut = server.bind(address);
     server_fut.await;
+}
+
+pub async fn file_lister_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
+    let context_lock = context.lock().unwrap();
+    Ok(dump_json(context_lock.working_dir())?).map(|r| warp::reply::json(&r))
 }
 
 pub async fn get_active_vote_plans(context: ContextLock) -> Result<impl Reply, Rejection> {

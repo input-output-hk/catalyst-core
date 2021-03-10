@@ -120,11 +120,12 @@ impl MultiController {
 
     pub fn retrieve_conversion_transactions(
         &mut self,
+        reuse_accounts: bool,
     ) -> Result<Vec<Vec<u8>>, MultiControllerError> {
         let mut output = Vec::new();
         let block0 = self.backend().block0()?;
         for wallet in self.wallets.iter_mut() {
-            if self.backend.account_exists(wallet.id())? {
+            if reuse_accounts || self.backend.account_exists(wallet.id())? {
                 continue;
             }
             wallet.retrieve_funds(&block0)?;

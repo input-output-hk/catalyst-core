@@ -44,7 +44,7 @@ impl Wallet {
     pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Self, Error> {
         Ok(Self {
             inner: Inner::recover(mnemonics, password)
-                .map_err(|e| Error::CannotRecover(e.to_string()))?
+                .map_err(|e| Error::CannotRecover(e.to_string()))?,
         })
     }
 

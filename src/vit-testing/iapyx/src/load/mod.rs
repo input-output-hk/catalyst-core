@@ -26,8 +26,6 @@ impl IapyxLoad {
         let settings = self.config.rest_settings();
         let pin_read_mode = self.config.pin_read_mode();
 
-        println!("{:?}", settings);
-
         let multicontroller = {
             if let Some(mnemonics_file) = &self.config.wallet_mnemonics_file {
                 let mnemonics = jortestkit::file::read_file_as_vector(&mnemonics_file)
@@ -55,7 +53,9 @@ impl IapyxLoad {
         };
 
         let mut request_generator = WalletRequestGen::new(multicontroller?);
-        request_generator.fill_generator().unwrap();
+        request_generator
+            .fill_generator(self.config.reuse_accounts)
+            .unwrap();
 
         let measurement_name = "iapyx load test";
         let stats = jortestkit::load::start_async(

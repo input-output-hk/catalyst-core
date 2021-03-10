@@ -23,8 +23,10 @@ impl WalletRequestGen {
         }
     }
 
-    pub fn fill_generator(&mut self) -> Result<(), MultiControllerError> {
-        self.initial_requests = self.multi_controller.retrieve_conversion_transactions()?;
+    pub fn fill_generator(&mut self, reuse_accounts: bool) -> Result<(), MultiControllerError> {
+        self.initial_requests = self
+            .multi_controller
+            .retrieve_conversion_transactions(reuse_accounts)?;
         self.proposals = self.multi_controller.proposals()?;
         Ok(())
     }

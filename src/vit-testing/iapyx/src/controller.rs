@@ -13,7 +13,7 @@ use std::convert::TryInto;
 use std::path::Path;
 use thiserror::Error;
 use wallet::{AccountId, Settings};
-use wallet_core::{Choice, Conversion,Value};
+use wallet_core::{Choice, Conversion, Value};
 
 pub struct Controller {
     backend: WalletBackend,

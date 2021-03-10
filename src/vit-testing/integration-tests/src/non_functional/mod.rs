@@ -103,6 +103,7 @@ fn build_load_config(
         qr_codes_folder: Some(qr_codes_folder),
         secrets_folder: None,
         global_pin: "".to_string(),
+        reuse_accounts: false,
         read_pin_from_filename: true,
         use_https_for_post: false,
         debug: true,

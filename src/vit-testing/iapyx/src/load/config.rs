@@ -11,6 +11,7 @@ pub struct IapyxLoadConfig {
     pub debug: bool,
     pub use_https_for_post: bool,
     pub read_pin_from_filename: bool,
+    pub reuse_accounts: bool,
     pub global_pin: String,
     pub wallet_mnemonics_file: Option<PathBuf>,
     pub qr_codes_folder: Option<PathBuf>,

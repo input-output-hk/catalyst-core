@@ -4,6 +4,7 @@
     utils.url = "github:kreisys/flake-utils";
     rust-nix.url = "github:input-output-hk/rust.nix/work";
     rust-nix.inputs.nixpkgs.follows = "nixpkgs";
+    voting-tools.url = "github:input-output-hk/voting-tools";
   };
   outputs = { self, nixpkgs, utils, rust-nix }:
     let

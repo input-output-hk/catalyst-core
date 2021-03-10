@@ -58,6 +58,41 @@
         "repo": "flake-utils",
         "type": "github"
       }
+    },
+    "utils_2": {
+      "locked": {
+        "lastModified": 1610051610,
+        "narHash": "sha256-U9rPz/usA1/Aohhk7Cmc2gBrEEKRzcW4nwPWMPwja4Y=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "3982c9903e93927c2164caa727cd3f6a0e6d14cc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "voting-tools": {
+      "inputs": {
+        "haskell-nix": "haskell-nix",
+        "nixpkgs": "nixpkgs_2",
+        "utils": "utils_2"
+      },
+      "locked": {
+        "lastModified": 1614872423,
+        "narHash": "sha256-vlaa4K6SYPkRw0ZaCroNx2a47yGgBAaR2ByYWwBwEio=",
+        "owner": "input-output-hk",
+        "repo": "voting-tools",
+        "rev": "6cf436eff5d3acab78cb3e13efeaa62e8aa0336a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "input-output-hk",
+        "repo": "voting-tools",
+        "type": "github"
+      }
     }
   },
   "root": "root",

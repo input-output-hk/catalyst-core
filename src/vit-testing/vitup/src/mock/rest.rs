@@ -394,7 +394,13 @@ pub async fn post_message(
     message: warp::hyper::body::Bytes,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let fragment = Fragment::deserialize(message.as_ref()).unwrap();
+    let fragment = match Fragment::deserialize(message.as_ref()) {
+        Ok(fragment) => fragment,
+        Err(err) => {
+            println!("post_message with wrong fragment reason '{:?}'...", err);
+            return Err(warp::reject());
+        }
+    };
     println!("post_message {}...", fragment.id());
 
     if !context.lock().unwrap().available() {

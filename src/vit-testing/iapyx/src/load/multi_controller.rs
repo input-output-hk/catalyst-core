@@ -125,11 +125,10 @@ impl MultiController {
         let mut output = Vec::new();
         let block0 = self.backend().block0()?;
         for wallet in self.wallets.iter_mut() {
-            if reuse_accounts {
-                if self.backend.account_exists(wallet.id())? {
-                    continue;
-                }
+            if reuse_accounts && self.backend.account_exists(wallet.id())? {
+                continue;
             }
+
             wallet.retrieve_funds(&block0)?;
             for tx in wallet.convert(self.settings.clone()).transactions() {
                 output.push(tx.clone());

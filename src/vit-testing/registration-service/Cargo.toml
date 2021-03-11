@@ -24,3 +24,5 @@ serde_yaml = "0.8"
 version = "0.10.10"
 default-features = false
 features = ["blocking", "rustls-tls"]
+
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "04e065d055d6ca7bb0b0237a60ac5036c190569e" } 

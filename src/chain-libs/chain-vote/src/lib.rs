@@ -125,7 +125,11 @@ impl EncryptedTally {
         }
     }
 
-    pub fn finish(&self, secret_key: &OpeningVoteKey) -> (TallyState, TallyDecryptShare) {
+    pub fn finish<R: RngCore + CryptoRng>(
+        &self,
+        rng: &mut R,
+        secret_key: &OpeningVoteKey,
+    ) -> (TallyState, TallyDecryptShare) {
         let mut dshares = Vec::with_capacity(self.r.len());
         let mut r2s = Vec::with_capacity(self.r.len());
         for r in &self.r {
@@ -327,7 +331,7 @@ mod tests {
         tally.add(&e2.0, 5);
         tally.add(&e3.0, 4);
 
-        let (ts, tds1) = tally.finish(m1.secret_key());
+        let (ts, tds1) = tally.finish(&mut rng, m1.secret_key());
 
         let max_votes = 20;
 
@@ -383,9 +387,9 @@ mod tests {
         tally.add(&e2.0, 3);
         tally.add(&e3.0, 4);
 
-        let (_, tds1) = tally.finish(m1.secret_key());
-        let (_, tds2) = tally.finish(m2.secret_key());
-        let (ts, tds3) = tally.finish(m3.secret_key());
+        let (_, tds1) = tally.finish(&mut rng, m1.secret_key());
+        let (_, tds2) = tally.finish(&mut rng, m2.secret_key());
+        let (ts, tds3) = tally.finish(&mut rng, m3.secret_key());
 
         let max_votes = 20;
 
@@ -432,7 +436,7 @@ mod tests {
         let mut tally = EncryptedTally::new(vote_options);
         tally.add(&e1, 42);
 
-        let (ts, tds1) = tally.finish(m1.secret_key());
+        let (ts, tds1) = tally.finish(&mut rng, m1.secret_key());
 
         let max_votes = 42;
 
@@ -471,7 +475,7 @@ mod tests {
         println!("tallying");
 
         let tally = EncryptedTally::new(vote_options);
-        let (ts, tds1) = tally.finish(m1.secret_key());
+        let (ts, tds1) = tally.finish(&mut rng, m1.secret_key());
 
         let max_votes = 2;
 
@@ -524,9 +528,9 @@ mod tests {
         tally.add(&e2.0, 3);
         tally.add(&e3.0, 40);
 
-        let (_, tds1) = tally.finish(m1.secret_key());
-        let (_, tds2) = tally.finish(m2.secret_key());
-        let (ts, tds3) = tally.finish(m3.secret_key());
+        let (_, tds1) = tally.finish(&mut rng, m1.secret_key());
+        let (_, tds2) = tally.finish(&mut rng, m2.secret_key());
+        let (ts, tds3) = tally.finish(&mut rng, m3.secret_key());
 
         let max_votes = 4;
 

@@ -88,7 +88,13 @@ pub struct EncryptedTally {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct TallyDecryptShare {
-    r1s: Vec<gang::GroupElement>,
+    elements: Vec<ProvenDecryptShare>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct ProvenDecryptShare {
+    r1: gang::GroupElement,
+    pi: decr_nizk::Proof,
 }
 
 #[derive(Clone)]
@@ -134,10 +140,16 @@ impl EncryptedTally {
         let mut r2s = Vec::with_capacity(self.r.len());
         for r in &self.r {
             let (r1, r2) = r.elements();
-            dshares.push(r1 * &secret_key.0.sk);
+            let decrypted_share = r1 * &secret_key.0.sk;
+            let w = Scalar::random(rng);
+            let proof = decr_nizk::generate(&w, r1, &secret_key.0.sk);
+            dshares.push(ProvenDecryptShare {
+                r1: decrypted_share,
+                pi: proof,
+            });
             r2s.push(r2.clone());
         }
-        (TallyState { r2s }, TallyDecryptShare { r1s: dshares })
+        (TallyState { r2s }, TallyDecryptShare { elements: dshares })
     }
 
     pub fn state(&self) -> TallyState {
@@ -182,11 +194,25 @@ impl std::ops::Add for EncryptedTally {
     }
 }
 
+impl ProvenDecryptShare {
+    const SIZE: usize = decr_nizk::PROOF_SIZE + GroupElement::BYTES_LEN;
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        if bytes.len() != ProvenDecryptShare::SIZE {
+            return None;
+        }
+
+        let r1 = gang::GroupElement::from_bytes(&bytes[0..GroupElement::BYTES_LEN])?;
+        let proof = decr_nizk::Proof::from_slice(&bytes[GroupElement::BYTES_LEN..])?;
+        Some(ProvenDecryptShare { r1, pi: proof })
+    }
+}
+
 impl TallyDecryptShare {
     /// Number of voting options this taly decrypt share structure is
     /// constructed for.
     pub fn options(&self) -> usize {
-        self.r1s.len()
+        self.elements.len()
     }
 
     /// Size of the byte representation for a tally decrypt share
@@ -196,11 +222,24 @@ impl TallyDecryptShare {
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
-        group_elements_to_bytes(&self.r1s)
+        let mut out = Vec::new();
+        for element in self.elements.iter() {
+            out.extend_from_slice(element.r1.to_bytes().as_ref());
+            out.extend_from_slice(&element.pi.to_bytes());
+        }
+        out
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        group_elements_from_bytes(bytes).map(|r1s| Self { r1s })
+        if bytes.len() % ProvenDecryptShare::SIZE != 0 {
+            return None;
+        }
+
+        let elements = bytes
+            .chunks(ProvenDecryptShare::SIZE)
+            .map(ProvenDecryptShare::from_bytes)
+            .collect::<Option<Vec<_>>>()?;
+        Some(TallyDecryptShare { elements })
     }
 }
 
@@ -252,7 +291,7 @@ fn result_vector(
     decrypt_shares: &[TallyDecryptShare],
 ) -> Vec<gang::GroupElement> {
     let ris = (0..tally_state.r2s.len())
-        .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
+        .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.elements[i].r1)));
 
     let results = tally_state
         .r2s

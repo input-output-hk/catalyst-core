@@ -2,6 +2,7 @@
 
 mod commitment;
 pub mod committee;
+pub mod decr_nizk;
 mod encrypted;
 mod gang;
 pub mod gargamel;

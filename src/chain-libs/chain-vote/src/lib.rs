@@ -286,6 +286,19 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     Some(elements)
 }
 
+pub fn verify_decrypt_share(
+    encrypted_tally: &EncryptedTally,
+    pk: &committee::MemberPublicKey,
+    decrypt_share: &TallyDecryptShare,
+) -> bool {
+    for (element, r) in decrypt_share.elements.iter().zip(encrypted_tally.r.iter()) {
+        if !decr_nizk::verify(&r.elements().0, &element.r1, &pk.0.pk, &element.pi) {
+            return false;
+        }
+    }
+    true
+}
+
 fn result_vector(
     tally_state: &TallyState,
     decrypt_shares: &[TallyDecryptShare],
@@ -372,6 +385,8 @@ mod tests {
 
         let (ts, tds1) = tally.finish(&mut rng, m1.secret_key());
 
+        assert_eq!(verify_decrypt_share(&tally, &m1.public_key(), &tds1), true);
+
         let max_votes = 20;
 
         let shares = vec![tds1];
@@ -429,6 +444,14 @@ mod tests {
         let (_, tds1) = tally.finish(&mut rng, m1.secret_key());
         let (_, tds2) = tally.finish(&mut rng, m2.secret_key());
         let (ts, tds3) = tally.finish(&mut rng, m3.secret_key());
+
+        // check that the verify shares are correct for each participants
+        assert_eq!(verify_decrypt_share(&tally, &m1.public_key(), &tds1), true);
+        assert_eq!(verify_decrypt_share(&tally, &m2.public_key(), &tds2), true);
+        assert_eq!(verify_decrypt_share(&tally, &m3.public_key(), &tds3), true);
+
+        // check a mismatch parameters (m2 key with m1's share) is detected
+        assert_eq!(verify_decrypt_share(&tally, &m2.public_key(), &tds1), false);
 
         let max_votes = 20;
 

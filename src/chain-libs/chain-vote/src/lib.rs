@@ -4,6 +4,7 @@
 mod macros;
 mod commitment;
 pub mod committee;
+pub mod decr_nizk;
 mod encrypted;
 pub mod encryption;
 mod gang;

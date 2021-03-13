@@ -80,4 +80,8 @@ impl Snapshot {
     pub fn challenges(&self) -> Vec<Challenge> {
         self.challenges.clone()
     }
+
+    pub fn challenges_mut(&mut self) -> &mut Vec<Challenge> {
+        &mut self.challenges
+    }
 }

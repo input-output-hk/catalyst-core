@@ -24,6 +24,10 @@ impl Context {
         }
     }
 
+    pub fn reset(&mut self, params: VitStartParameters) {
+        self.state = MockState::new(params, self.config.working_dir.clone()).unwrap();
+    }
+
     pub fn block0_bin(&self) -> Vec<u8> {
         self.state.ledger().block0_bin()
     }

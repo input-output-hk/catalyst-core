@@ -1,4 +1,5 @@
 use super::FragmentRecieveStrategy;
+use crate::config::VitStartParameters;
 use crate::mock::context::{Context, ContextLock};
 use chain_core::property::Deserialize;
 use chain_crypto::PublicKey;
@@ -82,6 +83,12 @@ pub async fn start_rest_server(context: ContextLock) {
         let command = {
             let root = warp::path!("command" / ..);
 
+            let reset = warp::path!("reset")
+                .and(warp::post())
+                .and(with_context.clone())
+                .and(warp::body::json())
+                .and_then(command_reset_mock);
+
             let availability = warp::path!("available" / bool)
                 .and(warp::post())
                 .and(with_context.clone())
@@ -118,7 +125,7 @@ pub async fn start_rest_server(context: ContextLock) {
                 root.and(reject.or(accept).or(pending).or(reset)).boxed()
             };
 
-            root.and(availability.or(fund_id).or(fragment_strategy))
+            root.and(reset.or(availability).or(fund_id).or(fragment_strategy))
                 .boxed()
         };
         root.and(api_token_filter).and(command.or(files)).boxed()
@@ -332,6 +339,14 @@ pub async fn debug_message(
     Ok(HandlerResult(Ok(format!("{:?}", fragment))))
 }
 
+pub async fn command_reset_mock(
+    context: ContextLock,
+    parameters: VitStartParameters,
+) -> Result<impl Reply, Rejection> {
+    context.lock().unwrap().reset(parameters);
+    Ok(warp::reply())
+}
+
 pub async fn command_available(
     available: bool,
     context: ContextLock,
@@ -341,15 +356,7 @@ pub async fn command_available(
 }
 
 pub async fn command_fund_id(id: i32, context: ContextLock) -> Result<impl Reply, Rejection> {
-    context
-        .lock()
-        .unwrap()
-        .state_mut()
-        .vit_mut()
-        .funds_mut()
-        .last_mut()
-        .unwrap()
-        .id = id;
+    context.lock().unwrap().state_mut().set_fund_id(id);
     Ok(warp::reply())
 }
 pub async fn command_reject(context: ContextLock) -> Result<impl Reply, Rejection> {

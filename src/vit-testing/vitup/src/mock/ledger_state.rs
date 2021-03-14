@@ -10,6 +10,7 @@ use jormungandr_lib::interfaces::Block0Configuration;
 use jormungandr_lib::interfaces::{BlockDate, SettingsDto};
 use jormungandr_lib::interfaces::{FragmentLog, FragmentOrigin, FragmentStatus};
 use jormungandr_lib::time::SystemTime;
+use std::collections::HashMap;
 use std::ops::Add;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -64,11 +65,11 @@ impl LedgerState {
         fragment_id
     }
 
-    pub fn statuses(&self, ids: Vec<FragmentId>) -> Vec<FragmentStatus> {
+    pub fn statuses(&self, ids: Vec<FragmentId>) -> HashMap<String, FragmentStatus> {
         self.fragment_logs
             .iter()
             .filter(|x| ids.contains(&x.fragment_id().clone().into_hash()))
-            .map(|x| x.status().clone())
+            .map(|x| (x.fragment_id().to_string(), x.status().clone()))
             .collect()
     }
 

@@ -2,6 +2,7 @@ pub type ContextLock = Arc<Mutex<Context>>;
 use crate::config::VitStartParameters;
 use crate::mock::config::Configuration;
 use crate::mock::mock_state::MockState;
+use crate::mock::Logger;
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -13,6 +14,7 @@ pub struct Context {
     config: Configuration,
     address: SocketAddr,
     state: MockState,
+    logger: Logger,
 }
 
 impl Context {
@@ -21,7 +23,24 @@ impl Context {
             address: ([0, 0, 0, 0], config.port).into(),
             state: MockState::new(params, config.working_dir.clone()).unwrap(),
             config,
+            logger: Logger::new(),
         }
+    }
+
+    pub fn log<S: Into<String>>(&mut self, message: S) {
+        self.logger.log(message)
+    }
+
+    pub fn logs(&self) -> Vec<String> {
+        self.logger.logs()
+    }
+
+    pub fn clear_logs(&mut self) {
+        self.logger.clear()
+    }
+
+    pub fn reset(&mut self, params: VitStartParameters) {
+        self.state = MockState::new(params, self.config.working_dir.clone()).unwrap();
     }
 
     pub fn block0_bin(&self) -> Vec<u8> {

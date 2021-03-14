@@ -68,6 +68,22 @@ pub async fn start_rest_server(context: ContextLock) {
             warp::any().boxed()
         };
 
+        let logs = {
+            let root = warp::path!("logs" / ..).boxed();
+
+            let list = warp::path!("get")
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(logs_get);
+
+            let clear = warp::path!("clear")
+                .and(warp::post())
+                .and(with_context.clone())
+                .and_then(logs_clear);
+
+            root.and(clear.or(list)).boxed()
+        };
+
         let files = {
             let root = warp::path!("files" / ..).boxed();
 
@@ -128,7 +144,9 @@ pub async fn start_rest_server(context: ContextLock) {
             root.and(reset.or(availability).or(fund_id).or(fragment_strategy))
                 .boxed()
         };
-        root.and(api_token_filter).and(command.or(files)).boxed()
+        root.and(api_token_filter)
+            .and(command.or(files).or(logs))
+            .boxed()
     };
 
     let health = warp::path!("health")
@@ -233,10 +251,13 @@ pub async fn start_rest_server(context: ContextLock) {
             .and_then(get_active_vote_plans)
             .boxed();
 
-        let block0 = warp::path!("block0").map(move || {
-            println!("get_block0 ...");
-            Ok(block0_content.clone())
-        });
+        let block0 =
+            warp::path!("block0")
+                .and(with_context.clone())
+                .map(move |context: ContextLock| {
+                    context.lock().unwrap().log("get_block0");
+                    Ok(block0_content.clone())
+                });
 
         root.and(
             proposals
@@ -295,16 +316,28 @@ pub async fn start_rest_server(context: ContextLock) {
     server_fut.await;
 }
 
+pub async fn logs_get(context: ContextLock) -> Result<impl Reply, Rejection> {
+    let context_lock = context.lock().unwrap();
+    Ok(HandlerResult(Ok(context_lock.logs())))
+}
+
+pub async fn logs_clear(context: ContextLock) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    context_lock.clear_logs();
+    Ok(warp::reply())
+}
+
 pub async fn file_lister_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
     let context_lock = context.lock().unwrap();
     Ok(dump_json(context_lock.working_dir())?).map(|r| warp::reply::json(&r))
 }
 
 pub async fn get_active_vote_plans(context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_active_vote_plans ...");
+    let mut context_lock = context.lock().unwrap();
+    context_lock.log("get_active_vote_plans");
 
-    if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+    if !context_lock.available() {
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -404,14 +437,21 @@ pub async fn post_message(
     let fragment = match Fragment::deserialize(message.as_ref()) {
         Ok(fragment) => fragment,
         Err(err) => {
-            println!("post_message with wrong fragment reason '{:?}'...", err);
+            context.lock().unwrap().log(format!(
+                "post_message with wrong fragment. Reason '{:?}'...",
+                err
+            ));
             return Err(warp::reject());
         }
     };
-    println!("post_message {}...", fragment.id());
+
+    context
+        .lock()
+        .unwrap()
+        .log(format!("post_message {}...", fragment.id()));
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -432,7 +472,7 @@ pub struct ChallengeWithProposals {
     pub proposals: Vec<Proposal>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct GetMessageStatusesQuery {
     fragment_ids: String,
 }
@@ -441,10 +481,13 @@ pub async fn get_fragment_statuses(
     query: GetMessageStatusesQuery,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    println!("get_fragment_statuses...");
+    context
+        .lock()
+        .unwrap()
+        .log(format!("get_fragment_statuses {:?}...", query));
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -466,9 +509,10 @@ pub async fn post_fragments(
     messages: Vec<String>,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    println!("post_fragments...");
+    context.lock().unwrap().log("post_fragments");
+
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -493,9 +537,10 @@ pub async fn post_fragments(
 }
 
 pub async fn get_fragment_logs(context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_fragment_logs...");
+    context.lock().unwrap().log("get_fragment_logs");
+
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -508,9 +553,10 @@ pub async fn get_fragment_logs(context: ContextLock) -> Result<impl Reply, Rejec
 }
 
 pub async fn get_challenges(context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_challenges...");
+    context.lock().unwrap().log("get_challenges");
+
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -523,10 +569,13 @@ pub async fn get_challenges(context: ContextLock) -> Result<impl Reply, Rejectio
 }
 
 pub async fn get_challenge_by_id(id: i32, context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_challenge_by_id {} ...", id);
+    context
+        .lock()
+        .unwrap()
+        .log(format!("get_challenge_by_id {} ...", id));
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -558,10 +607,10 @@ pub async fn get_challenge_by_id(id: i32, context: ContextLock) -> Result<impl R
 }
 
 pub async fn get_all_proposals(context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_all_proposals...");
+    context.lock().unwrap().log("get_all_proposals");
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -577,10 +626,13 @@ pub async fn get_all_proposals(context: ContextLock) -> Result<impl Reply, Rejec
 }
 
 pub async fn get_proposal(id: i32, context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_proposal {} ...", id);
+    context
+        .lock()
+        .unwrap()
+        .log(format!("get_proposal {} ...", id));
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -599,10 +651,13 @@ pub async fn get_proposal(id: i32, context: ContextLock) -> Result<impl Reply, R
 }
 
 pub async fn get_fund_by_id(id: i32, context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_fund_by_id {} ...", id);
+    context
+        .lock()
+        .unwrap()
+        .log(format!("get_fund_by_id {} ...", id));
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -614,10 +669,10 @@ pub async fn get_fund_by_id(id: i32, context: ContextLock) -> Result<impl Reply,
 }
 
 pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_fund ...");
+    context.lock().unwrap().log("get_fund ...");
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -627,10 +682,10 @@ pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
 }
 
 pub async fn get_settings(context: ContextLock) -> Result<impl Reply, Rejection> {
-    println!("get_settings ...");
+    context.lock().unwrap().log("get_settings...");
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
 
@@ -649,10 +704,13 @@ pub async fn get_account(
     account_bech32: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    println!("get_account {}...", &account_bech32);
+    context
+        .lock()
+        .unwrap()
+        .log(format!("get_account {}...", &account_bech32));
 
     if !context.lock().unwrap().available() {
-        println!("unavailability mode is on");
+        context.lock().unwrap().log("unavailability mode is on");
         return Err(warp::reject());
     }
     let account_state: Result<jormungandr_lib::interfaces::AccountState, _> = context

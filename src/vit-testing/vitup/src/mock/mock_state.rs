@@ -78,6 +78,11 @@ impl MockState {
         let mut fund = funds.last_mut().unwrap();
 
         fund.id = id;
+
+        for challenge in fund.challenges.iter_mut() {
+            challenge.fund_id = id;
+        }
+
         for vote_plan in fund.chain_vote_plans.iter_mut() {
             vote_plan.fund_id = id;
         }

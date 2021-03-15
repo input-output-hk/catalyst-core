@@ -1,6 +1,10 @@
 {
    "initials":[
       {
+        "above_threshold": 10,
+        "pin": "1234"
+      },
+      {
         "name":"darek",
         "funds":8000,
         "pin":"1111"         
@@ -24,7 +28,7 @@
   "vote_start": 1,
   "vote_tally": 5,
   "tally_end": 6,
-  "next_vote_start_time": "2021-03-31T20:00:00",
+  "next_vote_start_time": "2021-05-31T20:00:00",
   "proposals": 150,
   "challenges": 3,
   "slot_duration": 20,
@@ -32,15 +36,11 @@
   "voting_power": 2950,
   "fund_name": "Fund3",
   "private": false,
+  "version": "2.0",
   "fund_id":3,
   "linear_fees": {
     "constant": 0,
     "coefficient": 0,
     "certificate": 0
   },
-  "consensus_leader_ids": [
-    "ed25519_pk1lv8m52aakjm2z0yqtltqxp6f9kemtcmt9ej7gn86eru7gpt8tn0q08j8lt",
-    "ed25519_pk1qvq6prs87lmg6aeurdhq93fhtrx034yzc3jgj6lc3xc3a8lff98qtgw4dw",
-    "ed25519_pk1g0mftq89wpwaymtegmuppyxtfnsp4jcc42cwcz4p6flvd7c5zn4qm3lmtp"
-  ]
 }

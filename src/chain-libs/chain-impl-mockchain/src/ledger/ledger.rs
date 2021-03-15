@@ -725,28 +725,32 @@ impl Ledger {
 
     /// This function must be called before applying fragments to the ledger. Do not use it if you
     /// use `apply_block`.
-    pub fn apply_block_step1(&self, metadata: &HeaderContentEvalContext) -> Result<Self, Error> {
+    pub fn apply_block_step1(
+        &self,
+        chain_length: ChainLength,
+        block_date: BlockDate,
+    ) -> Result<Self, Error> {
         let mut new_ledger = self.clone();
 
         new_ledger.chain_length = self.chain_length.increase();
 
         // Check if the metadata (date/heigth) check out compared to the current state
-        if metadata.chain_length != new_ledger.chain_length {
+        if chain_length != new_ledger.chain_length {
             return Err(Error::WrongChainLength {
-                actual: metadata.chain_length,
+                actual: chain_length,
                 expected: new_ledger.chain_length,
             });
         }
 
-        if metadata.block_date <= new_ledger.date {
+        if block_date <= new_ledger.date {
             return Err(Error::NonMonotonicDate {
-                block_date: metadata.block_date,
+                block_date,
                 chain_date: new_ledger.date,
             });
         }
 
         // double check that if we had an epoch transition, distribute_rewards has been called
-        if metadata.block_date.epoch > new_ledger.date.epoch && self.leaders_log.total() > 0 {
+        if block_date.epoch > new_ledger.date.epoch && self.leaders_log.total() > 0 {
             panic!("internal error: apply_block called after epoch transition, but distribute_rewards has not been called")
         }
 
@@ -754,7 +758,7 @@ impl Ledger {
         let (updates, settings) = new_ledger.updates.process_proposals(
             new_ledger.settings,
             new_ledger.date,
-            metadata.block_date,
+            block_date,
         )?;
         new_ledger.updates = updates;
         new_ledger.settings = settings;
@@ -808,7 +812,7 @@ impl Ledger {
             });
         }
 
-        let mut new_ledger = self.apply_block_step1(metadata)?;
+        let mut new_ledger = self.apply_block_step1(metadata.chain_length, metadata.block_date)?;
 
         // Apply all the fragments
         for content in contents.iter() {

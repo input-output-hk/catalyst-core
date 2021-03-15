@@ -182,6 +182,7 @@ impl VitController {
             &node_setting,
             &block0_file.as_path(),
             &working_directory.path(),
+            params.version.version(),
             params.protocol.clone(),
         )
         .unwrap();

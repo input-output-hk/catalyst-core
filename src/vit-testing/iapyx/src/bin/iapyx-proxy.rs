@@ -86,7 +86,10 @@ async fn main() {
         root.and(fragments)
     };
 
-    let app = api.and(v0.or(v1));
+    let version = server_stub.vit_version();
+    let vit_version = warp::path!("vit-version").map(move || warp::reply::json(&version));
+
+    let app = api.and(v0.or(v1).or(vit_version));
 
     match server_stub.protocol() {
         Protocol::Https {

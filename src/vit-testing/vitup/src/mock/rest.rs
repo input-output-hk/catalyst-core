@@ -305,8 +305,12 @@ pub async fn start_rest_server(context: ContextLock) {
         root.and(fragments)
     };
 
+    let version = warp::path!("vit-version")
+        .and(with_context.clone())
+        .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()));
+
     let api = root
-        .and(health.or(control).or(v0).or(v1))
+        .and(health.or(control).or(v0).or(v1).or(version))
         .recover(report_invalid)
         .boxed();
 

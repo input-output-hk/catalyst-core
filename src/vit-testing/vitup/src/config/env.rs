@@ -23,6 +23,7 @@ pub struct VitStartParameters {
     pub fund_name: String,
     pub fund_id: i32,
     pub private: bool,
+    pub version: String,
 }
 
 impl Default for VitStartParameters {
@@ -45,6 +46,7 @@ impl Default for VitStartParameters {
             fund_name: "fund_3".to_owned(),
             private: false,
             fund_id: 1,
+            version: "2.0".to_string(),
         }
     }
 }

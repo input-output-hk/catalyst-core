@@ -1,3 +1,4 @@
+use crate::data::VitVersion;
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -34,6 +35,7 @@ pub struct ProxyServerStub {
     vit_address: String,
     node_rest_address: String,
     block0: Vec<u8>,
+    vit_version: String,
 }
 
 impl ProxyServerStub {
@@ -44,6 +46,7 @@ impl ProxyServerStub {
         vit_address: String,
         node_rest_address: String,
         block0: Vec<u8>,
+        vit_version: String,
     ) -> Self {
         Self::new(
             Protocol::Https {
@@ -54,6 +57,7 @@ impl ProxyServerStub {
             vit_address,
             node_rest_address,
             block0,
+            vit_version,
         )
     }
 
@@ -62,6 +66,7 @@ impl ProxyServerStub {
         vit_address: String,
         node_rest_address: String,
         block0: Vec<u8>,
+        vit_version: String,
     ) -> Self {
         Self::new(
             Protocol::Http,
@@ -69,6 +74,7 @@ impl ProxyServerStub {
             vit_address,
             node_rest_address,
             block0,
+            vit_version,
         )
     }
 
@@ -82,6 +88,7 @@ impl ProxyServerStub {
         vit_address: String,
         node_rest_address: String,
         block0: Vec<u8>,
+        vit_version: String,
     ) -> Self {
         Self {
             protocol,
@@ -89,6 +96,7 @@ impl ProxyServerStub {
             vit_address,
             node_rest_address,
             block0,
+            vit_version,
         }
     }
 
@@ -106,6 +114,10 @@ impl ProxyServerStub {
 
     pub fn node_rest_address(&self) -> String {
         self.node_rest_address.parse().unwrap()
+    }
+
+    pub fn vit_version(&self) -> VitVersion {
+        VitVersion::new(self.vit_version.clone())
     }
 
     pub fn base_address(&self) -> SocketAddr {

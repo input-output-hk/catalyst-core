@@ -723,32 +723,12 @@ impl Ledger {
         Ok(())
     }
 
-    /// Try to apply messages to a State, and return the new State if successful
-    pub fn apply_block(
-        &self,
-        ledger_params: &LedgerParameters,
-        contents: &Contents,
-        metadata: &HeaderContentEvalContext,
-    ) -> Result<Self, Error> {
+    /// This function must be called before applying fragments to the ledger. Do not use it if you
+    /// use `apply_block`.
+    pub fn apply_block_step1(&self, metadata: &HeaderContentEvalContext) -> Result<Self, Error> {
         let mut new_ledger = self.clone();
 
         new_ledger.chain_length = self.chain_length.increase();
-
-        let (content_hash, content_size) = contents.compute_hash_size();
-
-        if content_size > ledger_params.block_content_max_size {
-            return Err(Error::InvalidContentSize {
-                actual: content_size,
-                max: ledger_params.block_content_max_size,
-            });
-        }
-
-        if content_hash != metadata.content_hash {
-            return Err(Error::InvalidContentHash {
-                actual: content_hash,
-                expected: metadata.content_hash,
-            });
-        }
 
         // Check if the metadata (date/heigth) check out compared to the current state
         if metadata.chain_length != new_ledger.chain_length {
@@ -779,10 +759,13 @@ impl Ledger {
         new_ledger.updates = updates;
         new_ledger.settings = settings;
 
-        // Apply all the fragments
-        for content in contents.iter() {
-            new_ledger = new_ledger.apply_fragment(ledger_params, content, metadata.block_date)?;
-        }
+        Ok(new_ledger)
+    }
+
+    /// This function must be called after applying fragments to the ledger. Do not use it if you
+    /// use `apply_block`.
+    pub fn apply_block_step3(&self, metadata: &HeaderContentEvalContext) -> Self {
+        let mut new_ledger = self.clone();
 
         // Update the ledger metadata related to eval context
         new_ledger.date = metadata.block_date;
@@ -798,6 +781,41 @@ impl Ledger {
                     .increase_for(&gp_content.pool_creator);
             }
         };
+
+        new_ledger
+    }
+
+    /// Try to apply messages to a State, and return the new State if successful
+    pub fn apply_block(
+        &self,
+        ledger_params: &LedgerParameters,
+        contents: &Contents,
+        metadata: &HeaderContentEvalContext,
+    ) -> Result<Self, Error> {
+        let (content_hash, content_size) = contents.compute_hash_size();
+
+        if content_size > ledger_params.block_content_max_size {
+            return Err(Error::InvalidContentSize {
+                actual: content_size,
+                max: ledger_params.block_content_max_size,
+            });
+        }
+
+        if content_hash != metadata.content_hash {
+            return Err(Error::InvalidContentHash {
+                actual: content_hash,
+                expected: metadata.content_hash,
+            });
+        }
+
+        let mut new_ledger = self.apply_block_step1(metadata)?;
+
+        // Apply all the fragments
+        for content in contents.iter() {
+            new_ledger = new_ledger.apply_fragment(ledger_params, content, metadata.block_date)?;
+        }
+
+        new_ledger = new_ledger.apply_block_step3(metadata);
 
         Ok(new_ledger)
     }

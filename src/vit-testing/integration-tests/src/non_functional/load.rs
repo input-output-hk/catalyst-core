@@ -92,7 +92,7 @@ pub fn load_test_private_pesimistic() {
         .tally_end_epoch(12)
         .slot_duration_in_seconds(2)
         .slots_in_epoch_count(60)
-        .proposals_count(1)
+        .proposals_count(250)
         .voting_power(31_000)
         .private(true);
 
@@ -109,12 +109,12 @@ pub fn load_test_private_optimistic() {
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(0)
-        .tally_start_epoch(40)
-        .tally_end_epoch(42)
-        .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(60)
-        .proposals_count(1)
+        .vote_start_epoch(6)
+        .tally_start_epoch(10)
+        .tally_end_epoch(11)
+        .slot_duration_in_seconds(20)
+        .slots_in_epoch_count(180)
+        .proposals_count(500)
         .voting_power(31_000)
         .private(true);
 

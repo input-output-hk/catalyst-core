@@ -72,7 +72,7 @@ fn private_vote_test_scenario(
     let wallet_node = nodes.get(4).unwrap();
     time::wait_for_epoch(vote_tally, leader_1.explorer());
 
-    let mut committee = controller.wallet("committee").unwrap();
+    let mut committee = controller.wallet("committee_1").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
 
     controller
@@ -159,6 +159,6 @@ fn build_load_config(
         reuse_accounts: false,
         read_pin_from_filename: true,
         use_https_for_post: false,
-        debug: true,
+        debug: false,
     }
 }

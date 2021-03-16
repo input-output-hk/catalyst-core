@@ -1,5 +1,9 @@
 use super::{BootstrapCommandBuilder, ServerSettingsBuilder};
-use crate::common::{paths::BLOCK0_BIN, server::Server, startup::db::DbBuilderError};
+use crate::common::{
+    paths::BLOCK0_BIN,
+    server::Server,
+    startup::{db::DbBuilderError, get_exe},
+};
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use std::path::PathBuf;
@@ -55,10 +59,14 @@ impl ServerBootstrapper {
         self
     }
 
-    pub fn start(&self, temp_dir: &TempDir) -> Result<Server, ServerBootstrapperError> {
+    pub fn start_with_exe(
+        &self,
+        temp_dir: &TempDir,
+        exe: PathBuf,
+    ) -> Result<Server, ServerBootstrapperError> {
         let settings = self.settings_builder.build();
         let logger_file: PathBuf = temp_dir.child("log.log").path().into();
-        let mut command_builder: BootstrapCommandBuilder = Default::default();
+        let mut command_builder = BootstrapCommandBuilder::new(exe);
 
         command_builder
             .address(&settings.address.to_string())
@@ -81,6 +89,10 @@ impl ServerBootstrapper {
 
         std::thread::sleep(std::time::Duration::from_secs(1));
         Ok(Server::new(child, settings, logger_file))
+    }
+
+    pub fn start(&self, temp_dir: &TempDir) -> Result<Server, ServerBootstrapperError> {
+        self.start_with_exe(temp_dir, get_exe())
     }
 }
 

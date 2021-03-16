@@ -48,12 +48,14 @@ fn private_vote_test_scenario(
     )
     .unwrap();
 
-    println!("before qr_codes_folder");
+    println!("generating qr codes..");
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
     qr_codes_folder.push("vit_backend/qr-codes");
 
     wait_until_folder_contains_all_qrs(wallet_count, &qr_codes_folder);
+
+    println!("load test setup..");
 
     let config = build_load_config(endpoint, qr_codes_folder, no_of_threads, no_of_votes);
     let iapyx_load = IapyxLoad::new(config);
@@ -70,7 +72,7 @@ fn private_vote_test_scenario(
     let wallet_node = nodes.get(4).unwrap();
     time::wait_for_epoch(vote_tally, leader_1.explorer());
 
-    let mut committee = controller.wallet("committee_1").unwrap();
+    let mut committee = controller.wallet("committee").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
 
     controller

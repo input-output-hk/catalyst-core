@@ -43,6 +43,8 @@ pub fn setup_network(
     VitStationController,
     WalletProxyController,
 )> {
+    println!("Spawning leader 1..");
+
     // bootstrap network
     let leader_1 = controller.spawn_node_custom(
         SpawnParams::new(LEADER_1)
@@ -53,6 +55,8 @@ pub fn setup_network(
     leader_1.wait_for_bootstrap()?;
     controller.monitor_nodes();
 
+    println!("Spawning leader 2..");
+
     //start bft node 2
     let leader_2 = controller.spawn_node(
         LEADER_2,
@@ -60,6 +64,8 @@ pub fn setup_network(
         PersistenceMode::Persistent,
     )?;
     leader_2.wait_for_bootstrap()?;
+
+    println!("Spawning leader 3..");
 
     //start bft node 3
     let leader_3 = controller.spawn_node(
@@ -69,6 +75,8 @@ pub fn setup_network(
     )?;
     leader_3.wait_for_bootstrap()?;
 
+    println!("Spawning leader 4..");
+
     //start bft node 4
     let leader_4 = controller.spawn_node(
         LEADER_4,
@@ -76,6 +84,8 @@ pub fn setup_network(
         PersistenceMode::Persistent,
     )?;
     leader_4.wait_for_bootstrap()?;
+
+    println!("Spawning wallet node..");
 
     // start passive node
     let wallet_node = controller.spawn_node_custom(
@@ -85,6 +95,8 @@ pub fn setup_network(
             .explorer(Explorer { enabled: true }),
     )?;
     wallet_node.wait_for_bootstrap()?;
+
+    println!("Spawning vit station..");
 
     // start proxy and vit station
     let vit_station = vit_controller.spawn_vit_station(
@@ -99,6 +111,8 @@ pub fn setup_network(
             .with_base_address(endpoint)
             .with_protocol(protocol.clone()),
     )?;
+
+    println!("Backend network is up");
 
     Ok((
         vec![leader_1, leader_2, leader_3, leader_4, wallet_node],

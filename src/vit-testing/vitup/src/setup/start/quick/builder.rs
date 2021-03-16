@@ -326,16 +326,20 @@ impl QuickVitBackendSettingsBuilder {
         let folder = child.child("qr-codes");
         std::fs::create_dir_all(folder.path())?;
 
-        for (alias, _template) in controller
+        let wallets: Vec<(_, _)> = controller
             .wallets()
             .filter(|(_, x)| *x.template().wallet_type() == WalletType::UTxO)
-        {
+            .collect();
+
+        let total = wallets.len();
+
+        for (idx, (alias, _template)) in wallets.iter().enumerate() {
             let wallet = controller.wallet(alias)?;
 
             let pin = initials
                 .iter()
                 .find_map(|(template, pin)| {
-                    if template.alias() == alias {
+                    if template.alias() == *alias {
                         Some(pin)
                     } else {
                         None
@@ -343,6 +347,7 @@ impl QuickVitBackendSettingsBuilder {
                 })
                 .unwrap();
             let png = folder.child(format!("{}_{}.png", alias, pin));
+            println!("[{}/{}] Qr dumped to {:?}", idx + 1, total, png.path());
             wallet.save_qr_code(png.path(), &pin_to_bytes(&pin));
         }
 
@@ -370,6 +375,8 @@ impl QuickVitBackendSettingsBuilder {
     ) -> Result<(VitController, Controller, ValidVotePlanParameters, String)> {
         let mut builder = VitControllerBuilder::new(&self.title);
 
+        println!("building blockchain parameters..");
+
         builder.set_topology(self.build_topology());
 
         let mut blockchain = Blockchain::new(
@@ -382,6 +389,8 @@ impl QuickVitBackendSettingsBuilder {
             ActiveSlotCoefficient::new(Milli::from_millis(700))
                 .expect("active slot coefficient in millis"),
         );
+
+        println!("building topology..");
 
         blockchain.add_leader(LEADER_1);
         blockchain.add_leader(LEADER_2);
@@ -404,6 +413,8 @@ impl QuickVitBackendSettingsBuilder {
 
         let child = context.child_directory(self.title());
 
+        println!("building initials..");
+
         let mut templates = HashMap::new();
         if let Some(initials) = &self.parameters.initials {
             blockchain.set_external_wallets(initials.external_templates());
@@ -415,16 +426,26 @@ impl QuickVitBackendSettingsBuilder {
             }
         }
 
+        println!("building voteplan..");
+
         let mut vote_plan_def = self.build_vote_plan();
         blockchain.add_vote_plan(vote_plan_def.clone());
         builder.set_blockchain(blockchain);
         builder.build_settings(&mut context);
 
+        println!("building controllers..");
+
         let (vit_controller, controller) = builder.build_controllers(context)?;
+
+        println!("dumping qrs..");
 
         self.dump_qrs(&controller, &templates, &child)?;
 
+        println!("dumping secret keys..");
+
         controller.settings().dump_private_vote_keys(child);
+
+        println!("adjusting vote plan timing..");
 
         self.recalculate_voting_periods_if_needed(
             controller

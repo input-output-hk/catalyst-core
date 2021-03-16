@@ -124,15 +124,22 @@ impl MultiController {
     ) -> Result<Vec<Vec<u8>>, MultiControllerError> {
         let mut output = Vec::new();
         let block0 = self.backend().block0()?;
-        for wallet in self.wallets.iter_mut() {
+        let total = self.wallets.len();
+        for (idx, wallet) in self.wallets.iter_mut().enumerate() {
+            println!("[{}/{}] checking if account exists", idx + 1, total);
             if reuse_accounts && self.backend.account_exists(wallet.id())? {
                 continue;
             }
-
+            println!("[{}/{}] retrieveing funds", idx + 1, total);
+       
             wallet.retrieve_funds(&block0)?;
+
+            println!("[{}/{}] converting utxo->account", idx + 1, total);
             for tx in wallet.convert(self.settings.clone()).transactions() {
                 output.push(tx.clone());
             }
+
+            println!("[{}/{}] fund retrieved from block0", idx + 1, total);
         }
         Ok(output)
     }

@@ -24,6 +24,7 @@ impl WalletRequestGen {
     }
 
     pub fn fill_generator(&mut self, reuse_accounts: bool) -> Result<(), MultiControllerError> {
+        println!("filling vote generator");
         self.initial_requests = self
             .multi_controller
             .retrieve_conversion_transactions(reuse_accounts)?;

@@ -173,3 +173,26 @@ impl fmt::Display for SimpleVoteStatus {
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct VoteOptions(pub VoteOptionsMap);
 pub type VoteOptionsMap = HashMap<String, u8>;
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
+pub struct VitVersion {
+    service_version: String,
+}
+
+impl VitVersion {
+    pub fn new(service_version: String) -> Self {
+        Self { service_version }
+    }
+
+    pub fn version(&self) -> String {
+        self.service_version.clone()
+    }
+}
+
+impl Default for VitVersion {
+    fn default() -> Self {
+        Self {
+            service_version: "2.0".to_string(),
+        }
+    }
+}

@@ -12,7 +12,7 @@ mod wallet;
 pub use crate::wallet::{Error as WalletError, Wallet};
 pub use backend::{Protocol, ProxyClient, WalletBackend, WalletBackendSettings};
 pub use controller::{Controller, ControllerError};
-pub use data::{Fund, Proposal, SimpleVoteStatus, Voteplan};
+pub use data::{Fund, Proposal, SimpleVoteStatus, VitVersion, Voteplan};
 pub use load::{
     IapyxLoad, IapyxLoadConfig, IapyxLoadError, MultiController, VoteStatusProvider,
     WalletRequestGen,

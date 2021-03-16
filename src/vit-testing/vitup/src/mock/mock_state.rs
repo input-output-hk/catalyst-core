@@ -1,6 +1,7 @@
 use crate::config::VitStartParameters;
 use crate::mock::ledger_state::LedgerState;
 use crate::setup::start::quick::QuickVitBackendSettingsBuilder;
+use iapyx::VitVersion;
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::Context;
 use jormungandr_testing_utils::testing::network_builder::Seed;
@@ -15,6 +16,7 @@ use vit_servicing_station_tests::common::data::ValidVotePlanGenerator;
 
 pub struct MockState {
     pub available: bool,
+    version: VitVersion,
     ledger_state: LedgerState,
     vit_state: Snapshot,
 }
@@ -42,9 +44,12 @@ impl MockState {
         params: VitStartParameters,
         testing_directory: P,
     ) -> Result<Self, Error> {
+        let version: VitVersion = VitVersion::new(params.version.clone());
+
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
         let context = context(&testing_directory.as_ref().to_path_buf());
         quick_setup.upload_parameters(params);
+
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
         let (_, controller, vit_parameters) = quick_setup.build(context).unwrap();
 
@@ -58,7 +63,12 @@ impl MockState {
                 controller.block0_file(),
             )?,
             vit_state: snapshot,
+            version,
         })
+    }
+
+    pub fn version(&self) -> VitVersion {
+        self.version.clone()
     }
 
     pub fn vit(&self) -> &Snapshot {

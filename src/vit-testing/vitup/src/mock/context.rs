@@ -3,6 +3,7 @@ use crate::config::VitStartParameters;
 use crate::mock::config::Configuration;
 use crate::mock::mock_state::MockState;
 use crate::mock::Logger;
+use iapyx::VitVersion;
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -37,6 +38,10 @@ impl Context {
 
     pub fn clear_logs(&mut self) {
         self.logger.clear()
+    }
+
+    pub fn version(&self) -> VitVersion {
+        self.state.version()
     }
 
     pub fn reset(&mut self, params: VitStartParameters) {

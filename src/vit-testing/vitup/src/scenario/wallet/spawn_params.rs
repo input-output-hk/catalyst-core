@@ -1,11 +1,13 @@
 use crate::wallet::WalletProxySettings;
 use iapyx::Protocol;
+use iapyx::VitVersion;
 use std::net::SocketAddr;
 
 pub struct WalletProxySpawnParams {
     pub alias: String,
     pub base_address: Option<SocketAddr>,
     pub protocol: Protocol,
+    pub version: VitVersion,
 }
 
 impl WalletProxySpawnParams {
@@ -14,6 +16,7 @@ impl WalletProxySpawnParams {
             alias: alias.into(),
             base_address: None,
             protocol: Protocol::Http,
+            version: Default::default(),
         }
     }
 
@@ -24,6 +27,11 @@ impl WalletProxySpawnParams {
 
     pub fn with_protocol(&mut self, protocol: Protocol) -> &mut Self {
         self.protocol = protocol;
+        self
+    }
+
+    pub fn with_version(&mut self, version: VitVersion) -> &mut Self {
+        self.version = version;
         self
     }
 

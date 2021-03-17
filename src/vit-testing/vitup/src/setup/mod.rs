@@ -1,3 +1,4 @@
+pub mod diff;
 pub mod generate;
 pub mod start;
 
@@ -5,6 +6,7 @@ use crate::error::Result;
 use crate::mock::MockStartCommandArgs;
 use crate::setup::generate::{QrCommandArgs, SnapshotCommandArgs};
 use crate::setup::start::AdvancedStartCommandArgs;
+use diff::DiffCommand;
 use generate::DataCommandArgs;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
@@ -13,8 +15,10 @@ use structopt::StructOpt;
 pub enum VitCliCommand {
     /// start backend
     Start(StartCommand),
-    /// start backend
+    /// generate fund data
     Generate(GenerateCommand),
+    // get diff between new deployment and target env
+    Diff(DiffCommand),
 }
 
 impl VitCliCommand {
@@ -22,6 +26,7 @@ impl VitCliCommand {
         match self {
             Self::Start(start_command) => start_command.exec().await,
             Self::Generate(generate_command) => generate_command.exec(),
+            Self::Diff(diff_command) => diff_command.exec(),
         }
     }
 }

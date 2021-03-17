@@ -1,7 +1,9 @@
 use crate::scenario::vit_station::VitStationControllerError;
 use crate::scenario::wallet::WalletProxyError;
+use jormungandr_lib::interfaces::Block0ConfigurationError;
 use jormungandr_lib::interfaces::FragmentStatus;
 use std::time::Duration;
+use vit_servicing_station_tests::common::startup::server::ServerBootstrapperError;
 
 error_chain! {
 
@@ -25,6 +27,10 @@ error_chain! {
         GeneralError(jormungandr_scenario_tests::test::Error);
         ImageReadError(image::error::ImageError);
         MockError(crate::mock::Error);
+        WalletBackendError(iapyx::WalletBackendError);
+        Block0ConfigurationError(Block0ConfigurationError);
+        VitServerBootstrapperError(ServerBootstrapperError);
+        VitRestError(vit_servicing_station_tests::common::clients::RestError);
     }
 
     errors {

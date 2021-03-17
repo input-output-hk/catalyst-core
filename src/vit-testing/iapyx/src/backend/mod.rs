@@ -2,6 +2,7 @@ mod node;
 mod proxy;
 mod vit_station;
 
+use crate::Fund;
 use crate::Proposal;
 use crate::SimpleVoteStatus;
 use chain_core::mempack::Readable;
@@ -86,6 +87,10 @@ impl WalletBackend {
             .cloned()
             .map(Into::into)
             .collect())
+    }
+
+    pub fn funds(&self) -> Result<Fund, WalletBackendError> {
+        Ok(self.vit_client.funds()?)
     }
 
     pub fn block0(&self) -> Result<Vec<u8>, WalletBackendError> {

@@ -6,13 +6,14 @@ pub use wallet_core::{Choice, Value};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Fund {
-    //  pub id: i32,
+    pub id: i32,
     #[serde(alias = "fundName")]
     pub fund_name: String,
     #[serde(alias = "fundGoal")]
     pub fund_goal: String,
     #[serde(alias = "votingPowerInfo")]
     pub voting_power_info: String,
+    pub voting_power_threshold: u32,
     #[serde(alias = "rewardsInfo")]
     pub rewards_info: String,
     #[serde(alias = "fundStartTime")]
@@ -29,6 +30,8 @@ pub struct Fund {
     pub next_fund_start_time: i64,
     #[serde(alias = "chainVotePlans")]
     pub chain_vote_plans: Vec<Voteplan>,
+    #[serde(alias = "chainVotePlans")]
+    pub challenges: Vec<Challenge>,
 }
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Voteplan {
@@ -46,9 +49,11 @@ pub struct Voteplan {
     #[serde(alias = "chainCommitteeEnd")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
-    pub chain_committee_end: i64,
+    pub chain_committee_end_time: i64,
     #[serde(alias = "chainVoteplanPayload")]
     pub chain_voteplan_payload: String,
+
+    pub chain_vote_encryption_key: String,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
 }
@@ -81,7 +86,7 @@ pub struct Proposal {
     #[serde(alias = "proposalId")]
     pub proposal_id: String,
     //  #[serde(alias = "category")]
-    //   pub proposal_category: Category,
+    pub proposal_category: Category,
     #[serde(alias = "proposalTitle")]
     pub proposal_title: String,
     #[serde(alias = "proposalSummary")]
@@ -113,6 +118,28 @@ pub struct Proposal {
     pub chain_voteplan_payload: String,
     #[serde(alias = "chainVoteEncryptionKey")]
     pub chain_vote_encryption_key: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct Challenge {
+    pub id: i32,
+    #[serde(alias = "challengeType")]
+    pub challenge_type: ChallengeType,
+    pub title: String,
+    pub description: String,
+    #[serde(alias = "rewardsTotal")]
+    pub rewards_total: i64,
+    #[serde(alias = "fundId")]
+    pub fund_id: i32,
+    #[serde(alias = "challengeUrl")]
+    pub challenge_url: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum ChallengeType {
+    Simple,
+    CommunityChoice,
 }
 
 impl Proposal {

@@ -4640,7 +4640,7 @@ checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=3e15e560a7ff57c793f3c156c19e235d84934cd7#3e15e560a7ff57c793f3c156c19e235d84934cd7"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=9f42105a528aca3fcfecce8db5fc999f99953f22#9f42105a528aca3fcfecce8db5fc999f99953f22"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -4666,7 +4666,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=3e15e560a7ff57c793f3c156c19e235d84934cd7#3e15e560a7ff57c793f3c156c19e235d84934cd7"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=9f42105a528aca3fcfecce8db5fc999f99953f22#9f42105a528aca3fcfecce8db5fc999f99953f22"
 dependencies = [
  "askama",
  "askama_shared",

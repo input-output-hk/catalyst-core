@@ -38,7 +38,7 @@ impl AsRef<[u8]> for PraosNonce {
 
 /// Genesis Praos related data extract from the header
 #[derive(Debug, Clone)]
-pub(crate) struct HeaderGPContentEvalContext {
+pub struct HeaderGPContentEvalContext {
     pub(crate) nonce: PraosNonce,
     pub(crate) pool_creator: PoolId,
 }

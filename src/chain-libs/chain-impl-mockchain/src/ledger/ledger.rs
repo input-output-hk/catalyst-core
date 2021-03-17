@@ -6,7 +6,6 @@ use super::governance::{Governance, ParametersGovernanceAction, TreasuryGovernan
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
-use crate::certificate::{PoolId, VoteAction, VotePlan};
 use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
@@ -23,6 +22,10 @@ use crate::treasury::Treasury;
 use crate::value::*;
 use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError, VotePlanStatus};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
+use crate::{
+    certificate::{PoolId, VoteAction, VotePlan},
+    chaineval::HeaderGPContentEvalContext,
+};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
 use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
@@ -88,6 +91,14 @@ pub struct Ledger {
     pub(crate) leaders_log: LeadersParticipationRecord,
     pub(crate) votes: VotePlanLedger,
     pub(crate) governance: Governance,
+}
+
+#[derive(Clone)]
+pub struct ApplyBlockLedger<'a> {
+    ledger: Ledger,
+    ledger_params: &'a LedgerParameters,
+    chain_length: ChainLength,
+    block_date: BlockDate,
 }
 
 // Dummy implementation of Debug for Ledger
@@ -723,13 +734,12 @@ impl Ledger {
         Ok(())
     }
 
-    /// This function must be called before applying fragments to the ledger. Do not use it if you
-    /// use `apply_block`.
-    pub fn apply_block_step1(
+    pub fn begin_block<'a>(
         &self,
+        ledger_params: &'a LedgerParameters,
         chain_length: ChainLength,
         block_date: BlockDate,
-    ) -> Result<Self, Error> {
+    ) -> Result<ApplyBlockLedger<'a>, Error> {
         let mut new_ledger = self.clone();
 
         new_ledger.chain_length = self.chain_length.increase();
@@ -763,30 +773,12 @@ impl Ledger {
         new_ledger.updates = updates;
         new_ledger.settings = settings;
 
-        Ok(new_ledger)
-    }
-
-    /// This function must be called after applying fragments to the ledger. Do not use it if you
-    /// use `apply_block`.
-    pub fn apply_block_step3(&self, metadata: &HeaderContentEvalContext) -> Self {
-        let mut new_ledger = self.clone();
-
-        // Update the ledger metadata related to eval context
-        new_ledger.date = metadata.block_date;
-        match metadata.gp_content {
-            None => {}
-            Some(ref gp_content) => {
-                new_ledger
-                    .settings
-                    .consensus_nonce
-                    .hash_with(&gp_content.nonce);
-                new_ledger
-                    .leaders_log
-                    .increase_for(&gp_content.pool_creator);
-            }
-        };
-
-        new_ledger
+        Ok(ApplyBlockLedger {
+            ledger: new_ledger,
+            ledger_params,
+            chain_length,
+            block_date,
+        })
     }
 
     /// Try to apply messages to a State, and return the new State if successful
@@ -812,16 +804,14 @@ impl Ledger {
             });
         }
 
-        let mut new_ledger = self.apply_block_step1(metadata.chain_length, metadata.block_date)?;
-
-        // Apply all the fragments
-        for content in contents.iter() {
-            new_ledger = new_ledger.apply_fragment(ledger_params, content, metadata.block_date)?;
-        }
-
-        new_ledger = new_ledger.apply_block_step3(metadata);
-
-        Ok(new_ledger)
+        let new_block_ledger =
+            self.begin_block(ledger_params, metadata.chain_length, metadata.block_date)?;
+        let new_block_ledger = contents
+            .iter()
+            .try_fold(new_block_ledger, |new_block_ledger, fragment| {
+                new_block_ledger.apply_fragment(fragment)
+            })?;
+        Ok(new_block_ledger.finish(metadata.gp_content.as_ref()))
     }
 
     /// Try to apply a message to the State, and return the new State if successful
@@ -1629,6 +1619,39 @@ impl Ledger {
 
     pub fn treasury_value(&self) -> Value {
         self.pots.treasury.value()
+    }
+}
+
+impl<'a> ApplyBlockLedger<'a> {
+    pub fn apply_fragment(&self, fragment: &Fragment) -> Result<Self, Error> {
+        let ledger = self
+            .ledger
+            .apply_fragment(self.ledger_params, fragment, self.block_date)?;
+        Ok(ApplyBlockLedger {
+            ledger,
+            ..self.clone()
+        })
+    }
+
+    pub fn finish(self, maybe_gp_content: Option<&HeaderGPContentEvalContext>) -> Ledger {
+        let mut new_ledger = self.ledger;
+
+        // Update the ledger metadata related to eval context
+        new_ledger.date = self.block_date;
+        match maybe_gp_content {
+            None => {}
+            Some(gp_content) => {
+                new_ledger
+                    .settings
+                    .consensus_nonce
+                    .hash_with(&gp_content.nonce);
+                new_ledger
+                    .leaders_log
+                    .increase_for(&gp_content.pool_creator);
+            }
+        };
+
+        new_ledger
     }
 }
 

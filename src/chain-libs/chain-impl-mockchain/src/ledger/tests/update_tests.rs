@@ -48,7 +48,7 @@ pub fn ledger_adopt_settings_from_update_proposal(
     let header_meta = block.header.to_content_eval_context();
     ledger = ledger
         .apply_block(
-            &ledger.get_ledger_parameters(),
+            ledger.get_ledger_parameters(),
             &block.contents,
             &header_meta,
         )

@@ -94,9 +94,9 @@ pub struct Ledger {
 }
 
 #[derive(Clone)]
-pub struct ApplyBlockLedger<'a> {
+pub struct ApplyBlockLedger {
     ledger: Ledger,
-    ledger_params: &'a LedgerParameters,
+    ledger_params: LedgerParameters,
     chain_length: ChainLength,
     block_date: BlockDate,
 }
@@ -734,12 +734,12 @@ impl Ledger {
         Ok(())
     }
 
-    pub fn begin_block<'a>(
+    pub fn begin_block(
         &self,
-        ledger_params: &'a LedgerParameters,
+        ledger_params: LedgerParameters,
         chain_length: ChainLength,
         block_date: BlockDate,
-    ) -> Result<ApplyBlockLedger<'a>, Error> {
+    ) -> Result<ApplyBlockLedger, Error> {
         let mut new_ledger = self.clone();
 
         new_ledger.chain_length = self.chain_length.increase();
@@ -784,7 +784,7 @@ impl Ledger {
     /// Try to apply messages to a State, and return the new State if successful
     pub fn apply_block(
         &self,
-        ledger_params: &LedgerParameters,
+        ledger_params: LedgerParameters,
         contents: &Contents,
         metadata: &HeaderContentEvalContext,
     ) -> Result<Self, Error> {
@@ -1622,11 +1622,11 @@ impl Ledger {
     }
 }
 
-impl<'a> ApplyBlockLedger<'a> {
+impl ApplyBlockLedger {
     pub fn apply_fragment(&self, fragment: &Fragment) -> Result<Self, Error> {
         let ledger = self
             .ledger
-            .apply_fragment(self.ledger_params, fragment, self.block_date)?;
+            .apply_fragment(&self.ledger_params, fragment, self.block_date)?;
         Ok(ApplyBlockLedger {
             ledger,
             ..self.clone()
@@ -1856,7 +1856,7 @@ mod tests {
         let contents = Contents::empty();
         context.content_hash = contents.compute_hash();
 
-        let result = ledger.apply_block(&ledger.get_ledger_parameters(), &contents, &context);
+        let result = ledger.apply_block(ledger.get_ledger_parameters(), &contents, &context);
         match (result, should_succeed) {
             (Ok(_), true) => TestResult::passed(),
             (Ok(_), false) => TestResult::error("should pass"),

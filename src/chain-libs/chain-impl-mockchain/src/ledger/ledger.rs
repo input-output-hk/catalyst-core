@@ -24,7 +24,7 @@ use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError, VotePlanStat
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use crate::{
     certificate::{PoolId, VoteAction, VotePlan},
-    chaineval::HeaderGPContentEvalContext,
+    chaineval::ConsensusEvalContext,
 };
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
@@ -811,7 +811,7 @@ impl Ledger {
             .try_fold(new_block_ledger, |new_block_ledger, fragment| {
                 new_block_ledger.apply_fragment(fragment)
             })?;
-        Ok(new_block_ledger.finish(metadata.gp_content.as_ref()))
+        Ok(new_block_ledger.finish(&metadata.consensus_eval_context))
     }
 
     /// Try to apply a message to the State, and return the new State if successful
@@ -1633,21 +1633,19 @@ impl ApplyBlockLedger {
         })
     }
 
-    pub fn finish(self, maybe_gp_content: Option<&HeaderGPContentEvalContext>) -> Ledger {
+    pub fn finish(self, consensus_eval_context: &ConsensusEvalContext) -> Ledger {
         let mut new_ledger = self.ledger;
 
         // Update the ledger metadata related to eval context
         new_ledger.date = self.block_date;
-        match maybe_gp_content {
-            None => {}
-            Some(gp_content) => {
-                new_ledger
-                    .settings
-                    .consensus_nonce
-                    .hash_with(&gp_content.nonce);
-                new_ledger
-                    .leaders_log
-                    .increase_for(&gp_content.pool_creator);
+        match consensus_eval_context {
+            ConsensusEvalContext::Bft | ConsensusEvalContext::Genesis => {}
+            ConsensusEvalContext::Praos {
+                nonce,
+                pool_creator,
+            } => {
+                new_ledger.settings.consensus_nonce.hash_with(nonce);
+                new_ledger.leaders_log.increase_for(pool_creator);
             }
         };
 

@@ -237,8 +237,8 @@ impl Header {
         }
     }
 
-    pub fn to_content_eval_context(&self) -> HeaderContentEvalContext {
-        let gp_content = match self.block_version() {
+    pub fn to_gp_content_eval_context(&self) -> Option<HeaderGPContentEvalContext> {
+        match self.block_version() {
             BlockVersion::KesVrfproof => {
                 let nonce = VrfProof(self.get_cstruct().gp_vrf_proof())
                     .to_vrf_proof()
@@ -251,12 +251,15 @@ impl Header {
                 })
             }
             _ => None,
-        };
+        }
+    }
+
+    pub fn to_content_eval_context(&self) -> HeaderContentEvalContext {
         HeaderContentEvalContext {
             block_date: self.block_date(),
             chain_length: self.chain_length(),
             content_hash: self.block_content_hash(),
-            gp_content,
+            gp_content: self.to_gp_content_eval_context(),
         }
     }
 }

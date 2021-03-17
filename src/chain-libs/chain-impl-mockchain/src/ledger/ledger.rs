@@ -93,7 +93,7 @@ pub struct Ledger {
     pub(crate) governance: Governance,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct ApplyBlockLedger {
     ledger: Ledger,
     ledger_params: LedgerParameters,

@@ -65,7 +65,8 @@ bitflags = false
 ############## Options for How Your Rust library Should Be Parsed ##############
 
 [parse]
-parse_deps = false
+parse_deps = true
+include = ["wallet-core"]
 exclude = []
 clean = false
 extra_bindings = []

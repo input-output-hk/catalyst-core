@@ -24,6 +24,17 @@ impl Configuration {
         params: JobParameters,
     ) -> Result<std::process::Child, Error> {
         let output_folder = Path::new(&self.result_dir).join(format!("{}", job_id));
+        let voting_tools_bin_path = Path::new(&self.voting_tools.bin);
+        if !voting_tools_bin_path.exists() {
+            return Err(Error::CannotFindVotingTools(
+                voting_tools_bin_path.to_path_buf(),
+            ));
+        }
+
+        if !output_folder.exists() {
+            return Err(Error::ResultFolderDoesNotExists(output_folder));
+        }
+
         let mut command = std::process::Command::new(&self.voting_tools.bin);
         command.arg("genesis");
         match self.voting_tools.network {
@@ -85,4 +96,8 @@ pub enum Error {
     CannotReadConfiguration(PathBuf),
     #[error("cannot spawn command")]
     CannotSpawnCommand(#[from] std::io::Error),
+    #[error("cannot find voting tools at {0:?}")]
+    CannotFindVotingTools(PathBuf),
+    #[error("result folder does not exists at {0:?}")]
+    ResultFolderDoesNotExists(PathBuf),
 }

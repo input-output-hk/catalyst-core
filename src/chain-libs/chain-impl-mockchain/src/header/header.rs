@@ -237,7 +237,7 @@ impl Header {
         }
     }
 
-    pub fn to_consensus_eval_context(&self) -> ConsensusEvalContext {
+    pub fn get_consensus_eval_context(&self) -> ConsensusEvalContext {
         match self.block_version() {
             BlockVersion::KesVrfproof => {
                 let nonce = VrfProof(self.get_cstruct().gp_vrf_proof())
@@ -255,12 +255,12 @@ impl Header {
         }
     }
 
-    pub fn to_content_eval_context(&self) -> HeaderContentEvalContext {
+    pub fn get_content_eval_context(&self) -> HeaderContentEvalContext {
         HeaderContentEvalContext {
             block_date: self.block_date(),
             chain_length: self.chain_length(),
             content_hash: self.block_content_hash(),
-            consensus_eval_context: self.to_consensus_eval_context(),
+            consensus_eval_context: self.get_consensus_eval_context(),
         }
     }
 }

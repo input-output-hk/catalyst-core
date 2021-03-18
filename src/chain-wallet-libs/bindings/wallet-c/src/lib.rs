@@ -1,3 +1,4 @@
+pub mod settings;
 pub use chain_impl_mockchain::vote::PayloadType as PayloadTypeRust;
 use std::{
     ffi::{CStr, CString},

@@ -131,7 +131,7 @@ impl MultiController {
                 continue;
             }
             println!("[{}/{}] retrieveing funds", idx + 1, total);
-       
+
             wallet.retrieve_funds(&block0)?;
 
             println!("[{}/{}] converting utxo->account", idx + 1, total);

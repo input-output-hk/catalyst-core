@@ -48,6 +48,8 @@ fn private_vote_test_scenario(
     )
     .unwrap();
 
+    std::thread::sleep(std::time::Duration::from_secs(10));
+
     println!("generating qr codes..");
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();

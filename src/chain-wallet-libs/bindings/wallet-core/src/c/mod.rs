@@ -2,6 +2,7 @@
 //! C style bindings that we have (wallet-c, wallet-jni...)
 #[macro_use]
 mod macros;
+pub mod settings;
 pub mod vote;
 
 use crate::{Conversion, Error, Proposal, Result, Wallet};

@@ -4,6 +4,10 @@ use wallet_core::c::settings::{
     LinearFee,
 };
 
+/// # Safety
+///
+/// settings_out must point to valid writable memory
+/// block_0_hash is assumed to point to 32 bytes of readable memory
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_new(
     linear_fee: LinearFee,
@@ -20,6 +24,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_new(
     .into_c_api() as ErrorPtr
 }
 
+/// # Safety
+///
+///   This function also assumes that settings is a valid pointer previously
+///   obtained with this library, a null check is performed, but is important that
+///   the data it points to is valid
+///
+///   linear_fee_out must point to valid writable memory, a null check is
+///   performed
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_fees(
     settings: SettingsPtr,
@@ -28,6 +40,14 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_fees(
     settings_fees(settings as *const wallet_core::Settings, linear_fee_out).into_c_api() as ErrorPtr
 }
 
+/// # Safety
+///
+///   This function also assumes that settings is a valid pointer previously
+///   obtained with this library, a null check is performed, but is important that
+///   the data it points to is valid
+///
+///   discrimination_out must point to valid writable memory, a null check is
+///   performed
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_discrimination(
     settings: SettingsPtr,
@@ -37,6 +57,12 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_discrimination(
         .into_c_api() as ErrorPtr
 }
 
+/// # Safety
+///
+///   This function assumes block0_hash points to 32 bytes of valid memory
+///   This function also assumes that settings is a valid pointer previously
+///   obtained with this library, a null check is performed, but is important that
+///   the data it points to is valid
 #[no_mangle]
 pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_block0_hash(
     settings: SettingsPtr,

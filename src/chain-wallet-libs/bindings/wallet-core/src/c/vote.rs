@@ -46,8 +46,7 @@ impl<'a> ToPayload for ProposalPrivate<'a> {
 
                 let bytes = Vec::<u8>::from_base32(&raw_key).unwrap();
 
-                EncryptingVoteKey::from_bytes(&bytes)
-                    .ok_or_else(|| Error::invalid_vote_encryption_key())
+                EncryptingVoteKey::from_bytes(&bytes).ok_or_else(Error::invalid_vote_encryption_key)
             })
             .map(PayloadTypeConfig::Private)
             .map_err(|_| Error::invalid_vote_encryption_key())

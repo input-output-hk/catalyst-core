@@ -37,6 +37,10 @@ pub enum Discrimination {
     Test,
 }
 
+/// # Safety
+///
+/// settings_out must point to valid writable memory
+/// block_0_hash is assumed to point to 32 bytes of readable memory
 pub unsafe fn settings_new(
     fees: LinearFee,
     discrimination: Discrimination,
@@ -89,6 +93,14 @@ pub unsafe fn settings_new(
     Result::success()
 }
 
+/// # Safety
+///
+///   This function also assumes that settings is a valid pointer previously
+///   obtained with this library, a null check is performed, but is important that
+///   the data it points to is valid
+///
+///   linear_fee_out must point to valid writable memory, a null check is
+///   performed
 pub unsafe fn settings_fees(settings: *const Settings, linear_fee_out: *mut LinearFee) -> Result {
     let settings = non_null!(settings);
     // In theory, getting a &mut from linear_fee_output and setting the fields
@@ -146,6 +158,14 @@ pub unsafe fn settings_fees(settings: *const Settings, linear_fee_out: *mut Line
     }
 }
 
+/// # Safety
+///
+///   This function also assumes that settings is a valid pointer previously
+///   obtained with this library, a null check is performed, but is important that
+///   the data it points to is valid
+///
+///   discrimination_out must point to valid writable memory, a null check is
+///   performed
 pub unsafe fn settings_discrimination(
     settings: *const Settings,
     discrimination_out: *mut Discrimination,
@@ -169,6 +189,12 @@ pub unsafe fn settings_discrimination(
     }
 }
 
+/// # Safety
+///
+///   This function assumes block0_hash points to 32 bytes of valid memory
+///   This function also assumes that settings is a valid pointer previously
+///   obtained with this library, a null check is performed, but is important that
+///   the data it points to is valid
 #[no_mangle]
 pub unsafe fn settings_block0_hash(settings: *const Settings, block0_hash: *mut u8) -> Result {
     let settings = non_null!(settings);

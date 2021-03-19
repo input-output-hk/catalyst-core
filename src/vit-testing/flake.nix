@@ -6,7 +6,7 @@
     rust-nix.inputs.nixpkgs.follows = "nixpkgs";
     voting-tools.url = "github:input-output-hk/voting-tools/unsigned-voter-registration";
   };
-  outputs = { self, nixpkgs, utils, rust-nix }:
+  outputs = { self, nixpkgs, utils, rust-nix, voting-tools }:
     let
       workspaceCargo = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       inherit (workspaceCargo.workspace) members;

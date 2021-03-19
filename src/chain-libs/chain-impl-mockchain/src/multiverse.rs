@@ -252,14 +252,10 @@ mod test {
 
         for hash in blocks_to_apply.iter().rev() {
             let block = store.get(hash).unwrap();
-            let header_meta = block.header.to_content_eval_context();
+            let header_meta = block.header.get_content_eval_context();
             let state = state_ref.state();
             let state = state
-                .apply_block(
-                    &state.get_ledger_parameters(),
-                    &block.contents,
-                    &header_meta,
-                )
+                .apply_block(state.get_ledger_parameters(), &block.contents, &header_meta)
                 .unwrap();
             state_ref = multiverse.add(*hash, state);
         }
@@ -273,9 +269,9 @@ mod test {
         }
         state
             .apply_block(
-                &state.get_ledger_parameters(),
+                state.get_ledger_parameters(),
                 &block.contents,
-                &block.header.to_content_eval_context(),
+                &block.header.get_content_eval_context(),
             )
             .unwrap()
     }

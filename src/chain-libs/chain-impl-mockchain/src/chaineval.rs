@@ -36,11 +36,15 @@ impl AsRef<[u8]> for PraosNonce {
     }
 }
 
-/// Genesis Praos related data extract from the header
+/// Consensus related data extract from the header
 #[derive(Debug, Clone)]
-pub(crate) struct HeaderGPContentEvalContext {
-    pub(crate) nonce: PraosNonce,
-    pub(crate) pool_creator: PoolId,
+pub enum ConsensusEvalContext {
+    Genesis,
+    Bft,
+    Praos {
+        nonce: PraosNonce,
+        pool_creator: PoolId,
+    },
 }
 
 /// This is the data extracted from a header related to content evaluation
@@ -49,7 +53,7 @@ pub struct HeaderContentEvalContext {
     pub(crate) block_date: BlockDate,
     pub(crate) chain_length: ChainLength,
     pub(crate) content_hash: BlockContentHash,
-    pub(crate) gp_content: Option<HeaderGPContentEvalContext>,
+    pub(crate) consensus_eval_context: ConsensusEvalContext,
 }
 
 #[cfg(test)]
@@ -67,11 +71,19 @@ mod test {
         }
     }
 
-    impl Arbitrary for HeaderGPContentEvalContext {
+    impl Arbitrary for ConsensusEvalContext {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            HeaderGPContentEvalContext {
-                nonce: Arbitrary::arbitrary(g),
-                pool_creator: Arbitrary::arbitrary(g),
+            let n: u8 = Arbitrary::arbitrary(g);
+            let n = n % 3;
+
+            match n {
+                0 => ConsensusEvalContext::Genesis,
+                1 => ConsensusEvalContext::Bft,
+                2 => ConsensusEvalContext::Praos {
+                    nonce: Arbitrary::arbitrary(g),
+                    pool_creator: Arbitrary::arbitrary(g),
+                },
+                _ => unreachable!(),
             }
         }
     }
@@ -81,7 +93,7 @@ mod test {
             HeaderContentEvalContext {
                 block_date: Arbitrary::arbitrary(g),
                 chain_length: Arbitrary::arbitrary(g),
-                gp_content: Arbitrary::arbitrary(g),
+                consensus_eval_context: Arbitrary::arbitrary(g),
                 content_hash: Arbitrary::arbitrary(g),
             }
         }

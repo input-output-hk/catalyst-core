@@ -45,10 +45,10 @@ pub fn ledger_adopt_settings_from_update_proposal(
         date.next_epoch(),
         &update_proposal_data.block_signing_key,
     );
-    let header_meta = block.header.to_content_eval_context();
+    let header_meta = block.header.get_content_eval_context();
     ledger = ledger
         .apply_block(
-            &ledger.get_ledger_parameters(),
+            ledger.get_ledger_parameters(),
             &block.contents,
             &header_meta,
         )

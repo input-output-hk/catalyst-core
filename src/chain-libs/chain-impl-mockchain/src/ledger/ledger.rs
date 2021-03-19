@@ -6,7 +6,6 @@ use super::governance::{Governance, ParametersGovernanceAction, TreasuryGovernan
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
-use crate::certificate::{PoolId, VoteAction, VotePlan};
 use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
@@ -23,6 +22,10 @@ use crate::treasury::Treasury;
 use crate::value::*;
 use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError, VotePlanStatus};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
+use crate::{
+    certificate::{PoolId, VoteAction, VotePlan},
+    chaineval::ConsensusEvalContext,
+};
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
 use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
@@ -88,6 +91,14 @@ pub struct Ledger {
     pub(crate) leaders_log: LeadersParticipationRecord,
     pub(crate) votes: VotePlanLedger,
     pub(crate) governance: Governance,
+}
+
+#[derive(Debug, Clone)]
+pub struct ApplyBlockLedger {
+    ledger: Ledger,
+    ledger_params: LedgerParameters,
+    chain_length: ChainLength,
+    block_date: BlockDate,
 }
 
 // Dummy implementation of Debug for Ledger
@@ -723,17 +734,60 @@ impl Ledger {
         Ok(())
     }
 
-    /// Try to apply messages to a State, and return the new State if successful
-    pub fn apply_block(
+    pub fn begin_block(
         &self,
-        ledger_params: &LedgerParameters,
-        contents: &Contents,
-        metadata: &HeaderContentEvalContext,
-    ) -> Result<Self, Error> {
+        ledger_params: LedgerParameters,
+        chain_length: ChainLength,
+        block_date: BlockDate,
+    ) -> Result<ApplyBlockLedger, Error> {
         let mut new_ledger = self.clone();
 
         new_ledger.chain_length = self.chain_length.increase();
 
+        // Check if the metadata (date/heigth) check out compared to the current state
+        if chain_length != new_ledger.chain_length {
+            return Err(Error::WrongChainLength {
+                actual: chain_length,
+                expected: new_ledger.chain_length,
+            });
+        }
+
+        if block_date <= new_ledger.date {
+            return Err(Error::NonMonotonicDate {
+                block_date,
+                chain_date: new_ledger.date,
+            });
+        }
+
+        // double check that if we had an epoch transition, distribute_rewards has been called
+        if block_date.epoch > new_ledger.date.epoch && self.leaders_log.total() > 0 {
+            panic!("internal error: apply_block called after epoch transition, but distribute_rewards has not been called")
+        }
+
+        // Process Update proposals if needed
+        let (updates, settings) = new_ledger.updates.process_proposals(
+            new_ledger.settings,
+            new_ledger.date,
+            block_date,
+        )?;
+        new_ledger.updates = updates;
+        new_ledger.settings = settings;
+
+        Ok(ApplyBlockLedger {
+            ledger: new_ledger,
+            ledger_params,
+            chain_length,
+            block_date,
+        })
+    }
+
+    /// Try to apply messages to a State, and return the new State if successful
+    pub fn apply_block(
+        &self,
+        ledger_params: LedgerParameters,
+        contents: &Contents,
+        metadata: &HeaderContentEvalContext,
+    ) -> Result<Self, Error> {
         let (content_hash, content_size) = contents.compute_hash_size();
 
         if content_size > ledger_params.block_content_max_size {
@@ -750,56 +804,14 @@ impl Ledger {
             });
         }
 
-        // Check if the metadata (date/heigth) check out compared to the current state
-        if metadata.chain_length != new_ledger.chain_length {
-            return Err(Error::WrongChainLength {
-                actual: metadata.chain_length,
-                expected: new_ledger.chain_length,
-            });
-        }
-
-        if metadata.block_date <= new_ledger.date {
-            return Err(Error::NonMonotonicDate {
-                block_date: metadata.block_date,
-                chain_date: new_ledger.date,
-            });
-        }
-
-        // double check that if we had an epoch transition, distribute_rewards has been called
-        if metadata.block_date.epoch > new_ledger.date.epoch && self.leaders_log.total() > 0 {
-            panic!("internal error: apply_block called after epoch transition, but distribute_rewards has not been called")
-        }
-
-        // Process Update proposals if needed
-        let (updates, settings) = new_ledger.updates.process_proposals(
-            new_ledger.settings,
-            new_ledger.date,
-            metadata.block_date,
-        )?;
-        new_ledger.updates = updates;
-        new_ledger.settings = settings;
-
-        // Apply all the fragments
-        for content in contents.iter() {
-            new_ledger = new_ledger.apply_fragment(ledger_params, content, metadata.block_date)?;
-        }
-
-        // Update the ledger metadata related to eval context
-        new_ledger.date = metadata.block_date;
-        match metadata.gp_content {
-            None => {}
-            Some(ref gp_content) => {
-                new_ledger
-                    .settings
-                    .consensus_nonce
-                    .hash_with(&gp_content.nonce);
-                new_ledger
-                    .leaders_log
-                    .increase_for(&gp_content.pool_creator);
-            }
-        };
-
-        Ok(new_ledger)
+        let new_block_ledger =
+            self.begin_block(ledger_params, metadata.chain_length, metadata.block_date)?;
+        let new_block_ledger = contents
+            .iter()
+            .try_fold(new_block_ledger, |new_block_ledger, fragment| {
+                new_block_ledger.apply_fragment(fragment)
+            })?;
+        Ok(new_block_ledger.finish(&metadata.consensus_eval_context))
     }
 
     /// Try to apply a message to the State, and return the new State if successful
@@ -1610,6 +1622,37 @@ impl Ledger {
     }
 }
 
+impl ApplyBlockLedger {
+    pub fn apply_fragment(&self, fragment: &Fragment) -> Result<Self, Error> {
+        let ledger = self
+            .ledger
+            .apply_fragment(&self.ledger_params, fragment, self.block_date)?;
+        Ok(ApplyBlockLedger {
+            ledger,
+            ..self.clone()
+        })
+    }
+
+    pub fn finish(self, consensus_eval_context: &ConsensusEvalContext) -> Ledger {
+        let mut new_ledger = self.ledger;
+
+        // Update the ledger metadata related to eval context
+        new_ledger.date = self.block_date;
+        match consensus_eval_context {
+            ConsensusEvalContext::Bft | ConsensusEvalContext::Genesis => {}
+            ConsensusEvalContext::Praos {
+                nonce,
+                pool_creator,
+            } => {
+                new_ledger.settings.consensus_nonce.hash_with(nonce);
+                new_ledger.leaders_log.increase_for(pool_creator);
+            }
+        };
+
+        new_ledger
+    }
+}
+
 fn apply_old_declaration(
     fragment_id: &FragmentId,
     mut utxos: utxo::Ledger<legacy::OldAddress>,
@@ -1811,7 +1854,7 @@ mod tests {
         let contents = Contents::empty();
         context.content_hash = contents.compute_hash();
 
-        let result = ledger.apply_block(&ledger.get_ledger_parameters(), &contents, &context);
+        let result = ledger.apply_block(ledger.get_ledger_parameters(), &contents, &context);
         match (result, should_succeed) {
             (Ok(_), true) => TestResult::passed(),
             (Ok(_), false) => TestResult::error("should pass"),

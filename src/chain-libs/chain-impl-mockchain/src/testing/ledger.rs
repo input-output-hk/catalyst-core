@@ -498,9 +498,9 @@ impl TestLedger {
     }
 
     pub fn apply_block(&mut self, block: Block) -> Result<(), Error> {
-        let header_meta = block.header.to_content_eval_context();
+        let header_meta = block.header.get_content_eval_context();
         self.ledger = self.ledger.clone().apply_block(
-            &self.ledger.get_ledger_parameters(),
+            self.ledger.get_ledger_parameters(),
             &block.contents,
             &header_meta,
         )?;

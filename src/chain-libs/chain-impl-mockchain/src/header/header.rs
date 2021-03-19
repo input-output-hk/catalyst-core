@@ -4,7 +4,7 @@ use super::deconstruct::{BftProof, Common, GenesisPraosProof, Proof};
 use super::version::BlockVersion;
 
 use crate::certificate::PoolId;
-use crate::chaineval::{HeaderContentEvalContext, HeaderGPContentEvalContext};
+use crate::chaineval::{ConsensusEvalContext, HeaderContentEvalContext};
 use crate::chaintypes::{ChainLength, HeaderId};
 use crate::date::BlockDate;
 use crate::fragment::{BlockContentHash, BlockContentSize};
@@ -237,26 +237,30 @@ impl Header {
         }
     }
 
-    pub fn to_content_eval_context(&self) -> HeaderContentEvalContext {
-        let gp_content = match self.block_version() {
+    pub fn get_consensus_eval_context(&self) -> ConsensusEvalContext {
+        match self.block_version() {
             BlockVersion::KesVrfproof => {
                 let nonce = VrfProof(self.get_cstruct().gp_vrf_proof())
                     .to_vrf_proof()
                     .map(|p| leadership::genesis::witness_to_nonce(&p))
                     .expect("internal-error: content_eval_context: vrf proof invalid: shouldn't be trying get an header content application context");
                 let node_id = self.get_cstruct().gp_node_id();
-                Some(HeaderGPContentEvalContext {
+                ConsensusEvalContext::Praos {
                     nonce,
                     pool_creator: node_id.into(),
-                })
+                }
             }
-            _ => None,
-        };
+            BlockVersion::Ed25519Signed => ConsensusEvalContext::Bft,
+            BlockVersion::Genesis => ConsensusEvalContext::Genesis,
+        }
+    }
+
+    pub fn get_content_eval_context(&self) -> HeaderContentEvalContext {
         HeaderContentEvalContext {
             block_date: self.block_date(),
             chain_length: self.chain_length(),
             content_hash: self.block_content_hash(),
-            gp_content,
+            consensus_eval_context: self.get_consensus_eval_context(),
         }
     }
 }

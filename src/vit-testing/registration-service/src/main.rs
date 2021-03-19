@@ -2,6 +2,8 @@ mod args;
 mod config;
 mod context;
 mod file_lister;
+mod job;
+mod request;
 mod rest;
 mod service;
 

@@ -1,3 +1,4 @@
+use crate::job::VoteRegistrationJobBuilder;
 use crate::{
     config::{read_config, Configuration},
     service::ManagerService,
@@ -34,18 +35,22 @@ impl RegistrationServiceCommand {
         manager.spawn();
 
         loop {
-            if let Some(job_id) = manager.request_to_start() {
+            if let Some((job_id, request)) = manager.request_to_start() {
                 let mut job_result_dir = configuration.result_dir.clone();
                 job_result_dir.push(job_id.to_string());
                 std::fs::create_dir_all(job_result_dir.clone())?;
 
-                let params_to_override = control_context.lock().unwrap().params_to_override();
-
-                let mut child = configuration.spawn_command(job_id,params_to_override).unwrap();
+                let job = VoteRegistrationJobBuilder::new()
+                    .with_jcli(&configuration.jcli)
+                    .with_cardano_cli(&configuration.cardano_cli)
+                    .with_voter_registration(&configuration.voter_registration)
+                    .with_network(configuration.network.clone())
+                    .with_kedqr(&configuration.vit_kedqr)
+                    .with_working_dir(&job_result_dir)
+                    .build();
 
                 control_context.lock().unwrap().run_started().unwrap();
-
-                child.wait().unwrap();
+                job.start(request).unwrap();
                 control_context.lock().unwrap().run_finished().unwrap();
             }
             std::thread::sleep(std::time::Duration::from_secs(5));

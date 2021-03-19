@@ -12,6 +12,7 @@ chrono = "0.4"
 walkdir = "2.3.1"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "04e065d055d6ca7bb0b0237a60ac5036c190569e" } 
 futures = "0.3.8"
 serde = { version="=1.0.118", features = ["derive"] }
 warp = "0.3"
@@ -24,5 +25,3 @@ serde_yaml = "0.8"
 version = "0.10.10"
 default-features = false
 features = ["blocking", "rustls-tls"]
-
-jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "04e065d055d6ca7bb0b0237a60ac5036c190569e" } 

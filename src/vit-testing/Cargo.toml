@@ -3,5 +3,6 @@ members = [
   "iapyx",
   "vitup",
   "integration-tests",
+  "registration-service",
   "snapshot-trigger-service"
 ]

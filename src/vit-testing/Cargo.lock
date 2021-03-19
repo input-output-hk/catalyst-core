@@ -3294,6 +3294,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5eb417147ba9860a96cfe72a0b93bf88fee1744b5636ec99ab20c1aa9376581"
 
 [[package]]
+name = "registration-service"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "futures 0.3.13",
+ "jortestkit",
+ "reqwest 0.10.10",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "structopt",
+ "thiserror",
+ "tokio 1.2.0",
+ "uuid",
+ "walkdir",
+ "warp",
+]
+
+[[package]]
 name = "remove_dir_all"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

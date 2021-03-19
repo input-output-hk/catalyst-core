@@ -1,5 +1,6 @@
 pub type ContextLock = Arc<Mutex<Context>>;
 use crate::config::Configuration;
+use crate::request::Request;
 use crate::rest::ServerStopper;
 use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -38,23 +39,27 @@ impl Context {
         &self.server_stopper
     }
 
-    pub fn new_run(&mut self) -> Result<Uuid, Error> {
+    pub fn new_run(&mut self, request: Request) -> Result<Uuid, Error> {
         match self.state {
             State::Idle | State::Finished { .. } => {
                 let id = Uuid::new_v4();
-                self.state = State::RequestToStart { job_id: id };
+                self.state = State::RequestToStart {
+                    job_id: id,
+                    request,
+                };
                 Ok(id)
             }
-            _ => Err(Error::SnaphotInProgress),
+            _ => Err(Error::RegistrationInProgress),
         }
     }
 
     pub fn run_started(&mut self) -> Result<(), Error> {
-        match self.state {
-            State::RequestToStart { job_id } => {
+        match &self.state {
+            State::RequestToStart { job_id, request } => {
                 self.state = State::Running {
-                    job_id,
+                    job_id: *job_id,
                     start: Utc::now().naive_utc(),
+                    request: request.clone(),
                 };
                 Ok(())
             }
@@ -63,33 +68,38 @@ impl Context {
     }
 
     pub fn run_finished(&mut self) -> Result<(), Error> {
-        match self.state {
-            State::Running { job_id, start } => {
+        match &self.state {
+            State::Running {
+                job_id,
+                start,
+                request,
+            } => {
                 self.state = State::Finished {
-                    job_id,
-                    start,
+                    job_id: *job_id,
+                    start: *start,
                     end: Utc::now().naive_utc(),
+                    request: request.clone(),
                 };
                 Ok(())
             }
-            _ => Err(Error::SnaphotNotStarted),
+            _ => Err(Error::RegistrationNotStarted),
         }
     }
 
     pub fn status_by_id(&self, id: Uuid) -> Result<State, Error> {
         match self.state {
             State::Idle => Err(Error::NoJobRun),
-            State::RequestToStart { .. } => Ok(self.state),
+            State::RequestToStart { .. } => Ok(self.state.clone()),
             State::Running { job_id, .. } => {
                 if job_id == id {
-                    Ok(self.state)
+                    Ok(self.state.clone())
                 } else {
                     Err(Error::JobNotFound)
                 }
             }
             State::Finished { job_id, .. } => {
                 if job_id == id {
-                    Ok(self.state)
+                    Ok(self.state.clone())
                 } else {
                     Err(Error::JobNotFound)
                 }
@@ -122,20 +132,23 @@ impl Context {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 pub enum State {
     Idle,
     RequestToStart {
         job_id: Uuid,
+        request: Request,
     },
     Running {
         job_id: Uuid,
         start: NaiveDateTime,
+        request: Request,
     },
     Finished {
         job_id: Uuid,
         start: NaiveDateTime,
         end: NaiveDateTime,
+        request: Request,
     },
 }
 
@@ -144,9 +157,9 @@ use thiserror::Error;
 #[derive(Debug, Error, Deserialize, Serialize)]
 pub enum Error {
     #[error("job is in progress.")]
-    SnaphotInProgress,
+    RegistrationInProgress,
     #[error("job hasn't been started")]
-    SnaphotNotStarted,
+    RegistrationNotStarted,
     #[error("no request to start")]
     NoRequestToStart,
     #[error("job was not found")]
@@ -160,42 +173,3 @@ impl fmt::Display for State {
         write!(f, "{:?}", self)
     }
 }
-/*
-mod date_format {
-    use chrono::{DateTime, TimeZone, Utc};
-    use serde::{self, Deserialize, Deserializer, Serializer};
-
-    const FORMAT: &'static str = "%Y-%m-%d %H:%M:%S";
-
-    // The signature of a serialize_with function must follow the pattern:
-    //
-    //    fn serialize<S>(&T, S) -> Result<S::Ok, S::Error>
-    //    where
-    //        S: Serializer
-    //
-    // although it may also be generic over the input types T.
-    pub fn serialize<S>(date: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = format!("{}", date.format(FORMAT));
-        serializer.serialize_str(&s)
-    }
-
-    // The signature of a deserialize_with function must follow the pattern:
-    //
-    //    fn deserialize<'de, D>(D) -> Result<T, D::Error>
-    //    where
-    //        D: Deserializer<'de>
-    //
-    // although it may also be generic over the output types T.
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        Utc.datetime_from_str(&s, FORMAT)
-            .map_err(serde::de::Error::custom)
-    }
-}
-*/

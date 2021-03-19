@@ -3,6 +3,10 @@ use jni::sys::{jbyte, jbyteArray, jint, jlong};
 use jni::JNIEnv;
 use std::convert::TryInto;
 use std::ptr::{null, null_mut};
+use wallet_core::c::settings::{
+    settings_block0_hash, settings_discrimination, settings_fees, settings_new, Discrimination,
+    LinearFee, PerCertificateFee, PerVoteCertificateFee,
+};
 use wallet_core::c::*;
 
 ///
@@ -123,6 +127,205 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_delete(
     let wallet_ptr: WalletPtr = wallet as WalletPtr;
     if !wallet_ptr.is_null() {
         wallet_delete_wallet(wallet_ptr);
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_build(
+    env: JNIEnv,
+    _: JClass,
+    linear_fees: JObject,
+    discrimination: JObject,
+    block0_hash: jbyteArray,
+) -> jlong {
+    let discrimination = match env.call_method(discrimination, "discriminant", "()B", &[]) {
+        Ok(JValue::Byte(0)) => Discrimination::Production,
+        Ok(JValue::Byte(1)) => Discrimination::Test,
+        Err(_) => return std::ptr::null::<Settings>() as jlong,
+        _ => unreachable!("there should be only two discrimination variants"),
+    };
+
+    let linear_fees = match env
+        .call_method(linear_fees, "pack", "()[J", &[])
+        .and_then(|packed| match packed {
+            JValue::Object(array) => {
+                let mut bytes = [0i64; 8];
+                env.get_long_array_region(array.into_inner(), 0, &mut bytes)?;
+                let bytes: [u64; 8] = unsafe { std::mem::transmute(bytes) };
+                Ok(LinearFee {
+                    constant: bytes[0],
+                    coefficient: bytes[1],
+                    certificate: bytes[2],
+                    per_certificate_fees: PerCertificateFee {
+                        certificate_pool_registration: bytes[3],
+                        certificate_stake_delegation: bytes[4],
+                        certificate_owner_stake_delegation: bytes[5],
+                    },
+                    per_vote_certificate_fees: PerVoteCertificateFee {
+                        certificate_vote_plan: bytes[6],
+                        certificate_vote_cast: bytes[7],
+                    },
+                })
+            }
+            _ => unreachable!("pack should return array"),
+        }) {
+        Ok(linear_fees) => linear_fees,
+        Err(_) => return std::ptr::null::<Settings>() as jlong,
+    };
+
+    let len = env
+        .get_array_length(block0_hash)
+        .expect("Couldn't get block0 array length") as usize;
+
+    // TODO: define a constant HEADER_ID_SIZE somewhere
+    assert_eq!(len, 32);
+
+    // TODO: define a constant HEADER_ID_SIZE somewhere
+    let mut bytes = [0i8; 32];
+    let _r = env.get_byte_array_region(block0_hash, 0, &mut bytes);
+
+    let mut settings_out = std::ptr::null_mut();
+
+    let result = unsafe {
+        settings_new(
+            linear_fees,
+            discrimination,
+            bytes.as_mut_ptr() as *mut u8,
+            &mut settings_out as *mut *mut Settings,
+        )
+    };
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+    }
+
+    settings_out as jlong
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_fees(
+    env: JNIEnv,
+    _: JClass,
+    settings: jlong,
+) -> jni::sys::jobject {
+    let settings_ptr: SettingsPtr = settings as SettingsPtr;
+
+    let mut linear_fee = LinearFee::default();
+
+    let result = unsafe { settings_fees(settings_ptr, &mut linear_fee as *mut LinearFee) };
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+        std::ptr::null_mut::<jni::sys::_jobject>()
+    } else {
+        match env
+            .find_class("com/iohk/jormungandrwallet/Settings$LinearFees")
+            .and_then(|class_id| {
+                let linear_fees = env.new_object(
+                    class_id,
+                    concat! {
+                        "(",
+                        "JJJ", // the ones in the top level
+                        "JJJ", // per certificate
+                        "JJ",  // per vote certificate
+                        ")V",
+                    },
+                    &[
+                        JValue::Long(linear_fee.constant as i64),
+                        JValue::Long(linear_fee.coefficient as i64),
+                        JValue::Long(linear_fee.certificate as i64),
+                        JValue::Long(
+                            linear_fee
+                                .per_certificate_fees
+                                .certificate_pool_registration as i64,
+                        ),
+                        JValue::Long(
+                            linear_fee.per_certificate_fees.certificate_stake_delegation as i64,
+                        ),
+                        JValue::Long(
+                            linear_fee
+                                .per_certificate_fees
+                                .certificate_owner_stake_delegation
+                                as i64,
+                        ),
+                        JValue::Long(
+                            linear_fee.per_vote_certificate_fees.certificate_vote_plan as i64,
+                        ),
+                        JValue::Long(
+                            linear_fee.per_vote_certificate_fees.certificate_vote_cast as i64,
+                        ),
+                    ],
+                )?;
+
+                Ok(linear_fees.into_inner())
+            }) {
+            Ok(linear_fees) => linear_fees,
+            Err(_) => std::ptr::null_mut::<jni::sys::_jobject>(),
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_discrimination(
+    env: JNIEnv,
+    _: JClass,
+    settings: jlong,
+) -> jni::sys::jobject {
+    let settings_ptr: SettingsPtr = settings as SettingsPtr;
+
+    // it doesn't matter which variant we use here, it's going to be replaced by
+    // the function if necessary
+    let mut discrimination = Discrimination::Production;
+
+    let result = unsafe {
+        settings_discrimination(settings_ptr, &mut discrimination as *mut Discrimination)
+    };
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+        std::ptr::null_mut::<jni::sys::_jobject>()
+    } else {
+        let field = match discrimination {
+            Discrimination::Production => "PRODUCTION",
+            Discrimination::Test => "TEST",
+        };
+        match env.get_static_field(
+            "com/iohk/jormungandrwallet/Settings$Discrimination",
+            field,
+            "Lcom/iohk/jormungandrwallet/Settings$Discrimination;",
+        ) {
+            Ok(JValue::Object(v)) => v.into_inner(),
+            Ok(_) => unreachable!("Discrimination is an enum"),
+            Err(_) => std::ptr::null_mut::<jni::sys::_jobject>(),
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_block0Hash(
+    env: JNIEnv,
+    _: JClass,
+    settings: jlong,
+) -> jbyteArray {
+    let settings_ptr: SettingsPtr = settings as SettingsPtr;
+
+    // TODO: define a constant HEADER_ID_SIZE somewhere
+    let mut block0_hash = [0i8; 32];
+
+    let result = unsafe { settings_block0_hash(settings_ptr, block0_hash.as_mut_ptr() as *mut u8) };
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+        std::ptr::null_mut::<jni::sys::_jobject>()
+    } else {
+        let array = env
+            .new_byte_array(block0_hash.len() as i32)
+            .expect("Failed to create new byte array");
+
+        env.set_byte_array_region(array, 0, &block0_hash)
+            .expect("Couldn't copy array to jvm");
+
+        array
     }
 }
 

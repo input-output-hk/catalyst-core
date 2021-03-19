@@ -9,6 +9,7 @@ use thiserror::Error;
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct Configuration {
     pub port: u16,
+    #[serde(rename = "result-dir")]
     pub result_dir: PathBuf,
     pub jcli: PathBuf,
     #[serde(rename = "cardano-cli")]

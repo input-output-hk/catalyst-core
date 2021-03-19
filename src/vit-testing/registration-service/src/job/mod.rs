@@ -9,6 +9,8 @@ use std::process::ExitStatus;
 use std::str::FromStr;
 use thiserror::Error;
 
+use crate::utils::CommandExt as _;
+
 pub struct VoteRegistrationJobBuilder {
     job: VoteRegistrationJob,
 }
@@ -90,12 +92,8 @@ impl VoteRegistrationJob {
             .arg("--verification-key-file")
             .arg(verification_key.as_ref())
             .arg("--out-file")
-            .arg(output.as_ref());
-
-        match self.network {
-            NetworkType::Mainnet => command.arg("--mainnet"),
-            NetworkType::Testnet(magic) => command.arg("--testnet").arg(magic.to_string()),
-        };
+            .arg(output.as_ref())
+            .arg_network(self.network);
         println!("generate payment addres: {:?}", command);
         command.status().map_err(Into::into)
     }
@@ -130,9 +128,9 @@ impl VoteRegistrationJob {
         self.generate_payment_address(&payment_vkey_path, &payment_address_path)?;
 
         let vote_registration_path = Path::new(&self.working_dir).join("vote-registration.tx");
-        std::fs::create_dir_all(&vote_registration_path)?;
 
-        Command::new(&self.voter_registration)
+        let mut command = Command::new(&self.voter_registration);
+        command
             .arg("--payment-signing-key")
             .arg(&payment_skey_path)
             .arg("--payment-address")
@@ -141,34 +139,36 @@ impl VoteRegistrationJob {
             .arg(&payment_skey_path)
             .arg("--vote-public-key")
             .arg(&public_key_path)
-            .arg("--mainnet")
+            .arg_network(self.network)
             .arg("--mary-era")
             .arg("--cardano-mode")
             .arg("--sign")
             .arg("--out-file")
+            .arg(&vote_registration_path);
+
+        println!("{:?}", command);
+        command.status()?;
+
+        Command::new(&self.cardano_cli)
+            .arg("transaction")
+            .arg("submit")
+            .arg("--cardano-mode")
+            .arg_network(self.network)
+            .arg("--tx-file")
             .arg(&vote_registration_path)
             .status()?;
-        /*
-              Command::new(&self.cardano_cli)
-                  .arg("transaction")
-                  .arg("submit")
-                  .arg("--cardano-mode")
-                  .arg("--mainnet")
-                  .arg("--tx-file")
-                  .arg(&vote_registration_path)
-                  .status()?;
 
-              let qrcode = Path::new(&self.working_dir).join("qrcode.png");
+        let qrcode = Path::new(&self.working_dir).join("qrcode.png");
 
-              Command::new(&self.vit_kedqr)
-                  .arg("-pin")
-                  .arg("1234")
-                  .arg("-input")
-                  .arg(private_key_path)
-                  .arg("-output")
-                  .arg(qrcode)
-                  .status()?;
-        */
+        Command::new(&self.vit_kedqr)
+            .arg("-pin")
+            .arg("1234")
+            .arg("-input")
+            .arg(private_key_path)
+            .arg("-output")
+            .arg(qrcode)
+            .status()?;
+
         Ok(())
     }
 }

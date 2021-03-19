@@ -44,7 +44,7 @@ impl RegistrationServiceCommand {
                     .with_jcli(&configuration.jcli)
                     .with_cardano_cli(&configuration.cardano_cli)
                     .with_voter_registration(&configuration.voter_registration)
-                    .with_network(configuration.network.clone())
+                    .with_network(configuration.network)
                     .with_kedqr(&configuration.vit_kedqr)
                     .with_working_dir(&job_result_dir)
                     .build();

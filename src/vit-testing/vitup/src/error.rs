@@ -27,6 +27,7 @@ error_chain! {
         GeneralError(jormungandr_scenario_tests::test::Error);
         ImageReadError(image::error::ImageError);
         MockError(crate::mock::Error);
+        ClientRestError(crate::client::rest::Error);
         WalletBackendError(iapyx::WalletBackendError);
         Block0ConfigurationError(Block0ConfigurationError);
         VitServerBootstrapperError(ServerBootstrapperError);
@@ -51,6 +52,11 @@ error_chain! {
         ProxyNotFound(alias: String) {
             description("proxy not found"),
             display("proxy with alias: {} not found", alias),
+        }
+
+        EnvironmentIsDown {
+            description("environment is down"),
+            display("environment is down"),
         }
 
         SnapshotIntialReadError {

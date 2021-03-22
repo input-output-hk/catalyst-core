@@ -1,0 +1,11 @@
+{
+	"port": 80,
+    "jcli": "jcli.exe",
+    "result-dir":"c:\\Work\\iok\\registration\\test",
+    "cardano-cli":"c:\\tmp\\cardano-node-1.25.0-win64\\cardano-cli",
+    "voter-registration":"voter-registration.exe",
+    "vit-kedqr":"vit-ked.exe",
+    "network": {
+        "testnet": 10907416
+    }
+}

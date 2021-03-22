@@ -1,0 +1,27 @@
+[package]
+name = "registration-service"
+version = "0.1.0"
+authors = ["dkijania <dariusz.kijania@iohk.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+uuid = { version = "0.8", features = ["serde","v4"] }
+chrono = "0.4"
+walkdir = "2.3.1"
+structopt = "0.3"
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "1955f6a1a60bc66635cdd67460872ff7e4c29022" } 
+futures = "0.3.8"
+serde = { version="=1.0.118", features = ["derive"] }
+warp = "0.3"
+thiserror = "1.0"
+tokio = { version = "1.2", features = ["macros","rt","process"] }
+serde_json = "1.0"
+serde_yaml = "0.8"
+
+[dependencies.reqwest]
+version = "0.10.10"
+default-features = false
+features = ["blocking", "rustls-tls"]

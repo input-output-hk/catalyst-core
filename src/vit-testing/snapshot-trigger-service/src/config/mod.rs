@@ -39,7 +39,7 @@ impl Configuration {
         command.arg("genesis");
         match self.voting_tools.network {
             NetworkType::Mainnet => command.arg("--mainnet"),
-            NetworkType::Testnet(magic) => command.arg("--testnet").arg(magic.to_string()),
+            NetworkType::Testnet(magic) => command.arg("--testnet-magic").arg(magic.to_string()),
         };
 
         command

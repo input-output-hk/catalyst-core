@@ -18,7 +18,7 @@ default = ["console_error_panic_hook"]
 [dependencies]
 bech32 = "0.7.2"
 chain-crypto = {git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"}
-getrandom = {version = "0.2.2", features = ["wasm-bindgen"]}
+getrandom = { version = "0.2.2", features = ["js"] }
 js-sys = "0.3.40"
 rand = "0.8.3"
 rand_chacha = "0.3.0"

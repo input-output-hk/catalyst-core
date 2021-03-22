@@ -28,4 +28,4 @@ bech32 = "0.7.2"
 rand = { version = "0.8.3", features = ["getrandom"] }
 
 [dev-dependencies]
-rand_chacha = "0.2.2"
+rand_chacha = "0.3.0"

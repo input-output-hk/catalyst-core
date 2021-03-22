@@ -13,4 +13,4 @@ rand = "0.8.3"
 thiserror = {version = "1.0.13", default-features = false}
 
 [dev-dependencies]
-rand_chacha = "0.2.2"
+rand_chacha = "0.3.0"

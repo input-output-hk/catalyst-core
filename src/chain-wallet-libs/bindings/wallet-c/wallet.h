@@ -563,15 +563,49 @@ ErrorPtr iohk_jormungandr_wallet_set_state(WalletPtr wallet,
                                            uint64_t value,
                                            uint32_t counter);
 
+/**
+ * # Safety
+ *
+ *   This function assumes block0_hash points to 32 bytes of valid memory
+ *   This function also assumes that settings is a valid pointer previously
+ *   obtained with this library, a null check is performed, but is important that
+ *   the data it points to is valid
+ */
 ErrorPtr iohk_jormungandr_wallet_settings_block0_hash(SettingsPtr settings,
                                                       uint8_t *block0_hash);
 
+/**
+ * # Safety
+ *
+ *   This function also assumes that settings is a valid pointer previously
+ *   obtained with this library, a null check is performed, but is important that
+ *   the data it points to is valid
+ *
+ *   discrimination_out must point to valid writable memory, a null check is
+ *   performed
+ */
 ErrorPtr iohk_jormungandr_wallet_settings_discrimination(SettingsPtr settings,
                                                          enum Discrimination *discrimination_out);
 
+/**
+ * # Safety
+ *
+ *   This function also assumes that settings is a valid pointer previously
+ *   obtained with this library, a null check is performed, but is important that
+ *   the data it points to is valid
+ *
+ *   linear_fee_out must point to valid writable memory, a null check is
+ *   performed
+ */
 ErrorPtr iohk_jormungandr_wallet_settings_fees(SettingsPtr settings,
                                                struct LinearFee *linear_fee_out);
 
+/**
+ * # Safety
+ *
+ * settings_out must point to valid writable memory
+ * block_0_hash is assumed to point to 32 bytes of readable memory
+ */
 ErrorPtr iohk_jormungandr_wallet_settings_new(struct LinearFee linear_fee,
                                               enum Discrimination discrimination,
                                               const uint8_t *block_0_hash,

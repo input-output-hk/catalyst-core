@@ -25,19 +25,6 @@ impl Configuration {
     ) -> Result<std::process::Child, Error> {
         let output_folder = Path::new(&self.result_dir).join(format!("{}", job_id));
 
-        if let Some(voting_tools_bin) = &self.voting_tools.bin {
-            let voting_tools_bin_path = Path::new(&voting_tools_bin);
-            if !voting_tools_bin_path.exists() {
-                return Err(Error::CannotFindVotingTools(
-                    voting_tools_bin_path.to_path_buf(),
-                ));
-            }
-        }
-
-        if !output_folder.exists() {
-            return Err(Error::ResultFolderDoesNotExists(output_folder));
-        }
-
         let mut command = self.voting_tools.command()?;
         command.arg("genesis");
         match self.voting_tools.network {
@@ -56,8 +43,8 @@ impl Configuration {
             .arg(output_folder.join("snapshot.json"))
             .arg("--scale")
             .arg(self.voting_tools.scale.to_string())
-            .arg("--slot-id")
-            .arg(params.slot_id.to_string())
+            .arg("--slot-no")
+            .arg(params.slot_no.to_string())
             .arg("--threshold")
             .arg(params.threshold.to_string());
 

@@ -1,6 +1,8 @@
+#![recursion_limit = "256"]
 #[macro_use(error_chain, bail)]
 extern crate error_chain;
 
+pub mod client;
 pub mod config;
 pub mod error;
 pub mod interactive;

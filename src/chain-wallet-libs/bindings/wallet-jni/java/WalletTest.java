@@ -4,6 +4,7 @@ import com.iohk.jormungandrwallet.Conversion;
 import com.iohk.jormungandrwallet.Proposal;
 import com.iohk.jormungandrwallet.PendingTransactions;
 import com.iohk.jormungandrwallet.SymmetricCipher;
+import com.iohk.jormungandrwallet.Settings;
 
 import java.util.Properties;
 import java.util.Enumeration;
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class WalletTest {
@@ -31,6 +33,75 @@ public class WalletTest {
 
         Settings.delete(settingsPtr);
         Wallet.delete(walletPtr);
+    }
+
+    @Test
+    public void extractSettings() throws IOException {
+        final long walletPtr = Wallet.recover(
+                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+
+        final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
+
+        final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
+
+        final Settings.LinearFees fees = Settings.fees(settingsPtr);
+
+        assertEquals(fees.constant, 10);
+        assertEquals(fees.coefficient, 2);
+        assertEquals(fees.certificate, 100);
+
+        assertEquals(fees.perCertificateFee.certificatePoolRegistration, 0);
+        assertEquals(fees.perCertificateFee.certificateStakeDelegation, 0);
+        assertEquals(fees.perCertificateFee.certificateOwnerStakeDelegation, 0);
+
+        assertEquals(fees.perVoteCertificateFee.certificateVotePlan, 0);
+        assertEquals(fees.perVoteCertificateFee.certificateVoteCast, 0);
+
+        final Settings.Discrimination discrimination = Settings.discrimination(settingsPtr);
+
+        // TODO: actually, why are we using PRODUCTION discrimination in the
+        // test vectors genesis?
+        assertEquals(Settings.Discrimination.PRODUCTION, discrimination);
+
+        assertArrayEquals(hexStringToByteArray("182764b45bae25cc466143de8107618b37f0d28fe3daa0a0d39fd0ab5a2061e1"),
+                Settings.block0Hash(settingsPtr));
+
+        Settings.delete(settingsPtr);
+        Wallet.delete(walletPtr);
+    }
+
+    @Test
+    public void buildSettings() throws IOException {
+        final byte[] blockId = hexStringToByteArray("182764b45bae25cc466143de8107618b37f0d28fe3daa0a0d39fd0ab5a2061e1");
+        final Settings.Discrimination discrimination = Settings.Discrimination.TEST;
+        final Settings.LinearFees linearFees = new Settings.LinearFees(1, 2, 3, new Settings.PerCertificateFee(4, 5, 6),
+                new Settings.PerVoteCertificateFee(7, 8));
+
+        final long settingsPtr = Settings.build(linearFees, discrimination, blockId);
+
+        final Settings.LinearFees fees = Settings.fees(settingsPtr);
+
+        assertEquals(fees.constant, linearFees.constant);
+        assertEquals(fees.coefficient, linearFees.coefficient);
+        assertEquals(fees.certificate, linearFees.certificate);
+
+        assertEquals(fees.perCertificateFee.certificatePoolRegistration,
+                fees.perCertificateFee.certificatePoolRegistration);
+        assertEquals(fees.perCertificateFee.certificateStakeDelegation,
+                fees.perCertificateFee.certificateStakeDelegation);
+        assertEquals(fees.perCertificateFee.certificateOwnerStakeDelegation,
+                fees.perCertificateFee.certificateOwnerStakeDelegation);
+
+        assertEquals(fees.perVoteCertificateFee.certificateVotePlan, fees.perVoteCertificateFee.certificateVotePlan);
+        assertEquals(fees.perVoteCertificateFee.certificateVoteCast, fees.perVoteCertificateFee.certificateVoteCast);
+
+        final Settings.Discrimination foundDiscrimination = Settings.discrimination(settingsPtr);
+
+        assertEquals(discrimination, foundDiscrimination);
+
+        assertArrayEquals(blockId, Settings.block0Hash(settingsPtr));
+
+        Settings.delete(settingsPtr);
     }
 
     @Test

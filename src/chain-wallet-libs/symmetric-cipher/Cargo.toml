@@ -9,8 +9,8 @@ version = "0.5.0"
 
 [dependencies]
 cryptoxide = "0.3.1"
-rand = "0.7.3"
+rand = "0.8.3"
 thiserror = {version = "1.0.13", default-features = false}
 
 [dev-dependencies]
-rand_chacha = "0.2.2"
+rand_chacha = "0.3.0"

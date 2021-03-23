@@ -65,7 +65,7 @@ impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
 
     #[inline]
     pub fn estimate_fee_with(&self, extra_inputs: u8, extra_outputs: u8) -> Value {
-        self.settings.parameters.fees.calculate(
+        self.settings.fees.calculate(
             self.payload
                 .payload_data()
                 .borrow()
@@ -164,7 +164,7 @@ impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
     where
         P: Payload,
     {
-        let header_id = self.settings.static_parameters.block0_initial_hash;
+        let header_id = self.settings.block0_initial_hash;
         let auth_data = builder.get_auth_data_for_witness().hash();
         let witnesses: Vec<_> = self
             .witness_builders

@@ -192,6 +192,16 @@ impl Mul<Scalar> for Ciphertext {
     }
 }
 
+impl<'a> Mul<u64> for &'a Ciphertext {
+    type Output = Ciphertext;
+    fn mul(self, rhs: u64) -> Self::Output {
+        Ciphertext {
+            e1: &self.e1 * rhs,
+            e2: &self.e2 * rhs,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

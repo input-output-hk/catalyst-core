@@ -310,6 +310,26 @@ rref!(GroupElement, Mul, Scalar, GroupElement, mul);
 nref!(GroupElement, Mul, Scalar, GroupElement, mul);
 
 //////////
+// u64 * GE
+//////////
+
+impl<'a> Mul<&'a GroupElement> for u64 {
+    type Output = GroupElement;
+
+    fn mul(self, other: &'a GroupElement) -> GroupElement {
+        GroupElement(&other.0 * self)
+    }
+}
+
+impl<'a> Mul<u64> for &'a GroupElement {
+    type Output = GroupElement;
+
+    fn mul(self, other: u64) -> GroupElement {
+        GroupElement(other * &self.0)
+    }
+}
+
+//////////
 // GE + GE
 //////////
 

@@ -117,7 +117,7 @@ impl EncryptedTally {
     pub fn add(&mut self, vote: &EncryptedVote, weight: u64) {
         assert_eq!(vote.len(), self.r.len());
         for (ri, ci) in self.r.iter_mut().zip(vote.iter()) {
-            *ri = &*ri + &(ci * Scalar::from_u64(weight));
+            *ri = &*ri + &(ci * weight);
         }
     }
 
@@ -280,7 +280,7 @@ impl Tally {
         let r_results = result_vector(tally_state, decrypt_shares);
         let gen = gang::GroupElement::generator();
         for (i, &w) in self.votes.iter().enumerate() {
-            if &gen * gang::Scalar::from_u64(w) != r_results[i] {
+            if &gen * w != r_results[i] {
                 return false;
             }
         }

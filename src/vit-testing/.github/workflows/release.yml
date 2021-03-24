@@ -136,6 +136,19 @@ jobs:
 
     steps:
 
+      - name: Install dependencies macOS
+        run: brew update; brew install openssl libpq
+        if: matrix.os == 'macos-latest'
+
+      - name: Install dependencies Ubuntu
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends openssl libpq-dev build-essential
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Install dependencies Windows
+        run: vcpkg integrate install; vcpkg install openssl:x64-windows libpq:x64-windows
+        if: matrix.os == 'windows-latest'
+
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.toolchain }}

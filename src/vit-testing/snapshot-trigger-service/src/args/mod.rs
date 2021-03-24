@@ -1,10 +1,14 @@
 use crate::{
     config::{read_config, Configuration},
+    context::State,
     service::ManagerService,
     Context,
 };
 use std::sync::Mutex;
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use structopt::StructOpt;
 use thiserror::Error;
 
@@ -45,10 +49,23 @@ impl TriggerServiceCommand {
 
                 child.wait().unwrap();
                 control_context.lock().unwrap().run_finished().unwrap();
+
+                let status = control_context.lock().unwrap().status_by_id(job_id)?;
+                job_result_dir.push("status.yaml");
+                persist_status(&job_result_dir, status)
+                    .map_err(|_| Error::CannotPersistJobState)?;
             }
             std::thread::sleep(std::time::Duration::from_secs(5));
         }
     }
+}
+
+pub fn persist_status<P: AsRef<Path>>(path: P, state: State) -> Result<(), Error> {
+    use std::io::Write;
+    let content = serde_yaml::to_string(&state)?;
+    let mut file = std::fs::File::create(&path)?;
+    file.write_all(content.as_bytes())?;
+    Ok(())
 }
 
 #[derive(Debug, Error)]
@@ -59,4 +76,8 @@ pub enum Error {
     CannotReadConfiguration(#[from] crate::config::Error),
     #[error("context error")]
     Context(#[from] crate::context::Error),
+    #[error("cannot persist job state")]
+    CannotPersistJobState,
+    #[error("cannot serialize job state")]
+    CannotSerializeJobState(#[from] serde_yaml::Error),
 }

@@ -35,7 +35,7 @@ if event_name == 'push':
     ref = os.getenv('GITHUB_REF')
     if ref.startswith('refs/tags/'):
         release_type = 'tagged'
-    elif ref == 'refs/heads/ci/test/nightly':
+    elif ref == 'refs/heads/ci/test/release':
         # emulate the nightly workflow
         release_type = 'nightly'
         ref = None

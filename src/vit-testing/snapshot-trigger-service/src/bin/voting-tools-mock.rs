@@ -26,8 +26,8 @@ pub struct Genesis {
     #[structopt(long = "mainnet")]
     pub mainnet: bool,
 
-    #[structopt(long = "testnet")]
-    pub testnet: Option<u64>,
+    #[structopt(long = "testnet-magic")]
+    pub testnet_magic: Option<u64>,
 
     #[structopt(long = "db")]
     pub db: String,
@@ -44,8 +44,8 @@ pub struct Genesis {
     #[structopt(long = "scale")]
     pub scale: u64,
 
-    #[structopt(long = "slot-id")]
-    pub slot_id: Option<u64>,
+    #[structopt(long = "slot-no")]
+    pub slot_no: Option<u64>,
 
     #[structopt(long = "threshold")]
     pub threshold: Option<u64>,

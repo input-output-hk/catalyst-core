@@ -24,11 +24,12 @@ impl Configuration {
         params: JobParameters,
     ) -> Result<std::process::Child, Error> {
         let output_folder = Path::new(&self.result_dir).join(format!("{}", job_id));
-        let mut command = std::process::Command::new(&self.voting_tools.bin);
+
+        let mut command = self.voting_tools.command()?;
         command.arg("genesis");
         match self.voting_tools.network {
             NetworkType::Mainnet => command.arg("--mainnet"),
-            NetworkType::Testnet(magic) => command.arg("--testnet").arg(magic.to_string()),
+            NetworkType::Testnet(magic) => command.arg("--testnet-magic").arg(magic.to_string()),
         };
 
         command
@@ -42,8 +43,8 @@ impl Configuration {
             .arg(output_folder.join("snapshot.json"))
             .arg("--scale")
             .arg(self.voting_tools.scale.to_string())
-            .arg("--slot-id")
-            .arg(params.slot_id.to_string())
+            .arg("--slot-no")
+            .arg(params.slot_no.to_string())
             .arg("--threshold")
             .arg(params.threshold.to_string());
 
@@ -54,7 +55,10 @@ impl Configuration {
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct VotingToolsParams {
-    pub bin: String,
+    pub bin: Option<String>,
+    /// in some ocasion we need to run voting-tools via some dependency management
+    #[serde(rename = "nix-branch")]
+    pub nix_branch: Option<String>,
     pub network: NetworkType,
     pub db: String,
     #[serde(rename = "db-user")]
@@ -62,6 +66,21 @@ pub struct VotingToolsParams {
     #[serde(rename = "db-host")]
     pub db_host: String,
     pub scale: u32,
+}
+
+impl VotingToolsParams {
+    pub fn command(&self) -> Result<std::process::Command, Error> {
+        if let Some(bin) = &self.bin {
+            return Ok(std::process::Command::new(bin));
+        } else if let Some(nix_branch) = &self.nix_branch {
+            let mut command = std::process::Command::new("nix");
+            command.arg("run");
+            command.arg(nix_branch);
+            command.arg("--");
+            return Ok(command);
+        }
+        Err(Error::WrongVotingToolsConfiguration)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
@@ -85,4 +104,10 @@ pub enum Error {
     CannotReadConfiguration(PathBuf),
     #[error("cannot spawn command")]
     CannotSpawnCommand(#[from] std::io::Error),
+    #[error("cannot find voting tools at {0:?}")]
+    CannotFindVotingTools(PathBuf),
+    #[error("no 'bin' or 'run-through' defined in voting tools")]
+    WrongVotingToolsConfiguration,
+    #[error("result folder does not exists at {0:?}")]
+    ResultFolderDoesNotExists(PathBuf),
 }

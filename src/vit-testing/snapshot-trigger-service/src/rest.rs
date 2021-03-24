@@ -19,6 +19,8 @@ impl Reject for crate::context::Error {}
 pub enum Error {
     #[error("cannot parse uuid")]
     CannotParseUuid(#[from] uuid::Error),
+    #[error("cannot parse token")]
+    CannotParseToken,
 }
 
 impl Reject for Error {}
@@ -129,6 +131,7 @@ pub async fn health_handler() -> Result<impl Reply, Rejection> {
 
 pub async fn files_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
     let context_lock = context.lock().unwrap();
+    println!("Reading files from: {:?}", context_lock.working_directory());
     Ok(file_lister::dump_json(context_lock.working_directory())?).map(|r| warp::reply::json(&r))
 }
 
@@ -150,7 +153,8 @@ pub async fn authorize_token(
     token: String,
     context: Arc<std::sync::Mutex<Context>>,
 ) -> Result<(), Rejection> {
-    let api_token = APIToken::from_string(token).map_err(warp::reject::custom)?;
+    let api_token =
+        APIToken::from_string(token).map_err(|_| warp::reject::custom(Error::CannotParseToken))?;
 
     if context.lock().unwrap().api_token().is_none() {
         return Ok(());

@@ -2,7 +2,7 @@
 	"port": 8080,
 	"result-dir": "./data",
 	"voting-tools": {
-		"nix-branch": "github:input-output-hk/voting-tools#voting-tools",
+		"bin": "voting-tools-mock",
 		"network": {
 			"testnet": 1234231321
 		},

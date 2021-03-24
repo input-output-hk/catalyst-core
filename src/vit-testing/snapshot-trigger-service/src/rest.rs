@@ -19,6 +19,8 @@ impl Reject for crate::context::Error {}
 pub enum Error {
     #[error("cannot parse uuid")]
     CannotParseUuid(#[from] uuid::Error),
+    #[error("cannot parse token")]
+    CannotParseToken,
 }
 
 impl Reject for Error {}
@@ -151,7 +153,7 @@ pub async fn authorize_token(
     token: String,
     context: Arc<std::sync::Mutex<Context>>,
 ) -> Result<(), Rejection> {
-    let api_token = APIToken::from_string(token).map_err(warp::reject::custom)?;
+    let api_token = APIToken::from_string(token).map_err(|_| warp::reject::custom(Error::CannotParseToken))?;
 
     if context.lock().unwrap().api_token().is_none() {
         return Ok(());

@@ -1,0 +1,16 @@
+[package]
+name = "catalyst-toolbox-cli"
+version = "0.1.0"
+authors = ["danielsanchezq <daniel.sanchez@iohk.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = "0.3"
+jcli = { git = "https://github.com/danielSanchezQ/jormungandr.git", branch = "jcli-lib" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git" }
+
+
+[build-dependencies]
+versionisator = "1.0.3"

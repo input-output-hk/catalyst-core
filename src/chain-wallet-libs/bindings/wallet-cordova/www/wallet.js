@@ -1,5 +1,6 @@
 var exec = require('cordova/exec');
 var argscheck = require('cordova/argscheck');
+var base64 = require('cordova/base64');
 
 const NATIVE_CLASS_NAME = 'WalletPlugin';
 
@@ -26,6 +27,8 @@ const PENDING_TRANSACTIONS_DELETE = 'PENDING_TRANSACTIONS_DELETE';
 const PENDING_TRANSACTIONS_GET = 'PENDING_TRANSACTIONS_GET';
 const PENDING_TRANSACTIONS_SIZE = 'PENDING_TRANSACTIONS_SIZE';
 const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
+const SETTINGS_NEW = 'SETTINGS_NEW';
+const SETTINGS_GET = 'SETTINGS_GET';
 
 const VOTE_PLAN_ID_LENGTH = 32;
 const FRAGMENT_ID_LENGTH = 32;
@@ -51,6 +54,41 @@ var plugin = {
      * @callback errorCallback
      * @param {string} error - error description
      */
+
+    /**
+     * @callback SettingsCallback
+     * @param {Settings} settings
+     */
+
+    /**
+     * @typedef Settings
+     * @type {object}
+     * @property {Uint8Array} block0Hash
+     * @property {Discrimination} discrimination
+     * @property {Fees} fees
+     */
+
+    /**
+     * @typedef Fees
+     * @type {object}
+     * @property {string} constant
+     * @property {string} coefficient
+     * @property {string} certificate
+     * @property {string} certificatePoolRegistration
+     * @property {string} certificateStakeDelegation
+     * @property {string} certificateOwnerStakeDelegation
+     * @property {string} certificateVotePlan
+     * @property {string} certificateVoteCast
+     */
+
+    /**
+     * @readonly
+     * @enum {number}
+     */
+    Discrimination: {
+        PRODUCTION: 0,
+        TEST: 1
+    },
 
     /**
      * @param {string} mnemonics a string with the mnemonic phrase
@@ -300,6 +338,36 @@ var plugin = {
         checkUint8Array({ name: 'ciphertext', testee: ciphertext });
 
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SYMMETRIC_CIPHER_DECRYPT, [password.buffer, ciphertext.buffer]);
+    },
+
+    /**
+     * @param {Uint8Array} block0Hash
+     * @param {Discrimination} discrimination
+     * @param {Fees} fees
+     * @param {pointerCallback} successCallback
+     * @param {errorCallback} errorCallback
+     */
+    settingsNew: function (block0Hash, discrimination, fees, successCallback, errorCallback) {
+        argscheck.checkArgs('*n*ff', 'settingsNew', arguments);
+        checkUint8Array({ name: 'block0Hash', testee: block0Hash });
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SETTINGS_NEW, [block0Hash.buffer, discrimination, fees]);
+    },
+
+    /**
+     * @param {string} settingsPtr
+     * @param {SettingsCallback} settingsCallback
+     * @param {errorCallback} errorCallback
+     */
+    settingsGet: function (settingsPtr, settingsCallback, errorCallback) {
+        argscheck.checkArgs('sff', 'settingsGet', arguments);
+
+        const decodeBase64 = function (arg) {
+            arg.block0Hash = new Uint8Array(base64.toArrayBuffer(arg.block0Hash));
+            settingsCallback(arg);
+        };
+
+        exec(decodeBase64, errorCallback, NATIVE_CLASS_NAME, SETTINGS_GET, [settingsPtr]);
     },
 
     /**

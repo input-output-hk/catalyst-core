@@ -5,7 +5,8 @@ const primitives = require('wallet-cordova-plugin.wallet');
 
 const { hexStringToBytes, promisify, uint8ArrayEquals } = require('./src/utils.js');
 
-const BLOCK0 = '00520000000003c1000000000000000000000000da1006dbf989038c7df6048fb59ae3359e67184ba193e734db61718126a56948000000000000000000000000000000000000000000000000000000000000000000a60000000e0088000000005e922c7000410100c200010398000000000000000a000000000000000200000000000000640104000000b401411404040000a8c00208000000000000006402440001900001840000006405810104c800005af3107a40000521020000000000000064000000000000000d0000000000000013000000010000000302e0e57ceb3b2832f07e2ef051e772b62a837f7a486c35e38f51bf556bd3abcd8eca016f00010500000000000f4240004c82d818584283581c0992e6e3970dd01055ba919cff5b670a6813f41c588eb701231e3cf0a101581e581c4bff51e6e1bcf245c7bcb610415fad427c2d8b87faca8452215970f6001a660a147700000000000186a0004c82d818584283581c3657ed91ad2f25ad3ebc4faec404779f8dafafc03fa181743c76aa61a101581e581cd7c99cfa13e81ca55d026fe0395124646e39b188c475fb276525975d001ab75977f20000000000002710002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c70000000000000001004c82d818584283581c4baebf60011d051b02143a3417514fed6f25c8c03d2253025aa2ed5fa101581e581c4bff51e6e1bcf245c7bcb5104c7ca9ed201e1b1a6c6dfbe93eadeece001a318972700000000000000064002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c7014e00010500000000000f4240002b82d818582183581c783fd3008d0d8fb4532885481360cb6e97dc7801c8843f300ed69a56a0001a7d83a21d0000000000002710002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c70000000000000001002b82d818582183581c783fd3008d0d8fb4532885481360cb6e97dc7801c8843f300ed69a56a0001a7d83a21d0000000000000064004c82d818584283581cffd85f20cf3f289fd091e0b033285ecad725496bc57035a504b84a10a101581e581c4bff51e6e1bcf245c7bcb4105299a598c50eabacdd0f72815c016da7001a57f9068f00000000000003f2004c82d818584283581c847329097386f263121520fc9c364047b436298b37c9148a15efddb4a101581e581cd7c99cfa13e81ce17f4221e0aed54c08625a0a8c687d9748f462a6b2001af866b8b9005600020002032fc94e416c9cb9b3f7ea999846acd31fe466c092e1c0d8b6634074def8f9e1e800000000000003e8033005131602e42423f16621bbe6100bfa7a1a69aee5fd6118dc588fe6f2a8af7c0000000000002710';
+const BLOCK0 = '0052000000000464000000000000000000000000466e8737a3d6193daf384a9d925f948d299c015f4c791d24a7241dc06ce67620000000000000000000000000000000000000000000000000000000000000000000a60000000e0088000000005e922c7000410100c200010398000000000000000a000000000000000200000000000000640104000000b401411404040000a8c00208000000000000006402440001900001840000006405810104c800005af3107a40000521020000000000000064000000000000000d0000000000000013000000010000000302e00258e06557efa50c2b94a585c49f45abf67ade94174e6ea6426d126ab36176a6016f00010500000000000f4240004c82d818584283581c0992e6e3970dd01055ba919cff5b670a6813f41c588eb701231e3cf0a101581e581c4bff51e6e1bcf245c7bcb610415fad427c2d8b87faca8452215970f6001a660a147700000000000186a0004c82d818584283581c3657ed91ad2f25ad3ebc4faec404779f8dafafc03fa181743c76aa61a101581e581cd7c99cfa13e81ca55d026fe0395124646e39b188c475fb276525975d001ab75977f20000000000002710002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c70000000000000001004c82d818584283581c4baebf60011d051b02143a3417514fed6f25c8c03d2253025aa2ed5fa101581e581c4bff51e6e1bcf245c7bcb5104c7ca9ed201e1b1a6c6dfbe93eadeece001a318972700000000000000064002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c7014e00010500000000000f4240002b82d818582183581c783fd3008d0d8fb4532885481360cb6e97dc7801c8843f300ed69a56a0001a7d83a21d0000000000002710002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c70000000000000001002b82d818582183581c783fd3008d0d8fb4532885481360cb6e97dc7801c8843f300ed69a56a0001a7d83a21d0000000000000064004c82d818584283581cffd85f20cf3f289fd091e0b033285ecad725496bc57035a504b84a10a101581e581c4bff51e6e1bcf245c7bcb4105299a598c50eabacdd0f72815c016da7001a57f9068f00000000000003f2004c82d818584283581c847329097386f263121520fc9c364047b436298b37c9148a15efddb4a101581e581cd7c99cfa13e81ce17f4221e0aed54c08625a0a8c687d9748f462a6b2001af866b8b9005600020002032fc94e416c9cb9b3f7ea999846acd31fe466c092e1c0d8b6634074def8f9e1e800000000000003e8033005131602e42423f16621bbe6100bfa7a1a69aee5fd6118dc588fe6f2a8af7c000000000000271000a1000a0000000000000000000000010000000000000002000000000101000000000000000000000000000000000000000000000000000000000000000003000000000258e06557efa50c2b94a585c49f45abf67ade94174e6ea6426d126ab36176a69a634f0787cdec57882a436501b774bb53cddef938f7e966c2d93662a5f353378933b7d9ba61c0dc8740edf01bea95ef7eec83433d5f876dc41d83605dbc490a';
+const BLOCK0_ID = '182764b45bae25cc466143de8107618b37f0d28fe3daa0a0d39fd0ab5a2061e1'
 const WALLET_VALUE = 1000000 + 10000 + 10000 + 1 + 100;
 const YOROI_WALLET = 'neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone';
 const ENCRYPTED_WALLET = '017b938f189c7d1d9e4c75b02710a9c9a6b287b6ca55d624001828cba8aeb3a9d4c2a86261016693c7e05fb281f012fb2d7af44484da09c4d7b2dea6585965a4cc208d2b2fb1aa5ba6338520b3aa9c4f908fdd62816ebe01f496f8b4fc0344892fe245db072d054c3dedff926320589231298e216506c1f6858c5dba915c959a98ba0d0e3995aef91d4216b5172dedf2736b451d452916b81532eb7f8487e9f88a2de4f9261d0a0ddf11698796ad8b6894908024ebc4be9bba985ef9c0f2f71afce0b37520c66938313f6bf81b3fc24f5c93d216cd2528dabc716b8093359fda84db4e58d876d215713f2db000';
@@ -33,7 +34,7 @@ const deleteProposal = promisifyP(primitives.proposalDelete);
 const deletePending = promisifyP(primitives.pendingTransactionsDelete);
 const conversionGetTransactionAt = promisifyP(primitives.conversionTransactionsGet);
 const conversionGetIgnored = promisifyP(primitives.conversionGetIgnored);
-const proposalNew = promisifyP(primitives.proposalNew);
+const proposalNewPublic = promisifyP(primitives.proposalNewPublic);
 const proposalNewPrivate = promisifyP(primitives.proposalNewPrivate);
 const walletVote = promisifyP(primitives.walletVote);
 const walletSetState = promisifyP(primitives.walletSetState);
@@ -41,6 +42,8 @@ const walletConfirmTransaction = promisifyP(primitives.walletConfirmTransaction)
 const walletPendingTransactions = promisifyP(primitives.walletPendingTransactions);
 const pendingTransactionsGet = promisifyP(primitives.pendingTransactionsGet);
 const symmetricCipherDecrypt = promisifyP(primitives.symmetricCipherDecrypt);
+const settingsGet = promisifyP(primitives.settingsGet);
+const settingsNew = promisifyP(primitives.settingsNew);
 
 
 const tests = [
@@ -141,11 +144,10 @@ const tests = [
         }
 
         const votePlanId = new Uint8Array(array);
-        const payloadType = primitives.PayloadType.PUBLIC;
         const index = 0;
         const numChoices = 3;
 
-        const proposalPtr = await proposalNew(votePlanId, payloadType, index, numChoices);
+        const proposalPtr = await proposalNewPublic(votePlanId, index, numChoices);
         const walletPtr = await restoreWallet(YOROI_WALLET);
         const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
         await walletSetState(walletPtr, 1000000, 1);
@@ -204,6 +206,88 @@ const tests = [
         if (!uint8ArrayEquals(hexStringToBytes(expected), new Uint8Array(decrypted))) {
             throw Error('decryption failed');
         }
+    }],
+    ['extract settings', async function () {
+        const accountKey = new Uint8Array([
+            200, 101, 150, 194, 209, 32, 136, 133, 219, 31, 227, 101, 132, 6, 170, 15, 124, 199,
+            184, 225, 60, 54, 47, 228, 106, 109, 178, 119, 252, 80, 100, 88, 62, 72, 117, 136, 201,
+            138, 108, 54, 226, 231, 68, 92, 10, 221, 54, 248, 63, 23, 28, 181, 204, 253, 129, 85,
+            9, 209, 156, 211, 142, 203, 10, 243
+        ]);
+
+        const utxoKeys = new Uint8Array([
+            48, 21, 89, 204, 178, 212, 204, 126, 158, 84, 166, 245, 90, 128, 150, 11, 182, 145,
+            183, 177, 64, 149, 73, 239, 134, 149, 169, 46, 164, 26, 111, 79, 64, 82, 49, 168, 6,
+            194, 231, 185, 208, 219, 48, 225, 94, 224, 204, 31, 38, 28, 27, 159, 150, 21, 99, 107,
+            72, 189, 137, 254, 123, 230, 234, 31,
+            168, 182, 189, 240, 128, 199, 79, 188, 49, 51, 126, 222, 75, 102, 146, 194, 235, 237,
+            126, 52, 175, 109, 152, 183, 187, 205, 71, 140, 240, 123, 13, 94, 217, 63, 126, 157,
+            74, 163, 175, 222, 50, 26, 225, 171, 182, 27, 131, 68, 194, 67, 201, 208, 180, 7, 203,
+            248, 145, 125, 182, 223, 44, 101, 61, 234
+        ]);
+
+        const walletPtr = await importKeys(accountKey, utxoKeys);
+        expect(walletPtr !== 0).toBe(true);
+        const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
+
+        expect(settingsPtr !== 0).toBe(true);
+
+        const settings = await settingsGet(settingsPtr);
+
+        expect(uint8ArrayEquals(settings.block0Hash, hexStringToBytes(BLOCK0_ID))).toBe(true);
+        expect(settings.discrimination).toBe(primitives.Discrimination.PRODUCTION);
+
+        expect(settings.fees.constant).toBe("10");
+        expect(settings.fees.coefficient).toBe("2");
+        expect(settings.fees.certificate).toBe("100");
+
+        expect(settings.fees.certificatePoolRegistration).toBe("0");
+        expect(settings.fees.certificateStakeDelegation).toBe("0");
+        expect(settings.fees.certificateOwnerStakeDelegation).toBe("0");
+
+        expect(settings.fees.certificateVotePlan).toBe("0");
+        expect(settings.fees.certificateVoteCast).toBe("0");
+
+        await deleteSettings(settingsPtr);
+        await deleteWallet(walletPtr);
+    }],
+    ['new settings', async function () {
+        const settingsExpected = {
+            block0Hash: hexStringToBytes(BLOCK0_ID),
+            discrimination: primitives.Discrimination.TEST,
+            fees: {
+                constant: "1",
+                coefficient: "2",
+                certificate: "3",
+                certificatePoolRegistration: "4",
+                certificateStakeDelegation: "5",
+                certificateOwnerStakeDelegation: "6",
+                certificateVotePlan: "7",
+                certificateVoteCast: "8",
+            }
+        };
+
+        const settingsPtr = await settingsNew(settingsExpected.block0Hash, settingsExpected.discrimination, settingsExpected.fees);
+
+        expect(settingsPtr !== 0).toBe(true);
+
+        const settings = await settingsGet(settingsPtr);
+
+        expect(uint8ArrayEquals(settings.block0Hash, settingsExpected.block0Hash)).toBe(true);
+        expect(settings.discrimination).toBe(settingsExpected.discrimination);
+
+        expect(settings.fees.constant).toBe(settingsExpected.fees.constant);
+        expect(settings.fees.coefficient).toBe(settingsExpected.fees.coefficient);
+        expect(settings.fees.certificate).toBe(settingsExpected.fees.certificate);
+
+        expect(settings.fees.certificatePoolRegistration).toBe(settingsExpected.fees.certificatePoolRegistration);
+        expect(settings.fees.certificateStakeDelegation).toBe(settingsExpected.fees.certificateStakeDelegation);
+        expect(settings.fees.certificateOwnerStakeDelegation).toBe(settingsExpected.fees.certificateOwnerStakeDelegation);
+
+        expect(settings.fees.certificateVotePlan).toBe(settingsExpected.fees.certificateVotePlan);
+        expect(settings.fees.certificateVoteCast).toBe(settingsExpected.fees.certificateVoteCast);
+
+        await deleteSettings(settingsPtr);
     }],
 ]
 

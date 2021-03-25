@@ -74,26 +74,30 @@ public class WalletTest {
     public void buildSettings() throws IOException {
         final byte[] blockId = hexStringToByteArray("182764b45bae25cc466143de8107618b37f0d28fe3daa0a0d39fd0ab5a2061e1");
         final Settings.Discrimination discrimination = Settings.Discrimination.TEST;
-        final Settings.LinearFees linearFees = new Settings.LinearFees(1, 2, 3, new Settings.PerCertificateFee(4, 5, 6),
+        final Settings.LinearFees expectedFees = new Settings.LinearFees(1, 2, 3, new Settings.PerCertificateFee(4, 5, 6),
                 new Settings.PerVoteCertificateFee(7, 8));
 
-        final long settingsPtr = Settings.build(linearFees, discrimination, blockId);
+        Settings.PerCertificateFee test = new Settings.PerCertificateFee(4, 5, 6);
+
+        final long settingsPtr = Settings.build(expectedFees, discrimination, blockId);
 
         final Settings.LinearFees fees = Settings.fees(settingsPtr);
 
-        assertEquals(fees.constant, linearFees.constant);
-        assertEquals(fees.coefficient, linearFees.coefficient);
-        assertEquals(fees.certificate, linearFees.certificate);
+        assertEquals(fees.constant, expectedFees.constant);
+        assertEquals(fees.coefficient, expectedFees.coefficient);
+        assertEquals(fees.certificate, expectedFees.certificate);
 
         assertEquals(fees.perCertificateFee.certificatePoolRegistration,
-                fees.perCertificateFee.certificatePoolRegistration);
-        assertEquals(fees.perCertificateFee.certificateStakeDelegation,
-                fees.perCertificateFee.certificateStakeDelegation);
-        assertEquals(fees.perCertificateFee.certificateOwnerStakeDelegation,
-                fees.perCertificateFee.certificateOwnerStakeDelegation);
+                expectedFees.perCertificateFee.certificatePoolRegistration);
 
-        assertEquals(fees.perVoteCertificateFee.certificateVotePlan, fees.perVoteCertificateFee.certificateVotePlan);
-        assertEquals(fees.perVoteCertificateFee.certificateVoteCast, fees.perVoteCertificateFee.certificateVoteCast);
+        assertEquals(fees.perCertificateFee.certificateStakeDelegation,
+                expectedFees.perCertificateFee.certificateStakeDelegation);
+
+        assertEquals(fees.perCertificateFee.certificateOwnerStakeDelegation,
+                expectedFees.perCertificateFee.certificateOwnerStakeDelegation);
+
+        assertEquals(fees.perVoteCertificateFee.certificateVotePlan, expectedFees.perVoteCertificateFee.certificateVotePlan);
+        assertEquals(fees.perVoteCertificateFee.certificateVoteCast, expectedFees.perVoteCertificateFee.certificateVoteCast);
 
         final Settings.Discrimination foundDiscrimination = Settings.discrimination(settingsPtr);
 

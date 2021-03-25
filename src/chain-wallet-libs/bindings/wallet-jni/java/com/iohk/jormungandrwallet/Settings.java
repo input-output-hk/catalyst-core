@@ -83,10 +83,10 @@ public class Settings {
         public long certificateStakeDelegation;
         public long certificateOwnerStakeDelegation;
 
-        public PerCertificateFee(long registration, long certificateStakeDelegation, long ownerStakeDelegation) {
-            certificatePoolRegistration = registration;
-            certificateStakeDelegation = certificateStakeDelegation;
-            certificateOwnerStakeDelegation = ownerStakeDelegation;
+        public PerCertificateFee(long registration, long stakeDelegation, long ownerStakeDelegation) {
+            this.certificatePoolRegistration = registration;
+            this.certificateStakeDelegation = stakeDelegation;
+            this.certificateOwnerStakeDelegation = ownerStakeDelegation;
         }
     }
 

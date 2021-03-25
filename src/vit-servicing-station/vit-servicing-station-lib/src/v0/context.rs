@@ -54,7 +54,12 @@ pub mod test {
         let db_url = format!("file:{}?mode=memory&cache=shared", name);
         let pool = db::load_db_connection_pool(&db_url).unwrap();
         let block0: Vec<u8> = vec![1, 2, 3, 4, 5];
-        Arc::new(RwLock::new(Context::new(pool, "", block0, "2.0")))
+        Arc::new(RwLock::new(Context::new(
+            pool,
+            "",
+            block0,
+            "2.0".to_string(),
+        )))
     }
 
     pub fn new_test_shared_context(db_url: &str, block0_path: &str) -> SharedContext {

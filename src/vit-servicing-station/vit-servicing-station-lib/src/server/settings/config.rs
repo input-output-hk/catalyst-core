@@ -12,6 +12,7 @@ const DATABASE_URL: &str = "DATABASE_URL";
 const TLS_CERT_FILE: &str = "TLS_CERT_FILE";
 const TLS_PRIVATE_KEY_FILE: &str = "TLS_PK_FILE";
 const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
+pub const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
 
 const ADDRESS_DEFAULT: &str = "0.0.0.0:3030";
 const DB_URL_DEFAULT: &str = "./db/database.sqlite3";

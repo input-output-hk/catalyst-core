@@ -4,11 +4,12 @@ use structopt::StructOpt;
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
 use vit_servicing_station_lib::{
-    db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
-    server::settings::ServiceSettings, v0,
+    db, server,
+    server::exit_codes::ApplicationExitCode,
+    server::settings as server_settings,
+    server::settings::{ServiceSettings, VIT_SERVICE_VERSION_ENV_VARIABLE},
+    v0,
 };
-
-const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
 
 fn check_and_build_proper_path(path: &PathBuf) -> std::io::Result<()> {
     use std::fs;

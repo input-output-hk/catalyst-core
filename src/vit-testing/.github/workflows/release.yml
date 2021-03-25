@@ -267,16 +267,6 @@ jobs:
           asset_name: ${{ env.RELEASE_ARCHIVE }}
           asset_content_type: ${{ env.RELEASE_CONTENT_TYPE }}
 
-      - name: Upload checksum to the release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ./${{ steps.pack-assets.outputs.release-archive }}.sha256
-          asset_name: ${{ steps.pack-assets.outputs.release-archive }}.sha256
-          asset_content_type: text/plain
-
   publish_release:
     name: Publish release
     needs: [create_release, build_assets]

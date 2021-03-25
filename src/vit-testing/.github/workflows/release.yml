@@ -223,7 +223,10 @@ jobs:
             --release
             --target ${{ matrix.config.target }}
 
-
+      - id: pack-assets
+        name: Pack binaries
+        shell: bash
+        run: python3 ./ci/pack-assets.py ${{ needs.create_release.outputs.version }} ${{ matrix.config.target }} ${{ matrix.target_cpu }}
 
       - name: Upload binaries to the release
         uses: actions/upload-release-asset@v1

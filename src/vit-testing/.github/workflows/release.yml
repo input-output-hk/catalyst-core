@@ -223,10 +223,40 @@ jobs:
             --release
             --target ${{ matrix.config.target }}
 
-      - id: pack-assets
-        name: Pack binaries
-        shell: bash
-        run: python3 ./ci/pack-assets.py ${{ needs.create_release.outputs.version }} ${{ matrix.config.target }} ${{ matrix.target_cpu }}
+      - name: Pack binaries (Unix)
+        if: matrix.config.os != 'windows-latest'
+        run: |
+            archive=vit-testing-${{ needs.create_release.outputs.version }}-${{ matrix.config.target }}.tar.gz
+            tar -C ./target/${{ matrix.config.target }}/release -czvf $archive \
+              iapyx-cli \
+              iapyx-qr \
+              iapyx-load \
+              iapyx-proxy \
+              vitup \
+              vitup-cli
+            cat <<EOF >> $GITHUB_ENV
+            RELEASE_ARCHIVE=$archive
+            RELEASE_CONTENT_TYPE=application/gzip
+            EOF
+
+      - name: Pack binaries (Windows)
+        if: matrix.config.os == 'windows-latest'
+        run: |
+            $archive = "vit-testing-${{ needs.create_release.outputs.version }}-${{ matrix.config.target }}.zip"
+            $args = @{
+              Path  = "./target/${{ matrix.config.target }}/release/vitup.exe",
+                    "./target/${{ matrix.config.target }}/release/vitup-cli.exe",
+                    "./target/${{ matrix.config.target }}/release/iapyx-cli.exe",
+                    "./target/${{ matrix.config.target }}/release/iapyx-qr.exe",
+                    "./target/${{ matrix.config.target }}/release/iapyx-load.exe",
+                    "./target/${{ matrix.config.target }}/release/iapyx-proxy.exe"
+              DestinationPath = $archive
+            }
+            Compress-Archive @args
+            @"
+            RELEASE_ARCHIVE=$archive
+            RELEASE_CONTENT_TYPE=application/zip
+            "@ | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Upload binaries to the release
         uses: actions/upload-release-asset@v1

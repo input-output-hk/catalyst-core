@@ -203,7 +203,6 @@ jobs:
           command: build
           args: >
             --manifest-path vitup/Cargo.toml
-            --bin vitup
             --verbose
             --locked
             --release

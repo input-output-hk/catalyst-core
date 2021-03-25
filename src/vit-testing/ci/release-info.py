@@ -33,6 +33,7 @@ date = date.today().strftime('%Y%m%d')
 ref = None
 if event_name == 'push':
     ref = os.getenv('GITHUB_REF')
+    print(ref)
     if ref.startswith('refs/tags/'):
         release_type = 'tagged'
     elif ref == 'refs/heads/ci/test/release':

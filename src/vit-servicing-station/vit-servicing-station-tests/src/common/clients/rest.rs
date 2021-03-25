@@ -270,7 +270,7 @@ impl RestPathBuilder {
     }
 
     pub fn service_version(&self) -> String {
-        format!("http://{}{}{}", self.address, "/api/", "service-version")
+        format!("http://{}{}{}", self.address, "/api/", "vit-version")
     }
 
     pub fn path(&self, path: &str) -> String {

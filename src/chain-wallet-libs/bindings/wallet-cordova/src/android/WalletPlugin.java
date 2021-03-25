@@ -57,77 +57,83 @@ public class WalletPlugin extends CordovaPlugin {
             throws JSONException {
         Log.d(TAG, "action: " + action);
         switch (action) {
-            case "WALLET_RESTORE":
-                walletRestore(args, callbackContext);
-                break;
-            case "WALLET_IMPORT_KEYS":
-                walletImportKeys(args, callbackContext);
-                break;
-            case "SYMMETRIC_CIPHER_DECRYPT":
-                symmetricCipherDecrypt(args, callbackContext);
-                break;
-            case "WALLET_RETRIEVE_FUNDS":
-                walletRetrieveFunds(args, callbackContext);
-                break;
-            case "WALLET_TOTAL_FUNDS":
-                walletTotalFunds(args, callbackContext);
-                break;
-            case "WALLET_ID":
-                walletId(args, callbackContext);
-                break;
-            case "WALLET_SET_STATE":
-                walletSetState(args, callbackContext);
-                break;
-            case "WALLET_VOTE":
-                walletVote(args, callbackContext);
-                break;
-            case "WALLET_CONVERT":
-                walletConvert(args, callbackContext);
-                break;
-            case "WALLET_PENDING_TRANSACTIONS":
-                walletPendingTransactions(args, callbackContext);
-                break;
-            case "PENDING_TRANSACTIONS_SIZE":
-                pendingTransactionsSize(args, callbackContext);
-                break;
-            case "PENDING_TRANSACTIONS_GET":
-                pendingTransactionsGet(args, callbackContext);
-                break;
-            case "WALLET_CONFIRM_TRANSACTION":
-                walletConfirmTransaction(args, callbackContext);
-                break;
-            case "CONVERSION_TRANSACTIONS_SIZE":
-                conversionTransactionsSize(args, callbackContext);
-                break;
-            case "CONVERSION_TRANSACTIONS_GET":
-                conversionTransactionsGet(args, callbackContext);
-                break;
-            case "CONVERSION_IGNORED":
-                conversionIgnored(args, callbackContext);
-                break;
-            case "PROPOSAL_NEW_PUBLIC":
-                proposalNewPublic(args, callbackContext);
-                break;
-            case "PROPOSAL_NEW_PRIVATE":
-                proposalNewPrivate(args, callbackContext);
-                break;
-            case "WALLET_DELETE":
-                walletDelete(args, callbackContext);
-                break;
-            case "SETTINGS_DELETE":
-                settingsDelete(args, callbackContext);
-                break;
-            case "CONVERSION_DELETE":
-                conversionDelete(args, callbackContext);
-                break;
-            case "PROPOSAL_DELETE":
-                proposalDelete(args, callbackContext);
-                break;
-            case "PENDING_TRANSACTIONS_DELETE":
-                pendingDelete(args, callbackContext);
-                break;
-            default:
-                return false;
+        case "WALLET_RESTORE":
+            walletRestore(args, callbackContext);
+            break;
+        case "WALLET_IMPORT_KEYS":
+            walletImportKeys(args, callbackContext);
+            break;
+        case "SYMMETRIC_CIPHER_DECRYPT":
+            symmetricCipherDecrypt(args, callbackContext);
+            break;
+        case "WALLET_RETRIEVE_FUNDS":
+            walletRetrieveFunds(args, callbackContext);
+            break;
+        case "WALLET_TOTAL_FUNDS":
+            walletTotalFunds(args, callbackContext);
+            break;
+        case "WALLET_ID":
+            walletId(args, callbackContext);
+            break;
+        case "WALLET_SET_STATE":
+            walletSetState(args, callbackContext);
+            break;
+        case "WALLET_VOTE":
+            walletVote(args, callbackContext);
+            break;
+        case "WALLET_CONVERT":
+            walletConvert(args, callbackContext);
+            break;
+        case "WALLET_PENDING_TRANSACTIONS":
+            walletPendingTransactions(args, callbackContext);
+            break;
+        case "PENDING_TRANSACTIONS_SIZE":
+            pendingTransactionsSize(args, callbackContext);
+            break;
+        case "PENDING_TRANSACTIONS_GET":
+            pendingTransactionsGet(args, callbackContext);
+            break;
+        case "WALLET_CONFIRM_TRANSACTION":
+            walletConfirmTransaction(args, callbackContext);
+            break;
+        case "CONVERSION_TRANSACTIONS_SIZE":
+            conversionTransactionsSize(args, callbackContext);
+            break;
+        case "CONVERSION_TRANSACTIONS_GET":
+            conversionTransactionsGet(args, callbackContext);
+            break;
+        case "CONVERSION_IGNORED":
+            conversionIgnored(args, callbackContext);
+            break;
+        case "PROPOSAL_NEW_PUBLIC":
+            proposalNewPublic(args, callbackContext);
+            break;
+        case "PROPOSAL_NEW_PRIVATE":
+            proposalNewPrivate(args, callbackContext);
+            break;
+        case "SETTINGS_NEW":
+            settingsNew(args, callbackContext);
+            break;
+        case "SETTINGS_GET":
+            settingsGet(args, callbackContext);
+            break;
+        case "WALLET_DELETE":
+            walletDelete(args, callbackContext);
+            break;
+        case "SETTINGS_DELETE":
+            settingsDelete(args, callbackContext);
+            break;
+        case "CONVERSION_DELETE":
+            conversionDelete(args, callbackContext);
+            break;
+        case "PROPOSAL_DELETE":
+            proposalDelete(args, callbackContext);
+            break;
+        case "PENDING_TRANSACTIONS_DELETE":
+            pendingDelete(args, callbackContext);
+            break;
+        default:
+            return false;
         }
 
         return true;
@@ -157,7 +163,6 @@ public class WalletPlugin extends CordovaPlugin {
             public void run() {
                 try {
                     final long walletPtr = Wallet.importKeys(accountKey, utxoKeys);
-                    Log.d(TAG, Long.toString(walletPtr));
                     callbackContext.success(Long.toString(walletPtr));
                 } catch (final Exception e) {
                     callbackContext.error(e.getMessage());
@@ -174,6 +179,63 @@ public class WalletPlugin extends CordovaPlugin {
         try {
             final byte[] decrypted = SymmetricCipher.decrypt(password, ciphertext);
             callbackContext.success(decrypted);
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void settingsNew(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final byte[] block0Hash = args.getArrayBuffer(0);
+        final int discriminationInput = args.getInt(1);
+        final JSONObject fees = (JSONObject) args.get(2);
+
+        try {
+            final Settings.LinearFees linearFees = new Settings.LinearFees(Long.parseLong(fees.getString("constant")),
+                    Long.parseLong(fees.getString("coefficient")), Long.parseLong(fees.getString("certificate")),
+                    new Settings.PerCertificateFee(Long.parseLong(fees.getString("certificatePoolRegistration")),
+                            Long.parseLong(fees.getString("certificateStakeDelegation")),
+                            Long.parseLong(fees.getString("certificateOwnerStakeDelegation"))),
+                    new Settings.PerVoteCertificateFee(Long.parseLong(fees.getString("certificateVotePlan")),
+                            Long.parseLong(fees.getString("certificateVoteCast"))));
+
+            final Settings.Discrimination discrimination = discriminationInput == 0 ? Settings.Discrimination.PRODUCTION
+                    : Settings.Discrimination.TEST;
+
+            final long settingsPtr = Settings.build(linearFees, discrimination, block0Hash);
+
+            final Settings.LinearFees fees2 = Settings.fees(settingsPtr);
+
+            callbackContext.success(Long.toString(settingsPtr));
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void settingsGet(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final long settingsPtr = args.getLong(0);
+
+        try {
+            final Settings.LinearFees fees = Settings.fees(settingsPtr);
+            final Settings.Discrimination discrimination = Settings.discrimination(settingsPtr);
+            final byte[] block0Hash = Settings.block0Hash(settingsPtr);
+
+            final JSONObject feesJson = new JSONObject().put("constant", Long.toUnsignedString(fees.constant))
+                    .put("coefficient", Long.toUnsignedString(fees.coefficient))
+                    .put("certificate", Long.toUnsignedString(fees.certificate))
+                    .put("certificatePoolRegistration",
+                            Long.toUnsignedString(fees.perCertificateFee.certificatePoolRegistration))
+                    .put("certificateStakeDelegation",
+                            Long.toUnsignedString(fees.perCertificateFee.certificateStakeDelegation))
+                    .put("certificateOwnerStakeDelegation",
+                            Long.toUnsignedString(fees.perCertificateFee.certificateOwnerStakeDelegation))
+                    .put("certificateVotePlan", Long.toUnsignedString(fees.perVoteCertificateFee.certificateVotePlan))
+                    .put("certificateVoteCast", Long.toUnsignedString(fees.perVoteCertificateFee.certificateVoteCast));
+
+            final JSONObject result = new JSONObject().put("fees", feesJson)
+                    .put("discrimination", discrimination == Settings.Discrimination.PRODUCTION ? (int) 0 : 1)
+                    .put("block0Hash", Base64.encodeToString(block0Hash, Base64.NO_WRAP));
+
+            callbackContext.success(result);
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());
         }

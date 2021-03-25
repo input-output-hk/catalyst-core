@@ -8,7 +8,7 @@ use chain_impl_mockchain::{
     value::Value,
 };
 pub use hdkeygen::account::AccountId;
-use hdkeygen::account::{Account, SEED};
+use hdkeygen::account::{Account, Seed};
 
 pub struct Wallet {
     account: EitherAccount,
@@ -32,7 +32,7 @@ enum EitherAccount {
 }
 
 impl Wallet {
-    pub fn new_from_seed(seed: SEED) -> Wallet {
+    pub fn new_from_seed(seed: Seed) -> Wallet {
         Wallet {
             account: EitherAccount::Seed(Account::from_seed(seed)),
             state: States::new(

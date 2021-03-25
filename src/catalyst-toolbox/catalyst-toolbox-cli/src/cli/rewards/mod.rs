@@ -9,7 +9,7 @@ pub enum Error {
     #[error("error while writing to csv")]
     Csv(#[from] csv::Error),
     #[error(transparent)]
-    Other(#[from] crate::jcli_app::block::Error),
+    Other(#[from] jcli_lib::jcli_lib::block::Error),
 }
 
 #[derive(StructOpt)]

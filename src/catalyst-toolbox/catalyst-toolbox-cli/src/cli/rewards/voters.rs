@@ -101,7 +101,7 @@ impl VotersRewards {
         } = self;
         let block = common.input.load_block()?;
         let block0 = Block0Configuration::from_block(&block)
-            .map_err(crate::jcli_app::block::Error::BuildingGenesisFromBlock0Failed)?;
+            .map_err(jcli_lib::jcli_lib::block::Error::BuildingGenesisFromBlock0Failed)?;
         let committee_keys: HashSet<Address> = block0
             .blockchain_configuration
             .committees

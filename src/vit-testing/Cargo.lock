@@ -245,7 +245,7 @@ name = "bip39"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#ef877f6e239dcf920bdccf94149a969079fafe5d"
 dependencies = [
- "cryptoxide 0.3.2",
+ "cryptoxide",
  "thiserror",
 ]
 
@@ -422,7 +422,7 @@ source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#96
 dependencies = [
  "cbor_event",
  "chain-ser",
- "cryptoxide 0.3.2",
+ "cryptoxide",
  "ed25519-bip32",
 ]
 
@@ -468,7 +468,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
- "cryptoxide 0.3.2",
+ "cryptoxide",
  "quickcheck",
 ]
 
@@ -487,7 +487,7 @@ source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#96
 dependencies = [
  "bech32",
  "cfg-if 1.0.0",
- "cryptoxide 0.3.2",
+ "cryptoxide",
  "curve25519-dalek",
  "digest 0.9.0",
  "ed25519-bip32",
@@ -582,7 +582,7 @@ name = "chain-vote"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#96a853c5a6c0c9ec93c1ffdcc7a7d4906cb447c6"
 dependencies = [
- "cryptoxide 0.3.2",
+ "cryptoxide",
  "eccoxide",
  "rand_core 0.5.1",
  "rayon",
@@ -789,12 +789,6 @@ dependencies = [
  "lazy_static",
  "loom",
 ]
-
-[[package]]
-name = "cryptoxide"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da24927b5b899890bcb29205436c957b7892ec3a3fbffce81d710b9611e77778"
 
 [[package]]
 name = "cryptoxide"
@@ -1032,7 +1026,7 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8827180a2b511141fbe49141e50b31a8d542465e0fb572f81f36feea2addfe92"
 dependencies = [
- "cryptoxide 0.3.2",
+ "cryptoxide",
 ]
 
 [[package]]
@@ -1591,7 +1585,7 @@ dependencies = [
  "chain-addr",
  "chain-crypto",
  "chain-path-derivation",
- "cryptoxide 0.3.2",
+ "cryptoxide",
  "ed25519-bip32",
  "hex",
  "thiserror",
@@ -1806,7 +1800,7 @@ dependencies = [
  "chain-ser",
  "chrono",
  "console 0.11.3",
- "cryptoxide 0.2.1",
+ "cryptoxide",
  "dialoguer 0.6.2",
  "ed25519-bip32",
  "hdkeygen",
@@ -3939,7 +3933,7 @@ name = "symmetric-cipher"
 version = "0.5.0"
 source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#ef877f6e239dcf920bdccf94149a969079fafe5d"
 dependencies = [
- "cryptoxide 0.3.2",
+ "cryptoxide",
  "rand 0.7.3",
  "thiserror",
 ]
@@ -4860,7 +4854,7 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-path-derivation",
  "chain-time",
- "cryptoxide 0.3.2",
+ "cryptoxide",
  "ed25519-bip32",
  "hdkeygen",
  "hex",

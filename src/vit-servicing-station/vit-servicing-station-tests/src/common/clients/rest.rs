@@ -5,6 +5,7 @@ use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::{
     db::models::{funds::Fund, proposals::Proposal},
     v0::api_token::API_TOKEN_HEADER,
+    v0::endpoints::service_version::ServiceVersion,
 };
 
 #[derive(Debug, Clone)]
@@ -155,6 +156,19 @@ impl RestClient {
             .map_err(RestError::RequestError)
     }
 
+    pub fn service_version(&self) -> Result<ServiceVersion, RestError> {
+        let response = self.service_version_raw()?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.logger.log_text(&content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
+    pub fn service_version_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder.service_version())
+            .map_err(RestError::RequestError)
+    }
+
     pub fn get(&self, path: &str) -> Result<reqwest::blocking::Response, reqwest::Error> {
         self.logger.log_request(path);
         let client = reqwest::blocking::Client::new();
@@ -253,6 +267,10 @@ impl RestPathBuilder {
 
     pub fn health(&self) -> String {
         self.path("health")
+    }
+
+    pub fn service_version(&self) -> String {
+        format!("http://{}{}{}", self.address, "/api/", "service-version")
     }
 
     pub fn path(&self, path: &str) -> String {

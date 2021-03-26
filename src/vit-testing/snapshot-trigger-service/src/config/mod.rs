@@ -42,11 +42,13 @@ impl Configuration {
             .arg("--out-file")
             .arg(output_folder.join("snapshot.json"))
             .arg("--scale")
-            .arg(self.voting_tools.scale.to_string())
-            .arg("--slot-no")
-            .arg(params.slot_no.to_string())
-            .arg("--threshold")
-            .arg(params.threshold.to_string());
+            .arg(self.voting_tools.scale.to_string());
+
+        if let Some(slot_no) = params.slot_no {
+            command.arg("--slot-no").arg(slot_no.to_string());
+        }
+
+        command.arg("--threshold").arg(params.threshold.to_string());
 
         println!("Running command: {:?} ", command);
         command.spawn().map_err(Into::into)

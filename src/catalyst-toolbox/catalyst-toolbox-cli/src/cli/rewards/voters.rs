@@ -47,28 +47,27 @@ fn calculate_stake<'address>(
     (total_stake, stake_per_voter)
 }
 
-fn calculate_reward<'address>(
+/// Rewards are u64 for keeping the it we would calculate the inverse total_stake/voter_stake
+fn calculate_inverse_reward_share<'address>(
     total_stake: u64,
-    total_rewards: u64,
     stake_per_voter: &HashMap<&'address Address, u64>,
 ) -> HashMap<&'address Address, u64> {
     stake_per_voter
         .iter()
-        .map(|(k, v)| {
-            (
-                *k,
-                (v * ADA_TO_LOVELACE_FACTOR)
-                    .div(total_stake)
-                    .mul(total_rewards),
-            )
-        })
+        .map(|(k, v)| (*k, total_stake.div(v)))
         .collect()
+}
+
+/// caculate total reward from the inverse of the the reward share
+fn calculate_total_reward(share: u64, total_reward: u64) -> f64 {
+    1f64.div(share as f64).mul(total_reward as f64)
 }
 
 fn write_rewards_results(
     common: Common,
     stake_per_voter: &HashMap<&Address, u64>,
     results: &HashMap<&Address, u64>,
+    total_rewards: u64,
 ) -> Result<(), Error> {
     let writer = common.open_output()?;
     let header = [
@@ -82,11 +81,18 @@ fn write_rewards_results(
 
     for (address, reward) in results.iter() {
         let stake = stake_per_voter.get(*address).unwrap();
+        let voter_reward = calculate_total_reward(*reward, total_rewards);
         let record = [
             address.to_string(),
             stake.to_string(),
-            reward.div(ADA_TO_LOVELACE_FACTOR).to_string(), // transform lovelace to ADA (// 1000000)
-            reward.to_string(),
+            format!("{:.8}", voter_reward), // transform lovelace to ADA (// 1000000)
+            format!(
+                "{:.2}",
+                voter_reward
+                    .mul(ADA_TO_LOVELACE_FACTOR as f64)
+                    .trunc()
+                    .to_string()
+            ),
         ];
         csv_writer.write_record(&record).map_err(Error::Csv)?;
     }
@@ -116,12 +122,9 @@ impl VotersRewards {
             .collect();
 
         let (total_stake, stake_per_voter) = calculate_stake(&committee_keys, &block0);
-        let rewards = calculate_reward(
-            total_stake * ADA_TO_LOVELACE_FACTOR,
-            total_rewards,
-            &stake_per_voter,
-        );
-        write_rewards_results(common, &stake_per_voter, &rewards)?;
+        let rewards =
+            calculate_inverse_reward_share(total_stake * ADA_TO_LOVELACE_FACTOR, &stake_per_voter);
+        write_rewards_results(common, &stake_per_voter, &rewards, total_rewards)?;
         Ok(())
     }
 }

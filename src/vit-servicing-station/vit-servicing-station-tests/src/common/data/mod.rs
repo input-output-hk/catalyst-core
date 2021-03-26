@@ -1,5 +1,5 @@
 use vit_servicing_station_lib::db::models::{
-    api_tokens::APITokenData, challenges::Challenge, funds::Fund, proposals::FullProposalInfo,
+    api_tokens::ApiTokenData, challenges::Challenge, funds::Fund, proposals::FullProposalInfo,
     voteplans::Voteplan,
 };
 
@@ -12,7 +12,7 @@ pub use generator::{
     ValidVotePlanParameters, ValidVotingTemplateGenerator,
 };
 
-pub fn token() -> (String, APITokenData) {
+pub fn token() -> (String, ApiTokenData) {
     ArbitraryGenerator::new().token()
 }
 

@@ -10,7 +10,7 @@ pub fn malformed_path() {
         .build()
         .assert()
         .failure()
-        .code(ApplicationExitCode::DBConnectionError as i32);
+        .code(ApplicationExitCode::DbConnectionError as i32);
 }
 
 #[test]
@@ -21,5 +21,5 @@ pub fn path_doesnt_exist() {
         .build()
         .assert()
         .failure()
-        .code(ApplicationExitCode::DBConnectionError as i32);
+        .code(ApplicationExitCode::DbConnectionError as i32);
 }

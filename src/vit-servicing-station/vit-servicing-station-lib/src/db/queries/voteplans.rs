@@ -1,13 +1,13 @@
 use crate::db::{
     models::voteplans::Voteplan, schema::voteplans, schema::voteplans::dsl as voteplans_dsl,
-    DBConnection, DBConnectionPool,
+    DbConnection, DbConnectionPool,
 };
 use crate::v0::errors::HandleError;
 use diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 
 pub async fn query_voteplan_by_id(
     id: i32,
-    pool: &DBConnectionPool,
+    pool: &DbConnectionPool,
 ) -> Result<Vec<Voteplan>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
@@ -19,7 +19,7 @@ pub async fn query_voteplan_by_id(
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
 }
 
-pub fn insert_voteplan(voteplan: Voteplan, db_conn: &DBConnection) -> QueryResult<Voteplan> {
+pub fn insert_voteplan(voteplan: Voteplan, db_conn: &DbConnection) -> QueryResult<Voteplan> {
     diesel::insert_into(voteplans::table)
         .values(voteplan.values())
         .execute(db_conn)?;
@@ -31,7 +31,7 @@ pub fn insert_voteplan(voteplan: Voteplan, db_conn: &DBConnection) -> QueryResul
 
 pub fn batch_insert_voteplans(
     voteplans_slice: &[Voteplan],
-    db_conn: &DBConnection,
+    db_conn: &DbConnection,
 ) -> QueryResult<Vec<Voteplan>> {
     let len = voteplans_slice.len();
 

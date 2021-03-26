@@ -8,11 +8,11 @@ use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::sqlite::SqliteConnection;
 use diesel::Connection;
 
-pub type DBConnectionPool = Pool<ConnectionManager<SqliteConnection>>;
+pub type DbConnectionPool = Pool<ConnectionManager<SqliteConnection>>;
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 // TODO: Right now this is forced as the current backend. But it should be abstracted so it works for any diesel::Backend
-type DB = diesel::sqlite::Sqlite;
-pub type DBConnection = SqliteConnection;
+type Db = diesel::sqlite::Sqlite;
+pub type DbConnection = SqliteConnection;
 
 // ⚠ WARNING ⚠ : This query is sqlite specific, would need to be changed if backend changes
 const TEST_CONN_QUERY: &str = "
@@ -25,7 +25,7 @@ WHERE
     name NOT LIKE 'sqlite_%';
 ";
 
-pub fn load_db_connection_pool(db_url: &str) -> Result<DBConnectionPool, Error> {
+pub fn load_db_connection_pool(db_url: &str) -> Result<DbConnectionPool, Error> {
     let manager = ConnectionManager::<SqliteConnection>::new(db_url);
     let pool = Pool::builder().build(manager)?;
 

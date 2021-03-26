@@ -4,12 +4,12 @@ use crate::db::{
         challenges::dsl as challenges_dsl, funds, funds::dsl as fund_dsl,
         voteplans::dsl as voteplans_dsl,
     },
-    DBConnection, DBConnectionPool,
+    DbConnection, DbConnectionPool,
 };
 use crate::v0::errors::HandleError;
 use diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 
-pub async fn query_fund_by_id(id: i32, pool: &DBConnectionPool) -> Result<Fund, HandleError> {
+pub async fn query_fund_by_id(id: i32, pool: &DbConnectionPool) -> Result<Fund, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         let query_results = (
@@ -40,7 +40,7 @@ pub async fn query_fund_by_id(id: i32, pool: &DBConnectionPool) -> Result<Fund, 
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
 }
 
-pub async fn query_fund(pool: &DBConnectionPool) -> Result<Fund, HandleError> {
+pub async fn query_fund(pool: &DbConnectionPool) -> Result<Fund, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         let fund = fund_dsl::funds
@@ -77,7 +77,7 @@ pub async fn query_fund(pool: &DBConnectionPool) -> Result<Fund, HandleError> {
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))??
 }
 
-pub async fn query_all_funds(pool: &DBConnectionPool) -> Result<Vec<Fund>, HandleError> {
+pub async fn query_all_funds(pool: &DbConnectionPool) -> Result<Vec<Fund>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         fund_dsl::funds
@@ -88,7 +88,7 @@ pub async fn query_all_funds(pool: &DBConnectionPool) -> Result<Vec<Fund>, Handl
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
 }
 
-pub fn insert_fund(fund: Fund, db_conn: &DBConnection) -> QueryResult<Fund> {
+pub fn insert_fund(fund: Fund, db_conn: &DbConnection) -> QueryResult<Fund> {
     diesel::insert_into(funds::table)
         .values(fund.values())
         .execute(db_conn)?;

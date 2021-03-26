@@ -24,7 +24,7 @@ pub fn no_in_settings_provided() {
         .build()
         .assert()
         .failure()
-        .code(ApplicationExitCode::DBConnectionError as i32);
+        .code(ApplicationExitCode::DbConnectionError as i32);
 }
 
 #[test]
@@ -105,6 +105,6 @@ pub fn db_url_and_block0_replaced() -> Result<(), Box<dyn std::error::Error>> {
         .build()
         .assert()
         .failure()
-        .code(ApplicationExitCode::DBConnectionError as i32);
+        .code(ApplicationExitCode::DbConnectionError as i32);
     Ok(())
 }

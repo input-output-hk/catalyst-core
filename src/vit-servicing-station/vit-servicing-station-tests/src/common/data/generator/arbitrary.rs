@@ -2,14 +2,14 @@ use crate::common::data::Snapshot;
 use chrono::{offset::Utc, Duration};
 use vit_servicing_station_lib::{
     db::models::{
-        api_tokens::APITokenData,
+        api_tokens::ApiTokenData,
         challenges::Challenge,
         funds::Fund,
         proposals::{Category, ChallengeType, Proposal, Proposer},
         vote_options::VoteOptions,
         voteplans::Voteplan,
     },
-    v0::api_token::APIToken,
+    v0::api_token::ApiToken,
 };
 
 use fake::{
@@ -65,13 +65,13 @@ impl ArbitraryGenerator {
         self.id_generator.next_u32() as i32
     }
 
-    pub fn token(&mut self) -> (String, APITokenData) {
+    pub fn token(&mut self) -> (String, ApiTokenData) {
         let data = self.bytes().to_vec();
         let token_creation_time = Utc::now() - Duration::days(1);
         let toket_expiry_time = Utc::now() + Duration::days(1);
 
-        let token_data = APITokenData {
-            token: APIToken::new(data.clone()),
+        let token_data = ApiTokenData {
+            token: ApiToken::new(data.clone()),
             creation_time: token_creation_time.timestamp(),
             expire_time: toket_expiry_time.timestamp(),
         };
@@ -81,7 +81,7 @@ impl ArbitraryGenerator {
         )
     }
 
-    pub fn tokens(&mut self) -> HashMap<String, APITokenData> {
+    pub fn tokens(&mut self) -> HashMap<String, ApiTokenData> {
         let size = self.random_size() % 10 + 2;
         iter::from_fn(|| Some(self.token())).take(size).collect()
     }

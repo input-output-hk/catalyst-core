@@ -1,6 +1,6 @@
 use super::vote_options;
 use crate::db::models::vote_options::VoteOptions;
-use crate::db::{schema::proposals, views_schema::full_proposals_info, DB};
+use crate::db::{schema::proposals, views_schema::full_proposals_info, Db};
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 use std::convert::{TryFrom, TryInto};
@@ -227,7 +227,7 @@ type FullProposalsInfoRow = (
     Option<String>,
 );
 
-impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
+impl Queryable<full_proposals_info::SqlType, Db> for Proposal {
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
@@ -267,7 +267,7 @@ impl Queryable<full_proposals_info::SqlType, DB> for Proposal {
     }
 }
 
-impl Queryable<full_proposals_info::SqlType, DB> for FullProposalInfo {
+impl Queryable<full_proposals_info::SqlType, Db> for FullProposalInfo {
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
@@ -384,7 +384,7 @@ pub mod test {
         schema::{
             proposal_community_choice_challenge, proposal_simple_challenge, proposals, voteplans,
         },
-        DBConnectionPool,
+        DbConnectionPool,
     };
     use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
@@ -440,7 +440,7 @@ pub mod test {
         }
     }
 
-    pub fn populate_db_with_proposal(full_proposal: &FullProposalInfo, pool: &DBConnectionPool) {
+    pub fn populate_db_with_proposal(full_proposal: &FullProposalInfo, pool: &DbConnectionPool) {
         let connection = pool.get().unwrap();
         let proposal = &full_proposal.proposal;
         // insert the proposal information

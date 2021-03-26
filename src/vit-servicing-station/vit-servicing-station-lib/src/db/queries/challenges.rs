@@ -3,13 +3,13 @@ use crate::{
         models::{challenges::Challenge, proposals::Proposal},
         schema::challenges::{self, dsl as challenges_dsl},
         views_schema::full_proposals_info::dsl as proposals_dsl,
-        DBConnection, DBConnectionPool,
+        DbConnection, DbConnectionPool,
     },
     v0::errors::HandleError,
 };
 use diesel::{ExpressionMethods, Insertable, QueryResult, RunQueryDsl};
 
-pub async fn query_all_challenges(pool: &DBConnectionPool) -> Result<Vec<Challenge>, HandleError> {
+pub async fn query_all_challenges(pool: &DbConnectionPool) -> Result<Vec<Challenge>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
         challenges_dsl::challenges
@@ -22,7 +22,7 @@ pub async fn query_all_challenges(pool: &DBConnectionPool) -> Result<Vec<Challen
 
 pub async fn query_challenge_by_id(
     id: i32,
-    pool: &DBConnectionPool,
+    pool: &DbConnectionPool,
 ) -> Result<Challenge, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
@@ -36,7 +36,7 @@ pub async fn query_challenge_by_id(
 
 pub async fn query_challenges_by_fund_id(
     fund_id: i32,
-    pool: &DBConnectionPool,
+    pool: &DbConnectionPool,
 ) -> Result<Vec<Challenge>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
@@ -53,7 +53,7 @@ pub async fn query_challenges_by_fund_id(
 
 pub async fn query_challenge_proposals_by_id(
     id: i32,
-    pool: &DBConnectionPool,
+    pool: &DbConnectionPool,
 ) -> Result<Vec<Proposal>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
@@ -70,7 +70,7 @@ pub async fn query_challenge_proposals_by_id(
 
 pub fn batch_insert_challenges(
     challenges_slice: &[Challenge],
-    db_conn: &DBConnection,
+    db_conn: &DbConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(challenges::table)
         .values(

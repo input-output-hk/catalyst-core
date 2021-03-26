@@ -14,7 +14,7 @@ use vit_servicing_station_lib::db::{
 };
 
 #[derive(Debug, PartialEq, StructOpt)]
-pub enum CSVDataCmd {
+pub enum CsvDataCmd {
     /// Load Funds, Voteplans and Proposals information into a SQLite3 ready file DB.
     Load {
         /// URL of the vit-servicing-station database to interact with
@@ -39,7 +39,7 @@ pub enum CSVDataCmd {
     },
 }
 
-impl CSVDataCmd {
+impl CsvDataCmd {
     fn load_from_csv<T: DeserializeOwned>(csv_path: &str) -> io::Result<Vec<T>> {
         let mut reader = csv::ReaderBuilder::new()
             .flexible(true)
@@ -73,7 +73,7 @@ impl CSVDataCmd {
         challenges_path: &str,
     ) -> io::Result<()> {
         db_file_exists(db_url)?;
-        let funds = CSVDataCmd::load_from_csv::<Fund>(funds_path)?;
+        let funds = CsvDataCmd::load_from_csv::<Fund>(funds_path)?;
         if funds.len() != 1 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
@@ -83,13 +83,13 @@ impl CSVDataCmd {
                 ),
             ));
         }
-        let mut voteplans = CSVDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;
+        let mut voteplans = CsvDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;
         let mut challenges: HashMap<i32, Challenge> =
-            CSVDataCmd::load_from_csv::<Challenge>(challenges_path)?
+            CsvDataCmd::load_from_csv::<Challenge>(challenges_path)?
                 .into_iter()
                 .map(|c| (c.id, c))
                 .collect();
-        let csv_proposals = CSVDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?;
+        let csv_proposals = CsvDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?;
         let mut proposals: Vec<Proposal> = Vec::new();
         let mut simple_proposals_data: Vec<simple::ChallengeSqlValues> = Vec::new();
         let mut community_proposals_data: Vec<community_choice::ChallengeSqlValues> = Vec::new();
@@ -199,12 +199,12 @@ impl CSVDataCmd {
     }
 }
 
-impl ExecTask for CSVDataCmd {
+impl ExecTask for CsvDataCmd {
     type ResultValue = ();
 
     fn exec(&self) -> std::io::Result<()> {
         match self {
-            CSVDataCmd::Load {
+            CsvDataCmd::Load {
                 db_url,
                 funds,
                 voteplans,

@@ -1,4 +1,4 @@
-use crate::db::{queries::api_tokens as api_tokens_queries, DBConnectionPool};
+use crate::db::{queries::api_tokens as api_tokens_queries, DbConnectionPool};
 use crate::v0::{context::SharedContext, errors::HandleError};
 use warp::{Filter, Rejection};
 
@@ -7,40 +7,40 @@ pub const API_TOKEN_HEADER: &str = "API-Token";
 
 /// API Token wrapper type
 #[derive(PartialEq, Eq, Debug, Clone)]
-pub struct APIToken(Vec<u8>);
+pub struct ApiToken(Vec<u8>);
 
 /// API token manager is an abstraction on the API tokens for the service
 /// The main idea is to keep the service agnostic of what kind of backend we are using such task.
 /// Right now we rely on a SQLlite connection. But in the future it maybe be something else like a
 /// REDIS, or some other hybrid system.
-pub struct APITokenManager {
-    connection_pool: DBConnectionPool,
+pub struct ApiTokenManager {
+    connection_pool: DbConnectionPool,
 }
 
-impl From<&[u8]> for APIToken {
+impl From<&[u8]> for ApiToken {
     fn from(data: &[u8]) -> Self {
         Self(data.to_vec())
     }
 }
 
-impl AsRef<[u8]> for APIToken {
+impl AsRef<[u8]> for ApiToken {
     fn as_ref(&self) -> &[u8] {
         self.0.as_slice()
     }
 }
 
-impl APIToken {
+impl ApiToken {
     pub fn new(data: Vec<u8>) -> Self {
         Self(data)
     }
 }
 
-impl APITokenManager {
-    fn new(connection_pool: DBConnectionPool) -> Self {
+impl ApiTokenManager {
+    fn new(connection_pool: DbConnectionPool) -> Self {
         Self { connection_pool }
     }
 
-    async fn is_token_valid(&self, token: APIToken) -> Result<bool, HandleError> {
+    async fn is_token_valid(&self, token: ApiToken) -> Result<bool, HandleError> {
         match api_tokens_queries::query_token(token, &self.connection_pool).await {
             Ok(Some(_)) => Ok(true),
             Ok(None) => Ok(false),
@@ -52,13 +52,13 @@ impl APITokenManager {
     }
 
     #[allow(dead_code)]
-    async fn revoke_token(&self, _token: APIToken) -> Result<(), ()> {
+    async fn revoke_token(&self, _token: ApiToken) -> Result<(), ()> {
         Ok(())
     }
 }
 
 async fn authorize_token(token: String, context: SharedContext) -> Result<(), Rejection> {
-    let manager = APITokenManager::new(context.read().await.db_connection_pool.clone());
+    let manager = ApiTokenManager::new(context.read().await.db_connection_pool.clone());
 
     let mut token_vec: Vec<u8> = Vec::new();
     base64::decode_config_buf(token.clone(), base64::URL_SAFE, &mut token_vec).map_err(|_err| {
@@ -68,7 +68,7 @@ async fn authorize_token(token: String, context: SharedContext) -> Result<(), Re
         ))
     })?;
 
-    let api_token = APIToken(token_vec);
+    let api_token = ApiToken(token_vec);
 
     match manager.is_token_valid(api_token).await {
         Ok(true) => Ok(()),
@@ -101,17 +101,17 @@ pub async fn api_token_filter(
 mod test {
     use crate::db::{
         migrations as db_testing, models::api_tokens as api_token_model,
-        models::api_tokens::APITokenData, schema::api_tokens, DBConnectionPool,
+        models::api_tokens::ApiTokenData, schema::api_tokens, DbConnectionPool,
     };
-    use crate::v0::api_token::{api_token_filter, APIToken, API_TOKEN_HEADER};
+    use crate::v0::api_token::{api_token_filter, ApiToken, API_TOKEN_HEADER};
     use crate::v0::context::test::new_in_memmory_db_test_shared_context;
     use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
 
-    pub fn get_testing_token() -> (api_token_model::APITokenData, String) {
+    pub fn get_testing_token() -> (api_token_model::ApiTokenData, String) {
         let data = b"ffffffffffffffffffffffffffffffff".to_vec();
-        let token_data = APITokenData {
-            token: APIToken(data.clone()),
+        let token_data = ApiTokenData {
+            token: ApiToken(data.clone()),
             creation_time: Utc::now().timestamp(),
             expire_time: Utc::now().timestamp(),
         };
@@ -121,7 +121,7 @@ mod test {
         )
     }
 
-    pub fn insert_token_to_db(token: APITokenData, db: &DBConnectionPool) {
+    pub fn insert_token_to_db(token: ApiTokenData, db: &DbConnectionPool) {
         let conn = db.get().unwrap();
         let values = (
             api_tokens::dsl::token.eq(token.token.0.clone()),

@@ -1,27 +1,27 @@
-use crate::api_token::APITokenCmd;
-use crate::csv::loaders::CSVDataCmd;
-use crate::init_db::DB;
+use crate::api_token::ApiTokenCmd;
+use crate::csv::loaders::CsvDataCmd;
+use crate::init_db::Db;
 use crate::task::ExecTask;
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
-pub enum CLIApp {
+pub enum CliApp {
     /// API token related operations
-    APIToken(APITokenCmd),
+    ApiToken(ApiTokenCmd),
     /// CSV data loaders
-    CSVData(CSVDataCmd),
+    CsvData(CsvDataCmd),
     /// DB related operations
-    DB(DB),
+    Db(Db),
 }
 
-impl ExecTask for CLIApp {
+impl ExecTask for CliApp {
     type ResultValue = ();
 
     fn exec(&self) -> std::io::Result<Self::ResultValue> {
         match self {
-            CLIApp::APIToken(api_token) => api_token.exec(),
-            CLIApp::CSVData(csv_data) => csv_data.exec(),
-            CLIApp::DB(db_cmd) => db_cmd.exec(),
+            CliApp::ApiToken(api_token) => api_token.exec(),
+            CliApp::CsvData(csv_data) => csv_data.exec(),
+            CliApp::Db(db_cmd) => db_cmd.exec(),
         }
     }
 }

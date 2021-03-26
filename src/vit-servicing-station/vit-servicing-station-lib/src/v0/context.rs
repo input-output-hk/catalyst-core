@@ -6,7 +6,7 @@ pub type SharedContext = Arc<RwLock<Context>>;
 
 #[derive(Clone)]
 pub struct Context {
-    pub db_connection_pool: db::DBConnectionPool,
+    pub db_connection_pool: db::DbConnectionPool,
     pub block0_path: String,
     pub block0: Vec<u8>,
     pub versioning: String,
@@ -14,7 +14,7 @@ pub struct Context {
 
 impl Context {
     pub fn new(
-        db_connection_pool: db::DBConnectionPool,
+        db_connection_pool: db::DbConnectionPool,
         block0_path: &str,
         block0: Vec<u8>,
         versioning: String,
@@ -29,7 +29,7 @@ impl Context {
 }
 
 pub fn new_shared_context(
-    db_connection_pool: db::DBConnectionPool,
+    db_connection_pool: db::DbConnectionPool,
     block0_path: &str,
     versioning: String,
 ) -> SharedContext {

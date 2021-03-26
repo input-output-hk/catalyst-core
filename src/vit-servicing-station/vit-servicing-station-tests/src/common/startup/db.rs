@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::{
-    api_tokens::APITokenData, challenges::Challenge, funds::Fund,
+    api_tokens::ApiTokenData, challenges::Challenge, funds::Fund,
 };
 
 use crate::common::{
@@ -18,7 +18,7 @@ use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 pub struct DbBuilder {
     migrations_folder: Option<PathBuf>,
-    tokens: Option<Vec<APITokenData>>,
+    tokens: Option<Vec<ApiTokenData>>,
     proposals: Option<Vec<FullProposalInfo>>,
     funds: Option<Vec<Fund>>,
     challenges: Option<Vec<Challenge>>,
@@ -35,12 +35,12 @@ impl DbBuilder {
         }
     }
 
-    pub fn with_tokens(&mut self, tokens: Vec<APITokenData>) -> &mut Self {
+    pub fn with_tokens(&mut self, tokens: Vec<ApiTokenData>) -> &mut Self {
         self.tokens = Some(tokens);
         self
     }
 
-    pub fn with_token(&mut self, token: APITokenData) -> &mut Self {
+    pub fn with_token(&mut self, token: ApiTokenData) -> &mut Self {
         self.with_tokens(vec![token]);
         self
     }
@@ -81,7 +81,7 @@ impl DbBuilder {
     fn do_migration(
         &self,
         connection: &SqliteConnection,
-        migration_folder: &PathBuf,
+        migration_folder: &Path,
     ) -> Result<(), DbBuilderError> {
         let stdout = io::stdout();
         let mut handle = stdout.lock();

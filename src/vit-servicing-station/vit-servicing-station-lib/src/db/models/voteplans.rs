@@ -56,7 +56,7 @@ impl Insertable<voteplans::table> for Voteplan {
 
 #[cfg(test)]
 pub mod test {
-    use crate::db::{models::voteplans::Voteplan, schema::voteplans, DBConnectionPool};
+    use crate::db::{models::voteplans::Voteplan, schema::voteplans, DbConnectionPool};
 
     use chrono::Utc;
     use diesel::{ExpressionMethods, RunQueryDsl};
@@ -74,7 +74,7 @@ pub mod test {
         }
     }
 
-    pub fn populate_db_with_voteplan(voteplan: &Voteplan, pool: &DBConnectionPool) {
+    pub fn populate_db_with_voteplan(voteplan: &Voteplan, pool: &DbConnectionPool) {
         let connection = pool.get().unwrap();
         let values = (
             voteplans::chain_voteplan_id.eq(voteplan.chain_voteplan_id.clone()),

@@ -6,7 +6,7 @@ use vit_servicing_station_lib::db::{
 };
 
 #[derive(Debug, PartialEq, StructOpt)]
-pub enum DB {
+pub enum Db {
     /// Initialize a DB with the proper migrations, DB file is created if not exists.
     Init {
         /// URL of the vit-servicing-station database to interact with
@@ -15,7 +15,7 @@ pub enum DB {
     },
 }
 
-impl DB {
+impl Db {
     fn init_with_migrations(db_url: &str) -> io::Result<()> {
         let pool = load_db_connection_pool(db_url)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;
@@ -27,12 +27,12 @@ impl DB {
     }
 }
 
-impl ExecTask for DB {
+impl ExecTask for Db {
     type ResultValue = ();
 
     fn exec(&self) -> io::Result<Self::ResultValue> {
         match self {
-            DB::Init { db_url } => DB::init_with_migrations(db_url),
+            Db::Init { db_url } => Db::init_with_migrations(db_url),
         }
     }
 }

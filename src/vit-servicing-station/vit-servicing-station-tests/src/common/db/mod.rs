@@ -4,7 +4,7 @@ use diesel::SqliteConnection;
 use thiserror::Error;
 use vit_servicing_station_lib::db::{
     models::{
-        api_tokens::APITokenData,
+        api_tokens::ApiTokenData,
         challenges::Challenge,
         funds::Fund,
         proposals::{FullProposalInfo, ProposalChallengeInfo},
@@ -24,7 +24,7 @@ impl<'a> DbInserter<'a> {
         Self { connection }
     }
 
-    pub fn insert_token(&self, token_data: &APITokenData) -> Result<(), DbInserterError> {
+    pub fn insert_token(&self, token_data: &ApiTokenData) -> Result<(), DbInserterError> {
         let values = (
             api_tokens::dsl::token.eq(token_data.token.as_ref()),
             api_tokens::dsl::creation_time.eq(token_data.creation_time),
@@ -39,7 +39,7 @@ impl<'a> DbInserter<'a> {
         Ok(())
     }
 
-    pub fn insert_tokens(&self, tokens_data: &[APITokenData]) -> Result<(), DbInserterError> {
+    pub fn insert_tokens(&self, tokens_data: &[ApiTokenData]) -> Result<(), DbInserterError> {
         for token_data in tokens_data {
             self.insert_token(token_data)?;
         }

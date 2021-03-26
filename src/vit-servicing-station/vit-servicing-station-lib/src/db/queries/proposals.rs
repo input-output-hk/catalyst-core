@@ -7,14 +7,14 @@ use crate::db::{
     },
     views_schema::full_proposals_info::dsl as full_proposal_dsl,
     views_schema::full_proposals_info::dsl::full_proposals_info,
-    DBConnection, DBConnectionPool,
+    DbConnection, DbConnectionPool,
 };
 use crate::v0::errors::HandleError;
 use diesel::query_dsl::filter_dsl::FilterDsl;
 use diesel::{ExpressionMethods, Insertable, QueryResult, RunQueryDsl};
 
 pub async fn query_all_proposals(
-    pool: &DBConnectionPool,
+    pool: &DbConnectionPool,
 ) -> Result<Vec<FullProposalInfo>, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
@@ -28,7 +28,7 @@ pub async fn query_all_proposals(
 
 pub async fn query_proposal_by_id(
     id: i32,
-    pool: &DBConnectionPool,
+    pool: &DbConnectionPool,
 ) -> Result<FullProposalInfo, HandleError> {
     let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
     tokio::task::spawn_blocking(move || {
@@ -41,7 +41,7 @@ pub async fn query_proposal_by_id(
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
 }
 
-pub fn insert_proposal(proposal: Proposal, db_conn: &DBConnection) -> QueryResult<usize> {
+pub fn insert_proposal(proposal: Proposal, db_conn: &DbConnection) -> QueryResult<usize> {
     diesel::insert_into(proposals::table)
         .values(proposal.values())
         .execute(db_conn)
@@ -49,7 +49,7 @@ pub fn insert_proposal(proposal: Proposal, db_conn: &DBConnection) -> QueryResul
 
 pub fn batch_insert_proposals(
     proposals_slice: &[Proposal],
-    db_conn: &DBConnection,
+    db_conn: &DbConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(proposals::table)
         .values(
@@ -64,7 +64,7 @@ pub fn batch_insert_proposals(
 
 pub fn batch_insert_community_choice_challenge_data(
     values: &[community_choice::ChallengeSqlValues],
-    db_conn: &DBConnection,
+    db_conn: &DbConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(community_choice_proposal_dsl::table)
         .values(values)
@@ -73,7 +73,7 @@ pub fn batch_insert_community_choice_challenge_data(
 
 pub fn batch_insert_simple_challenge_data(
     values: &[simple::ChallengeSqlValues],
-    db_conn: &DBConnection,
+    db_conn: &DbConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(simple_proposal_dsl::table)
         .values(values)

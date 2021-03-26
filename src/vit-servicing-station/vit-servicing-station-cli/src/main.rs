@@ -10,7 +10,7 @@ use structopt::StructOpt;
 use task::ExecTask;
 
 fn main() {
-    let app = CLIApp::from_args();
+    let app = CliApp::from_args();
     match app.exec() {
         Ok(()) => (),
         Err(e) => {

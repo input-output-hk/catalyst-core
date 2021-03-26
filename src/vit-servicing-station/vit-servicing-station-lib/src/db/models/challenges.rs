@@ -1,5 +1,5 @@
 use crate::db::models::proposals::ChallengeType;
-use crate::db::{schema::challenges, DB};
+use crate::db::{schema::challenges, Db};
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
@@ -18,7 +18,7 @@ pub struct Challenge {
     pub challenge_url: String,
 }
 
-impl Queryable<challenges::SqlType, DB> for Challenge {
+impl Queryable<challenges::SqlType, Db> for Challenge {
     type Row = (
         // 0 -> id
         i32,
@@ -77,7 +77,7 @@ impl Insertable<challenges::table> for Challenge {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use crate::db::DBConnectionPool;
+    use crate::db::DbConnectionPool;
     use diesel::{ExpressionMethods, RunQueryDsl};
 
     pub fn get_test_challenge_with_fund_id(fund_id: i32) -> Challenge {
@@ -94,7 +94,7 @@ pub mod test {
         }
     }
 
-    pub fn populate_db_with_challenge(challenge: &Challenge, pool: &DBConnectionPool) {
+    pub fn populate_db_with_challenge(challenge: &Challenge, pool: &DbConnectionPool) {
         let connection = pool.get().unwrap();
 
         let values = (

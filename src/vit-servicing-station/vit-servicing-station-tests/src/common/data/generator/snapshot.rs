@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
-    api_tokens::APITokenData, challenges::Challenge, funds::Fund, voteplans::Voteplan,
+    api_tokens::ApiTokenData, challenges::Challenge, funds::Fund, voteplans::Voteplan,
 };
 
 #[derive(Debug, Clone)]
@@ -9,7 +9,7 @@ pub struct Snapshot {
     funds: Vec<Fund>,
     proposals: Vec<FullProposalInfo>,
     challenges: Vec<Challenge>,
-    tokens: HashMap<String, APITokenData>,
+    tokens: HashMap<String, ApiTokenData>,
     voteplans: Vec<Voteplan>,
 }
 
@@ -18,7 +18,7 @@ impl Snapshot {
         funds: Vec<Fund>,
         proposals: Vec<FullProposalInfo>,
         challenges: Vec<Challenge>,
-        tokens: HashMap<String, APITokenData>,
+        tokens: HashMap<String, ApiTokenData>,
         voteplans: Vec<Voteplan>,
     ) -> Self {
         Self {
@@ -38,7 +38,7 @@ impl Snapshot {
         self.proposals.clone()
     }
 
-    pub fn tokens(&self) -> HashMap<String, APITokenData> {
+    pub fn tokens(&self) -> HashMap<String, ApiTokenData> {
         self.tokens.clone()
     }
 
@@ -68,7 +68,7 @@ impl Snapshot {
         self.funds.iter().find(|x| x.id == id)
     }
 
-    pub fn any_token(&self) -> (String, APITokenData) {
+    pub fn any_token(&self) -> (String, ApiTokenData) {
         let (hash, token) = self.tokens.iter().next().clone().unwrap();
         (hash.to_string(), token.clone())
     }

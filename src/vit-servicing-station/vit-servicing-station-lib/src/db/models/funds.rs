@@ -1,7 +1,7 @@
 use crate::db::{
     models::{challenges::Challenge, voteplans::Voteplan},
     schema::funds,
-    DB,
+    Db,
 };
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
@@ -38,7 +38,7 @@ pub struct Fund {
     pub challenges: Vec<Challenge>,
 }
 
-impl Queryable<funds::SqlType, DB> for Fund {
+impl Queryable<funds::SqlType, Db> for Fund {
     type Row = (
         // 0 -> id
         i32,
@@ -121,7 +121,7 @@ pub mod test {
             voteplans::test as voteplans_testing,
         },
         schema::funds,
-        DBConnectionPool,
+        DbConnectionPool,
     };
 
     use chrono::Utc;
@@ -144,7 +144,7 @@ pub mod test {
         }
     }
 
-    pub fn populate_db_with_fund(fund: &Fund, pool: &DBConnectionPool) {
+    pub fn populate_db_with_fund(fund: &Fund, pool: &DbConnectionPool) {
         let values = (
             funds::id.eq(fund.id),
             funds::fund_name.eq(fund.fund_name.clone()),

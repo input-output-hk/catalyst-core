@@ -1,4 +1,5 @@
 use crate::common::startup::get_exe;
+use std::path::Path;
 use std::{path::PathBuf, process::Command};
 
 /// In order to test robustness of server bootstrapper we need to be able
@@ -59,8 +60,8 @@ impl BootstrapCommandBuilder {
         self
     }
 
-    pub fn cert_file(&mut self, cert_file: &PathBuf) -> &mut Self {
-        self.cert_file = Some(cert_file.clone());
+    pub fn cert_file(&mut self, cert_file: &Path) -> &mut Self {
+        self.cert_file = Some(cert_file.to_path_buf());
         self
     }
 
@@ -74,26 +75,26 @@ impl BootstrapCommandBuilder {
         self
     }
 
-    pub fn in_settings_file(&mut self, in_settings_file: &PathBuf) -> &mut Self {
-        self.in_settings_file = Some(in_settings_file.clone());
+    pub fn in_settings_file(&mut self, in_settings_file: &Path) -> &mut Self {
+        self.in_settings_file = Some(in_settings_file.to_path_buf());
         self
     }
     pub fn max_age_secs(&mut self, max_age_secs: u32) -> &mut Self {
         self.max_age_secs = Some(max_age_secs);
         self
     }
-    pub fn out_settings_file(&mut self, out_settings_file: &PathBuf) -> &mut Self {
-        self.out_settings_file = Some(out_settings_file.clone());
+    pub fn out_settings_file(&mut self, out_settings_file: &Path) -> &mut Self {
+        self.out_settings_file = Some(out_settings_file.to_path_buf());
         self
     }
 
-    pub fn priv_key_file(&mut self, priv_key_file: &PathBuf) -> &mut Self {
-        self.priv_key_file = Some(priv_key_file.clone());
+    pub fn priv_key_file(&mut self, priv_key_file: &Path) -> &mut Self {
+        self.priv_key_file = Some(priv_key_file.to_path_buf());
         self
     }
 
-    pub fn log_file(&mut self, log_file: &PathBuf) -> &mut Self {
-        self.log_file = Some(log_file.clone());
+    pub fn log_file(&mut self, log_file: &Path) -> &mut Self {
+        self.log_file = Some(log_file.to_path_buf());
         self
     }
 

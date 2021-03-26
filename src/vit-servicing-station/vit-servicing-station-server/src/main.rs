@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
 use tracing::{error, info};
@@ -11,7 +11,7 @@ use vit_servicing_station_lib::{
     v0,
 };
 
-fn check_and_build_proper_path(path: &PathBuf) -> std::io::Result<()> {
+fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
     use std::fs;
     // create parent dirs if not exists
     fs::create_dir_all(path.parent().ok_or_else(|| {
@@ -109,12 +109,12 @@ async fn main() {
     // Check db file exists (should be here only for current sqlite db backend)
     if !std::path::Path::new(&settings.db_url).exists() {
         error!("DB file {} not found.", &settings.db_url);
-        std::process::exit(ApplicationExitCode::DBConnectionError.into())
+        std::process::exit(ApplicationExitCode::DbConnectionError.into())
     }
     // load db pool
     let db_pool = db::load_db_connection_pool(&settings.db_url).unwrap_or_else(|e| {
         error!("Error connecting to database: {}", e);
-        std::process::exit(ApplicationExitCode::DBConnectionError.into())
+        std::process::exit(ApplicationExitCode::DbConnectionError.into())
     });
 
     // load versioning env variable

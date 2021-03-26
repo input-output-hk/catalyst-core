@@ -119,11 +119,11 @@ impl CsvConverter {
         path: P,
     ) -> Result<(), Error> {
         let mut csv_loader: CsvFileBuilder = CsvFileBuilder::from_path(path);
-        Ok(csv_loader
+        csv_loader
             .with_header(headers)
             .with_contents(content)
             .build()
-            .map_err(|e| Error::CannotBuildCsvWithFunds(e.to_string()))?)
+            .map_err(|e| Error::CannotBuildCsvWithFunds(e.to_string()))
     }
 }
 

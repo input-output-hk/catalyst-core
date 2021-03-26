@@ -2,7 +2,7 @@
 pub enum ApplicationExitCode {
     WriteSettingsError = 10,
     LoadSettingsError,
-    DBConnectionError,
+    DbConnectionError,
     ServiceVersionError,
 }
 
@@ -14,15 +14,15 @@ impl ApplicationExitCode {
         match n {
             10 => Some(Self::WriteSettingsError),
             11 => Some(Self::LoadSettingsError),
-            12 => Some(Self::DBConnectionError),
+            12 => Some(Self::DbConnectionError),
             13 => Some(Self::ServiceVersionError),
             _ => None,
         }
     }
 }
 
-impl Into<i32> for ApplicationExitCode {
-    fn into(self) -> i32 {
-        self as i32
+impl From<ApplicationExitCode> for i32 {
+    fn from(exit_code: ApplicationExitCode) -> Self {
+        exit_code as i32
     }
 }

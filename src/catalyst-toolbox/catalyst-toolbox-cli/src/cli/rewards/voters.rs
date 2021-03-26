@@ -60,7 +60,7 @@ fn calculate_inverse_reward_share<'address>(
 
 /// caculate total reward from the inverse of the the reward share
 fn calculate_total_reward(share: u64, total_reward: u64) -> f64 {
-    1f64.div(share as f64).mul(total_reward as f64)
+    (total_reward as f64).div(share as f64)
 }
 
 fn write_rewards_results(
@@ -72,7 +72,7 @@ fn write_rewards_results(
     let writer = common.open_output()?;
     let header = [
         "Address",
-        "Stake of the voter",
+        "Stake of the voter (ADA)",
         "Reward for the voter (ADA)",
         "Reward for the voter (lovelace)",
     ];
@@ -85,14 +85,8 @@ fn write_rewards_results(
         let record = [
             address.to_string(),
             stake.to_string(),
-            format!("{:.8}", voter_reward), // transform lovelace to ADA (// 1000000)
-            format!(
-                "{:.2}",
-                voter_reward
-                    .mul(ADA_TO_LOVELACE_FACTOR as f64)
-                    .trunc()
-                    .to_string()
-            ),
+            format!("{:.0}", voter_reward.trunc()),
+            format!("{:.4}", voter_reward.mul(ADA_TO_LOVELACE_FACTOR as f64)),
         ];
         csv_writer.write_record(&record).map_err(Error::Csv)?;
     }
@@ -122,8 +116,7 @@ impl VotersRewards {
             .collect();
 
         let (total_stake, stake_per_voter) = calculate_stake(&committee_keys, &block0);
-        let rewards =
-            calculate_inverse_reward_share(total_stake * ADA_TO_LOVELACE_FACTOR, &stake_per_voter);
+        let rewards = calculate_inverse_reward_share(total_stake, &stake_per_voter);
         write_rewards_results(common, &stake_per_voter, &rewards, total_rewards)?;
         Ok(())
     }

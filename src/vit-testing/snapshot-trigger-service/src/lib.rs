@@ -1,4 +1,5 @@
 mod args;
+pub mod client;
 pub mod config;
 mod context;
 pub mod file_lister;

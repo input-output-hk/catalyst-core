@@ -9,11 +9,12 @@ use assert_fs::TempDir;
 use std::path::PathBuf;
 use std::process::Stdio;
 use thiserror::Error;
-use vit_servicing_station_lib::server::settings::LogLevel;
+use vit_servicing_station_lib::server::settings::{LogLevel, VIT_SERVICE_VERSION_ENV_VARIABLE};
 
 pub struct ServerBootstrapper {
     settings_builder: ServerSettingsBuilder,
     allowed_origins: Option<String>,
+    service_version: String,
 }
 
 impl ServerBootstrapper {
@@ -26,6 +27,7 @@ impl ServerBootstrapper {
         Self {
             settings_builder,
             allowed_origins: None,
+            service_version: Default::default(),
         }
     }
 
@@ -59,6 +61,11 @@ impl ServerBootstrapper {
         self
     }
 
+    pub fn with_service_version(&mut self, service_version: String) -> &mut Self {
+        self.service_version = service_version;
+        self
+    }
+
     pub fn start_with_exe(
         &self,
         temp_dir: &TempDir,
@@ -84,6 +91,7 @@ impl ServerBootstrapper {
         }
 
         let mut command = command_builder.build();
+        command.env(VIT_SERVICE_VERSION_ENV_VARIABLE, &self.service_version);
         println!("{:?}", command);
         let child = command.stdout(Stdio::inherit()).spawn()?;
 

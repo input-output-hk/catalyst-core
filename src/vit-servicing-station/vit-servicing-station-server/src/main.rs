@@ -4,8 +4,11 @@ use structopt::StructOpt;
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
 use vit_servicing_station_lib::{
-    db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
-    server::settings::ServiceSettings, v0,
+    db, server,
+    server::exit_codes::ApplicationExitCode,
+    server::settings as server_settings,
+    server::settings::{ServiceSettings, VIT_SERVICE_VERSION_ENV_VARIABLE},
+    v0,
 };
 
 fn check_and_build_proper_path(path: &PathBuf) -> std::io::Result<()> {
@@ -114,7 +117,16 @@ async fn main() {
         std::process::exit(ApplicationExitCode::DBConnectionError.into())
     });
 
-    let context = v0::context::new_shared_context(db_pool, &settings.block0_path);
+    // load versioning env variable
+    let versioning = std::env::var(VIT_SERVICE_VERSION_ENV_VARIABLE).unwrap_or_else(|e| {
+        error!(
+            "Error loading service version variable ({}): {}",
+            VIT_SERVICE_VERSION_ENV_VARIABLE, e
+        );
+        std::process::exit(ApplicationExitCode::ServiceVersionError.into())
+    });
+
+    let context = v0::context::new_shared_context(db_pool, &settings.block0_path, versioning);
 
     let app = v0::filter(context, settings.enable_api_tokens).await;
 

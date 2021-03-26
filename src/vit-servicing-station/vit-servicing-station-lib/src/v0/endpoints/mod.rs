@@ -3,6 +3,7 @@ mod funds;
 mod genesis;
 mod health;
 mod proposals;
+pub mod service_version;
 
 use crate::v0::context::SharedContext;
 

@@ -133,7 +133,7 @@ if snapshot_service1_checksum != snapshot_service_checksum:
     print('snapshot service checksum mismarch: before {} != after {}'.format(
         snapshot_service_checksum, snapshot_service1_checksum))
     exit(1)
-    if snapshot_cli1_checksum != snapshot_cli_checksum:
+if snapshot_cli1_checksum != snapshot_cli_checksum:
     print('snapshot cli checksum mismarch: before {} != after {}'.format(
         snapshot_cli_checksum, snapshot_cli1_checksum))
     exit(1)

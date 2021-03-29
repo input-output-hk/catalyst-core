@@ -29,9 +29,6 @@ pub struct IapyxProxyCommand {
     #[structopt(short = "b", long = "block0")]
     pub block0_path: PathBuf,
 
-    #[structopt(long = "version")]
-    pub version: String,
-
     #[structopt(long = "cert")]
     pub cert_path: Option<PathBuf>,
 
@@ -45,7 +42,6 @@ impl IapyxProxyCommand {
         let vit_address = self.vit_address.clone();
         let node_address = self.node_address.clone();
         let block0_path = self.block0_path.clone();
-        let version = self.version.clone();
 
         if let Some(cert_path) = &self.cert_path {
             let key_path = self
@@ -68,7 +64,6 @@ impl IapyxProxyCommand {
                 vit_address,
                 node_address,
                 jortestkit::file::get_file_as_byte_vec(&block0_path),
-                version,
             ));
         }
 
@@ -77,7 +72,6 @@ impl IapyxProxyCommand {
             vit_address,
             node_address,
             jortestkit::file::get_file_as_byte_vec(&block0_path),
-            version,
         ))
     }
 }

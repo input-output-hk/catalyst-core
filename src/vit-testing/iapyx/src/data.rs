@@ -182,6 +182,11 @@ impl Into<wallet_core::Proposal> for Proposal {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct ServiceVersion {
+    pub service_version: String,
+}
+
 pub struct SimpleVoteStatus {
     pub chain_proposal_id: String,
     pub proposal_title: String,

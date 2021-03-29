@@ -113,6 +113,12 @@ impl QuickVitBackendSettingsBuilder {
         self.parameters.slots_per_epoch = slots_in_epoch;
         self
     }
+
+    pub fn version(&mut self, version: String) -> &mut Self {
+        self.parameters.version = version;
+        self
+    }
+
     pub fn proposals_count(&mut self, proposals_count: u32) -> &mut Self {
         self.parameters.proposals = proposals_count;
         self
@@ -158,8 +164,9 @@ impl QuickVitBackendSettingsBuilder {
         self.parameters.fund_name.to_string()
     }
 
-    pub fn private(&mut self, private: bool) {
+    pub fn private(&mut self, private: bool) -> &mut Self {
         self.parameters.private = private;
+        self
     }
 
     pub fn recalculate_voting_periods_if_needed(&mut self, block0_date: SecondsSinceUnixEpoch) {
@@ -339,7 +346,7 @@ impl QuickVitBackendSettingsBuilder {
     pub fn build(
         &mut self,
         mut context: ContextChaCha,
-    ) -> Result<(VitController, Controller, ValidVotePlanParameters)> {
+    ) -> Result<(VitController, Controller, ValidVotePlanParameters, String)> {
         let mut builder = VitControllerBuilder::new(&self.title);
 
         builder.set_topology(self.build_topology());
@@ -407,7 +414,12 @@ impl QuickVitBackendSettingsBuilder {
 
         vote_plan_def = controller.vote_plan(&self.fund_name()).unwrap();
         let parameters = self.vote_plan_parameters(vote_plan_def, &controller.settings());
-        Ok((vit_controller, controller, parameters))
+        Ok((
+            vit_controller,
+            controller,
+            parameters,
+            self.parameters.version.clone(),
+        ))
     }
 }
 

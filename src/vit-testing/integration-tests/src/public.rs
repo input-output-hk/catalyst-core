@@ -56,6 +56,7 @@ pub async fn public_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
         &mut template_generator,
         endpoint.to_string(),
         &Protocol::Http,
+        "2.0".to_owned(),
     )
     .unwrap();
 

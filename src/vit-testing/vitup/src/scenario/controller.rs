@@ -113,6 +113,7 @@ impl VitController {
         controller: &mut Controller,
         vote_plan_parameters: ValidVotePlanParameters,
         template_generator: &mut dyn ValidVotingTemplateGenerator,
+        version: String,
     ) -> Result<VitStationController> {
         let (alias, settings) = self
             .vit_settings
@@ -136,6 +137,7 @@ impl VitController {
             settings.clone(),
             &block0_file.as_path(),
             working_directory,
+            &version,
         )
         .unwrap();
         Ok(vit_station.controller())
@@ -182,7 +184,6 @@ impl VitController {
             &node_setting,
             &block0_file.as_path(),
             &working_directory.path(),
-            params.version.version(),
             params.protocol.clone(),
         )
         .unwrap();

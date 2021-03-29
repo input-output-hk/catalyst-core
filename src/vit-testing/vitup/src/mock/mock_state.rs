@@ -44,14 +44,12 @@ impl MockState {
         params: VitStartParameters,
         testing_directory: P,
     ) -> Result<Self, Error> {
-        let version: VitVersion = VitVersion::new(params.version.clone());
-
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
         let context = context(&testing_directory.as_ref().to_path_buf());
         quick_setup.upload_parameters(params);
 
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
-        let (_, controller, vit_parameters) = quick_setup.build(context).unwrap();
+        let (_, controller, vit_parameters, version) = quick_setup.build(context).unwrap();
 
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
         let snapshot = generator.build(&mut template_generator);
@@ -63,12 +61,16 @@ impl MockState {
                 controller.block0_file(),
             )?,
             vit_state: snapshot,
-            version,
+            version: VitVersion::new(version),
         })
     }
 
     pub fn version(&self) -> VitVersion {
         self.version.clone()
+    }
+
+    pub fn set_version(&mut self, version: String) {
+        self.version = VitVersion::new(version);
     }
 
     pub fn vit(&self) -> &Snapshot {

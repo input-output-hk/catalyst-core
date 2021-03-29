@@ -62,7 +62,7 @@ impl SnapshotCommandArgs {
             std::fs::remove_dir_all(&self.output_directory)?;
         }
 
-        let (_, controller, _) = quick_setup.build(context)?;
+        let (_, controller, _, _) = quick_setup.build(context)?;
 
         let result_dir = std::path::Path::new(&self.output_directory).join(quick_setup.title());
         let genesis_yaml = std::path::Path::new(&result_dir).join("genesis.yaml");

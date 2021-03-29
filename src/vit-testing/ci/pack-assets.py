@@ -85,15 +85,15 @@ else:
     content_type = 'application/gzip'
     archive_name = '{}.tar.gz'.format(archive_basename)
     with tarfile.open(archive_name, 'x:gz') as archive:
-        archive.write(iapyx_cli_path, arcname=iapyx_cli_name)
-        archive.write(iapyx_load_path, arcname=iapyx_load_name)
-        archive.write(iapyx_proxy_path, arcname=iapyx_proxy_name)
-        archive.write(iapyx_qr_path, arcname=iapyx_qr_name)
-        archive.write(vitup_path, arcname=vitup_name)
-        archive.write(vitup_cli_path, arcname=vitup_cli_name)
-        archive.write(snapshot_service_path, arcname=snapshot_service_name)
-        archive.write(snapshot_cli_path, arcname=snapshot_cli_name)
-        archive.write(registration_service_path, arcname=registration_service_name)
+        archive.add(iapyx_cli_path, arcname=iapyx_cli_name)
+        archive.add(iapyx_load_path, arcname=iapyx_load_name)
+        archive.add(iapyx_proxy_path, arcname=iapyx_proxy_name)
+        archive.add(iapyx_qr_path, arcname=iapyx_qr_name)
+        archive.add(vitup_path, arcname=vitup_name)
+        archive.add(vitup_cli_path, arcname=vitup_cli_name)
+        archive.add(snapshot_service_path, arcname=snapshot_service_name)
+        archive.add(snapshot_cli_path, arcname=snapshot_cli_name)
+        archive.add(registration_service_path, arcname=registration_service_name)
 
 # verify archive
 shutil.unpack_archive(archive_name, './unpack-test')

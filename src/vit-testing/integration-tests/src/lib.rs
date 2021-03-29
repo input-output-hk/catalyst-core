@@ -27,7 +27,7 @@ pub enum Error {
 
 #[allow(dead_code)]
 pub enum Vote {
-    BLANK = 0,
-    YES = 1,
-    NO = 2,
+    Blank = 0,
+    Yes = 1,
+    No = 2,
 }

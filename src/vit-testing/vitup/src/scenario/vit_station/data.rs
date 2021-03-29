@@ -1,5 +1,5 @@
 use assert_fs::TempDir;
-use std::path::PathBuf;
+use std::path::Path;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::{
     ValidVotePlanGenerator, ValidVotingTemplateGenerator,
@@ -14,11 +14,7 @@ impl DbGenerator {
         Self { parameters }
     }
 
-    pub fn build(
-        self,
-        db_file: &PathBuf,
-        template_generator: &mut dyn ValidVotingTemplateGenerator,
-    ) {
+    pub fn build(self, db_file: &Path, template_generator: &mut dyn ValidVotingTemplateGenerator) {
         std::fs::File::create(&db_file).unwrap();
 
         let mut generator = ValidVotePlanGenerator::new(self.parameters);

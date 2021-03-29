@@ -21,7 +21,7 @@ pub struct MockState {
     vit_state: Snapshot,
 }
 
-pub fn context(testing_directory: &PathBuf) -> Context {
+pub fn context<P: AsRef<Path>>(testing_directory: P) -> Context {
     let jormungandr = prepare_command(PathBuf::from_str("jormungandr").unwrap());
     let jcli = prepare_command(PathBuf::from_str("jcli").unwrap());
     let seed = Seed::generate(rand::rngs::OsRng);
@@ -32,7 +32,7 @@ pub fn context(testing_directory: &PathBuf) -> Context {
         seed,
         jormungandr,
         jcli,
-        Some(testing_directory.clone()),
+        Some(testing_directory.as_ref().to_path_buf()),
         generate_documentation,
         ProgressBarMode::None,
         log_level,

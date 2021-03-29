@@ -9,7 +9,7 @@ use assert_fs::TempDir;
 use std::path::PathBuf;
 use std::process::Stdio;
 use thiserror::Error;
-use vit_servicing_station_lib::server::settings::{LogLevel, VIT_SERVICE_VERSION_ENV_VARIABLE};
+use vit_servicing_station_lib::server::settings::LogLevel;
 
 pub struct ServerBootstrapper {
     settings_builder: ServerSettingsBuilder,
@@ -80,7 +80,8 @@ impl ServerBootstrapper {
             .db_url(&settings.db_url)
             .log_file(&logger_file)
             .enable_api_tokens(settings.enable_api_tokens)
-            .block0_path(&settings.block0_path);
+            .block0_path(&settings.block0_path)
+            .version(&self.service_version);
 
         if let Some(allowed_origins) = self.allowed_origins.as_ref() {
             command_builder.allowed_origins(allowed_origins);
@@ -91,7 +92,6 @@ impl ServerBootstrapper {
         }
 
         let mut command = command_builder.build();
-        command.env(VIT_SERVICE_VERSION_ENV_VARIABLE, &self.service_version);
         println!("{:?}", command);
         let child = command.stdout(Stdio::inherit()).spawn()?;
 

@@ -44,7 +44,12 @@ impl SnapshotRandomizer {
     pub fn random_proposal_id(&mut self) -> i32 {
         let proposals = self.snapshot.proposals();
         let random_idx = self.random_usize() % proposals.len();
-        proposals.get(random_idx).unwrap().internal_id.clone()
+        proposals
+            .get(random_idx)
+            .unwrap()
+            .proposal
+            .internal_id
+            .clone()
     }
 
     pub fn random_fund_id(&mut self) -> i32 {

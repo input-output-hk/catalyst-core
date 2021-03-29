@@ -16,13 +16,13 @@ use chain_path_derivation::{
 };
 use ed25519_bip32::XPrv;
 use hdkeygen::{
-    rindex::{decode_derivation_path, HDKey},
+    rindex::{decode_derivation_path, HdKey},
     Key,
 };
 
 pub struct Wallet {
     root_key: Key<XPrv, Rindex<rindex::Root>>,
-    payload_key: HDKey,
+    payload_key: HdKey,
     state: States<FragmentId, UtxoStore<Key<XPrv, Rindex<rindex::Address>>>>,
 }
 

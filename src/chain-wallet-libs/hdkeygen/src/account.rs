@@ -15,7 +15,7 @@ use std::{
 };
 
 pub use cryptoxide::ed25519::SEED_LENGTH;
-pub type SEED = [u8; SEED_LENGTH];
+pub type Seed = [u8; SEED_LENGTH];
 
 pub struct Account<K: AsymmetricKey> {
     secret: SecretKey<K>,
@@ -28,7 +28,7 @@ pub struct AccountId {
 }
 
 impl Account<Ed25519> {
-    pub fn from_seed(seed: SEED) -> Self {
+    pub fn from_seed(seed: Seed) -> Self {
         let secret = SecretKey::<Ed25519>::from_binary(&seed).unwrap();
         Account { secret, counter: 0 }
     }
@@ -116,9 +116,9 @@ impl From<[u8; Self::SIZE]> for AccountId {
     }
 }
 
-impl Into<PublicKey<Ed25519>> for AccountId {
-    fn into(self) -> PublicKey<Ed25519> {
-        if let Ok(pk) = PublicKey::from_binary(&self.id) {
+impl From<AccountId> for PublicKey<Ed25519> {
+    fn from(account: AccountId) -> PublicKey<Ed25519> {
+        if let Ok(pk) = PublicKey::from_binary(&account.id) {
             pk
         } else {
             unsafe { std::hint::unreachable_unchecked() }

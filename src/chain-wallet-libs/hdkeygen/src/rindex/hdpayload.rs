@@ -145,15 +145,15 @@ pub fn decode_derivation_path(buf: &[u8]) -> Option<DerivationPath<AnyScheme>> {
 
 /// The key to encrypt and decrypt HD payload
 #[derive(Clone)]
-pub struct HDKey([u8; HDKEY_SIZE]);
-impl HDKey {
+pub struct HdKey([u8; HDKEY_SIZE]);
+impl HdKey {
     /// Create a new `HDKey` from an extended public key
     pub fn new(root_pub: &XPub) -> Self {
         let mut mac = Hmac::new(Sha512::new(), root_pub.as_ref());
         let mut result = [0; HDKEY_SIZE];
         let iters = 500;
-        pbkdf2(&mut mac, &SALT[..], iters, &mut result);
-        HDKey(result)
+        pbkdf2(&mut mac, SALT, iters, &mut result);
+        HdKey(result)
     }
 
     #[cfg(test)]
@@ -179,7 +179,7 @@ impl HDKey {
             return Err(Error::PayloadIsTooLarge(len, MAX_PAYLOAD_SIZE));
         }
 
-        let mut ctx = ChaCha20Poly1305::new(&self.0, &NONCE[..], &[]);
+        let mut ctx = ChaCha20Poly1305::new(&self.0, NONCE, &[]);
 
         let mut out: Vec<u8> = vec![0; len];
 
@@ -190,7 +190,7 @@ impl HDKey {
         }
     }
 }
-impl Drop for HDKey {
+impl Drop for HdKey {
     fn drop(&mut self) {
         secure_memset(&mut self.0, 0)
     }
@@ -237,7 +237,7 @@ mod tests {
         let sk = generate_from_daedalus_seed(&[0; SEED_SIZE]);
         let pk = sk.public();
 
-        let key = HDKey::new(&pk);
+        let key = HdKey::new(&pk);
         let payload = key.encrypt(&bytes);
         assert_eq!(bytes, key.decrypt(&payload).unwrap())
     }
@@ -249,7 +249,7 @@ mod tests {
         let sk = generate_from_daedalus_seed(&[0; SEED_SIZE]);
         let pk = sk.public();
 
-        let key = HDKey::new(&pk);
+        let key = HdKey::new(&pk);
         match key.decrypt(&bytes).unwrap_err() {
             Error::NotEnoughEncryptedData => {}
             err => assert!(
@@ -266,7 +266,7 @@ mod tests {
         let sk = generate_from_daedalus_seed(&[0; SEED_SIZE]);
         let pk = sk.public();
 
-        let key = HDKey::new(&pk);
+        let key = HdKey::new(&pk);
         match key.decrypt(&bytes).unwrap_err() {
             Error::PayloadIsTooLarge(len, _too_large) => {
                 assert_eq!(len, TOO_LARGE_PAYLOAD - TAG_LEN)
@@ -296,14 +296,14 @@ mod tests {
         let sk = generate_from_daedalus_seed(&[0; SEED_SIZE]);
         let pk = sk.public();
 
-        let key = HDKey::new(&pk);
+        let key = HdKey::new(&pk);
         let payload = key.encrypt(&path);
         assert_eq!(path, key.decrypt(&payload).unwrap())
     }
 
     #[test]
     fn unit1() {
-        let key = HDKey([0u8; 32]);
+        let key = HdKey([0u8; 32]);
         let dat = [0x9f, 0x00, 0x01, 0x0ff];
         let expected = [
             0xda, 0xac, 0x4a, 0x55, 0xfc, 0xa7, 0x48, 0xf3, 0x2f, 0xfa, 0xf4, 0x9e, 0x2b, 0x41,
@@ -381,12 +381,12 @@ mod tests {
 
     fn run_golden_test(golden_test: &GoldenTest) {
         let xprv = XPrv::from_bytes_verified(golden_test.xprv_key).unwrap();
-        let hdkey = HDKey(golden_test.hdkey);
+        let hdkey = HdKey(golden_test.hdkey);
         let payload = Vec::from(golden_test.payload);
         let path = derivation_path(&golden_test.addressing[..]);
         let path = encode_derivation_path(&path);
 
-        let our_hdkey = HDKey::new(&xprv.public());
+        let our_hdkey = HdKey::new(&xprv.public());
         assert_eq!(hdkey.0, our_hdkey.0);
 
         let our_payload = hdkey.encrypt(&path);

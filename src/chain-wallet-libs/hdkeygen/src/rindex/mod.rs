@@ -8,7 +8,7 @@ use chain_path_derivation::{
     DerivationPath,
 };
 use ed25519_bip32::XPrv;
-pub use hdpayload::{decode_derivation_path, HDKey};
+pub use hdpayload::{decode_derivation_path, HdKey};
 
 impl Key<XPrv, Rindex<rindex::Root>> {
     pub fn key(
@@ -20,7 +20,7 @@ impl Key<XPrv, Rindex<rindex::Root>> {
 
     /// get an address recovering object, this object can be used to check the
     /// ownership of addresses
-    pub fn hd_key(&self) -> HDKey {
-        HDKey::new(self.public().public_key())
+    pub fn hd_key(&self) -> HdKey {
+        HdKey::new(self.public().public_key())
     }
 }

@@ -20,10 +20,8 @@ pub struct TransactionBuilder<'settings, P: Payload> {
     payload: P,
     outputs: Vec<Output<Address>>,
     inputs: Vec<Input>,
-    witness_builders: Vec<WB>,
+    witness_builders: Vec<Box<dyn WitnessBuilder>>,
 }
-
-type WB = Box<dyn WitnessBuilder>;
 
 pub enum AddInputStatus {
     Added,

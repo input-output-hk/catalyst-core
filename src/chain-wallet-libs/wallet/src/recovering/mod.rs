@@ -34,7 +34,7 @@ pub struct RecoveryBuilder {
 }
 
 enum AccountFrom {
-    Seed(hdkeygen::account::SEED),
+    Seed(hdkeygen::account::Seed),
     SecretKey(SecretKey<Ed25519Extended>),
 }
 
@@ -86,7 +86,7 @@ impl RecoveryBuilder {
         }
     }
 
-    pub fn account_seed(self, seed: hdkeygen::account::SEED) -> Self {
+    pub fn account_seed(self, seed: hdkeygen::account::Seed) -> Self {
         Self {
             account: Some(AccountFrom::Seed(seed)),
             ..self

@@ -218,6 +218,32 @@ jobs:
             --release
             --target ${{ matrix.config.target }}
 
+      - name: Build snapshot trigger service binary
+        uses: actions-rs/cargo@v1
+        env:
+          DATE: ${{ needs.create_release.outputs.date }}
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: >
+            --manifest-path snapshot-trigger-service/Cargo.toml
+            --verbose
+            --release
+            --target ${{ matrix.config.target }}
+    
+      - name: Build registration service binary
+        uses: actions-rs/cargo@v1
+        env:
+          DATE: ${{ needs.create_release.outputs.date }}
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: >
+            --manifest-path registration-service/Cargo.toml
+            --verbose
+            --release
+            --target ${{ matrix.config.target }}   
+
       - id: pack-assets
         name: Pack binaries
         shell: bash

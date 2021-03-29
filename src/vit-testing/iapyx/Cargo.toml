@@ -20,7 +20,7 @@ chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.gi
 hex = "0.4"
 rand = "0.7"
 rand_core = "0.5"
-cryptoxide = "0.2.0"
+cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
 jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", rev = "1955f6a1a60bc66635cdd67460872ff7e4c29022" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "1955f6a1a60bc66635cdd67460872ff7e4c29022" }

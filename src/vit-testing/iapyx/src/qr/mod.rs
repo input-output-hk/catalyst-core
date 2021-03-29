@@ -30,9 +30,9 @@ pub enum PinReadError {
     #[error("cannot split file name  from path {0:?}")]
     UnableToSplitFileName(PathBuf),
     #[error("Cannot read qr from file")]
-    UnableToReadQR(#[from] std::io::Error),
+    UnableToReadQr(#[from] std::io::Error),
     #[error("Cannot decode qr from file")]
-    UnableToDecodeQR(#[from] KeyQrCodeError),
+    UnableToDecodeQr(#[from] KeyQrCodeError),
     #[error("cannot open image")]
     UnableToOpenImage(#[from] image::ImageError),
 }

@@ -125,5 +125,5 @@ pub enum Error {
     #[error("yaml response serialization error")]
     SerdeYamlError(#[from] serde_yaml::Error),
     #[error("io error")]
-    IOError(#[from] std::io::Error),
+    IoError(#[from] std::io::Error),
 }

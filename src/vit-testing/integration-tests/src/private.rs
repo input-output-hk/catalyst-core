@@ -90,7 +90,7 @@ pub async fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
 
     // start voting
     david
-        .vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8)
+        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
         .unwrap();
 
     let mut edgar = vit_controller
@@ -100,7 +100,7 @@ pub async fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     edgar.convert_and_send().unwrap();
 
     edgar
-        .vote_for(fund1_vote_plan.id(), 0, Vote::YES as u8)
+        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
         .unwrap();
 
     let mut filip = vit_controller
@@ -110,7 +110,7 @@ pub async fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     filip.convert_and_send().unwrap();
 
     filip
-        .vote_for(fund1_vote_plan.id(), 0, Vote::NO as u8)
+        .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8)
         .unwrap();
 
     let target_date = BlockDate {

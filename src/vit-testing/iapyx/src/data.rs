@@ -157,6 +157,7 @@ impl Proposal {
     }
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<wallet_core::Proposal> for Proposal {
     fn into(self) -> wallet_core::Proposal {
         let chain_proposal_index = self.chain_proposal_index as u8;

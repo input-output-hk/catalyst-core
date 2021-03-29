@@ -18,7 +18,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 use url::Url;
 #[derive(StructOpt, Debug)]
-pub struct GetAddressFromQRCommand {
+pub struct GetAddressFromQrCommand {
     #[structopt(long = "qr")]
     pub qr: PathBuf,
 
@@ -40,7 +40,7 @@ pub struct GetAddressFromQRCommand {
     pub block0: Option<String>,
 }
 
-impl GetAddressFromQRCommand {
+impl GetAddressFromQrCommand {
     pub fn exec(&self) -> Result<(), IapyxQrCommandError> {
         println!("Decoding qr from file: {:?}...", self.qr);
         let pin_read_mode = PinReadMode::new(self.read_pin_from_filename, &self.pin);

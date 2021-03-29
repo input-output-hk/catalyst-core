@@ -19,9 +19,9 @@ pub fn deserialize_unix_timestamp_from_rfc3339<'de, D>(deserializer: D) -> Resul
 where
     D: Deserializer<'de>,
 {
-    struct RFC3339Deserializer();
+    struct Rfc3339Deserializer();
 
-    impl<'de> Visitor<'de> for RFC3339Deserializer {
+    impl<'de> Visitor<'de> for Rfc3339Deserializer {
         type Value = DateTime<Utc>;
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -40,7 +40,7 @@ where
     }
 
     deserializer
-        .deserialize_str(RFC3339Deserializer())
+        .deserialize_str(Rfc3339Deserializer())
         .map(|datetime| datetime.timestamp())
 }
 

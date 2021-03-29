@@ -127,34 +127,6 @@ impl WalletBackend {
         &self,
         _identifier: AccountIdentifier,
     ) -> Result<Vec<SimpleVoteStatus>, WalletBackendError> {
-        /*
-        let vote_plan_statuses = self.vote_plan_statuses().unwrap();
-        let proposals = self.proposals().unwrap();
-
-
-        let mut active_votes = Vec::new();
-        for vote_plan_status in vote_plan_statuses {
-            for proposal in vote_plan_status.proposals {
-                for (account, payload) in proposal.votes.iter() {
-                    if *account == identifier {
-                        let vit_proposal = proposals
-                            .iter()
-                            .find(|x| {
-                                x.chain_proposal_id_as_str()
-                                    == proposal.proposal_id.clone().to_string()
-                            })
-                            .unwrap();
-                        active_votes.push(SimpleVoteStatus {
-                            chain_proposal_id: vit_proposal.chain_proposal_id_as_str(),
-                            proposal_title: vit_proposal.proposal_title.clone(),
-                            choice: vit_proposal.get_option_text(payload.choice().unwrap().clone()),
-                        });
-                    }
-                }
-            }
-        }
-        Ok(active_votes)
-        */
         unimplemented!()
     }
 
@@ -162,8 +134,7 @@ impl WalletBackend {
         let block0 = self.block0()?;
         let mut block0_bytes = ReadBuf::from(&block0);
         let block0 = Block::read(&mut block0_bytes).map_err(WalletBackendError::Block0ReadError)?;
-        Ok(Settings::new(&block0)
-            .map_err(|e| WalletBackendError::SettingsReadError(Box::new(e)))?)
+        Settings::new(&block0).map_err(|e| WalletBackendError::SettingsReadError(Box::new(e)))
     }
 
     pub fn account_exists(&self, id: AccountId) -> Result<bool, WalletBackendError> {
@@ -180,7 +151,7 @@ pub enum WalletBackendError {
     #[error("node rest error")]
     ProxyConnectionError(#[from] ProxyClientError),
     #[error("io error")]
-    IOError(#[from] std::io::Error),
+    IoError(#[from] std::io::Error),
     #[error("block0 retrieve error")]
     Block0ReadError(#[from] chain_core::mempack::ReadError),
     #[error("block0 retrieve error")]

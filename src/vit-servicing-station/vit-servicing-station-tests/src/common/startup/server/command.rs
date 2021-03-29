@@ -1,6 +1,7 @@
 use crate::common::startup::get_exe;
 use std::path::Path;
 use std::{path::PathBuf, process::Command};
+use vit_servicing_station_lib::server::settings::VIT_SERVICE_VERSION_ENV_VARIABLE;
 
 /// In order to test robustness of server bootstrapper we need to be able
 /// to provide some
@@ -18,6 +19,7 @@ pub struct BootstrapCommandBuilder {
     priv_key_file: Option<PathBuf>,
     log_file: Option<PathBuf>,
     log_level: Option<String>,
+    version: Option<String>,
 }
 
 impl Default for BootstrapCommandBuilder {
@@ -42,6 +44,7 @@ impl BootstrapCommandBuilder {
             priv_key_file: None,
             log_file: None,
             log_level: None,
+            version: None,
         }
     }
 
@@ -67,6 +70,11 @@ impl BootstrapCommandBuilder {
 
     pub fn db_url<S: Into<String>>(&mut self, db_url: S) -> &mut Self {
         self.db_url = Some(db_url.into());
+        self
+    }
+
+    pub fn version<S: Into<String>>(&mut self, version: S) -> &mut Self {
+        self.version = Some(version.into());
         self
     }
 
@@ -105,6 +113,11 @@ impl BootstrapCommandBuilder {
 
     pub fn build(&self) -> Command {
         let mut command = Command::new(self.exe.clone());
+
+        if let Some(version) = &self.version {
+            command.env(VIT_SERVICE_VERSION_ENV_VARIABLE, version);
+        }
+
         if let Some(address) = &self.address {
             command.arg("--address").arg(address);
         }

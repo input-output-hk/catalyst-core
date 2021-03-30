@@ -69,7 +69,7 @@ pub enum ConfigParam {
     RemoveBftLeader(BftLeaderId),
     LinearFee(LinearFee),
     ProposalExpiration(u32),
-    KESUpdateSpeed(u32),
+    KesUpdateSpeed(u32),
     TreasuryAdd(Value),
     TreasuryParams(TaxType),
     RewardPot(Value),
@@ -128,7 +128,7 @@ pub enum Tag {
     #[strum(to_string = "proposal-expiration")]
     ProposalExpiration = 15,
     #[strum(to_string = "kes-update-speed")]
-    KESUpdateSpeed = 16,
+    KesUpdateSpeed = 16,
     #[strum(to_string = "treasury")]
     TreasuryAdd = 17,
     #[strum(to_string = "treasury-params")]
@@ -170,7 +170,7 @@ impl Tag {
             12 => Some(Tag::RemoveBftLeader),
             14 => Some(Tag::LinearFee),
             15 => Some(Tag::ProposalExpiration),
-            16 => Some(Tag::KESUpdateSpeed),
+            16 => Some(Tag::KesUpdateSpeed),
             17 => Some(Tag::TreasuryAdd),
             18 => Some(Tag::TreasuryParams),
             19 => Some(Tag::RewardPot),
@@ -205,7 +205,7 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::RemoveBftLeader(_) => Tag::RemoveBftLeader,
             ConfigParam::LinearFee(_) => Tag::LinearFee,
             ConfigParam::ProposalExpiration(_) => Tag::ProposalExpiration,
-            ConfigParam::KESUpdateSpeed(_) => Tag::KESUpdateSpeed,
+            ConfigParam::KesUpdateSpeed(_) => Tag::KesUpdateSpeed,
             ConfigParam::TreasuryAdd(_) => Tag::TreasuryAdd,
             ConfigParam::TreasuryParams(_) => Tag::TreasuryParams,
             ConfigParam::RewardPot(_) => Tag::RewardPot,
@@ -258,8 +258,8 @@ impl Readable for ConfigParam {
             Tag::ProposalExpiration => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::ProposalExpiration)
             }
-            Tag::KESUpdateSpeed => {
-                ConfigParamVariant::from_payload(bytes).map(ConfigParam::KESUpdateSpeed)
+            Tag::KesUpdateSpeed => {
+                ConfigParamVariant::from_payload(bytes).map(ConfigParam::KesUpdateSpeed)
             }
             Tag::TreasuryAdd => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::TreasuryAdd)
@@ -321,7 +321,7 @@ impl property::Serialize for ConfigParam {
             ConfigParam::RemoveBftLeader(data) => data.to_payload(),
             ConfigParam::LinearFee(data) => data.to_payload(),
             ConfigParam::ProposalExpiration(data) => data.to_payload(),
-            ConfigParam::KESUpdateSpeed(data) => data.to_payload(),
+            ConfigParam::KesUpdateSpeed(data) => data.to_payload(),
             ConfigParam::TreasuryAdd(data) => data.to_payload(),
             ConfigParam::TreasuryParams(data) => data.to_payload(),
             ConfigParam::RewardPot(data) => data.to_payload(),

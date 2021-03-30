@@ -16,7 +16,7 @@ pub use builder::{
     header_builder, HeaderBftBuilder, HeaderBuilder, HeaderBuilderNew, HeaderGenesisPraosBuilder,
     HeaderSetConsensusData, HeaderSetConsensusSignature,
 };
-pub use components::{BftSignature, KESSignature, VrfProof};
+pub use components::{BftSignature, KesSignature, VrfProof};
 pub use deconstruct::{BftProof, Common, GenesisPraosProof, Proof};
 pub use header::{Header, HeaderBft, HeaderDesc, HeaderGenesisPraos, HeaderUnsigned};
 pub use version::{AnyBlockVersion, BlockVersion};

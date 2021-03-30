@@ -376,7 +376,7 @@ impl Ledger {
                     ConfigParam::SlotsPerEpoch(n) => {
                         slots_per_epoch = Some(*n);
                     }
-                    ConfigParam::KESUpdateSpeed(n) => {
+                    ConfigParam::KesUpdateSpeed(n) => {
                         kes_update_speed = Some(*n);
                     }
                     ConfigParam::TreasuryAdd(v) => {

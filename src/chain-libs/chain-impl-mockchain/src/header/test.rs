@@ -1,6 +1,6 @@
 use super::*;
 use crate::chaintypes::ChainLength;
-use crate::header::{BftProof, BftSignature, Common, GenesisPraosProof, KESSignature};
+use crate::header::{BftProof, BftSignature, Common, GenesisPraosProof, KesSignature};
 use crate::key::BftLeaderId;
 use chain_crypto::{
     self, AsymmetricKey, Curve25519_2HashDH, Ed25519, SecretKey, SumEd25519_12,
@@ -71,7 +71,7 @@ impl Arbitrary for GenesisPraosProof {
             }
             let sk = SK_FIRST.clone();
             let signature = sk.sign(&[0u8, 1, 2, 3]);
-            KESSignature(signature.coerce())
+            KesSignature(signature.coerce())
         };
         GenesisPraosProof {
             node_id,

@@ -14,20 +14,26 @@ pub struct ExternalDataCommandArgs {
     #[structopt(long = "output", default_value = "./data")]
     pub output_directory: PathBuf,
 
-    /// how many qr to generate
+    /// configuration
     #[structopt(long = "config")]
     pub config: PathBuf,
 
     /// proposals import json
-    #[structopt(long = "proposals")]
+    #[structopt(
+        long = "proposals",
+        default_value = "../resources/external/proposals.json"
+    )]
     pub proposals: PathBuf,
 
     /// challenges import json
-    #[structopt(long = "challenges")]
+    #[structopt(
+        long = "challenges",
+        default_value = "../resources/external/challenges.json"
+    )]
     pub challenges: PathBuf,
 
     /// funds import json
-    #[structopt(long = "funds")]
+    #[structopt(long = "funds", default_value = "../resources/external/funds.json")]
     pub funds: PathBuf,
 
     #[structopt(long = "snapshot")]

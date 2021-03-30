@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
+use crate::data::ServiceVersion;
 use crate::data::{Fund, Proposal};
 use hyper::StatusCode;
 use reqwest::blocking::Response;
 use thiserror::Error;
-
 pub const API_TOKEN_HEADER: &str = "API-Token";
 
 #[derive(Debug, Clone)]
@@ -147,6 +147,16 @@ impl VitStationRestClient {
         Ok(self.genesis_raw()?.bytes()?.to_vec())
     }
 
+    pub fn version(&self) -> Result<ServiceVersion, RestError> {
+        let content = self.version_raw()?.text()?;
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
+    pub fn version_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder.version())
+            .map_err(RestError::RequestError)
+    }
+
     pub fn genesis_raw(&self) -> Result<Response, RestError> {
         self.get(&self.path_builder.genesis())
             .map_err(RestError::RequestError)
@@ -215,6 +225,10 @@ impl RestPathBuilder {
             root: "/api/v0/".to_string(),
             address: address.into(),
         }
+    }
+
+    pub fn version(&self) -> String {
+        format!("http://{}/api/version", self.address)
     }
 
     pub fn proposals(&self) -> String {

@@ -37,6 +37,7 @@ pub fn setup_network(
     vit_data_generator: &mut dyn ValidVotingTemplateGenerator,
     endpoint: String,
     protocol: &Protocol,
+    vit_version: String,
 ) -> Result<(
     Vec<NodeController>,
     VitStationController,
@@ -86,8 +87,12 @@ pub fn setup_network(
     wallet_node.wait_for_bootstrap()?;
 
     // start proxy and vit station
-    let vit_station =
-        vit_controller.spawn_vit_station(controller, vit_parameters, vit_data_generator)?;
+    let vit_station = vit_controller.spawn_vit_station(
+        controller,
+        vit_parameters,
+        vit_data_generator,
+        vit_version,
+    )?;
     let wallet_proxy = vit_controller.spawn_wallet_proxy_custom(
         controller,
         WalletProxySpawnParams::new(WALLET_NODE)
@@ -225,7 +230,8 @@ pub fn single_run(
         *state = State::Starting;
     }
 
-    let (mut vit_controller, mut controller, vit_parameters) = quick_setup.build(context)?;
+    let (mut vit_controller, mut controller, vit_parameters, version) =
+        quick_setup.build(context)?;
     let (nodes_list, vit_station, wallet_proxy) = setup_network(
         &mut controller,
         &mut vit_controller,
@@ -233,6 +239,7 @@ pub fn single_run(
         template_generator,
         endpoint,
         protocol,
+        version,
     )?;
 
     {

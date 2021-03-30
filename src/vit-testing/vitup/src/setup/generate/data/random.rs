@@ -44,7 +44,8 @@ impl RandomDataCommandArgs {
 
         let title = quick_setup.title();
 
-        let (vit_controller, mut controller, vit_parameters) = quick_setup.build(context)?;
+        let (vit_controller, mut controller, vit_parameters, version) =
+            quick_setup.build(context)?;
         let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 
         // generate vit station data
@@ -52,6 +53,7 @@ impl RandomDataCommandArgs {
             &mut controller,
             vit_parameters,
             &mut template_generator,
+            version,
         )?;
         vit_station.shutdown();
 

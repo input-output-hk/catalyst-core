@@ -172,7 +172,7 @@ impl AdvancedStartCommandArgs {
                 }
             }
             Mode::Endless => {
-                let (mut vit_controller, mut controller, vit_parameters) =
+                let (mut vit_controller, mut controller, vit_parameters, version) =
                     quick_setup.build(context)?;
                 let (_nodes_list, _vit_station, _wallet_proxy) = setup_network(
                     &mut controller,
@@ -181,11 +181,12 @@ impl AdvancedStartCommandArgs {
                     &mut template_generator,
                     endpoint,
                     quick_setup.protocol(),
+                    version,
                 )?;
                 endless_mode()?;
             }
             Mode::Interactive => {
-                let (mut vit_controller, mut controller, vit_parameters) =
+                let (mut vit_controller, mut controller, vit_parameters, version) =
                     quick_setup.build(context)?;
 
                 let (nodes_list, vit_station, wallet_proxy) = setup_network(
@@ -195,6 +196,7 @@ impl AdvancedStartCommandArgs {
                     &mut template_generator,
                     endpoint,
                     quick_setup.protocol(),
+                    version,
                 )?;
                 interactive_mode(controller, nodes_list, vit_station, wallet_proxy)?;
             }

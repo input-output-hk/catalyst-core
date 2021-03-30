@@ -148,7 +148,6 @@ impl WalletProxy {
         node_setting: &NodeSetting,
         block0: &Path,
         working_dir: &Path,
-        version: String,
         protocol: Protocol,
     ) -> Result<Self> {
         let dir = working_dir.join(alias);
@@ -171,9 +170,7 @@ impl WalletProxy {
             .arg("--node-address")
             .arg(&settings.base_node_backend_address().unwrap().to_string())
             .arg("--block0")
-            .arg(block0.to_str().unwrap())
-            .arg("--version")
-            .arg(version);
+            .arg(block0.to_str().unwrap());
 
         if let Protocol::Https {
             key_path,

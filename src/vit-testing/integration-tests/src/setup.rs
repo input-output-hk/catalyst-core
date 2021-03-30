@@ -75,6 +75,6 @@ pub fn vitup_setup(
     }
 
     let fund_name = quick_setup.fund_name();
-    let (vit_controller, controller, vit_parameters) = quick_setup.build(context).unwrap();
+    let (vit_controller, controller, vit_parameters, _) = quick_setup.build(context).unwrap();
     (vit_controller, controller, vit_parameters, fund_name)
 }

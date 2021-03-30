@@ -124,6 +124,10 @@ pub struct QuickStartCommandArgs {
     #[structopt(long = "private")]
     pub private: bool,
 
+    /// switch to private voting type
+    #[structopt(long = "version")]
+    pub version: String,
+
     /// use tls
     #[structopt(long = "https")]
     pub https: bool,
@@ -209,7 +213,8 @@ impl QuickStartCommandArgs {
             .slots_in_epoch_count(self.slots_in_epoch)
             .proposals_count(self.proposals)
             .voting_power(self.voting_power)
-            .private(self.private);
+            .private(self.private)
+            .version(self.version);
 
         jormungandr_scenario_tests::introduction::print(&context, "VOTING BACKEND");
 
@@ -229,7 +234,7 @@ impl QuickStartCommandArgs {
                 token,
             )?,
             Mode::Endless => {
-                let (mut vit_controller, mut controller, vit_parameters) =
+                let (mut vit_controller, mut controller, vit_parameters, version) =
                     quick_setup.build(context)?;
                 let (_nodes_list, _vit_station, _wallet_proxy) = setup_network(
                     &mut controller,
@@ -238,11 +243,12 @@ impl QuickStartCommandArgs {
                     template_generator,
                     endpoint,
                     quick_setup.protocol(),
+                    version,
                 )?;
                 endless_mode()?;
             }
             Mode::Interactive => {
-                let (mut vit_controller, mut controller, vit_parameters) =
+                let (mut vit_controller, mut controller, vit_parameters, version) =
                     quick_setup.build(context)?;
 
                 let (nodes_list, vit_station, wallet_proxy) = setup_network(
@@ -252,6 +258,7 @@ impl QuickStartCommandArgs {
                     template_generator,
                     endpoint,
                     quick_setup.protocol(),
+                    version,
                 )?;
                 interactive_mode(controller, nodes_list, vit_station, wallet_proxy)?;
             }

@@ -58,7 +58,8 @@ impl ExternalDataCommandArgs {
         }
 
         let title = quick_setup.title();
-        let (vit_controller, mut controller, vit_parameters) = quick_setup.build(context)?;
+        let (vit_controller, mut controller, vit_parameters, version) =
+            quick_setup.build(context)?;
 
         let mut template_generator =
             ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)
@@ -69,6 +70,7 @@ impl ExternalDataCommandArgs {
             &mut controller,
             vit_parameters,
             &mut template_generator,
+            version,
         )?;
         vit_station.shutdown();
 

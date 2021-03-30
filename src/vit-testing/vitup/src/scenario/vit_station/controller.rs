@@ -180,6 +180,7 @@ impl VitStation {
         settings: VitStationSettings,
         block0: &Path,
         working_dir: &Path,
+        version: &str,
     ) -> Result<Self> {
         let dir = working_dir.join(alias);
         std::fs::DirBuilder::new().recursive(true).create(&dir)?;
@@ -201,6 +202,7 @@ impl VitStation {
         let mut command = command_builder
             .in_settings_file(&config_file)
             .db_url(db_file.to_str().unwrap())
+            .version(version)
             .block0_path(block0.to_str().unwrap())
             .build();
 

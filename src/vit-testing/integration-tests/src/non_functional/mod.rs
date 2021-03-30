@@ -38,6 +38,7 @@ fn private_vote_test_scenario(
         &mut template_generator,
         endpoint.to_string(),
         &Protocol::Http,
+        "2.0".to_owned(),
     )
     .unwrap();
 

@@ -115,6 +115,11 @@ pub async fn start_rest_server(context: ContextLock) {
                 .and(with_context.clone())
                 .and_then(command_fund_id);
 
+            let version = warp::path!("version" / String)
+                .and(warp::post())
+                .and(with_context.clone())
+                .and_then(command_version);
+
             let fragment_strategy = {
                 let root = warp::path!("fragments" / ..);
 
@@ -141,8 +146,14 @@ pub async fn start_rest_server(context: ContextLock) {
                 root.and(reject.or(accept).or(pending).or(reset)).boxed()
             };
 
-            root.and(reset.or(availability).or(fund_id).or(fragment_strategy))
-                .boxed()
+            root.and(
+                reset
+                    .or(availability)
+                    .or(fund_id)
+                    .or(fragment_strategy)
+                    .or(version),
+            )
+            .boxed()
         };
         root.and(api_token_filter)
             .and(command.or(files).or(logs))
@@ -305,7 +316,7 @@ pub async fn start_rest_server(context: ContextLock) {
         root.and(fragments)
     };
 
-    let version = warp::path!("vit-version")
+    let version = warp::path!("version")
         .and(with_context.clone())
         .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()));
 
@@ -396,6 +407,15 @@ pub async fn command_fund_id(id: i32, context: ContextLock) -> Result<impl Reply
     context.lock().unwrap().state_mut().set_fund_id(id);
     Ok(warp::reply())
 }
+
+pub async fn command_version(
+    version: String,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    context.lock().unwrap().state_mut().set_version(version);
+    Ok(warp::reply())
+}
+
 pub async fn command_reject(context: ContextLock) -> Result<impl Reply, Rejection> {
     context
         .lock()

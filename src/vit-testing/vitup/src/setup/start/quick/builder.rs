@@ -136,6 +136,14 @@ impl QuickVitBackendSettingsBuilder {
         self
     }
 
+    pub fn refresh_timestamp(&mut self, refresh_timestamp: Option<String>) -> &mut Self {
+        if let Some(timestamp) = refresh_timestamp {
+            self.parameters.refresh_time =
+                Some(NaiveDateTime::parse_from_str(&timestamp, FORMAT).unwrap());
+        }
+        self
+    }
+
     pub fn vote_start_timestamp(&mut self, vote_start_timestamp: Option<String>) -> &mut Self {
         if let Some(timestamp) = vote_start_timestamp {
             self.parameters.vote_start_timestamp =
@@ -222,12 +230,29 @@ impl QuickVitBackendSettingsBuilder {
         parameters.set_voting_tally_end(self.parameters.tally_end_timestamp.unwrap().timestamp());
         parameters
             .set_next_fund_start_time(self.parameters.next_vote_start_time.unwrap().timestamp());
+
+        if let Some(refresh_timestamp) = self.parameters.refresh_time {
+            parameters.set_refresh_time(refresh_timestamp.timestamp());
+        }
+
         parameters.set_fund_id(self.parameters.fund_id);
         parameters.calculate_challenges_total_funds = true;
 
         if self.parameters.private {
-            let private_key_data = settings.private_vote_plans.get(&self.fund_name()).unwrap();
-
+            let mut committee_wallet = settings
+                .network_settings
+                .wallets
+                .get(&self.committe_wallet)
+                .unwrap()
+                .clone();
+            let identifier = committee_wallet.identifier();
+            let private_key_data = settings
+                .private_vote_plans
+                .values()
+                .next()
+                .unwrap()
+                .get(&identifier.into())
+                .unwrap();
             let key: ElectionPublicKey = private_key_data.encrypting_vote_key();
             parameters.set_vote_encryption_key(key.to_base32().unwrap());
         }

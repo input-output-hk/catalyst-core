@@ -91,6 +91,10 @@ pub struct QuickStartCommandArgs {
     #[structopt(long = "next-vote-timestamp")]
     pub next_vote_timestamp: Option<String>,
 
+    /// snapshot timestamp
+    #[structopt(long = "snapshot-timestamp")]
+    pub snapshot_timestamp: Option<String>,
+
     /// slot duration
     #[structopt(long = "slot-duration", default_value = "20")]
     pub slot_duration: u8,
@@ -209,6 +213,7 @@ impl QuickStartCommandArgs {
             .tally_start_timestamp(self.tally_start_timestamp)
             .tally_end_timestamp(self.tally_end_timestamp)
             .next_vote_timestamp(self.next_vote_timestamp)
+            .refresh_timestamp(self.snapshot_timestamp)
             .slot_duration_in_seconds(self.slot_duration)
             .slots_in_epoch_count(self.slots_in_epoch)
             .proposals_count(self.proposals)

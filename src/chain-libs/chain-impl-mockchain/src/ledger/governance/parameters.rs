@@ -1,10 +1,7 @@
 use crate::{ledger::governance::GovernanceAcceptanceCriteria, value::Value};
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use imhamt::Hamt;
-use std::collections::{
-    hash_map::{DefaultHasher, Entry},
-    HashMap,
-};
+use std::collections::hash_map::DefaultHasher;
 use typed_bytes::ByteBuilder;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -26,7 +23,7 @@ pub struct ParametersGovernance {
 
     default_acceptance_criteria: GovernanceAcceptanceCriteria,
 
-    logs: HashMap<ParametersGovernanceActionType, ParametersGovernanceAction>,
+    logs: Vec<ParametersGovernanceAction>,
 }
 
 impl ParametersGovernanceAction {
@@ -90,7 +87,7 @@ impl ParametersGovernance {
     }
 
     pub fn logs(&self) -> impl Iterator<Item = &ParametersGovernanceAction> {
-        self.logs.values()
+        self.logs.iter()
     }
 
     pub fn logs_clear(&mut self) {
@@ -98,17 +95,8 @@ impl ParametersGovernance {
     }
 
     /// register a new action
-    #[allow(clippy::result_unit_err)]
-    pub fn logs_register(&mut self, action: ParametersGovernanceAction) -> Result<(), ()> {
-        let entry = self.logs.entry(action.to_type());
-
-        match entry {
-            Entry::Vacant(vacant) => {
-                vacant.insert(action);
-                Ok(())
-            }
-            _ => Err(()),
-        }
+    pub fn logs_register(&mut self, action: ParametersGovernanceAction) {
+        self.logs.push(action)
     }
 }
 
@@ -203,7 +191,7 @@ mod tests {
     #[quickcheck]
     pub fn parameters_governance_logs(action_type: ParametersGovernanceAction) {
         let mut governance = ParametersGovernance::new();
-        assert!(governance.logs_register(action_type.clone()).is_ok());
+        governance.logs_register(action_type.clone());
         assert!(governance.logs().any(|x| *x == action_type));
         governance.logs_clear();
 

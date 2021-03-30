@@ -1145,11 +1145,7 @@ impl Ledger {
                     self.pots.rewards_add(value)?;
                 }
                 VoteAction::Parameters { action } => {
-                    if self.governance.parameters.logs_register(action).is_err() {
-                        unimplemented!("the action was already recorded for this epoch")
-                    } else {
-                        // nothing
-                    }
+                    self.governance.parameters.logs_register(action);
                 }
             }
         }

@@ -1,29 +1,65 @@
 [
-        {
-            "id": "1",
-            "title": "Community Choice",
-            "description": "Which challenges should be launched during Fund5 (March 31st) in order to fulfill Cardano's mission?",
-            "rewards_total": "500000",
-            "fund_id": "3",
-            "challenge_type":"community-choice",
-            "challenge_url": "https://cardano.ideascale.com/a/campaign-home/25800"
-        },
-        {
-            "id": "2",
-            "title": "DApp Creation",
-            "description": "What DApps should be built to drive user adoption?",
-            "rewards_total": "250000",
-            "fund_id": "3",
-            "challenge_type":"simple",
-            "challenge_url": "https://cardano.ideascale.com/a/campaign-home/25797"
-        },
-        {
-            "id": "3",
-            "title": "Developer Ecosystem",
-            "description": "How can we encourage developers to build Dapps on top of Cardano?",
-            "rewards_total": "250000",
-            "fund_id": "3",
-            "challenge_type":"simple",
-            "challenge_url": "https://cardano.ideascale.com/a/campaign-home/25805"
-        }
-]
+    {
+       "id":"1",
+       "challenge_type":"community-choice",
+       "title":"Fund6 Challenge Setting",
+       "description":"What Challenges should the community prioritize to address in Fund6?",
+       "rewards_total":"400000",
+       "fund_id":"4",
+       "challenge_url":"https://cardano.ideascale.com/a/campaign-home/25874"
+    },
+    {
+       "id":"2",
+       "challenge_type":"simple",
+       "title":"Dapps & Integrations",
+       "description":"How can application developers drive adoption of Cardano in 2021?",
+       "rewards_total":"200000",
+       "fund_id":"4",
+       "challenge_url":"https://cardano.ideascale.com/a/campaign-home/25869"
+    },
+    {
+       "id":"3",
+       "challenge_type":"simple",
+       "title":"Developer Ecosystem",
+       "description":"How can we create a positive developer experience that helps the developer focus on building successful apps?",
+       "rewards_total":"400000",
+       "fund_id":"4",
+       "challenge_url":"https://cardano.ideascale.com/a/campaign-home/25868"
+    },
+    {
+       "id":"4",
+       "challenge_type":"simple",
+       "title":"Distributed Decision Making",
+       "description":"How can we help the Catalyst community to get better at distributed decision making within the next two Catalyst rounds?",
+       "rewards_total":"50000",
+       "fund_id":"4",
+       "challenge_url":"https://cardano.ideascale.com/a/campaign-home/25870"
+    },
+    {
+       "id":"5",
+       "challenge_type":"simple",
+       "title":"Proposer Outreach",
+       "description":"How can we encourage entrepreneurs from outside the Cardano ecosystem to submit proposals to Catalyst in the next two funds?",
+       "rewards_total":"50000",
+       "fund_id":"4",
+       "challenge_url":"https://cardano.ideascale.com/a/campaign-home/25871"
+    },
+    {
+       "id":"6",
+       "challenge_type":"simple",
+       "title":"Catalyst Value Onboarding",
+       "description":"How can we encourage more meaningful participation in Project Catalyst from community members in the next two funds?",
+       "rewards_total":"50000",
+       "fund_id":"4",
+       "challenge_url":"https://cardano.ideascale.com/a/campaign-home/25872"
+    },
+    {
+       "id":"7",
+       "challenge_type":"simple",
+       "title":"Local Community Centers",
+       "description":"How can we mobilize the community to solve local problems using Cardano, through a Local Community Center model supported by the CF?",
+       "rewards_total":"50000",
+       "fund_id":"4",
+       "challenge_url":"https://cardano.ideascale.com/a/campaign-home/25873"
+    }
+ ]

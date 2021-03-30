@@ -40,14 +40,15 @@ jobs:
       - restore_cache:
           name: Restore dependency crates from cache
           keys:
-            - cargo-deps-v1-{{ checksum "Cargo.lock" }}
-            - cargo-deps-v1-
+            - cargo-deps-v2-{{ checksum "Cargo.lock" }}
+            - cargo-deps-v2-
       - run: cargo fetch
       - save_cache:
           name: Save dependency crates into cache
-          key: cargo-deps-v1-{{ checksum "Cargo.lock" }}
+          key: cargo-deps-v2-{{ checksum "Cargo.lock" }}
           paths:
             - /usr/local/cargo/registry/cache
+            - /usr/local/cargo/git/db
       - persist_to_workspace:
           root: .
           paths:
@@ -95,7 +96,7 @@ commands:
       - restore_cache:
           name: Restore dependency crates from cache
           keys:
-            - cargo-deps-v1-{{ checksum "Cargo.lock" }}
+            - cargo-deps-v2-{{ checksum "Cargo.lock" }}
       - run:
           name: Print version information
           command: rustc --version; cargo --version

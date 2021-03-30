@@ -52,6 +52,8 @@ impl ExternalDataCommandArgs {
         let config = read_config(&self.config)?;
 
         quick_setup.upload_parameters(config.params.clone());
+        quick_setup.fees(config.linear_fees);
+        quick_setup.set_external_committees(config.committees);
 
         if !self.output_directory.exists() {
             std::fs::create_dir_all(&self.output_directory)?;
@@ -85,20 +87,10 @@ impl ExternalDataCommandArgs {
 
         let mut block0_configuration = read_genesis_yaml(&genesis)?;
 
-        block0_configuration.blockchain_configuration.linear_fees = config.linear_fees;
         if !config.consensus_leader_ids.is_empty() {
             block0_configuration
                 .blockchain_configuration
                 .consensus_leader_ids = config.consensus_leader_ids;
-        }
-        if !config.committees.is_empty() {
-            block0_configuration
-                .blockchain_configuration
-                .committees
-                .extend(config.committees.clone());
-        }
-        if !config.additions.is_empty() {
-            block0_configuration.initial.extend(config.additions);
         }
 
         if let Some(snapshot_file) = self.snapshot {
@@ -127,6 +119,10 @@ impl ExternalDataCommandArgs {
         println!(
             "next vote start time: {:?}",
             quick_setup.parameters().next_vote_start_time
+        );
+        println!(
+            "refresh timestamp: {:?}",
+            quick_setup.parameters().refresh_time
         );
         Ok(())
     }

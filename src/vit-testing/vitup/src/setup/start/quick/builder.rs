@@ -13,6 +13,7 @@ use chain_impl_mockchain::{
 use chain_vote::committee::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
 use iapyx::Protocol;
+use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
@@ -36,7 +37,9 @@ pub const WALLET_NODE: &str = "Wallet_Node";
 #[derive(Clone)]
 pub struct QuickVitBackendSettingsBuilder {
     parameters: VitStartParameters,
-    committe_wallet_names: Vec<String>,
+    committe_wallet: String,
+    external_committees: Vec<CommitteeIdDef>,
+    fees: LinearFee,
     title: String,
 }
 
@@ -53,12 +56,18 @@ impl QuickVitBackendSettingsBuilder {
         Self {
             parameters: Default::default(),
             title: "vit_backend".to_owned(),
-            committe_wallet_names: vec![
-                "committee_1".to_owned(),
-                "committee_2".to_owned(),
-                "committee_3".to_owned(),
-            ],
+            committe_wallet: "committee_1".to_owned(),
+            fees: LinearFee::new(0, 0, 0),
+            external_committees: Vec::new(),
         }
+    }
+
+    pub fn fees(&mut self, fees: LinearFee) {
+        self.fees = fees;
+    }
+
+    pub fn set_external_committees(&mut self, external_committees: Vec<CommitteeIdDef>) {
+        self.external_committees = external_committees;
     }
 
     pub fn parameters(&self) -> &VitStartParameters {
@@ -298,7 +307,7 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn build_vote_plan(&mut self) -> VotePlanDef {
         let mut vote_plan_builder = VotePlanDefBuilder::new(&self.fund_name());
-        vote_plan_builder.owner(&self.committe_wallet_names.first().unwrap());
+        vote_plan_builder.owner(&self.committe_wallet);
 
         if self.parameters.private {
             vote_plan_builder.payload_type(PayloadType::Private);
@@ -391,18 +400,20 @@ impl QuickVitBackendSettingsBuilder {
         blockchain.add_leader(LEADER_2);
         blockchain.add_leader(LEADER_3);
         blockchain.add_leader(LEADER_4);
-        blockchain.set_linear_fee(LinearFee::new(0, 0, 0));
+        blockchain.set_linear_fee(self.fees);
         blockchain.set_discrimination(chain_addr::Discrimination::Production);
 
-        for committe_wallet_name in &self.committe_wallet_names {
-            let committe_wallet = WalletTemplate::new_account(
-                committe_wallet_name,
-                Value(1_000_000),
-                blockchain.discrimination(),
-            );
-            blockchain.add_wallet(committe_wallet);
-            blockchain.add_committee(committe_wallet_name);
+        if !self.external_committees.is_empty() {
+            blockchain.set_external_committees(self.external_committees.clone());
         }
+
+        let committe_wallet = WalletTemplate::new_account(
+            self.committe_wallet.clone(),
+            Value(1_000_000_000),
+            blockchain.discrimination(),
+        );
+        blockchain.add_wallet(committe_wallet);
+        blockchain.add_committee(self.committe_wallet.clone());
 
         let child = context.child_directory(self.title());
 

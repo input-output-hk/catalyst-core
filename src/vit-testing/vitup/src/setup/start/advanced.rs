@@ -123,8 +123,12 @@ impl AdvancedStartCommandArgs {
 
         let config = read_config(&self.config)?;
 
+        println!("{:?}", config.params);
+
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
-        quick_setup.upload_parameters(config.params);
+        quick_setup.upload_parameters(config.params.clone());
+        quick_setup.fees(config.linear_fees);
+        quick_setup.set_external_committees(config.committees);
 
         let mut template_generator =
             ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)

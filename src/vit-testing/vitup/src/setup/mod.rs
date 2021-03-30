@@ -3,6 +3,7 @@ pub mod generate;
 pub mod start;
 
 use crate::error::Result;
+use crate::setup::generate::CommitteeIdCommandArgs;
 use crate::mock::MockStartCommandArgs;
 use crate::setup::generate::{QrCommandArgs, SnapshotCommandArgs};
 use crate::setup::start::AdvancedStartCommandArgs;
@@ -59,6 +60,8 @@ pub enum GenerateCommand {
     Data(DataCommandArgs),
     /// generate snapshot data only
     Snapshot(SnapshotCommandArgs),
+    /// Committee Id
+    Committee(CommitteeIdCommandArgs),
 }
 
 impl GenerateCommand {
@@ -67,6 +70,7 @@ impl GenerateCommand {
             Self::Qr(quick_start_command) => quick_start_command.exec(),
             Self::Data(data_start_command) => data_start_command.exec(),
             Self::Snapshot(snapshot_start_command) => snapshot_start_command.exec(),
+            Self::Committee(generate_committee_command) => generate_committee_command.exec(),
         }
     }
 }

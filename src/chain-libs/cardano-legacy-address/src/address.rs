@@ -47,15 +47,15 @@ impl cbor_event::de::Deserialize for PubKeyTag {
     }
 }
 
-type HDAddressPayload = Vec<u8>;
+type HdAddressPayload = Vec<u8>;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub struct Attributes {
-    pub derivation_path: Option<HDAddressPayload>,
+    pub derivation_path: Option<HdAddressPayload>,
     pub network_magic: Option<u32>,
 }
 impl Attributes {
-    pub fn new_bootstrap_era(hdap: Option<HDAddressPayload>, network_magic: Option<u32>) -> Self {
+    pub fn new_bootstrap_era(hdap: Option<HdAddressPayload>, network_magic: Option<u32>) -> Self {
         Attributes {
             derivation_path: hdap,
             network_magic,

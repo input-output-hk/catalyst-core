@@ -3,8 +3,8 @@ pub mod generate;
 pub mod start;
 
 use crate::error::Result;
-use crate::setup::generate::CommitteeIdCommandArgs;
 use crate::mock::MockStartCommandArgs;
+use crate::setup::generate::CommitteeIdCommandArgs;
 use crate::setup::generate::{QrCommandArgs, SnapshotCommandArgs};
 use crate::setup::start::AdvancedStartCommandArgs;
 use diff::DiffCommand;

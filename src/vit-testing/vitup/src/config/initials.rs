@@ -130,7 +130,7 @@ impl Initials {
                         above_threshold_index += 1;
                         let wallet_alias =
                             format!("wallet_{}_above_{}", above_threshold_index, threshold);
-                        let value: u64 = rand.gen_range(GRACE_VALUE, threshold - GRACE_VALUE);
+                        let value: u64 = rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
                             WalletTemplate::new_utxo(
                                 wallet_alias,
@@ -149,7 +149,7 @@ impl Initials {
                         below_threshold_index += 1;
                         let wallet_alias =
                             format!("wallet_{}_below_{}", below_threshold_index, threshold);
-                        let value: u64 = rand.gen_range(GRACE_VALUE, threshold - GRACE_VALUE);
+                        let value: u64 = rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
                             WalletTemplate::new_utxo(
                                 wallet_alias,

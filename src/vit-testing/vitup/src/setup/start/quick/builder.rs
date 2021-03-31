@@ -17,7 +17,7 @@ use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
-    ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KESUpdateSpeed, Milli,
+    ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KesUpdateSpeed, Milli,
     NumberOfSlotsPerEpoch, SlotDuration, Topology, TopologyBuilder,
 };
 use jormungandr_testing_utils::testing::network_builder::{
@@ -248,20 +248,7 @@ impl QuickVitBackendSettingsBuilder {
         parameters.calculate_challenges_total_funds = true;
 
         if self.parameters.private {
-            let mut committee_wallet = settings
-                .network_settings
-                .wallets
-                .get(&self.committe_wallet)
-                .unwrap()
-                .clone();
-            let identifier = committee_wallet.identifier();
-            let private_key_data = settings
-                .private_vote_plans
-                .values()
-                .next()
-                .unwrap()
-                .get(&identifier.into())
-                .unwrap();
+            let private_key_data = settings.private_vote_plans.get(&self.fund_name()).unwrap();
             let key: ElectionPublicKey = private_key_data.encrypting_vote_key();
             parameters.set_vote_encryption_key(key.to_base32().unwrap());
         }
@@ -391,7 +378,7 @@ impl QuickVitBackendSettingsBuilder {
                 .expect("valid number of slots per epoch"),
             SlotDuration::new(self.parameters.slot_duration)
                 .expect("valid slot duration in seconds"),
-            KESUpdateSpeed::new(46800).expect("valid kes update speed in seconds"),
+            KesUpdateSpeed::new(46800).expect("valid kes update speed in seconds"),
             ActiveSlotCoefficient::new(Milli::from_millis(700))
                 .expect("active slot coefficient in millis"),
         );

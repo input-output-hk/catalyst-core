@@ -12,4 +12,4 @@ pub use ed25519::Ed25519;
 pub use ed25519_derive::Ed25519Bip32;
 pub use ed25519_extended::Ed25519Extended;
 pub use sumed25519::SumEd25519_12;
-pub use vrf::Curve25519_2HashDH;
+pub use vrf::Curve25519_2HashDh;

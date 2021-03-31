@@ -5,15 +5,15 @@ pub mod vrf;
 use crate::key::{
     AsymmetricKey, AsymmetricPublicKey, PublicKeyError, SecretKeyError, SecretKeySizeStatic,
 };
-use crate::vrf::{VRFVerification, VerifiableRandomFunction};
+use crate::vrf::{VerifiableRandomFunction, VrfVerification};
 use rand_core::{CryptoRng, RngCore};
 
 pub use vrf::ProvenOutputSeed;
 
 /// VRF
-pub struct Curve25519_2HashDH;
+pub struct Curve25519_2HashDh;
 
-impl AsymmetricPublicKey for Curve25519_2HashDH {
+impl AsymmetricPublicKey for Curve25519_2HashDh {
     type Public = vrf::PublicKey;
     const PUBLIC_BECH32_HRP: &'static str = "vrf_pk";
     const PUBLIC_KEY_SIZE: usize = vrf::PUBLIC_SIZE;
@@ -22,9 +22,9 @@ impl AsymmetricPublicKey for Curve25519_2HashDH {
     }
 }
 
-impl AsymmetricKey for Curve25519_2HashDH {
+impl AsymmetricKey for Curve25519_2HashDh {
     type Secret = vrf::SecretKey;
-    type PubAlg = Curve25519_2HashDH;
+    type PubAlg = Curve25519_2HashDh;
 
     const SECRET_BECH32_HRP: &'static str = "vrf_sk";
 
@@ -49,11 +49,11 @@ impl AsymmetricKey for Curve25519_2HashDH {
     }
 }
 
-impl SecretKeySizeStatic for Curve25519_2HashDH {
+impl SecretKeySizeStatic for Curve25519_2HashDh {
     const SECRET_KEY_SIZE: usize = vrf::SECRET_SIZE;
 }
 
-impl VerifiableRandomFunction for Curve25519_2HashDH {
+impl VerifiableRandomFunction for Curve25519_2HashDh {
     type VerifiedRandomOutput = vrf::ProvenOutputSeed;
     type RandomOutput = vrf::OutputSeed;
     type Input = [u8];
@@ -72,12 +72,12 @@ impl VerifiableRandomFunction for Curve25519_2HashDH {
         public: &Self::Public,
         input: &Self::Input,
         vrand: &Self::VerifiedRandomOutput,
-    ) -> VRFVerification {
+    ) -> VrfVerification {
         let v = vrand.verify(public, input);
         if v {
-            VRFVerification::Success
+            VrfVerification::Success
         } else {
-            VRFVerification::Failed
+            VrfVerification::Failed
         }
     }
 

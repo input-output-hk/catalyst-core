@@ -111,7 +111,7 @@ impl SecretKey {
     ///
     /// use 'evaluate' or 'evaluate_simple' for creating the proof directly from input
     pub fn proove(&self, r: &Scalar, m_point: Point, output: OutputSeed) -> ProvenOutputSeed {
-        let dleq = dleq::DLEQ {
+        let dleq = dleq::Dleq {
             g1: &RISTRETTO_BASEPOINT_POINT,
             h1: &self.public,
             g2: &m_point,
@@ -183,7 +183,7 @@ impl PublicKey {
 impl ProvenOutputSeed {
     /// Verify a proof for a given public key and a data slice
     pub fn verify(&self, public_key: &PublicKey, input: &[u8]) -> bool {
-        let dleq = dleq::DLEQ {
+        let dleq = dleq::Dleq {
             g1: &RISTRETTO_BASEPOINT_POINT,
             h1: &public_key.0,
             g2: &make_message_hash_point(input),

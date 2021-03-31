@@ -3,7 +3,7 @@ use crate::chaintypes::ChainLength;
 use crate::header::{BftProof, BftSignature, Common, GenesisPraosProof, KesSignature};
 use crate::key::BftLeaderId;
 use chain_crypto::{
-    self, AsymmetricKey, Curve25519_2HashDH, Ed25519, SecretKey, SumEd25519_12,
+    self, AsymmetricKey, Curve25519_2HashDh, Ed25519, SecretKey, SumEd25519_12,
     VerifiableRandomFunction,
 };
 use lazy_static::lazy_static;
@@ -61,8 +61,8 @@ impl Arbitrary for GenesisPraosProof {
         let node_id = Arbitrary::arbitrary(g);
 
         let vrf_proof = {
-            let sk = Curve25519_2HashDH::generate(&mut tcg.get_rng(0));
-            Curve25519_2HashDH::evaluate_and_prove(&sk, &[0, 1, 2, 3], &mut tcg.get_rng(1))
+            let sk = Curve25519_2HashDh::generate(&mut tcg.get_rng(0));
+            Curve25519_2HashDh::evaluate_and_prove(&sk, &[0, 1, 2, 3], &mut tcg.get_rng(1))
         };
 
         let kes_proof = {

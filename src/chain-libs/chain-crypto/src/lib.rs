@@ -42,8 +42,8 @@ pub use sign::{
     VerificationAlgorithm,
 };
 pub use vrf::{
-    vrf_evaluate_and_prove, vrf_verified_get_output, vrf_verify, VRFVerification,
-    VerifiableRandomFunction,
+    vrf_evaluate_and_prove, vrf_verified_get_output, vrf_verify, VerifiableRandomFunction,
+    VrfVerification,
 };
 
 pub use algorithms::*;

@@ -90,8 +90,8 @@ pub fn load_test_private_pesimistic() {
         .vote_start_epoch(0)
         .tally_start_epoch(110)
         .tally_end_epoch(115)
-        .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(60)
+        .slot_duration_in_seconds(20)
+        .slots_in_epoch_count(3)
         .proposals_count(250)
         .voting_power(31_000)
         .private(true);

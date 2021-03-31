@@ -2,20 +2,24 @@ mod address;
 mod secret;
 mod verify;
 mod voters;
-use crate::cli::args::qr::secret::GetSecretFromQRCommand;
-use address::GetAddressFromQRCommand;
+mod wallets;
+
+use crate::cli::args::qr::secret::GetSecretFromQrCommand;
+use address::GetAddressFromQrCommand;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
 use structopt::StructOpt;
 use thiserror::Error;
 use verify::VerifyQrCommand;
 use voters::VotersCommand;
+use wallets::WalletsCommand;
 
 #[derive(StructOpt, Debug)]
 pub enum IapyxQrCommand {
     Verify(VerifyQrCommand),
     Voters(VotersCommand),
-    CheckAddress(GetAddressFromQRCommand),
-    Secret(GetSecretFromQRCommand),
+    CheckAddress(GetAddressFromQrCommand),
+    Secret(GetSecretFromQrCommand),
+    Wallets(WalletsCommand),
 }
 
 impl IapyxQrCommand {
@@ -25,6 +29,7 @@ impl IapyxQrCommand {
             Self::CheckAddress(check_address) => check_address.exec(),
             Self::Secret(secret) => secret.exec(),
             Self::Voters(voters) => voters.exec(),
+            Self::Wallets(wallets) => wallets.exec(),
         }
     }
 }

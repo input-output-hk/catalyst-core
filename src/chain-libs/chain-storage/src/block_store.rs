@@ -527,8 +527,7 @@ impl BlockStore {
             None => return Ok(0),
         }
 
-        let mut block_infos = Vec::new();
-        block_infos.push(block_info);
+        let mut block_infos = vec![block_info];
         let mut current_block_id = block_infos.last().unwrap().parent_id().as_ref();
 
         while let Some(block_info) = self

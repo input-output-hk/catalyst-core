@@ -15,7 +15,7 @@ pub fn load_test_public_100_000_votes() {
     let endpoint = "127.0.0.1:8080";
     let version = "2.0";
 
-    let no_of_votes = 100_000;
+    let no_of_votes = 10_000;
     let no_of_threads = 10;
     let no_of_wallets = 40_000;
     let vote_timing = [0, 100, 102];
@@ -79,7 +79,7 @@ pub fn load_test_public_100_000_votes() {
 
 #[test]
 pub fn load_test_private_pesimistic() {
-    let no_of_votes = 30_000;
+    let no_of_votes = 8_000;
     let no_of_threads = 10;
     let no_of_wallets = 4_000;
     let endpoint = "127.0.0.1:8080";
@@ -101,7 +101,7 @@ pub fn load_test_private_pesimistic() {
 
 #[test]
 pub fn load_test_private_optimistic() {
-    let no_of_votes = 100_000;
+    let no_of_votes = 10_000;
     let no_of_threads = 10;
     let no_of_wallets = 20_000;
     let endpoint = "127.0.0.1:8080";

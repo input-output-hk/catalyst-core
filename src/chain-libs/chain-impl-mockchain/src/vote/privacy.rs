@@ -1,11 +1,11 @@
 use crate::vote::{EncryptedVote, ProofOfCorrectVote};
-use chain_vote::{EncryptingVoteKey, Vote, CRS};
+use chain_vote::{Crs, EncryptingVoteKey, Vote};
 use rand_core::{CryptoRng, RngCore};
 
 #[allow(dead_code)]
 pub fn encrypt_vote<R: RngCore + CryptoRng>(
     rng: &mut R,
-    crs: &CRS,
+    crs: &Crs,
     public_key: &EncryptingVoteKey,
     vote: Vote,
 ) -> (EncryptedVote, ProofOfCorrectVote) {

@@ -1,7 +1,7 @@
 use crate::vote::VotePlanStatus;
 use chain_vote::{
-    committee::MemberSecretKey, MemberCommunicationKey, MemberPublicKey, MemberState,
-    TallyDecryptShare, CRS,
+    committee::MemberSecretKey, Crs, MemberCommunicationKey, MemberPublicKey, MemberState,
+    TallyDecryptShare,
 };
 use rand_core::CryptoRng;
 use rand_core::RngCore;
@@ -28,7 +28,7 @@ impl CommitteeMembersManager {
             public_keys.push(public_key);
         }
 
-        let crs = CRS::from_hash(&crs_seed);
+        let crs = Crs::from_hash(&crs_seed);
 
         let mut members = Vec::new();
         for i in 0..members_no {

@@ -5,12 +5,12 @@ use rand_core::{CryptoRng, RngCore};
 
 // Power of Two Padded vector structure
 #[derive(Clone)]
-pub struct PTP<A> {
+pub struct Ptp<A> {
     pub elements: Vec<A>,
     pub orig_len: usize,
 }
 
-impl<A: Clone> PTP<A> {
+impl<A: Clone> Ptp<A> {
     pub fn len(&self) -> usize {
         self.elements.len()
     }
@@ -21,7 +21,7 @@ impl<A: Clone> PTP<A> {
         len.trailing_zeros() as usize
     }
 
-    pub fn new<F>(mut vec: Vec<A>, extended_value: F) -> PTP<A>
+    pub fn new<F>(mut vec: Vec<A>, extended_value: F) -> Ptp<A>
     where
         A: Clone,
         F: Fn() -> A,
@@ -35,7 +35,7 @@ impl<A: Clone> PTP<A> {
                 vec.push(a.clone());
             }
         }
-        PTP {
+        Ptp {
             orig_len,
             elements: vec,
         }
@@ -46,7 +46,7 @@ impl<A: Clone> PTP<A> {
     }
 }
 
-impl<A> AsRef<[A]> for PTP<A> {
+impl<A> AsRef<[A]> for Ptp<A> {
     fn as_ref(&self) -> &[A] {
         &self.elements
     }
@@ -85,7 +85,7 @@ impl EncryptingVote {
     }
 
     /*
-    pub fn pad<F>(mut self, extended_value: F) -> PTPEncryptingVote
+    pub fn pad<F>(mut self, extended_value: F) -> PtpEncryptingVote
     where
         F: Fn() -> (Scalar, Ciphertext),
     {
@@ -99,7 +99,7 @@ impl EncryptingVote {
                 self.random_elements.push(field_element);
             }
         }
-        PTPEncryptingVote {
+        PtpEncryptingVote {
             actual_length: orig_len,
             encrypting_vote: self,
         }

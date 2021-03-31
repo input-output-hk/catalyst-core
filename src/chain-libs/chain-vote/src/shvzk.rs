@@ -3,27 +3,27 @@ use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};
 
 use crate::commitment::{Commitment, CommitmentKey};
-use crate::encrypted::{EncryptingVote, PTP};
+use crate::encrypted::{EncryptingVote, Ptp};
 use crate::encryption::{Ciphertext, PublicKey};
 use crate::gang::Scalar;
 use crate::math::Polynomial;
 use crate::unit_vector::binrep;
-use crate::CRS;
+use crate::Crs;
 
-struct ABCD {
+struct Abcd {
     alpha: Scalar,
     beta: Scalar,
     gamma: Scalar,
     delta: Scalar,
 }
 
-impl ABCD {
+impl Abcd {
     pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         let alpha = Scalar::random(rng);
         let beta = Scalar::random(rng);
         let gamma = Scalar::random(rng);
         let delta = Scalar::random(rng);
-        ABCD {
+        Abcd {
             alpha,
             beta,
             gamma,
@@ -34,7 +34,7 @@ impl ABCD {
 
 /// I, B, A commitments
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct IBA {
+pub struct Iba {
     i: Commitment,
     b: Commitment,
     a: Commitment,
@@ -42,7 +42,7 @@ pub struct IBA {
 
 // Computed z, w, v
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct ZWV {
+pub struct Zwv {
     z: Scalar,
     w: Scalar,
     v: Scalar,
@@ -51,13 +51,13 @@ pub struct ZWV {
 /// Proof of unit vector
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Proof {
-    ibas: Vec<IBA>,
+    ibas: Vec<Iba>,
     ds: Vec<Ciphertext>,
-    zwvs: Vec<ZWV>,
+    zwvs: Vec<Zwv>,
     r: Scalar,
 }
 
-impl IBA {
+impl Iba {
     pub const BYTES_LEN: usize = Commitment::BYTES_LEN * 3;
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
@@ -81,7 +81,7 @@ impl IBA {
     }
 }
 
-impl ZWV {
+impl Zwv {
     pub const BYTES_LEN: usize = Scalar::BYTES_LEN * 3;
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
@@ -112,7 +112,7 @@ impl Proof {
     /// # Panics
     ///
     /// The `ibas`, `ds`, and `zwvs` must have the same length, otherwise the function will panic.
-    pub fn from_parts(ibas: Vec<IBA>, ds: Vec<Ciphertext>, zwvs: Vec<ZWV>, r: Scalar) -> Self {
+    pub fn from_parts(ibas: Vec<Iba>, ds: Vec<Ciphertext>, zwvs: Vec<Zwv>, r: Scalar) -> Self {
         assert_eq!(ibas.len(), ds.len());
         assert_eq!(ibas.len(), zwvs.len());
         Proof { ibas, ds, zwvs, r }
@@ -122,7 +122,7 @@ impl Proof {
         self.ibas.len()
     }
 
-    pub fn ibas(&self) -> impl Iterator<Item = &IBA> {
+    pub fn ibas(&self) -> impl Iterator<Item = &Iba> {
         self.ibas.iter()
     }
 
@@ -130,7 +130,7 @@ impl Proof {
         self.ds.iter()
     }
 
-    pub fn zwvs(&self) -> impl Iterator<Item = &ZWV> {
+    pub fn zwvs(&self) -> impl Iterator<Item = &Zwv> {
         self.zwvs.iter()
     }
 
@@ -139,8 +139,8 @@ impl Proof {
     }
 }
 
-impl IBA {
-    fn new(ck: &CommitmentKey, abcd: &ABCD, index: &Scalar) -> Self {
+impl Iba {
+    fn new(ck: &CommitmentKey, abcd: &Abcd, index: &Scalar) -> Self {
         assert!(index == &Scalar::zero() || index == &Scalar::one());
 
         // commit index bit: 0 or 1
@@ -155,7 +155,7 @@ impl IBA {
         };
         let a = Commitment::new(ck, &acommited, &abcd.delta);
 
-        IBA { i, b, a }
+        Iba { i, b, a }
     }
 }
 
@@ -168,7 +168,7 @@ fn hash_to_scalar(b: &Blake2b) -> Scalar {
 }
 
 impl ChallengeContext {
-    fn new(public_key: &PublicKey, ciphers: &[Ciphertext], ibas: &[IBA]) -> Self {
+    fn new(public_key: &PublicKey, ciphers: &[Ciphertext], ibas: &[Iba]) -> Self {
         let mut ctx = Blake2b::new(32);
         ctx.input(&public_key.to_bytes());
         for c in ciphers {
@@ -197,13 +197,13 @@ impl ChallengeContext {
 
 pub(crate) fn prove<R: RngCore + CryptoRng>(
     rng: &mut R,
-    crs: &CRS,
+    crs: &Crs,
     public_key: &PublicKey,
     encrypting_vote: EncryptingVote,
 ) -> Proof {
     let ck = CommitmentKey { h: crs.clone() };
-    let ciphers = PTP::new(encrypting_vote.ciphertexts, Ciphertext::zero);
-    let cipher_randoms = PTP::new(encrypting_vote.random_elements, Scalar::zero);
+    let ciphers = Ptp::new(encrypting_vote.ciphertexts, Ciphertext::zero);
+    let cipher_randoms = Ptp::new(encrypting_vote.random_elements, Scalar::zero);
 
     assert_eq!(ciphers.bits(), cipher_randoms.bits());
 
@@ -211,7 +211,7 @@ pub(crate) fn prove<R: RngCore + CryptoRng>(
 
     let mut abcds = Vec::with_capacity(bits);
     for _ in 0..bits {
-        abcds.push(ABCD::random(rng))
+        abcds.push(Abcd::random(rng))
     }
 
     let unit_vector = &encrypting_vote.unit_vector;
@@ -219,10 +219,10 @@ pub(crate) fn prove<R: RngCore + CryptoRng>(
     assert_eq!(idx.len(), bits);
 
     // Generate I, B, A commitments
-    let ibas: Vec<IBA> = abcds
+    let ibas: Vec<Iba> = abcds
         .iter()
         .zip(idx.iter())
-        .map(|(abcd, index)| IBA::new(&ck, abcd, &(*index).into()))
+        .map(|(abcd, index)| Iba::new(&ck, abcd, &(*index).into()))
         .collect();
     debug_assert_eq!(ibas.len(), bits);
 
@@ -295,7 +295,7 @@ pub(crate) fn prove<R: RngCore + CryptoRng>(
             let z = Scalar::from(*index) * &cx + &abcd.beta;
             let w = &abcd.alpha * &cx + &abcd.gamma;
             let v = &abcd.alpha * (&cx - &z) + &abcd.delta;
-            ZWV { z, w, v }
+            Zwv { z, w, v }
         })
         .collect::<Vec<_>>();
     debug_assert_eq!(zwvs.len(), bits);
@@ -321,13 +321,13 @@ pub(crate) fn prove<R: RngCore + CryptoRng>(
 }
 
 pub(crate) fn verify(
-    crs: &CRS,
+    crs: &Crs,
     public_key: &PublicKey,
     ciphertexts: &[Ciphertext],
     proof: &Proof,
 ) -> bool {
     let ck = CommitmentKey { h: crs.clone() };
-    let ciphertexts = PTP::new(ciphertexts.to_vec(), Ciphertext::zero);
+    let ciphertexts = Ptp::new(ciphertexts.to_vec(), Ciphertext::zero);
     let bits = ciphertexts.bits();
     let cc = ChallengeContext::new(public_key, ciphertexts.as_ref(), &proof.ibas);
     let cy = cc.first_challenge();
@@ -415,7 +415,7 @@ mod tests {
 
         let mut shared_string =
             b"Example of a shared string. This could be the latest block hash".to_owned();
-        let crs = CRS::from_hash(&mut shared_string);
+        let crs = Crs::from_hash(&mut shared_string);
 
         let proof = prove(&mut r, &crs, &public_key, ev.clone());
         assert!(verify(&crs, &public_key, &ev.ciphertexts, &proof))
@@ -430,7 +430,7 @@ mod tests {
 
         let mut shared_string =
             b"Example of a shared string. This could be the latest block hash".to_owned();
-        let crs = CRS::from_hash(&mut shared_string);
+        let crs = Crs::from_hash(&mut shared_string);
 
         let proof = prove(&mut r, &crs, &public_key, ev.clone());
         assert!(verify(&crs, &public_key, &ev.ciphertexts, &proof))

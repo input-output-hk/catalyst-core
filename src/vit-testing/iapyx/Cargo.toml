@@ -18,12 +18,12 @@ chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 hex = "0.4"
-rand = "0.7"
-rand_core = "0.5"
+rand = "0.8"
+rand_core = "0.6"
 cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
-jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", rev = "1955f6a1a60bc66635cdd67460872ff7e4c29022" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "1955f6a1a60bc66635cdd67460872ff7e4c29022" }
+jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", rev = "d7da17dd5201c80f7304050a386243975f097fc2" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "d7da17dd5201c80f7304050a386243975f097fc2" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
 hyper = "0.13.6"
 thiserror = "1.0"
@@ -36,7 +36,7 @@ structopt = "0.3"
 console = "0.11"
 warp = { version = "0.3", features = ["tls"] }
 warp-reverse-proxy = "0.3.1"
-tokio = { version = "^1.0", features = ["macros", "signal", "rt", "fs", "sync"] }
+tokio = { version = "^1.4.0", features = ["macros", "signal", "rt", "fs", "sync"] }
 url = "2.1.1"
 image = "0.23.12"
 

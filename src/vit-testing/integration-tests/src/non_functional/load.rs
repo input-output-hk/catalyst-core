@@ -9,8 +9,8 @@ use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGener
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
-#[tokio::test]
-pub async fn load_test_public_100_000_votes() {
+#[test]
+pub fn load_test_public_100_000_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let endpoint = "127.0.0.1:8080";
     let version = "2.0";
@@ -55,19 +55,6 @@ pub async fn load_test_public_100_000_votes() {
         assert!(benchmark.status() == Status::Green, "too low efficiency");
     }
 
-    println!(
-        "{:?}",
-        nodes
-            .get(0)
-            .unwrap()
-            .explorer()
-            .status()
-            .unwrap()
-            .data
-            .unwrap()
-            .status
-    );
-
     time::wait_for_epoch(10, nodes.get(0).unwrap().explorer());
 
     let mut committee = controller.wallet("committee").unwrap();
@@ -89,8 +76,8 @@ pub async fn load_test_public_100_000_votes() {
     controller.finalize();
 }
 
-#[tokio::test]
-pub async fn load_test_private_pesimistic() {
+#[test]
+pub fn load_test_private_pesimistic() {
     let no_of_votes = 30_000;
     let no_of_threads = 10;
     let no_of_wallets = 4_000;
@@ -111,8 +98,8 @@ pub async fn load_test_private_pesimistic() {
     private_vote_test_scenario(quick_setup, endpoint, no_of_votes, no_of_threads);
 }
 
-#[tokio::test]
-pub async fn load_test_private_optimistic() {
+#[test]
+pub fn load_test_private_optimistic() {
     let no_of_votes = 100_000;
     let no_of_threads = 10;
     let no_of_wallets = 20_000;

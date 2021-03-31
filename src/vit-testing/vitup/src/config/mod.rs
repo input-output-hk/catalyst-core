@@ -5,7 +5,7 @@ pub use env::VitStartParameters;
 pub use initials::{Initial as InitialEntry, Initials};
 
 use chain_impl_mockchain::fee::LinearFee;
-use jormungandr_lib::interfaces::{CommitteeIdDef, ConsensusLeaderId, Initial, LinearFeeDef};
+use jormungandr_lib::interfaces::{CommitteeIdDef, ConsensusLeaderId, LinearFeeDef};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -16,8 +16,6 @@ pub struct DataGenerationConfig {
     pub linear_fees: LinearFee,
     #[serde(default)]
     pub committees: Vec<CommitteeIdDef>,
-    #[serde(default)]
-    pub additions: Vec<Initial>,
     #[serde(flatten)]
     pub params: VitStartParameters,
 }
@@ -28,7 +26,6 @@ impl Default for DataGenerationConfig {
             consensus_leader_ids: Vec::new(),
             linear_fees: LinearFee::new(0, 0, 0),
             committees: Vec::new(),
-            additions: Vec::new(),
             params: Default::default(),
         }
     }

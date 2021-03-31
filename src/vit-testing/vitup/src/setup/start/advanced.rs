@@ -75,15 +75,21 @@ pub struct AdvancedStartCommandArgs {
     pub config: PathBuf,
 
     /// proposals import json
-    #[structopt(long = "proposals")]
+    #[structopt(
+        long = "proposals",
+        default_value = "../resources/external/proposals.json"
+    )]
     pub proposals: PathBuf,
 
     /// challenges import json
-    #[structopt(long = "challenges")]
+    #[structopt(
+        long = "challenges",
+        default_value = "../resources/external/challenges.json"
+    )]
     pub challenges: PathBuf,
 
     /// funds import json
-    #[structopt(long = "funds")]
+    #[structopt(long = "funds", default_value = "../resources/external/funds.json")]
     pub funds: PathBuf,
 
     #[structopt(long = "snapshot")]
@@ -123,8 +129,12 @@ impl AdvancedStartCommandArgs {
 
         let config = read_config(&self.config)?;
 
+        println!("{:?}", config.params);
+
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
-        quick_setup.upload_parameters(config.params);
+        quick_setup.upload_parameters(config.params.clone());
+        quick_setup.fees(config.linear_fees);
+        quick_setup.set_external_committees(config.committees);
 
         let mut template_generator =
             ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)

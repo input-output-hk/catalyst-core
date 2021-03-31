@@ -32,6 +32,8 @@ error_chain! {
         Block0ConfigurationError(Block0ConfigurationError);
         VitServerBootstrapperError(ServerBootstrapperError);
         VitRestError(vit_servicing_station_tests::common::clients::RestError);
+        ChainAddressError(chain_addr::Error);
+        ChainBech32Error(chain_crypto::bech32::Error);
     }
 
     errors {

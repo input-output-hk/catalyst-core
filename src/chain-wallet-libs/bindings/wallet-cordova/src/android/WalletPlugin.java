@@ -190,20 +190,27 @@ public class WalletPlugin extends CordovaPlugin {
         final JSONObject fees = (JSONObject) args.get(2);
 
         try {
-            final Settings.LinearFees linearFees = new Settings.LinearFees(Long.parseLong(fees.getString("constant")),
-                    Long.parseLong(fees.getString("coefficient")), Long.parseLong(fees.getString("certificate")),
-                    new Settings.PerCertificateFee(Long.parseLong(fees.getString("certificatePoolRegistration")),
-                            Long.parseLong(fees.getString("certificateStakeDelegation")),
-                            Long.parseLong(fees.getString("certificateOwnerStakeDelegation"))),
-                    new Settings.PerVoteCertificateFee(Long.parseLong(fees.getString("certificateVotePlan")),
-                            Long.parseLong(fees.getString("certificateVoteCast"))));
+            final long constant = Long.parseLong(fees.getString("constant"));
+            final long coefficient = Long.parseLong(fees.getString("coefficient"));
+            final long certificate = Long.parseLong(fees.getString("certificate"));
+
+            final long certificatePoolRegistration = Long.parseLong(fees.getString("certificatePoolRegistration"));
+            final long certificateStakeDelegation = Long.parseLong(fees.getString("certificateStakeDelegation"));
+            final long certificateOwnerStakeDelegation = Long
+                    .parseLong(fees.getString("certificateOwnerStakeDelegation"));
+
+            final long certificateVotePlan = Long.parseLong(fees.getString("certificateVotePlan"));
+            final long certificateVoteCast = Long.parseLong(fees.getString("certificateVoteCast"));
+
+            final Settings.LinearFees linearFees = new Settings.LinearFees(constant, coefficient, certificate,
+                    new Settings.PerCertificateFee(certificatePoolRegistration, certificateStakeDelegation,
+                            certificateOwnerStakeDelegation),
+                    new Settings.PerVoteCertificateFee(certificateVotePlan, certificateVoteCast));
 
             final Settings.Discrimination discrimination = discriminationInput == 0 ? Settings.Discrimination.PRODUCTION
                     : Settings.Discrimination.TEST;
 
             final long settingsPtr = Settings.build(linearFees, discrimination, block0Hash);
-
-            final Settings.LinearFees fees2 = Settings.fees(settingsPtr);
 
             callbackContext.success(Long.toString(settingsPtr));
         } catch (final Exception e) {

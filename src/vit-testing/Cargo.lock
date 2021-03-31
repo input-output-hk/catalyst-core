@@ -1961,7 +1961,7 @@ dependencies = [
  "jormungandr-scenario-tests",
  "jormungandr-testing-utils",
  "jortestkit",
- "rand 0.7.3",
+ "rand 0.8.3",
  "rand_chacha 0.2.2",
  "thiserror",
  "tokio 1.4.0",

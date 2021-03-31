@@ -60,4 +60,4 @@ tracing-appender = "0.1.2"
 [dependencies.reqwest]
 version = "0.10.10"
 default-features = false
-features = ["blocking", "rustls-tls"]
+features = ["blocking", "rustls-tls", "json"]

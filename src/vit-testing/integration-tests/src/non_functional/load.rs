@@ -55,19 +55,6 @@ pub async fn load_test_public_100_000_votes() {
         assert!(benchmark.status() == Status::Green, "too low efficiency");
     }
 
-    println!(
-        "{:?}",
-        nodes
-            .get(0)
-            .unwrap()
-            .explorer()
-            .status()
-            .unwrap()
-            .data
-            .unwrap()
-            .status
-    );
-
     time::wait_for_epoch(10, nodes.get(0).unwrap().explorer());
 
     let mut committee = controller.wallet("committee").unwrap();

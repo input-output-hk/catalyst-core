@@ -7,14 +7,13 @@ use iapyx::Protocol;
 use jormungandr_testing_utils::testing::node::time;
 use std::path::Path;
 use std::str::FromStr;
-use tokio;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::{InitialEntry, Initials};
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
-#[tokio::test]
-pub async fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
+#[test]
+pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let endpoint = "127.0.0.1:8080";
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();

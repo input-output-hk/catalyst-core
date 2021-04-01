@@ -30,11 +30,10 @@ pub struct VitStartParameters {
 
 impl VitStartParameters {
     pub fn calculate_vote_duration(&self) -> Duration {
-        let duration_as_secs = 
-                (self.vote_tally - self.vote_start) *
-                self.slot_duration as u64 * 
-                (self.slots_per_epoch-1 ) as u64;
-        
+        let duration_as_secs = (self.vote_tally - self.vote_start)
+            * self.slot_duration as u64
+            * (self.slots_per_epoch - 1) as u64;
+
         Duration::from_secs(duration_as_secs)
     }
 }

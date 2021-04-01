@@ -17,17 +17,17 @@ use jortestkit::{
 use std::path::PathBuf;
 use std::str::FromStr;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::config::VitStartParameters;
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 #[allow(dead_code)]
 fn private_vote_test_scenario(
     quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: &str,
-    no_of_votes: u32,
     no_of_threads: usize,
 ) {
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let parameters = quick_setup.parameters();
+    let parameters = quick_setup.parameters().clone();
     let wallet_count = parameters.initials.as_ref().unwrap().count();
     let vote_tally = parameters.vote_tally;
     let slots_per_epoch = parameters.slots_per_epoch;
@@ -59,7 +59,7 @@ fn private_vote_test_scenario(
 
     println!("load test setup..");
 
-    let config = build_load_config(endpoint, qr_codes_folder, no_of_threads, no_of_votes);
+    let config = build_load_config(endpoint, qr_codes_folder, no_of_threads, parameters);
     let iapyx_load = IapyxLoad::new(config);
     if let Some(benchmark) = iapyx_load.start().unwrap() {
         assert!(
@@ -140,11 +140,11 @@ fn build_load_config(
     address: &str,
     qr_codes_folder: PathBuf,
     threads_no: usize,
-    no_of_votes: u32,
+    parameters: VitStartParameters,
 ) -> IapyxLoadConfig {
-    let config = Configuration::requests_per_thread(
+    let config = Configuration::duration(
         threads_no,
-        no_of_votes,
+        parameters.calculate_vote_duration(),
         100,
         Monitor::Progress(100),
         60,

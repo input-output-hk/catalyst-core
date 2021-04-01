@@ -13,9 +13,8 @@ use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 pub fn load_test_public_100_000_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let endpoint = "127.0.0.1:8080";
-    let version = "2.0";
 
-    let no_of_votes = 10_000;
+    let version = "2.0";
     let no_of_threads = 10;
     let no_of_wallets = 40_000;
     let vote_timing = [0, 100, 102];
@@ -32,6 +31,7 @@ pub fn load_test_public_100_000_votes() {
         .voting_power(31_000)
         .private(false);
 
+    let setup_parameters = quick_setup.parameters().clone();
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
     let (mut vit_controller, mut controller, vit_parameters, fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
@@ -50,7 +50,7 @@ pub fn load_test_public_100_000_votes() {
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
     qr_codes_folder.push("vit_backend/qr-codes");
 
-    let config = build_load_config(endpoint, qr_codes_folder, no_of_threads, no_of_votes);
+    let config = build_load_config(endpoint, qr_codes_folder, no_of_threads, setup_parameters);
     let iapyx_load = IapyxLoad::new(config);
     if let Some(benchmark) = iapyx_load.start().unwrap() {
         assert!(benchmark.status() == Status::Green, "too low efficiency");
@@ -79,29 +79,26 @@ pub fn load_test_public_100_000_votes() {
 
 #[test]
 pub fn load_test_private_pesimistic() {
-    let no_of_votes = 8_000;
     let no_of_threads = 10;
-    let no_of_wallets = 4_000;
     let endpoint = "127.0.0.1:8080";
-
+    let no_of_wallets = 8_000;
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
         .vote_start_epoch(0)
-        .tally_start_epoch(110)
-        .tally_end_epoch(115)
+        .tally_start_epoch(11)
+        .tally_end_epoch(12)
         .slot_duration_in_seconds(20)
         .slots_in_epoch_count(3)
         .proposals_count(250)
         .voting_power(31_000)
         .private(true);
 
-    private_vote_test_scenario(quick_setup, endpoint, no_of_votes, no_of_threads);
+    private_vote_test_scenario(quick_setup, endpoint, no_of_threads);
 }
 
 #[test]
 pub fn load_test_private_optimistic() {
-    let no_of_votes = 10_000;
     let no_of_threads = 10;
     let no_of_wallets = 20_000;
     let endpoint = "127.0.0.1:8080";
@@ -118,5 +115,5 @@ pub fn load_test_private_optimistic() {
         .voting_power(31_000)
         .private(true);
 
-    private_vote_test_scenario(quick_setup, endpoint, no_of_votes, no_of_threads);
+    private_vote_test_scenario(quick_setup, endpoint, no_of_threads);
 }

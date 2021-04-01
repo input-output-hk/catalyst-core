@@ -3,7 +3,6 @@ use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 #[test]
 pub fn soak_test_private_super_optimistic() {
-    let no_of_votes = 200_000;
     let no_of_threads = 10;
     let no_of_wallets = 40_000;
     let endpoint = "127.0.0.1:8080";
@@ -20,5 +19,5 @@ pub fn soak_test_private_super_optimistic() {
         .voting_power(1_500_000)
         .private(true);
 
-    private_vote_test_scenario(quick_setup, endpoint, no_of_votes, no_of_threads);
+    private_vote_test_scenario(quick_setup, endpoint, no_of_threads);
 }

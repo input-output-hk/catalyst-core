@@ -3,7 +3,7 @@ version: 2.1
 executors:
   rust-stable:
     docker:
-      - image: circleci/rust:latest
+      - image: cimg/rust:1.51.0
     working_directory: /home/circleci/build
   rust-nightly:
     docker:
@@ -23,32 +23,32 @@ jobs:
       - restore_cache:
           name: Restore cargo registry index from cache
           keys:
-            - cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
-            - cargo-index-v1-
+            - cargo-index-v2-{{ checksum ".circleci/crates.io-index.head" }}
+            - cargo-index-v2-
       - run:
           name: Generate Cargo.lock and update cargo registry index
           command: |
             cargo generate-lockfile
-            git -C /usr/local/cargo/registry/index/github.com-1ecc6299db9ec823 \
+            git -C /home/circleci/.cargo/registry/index/github.com-1ecc6299db9ec823 \
                 show-ref -s refs/remotes/origin/master |
               tee .circleci/crates.io-index.head
       - save_cache:
           name: Save cargo registry index into cache
-          key: cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
+          key: cargo-index-v2-{{ checksum ".circleci/crates.io-index.head" }}
           paths:
-            - /usr/local/cargo/registry/index
+            - /home/circleci/.cargo/registry/index
       - restore_cache:
           name: Restore dependency crates from cache
           keys:
-            - cargo-deps-v2-{{ checksum "Cargo.lock" }}
-            - cargo-deps-v2-
+            - cargo-deps-v3-{{ checksum "Cargo.lock" }}
+            - cargo-deps-v3-
       - run: cargo fetch
       - save_cache:
           name: Save dependency crates into cache
-          key: cargo-deps-v2-{{ checksum "Cargo.lock" }}
+          key: cargo-deps-v3-{{ checksum "Cargo.lock" }}
           paths:
-            - /usr/local/cargo/registry/cache
-            - /usr/local/cargo/git/db
+            - /home/circleci/.cargo/registry/cache
+            - /home/circleci/.cargo/git/db
       - persist_to_workspace:
           root: .
           paths:
@@ -92,11 +92,11 @@ commands:
       - restore_cache:
           name: Restore cargo registry index from cache
           keys:
-            - cargo-index-v1-{{ checksum ".circleci/crates.io-index.head" }}
+            - cargo-index-v2-{{ checksum ".circleci/crates.io-index.head" }}
       - restore_cache:
           name: Restore dependency crates from cache
           keys:
-            - cargo-deps-v2-{{ checksum "Cargo.lock" }}
+            - cargo-deps-v3-{{ checksum "Cargo.lock" }}
       - run:
           name: Print version information
           command: rustc --version; cargo --version

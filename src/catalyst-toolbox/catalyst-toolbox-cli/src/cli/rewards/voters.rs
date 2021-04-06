@@ -85,14 +85,11 @@ fn write_rewards_results(
         let record = [
             address.to_string(),
             stake.to_string(),
-            format!("{}", voter_reward.to_string()),
-            format!(
-                "{}",
-                voter_reward
-                    .mul(&(ADA_TO_LOVELACE_FACTOR as u128))
-                    .int()
-                    .to_string()
-            ),
+            voter_reward.to_string(),
+            voter_reward
+                .mul(&(ADA_TO_LOVELACE_FACTOR as u128))
+                .int()
+                .to_string(),
         ];
         csv_writer.write_record(&record).map_err(Error::Csv)?;
     }

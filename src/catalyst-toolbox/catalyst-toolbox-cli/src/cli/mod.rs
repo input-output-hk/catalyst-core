@@ -3,7 +3,6 @@ pub mod rewards;
 use std::error::Error;
 use structopt::StructOpt;
 
-
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Cli {
@@ -19,7 +18,6 @@ pub struct Cli {
     #[structopt(subcommand)]
     command: Option<CatalystCommand>,
 }
-
 
 #[allow(clippy::large_enum_variant)]
 #[derive(StructOpt)]

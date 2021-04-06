@@ -4,9 +4,7 @@ use std::error::Error;
 use structopt::StructOpt;
 
 fn main() {
-    cli::Cli::from_args()
-        .exec()
-        .unwrap_or_else(report_error)
+    cli::Cli::from_args().exec().unwrap_or_else(report_error)
 }
 
 fn report_error(error: Box<dyn Error>) {

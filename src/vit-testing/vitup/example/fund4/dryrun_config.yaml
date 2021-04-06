@@ -1,8 +1,8 @@
 {
   "vote_start": 1,
-  "vote_tally": 25,
-  "tally_end": 27,
-  "next_vote_start_time": "2021-03-14T21:00:00",
+  "vote_tally": 18,
+  "tally_end": 20,
+  "next_vote_start_time": "2021-04-30T21:00:00",
   "proposals": 285,
   "challenges": 7,
   "slot_duration": 20,
@@ -20,5 +20,6 @@
     "ed25519_pk1lv8m52aakjm2z0yqtltqxp6f9kemtcmt9ej7gn86eru7gpt8tn0q08j8lt",
     "ed25519_pk1qvq6prs87lmg6aeurdhq93fhtrx034yzc3jgj6lc3xc3a8lff98qtgw4dw",
     "ed25519_pk1g0mftq89wpwaymtegmuppyxtfnsp4jcc42cwcz4p6flvd7c5zn4qm3lmtp"
-  ]
+  ],
+  "version":"0.1"
 }

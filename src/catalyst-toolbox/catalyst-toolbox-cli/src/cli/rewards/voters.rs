@@ -58,15 +58,15 @@ fn calculate_inverse_reward_share<'address>(
         .collect()
 }
 
-/// caculate total reward from the inverse of the the reward share
-fn calculate_total_reward(share: u64, total_reward: u64) -> f64 {
-    (total_reward as f64).div(share as f64)
+/// get the proportional reward from a share total reward from the inverse of the the reward share
+fn reward_from_share(share: u64, total_reward: u64) -> fixed::types::U64F64 {
+    fixed::types::U64F64::from_num(total_reward) / share as u128
 }
 
 fn write_rewards_results(
     common: Common,
     stake_per_voter: &HashMap<&Address, u64>,
-    results: &HashMap<&Address, u64>,
+    share_results: &HashMap<&Address, u64>,
     total_rewards: u64,
 ) -> Result<(), Error> {
     let writer = common.open_output()?;
@@ -79,14 +79,20 @@ fn write_rewards_results(
     let mut csv_writer = csv::Writer::from_writer(writer);
     csv_writer.write_record(&header).map_err(Error::Csv)?;
 
-    for (address, reward) in results.iter() {
+    for (address, share) in share_results.iter() {
         let stake = stake_per_voter.get(*address).unwrap();
-        let voter_reward = calculate_total_reward(*reward, total_rewards);
+        let voter_reward = reward_from_share(*share, total_rewards);
         let record = [
             address.to_string(),
             stake.to_string(),
-            format!("{:.0}", voter_reward.trunc()),
-            format!("{:.4}", voter_reward.mul(ADA_TO_LOVELACE_FACTOR as f64)),
+            format!("{}", voter_reward.to_string()),
+            format!(
+                "{}",
+                voter_reward
+                    .mul(&(ADA_TO_LOVELACE_FACTOR as u128))
+                    .int()
+                    .to_string()
+            ),
         ];
         csv_writer.write_record(&record).map_err(Error::Csv)?;
     }

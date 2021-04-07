@@ -15,6 +15,7 @@ vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-serv
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
+snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 rand_chacha = "0.2"
 tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
@@ -22,6 +23,7 @@ thiserror = "1.0"
 rand = "0.8"
 cfg-if = "1.0.0"
 assert_fs = "1.0"
+chrono = "0.4.19"
 
 [features]
 load-tests = []

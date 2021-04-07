@@ -44,4 +44,4 @@ eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch =
 [dependencies.reqwest]
 version = "0.10.6"
 default-features = false
-features = ["blocking"]
+features = ["blocking","rustls-tls"]

@@ -1957,6 +1957,7 @@ dependencies = [
  "assert_fs",
  "cfg-if 1.0.0",
  "chain-impl-mockchain",
+ "chrono",
  "iapyx",
  "jormungandr-lib 0.11.0-rc1 (git+https://github.com/input-output-hk/jormungandr.git?rev=91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da)",
  "jormungandr-scenario-tests",
@@ -1964,6 +1965,7 @@ dependencies = [
  "jortestkit",
  "rand 0.8.3",
  "rand_chacha 0.2.2",
+ "snapshot-trigger-service",
  "thiserror",
  "tokio 1.4.0",
  "vit-servicing-station-lib",
@@ -2013,7 +2015,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.11.0-rc1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=ff6dda75351a75c275e1b4eb1c3cad40030a0e43#ff6dda75351a75c275e1b4eb1c3cad40030a0e43"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da#91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da"
 dependencies = [
  "assert_cmd",
  "assert_fs",

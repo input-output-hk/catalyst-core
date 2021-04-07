@@ -23,9 +23,9 @@ pub enum VitCliCommand {
 }
 
 impl VitCliCommand {
-    pub async fn exec(self) -> Result<()> {
+    pub fn exec(self) -> Result<()> {
         match self {
-            Self::Start(start_command) => start_command.exec().await,
+            Self::Start(start_command) => start_command.exec(),
             Self::Generate(generate_command) => generate_command.exec(),
             Self::Diff(diff_command) => diff_command.exec(),
         }
@@ -43,11 +43,11 @@ pub enum StartCommand {
 }
 
 impl StartCommand {
-    pub async fn exec(self) -> Result<()> {
+    pub fn exec(self) -> Result<()> {
         match self {
             Self::Quick(quick_start_command) => quick_start_command.exec(),
             Self::Advanced(advanced_start_command) => advanced_start_command.exec(),
-            Self::Mock(mock_start_command) => mock_start_command.exec().await.map_err(Into::into),
+            Self::Mock(mock_start_command) => mock_start_command.exec().map_err(Into::into),
         }
     }
 }

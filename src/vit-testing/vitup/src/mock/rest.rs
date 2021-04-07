@@ -36,6 +36,7 @@ pub enum Error {
 
 impl Reject for Error {}
 
+#[tokio::main]
 pub async fn start_rest_server(context: ContextLock) {
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();

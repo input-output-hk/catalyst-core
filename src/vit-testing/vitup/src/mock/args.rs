@@ -23,7 +23,7 @@ pub struct MockStartCommandArgs {
 }
 
 impl MockStartCommandArgs {
-    pub async fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), Error> {
         let mut configuration: Configuration = read_config(&self.config)?;
         let start_params = read_params(&self.params)?;
 
@@ -36,7 +36,9 @@ impl MockStartCommandArgs {
             start_params,
         )));
 
-        start_rest_server(control_context.clone()).await;
+        tokio::spawn(async move {
+            start_rest_server(control_context.clone())
+        });
         Ok(())
     }
 }

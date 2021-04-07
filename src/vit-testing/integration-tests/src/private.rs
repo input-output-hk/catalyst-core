@@ -4,7 +4,7 @@ use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
 use iapyx::Protocol;
-use jormungandr_testing_utils::testing::node::time;
+use jormungandr_testing_utils::testing::{FragmentSenderSetup, node::time};
 use std::path::Path;
 use std::str::FromStr;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
@@ -119,8 +119,10 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     };
     time::wait_for_date(target_date.into(), leader_1.explorer());
 
-    controller
-        .fragment_sender()
+    
+    let fragment_sender = controller.fragment_sender_with_setup(FragmentSenderSetup::resend_3_times());
+        
+    fragment_sender
         .send_encrypted_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
         .unwrap();
 
@@ -143,9 +145,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
         .unwrap()
         .decrypt_tally(&vote_plan_status.clone().into());
 
-    controller
-        .fragment_sender()
-        .send_private_vote_tally(
+    fragment_sender.send_private_vote_tally(
             &mut committee,
             &fund1_vote_plan.clone().into(),
             shares,

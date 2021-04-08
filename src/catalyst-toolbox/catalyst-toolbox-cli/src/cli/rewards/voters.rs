@@ -16,7 +16,7 @@ const ADA_TO_LOVELACE_FACTOR: u64 = 1_000_000;
 pub struct VotersRewards {
     #[structopt(flatten)]
     common: Common,
-    /// Reward (in LOVELACE) to be distributed
+    /// Reward (in ADA) to be distributed
     #[structopt(long = "total-rewards")]
     total_rewards: u64,
 }

@@ -77,10 +77,17 @@ fn private_vote_test_scenario(
     let mut committee = controller.wallet("committee_1").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
 
-    controller
-        .fragment_sender()
-        .send_encrypted_tally(&mut committee, &vote_plan.clone().into(), wallet_node)
-        .unwrap();
+    match controller.fragment_sender().send_encrypted_tally(
+        &mut committee,
+        &vote_plan.clone().into(),
+        wallet_node,
+    ) {
+        Ok(_) => (),
+        Err(_) => {
+            println!("Encrypted Tally {:?}", leader_1.fragment_logs());
+            println!("Encrypted Tally {:?}", wallet_node.fragment_logs());
+        }
+    };
 
     let target_date = BlockDate::new(vote_tally as u32, slots_per_epoch / 2);
     time::wait_for_date(target_date.into(), leader_1.explorer());
@@ -98,15 +105,18 @@ fn private_vote_test_scenario(
         .unwrap()
         .decrypt_tally(&vote_plan_status.clone().into());
 
-    controller
-        .fragment_sender()
-        .send_private_vote_tally(
-            &mut committee,
-            &vote_plan.clone().into(),
-            shares,
-            wallet_node,
-        )
-        .unwrap();
+    match controller.fragment_sender().send_private_vote_tally(
+        &mut committee,
+        &vote_plan.clone().into(),
+        shares,
+        wallet_node,
+    ) {
+        Ok(_) => (),
+        Err(_) => {
+            println!("Tally {:?}", leader_1.fragment_logs());
+            println!("Tally {:?}", wallet_node.fragment_logs());
+        }
+    };
 
     time::wait_for_epoch(tally_end + 10, leader_1.explorer());
 

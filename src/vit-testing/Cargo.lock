@@ -2285,6 +2285,47 @@ dependencies = [
 [[package]]
 name = "jortestkit"
 version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jortestkit.git?rev=6a768ad2bb726449f6228d40b6f0f59b797b5b5f#6a768ad2bb726449f6228d40b6f0f59b797b5b5f"
+dependencies = [
+ "assert_fs",
+ "base64 0.12.3",
+ "bech32",
+ "bytesize",
+ "chrono",
+ "console 0.11.3",
+ "csv",
+ "custom_debug",
+ "dialoguer 0.6.2",
+ "flate2",
+ "fs_extra",
+ "hex",
+ "humantime",
+ "indicatif",
+ "lazy_static",
+ "os_info 2.0.8",
+ "predicates",
+ "rand 0.7.3",
+ "rand_chacha 0.2.2",
+ "rand_core 0.5.1",
+ "reqwest 0.11.2",
+ "semver 0.11.0",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "sha-1",
+ "sha2",
+ "sysinfo 0.14.15",
+ "tar",
+ "thiserror",
+ "tokio 1.4.0",
+ "warp",
+ "zip",
+]
+
+[[package]]
+name = "jortestkit"
+version = "0.1.0"
 source = "git+https://github.com/input-output-hk/jortestkit.git?branch=master#79033558ac7eae01cbb1311cc1a1d00ec100c36a"
 dependencies = [
  "assert_fs",
@@ -3503,7 +3544,7 @@ dependencies = [
  "chrono",
  "futures 0.3.13",
  "jormungandr-integration-tests",
- "jortestkit",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "reqwest 0.10.10",
  "serde",
  "serde_json",
@@ -3959,7 +4000,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "futures 0.3.13",
- "jortestkit",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "reqwest 0.10.10",
  "serde",
  "serde_json",
@@ -4904,7 +4945,7 @@ dependencies = [
  "dyn-clone",
  "fake",
  "hyper 0.14.5",
- "jortestkit",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "lazy_static",
  "libsqlite3-sys",
  "predicates",

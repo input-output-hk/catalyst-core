@@ -19,6 +19,7 @@ pub struct Configuration {
     step_delay: u64,
     monitor: Monitor,
     shutdown_grace_period: u32,
+    status_pace: u64,
 }
 
 impl Configuration {
@@ -28,6 +29,7 @@ impl Configuration {
         step_delay: u64,
         monitor: Monitor,
         shutdown_grace_period: u32,
+        status_pace: u64,
     ) -> Configuration {
         Self {
             thread_no,
@@ -35,6 +37,7 @@ impl Configuration {
             step_delay,
             monitor,
             shutdown_grace_period,
+            status_pace,
         }
     }
 
@@ -44,6 +47,7 @@ impl Configuration {
         step_delay: u64,
         monitor: Monitor,
         shutdown_grace_period: u32,
+        status_pace: u64,
     ) -> Configuration {
         Self {
             thread_no,
@@ -51,6 +55,7 @@ impl Configuration {
             step_delay,
             monitor,
             shutdown_grace_period,
+            status_pace,
         }
     }
 
@@ -60,6 +65,7 @@ impl Configuration {
         step_delay: u64,
         monitor: Monitor,
         shutdown_grace_period: u32,
+        status_pace: u64,
     ) -> Configuration {
         Self {
             thread_no,
@@ -67,6 +73,7 @@ impl Configuration {
             step_delay,
             monitor,
             shutdown_grace_period,
+            status_pace,
         }
     }
 
@@ -80,6 +87,10 @@ impl Configuration {
 
     pub fn step_delay(&self) -> u64 {
         self.step_delay
+    }
+
+    pub fn status_pace(&self) -> u64 {
+        self.status_pace
     }
 
     pub fn monitor(&self) -> &Monitor {

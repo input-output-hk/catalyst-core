@@ -1,12 +1,18 @@
-{
+{  
+  "initials": [
+    {
+      "above_threshold": 10,
+      "pin": "1234"
+    }
+  ],
   "vote_start": 1,
-  "vote_tally": 18,
-  "tally_end": 25,
+  "vote_tally": 2,
+  "tally_end": 4,
   "next_vote_start_time": "2021-04-30T21:00:00",
   "proposals": 285,
   "challenges": 7,
   "slot_duration": 20,
-  "slots_per_epoch": 180,
+  "slots_per_epoch": 90,
   "voting_power": 450,
   "fund_name": "Fund4",
   "private": true,

@@ -104,6 +104,7 @@ impl CsvConverter {
             "title",
             "description",
             "rewards_total",
+            "proposers_rewards",
             "fund_id",
             "challenge_url",
         ];
@@ -216,6 +217,7 @@ fn convert_challenge(challenge: &Challenge) -> Vec<String> {
         challenge.title.clone(),
         challenge.description.clone(),
         challenge.rewards_total.to_string(),
+        challenge.proposers_rewards.to_string(),
         challenge.fund_id.to_string(),
         challenge.challenge_url.clone(),
     ]

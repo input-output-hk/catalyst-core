@@ -70,7 +70,7 @@ impl Status {
         }
     }
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<RequestStatus> for Status {
     fn into(self) -> RequestStatus {
         self.status().clone()

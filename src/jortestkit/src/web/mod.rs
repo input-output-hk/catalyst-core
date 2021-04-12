@@ -13,7 +13,7 @@ pub enum WebError {
     #[error("could not save output to file")]
     CannotCreateOutputFile,
     #[error("could not send reqeuest")]
-    IOError(#[from] io::Error),
+    IoError(#[from] io::Error),
 }
 
 pub fn download_file(link: String, output: &Path) -> Result<(), WebError> {

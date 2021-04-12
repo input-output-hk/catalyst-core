@@ -33,7 +33,7 @@ impl From<SystemTime> for Timestamp {
         Timestamp(from)
     }
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<SystemTime> for Timestamp {
     fn into(self) -> SystemTime {
         self.0

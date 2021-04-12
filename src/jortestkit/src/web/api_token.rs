@@ -5,6 +5,7 @@ pub const API_TOKEN_HEADER: &str = "API-Token";
 
 /// API Token wrapper type
 #[derive(PartialEq, Eq, Debug, Clone)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct APIToken(Vec<u8>);
 
 impl APIToken {
@@ -15,6 +16,7 @@ impl APIToken {
     }
 }
 
+#[allow(clippy::upper_case_acronyms)]
 pub struct APITokenManager {
     verification_token: APIToken,
 }

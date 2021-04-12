@@ -97,6 +97,17 @@ class VoteplanStatus(pydantic.BaseModel):
     proposals: List[ProposalStatus]
 
 
+class Challenge(pydantic.BaseModel):
+    id: int
+    challenge_type: str
+    title: str
+    description: str
+    rewards_total: int
+    proposers_rewards: int
+    fund_id: int
+    challenge_ur: str
+
+
 # File loaders
 
 def load_json_from_file(file_path: str) -> Dict:
@@ -124,13 +135,25 @@ def get_voteplan_proposals_from_file(voteplan_file_path: str) -> Dict[str, Propo
     return voteplan_proposals_dict
 
 
-def get_proposals_and_voteplans_from_files(
+def get_challenges_from_file(
+        challenges_file_path: str
+) -> Dict[int, Challenge]:
+    challenges: Generator[Challenge, None, None] = (
+        Challenge(**challenge) for challenge in load_json_from_file(challenges_file_path)
+    )
+    challenges_dict = {challenge.id: challenge for challenge in challenges}
+    return challenges_dict
+
+
+def get_proposals_voteplans_and_challenges_from_files(
         proposals_file_path: str,
-        voteplan_file_path: str
-) -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus]]:
+        voteplan_file_path: str,
+        challenges_file_path: str
+) -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus], Dict[int, Challenge]]:
     proposals = get_proposals_from_file(proposals_file_path)
     voteplan_proposals = get_voteplan_proposals_from_file(voteplan_file_path)
-    return proposals, voteplan_proposals
+    challeges = get_challenges_from_file(challenges_file_path)
+    return proposals, voteplan_proposals, challeges
 
 
 # API loaders
@@ -149,17 +172,27 @@ async def get_active_voteplans_from_api(vit_servicing_station_url: str) -> List[
         return [VoteplanStatus(**proposal_data) for proposal_data in proposals_result.json()]
 
 
-async def get_proposals_and_voteplans_from_api(vit_servicing_station_url: str) \
+async def get_challenges_from_api(vit_servicing_station_url: str) -> List[Challenge]:
+    async with httpx.AsyncClient() as client:
+        challenges_result = await client.get(f"{vit_servicing_station_url}/api/v0/challenges")
+        assert challenges_result.status_code == 200
+        return [Challenge(**challenge) for challenge in challenges_result.json()]
+
+
+async def get_proposals_voteplans_and_challenges_from_api(vit_servicing_station_url: str) \
         -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus]]:
     proposals_task = asyncio.create_task(get_proposals_from_api(vit_servicing_station_url))
     voteplans_task = asyncio.create_task(get_active_voteplans_from_api(vit_servicing_station_url))
+    challenges_task = asyncio.create_task(get_challenges_from_api(vit_servicing_station_url))
 
     proposals = {proposal.proposal_id: proposal for proposal in await proposals_task}
     voteplans_proposals = {
         proposal.proposal_id: proposal
         for proposal in itertools.chain.from_iterable(voteplan.proposals for voteplan in await voteplans_task)
     }
-    return proposals, voteplans_proposals
+    challenges = {challenge.id: challenge for challenge in await challenges_task}
+
+    return proposals, voteplans_proposals, challenges
 
 
 # Checkers
@@ -311,6 +344,7 @@ def calculate_rewards(
         output_format: OutputFormat = typer.Option("csv"),
         proposals_path: Optional[str] = typer.Option(None),
         active_voteplan_path: Optional[str] = typer.Option(None),
+        challenges_path: Optional[str] = typer.Option(None),
         vit_station_url: str = typer.Option("https://servicing-station.vit.iohk.io")):
     """
     Calculate catalyst rewards after tallying process.
@@ -318,12 +352,14 @@ def calculate_rewards(
     Otherwise data is requested to the proper API endpoints pointed to the --vit-station-url option.
     """
     if all(path is not None for path in (proposals_path, active_voteplan_path)):
-        proposals, voteplan_proposals = (
+        proposals, voteplan_proposals, challenges = (
             # we already check that both paths are not None, we can disable type checking here
-            get_proposals_and_voteplans_from_files(proposals_path, active_voteplan_path)  # type: ignore
+            get_proposals_voteplans_and_challenges_from_files(proposals_path, active_voteplan_path, challenges_path)  # type: ignore
         )
     else:
-        proposals, voteplan_proposals = asyncio.run(get_proposals_and_voteplans_from_api(vit_station_url))
+        proposals, voteplan_proposals, challenges = asyncio.run(
+            get_proposals_voteplans_and_challenges_from_api(vit_station_url)
+        )
 
     try:
         sanity_check_data(proposals, voteplan_proposals)

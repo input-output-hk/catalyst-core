@@ -2,7 +2,10 @@ mod arbitrary;
 mod external;
 
 pub use arbitrary::ArbitraryValidVotingTemplateGenerator;
-pub use external::{ExternalValidVotingTemplateGenerator, TemplateLoadError};
+pub use external::{
+    parse_challenges, parse_funds, parse_proposals, ExternalValidVotingTemplateGenerator,
+    TemplateLoadError,
+};
 use serde::{Deserialize, Serialize};
 use vit_servicing_station_lib::db::models::proposals::{ChallengeType, ProposalChallengeInfo};
 

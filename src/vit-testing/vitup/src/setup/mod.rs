@@ -1,6 +1,8 @@
 pub mod diff;
 pub mod generate;
 pub mod start;
+pub mod validate;
+pub mod convert;
 
 use crate::error::Result;
 use crate::mock::MockStartCommandArgs;
@@ -11,6 +13,8 @@ use diff::DiffCommand;
 use generate::DataCommandArgs;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
+use validate::ValidateCommand;
+use convert::ConvertCommand;
 
 #[derive(StructOpt, Debug)]
 pub enum VitCliCommand {
@@ -20,6 +24,10 @@ pub enum VitCliCommand {
     Generate(GenerateCommand),
     // get diff between new deployment and target env
     Diff(DiffCommand),
+    // validate data
+    Validate(ValidateCommand),
+    // convert data
+    Convert(ConvertCommand), 
 }
 
 impl VitCliCommand {
@@ -28,6 +36,8 @@ impl VitCliCommand {
             Self::Start(start_command) => start_command.exec(),
             Self::Generate(generate_command) => generate_command.exec(),
             Self::Diff(diff_command) => diff_command.exec(),
+            Self::Validate(validate_command) => validate_command.exec(),
+            Self::Convert(convert_command) => convert_command.exec(),
         }
     }
 }

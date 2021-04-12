@@ -1829,6 +1829,7 @@ dependencies = [
  "console 0.11.3",
  "cryptoxide",
  "dialoguer 0.6.2",
+ "eccoxide",
  "ed25519-bip32",
  "hdkeygen",
  "hex",

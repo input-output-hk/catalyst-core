@@ -46,6 +46,7 @@ pub struct ChallengeTemplate {
     pub title: String,
     pub description: String,
     pub rewards_total: String,
+    pub proposers_rewards: String,
     pub challenge_url: String,
     pub fund_id: Option<String>,
 }

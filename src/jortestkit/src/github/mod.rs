@@ -32,7 +32,7 @@ pub enum GitHubApiError {
     #[error(transparent)]
     Download(#[from] WebError),
     #[error(transparent)]
-    IO(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 }
 
 #[derive(Debug, Clone)]

@@ -38,6 +38,7 @@ pub struct ReleaseDto {
     draft: bool,
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<Release> for ReleaseDto {
     fn into(self) -> Release {
         let assets = Asset::assets_from_dtos(self.assets);

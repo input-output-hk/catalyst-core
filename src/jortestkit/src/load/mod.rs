@@ -100,6 +100,7 @@ where
         config.monitor().clone(),
         title,
         config.shutdown_grace_period(),
+        config.status_pace(),
     );
 
     BackgroundLoadProcess {
@@ -138,6 +139,7 @@ where
         config.monitor().clone(),
         title,
         config.shutdown_grace_period(),
+        config.status_pace(),
     );
     for t in child_threads.into_iter() {
         let _child_threads = t.join();

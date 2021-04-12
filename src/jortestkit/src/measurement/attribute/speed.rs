@@ -9,7 +9,7 @@ impl From<Duration> for Speed {
         Speed(duration)
     }
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<Duration> for Speed {
     fn into(self) -> Duration {
         self.0

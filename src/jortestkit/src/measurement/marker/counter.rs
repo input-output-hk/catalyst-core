@@ -14,7 +14,7 @@ impl From<u32> for Counter {
         Counter(from)
     }
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<u32> for Counter {
     fn into(self) -> u32 {
         self.0

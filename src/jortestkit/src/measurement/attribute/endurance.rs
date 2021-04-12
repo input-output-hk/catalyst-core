@@ -9,7 +9,7 @@ impl From<Duration> for Endurance {
         Endurance(duration)
     }
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<Duration> for Endurance {
     fn into(self) -> Duration {
         self.0

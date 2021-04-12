@@ -31,7 +31,7 @@ fn trim_new_line_at_end(mut content: String) -> String {
     content
 }
 
-pub fn make_readonly(path: &PathBuf) {
+pub fn make_readonly(path: &Path) {
     if !path.exists() {
         std::fs::File::create(&path).unwrap();
     }
@@ -40,7 +40,7 @@ pub fn make_readonly(path: &PathBuf) {
     fs::set_permissions(path.as_os_str(), perms).expect("cannot set permissions");
 }
 
-pub fn copy_folder(from: &PathBuf, to: &PathBuf, overwrite: bool) {
+pub fn copy_folder(from: &Path, to: &Path, overwrite: bool) {
     let mut options = CopyOptions::new();
     options.overwrite = overwrite;
     copy(from, to, &options).expect("cannot copy folder");

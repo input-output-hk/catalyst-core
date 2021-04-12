@@ -70,7 +70,7 @@ impl Status {
         }
     }
 }
-
+#[allow(clippy::from_over_into)]
 impl Into<RequestStatus> for Status {
     fn into(self) -> RequestStatus {
         self.status().clone()
@@ -122,6 +122,7 @@ impl StatusUpdaterThread {
         monitor: Monitor,
         title: &str,
         shutdown_grace_period: u32,
+        pace: u64,
     ) -> Self
     where
         S: RequestStatusProvider + Send + 'static,
@@ -161,7 +162,7 @@ impl StatusUpdaterThread {
                 Err(TryRecvError::Empty) => {}
             }
             update_statuses(&responses_clone, &request_status_provider_clone);
-            std::thread::sleep(std::time::Duration::from_secs(1));
+            std::thread::sleep(std::time::Duration::from_secs(pace));
         });
         Self {
             stop_signal: tx,

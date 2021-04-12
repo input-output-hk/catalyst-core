@@ -78,6 +78,7 @@ create table challenges
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
     rewards_total BIGINT NOT NULL,
+    proposers_rewards BIGINT NOT NULL,
     fund_id INTEGER NOT NULL,
     challenge_url VARCHAR NOT NULL
 );

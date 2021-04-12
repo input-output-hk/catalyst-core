@@ -13,6 +13,7 @@ table! {
         title -> Text,
         description -> Text,
         rewards_total -> BigInt,
+        proposers_rewards -> BigInt,
         fund_id -> Integer,
         challenge_url -> Text,
     }

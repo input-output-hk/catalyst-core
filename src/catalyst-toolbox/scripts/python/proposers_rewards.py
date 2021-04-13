@@ -106,7 +106,7 @@ class Challenge(pydantic.BaseModel):
     rewards_total: int
     proposers_rewards: int
     fund_id: int
-    challenge_ur: str
+    challenge_url: str
 
 
 # File loaders
@@ -311,17 +311,18 @@ def calc_results(
 
     return result_lst
 
+
 def filter_data_by_challenge(
         challenge_id: int,
         proposals: Dict[str, Proposal],
         voteplan_proposals: Dict[str, ProposalStatus]
 ) -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus]]:
     proposals = {
-        proposal.proposal_id: proposal for proposal in proposals if proposal.challenge_id == challenge_id
+        proposal.proposal_id: proposal for proposal in proposals.values() if proposal.challenge_id == challenge_id
     }
     voteplans = {
-        voteplan.proposal_id: voteplan for voteplan in voteplan_proposals
-        if proposals[voteplan.proposal_id].challenge_id == challenge_id
+        voteplan.proposal_id: voteplan for voteplan in voteplan_proposals.values()
+        if voteplan.proposal_id in proposals
     }
     return proposals, voteplans
 
@@ -359,7 +360,6 @@ class OutputFormat(enum.Enum):
 
 
 def calculate_rewards(
-        fund: float = typer.Option(...),
         conversion_factor: float = typer.Option(...),
         output_file: str = typer.Option(...),
         threshold: float = typer.Option(0.15),
@@ -373,7 +373,7 @@ def calculate_rewards(
     If both --proposals-path and --active-voteplan-path are provided data is loaded from the json files on those locations.
     Otherwise data is requested to the proper API endpoints pointed to the --vit-station-url option.
     """
-    if all(path is not None for path in (proposals_path, active_voteplan_path)):
+    if all(path is not None for path in (proposals_path, active_voteplan_path, challenges_path)):
         proposals, voteplan_proposals, challenges = (
             # we already check that both paths are not None, we can disable type checking here
             get_proposals_voteplans_and_challenges_from_files(proposals_path, active_voteplan_path, challenges_path)  # type: ignore
@@ -401,8 +401,8 @@ def calculate_rewards(
             threshold
         )
         out_stream = output_json(results) if output_format == OutputFormat.JSON else output_csv(results)
-        output_file = build_path_for_challenge(out_file, challenge.title.replace(" ", "_"))
-        with open(output_file, "w", encoding="utf-8") as out_file:
+        chalenge_ouput_file_path = build_path_for_challenge(output_file, challenge.title.replace(" ", "_"))
+        with open(chalenge_ouput_file_path, "w", encoding="utf-8") as out_file:
             dump_to_file(out_stream, out_file)
 
 

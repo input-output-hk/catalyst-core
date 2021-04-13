@@ -284,7 +284,9 @@ def calc_results(
         total_result, threshold_success = success_results[proposal_id]
         yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
         funded = all((threshold_success, depletion > 0, depletion >= proposal.proposal_funds))
-        not_funded_reason = "" if funded else (NOT_FUNDED_APPROVAL_THRESHOLD if not threshold_success else NOT_FUNDED_OVER_BUDGET)
+        not_funded_reason = "" if funded else (
+            NOT_FUNDED_APPROVAL_THRESHOLD if not threshold_success else NOT_FUNDED_OVER_BUDGET
+        )
 
         if funded:
             depletion -= proposal.proposal_funds
@@ -353,7 +355,6 @@ def build_path_for_challenge(file_path: str, challenge_name: str) -> str:
     return f"{path}_{challenge_name}{suffix}"
 
 
-
 class OutputFormat(enum.Enum):
     CSV: str = "csv"
     JSON: str = "json"
@@ -376,7 +377,9 @@ def calculate_rewards(
     if all(path is not None for path in (proposals_path, active_voteplan_path, challenges_path)):
         proposals, voteplan_proposals, challenges = (
             # we already check that both paths are not None, we can disable type checking here
-            get_proposals_voteplans_and_challenges_from_files(proposals_path, active_voteplan_path, challenges_path)  # type: ignore
+            get_proposals_voteplans_and_challenges_from_files(
+                proposals_path, active_voteplan_path, challenges_path
+            )  # type: ignore
         )
     else:
         proposals, voteplan_proposals, challenges = asyncio.run(

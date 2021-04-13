@@ -19,13 +19,13 @@ pub struct MockStartCommandArgs {
     pub config: PathBuf,
 
     #[structopt(long = "params")]
-    pub params: PathBuf,
+    pub params: Option<PathBuf>,
 }
 
 impl MockStartCommandArgs {
     pub fn exec(self) -> Result<(), Error> {
         let mut configuration: Configuration = read_config(&self.config)?;
-        let start_params = read_params(&self.params)?;
+        let start_params = self.params.as_ref().map(|x| read_params(x).unwrap());
 
         if self.token.is_some() {
             configuration.token = self.token;

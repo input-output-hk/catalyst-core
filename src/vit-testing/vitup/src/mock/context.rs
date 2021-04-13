@@ -19,10 +19,10 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(config: Configuration, params: VitStartParameters) -> Self {
+    pub fn new(config: Configuration, params: Option<VitStartParameters>) -> Self {
         Self {
             address: ([0, 0, 0, 0], config.port).into(),
-            state: MockState::new(params, config.working_dir.clone()).unwrap(),
+            state: MockState::new(params.unwrap_or_default(), config.clone()).unwrap(),
             config,
             logger: Logger::new(),
         }
@@ -45,7 +45,7 @@ impl Context {
     }
 
     pub fn reset(&mut self, params: VitStartParameters) {
-        self.state = MockState::new(params, self.config.working_dir.clone()).unwrap();
+        self.state = MockState::new(params, self.config.clone()).unwrap();
     }
 
     pub fn block0_bin(&self) -> Vec<u8> {

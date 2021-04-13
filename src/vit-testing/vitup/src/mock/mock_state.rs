@@ -1,6 +1,10 @@
+use super::config::Configuration;
 use crate::config::VitStartParameters;
 use crate::mock::ledger_state::LedgerState;
-use crate::setup::start::quick::QuickVitBackendSettingsBuilder;
+use crate::{
+    scenario::network::build_template_generator,
+    setup::start::quick::QuickVitBackendSettingsBuilder,
+};
 use iapyx::VitVersion;
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::Context;
@@ -10,7 +14,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
-use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::Snapshot;
 use vit_servicing_station_tests::common::data::ValidVotePlanGenerator;
 
@@ -40,19 +43,18 @@ pub fn context<P: AsRef<Path>>(testing_directory: P) -> Context {
 }
 
 impl MockState {
-    pub fn new<P: AsRef<Path>>(
-        params: VitStartParameters,
-        testing_directory: P,
-    ) -> Result<Self, Error> {
+    pub fn new(params: VitStartParameters, config: Configuration) -> Result<Self, Error> {
+        std::fs::remove_dir_all(&config.working_dir)?;
+
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
-        let context = context(&testing_directory.as_ref().to_path_buf());
+        let context = context(&config.working_dir);
         quick_setup.upload_parameters(params);
 
-        let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
+        let template_generator = Box::leak(build_template_generator(config.ideascale));
         let (_, controller, vit_parameters, version) = quick_setup.build(context).unwrap();
 
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
-        let snapshot = generator.build(&mut template_generator);
+        let snapshot = generator.build(template_generator);
 
         Ok(Self {
             available: true,
@@ -113,4 +115,6 @@ impl MockState {
 pub enum Error {
     #[error("ledger error")]
     LedgerError(#[from] super::ledger_state::Error),
+    #[error("IO error")]
+    IoError(#[from] std::io::Error),
 }

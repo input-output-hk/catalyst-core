@@ -5,6 +5,7 @@ import asyncio
 import json
 import itertools
 import enum
+import os
 from collections import namedtuple
 
 import pydantic
@@ -310,6 +311,20 @@ def calc_results(
 
     return result_lst
 
+def filter_data_by_challenge(
+        challenge_id: int,
+        proposals: Dict[str, Proposal],
+        voteplan_proposals: Dict[str, ProposalStatus]
+) -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus]]:
+    proposals = {
+        proposal.proposal_id: proposal for proposal in proposals if proposal.challenge_id == challenge_id
+    }
+    voteplans = {
+        voteplan.proposal_id: voteplan for voteplan in voteplan_proposals
+        if proposals[voteplan.proposal_id].challenge_id == challenge_id
+    }
+    return proposals, voteplans
+
 
 # Output results
 
@@ -328,7 +343,14 @@ def output_json(results: List[Result]) -> Generator[str, None, None]:
 def dump_to_file(stream: Generator[str, None, None], out: TextIO):
     out.writelines(stream)
 
+
 # CLI
+
+
+def build_path_for_challenge(file_path: str, challenge_name: str) -> str:
+    path, suffix = os.path.splitext(file_path)
+    return f"{path}_{challenge_name}{suffix}"
+
 
 
 class OutputFormat(enum.Enum):
@@ -367,11 +389,21 @@ def calculate_rewards(
         print(f"{e}")
         sys.exit(1)
 
-    results = calc_results(proposals, voteplan_proposals, fund, conversion_factor, threshold)
-    out_stream = output_json(results) if output_format == OutputFormat.JSON else output_csv(results)
-
-    with open(output_file, "w", encoding="utf-8") as out_file:
-        dump_to_file(out_stream, out_file)
+    for challenge in challenges.values():
+        challenge_proposals, challenge_voteplan_proposals = filter_data_by_challenge(
+            challenge.id, proposals, voteplan_proposals
+        )
+        results = calc_results(
+            challenge_proposals,
+            challenge_voteplan_proposals,
+            challenge.proposers_rewards,
+            conversion_factor,
+            threshold
+        )
+        out_stream = output_json(results) if output_format == OutputFormat.JSON else output_csv(results)
+        output_file = build_path_for_challenge(out_file, challenge.title.replace(" ", "_"))
+        with open(output_file, "w", encoding="utf-8") as out_file:
+            dump_to_file(out_stream, out_file)
 
 
 if __name__ == "__main__":

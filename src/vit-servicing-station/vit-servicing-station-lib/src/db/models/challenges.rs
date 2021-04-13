@@ -32,7 +32,7 @@ impl Queryable<challenges::SqlType, Db> for Challenge {
         String,
         // 3 -> rewards_total
         i64,
-        // 4 -> rewards_total
+        // 4 -> proposers_rewards
         i64,
         // 5 -> fund_id
         i32,

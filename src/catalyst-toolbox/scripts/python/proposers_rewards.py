@@ -371,8 +371,11 @@ def calculate_rewards(
         vit_station_url: str = typer.Option("https://servicing-station.vit.iohk.io")):
     """
     Calculate catalyst rewards after tallying process.
-    If both --proposals-path and --active-voteplan-path are provided data is loaded from the json files on those locations.
+    If all --proposals-path, --active-voteplan-path and --challenges_path are provided data is loaded from the json files on those locations.
     Otherwise data is requested to the proper API endpoints pointed to the --vit-station-url option.
+    Rewards are written into a separated file for each challenge. File is constructed via the --output-file.
+    For example /out/rewards.csv with challenges [challenge_1, challenge_2] will generate /out/rewards_challenge_1.csv
+    and /out/rewards_challenge_2.csv files.
     """
     if all(path is not None for path in (proposals_path, active_voteplan_path, challenges_path)):
         proposals, voteplan_proposals, challenges = (

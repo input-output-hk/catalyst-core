@@ -59,3 +59,41 @@ OPTIONS:
         --total-rewards <total-rewards>
             Reward (in LOVELACE) to be distributed
 ```
+
+## Python scripts
+
+Use an updated version of `python3` and either create a venv or just install the dependencies from the
+`requirements.txt` file inside the `/scripts/python` folder. 
+
+#### Calculate proposers rewards
+
+Load your __venv__ and/or run with your default __python3__ `python proposers_rewards.py --help`
+
+```shell
+Usage: proposers_rewards.py [OPTIONS]
+
+  Calculate catalyst rewards after tallying process. If all --proposals-
+  path, --active-voteplan-path and --challenges_path are provided data is
+  loaded from the json files on those locations. Otherwise data is requested
+  to the proper API endpoints pointed to the --vit-station-url option.
+
+Options:
+  --conversion-factor FLOAT       [required]
+  --output-file TEXT              [required]
+  --threshold FLOAT               [default: 0.15]
+  --output-format [csv|json]      [default: csv]
+  --proposals-path TEXT
+  --active-voteplan-path TEXT
+  --challenges-path TEXT
+  --vit-station-url TEXT          [default: https://servicing-
+                                  station.vit.iohk.io]
+
+  --install-completion [bash|zsh|fish|powershell|pwsh]
+                                  Install completion for the specified shell.
+  --show-completion [bash|zsh|fish|powershell|pwsh]
+                                  Show completion for the specified shell, to
+                                  copy it or customize the installation.
+
+  --help                          Show this message and exit.
+
+```

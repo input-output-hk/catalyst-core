@@ -149,6 +149,9 @@ components:
           type: string
         voting_power_info:
           type: string
+        voting_power_threshold:
+          type: integer
+          format: int64
         rewards_info:
           type: string
         fund_start_time:

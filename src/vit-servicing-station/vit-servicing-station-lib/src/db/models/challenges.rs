@@ -12,6 +12,8 @@ pub struct Challenge {
     pub description: String,
     #[serde(alias = "rewardsTotal")]
     pub rewards_total: i64,
+    #[serde(alias = "proposersRewards")]
+    pub proposers_rewards: i64,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
     #[serde(alias = "challengeUrl")]
@@ -30,9 +32,11 @@ impl Queryable<challenges::SqlType, Db> for Challenge {
         String,
         // 3 -> rewards_total
         i64,
-        // 4 -> fund_id
+        // 4 -> proposers_rewards
+        i64,
+        // 5 -> fund_id
         i32,
-        // 5 -> fund_url
+        // 6 -> fund_url
         String,
     );
 
@@ -43,8 +47,9 @@ impl Queryable<challenges::SqlType, Db> for Challenge {
             title: row.2,
             description: row.3,
             rewards_total: row.4,
-            fund_id: row.5,
-            challenge_url: row.6,
+            proposers_rewards: row.5,
+            fund_id: row.6,
+            challenge_url: row.7,
         }
     }
 }
@@ -57,6 +62,7 @@ impl Insertable<challenges::table> for Challenge {
         diesel::dsl::Eq<challenges::title, String>,
         diesel::dsl::Eq<challenges::description, String>,
         diesel::dsl::Eq<challenges::rewards_total, i64>,
+        diesel::dsl::Eq<challenges::proposers_rewards, i64>,
         diesel::dsl::Eq<challenges::fund_id, i32>,
         diesel::dsl::Eq<challenges::challenge_url, String>,
     );
@@ -68,6 +74,7 @@ impl Insertable<challenges::table> for Challenge {
             challenges::title.eq(self.title),
             challenges::description.eq(self.description),
             challenges::rewards_total.eq(self.rewards_total),
+            challenges::proposers_rewards.eq(self.proposers_rewards),
             challenges::fund_id.eq(self.fund_id),
             challenges::challenge_url.eq(self.challenge_url),
         )
@@ -89,6 +96,7 @@ pub mod test {
             title: "challenge title".to_string(),
             description: "challenge description".to_string(),
             rewards_total: REWARDS_TOTAL,
+            proposers_rewards: REWARDS_TOTAL,
             fund_id,
             challenge_url: "http://example.com/".to_string(),
         }
@@ -103,6 +111,7 @@ pub mod test {
             challenges::title.eq(challenge.title.clone()),
             challenges::description.eq(challenge.description.clone()),
             challenges::rewards_total.eq(challenge.rewards_total),
+            challenges::proposers_rewards.eq(challenge.proposers_rewards),
             challenges::fund_id.eq(challenge.fund_id),
             challenges::challenge_url.eq(challenge.challenge_url.clone()),
         );

@@ -146,6 +146,7 @@ impl ValidVotePlanGenerator {
                 title: challenge_data.title,
                 description: challenge_data.description,
                 rewards_total: challenge_data.rewards_total.parse().unwrap(),
+                proposers_rewards: challenge_data.proposers_rewards.parse().unwrap(),
                 fund_id,
                 challenge_url: challenge_data.challenge_url,
             })

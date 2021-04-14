@@ -281,6 +281,7 @@ impl ArbitraryGenerator {
             title: CatchPhase().fake::<String>(),
             description: Buzzword().fake::<String>(),
             rewards_total: 100500,
+            proposers_rewards: 100000,
             fund_id,
             challenge_url: self.gen_http_address(),
         }

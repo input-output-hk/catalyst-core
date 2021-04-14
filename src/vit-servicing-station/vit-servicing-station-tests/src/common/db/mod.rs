@@ -200,6 +200,7 @@ impl<'a> DbInserter<'a> {
                 challenges::title.eq(challenge.title.clone()),
                 challenges::description.eq(challenge.description.clone()),
                 challenges::rewards_total.eq(challenge.rewards_total),
+                challenges::proposers_rewards.eq(challenge.proposers_rewards),
                 challenges::fund_id.eq(challenge.fund_id),
                 challenges::challenge_url.eq(challenge.challenge_url.clone()),
             );

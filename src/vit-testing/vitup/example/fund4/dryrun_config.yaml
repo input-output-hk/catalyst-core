@@ -1,22 +1,23 @@
 {  
   "initials": [
     {
-      "above_threshold": 10,
+      "above_threshold": 50,
       "pin": "1234"
     }
   ],
-  "vote_start": 1,
-  "vote_tally": 2,
-  "tally_end": 4,
+  "vote_start": 24,
+  "vote_tally": 30,
+  "tally_end": 34,
+  "refresh_time": "2021-04-13T09:00:00",
   "next_vote_start_time": "2021-04-30T21:00:00",
   "proposals": 285,
   "challenges": 7,
   "slot_duration": 20,
-  "slots_per_epoch": 90,
+  "slots_per_epoch": 180,
   "voting_power": 450,
   "fund_name": "Fund4",
-  "private": true,
-  "fund_id":4,
+  "private": false,
+  "fund_id":42,
   "linear_fees": {
     "constant": 0,
     "coefficient": 0,

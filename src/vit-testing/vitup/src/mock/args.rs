@@ -23,7 +23,8 @@ pub struct MockStartCommandArgs {
 }
 
 impl MockStartCommandArgs {
-    pub fn exec(self) -> Result<(), Error> {
+    #[tokio::main]
+    pub async fn exec(self) -> Result<(), Error> {
         let mut configuration: Configuration = read_config(&self.config)?;
         let start_params = self.params.as_ref().map(|x| read_params(x).unwrap());
 
@@ -37,9 +38,11 @@ impl MockStartCommandArgs {
         )));
 
         tokio::spawn(async move {
-            start_rest_server(control_context.clone())
-        });
-        Ok(())
+            start_rest_server(control_context.clone()).await;
+        })
+        .await
+        .map(|_| ())
+        .map_err(Into::into)
     }
 }
 
@@ -58,4 +61,6 @@ pub enum Error {
     CannotReadParameters(#[from] serde_yaml::Error),
     #[error("context error")]
     Context(#[from] crate::mock::context::Error),
+    #[error("join error")]
+    JoinError(#[from] tokio::task::JoinError),
 }

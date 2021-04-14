@@ -1,20 +1,20 @@
+pub mod convert;
 pub mod diff;
 pub mod generate;
 pub mod start;
 pub mod validate;
-pub mod convert;
 
 use crate::error::Result;
 use crate::mock::MockStartCommandArgs;
 use crate::setup::generate::CommitteeIdCommandArgs;
 use crate::setup::generate::{QrCommandArgs, SnapshotCommandArgs};
 use crate::setup::start::AdvancedStartCommandArgs;
+use convert::ConvertCommand;
 use diff::DiffCommand;
 use generate::DataCommandArgs;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
 use validate::ValidateCommand;
-use convert::ConvertCommand;
 
 #[derive(StructOpt, Debug)]
 pub enum VitCliCommand {
@@ -27,7 +27,7 @@ pub enum VitCliCommand {
     // validate data
     Validate(ValidateCommand),
     // convert data
-    Convert(ConvertCommand), 
+    Convert(ConvertCommand),
 }
 
 impl VitCliCommand {

@@ -1,11 +1,10 @@
 use crate::Result;
+use std::io::Write;
 use std::{fs::File, path::PathBuf};
 use structopt::StructOpt;
-use std::io::Write;
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct ConvertFromIdeascale {
-
     #[structopt(long = "input")]
     pub input: PathBuf,
 
@@ -22,14 +21,13 @@ pub struct ConvertFromIdeascale {
         default_value = "../resources/external/challenges.json"
     )]
     pub challenges: PathBuf,
-
 }
 
 impl ConvertFromIdeascale {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let mut data: serde_json::Value =
+        let data: serde_json::Value =
             serde_json::from_str(&jortestkit::file::read_file(&self.input))?;
 
         let proposals = &data["proposals.csv"];

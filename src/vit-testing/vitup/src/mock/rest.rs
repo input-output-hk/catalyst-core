@@ -39,7 +39,6 @@ impl Reject for Error {}
 pub async fn start_rest_server(context: ContextLock) {
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();
-    let block0_content = context.lock().unwrap().block0_bin();
     let working_dir = context.lock().unwrap().working_dir();
     let with_context = warp::any().map(move || context.clone());
 
@@ -267,7 +266,7 @@ pub async fn start_rest_server(context: ContextLock) {
                 .and(with_context.clone())
                 .map(move |context: ContextLock| {
                     context.lock().unwrap().log("get_block0");
-                    Ok(block0_content.clone())
+                    Ok(context.lock().unwrap().block0_bin())
                 });
 
         root.and(

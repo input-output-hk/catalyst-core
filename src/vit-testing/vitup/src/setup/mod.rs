@@ -1,16 +1,20 @@
+pub mod convert;
 pub mod diff;
 pub mod generate;
 pub mod start;
+pub mod validate;
 
 use crate::error::Result;
 use crate::mock::MockStartCommandArgs;
 use crate::setup::generate::CommitteeIdCommandArgs;
 use crate::setup::generate::{QrCommandArgs, SnapshotCommandArgs};
 use crate::setup::start::AdvancedStartCommandArgs;
+use convert::ConvertCommand;
 use diff::DiffCommand;
 use generate::DataCommandArgs;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
+use validate::ValidateCommand;
 
 #[derive(StructOpt, Debug)]
 pub enum VitCliCommand {
@@ -20,14 +24,20 @@ pub enum VitCliCommand {
     Generate(GenerateCommand),
     // get diff between new deployment and target env
     Diff(DiffCommand),
+    // validate data
+    Validate(ValidateCommand),
+    // convert data
+    Convert(ConvertCommand),
 }
 
 impl VitCliCommand {
-    pub async fn exec(self) -> Result<()> {
+    pub fn exec(self) -> Result<()> {
         match self {
-            Self::Start(start_command) => start_command.exec().await,
+            Self::Start(start_command) => start_command.exec(),
             Self::Generate(generate_command) => generate_command.exec(),
             Self::Diff(diff_command) => diff_command.exec(),
+            Self::Validate(validate_command) => validate_command.exec(),
+            Self::Convert(convert_command) => convert_command.exec(),
         }
     }
 }
@@ -43,11 +53,11 @@ pub enum StartCommand {
 }
 
 impl StartCommand {
-    pub async fn exec(self) -> Result<()> {
+    pub fn exec(self) -> Result<()> {
         match self {
             Self::Quick(quick_start_command) => quick_start_command.exec(),
             Self::Advanced(advanced_start_command) => advanced_start_command.exec(),
-            Self::Mock(mock_start_command) => mock_start_command.exec().await.map_err(Into::into),
+            Self::Mock(mock_start_command) => mock_start_command.exec().map_err(Into::into),
         }
     }
 }

@@ -245,7 +245,7 @@ impl QuickVitBackendSettingsBuilder {
         }
 
         parameters.set_fund_id(self.parameters.fund_id);
-        parameters.calculate_challenges_total_funds = true;
+        parameters.calculate_challenges_total_funds = false;
 
         if self.parameters.private {
             let private_key_data = settings.private_vote_plans.get(&self.fund_name()).unwrap();

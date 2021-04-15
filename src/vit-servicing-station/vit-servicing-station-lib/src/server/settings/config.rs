@@ -405,7 +405,8 @@ mod test {
             "log" : {
                 "log_output_path" : "./server.log",
                 "log_level" : "error"    
-            }
+            },
+            "service_version" : "v0.2.0"
         }
         "#;
 
@@ -430,6 +431,7 @@ mod test {
             CorsOrigin("https://foo.test".to_string())
         );
         assert_eq!(cors_config.max_age_secs.unwrap(), 60);
+        assert_eq!(&config.service_version, "v0.2.0");
     }
 
     #[test]
@@ -546,6 +548,8 @@ mod test {
             "--block0-path",
             "block0.bin",
             "--enable-api-tokens",
+            "--service-version",
+            "v0.2.0",
         ]);
 
         let merged_settings = default.override_from(&other_settings);

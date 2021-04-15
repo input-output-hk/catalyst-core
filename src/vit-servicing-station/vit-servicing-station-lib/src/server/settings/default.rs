@@ -15,6 +15,7 @@ impl Default for ServiceSettings {
             block0_path: "./resources/v0/block0.bin".to_string(),
             enable_api_tokens: false,
             log: Log::default(),
+            service_version: "".to_string(),
         }
     }
 }

@@ -12,7 +12,7 @@ const DATABASE_URL: &str = "DATABASE_URL";
 const TLS_CERT_FILE: &str = "TLS_CERT_FILE";
 const TLS_PRIVATE_KEY_FILE: &str = "TLS_PK_FILE";
 const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
-pub const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
+const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
 
 const ADDRESS_DEFAULT: &str = "0.0.0.0:3030";
 const DB_URL_DEFAULT: &str = "./db/database.sqlite3";
@@ -60,6 +60,9 @@ pub struct ServiceSettings {
     #[serde(default)]
     #[structopt(flatten)]
     pub log: Log,
+
+    #[structopt(long, env = VIT_SERVICE_VERSION_ENV_VARIABLE)]
+    pub service_version: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt, Default)]
@@ -168,6 +171,10 @@ impl ServiceSettings {
 
         if other_settings.log.log_output_path.is_some() {
             return_settings.log.log_output_path = other_settings.log.log_output_path.clone();
+        }
+
+        if !other_settings.service_version.is_empty() {
+            return_settings.service_version = other_settings.service_version.clone();
         }
 
         return_settings.enable_api_tokens = other_settings.enable_api_tokens;

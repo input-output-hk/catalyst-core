@@ -31,10 +31,15 @@ impl Context {
 pub fn new_shared_context(
     db_connection_pool: db::DbConnectionPool,
     block0_path: &str,
-    versioning: String,
+    versioning: &str,
 ) -> SharedContext {
     let block0 = std::fs::read(block0_path).unwrap_or_default();
-    let context = Context::new(db_connection_pool, block0_path, block0, versioning);
+    let context = Context::new(
+        db_connection_pool,
+        block0_path,
+        block0,
+        versioning.to_string(),
+    );
     Arc::new(RwLock::new(context))
 }
 
@@ -64,6 +69,6 @@ pub mod test {
 
     pub fn new_test_shared_context(db_url: &str, block0_path: &str) -> SharedContext {
         let pool = db::load_db_connection_pool(db_url).unwrap();
-        new_shared_context(pool, block0_path, "2.0".to_string())
+        new_shared_context(pool, block0_path, "2.0")
     }
 }

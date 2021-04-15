@@ -1,7 +1,6 @@
 use crate::common::startup::{quick_start, server::BootstrapCommandBuilder};
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::TempDir;
-use vit_servicing_station_lib::server::settings::VIT_SERVICE_VERSION_ENV_VARIABLE;
 
 #[test]
 pub fn address_with_schema() {
@@ -37,7 +36,6 @@ pub fn port_already_in_use() -> Result<(), Box<dyn std::error::Error>> {
         .db_url(settings.db_url)
         .block0_path(settings.block0_path)
         .build()
-        .env(VIT_SERVICE_VERSION_ENV_VARIABLE, "".to_string())
         .assert()
         .failure()
         .code(101);

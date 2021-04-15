@@ -3039,6 +3039,7 @@ dependencies = [
  "diesel",
  "diesel_migrations",
  "dotenv",
+ "eccoxide",
  "itertools",
  "libsqlite3-sys",
  "log",

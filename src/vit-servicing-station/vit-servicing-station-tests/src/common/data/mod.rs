@@ -7,8 +7,9 @@ mod csv_converter;
 mod generator;
 pub use csv_converter::CsvConverter;
 pub use generator::{
-    ArbitraryGenerator, ArbitraryValidVotingTemplateGenerator,
-    ExternalValidVotingTemplateGenerator, Snapshot, TemplateLoadError, ValidVotePlanGenerator,
+    parse_challenges, parse_funds, parse_proposals, ArbitraryGenerator,
+    ArbitraryValidVotingTemplateGenerator, ChallengeTemplate, ExternalValidVotingTemplateGenerator,
+    FundTemplate, ProposalTemplate, Snapshot, TemplateLoadError, ValidVotePlanGenerator,
     ValidVotePlanParameters, ValidVotingTemplateGenerator,
 };
 

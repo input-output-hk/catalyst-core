@@ -5,8 +5,11 @@
     rust-nix.url = "github:input-output-hk/rust.nix/work";
     rust-nix.inputs.nixpkgs.follows = "nixpkgs";
     voting-tools.url = "github:input-output-hk/voting-tools";
+    vit-kedqr.url = "github:input-output-hk/vit-kedqr";
+    jormungandr.url = "github:input-output-hk/jormungandr";
+    cardano-node.url = "github:input-output-hk/cardano-node/1.26.1";
   };
-  outputs = { self, nixpkgs, utils, rust-nix, voting-tools }:
+  outputs = { self, nixpkgs, utils, rust-nix, voting-tools, vit-kedqr, jormungandr, cardano-node }:
     let
       workspaceCargo = builtins.fromTOML (builtins.readFile ./Cargo.toml);
       inherit (workspaceCargo.workspace) members;
@@ -38,9 +41,17 @@
             }
           '';
         });
+        registration-service = prev.registration-service.overrideAttrs (oldAttrs: {
+          nativeBuildInputs = oldAttrs.nativeBuildInputs ++ [ final.makeWrapper ];
+          postInstall = ''
+            wrapProgram $out/bin/registration-service --prefix PATH : ${
+              final.lib.makeBinPath [ final.voting-tools vit-kedqr.packages.${final.system}.vit-kedqr ]
+            }
+          '';
+        });
       };
       packages =
-        { iapyx, vitup, integration-tests, snapshot-trigger-service }@pkgs:
+        { iapyx, vitup, integration-tests, snapshot-trigger-service, registration-service }@pkgs:
         pkgs;
       devShell = { mkShell, rustc, cargo, pkg-config, openssl, protobuf }: mkShell {
         PROTOC = "${protobuf}/bin/protoc";

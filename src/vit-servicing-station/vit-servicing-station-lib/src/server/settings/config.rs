@@ -422,6 +422,7 @@ mod test {
             std::path::PathBuf::from_str("./server.log").unwrap()
         );
         assert_eq!(config.log.log_level, Some(LogLevel::Error));
+        assert_eq!(config.service_version, "v0.2.0");
         let tls_config = config.tls;
         let cors_config = config.cors;
         assert_eq!(tls_config.cert_file.unwrap(), "./foo/bar.pem");
@@ -431,7 +432,6 @@ mod test {
             CorsOrigin("https://foo.test".to_string())
         );
         assert_eq!(cors_config.max_age_secs.unwrap(), 60);
-        assert_eq!(&config.service_version, "v0.2.0");
     }
 
     #[test]
@@ -465,6 +465,8 @@ mod test {
             "--log-level",
             "error",
             "--enable-api-tokens",
+            "--service-version",
+            "v0.2.0",
         ]);
 
         assert_eq!(
@@ -478,6 +480,7 @@ mod test {
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
         assert_eq!(settings.db_url, "database.sqlite3");
         assert_eq!(settings.cors.max_age_secs.unwrap(), 60);
+        assert_eq!(settings.service_version, "v0.2.0");
         let allowed_origins = settings.cors.allowed_origins.unwrap();
         assert_eq!(allowed_origins.len(), 2);
         assert_eq!(
@@ -501,6 +504,7 @@ mod test {
             CORS_ALLOWED_ORIGINS,
             "https://foo.test;https://test.foo:5050",
         );
+        set_var(VIT_SERVICE_VERSION_ENV_VARIABLE, "v0.2.0");
 
         let settings: ServiceSettings = ServiceSettings::from_iter(&[
             "test",
@@ -520,6 +524,7 @@ mod test {
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
         assert_eq!(settings.db_url, "database.sqlite3");
         assert_eq!(settings.cors.max_age_secs.unwrap(), 60);
+        assert_eq!(settings.service_version, "v0.2.0");
         let allowed_origins = settings.cors.allowed_origins.unwrap();
         assert_eq!(allowed_origins.len(), 2);
         assert_eq!(

@@ -130,7 +130,7 @@ impl MultiController {
             if reuse_accounts && self.backend.account_exists(wallet.id())? {
                 continue;
             }
-            println!("[{}/{}] retrieveing funds", idx + 1, total);
+            println!("[{}/{}] retrieving funds", idx + 1, total);
 
             wallet.retrieve_funds(&block0)?;
 

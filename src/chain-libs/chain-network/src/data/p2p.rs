@@ -11,8 +11,6 @@ pub struct Peer {
     addr: SocketAddr,
 }
 
-pub type Peers = Box<[Peer]>;
-
 impl Peer {
     #[inline]
     pub fn addr(&self) -> SocketAddr {

@@ -1,5 +1,5 @@
 use super::PushStream;
-use crate::data::{Gossip, Peer, Peers};
+use crate::data::{Gossip, Peer};
 use crate::error::Error;
 use async_trait::async_trait;
 use futures::stream::Stream;
@@ -8,7 +8,7 @@ use futures::stream::Stream;
 /// exchanging P2P network gossip.
 #[async_trait]
 pub trait GossipService {
-    async fn peers(&self, limit: u32) -> Result<Peers, Error>;
+    async fn peers(&self, limit: u32) -> Result<Gossip, Error>;
 
     /// The type of outbound asynchronous streams returned by the
     /// `subscription` method.

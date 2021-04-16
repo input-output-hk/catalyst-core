@@ -8,7 +8,7 @@ use super::legacy;
 use crate::data::block::{Block, BlockEvent, BlockId, BlockIds, Header};
 use crate::data::fragment::{Fragment, FragmentIds};
 use crate::data::p2p::{AuthenticatedNodeId, NodeId};
-use crate::data::{Gossip, HandshakeResponse, Peers};
+use crate::data::{Gossip, HandshakeResponse};
 use crate::error::{Error, HandshakeError};
 use crate::PROTOCOL_VERSION;
 use futures::prelude::*;
@@ -189,10 +189,11 @@ where
     /// The peers are picked up accordingly to the Poldercast algorithm
     /// modules. This request is typically used during bootstrap from
     /// a trusted peer.
-    pub async fn peers(&mut self, limit: u32) -> Result<Peers, Error> {
+    pub async fn peers(&mut self, limit: u32) -> Result<Gossip, Error> {
+        use crate::grpc::convert::FromProtobuf;
         let req = proto::PeersRequest { limit };
         let res = self.inner.peers(req).await?.into_inner();
-        let peers = convert::from_protobuf_repeated(res.peers)?;
+        let peers = Gossip::from_message(res)?;
         Ok(peers)
     }
 

@@ -72,15 +72,19 @@ Load your __venv__ and/or run with your default __python3__ `python proposers_re
 ```shell
 Usage: proposers_rewards.py [OPTIONS]
 
-  Calculate catalyst rewards after tallying process. If all, --proposals-
-  path --active-voteplan-path and --challenges_path, are provided. Data is
-  loaded from the json files on those locations. Otherwise data is requested
-  to the proper API endpoints pointed to the --vit-station-url option.
+  Calculate catalyst rewards after tallying process. If all --proposals-path, 
+  --active-voteplan-path and --challenges_path are provided. Then,
+  data is loaded from the json files on those locations. Otherwise data is
+  requested to the proper API endpoints pointed to the --vit-station-url
+  option. Rewards are written into a separated file for each challenge. File
+  is constructed via the --output-file. For example /out/rewards.csv with
+  challenges [challenge_1, challenge_2] will generate
+  /out/rewards_challenge_1.csv and /out/rewards_challenge_2.csv files.
 
 Options:
   --conversion-factor FLOAT       [required]
   --output-file TEXT              [required]
-  --threshold FLOAT               [default: 0.15]
+  --approval-threshold FLOAT      [default: 0.15]
   --output-format [csv|json]      [default: csv]
   --proposals-path TEXT
   --active-voteplan-path TEXT
@@ -95,5 +99,6 @@ Options:
                                   copy it or customize the installation.
 
   --help                          Show this message and exit.
+
 
 ```

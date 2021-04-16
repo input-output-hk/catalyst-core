@@ -7,9 +7,8 @@ use crate::{
 };
 use iapyx::VitVersion;
 use jormungandr_scenario_tests::prepare_command;
-use jormungandr_scenario_tests::Context;
+use jormungandr_scenario_tests::{Context, ProgressBarMode};
 use jormungandr_testing_utils::testing::network_builder::Seed;
-use jortestkit::prelude::*;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;

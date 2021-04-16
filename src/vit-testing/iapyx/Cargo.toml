@@ -24,7 +24,7 @@ cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
 jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", rev = "91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da" }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev="6a768ad2bb726449f6228d40b6f0f59b797b5b5f" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev="919e6e99ef064b9e810887bf72d961281ae2dd49" }
 hyper = "0.13.6"
 thiserror = "1.0"
 serde_json = "1.0.53"

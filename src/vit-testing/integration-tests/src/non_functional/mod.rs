@@ -158,6 +158,7 @@ fn build_load_config(
         100,
         Monitor::Progress(100),
         60,
+        1,
     );
 
     IapyxLoadConfig {

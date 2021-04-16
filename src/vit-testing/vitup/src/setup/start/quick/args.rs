@@ -7,9 +7,10 @@ use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::Result;
 use iapyx::Protocol;
 use jormungandr_scenario_tests::programs::prepare_command;
-use jormungandr_scenario_tests::{Context, Seed};
+use jormungandr_scenario_tests::{
+    parse_progress_bar_mode_from_str, Context, ProgressBarMode, Seed,
+};
 use jortestkit::prelude::read_file;
-use jortestkit::prelude::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;

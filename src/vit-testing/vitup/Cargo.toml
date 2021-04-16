@@ -22,7 +22,7 @@ chain-vote           = { git = "https://github.com/input-output-hk/chain-libs.gi
 jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da" } 
 jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da" }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev="919e6e99ef064b9e810887bf72d961281ae2dd49" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "8ff851f532e68aa13126dc0de7b9f9675d827988" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "8ff851f532e68aa13126dc0de7b9f9675d827988" }
 iapyx = { path = "../iapyx" }

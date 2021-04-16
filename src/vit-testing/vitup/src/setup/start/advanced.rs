@@ -8,8 +8,9 @@ use crate::setup::start::quick::Mode;
 use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
 use jormungandr_scenario_tests::programs::prepare_command;
-use jormungandr_scenario_tests::{Context, Seed};
-use jortestkit::prelude::{parse_progress_bar_mode_from_str, ProgressBarMode};
+use jormungandr_scenario_tests::{
+    parse_progress_bar_mode_from_str, Context, ProgressBarMode, Seed,
+};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;

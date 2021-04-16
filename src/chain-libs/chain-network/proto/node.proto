@@ -61,31 +61,8 @@ message FragmentIds {
 // Request for peers
 message PeersRequest { uint32 limit = 1; }
 
-// Responses as a bunch of peers
-message PeersResponse { repeated Peer peers = 1; }
-
-// A Peer on the network
-message Peer {
-  // FIXME: make the port field common, indicate TCP protocol selection
-  // by the field number.
-  oneof peer {
-    PeerV4 v4 = 1;
-    PeerV6 v6 = 2;
-  }
-}
-
-// An ipv4 peer
-message PeerV4 {
-  fixed32 ip = 1;
-  fixed32 port = 2; // FIXME: uint32 is more efficient for port numbers
-}
-
-// An ipv6 peer
-message PeerV6 {
-  fixed64 ip_high = 1;
-  fixed64 ip_low = 2;
-  fixed32 port = 3; // FIXME: uint32 is more efficient for port numbers
-}
+// Responses as a bunch of peers, similar to Gossip
+message PeersResponse { repeated bytes peers = 2; }
 
 // Request message for method PullHeaders.
 // This message can also be send by the service as a BlockEvent variant.

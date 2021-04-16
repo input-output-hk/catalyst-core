@@ -159,25 +159,23 @@ def get_proposals_voteplans_and_challenges_from_files(
 
 # API loaders
 
-async def get_proposals_from_api(vit_servicing_station_url: str) -> List[Proposal]:
+async def get_data_from_api(base_url: str, endpoint: str, cls: "T") -> List["T"]:
     async with httpx.AsyncClient() as client:
-        proposals_result = await client.get(f"{vit_servicing_station_url}/api/v0/proposals")
-        assert proposals_result.status_code == 200
-        return [Proposal(**proposal_data) for proposal_data in proposals_result.json()]
+        result = await client.get(f"{base_url}{endpoint}")
+        assert result.status_code == 200
+        return [cls(**data) for data in result.json()]
+
+
+async def get_proposals_from_api(vit_servicing_station_url: str) -> List[Proposal]:
+    return await get_data_from_api(vit_servicing_station_url, "/api/v0/proposals", Proposal)
 
 
 async def get_active_voteplans_from_api(vit_servicing_station_url: str) -> List[VoteplanStatus]:
-    async with httpx.AsyncClient() as client:
-        proposals_result = await client.get(f"{vit_servicing_station_url}/api/v0/vote/active/plans")
-        assert proposals_result.status_code == 200
-        return [VoteplanStatus(**proposal_data) for proposal_data in proposals_result.json()]
+    return await get_data_from_api(vit_servicing_station_url, "/api/v0/vote/active/plans", VoteplanStatus)
 
 
 async def get_challenges_from_api(vit_servicing_station_url: str) -> List[Challenge]:
-    async with httpx.AsyncClient() as client:
-        challenges_result = await client.get(f"{vit_servicing_station_url}/api/v0/challenges")
-        assert challenges_result.status_code == 200
-        return [Challenge(**challenge) for challenge in challenges_result.json()]
+    return await get_data_from_api(vit_servicing_station_url, "/api/v0/challenges", Challenge)
 
 
 async def get_proposals_voteplans_and_challenges_from_api(vit_servicing_station_url: str) \
@@ -363,7 +361,7 @@ class OutputFormat(enum.Enum):
 def calculate_rewards(
         conversion_factor: float = typer.Option(...),
         output_file: str = typer.Option(...),
-        threshold: float = typer.Option(0.15),
+        approval_threshold: float = typer.Option(0.15),
         output_format: OutputFormat = typer.Option("csv"),
         proposals_path: Optional[str] = typer.Option(None),
         active_voteplan_path: Optional[str] = typer.Option(None),
@@ -371,7 +369,8 @@ def calculate_rewards(
         vit_station_url: str = typer.Option("https://servicing-station.vit.iohk.io")):
     """
     Calculate catalyst rewards after tallying process.
-    If all --proposals-path, --active-voteplan-path and --challenges_path are provided data is loaded from the json files on those locations.
+    If all --proposals-path, --active-voteplan-path and --challenges_path are provided.
+    Then, data is loaded from the json files on those locations.
     Otherwise data is requested to the proper API endpoints pointed to the --vit-station-url option.
     Rewards are written into a separated file for each challenge. File is constructed via the --output-file.
     For example /out/rewards.csv with challenges [challenge_1, challenge_2] will generate /out/rewards_challenge_1.csv
@@ -404,7 +403,7 @@ def calculate_rewards(
             challenge_voteplan_proposals,
             challenge.proposers_rewards,
             conversion_factor,
-            threshold
+            approval_threshold
         )
         out_stream = output_json(results) if output_format == OutputFormat.JSON else output_csv(results)
         chalenge_ouput_file_path = build_path_for_challenge(output_file, challenge.title.replace(" ", "_"))

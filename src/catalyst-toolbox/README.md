@@ -72,8 +72,8 @@ Load your __venv__ and/or run with your default __python3__ `python proposers_re
 ```shell
 Usage: proposers_rewards.py [OPTIONS]
 
-  Calculate catalyst rewards after tallying process. If all --proposals-
-  path, --active-voteplan-path and --challenges_path are provided data is
+  Calculate catalyst rewards after tallying process. If all, --proposals-
+  path --active-voteplan-path and --challenges_path, are provided. Data is
   loaded from the json files on those locations. Otherwise data is requested
   to the proper API endpoints pointed to the --vit-station-url option.
 

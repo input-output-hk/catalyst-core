@@ -12,7 +12,7 @@ const DATABASE_URL: &str = "DATABASE_URL";
 const TLS_CERT_FILE: &str = "TLS_CERT_FILE";
 const TLS_PRIVATE_KEY_FILE: &str = "TLS_PK_FILE";
 const CORS_ALLOWED_ORIGINS: &str = "CORS_ALLOWED_ORIGINS";
-pub const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
+const VIT_SERVICE_VERSION_ENV_VARIABLE: &str = "SERVICE_VERSION";
 
 const ADDRESS_DEFAULT: &str = "0.0.0.0:3030";
 const DB_URL_DEFAULT: &str = "./db/database.sqlite3";
@@ -60,6 +60,9 @@ pub struct ServiceSettings {
     #[serde(default)]
     #[structopt(flatten)]
     pub log: Log,
+
+    #[structopt(long, env = VIT_SERVICE_VERSION_ENV_VARIABLE)]
+    pub service_version: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, StructOpt, Default)]
@@ -168,6 +171,10 @@ impl ServiceSettings {
 
         if other_settings.log.log_output_path.is_some() {
             return_settings.log.log_output_path = other_settings.log.log_output_path.clone();
+        }
+
+        if !other_settings.service_version.is_empty() {
+            return_settings.service_version = other_settings.service_version.clone();
         }
 
         return_settings.enable_api_tokens = other_settings.enable_api_tokens;
@@ -398,7 +405,8 @@ mod test {
             "log" : {
                 "log_output_path" : "./server.log",
                 "log_level" : "error"    
-            }
+            },
+            "service_version" : "v0.2.0"
         }
         "#;
 
@@ -414,6 +422,7 @@ mod test {
             std::path::PathBuf::from_str("./server.log").unwrap()
         );
         assert_eq!(config.log.log_level, Some(LogLevel::Error));
+        assert_eq!(config.service_version, "v0.2.0");
         let tls_config = config.tls;
         let cors_config = config.cors;
         assert_eq!(tls_config.cert_file.unwrap(), "./foo/bar.pem");
@@ -456,6 +465,8 @@ mod test {
             "--log-level",
             "error",
             "--enable-api-tokens",
+            "--service-version",
+            "v0.2.0",
         ]);
 
         assert_eq!(
@@ -469,6 +480,7 @@ mod test {
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
         assert_eq!(settings.db_url, "database.sqlite3");
         assert_eq!(settings.cors.max_age_secs.unwrap(), 60);
+        assert_eq!(settings.service_version, "v0.2.0");
         let allowed_origins = settings.cors.allowed_origins.unwrap();
         assert_eq!(allowed_origins.len(), 2);
         assert_eq!(
@@ -492,6 +504,7 @@ mod test {
             CORS_ALLOWED_ORIGINS,
             "https://foo.test;https://test.foo:5050",
         );
+        set_var(VIT_SERVICE_VERSION_ENV_VARIABLE, "v0.2.0");
 
         let settings: ServiceSettings = ServiceSettings::from_iter(&[
             "test",
@@ -511,6 +524,7 @@ mod test {
         assert_eq!(settings.tls.priv_key_file.unwrap(), "bar.foo");
         assert_eq!(settings.db_url, "database.sqlite3");
         assert_eq!(settings.cors.max_age_secs.unwrap(), 60);
+        assert_eq!(settings.service_version, "v0.2.0");
         let allowed_origins = settings.cors.allowed_origins.unwrap();
         assert_eq!(allowed_origins.len(), 2);
         assert_eq!(
@@ -539,6 +553,8 @@ mod test {
             "--block0-path",
             "block0.bin",
             "--enable-api-tokens",
+            "--service-version",
+            "v0.2.0",
         ]);
 
         let merged_settings = default.override_from(&other_settings);

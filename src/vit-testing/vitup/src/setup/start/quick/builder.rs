@@ -41,6 +41,8 @@ pub struct QuickVitBackendSettingsBuilder {
     external_committees: Vec<CommitteeIdDef>,
     fees: LinearFee,
     title: String,
+    //needed for load tests when we relay on secret keys instead of qrs
+    skip_qr_generation: bool,
 }
 
 impl Default for QuickVitBackendSettingsBuilder {
@@ -59,6 +61,7 @@ impl QuickVitBackendSettingsBuilder {
             committe_wallet: "committee_1".to_owned(),
             fees: LinearFee::new(0, 0, 0),
             external_committees: Vec::new(),
+            skip_qr_generation: false,
         }
     }
 
@@ -68,6 +71,10 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn set_external_committees(&mut self, external_committees: Vec<CommitteeIdDef>) {
         self.external_committees = external_committees;
+    }
+
+    pub fn skip_qr_generation(&mut self) {
+        self.skip_qr_generation = true;
     }
 
     pub fn parameters(&self) -> &VitStartParameters {
@@ -437,9 +444,9 @@ impl QuickVitBackendSettingsBuilder {
 
         let (vit_controller, controller) = builder.build_controllers(context)?;
 
-        println!("dumping qrs..");
-
-        self.dump_qrs(&controller, &templates, &child)?;
+        if !self.skip_qr_generation {
+            self.dump_qrs(&controller, &templates, &child)?;
+        }
 
         println!("dumping secret keys..");
 

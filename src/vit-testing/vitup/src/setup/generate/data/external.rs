@@ -38,6 +38,9 @@ pub struct ExternalDataCommandArgs {
 
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
+
+    #[structopt(long = "skip-qr-generation")]
+    pub skip_qr_generation: bool,
 }
 
 impl ExternalDataCommandArgs {
@@ -57,6 +60,9 @@ impl ExternalDataCommandArgs {
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
         let config = read_config(&self.config)?;
 
+        if self.skip_qr_generation {
+            quick_setup.skip_qr_generation();
+        }
         quick_setup.upload_parameters(config.params.clone());
         quick_setup.fees(config.linear_fees);
         quick_setup.set_external_committees(config.committees);

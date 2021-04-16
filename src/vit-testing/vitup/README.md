@@ -3,7 +3,7 @@
 Vitup is a cli project which is capable to bootstrap mock backend which can be excercised by various tools. Initial purpose is to provide simple localhost backend for 
 catalyst voting app
 
-# build
+## build
 
 before building vitup all dependencies need to be installed.
 - iapyx-proxy
@@ -17,7 +17,7 @@ and install:
 
 `cargo install --path .`
 
-# quick start
+## quick start
 
 The simplest configuration is available by using command:
 
@@ -25,23 +25,22 @@ The simplest configuration is available by using command:
 
 default endpoint will be exposed at `0.0.0.0:80` all data dumped to `.\data\vit_backend`
 
-# Command line parameters
+### Command line parameters
 
-## Modes
+#### Modes
 
 There are 3 modes available in vitup:
 - `--mode interactive` - where user can push some fragments or query status of nodes 
 - `--mode endless` - [Default] just simple run until stopped by user
 - `--mode service` - manager service published at `0.0.0.0:3030` and control stop/start/ and provide files over http
 
-### Service mode
 
-#### Admin
+##### Admin
 
 Once environment is up admin can check status or modify existing environment. It can use below operations
 
 
-#### Admin Operations
+###### Admin Operations
 - start -  in order to start new voting
 - stop -  stops currently running vote backend (usually it takes 1 min to stop it)
 - status -  check status of environment: <br/>
@@ -55,7 +54,7 @@ In order to get qr-codes or secret files from env, two operations are provided: 
   a) `List Files` - list all files in data directory for current run, <br/>
   b) `Get File` - downloads particular file which is visible in `List Files` operation result,
 
-#### How to send operations
+###### How to send operations
 
 Voting backend admin console is an REST API accessible over http on port 3030. Using POST/GET http methods admin can send some operations to environment.
 There are various apps capable of sending REST commands. The simplest is to download `Postman` and use UI to fire up commands.
@@ -66,7 +65,7 @@ There are various apps capable of sending REST commands. The simplest is to down
 
 Now let's review available commands:
 
-##### Check environment status
+###### Check environment status
 
 - Request Type: GET
 - Endpoint : http://{env_endpoint}:3030/status
@@ -75,7 +74,7 @@ Now let's review available commands:
 Running
 ```
 
-##### Start environment
+###### Start environment
 
 Default parameters:
 
@@ -312,3 +311,148 @@ User can list or view files available for current voting. to list all available 
 
 - Request Type: GET
 - Endpoint : http://{env_endpoint}:3030/files/get/{file_path}
+
+
+## Mock
+
+For developer convience an in-memory backend is available. Idea is the same as above but env is more lightweight and does not spawn jormungandr or vit-servicing-station.
+Mock is also capable of controlling more backend aspect than normal deployment (cut off the connections, rejects all fragments.
+
+### Configuration
+
+Note: it is recommended to run command from `vit-testing/vitup` folder (then no explicit paths are required to be provided).
+Configuration file example is available under `vit-testing/vitup/config.yaml`
+
+### Start
+
+`vitup start mock --config example\mock\config.yaml`
+
+#### Admin rest commands
+
+##### List Files
+
+```
+curl --location --request GET 'http://{mock_address}/api/control/files/list'
+```
+
+##### Health
+
+
+```
+curl --location --request GET 'http://{mock_address}/api/health'
+```
+
+##### Change Fund Id
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/fund/id/{new_fund_id}'
+```
+
+##### Accept all Fragments
+
+Makes mock to accept all further fragments sent to environment
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/fragments/accept'
+```
+
+##### Reject all Fragments
+
+Makes mock to reject all further fragments sent to environment
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/fragments/reject'
+```
+
+##### Hold all Fragments
+
+
+Makes mock to hold  all further fragments sent to environment
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/fragments/pending'
+```
+
+##### Reset Fragment strategy
+
+
+Makes mock to validate all further fragments sent to environment
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/fragments/reset'
+```
+##### Make backend unavailable
+
+Mock will reject all connections (returns 500)
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/available/false'
+```
+
+##### Make backend available
+
+
+Mock will accept all connections
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/command/available/true'
+```
+##### Reset environment
+
+Resets environment data
+
+```
+curl --location --request POST 'http://192.168.0.19:8080/api/control/command/reset' \
+--header 'Content-Type: application/json' \
+--data-raw '{" \ 
+	initials":[ \
+	   { \
+	      "name":"beforeVotingStart", \
+	      "funds":500, \
+	      "pin":"1234" \
+	   } \
+	], \
+	"vote_start":0, \
+	"vote_tally":10, \
+	"tally_end":20, \
+	"next_vote_start_time":"2022-05-31T20:00:00", \
+	"proposals":257, \
+	"challenges":7, \
+	"slot_duration":1, \
+	"slots_per_epoch":60, \
+	"voting_power":450, \
+	"fund_name":"Fund4", \
+	"fund_id":4, \
+	"linear_fees":{"constant":0,"coefficient":0,"certificate":0}, \
+	"version":"2.0", \
+	"private":false \
+}'
+```
+##### Health
+
+Checks if mock is up
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/health'
+```
+
+##### Logs
+
+Mock stores record of each request send to it. This endpoint gets all logs from mock
+
+
+```
+curl --location --request POST 'http://{mock_address}/api/control/logs/get'
+```
+
+
+#### Admin cli
+
+
+Admin CLI is an alternative for all above calls, available under vitup project.
+
+example:
+
+```
+vitup-cli --endpoint {mock} disruption control health
+```

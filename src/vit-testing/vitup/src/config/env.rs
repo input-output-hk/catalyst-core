@@ -2,6 +2,7 @@ use super::initials::Initials;
 use chrono::NaiveDateTime;
 use iapyx::Protocol;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct VitStartParameters {
@@ -25,6 +26,16 @@ pub struct VitStartParameters {
     pub fund_id: i32,
     pub private: bool,
     pub version: String,
+}
+
+impl VitStartParameters {
+    pub fn calculate_vote_duration(&self) -> Duration {
+        let duration_as_secs = (self.vote_tally - self.vote_start)
+            * self.slot_duration as u64
+            * (self.slots_per_epoch - 1) as u64;
+
+        Duration::from_secs(duration_as_secs)
+    }
 }
 
 impl Default for VitStartParameters {

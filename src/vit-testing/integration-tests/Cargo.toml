@@ -12,9 +12,10 @@ jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormunga
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "8ff851f532e68aa13126dc0de7b9f9675d827988" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "8ff851f532e68aa13126dc0de7b9f9675d827988" }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev="919e6e99ef064b9e810887bf72d961281ae2dd49" }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
+snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 rand_chacha = "0.2"
 tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
@@ -22,6 +23,7 @@ thiserror = "1.0"
 rand = "0.8"
 cfg-if = "1.0.0"
 assert_fs = "1.0"
+chrono = "0.4.19"
 
 [features]
 load-tests = []

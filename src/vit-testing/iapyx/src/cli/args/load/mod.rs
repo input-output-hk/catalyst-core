@@ -33,7 +33,7 @@ pub struct IapyxLoadCommand {
     pub pace: u64,
 
     // duration of scenario
-    #[structopt(short = "r", long = "duration")]
+    #[structopt(long = "duration")]
     pub duration: Option<u64>,
 
     /// how many requests per thread should be sent
@@ -67,6 +67,9 @@ pub struct IapyxLoadCommand {
     /// use https for sending fragments
     #[structopt(short = "r", long = "reuse_accounts")]
     pub reuse_accounts: bool,
+
+    #[structopt(long = "status-pace", default_value = "1")]
+    pub status_pace: u64,
 
     // measure
     #[structopt(short = "c", long = "criterion")]
@@ -108,6 +111,7 @@ impl IapyxLoadCommand {
                 self.pace,
                 self.build_monitor(),
                 0,
+                self.status_pace,
             )
         } else if let Some(count) = self.count {
             Configuration::requests_per_thread(
@@ -116,6 +120,7 @@ impl IapyxLoadCommand {
                 self.pace,
                 self.build_monitor(),
                 0,
+                self.status_pace,
             )
         } else {
             return Err(IapyxLoadCommandError::NoStrategyDefined);

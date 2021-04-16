@@ -21,12 +21,12 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/jormungandr && \
 	cd jormungandr && \
-	git checkout d7da17dd5201c80f7304050a386243975f097fc2
+	git checkout 91d6ffc15122f0b18e8e8a4d6e1454dcc99b54da
 
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-servicing-station && \
 	cd vit-servicing-station && \
-	git checkout 9b207ab7b4428d2dddb38b045bdf3e7a8eacd548
+	git checkout 8ff851f532e68aa13126dc0de7b9f9675d827988
 	
  RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-testing
@@ -50,4 +50,6 @@ ENV PATH="/root/.cargo/bin/:${PATH}"
 EXPOSE 80 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010 3030
 
 WORKDIR ${ENV_PREFIX}/vit-testing/vitup
-ENTRYPOINT ~/.cargo/bin/vitup start mock --config ./example/mock/config.yaml --params ./example/mock/start_params.yaml
+RUN mkdir -p ./mock
+
+ENTRYPOINT ~/.cargo/bin/vitup start mock --config ./example/mock/config.yaml

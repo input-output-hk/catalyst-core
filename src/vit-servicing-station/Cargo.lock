@@ -116,9 +116,9 @@ dependencies = [
 
 [[package]]
 name = "async-trait"
-version = "0.1.49"
+version = "0.1.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "589652ce7ccb335d1e7ecb3be145425702b290dbcb7029bbeaae263fc1d87b48"
+checksum = "0b98e84bbb4cbcdd97da190ba0c58a1bb0de2c1fdf67d159e192ed766aeca722"
 dependencies = [
  "proc-macro2 1.0.26",
  "quote 1.0.9",
@@ -3019,7 +3019,7 @@ checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
 
 [[package]]
 name = "vit-servicing-station-cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "base64 0.12.3",
  "chrono",
@@ -3035,7 +3035,7 @@ dependencies = [
 
 [[package]]
 name = "vit-servicing-station-lib"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -3063,7 +3063,7 @@ dependencies = [
 
 [[package]]
 name = "vit-servicing-station-server"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "log",
  "structopt",
@@ -3077,7 +3077,7 @@ dependencies = [
 
 [[package]]
 name = "vit-servicing-station-tests"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "askama",
  "askama_shared",

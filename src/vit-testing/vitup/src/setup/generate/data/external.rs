@@ -117,6 +117,10 @@ impl ExternalDataCommandArgs {
 
         println!("Fund id: {}", quick_setup.parameters().fund_id);
         println!(
+            "voteplan ids: {:?}",
+            controller.vote_plans().iter().map(|x| x.id()).collect::<Vec<String>>()
+        );
+        println!(
             "vote start timestamp: {:?}",
             quick_setup.parameters().vote_start_timestamp
         );

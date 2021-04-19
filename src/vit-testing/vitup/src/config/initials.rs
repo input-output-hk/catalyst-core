@@ -132,7 +132,7 @@ impl Initials {
                             format!("wallet_{}_above_{}", above_threshold_index, threshold);
                         let value: u64 = rand.gen_range(GRACE_VALUE..=threshold - GRACE_VALUE);
                         templates.insert(
-                            WalletTemplate::new_account(
+                            WalletTemplate::new_utxo(
                                 wallet_alias,
                                 Value(threshold + value),
                                 discrimination,

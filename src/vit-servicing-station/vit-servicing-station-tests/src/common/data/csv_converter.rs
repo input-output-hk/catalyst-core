@@ -22,11 +22,11 @@ impl CsvConverter {
             "fund_name",
             "voting_power_threshold",
             "fund_goal",
-            "voting_power_info",
             "rewards_info",
             "fund_start_time",
             "fund_end_time",
             "next_fund_start_time",
+            "registration_snapshot_time",
         ];
         let content: Vec<Vec<String>> = funds.iter().map(|x| convert_fund(x)).collect();
         self.build_file(headers, content, path)
@@ -189,11 +189,11 @@ fn convert_fund(fund: &Fund) -> Vec<String> {
         fund.fund_name.to_string(),
         fund.voting_power_threshold.to_string(),
         fund.fund_goal.to_string(),
-        fund.voting_power_info.to_string(),
         fund.rewards_info.to_string(),
         unix_timestamp_to_datetime(fund.fund_start_time).to_rfc3339(),
         unix_timestamp_to_datetime(fund.fund_end_time).to_rfc3339(),
         unix_timestamp_to_datetime(fund.next_fund_start_time).to_rfc3339(),
+        unix_timestamp_to_datetime(fund.registration_snapshot_time).to_rfc3339(),
     ]
 }
 

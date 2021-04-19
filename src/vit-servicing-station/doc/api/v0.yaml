@@ -149,6 +149,8 @@ components:
           type: string
         voting_power_info:
           type: string
+          deprecated: true
+          description: "Deprecated, same as registration_snapshot_time"
         voting_power_threshold:
           type: integer
           format: int64
@@ -161,6 +163,9 @@ components:
           type: string
           format: date-time
         next_fund_start_time:
+          type: string
+          format: date-time
+        registration_snapshot_time:
           type: string
           format: date-time
         chain_vote_plans:

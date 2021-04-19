@@ -121,7 +121,7 @@ pub fn voting_snapshot_build() {
             .unwrap()
             .timestamp(),
     );
-    parameters.set_refresh_time(
+    parameters.set_registration_snapshot_time(
         NaiveDateTime::parse_from_str("2015-09-03 20:00:00", format)
             .unwrap()
             .timestamp(),

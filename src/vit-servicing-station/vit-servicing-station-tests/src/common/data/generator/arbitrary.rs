@@ -13,9 +13,9 @@ use vit_servicing_station_lib::{
 };
 
 use fake::{
+    faker::chrono::en::DateTimeBetween,
     faker::company::en::{Buzzword, CatchPhase, CompanyName, Industry},
     faker::lorem::en::*,
-    faker::{chrono::en::DateTimeBetween, number::en::NumberWithFormat},
     faker::{internet::en::DomainSuffix, internet::en::SafeEmail, name::en::Name},
     Fake,
 };
@@ -28,6 +28,19 @@ use vit_servicing_station_lib::db::models::proposals::{
 };
 
 type UtcDateTime = DateTime<Utc>;
+
+struct FundDateTimes {
+    start: UtcDateTime,
+    end: UtcDateTime,
+    next: UtcDateTime,
+    snapshot: UtcDateTime,
+}
+
+struct VoteplanDateTimes {
+    start: UtcDateTime,
+    end: UtcDateTime,
+    tally: UtcDateTime,
+}
 
 #[derive(Clone)]
 pub struct ArbitraryGenerator {
@@ -95,18 +108,18 @@ impl ArbitraryGenerator {
 
     fn gen_single_fund(&mut self) -> Fund {
         let id = self.id();
-        let (start, end, next) = self.consecutive_dates();
+        let dates = self.fund_date_times();
 
         Fund {
             id: id.abs(),
             fund_name: CatchPhase().fake::<String>(),
             fund_goal: Buzzword().fake::<String>(),
-            voting_power_info: format!(">{}", NumberWithFormat("^###").fake::<String>()),
             rewards_info: Sentence(3..5).fake::<String>(),
-            fund_start_time: start.timestamp(),
+            fund_start_time: dates.start.timestamp(),
             voting_power_threshold: self.id_generator.next_u64() as i64,
-            fund_end_time: end.timestamp(),
-            next_fund_start_time: next.timestamp(),
+            fund_end_time: dates.end.timestamp(),
+            next_fund_start_time: dates.next.timestamp(),
+            registration_snapshot_time: dates.snapshot.timestamp(),
             chain_vote_plans: vec![self.voteplan_with_fund_id(id.abs())],
             challenges: vec![self.challenge_with_fund_id(id.abs())],
         }
@@ -220,15 +233,30 @@ impl ArbitraryGenerator {
         }
     }
 
-    fn consecutive_dates(&self) -> (UtcDateTime, UtcDateTime, UtcDateTime) {
+    fn fund_date_times(&self) -> FundDateTimes {
         let range_start_time = Utc::now() - Duration::days(10);
         let range_end_time = Utc::now() + Duration::days(10);
         let range_next_start_time = range_end_time + Duration::days(10);
-        (
-            DateTimeBetween(range_start_time, Utc::now()).fake::<UtcDateTime>(),
-            DateTimeBetween(Utc::now(), range_end_time).fake::<UtcDateTime>(),
-            DateTimeBetween(range_end_time, range_next_start_time).fake::<UtcDateTime>(),
-        )
+        let start = DateTimeBetween(range_start_time, Utc::now()).fake::<UtcDateTime>();
+        let end = DateTimeBetween(Utc::now(), range_end_time).fake::<UtcDateTime>();
+        let next = DateTimeBetween(range_end_time, range_next_start_time).fake::<UtcDateTime>();
+        let snapshot = DateTimeBetween(start, end).fake::<UtcDateTime>();
+        FundDateTimes {
+            start,
+            end,
+            next,
+            snapshot,
+        }
+    }
+
+    fn voteplan_date_times(&self) -> VoteplanDateTimes {
+        let range_start_time = Utc::now() - Duration::days(10);
+        let range_end_time = Utc::now() + Duration::days(10);
+        let range_tally_time = range_end_time + Duration::days(10);
+        let start = DateTimeBetween(range_start_time, Utc::now()).fake::<UtcDateTime>();
+        let end = DateTimeBetween(Utc::now(), range_end_time).fake::<UtcDateTime>();
+        let tally = DateTimeBetween(range_end_time, range_tally_time).fake::<UtcDateTime>();
+        VoteplanDateTimes { start, end, tally }
     }
 
     pub fn hash(&mut self) -> String {
@@ -258,14 +286,14 @@ impl ArbitraryGenerator {
 
     pub fn voteplan_with_fund_id(&mut self, fund_id: i32) -> Voteplan {
         let id = self.id_generator.next_u32() as i32;
-        let (start, end, next) = self.consecutive_dates();
+        let dates = self.voteplan_date_times();
 
         Voteplan {
             id: id.abs(),
             chain_voteplan_id: self.hash(),
-            chain_vote_start_time: start.timestamp(),
-            chain_vote_end_time: end.timestamp(),
-            chain_committee_end_time: next.timestamp(),
+            chain_vote_start_time: dates.start.timestamp(),
+            chain_vote_end_time: dates.end.timestamp(),
+            chain_committee_end_time: dates.tally.timestamp(),
             chain_voteplan_payload: "public".to_string(),
             chain_vote_encryption_key: "".to_string(),
             fund_id,

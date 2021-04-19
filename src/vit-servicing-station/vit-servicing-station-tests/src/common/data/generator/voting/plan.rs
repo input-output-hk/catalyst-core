@@ -1,7 +1,6 @@
 use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingTemplateGenerator};
 use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
-use chrono::{DateTime, NaiveDateTime, SecondsFormat, Utc};
 use rand::{rngs::OsRng, RngCore};
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
@@ -19,7 +18,7 @@ pub struct ValidVotePlanParameters {
     pub voting_tally_start: Option<i64>,
     pub voting_tally_end: Option<i64>,
     pub next_fund_start_time: Option<i64>,
-    pub refresh_time: Option<i64>,
+    pub registration_snapshot_time: Option<i64>,
     pub vote_encryption_key: Option<String>,
     pub vote_options: Option<VoteOptions>,
     pub challenges_count: usize,
@@ -36,7 +35,7 @@ impl ValidVotePlanParameters {
             voting_tally_start: None,
             voting_tally_end: None,
             next_fund_start_time: None,
-            refresh_time: None,
+            registration_snapshot_time: None,
             vote_encryption_key: None,
             vote_options: Some(VoteOptions::parse_coma_separated_value("blank,yes,no")),
             challenges_count: 4,
@@ -69,8 +68,8 @@ impl ValidVotePlanParameters {
         self.next_fund_start_time = Some(next_fund_start_time);
     }
 
-    pub fn set_refresh_time(&mut self, refresh_time: i64) {
-        self.refresh_time = Some(refresh_time);
+    pub fn set_registration_snapshot_time(&mut self, registration_snapshot_time: i64) {
+        self.registration_snapshot_time = Some(registration_snapshot_time);
     }
 
     pub fn set_challenges_count(&mut self, challenges_count: usize) {
@@ -112,7 +111,10 @@ impl ValidVotePlanGenerator {
         let voting_tally_start = self.parameters.voting_tally_start.unwrap();
         let voting_tally_end = self.parameters.voting_tally_end.unwrap();
         let next_fund_start_time = self.parameters.next_fund_start_time.unwrap();
-        let refresh_time = self.parameters.refresh_time.unwrap_or(voting_start);
+        let registration_snapshot_time = self
+            .parameters
+            .registration_snapshot_time
+            .unwrap_or(voting_start);
 
         let fund_template = template_generator.next_fund();
         let fund_id = self.parameters.fund_id.unwrap_or(fund_template.id);
@@ -154,19 +156,16 @@ impl ValidVotePlanGenerator {
         .take(count)
         .collect();
 
-        let naive = NaiveDateTime::from_timestamp(refresh_time, 0);
-        let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
-
         let mut fund = Fund {
             id: fund_id,
             fund_name: self.parameters.vote_plan.alias(),
             fund_goal: fund_template.goal,
-            voting_power_info: datetime.to_rfc3339_opts(SecondsFormat::Secs, true),
             voting_power_threshold: threshold,
             rewards_info: fund_template.rewards_info,
             fund_start_time: voting_start,
             fund_end_time: voting_tally_start,
             next_fund_start_time,
+            registration_snapshot_time,
             chain_vote_plans: vec![vote_plan.clone()],
             challenges,
         };

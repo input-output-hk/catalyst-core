@@ -96,8 +96,7 @@ impl Readable for Witness {
         let first_key = deserialize_public_key(buf)?;
         let first_sig = deserialize_signature(buf)?;
 
-        let mut v = Vec::new();
-        v.push((first_index, first_key, first_sig));
+        let mut v = vec![(first_index, first_key, first_sig)];
 
         let mut prev_index = first_index;
         for _ in 0..len {

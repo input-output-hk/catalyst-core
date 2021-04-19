@@ -161,8 +161,8 @@ impl TryFrom<&[u8]> for Value {
     }
 }
 
-impl Into<Stake> for Value {
-    fn into(self) -> Stake {
-        Stake::from_value(self)
+impl From<Value> for Stake {
+    fn from(value: Value) -> Stake {
+        Stake::from_value(value)
     }
 }

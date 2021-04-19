@@ -49,9 +49,9 @@ impl From<ReadError> for Error {
     }
 }
 
-impl Into<ReadError> for Error {
-    fn into(self) -> ReadError {
-        ReadError::StructureInvalid(self.to_string())
+impl From<Error> for ReadError {
+    fn from(error: Error) -> ReadError {
+        ReadError::StructureInvalid(error.to_string())
     }
 }
 
@@ -226,7 +226,7 @@ impl Readable for ConfigParam {
     fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         let taglen = TagLen(buf.get_u16()?);
         let bytes = buf.get_slice(taglen.get_len())?;
-        match taglen.get_tag().map_err(Into::into)? {
+        match taglen.get_tag()? {
             Tag::Block0Date => ConfigParamVariant::from_payload(bytes).map(ConfigParam::Block0Date),
             Tag::Discrimination => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::Discrimination)

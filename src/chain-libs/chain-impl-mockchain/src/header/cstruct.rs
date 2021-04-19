@@ -296,7 +296,7 @@ impl<'a> HeaderSlice<'a> {
     }
 
     pub fn as_slice(&self) -> &'a [u8] {
-        &self.0[..]
+        &self.0
     }
 
     pub(super) fn to_owned(&self) -> Header {

@@ -1,7 +1,7 @@
 {  
   "initials": [
     {
-      "above_threshold": 5000,
+      "above_threshold": 1,
       "pin": "1234"
     }
   ],

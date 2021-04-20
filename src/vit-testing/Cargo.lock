@@ -1968,8 +1968,8 @@ dependencies = [
  "snapshot-trigger-service",
  "thiserror",
  "tokio 1.5.0",
- "vit-servicing-station-lib 0.2.0",
- "vit-servicing-station-tests 0.2.0",
+ "vit-servicing-station-lib",
+ "vit-servicing-station-tests",
  "vitup",
 ]
 
@@ -4810,34 +4810,8 @@ checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
 
 [[package]]
 name = "vit-servicing-station-lib"
-version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=8ff851f532e68aa13126dc0de7b9f9675d827988#8ff851f532e68aa13126dc0de7b9f9675d827988"
-dependencies = [
- "async-trait",
- "base64 0.12.3",
- "chrono",
- "diesel",
- "diesel_migrations",
- "dotenv",
- "itertools 0.9.0",
- "libsqlite3-sys",
- "log",
- "serde",
- "serde_json",
- "simplelog",
- "structopt",
- "thiserror",
- "tokio 1.5.0",
- "tracing",
- "tracing-futures",
- "tracing-subscriber",
- "warp",
-]
-
-[[package]]
-name = "vit-servicing-station-lib"
 version = "0.3.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=30112b87630fc037e657d108fefbe162608b1c95#30112b87630fc037e657d108fefbe162608b1c95"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=5c545145036d3c117ac5e0cf9ea0c7a90acd256a#5c545145036d3c117ac5e0cf9ea0c7a90acd256a"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -4862,8 +4836,8 @@ dependencies = [
 
 [[package]]
 name = "vit-servicing-station-tests"
-version = "0.2.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=8ff851f532e68aa13126dc0de7b9f9675d827988#8ff851f532e68aa13126dc0de7b9f9675d827988"
+version = "0.3.0"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=5c545145036d3c117ac5e0cf9ea0c7a90acd256a#5c545145036d3c117ac5e0cf9ea0c7a90acd256a"
 dependencies = [
  "askama",
  "askama_shared",
@@ -4894,44 +4868,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio 1.5.0",
- "vit-servicing-station-lib 0.2.0",
-]
-
-[[package]]
-name = "vit-servicing-station-tests"
-version = "0.3.0"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=30112b87630fc037e657d108fefbe162608b1c95#30112b87630fc037e657d108fefbe162608b1c95"
-dependencies = [
- "askama",
- "askama_shared",
- "assert_cmd",
- "assert_fs",
- "base64 0.12.3",
- "cfg-if 0.1.10",
- "chain-addr",
- "chain-crypto",
- "chain-impl-mockchain",
- "chrono",
- "diesel",
- "diesel_migrations",
- "dyn-clone",
- "fake",
- "hyper 0.14.5",
- "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
- "lazy_static",
- "libsqlite3-sys",
- "predicates",
- "pretty_assertions",
- "rand 0.7.3",
- "rand_core 0.5.1",
- "reqwest 0.10.10",
- "serde",
- "serde_json",
- "structopt",
- "tempfile",
- "thiserror",
- "tokio 1.5.0",
- "vit-servicing-station-lib 0.3.0",
+ "vit-servicing-station-lib",
 ]
 
 [[package]]
@@ -4982,8 +4919,8 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "uuid",
- "vit-servicing-station-lib 0.3.0",
- "vit-servicing-station-tests 0.3.0",
+ "vit-servicing-station-lib",
+ "vit-servicing-station-tests",
  "walkdir",
  "warp",
  "warp-reverse-proxy",

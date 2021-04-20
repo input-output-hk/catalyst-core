@@ -202,7 +202,7 @@ impl VitStation {
         let mut command = command_builder
             .in_settings_file(&config_file)
             .db_url(db_file.to_str().unwrap())
-            .version(version)
+            .service_version(version)
             .block0_path(block0.to_str().unwrap())
             .build();
 

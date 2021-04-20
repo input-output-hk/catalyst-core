@@ -24,7 +24,7 @@ table! {
         id -> Integer,
         fund_name -> Text,
         fund_goal -> Text,
-        voting_power_info -> Text,
+        registration_snapshot_time -> BigInt,
         voting_power_threshold -> BigInt,
         rewards_info -> Text,
         fund_start_time -> BigInt,

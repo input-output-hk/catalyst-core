@@ -3,10 +3,12 @@ use crate::db::{
     schema::funds,
     Db,
 };
+use crate::utils::datetime::unix_timestamp_to_datetime;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[serde(into = "FundWithLegacyFields")]
 pub struct Fund {
     #[serde(default = "Default::default")]
     pub id: i32,
@@ -14,28 +16,67 @@ pub struct Fund {
     pub fund_name: String,
     #[serde(alias = "fundGoal")]
     pub fund_goal: String,
-    #[serde(alias = "votingPowerInfo")]
-    pub voting_power_info: String,
     #[serde(alias = "votingPowerThreshold")]
     pub voting_power_threshold: i64,
     #[serde(alias = "rewardsInfo")]
     pub rewards_info: String,
     #[serde(alias = "fundStartTime")]
-    #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub fund_start_time: i64,
     #[serde(alias = "fundEndTime")]
-    #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub fund_end_time: i64,
     #[serde(alias = "nextFundStartTime")]
-    #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     pub next_fund_start_time: i64,
+    #[serde(alias = "registrationSnapshotTime")]
+    #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
+    pub registration_snapshot_time: i64,
     #[serde(alias = "chainVotePlans", default = "Vec::new")]
     pub chain_vote_plans: Vec<Voteplan>,
     #[serde(default = "Vec::new")]
     pub challenges: Vec<Challenge>,
+}
+
+#[derive(Serialize)]
+struct FundWithLegacyFields {
+    id: i32,
+    fund_name: String,
+    fund_goal: String,
+    voting_power_threshold: i64,
+    rewards_info: String,
+    #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
+    fund_start_time: i64,
+    #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
+    fund_end_time: i64,
+    #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
+    next_fund_start_time: i64,
+    #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
+    registration_snapshot_time: i64,
+    chain_vote_plans: Vec<Voteplan>,
+    challenges: Vec<Challenge>,
+    voting_power_info: String,
+}
+
+impl From<Fund> for FundWithLegacyFields {
+    fn from(fund: Fund) -> Self {
+        let voting_power_info =
+            unix_timestamp_to_datetime(fund.registration_snapshot_time).to_rfc3339();
+        FundWithLegacyFields {
+            id: fund.id,
+            fund_name: fund.fund_name,
+            fund_goal: fund.fund_goal,
+            voting_power_threshold: fund.voting_power_threshold,
+            rewards_info: fund.rewards_info,
+            fund_start_time: fund.fund_start_time,
+            fund_end_time: fund.fund_end_time,
+            next_fund_start_time: fund.next_fund_start_time,
+            registration_snapshot_time: fund.registration_snapshot_time,
+            chain_vote_plans: fund.chain_vote_plans,
+            challenges: fund.challenges,
+            voting_power_info,
+        }
+    }
 }
 
 impl Queryable<funds::SqlType, Db> for Fund {
@@ -46,8 +87,8 @@ impl Queryable<funds::SqlType, Db> for Fund {
         String,
         // 2 -> fund_goal
         String,
-        // 3 -> voting_power_info
-        String,
+        // 3 -> registration_snapshot_time
+        i64,
         // 4 -> voting_power_threshold
         i64,
         // 5 -> rewards_info
@@ -65,7 +106,7 @@ impl Queryable<funds::SqlType, Db> for Fund {
             id: row.0,
             fund_name: row.1,
             fund_goal: row.2,
-            voting_power_info: row.3,
+            registration_snapshot_time: row.3,
             voting_power_threshold: row.4,
             rewards_info: row.5,
             fund_start_time: row.6,
@@ -85,7 +126,7 @@ impl Insertable<funds::table> for Fund {
         Option<diesel::dsl::Eq<funds::id, i32>>,
         diesel::dsl::Eq<funds::fund_name, String>,
         diesel::dsl::Eq<funds::fund_goal, String>,
-        diesel::dsl::Eq<funds::voting_power_info, String>,
+        diesel::dsl::Eq<funds::registration_snapshot_time, i64>,
         diesel::dsl::Eq<funds::voting_power_threshold, i64>,
         diesel::dsl::Eq<funds::rewards_info, String>,
         diesel::dsl::Eq<funds::fund_start_time, i64>,
@@ -103,7 +144,7 @@ impl Insertable<funds::table> for Fund {
             id_item,
             funds::fund_name.eq(self.fund_name),
             funds::fund_goal.eq(self.fund_goal),
-            funds::voting_power_info.eq(self.voting_power_info),
+            funds::registration_snapshot_time.eq(self.registration_snapshot_time),
             funds::voting_power_threshold.eq(self.voting_power_threshold),
             funds::rewards_info.eq(self.rewards_info),
             funds::fund_start_time.eq(self.fund_start_time),
@@ -124,7 +165,7 @@ pub mod test {
         DbConnectionPool,
     };
 
-    use chrono::Utc;
+    use chrono::{Duration, Utc};
     use diesel::{ExpressionMethods, RunQueryDsl};
 
     pub fn get_test_fund() -> Fund {
@@ -133,7 +174,7 @@ pub mod test {
             id: FUND_ID,
             fund_name: "hey oh let's go".to_string(),
             fund_goal: "test this endpoint".to_string(),
-            voting_power_info: ">9000".to_string(),
+            registration_snapshot_time: (Utc::now() + Duration::days(3)).timestamp(),
             voting_power_threshold: 100,
             rewards_info: "not much".to_string(),
             fund_start_time: Utc::now().timestamp(),
@@ -149,7 +190,7 @@ pub mod test {
             funds::id.eq(fund.id),
             funds::fund_name.eq(fund.fund_name.clone()),
             funds::fund_goal.eq(fund.fund_goal.clone()),
-            funds::voting_power_info.eq(fund.voting_power_info.clone()),
+            funds::registration_snapshot_time.eq(fund.registration_snapshot_time.clone()),
             funds::voting_power_threshold.eq(fund.voting_power_threshold),
             funds::rewards_info.eq(fund.rewards_info.clone()),
             funds::fund_start_time.eq(fund.fund_start_time),

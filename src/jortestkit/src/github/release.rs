@@ -41,7 +41,12 @@ pub struct ReleaseDto {
 #[allow(clippy::from_over_into)]
 impl Into<Release> for ReleaseDto {
     fn into(self) -> Release {
-        let assets = Asset::assets_from_dtos(self.assets);
+        let assets = Asset::assets_from_dtos(
+            self.assets
+                .into_iter()
+                .filter(|x| x.is_generic())
+                .collect::<Vec<_>>(),
+        );
         Release {
             version: self.tag_name.clone(),
             released_date: self.published_at.map(|dt| dt.into()),
@@ -102,6 +107,10 @@ impl AssetDto {
 
     fn is_unix(&self) -> bool {
         self.name.contains("linux")
+    }
+
+    fn is_generic(&self) -> bool {
+        self.name.contains("generic")
     }
 
     pub fn download_url(&self) -> String {

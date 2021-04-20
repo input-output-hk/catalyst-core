@@ -5,6 +5,7 @@
     "description": "What Challenges should the community prioritize to address in Fund6?",
     "fund_id": "4",
     "id": "1",
+    "proposers_rewards": "0",
     "rewards_total": "400000",
     "title": "Fund6 Challenge Setting"
   },
@@ -14,6 +15,7 @@
     "description": "How can application developers drive adoption of Cardano in 2021?",
     "fund_id": "4",
     "id": "2",
+    "proposers_rewards": "0",
     "rewards_total": "200000",
     "title": "Dapps & Integrations"
   },
@@ -23,6 +25,7 @@
     "description": "How can we create a positive developer experience that helps the developer focus on building successful apps?",
     "fund_id": "4",
     "id": "3",
+    "proposers_rewards": "0",
     "rewards_total": "400000",
     "title": "Developer Ecosystem"
   },
@@ -32,6 +35,7 @@
     "description": "How can we help the Catalyst community to get better at distributed decision making within the next two Catalyst rounds?",
     "fund_id": "4",
     "id": "4",
+    "proposers_rewards": "0",
     "rewards_total": "50000",
     "title": "Distributed Decision Making"
   },
@@ -41,6 +45,7 @@
     "description": "How can we encourage entrepreneurs from outside the Cardano ecosystem to submit proposals to Catalyst in the next two funds?",
     "fund_id": "4",
     "id": "5",
+    "proposers_rewards": "0",
     "rewards_total": "50000",
     "title": "Proposer Outreach"
   },
@@ -50,6 +55,7 @@
     "description": "How can we encourage more meaningful participation in Project Catalyst from community members in the next two funds?",
     "fund_id": "4",
     "id": "6",
+    "proposers_rewards": "0",
     "rewards_total": "50000",
     "title": "Catalyst Value Onboarding"
   },
@@ -59,6 +65,7 @@
     "description": "How can we mobilize the community to solve local problems using Cardano, through a Local Community Center model supported by the CF?",
     "fund_id": "4",
     "id": "7",
+    "proposers_rewards": "0",
     "rewards_total": "50000",
     "title": "Local Community Centers"
   }

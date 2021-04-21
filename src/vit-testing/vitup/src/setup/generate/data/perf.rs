@@ -157,6 +157,7 @@ impl PerfDataCommandArgs {
 
     fn move_single_user_secrets<P: AsRef<Path>>(&self, root: P, output_folder: P) -> Result<()> {
         let pattern = format!("{}/wallet_*_*", root.as_ref().display());
+        std::fs::create_dir_all(&output_folder).unwrap();
         for file in glob(&pattern)
             .expect("Failed to read glob pattern")
             .take(self.single)

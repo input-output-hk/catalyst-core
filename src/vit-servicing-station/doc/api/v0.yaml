@@ -143,70 +143,93 @@ components:
         id:
           type: integer
           format: int32
+          description: Identifier of the fund campaign.
         fund_name:
           type: string
+          description: Human-readable name of the fund campaign.
         fund_goal:
           type: string
+          description: Description of the campaign's goals.
         voting_power_info:
           type: string
           deprecated: true
-          description: "Deprecated, same as registration_snapshot_time"
+          description: Deprecated, same as registration_snapshot_time.
         voting_power_threshold:
           type: integer
           format: int64
+          description: |
+            Minimal amount of funds required for a valid voter registration.
+            This amount is in lovelace.
         rewards_info:
           type: string
+          # FIXME: document the purpose of this field or deprecate it
         fund_start_time:
           type: string
           format: date-time
+          description: Date and time for the start of the current voting period.
         fund_end_time:
           type: string
           format: date-time
+          description: Date and time for the end of the current voting period.
         next_fund_start_time:
           type: string
           format: date-time
+          description: Date and time for the start of the next voting period.
         registration_snapshot_time:
           type: string
           format: date-time
+          description: Date and time for blockchain state snapshot capturing voter registrations.
         chain_vote_plans:
           type: array
           items:
             $ref: "#/components/schemas/VotePlan"
+          description: Vote plans registered for voting in this fund campaign.
         challenges:
           type: array
           items:
             $ref: "#/components/schemas/Challenge"
+          description: A list of campaign challenges structuring the proposals.
 
     VotePlan:
       properties:
         id:
           type: integer
           format: int32
+          description: API identifier of the vote plan.
         chain_voteplan_id:
           type: string
           format: hash
+          description: Blockchain ID of the vote plan transaction.
         chain_vote_start_time:
           type: string
           format: date-time
+          description: Date and time for the start of voting on this vote plan.
         chain_vote_end_time:
           type: string
           format: date-time
+          description: Date and time for the end of voting on this vote plan.
         chain_committee_end_time:
           type: string
           format: date-time
+          description: Date and time for the end of tallying on this vote plan.
         chain_voteplan_payload:
           type: string
+          description: |
+            Whether the voting is done using the public or the privacy-preserving protocol.
         fund_id:
           type: integer
           format: int32
+          description: The fund ID this vote plan belongs to.
 
     Proposal:
       properties:
         internal_id:
           type: integer
           format: int32
+          description: The API identifier for this proposal.
         proposal_id:
           type: string
+          description: Unique identifier for this proposal.
         proposal_category:
           type: object
           properties:
@@ -218,16 +241,20 @@ components:
               type: string
         proposal_title:
           type: string
+          description: Short title of the proposal.
         proposal_summary:
           type: string
+          description: Brief description of the proposal.
         proposal_public_key:
           type: string
           format: binary
         proposal_funds:
           type: integer
           format: int64
+          description: The amount of funds requested by this proposal.
         proposal_url:
           type: string
+          description: URL to a web page with details on this proposal.
         proposal_files:
           type: string
         proposer:
@@ -235,31 +262,42 @@ components:
           properties:
             proposer_name:
               type: string
+              description: Name of the author of the proposal.
             proposer_email:
               type: string
+              description: Email address of the author of the proposal.
             proposer_url:
               type: string
+              description: URL to a web resource with details about the author of the proposal.
         chain_proposal_id:
           type: string
+          description: Identifier of the proposal on the blockchain.
         chain_proposal_index:
           type: integer
           format: int64
+          description: Index of the proposal in the vote plan.
         chain_vote_options:
-          description: Map[VoteOption; Index]
+          description: Map of named vote options to choice indices.
           type: object
         chain_voteplan_id:
           type: string
+          description: Identifier of the vote plan this proposal belongs to.
         chain_vote_start_time:
           type: string
           format: date-time
+          description: Date and time for the start of voting on this proposal's vote plan.
         chain_vote_end_time:
           type: string
           format: date-time
+          description: Date and time for the start of voting on this proposal's vote plan.
         chain_committee_end_time:
           type: string
           format: date-time
+          description: Date and time for the end of tallying on this proposal's vote plan.
         chain_voteplan_payload:
           type: string
+          description: |
+            Whether the voting is done using the public or the privacy-preserving protocol.
 
     ChallengeType:
       type: string

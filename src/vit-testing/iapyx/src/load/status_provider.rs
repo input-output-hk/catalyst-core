@@ -25,12 +25,14 @@ impl VoteStatusProvider {
 
 impl RequestStatusProvider for VoteStatusProvider {
     fn get_statuses(&self, ids: &[Id]) -> Vec<Status> {
-        let fragment_logs = self.backend.fragment_logs().unwrap();
-        fragment_logs
-            .iter()
-            .filter(|(id, _)| ids.contains(&id.to_string()))
-            .map(|(id, fragment_log)| into_status(fragment_log, id))
-            .collect()
+        match self.backend.fragment_logs() {
+            Ok(fragment_logs) => fragment_logs
+                .iter()
+                .filter(|(id, _)| ids.contains(&id.to_string()))
+                .map(|(id, fragment_log)| into_status(fragment_log, id))
+                .collect(),
+            Err(_) => vec![],
+        }
     }
 }
 

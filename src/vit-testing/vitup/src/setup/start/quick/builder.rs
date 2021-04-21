@@ -314,8 +314,15 @@ impl QuickVitBackendSettingsBuilder {
         .into_iter()
         .enumerate()
         .map(|(index, x)| {
-            let mut vote_plan_builder =
-                VotePlanDefBuilder::new(&format!("{}_{}", &self.fund_name(), index + 1));
+            let vote_plan_name = {
+                if index == 0 {
+                    self.fund_name()
+                } else {
+                    format!("{}_{}", &self.fund_name(), index)
+                }
+            };
+
+            let mut vote_plan_builder = VotePlanDefBuilder::new(&vote_plan_name);
             vote_plan_builder.owner(&self.committe_wallet);
 
             if self.parameters.private {

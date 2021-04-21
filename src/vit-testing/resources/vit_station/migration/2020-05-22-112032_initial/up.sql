@@ -4,7 +4,7 @@ create table funds
         primary key autoincrement,
     fund_name VARCHAR NOT NULL,
     fund_goal VARCHAR NOT NULL,
-    voting_power_info VARCHAR NOT NULL,
+    registration_snapshot_time BIGINT NOT NULL,
     voting_power_threshold BIGINT NOT NULL,
     rewards_info VARCHAR NOT NULL,
     fund_start_time BIGINT NOT NULL,
@@ -78,6 +78,7 @@ create table challenges
     title VARCHAR NOT NULL,
     description VARCHAR NOT NULL,
     rewards_total BIGINT NOT NULL,
+    proposers_rewards BIGINT NOT NULL,
     fund_id INTEGER NOT NULL,
     challenge_url VARCHAR NOT NULL
 );

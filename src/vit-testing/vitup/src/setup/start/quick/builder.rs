@@ -25,7 +25,7 @@ use jormungandr_testing_utils::testing::network_builder::{
 };
 use jormungandr_testing_utils::wallet::LinearFee;
 use jormungandr_testing_utils::{qr_code::KeyQrCode, wallet::ElectionPublicKeyExtension};
-use std::collections::HashMap;
+use std::{collections::HashMap, iter};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub const LEADER_1: &str = "Leader1";
@@ -234,10 +234,10 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn vote_plan_parameters(
         &self,
-        vote_plan: VotePlanDef,
+        vote_plans: Vec<VotePlanDef>,
         settings: &Settings,
     ) -> ValidVotePlanParameters {
-        let mut parameters = ValidVotePlanParameters::new(vote_plan);
+        let mut parameters = ValidVotePlanParameters::new(vote_plans, self.fund_name());
         parameters.set_voting_power_threshold((self.parameters.voting_power * 1_000_000) as i64);
         parameters.set_challenges_count(self.parameters.challenges);
         parameters.set_voting_start(self.parameters.vote_start_timestamp.unwrap().timestamp());
@@ -247,8 +247,8 @@ impl QuickVitBackendSettingsBuilder {
         parameters
             .set_next_fund_start_time(self.parameters.next_vote_start_time.unwrap().timestamp());
 
-        if let Some(refresh_timestamp) = self.parameters.refresh_time {
-            parameters.set_refresh_time(refresh_timestamp.timestamp());
+        if let Some(registration_snapshot_time) = self.parameters.refresh_time {
+            parameters.set_registration_snapshot_time(registration_snapshot_time.timestamp());
         }
 
         parameters.set_fund_id(self.parameters.fund_id);
@@ -299,31 +299,48 @@ impl QuickVitBackendSettingsBuilder {
         topology_builder.build()
     }
 
-    pub fn build_vote_plan(&mut self) -> VotePlanDef {
-        let mut vote_plan_builder = VotePlanDefBuilder::new(&self.fund_name());
-        vote_plan_builder.owner(&self.committe_wallet);
-
-        if self.parameters.private {
-            vote_plan_builder.payload_type(PayloadType::Private);
-        }
-        vote_plan_builder.vote_phases(
-            self.parameters.vote_start as u32,
-            self.parameters.vote_tally as u32,
-            self.parameters.tally_end as u32,
-        );
-
-        for _ in 0..self.parameters.proposals {
+    pub fn build_vote_plans(&mut self) -> Vec<VotePlanDef> {
+        iter::from_fn(|| {
             let mut proposal_builder = ProposalDefBuilder::new(
                 chain_impl_mockchain::testing::VoteTestGen::external_proposal_id(),
             );
             proposal_builder.options(3);
-
             proposal_builder.action_off_chain();
-            vote_plan_builder.with_proposal(&mut proposal_builder);
-        }
+            Some(proposal_builder)
+        })
+        .take(self.parameters.proposals as usize)
+        .collect::<Vec<ProposalDefBuilder>>()
+        .chunks(255)
+        .into_iter()
+        .enumerate()
+        .map(|(index, x)| {
+            let vote_plan_name = {
+                if index == 0 {
+                    self.fund_name()
+                } else {
+                    format!("{}_{}", &self.fund_name(), index)
+                }
+            };
 
-        vote_plan_builder.build()
+            let mut vote_plan_builder = VotePlanDefBuilder::new(&vote_plan_name);
+            vote_plan_builder.owner(&self.committe_wallet);
+
+            if self.parameters.private {
+                vote_plan_builder.payload_type(PayloadType::Private);
+            }
+            vote_plan_builder.vote_phases(
+                self.parameters.vote_start as u32,
+                self.parameters.vote_tally as u32,
+                self.parameters.tally_end as u32,
+            );
+            x.to_vec().iter_mut().for_each(|proposal| {
+                vote_plan_builder.with_proposal(proposal);
+            });
+            vote_plan_builder.build()
+        })
+        .collect()
     }
+
     pub fn dump_qrs(
         &self,
         controller: &Controller,
@@ -425,18 +442,17 @@ impl QuickVitBackendSettingsBuilder {
         let mut templates = HashMap::new();
         if let Some(initials) = &self.parameters.initials {
             blockchain.set_external_wallets(initials.external_templates());
-
             templates =
                 initials.templates(self.parameters.voting_power, blockchain.discrimination());
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
                 blockchain.add_wallet(wallet.clone());
             }
         }
-
         println!("building voteplan..");
 
-        let mut vote_plan_def = self.build_vote_plan();
-        blockchain.add_vote_plan(vote_plan_def.clone());
+        self.build_vote_plans()
+            .into_iter()
+            .for_each(|vote_plan_def| blockchain.add_vote_plan(vote_plan_def));
         builder.set_blockchain(blockchain);
         builder.build_settings(&mut context);
 
@@ -463,8 +479,7 @@ impl QuickVitBackendSettingsBuilder {
                 .block0_date,
         );
 
-        vote_plan_def = controller.vote_plan(&self.fund_name()).unwrap();
-        let parameters = self.vote_plan_parameters(vote_plan_def, &controller.settings());
+        let parameters = self.vote_plan_parameters(controller.vote_plans(), &controller.settings());
         Ok((
             vit_controller,
             controller,

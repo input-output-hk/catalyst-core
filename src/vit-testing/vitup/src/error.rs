@@ -34,6 +34,7 @@ error_chain! {
         VitRestError(vit_servicing_station_tests::common::clients::RestError);
         ChainAddressError(chain_addr::Error);
         ChainBech32Error(chain_crypto::bech32::Error);
+        GlobError(glob::GlobError);
     }
 
     errors {

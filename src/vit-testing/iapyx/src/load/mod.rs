@@ -60,7 +60,7 @@ impl IapyxLoad {
         let measurement_name = "iapyx load test";
         let stats = jortestkit::load::start_async(
             request_generator,
-            VoteStatusProvider::new(backend),
+            VoteStatusProvider::new(backend, self.config.debug),
             self.config.config,
             measurement_name,
         );

@@ -1,8 +1,10 @@
 mod external;
+mod perf;
 mod random;
 
 pub use external::ExternalDataCommandArgs;
 pub use jormungandr_lib::interfaces::Initial;
+pub use perf::PerfDataCommandArgs;
 pub use random::RandomDataCommandArgs;
 
 use crate::config::DataGenerationConfig;
@@ -21,6 +23,8 @@ pub enum DataCommandArgs {
     Import(ExternalDataCommandArgs),
     /// generate random data
     Random(RandomDataCommandArgs),
+    /// generate data for performance tests
+    Perf(PerfDataCommandArgs),
 }
 
 impl DataCommandArgs {
@@ -28,6 +32,7 @@ impl DataCommandArgs {
         match self {
             Self::Import(import_command) => import_command.exec(),
             Self::Random(random_command) => random_command.exec(),
+            Self::Perf(perf_command) => perf_command.exec(),
         }
     }
 }

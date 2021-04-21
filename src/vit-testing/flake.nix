@@ -4,7 +4,8 @@
     utils.url = "github:kreisys/flake-utils";
     rust-nix.url = "github:input-output-hk/rust.nix/work";
     rust-nix.inputs.nixpkgs.follows = "nixpkgs";
-    voting-tools.url = "github:input-output-hk/voting-tools?rev=2f33a371665abf0f6fc5d74ba1739f1a8b8af484";
+    voting-tools.url =
+      "github:input-output-hk/voting-tools?rev=2f33a371665abf0f6fc5d74ba1739f1a8b8af484";
     vit-kedqr.url = "github:input-output-hk/vit-kedqr";
     jormungandr.url =
       "github:input-output-hk/jormungandr?rev=50fc937159cbea328973af2a4a04d1c8d9d4b48e";
@@ -78,5 +79,9 @@
           PROTOC_INCLUDE = "${protobuf}/include";
           buildInputs = [ rustc cargo pkg-config openssl protobuf ];
         };
+
+      hydraJobs = { iapyx, vitup, integration-tests, snapshot-trigger-service
+        , registration-service }@pkgs:
+        pkgs;
     };
 }

@@ -20,7 +20,7 @@
     in utils.lib.simpleFlake {
       inherit nixpkgs;
 
-      systems = [ "x86_64-linux" "aarch64-linux" ];
+      systems = [ "x86_64-linux" ];
 
       preOverlays = let
         cargo-packages = final: prev:

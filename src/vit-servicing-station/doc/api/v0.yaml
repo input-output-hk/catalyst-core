@@ -162,7 +162,6 @@ components:
             This amount is in lovelace.
         rewards_info:
           type: string
-          # FIXME: document the purpose of this field or deprecate it
         fund_start_time:
           type: string
           format: date-time

@@ -30,7 +30,7 @@ RUN cd ${ENV_PREFIX} && \
 	
  RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-testing && \
-	cd vit-servicing-station && \
+	cd vit-testing && \
     git checkout account_based_block0
 
 # install the node and jcli from source

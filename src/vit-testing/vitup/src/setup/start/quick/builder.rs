@@ -20,9 +20,7 @@ use jormungandr_scenario_tests::scenario::{
     ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KesUpdateSpeed, Milli,
     NumberOfSlotsPerEpoch, SlotDuration, Topology, TopologyBuilder,
 };
-use jormungandr_testing_utils::testing::network_builder::{
-    Blockchain, Node, WalletTemplate, WalletType,
-};
+use jormungandr_testing_utils::testing::network_builder::{Blockchain, Node, WalletTemplate};
 use jormungandr_testing_utils::wallet::LinearFee;
 use jormungandr_testing_utils::{qr_code::KeyQrCode, wallet::ElectionPublicKeyExtension};
 use std::{collections::HashMap, iter};
@@ -352,7 +350,7 @@ impl QuickVitBackendSettingsBuilder {
 
         let wallets: Vec<(_, _)> = controller
             .wallets()
-            .filter(|(_, x)| *x.template().wallet_type() == WalletType::UTxO)
+            .filter(|(_, x)| !x.template().alias().starts_with("committee"))
             .collect();
 
         let total = wallets.len();

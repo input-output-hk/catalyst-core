@@ -155,51 +155,44 @@ mod tests {
 
     use crate::testing::sparse_array_test_data;
     use proptest::prelude::*;
+    use proptest_attr::proptest;
 
-    #[test]
-    fn add_test() {
-        let mut runner = prop::test_runner::TestRunner::new(Default::default());
-        let result = runner.run(&sparse_array_test_data(), |data| {
-            let mut sparse_array = FastSparseArray::new();
-            for (idx, value) in data.iter() {
-                sparse_array.set(*idx, value);
-            }
+    #[proptest(strategy = "sparse_array_test_data()")]
+    fn add_test(data: Vec<(u8, u8)>) -> prop::test_runner::TestCaseResult {
+        let mut sparse_array = FastSparseArray::new();
+        for (idx, value) in data.iter() {
+            sparse_array.set(*idx, value);
+        }
 
-            prop_assert!(data
-                .iter()
-                .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));
+        prop_assert!(data
+            .iter()
+            .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));
 
-            Ok(())
-        });
-        result.unwrap();
+        Ok(())
     }
 
-    #[test]
-    fn remove_test() {
-        let mut runner = prop::test_runner::TestRunner::new(Default::default());
-        let result = runner.run(&sparse_array_test_data(), |data| {
-            let mut sparse_array = FastSparseArray::new();
-            for (idx, value) in data.iter() {
-                sparse_array.set(*idx, value);
-            }
+    #[proptest(strategy = "sparse_array_test_data()")]
+    fn remove_test(data: Vec<(u8, u8)>) -> prop::test_runner::TestCaseResult {
+        let mut sparse_array = FastSparseArray::new();
+        for (idx, value) in data.iter() {
+            sparse_array.set(*idx, value);
+        }
 
-            let (to_remove, to_set) = data.split_at(data.len() / 2);
-            for (idx, _) in to_remove.iter() {
-                sparse_array.remove(*idx);
-            }
+        let (to_remove, to_set) = data.split_at(data.len() / 2);
+        for (idx, _) in to_remove.iter() {
+            sparse_array.remove(*idx);
+        }
 
-            sparse_array.shrink();
+        sparse_array.shrink();
 
-            prop_assert!(to_remove
-                .iter()
-                .all(|(idx, _)| sparse_array.get(*idx) == None));
-            prop_assert!(to_set
-                .iter()
-                .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));
+        prop_assert!(to_remove
+            .iter()
+            .all(|(idx, _)| sparse_array.get(*idx) == None));
+        prop_assert!(to_set
+            .iter()
+            .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));
 
-            Ok(())
-        });
-        result.unwrap();
+        Ok(())
     }
 
     #[test]

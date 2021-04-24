@@ -88,6 +88,7 @@ mod tests {
 
     use crate::testing::test_indexes;
     use proptest::prelude::*;
+    use proptest_attr::proptest;
 
     #[test]
     fn is_empty_when_created_test() {
@@ -96,70 +97,54 @@ mod tests {
         assert!(bitmap.get_first_index().is_none());
     }
 
-    #[test]
-    fn set_index_test() {
-        let mut runner = prop::test_runner::TestRunner::new(Default::default());
-        let result = runner.run(&test_indexes(), |indexes| {
-            let mut bitmap = BitmapIndex::new();
-            for idx in indexes.iter() {
-                bitmap.set_index(*idx);
-            }
-            prop_assert!(indexes.iter().all(|idx| bitmap.get_index(*idx)));
-            Ok(())
-        });
-        result.unwrap();
+    #[proptest(strategy = "test_indexes()")]
+    fn set_index_test(indexes: Vec<u8>) -> prop::test_runner::TestCaseResult {
+        let mut bitmap = BitmapIndex::new();
+        for idx in indexes.iter() {
+            bitmap.set_index(*idx);
+        }
+        prop_assert!(indexes.iter().all(|idx| bitmap.get_index(*idx)));
+        Ok(())
     }
 
-    #[test]
-    fn remove_indextest() {
-        let mut runner = prop::test_runner::TestRunner::new(Default::default());
-        let result = runner.run(&test_indexes(), |indexes| {
-            let mut bitmap = BitmapIndex::new();
-            for idx in indexes.iter() {
-                bitmap.set_index(*idx);
-            }
+    #[proptest(strategy = "test_indexes()")]
+    fn remove_indextest(indexes: Vec<u8>) -> prop::test_runner::TestCaseResult {
+        let mut bitmap = BitmapIndex::new();
+        for idx in indexes.iter() {
+            bitmap.set_index(*idx);
+        }
 
-            // split indices vector in two and remove elements only from the first
-            // vector
-            let (to_remove, to_set) = indexes.split_at(indexes.len() / 2);
-            for idx in to_remove.iter() {
-                bitmap.remove_index(*idx);
-            }
+        // split indices vector in two and remove elements only from the first
+        // vector
+        let (to_remove, to_set) = indexes.split_at(indexes.len() / 2);
+        for idx in to_remove.iter() {
+            bitmap.remove_index(*idx);
+        }
 
-            prop_assert!(to_remove.iter().all(|idx| !bitmap.get_index(*idx)));
-            prop_assert!(to_set.iter().all(|idx| bitmap.get_index(*idx)));
+        prop_assert!(to_remove.iter().all(|idx| !bitmap.get_index(*idx)));
+        prop_assert!(to_set.iter().all(|idx| bitmap.get_index(*idx)));
 
-            Ok(())
-        });
-        result.unwrap();
+        Ok(())
     }
 
-    #[test]
-    fn get_real_index_test() {
-        let mut runner = prop::test_runner::TestRunner::new(Default::default());
-        let result = runner.run(&test_indexes(), |indexes| {
-            let mut bitmap = BitmapIndex::new();
-            for idx in indexes.iter() {
-                bitmap.set_index(*idx);
-            }
-            prop_assert!(indexes
-                .iter()
-                .enumerate()
-                .all(|(expected, idx)| bitmap.get_real_index(*idx) == Some(expected as u8)));
-            Ok(())
-        });
-        result.unwrap();
+    #[proptest(strategy = "test_indexes()")]
+    fn get_real_index_test(indexes: Vec<u8>) -> prop::test_runner::TestCaseResult {
+        let mut bitmap = BitmapIndex::new();
+        for idx in indexes.iter() {
+            bitmap.set_index(*idx);
+        }
+        prop_assert!(indexes
+            .iter()
+            .enumerate()
+            .all(|(expected, idx)| bitmap.get_real_index(*idx) == Some(expected as u8)));
+        Ok(())
     }
 
-    #[test]
-    fn get_first_index_test() {
-        let mut runner = prop::test_runner::TestRunner::new(Default::default());
-        let result = runner.run(&(0..=u8::MAX), |idx| {
-            let mut bitmap = BitmapIndex::new();
-            bitmap.set_index(idx);
-            prop_assert!(bitmap.get_first_index() == Some(idx));
-            Ok(())
-        });
-        result.unwrap();
+    #[proptest(strategy = "0..=u8::MAX")]
+    fn get_first_index_test(idx: u8) -> prop::test_runner::TestCaseResult {
+        let mut bitmap = BitmapIndex::new();
+        bitmap.set_index(idx);
+        prop_assert!(bitmap.get_first_index() == Some(idx));
+        Ok(())
     }
 }

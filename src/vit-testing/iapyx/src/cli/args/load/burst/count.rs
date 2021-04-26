@@ -75,7 +75,7 @@ pub struct BurstCountIapyxLoadCommand {
 
 impl BurstCountIapyxLoadCommand {
     pub fn exec(&self) -> Result<(), IapyxLoadCommandError> {
-        let config = self.build_config()?;
+        let config = self.build_config();
         let iapyx_load = IapyxLoad::new(config);
         if let Some(stats) = iapyx_load.start()? {
             stats.print()
@@ -83,7 +83,7 @@ impl BurstCountIapyxLoadCommand {
         Ok(())
     }
 
-    fn build_config(&self) -> Result<IapyxLoadConfig, IapyxLoadCommandError> {
+    fn build_config(&self) -> IapyxLoadConfig {
         let config = Configuration::requests_per_thread(
             self.threads,
             self.count,
@@ -93,7 +93,7 @@ impl BurstCountIapyxLoadCommand {
             self.status_pace,
         );
 
-        Ok(IapyxLoadConfig {
+        IapyxLoadConfig {
             config,
             batch_size: self.batch_size,
             criterion: self.criterion,
@@ -106,6 +106,6 @@ impl BurstCountIapyxLoadCommand {
             read_pin_from_filename: self.read_pin_from_filename,
             use_https_for_post: self.use_https_for_post,
             debug: self.debug,
-        })
+        }
     }
 }

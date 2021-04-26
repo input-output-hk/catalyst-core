@@ -72,8 +72,7 @@ impl BatchWalletRequestGen {
 
 impl RequestGenerator for BatchWalletRequestGen {
     fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
-        Ok(self
-            .random_votes()
-            .map_err(|e| RequestFailure::General(format!("{:?}", e)))?)
+        self.random_votes()
+            .map_err(|e| RequestFailure::General(format!("{:?}", e)))
     }
 }

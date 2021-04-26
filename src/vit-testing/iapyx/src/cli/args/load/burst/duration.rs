@@ -75,7 +75,7 @@ pub struct BurstDurationIapyxLoadCommand {
 
 impl BurstDurationIapyxLoadCommand {
     pub fn exec(&self) -> Result<(), IapyxLoadCommandError> {
-        let config = self.build_config()?;
+        let config = self.build_config();
         let iapyx_load = IapyxLoad::new(config);
         if let Some(stats) = iapyx_load.start()? {
             stats.print()
@@ -83,7 +83,7 @@ impl BurstDurationIapyxLoadCommand {
         Ok(())
     }
 
-    fn build_config(&self) -> Result<IapyxLoadConfig, IapyxLoadCommandError> {
+    fn build_config(&self) -> IapyxLoadConfig {
         let config = Configuration::duration(
             self.threads,
             std::time::Duration::from_secs(self.duration),
@@ -93,7 +93,7 @@ impl BurstDurationIapyxLoadCommand {
             self.status_pace,
         );
 
-        Ok(IapyxLoadConfig {
+        IapyxLoadConfig {
             config,
             batch_size: self.batch_size,
             criterion: self.criterion,
@@ -106,6 +106,6 @@ impl BurstDurationIapyxLoadCommand {
             read_pin_from_filename: self.read_pin_from_filename,
             use_https_for_post: self.use_https_for_post,
             debug: self.debug,
-        })
+        }
     }
 }

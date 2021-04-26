@@ -1,12 +1,12 @@
 mod config;
 mod multi_controller;
-mod request_generator;
+mod request_generators;
 mod status_provider;
 
 pub use config::IapyxLoadConfig;
 use jortestkit::measurement::EfficiencyBenchmarkFinish;
 pub use multi_controller::{MultiController, MultiControllerError};
-pub use request_generator::WalletRequestGen;
+pub use request_generators::{BatchWalletRequestGen, WalletRequestGen};
 pub use status_provider::VoteStatusProvider;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -52,18 +52,24 @@ impl IapyxLoad {
             }
         };
 
-        let mut request_generator = WalletRequestGen::new(multicontroller?);
-        request_generator
-            .fill_generator(self.config.reuse_accounts)
-            .unwrap();
-
         let measurement_name = "iapyx load test";
-        let stats = jortestkit::load::start_async(
-            request_generator,
-            VoteStatusProvider::new(backend, self.config.debug),
-            self.config.config,
-            measurement_name,
-        );
+
+        let stats = if self.config.batch_size > 1 {
+            jortestkit::load::start_async(
+                BatchWalletRequestGen::new(multicontroller?, self.config.batch_size),
+                VoteStatusProvider::new(backend, self.config.debug),
+                self.config.config,
+                measurement_name,
+            )
+        } else {
+            jortestkit::load::start_async(
+                WalletRequestGen::new(multicontroller?),
+                VoteStatusProvider::new(backend, self.config.debug),
+                self.config.config,
+                measurement_name,
+            )
+        };
+
         stats.print_summary(measurement_name);
 
         if let Some(threshold) = self.config.criterion {

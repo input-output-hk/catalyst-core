@@ -13,6 +13,9 @@ chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.gi
 jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 fixed = "1.7"
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+serde = "1.0"
+serde_json = "1.0"
 structopt = "0.3"
 thiserror = "1.0"
 

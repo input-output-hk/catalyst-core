@@ -1,4 +1,3 @@
-use crate::cli::notifications::requests::common::Geozone;
 use std::collections::HashMap;
 
 pub enum MessageParameters {
@@ -8,6 +7,12 @@ pub enum MessageParameters {
 pub enum Content {
     Plain(String),
     MultiLanguage(HashMap<String, String>),
+}
+
+pub struct Geozone {
+    lat: f32,
+    lng: f32,
+    range: usize,
 }
 
 pub struct ContentSettings {

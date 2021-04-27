@@ -1,4 +1,3 @@
-use super::convert;
 use super::proto;
 use super::streaming::{InboundStream, OutboundTryStream};
 
@@ -167,7 +166,12 @@ where
         let service = self.gossip_service()?;
         let peers = service.peers(req.into_inner().limit).await?;
         let res = proto::PeersResponse {
-            peers: convert::into_protobuf_repeated(peers.into_vec()),
+            peers: peers
+                .nodes
+                .to_vec()
+                .into_iter()
+                .map(|node| node.into_bytes())
+                .collect(),
         };
         Ok(tonic::Response::new(res))
     }

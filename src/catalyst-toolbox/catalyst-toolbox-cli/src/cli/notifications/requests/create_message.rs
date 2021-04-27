@@ -1,16 +1,17 @@
+use crate::cli::notifications::Error;
+
+use chrono::DateTime;
 use serde::Serialize;
 
 use std::collections::HashMap;
+use std::fmt::Display;
 
-#[derive(Serialize)]
-pub enum MessageParameters {
-    ContentSettings(ContentSettings),
-}
+pub type MultiLanguageContent = HashMap<String, String>;
 
 #[derive(Serialize)]
 pub enum Content {
     Plain(String),
-    MultiLanguage(HashMap<String, String>),
+    MultiLanguage(MultiLanguageContent),
 }
 
 #[derive(Serialize)]
@@ -30,5 +31,153 @@ pub struct CreateMessage {
     /// Pushwoosh application code
     application: String,
     /// Push notifications properties
-    notifications: Vec<MessageParameters>,
+    notifications: Vec<ContentSettings>,
+}
+
+pub struct ContentSettingsBuilder {
+    send_date: String,
+    content: Option<Content>,
+    ignore_user_timezones: bool,
+    timezone: Option<String>,
+    campaign: Option<String>,
+    filter: Option<String>,
+}
+
+impl Default for ContentSettingsBuilder {
+    fn default() -> Self {
+        Self {
+            send_date: "now".to_string(),
+            content: None,
+            ignore_user_timezones: false,
+            timezone: None,
+            campaign: None,
+            filter: None,
+        }
+    }
+}
+
+impl ContentSettingsBuilder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_send_date<Tz>(mut self, datetime: DateTime<Tz>) -> Self
+    where
+        Tz: chrono::TimeZone,
+        Tz::Offset: Display,
+    {
+        self.send_date = datetime.format("%Y-%m-%d %H:%M").to_string();
+        self
+    }
+
+    pub fn with_send_now(mut self) -> Self {
+        self.send_date = "now".to_string();
+        self
+    }
+
+    pub fn with_plain_content(mut self, content: String) -> Self {
+        self.content = Some(Content::Plain(content));
+        self
+    }
+
+    pub fn with_multi_content(mut self, content: MultiLanguageContent) -> Self {
+        self.content = Some(Content::MultiLanguage(content));
+        self
+    }
+
+    pub fn with_ignore_user_timezones(mut self, ignore: bool) -> Self {
+        self.ignore_user_timezones = ignore;
+        self
+    }
+
+    pub fn with_timezone(mut self, timezone: String) -> Self {
+        self.timezone = Some(timezone);
+        self
+    }
+
+    pub fn with_campaign(mut self, campaign: String) -> Self {
+        self.campaign = Some(campaign);
+        self
+    }
+
+    pub fn with_filter(mut self, filter: String) -> Self {
+        self.filter = Some(filter);
+        self
+    }
+
+    pub fn build(self) -> Result<ContentSettings, Error> {
+        Ok(ContentSettings {
+            send_date: self.send_date,
+            content: self.content.ok_or(Error::MissingFieldOnBuilderError {
+                object_name: "ContentSettings".to_string(),
+                field_name: "content".to_string(),
+            })?,
+            ignore_user_timezones: self.ignore_user_timezones,
+            timezone: self.timezone,
+            campaign: self.campaign,
+            filter: self.filter,
+        })
+    }
+}
+
+pub struct CreateMessageBuilder {
+    auth: Option<String>,
+
+    application: Option<String>,
+
+    notifications: Vec<ContentSettings>,
+}
+
+impl Default for CreateMessageBuilder {
+    fn default() -> Self {
+        Self {
+            auth: None,
+            application: None,
+            notifications: Vec::new(),
+        }
+    }
+}
+
+impl CreateMessageBuilder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_auth(mut self, auth: String) -> Self {
+        self.auth = Some(auth);
+        self
+    }
+
+    pub fn with_application(mut self, application: String) -> Self {
+        self.application = Some(application);
+        self
+    }
+
+    pub fn add_content_settings(mut self, parameters: ContentSettings) -> Self {
+        self.notifications.push(parameters);
+        self
+    }
+
+    pub fn build(self) -> Result<CreateMessage, Error> {
+        if self.notifications.is_empty() {
+            return Err(Error::EmptyContentSettingsError);
+        }
+        Ok(CreateMessage {
+            auth: self.auth.ok_or(Error::MissingFieldOnBuilderError {
+                object_name: "CreateMessage".to_string(),
+                field_name: "auth".to_string(),
+            })?,
+            application: self.application.ok_or(Error::MissingFieldOnBuilderError {
+                object_name: "CreateMessage".to_string(),
+                field_name: "application".to_string(),
+            })?,
+            notifications: self.notifications,
+        })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_serialize() {}
 }

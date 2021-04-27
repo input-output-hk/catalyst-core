@@ -199,6 +199,7 @@ version = "0.1.0"
 dependencies = [
  "chain-addr",
  "chain-impl-mockchain",
+ "chrono",
  "csv",
  "fixed",
  "jcli",

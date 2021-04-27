@@ -1,4 +1,5 @@
 pub mod create_message;
+use serde::Serialize;
 
 #[derive(Serialize)]
 pub enum RequestData {

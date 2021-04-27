@@ -7,6 +7,8 @@ use std::fmt::Display;
 use structopt::StructOpt;
 use thiserror::Error;
 
+pub const DATETIME_FMT: &str = "%Y-%m-%d %H:%M";
+
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error)]
 pub enum Error {

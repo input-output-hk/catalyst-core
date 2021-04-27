@@ -1,5 +1,6 @@
-pub mod requests;
-pub mod responses;
+mod api_params;
+mod requests;
+mod responses;
 mod send;
 
 use structopt::StructOpt;

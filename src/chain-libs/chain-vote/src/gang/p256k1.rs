@@ -1,5 +1,7 @@
+use cryptoxide::blake2b::Blake2b;
+use cryptoxide::digest::Digest;
 use eccoxide::curve::sec2::p256k1::{FieldElement, Point, PointAffine, Scalar as IScalar};
-use eccoxide::curve::Sign as ISign;
+use eccoxide::curve::{Sign as ISign, Sign::Negative, Sign::Positive};
 use rand_core::{CryptoRng, RngCore};
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
@@ -36,6 +38,16 @@ impl Coordinate {
     pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
         self.0.to_bytes()
     }
+
+    pub fn from_bytes(input: &[u8]) -> Option<Self> {
+        if input.len() < Self::BYTES_LEN {
+            None
+        } else {
+            Some(Coordinate(FieldElement::from_slice(
+                &input[..Self::BYTES_LEN],
+            )?))
+        }
+    }
 }
 
 impl GroupElement {
@@ -45,23 +57,46 @@ impl GroupElement {
     /// Serialized GroupElement::zero
     const BYTES_ZERO: [u8; Self::BYTES_LEN] = [0; Self::BYTES_LEN];
 
+    /// Point from hash
+    pub fn from_hash(buffer: &[u8]) -> Self {
+        let mut result = [0u8; 33];
+        let mut hash = Blake2b::new(33);
+        let mut i = 0u32;
+        loop {
+            hash.input(buffer);
+            hash.input(&i.to_be_bytes());
+            hash.result(&mut result);
+            hash.reset();
+            // arbitrary encoding of sign
+            let sign = if result[32] & 1 == 0 {
+                Sign(Positive)
+            } else {
+                Sign(Negative)
+            };
+            if let Some(point) = Self::from_x_bytes(&result[0..32], sign) {
+                break point;
+            }
+            i += 1;
+        }
+    }
+
+    fn from_x_bytes(bytes: &[u8], sign: Sign) -> Option<Self> {
+        let x_coord = Coordinate::from_bytes(bytes)?;
+        Self::decompress(&x_coord, sign)
+    }
+
+    pub fn decompress(coord: &Coordinate, sign: Sign) -> Option<Self> {
+        Some(GroupElement(Point::from_affine(&PointAffine::decompress(
+            &coord.0, sign.0,
+        )?)))
+    }
+
     pub fn generator() -> Self {
         GroupElement(Point::generator())
     }
 
     pub fn zero() -> Self {
         GroupElement(Point::infinity())
-    }
-
-    pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
-        let fe = Scalar::random(rng);
-        GroupElement(&Point::generator() * &fe.0)
-    }
-
-    pub fn random_with_fe<R: RngCore + CryptoRng>(rng: &mut R) -> (Scalar, Self) {
-        let fe = Scalar::random(rng);
-        let ge = GroupElement(&Point::generator() * &fe.0);
-        (fe, ge)
     }
 
     pub fn normalize(&mut self) {
@@ -360,3 +395,22 @@ impl<'a, 'b> Sub<&'b GroupElement> for &'a GroupElement {
 lref!(GroupElement, Sub, GroupElement, GroupElement, sub);
 rref!(GroupElement, Sub, GroupElement, GroupElement, sub);
 nref!(GroupElement, Sub, GroupElement, GroupElement, sub);
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn from_hash() {
+        let element = GroupElement::from_hash(&[1u8]);
+
+        let element2 = GroupElement::from_bytes(&[
+            4, 13, 166, 126, 45, 249, 4, 248, 227, 194, 159, 100, 48, 62, 165, 72, 101, 155, 168,
+            137, 90, 110, 97, 89, 167, 229, 100, 160, 195, 191, 156, 174, 214, 65, 120, 172, 28,
+            98, 217, 114, 141, 108, 225, 197, 90, 251, 208, 66, 121, 120, 247, 73, 98, 111, 219,
+            172, 181, 134, 49, 239, 108, 91, 149, 243, 218,
+        ])
+        .expect("This point is on the curve");
+        assert_eq!(element, element2)
+    }
+}

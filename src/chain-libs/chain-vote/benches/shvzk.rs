@@ -1,11 +1,10 @@
-use chain_vote::debug::{gang, shvzk};
 use chain_vote::*;
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;
 
 fn common(rng: &mut ChaCha20Rng) -> (EncryptingVoteKey, EncryptingVote) {
-    let h = gang::GroupElement::random(rng);
+    let h = CRS::from_hash(&[0u8; 32]);
 
     let mc1 = MemberCommunicationKey::new(rng);
     let mc = [mc1.to_public()];
@@ -24,22 +23,49 @@ fn common(rng: &mut ChaCha20Rng) -> (EncryptingVoteKey, EncryptingVote) {
     (ek, ev)
 }
 
-fn generate(c: &mut Criterion) {
+fn encrypt_and_prove(c: &mut Criterion) {
     let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
-    let (ek, ev) = common(&mut rng);
-    c.bench_function("generate", |b| {
-        b.iter(|| shvzk::prove(&mut rng, ek.as_raw(), ev.clone()))
-    });
+    let mut group = c.benchmark_group("Encrypt and prove");
+    let crs = CRS::from_hash(&[0u8; 32]);
+    let (ek, _) = common(&mut rng);
+
+    for &number_candidates in [2usize, 4, 8, 16, 32, 64, 128, 256, 512, 1024].iter() {
+        let parameter_string = format!("{} candidates", number_candidates);
+        group.bench_with_input(
+            BenchmarkId::new("Encrypt and Prove", parameter_string),
+            &number_candidates,
+            |b, &nr| b.iter(|| encrypt_vote(&mut rng, &crs, &ek, Vote::new(nr, 0))),
+        );
+    }
+
+    group.finish();
 }
 
 fn verify(c: &mut Criterion) {
     let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
-    let (ek, ev) = common(&mut rng);
-    let proof = shvzk::prove(&mut rng, ek.as_raw(), ev.clone());
-    c.bench_function("verify", |b| {
-        b.iter(|| shvzk::verify(&ek.as_raw(), &ev.ciphertexts, &proof))
-    });
+    let mut group = c.benchmark_group("Verify vote proof");
+    let crs = CRS::from_hash(&[0u8; 32]);
+    let (ek, _) = common(&mut rng);
+
+    for &number_candidates in [2usize, 4, 8, 16, 32, 64, 128, 256, 512, 1024].iter() {
+        let (vote, proof) = encrypt_vote(&mut rng, &crs, &ek, Vote::new(number_candidates, 0));
+        let parameter_string = format!("{} candidates", number_candidates);
+        group.bench_with_input(
+            BenchmarkId::new("Verify with", parameter_string),
+            &number_candidates,
+            |b, _| b.iter(|| verify_vote(&crs, &ek, &vote, &proof)),
+        );
+    }
+
+    group.finish();
 }
 
-criterion_group!(shvzk, generate, verify);
+criterion_group!(
+    name = shvzk;
+    config = Criterion::default();
+    targets =
+    encrypt_and_prove,
+    verify,
+);
+
 criterion_main!(shvzk);

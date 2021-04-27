@@ -185,7 +185,7 @@ impl Arbitrary for VotePlan {
         let mut seed = [0u8; 32];
         g.fill_bytes(&mut seed);
         let mut rng = rand_chacha::ChaCha20Rng::from_seed(seed);
-        let h = chain_vote::CRS::random(&mut rng);
+        let h = chain_vote::CRS::from_hash(&seed);
         for _i in 0..keys_n {
             let mc = chain_vote::MemberCommunicationKey::new(&mut rng);
             let threshold = 1;

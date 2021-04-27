@@ -1,5 +1,4 @@
 use crate::gang::{GroupElement, Scalar};
-use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul};
 
 /// Pedersen commitment
@@ -14,9 +13,10 @@ pub struct CommitmentKey {
 }
 
 impl CommitmentKey {
-    pub fn generate<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
-        let h = GroupElement::random(rng);
-        CommitmentKey { h }
+    pub fn generate_from_seed(buffer: &mut [u8]) -> Self {
+        CommitmentKey {
+            h: GroupElement::from_hash(buffer),
+        }
     }
 }
 

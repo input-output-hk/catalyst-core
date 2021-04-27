@@ -10,6 +10,7 @@ use crate::{
 };
 use chain_core::property::BlockDate as BlockDateProp;
 use chain_crypto::digest::DigestOf;
+use chain_vote::CRS;
 use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
 
@@ -106,8 +107,10 @@ impl VoteTestGen {
         let encrypting_key =
             chain_vote::EncryptingVoteKey::from_participants(vote_plan.committee_public_keys());
 
+        let crs = CRS::from_hash(&vote_plan.to_id().as_ref());
         let (encrypted_vote, proof) = chain_vote::encrypt_vote(
             rng,
+            &crs,
             &encrypting_key,
             chain_vote::Vote::new(
                 proposal.options().choice_range().clone().max().unwrap() as usize + 1,

@@ -15,7 +15,12 @@ pub struct CommitteeMember {
 }
 
 impl CommitteeMembersManager {
-    pub fn new(rng: &mut (impl RngCore + CryptoRng), threshold: usize, members_no: usize) -> Self {
+    pub fn new(
+        rng: &mut (impl RngCore + CryptoRng),
+        crs_seed: &[u8],
+        threshold: usize,
+        members_no: usize,
+    ) -> Self {
         let mut public_keys = Vec::new();
         for _ in 0..members_no {
             let private_key = MemberCommunicationKey::new(rng);
@@ -23,7 +28,7 @@ impl CommitteeMembersManager {
             public_keys.push(public_key);
         }
 
-        let crs = CRS::random(rng);
+        let crs = CRS::from_hash(&crs_seed);
 
         let mut members = Vec::new();
         for i in 0..members_no {

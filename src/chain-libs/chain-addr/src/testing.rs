@@ -64,9 +64,7 @@ impl Arbitrary for Kind {
                 let h = arbitrary_32bytes(g);
                 Kind::Multisig(h)
             }
-            4 => {
-                Kind::Script(arbitrary_32bytes(g))
-            }
+            4 => Kind::Script(arbitrary_32bytes(g)),
             _ => unreachable!(),
         }
     }

@@ -1,7 +1,7 @@
-use crate::commitment::CommitmentKey;
 use crate::gang::{GroupElement, Scalar};
 use crate::gargamel::{PublicKey, SecretKey};
 use crate::hybrid;
+use crate::hybrid::SymmetricKey;
 use crate::math::Polynomial;
 use rand_core::{CryptoRng, RngCore};
 
@@ -38,7 +38,7 @@ pub struct MemberState {
     owner_index: usize,
     apubs: Vec<GroupElement>,
     es: Vec<GroupElement>,
-    encrypted: Vec<(hybrid::Encrypted, hybrid::Encrypted)>,
+    encrypted: Vec<(hybrid::HybridCiphertext, hybrid::HybridCiphertext)>,
 }
 
 pub type CRS = GroupElement;
@@ -82,13 +82,19 @@ impl MemberState {
                 let share_shek = pshek.evaluate(&idx);
 
                 let pk = &committee_pks[i];
-                let ck_comm = CommitmentKey::generate(rng);
-                let ck_shek = CommitmentKey::generate(rng);
+                let sym_key_shares = SymmetricKey::new(rng);
+                let sym_key_blinders = SymmetricKey::new(rng);
 
                 let rcomm = Scalar::random(rng);
                 let rshek = Scalar::random(rng);
-                let ecomm = hybrid::encrypt(&pk.0, &ck_comm, &share_comm.to_bytes(), &rcomm);
-                let eshek = hybrid::encrypt(&pk.0, &ck_shek, &share_shek.to_bytes(), &rshek);
+                let ecomm =
+                    hybrid::hybrid_encrypt(&pk.0, &sym_key_shares, &share_comm.to_bytes(), &rcomm);
+                let eshek = hybrid::hybrid_encrypt(
+                    &pk.0,
+                    &sym_key_blinders,
+                    &share_shek.to_bytes(),
+                    &rshek,
+                );
 
                 encrypted.push((ecomm, eshek));
             }

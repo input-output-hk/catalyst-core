@@ -11,7 +11,7 @@ use crate::{
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
-use chain_vote::EncryptedTally;
+use chain_vote::{EncryptedTally, CRS};
 use imhamt::Hamt;
 use thiserror::Error;
 
@@ -588,12 +588,13 @@ impl VotePlanManager {
                 encrypted_vote,
                 proof,
             } => {
+                let crs = CRS::from_hash(&self.plan.as_ref().to_id().as_ref());
                 let ciphertext = encrypted_vote.as_inner();
                 self.proposal_managers.validate_vote(&cast)?;
                 let pk = chain_vote::EncryptingVoteKey::from_participants(
                     self.plan.committee_public_keys(),
                 );
-                if !chain_vote::verify_vote(&pk, ciphertext, proof.as_inner()) {
+                if !chain_vote::verify_vote(&crs, &pk, ciphertext, proof.as_inner()) {
                     Err(VoteError::VoteVerificationError)
                 } else {
                     Ok(())

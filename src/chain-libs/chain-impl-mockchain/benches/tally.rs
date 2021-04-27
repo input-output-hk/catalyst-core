@@ -25,6 +25,7 @@ use rayon::prelude::*;
 
 const ALICE: &str = "Alice";
 const STAKE_POOL: &str = "stake_pool";
+const CRS_SEED: &[u8] = b"This should be a shared seed among the different committee members. Could be the id of the previous VotePlan";
 const VOTE_PLAN: &str = "fund1";
 const MEMBERS_NO: usize = 3;
 const THRESHOLD: usize = 2;
@@ -75,7 +76,7 @@ fn tally_benchmark(
     wallets.append(&mut voters_wallets.iter_mut().collect());
 
     // Prepare committee members keys
-    let members = CommitteeMembersManager::new(&mut rng, THRESHOLD, MEMBERS_NO);
+    let members = CommitteeMembersManager::new(&mut rng, CRS_SEED, THRESHOLD, MEMBERS_NO);
     let committee_keys: Vec<_> = members
         .members()
         .iter()

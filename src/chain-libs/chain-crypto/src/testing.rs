@@ -2,8 +2,8 @@ use super::*;
 use crate::digest;
 
 use quickcheck::{Arbitrary, Gen};
-use rand_core::{SeedableRng, RngCore, CryptoRng, Error as RngError};
 use rand::rngs::SmallRng;
+use rand_core::{CryptoRng, Error as RngError, RngCore, SeedableRng};
 
 /// an Arbitrary friendly cryptographic generator
 ///

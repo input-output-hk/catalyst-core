@@ -4,10 +4,11 @@ use rand_core::{CryptoRng, RngCore};
 
 use crate::commitment::{Commitment, CommitmentKey};
 use crate::encrypted::{EncryptingVote, PTP};
-use crate::gang::{GroupElement, Scalar};
+use crate::gang::Scalar;
 use crate::gargamel::{encrypt, Ciphertext, PublicKey};
 use crate::math::Polynomial;
 use crate::unit_vector::binrep;
+use crate::CRS;
 
 struct ABCD {
     alpha: Scalar,
@@ -138,39 +139,21 @@ impl Proof {
     }
 }
 
-fn commitkey(pk: &PublicKey) -> CommitmentKey {
-    let mut ctx = Blake2b::new(32);
-    ctx.input(&pk.to_bytes());
-    let mut i = 1u32;
-    let mut h = [0u8; 32];
-    loop {
-        ctx.input(&i.to_be_bytes());
-        ctx.result(&mut h);
-        match Scalar::from_bytes(&h) {
-            None => i += 1,
-            Some(fe) => {
-                let h = &GroupElement::generator() * &fe;
-                break CommitmentKey { h };
-            }
-        }
-    }
-}
-
 impl IBA {
     fn new(ck: &CommitmentKey, abcd: &ABCD, index: &Scalar) -> Self {
         assert!(index == &Scalar::zero() || index == &Scalar::one());
 
         // commit index bit: 0 or 1
-        let i = Commitment::new(&ck, &index, &abcd.alpha);
+        let i = Commitment::new(ck, &index, &abcd.alpha);
         // commit beta
-        let b = Commitment::new(&ck, &abcd.beta, &abcd.gamma);
+        let b = Commitment::new(ck, &abcd.beta, &abcd.gamma);
         // commit i * B => 0 * B = 0 or 1 * B = B
         let acommited = if index == &Scalar::one() {
             abcd.beta.clone()
         } else {
             Scalar::zero()
         };
-        let a = Commitment::new(&ck, &acommited, &abcd.delta);
+        let a = Commitment::new(ck, &acommited, &abcd.delta);
 
         IBA { i, b, a }
     }
@@ -214,17 +197,17 @@ impl ChallengeContext {
 
 pub(crate) fn prove<R: RngCore + CryptoRng>(
     rng: &mut R,
+    crs: &CRS,
     public_key: &PublicKey,
     encrypting_vote: EncryptingVote,
 ) -> Proof {
+    let ck = CommitmentKey { h: crs.clone() };
     let ciphers = PTP::new(encrypting_vote.ciphertexts, Ciphertext::zero);
     let cipher_randoms = PTP::new(encrypting_vote.random_elements, Scalar::zero);
 
     assert_eq!(ciphers.bits(), cipher_randoms.bits());
 
     let bits = ciphers.bits();
-
-    let ck = commitkey(&public_key);
 
     let mut abcds = Vec::with_capacity(bits);
     for _ in 0..bits {
@@ -343,9 +326,13 @@ pub(crate) fn prove<R: RngCore + CryptoRng>(
     Proof { ibas, ds, zwvs, r }
 }
 
-pub(crate) fn verify(public_key: &PublicKey, ciphertexts: &[Ciphertext], proof: &Proof) -> bool {
-    let ck = commitkey(&public_key);
-
+pub(crate) fn verify(
+    crs: &CRS,
+    public_key: &PublicKey,
+    ciphertexts: &[Ciphertext],
+    proof: &Proof,
+) -> bool {
+    let ck = CommitmentKey { h: crs.clone() };
     let ciphertexts = PTP::new(ciphertexts.to_vec(), Ciphertext::zero);
     let bits = ciphertexts.bits();
     let cc = ChallengeContext::new(public_key, ciphertexts.as_ref(), &proof.ibas);
@@ -432,8 +419,12 @@ mod tests {
         let unit_vector = UnitVector::new(2, 0);
         let ev = EncryptingVote::prepare(&mut r, &public_key, &unit_vector);
 
-        let proof = prove(&mut r, &public_key, ev.clone());
-        assert!(verify(&public_key, &ev.ciphertexts, &proof))
+        let mut shared_string =
+            b"Example of a shared string. This could be the latest block hash".to_owned();
+        let crs = CRS::from_hash(&mut shared_string);
+
+        let proof = prove(&mut r, &crs, &public_key, ev.clone());
+        assert!(verify(&crs, &public_key, &ev.ciphertexts, &proof))
     }
 
     #[test]
@@ -443,7 +434,11 @@ mod tests {
         let unit_vector = UnitVector::new(5, 1);
         let ev = EncryptingVote::prepare(&mut r, &public_key, &unit_vector);
 
-        let proof = prove(&mut r, &public_key, ev.clone());
-        assert!(verify(&public_key, &ev.ciphertexts, &proof))
+        let mut shared_string =
+            b"Example of a shared string. This could be the latest block hash".to_owned();
+        let crs = CRS::from_hash(&mut shared_string);
+
+        let proof = prove(&mut r, &crs, &public_key, ev.clone());
+        assert!(verify(&crs, &public_key, &ev.ciphertexts, &proof))
     }
 }

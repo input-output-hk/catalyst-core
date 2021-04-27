@@ -55,18 +55,13 @@ impl BatchWalletRequestGen {
 
         self.multi_controller.refresh_wallet(wallet_index)?;
 
-        Ok(proposals
-            .iter()
-            .zip(choices)
-            .map(|(proposal, choice)| {
-                Some(
-                    self.multi_controller
-                        .vote(wallet_index, proposal, choice)
-                        .unwrap()
-                        .to_string(),
-                )
+        self.multi_controller
+            .votes_batch(wallet_index, proposals.iter().zip(choices).collect())
+            .map(|x| {
+                x.into_iter()
+                    .map(|s| Some(s.to_string()))
+                    .collect::<Vec<Option<Id>>>()
             })
-            .collect())
     }
 }
 

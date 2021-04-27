@@ -1,10 +1,24 @@
-use crate::cli::notifications::Error;
-
 use chrono::DateTime;
 use serde::Serialize;
 
 use std::collections::HashMap;
 use std::fmt::Display;
+
+use structopt::StructOpt;
+use thiserror::Error;
+
+#[allow(clippy::large_enum_variant)]
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("could not build {object_name:?}, missing field {field_name:?}")]
+    MissingFieldOnBuilderError {
+        object_name: String,
+        field_name: String,
+    },
+
+    #[error("CreateMessage should contain at least one ContentSettings entry")]
+    EmptyContentSettingsError,
+}
 
 pub type MultiLanguageContent = HashMap<String, String>;
 

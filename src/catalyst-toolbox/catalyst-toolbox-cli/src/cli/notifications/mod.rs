@@ -8,14 +8,14 @@ use thiserror::Error;
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("could not build {object_name:?}, missing field {field_name:?}")]
-    MissingFieldOnBuilderError {
-        object_name: String,
-        field_name: String,
-    },
+    #[error(transparent)]
+    CreateMessageError(#[from] requests::create_message::Error),
 
-    #[error("CreateMessage should contain at least one ContentSettings entry")]
-    EmptyContentSettingsError,
+    #[error(transparent)]
+    SerdeError(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    RequestError(#[from] reqwest::Error),
 }
 
 #[derive(StructOpt)]

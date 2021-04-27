@@ -17,17 +17,17 @@ pub fn load_test_public_100_000_votes() {
     let version = "2.0";
     let no_of_threads = 10;
     let no_of_wallets = 40_000;
-    let vote_timing = [0, 100, 102];
+    let vote_timing = VoteTiming::new(0, 100, 102);
 
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(vote_timing[0])
-        .tally_start_epoch(vote_timing[1])
-        .tally_end_epoch(vote_timing[2])
+        .vote_start_epoch(vote_timing.vote_start)
+        .tally_start_epoch(vote_timing.tally_start)
+        .tally_end_epoch(vote_timing.tally_end)
         .slot_duration_in_seconds(2)
         .slots_in_epoch_count(60)
-        .proposals_count(1)
+        .proposals_count(300)
         .voting_power(31_000)
         .private(false);
 
@@ -56,7 +56,7 @@ pub fn load_test_public_100_000_votes() {
         assert!(benchmark.status() == Status::Green, "too low efficiency");
     }
 
-    time::wait_for_epoch(10, nodes.get(0).unwrap().explorer());
+    vote_timing.wait_for_vote_end(nodes.get(0).unwrap().explorer());
 
     let mut committee = controller.wallet("committee").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
@@ -68,6 +68,7 @@ pub fn load_test_public_100_000_votes() {
 
     vit_station.shutdown();
     wallet_proxy.shutdown();
+
     for node in nodes {
         node.logger()
             .assert_no_errors(&format!("Errors in logs for node: {}", node.alias()));
@@ -83,11 +84,13 @@ pub fn load_test_private_pesimistic() {
     let endpoint = "127.0.0.1:8080";
     let no_of_wallets = 8_000;
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    let vote_timing = VoteTiming::new(0, 11, 12);
+
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(0)
-        .tally_start_epoch(11)
-        .tally_end_epoch(12)
+        .vote_start_epoch(vote_timing.vote_start)
+        .tally_start_epoch(vote_timing.tally_start)
+        .tally_end_epoch(vote_timing.tally_end)
         .slot_duration_in_seconds(20)
         .slots_in_epoch_count(3)
         .proposals_count(250)
@@ -102,13 +105,14 @@ pub fn load_test_private_optimistic() {
     let no_of_threads = 10;
     let no_of_wallets = 20_000;
     let endpoint = "127.0.0.1:8080";
+    let vote_timing = VoteTiming::new(6, 10, 11);
 
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(6)
-        .tally_start_epoch(10)
-        .tally_end_epoch(11)
+        .vote_start_epoch(vote_timing.vote_start)
+        .tally_start_epoch(vote_timing.tally_start)
+        .tally_end_epoch(vote_timing.tally_end)
         .slot_duration_in_seconds(20)
         .slots_in_epoch_count(180)
         .proposals_count(500)

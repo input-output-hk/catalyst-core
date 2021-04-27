@@ -1,5 +1,7 @@
 use super::Vote;
+use crate::asserts::VotePlanStatusAssert;
 use crate::setup::*;
+use crate::VoteTiming;
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
@@ -15,6 +17,8 @@ use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 #[test]
 pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let endpoint = "127.0.0.1:8080";
+    let vote_timing = VoteTiming::new(0, 1, 2);
+
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let mut quick_setup = QuickVitBackendSettingsBuilder::new();
     quick_setup
@@ -35,9 +39,9 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
                 pin: "1234".to_string(),
             },
         ]))
-        .vote_start_epoch(0)
-        .tally_start_epoch(1)
-        .tally_end_epoch(2)
+        .vote_start_epoch(vote_timing.vote_start)
+        .tally_start_epoch(vote_timing.tally_start)
+        .tally_end_epoch(vote_timing.tally_end)
         .slot_duration_in_seconds(2)
         .slots_in_epoch_count(60)
         .proposals_count(1)
@@ -74,19 +78,8 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let mut david = vit_controller
         .iapyx_wallet_from_qr(&david_qr_code, "1234", &wallet_proxy)
         .unwrap();
-    david.retrieve_funds().unwrap();
-    david.convert_and_send().unwrap();
 
     let fund1_vote_plan = controller.vote_plan(&fund_name).unwrap();
-
-    println!(
-        "Controller: {}: {:?}",
-        fund1_vote_plan.id(),
-        fund1_vote_plan
-    );
-
-    let vote_plan = &leader_1.vote_plans().unwrap()[0];
-    println!("Blockchain: {:?}", vote_plan);
 
     // start voting
     david
@@ -96,8 +89,6 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let mut edgar = vit_controller
         .iapyx_wallet_from_qr(&edgar_qr_code, "1234", &wallet_proxy)
         .unwrap();
-    edgar.retrieve_funds().unwrap();
-    edgar.convert_and_send().unwrap();
 
     edgar
         .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
@@ -106,8 +97,6 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
     let mut filip = vit_controller
         .iapyx_wallet_from_qr(&filip_qr_code, "1234", &wallet_proxy)
         .unwrap();
-    filip.retrieve_funds().unwrap();
-    filip.convert_and_send().unwrap();
 
     filip
         .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8)
@@ -154,21 +143,10 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), crate::Error> {
         )
         .unwrap();
 
-    time::wait_for_epoch(2, leader_1.explorer());
+    vote_timing.wait_for_tally_end(leader_1.explorer());
 
-    let active_vote_plans = leader_1.vote_plans().unwrap();
-    let vote_plan_status = active_vote_plans
-        .iter()
-        .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&fund1_vote_plan.id()).unwrap().into())
-        .unwrap();
-
-    for proposal in vote_plan_status.proposals.iter() {
-        assert!(
-            proposal.tally.is_some(),
-            "Proposal is not tallied {:?}",
-            proposal
-        );
-    }
+    let vote_plan_assert: VotePlanStatusAssert = leader_1.vote_plans().unwrap().into();
+    vote_plan_assert.assert_all_proposals_are_tallied();
 
     vit_station.shutdown();
     wallet_proxy.shutdown();

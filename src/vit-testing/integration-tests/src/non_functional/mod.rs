@@ -3,6 +3,7 @@ pub mod load;
 #[cfg(feature = "soak-tests")]
 pub mod soak;
 
+use crate::asserts::VotePlanStatusAssert;
 use crate::setup::vitup_setup;
 use crate::setup::wait_until_folder_contains_all_qrs;
 use assert_fs::TempDir;
@@ -20,6 +21,7 @@ use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGener
 use vitup::config::VitStartParameters;
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
+
 #[allow(dead_code)]
 fn private_vote_test_scenario(
     quick_setup: QuickVitBackendSettingsBuilder,
@@ -120,19 +122,8 @@ fn private_vote_test_scenario(
 
     time::wait_for_epoch(tally_end + 10, leader_1.explorer());
 
-    let active_vote_plans = leader_1.vote_plans().unwrap();
-    let vote_plan_status = active_vote_plans
-        .iter()
-        .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&vote_plan.id()).unwrap().into())
-        .unwrap();
-
-    for proposal in vote_plan_status.proposals.iter() {
-        assert!(
-            proposal.tally.is_some(),
-            "Proposal is not tallied {:?}",
-            proposal
-        );
-    }
+    let vote_plan_assert: VotePlanStatusAssert = leader_1.vote_plans().unwrap().into();
+    vote_plan_assert.assert_all_proposals_are_tallied();
 
     vit_station.shutdown();
     wallet_proxy.shutdown();

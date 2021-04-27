@@ -11,7 +11,7 @@ uuid = { version = "0.8", features = ["serde","v4"] }
 chrono = "0.4"
 walkdir = "2.3.1"
 structopt = "0.3"
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev="919e6e99ef064b9e810887bf72d961281ae2dd49" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "e4a2b0b0c93cdc219f1c321a4bb6d2903c852037" } 
 futures = "0.3.8"
 serde = { version="=1.0.118", features = ["derive"] }

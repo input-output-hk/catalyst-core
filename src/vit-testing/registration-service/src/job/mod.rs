@@ -99,33 +99,47 @@ impl VoteRegistrationJob {
     }
 
     pub fn start(&self, request: Request) -> Result<(), Error> {
+        println!("saving payment.skey...");
         let payment_skey = CardanoKeyTemplate::payment_signing_key(request.payment_skey);
         let payment_skey_path = Path::new(&self.working_dir).join("payment.skey");
         payment_skey.write_to_file(&payment_skey_path)?;
+        println!("payment.skey saved");
 
+        println!("saving payment.vkey...");
         let payment_vkey = CardanoKeyTemplate::payment_verification_key(request.payment_vkey);
         let payment_vkey_path = Path::new(&self.working_dir).join("payment.vkey");
         payment_vkey.write_to_file(&payment_vkey_path)?;
+        println!("payment.vkey saved");
 
+        println!("saving stake.skey...");
         let stake_skey = CardanoKeyTemplate::stake_signing_key(request.stake_skey);
         let stake_skey_path = Path::new(&self.working_dir).join("stake.skey");
         stake_skey.write_to_file(stake_skey_path)?;
+        println!("stake.skey saved");
 
+        println!("saving stake.vkey...");
         let stake_vkey = CardanoKeyTemplate::stake_verification_key(request.stake_vkey);
         let stake_vkey_path = Path::new(&self.working_dir).join("stake.vkey");
         stake_vkey.write_to_file(&stake_vkey_path)?;
+        println!("stake.vkey saved");
 
+        println!("saving catalyst-vote.skey...");
         let jcli = JCli::new(self.jcli.clone());
         let private_key = jcli.key().generate_default();
         let private_key_path = Path::new(&self.working_dir).join("catalyst-vote.skey");
         write_content(&private_key, &private_key_path)?;
+        println!("catalyst-vote.skey saved");
 
+        println!("saving catalyst-vote.pkey...");
         let public_key = jcli.key().convert_to_public_string(&private_key);
         let public_key_path = Path::new(&self.working_dir).join("catalyst-vote.pkey");
         write_content(&public_key, &public_key_path)?;
+        println!("catalyst-vote.pkey saved");
 
+        println!("saving payment.addr...");
         let payment_address_path = Path::new(&self.working_dir).join("payment.addr");
         self.generate_payment_address(&payment_vkey_path, &payment_address_path)?;
+        println!("payment.addr saved");
 
         let vote_registration_path = Path::new(&self.working_dir).join("vote-registration.tx");
 
@@ -146,29 +160,36 @@ impl VoteRegistrationJob {
             .arg("--out-file")
             .arg(&vote_registration_path);
 
-        println!("{:?}", command);
+        println!("Running voter-registration: {:?}", command);
         command.status()?;
+        println!("voter-registration finished");
 
-        Command::new(&self.cardano_cli)
+        let mut command = Command::new(&self.voter_registration);
+        command
             .arg("transaction")
             .arg("submit")
             .arg("--cardano-mode")
             .arg_network(self.network)
             .arg("--tx-file")
-            .arg(&vote_registration_path)
-            .status()?;
+            .arg(&vote_registration_path);
+
+        println!("Running voter-registration: {:?}", command);
+        command.status()?;
+        println!("voter-registration finished");
 
         let qrcode = Path::new(&self.working_dir).join("qrcode.png");
 
-        Command::new(&self.vit_kedqr)
+        let mut command = Command::new(&self.vit_kedqr);
+        command
             .arg("-pin")
             .arg("1234")
             .arg("-input")
             .arg(private_key_path)
             .arg("-output")
-            .arg(qrcode)
-            .status()?;
-
+            .arg(qrcode);
+        println!("Running vit-kedqr: {:?}", command);
+        command.status()?;
+        println!("vit-kedqr finished");
         Ok(())
     }
 }

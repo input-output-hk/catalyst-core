@@ -5,7 +5,7 @@
       "pin": "1234"
     }
   ],
-  "vote_start": 5,
+  "vote_start": 0,
   "vote_tally": 41,
   "tally_end": 51,
   "refresh_time": "2021-04-13T09:00:00",

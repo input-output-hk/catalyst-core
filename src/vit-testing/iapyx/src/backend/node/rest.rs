@@ -26,6 +26,10 @@ impl WalletNodeRestClient {
         self.rest_client.send_raw_fragment(body)
     }
 
+    pub fn send_fragments(&self, bodies: Vec<Vec<u8>>) -> Result<(), RestError> {
+        self.rest_client.send_raw_fragments(bodies)
+    }
+
     pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, RestError> {
         Ok(self
             .rest_client

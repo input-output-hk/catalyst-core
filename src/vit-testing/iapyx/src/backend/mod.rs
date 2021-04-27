@@ -69,6 +69,30 @@ impl WalletBackend {
         Ok(fragment.id())
     }
 
+    pub fn send_fragments(
+        &self,
+        transactions: Vec<Vec<u8>>,
+    ) -> Result<Vec<FragmentId>, WalletBackendError> {
+        for tx in transactions.iter() {
+            self.node_client.send_fragment(tx.clone())?;
+        }
+        Ok(transactions
+            .iter()
+            .map(|tx| Fragment::deserialize(tx.as_slice()).unwrap().id())
+            .collect())
+    }
+
+    pub fn send_fragments_at_once(
+        &self,
+        transactions: Vec<Vec<u8>>,
+    ) -> Result<Vec<FragmentId>, WalletBackendError> {
+        self.node_client.send_fragments(transactions.clone())?;
+        Ok(transactions
+            .iter()
+            .map(|tx| Fragment::deserialize(tx.as_slice()).unwrap().id())
+            .collect())
+    }
+
     pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, WalletBackendError> {
         self.node_client.fragment_logs().map_err(Into::into)
     }

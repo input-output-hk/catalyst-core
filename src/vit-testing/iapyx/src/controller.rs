@@ -274,7 +274,9 @@ impl Controller {
     }
 
     pub fn active_votes(&self) -> Result<Vec<SimpleVoteStatus>, ControllerError> {
-        Ok(self.backend.vote_statuses(self.wallet.identifier())?)
+        Ok(self
+            .backend
+            .vote_statuses(self.wallet.identifier(self.settings.discrimination))?)
     }
 
     pub fn is_converted(&mut self) -> Result<bool, ControllerError> {

@@ -162,6 +162,7 @@ fn build_load_config(
     );
 
     IapyxLoadConfig {
+        batch_size: 1,
         config,
         criterion: Some(100),
         address: address.to_string(),

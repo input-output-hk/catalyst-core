@@ -5,6 +5,9 @@ use crate::WalletBackend;
 use crate::{Proposal, Wallet};
 use bech32::FromBase32;
 use bip39::Type;
+use chain_core::property::Deserialize;
+use chain_core::property::Fragment as _;
+use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::fragment::FragmentId;
 use jormungandr_testing_utils::testing::node::RestSettings;
 use std::iter;
@@ -162,6 +165,31 @@ impl MultiController {
         let tx = wallet.vote(self.settings.clone(), &proposal.clone().into(), choice)?;
         self.backend()
             .send_fragment(tx.to_vec())
+            .map_err(Into::into)
+    }
+
+    pub fn votes_batch(
+        &mut self,
+        wallet_index: usize,
+        votes_data: Vec<(&Proposal, Choice)>,
+    ) -> Result<Vec<FragmentId>, MultiControllerError> {
+        let wallet = self.wallets.get_mut(wallet_index).unwrap();
+        let settings = self.settings.clone();
+        let txs = votes_data
+            .into_iter()
+            .map(|(p, c)| {
+                let tx = wallet
+                    .vote(settings.clone(), &p.clone().into(), c)
+                    .unwrap()
+                    .to_vec();
+                let fragment_id = Fragment::deserialize(tx.as_slice()).unwrap().id();
+                wallet.confirm_transaction(fragment_id);
+                tx
+            })
+            .collect();
+
+        self.backend()
+            .send_fragments_at_once(txs)
             .map_err(Into::into)
     }
 

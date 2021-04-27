@@ -130,16 +130,25 @@ impl Wallet {
             .map_err(|e| Error::CannotSendVote(e.to_string()))
     }
 
-    pub fn identifier(&self) -> AccountIdentifier {
-        AccountIdentifier::from_str(
-            &AddressReadable::from_address("ca", &self.account(Discrimination::Test)).to_string(),
-        )
-        .unwrap()
+    pub fn identifier(&self, discrimination: Discrimination) -> AccountIdentifier {
+        let address_readable = match discrimination {
+            Discrimination::Test => {
+                AddressReadable::from_address("ta", &self.account(discrimination)).to_string()
+            }
+            Discrimination::Production => {
+                AddressReadable::from_address("ca", &self.account(discrimination)).to_string()
+            }
+        };
+        AccountIdentifier::from_str(&address_readable).unwrap()
     }
 }
 
 impl std::fmt::Debug for Wallet {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.identifier().to_string())
+        write!(
+            f,
+            "{}",
+            self.identifier(Discrimination::Production).to_string()
+        )
     }
 }

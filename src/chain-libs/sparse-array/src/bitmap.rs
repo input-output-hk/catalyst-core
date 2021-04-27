@@ -88,7 +88,7 @@ mod tests {
 
     use crate::testing::test_indexes;
     use proptest::prelude::*;
-    use proptest_attr::proptest;
+    use test_strategy::proptest;
 
     #[test]
     fn is_empty_when_created_test() {
@@ -97,18 +97,17 @@ mod tests {
         assert!(bitmap.get_first_index().is_none());
     }
 
-    #[proptest(strategy = "test_indexes()")]
-    fn set_index_test(indexes: Vec<u8>) -> prop::test_runner::TestCaseResult {
+    #[proptest]
+    fn set_index_test(#[strategy(test_indexes())] indexes: Vec<u8>) {
         let mut bitmap = BitmapIndex::new();
         for idx in indexes.iter() {
             bitmap.set_index(*idx);
         }
         prop_assert!(indexes.iter().all(|idx| bitmap.get_index(*idx)));
-        Ok(())
     }
 
-    #[proptest(strategy = "test_indexes()")]
-    fn remove_indextest(indexes: Vec<u8>) -> prop::test_runner::TestCaseResult {
+    #[proptest]
+    fn remove_indextest(#[strategy(test_indexes())] indexes: Vec<u8>) {
         let mut bitmap = BitmapIndex::new();
         for idx in indexes.iter() {
             bitmap.set_index(*idx);
@@ -123,12 +122,10 @@ mod tests {
 
         prop_assert!(to_remove.iter().all(|idx| !bitmap.get_index(*idx)));
         prop_assert!(to_set.iter().all(|idx| bitmap.get_index(*idx)));
-
-        Ok(())
     }
 
-    #[proptest(strategy = "test_indexes()")]
-    fn get_real_index_test(indexes: Vec<u8>) -> prop::test_runner::TestCaseResult {
+    #[proptest]
+    fn get_real_index(#[strategy(test_indexes())] indexes: Vec<u8>) {
         let mut bitmap = BitmapIndex::new();
         for idx in indexes.iter() {
             bitmap.set_index(*idx);
@@ -137,14 +134,12 @@ mod tests {
             .iter()
             .enumerate()
             .all(|(expected, idx)| bitmap.get_real_index(*idx) == Some(expected as u8)));
-        Ok(())
     }
 
-    #[proptest(strategy = "0..=u8::MAX")]
-    fn get_first_index_test(idx: u8) -> prop::test_runner::TestCaseResult {
+    #[proptest]
+    fn get_first_index(idx: u8) {
         let mut bitmap = BitmapIndex::new();
         bitmap.set_index(idx);
         prop_assert!(bitmap.get_first_index() == Some(idx));
-        Ok(())
     }
 }

@@ -154,10 +154,10 @@ mod tests {
 
     use crate::testing::sparse_array_test_data;
     use proptest::prelude::*;
-    use proptest_attr::proptest;
+    use test_strategy::proptest;
 
-    #[proptest(strategy = "sparse_array_test_data()")]
-    fn add_test(data: Vec<(u8, u8)>) -> prop::test_runner::TestCaseResult {
+    #[proptest]
+    fn add_test(#[strategy(sparse_array_test_data())] data: Vec<(u8, u8)>) {
         let mut sparse_array = SparseArray::new();
         for (idx, value) in data.iter() {
             sparse_array = sparse_array.set(*idx, value);
@@ -166,12 +166,10 @@ mod tests {
         prop_assert!(data
             .iter()
             .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));
-
-        Ok(())
     }
 
-    #[proptest(strategy = "sparse_array_test_data()")]
-    fn remove_test(data: Vec<(u8, u8)>) -> prop::test_runner::TestCaseResult {
+    #[proptest]
+    fn remove_test(#[strategy(sparse_array_test_data())] data: Vec<(u8, u8)>) {
         let mut sparse_array = SparseArray::new();
         for (idx, value) in data.iter() {
             sparse_array = sparse_array.set(*idx, value);
@@ -188,7 +186,5 @@ mod tests {
         prop_assert!(to_set
             .iter()
             .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));
-
-        Ok(())
     }
 }

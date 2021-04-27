@@ -6,4 +6,4 @@ edition = "2018"
 
 [dev-dependencies]
 proptest = "1.0.0"
-proptest-attr = { git = "https://github.com/eugene-babichenko/proptest-attr.git" }
+test-strategy = "0.1"

@@ -14,20 +14,12 @@ pub enum Content {
 }
 
 #[derive(Serialize)]
-pub struct Geozone {
-    lat: f32,
-    lng: f32,
-    range: usize,
-}
-
-#[derive(Serialize)]
 pub struct ContentSettings {
     send_date: String,
     content: Content,
     ignore_user_timezones: bool,
     timezone: Option<String>,
     campaign: Option<String>,
-    geozone: Option<Geozone>,
     filter: Option<String>,
 }
 
@@ -37,6 +29,6 @@ pub struct CreateMessage {
     auth: String,
     /// Pushwoosh application code
     application: String,
-    ///
+    /// Push notifications properties
     notifications: Vec<MessageParameters>,
 }

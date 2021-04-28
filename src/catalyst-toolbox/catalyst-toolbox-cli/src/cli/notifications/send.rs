@@ -14,6 +14,7 @@ use structopt::StructOpt;
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Content {
+    /// Path to file with notification message, if not provided will be read from the stdin
     content_path: Option<PathBuf>,
 }
 
@@ -26,9 +27,21 @@ pub struct SendNotification {
     #[structopt(flatten)]
     content_path: Content,
 
-    /// Date
-    #[structopt(parse(parse_date_time))]
+    /// Date and time to send notification of format  "Y-m-d H:M"
+    #[structopt(long, parse(try_from_str=parse_date_time))]
     send_date: Option<DateTime<FixedOffset>>,
+
+    /// Ignore user timezones when sending a message
+    #[structopt(long, short = "iut")]
+    ignore_user_timezones: bool,
+
+    /// Select an specific campaign to send the message to
+    #[structopt(long)]
+    campaign: Option<String>,
+
+    ///
+    #[structopt(long)]
+    filter: Option<String>,
 }
 
 impl SendNotification {

@@ -20,6 +20,9 @@ pub enum Error {
 
     #[error("error reading file, source: {0}")]
     FileError(#[from] std::io::Error),
+
+    #[error("sent data is invalid:\n {request}")]
+    BadDataSent { request: String },
 }
 
 #[derive(StructOpt)]
@@ -32,7 +35,7 @@ impl PushNotifications {
     pub fn exec(self) -> Result<(), Error> {
         use self::PushNotifications::*;
         match self {
-            Send(_) => {}
+            Send(cmd) => cmd.exec()?,
         };
         Ok(())
     }

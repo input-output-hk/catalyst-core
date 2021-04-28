@@ -5,8 +5,8 @@ use crate::cli::notifications::{
     Error,
 };
 
-use chrono::{DateTime, FixedOffset, Local};
-use reqwest::{blocking::Client, Url};
+use chrono::{DateTime, FixedOffset};
+use reqwest::{blocking::Client, StatusCode, Url};
 use structopt::StructOpt;
 
 use std::io::Read;
@@ -15,6 +15,7 @@ use std::path::PathBuf;
 use crate::cli::notifications::requests::create_message::{
     ContentSettingsBuilder, CreateMessageBuilder,
 };
+use crate::cli::notifications::requests::{Request, RequestData};
 use jcli_lib::utils::io;
 
 #[derive(StructOpt)]
@@ -42,7 +43,7 @@ pub struct SendNotification {
     send_date: Option<DateTime<FixedOffset>>,
 
     /// Ignore user timezones when sending a message
-    #[structopt(long, short = "iut")]
+    #[structopt(long)]
     ignore_user_timezones: bool,
 
     /// Select an specific campaign to send the message to
@@ -52,20 +53,26 @@ pub struct SendNotification {
     ///
     #[structopt(long)]
     filter: Option<String>,
+
+    /// Timezone of send date, for example "America/New_York"
+    #[structopt(long)]
+    timezone: Option<String>,
 }
 
 impl SendNotification {
     pub fn exec(self) -> Result<(), Error> {
+        let url = self.api_params.api_url.join("createMessage").unwrap();
         let message = self.build_create_message()?;
-        let response = send_create_message(self.api_params.api_url, &message)?;
-        for message_code in response.messages_codes() {
-            println!("{}", message_code);
-        }
+        let request = Request::new(RequestData::CreateMessageRequest(message));
+        let response = send_create_message(url, &request)?;
+
+        println!("{}", serde_json::to_string_pretty(&response)?);
         Ok(())
     }
 
     pub fn build_create_message(&self) -> Result<CreateMessage, Error> {
         let mut content_builder = ContentSettingsBuilder::new()
+            .with_timezone(self.timezone.clone())
             .with_campaign(self.campaign.clone())
             .with_filter(self.filter.clone())
             .with_ignore_user_timezones(self.ignore_user_timezones)
@@ -98,13 +105,18 @@ impl Content {
 
 pub fn send_create_message(
     url: Url,
-    notification: &CreateMessage,
+    notification: &Request,
 ) -> Result<CreateMessageResponse, Error> {
-    let mut client = Client::new();
-    let response: CreateMessageResponse = client
+    let client = Client::new();
+    let response = client
         .post(url)
         .body(serde_json::to_string(&notification)?)
-        .send()?
-        .json()?;
-    Ok(response)
+        .send()?;
+    if response.status() == StatusCode::BAD_REQUEST {
+        return Err(Error::BadDataSent {
+            request: serde_json::to_string_pretty(&notification)?,
+        });
+    }
+    let response_message = response.json()?;
+    Ok(response_message)
 }

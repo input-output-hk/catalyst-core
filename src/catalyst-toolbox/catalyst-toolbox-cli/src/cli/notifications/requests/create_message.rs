@@ -4,7 +4,6 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::fmt::Display;
 
-use structopt::StructOpt;
 use thiserror::Error;
 
 pub const DATETIME_FMT: &str = "%Y-%m-%d %H:%M";
@@ -25,6 +24,7 @@ pub enum Error {
 pub type MultiLanguageContent = HashMap<String, String>;
 
 #[derive(Serialize)]
+#[serde(untagged)]
 pub enum Content {
     Plain(String),
     MultiLanguage(MultiLanguageContent),
@@ -35,8 +35,11 @@ pub struct ContentSettings {
     send_date: String,
     content: Content,
     ignore_user_timezones: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
     timezone: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     campaign: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     filter: Option<String>,
 }
 

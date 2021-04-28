@@ -1,25 +1,22 @@
 use reqwest::StatusCode;
 use serde::de::Error;
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct InnerResponse {
     #[serde(alias = "Messages")]
     messages: Vec<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateMessageResponse {
-    #[serde(deserialize_with = "deserialize_status_code")]
+    #[serde(
+        deserialize_with = "deserialize_status_code",
+        serialize_with = "serialize_status_code"
+    )]
     status_code: StatusCode,
     status_message: String,
     response: InnerResponse,
-}
-
-impl CreateMessageResponse {
-    pub fn messages_codes(&self) -> impl Iterator<Item = &String> {
-        self.response.messages.iter()
-    }
 }
 
 fn deserialize_status_code<'de, D>(deserializer: D) -> Result<StatusCode, D::Error>
@@ -28,6 +25,13 @@ where
 {
     StatusCode::from_u16(u16::deserialize(deserializer)?)
         .map_err(|_| D::Error::custom("Invalid StatusCode"))
+}
+
+fn serialize_status_code<S>(status_code: &StatusCode, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_u16(status_code.as_u16())
 }
 
 #[cfg(test)]

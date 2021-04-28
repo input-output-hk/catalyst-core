@@ -171,6 +171,7 @@ impl MultiController {
     pub fn votes_batch(
         &mut self,
         wallet_index: usize,
+        use_v1: bool,
         votes_data: Vec<(&Proposal, Choice)>,
     ) -> Result<Vec<FragmentId>, MultiControllerError> {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
@@ -189,7 +190,7 @@ impl MultiController {
             .collect();
 
         self.backend()
-            .send_fragments_at_once(txs)
+            .send_fragments_at_once(txs, use_v1)
             .map_err(Into::into)
     }
 

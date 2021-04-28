@@ -56,7 +56,11 @@ impl IapyxLoad {
 
         let stats = if self.config.batch_size > 1 {
             jortestkit::load::start_async(
-                BatchWalletRequestGen::new(multicontroller?, self.config.batch_size),
+                BatchWalletRequestGen::new(
+                    multicontroller?,
+                    self.config.batch_size,
+                    self.config.use_v1,
+                ),
                 VoteStatusProvider::new(backend, self.config.debug),
                 self.config.config,
                 measurement_name,

@@ -249,6 +249,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dabbe35f96fb9507f7330793dc490461b2962659ac5d427181e451a623751d1"
 
 [[package]]
+name = "bincode"
+version = "1.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "bip39"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#959bbda40f318665a83877af9463494c1f077637"
@@ -609,7 +618,7 @@ checksum = "ff0e3bc0b6446b3f9663c1a6aba6ef06c5aeaa1bc92bd18077be337198ab9768"
 dependencies = [
  "multibase",
  "multihash 0.13.2",
- "unsigned-varint",
+ "unsigned-varint 0.5.1",
 ]
 
 [[package]]
@@ -1835,8 +1844,8 @@ dependencies = [
  "hex",
  "hyper 0.13.10",
  "image",
- "jormungandr-lib",
- "jormungandr-testing-utils",
+ "jormungandr-lib 0.11.0-rc1",
+ "jormungandr-testing-utils 0.11.0-rc1",
  "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=919e6e99ef064b9e810887bf72d961281ae2dd49)",
  "rand 0.8.3",
  "rand_core 0.6.2",
@@ -1959,9 +1968,9 @@ dependencies = [
  "chain-impl-mockchain",
  "chrono",
  "iapyx",
- "jormungandr-lib",
+ "jormungandr-lib 0.11.0-rc1",
  "jormungandr-scenario-tests",
- "jormungandr-testing-utils",
+ "jormungandr-testing-utils 0.11.0-rc1",
  "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=919e6e99ef064b9e810887bf72d961281ae2dd49)",
  "rand 0.8.3",
  "rand_chacha 0.2.2",
@@ -2014,8 +2023,8 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 
 [[package]]
 name = "jormungandr-integration-tests"
-version = "0.11.0-rc1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=e4a2b0b0c93cdc219f1c321a4bb6d2903c852037#e4a2b0b0c93cdc219f1c321a4bb6d2903c852037"
+version = "0.11.1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=b38e067ea29267e6af65938c5603dbe05418e6f7#b38e067ea29267e6af65938c5603dbe05418e6f7"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2031,12 +2040,13 @@ dependencies = [
  "futures 0.3.14",
  "hex",
  "indicatif",
- "jormungandr-lib",
- "jormungandr-testing-utils",
+ "jormungandr-lib 0.11.1",
+ "jormungandr-testing-utils 0.11.1",
  "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "json",
  "lazy_static",
- "poldercast 0.14.0",
+ "parity-multiaddr 0.11.2",
+ "poldercast 1.2.0",
  "predicates",
  "prost",
  "rand 0.8.3",
@@ -2049,6 +2059,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "structopt",
+ "tempfile",
  "thiserror",
  "tokio 1.5.0",
  "tonic",
@@ -2074,8 +2085,35 @@ dependencies = [
  "hex",
  "http",
  "humantime",
- "parity-multiaddr",
+ "parity-multiaddr 0.9.7",
  "poldercast 0.14.0",
+ "rand 0.8.3",
+ "rand_chacha 0.3.0",
+ "rand_core 0.6.2",
+ "serde",
+ "thiserror",
+ "typed-bytes",
+]
+
+[[package]]
+name = "jormungandr-lib"
+version = "0.11.1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=b38e067ea29267e6af65938c5603dbe05418e6f7#b38e067ea29267e6af65938c5603dbe05418e6f7"
+dependencies = [
+ "base64 0.13.0",
+ "bech32",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "hex",
+ "http",
+ "humantime",
+ "parity-multiaddr 0.11.2",
  "rand 0.8.3",
  "rand_chacha 0.3.0",
  "rand_core 0.6.2",
@@ -2104,8 +2142,8 @@ dependencies = [
  "futures 0.3.14",
  "hex",
  "indicatif",
- "jormungandr-lib",
- "jormungandr-testing-utils",
+ "jormungandr-lib 0.11.0-rc1",
+ "jormungandr-testing-utils 0.11.0-rc1",
  "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "json",
  "lazy_static",
@@ -2152,7 +2190,7 @@ dependencies = [
  "hex",
  "humantime",
  "image",
- "jormungandr-lib",
+ "jormungandr-lib 0.11.0-rc1",
  "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "json",
  "lazy_static",
@@ -2175,6 +2213,73 @@ dependencies = [
  "strum 0.20.0",
  "symmetric-cipher",
  "sysinfo 0.16.5",
+ "tar",
+ "thiserror",
+ "tokio 1.5.0",
+ "tokio-codec",
+ "tokio-stream",
+ "tonic",
+ "tonic-build",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "typed-bytes",
+ "url",
+ "zip",
+]
+
+[[package]]
+name = "jormungandr-testing-utils"
+version = "0.11.1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=b38e067ea29267e6af65938c5603dbe05418e6f7#b38e067ea29267e6af65938c5603dbe05418e6f7"
+dependencies = [
+ "assert_fs",
+ "base64 0.13.0",
+ "bech32",
+ "bincode",
+ "bytesize",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "custom_debug",
+ "flate2",
+ "fs_extra",
+ "futures 0.3.14",
+ "graphql_client",
+ "hex",
+ "humantime",
+ "image",
+ "jormungandr-lib 0.11.1",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
+ "json",
+ "keynesis",
+ "lazy_static",
+ "netstat2",
+ "os_info 3.0.2",
+ "parity-multiaddr 0.11.2",
+ "poldercast 1.2.0",
+ "prost",
+ "qrcodegen",
+ "quircs",
+ "rand 0.8.3",
+ "rand_chacha 0.3.0",
+ "rand_core 0.6.2",
+ "regex 1.4.5",
+ "reqwest 0.11.3",
+ "semver 0.11.0",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "strum 0.20.0",
+ "symmetric-cipher",
+ "sysinfo 0.17.2",
  "tar",
  "thiserror",
  "tokio 1.5.0",
@@ -2310,6 +2415,19 @@ checksum = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
 dependencies = [
  "winapi 0.2.8",
  "winapi-build",
+]
+
+[[package]]
+name = "keynesis"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5bf8dc22157c7a4d75f1df13a1b75ada82431141423e3d419ac89f2c1fbb298"
+dependencies = [
+ "cryptoxide",
+ "hex",
+ "rand_chacha 0.3.0",
+ "rand_core 0.6.2",
+ "thiserror",
 ]
 
 [[package]]
@@ -2540,7 +2658,7 @@ dependencies = [
  "sha-1",
  "sha2",
  "sha3",
- "unsigned-varint",
+ "unsigned-varint 0.5.1",
 ]
 
 [[package]]
@@ -2557,7 +2675,7 @@ dependencies = [
  "multihash-derive",
  "sha2",
  "sha3",
- "unsigned-varint",
+ "unsigned-varint 0.5.1",
 ]
 
 [[package]]
@@ -2834,7 +2952,25 @@ dependencies = [
  "percent-encoding",
  "serde",
  "static_assertions",
- "unsigned-varint",
+ "unsigned-varint 0.5.1",
+ "url",
+]
+
+[[package]]
+name = "parity-multiaddr"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58341485071825827b7f03cf7efd1cb21e6a709bea778fb50227fd45d2f361b4"
+dependencies = [
+ "arrayref",
+ "bs58",
+ "byteorder",
+ "data-encoding",
+ "multihash 0.13.2",
+ "percent-encoding",
+ "serde",
+ "static_assertions",
+ "unsigned-varint 0.7.0",
  "url",
 ]
 
@@ -2985,7 +3121,7 @@ source = "git+https://github.com/primetype/poldercast.git?rev=8305f1560392a9d266
 dependencies = [
  "hex",
  "lru",
- "parity-multiaddr",
+ "parity-multiaddr 0.9.7",
  "rand 0.7.3",
  "rayon",
  "serde",
@@ -3001,10 +3137,22 @@ dependencies = [
  "cid",
  "hex",
  "lru",
- "parity-multiaddr",
+ "parity-multiaddr 0.9.7",
  "rand 0.8.3",
  "rayon",
  "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "poldercast"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e779918f3699dbd6df29cbbdb0681c863f5c42d42c85a1d197d72246d7895397"
+dependencies = [
+ "hex",
+ "keynesis",
+ "lru",
  "thiserror",
 ]
 
@@ -4116,6 +4264,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "sysinfo"
+version = "0.17.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f5e4b56d92c7c56cc8a06df0cc06860a8ec6102e9a8a5ee85dff90afbeadf3d"
+dependencies = [
+ "cfg-if 1.0.0",
+ "core-foundation-sys",
+ "doc-comment",
+ "libc",
+ "ntapi",
+ "once_cell",
+ "rayon",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "tar"
 version = "0.4.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4745,6 +4909,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7fdeedbf205afadfe39ae559b75c3240f24e257d0ca27e85f85cb82aa19ac35"
 
 [[package]]
+name = "unsigned-varint"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f8d425fafb8cd76bc3f22aace4af471d3156301d7508f2107e98fbeae10bc7f"
+
+[[package]]
 name = "untrusted"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4896,9 +5066,9 @@ dependencies = [
  "iapyx",
  "image",
  "indicatif",
- "jormungandr-lib",
+ "jormungandr-lib 0.11.0-rc1",
  "jormungandr-scenario-tests",
- "jormungandr-testing-utils",
+ "jormungandr-testing-utils 0.11.0-rc1",
  "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "json",
  "lazy_static",

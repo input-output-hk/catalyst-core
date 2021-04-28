@@ -17,6 +17,9 @@ pub enum Error {
 
     #[error(transparent)]
     RequestError(#[from] reqwest::Error),
+
+    #[error("error reading file, source: {0}")]
+    FileError(#[from] std::io::Error),
 }
 
 #[derive(StructOpt)]

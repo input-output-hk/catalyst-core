@@ -16,6 +16,12 @@ pub struct CreateMessageResponse {
     response: InnerResponse,
 }
 
+impl CreateMessageResponse {
+    pub fn messages_codes(&self) -> impl Iterator<Item = &String> {
+        self.response.messages.iter()
+    }
+}
+
 fn deserialize_status_code<'de, D>(deserializer: D) -> Result<StatusCode, D::Error>
 where
     D: Deserializer<'de>,

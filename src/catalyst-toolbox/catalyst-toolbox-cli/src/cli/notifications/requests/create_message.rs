@@ -106,18 +106,18 @@ impl ContentSettingsBuilder {
         self
     }
 
-    pub fn with_timezone(mut self, timezone: String) -> Self {
-        self.timezone = Some(timezone);
+    pub fn with_timezone(mut self, timezone: Option<String>) -> Self {
+        self.timezone = timezone;
         self
     }
 
-    pub fn with_campaign(mut self, campaign: String) -> Self {
-        self.campaign = Some(campaign);
+    pub fn with_campaign(mut self, campaign: Option<String>) -> Self {
+        self.campaign = campaign;
         self
     }
 
-    pub fn with_filter(mut self, filter: String) -> Self {
-        self.filter = Some(filter);
+    pub fn with_filter(mut self, filter: Option<String>) -> Self {
+        self.filter = filter;
         self
     }
 

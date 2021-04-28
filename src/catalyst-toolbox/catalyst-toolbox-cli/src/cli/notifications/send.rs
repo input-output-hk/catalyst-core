@@ -6,10 +6,16 @@ use crate::cli::notifications::{
 };
 
 use chrono::{DateTime, FixedOffset, Local};
-use reqwest::blocking::Client;
-use reqwest::Url;
-use std::path::PathBuf;
+use reqwest::{blocking::Client, Url};
 use structopt::StructOpt;
+
+use std::io::Read;
+use std::path::PathBuf;
+
+use crate::cli::notifications::requests::create_message::{
+    ContentSettingsBuilder, CreateMessageBuilder,
+};
+use jcli_lib::utils::io;
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -26,6 +32,10 @@ pub struct SendNotification {
 
     #[structopt(flatten)]
     content_path: Content,
+
+    /// Pushwoosh application code where message will be send
+    #[structopt(long)]
+    application: String,
 
     /// Date and time to send notification of format  "Y-m-d H:M"
     #[structopt(long, parse(try_from_str=parse_date_time))]
@@ -46,7 +56,30 @@ pub struct SendNotification {
 
 impl SendNotification {
     pub fn exec(self) -> Result<(), Error> {
+        let message = self.build_create_message()?;
+        let response = send_create_message(self.api_params.api_url, &message)?;
+        for message_code in response.messages_codes() {
+            println!("{}", message_code);
+        }
         Ok(())
+    }
+
+    pub fn build_create_message(&self) -> Result<CreateMessage, Error> {
+        let mut content_builder = ContentSettingsBuilder::new()
+            .with_campaign(self.campaign.clone())
+            .with_filter(self.filter.clone())
+            .with_ignore_user_timezones(self.ignore_user_timezones)
+            .with_plain_content(self.content_path.get_content()?);
+        if let Some(datetime) = self.send_date {
+            content_builder = content_builder.with_send_date(datetime);
+        }
+
+        CreateMessageBuilder::new()
+            .with_auth(self.api_params.access_token.clone())
+            .with_application(self.application.clone())
+            .add_content_settings(content_builder.build()?)
+            .build()
+            .map_err(Into::into)
     }
 }
 
@@ -54,7 +87,14 @@ fn parse_date_time(dt: &str) -> chrono::ParseResult<DateTime<FixedOffset>> {
     DateTime::parse_from_str(dt, DATETIME_FMT)
 }
 
-impl Content {}
+impl Content {
+    pub fn get_content(&self) -> Result<String, Error> {
+        let mut reader = io::open_file_read(&self.content_path).map_err(Error::FileError)?;
+        let mut result = String::new();
+        reader.read_to_string(&mut result)?;
+        Ok(result)
+    }
+}
 
 pub fn send_create_message(
     url: Url,

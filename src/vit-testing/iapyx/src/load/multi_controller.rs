@@ -175,19 +175,24 @@ impl MultiController {
         votes_data: Vec<(&Proposal, Choice)>,
     ) -> Result<Vec<FragmentId>, MultiControllerError> {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
+        let account_state = self.backend.account_state(wallet.id())?;
+      
+        let mut counter = account_state.counter();
         let settings = self.settings.clone();
         let txs = votes_data
             .into_iter()
             .map(|(p, c)| {
+                wallet.set_state(account_state.value().clone().into(), counter);
                 let tx = wallet
                     .vote(settings.clone(), &p.clone().into(), c)
                     .unwrap()
                     .to_vec();
-                let fragment_id = Fragment::deserialize(tx.as_slice()).unwrap().id();
-                wallet.confirm_transaction(fragment_id);
+                counter = counter + 1; 
                 tx
             })
+            .rev()
             .collect();
+
 
         self.backend()
             .send_fragments_at_once(txs, use_v1)

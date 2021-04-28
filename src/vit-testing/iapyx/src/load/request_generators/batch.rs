@@ -55,8 +55,6 @@ impl BatchWalletRequestGen {
                 .map(|index| Choice::new(*options.get(index).clone().unwrap()))
                 .collect();
 
-        self.multi_controller.refresh_wallet(wallet_index)?;
-
         self.multi_controller
             .votes_batch(
                 wallet_index,

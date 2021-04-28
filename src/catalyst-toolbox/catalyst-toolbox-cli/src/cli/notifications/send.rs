@@ -112,11 +112,19 @@ pub fn send_create_message(
         .post(url)
         .body(serde_json::to_string(&notification)?)
         .send()?;
-    if response.status() == StatusCode::BAD_REQUEST {
-        return Err(Error::BadDataSent {
-            request: serde_json::to_string_pretty(&notification)?,
-        });
-    }
+    match response.status() {
+        StatusCode::OK => {}
+        StatusCode::BAD_REQUEST => {
+            return Err(Error::BadDataSent {
+                request: serde_json::to_string_pretty(&notification)?,
+            })
+        }
+        _ => {
+            return Err(Error::UnsuccessfulRequest {
+                response: response.text()?,
+            })
+        }
+    };
     let response_message = response.json()?;
     Ok(response_message)
 }

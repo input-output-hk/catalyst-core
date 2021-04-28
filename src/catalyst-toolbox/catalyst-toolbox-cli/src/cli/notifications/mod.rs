@@ -23,6 +23,9 @@ pub enum Error {
 
     #[error("sent data is invalid:\n {request}")]
     BadDataSent { request: String },
+
+    #[error("request was unsuccessful, feedback:\n {response}")]
+    UnsuccessfulRequest { response: String },
 }
 
 #[derive(StructOpt)]

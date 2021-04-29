@@ -151,7 +151,7 @@ impl VoteRegistrationJob {
             .arg("--payment-address")
             .arg(&payment_address)
             .arg("--stake-signing-key")
-            .arg(&payment_skey_path)
+            .arg(&stake_skey_path)
             .arg("--vote-public-key")
             .arg(&public_key_path)
             .arg_network(self.network)

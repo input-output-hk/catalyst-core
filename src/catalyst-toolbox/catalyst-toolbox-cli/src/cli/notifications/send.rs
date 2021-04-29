@@ -21,16 +21,16 @@ use jcli_lib::utils::io;
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Content {
-    /// Path to file with notification message, if not provided will be read from the stdin
     content_path: Option<PathBuf>,
 }
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
-pub struct SendNotification {
+pub struct Args {
     #[structopt(flatten)]
     api_params: ApiParams,
 
+    /// Path to file with notification message, if not provided will be read from the stdin
     #[structopt(flatten)]
     content_path: Content,
 
@@ -59,7 +59,26 @@ pub struct SendNotification {
     timezone: Option<String>,
 }
 
-impl SendNotification {
+#[derive(StructOpt)]
+#[structopt(rename_all = "kebab-case")]
+pub struct Json {
+    #[structopt(long, default_value = "https://cp.pushwoosh.com/json/1.3/")]
+    pub api_url: Url,
+
+    /// Path to file with the json representation of the notification,
+    /// if not provided will be read from stdin
+    #[structopt(flatten)]
+    json_path: Content,
+}
+
+#[derive(StructOpt)]
+#[structopt(rename_all = "kebab-case")]
+pub enum SendNotification {
+    FromArgs(Args),
+    FromJson(Json),
+}
+
+impl Args {
     pub fn exec(self) -> Result<(), Error> {
         let url = self.api_params.api_url.join("createMessage").unwrap();
         let message = self.build_create_message()?;
@@ -87,6 +106,27 @@ impl SendNotification {
             .add_content_settings(content_builder.build()?)
             .build()
             .map_err(Into::into)
+    }
+}
+
+impl Json {
+    pub fn exec(self) -> Result<(), Error> {
+        let url = self.api_url.join("createMessage").unwrap();
+        let message_data: RequestData = serde_json::from_str(&self.json_path.get_content()?)?;
+        let request: Request = Request::new(message_data);
+        let response = send_create_message(url, &request)?;
+
+        println!("{}", serde_json::to_string_pretty(&response)?);
+        Ok(())
+    }
+}
+
+impl SendNotification {
+    pub fn exec(self) -> Result<(), Error> {
+        match self {
+            SendNotification::FromArgs(args) => args.exec(),
+            SendNotification::FromJson(json) => json.exec(),
+        }
     }
 }
 

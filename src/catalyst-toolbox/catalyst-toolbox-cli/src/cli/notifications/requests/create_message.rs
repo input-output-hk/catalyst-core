@@ -1,5 +1,5 @@
 use chrono::DateTime;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 use std::fmt::Display;
@@ -23,14 +23,14 @@ pub enum Error {
 
 pub type MultiLanguageContent = HashMap<String, String>;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Content {
     Plain(String),
     MultiLanguage(MultiLanguageContent),
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ContentSettings {
     send_date: String,
     content: Content,
@@ -43,7 +43,7 @@ pub struct ContentSettings {
     filter: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CreateMessage {
     /// API access token from Pushwoosh Control Panel
     auth: String,

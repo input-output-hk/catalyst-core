@@ -1,6 +1,8 @@
 use crate::config::NetworkType;
 use crate::request::Request;
+use crate::utils::CommandExt as _;
 use jormungandr_integration_tests::common::jcli::JCli;
+use jortestkit::prelude::read_file;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -8,8 +10,6 @@ use std::process::Command;
 use std::process::ExitStatus;
 use std::str::FromStr;
 use thiserror::Error;
-
-use crate::utils::CommandExt as _;
 
 pub struct VoteRegistrationJobBuilder {
     job: VoteRegistrationJob,
@@ -141,6 +141,7 @@ impl VoteRegistrationJob {
         self.generate_payment_address(&payment_vkey_path, &payment_address_path)?;
         println!("payment.addr saved");
 
+        let payment_address = read_file(&payment_address_path);
         let vote_registration_path = Path::new(&self.working_dir).join("vote-registration.tx");
 
         let mut command = Command::new(&self.voter_registration);
@@ -148,7 +149,7 @@ impl VoteRegistrationJob {
             .arg("--payment-signing-key")
             .arg(&payment_skey_path)
             .arg("--payment-address")
-            .arg(&payment_address_path)
+            .arg(&payment_address)
             .arg("--stake-signing-key")
             .arg(&payment_skey_path)
             .arg("--vote-public-key")

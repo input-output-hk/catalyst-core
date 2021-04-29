@@ -25,7 +25,7 @@ pub type MultiLanguageContent = HashMap<String, String>;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum Content {
+pub enum ContentType {
     Plain(String),
     MultiLanguage(MultiLanguageContent),
 }
@@ -33,7 +33,7 @@ pub enum Content {
 #[derive(Serialize, Deserialize)]
 pub struct ContentSettings {
     send_date: String,
-    content: Content,
+    content: ContentType,
     ignore_user_timezones: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     timezone: Option<String>,
@@ -55,7 +55,7 @@ pub struct CreateMessage {
 
 pub struct ContentSettingsBuilder {
     send_date: String,
-    content: Option<Content>,
+    content: Option<ContentType>,
     ignore_user_timezones: bool,
     timezone: Option<String>,
     campaign: Option<String>,
@@ -95,13 +95,20 @@ impl ContentSettingsBuilder {
     }
 
     pub fn with_plain_content(mut self, content: String) -> Self {
-        self.content = Some(Content::Plain(content));
+        self.content = Some(ContentType::Plain(content));
         self
     }
 
     pub fn with_multi_content(mut self, content: MultiLanguageContent) -> Self {
-        self.content = Some(Content::MultiLanguage(content));
+        self.content = Some(ContentType::MultiLanguage(content));
         self
+    }
+
+    pub fn with_content(self, content: ContentType) -> Self {
+        match content {
+            ContentType::Plain(content) => self.with_plain_content(content),
+            ContentType::MultiLanguage(content) => self.with_multi_content(content),
+        }
     }
 
     pub fn with_ignore_user_timezones(mut self, ignore: bool) -> Self {

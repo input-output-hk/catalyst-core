@@ -13,7 +13,7 @@ use std::io::Read;
 use std::path::PathBuf;
 
 use crate::cli::notifications::requests::create_message::{
-    ContentSettingsBuilder, CreateMessageBuilder,
+    ContentSettingsBuilder, ContentType, CreateMessageBuilder,
 };
 use crate::cli::notifications::requests::{Request, RequestData};
 use jcli_lib::utils::io;
@@ -90,12 +90,14 @@ impl Args {
     }
 
     pub fn build_create_message(&self) -> Result<CreateMessage, Error> {
+        let content: ContentType = serde_json::from_str(&self.content_path.get_content()?)?;
         let mut content_builder = ContentSettingsBuilder::new()
             .with_timezone(self.timezone.clone())
             .with_campaign(self.campaign.clone())
             .with_filter(self.filter.clone())
             .with_ignore_user_timezones(self.ignore_user_timezones)
-            .with_plain_content(self.content_path.get_content()?);
+            .with_content(content);
+
         if let Some(datetime) = self.send_date {
             content_builder = content_builder.with_send_date(datetime);
         }

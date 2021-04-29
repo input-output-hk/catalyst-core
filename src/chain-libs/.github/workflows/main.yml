@@ -124,6 +124,18 @@ jobs:
           command: build
           args: --all-targets ${{ matrix.mode }} --locked
 
+      # Note that currently all benchmarks within this workspace require it. An additional step may
+      # be needed if some future benchmarks won't require that feature.
+      - name: Build benchmarks requiring with-bench feature
+        # building when alternative profiles are set is pointless: benchmarks are always build with
+        # their own profile.
+        if: ${{ matrix.mode == '' }}
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: bench
+          args: --features with-bench --no-run --locked
+
       - name: Run tests
         uses: actions-rs/cargo@v1
         continue-on-error: false

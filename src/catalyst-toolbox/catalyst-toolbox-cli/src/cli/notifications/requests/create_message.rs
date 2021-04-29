@@ -89,11 +89,6 @@ impl ContentSettingsBuilder {
         self
     }
 
-    pub fn with_send_now(mut self) -> Self {
-        self.send_date = "now".to_string();
-        self
-    }
-
     pub fn with_plain_content(mut self, content: String) -> Self {
         self.content = Some(ContentType::Plain(content));
         self

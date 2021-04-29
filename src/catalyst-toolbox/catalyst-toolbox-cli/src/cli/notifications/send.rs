@@ -1,9 +1,15 @@
 use crate::cli::notifications::{
     api_params::ApiParams,
-    requests::create_message::{CreateMessage, DATETIME_FMT},
+    requests::{
+        create_message::{
+            ContentSettingsBuilder, ContentType, CreateMessage, CreateMessageBuilder, DATETIME_FMT,
+        },
+        Request, RequestData,
+    },
     responses::create_message::CreateMessageResponse,
     Error,
 };
+use jcli_lib::utils::io;
 
 use chrono::{DateTime, FixedOffset};
 use reqwest::{blocking::Client, StatusCode, Url};
@@ -11,12 +17,6 @@ use structopt::StructOpt;
 
 use std::io::Read;
 use std::path::PathBuf;
-
-use crate::cli::notifications::requests::create_message::{
-    ContentSettingsBuilder, ContentType, CreateMessageBuilder,
-};
-use crate::cli::notifications::requests::{Request, RequestData};
-use jcli_lib::utils::io;
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]

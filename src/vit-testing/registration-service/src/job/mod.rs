@@ -148,7 +148,7 @@ impl VoteRegistrationJob {
             .arg("--payment-signing-key")
             .arg(&payment_skey_path)
             .arg("--payment-address")
-            .arg(&payment_skey_path)
+            .arg(&payment_address_path)
             .arg("--stake-signing-key")
             .arg(&payment_skey_path)
             .arg("--vote-public-key")
@@ -164,7 +164,7 @@ impl VoteRegistrationJob {
         command.status()?;
         println!("voter-registration finished");
 
-        let mut command = Command::new(&self.voter_registration);
+        let mut command = Command::new(&self.cardano_cli);
         command
             .arg("transaction")
             .arg("submit")
@@ -173,19 +173,19 @@ impl VoteRegistrationJob {
             .arg("--tx-file")
             .arg(&vote_registration_path);
 
-        println!("Running voter-registration: {:?}", command);
+        println!("Running cardano_cli: {:?}", command);
         command.status()?;
-        println!("voter-registration finished");
+        println!("cardano_cli finished");
 
         let qrcode = Path::new(&self.working_dir).join("qrcode.png");
 
         let mut command = Command::new(&self.vit_kedqr);
         command
-            .arg("-pin")
+            .arg("--pin")
             .arg("1234")
-            .arg("-input")
+            .arg("--input")
             .arg(private_key_path)
-            .arg("-output")
+            .arg("--output")
             .arg(qrcode);
         println!("Running vit-kedqr: {:?}", command);
         command.status()?;

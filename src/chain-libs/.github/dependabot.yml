@@ -1,0 +1,34 @@
+version: 2
+updates:
+- package-ecosystem: cargo
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  labels:
+  - update-deps
+  ignore:
+  - dependency-name: bytes
+    versions:
+    - ">= 0.5.a, < 0.6"
+  - dependency-name: futures
+    versions:
+    - ">= 0.3.a, < 0.4"
+  - dependency-name: hyper
+    versions:
+    - ">= 0.13.a, < 0.14"
+  - dependency-name: r2d2_sqlite
+    versions:
+    - "> 0.8, < 1"
+  - dependency-name: rand
+    versions:
+    - ">= 0.8.a, < 0.9"
+  - dependency-name: rand_chacha
+    versions:
+    - ">= 0.3.a, < 0.4"
+  - dependency-name: rand_core
+    versions:
+    - ">= 0.6.a, < 0.7"
+  - dependency-name: rusqlite
+    versions:
+    - "> 0.16.0, < 0.17"

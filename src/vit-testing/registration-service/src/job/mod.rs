@@ -114,7 +114,7 @@ impl VoteRegistrationJob {
         println!("saving stake.skey...");
         let stake_skey = CardanoKeyTemplate::stake_signing_key(request.stake_skey);
         let stake_skey_path = Path::new(&self.working_dir).join("stake.skey");
-        stake_skey.write_to_file(stake_skey_path)?;
+        stake_skey.write_to_file(&stake_skey_path)?;
         println!("stake.skey saved");
 
         println!("saving stake.vkey...");

@@ -225,6 +225,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "base-x"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4521f3e3d031370679b3b140beb36dfe4801b09ac77e30c61941f97df3ef28b"
+
+[[package]]
 name = "base64"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -286,6 +292,21 @@ dependencies = [
  "arrayref",
  "arrayvec",
  "constant_time_eq",
+]
+
+[[package]]
+name = "blake3"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9ff35b701f3914bdb8fad3368d822c766ef2858b2583198e41639b936f09d3f"
+dependencies = [
+ "arrayref",
+ "arrayvec",
+ "cc",
+ "cfg-if 0.1.10",
+ "constant_time_eq",
+ "crypto-mac",
+ "digest",
 ]
 
 [[package]]
@@ -590,6 +611,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "cid"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff0e3bc0b6446b3f9663c1a6aba6ef06c5aeaa1bc92bd18077be337198ab9768"
+dependencies = [
+ "multibase",
+ "multihash 0.13.2",
+ "unsigned-varint 0.5.1",
+]
+
+[[package]]
 name = "clap"
 version = "2.33.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -790,6 +822,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-mac"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b584a330336237c1eecd3e94266efb216c56ed91225d634cb2991c5f3fd1aeab"
+dependencies = [
+ "generic-array",
+ "subtle",
+]
+
+[[package]]
 name = "cryptoxide"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -878,6 +920,26 @@ name = "data-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ee2393c4a91429dffb4bedf19f4d6abf27d8a732c8ce4980305d782e5426d57"
+
+[[package]]
+name = "data-encoding-macro"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a94feec3d2ba66c0b6621bca8bc6f68415b1e5c69af3586fdd0af9fd9f29b17"
+dependencies = [
+ "data-encoding",
+ "data-encoding-macro-internal",
+]
+
+[[package]]
+name = "data-encoding-macro-internal"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0f83e699727abca3c56e187945f303389590305ab2f0185ea445aa66e8d5f2a"
+dependencies = [
+ "data-encoding",
+ "syn 1.0.69",
+]
 
 [[package]]
 name = "data-pile"
@@ -1906,10 +1968,10 @@ dependencies = [
  "chain-impl-mockchain",
  "chrono",
  "iapyx",
- "jormungandr-lib",
+ "jormungandr-lib 0.11.0-rc1",
  "jormungandr-scenario-tests",
  "jormungandr-testing-utils",
- "jortestkit",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=919e6e99ef064b9e810887bf72d961281ae2dd49)",
  "rand 0.8.3",
  "rand_chacha 0.2.2",
  "snapshot-trigger-service",
@@ -1980,7 +2042,7 @@ dependencies = [
  "indicatif",
  "jormungandr-lib",
  "jormungandr-testing-utils",
- "jortestkit",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "json",
  "lazy_static",
  "parity-multiaddr 0.11.2",
@@ -2003,6 +2065,34 @@ dependencies = [
  "tonic",
  "url",
  "yaml-rust",
+]
+
+[[package]]
+name = "jormungandr-lib"
+version = "0.11.0-rc1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=e4a2b0b0c93cdc219f1c321a4bb6d2903c852037#e4a2b0b0c93cdc219f1c321a4bb6d2903c852037"
+dependencies = [
+ "base64 0.13.0",
+ "bech32",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "hex",
+ "http",
+ "humantime",
+ "parity-multiaddr 0.9.7",
+ "poldercast 0.14.0",
+ "rand 0.8.3",
+ "rand_chacha 0.3.0",
+ "rand_core 0.6.2",
+ "serde",
+ "thiserror",
+ "typed-bytes",
 ]
 
 [[package]]
@@ -2034,8 +2124,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-scenario-tests"
-version = "0.11.1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=b38e067ea29267e6af65938c5603dbe05418e6f7#b38e067ea29267e6af65938c5603dbe05418e6f7"
+version = "0.11.0-rc1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=e4a2b0b0c93cdc219f1c321a4bb6d2903c852037#e4a2b0b0c93cdc219f1c321a4bb6d2903c852037"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2054,11 +2144,10 @@ dependencies = [
  "indicatif",
  "jormungandr-lib",
  "jormungandr-testing-utils",
- "jortestkit",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "json",
  "lazy_static",
- "parity-multiaddr 0.11.2",
- "poldercast 1.2.0",
+ "poldercast 0.14.0",
  "rand 0.8.3",
  "rand_chacha 0.3.0",
  "rand_core 0.6.2",
@@ -2073,6 +2162,70 @@ dependencies = [
  "thiserror",
  "tokio 1.5.0",
  "yaml-rust",
+]
+
+[[package]]
+name = "jormungandr-testing-utils"
+version = "0.11.0-rc1"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=e4a2b0b0c93cdc219f1c321a4bb6d2903c852037#e4a2b0b0c93cdc219f1c321a4bb6d2903c852037"
+dependencies = [
+ "assert_fs",
+ "base64 0.13.0",
+ "bech32",
+ "bytesize",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
+ "chrono",
+ "custom_debug",
+ "flate2",
+ "fs_extra",
+ "futures 0.3.14",
+ "graphql_client",
+ "hex",
+ "humantime",
+ "image",
+ "jormungandr-lib 0.11.0-rc1",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
+ "json",
+ "lazy_static",
+ "netstat2",
+ "os_info 3.0.2",
+ "poldercast 0.14.0",
+ "prost",
+ "qrcodegen",
+ "quircs",
+ "rand 0.8.3",
+ "rand_chacha 0.3.0",
+ "rand_core 0.6.2",
+ "regex 1.4.5",
+ "reqwest 0.11.3",
+ "semver 0.11.0",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "strum 0.20.0",
+ "symmetric-cipher",
+ "sysinfo 0.16.5",
+ "tar",
+ "thiserror",
+ "tokio 1.5.0",
+ "tokio-codec",
+ "tokio-stream",
+ "tonic",
+ "tonic-build",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "typed-bytes",
+ "url",
+ "zip",
 ]
 
 [[package]]
@@ -2103,7 +2256,7 @@ dependencies = [
  "humantime",
  "image",
  "jormungandr-lib",
- "jortestkit",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "json",
  "keynesis",
  "lazy_static",
@@ -2442,6 +2595,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "multibase"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b78c60039650ff12e140ae867ef5299a58e19dded4d334c849dc7177083667e2"
+dependencies = [
+ "base-x",
+ "data-encoding",
+ "data-encoding-macro",
+]
+
+[[package]]
 name = "multihash"
 version = "0.11.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2462,8 +2626,14 @@ version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4dac63698b887d2d929306ea48b63760431ff8a24fac40ddb22f9c7f49fb7cab"
 dependencies = [
+ "blake2b_simd",
+ "blake2s_simd",
+ "blake3",
+ "digest",
  "generic-array",
  "multihash-derive",
+ "sha2",
+ "sha3",
  "unsigned-varint 0.5.1",
 ]
 
@@ -2742,6 +2912,7 @@ dependencies = [
  "serde",
  "static_assertions",
  "unsigned-varint 0.5.1",
+ "url",
 ]
 
 [[package]]
@@ -2911,6 +3082,22 @@ dependencies = [
  "lru",
  "parity-multiaddr 0.9.7",
  "rand 0.7.3",
+ "rayon",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "poldercast"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23ddb4dee32841833fe054d2f731529030cf567362606de3b726795b4d5b7e8b"
+dependencies = [
+ "cid",
+ "hex",
+ "lru",
+ "parity-multiaddr 0.9.7",
+ "rand 0.8.3",
  "rayon",
  "serde",
  "thiserror",
@@ -4021,6 +4208,22 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
+version = "0.16.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567e910ef0207be81a4e1bb0491e9a8d9866cf45b20fe1a52c03d347da9ea51b"
+dependencies = [
+ "cfg-if 1.0.0",
+ "core-foundation-sys",
+ "doc-comment",
+ "libc",
+ "ntapi",
+ "once_cell",
+ "rayon",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "sysinfo"
 version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f5e4b56d92c7c56cc8a06df0cc06860a8ec6102e9a8a5ee85dff90afbeadf3d"
@@ -4822,10 +5025,10 @@ dependencies = [
  "iapyx",
  "image",
  "indicatif",
- "jormungandr-lib",
+ "jormungandr-lib 0.11.0-rc1",
  "jormungandr-scenario-tests",
  "jormungandr-testing-utils",
- "jortestkit",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
  "json",
  "lazy_static",
  "poldercast 0.14.0-dev",

@@ -1,5 +1,6 @@
 pub type ContextLock = Arc<Mutex<Context>>;
 use crate::config::Configuration;
+use crate::job::JobOutputInfo;
 use crate::request::Request;
 use crate::rest::ServerStopper;
 use chrono::{NaiveDateTime, Utc};
@@ -67,7 +68,7 @@ impl Context {
         }
     }
 
-    pub fn run_finished(&mut self) -> Result<(), Error> {
+    pub fn run_finished(&mut self, info: JobOutputInfo) -> Result<(), Error> {
         match &self.state {
             State::Running {
                 job_id,
@@ -79,6 +80,7 @@ impl Context {
                     start: *start,
                     end: Utc::now().naive_utc(),
                     request: request.clone(),
+                    info,
                 };
                 Ok(())
             }
@@ -149,6 +151,7 @@ pub enum State {
         start: NaiveDateTime,
         end: NaiveDateTime,
         request: Request,
+        info: JobOutputInfo,
     },
 }
 

@@ -50,8 +50,12 @@ impl RegistrationServiceCommand {
                     .build();
 
                 control_context.lock().unwrap().run_started().unwrap();
-                job.start(request).unwrap();
-                control_context.lock().unwrap().run_finished().unwrap();
+                let output_info = job.start(request).unwrap();
+                control_context
+                    .lock()
+                    .unwrap()
+                    .run_finished(output_info)
+                    .unwrap();
             }
             std::thread::sleep(std::time::Duration::from_secs(5));
         }

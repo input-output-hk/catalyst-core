@@ -1,5 +1,5 @@
 use crate::cli::notifications::{
-    api_params::ApiParams,
+    api_params::{ApiParams, DEFAULT_PUSHWOOSH_API_URL},
     requests::{
         create_message::{
             ContentSettingsBuilder, ContentType, CreateMessage, CreateMessageBuilder, DATETIME_FMT,
@@ -21,6 +21,7 @@ use std::path::PathBuf;
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Content {
+    /// Path to file with notification message, if not provided will be read from the stdin
     content_path: Option<PathBuf>,
 }
 
@@ -30,7 +31,6 @@ pub struct Args {
     #[structopt(flatten)]
     api_params: ApiParams,
 
-    /// Path to file with notification message, if not provided will be read from the stdin
     #[structopt(flatten)]
     content_path: Content,
 
@@ -50,7 +50,7 @@ pub struct Args {
     #[structopt(long)]
     campaign: Option<String>,
 
-    ///
+    /// Filter options as described by pushwhoosh API
     #[structopt(long)]
     filter: Option<String>,
 
@@ -62,7 +62,8 @@ pub struct Args {
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Json {
-    #[structopt(long, default_value = "https://cp.pushwoosh.com/json/1.3/")]
+    /// Pushwoosh API url
+    #[structopt(long, default_value = DEFAULT_PUSHWOOSH_API_URL)]
     pub api_url: Url,
 
     /// Path to file with the json representation of the notification,
@@ -74,7 +75,9 @@ pub struct Json {
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub enum SendNotification {
+    /// Push a notification with setup taken from arguments
     FromArgs(Args),
+    /// Push an already built notification from a json object
     FromJson(Json),
 }
 

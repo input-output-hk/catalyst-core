@@ -107,6 +107,27 @@ ARGS:
                       the stdin
 ```
 
+The content file can have two types of content, a plain string or a multilanguage one.
+
+###### Plain string
+Should be a message surrounded by `"`, json style. For example:
+
+```json
+"Hello pushwoosh app!"
+```
+
+###### Plain string
+A json style object with international language code as keys and message as value:
+
+```json
+{  
+    "en": "Hello!",
+    "es": "¡Hola!",
+    "de": "Hallo!"
+}
+```
+
+
 ##### from-json
 
 ```shell
@@ -125,6 +146,41 @@ ARGS:
                       the stdin
 ```
 
+##### Notification json format
+The notification json must include all mandatory fields or request would fail. A minimal example:
+```json
+{
+    "auth": "z2CjBa...OTbWox",
+    "application": "FFFFF-00000",
+    "notifications": [
+        {
+            "send_date": "now",
+            "content": {
+                "es": "Hola!",
+                "en": "Hi!"
+            },
+            "ignore_user_timezones": false
+        }
+    ]
+}
+```
+Required fields:
+
+* `auth`: Pushwoosh API token
+* `application`: Pushwoosh application code
+* `notifications`: Array of notification configuration objects. Should contain at least 1 item.
+
+notification fields:
+
+* Required:
+    * `send_date`: Either `"now"` or a datetime with format `"Y-m-d H:M"`.
+    * `content`: Either a plain mesasge (`"Hello app!"`) or a multilanguage object as explained above.
+    * `ignore_use_timezones`: A boolean indicating if timezones will be avoided.
+* Optionals:
+    * `timezone`: Timezone of the provided `send_date`. [Available timezones](https://www.php.net/manual/en/timezones.php).
+    * `campaign`: Campaign name for filtering push. Should exist in pushwoosh app configuration.
+    * `filter`: Filter name string. Should exist in pushwoosh app configuration. As described in [pushwoosh documentation](https://docs.pushwoosh.com/platform-docs/api-reference/messages/api-prerequisites#filter)
+    
 ## Python scripts
 
 Use an updated version of `python3` and either create a venv or just install the dependencies from the

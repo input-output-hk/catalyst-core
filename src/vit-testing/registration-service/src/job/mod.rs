@@ -158,7 +158,7 @@ impl VoteRegistrationJob {
             .arg(&payment_address);
 
         println!("Running cardano_cli: {:?}", command);
-        let funds = self.get_funds(command.output()?.as_multi_line())?;
+        let funds = get_funds(command.output()?.as_multi_line())?;
         println!("cardano_cli finished");
 
         let vote_registration_path = Path::new(&self.working_dir).join("vote-registration.tx");
@@ -181,7 +181,7 @@ impl VoteRegistrationJob {
             .arg(&vote_registration_path);
 
         println!("Running voter-registration: {:?}", command);
-        let slot_no = self.get_slot_no(command.output()?.as_multi_line())?;
+        let slot_no = get_slot_no(command.output()?.as_multi_line())?;
         println!("voter-registration finished");
 
         let mut command = Command::new(&self.cardano_cli);
@@ -212,39 +212,6 @@ impl VoteRegistrationJob {
         println!("vit-kedqr finished");
 
         Ok(JobOutputInfo { slot_no, funds })
-    }
-
-    /// Supported output: https://docs.cardano.org/projects/cardano-node/en/latest/reference/shelley-genesis.html?highlight=funds#submitting-the-signed-transaction
-    ///                             TxHash                                 TxIx        Lovelace
-    /// ----------------------------------------------------------------------------------------
-    /// d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000
-    pub fn get_funds(&self, output: Vec<String>) -> Result<u64, Error> {
-        output
-            .get(2)
-            .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
-            .split_whitespace()
-            .nth(2)
-            .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
-            .parse()
-            .map_err(|_| Error::CannotParseCardanoCliOutput(output.clone()))
-    }
-
-    /// Supported output:
-    /// Vote public key used        (hex): c6b6d184ea26781f00b9034ec0ba974f2f833788ce2e24cc37e9e8f41131e1fa
-    /// Stake public key used       (hex): e542b6a0ced80e1ab5bda70311bf643b9011ee04411737f3e0136825ef47f2d8
-    /// Rewards address used        (hex): 60170bc7c5218b7dcce40e5a232bcf01799cf55587131170f40ab6c541
-    /// Slot registered:                   25398498
-    /// Vote registration signature (hex): e5cc2e1a9344794cbad76bb65d485776aa560baca6133cdfe77827b15dd0e4c883c32e7177dc15d55e34f79df7ffaebca4d271271c6615b0dacc90e36fb22f03
-    pub fn get_slot_no(&self, output: Vec<String>) -> Result<u64, Error> {
-        output
-            .iter()
-            .find(|x| x.contains("Slot registered"))
-            .ok_or_else(|| Error::CannotParseVoterRegistrationOutput(output.clone()))?
-            .split_whitespace()
-            .nth(1)
-            .ok_or_else(|| Error::CannotParseVoterRegistrationOutput(output.clone()))?
-            .parse()
-            .map_err(|_| Error::CannotParseVoterRegistrationOutput(output.clone()))
     }
 }
 
@@ -313,4 +280,66 @@ pub enum Error {
     CannotParseVoterRegistrationOutput(Vec<String>),
     #[error("cannot parse cardano cli output: {0:?}")]
     CannotParseCardanoCliOutput(Vec<String>),
+}
+
+/// Supported output: https://docs.cardano.org/projects/cardano-node/en/latest/reference/shelley-genesis.html?highlight=funds#submitting-the-signed-transaction
+///                             TxHash                                 TxIx        Lovelace
+/// ----------------------------------------------------------------------------------------
+/// d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000
+pub fn get_funds(output: Vec<String>) -> Result<u64, Error> {
+    output
+        .get(2)
+        .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
+        .split_whitespace()
+        .nth(2)
+        .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
+        .parse()
+        .map_err(|_| Error::CannotParseCardanoCliOutput(output.clone()))
+}
+
+/// Supported output:
+/// Vote public key used        (hex): c6b6d184ea26781f00b9034ec0ba974f2f833788ce2e24cc37e9e8f41131e1fa
+/// Stake public key used       (hex): e542b6a0ced80e1ab5bda70311bf643b9011ee04411737f3e0136825ef47f2d8
+/// Rewards address used        (hex): 60170bc7c5218b7dcce40e5a232bcf01799cf55587131170f40ab6c541
+/// Slot registered:                   25398498
+/// Vote registration signature (hex): e5cc2e1a9344794cbad76bb65d485776aa560baca6133cdfe77827b15dd0e4c883c32e7177dc15d55e34f79df7ffaebca4d271271c6615b0dacc90e36fb22f03
+pub fn get_slot_no(output: Vec<String>) -> Result<u64, Error> {
+    output
+        .iter()
+        .find(|x| x.contains("Slot registered"))
+        .ok_or_else(|| Error::CannotParseVoterRegistrationOutput(output.clone()))?
+        .split_whitespace()
+        .nth(2)
+        .ok_or_else(|| Error::CannotParseVoterRegistrationOutput(output.clone()))?
+        .parse()
+        .map_err(|_| Error::CannotParseVoterRegistrationOutput(output.clone()))
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::{get_funds, get_slot_no};
+
+    #[test]
+    pub fn test_funds_extraction() {
+        let content = vec![
+            "    TxHash                                 TxIx        Lovelace".to_string(),
+            "----------------------------------------------------------------------------------------".to_string(),
+            "d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000".to_string()
+        ];
+        assert_eq!(get_funds(content).unwrap(), 500000000);
+    }
+
+    #[test]
+    pub fn test_slot_no_extraction() {
+        let content = vec![
+            "Vote public key used        (hex): c6b6d184ea26781f00b9034ec0ba974f2f833788ce2e24cc37e9e8f41131e1fa".to_string(),
+            "Stake public key used       (hex): e542b6a0ced80e1ab5bda70311bf643b9011ee04411737f3e0136825ef47f2d8".to_string(),
+            "Rewards address used        (hex): 60170bc7c5218b7dcce40e5a232bcf01799cf55587131170f40ab6c541".to_string(),
+            "Slot registered:                   25398498".to_string(),
+            "Vote registration signature (hex): e5cc2e1a9344794cbad76bb65d485776aa560baca6133cdfe77827b15dd0e4c883c32e7177dc15d55e34f79df7ffaebca4d271271c6615b0dacc90e36fb22f03".to_string()
+        ];
+
+        assert_eq!(get_slot_no(content).unwrap(), 25398498);
+    }
 }

@@ -9,7 +9,8 @@ executors:
 
 jobs:
   cargo_fetch:
-    executor: rust-stable
+    docker:
+      - image: cimg/rust:1.51.0
     steps:
       - checkout
       - run: git --version

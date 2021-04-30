@@ -5,9 +5,6 @@ use crate::WalletBackend;
 use crate::{Proposal, Wallet};
 use bech32::FromBase32;
 use bip39::Type;
-use chain_core::property::Deserialize;
-use chain_core::property::Fragment as _;
-use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::fragment::FragmentId;
 use jormungandr_testing_utils::testing::node::RestSettings;
 use std::iter;
@@ -77,7 +74,7 @@ impl MultiController {
         let wallets = secrets
             .into_iter()
             .map(|secret| {
-                Wallet::recover_from_utxo(secret.leak_secret().as_ref().try_into().unwrap())
+                Wallet::recover_from_account(secret.leak_secret().as_ref())
                     .unwrap()
             })
             .collect();
@@ -102,7 +99,7 @@ impl MultiController {
                 let (_, data) = read_bech32(x.as_ref()).unwrap();
                 let key_bytes = Vec::<u8>::from_base32(&data).unwrap();
                 let data: [u8; 64] = key_bytes.try_into().unwrap();
-                Wallet::recover_from_utxo(&data).unwrap()
+                Wallet::recover_from_account(&data).unwrap()
             })
             .collect();
 
@@ -111,40 +108,6 @@ impl MultiController {
             wallets,
             settings,
         })
-    }
-
-    pub fn retrieve_funds(&mut self) -> Result<(), MultiControllerError> {
-        let block_bytes = self.backend.block0()?;
-        for wallet in self.wallets.iter_mut() {
-            wallet.retrieve_funds(&block_bytes)?;
-        }
-        Ok(())
-    }
-
-    pub fn retrieve_conversion_transactions(
-        &mut self,
-        reuse_accounts: bool,
-    ) -> Result<Vec<Vec<u8>>, MultiControllerError> {
-        let mut output = Vec::new();
-        let block0 = self.backend().block0()?;
-        let total = self.wallets.len();
-        for (idx, wallet) in self.wallets.iter_mut().enumerate() {
-            println!("[{}/{}] checking if account exists", idx + 1, total);
-            if reuse_accounts && self.backend.account_exists(wallet.id())? {
-                continue;
-            }
-            println!("[{}/{}] retrieving funds", idx + 1, total);
-
-            wallet.retrieve_funds(&block0)?;
-
-            println!("[{}/{}] converting utxo->account", idx + 1, total);
-            for tx in wallet.convert(self.settings.clone()).transactions() {
-                output.push(tx.clone());
-            }
-
-            println!("[{}/{}] fund retrieved from block0", idx + 1, total);
-        }
-        Ok(output)
     }
 
     pub fn proposals(&self) -> Result<Vec<Proposal>, MultiControllerError> {
@@ -176,7 +139,7 @@ impl MultiController {
     ) -> Result<Vec<FragmentId>, MultiControllerError> {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let account_state = self.backend.account_state(wallet.id())?;
-      
+
         let mut counter = account_state.counter();
         let settings = self.settings.clone();
         let txs = votes_data
@@ -187,12 +150,11 @@ impl MultiController {
                     .vote(settings.clone(), &p.clone().into(), c)
                     .unwrap()
                     .to_vec();
-                counter = counter + 1; 
+                counter += 1;
                 tx
             })
             .rev()
             .collect();
-
 
         self.backend()
             .send_fragments_at_once(txs, use_v1)

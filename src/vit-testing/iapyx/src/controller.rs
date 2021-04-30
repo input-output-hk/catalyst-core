@@ -13,7 +13,7 @@ use std::convert::TryInto;
 use std::path::Path;
 use thiserror::Error;
 use wallet::{AccountId, Settings};
-use wallet_core::{Choice, Conversion, Value};
+use wallet_core::{Choice, Value};
 
 pub struct Controller {
     backend: WalletBackend,
@@ -126,23 +126,6 @@ impl Controller {
 
     pub fn id(&self) -> AccountId {
         self.wallet.id()
-    }
-
-    pub fn retrieve_funds(&mut self) -> Result<(), ControllerError> {
-        let block0_bytes = self.backend.block0()?;
-        self.wallet.retrieve_funds(&block0_bytes)?;
-        Ok(())
-    }
-
-    pub fn convert(&mut self) -> Conversion {
-        self.wallet.convert(self.settings.clone())
-    }
-
-    pub fn convert_and_send(&mut self) -> Result<(), ControllerError> {
-        for transaction in self.convert().transactions() {
-            self.backend.send_fragment(transaction.clone())?;
-        }
-        Ok(())
     }
 
     pub fn send_fragment(&self, transaction: &[u8]) -> Result<FragmentId, ControllerError> {
@@ -277,12 +260,6 @@ impl Controller {
         Ok(self
             .backend
             .vote_statuses(self.wallet.identifier(self.settings.discrimination))?)
-    }
-
-    pub fn is_converted(&mut self) -> Result<bool, ControllerError> {
-        self.backend
-            .account_exists(self.wallet.id())
-            .map_err(Into::into)
     }
 }
 

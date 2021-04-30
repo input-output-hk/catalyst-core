@@ -37,7 +37,7 @@ SUBCOMMANDS:
 Calculate rewards for voters base on their stake
 
 USAGE:
-    catalyst-toolbox-cli.exe rewards voters [OPTIONS] --total-rewards <total-rewards>
+    catalyst-toolbox-cli rewards voters [OPTIONS] --total-rewards <total-rewards>
 
 FLAGS:
     -h, --help
@@ -58,6 +58,71 @@ OPTIONS:
             If not available the command will expect to write the block to to the standard output
         --total-rewards <total-rewards>
             Reward (in LOVELACE) to be distributed
+```
+
+#### Send push notification through Pushwoosh API
+You can send a push notification directly from `catalyst-toolbox-cli` with:
+
+```shell
+USAGE:
+    catalyst-toolbox-cli push-notification send <SUBCOMMAND>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    from-args    Push a notification with setup taken from arguments
+    from-json    Push an already built notification from a json object
+    help         Prints this message or the help of the given subcommand(s)
+```
+
+There are two main subcommands for sending such notifications. The difference between them is the input type. 
+One (`from-args`) derives the notification required data from cli arguments meanwhile the other (`from-json`) takes 
+a preloaded json file as input.
+
+##### from-args
+
+```shell
+USAGE:
+    catalyst-toolbox-cli push-notification send from-args [FLAGS] [OPTIONS] --access-token <acces
+s-token> --application <application> [content-path]
+
+FLAGS:
+    -h, --help                     Prints help information
+        --ignore-user-timezones    Ignore user timezones when sending a message
+    -V, --version                  Prints version information
+
+OPTIONS:
+        --access-token <access-token>
+        --api-url <api-url>               [default: https://cp.pushwoosh.com/json/1.3/]
+        --application <application>      Pushwoosh application code where message will be send
+        --campaign <campaign>            Select an specific campaign to send the message to
+        --filter <filter>                Filter options as described by pushwhoosh API
+        --send-date <send-date>          Date and time to send notification of format  "Y-m-d H:M"
+        --timezone <timezone>            Timezone of send date, for example "America/New_York"
+
+ARGS:
+    <content-path>    Path to file with notification message, if not provided will be read from
+                      the stdin
+```
+
+##### from-json
+
+```shell
+USAGE:
+    catalyst-toolbox-cli.exe push-notification send from-json [OPTIONS] [content-path]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --api-url <api-url>    Pushwoosh API url [default: https://cp.pushwoosh.com/json/1.3/]
+
+ARGS:
+    <content-path>    Path to file with notification message, if not provided will be read from
+                      the stdin
 ```
 
 ## Python scripts

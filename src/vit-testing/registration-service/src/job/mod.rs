@@ -153,7 +153,6 @@ impl VoteRegistrationJob {
         command
             .arg("query")
             .arg("utxo")
-            .arg("--shelley-mode")
             .arg_network(self.network)
             .arg("--address")
             .arg(&payment_address);

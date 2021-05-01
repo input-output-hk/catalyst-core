@@ -73,10 +73,7 @@ impl MultiController {
         let secrets = pin_reader.read_qrs(qrs, false);
         let wallets = secrets
             .into_iter()
-            .map(|secret| {
-                Wallet::recover_from_account(secret.leak_secret().as_ref())
-                    .unwrap()
-            })
+            .map(|secret| Wallet::recover_from_account(secret.leak_secret().as_ref()).unwrap())
             .collect();
 
         Ok(Self {

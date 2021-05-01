@@ -59,7 +59,7 @@
             postInstall = ''
               wrapProgram $out/bin/registration-service --prefix PATH : ${
                 final.lib.makeBinPath [
-                  final.voting-tools
+                  voting-tools.packages.${final.system}.voter-registration
                   vit-kedqr.packages.${final.system}.vit-kedqr
                   jormungandr.packages.${final.system}.jcli
                   cardano-node.packages.${final.system}.cardano-cli

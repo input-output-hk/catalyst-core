@@ -1,6 +1,12 @@
+mod info;
+
 use crate::config::NetworkType;
 use crate::request::Request;
+use crate::utils::CommandExt as _;
+pub use info::JobOutputInfo;
 use jormungandr_integration_tests::common::jcli::JCli;
+use jortestkit::prelude::read_file;
+use jortestkit::prelude::ProcessOutput;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -9,7 +15,7 @@ use std::process::ExitStatus;
 use std::str::FromStr;
 use thiserror::Error;
 
-use crate::utils::CommandExt as _;
+const PIN: &str = "1234";
 
 pub struct VoteRegistrationJobBuilder {
     job: VoteRegistrationJob,
@@ -98,7 +104,7 @@ impl VoteRegistrationJob {
         command.status().map_err(Into::into)
     }
 
-    pub fn start(&self, request: Request) -> Result<(), Error> {
+    pub fn start(&self, request: Request) -> Result<JobOutputInfo, Error> {
         println!("saving payment.skey...");
         let payment_skey = CardanoKeyTemplate::payment_signing_key(request.payment_skey);
         let payment_skey_path = Path::new(&self.working_dir).join("payment.skey");
@@ -114,7 +120,7 @@ impl VoteRegistrationJob {
         println!("saving stake.skey...");
         let stake_skey = CardanoKeyTemplate::stake_signing_key(request.stake_skey);
         let stake_skey_path = Path::new(&self.working_dir).join("stake.skey");
-        stake_skey.write_to_file(stake_skey_path)?;
+        stake_skey.write_to_file(&stake_skey_path)?;
         println!("stake.skey saved");
 
         println!("saving stake.vkey...");
@@ -141,6 +147,20 @@ impl VoteRegistrationJob {
         self.generate_payment_address(&payment_vkey_path, &payment_address_path)?;
         println!("payment.addr saved");
 
+        let payment_address = read_file(&payment_address_path);
+
+        let mut command = Command::new(&self.cardano_cli);
+        command
+            .arg("query")
+            .arg("utxo")
+            .arg_network(self.network)
+            .arg("--address")
+            .arg(&payment_address);
+
+        println!("Running cardano_cli: {:?}", command);
+        let funds = get_funds(command.output()?.as_multi_line())?;
+        println!("cardano_cli finished");
+
         let vote_registration_path = Path::new(&self.working_dir).join("vote-registration.tx");
 
         let mut command = Command::new(&self.voter_registration);
@@ -148,9 +168,9 @@ impl VoteRegistrationJob {
             .arg("--payment-signing-key")
             .arg(&payment_skey_path)
             .arg("--payment-address")
-            .arg(&payment_skey_path)
+            .arg(&payment_address)
             .arg("--stake-signing-key")
-            .arg(&payment_skey_path)
+            .arg(&stake_skey_path)
             .arg("--vote-public-key")
             .arg(&public_key_path)
             .arg_network(self.network)
@@ -161,10 +181,10 @@ impl VoteRegistrationJob {
             .arg(&vote_registration_path);
 
         println!("Running voter-registration: {:?}", command);
-        command.status()?;
+        let slot_no = get_slot_no(command.output()?.as_multi_line())?;
         println!("voter-registration finished");
 
-        let mut command = Command::new(&self.voter_registration);
+        let mut command = Command::new(&self.cardano_cli);
         command
             .arg("transaction")
             .arg("submit")
@@ -173,24 +193,25 @@ impl VoteRegistrationJob {
             .arg("--tx-file")
             .arg(&vote_registration_path);
 
-        println!("Running voter-registration: {:?}", command);
+        println!("Running cardano_cli: {:?}", command);
         command.status()?;
-        println!("voter-registration finished");
+        println!("cardano_cli finished");
 
-        let qrcode = Path::new(&self.working_dir).join("qrcode.png");
+        let qrcode = Path::new(&self.working_dir).join(format!("qrcode_pin_{}.png", PIN));
 
         let mut command = Command::new(&self.vit_kedqr);
         command
-            .arg("-pin")
-            .arg("1234")
-            .arg("-input")
+            .arg("--pin")
+            .arg(PIN)
+            .arg("--input")
             .arg(private_key_path)
-            .arg("-output")
+            .arg("--output")
             .arg(qrcode);
         println!("Running vit-kedqr: {:?}", command);
         command.status()?;
         println!("vit-kedqr finished");
-        Ok(())
+
+        Ok(JobOutputInfo { slot_no, funds })
     }
 }
 
@@ -255,4 +276,70 @@ pub enum Error {
     SerializationError(#[from] serde_json::Error),
     #[error("context error")]
     Context(#[from] crate::context::Error),
+    #[error("cannot parse voter-registration output: {0:?}")]
+    CannotParseVoterRegistrationOutput(Vec<String>),
+    #[error("cannot parse cardano cli output: {0:?}")]
+    CannotParseCardanoCliOutput(Vec<String>),
+}
+
+/// Supported output: https://docs.cardano.org/projects/cardano-node/en/latest/reference/shelley-genesis.html?highlight=funds#submitting-the-signed-transaction
+///                             TxHash                                 TxIx        Lovelace
+/// ----------------------------------------------------------------------------------------
+/// d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000
+pub fn get_funds(output: Vec<String>) -> Result<u64, Error> {
+    output
+        .get(2)
+        .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
+        .split_whitespace()
+        .nth(2)
+        .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
+        .parse()
+        .map_err(|_| Error::CannotParseCardanoCliOutput(output.clone()))
+}
+
+/// Supported output:
+/// Vote public key used        (hex): c6b6d184ea26781f00b9034ec0ba974f2f833788ce2e24cc37e9e8f41131e1fa
+/// Stake public key used       (hex): e542b6a0ced80e1ab5bda70311bf643b9011ee04411737f3e0136825ef47f2d8
+/// Rewards address used        (hex): 60170bc7c5218b7dcce40e5a232bcf01799cf55587131170f40ab6c541
+/// Slot registered:                   25398498
+/// Vote registration signature (hex): e5cc2e1a9344794cbad76bb65d485776aa560baca6133cdfe77827b15dd0e4c883c32e7177dc15d55e34f79df7ffaebca4d271271c6615b0dacc90e36fb22f03
+pub fn get_slot_no(output: Vec<String>) -> Result<u64, Error> {
+    output
+        .iter()
+        .find(|x| x.contains("Slot registered"))
+        .ok_or_else(|| Error::CannotParseVoterRegistrationOutput(output.clone()))?
+        .split_whitespace()
+        .nth(2)
+        .ok_or_else(|| Error::CannotParseVoterRegistrationOutput(output.clone()))?
+        .parse()
+        .map_err(|_| Error::CannotParseVoterRegistrationOutput(output.clone()))
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::{get_funds, get_slot_no};
+
+    #[test]
+    pub fn test_funds_extraction() {
+        let content = vec![
+            "    TxHash                                 TxIx        Lovelace".to_string(),
+            "----------------------------------------------------------------------------------------".to_string(),
+            "d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000".to_string()
+        ];
+        assert_eq!(get_funds(content).unwrap(), 500000000);
+    }
+
+    #[test]
+    pub fn test_slot_no_extraction() {
+        let content = vec![
+            "Vote public key used        (hex): c6b6d184ea26781f00b9034ec0ba974f2f833788ce2e24cc37e9e8f41131e1fa".to_string(),
+            "Stake public key used       (hex): e542b6a0ced80e1ab5bda70311bf643b9011ee04411737f3e0136825ef47f2d8".to_string(),
+            "Rewards address used        (hex): 60170bc7c5218b7dcce40e5a232bcf01799cf55587131170f40ab6c541".to_string(),
+            "Slot registered:                   25398498".to_string(),
+            "Vote registration signature (hex): e5cc2e1a9344794cbad76bb65d485776aa560baca6133cdfe77827b15dd0e4c883c32e7177dc15d55e34f79df7ffaebca4d271271c6615b0dacc90e36fb22f03".to_string()
+        ];
+
+        assert_eq!(get_slot_no(content).unwrap(), 25398498);
+    }
 }

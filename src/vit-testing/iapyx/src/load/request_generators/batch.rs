@@ -11,10 +11,11 @@ pub struct BatchWalletRequestGen {
     multi_controller: MultiController,
     proposals: Vec<Proposal>,
     options: Vec<u8>,
+    use_v1: bool,
 }
 
 impl BatchWalletRequestGen {
-    pub fn new(multi_controller: MultiController, batch_size: usize) -> Self {
+    pub fn new(multi_controller: MultiController, batch_size: usize, use_v1: bool) -> Self {
         let proposals = multi_controller.proposals().unwrap();
         let options = proposals[0]
             .chain_vote_options
@@ -24,6 +25,7 @@ impl BatchWalletRequestGen {
             .collect();
         Self {
             batch_size,
+            use_v1,
             multi_controller,
             rand: OsRng,
             proposals,
@@ -53,10 +55,12 @@ impl BatchWalletRequestGen {
                 .map(|index| Choice::new(*options.get(index).clone().unwrap()))
                 .collect();
 
-        self.multi_controller.refresh_wallet(wallet_index)?;
-
         self.multi_controller
-            .votes_batch(wallet_index, proposals.iter().zip(choices).collect())
+            .votes_batch(
+                wallet_index,
+                self.use_v1,
+                proposals.iter().zip(choices).collect(),
+            )
             .map(|x| {
                 x.into_iter()
                     .map(|s| Some(s.to_string()))

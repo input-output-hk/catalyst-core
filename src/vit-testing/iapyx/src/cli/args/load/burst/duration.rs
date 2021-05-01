@@ -25,6 +25,10 @@ pub struct BurstDurationIapyxLoadCommand {
     #[structopt(short = "b", long = "batch-size", default_value = "100")]
     pub batch_size: usize,
 
+    // use v1 endpoint for bursts
+    #[structopt(long = "v1")]
+    pub use_v1: bool,
+
     // duration of scenario
     #[structopt(long = "duration")]
     pub duration: u64,
@@ -95,6 +99,7 @@ impl BurstDurationIapyxLoadCommand {
 
         IapyxLoadConfig {
             config,
+            use_v1: self.use_v1,
             batch_size: self.batch_size,
             criterion: self.criterion,
             address: self.address.clone(),

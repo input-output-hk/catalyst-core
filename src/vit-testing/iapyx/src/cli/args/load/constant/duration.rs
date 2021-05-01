@@ -92,6 +92,7 @@ impl ConstDurationIapyxLoadCommand {
 
         IapyxLoadConfig {
             config,
+            use_v1: false,
             batch_size: 1,
             criterion: self.criterion,
             address: self.address.clone(),

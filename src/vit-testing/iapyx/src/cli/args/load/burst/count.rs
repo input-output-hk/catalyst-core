@@ -64,6 +64,10 @@ pub struct BurstCountIapyxLoadCommand {
     #[structopt(short = "c", long = "criterion")]
     pub criterion: Option<u8>,
 
+    // use v1 endpoint for bursts
+    #[structopt(long = "v1")]
+    pub use_v1: bool,
+
     // show progress
     #[structopt(
         long = "progress-bar-mode",
@@ -95,6 +99,7 @@ impl BurstCountIapyxLoadCommand {
 
         IapyxLoadConfig {
             config,
+            use_v1: self.use_v1,
             batch_size: self.batch_size,
             criterion: self.criterion,
             address: self.address.clone(),

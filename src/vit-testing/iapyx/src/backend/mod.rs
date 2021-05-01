@@ -85,8 +85,10 @@ impl WalletBackend {
     pub fn send_fragments_at_once(
         &self,
         transactions: Vec<Vec<u8>>,
+        use_v1: bool,
     ) -> Result<Vec<FragmentId>, WalletBackendError> {
-        self.node_client.send_fragments(transactions.clone())?;
+        self.node_client
+            .send_fragments(transactions.clone(), use_v1)?;
         Ok(transactions
             .iter()
             .map(|tx| Fragment::deserialize(tx.as_slice()).unwrap().id())

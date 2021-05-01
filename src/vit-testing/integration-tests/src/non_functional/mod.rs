@@ -154,6 +154,7 @@ fn build_load_config(
 
     IapyxLoadConfig {
         batch_size: 1,
+        use_v1: false,
         config,
         criterion: Some(100),
         address: address.to_string(),

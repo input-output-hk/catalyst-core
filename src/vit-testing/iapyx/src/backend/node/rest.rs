@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
+use chain_core::property::Deserialize;
 use chain_crypto::{bech32::Bech32, Ed25519, PublicKey};
+use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::fragment::FragmentId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, NodeStatsDto, VotePlanStatus};
 pub use jormungandr_testing_utils::testing::node::RestError;
@@ -26,8 +28,18 @@ impl WalletNodeRestClient {
         self.rest_client.send_raw_fragment(body)
     }
 
-    pub fn send_fragments(&self, bodies: Vec<Vec<u8>>) -> Result<(), RestError> {
-        self.rest_client.send_raw_fragments(bodies)
+    pub fn send_fragments(&self, bodies: Vec<Vec<u8>>, use_v1: bool) -> Result<(), RestError> {
+        if use_v1 {
+            self.rest_client.send_fragment_batch(
+                bodies
+                    .iter()
+                    .map(|tx| Fragment::deserialize(tx.as_slice()).unwrap())
+                    .collect(),
+            )?;
+            Ok(())
+        } else {
+            self.rest_client.send_raw_fragments(bodies)
+        }
     }
 
     pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, RestError> {

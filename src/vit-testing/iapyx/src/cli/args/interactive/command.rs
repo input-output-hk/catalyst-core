@@ -3,7 +3,6 @@ use crate::cli::args::interactive::UserInteractionContoller;
 use crate::Controller;
 use bip39::Type;
 use chain_addr::{AddressReadable, Discrimination};
-use chain_impl_mockchain::fragment::FragmentId;
 use jormungandr_testing_utils::testing::node::RestSettings;
 use std::path::PathBuf;
 use structopt::{clap::AppSettings, StructOpt};
@@ -17,15 +16,10 @@ pub enum IapyxCommand {
     Recover(Recover),
     /// generate new wallet
     Generate(Generate),
-    /// recover wallet funds from mnemonic
+    /// connect to backend
     Connect(Connect),
-    /// Prints nodes related data, like stats,fragments etc.
-    RetrieveFunds,
-    /// Spawn leader or passive node (also legacy)
-    Convert(Convert),
     /// confirms transaction
     ConfirmTx,
-    /// Exit interactive mode
     Value,
     /// Prints wallets, nodes which can be used. Draw topology
     Status,
@@ -33,15 +27,12 @@ pub enum IapyxCommand {
     Refresh,
     /// get Address
     Address(Address),
-    /// send fragments
-    // Vote(Vote),
-    /// send fragments
     Logs,
+    /// Exit interactive mode
     Exit,
     Proposals,
     Vote(Vote),
     Votes,
-    IsConverted,
     PendingTransactions,
 }
 
@@ -60,15 +51,6 @@ impl IapyxCommand {
                         println!("{}. {}", (id + 1), fragment_ids);
                     }
                     println!("===================");
-                    return Ok(());
-                }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
-            }
-            IapyxCommand::IsConverted => {
-                if let Some(controller) = model.controller.as_mut() {
-                    println!("Is Converted: {}", controller.is_converted()?);
                     return Ok(());
                 }
                 Err(IapyxCommandError::GeneralError(
@@ -122,16 +104,6 @@ impl IapyxCommand {
             IapyxCommand::Exit => Ok(()),
             IapyxCommand::Generate(generate) => generate.exec(model),
             IapyxCommand::Connect(connect) => connect.exec(model),
-            IapyxCommand::RetrieveFunds => {
-                if let Some(controller) = model.controller.as_mut() {
-                    controller.retrieve_funds()?;
-                    return Ok(());
-                }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
-            }
-            IapyxCommand::Convert(convert) => convert.exec(model),
             IapyxCommand::Value => {
                 if let Some(controller) = model.controller.as_mut() {
                     println!("Total Value: {}", controller.total_value());
@@ -233,38 +205,6 @@ impl Vote {
                 .get(&self.choice)
                 .ok_or_else(|| IapyxCommandError::GeneralError("wrong choice".to_string()))?;
             controller.vote(proposal, Choice::new(*choice))?;
-            return Ok(());
-        }
-        Err(IapyxCommandError::GeneralError(
-            "wallet not recovered or generated".to_string(),
-        ))
-    }
-}
-
-#[derive(StructOpt, Debug)]
-pub struct Convert {
-    /// blocks execution until fragment is in block
-    #[structopt(short = "w", long = "wait")]
-    pub wait: bool,
-}
-
-impl Convert {
-    pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
-        if let Some(controller) = model.controller.as_mut() {
-            controller.convert_and_send()?;
-            if self.wait {
-                println!("waiting for all pending transactions to be in block...");
-                controller.wait_for_pending_transactions(std::time::Duration::from_secs(1))?;
-            } else {
-                println!(
-                    "Conversion transactions ids: [{:?}]",
-                    controller
-                        .pending_transactions()
-                        .iter()
-                        .cloned()
-                        .collect::<Vec<FragmentId>>()
-                );
-            }
             return Ok(());
         }
         Err(IapyxCommandError::GeneralError(

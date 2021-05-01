@@ -6,6 +6,7 @@ use std::path::PathBuf;
 #[derive(Clone, Debug)]
 pub struct IapyxLoadConfig {
     pub config: Configuration,
+    pub use_v1: bool,
     pub batch_size: usize,
     pub criterion: Option<u8>,
     pub address: String,

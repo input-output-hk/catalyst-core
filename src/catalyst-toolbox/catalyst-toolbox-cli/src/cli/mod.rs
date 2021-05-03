@@ -1,4 +1,5 @@
-pub mod rewards;
+mod notifications;
+mod rewards;
 
 use std::error::Error;
 use structopt::StructOpt;
@@ -25,6 +26,7 @@ pub struct Cli {
 pub enum CatalystCommand {
     /// Rewards related operations
     Rewards(rewards::Rewards),
+    PushNotification(notifications::PushNotifications),
 }
 
 impl Cli {
@@ -48,6 +50,7 @@ impl CatalystCommand {
         use self::CatalystCommand::*;
         match self {
             Rewards(rewards) => rewards.exec()?,
+            PushNotification(notifications) => notifications.exec()?,
         };
         Ok(())
     }

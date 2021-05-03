@@ -37,7 +37,7 @@ SUBCOMMANDS:
 Calculate rewards for voters base on their stake
 
 USAGE:
-    catalyst-toolbox-cli.exe rewards voters [OPTIONS] --total-rewards <total-rewards>
+    catalyst-toolbox-cli rewards voters [OPTIONS] --total-rewards <total-rewards>
 
 FLAGS:
     -h, --help
@@ -60,6 +60,127 @@ OPTIONS:
             Reward (in LOVELACE) to be distributed
 ```
 
+#### Send push notification through Pushwoosh API
+You can send a push notification directly from `catalyst-toolbox-cli` with:
+
+```shell
+USAGE:
+    catalyst-toolbox-cli push-notification send <SUBCOMMAND>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    from-args    Push a notification with setup taken from arguments
+    from-json    Push an already built notification from a json object
+    help         Prints this message or the help of the given subcommand(s)
+```
+
+There are two main subcommands for sending such notifications. The difference between them is the input type. 
+One (`from-args`) derives the notification required data from cli arguments meanwhile the other (`from-json`) takes 
+a preloaded json file as input.
+
+##### from-args
+
+```shell
+USAGE:
+    catalyst-toolbox-cli push-notification send from-args [FLAGS] [OPTIONS] --access-token <acces
+s-token> --application <application> [content-path]
+
+FLAGS:
+    -h, --help                     Prints help information
+        --ignore-user-timezones    Ignore user timezones when sending a message
+    -V, --version                  Prints version information
+
+OPTIONS:
+        --access-token <access-token>
+        --api-url <api-url>               [default: https://cp.pushwoosh.com/json/1.3/]
+        --application <application>      Pushwoosh application code where message will be send
+        --campaign <campaign>            Select an specific campaign to send the message to
+        --filter <filter>                Filter options as described by pushwhoosh API
+        --send-date <send-date>          Date and time to send notification of format  "Y-m-d H:M"
+        --timezone <timezone>            Timezone of send date, for example "America/New_York"
+
+ARGS:
+    <content-path>    Path to file with notification message, if not provided will be read from
+                      the stdin
+```
+
+The content file can have two types of content, a plain string or a multilanguage one.
+
+###### Plain string
+Should be a message surrounded by `"`, json style. For example:
+
+```json
+"Hello pushwoosh app!"
+```
+
+###### Plain string
+A json style object with international language code as keys and message as value:
+
+```json
+{  
+    "en": "Hello!",
+    "es": "¡Hola!",
+    "de": "Hallo!"
+}
+```
+
+
+##### from-json
+
+```shell
+USAGE:
+    catalyst-toolbox-cli push-notification send from-json [OPTIONS] [content-path]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --api-url <api-url>    Pushwoosh API url [default: https://cp.pushwoosh.com/json/1.3/]
+
+ARGS:
+    <content-path>    Path to file with notification message, if not provided will be read from
+                      the stdin
+```
+
+##### Notification json format
+The notification json must include all mandatory fields or request would fail. A minimal example:
+```json
+{
+    "auth": "z2CjBa...OTbWox",
+    "application": "FFFFF-00000",
+    "notifications": [
+        {
+            "send_date": "now",
+            "content": {
+                "es": "Hola!",
+                "en": "Hi!"
+            },
+            "ignore_user_timezones": false
+        }
+    ]
+}
+```
+Required fields:
+
+* `auth`: Pushwoosh API token
+* `application`: Pushwoosh application code
+* `notifications`: Array of notification configuration objects. Should contain at least 1 item.
+
+notification fields:
+
+* Required:
+    * `send_date`: Either `"now"` or a datetime with format `"Y-m-d H:M"`.
+    * `content`: Either a plain mesasge (`"Hello app!"`) or a multilanguage object as explained above.
+    * `ignore_use_timezones`: A boolean indicating if timezones will be avoided.
+* Optionals:
+    * `timezone`: Timezone of the provided `send_date`. [Available timezones](https://www.php.net/manual/en/timezones.php).
+    * `campaign`: Campaign name for filtering push. Should exist in pushwoosh app configuration.
+    * `filter`: Filter name string. Should exist in pushwoosh app configuration. As described in [pushwoosh documentation](https://docs.pushwoosh.com/platform-docs/api-reference/messages/api-prerequisites#filter)
+    
 ## Python scripts
 
 Use an updated version of `python3` and either create a venv or just install the dependencies from the

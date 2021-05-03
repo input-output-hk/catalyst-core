@@ -77,7 +77,12 @@ impl Proposal {
                 let choice = choice.as_byte() - self.options.choice_range().start;
 
                 let vote = Vote::new(length.into(), choice.into());
-                let (encrypted_vote, proof) = vote::encrypt_vote(&mut rng, key, vote);
+                let (encrypted_vote, proof) = vote::encrypt_vote(
+                    &mut rng,
+                    &chain_vote::CRS::from_hash(self.vote_plan_id.as_ref()),
+                    key,
+                    vote,
+                );
 
                 Payload::Private {
                     encrypted_vote,

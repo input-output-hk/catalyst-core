@@ -1,0 +1,243 @@
+on:
+  push:
+    tags:
+      - 'v[0-9].*' # Release tags matching v*, i.e. v1.0, v20.15.10
+
+name: Release
+
+jobs:
+
+  create_release:
+    name: Create release
+    if: >
+      github.repository_owner == 'input-output-hk'
+      || startsWith(github.ref, 'refs/heads/ci/test/')
+      || startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-ci-test.')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release_info.outputs.version }}
+      tag: ${{ steps.release_info.outputs.tag }}
+      date: ${{ steps.release_info.outputs.date }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - id: release_info
+        name: Get release information
+        run: python3 ci/release-info.py "$GITHUB_EVENT_NAME"
+
+      - id: create_release
+        name: Create a draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_tag='${{ steps.release_info.outputs.tag }}'
+          hub release create ${{ steps.release_info.outputs.release_flags }} --draft \
+            -m "Release ${{ steps.release_info.outputs.version }} (in progress)" \
+            -t $GITHUB_SHA $release_tag
+          upload_url=$(hub release show -f '%uA' $release_tag)
+          echo "::set-output name=upload_url::$upload_url"
+
+  cache_info:
+    name: Bootstrap cache
+    if: >
+      github.repository_owner == 'input-output-hk'
+      || startsWith(github.ref, 'refs/heads/ci/test/')
+      || startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-ci-test.')
+    runs-on: ubuntu-latest
+    outputs:
+      crates-io-index-head: ${{ steps.ls-crates-io-index.outputs.head }}
+      cargo-lock-hash: ${{ steps.hash-cargo-lock.outputs.hash }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - id: ls-crates-io-index
+        name: Get head commit hash of crates.io registry index
+        run: |
+          commit=$(
+            git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master |
+            cut -f 1
+          )
+          echo "$commit"
+          echo "::set-output name=head::$commit"
+
+      - id: hash-cargo-lock
+        name: Calculate dependency cache key
+        run: |
+          hash=$(
+            ci/strip-own-version-from-cargo-lock.pl Cargo.lock |
+            sha1sum | cut -d ' ' -f 1
+          )
+          echo "$hash"
+          echo "::set-output name=hash::$hash"
+
+  update_deps:
+    name: Update dependencies
+    needs: cache_info
+    # Caches on Windows and Unix do not interop:
+    # https://github.com/actions/cache/issues/330#issuecomment-637701649
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Cache cargo registry index
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry/index
+          key: cargo-index-${{ needs.cache_info.outputs.crates-io-index-head }}
+          restore-keys: cargo-index-
+
+      - id: cargo-deps
+        name: Cache cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry/cache
+          key: cargo-deps-${{ needs.cache_info.outputs.cargo-lock-hash }}
+
+      - name: Check out the repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Fetch dependencies and update cargo registry
+        run: cargo fetch --locked
+
+  build_assets:
+    name: Build assets
+    needs: [create_release, cache_info, update_deps]
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          # Linux
+          - {os: ubuntu-latest, target: x86_64-unknown-linux-gnu}
+          # Macos
+          - {os: macos-latest, target: x86_64-apple-darwin}
+        toolchain: [stable]
+        cross: [false]
+        include:
+          # Windows
+          - config: {os: windows-latest, target: x86_64-pc-windows-gnu}
+            toolchain: stable-x86_64-pc-windows-gnu
+            cross: false
+          - config: {os: windows-latest, target: x86_64-pc-windows-msvc}
+            toolchain: stable-x86_64-pc-windows-msvc
+            cross: false
+          # Cross targets
+          - config: {os: ubuntu-latest,  target: x86_64-unknown-linux-musl}
+            toolchain: stable
+            cross: true
+
+    steps:
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          target: ${{ matrix.config.target }}
+          override: true
+          default: true
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Restore cargo registry index
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry/index
+          key: cargo-index-${{ needs.cache_info.outputs.crates-io-index-head }}
+
+      - name: Restore cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry/cache
+          key: cargo-deps-${{ needs.cache_info.outputs.cargo-lock-hash }}
+
+      - name: Create .cargo/config.toml
+        shell: bash
+        run: |
+          mkdir .cargo
+          cat > .cargo/config.toml <<EOF
+          [target.${{ matrix.config.target }}]
+          rustflags = ["-Ctarget-cpu=generic", "-Clto", "-Cembed-bitcode=yes"]
+          EOF
+
+      - if: ${{ matrix.cross }}
+        name: Create Cross.toml
+        shell: bash
+        run: |
+          cat > Cross.toml <<EOF
+          [build.env]
+          passthrough = ["DATE"]
+          EOF
+
+      - name: Build the cli binary
+        uses: actions-rs/cargo@v1
+        env:
+          DATE: ${{ needs.create_release.outputs.date }}
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: >
+            --manifest-path catalyst-toolbox-cli/Cargo.toml
+            --bin catalyst-toolbox-cli
+            --verbose
+            --locked
+            --release
+            --target ${{ matrix.config.target }}
+
+      - name: Pack binaries (Unix)
+        if: matrix.config.os != 'windows-latest'
+        run: |
+          archive=catalyst-toolbox-cli-${{ needs.create_release.outputs.version }}-${{ matrix.config.target }}.tar.gz
+          tar -C ./target/${{ matrix.config.target }}/release -czvf $archive \
+            catalyst-toolbox-cli
+          cat <<EOF >> $GITHUB_ENV
+          RELEASE_ARCHIVE=$archive
+          RELEASE_CONTENT_TYPE=application/gzip
+          EOF
+
+      - name: Pack binaries (Windows)
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          $archive = "catalyst-toolbox-cli-${{ needs.create_release.outputs.version }}-${{ matrix.config.target }}.zip"
+          $args = @{
+            Path  = "./target/${{ matrix.config.target }}/release/catalyst-toolbox-cli.exe"
+            DestinationPath = $archive
+          }
+          Compress-Archive @args
+          @"
+          RELEASE_ARCHIVE=$archive
+          RELEASE_CONTENT_TYPE=application/zip
+          "@ | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Upload binaries to the release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./${{ env.RELEASE_ARCHIVE }}
+          asset_name: ${{ env.RELEASE_ARCHIVE }}
+          asset_content_type: ${{ env.RELEASE_CONTENT_TYPE }}
+
+  publish_release:
+    name: Publish release
+    needs: [create_release, build_assets]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hub release edit --draft=false \
+            -m 'Release ${{ needs.create_release.outputs.version }}' \
+            ${{ needs.create_release.outputs.tag }}

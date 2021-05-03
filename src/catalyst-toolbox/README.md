@@ -132,7 +132,7 @@ A json style object with international language code as keys and message as valu
 
 ```shell
 USAGE:
-    catalyst-toolbox-cli.exe push-notification send from-json [OPTIONS] [content-path]
+    catalyst-toolbox-cli push-notification send from-json [OPTIONS] [content-path]
 
 FLAGS:
     -h, --help       Prints help information

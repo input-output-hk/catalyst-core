@@ -1,13 +1,13 @@
 mod babystep;
-#[cfg(not(feature = "zerocaf"))]
+#[cfg(not(feature = "ristretto255"))]
 mod p256k1;
-#[cfg(feature = "zerocaf")]
-mod zerocaf;
+#[cfg(feature = "ristretto255")]
+mod ristretto255;
 
-#[cfg(not(feature = "zerocaf"))]
+#[cfg(not(feature = "ristretto255"))]
 pub use self::p256k1::*;
-#[cfg(feature = "zerocaf")]
-pub use self::zerocaf::*;
+#[cfg(feature = "ristretto255")]
+pub use self::ristretto255::*;
 pub use babystep::{baby_step_giant_step, BabyStepsTable};
 
 #[cfg(test)]
@@ -32,10 +32,10 @@ mod tests {
     }
 
     #[test]
-    //fn ran() {
-    //let fe1 = Scalar::from_random_bytes([1u8; 32]);
-    //assert_eq!(fe1, fe1);
-    //}
+    fn clone() {
+        let fe1 = Scalar::from_bytes(&[1u8; 32]);
+        assert_eq!(fe1, fe1.clone());
+    }
     #[test]
     fn associative() {
         let fe1 = Scalar::from_u64(124);

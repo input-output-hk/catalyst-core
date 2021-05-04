@@ -248,15 +248,12 @@ fn result_vector(
     let ris = (0..tally_state.r2s.len())
         .map(|i| gang::GroupElement::sum(decrypt_shares.iter().map(|ds| &ds.r1s[i])));
 
-    let mut results = tally_state
+    let results = tally_state
         .r2s
         .iter()
         .zip(ris)
         .map(|(r2, r1)| r2 - r1)
         .collect::<Vec<_>>();
-    for r in results.iter_mut() {
-        r.normalize()
-    }
 
     results
 }

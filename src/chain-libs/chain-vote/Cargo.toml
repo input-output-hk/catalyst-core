@@ -11,7 +11,7 @@ thiserror = "1.0"
 cryptoxide = "0.3"
 # TODO replace with the crates.io version once it has faster scalar multiplication
 eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch = "fast-u64-scalar-mul", features = ["fast-u64-scalar-mul"], optional = true }
-zerocaf = { version = "0.2", optional = true }
+curve25519-dalek-ng = { version = "4.0.1", optional = true}
 criterion = { version = "0.3", optional = true }
 
 [dev-dependencies]
@@ -21,7 +21,7 @@ smoke = "^0.2.1"
 [features]
 default = ["p256k1"]
 p256k1 = ["eccoxide"]
-ed = ["zerocaf"]
+ristretto255 = ["curve25519-dalek-ng"]
 with-bench = ["criterion"]
 
 [[bench]]
@@ -31,5 +31,5 @@ required-features = ["with-bench"]
 
 [[bench]]
 harness = false
-name = "gmul"
+name = "curve"
 required-features = ["with-bench"]

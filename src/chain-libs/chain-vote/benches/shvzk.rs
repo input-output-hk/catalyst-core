@@ -29,7 +29,7 @@ fn encrypt_and_prove(c: &mut Criterion) {
     let crs = CRS::from_hash(&[0u8; 32]);
     let (ek, _) = common(&mut rng);
 
-    for &number_candidates in [2usize, 4, 8, 16, 32, 64, 128, 256, 512, 1024].iter() {
+    for &number_candidates in [2usize, 4, 8].iter() {
         let parameter_string = format!("{} candidates", number_candidates);
         group.bench_with_input(
             BenchmarkId::new("Encrypt and Prove", parameter_string),
@@ -47,7 +47,7 @@ fn verify(c: &mut Criterion) {
     let crs = CRS::from_hash(&[0u8; 32]);
     let (ek, _) = common(&mut rng);
 
-    for &number_candidates in [2usize, 4, 8, 16, 32, 64, 128, 256, 512, 1024].iter() {
+    for &number_candidates in [2usize, 4, 8].iter() {
         let (vote, proof) = encrypt_vote(&mut rng, &crs, &ek, Vote::new(number_candidates, 0));
         let parameter_string = format!("{} candidates", number_candidates);
         group.bench_with_input(

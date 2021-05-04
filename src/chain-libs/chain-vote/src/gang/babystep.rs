@@ -10,7 +10,10 @@ const DEFAULT_BALANCE: u64 = 2;
 /// for solving discrete log on ECC
 #[derive(Debug, Clone)]
 pub struct BabyStepsTable {
+    #[cfg(not(feature = "ristretto255"))]
     table: HashMap<Option<[u8; Coordinate::BYTES_LEN]>, u64>,
+    #[cfg(feature = "ristretto255")]
+    table: HashMap<Option<[u8; GroupElement::BYTES_LEN]>, u64>,
     baby_step_size: u64,
     giant_step: GroupElement,
 }
@@ -35,9 +38,18 @@ impl BabyStepsTable {
         let mut bs = HashMap::new();
         let gen = GroupElement::generator();
         let mut e = GroupElement::zero();
-        // With ECC we can use the property that P and -P share a coordinate
+
+        // With sec2 curves we can use the property that P and -P share a coordinate
+        #[cfg(not(feature = "ristretto255"))]
         for i in 0..=baby_step_size / 2 {
             bs.insert(e.compress().map(|(c, _sign)| c.to_bytes()), i);
+            e = &e + &gen;
+        }
+        // Not with ristretto group. the ristretto group API does not allow to use the x coordinate
+        // for security properties (see [here](https://github.com/dalek-cryptography/curve25519-dalek/issues/235))
+        #[cfg(feature = "ristretto255")]
+        for i in 0..=baby_step_size {
+            bs.insert(Some(e.to_bytes()), i);
             e = &e + &gen;
         }
         assert!(!bs.is_empty());
@@ -64,21 +76,29 @@ pub fn baby_step_giant_step(
     let table = &table.table;
     points
         .into_par_iter()
-        .map(|mut p| {
+        .map(|mut point| {
             let mut a = 0;
             loop {
-                if let Some(x) = table.get(&p.compress().map(|(c, _sign)| c.to_bytes())) {
-                    let r = if Scalar::from_u64(*x) * GroupElement::generator() == p {
+                #[cfg(not(feature = "ristretto255"))]
+                if let Some(x) = table.get(&point.compress().map(|(c, _sign)| c.to_bytes())) {
+                    let r = if Scalar::from_u64(*x) * GroupElement::generator() == point {
                         a * baby_step_size + x
                     } else {
                         a * baby_step_size - x
                     };
                     return Ok(r);
                 }
+
+                #[cfg(feature = "ristretto255")]
+                if let Some(x) = table.get(&Some(point.to_bytes())) {
+                    let r = a * baby_step_size + x;
+                    return Ok(r);
+                }
+
                 if a * baby_step_size > max_log {
                     return Err(MaxLogExceeded);
                 }
-                p = p + giant_step;
+                point = point + giant_step;
                 a += 1;
             }
         })
@@ -107,10 +127,7 @@ mod tests {
         let points = votes
             .iter()
             .map(|k| {
-                #[cfg(not(feature = "zerocaf"))]
                 let ks = Scalar::from_u64(*k);
-                #[cfg(feature = "zerocaf")]
-                let ks = FieldElement::from_u64(*k);
                 &p * ks
             })
             .collect();

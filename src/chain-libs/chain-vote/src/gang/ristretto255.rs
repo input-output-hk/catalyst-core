@@ -1,22 +1,25 @@
+use curve25519_dalek_ng::{
+    constants::{RISTRETTO_BASEPOINT_POINT, RISTRETTO_BASEPOINT_TABLE},
+    ristretto::{CompressedRistretto, RistrettoPoint as Point},
+    scalar::Scalar as IScalar,
+    traits::Identity,
+};
+
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
-use eccoxide::curve::sec2::p256k1::{FieldElement, Point, PointAffine, Scalar as IScalar};
-use eccoxide::curve::{Sign as ISign, Sign::Negative, Sign::Positive};
+
 use rand_core::{CryptoRng, RngCore};
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use std::array::TryFromSliceError;
+use std::convert::TryInto;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Scalar(IScalar);
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct GroupElement(Point);
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Coordinate(FieldElement);
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Sign(ISign);
 
 #[allow(clippy::derive_hash_xor_eq)]
 impl Hash for GroupElement {
@@ -32,109 +35,39 @@ impl Hash for Scalar {
     }
 }
 
-impl Coordinate {
-    pub const BYTES_LEN: usize = FieldElement::SIZE_BYTES;
-
-    pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
-        self.0.to_bytes()
-    }
-
-    pub fn from_bytes(input: &[u8]) -> Option<Self> {
-        if input.len() < Self::BYTES_LEN {
-            None
-        } else {
-            Some(Coordinate(FieldElement::from_slice(
-                &input[..Self::BYTES_LEN],
-            )?))
-        }
-    }
-}
-
 impl GroupElement {
-    /// Size of the byte representation of `GroupElement`.
-    pub const BYTES_LEN: usize = 65;
-
-    /// Serialized GroupElement::zero
-    const BYTES_ZERO: [u8; Self::BYTES_LEN] = [0; Self::BYTES_LEN];
-
-    /// Point from hash
-    pub fn from_hash(buffer: &[u8]) -> Self {
-        let mut result = [0u8; 33];
-        let mut hash = Blake2b::new(33);
-        let mut i = 0u32;
-        loop {
-            hash.input(buffer);
-            hash.input(&i.to_be_bytes());
-            hash.result(&mut result);
-            hash.reset();
-            // arbitrary encoding of sign
-            let sign = if result[32] & 1 == 0 {
-                Sign(Positive)
-            } else {
-                Sign(Negative)
-            };
-            if let Some(point) = Self::from_x_bytes(&result[0..32], sign) {
-                break point;
-            }
-            i += 1;
-        }
-    }
-
-    fn from_x_bytes(bytes: &[u8], sign: Sign) -> Option<Self> {
-        let x_coord = Coordinate::from_bytes(bytes)?;
-        Self::decompress(&x_coord, sign)
-    }
-
-    pub fn decompress(coord: &Coordinate, sign: Sign) -> Option<Self> {
-        Some(GroupElement(Point::from_affine(&PointAffine::decompress(
-            &coord.0, sign.0,
-        )?)))
-    }
+    /// Size of the byte representation of `GroupElement`. We always encode the compressed value
+    pub const BYTES_LEN: usize = 32;
 
     pub fn generator() -> Self {
-        GroupElement(Point::generator())
+        GroupElement(RISTRETTO_BASEPOINT_POINT)
     }
 
     pub fn zero() -> Self {
-        GroupElement(Point::infinity())
+        GroupElement(Point::identity())
     }
 
-    pub fn normalize(&mut self) {
-        self.0.normalize()
-    }
-
-    pub(super) fn compress(&self) -> Option<(Coordinate, Sign)> {
-        self.0.to_affine().map(|p| {
-            let (x, sign) = p.compress();
-            (Coordinate(x.clone()), Sign(sign))
-        })
+    pub(super) fn compress(&self) -> CompressedRistretto {
+        self.0.compress()
     }
 
     pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
-        match self.0.to_affine() {
-            None => Self::BYTES_ZERO,
-            Some(pa) => {
-                let mut bytes = [0u8; Self::BYTES_LEN];
-                let (x, y) = pa.to_coordinate();
-                bytes[0] = 0x4;
-                x.to_slice(&mut bytes[1..33]);
-                y.to_slice(&mut bytes[33..65]);
-                bytes
-            }
-        }
+        self.compress().to_bytes()
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        if bytes[0] == 0x4 {
-            let x = FieldElement::from_slice(&bytes[1..33])?;
-            let y = FieldElement::from_slice(&bytes[33..65])?;
-            let p = PointAffine::from_coordinate(&x, &y)?;
-            Some(GroupElement(Point::from_affine(&p)))
-        } else if bytes == Self::BYTES_ZERO {
-            Some(Self::zero())
-        } else {
-            None
-        }
+        Some(GroupElement(
+            CompressedRistretto::from_slice(bytes).decompress()?,
+        ))
+    }
+
+    /// Point from hash
+    pub fn from_hash(buffer: &[u8]) -> Self {
+        let mut result = [0u8; 64];
+        let mut hash = Blake2b::new(64);
+        hash.input(buffer);
+        hash.result(&mut result);
+        GroupElement(Point::from_uniform_bytes(&result))
     }
 
     pub fn sum<'a, I>(i: I) -> Self
@@ -163,12 +96,12 @@ impl Scalar {
     }
 
     pub fn negate(&self) -> Self {
-        Scalar(-&self.0)
+        Scalar(-self.0)
     }
 
     /// multiplicative inverse
     pub fn inverse(&self) -> Scalar {
-        Scalar(self.0.inverse())
+        Scalar(self.0.invert())
     }
 
     /// Increment a
@@ -181,26 +114,36 @@ impl Scalar {
     }
 
     pub fn from_bytes(slice: &[u8]) -> Option<Self> {
-        IScalar::from_slice(slice).map(Scalar)
-    }
-
-    pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
-        let mut r = [0u8; 32];
-        loop {
-            rng.fill_bytes(&mut r[..]);
-
-            if let Some(s) = IScalar::from_bytes(&r) {
-                break (Scalar(s));
-            }
+        let scalar: Result<[u8; 32], TryFromSliceError> = slice.try_into();
+        match scalar {
+            Ok(e) => Some(Scalar(IScalar::from_bytes_mod_order(e))),
+            _ => None,
         }
     }
 
-    pub fn from_u64(v: u64) -> Self {
-        Scalar(IScalar::from_u64(v))
+    pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
+        Scalar(IScalar::random(rng))
     }
 
+    pub fn from_u64(v: u64) -> Self {
+        Scalar(IScalar::from(v))
+    }
+    /// Raises `x` to the power `n` using binary exponentiation,
+    /// with (1 to 2)*lg(n) scalar multiplications.
+    /// Not constant time
     pub fn power(&self, n: usize) -> Self {
-        Self(self.0.power_u64(n as u64))
+        let mut result = IScalar::one();
+        let mut power = n;
+        let mut aux = self.0; // x, x^2, x^4, x^8, ...
+        while power > 0 {
+            let bit = power & 1;
+            if bit == 1 {
+                result *= aux;
+            }
+            power >>= 1;
+            aux = aux * aux;
+        }
+        Scalar(result)
     }
 
     pub fn sum<I>(mut i: I) -> Option<Self>
@@ -209,7 +152,7 @@ impl Scalar {
     {
         let mut sum = i.next()?;
         for v in i {
-            sum = &sum + &v;
+            sum = sum + v;
         }
         Some(sum)
     }
@@ -269,7 +212,7 @@ impl<'a, 'b> Add<&'b Scalar> for &'a Scalar {
     type Output = Scalar;
 
     fn add(self, other: &'b Scalar) -> Scalar {
-        Scalar(&self.0 + &other.0)
+        Scalar(self.0 + other.0)
     }
 }
 
@@ -285,7 +228,7 @@ impl<'a, 'b> Sub<&'b Scalar> for &'a Scalar {
     type Output = Scalar;
 
     fn sub(self, other: &'b Scalar) -> Scalar {
-        Scalar(&self.0 - &other.0)
+        Scalar(self.0 - other.0)
     }
 }
 
@@ -301,7 +244,7 @@ impl<'a, 'b> Mul<&'b Scalar> for &'a Scalar {
     type Output = Scalar;
 
     fn mul(self, other: &'b Scalar) -> Scalar {
-        Scalar(&self.0 * &other.0)
+        Scalar(self.0 * other.0)
     }
 }
 
@@ -317,7 +260,7 @@ impl<'a, 'b> Mul<&'b GroupElement> for &'a Scalar {
     type Output = GroupElement;
 
     fn mul(self, other: &'b GroupElement) -> GroupElement {
-        GroupElement(&other.0 * &self.0)
+        other * self
     }
 }
 
@@ -325,7 +268,11 @@ impl<'a, 'b> Mul<&'b Scalar> for &'a GroupElement {
     type Output = GroupElement;
 
     fn mul(self, other: &'b Scalar) -> GroupElement {
-        GroupElement(&other.0 * &self.0)
+        if self.0 == RISTRETTO_BASEPOINT_POINT {
+            GroupElement(&RISTRETTO_BASEPOINT_TABLE * &other.0)
+        } else {
+            GroupElement(other.0 * self.0)
+        }
     }
 }
 
@@ -345,15 +292,25 @@ impl<'a> Mul<&'a GroupElement> for u64 {
     type Output = GroupElement;
 
     fn mul(self, other: &'a GroupElement) -> GroupElement {
-        GroupElement(&other.0 * self)
+        other * self
     }
 }
 
 impl<'a> Mul<u64> for &'a GroupElement {
     type Output = GroupElement;
 
-    fn mul(self, other: u64) -> GroupElement {
-        GroupElement(other * &self.0)
+    fn mul(self, mut other: u64) -> GroupElement {
+        let mut a = self.0;
+        let mut q = Point::identity();
+
+        while other != 0 {
+            if other & 1 != 0 {
+                q += a;
+            }
+            a += a;
+            other >>= 1;
+        }
+        GroupElement(q)
     }
 }
 
@@ -365,7 +322,7 @@ impl<'a, 'b> Add<&'b GroupElement> for &'a GroupElement {
     type Output = GroupElement;
 
     fn add(self, other: &'b GroupElement) -> GroupElement {
-        GroupElement(&self.0 + &other.0)
+        GroupElement(self.0 + other.0)
     }
 }
 
@@ -381,7 +338,7 @@ impl<'a, 'b> Sub<&'b GroupElement> for &'a GroupElement {
     type Output = GroupElement;
 
     fn sub(self, other: &'b GroupElement) -> GroupElement {
-        GroupElement(&self.0 + (-&other.0))
+        GroupElement(self.0 + (-other.0))
     }
 }
 
@@ -395,15 +352,14 @@ mod test {
 
     #[test]
     fn from_hash() {
-        let element = GroupElement::from_hash(&[1u8]);
+        let element = GroupElement::from_hash(&mut [1u8]);
 
         let element2 = GroupElement::from_bytes(&[
-            4, 13, 166, 126, 45, 249, 4, 248, 227, 194, 159, 100, 48, 62, 165, 72, 101, 155, 168,
-            137, 90, 110, 97, 89, 167, 229, 100, 160, 195, 191, 156, 174, 214, 65, 120, 172, 28,
-            98, 217, 114, 141, 108, 225, 197, 90, 251, 208, 66, 121, 120, 247, 73, 98, 111, 219,
-            172, 181, 134, 49, 239, 108, 91, 149, 243, 218,
+            32, 60, 29, 4, 97, 184, 42, 236, 79, 92, 154, 113, 205, 92, 7, 4, 122, 17, 166, 95,
+            127, 151, 46, 225, 202, 83, 42, 58, 50, 163, 1, 82,
         ])
-        .expect("This point is on the curve");
+        .expect("Point is on curve");
+
         assert_eq!(element, element2)
     }
 }

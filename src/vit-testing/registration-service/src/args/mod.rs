@@ -1,8 +1,8 @@
 use crate::job::VoteRegistrationJobBuilder;
 use crate::{
     config::{read_config, Configuration},
+    context::Context,
     service::ManagerService,
-    Context,
 };
 use futures::future::FutureExt;
 use std::sync::Mutex;

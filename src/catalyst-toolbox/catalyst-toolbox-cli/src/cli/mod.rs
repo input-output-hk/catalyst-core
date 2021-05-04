@@ -1,4 +1,5 @@
 mod notifications;
+mod recovery;
 mod rewards;
 
 use std::error::Error;

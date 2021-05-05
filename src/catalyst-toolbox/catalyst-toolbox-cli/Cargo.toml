@@ -10,11 +10,12 @@ edition = "2018"
 bincode = "1.3"
 csv = "1.1"
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chrono = "0.4"
 itertools = "0.10"
-jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "persistent-fragments-log" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "persistent-fragments-log" }
+jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 fixed = "1.7"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 serde = "1.0"

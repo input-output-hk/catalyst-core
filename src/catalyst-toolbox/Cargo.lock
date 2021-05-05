@@ -137,6 +137,7 @@ dependencies = [
  "bincode",
  "chain-addr",
  "chain-impl-mockchain",
+ "chain-ser",
  "chrono",
  "csv",
  "fixed",
@@ -882,7 +883,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jcli"
 version = "0.11.1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=persistent-fragments-log#3fc3273ec66042cb26e9db14c47baf1ecab3eeb9"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a751cdd5f19e99656c82752f34f391a5f402f7ee"
 dependencies = [
  "base64",
  "bech32",
@@ -917,7 +918,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.11.1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=persistent-fragments-log#3fc3273ec66042cb26e9db14c47baf1ecab3eeb9"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=master#a751cdd5f19e99656c82752f34f391a5f402f7ee"
 dependencies = [
  "base64",
  "bech32",

@@ -5,9 +5,10 @@ use structopt::StructOpt;
 
 use chain_addr::{Discrimination, Kind};
 use chain_impl_mockchain::vote::CommitteeId;
+use fixed::types::U64F64;
 use jormungandr_lib::interfaces::{Address, Block0Configuration, Initial};
 use std::collections::{HashMap, HashSet};
-use std::ops::{Div, Mul};
+use std::ops::Div;
 
 const ADA_TO_LOVELACE_FACTOR: u64 = 1_000_000;
 
@@ -16,7 +17,7 @@ const ADA_TO_LOVELACE_FACTOR: u64 = 1_000_000;
 pub struct VotersRewards {
     #[structopt(flatten)]
     common: Common,
-    /// Reward (in ADA) to be distributed
+    /// Reward (in LOVELACE) to be distributed
     #[structopt(long = "total-rewards")]
     total_rewards: u64,
 }
@@ -51,22 +52,22 @@ fn calculate_stake<'address>(
 fn calculate_inverse_reward_share<'address>(
     total_stake: u64,
     stake_per_voter: &HashMap<&'address Address, u64>,
-) -> HashMap<&'address Address, u64> {
+) -> HashMap<&'address Address, U64F64> {
     stake_per_voter
         .iter()
-        .map(|(k, v)| (*k, total_stake.div(v)))
+        .map(|(k, v)| (*k, fixed::types::U64F64::from_num(*v) / total_stake as u128))
         .collect()
 }
 
 /// get the proportional reward from a share total reward from the inverse of the the reward share
-fn reward_from_share(share: u64, total_reward: u64) -> fixed::types::U64F64 {
-    fixed::types::U64F64::from_num(total_reward) / share as u128
+fn reward_from_share(share: U64F64, total_reward: u64) -> fixed::types::U64F64 {
+    fixed::types::U64F64::from_num(total_reward) * share
 }
 
 fn write_rewards_results(
     common: Common,
     stake_per_voter: &HashMap<&Address, u64>,
-    share_results: &HashMap<&Address, u64>,
+    share_results: &HashMap<&Address, U64F64>,
     total_rewards: u64,
 ) -> Result<(), Error> {
     let writer = common.open_output()?;
@@ -85,11 +86,10 @@ fn write_rewards_results(
         let record = [
             address.to_string(),
             stake.to_string(),
-            voter_reward.to_string(),
             voter_reward
-                .mul(&(ADA_TO_LOVELACE_FACTOR as u128))
-                .int()
+                .div(&(ADA_TO_LOVELACE_FACTOR as u128))
                 .to_string(),
+            voter_reward.int().to_string(),
         ];
         csv_writer.write_record(&record).map_err(Error::Csv)?;
     }

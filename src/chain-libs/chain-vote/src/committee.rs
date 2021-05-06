@@ -39,14 +39,14 @@ pub struct MemberState {
     encrypted: Vec<(HybridCiphertext, HybridCiphertext)>,
 }
 
-pub type CRS = GroupElement;
+pub type Crs = GroupElement;
 
 impl MemberState {
     /// Generate a new member state from random, where the number
     pub fn new<R: RngCore + CryptoRng>(
         rng: &mut R,
         t: usize,
-        h: &CRS, // TODO: document
+        h: &Crs, // TODO: document
         committee_pks: &[MemberCommunicationPublicKey],
         my: usize,
     ) -> MemberState {

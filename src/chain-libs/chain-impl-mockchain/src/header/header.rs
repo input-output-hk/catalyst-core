@@ -32,7 +32,7 @@ pub struct HeaderBft(pub(super) cstruct::Header);
 pub enum Header {
     Unsigned(HeaderUnsigned),
     GenesisPraos(HeaderGenesisPraos),
-    BFT(HeaderBft),
+    Bft(HeaderBft),
 }
 
 impl HeaderUnsigned {
@@ -51,7 +51,7 @@ impl HeaderBft {
     }
 
     pub fn generalize(self) -> Header {
-        Header::BFT(self)
+        Header::Bft(self)
     }
 }
 
@@ -100,7 +100,7 @@ impl Header {
         match self {
             Header::Unsigned(h) => h.id(),
             Header::GenesisPraos(h) => h.id(),
-            Header::BFT(h) => h.id(),
+            Header::Bft(h) => h.id(),
         }
     }
 
@@ -126,7 +126,7 @@ impl Header {
         match self {
             Header::Unsigned(h) => h.0.as_slice(),
             Header::GenesisPraos(h) => h.0.as_slice(),
-            Header::BFT(h) => h.0.as_slice(),
+            Header::Bft(h) => h.0.as_slice(),
         }
     }
 
@@ -137,7 +137,7 @@ impl Header {
     pub fn as_auth_slice(&self) -> &[u8] {
         match self {
             Header::Unsigned(_) => self.get_cstruct().as_slice(),
-            Header::BFT(_) => self.get_cstruct().slice_bft_auth(),
+            Header::Bft(_) => self.get_cstruct().slice_bft_auth(),
             Header::GenesisPraos(_) => self.get_cstruct().slice_gp_auth(),
         }
     }
@@ -147,7 +147,7 @@ impl Header {
         match self {
             Header::Unsigned(_) => BlockVersion::Genesis,
             Header::GenesisPraos(_) => BlockVersion::KesVrfproof,
-            Header::BFT(_) => BlockVersion::Ed25519Signed,
+            Header::Bft(_) => BlockVersion::Ed25519Signed,
         }
     }
 
@@ -184,7 +184,7 @@ impl Header {
         let hdr = hdr_slice.to_owned();
         match BlockVersion::from_u16(hdr.version()).expect("header slice only know version") {
             BlockVersion::Genesis => Ok(Header::Unsigned(HeaderUnsigned(hdr))),
-            BlockVersion::Ed25519Signed => Ok(Header::BFT(HeaderBft(hdr))),
+            BlockVersion::Ed25519Signed => Ok(Header::Bft(HeaderBft(hdr))),
             BlockVersion::KesVrfproof => Ok(Header::GenesisPraos(HeaderGenesisPraos(hdr))),
         }
     }
@@ -278,7 +278,7 @@ impl Debug for Header {
             .field("parent_hash", &hs.parent_hash_ref());
         let r = match self {
             Header::Unsigned(_) => r,
-            Header::BFT(_) => r
+            Header::Bft(_) => r
                 .field("bft-leader-id", &hs.bft_leader_id())
                 .field("bft-sig", &hs.bft_signature_ref()),
             Header::GenesisPraos(_) => r

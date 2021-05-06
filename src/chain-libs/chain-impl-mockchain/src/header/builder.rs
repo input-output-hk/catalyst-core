@@ -4,7 +4,7 @@ use super::header::{HeaderBft, HeaderGenesisPraos, HeaderUnsigned};
 use super::version::BlockVersion;
 
 use crate::{
-    block::{BftSignature, KESSignature},
+    block::{BftSignature, KesSignature},
     certificate::PoolId,
     chaintypes::{ChainLength, HeaderId},
     date::BlockDate,
@@ -198,7 +198,7 @@ impl HeaderGenesisPraosBuilder<HeaderSetConsensusSignature> {
     }
 
     /// Set the signature in the Genesis-Praos header and return a finalized Genesis-Praos Header
-    pub fn set_signature(self, kes_signature: KESSignature) -> HeaderGenesisPraos {
+    pub fn set_signature(self, kes_signature: KesSignature) -> HeaderGenesisPraos {
         let mut hdr = self.0;
         hdr.set_gp_kes_signature_slice(kes_signature.0.as_ref());
         HeaderGenesisPraos(hdr)
@@ -208,7 +208,7 @@ impl HeaderGenesisPraosBuilder<HeaderSetConsensusSignature> {
     pub fn sign_using(self, kes_signing_key: &SecretKey<SumEd25519_12>) -> HeaderGenesisPraos {
         let data = self.get_authenticated_data();
         let signature = kes_signing_key.sign_slice(data);
-        self.set_signature(KESSignature(signature))
+        self.set_signature(KesSignature(signature))
     }
 }
 

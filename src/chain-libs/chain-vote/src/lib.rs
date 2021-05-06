@@ -54,12 +54,12 @@ pub type EncryptedVote = Vec<Ciphertext>;
 pub type ProofOfCorrectVote = shvzk::Proof;
 
 /// Common Reference String
-pub type CRS = committee::CRS;
+pub type Crs = committee::Crs;
 
 /// Take a vote and encrypt it + provide a proof of correct voting
 pub fn encrypt_vote<R: RngCore + CryptoRng>(
     rng: &mut R,
-    crs: &CRS,
+    crs: &Crs,
     public_key: &EncryptingVoteKey,
     vote: Vote,
 ) -> (EncryptedVote, ProofOfCorrectVote) {
@@ -71,7 +71,7 @@ pub fn encrypt_vote<R: RngCore + CryptoRng>(
 /// Verify that the encrypted vote is valid without opening it
 #[allow(clippy::ptr_arg)]
 pub fn verify_vote(
-    crs: &CRS,
+    crs: &Crs,
     public_key: &EncryptingVoteKey,
     vote: &EncryptedVote,
     proof: &ProofOfCorrectVote,
@@ -300,7 +300,7 @@ mod tests {
 
         let mut shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = CRS::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&mut shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc = [mc1.to_public()];
@@ -351,7 +351,7 @@ mod tests {
 
         let mut shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = CRS::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&mut shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc2 = MemberCommunicationKey::new(&mut rng);
@@ -409,7 +409,7 @@ mod tests {
 
         let mut shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = CRS::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&mut shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc = [mc1.to_public()];
@@ -456,7 +456,7 @@ mod tests {
 
         let mut shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = CRS::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&mut shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc = [mc1.to_public()];
@@ -495,7 +495,7 @@ mod tests {
 
         let mut shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = CRS::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&mut shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc2 = MemberCommunicationKey::new(&mut rng);

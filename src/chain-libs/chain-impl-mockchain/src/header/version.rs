@@ -35,9 +35,9 @@ impl From<u16> for AnyBlockVersion {
     }
 }
 
-impl Into<u16> for AnyBlockVersion {
-    fn into(self) -> u16 {
-        match self {
+impl From<AnyBlockVersion> for u16 {
+    fn from(block_version: AnyBlockVersion) -> u16 {
+        match block_version {
             AnyBlockVersion::Supported(version) => version as u16,
             AnyBlockVersion::Unsupported(n) => n,
         }

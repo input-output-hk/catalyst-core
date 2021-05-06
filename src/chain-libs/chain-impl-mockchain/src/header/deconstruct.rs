@@ -1,4 +1,4 @@
-use super::components::{BftSignature, KESSignature, VrfProof};
+use super::components::{BftSignature, KesSignature, VrfProof};
 use super::version::BlockVersion;
 use crate::certificate::PoolId;
 use crate::chaintypes::{ChainLength, HeaderId};
@@ -35,5 +35,5 @@ pub struct BftProof {
 pub struct GenesisPraosProof {
     pub(crate) node_id: PoolId,
     pub(crate) vrf_proof: VrfProof,
-    pub(crate) kes_proof: KESSignature,
+    pub(crate) kes_proof: KesSignature,
 }

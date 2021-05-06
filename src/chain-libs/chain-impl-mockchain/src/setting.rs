@@ -145,7 +145,7 @@ impl Settings {
                 | ConfigParam::Discrimination(_)
                 | ConfigParam::TreasuryAdd(_)
                 | ConfigParam::RewardPot(_)
-                | ConfigParam::KESUpdateSpeed(_) => {
+                | ConfigParam::KesUpdateSpeed(_) => {
                     return Err(update::Error::ReadOnlySetting);
                 }
                 ConfigParam::ConsensusVersion(d) => {

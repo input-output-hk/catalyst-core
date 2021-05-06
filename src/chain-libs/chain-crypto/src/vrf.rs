@@ -2,7 +2,7 @@ use crate::key;
 use rand_core::{CryptoRng, RngCore};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VRFVerification {
+pub enum VrfVerification {
     Success,
     Failed,
 }
@@ -24,7 +24,7 @@ pub trait VerifiableRandomFunction: key::AsymmetricPublicKey + key::AsymmetricKe
         public: &Self::Public,
         input: &Self::Input,
         vrand: &Self::VerifiedRandomOutput,
-    ) -> VRFVerification;
+    ) -> VrfVerification;
 
     fn strip_verification_output(vr: &Self::VerifiedRandomOutput) -> Self::RandomOutput;
 }
@@ -43,7 +43,7 @@ pub fn vrf_verify<VRF: VerifiableRandomFunction>(
     public: &key::PublicKey<VRF>,
     input: &<VRF as VerifiableRandomFunction>::Input,
     vrand: &<VRF as VerifiableRandomFunction>::VerifiedRandomOutput,
-) -> VRFVerification {
+) -> VrfVerification {
     VRF::verify(&public.0, input, vrand)
 }
 

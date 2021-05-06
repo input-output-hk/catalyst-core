@@ -266,7 +266,7 @@ impl ConfigBuilder {
             self.active_slots_coeff,
         ));
         ie.push(ConfigParam::SlotsPerEpoch(self.slots_per_epoch));
-        ie.push(ConfigParam::KESUpdateSpeed(self.kes_update_speed));
+        ie.push(ConfigParam::KesUpdateSpeed(self.kes_update_speed));
         ie
     }
 }

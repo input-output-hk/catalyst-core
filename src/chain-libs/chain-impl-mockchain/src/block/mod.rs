@@ -17,7 +17,7 @@ pub use crate::fragment::{BlockContentHash, BlockContentSize, Contents, Contents
 
 pub use self::headerraw::HeaderRaw;
 pub use crate::header::{
-    BftProof, BftSignature, Common, GenesisPraosProof, Header, HeaderId, KESSignature, Proof,
+    BftProof, BftSignature, Common, GenesisPraosProof, Header, HeaderId, KesSignature, Proof,
 };
 
 pub use builder::builder;

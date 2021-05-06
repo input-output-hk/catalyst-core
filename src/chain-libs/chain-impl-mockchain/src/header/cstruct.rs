@@ -58,13 +58,13 @@ pub const HEADER_MAX_KNOWN_SIZE: usize = HEADER_GP_SIZE;
 // ************************************************************************
 
 pub(super) type HeaderUnsigned = [u8; HEADER_COMMON_SIZE];
-pub(super) type HeaderBFT = [u8; HEADER_BFT_SIZE];
-pub(super) type HeaderGP = [u8; HEADER_GP_SIZE];
+pub(super) type HeaderBft = [u8; HEADER_BFT_SIZE];
+pub(super) type HeaderGp = [u8; HEADER_GP_SIZE];
 
 pub(super) union Header {
     unsigned: HeaderUnsigned,
-    bft: HeaderBFT,
-    gp: HeaderGP,
+    bft: HeaderBft,
+    gp: HeaderGp,
 }
 
 impl Clone for Header {
@@ -296,7 +296,7 @@ impl<'a> HeaderSlice<'a> {
     }
 
     pub fn as_slice(&self) -> &'a [u8] {
-        &self.0[..]
+        &self.0
     }
 
     pub(super) fn to_owned(&self) -> Header {

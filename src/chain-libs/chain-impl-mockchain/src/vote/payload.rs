@@ -134,8 +134,8 @@ impl ProofOfCorrectVote {
         let bits = buf.get_u8()? as usize;
         let mut ibas = Vec::with_capacity(bits);
         for _ in 0..bits {
-            let elem_buf = buf.get_slice(shvzk::IBA::BYTES_LEN)?;
-            let iba = shvzk::IBA::from_bytes(elem_buf)
+            let elem_buf = buf.get_slice(shvzk::Iba::BYTES_LEN)?;
+            let iba = shvzk::Iba::from_bytes(elem_buf)
                 .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?;
             ibas.push(iba);
         }
@@ -149,8 +149,8 @@ impl ProofOfCorrectVote {
         }
         let mut zwvs = Vec::with_capacity(bits);
         for _ in 0..bits {
-            let elem_buf = buf.get_slice(shvzk::ZWV::BYTES_LEN)?;
-            let zwv = shvzk::ZWV::from_bytes(elem_buf)
+            let elem_buf = buf.get_slice(shvzk::Zwv::BYTES_LEN)?;
+            let zwv = shvzk::Zwv::from_bytes(elem_buf)
                 .ok_or_else(|| ReadError::StructureInvalid("Invalid ZWV component".to_string()))?;
             zwvs.push(zwv);
         }
@@ -235,7 +235,7 @@ mod tests {
     impl Arbitrary for Payload {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             use chain_vote::{
-                encrypt_vote, EncryptingVoteKey, MemberCommunicationKey, MemberState, Vote, CRS,
+                encrypt_vote, Crs, EncryptingVoteKey, MemberCommunicationKey, MemberState, Vote,
             };
             use rand_core::SeedableRng;
 
@@ -247,7 +247,7 @@ mod tests {
                     let mut gen = rand_chacha::ChaCha20Rng::from_seed(seed);
                     let mc = MemberCommunicationKey::new(&mut gen);
                     let threshold = 1;
-                    let h = CRS::from_hash(&mut seed);
+                    let h = Crs::from_hash(&mut seed);
                     let m = MemberState::new(&mut gen, threshold, &h, &[mc.to_public()], 0);
                     let participants = vec![m.public_key()];
                     let ek = EncryptingVoteKey::from_participants(&participants);

@@ -110,12 +110,7 @@ pub fn encrypt<R: RngCore + CryptoRng>(
     let pk = RISTRETTO_BASEPOINT_POINT * r;
 
     // encrypt the data with the context
-    let mut out = Vec::new();
-
-    out.push(1);
-    out.push(PAD1);
-    out.push(PAD2);
-    out.push(receiver_pks.len() as u8);
+    let mut out = vec![1, PAD1, PAD2, receiver_pks.len() as u8];
 
     // Copy the ephemeral key first
     out.extend_from_slice(pk.compress().as_bytes());

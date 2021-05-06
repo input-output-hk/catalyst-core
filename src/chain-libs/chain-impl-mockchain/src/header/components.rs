@@ -7,23 +7,23 @@ use std::fmt::{self, Debug};
 pub struct HeaderAuth;
 
 #[derive(Debug, Clone)]
-pub struct KESSignature(pub(crate) Signature<HeaderAuth, SumEd25519_12>);
+pub struct KesSignature(pub(crate) Signature<HeaderAuth, SumEd25519_12>);
 
-impl From<cstruct::GpKesSignature> for KESSignature {
-    fn from(b: cstruct::GpKesSignature) -> KESSignature {
-        KESSignature(
+impl From<cstruct::GpKesSignature> for KesSignature {
+    fn from(b: cstruct::GpKesSignature) -> KesSignature {
+        KesSignature(
             Signature::from_binary(&b[..]).expect("internal error: KES signature length invalid"),
         )
     }
 }
 
-impl From<Signature<HeaderAuth, SumEd25519_12>> for KESSignature {
-    fn from(sig: Signature<HeaderAuth, SumEd25519_12>) -> KESSignature {
-        KESSignature(sig)
+impl From<Signature<HeaderAuth, SumEd25519_12>> for KesSignature {
+    fn from(sig: Signature<HeaderAuth, SumEd25519_12>) -> KesSignature {
+        KesSignature(sig)
     }
 }
 
-impl KESSignature {
+impl KesSignature {
     pub fn verify(&self, pk: &PublicKey<SumEd25519_12>, data: &[u8]) -> Verification {
         self.0.verify_slice(pk, data)
     }

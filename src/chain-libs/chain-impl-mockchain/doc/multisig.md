@@ -98,4 +98,4 @@ TODO: Add format
 Multisig account can, just like normal accounts (group key), have their stake
 delegated through the stake delegation certificate, and register stake pool as
 one of the owner. The same mechanism used for transaction witnessing is
-used 
+used.

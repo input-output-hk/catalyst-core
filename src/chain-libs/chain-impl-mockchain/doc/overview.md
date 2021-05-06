@@ -22,9 +22,8 @@ The block **chain** component is handled by the parent-hash, which points
 through the HeaderId to a unique header.
 
 ```
-    
          HeaderId A    <-           HeaderId B
-    +------------------+ \       +---------------+ 
+    +------------------+ \       +---------------+
     | depth=0          |  \      | depth=1       |
  |--| parent-hash=0*32 |   \-----| parent-hash=A |
     | ...              |         | ...           |

@@ -346,5 +346,5 @@ Ratio Delegation of:
     f0 f0 f0 f0 f0 f0 f0 f0  f0 f0 f0 f0 f0 f0 f0 f0
     f0 f0 f0 03 ab ab ab ab  ab ab ab ab ab ab ab ab
     ab ab ab ab ab ab ab ab  ab ab ab ab ab ab ab ab
-    ab ab ab ab 
+    ab ab ab ab
 ```

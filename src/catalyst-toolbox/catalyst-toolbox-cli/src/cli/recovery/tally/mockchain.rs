@@ -1,25 +1,47 @@
 use chain_impl_mockchain::block::HeaderId;
-use chain_impl_mockchain::fee::LinearFee;
 use chain_impl_mockchain::fragment::Fragment;
-use chain_impl_mockchain::ledger::{Error, Ledger, LedgerParameters};
-use chain_impl_mockchain::rewards::TaxType;
+use chain_impl_mockchain::ledger::{Error, Ledger};
 use jormungandr_lib::interfaces::PersistentFragmentLog;
 
 use std::collections::vec_deque::VecDeque;
-use std::iter::FromIterator;
 
 pub fn generate_ledger_from_fragments<'block0>(
     block0_header_id: HeaderId,
     block0_fragments: impl Iterator<Item = &'block0 Fragment>,
-    logged_fragments: impl Iterator<Item = PersistentFragmentLog>,
+    logged_fragments: impl Iterator<Item = Result<PersistentFragmentLog, Error>>,
 ) -> Result<(Ledger, VecDeque<PersistentFragmentLog>), chain_impl_mockchain::ledger::Error> {
-    let mut ledger = Ledger::new(block0_header_id, block0_fragments)?;
+    let ledger = Ledger::new(block0_header_id, block0_fragments)?;
     let parameters = ledger.get_ledger_parameters();
     let block_date = ledger.date();
-    let mut fragments = VecDeque::from_iter(logged_fragments);
-    println!("{}", fragments.len());
+
+    let mut fragments: VecDeque<PersistentFragmentLog> = VecDeque::new();
+    let mut tally_fragments: Vec<PersistentFragmentLog> = Vec::new();
+
+    // process fragments lazily
+    for fragment in logged_fragments {
+        match fragment {
+            Err(e) => {
+                //TODO: log error here
+            }
+            Ok(fragment_log) => {
+                if matches!(&fragment_log.fragment, Fragment::VoteTally(_)) {
+                    tally_fragments.push(fragment_log);
+                    continue;
+                }
+                match ledger.apply_fragment(&parameters, &fragment_log.fragment, block_date) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        dbg!(e);
+                        // failed to apply fragment so store for later post-process
+                        fragments.push_back(fragment_log);
+                    }
+                }
+            }
+        };
+    }
+
+    //postprocess failed fragments
     let mut counter = 0;
-    let mut tally = None;
     while !fragments.is_empty() && counter < fragments.len() {
         counter += 1;
         match fragments.pop_front() {
@@ -27,10 +49,6 @@ pub fn generate_ledger_from_fragments<'block0>(
                 break;
             }
             Some(fragment_log) => {
-                if matches!(&fragment_log.fragment, Fragment::VoteTally(_)) {
-                    tally = Some(fragment_log.fragment.clone());
-                    continue;
-                }
                 match ledger.apply_fragment(&parameters, &fragment_log.fragment, block_date) {
                     Ok(_) => {
                         counter = 0;
@@ -41,11 +59,14 @@ pub fn generate_ledger_from_fragments<'block0>(
                     }
                 }
             }
-        }
+        };
     }
-    if let Some(tally_fragment) = tally {
-        ledger.apply_fragment(&parameters, &tally_fragment, block_date)?;
+
+    // run tally transactions
+    for tally_fragment_log in tally_fragments {
+        ledger.apply_fragment(&parameters, &tally_fragment_log.fragment, block_date)?;
     }
+
     Ok((ledger, fragments))
 }
 

@@ -8,6 +8,7 @@ mod ristretto255;
 pub use self::p256k1::*;
 #[cfg(feature = "ristretto255")]
 pub use self::ristretto255::*;
+
 pub use babystep::{baby_step_giant_step, BabyStepsTable};
 
 #[cfg(test)]

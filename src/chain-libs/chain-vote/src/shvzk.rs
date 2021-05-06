@@ -4,8 +4,8 @@ use rand_core::{CryptoRng, RngCore};
 
 use crate::commitment::{Commitment, CommitmentKey};
 use crate::encrypted::{EncryptingVote, PTP};
+use crate::encryption::{Ciphertext, PublicKey};
 use crate::gang::Scalar;
-use crate::gargamel::{encrypt, Ciphertext, PublicKey};
 use crate::math::Polynomial;
 use crate::unit_vector::binrep;
 use crate::CRS;
@@ -264,27 +264,21 @@ pub(crate) fn prove<R: RngCore + CryptoRng>(
 
         assert_eq!(pjs.len(), ciphers.len());
 
-        // Generate new Rs for Ds
+        // Generate new Rs and Ds vectors
         let mut rs = Vec::with_capacity(bits);
-        for _ in 0..bits {
-            let r = Scalar::random(rng);
-            rs.push(r);
-        }
+        let mut ds = Vec::with_capacity(bits);
 
         // Compute Ds
-        let ds = rs
-            .iter()
-            .enumerate()
-            .map(|(i, r)| {
-                let mut sum = Scalar::zero();
-                #[allow(clippy::needless_range_loop)]
-                for j in 0..ciphers.len() {
-                    sum = sum + (cy.power(j) * pjs[j].get_coefficient_at(i))
-                }
-
-                encrypt(public_key, &sum, r)
-            })
-            .collect::<Vec<_>>();
+        for i in 0..bits {
+            let mut sum = Scalar::zero();
+            #[allow(clippy::needless_range_loop)]
+            for j in 0..ciphers.len() {
+                sum = sum + (cy.power(j) * pjs[j].get_coefficient_at(i))
+            }
+            let (d, r) = public_key.encrypt_return_r(&sum, rng);
+            rs.push(r);
+            ds.push(d);
+        }
 
         (ds, rs)
     };
@@ -381,7 +375,7 @@ pub(crate) fn verify(
                         let m = if idx[j] { zwv.z.clone() } else { &cx - &zwv.z };
                         &acc * m
                     });
-                let enc = encrypt(public_key, &multz.negate(), &Scalar::zero());
+                let enc = public_key.encrypt_with_r(&multz.negate(), &Scalar::zero());
                 let mult_c = c * &cx_pow;
                 let y_pow_i = cy.power(i);
                 let t = (&mult_c + &enc) * y_pow_i;
@@ -394,7 +388,7 @@ pub(crate) fn verify(
             .enumerate()
             .fold(Ciphertext::zero(), |acc, (l, d)| &acc + &(d * cx.power(l)));
 
-        let zero = encrypt(public_key, &Scalar::zero(), &proof.r);
+        let zero = public_key.encrypt_with_r(&Scalar::zero(), &proof.r);
         if &p1 + &dsum != zero {
             return false;
         }
@@ -407,7 +401,7 @@ pub(crate) fn verify(
 mod tests {
     use super::*;
     use crate::encrypted::EncryptingVote;
-    use crate::gargamel;
+    use crate::encryption::Keypair;
     use crate::unit_vector::UnitVector;
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
@@ -415,7 +409,7 @@ mod tests {
     #[test]
     fn prove_verify1() {
         let mut r = ChaCha20Rng::from_seed([0u8; 32]);
-        let public_key = gargamel::generate(&mut r).public_key;
+        let public_key = Keypair::generate(&mut r).public_key;
         let unit_vector = UnitVector::new(2, 0);
         let ev = EncryptingVote::prepare(&mut r, &public_key, &unit_vector);
 
@@ -430,7 +424,7 @@ mod tests {
     #[test]
     fn prove_verify() {
         let mut r = ChaCha20Rng::from_seed([0u8; 32]);
-        let public_key = gargamel::generate(&mut r).public_key;
+        let public_key = Keypair::generate(&mut r).public_key;
         let unit_vector = UnitVector::new(5, 1);
         let ev = EncryptingVote::prepare(&mut r, &public_key, &unit_vector);
 

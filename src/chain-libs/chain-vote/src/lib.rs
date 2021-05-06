@@ -1,11 +1,12 @@
 //! Chain Vote
 
+#[macro_use]
+mod macros;
 mod commitment;
 pub mod committee;
 mod encrypted;
+pub mod encryption;
 mod gang;
-pub mod gargamel;
-mod hybrid;
 mod math;
 pub mod shvzk;
 mod unit_vector;
@@ -25,9 +26,9 @@ pub use committee::{
     MemberCommunicationKey, MemberCommunicationPublicKey, MemberPublicKey, MemberState,
 };
 pub use encrypted::EncryptingVote;
+pub use encryption::Ciphertext;
 use gang::GroupElement;
 pub use gang::{BabyStepsTable as TallyOptimizationTable, Scalar};
-pub use gargamel::Ciphertext;
 use rand_core::{CryptoRng, RngCore};
 pub use unit_vector::UnitVector;
 

@@ -73,13 +73,7 @@ impl<'a, 'b> Add<&'b Commitment> for &'a Commitment {
     }
 }
 
-impl<'b> Add<&'b Commitment> for Commitment {
-    type Output = Commitment;
-    fn add(self, rhs: &'b Commitment) -> Self::Output {
-        let c = &self.c + &rhs.c;
-        Commitment { c }
-    }
-}
+std_ops_gen!(Commitment, Add, Commitment, Commitment, add);
 
 impl<'a, 'b> Mul<&'b Scalar> for &'a Commitment {
     type Output = Commitment;
@@ -88,16 +82,4 @@ impl<'a, 'b> Mul<&'b Scalar> for &'a Commitment {
     }
 }
 
-impl<'a> Mul<Scalar> for &'a Commitment {
-    type Output = Commitment;
-    fn mul(self, rhs: Scalar) -> Self::Output {
-        Commitment { c: &self.c * rhs }
-    }
-}
-
-impl Mul<Scalar> for Commitment {
-    type Output = Commitment;
-    fn mul(self, rhs: Scalar) -> Self::Output {
-        Commitment { c: &self.c * &rhs }
-    }
-}
+std_ops_gen!(Commitment, Mul, Scalar, Commitment, mul);

@@ -1,5 +1,5 @@
+use crate::encryption::{Ciphertext, PublicKey};
 use crate::gang::Scalar;
-use crate::gargamel::{self, Ciphertext, PublicKey};
 use crate::unit_vector::UnitVector;
 use rand_core::{CryptoRng, RngCore};
 
@@ -73,8 +73,7 @@ impl EncryptingVote {
         let mut rs = Vec::new();
         let mut ciphers = Vec::new();
         for vote_element in vote.iter() {
-            let r = Scalar::random(rng);
-            let cipher = gargamel::encrypt(public_key, &vote_element.into(), &r);
+            let (cipher, r) = public_key.encrypt_return_r(&vote_element.into(), rng);
             rs.push(r);
             ciphers.push(cipher);
         }

@@ -225,42 +225,6 @@ impl From<bool> for Scalar {
     }
 }
 
-macro_rules! lref {
-    ($lty: ident, $class: ident, $rty: ident, $out: ident, $f: ident) => {
-        impl<'a> $class<$rty> for &'a $lty {
-            type Output = $out;
-
-            fn $f(self, other: $rty) -> Self::Output {
-                self.$f(&other)
-            }
-        }
-    };
-}
-
-macro_rules! rref {
-    ($lty: ident, $class: ident, $rty: ident, $out: ident, $f: ident) => {
-        impl<'b> $class<&'b $rty> for $lty {
-            type Output = $out;
-
-            fn $f(self, other: &'b $rty) -> Self::Output {
-                (&self).$f(other)
-            }
-        }
-    };
-}
-
-macro_rules! nref {
-    ($lty: ident, $class: ident, $rty: ident, $out: ident, $f: ident) => {
-        impl $class<$rty> for $lty {
-            type Output = $out;
-
-            fn $f(self, other: $rty) -> Self::Output {
-                (&self).$f(&other)
-            }
-        }
-    };
-}
-
 //////////
 // FE + FE
 //////////
@@ -273,9 +237,7 @@ impl<'a, 'b> Add<&'b Scalar> for &'a Scalar {
     }
 }
 
-lref!(Scalar, Add, Scalar, Scalar, add);
-rref!(Scalar, Add, Scalar, Scalar, add);
-nref!(Scalar, Add, Scalar, Scalar, add);
+std_ops_gen!(Scalar, Add, Scalar, Scalar, add);
 
 //////////
 // FE - FE
@@ -289,10 +251,7 @@ impl<'a, 'b> Sub<&'b Scalar> for &'a Scalar {
     }
 }
 
-lref!(Scalar, Sub, Scalar, Scalar, sub);
-rref!(Scalar, Sub, Scalar, Scalar, sub);
-nref!(Scalar, Sub, Scalar, Scalar, sub);
-
+std_ops_gen!(Scalar, Sub, Scalar, Scalar, sub);
 //////////
 // FE * FE
 //////////
@@ -305,9 +264,7 @@ impl<'a, 'b> Mul<&'b Scalar> for &'a Scalar {
     }
 }
 
-lref!(Scalar, Mul, Scalar, Scalar, mul);
-rref!(Scalar, Mul, Scalar, Scalar, mul);
-nref!(Scalar, Mul, Scalar, Scalar, mul);
+std_ops_gen!(Scalar, Mul, Scalar, Scalar, mul);
 
 //////////
 // FE * GE
@@ -329,13 +286,9 @@ impl<'a, 'b> Mul<&'b Scalar> for &'a GroupElement {
     }
 }
 
-lref!(Scalar, Mul, GroupElement, GroupElement, mul);
-rref!(Scalar, Mul, GroupElement, GroupElement, mul);
-nref!(Scalar, Mul, GroupElement, GroupElement, mul);
+std_ops_gen!(Scalar, Mul, GroupElement, GroupElement, mul);
 
-lref!(GroupElement, Mul, Scalar, GroupElement, mul);
-rref!(GroupElement, Mul, Scalar, GroupElement, mul);
-nref!(GroupElement, Mul, Scalar, GroupElement, mul);
+std_ops_gen!(GroupElement, Mul, Scalar, GroupElement, mul);
 
 //////////
 // u64 * GE
@@ -369,9 +322,7 @@ impl<'a, 'b> Add<&'b GroupElement> for &'a GroupElement {
     }
 }
 
-lref!(GroupElement, Add, GroupElement, GroupElement, add);
-rref!(GroupElement, Add, GroupElement, GroupElement, add);
-nref!(GroupElement, Add, GroupElement, GroupElement, add);
+std_ops_gen!(GroupElement, Add, GroupElement, GroupElement, add);
 
 //////////
 // GE - GE
@@ -385,9 +336,7 @@ impl<'a, 'b> Sub<&'b GroupElement> for &'a GroupElement {
     }
 }
 
-lref!(GroupElement, Sub, GroupElement, GroupElement, sub);
-rref!(GroupElement, Sub, GroupElement, GroupElement, sub);
-nref!(GroupElement, Sub, GroupElement, GroupElement, sub);
+std_ops_gen!(GroupElement, Sub, GroupElement, GroupElement, sub);
 
 #[cfg(test)]
 mod test {

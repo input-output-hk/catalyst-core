@@ -1,16 +1,17 @@
 use chain_impl_mockchain::block::HeaderId;
 use chain_impl_mockchain::fragment::Fragment;
-use chain_impl_mockchain::ledger::{Error, Ledger};
+use chain_impl_mockchain::ledger::Ledger;
 use jormungandr_lib::interfaces::PersistentFragmentLog;
 
+use crate::cli::recovery::tally::Error;
 use std::collections::vec_deque::VecDeque;
 
 pub fn generate_ledger_from_fragments<'block0>(
     block0_header_id: HeaderId,
     block0_fragments: impl Iterator<Item = &'block0 Fragment>,
     logged_fragments: impl Iterator<Item = Result<PersistentFragmentLog, Error>>,
-) -> Result<(Ledger, VecDeque<PersistentFragmentLog>), chain_impl_mockchain::ledger::Error> {
-    let ledger = Ledger::new(block0_header_id, block0_fragments)?;
+) -> Result<(Ledger, VecDeque<PersistentFragmentLog>), Error> {
+    let ledger = Ledger::new(block0_header_id, block0_fragments).map_err(Error::LedgerError)?;
     let parameters = ledger.get_ledger_parameters();
     let block_date = ledger.date();
 
@@ -21,7 +22,7 @@ pub fn generate_ledger_from_fragments<'block0>(
     for fragment in logged_fragments {
         match fragment {
             Err(e) => {
-                //TODO: log error here
+                println!("Error processing fragment: {:?}", e);
             }
             Ok(fragment_log) => {
                 if matches!(&fragment_log.fragment, Fragment::VoteTally(_)) {
@@ -40,7 +41,7 @@ pub fn generate_ledger_from_fragments<'block0>(
         };
     }
 
-    //postprocess failed fragments
+    // postprocess failed fragments
     let mut counter = 0;
     while !fragments.is_empty() && counter < fragments.len() {
         counter += 1;

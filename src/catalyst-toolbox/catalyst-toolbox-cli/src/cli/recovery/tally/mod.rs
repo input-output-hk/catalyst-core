@@ -8,4 +8,7 @@ use thiserror;
 pub enum Error {
     #[error("Couldn't deserialize entry {entry } in {file}")]
     DeserializeError { file: String, entry: usize },
+
+    #[error(transparent)]
+    LedgerError(#[from] chain_impl_mockchain::ledger::Error),
 }

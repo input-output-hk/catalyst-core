@@ -468,17 +468,17 @@
         "utils": "utils_5"
       },
       "locked": {
-        "lastModified": 1618507995,
-        "narHash": "sha256-TlGfpc+kLbr2zcBLiFr4xLzkXz0cnHHlM7jUilvM9II=",
+        "lastModified": 1619553816,
+        "narHash": "sha256-2fLrhFAV4GN7BZvmqU324wdrJB+F+fir6HTgXcRlZ2E=",
         "owner": "input-output-hk",
         "repo": "voting-tools",
-        "rev": "2f33a371665abf0f6fc5d74ba1739f1a8b8af484",
+        "rev": "5cb9acbfeadae04c26a7cd847d97eb63db9a11b8",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
+        "ref": "stake-address-for-rewards",
         "repo": "voting-tools",
-        "rev": "2f33a371665abf0f6fc5d74ba1739f1a8b8af484",
         "type": "github"
       }
     }

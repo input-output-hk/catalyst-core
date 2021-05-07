@@ -19,6 +19,8 @@ pub enum DecompressError {
     IntenralZipError(#[from] zip::result::ZipError),
     #[error("internal unpack error")]
     UnpackError,
+    #[error("unsafe file name of an archive member")]
+    UnsafeFileName(String),
     #[error("unsupported format")]
     UnsupportedFormat,
 }
@@ -35,7 +37,10 @@ pub fn decompress(input: &Path, output: &Path) -> Result<(), DecompressError> {
             let mut file = archive
                 .by_index(i)
                 .map_err(|_| DecompressError::UnpackError)?;
-            let outpath = output.join(file.sanitized_name());
+            let file_name = file
+                .enclosed_name()
+                .ok_or_else(|| DecompressError::UnsafeFileName(file.name().to_owned()))?;
+            let outpath = output.join(file_name);
             let mut outfile =
                 File::create(&outpath).map_err(DecompressError::CannotWriteOutputFile)?;
             io::copy(&mut file, &mut outfile)?;

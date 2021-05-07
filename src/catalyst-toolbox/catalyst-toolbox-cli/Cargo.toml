@@ -18,12 +18,14 @@ chrono = "0.4"
 itertools = "0.10"
 jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 fixed = "1.7"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 serde = "1.0"
 serde_json = "1.0"
 structopt = "0.3"
 thiserror = "1.0"
+rand = "0.8.3"
 
 [build-dependencies]
 versionisator = "1.0.3"

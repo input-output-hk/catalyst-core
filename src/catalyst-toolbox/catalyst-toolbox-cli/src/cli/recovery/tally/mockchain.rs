@@ -1,233 +1,200 @@
-use chain_core::property::BlockDate as _;
-use chain_impl_mockchain::block::{Block, BlockDate, HeaderId};
-use chain_impl_mockchain::fragment::Fragment;
-use chain_impl_mockchain::ledger::Ledger;
-use chain_time::{SlotDuration, TimeFrame, Timeline};
-use jormungandr_lib::interfaces::{
-    Block0Configuration, FragmentLogDeserializeError, PersistentFragmentLog,
-};
-
-use crate::cli::recovery::tally::Error;
-use chain_impl_mockchain::chaineval::ConsensusEvalContext;
-use jormungandr_lib::time::SecondsSinceUnixEpoch;
-use std::collections::VecDeque;
 use std::ops::Add;
 use std::time::{Duration, SystemTime};
 
-fn vote_start_date_from_ledger(ledger: &Ledger) -> (BlockDate, BlockDate) {
-    ledger
-        .active_vote_plans()
-        .last()
-        .map(|voteplan| (voteplan.vote_start, voteplan.vote_end))
-        .unwrap()
-}
+use super::Error;
+use chain_core::property::BlockDate as _;
+use chain_impl_mockchain::certificate::{VotePlan, VotePlanId};
+use chain_impl_mockchain::fee::LinearFee;
+use chain_impl_mockchain::{
+    block::{Block, BlockDate},
+    fragment::Fragment,
+    ledger::Ledger,
+    transaction::InputEnum,
+    vote::Payload,
+};
+use chain_time::{SlotDuration, TimeFrame, Timeline};
+use jormungandr_lib::crypto::account::Identifier;
+use jormungandr_lib::crypto::hash::Hash;
+use jormungandr_lib::{
+    interfaces::{
+        Address, Block0Configuration, FragmentLogDeserializeError, Initial, PersistentFragmentLog,
+        SlotDuration as Block0SlotDuration,
+    },
+    time::SecondsSinceUnixEpoch,
+};
+use jormungandr_testing_utils::wallet::Wallet;
+use std::collections::HashMap;
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
     SystemTime::UNIX_EPOCH.add(Duration::new(ts.to_secs(), 0))
 }
 
-pub fn recover_ledger_from_fragments<'block0>(
+fn fragment_log_timestamp_to_blockdate(
+    timestamp: SecondsSinceUnixEpoch,
+    timeframe: &TimeFrame,
+    ledger: &Ledger,
+) -> BlockDate {
+    let slot = timestamp_to_system_time(timestamp);
+    // TODO: Get rid of unwraps
+    let new_slot = timeframe.slot_at(&slot).unwrap();
+    let epoch_position = ledger.era().from_slot_to_era(new_slot).unwrap();
+    BlockDate::from(epoch_position)
+}
+
+fn timeframe_from_block0_start_and_slot_duration(
+    block0_start: SecondsSinceUnixEpoch,
+    slot_duration: Block0SlotDuration,
+) -> TimeFrame {
+    let timeline = Timeline::new(timestamp_to_system_time(block0_start));
+
+    TimeFrame::new(
+        timeline,
+        SlotDuration::from_secs(<u8>::from(slot_duration) as u32),
+    )
+}
+
+pub fn recover_ledger_from_logs(
     block0: &Block,
-    block0_fragments: impl Iterator<Item = &'block0 Fragment>,
-    logged_fragments: impl Iterator<Item = Result<PersistentFragmentLog, FragmentLogDeserializeError>>,
-) -> Result<(Ledger, VecDeque<PersistentFragmentLog>), Error> {
+    fragment_logs: impl Iterator<Item = Result<PersistentFragmentLog, FragmentLogDeserializeError>>,
+) -> Result<Ledger, Error> {
     let block0_configuration = Block0Configuration::from_block(&block0).unwrap();
+
+    let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(&block0)?;
+
+    let mut ledger =
+        Ledger::new(new_block0.header.id(), new_block0.fragments()).map_err(Error::LedgerError)?;
 
     let block0_start = block0_configuration.blockchain_configuration.block0_date;
     let slot_duration = block0_configuration.blockchain_configuration.slot_duration;
+    let fees = block0_configuration.blockchain_configuration.linear_fees;
 
-    let timeline = Timeline::new(timestamp_to_system_time(block0_start));
+    // we assume that voteplans use the same vote start/end BlockDates as well as committee and tally ones
+    // hence we only take data from one of them
+    let voteplan = ledger
+        .active_vote_plans()
+        .last()
+        .ok_or(Error::MissingVoteplanError)?;
+    let vote_start = voteplan.vote_start;
+    let vote_end = voteplan.vote_end;
 
-    let timeframe = TimeFrame::new(
-        timeline,
-        SlotDuration::from_secs(<u8>::from(slot_duration) as u32),
-    );
+    let timeframe = timeframe_from_block0_start_and_slot_duration(block0_start, slot_duration);
 
-    let mut ledger =
-        Ledger::new(block0.header.id(), block0_fragments).map_err(Error::LedgerError)?;
-
-    let parameters = ledger.get_ledger_parameters();
-
-    let mut fragments: VecDeque<PersistentFragmentLog> = VecDeque::new();
-    let mut tally_fragments: Vec<PersistentFragmentLog> = Vec::new();
-
-    let mut vote_start = BlockDate::from_epoch_slot_id(999999998, 0);
-    let mut vote_end = BlockDate::from_epoch_slot_id(999999999, 0);
-
-    // process fragments lazily
-    for fragment in logged_fragments {
-        println!("{:?}", ledger.date());
-        match fragment {
-            Err(e) => {
-                println!("Error processing fragment: {:?}", e);
-            }
-            Ok(fragment_log) => {
-                let slot = timestamp_to_system_time(fragment_log.time);
-                let new_slot = timeframe.slot_at(&slot).unwrap();
-                let epoch_position = ledger.era().from_slot_to_era(new_slot).unwrap();
-                let block_date = BlockDate::from(epoch_position);
-
-                // discard votes that are not within the range
-                if matches!(&fragment_log.fragment, Fragment::VoteCast(_)) {
-                    if block_date >= vote_end || block_date < vote_start {
-                        println!(
-                            "Fragment {} with blockdate {} was discarded",
-                            fragment_log.fragment.hash(),
-                            block_date
-                        );
-                        continue;
+    for fragment_log in fragment_logs {
+        match fragment_log {
+            Ok(PersistentFragmentLog { fragment, time }) => {
+                let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger);
+                let new_fragment = fragment_replayer.replay(fragment.clone());
+                if matches!(fragment, Fragment::VoteCast(_)) {
+                    if vote_start > block_date || vote_end <= block_date {
+                        unimplemented!(
+                            "Exaplain that fragment is skipped because it is out of vote time"
+                        )
                     }
                 }
-
-                if matches!(&fragment_log.fragment, Fragment::VoteTally(_)) {
-                    tally_fragments.push(fragment_log);
-                    continue;
-                }
-
-                match ledger.apply_fragment(&parameters, &fragment_log.fragment, ledger.date()) {
-                    Ok(new_ledger) => {
-                        ledger = new_ledger;
-                        if matches!(&fragment_log.fragment, Fragment::VotePlan(_)) {
-                            // TODO: for now we assume that voteplans use the same vote_start and vote_end
-                            // data. We should check if those values actually changed and throw a proper error
-                            let (vs, ve) = vote_start_date_from_ledger(&ledger);
-                            vote_start = vs;
-                            vote_end = ve;
-
-                            ledger = ledger
-                                .begin_block(
-                                    parameters.clone(),
-                                    ledger.chain_length().increase(),
-                                    vote_start,
-                                )
-                                .unwrap()
-                                .finish(&ConsensusEvalContext::Bft);
-                        }
-                    }
-                    Err(e) => {
-                        println!(
-                            "Error processing fragment {}: {:?}",
-                            &fragment_log.fragment.hash(),
-                            e
-                        ); // failed to apply fragment so store for later post-process
-                        fragments.push_back(fragment_log);
-                    }
-                }
-            }
-        };
-    }
-
-    // postprocess failed fragments
-    while !fragments.is_empty() {
-        let len_before = fragments.len();
-
-        fragments.retain(|fragment_log| {
-            let slot = timestamp_to_system_time(fragment_log.time);
-            let new_slot = timeframe.slot_at(&slot).unwrap();
-            let epoch_position = ledger.era().from_slot_to_era(new_slot).unwrap();
-            let block_date = BlockDate::from(epoch_position);
-
-            // discard votes that are not within the range
-            if matches!(&fragment_log.fragment, Fragment::VoteCast(_)) {
-                if block_date >= vote_end || block_date < vote_start {
-                    println!(
-                        "Fragment {} with blockdate {} was discarded",
-                        fragment_log.fragment.hash(),
-                        block_date
-                    );
-                    return false;
-                }
-            }
-            // take last added voteplan vote start date
-            match ledger.apply_fragment(&parameters, &fragment_log.fragment, ledger.date()) {
-                Ok(new_ledger) => {
-                    ledger = new_ledger;
-                    false
-                }
-                Err(e) => {
-                    println!(
-                        "Error processing fragment {}: {:?}",
-                        &fragment_log.fragment.hash(),
-                        e
-                    );
-                    true
-                }
-            }
-        });
-
-        if len_before == fragments.len() {
-            break;
-        }
-    }
-
-    // advance to tally time
-    ledger = ledger
-        .begin_block(
-            parameters.clone(),
-            ledger.chain_length().increase(),
-            vote_end,
-        )
-        .unwrap()
-        .finish(&ConsensusEvalContext::Bft);
-
-    // run tally transactions
-    for tally_fragment_log in tally_fragments {
-        match ledger.apply_fragment(&parameters, &tally_fragment_log.fragment, ledger.date()) {
-            Ok(new_ledger) => {
-                ledger = new_ledger;
             }
             Err(e) => {
-                println!(
-                    "Error processing fragment {}: {:?}",
-                    &tally_fragment_log.fragment.hash(),
-                    e
-                );
+                unimplemented!("Dump error")
             }
         }
     }
 
-    Ok((ledger, fragments))
+    Ok(ledger)
 }
 
-#[cfg(test)]
-mod test {
-    use crate::cli::recovery::tally::mockchain::recover_ledger_from_fragments;
-    use chain_impl_mockchain::block::Block;
-    use chain_ser::deser::Deserialize;
-    use jormungandr_lib::interfaces::{
-        load_persistent_fragments_logs_from_folder_path, Block0Configuration,
-    };
-    use std::io::BufReader;
-    use std::path::PathBuf;
+struct FragmentReplayer {
+    wallets: HashMap<Address, Wallet>,
+    voteplans: HashMap<VotePlanId, VotePlan>,
+    block0_hash: Hash,
+    fees: LinearFee,
+}
 
-    fn read_block0(path: PathBuf) -> std::io::Result<Block> {
-        let reader = std::fs::File::open(path)?;
-        Ok(Block::deserialize(BufReader::new(reader)).unwrap())
-    }
+impl FragmentReplayer {
+    fn from_block0(block0: &Block) -> Result<(Self, Block), Error> {
+        let mut config =
+            Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
+        let voteplans = block0
+            .fragments()
+            .filter_map(|fragment| {
+                if let Fragment::VotePlan(tx) = fragment {
+                    let voteplan = tx.as_slice().payload().into_payload();
+                    Some((voteplan.to_id(), voteplan))
+                } else {
+                    None
+                }
+            })
+            .collect::<HashMap<_, _>>();
 
-    #[test]
-    fn test_vote_flow() -> std::io::Result<()> {
-        let path: PathBuf = r"D:\projects\rust\catalyst-toolbox\vote_flow_testing\fragment_logs"
-            .parse()
-            .unwrap();
-
-        let fragments = load_persistent_fragments_logs_from_folder_path(&path)?;
-
-        let block0 =
-            read_block0(r"D:\projects\rust\catalyst-toolbox\vote_flow_testing\block-0.bin".into())?;
-
-        let initial_fragments = block0.fragments();
-
-        let (ledger, unprocessed) =
-            recover_ledger_from_fragments(&block0, initial_fragments, fragments).unwrap();
-        println!("{}", unprocessed.len());
-
-        for voteplan in ledger.active_vote_plans() {
-            for proposal in voteplan.proposals {
-                println!("{:?}", proposal.tally);
+        let mut wallets = HashMap::new();
+        let mut rng = rand::thread_rng();
+        for initial in &mut config.initial {
+            if let Initial::Fund(mut utxos) = initial {
+                for utxo in &mut utxos {
+                    let wallet = Wallet::new_account_with_discrimination(
+                        &mut rng,
+                        chain_addr::Discrimination::Production,
+                    );
+                    let new_initial_utxo = wallet.to_initial_fund(utxo.value.into());
+                    wallets.insert(utxo.address, wallet);
+                    *utxo = new_initial_utxo;
+                }
             }
         }
+        let block0_hash: Hash = block0.header.id().into();
+        let fees = config.blockchain_configuration.linear_fees;
 
-        Ok(())
+        Ok((
+            Self {
+                wallets,
+                voteplans,
+                block0_hash,
+                fees,
+            },
+            config.to_block(),
+        ))
+    }
+
+    fn replay(&mut self, fragment: Fragment) -> Result<Fragment, Error> {
+        if let Fragment::VoteCast(transaction) = fragment {
+            let vote_cast = transaction.as_slice().payload().into_payload();
+            let account = transaction
+                .as_slice()
+                .inputs()
+                .iter()
+                .next()
+                .unwrap()
+                .to_enum();
+
+            let address = if let InputEnum::AccountInput(account, _) = account {
+                Identifier::from(account.to_single_account().unwrap())
+                    .to_address(chain_addr::Discrimination::Production)
+            } else {
+                panic!("cannot handle utxo inputs");
+            };
+
+            let choice = if let Payload::Public { choice } = vote_cast.payload() {
+                choice
+            } else {
+                panic!("cannot handle private votes");
+            };
+
+            let wallet = self.wallets.get_mut(&address).unwrap();
+            let vote_plan = self
+                .voteplans
+                .get(vote_cast.vote_plan())
+                .ok_or(Error::MissingVoteplanError)?;
+            let res = wallet
+                .issue_vote_cast_cert(
+                    &self.block0_hash,
+                    &self.fees,
+                    &vote_plan,
+                    vote_cast.proposal_index(),
+                    &choice,
+                )
+                .unwrap();
+            wallet.confirm_transaction();
+            Ok(res)
+        } else {
+            unimplemented!()
+        }
     }
 }

@@ -44,7 +44,7 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/jormungandr && \
 	cd jormungandr && \
-	git checkout 18de926dc7f26c6b7ab28f2131c76df5369ff2b4
+	git checkout 407e04596be8cc864058cce15b23cb173a01c4d9
 
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-servicing-station && \
@@ -52,9 +52,7 @@ RUN cd ${ENV_PREFIX} && \
 	git checkout 59f8cfbd1be864c2a3b67d6e7df63605eec17193
 	
  RUN cd ${ENV_PREFIX} && \
-    git clone https://github.com/input-output-hk/vit-testing && \
-    cd vit-testing && \
-	git checkout 7489f37b6075d5a3155ced3fb1a525a677beb7f0	
+    git clone https://github.com/input-output-hk/vit-testing
     
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-servicing-station && \

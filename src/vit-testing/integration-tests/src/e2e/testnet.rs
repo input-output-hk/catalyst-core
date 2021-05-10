@@ -4,29 +4,29 @@ use registration_service::{
 };
 use snapshot_trigger_service::{client::rest::SnapshotRestClient, config::JobParameters};
 
-const REGISTRATION_TOKEN: &str = "I-O3OaHVdD1Www";
-const REGISTRATION_ADDRESS: &str = "https://registration-testnet.vit.iohk.io";
-
-const SNAPSHOT_TOKEN: &str = "UarouhaiNgiiwahcaNgai8aexaiTh0me";
-const SNAPSHOT_ADDRESS: &str = "https://snapshot-testnet.vit.iohk.io";
-
-const PAYMENT_SKEY: &str = "58205d9e4a747b7115d3fcb36e56308ebe3dd327b109fa95f147ff2f1e423c103848";
-const PAYMENT_VKEY: &str = "5820530136f75366d408e643e267e41c1f3aa15f6b017750af3371aabc7feb77d50c";
-const STAKE_SKEY: &str = "5820dad960491123979e49f0f00d319ee9e68a3530fe0df3f878ff8f3d19bd0ca696";
-const STAKE_VKEY: &str = "5820e542b6a0ced80e1ab5bda70311bf643b9011ee04411737f3e0136825ef47f2d8";
-
 #[test]
 pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
+
+    let registration_token = std::env::var("REGISTRATION_TOKEN").unwrap_or_else(|_| "REGISTRATION_TOKEN not defined".to_owned());
+    let registration_address = std::env::var("REGISTRATION_ADDRESS").unwrap_or_else(|_| "REGISTRATION_ADDRESS not defined".to_owned());
+    let snapshot_token = std::env::var("SNAPSHOT_TOKEN").unwrap_or_else(|_| "SNAPSHOT_TOKEN not defined".to_owned());
+    let snapshot_address = std::env::var("SNAPSHOT_ADDRESS").unwrap_or_else(|_| "SNAPSHOT_ADDRESS not defined".to_owned());
+    let payment_skey = std::env::var("PAYMENT_SKEY").unwrap_or_else(|_| "PAYMENT_SKEY not defined".to_owned());
+    let payment_vkey = std::env::var("PAYMENT_VKEY").unwrap_or_else(|_| "PAYMENT_VKEY not defined".to_owned());
+    let stake_skey = std::env::var("STAKE_SKEY").unwrap_or_else(|_| "STAKE_SKEY not defined".to_owned());
+    let stake_vkey = std::env::var("STAKE_VKEY").unwrap_or_else(|_| "STAKE_VKEY not defined".to_owned());
+
+
     let registration_client = RegistrationRestClient::new_with_token(
-        REGISTRATION_TOKEN.to_string(),
-        REGISTRATION_ADDRESS.to_string(),
+        registration_token.to_string(),
+        registration_address.to_string(),
     );
 
     let registration_request = Request {
-        payment_skey: PAYMENT_SKEY.to_string(),
-        payment_vkey: PAYMENT_VKEY.to_string(),
-        stake_skey: STAKE_SKEY.to_string(),
-        stake_vkey: STAKE_VKEY.to_string(),
+        payment_skey: payment_skey.to_string(),
+        payment_vkey: payment_vkey.to_string(),
+        stake_skey: stake_skey.to_string(),
+        stake_vkey: stake_vkey.to_string(),
     };
 
     let registration_job_id = registration_client.job_new(registration_request).unwrap();
@@ -43,8 +43,8 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .unwrap();
 
     let snapshot_client = SnapshotRestClient::new_with_token(
-        SNAPSHOT_TOKEN.to_string(),
-        SNAPSHOT_ADDRESS.to_string(),
+        snapshot_token.to_string(),
+        snapshot_address.to_string(),
     );
 
     let job_param = match registration_jobs_status {

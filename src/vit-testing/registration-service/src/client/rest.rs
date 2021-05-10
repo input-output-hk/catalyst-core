@@ -1,7 +1,7 @@
 use crate::context::State;
 use crate::file_lister::FolderDump;
 use crate::request::Request;
-use reqwest::blocking::Response;
+use jortestkit::{prelude::Wait, process::WaitError};
 use std::io::Write;
 use std::path::Path;
 use thiserror::Error;
@@ -36,14 +36,6 @@ impl RegistrationRestClient {
 
     fn path<S: Into<String>>(&self, path: S) -> String {
         format!("{}/{}", self.address, path.into())
-    }
-
-    fn post<S: Into<String>>(&self, local_path: S) -> Result<Response, Error> {
-        let path = self.path(local_path);
-        println!("Calling: {}", path);
-        let client = reqwest::blocking::Client::new();
-        let request = self.set_header(client.post(&path));
-        request.send().map_err(Into::into)
     }
 
     fn get<S: Into<String>>(&self, local_path: S) -> Result<String, Error> {
@@ -89,7 +81,9 @@ impl RegistrationRestClient {
 
     pub fn job_new(&self, request: Request) -> Result<String, Error> {
         let client = reqwest::blocking::Client::new();
-        let request_builder = self.set_header(client.post("api/job/new"));
+        let path = self.path("api/job/new");
+        println!("Calling: {}", path);
+        let request_builder = self.set_header(client.post(&path));
         request_builder
             .json(&request)
             .send()?
@@ -98,8 +92,24 @@ impl RegistrationRestClient {
     }
 
     pub fn job_status<S: Into<String>>(&self, id: S) -> Result<State, Error> {
-        let content = self.post(format!("api/job/status/{}", id.into()))?.text()?;
+        let content = self.get(format!("api/job/status/{}", id.into()))?;
         serde_yaml::from_str(&content).map_err(Into::into)
+    }
+
+    pub fn wait_for_job_finish<S: Into<String>>(
+        &self,
+        id: S,
+        mut wait: Wait,
+    ) -> Result<State, Error> {
+        let job_id = id.into();
+        loop {
+            let response = self.job_status(job_id.clone())?;
+            if let State::Finished { .. } = response {
+                return Ok(response);
+            }
+            wait.check_timeout()?;
+            wait.advance();
+        }
     }
 
     pub fn is_up(&self) -> bool {
@@ -122,4 +132,6 @@ pub enum Error {
     SerdeYamlError(#[from] serde_yaml::Error),
     #[error("io error")]
     IoError(#[from] std::io::Error),
+    #[error("timeout error")]
+    WaitError(#[from] WaitError),
 }

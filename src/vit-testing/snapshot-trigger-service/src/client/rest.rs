@@ -1,6 +1,7 @@
 use crate::config::JobParameters;
 use crate::context::State;
 use crate::file_lister::FolderDump;
+use jortestkit::{prelude::Wait, process::WaitError};
 use reqwest::blocking::Response;
 use std::io::Write;
 use std::path::Path;
@@ -73,7 +74,7 @@ impl SnapshotRestClient {
         id: S,
         output: P,
     ) -> Result<(), Error> {
-        self.download(format!("{}/status.yaml", id.into()), output)
+        self.download(format!("{}/snapshot.json", id.into()), output)
     }
 
     pub fn download_job_status<S: Into<String>, P: AsRef<Path>>(
@@ -81,7 +82,7 @@ impl SnapshotRestClient {
         id: S,
         output: P,
     ) -> Result<(), Error> {
-        self.download(format!("{}/snapshot.json", id.into()), output)
+        self.download(format!("{}/status.yaml", id.into()), output)
     }
 
     pub fn download<S: Into<String>, P: AsRef<Path>>(
@@ -106,6 +107,22 @@ impl SnapshotRestClient {
         serde_yaml::from_str(&content).map_err(Into::into)
     }
 
+    pub fn wait_for_job_finish<S: Into<String>>(
+        &self,
+        id: S,
+        mut wait: Wait,
+    ) -> Result<State, Error> {
+        let job_id = id.into();
+        loop {
+            let response = self.job_status(job_id.clone())?;
+            if let State::Finished { .. } = response {
+                return Ok(response);
+            }
+            wait.check_timeout()?;
+            wait.advance();
+        }
+    }
+
     pub fn is_up(&self) -> bool {
         if let Ok(path) = self.get("api/health") {
             if let Ok(response) = reqwest::blocking::get(&path) {
@@ -126,4 +143,6 @@ pub enum Error {
     SerdeYamlError(#[from] serde_yaml::Error),
     #[error("io error")]
     IoError(#[from] std::io::Error),
+    #[error("timeout error")]
+    WaitError(#[from] WaitError),
 }

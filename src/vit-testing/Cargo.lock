@@ -1896,6 +1896,7 @@ dependencies = [
  "jortestkit",
  "rand 0.8.3",
  "rand_chacha 0.2.2",
+ "registration-service",
  "snapshot-trigger-service",
  "thiserror",
  "tokio 1.5.0",

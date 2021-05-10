@@ -5,6 +5,7 @@ cfg_if::cfg_if! {
         pub mod private;
         pub mod non_functional;
         pub mod asserts;
+        pub mod e2e;
     }
 }
 

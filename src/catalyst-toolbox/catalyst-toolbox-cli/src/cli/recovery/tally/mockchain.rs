@@ -2,6 +2,7 @@ use std::ops::{Add, Range};
 use std::time::{Duration, SystemTime};
 
 use super::Error;
+use chain_addr::{Discrimination, Kind};
 use chain_core::property::BlockDate as _;
 use chain_impl_mockchain::account::SpendingCounter;
 use chain_impl_mockchain::block::HeaderId;
@@ -15,11 +16,12 @@ use chain_impl_mockchain::{
     fragment::Fragment,
     ledger::Ledger,
     transaction::InputEnum,
-    vote::Payload,
+    vote::{CommitteeId, Payload},
 };
 use chain_time::{Epoch, SlotDuration, TimeFrame, Timeline};
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::crypto::hash::Hash;
+use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::{
     interfaces::{
         Address, Block0Configuration, FragmentLogDeserializeError, Initial, PersistentFragmentLog,
@@ -28,7 +30,7 @@ use jormungandr_lib::{
     time::SecondsSinceUnixEpoch,
 };
 use jormungandr_testing_utils::wallet::Wallet;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
     SystemTime::UNIX_EPOCH.add(Duration::new(ts.to_secs(), 0))
@@ -58,6 +60,12 @@ fn timeframe_from_block0_start_and_slot_duration(
     )
 }
 
+fn committee_id_to_address(id: CommitteeIdDef) -> Address {
+    let id = CommitteeId::from(id);
+    let pk = id.public_key();
+    chain_addr::Address(Discrimination::Production, Kind::Account(pk)).into()
+}
+
 fn verify_original_tx(
     spending_counter: SpendingCounter,
     block0_hash: &HeaderId,
@@ -85,17 +93,19 @@ pub fn recover_ledger_from_logs(
 ) -> Result<(Ledger, Vec<Fragment>), Error> {
     let block0_configuration = Block0Configuration::from_block(block0).unwrap();
     let mut failed_fragments = Vec::new();
-    // println!("{}", serde_yaml::to_string(&block0_configuration).unwrap());
+    println!("{}", serde_yaml::to_string(&block0_configuration).unwrap());
     let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(block0)?;
     let new_block0_configuration = Block0Configuration::from_block(&new_block0).unwrap();
 
-    // println!(
-    //     "{}",
-    //     serde_yaml::to_string(&new_block0_configuration).unwrap()
-    // );
+    println!(
+        "{}",
+        serde_yaml::to_string(&new_block0_configuration).unwrap()
+    );
 
+    // we use block0 header id instead of the new one, to keep validation on old tx that uses the original block0 id.
+    // This is used so we can run the VoteTally certificates with the original (issued) committee members ones.
     let mut ledger =
-        Ledger::new(new_block0.header.id(), new_block0.fragments()).map_err(Error::LedgerError)?;
+        Ledger::new(block0.header.id(), new_block0.fragments()).map_err(Error::LedgerError)?;
 
     let block0_start = block0_configuration.blockchain_configuration.block0_date;
     let slot_duration = block0_configuration.blockchain_configuration.slot_duration;
@@ -121,27 +131,49 @@ pub fn recover_ledger_from_logs(
             .unwrap()
             .finish(&ConsensusEvalContext::Bft);
     }
-
+    let mut inc_tally = true;
     for fragment_log in fragment_logs {
         match fragment_log {
             Ok(PersistentFragmentLog { fragment, time }) => {
                 let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger);
-                if let Ok(new_fragment) = fragment_replayer
-                    .replay(fragment.clone())
-                    .map_err(|e| println!("Fragment couldn't be processed:\n\t {:?}", e))
-                {
-                    println!("Fragment processed {}", fragment.hash());
-                    if matches!(fragment, Fragment::VoteCast(_)) {
-                        if vote_start > block_date || vote_end <= block_date {
-                            unimplemented!(
-                                "Explain that fragment is skipped because it is out of vote time"
-                            )
+
+                println!("Fragment processed {}", fragment.hash());
+                let new_fragment = match &fragment {
+                    Fragment::VoteCast(_) => {
+                        if let Ok(new_fragment) = fragment_replayer
+                            .replay(fragment.clone())
+                            .map_err(|e| println!("Fragment couldn't be processed:\n\t {:?}", e))
+                        {
+                            if vote_start > block_date || vote_end <= block_date {
+                                unimplemented!(
+                                        "Explain that fragment is skipped because it is out of vote time"
+                                    );
+                            }
+                            Some(new_fragment)
+                        } else {
+                            failed_fragments.push(fragment);
+                            None
                         }
                     }
+                    new_fragment @ Fragment::VoteTally(_) => {
+                        if inc_tally {
+                            ledger = ledger
+                                .begin_block(
+                                    ledger.get_ledger_parameters(),
+                                    ledger.chain_length().increase(),
+                                    vote_end,
+                                )
+                                .unwrap()
+                                .finish(&ConsensusEvalContext::Bft);
+                            inc_tally = false;
+                        }
+                        Some(new_fragment.clone())
+                    }
+                    _ => None,
+                };
+                if let Some(new_fragment) = new_fragment {
                     ledger = ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date)
                         .expect("Should be impossible to fail, since we would be using proper spending counters and signatures");
-                } else {
-                    failed_fragments.push(fragment);
                 }
             }
             Err(e) => {
@@ -149,7 +181,6 @@ pub fn recover_ledger_from_logs(
             }
         }
     }
-
     Ok((ledger, failed_fragments))
 }
 
@@ -179,6 +210,15 @@ impl FragmentReplayer {
 
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();
+
+        let mut committee_members = config
+            .blockchain_configuration
+            .committees
+            .iter()
+            .cloned()
+            .map(committee_id_to_address)
+            .collect::<HashSet<_>>();
+
         for initial in &mut config.initial {
             if let Initial::Fund(ref mut utxos) = initial {
                 for utxo in utxos.iter_mut() {
@@ -186,6 +226,10 @@ impl FragmentReplayer {
                         &mut rng,
                         chain_addr::Discrimination::Production,
                     );
+                    if committee_members.contains(&utxo.address) {
+                        println!("Committee account found {}", &utxo.address);
+                        continue;
+                    }
                     let new_initial_utxo = wallet.to_initial_fund(utxo.value.into());
                     wallets.insert(utxo.address.clone(), wallet);
                     *utxo = new_initial_utxo;
@@ -272,9 +316,12 @@ impl FragmentReplayer {
                 .get(vote_cast.vote_plan())
                 .ok_or(Error::MissingVoteplanError)?;
 
+            // we still use the old block0 hash because the new ledger will still use the old one for
+            // verifications. This makes possible the usage of old VoteTally transactions without the need
+            // to be replayed.
             let res = wallet
                 .issue_vote_cast_cert(
-                    &self.new_block0_hash,
+                    &self.old_block0_hash,
                     &self.fees,
                     &vote_plan,
                     vote_cast.proposal_index(),
@@ -284,7 +331,7 @@ impl FragmentReplayer {
             wallet.confirm_transaction();
             Ok(res)
         } else {
-            unimplemented!()
+            unimplemented!();
         }
     }
 }

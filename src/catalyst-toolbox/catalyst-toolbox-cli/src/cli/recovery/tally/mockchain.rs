@@ -72,18 +72,24 @@ fn verify_original_tx(
     account: &account::Identifier,
     witness: &account::Witness,
     range_check: Range<i32>,
-) -> bool {
+) -> (bool, u32) {
     for i in range_check {
         let spending_counter: i32 = <u32>::from(spending_counter) as i32;
-        let new_spending_counter =
-            SpendingCounter::from(spending_counter.add(i).clamp(0, i32::MAX) as u32);
-        let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, new_spending_counter);
+        let new_spending_counter = spending_counter.add(i).clamp(0, i32::MAX) as u32;
+        let tidsc = WitnessAccountData::new(
+            block0_hash,
+            sign_data_hash,
+            SpendingCounter::from(new_spending_counter),
+        );
         if witness.verify(account.as_ref(), &tidsc) == chain_crypto::Verification::Success {
-            println!("{} {}", spending_counter, i);
-            return true;
+            println!(
+                "expected: {} found: {}",
+                spending_counter, new_spending_counter
+            );
+            return (true, new_spending_counter);
         }
     }
-    false
+    (false, 0)
 }
 
 pub fn recover_ledger_from_logs(
@@ -178,6 +184,7 @@ pub fn recover_ledger_from_logs(
 
 struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
+    spending_counters: HashMap<Address, Vec<u32>>,
     voteplans: HashMap<VotePlanId, VotePlan>,
     old_block0_hash: Hash,
     fees: LinearFee,
@@ -235,6 +242,7 @@ impl FragmentReplayer {
         Ok((
             Self {
                 wallets,
+                spending_counters: HashMap::new(),
                 voteplans,
                 old_block0_hash: block0.header.id().into(),
                 fees,
@@ -288,7 +296,7 @@ impl FragmentReplayer {
                 panic!("utxo witnesses not supported");
             };
 
-            let valid = verify_original_tx(
+            let (valid, sc) = verify_original_tx(
                 spending_counter,
                 &self.old_block0_hash.into_hash(),
                 &sign_data_hash,
@@ -296,13 +304,18 @@ impl FragmentReplayer {
                 &witness,
                 Self::CHECK_RANGE,
             );
+
             if !valid {
                 return Err(Error::InvalidTransactionSignature {
                     id: fragment.clone().hash().to_string(),
                     range: Self::CHECK_RANGE,
                 });
             }
-            let wallet = self.wallets.get_mut(&address.clone().into()).unwrap();
+            self.spending_counters
+                .entry(address.clone().into())
+                .or_insert_with(Vec::new)
+                .push(sc);
+            let wallet = self.wallets.get_mut(&address.into()).unwrap();
             let vote_plan = self
                 .voteplans
                 .get(vote_cast.vote_plan())

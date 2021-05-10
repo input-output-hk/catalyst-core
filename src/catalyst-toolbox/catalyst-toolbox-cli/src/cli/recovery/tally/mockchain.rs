@@ -3,7 +3,6 @@ use std::time::{Duration, SystemTime};
 
 use super::Error;
 use chain_addr::{Discrimination, Kind};
-use chain_core::property::BlockDate as _;
 use chain_impl_mockchain::account::SpendingCounter;
 use chain_impl_mockchain::block::HeaderId;
 use chain_impl_mockchain::certificate::{VotePlan, VotePlanId};
@@ -18,7 +17,7 @@ use chain_impl_mockchain::{
     transaction::InputEnum,
     vote::{CommitteeId, Payload},
 };
-use chain_time::{Epoch, SlotDuration, TimeFrame, Timeline};
+use chain_time::{SlotDuration, TimeFrame, Timeline};
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::CommitteeIdDef;
@@ -93,14 +92,8 @@ pub fn recover_ledger_from_logs(
 ) -> Result<(Ledger, Vec<Fragment>), Error> {
     let block0_configuration = Block0Configuration::from_block(block0).unwrap();
     let mut failed_fragments = Vec::new();
-    println!("{}", serde_yaml::to_string(&block0_configuration).unwrap());
-    let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(block0)?;
-    let new_block0_configuration = Block0Configuration::from_block(&new_block0).unwrap();
 
-    println!(
-        "{}",
-        serde_yaml::to_string(&new_block0_configuration).unwrap()
-    );
+    let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(block0)?;
 
     // we use block0 header id instead of the new one, to keep validation on old tx that uses the original block0 id.
     // This is used so we can run the VoteTally certificates with the original (issued) committee members ones.
@@ -109,7 +102,6 @@ pub fn recover_ledger_from_logs(
 
     let block0_start = block0_configuration.blockchain_configuration.block0_date;
     let slot_duration = block0_configuration.blockchain_configuration.slot_duration;
-    let fees = block0_configuration.blockchain_configuration.linear_fees;
 
     // we assume that voteplans use the same vote start/end BlockDates as well as committee and tally ones
     // hence we only take data from one of them
@@ -176,7 +168,7 @@ pub fn recover_ledger_from_logs(
                         .expect("Should be impossible to fail, since we would be using proper spending counters and signatures");
                 }
             }
-            Err(e) => {
+            Err(_e) => {
                 unimplemented!("Dump error")
             }
         }
@@ -188,11 +180,12 @@ struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
     voteplans: HashMap<VotePlanId, VotePlan>,
     old_block0_hash: Hash,
-    new_block0_hash: Hash,
     fees: LinearFee,
 }
 
 impl FragmentReplayer {
+    const CHECK_RANGE: Range<i32> = -50..50;
+
     fn from_block0(block0: &Block) -> Result<(Self, Block), Error> {
         let mut config =
             Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
@@ -211,7 +204,7 @@ impl FragmentReplayer {
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();
 
-        let mut committee_members = config
+        let committee_members = config
             .blockchain_configuration
             .committees
             .iter()
@@ -244,7 +237,6 @@ impl FragmentReplayer {
                 wallets,
                 voteplans,
                 old_block0_hash: block0.header.id().into(),
-                new_block0_hash: config.to_block().header.id().into(),
                 fees,
             },
             config.to_block(),
@@ -302,12 +294,12 @@ impl FragmentReplayer {
                 &sign_data_hash,
                 &identifier.to_inner(),
                 &witness,
-                -50..50,
+                Self::CHECK_RANGE,
             );
             if !valid {
                 return Err(Error::InvalidTransactionSignature {
                     id: fragment.clone().hash().to_string(),
-                    range: -10..10,
+                    range: Self::CHECK_RANGE,
                 });
             }
             let wallet = self.wallets.get_mut(&address.clone().into()).unwrap();
@@ -341,9 +333,7 @@ mod test {
     use crate::cli::recovery::tally::mockchain::recover_ledger_from_logs;
     use chain_impl_mockchain::block::Block;
     use chain_ser::deser::Deserialize;
-    use jormungandr_lib::interfaces::{
-        load_persistent_fragments_logs_from_folder_path, Block0Configuration,
-    };
+    use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
     use std::io::BufReader;
     use std::path::PathBuf;
 
@@ -363,16 +353,14 @@ mod test {
         let block0 =
             read_block0(r"/Users/daniel/projects/rust/catalyst-toolbox/testing/block0.bin".into())?;
 
-        let initial_fragments = block0.fragments();
-
         let (ledger, failed) = recover_ledger_from_logs(&block0, fragments).unwrap();
 
         println!("Failed: {}", failed.len());
-        // for voteplan in ledger.active_vote_plans() {
-        //     for proposal in voteplan.proposals {
-        //         println!("{:?}", proposal.tally);
-        //     }
-        // }
+        for voteplan in ledger.active_vote_plans() {
+            for proposal in voteplan.proposals {
+                println!("{:?}", proposal.tally);
+            }
+        }
 
         Ok(())
     }

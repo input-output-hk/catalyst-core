@@ -19,4 +19,10 @@ pub enum Error {
 
     #[error("block0 do not contain any voteplan")]
     MissingVoteplanError,
+
+    #[error("Could not verify transaction {id} signature with range {range:?}")]
+    InvalidTransactionSignature {
+        id: String,
+        range: std::ops::Range<i32>,
+    },
 }

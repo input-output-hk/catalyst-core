@@ -1,18 +1,23 @@
-use std::ops::Add;
+use std::ops::{Add, Range};
 use std::time::{Duration, SystemTime};
 
 use super::Error;
 use chain_core::property::BlockDate as _;
+use chain_impl_mockchain::account::SpendingCounter;
+use chain_impl_mockchain::block::HeaderId;
 use chain_impl_mockchain::certificate::{VotePlan, VotePlanId};
+use chain_impl_mockchain::chaineval::ConsensusEvalContext;
 use chain_impl_mockchain::fee::LinearFee;
+use chain_impl_mockchain::transaction::{TransactionSignDataHash, Witness, WitnessAccountData};
 use chain_impl_mockchain::{
+    account,
     block::{Block, BlockDate},
     fragment::Fragment,
     ledger::Ledger,
     transaction::InputEnum,
     vote::Payload,
 };
-use chain_time::{SlotDuration, TimeFrame, Timeline};
+use chain_time::{Epoch, SlotDuration, TimeFrame, Timeline};
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::{
@@ -53,13 +58,41 @@ fn timeframe_from_block0_start_and_slot_duration(
     )
 }
 
+fn verify_original_tx(
+    spending_counter: SpendingCounter,
+    block0_hash: &HeaderId,
+    sign_data_hash: &TransactionSignDataHash,
+    account: &account::Identifier,
+    witness: &account::Witness,
+    range_check: Range<i32>,
+) -> bool {
+    for i in range_check {
+        let spending_counter: i32 = <u32>::from(spending_counter) as i32;
+        let new_spending_counter =
+            SpendingCounter::from(spending_counter.add(i).clamp(0, i32::MAX) as u32);
+        let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, new_spending_counter);
+        if witness.verify(account.as_ref(), &tidsc) == chain_crypto::Verification::Success {
+            println!("{} {}", spending_counter, i);
+            return true;
+        }
+    }
+    false
+}
+
 pub fn recover_ledger_from_logs(
     block0: &Block,
     fragment_logs: impl Iterator<Item = Result<PersistentFragmentLog, FragmentLogDeserializeError>>,
-) -> Result<Ledger, Error> {
-    let block0_configuration = Block0Configuration::from_block(&block0).unwrap();
+) -> Result<(Ledger, Vec<Fragment>), Error> {
+    let block0_configuration = Block0Configuration::from_block(block0).unwrap();
+    let mut failed_fragments = Vec::new();
+    // println!("{}", serde_yaml::to_string(&block0_configuration).unwrap());
+    let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(block0)?;
+    let new_block0_configuration = Block0Configuration::from_block(&new_block0).unwrap();
 
-    let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(&block0)?;
+    // println!(
+    //     "{}",
+    //     serde_yaml::to_string(&new_block0_configuration).unwrap()
+    // );
 
     let mut ledger =
         Ledger::new(new_block0.header.id(), new_block0.fragments()).map_err(Error::LedgerError)?;
@@ -70,26 +103,45 @@ pub fn recover_ledger_from_logs(
 
     // we assume that voteplans use the same vote start/end BlockDates as well as committee and tally ones
     // hence we only take data from one of them
-    let voteplan = ledger
-        .active_vote_plans()
-        .last()
-        .ok_or(Error::MissingVoteplanError)?;
+    let active_voteplans = ledger.active_vote_plans();
+    let voteplan = active_voteplans.last().ok_or(Error::MissingVoteplanError)?;
     let vote_start = voteplan.vote_start;
     let vote_end = voteplan.vote_end;
+    println!("{}", vote_start);
 
     let timeframe = timeframe_from_block0_start_and_slot_duration(block0_start, slot_duration);
+
+    if vote_start.epoch != 0 {
+        ledger = ledger
+            .begin_block(
+                ledger.get_ledger_parameters(),
+                ledger.chain_length().increase(),
+                vote_start,
+            )
+            .unwrap()
+            .finish(&ConsensusEvalContext::Bft);
+    }
 
     for fragment_log in fragment_logs {
         match fragment_log {
             Ok(PersistentFragmentLog { fragment, time }) => {
                 let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger);
-                let new_fragment = fragment_replayer.replay(fragment.clone());
-                if matches!(fragment, Fragment::VoteCast(_)) {
-                    if vote_start > block_date || vote_end <= block_date {
-                        unimplemented!(
-                            "Exaplain that fragment is skipped because it is out of vote time"
-                        )
+                if let Ok(new_fragment) = fragment_replayer
+                    .replay(fragment.clone())
+                    .map_err(|e| println!("Fragment couldn't be processed:\n\t {:?}", e))
+                {
+                    println!("Fragment processed {}", fragment.hash());
+                    if matches!(fragment, Fragment::VoteCast(_)) {
+                        if vote_start > block_date || vote_end <= block_date {
+                            unimplemented!(
+                                "Explain that fragment is skipped because it is out of vote time"
+                            )
+                        }
                     }
+                    ledger = ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date)
+                        .expect("Should be impossible to fail, since we would be using proper spending counters and signatures");
+                } else {
+                    failed_fragments.push(fragment);
                 }
             }
             Err(e) => {
@@ -98,13 +150,14 @@ pub fn recover_ledger_from_logs(
         }
     }
 
-    Ok(ledger)
+    Ok((ledger, failed_fragments))
 }
 
 struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
     voteplans: HashMap<VotePlanId, VotePlan>,
-    block0_hash: Hash,
+    old_block0_hash: Hash,
+    new_block0_hash: Hash,
     fees: LinearFee,
 }
 
@@ -127,26 +180,27 @@ impl FragmentReplayer {
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();
         for initial in &mut config.initial {
-            if let Initial::Fund(mut utxos) = initial {
-                for utxo in &mut utxos {
+            if let Initial::Fund(ref mut utxos) = initial {
+                for utxo in utxos.iter_mut() {
                     let wallet = Wallet::new_account_with_discrimination(
                         &mut rng,
                         chain_addr::Discrimination::Production,
                     );
                     let new_initial_utxo = wallet.to_initial_fund(utxo.value.into());
-                    wallets.insert(utxo.address, wallet);
+                    wallets.insert(utxo.address.clone(), wallet);
                     *utxo = new_initial_utxo;
                 }
             }
         }
-        let block0_hash: Hash = block0.header.id().into();
+
         let fees = config.blockchain_configuration.linear_fees;
 
         Ok((
             Self {
                 wallets,
                 voteplans,
-                block0_hash,
+                old_block0_hash: block0.header.id().into(),
+                new_block0_hash: config.to_block().header.id().into(),
                 fees,
             },
             config.to_block(),
@@ -154,8 +208,10 @@ impl FragmentReplayer {
     }
 
     fn replay(&mut self, fragment: Fragment) -> Result<Fragment, Error> {
-        if let Fragment::VoteCast(transaction) = fragment {
-            let vote_cast = transaction.as_slice().payload().into_payload();
+        if let Fragment::VoteCast(ref transaction) = fragment {
+            let transaction_slice = transaction.as_slice();
+
+            let vote_cast = transaction_slice.payload().into_payload();
             let account = transaction
                 .as_slice()
                 .inputs()
@@ -164,12 +220,12 @@ impl FragmentReplayer {
                 .unwrap()
                 .to_enum();
 
-            let address = if let InputEnum::AccountInput(account, _) = account {
+            let identifier = if let InputEnum::AccountInput(account, _) = account {
                 Identifier::from(account.to_single_account().unwrap())
-                    .to_address(chain_addr::Discrimination::Production)
             } else {
                 panic!("cannot handle utxo inputs");
             };
+            let address = identifier.to_address(chain_addr::Discrimination::Production);
 
             let choice = if let Payload::Public { choice } = vote_cast.payload() {
                 choice
@@ -177,14 +233,48 @@ impl FragmentReplayer {
                 panic!("cannot handle private votes");
             };
 
-            let wallet = self.wallets.get_mut(&address).unwrap();
+            let sign_data_hash = transaction_slice.transaction_sign_data_hash();
+            let spending_counter = if let Wallet::Account(account) =
+                self.wallets.get(&address.clone().into()).unwrap()
+            {
+                account.internal_counter()
+            } else {
+                panic!("this cannot happen")
+            };
+            if transaction_slice.nb_witnesses() != 1 {
+                unimplemented!("Multisig not implemented");
+            }
+            let witness = if let Witness::Account(witness) =
+                transaction_slice.witnesses().iter().next().unwrap()
+            {
+                witness
+            } else {
+                panic!("utxo witnesses not supported");
+            };
+
+            let valid = verify_original_tx(
+                spending_counter,
+                &self.old_block0_hash.into_hash(),
+                &sign_data_hash,
+                &identifier.to_inner(),
+                &witness,
+                -50..50,
+            );
+            if !valid {
+                return Err(Error::InvalidTransactionSignature {
+                    id: fragment.clone().hash().to_string(),
+                    range: -10..10,
+                });
+            }
+            let wallet = self.wallets.get_mut(&address.clone().into()).unwrap();
             let vote_plan = self
                 .voteplans
                 .get(vote_cast.vote_plan())
                 .ok_or(Error::MissingVoteplanError)?;
+
             let res = wallet
                 .issue_vote_cast_cert(
-                    &self.block0_hash,
+                    &self.new_block0_hash,
                     &self.fees,
                     &vote_plan,
                     vote_cast.proposal_index(),
@@ -196,5 +286,47 @@ impl FragmentReplayer {
         } else {
             unimplemented!()
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::cli::recovery::tally::mockchain::recover_ledger_from_logs;
+    use chain_impl_mockchain::block::Block;
+    use chain_ser::deser::Deserialize;
+    use jormungandr_lib::interfaces::{
+        load_persistent_fragments_logs_from_folder_path, Block0Configuration,
+    };
+    use std::io::BufReader;
+    use std::path::PathBuf;
+
+    fn read_block0(path: PathBuf) -> std::io::Result<Block> {
+        let reader = std::fs::File::open(path)?;
+        Ok(Block::deserialize(BufReader::new(reader)).unwrap())
+    }
+
+    #[test]
+    fn test_vote_flow() -> std::io::Result<()> {
+        let path: PathBuf = r"/Users/daniel/projects/rust/catalyst-toolbox/testing/logs"
+            .parse()
+            .unwrap();
+
+        let fragments = load_persistent_fragments_logs_from_folder_path(&path)?;
+
+        let block0 =
+            read_block0(r"/Users/daniel/projects/rust/catalyst-toolbox/testing/block0.bin".into())?;
+
+        let initial_fragments = block0.fragments();
+
+        let (ledger, failed) = recover_ledger_from_logs(&block0, fragments).unwrap();
+
+        println!("Failed: {}", failed.len());
+        // for voteplan in ledger.active_vote_plans() {
+        //     for proposal in voteplan.proposals {
+        //         println!("{:?}", proposal.tally);
+        //     }
+        // }
+
+        Ok(())
     }
 }

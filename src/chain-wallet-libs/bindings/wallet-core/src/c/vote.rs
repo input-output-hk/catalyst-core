@@ -103,12 +103,12 @@ mod tests {
 
     #[test]
     fn cast_private_vote() {
-        use chain_vote::gargamel;
+        use chain_vote::encryption;
         use rand::SeedableRng;
         let vote_plan_id = [0u8; crate::vote::VOTE_PLAN_ID_LENGTH];
         let mut rng = rand_chacha::ChaCha20Rng::from_seed([1u8; 32]);
-        let sk = gargamel::SecretKey::generate(&mut rng);
-        let pk = gargamel::Keypair::from_secretkey(sk).public_key;
+        let sk = encryption::SecretKey::generate(&mut rng);
+        let pk = encryption::Keypair::from_secretkey(sk).public_key;
 
         let encrypting_vote_key =
             bech32::encode(ENCRYPTION_VOTE_KEY_HRP, pk.to_bytes().to_base32()).unwrap();

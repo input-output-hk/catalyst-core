@@ -252,7 +252,7 @@ mod tests {
 
         let password = [5u8, 6, 7, 8];
         assert!(matches!(
-            decrypt(&password, slice.clone()),
+            decrypt(&password, slice),
             Err(Error::AuthenticationFailed)
         ));
     }

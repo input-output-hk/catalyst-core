@@ -121,8 +121,8 @@ impl<K> UtxoGroup<K> {
         );
 
         Self {
-            total_value,
             by_value,
+            total_value,
             key,
         }
     }

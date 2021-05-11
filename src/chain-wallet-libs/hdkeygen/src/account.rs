@@ -160,7 +160,7 @@ mod tests {
         fn clone(&self) -> Self {
             Self {
                 secret: self.secret.clone(),
-                counter: self.counter.clone(),
+                counter: self.counter,
             }
         }
     }

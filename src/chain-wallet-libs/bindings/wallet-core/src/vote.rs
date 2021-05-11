@@ -28,9 +28,9 @@ impl Proposal {
     ) -> Self {
         Self {
             vote_plan_id,
-            payload_type,
             index,
             options,
+            payload_type,
         }
     }
 

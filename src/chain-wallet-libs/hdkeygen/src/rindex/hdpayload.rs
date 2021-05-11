@@ -158,7 +158,7 @@ impl HdKey {
 
     #[cfg(test)]
     pub fn encrypt(&self, input: &[u8]) -> Vec<u8> {
-        let mut ctx = ChaCha20Poly1305::new(&self.0, &NONCE[..], &[]);
+        let mut ctx = ChaCha20Poly1305::new(&self.0, NONCE, &[]);
 
         let len = input.len();
 

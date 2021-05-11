@@ -3,6 +3,7 @@ use std::time::{Duration, SystemTime};
 
 use super::Error;
 use chain_addr::{Discrimination, Kind};
+use chain_core::property::Fragment;
 use chain_impl_mockchain::account::SpendingCounter;
 use chain_impl_mockchain::block::HeaderId;
 use chain_impl_mockchain::certificate::{VotePlan, VotePlanId};
@@ -73,8 +74,8 @@ fn verify_original_tx(
     witness: &account::Witness,
     range_check: Range<i32>,
 ) -> (bool, u32) {
+    let spending_counter: i32 = <u32>::from(spending_counter) as i32;
     for i in range_check {
-        let spending_counter: i32 = <u32>::from(spending_counter) as i32;
         let new_spending_counter = spending_counter.add(i).clamp(0, i32::MAX) as u32;
         let tidsc = WitnessAccountData::new(
             block0_hash,
@@ -119,6 +120,7 @@ pub fn recover_ledger_from_logs(
 
     let timeframe = timeframe_from_block0_start_and_slot_duration(block0_start, slot_duration);
 
+    // do not update ledger epoch if we are already in expected Epoch(0)
     if vote_start.epoch != 0 {
         ledger = ledger
             .begin_block(
@@ -129,6 +131,8 @@ pub fn recover_ledger_from_logs(
             .unwrap()
             .finish(&ConsensusEvalContext::Bft);
     }
+
+    // flag to check if we already incremented the time for tally (advance to vote_end)
     let mut inc_tally = true;
     for fragment_log in fragment_logs {
         match fragment_log {
@@ -137,17 +141,28 @@ pub fn recover_ledger_from_logs(
 
                 println!("Fragment processed {}", fragment.hash());
                 let new_fragment = match &fragment {
-                    Fragment::VoteCast(_) => {
-                        if let Ok(new_fragment) = fragment_replayer
-                            .replay(fragment.clone())
-                            .map_err(|e| println!("Fragment couldn't be processed:\n\t {:?}", e))
+                    fragment @ Fragment::VoteCast(_) => {
+                        if let Ok(new_fragment) =
+                            fragment_replayer.replay(fragment.clone()).map_err(|e| {
+                                println!(
+                                    "Fragment {} couldn't be processed:\n\t {:?}",
+                                    fragment.id(),
+                                    e
+                                );
+                            })
                         {
                             if vote_start > block_date || vote_end <= block_date {
-                                unimplemented!(
-                                        "Explain that fragment is skipped because it is out of vote time"
-                                    );
+                                println!(
+                                    "Fragment {} skipped because it was out of voting time ({}-{}-{})",
+                                    fragment.id(),
+                                    vote_start,
+                                    block_date,
+                                    vote_end,
+                                );
+                                None
+                            } else {
+                                Some(new_fragment)
                             }
-                            Some(new_fragment)
                         } else {
                             failed_fragments.push(fragment);
                             None
@@ -171,11 +186,11 @@ pub fn recover_ledger_from_logs(
                 };
                 if let Some(new_fragment) = new_fragment {
                     ledger = ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date)
-                        .expect("Should be impossible to fail, since we would be using proper spending counters and signatures");
+                        .expect("Should be impossible to fail, since we should be using proper spending counters and signatures");
                 }
             }
-            Err(_e) => {
-                unimplemented!("Dump error")
+            Err(e) => {
+                println!("Error deserializing PersistentFragmentLog: {:?}", e);
             }
         }
     }
@@ -193,9 +208,11 @@ struct FragmentReplayer {
 impl FragmentReplayer {
     const CHECK_RANGE: Range<i32> = -50..50;
 
+    // build a new block0 with mirror accounts and same configuration as original one
     fn from_block0(block0: &Block) -> Result<(Self, Block), Error> {
         let mut config =
             Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
+
         let voteplans = block0
             .fragments()
             .filter_map(|fragment| {
@@ -251,6 +268,7 @@ impl FragmentReplayer {
         ))
     }
 
+    // rebuild a fragment to be used in the new ledger configuration with the account mirror account.
     fn replay(&mut self, fragment: Fragment) -> Result<Fragment, Error> {
         if let Fragment::VoteCast(ref transaction) = fragment {
             let transaction_slice = transaction.as_slice();
@@ -283,11 +301,13 @@ impl FragmentReplayer {
             {
                 account.internal_counter()
             } else {
-                panic!("this cannot happen")
+                panic!("New accounts spending counters should always be valid.")
             };
+
             if transaction_slice.nb_witnesses() != 1 {
-                unimplemented!("Multisig not implemented");
+                unimplemented!("Multi-signature is not supported");
             }
+
             let witness = if let Witness::Account(witness) =
                 transaction_slice.witnesses().iter().next().unwrap()
             {
@@ -296,7 +316,7 @@ impl FragmentReplayer {
                 panic!("utxo witnesses not supported");
             };
 
-            let (valid, sc) = verify_original_tx(
+            let (is_valid_tx, sc) = verify_original_tx(
                 spending_counter,
                 &self.old_block0_hash.into_hash(),
                 &sign_data_hash,
@@ -305,17 +325,20 @@ impl FragmentReplayer {
                 Self::CHECK_RANGE,
             );
 
-            if !valid {
+            if !is_valid_tx {
                 return Err(Error::InvalidTransactionSignature {
                     id: fragment.clone().hash().to_string(),
                     range: Self::CHECK_RANGE,
                 });
             }
+
             self.spending_counters
                 .entry(address.clone().into())
                 .or_insert_with(Vec::new)
                 .push(sc);
+
             let wallet = self.wallets.get_mut(&address.into()).unwrap();
+
             let vote_plan = self
                 .voteplans
                 .get(vote_cast.vote_plan())

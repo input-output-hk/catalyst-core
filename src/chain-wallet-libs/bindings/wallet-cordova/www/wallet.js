@@ -8,6 +8,7 @@ const WALLET_RESTORE_ACTION_TAG = 'WALLET_RESTORE';
 const WALLET_IMPORT_KEYS_TAG = 'WALLET_IMPORT_KEYS';
 const WALLET_RETRIEVE_FUNDS_ACTION_TAG = 'WALLET_RETRIEVE_FUNDS';
 const WALLET_TOTAL_FUNDS_ACTION_TAG = 'WALLET_TOTAL_FUNDS';
+const WALLET_SPENDING_COUNTER_ACTION_TAG = 'WALLET_SPENDING_COUNTER';
 const WALLET_ID_TAG = 'WALLET_ID';
 const WALLET_CONVERT_ACTION_TAG = 'WALLET_CONVERT';
 const WALLET_SET_STATE_ACTION_TAG = 'WALLET_SET_STATE';
@@ -135,6 +136,21 @@ var plugin = {
     walletTotalFunds: function (ptr, successCallback, errorCallback) {
         argscheck.checkArgs('sff', 'walletTotalFunds', arguments);
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_TOTAL_FUNDS_ACTION_TAG, [ptr]);
+    },
+
+    /**
+     * @param {string} ptr a pointer to a wallet
+     * @param {function} successCallback returns a number
+     * @param {errorCallback} errorCallback this function should not fail
+     */
+    walletSpendingCounter: function (ptr, successCallback, errorCallback) {
+        argscheck.checkArgs('sff', 'walletTotalFunds', arguments);
+
+        const toNumber = function (arg) {
+            successCallback(Number(arg));
+        };
+
+        exec(toNumber, errorCallback, NATIVE_CLASS_NAME, WALLET_SPENDING_COUNTER_ACTION_TAG, [ptr]);
     },
 
     /**

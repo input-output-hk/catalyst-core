@@ -277,6 +277,12 @@ impl Wallet {
         todo!("pending transactions");
     }
 
+    /// get the current spending counter
+    ///
+    pub fn spending_counter(&self) -> u32 {
+        self.account.spending_counter()
+    }
+
     /// get the total value in the wallet
     ///
     /// make sure to call `retrieve_funds` prior to calling this function

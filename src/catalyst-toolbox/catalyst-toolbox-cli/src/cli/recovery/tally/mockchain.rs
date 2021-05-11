@@ -3,7 +3,7 @@ use std::time::{Duration, SystemTime};
 
 use super::Error;
 use chain_addr::{Discrimination, Kind};
-use chain_core::property::Fragment;
+use chain_core::property::Fragment as _;
 use chain_impl_mockchain::account::SpendingCounter;
 use chain_impl_mockchain::block::HeaderId;
 use chain_impl_mockchain::certificate::{VotePlan, VotePlanId};
@@ -164,7 +164,7 @@ pub fn recover_ledger_from_logs(
                                 Some(new_fragment)
                             }
                         } else {
-                            failed_fragments.push(fragment);
+                            failed_fragments.push(fragment.clone());
                             None
                         }
                     }

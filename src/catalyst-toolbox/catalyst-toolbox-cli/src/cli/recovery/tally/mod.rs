@@ -1,7 +1,7 @@
 pub(crate) mod mockchain;
-pub(crate) mod voteplan;
 
-use thiserror;
+use std::path::PathBuf;
+use structopt::StructOpt;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -25,4 +25,17 @@ pub enum Error {
         id: String,
         range: std::ops::Range<i32>,
     },
+}
+
+#[derive(StructOpt)]
+#[structopt(rename_all = "kebab")]
+pub struct Replay {
+    block0_path: PathBuf,
+    logs_path: PathBuf,
+}
+
+impl Replay {
+    pub fn exec(self) -> Result<(), Error> {
+        Ok(())
+    }
 }

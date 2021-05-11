@@ -66,6 +66,20 @@ fn committee_id_to_address(id: CommitteeIdDef) -> Address {
     chain_addr::Address(Discrimination::Production, Kind::Account(pk)).into()
 }
 
+fn voteplans_from_block0(block0: &Block) -> HashMap<VotePlanId, VotePlan> {
+    block0
+        .fragments()
+        .filter_map(|fragment| {
+            if let Fragment::VotePlan(tx) = fragment {
+                let voteplan = tx.as_slice().payload().into_payload();
+                Some((voteplan.to_id(), voteplan))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 fn verify_original_tx(
     spending_counter: SpendingCounter,
     block0_hash: &HeaderId,
@@ -91,6 +105,17 @@ fn verify_original_tx(
         }
     }
     (false, 0)
+}
+
+fn increment_ledger_time_up_to(ledger: Ledger, blockdate: BlockDate) -> Ledger {
+    ledger
+        .begin_block(
+            ledger.get_ledger_parameters(),
+            ledger.chain_length().increase(),
+            blockdate,
+        )
+        .unwrap()
+        .finish(&ConsensusEvalContext::Bft)
 }
 
 pub fn recover_ledger_from_logs(
@@ -170,14 +195,7 @@ pub fn recover_ledger_from_logs(
                     }
                     new_fragment @ Fragment::VoteTally(_) => {
                         if inc_tally {
-                            ledger = ledger
-                                .begin_block(
-                                    ledger.get_ledger_parameters(),
-                                    ledger.chain_length().increase(),
-                                    vote_end,
-                                )
-                                .unwrap()
-                                .finish(&ConsensusEvalContext::Bft);
+                            ledger = increment_ledger_time_up_to(ledger, vote_end);
                             inc_tally = false;
                         }
                         Some(new_fragment.clone())
@@ -213,17 +231,7 @@ impl FragmentReplayer {
         let mut config =
             Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
 
-        let voteplans = block0
-            .fragments()
-            .filter_map(|fragment| {
-                if let Fragment::VotePlan(tx) = fragment {
-                    let voteplan = tx.as_slice().payload().into_payload();
-                    Some((voteplan.to_id(), voteplan))
-                } else {
-                    None
-                }
-            })
-            .collect::<HashMap<_, _>>();
+        let voteplans = voteplans_from_block0(&block0);
 
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();
@@ -366,10 +374,17 @@ impl FragmentReplayer {
 
 #[cfg(test)]
 mod test {
-    use crate::cli::recovery::tally::mockchain::recover_ledger_from_logs;
+    use crate::cli::recovery::tally::mockchain::{
+        increment_ledger_time_up_to, recover_ledger_from_logs, voteplans_from_block0,
+    };
     use chain_impl_mockchain::block::Block;
+    use chain_impl_mockchain::certificate::VoteTallyPayload;
+    use chain_impl_mockchain::vote::Weight;
     use chain_ser::deser::Deserialize;
-    use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
+    use jormungandr_lib::interfaces::{
+        load_persistent_fragments_logs_from_folder_path, Block0Configuration,
+    };
+    use jormungandr_testing_utils::wallet::Wallet;
     use std::io::BufReader;
     use std::path::PathBuf;
 
@@ -380,21 +395,47 @@ mod test {
 
     #[test]
     fn test_vote_flow() -> std::io::Result<()> {
-        let path: PathBuf = r"/Users/daniel/projects/rust/catalyst-toolbox/testing/logs"
-            .parse()
-            .unwrap();
-
+        println!("{}", std::env::current_dir().unwrap().to_string_lossy());
+        let path = std::fs::canonicalize(r"../testing/logs").unwrap();
+        println!(
+            "{}",
+            std::fs::canonicalize(path.clone())
+                .unwrap()
+                .to_string_lossy()
+        );
         let fragments = load_persistent_fragments_logs_from_folder_path(&path)?;
-
-        let block0 =
-            read_block0(r"/Users/daniel/projects/rust/catalyst-toolbox/testing/block0.bin".into())?;
-
-        let (ledger, failed) = recover_ledger_from_logs(&block0, fragments).unwrap();
+        let block0_path: PathBuf = std::fs::canonicalize(r"../testing/block0.bin").unwrap();
+        let block0 = read_block0(block0_path)?;
+        let block0_configuration = Block0Configuration::from_block(&block0).unwrap();
+        let (mut ledger, failed) = recover_ledger_from_logs(&block0, fragments).unwrap();
+        let mut committee = Wallet::from_existing_account("ed25519e_sk1dpqkhtzyeaqvclvjf3hgdkw2rh5q06a2dqrp9qks32g96ta6k9alvhm7a0zp5j4gly90dmjj2w4ky3u86mpwxyctrc2k7s5qfq9dd8sefgey5", 0.into());
+        let voteplans = voteplans_from_block0(&block0);
+        let mut ledger =
+            increment_ledger_time_up_to(ledger, voteplans.values().last().unwrap().vote_end());
+        for (_, voteplan) in voteplans {
+            let tally_cert = committee
+                .issue_vote_tally_cert(
+                    &block0.header.id().into(),
+                    &block0_configuration.blockchain_configuration.linear_fees,
+                    &voteplan,
+                    VoteTallyPayload::Public,
+                )
+                .unwrap();
+            ledger = ledger.apply_fragment(&ledger.get_ledger_parameters(), &tally_cert, ledger.date())
+                .expect("Should be impossible to fail, since we should be using proper spending counters and signatures");
+            committee.confirm_transaction();
+        }
 
         println!("Failed: {}", failed.len());
+        assert_eq!(failed.len(), 0);
         for voteplan in ledger.active_vote_plans() {
+            println!("Voteplan: {}", voteplan.id);
             for proposal in voteplan.proposals {
-                println!("{:?}", proposal.tally);
+                let result = proposal.tally.unwrap().result().cloned().unwrap();
+                if result.results().iter().any(|w| w != &Weight::from(0)) {
+                    println!("\tProposal: {}", proposal.proposal_id);
+                    println!("\t\t{:?}", result.results());
+                }
             }
         }
 

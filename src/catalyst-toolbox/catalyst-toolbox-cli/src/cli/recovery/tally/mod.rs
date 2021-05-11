@@ -52,12 +52,15 @@ pub enum Error {
     OutputFormatError(#[from] OutputFormatError),
 }
 
+/// Recover the tally from fragment log files and the initial preloaded block0 binary file.
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab")]
 pub struct Replay {
+    /// Path to the block0 binary file
     #[structopt(long)]
     block0_path: PathBuf,
 
+    /// Path to the folder containing the log files used for the tally reconstruction
     #[structopt(long)]
     logs_path: PathBuf,
 

@@ -612,6 +612,24 @@ ErrorPtr iohk_jormungandr_wallet_settings_new(struct LinearFee linear_fee,
                                               SettingsPtr *settings_out);
 
 /**
+ * get the current spending counter for the (only) account in this wallet
+ *
+ *
+ * # Errors
+ *
+ * * this function may fail if the wallet pointer is null;
+ *
+ * # Safety
+ *
+ * This function dereference raw pointers. Even though
+ * the function checks if the pointers are null. Mind not to put random values
+ * in or you may see unexpected behaviors
+ *
+ */
+ErrorPtr iohk_jormungandr_wallet_spending_counter(WalletPtr wallet,
+                                                  uint32_t *spending_counter_ptr);
+
+/**
  * get the total value in the wallet
  *
  * make sure to call `retrieve_funds` prior to calling this function

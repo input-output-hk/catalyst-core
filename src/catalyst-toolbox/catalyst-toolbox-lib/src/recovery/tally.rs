@@ -263,10 +263,13 @@ impl FragmentReplayer {
             Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
 
         let voteplans = voteplans_from_block0(&block0);
+
+        // use double of proposals range as possible spending counters to check
         let spending_counter_max_check: u32 = voteplans
             .values()
             .flat_map(|voteplan| voteplan.proposals().iter())
-            .count() as u32;
+            .count() as u32
+            * 2;
 
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();

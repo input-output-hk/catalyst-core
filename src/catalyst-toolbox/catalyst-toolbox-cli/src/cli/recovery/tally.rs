@@ -1,5 +1,4 @@
-pub(crate) mod mockchain;
-
+use catalyst_toolbox_lib::recovery::tally::recover_ledger_from_logs;
 use chain_core::property::{Deserialize, Fragment};
 use chain_impl_mockchain::block::Block;
 use jcli_lib::utils::{
@@ -25,25 +24,7 @@ pub enum Error {
     SerializationError(#[from] serde_json::Error),
 
     #[error(transparent)]
-    DeserializeError(#[from] jormungandr_lib::interfaces::FragmentLogDeserializeError),
-
-    #[error(transparent)]
-    LedgerError(#[from] chain_impl_mockchain::ledger::Error),
-
-    #[error("Couldn't initiate a new wallet")]
-    WalletError(#[from] jormungandr_testing_utils::wallet::WalletError),
-
-    #[error(transparent)]
-    Block0ConfigurationError(#[from] jormungandr_lib::interfaces::Block0ConfigurationError),
-
-    #[error("Block0 do not contain any voteplan")]
-    MissingVoteplanError,
-
-    #[error("Could not verify transaction {id} signature with range {range:?}")]
-    InvalidTransactionSignature {
-        id: String,
-        range: std::ops::Range<i32>,
-    },
+    RecoveryError(#[from] catalyst_toolbox_lib::recovery::tally::Error),
 
     #[error(transparent)]
     OutputFileError(#[from] OutputFileError),
@@ -87,7 +68,7 @@ impl Replay {
         let block0 = read_block0(block0_path)?;
         let fragments = load_persistent_fragments_logs_from_folder_path(&logs_path)?;
 
-        let (ledger, failed) = mockchain::recover_ledger_from_logs(&block0, fragments)?;
+        let (ledger, failed) = recover_ledger_from_logs(&block0, fragments)?;
         if !failed.is_empty() {
             println!("{} fragments couldn't be properly processed", failed.len());
             for failed_fragment in failed {

@@ -1,7 +1,6 @@
 use std::ops::{Add, Range};
 use std::time::{Duration, SystemTime};
 
-use super::Error;
 use chain_addr::{Discrimination, Kind};
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::account::SpendingCounter;
@@ -31,6 +30,31 @@ use jormungandr_lib::{
 };
 use jormungandr_testing_utils::wallet::Wallet;
 use std::collections::{HashMap, HashSet};
+
+#[allow(clippy::large_enum_variant)]
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    DeserializeError(#[from] jormungandr_lib::interfaces::FragmentLogDeserializeError),
+
+    #[error(transparent)]
+    LedgerError(#[from] chain_impl_mockchain::ledger::Error),
+
+    #[error("Couldn't initiate a new wallet")]
+    WalletError(#[from] jormungandr_testing_utils::wallet::WalletError),
+
+    #[error(transparent)]
+    Block0ConfigurationError(#[from] jormungandr_lib::interfaces::Block0ConfigurationError),
+
+    #[error("Block0 do not contain any voteplan")]
+    MissingVoteplanError,
+
+    #[error("Could not verify transaction {id} signature with range {range:?}")]
+    InvalidTransactionSignature {
+        id: String,
+        range: std::ops::Range<i32>,
+    },
+}
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
     SystemTime::UNIX_EPOCH.add(Duration::new(ts.to_secs(), 0))
@@ -374,9 +398,7 @@ impl FragmentReplayer {
 
 #[cfg(test)]
 mod test {
-    use crate::cli::recovery::tally::mockchain::{
-        increment_ledger_time_up_to, recover_ledger_from_logs, voteplans_from_block0,
-    };
+    use super::{increment_ledger_time_up_to, recover_ledger_from_logs, voteplans_from_block0};
     use chain_impl_mockchain::block::Block;
     use chain_impl_mockchain::certificate::VoteTallyPayload;
     use chain_impl_mockchain::vote::Weight;
@@ -407,7 +429,7 @@ mod test {
         let block0_path: PathBuf = std::fs::canonicalize(r"../testing/block0.bin").unwrap();
         let block0 = read_block0(block0_path)?;
         let block0_configuration = Block0Configuration::from_block(&block0).unwrap();
-        let (mut ledger, failed) = recover_ledger_from_logs(&block0, fragments).unwrap();
+        let (ledger, failed) = recover_ledger_from_logs(&block0, fragments).unwrap();
         let mut committee = Wallet::from_existing_account("ed25519e_sk1dpqkhtzyeaqvclvjf3hgdkw2rh5q06a2dqrp9qks32g96ta6k9alvhm7a0zp5j4gly90dmjj2w4ky3u86mpwxyctrc2k7s5qfq9dd8sefgey5", 0.into());
         let voteplans = voteplans_from_block0(&block0);
         let mut ledger =

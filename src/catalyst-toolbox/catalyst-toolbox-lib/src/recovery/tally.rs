@@ -247,6 +247,7 @@ struct FragmentReplayer {
     voteplans: HashMap<VotePlanId, VotePlan>,
     old_block0_hash: Hash,
     fees: LinearFee,
+    range_check: Range<u32>,
 }
 
 impl FragmentReplayer {
@@ -256,6 +257,10 @@ impl FragmentReplayer {
             Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
 
         let voteplans = voteplans_from_block0(&block0);
+        let spending_counter_max_check: u32 = voteplans
+            .values()
+            .flat_map(|voteplan| voteplan.proposals().iter())
+            .count() as u32;
 
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();
@@ -295,6 +300,7 @@ impl FragmentReplayer {
                 voteplans,
                 old_block0_hash: block0.header.id().into(),
                 fees,
+                range_check: (0..spending_counter_max_check),
             },
             config.to_block(),
         ))
@@ -348,25 +354,19 @@ impl FragmentReplayer {
                 panic!("utxo witnesses not supported");
             };
 
-            let spending_counter_max_check: u32 = self
-                .voteplans
-                .values()
-                .flat_map(|voteplan| voteplan.proposals().iter())
-                .count() as u32;
-
             let (is_valid_tx, sc) = verify_original_tx(
                 spending_counter,
                 &self.old_block0_hash.into_hash(),
                 &sign_data_hash,
                 &identifier.to_inner(),
                 &witness,
-                0..spending_counter_max_check,
+                self.range_check.clone(),
             );
 
             if !is_valid_tx {
                 return Err(Error::InvalidTransactionSignature {
                     id: fragment.clone().hash().to_string(),
-                    range: 0..spending_counter_max_check,
+                    range: self.range_check.clone(),
                 });
             }
 

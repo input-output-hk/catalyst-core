@@ -5,7 +5,7 @@
     rust-nix.url = "github:input-output-hk/rust.nix/work";
     rust-nix.inputs.nixpkgs.follows = "nixpkgs";
     voting-tools.url =
-      "github:input-output-hk/voting-tools/stake-address-for-rewards";
+      "github:input-output-hk/voting-tools?rev=db0748e7c1636ac21f322c9d42ba088bb501e5a2";
     vit-kedqr.url = "github:input-output-hk/vit-kedqr";
     jormungandr.url =
       "github:input-output-hk/jormungandr?rev=50fc937159cbea328973af2a4a04d1c8d9d4b48e";

@@ -9,12 +9,14 @@ use chain_impl_mockchain::{
 };
 pub use hdkeygen::account::AccountId;
 use hdkeygen::account::{Account, Seed};
+use thiserror::Error;
 
 pub struct Wallet {
     account: EitherAccount,
     state: States<FragmentId, State>,
 }
 
+#[derive(Debug)]
 pub struct State {
     value: Value,
     counter: u32,
@@ -22,8 +24,15 @@ pub struct State {
 
 pub struct WalletBuildTx<'a> {
     wallet: &'a mut Wallet,
-    value: Value,
-    counter: u32,
+    needed_input: Value,
+    next_value: Value,
+    current_counter: u32,
+}
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("not enough funds, needed {needed:?}, available {current:?}")]
+    NotEnoughFunds { current: Value, needed: Value },
 }
 
 enum EitherAccount {
@@ -90,7 +99,7 @@ impl Wallet {
     /// as immutable
     ///
     pub fn confirm(&mut self, fragment_id: &FragmentId) {
-        self.state.confirm(fragment_id)
+        self.state.confirm(fragment_id);
     }
 
     /// get all the pending transactions of the wallet
@@ -130,14 +139,24 @@ impl Wallet {
         }
     }
 
-    pub fn new_transaction(&mut self, value: Value) -> WalletBuildTx {
+    pub fn new_transaction(&mut self, needed_input: Value) -> Result<WalletBuildTx, Error> {
         let (_, state, _) = self.state.last_state();
-        let counter = state.counter;
-        WalletBuildTx {
+        let current_counter = state.counter;
+        let next_value =
+            state
+                .value
+                .checked_sub(needed_input)
+                .map_err(|_| Error::NotEnoughFunds {
+                    current: state.value,
+                    needed: needed_input,
+                })?;
+
+        Ok(WalletBuildTx {
             wallet: self,
-            value,
-            counter,
-        }
+            needed_input,
+            current_counter,
+            next_value,
+        })
     }
 
     pub fn check_fragment(&mut self, fragment_id: &FragmentId, fragment: &Fragment) -> bool {
@@ -207,19 +226,19 @@ impl Wallet {
 
 impl<'a> WalletBuildTx<'a> {
     pub fn input(&self) -> Input {
-        Input::from_account_public_key(self.wallet.account_id().into(), self.value)
+        Input::from_account_public_key(self.wallet.account_id().into(), self.needed_input)
     }
 
     pub fn witness_builder(&self) -> AccountWitnessBuilder {
         match &self.wallet.account {
             EitherAccount::Seed(account) => crate::transaction::AccountWitnessBuilder::Ed25519(
                 account.secret().clone(),
-                self.counter.into(),
+                self.current_counter.into(),
             ),
             EitherAccount::Extended(account) => {
                 crate::transaction::AccountWitnessBuilder::Ed25519Extended(
                     account.secret().clone(),
-                    self.counter.into(),
+                    self.current_counter.into(),
                 )
             }
         }
@@ -229,8 +248,8 @@ impl<'a> WalletBuildTx<'a> {
         self.wallet.state.push(
             fragment_id,
             State {
-                value: self.value,
-                counter: self.counter.checked_add(1).unwrap(),
+                value: self.next_value,
+                counter: self.current_counter.checked_add(1).unwrap(),
             },
         );
     }

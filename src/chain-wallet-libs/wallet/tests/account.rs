@@ -119,7 +119,7 @@ fn cast_vote() {
 
     let value = builder.estimate_fee_with(1, 0);
 
-    let account_tx_builder = account.new_transaction(value);
+    let account_tx_builder = account.new_transaction(value).unwrap();
     let input = account_tx_builder.input();
     let witness_builder = account_tx_builder.witness_builder();
 

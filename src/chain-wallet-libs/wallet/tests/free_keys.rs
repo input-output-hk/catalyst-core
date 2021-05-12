@@ -57,6 +57,19 @@ fn free_keys1() {
 
 #[test]
 fn cast_vote() {
+    impl State {
+        pub fn get_account_state(
+            &self,
+            account_id: wallet::AccountId,
+        ) -> Option<(chain_impl_mockchain::account::SpendingCounter, Value)> {
+            self.ledger
+                .accounts()
+                .get_state(&chain_crypto::PublicKey::from(account_id).into())
+                .ok()
+                .map(|account_state| (account_state.counter, account_state.value))
+        }
+    }
+
     let builder = wallet::RecoveryBuilder::new();
 
     let builder = builder
@@ -86,11 +99,17 @@ fn cast_vote() {
 
     assert!(ignored.is_empty());
 
+    account.check_fragment(&fragment.hash(), &fragment);
+
     state
         .apply_fragments(&[fragment.to_raw()])
         .expect("the dump fragments should be valid");
 
+    let (_counter, value) = state.get_account_state(account.account_id()).unwrap();
+
     account.confirm(&fragment.hash());
+
+    assert_eq!(account.confirmed_value(), value);
 
     let vote_plan_id: [u8; 32] = hex::decode(
         "4aa30d9df6d2dfdb45725c0de00d1a73394950c8bf3dabc8285f46f1e25e53fa",
@@ -110,7 +129,7 @@ fn cast_vote() {
 
     let value = builder.estimate_fee_with(1, 0);
 
-    let account_tx_builder = account.new_transaction(value);
+    let account_tx_builder = account.new_transaction(value).unwrap();
     let input = account_tx_builder.input();
     let witness_builder = account_tx_builder.witness_builder();
 
@@ -127,4 +146,9 @@ fn cast_vote() {
     state
         .apply_fragments(&[raw])
         .expect("couldn't apply votecast fragment");
+
+    account.confirm(&id);
+
+    let (_counter, value) = state.get_account_state(account.account_id()).unwrap();
+    assert_eq!(account.confirmed_value(), value);
 }

@@ -345,7 +345,11 @@ impl Wallet {
 
         let value = builder.estimate_fee_with(1, 0);
 
-        let account_tx_builder = self.account.new_transaction(value);
+        let account_tx_builder = self
+            .account
+            .new_transaction(value)
+            .map_err(|_| Error::not_enough_funds())?;
+
         let input = account_tx_builder.input();
         let witness_builder = account_tx_builder.witness_builder();
 

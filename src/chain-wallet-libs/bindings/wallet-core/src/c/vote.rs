@@ -4,7 +4,7 @@ use crate::{
     Error, Proposal, Result as AbiResult,
 };
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options as VoteOptions};
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 pub use wallet::Settings;
 
@@ -19,18 +19,18 @@ const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
 pub struct ProposalPublic;
 pub struct ProposalPrivate<'a>(pub &'a CStr);
 
-pub trait ToPayload {
-    fn to_payload(self) -> Result<PayloadTypeConfig, Error>;
-}
+impl TryInto<PayloadTypeConfig> for ProposalPublic {
+    type Error = Error;
 
-impl ToPayload for ProposalPublic {
-    fn to_payload(self) -> Result<PayloadTypeConfig, Error> {
+    fn try_into(self) -> Result<PayloadTypeConfig, Error> {
         Ok(PayloadTypeConfig::Public)
     }
 }
 
-impl<'a> ToPayload for ProposalPrivate<'a> {
-    fn to_payload(self) -> Result<PayloadTypeConfig, Error> {
+impl<'a> TryInto<PayloadTypeConfig> for ProposalPrivate<'a> {
+    type Error = Error;
+
+    fn try_into(self) -> Result<PayloadTypeConfig, Error> {
         use bech32::FromBase32;
 
         const INPUT_NAME: &str = "encrypting_vote_key";
@@ -67,13 +67,17 @@ impl<'a> ToPayload for ProposalPrivate<'a> {
 /// This function dereference raw pointers. Even though the function checks if
 /// the pointers are null. Mind not to put random values in or you may see
 /// unexpected behaviors.
-pub unsafe fn proposal_new<P: ToPayload>(
+pub unsafe fn proposal_new<P>(
     vote_plan_id: *const u8,
     index: u8,
     num_choices: u8,
     payload_type: P,
     proposal_out: *mut ProposalPtr,
-) -> AbiResult {
+) -> AbiResult
+where
+    P: TryInto<PayloadTypeConfig>,
+    P::Error: Into<AbiResult>,
+{
     let options = match VoteOptions::new_length(num_choices) {
         Ok(options) => options,
         Err(err) => return Error::invalid_input("num_choices").with(err).into(),
@@ -85,7 +89,7 @@ pub unsafe fn proposal_new<P: ToPayload>(
         Err(err) => return Error::invalid_input("vote_plan_id").with(err).into(),
     };
 
-    let payload_type = match payload_type.to_payload() {
+    let payload_type = match payload_type.try_into() {
         Ok(payload_type) => payload_type,
         Err(err) => return err.into(),
     };

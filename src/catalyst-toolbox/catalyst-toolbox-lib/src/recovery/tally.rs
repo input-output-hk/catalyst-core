@@ -54,6 +54,11 @@ pub enum Error {
         id: String,
         range: std::ops::Range<u32>,
     },
+
+    #[error(
+        "Fragment with id {id} and spending counter value {spending_counter} was already processed"
+    )]
+    DuplicatedFragment { id: String, spending_counter: u32 },
 }
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
@@ -244,6 +249,7 @@ pub fn recover_ledger_from_logs(
 struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
     spending_counters: HashMap<Address, Vec<u32>>,
+    processed_fragments: HashSet<(String, u32)>,
     voteplans: HashMap<VotePlanId, VotePlan>,
     old_block0_hash: Hash,
     fees: LinearFee,
@@ -297,6 +303,7 @@ impl FragmentReplayer {
             Self {
                 wallets,
                 spending_counters: HashMap::new(),
+                processed_fragments: HashSet::new(),
                 voteplans,
                 old_block0_hash: block0.header.id().into(),
                 fees,
@@ -341,6 +348,15 @@ impl FragmentReplayer {
             } else {
                 panic!("New accounts spending counters should always be valid.")
             };
+
+            // check if fragment was processed already
+            let processed_key = (fragment.id().to_string(), spending_counter.into());
+            if self.processed_fragments.contains(&processed_key) {
+                return Err(Error::DuplicatedFragment {
+                    id: fragment.id().to_string(),
+                    spending_counter: spending_counter.into(),
+                });
+            }
 
             if transaction_slice.nb_witnesses() != 1 {
                 unimplemented!("Multi-signature is not supported");
@@ -395,6 +411,8 @@ impl FragmentReplayer {
                 )
                 .unwrap();
             wallet.confirm_transaction();
+            // add to processed list so it is not processed if duplicated
+            self.processed_fragments.insert(processed_key);
             Ok(res)
         } else {
             unimplemented!();

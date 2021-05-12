@@ -250,8 +250,6 @@ struct FragmentReplayer {
 }
 
 impl FragmentReplayer {
-    const CHECK_RANGE: Range<u32> = 0..50;
-
     // build a new block0 with mirror accounts and same configuration as original one
     fn from_block0(block0: &Block) -> Result<(Self, Block), Error> {
         let mut config =
@@ -350,19 +348,25 @@ impl FragmentReplayer {
                 panic!("utxo witnesses not supported");
             };
 
+            let spending_counter_max_check: u32 = self
+                .voteplans
+                .values()
+                .flat_map(|voteplan| voteplan.proposals().iter())
+                .count() as u32;
+
             let (is_valid_tx, sc) = verify_original_tx(
                 spending_counter,
                 &self.old_block0_hash.into_hash(),
                 &sign_data_hash,
                 &identifier.to_inner(),
                 &witness,
-                Self::CHECK_RANGE,
+                0..spending_counter_max_check,
             );
 
             if !is_valid_tx {
                 return Err(Error::InvalidTransactionSignature {
                     id: fragment.clone().hash().to_string(),
-                    range: Self::CHECK_RANGE,
+                    range: 0..spending_counter_max_check,
                 });
             }
 

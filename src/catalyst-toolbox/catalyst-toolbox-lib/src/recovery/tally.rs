@@ -64,12 +64,11 @@ fn fragment_log_timestamp_to_blockdate(
     timestamp: SecondsSinceUnixEpoch,
     timeframe: &TimeFrame,
     ledger: &Ledger,
-) -> BlockDate {
+) -> Option<BlockDate> {
     let slot = timestamp_to_system_time(timestamp);
-    // TODO: Get rid of unwraps
-    let new_slot = timeframe.slot_at(&slot).unwrap();
-    let epoch_position = ledger.era().from_slot_to_era(new_slot).unwrap();
-    BlockDate::from(epoch_position)
+    let new_slot = timeframe.slot_at(&slot)?;
+    let epoch_position = ledger.era().from_slot_to_era(new_slot)?;
+    Some(BlockDate::from(epoch_position))
 }
 
 fn timeframe_from_block0_start_and_slot_duration(
@@ -186,7 +185,8 @@ pub fn recover_ledger_from_logs(
     for fragment_log in fragment_logs {
         match fragment_log {
             Ok(PersistentFragmentLog { fragment, time }) => {
-                let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger);
+                let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger)
+                    .expect("BlockDates should always be valid for logs timestamps");
 
                 println!("Fragment processed {}", fragment.hash());
                 let new_fragment = match &fragment {

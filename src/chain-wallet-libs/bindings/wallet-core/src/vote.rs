@@ -79,7 +79,7 @@ impl Proposal {
                 let vote = Vote::new(length.into(), choice.into());
                 let (encrypted_vote, proof) = vote::encrypt_vote(
                     &mut rng,
-                    &chain_vote::CRS::from_hash(self.vote_plan_id.as_ref()),
+                    &chain_vote::Crs::from_hash(self.vote_plan_id.as_ref()),
                     key,
                     vote,
                 );

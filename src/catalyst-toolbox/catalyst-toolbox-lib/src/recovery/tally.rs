@@ -52,7 +52,7 @@ pub enum Error {
     #[error("Could not verify transaction {id} signature with range {range:?}")]
     InvalidTransactionSignature {
         id: String,
-        range: std::ops::Range<i32>,
+        range: std::ops::Range<u32>,
     },
 }
 
@@ -109,22 +109,25 @@ fn verify_original_tx(
     sign_data_hash: &TransactionSignDataHash,
     account: &account::Identifier,
     witness: &account::Witness,
-    range_check: Range<i32>,
+    range_check: Range<u32>,
 ) -> (bool, u32) {
-    let spending_counter: i32 = <u32>::from(spending_counter) as i32;
+    let spending_counter: u32 = <u32>::from(spending_counter);
     for i in range_check {
-        let new_spending_counter = spending_counter.add(i).clamp(0, i32::MAX) as u32;
-        let tidsc = WitnessAccountData::new(
-            block0_hash,
-            sign_data_hash,
-            SpendingCounter::from(new_spending_counter),
-        );
-        if witness.verify(account.as_ref(), &tidsc) == chain_crypto::Verification::Success {
-            eprintln!(
-                "expected: {} found: {}",
-                spending_counter, new_spending_counter
-            );
-            return (true, new_spending_counter);
+        for op in &[u32::checked_add, u32::checked_sub] {
+            if let Some(new_spending_counter) = op(spending_counter, i) {
+                let tidsc = WitnessAccountData::new(
+                    block0_hash,
+                    sign_data_hash,
+                    SpendingCounter::from(new_spending_counter),
+                );
+                if witness.verify(account.as_ref(), &tidsc) == chain_crypto::Verification::Success {
+                    eprintln!(
+                        "expected: {} found: {}",
+                        spending_counter, new_spending_counter
+                    );
+                    return (true, new_spending_counter);
+                }
+            }
         }
     }
     (false, 0)
@@ -187,7 +190,7 @@ pub fn recover_ledger_from_logs(
                 let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger)
                     .expect("BlockDates should always be valid for logs timestamps");
 
-                dbg!("Fragment processed {}", fragment.hash());
+                eprintln!("Fragment processed {}", fragment.hash());
                 let new_fragment = match &fragment {
                     fragment @ Fragment::VoteCast(_) => {
                         if let Ok(new_fragment) =
@@ -247,7 +250,7 @@ struct FragmentReplayer {
 }
 
 impl FragmentReplayer {
-    const CHECK_RANGE: Range<i32> = -50..50;
+    const CHECK_RANGE: Range<u32> = 0..50;
 
     // build a new block0 with mirror accounts and same configuration as original one
     fn from_block0(block0: &Block) -> Result<(Self, Block), Error> {
@@ -275,7 +278,7 @@ impl FragmentReplayer {
                         chain_addr::Discrimination::Production,
                     );
                     if committee_members.contains(&utxo.address) {
-                        dbg!("Committee account found {}", &utxo.address);
+                        eprintln!("Committee account found {}", &utxo.address);
                         continue;
                     }
                     let new_initial_utxo = wallet.to_initial_fund(utxo.value.into());

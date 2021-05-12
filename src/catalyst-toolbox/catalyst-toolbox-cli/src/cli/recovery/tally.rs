@@ -70,9 +70,9 @@ impl Replay {
 
         let (ledger, failed) = recover_ledger_from_logs(&block0, fragments)?;
         if !failed.is_empty() {
-            println!("{} fragments couldn't be properly processed", failed.len());
+            eprintln!("{} fragments couldn't be properly processed", failed.len());
             for failed_fragment in failed {
-                println!("{}", failed_fragment.id());
+                eprintln!("{}", failed_fragment.id());
             }
         }
         let voteplans = ledger.active_vote_plans();

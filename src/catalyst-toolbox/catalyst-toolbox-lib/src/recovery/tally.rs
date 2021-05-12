@@ -120,7 +120,7 @@ fn verify_original_tx(
             SpendingCounter::from(new_spending_counter),
         );
         if witness.verify(account.as_ref(), &tidsc) == chain_crypto::Verification::Success {
-            println!(
+            eprintln!(
                 "expected: {} found: {}",
                 spending_counter, new_spending_counter
             );
@@ -164,7 +164,6 @@ pub fn recover_ledger_from_logs(
     let voteplan = active_voteplans.last().ok_or(Error::MissingVoteplanError)?;
     let vote_start = voteplan.vote_start;
     let vote_end = voteplan.vote_end;
-    println!("{}", vote_start);
 
     let timeframe = timeframe_from_block0_start_and_slot_duration(block0_start, slot_duration);
 
@@ -188,12 +187,12 @@ pub fn recover_ledger_from_logs(
                 let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger)
                     .expect("BlockDates should always be valid for logs timestamps");
 
-                println!("Fragment processed {}", fragment.hash());
+                dbg!("Fragment processed {}", fragment.hash());
                 let new_fragment = match &fragment {
                     fragment @ Fragment::VoteCast(_) => {
                         if let Ok(new_fragment) =
                             fragment_replayer.replay(fragment.clone()).map_err(|e| {
-                                println!(
+                                eprintln!(
                                     "Fragment {} couldn't be processed:\n\t {:?}",
                                     fragment.id(),
                                     e
@@ -201,7 +200,7 @@ pub fn recover_ledger_from_logs(
                             })
                         {
                             if vote_start > block_date || vote_end <= block_date {
-                                println!(
+                                eprintln!(
                                     "Fragment {} skipped because it was out of voting time ({}-{}-{})",
                                     fragment.id(),
                                     vote_start,
@@ -232,7 +231,7 @@ pub fn recover_ledger_from_logs(
                 }
             }
             Err(e) => {
-                println!("Error deserializing PersistentFragmentLog: {:?}", e);
+                eprintln!("Error deserializing PersistentFragmentLog: {:?}", e);
             }
         }
     }
@@ -276,7 +275,7 @@ impl FragmentReplayer {
                         chain_addr::Discrimination::Production,
                     );
                     if committee_members.contains(&utxo.address) {
-                        println!("Committee account found {}", &utxo.address);
+                        dbg!("Committee account found {}", &utxo.address);
                         continue;
                     }
                     let new_initial_utxo = wallet.to_initial_fund(utxo.value.into());

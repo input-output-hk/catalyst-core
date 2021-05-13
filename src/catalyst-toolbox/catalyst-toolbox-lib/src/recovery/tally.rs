@@ -59,6 +59,9 @@ pub enum Error {
         "Fragment with id {id} and spending counter value {spending_counter} was already processed"
     )]
     DuplicatedFragment { id: String, spending_counter: u32 },
+
+    #[error("Tried to vote with a non registered account: {0}")]
+    NonVotingAccount(String),
 }
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
@@ -348,8 +351,10 @@ impl FragmentReplayer {
             };
 
             let sign_data_hash = transaction_slice.transaction_sign_data_hash();
-            let spending_counter = if let Wallet::Account(account) =
-                self.wallets.get(&address.clone().into()).unwrap()
+            let spending_counter = if let Wallet::Account(account) = self
+                .wallets
+                .get(&address.clone().into())
+                .ok_or_else(|| Error::NonVotingAccount(identifier.to_string()))?
             {
                 account.internal_counter()
             } else {

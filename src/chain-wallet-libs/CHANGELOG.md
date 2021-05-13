@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - spending_counter
 - settings_new
 - settings_get
+- fragment_from_raw
+- fragment_id
+- fragment_delete
+
+### Changed
+
+pending_transactions now returns transactions in order relative to the same
+wallet type instead of arbitrary order.  First starting with deadalus/yoroi/free
+utxo keys (those are all exclusive) in order of creating, and then the account
+transactions, also in order of creation (and signing).
 
 ## [0.6.0-pre1]
 

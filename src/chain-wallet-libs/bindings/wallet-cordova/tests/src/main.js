@@ -24,6 +24,7 @@ let promisifyP = f => promisify(primitives, f)
 const restoreWallet = promisifyP(primitives.walletRestore);
 const importKeys = promisifyP(primitives.walletImportKeys);
 const retrieveFunds = promisifyP(primitives.walletRetrieveFunds);
+const spendingCounter = promisifyP(primitives.walletSpendingCounter);
 const totalFunds = promisifyP(primitives.walletTotalFunds);
 const convertWallet = promisifyP(primitives.walletConvert);
 const setState = promisifyP(primitives.walletSetState);
@@ -150,8 +151,13 @@ const tests = [
         const proposalPtr = await proposalNewPublic(votePlanId, index, numChoices);
         const walletPtr = await restoreWallet(YOROI_WALLET);
         const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
-        await walletSetState(walletPtr, 1000000, 1);
+        await walletSetState(walletPtr, 1000000, 0);
+
+        expect(await spendingCounter(walletPtr)).toBe(0);
+
         await walletVote(walletPtr, settingsPtr, proposalPtr, 0);
+
+        expect(await spendingCounter(walletPtr)).toBe(1);
 
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);

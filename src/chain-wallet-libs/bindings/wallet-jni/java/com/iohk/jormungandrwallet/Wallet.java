@@ -11,6 +11,8 @@ public class Wallet {
 
     public native static void delete(long wallet);
 
+    public native static int spendingCounter(long wallet);
+
     public native static int totalValue(long wallet);
 
     public native static long initialFunds(long wallet, byte[] block0);

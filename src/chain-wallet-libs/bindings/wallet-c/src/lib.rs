@@ -10,7 +10,7 @@ use wallet_core::c::{
     wallet_convert_transactions_get, wallet_convert_transactions_size, wallet_delete_conversion,
     wallet_delete_error, wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet,
     wallet_id, wallet_import_keys, wallet_recover, wallet_retrieve_funds, wallet_set_state,
-    wallet_total_value, wallet_vote_cast,
+    wallet_spending_counter, wallet_total_value, wallet_vote_cast,
 };
 use wallet_core::{
     Conversion as ConversionRust, Error as ErrorRust, Proposal as ProposalRust,
@@ -360,6 +360,28 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_convert_ignored(
     let r = wallet_convert_ignored(conversion as *mut ConversionRust, value_out, ignored_out);
 
     r.into_c_api() as ErrorPtr
+}
+
+/// get the current spending counter for the (only) account in this wallet
+///
+///
+/// # Errors
+///
+/// * this function may fail if the wallet pointer is null;
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_wallet_spending_counter(
+    wallet: WalletPtr,
+    spending_counter_ptr: *mut u32,
+) -> ErrorPtr {
+    wallet_spending_counter(wallet as *mut WalletRust, spending_counter_ptr).into_c_api()
+        as ErrorPtr
 }
 
 /// get the total value in the wallet

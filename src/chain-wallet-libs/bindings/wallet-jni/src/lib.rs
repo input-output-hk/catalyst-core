@@ -407,6 +407,30 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFund
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_spendingCounter(
+    env: JNIEnv,
+    _: JClass,
+    wallet: jlong,
+) -> jlong {
+    let wallet_ptr: WalletPtr = wallet as WalletPtr;
+    let mut value: u32 = 0;
+    let result = wallet_spending_counter(wallet_ptr, &mut value as *mut u32);
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+    }
+
+    value as jlong
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
 pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_id(
     env: JNIEnv,
     _: JClass,

@@ -203,8 +203,13 @@ public class WalletTest {
         final long proposalPtr = Proposal.withPublicPayload(id, 0, 3);
 
         Wallet.setState(walletPtr, 10000000, 0);
+
+        assertEquals(Wallet.spendingCounter(walletPtr), 0);
+
         try {
             final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+
+            assertEquals(Wallet.spendingCounter(walletPtr), 1);
         } catch (final Exception e) {
             Proposal.delete(proposalPtr);
             Settings.delete(settingsPtr);
@@ -264,6 +269,7 @@ public class WalletTest {
         final long proposalPtr = Proposal.withPublicPayload(id, 0, 3);
 
         Wallet.setState(walletPtr, 10000000, 0);
+
         try {
             final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
 

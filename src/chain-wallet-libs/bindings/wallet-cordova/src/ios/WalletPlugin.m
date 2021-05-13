@@ -172,6 +172,26 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     }];
 }
 
+- (void)WALLET_SPENDING_COUNTER:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+    NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];
+
+    WalletPtr wallet_ptr = (WalletPtr)[wallet_ptr_raw longLongValue];
+    uint32_t value;
+    ErrorPtr result = iohk_jormungandr_wallet_spending_counter(wallet_ptr, &value);
+
+    if (result != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(result);
+    } else {
+        NSString* returnValue = [NSString stringWithFormat:@"%u", value];
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                         messageAsString:returnValue];
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)WALLET_TOTAL_FUNDS:(CDVInvokedUrlCommand*)command
 {
     CDVPluginResult* pluginResult = nil;

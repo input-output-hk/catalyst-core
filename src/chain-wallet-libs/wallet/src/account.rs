@@ -88,6 +88,10 @@ impl Wallet {
         self.state = States::new(FragmentId::zero_hash(), State { value, counter });
     }
 
+    pub fn spending_counter(&self) -> u32 {
+        self.state.last_state().1.counter
+    }
+
     pub fn value(&self) -> Value {
         self.state.last_state().1.value
     }

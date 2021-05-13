@@ -509,6 +509,28 @@ pub unsafe fn wallet_convert_ignored(
     }
 }
 
+/// get the current spending counter for the (only) account in this wallet
+///
+///
+/// # Errors
+///
+/// * this function may fail if the wallet pointer is null;
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+pub unsafe fn wallet_spending_counter(wallet: WalletPtr, spending_counter_ptr: *mut u32) -> Result {
+    let wallet = non_null!(wallet);
+    let spending_counter = non_null_mut!(spending_counter_ptr);
+
+    *spending_counter = wallet.spending_counter();
+
+    Result::success()
+}
+
 /// get the total value in the wallet
 ///
 /// make sure to call `retrieve_funds` prior to calling this function

@@ -3,11 +3,14 @@ use jni::sys::{jbyte, jbyteArray, jint, jlong};
 use jni::JNIEnv;
 use std::convert::TryInto;
 use std::ptr::{null, null_mut};
-use wallet_core::c::settings::{
-    settings_block0_hash, settings_discrimination, settings_fees, settings_new, Discrimination,
-    LinearFee, PerCertificateFee, PerVoteCertificateFee,
-};
 use wallet_core::c::*;
+use wallet_core::c::{
+    fragment::{fragment_from_raw, fragment_id},
+    settings::{
+        settings_block0_hash, settings_discrimination, settings_fees, settings_new, Discrimination,
+        LinearFee, PerCertificateFee, PerVoteCertificateFee,
+    },
+};
 
 ///
 /// # Safety
@@ -1026,4 +1029,92 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_SymmetricCipher_decrypt(
             null_mut()
         }
     }
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Fragment_fromBytes(
+    env: JNIEnv,
+    _: JClass,
+    buffer: jbyteArray,
+) -> jlong {
+    let len = env
+        .get_array_length(buffer)
+        .expect("Couldn't get block0 array length") as usize;
+
+    let mut bytes = vec![0i8; len as usize];
+
+    env.get_byte_array_region(buffer, 0, &mut bytes).unwrap();
+
+    let mut ptr: FragmentPtr = null_mut();
+
+    let result = fragment_from_raw(
+        bytes.as_ptr().cast::<u8>(),
+        len,
+        &mut ptr as *mut FragmentPtr,
+    );
+
+    if let Some(error) = result.error() {
+        let _ = env.throw(error.to_string());
+    }
+
+    ptr as jlong
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Fragment_id(
+    env: JNIEnv,
+    _: JClass,
+    fragment: jlong,
+) -> jbyteArray {
+    let mut id = [0u8; FRAGMENT_ID_LENGTH];
+
+    let result = fragment_id(fragment as FragmentPtr, id.as_mut_ptr());
+
+    let array = env
+        .new_byte_array(id.len() as jint)
+        .expect("Failed to create new byte array");
+
+    match result.error() {
+        None => {
+            let slice = std::slice::from_raw_parts(id.as_ptr() as *const jbyte, id.len());
+
+            env.set_byte_array_region(array, 0, slice)
+                .expect("Couldn't copy array to jvm");
+        }
+        Some(error) => {
+            let _ = env.throw(error.to_string());
+        }
+    };
+
+    array
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Fragment_delete(
+    _env: JNIEnv,
+    _: JClass,
+    fragment: jlong,
+) {
+    let _ = fragment::fragment_delete(fragment as FragmentPtr);
 }

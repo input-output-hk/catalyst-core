@@ -1,10 +1,11 @@
 import com.iohk.jormungandrwallet.Wallet;
 import com.iohk.jormungandrwallet.Settings;
 import com.iohk.jormungandrwallet.Conversion;
+import com.iohk.jormungandrwallet.Fragment;
 import com.iohk.jormungandrwallet.Proposal;
 import com.iohk.jormungandrwallet.PendingTransactions;
 import com.iohk.jormungandrwallet.SymmetricCipher;
-import com.iohk.jormungandrwallet.Settings;
+import com.iohk.jormungandrwallet.Fragment;
 
 import java.util.Properties;
 import java.util.Enumeration;
@@ -74,8 +75,8 @@ public class WalletTest {
     public void buildSettings() throws IOException {
         final byte[] blockId = hexStringToByteArray("182764b45bae25cc466143de8107618b37f0d28fe3daa0a0d39fd0ab5a2061e1");
         final Settings.Discrimination discrimination = Settings.Discrimination.TEST;
-        final Settings.LinearFees expectedFees = new Settings.LinearFees(1, 2, 3, new Settings.PerCertificateFee(4, 5, 6),
-                new Settings.PerVoteCertificateFee(7, 8));
+        final Settings.LinearFees expectedFees = new Settings.LinearFees(1, 2, 3,
+                new Settings.PerCertificateFee(4, 5, 6), new Settings.PerVoteCertificateFee(7, 8));
 
         Settings.PerCertificateFee test = new Settings.PerCertificateFee(4, 5, 6);
 
@@ -96,8 +97,10 @@ public class WalletTest {
         assertEquals(fees.perCertificateFee.certificateOwnerStakeDelegation,
                 expectedFees.perCertificateFee.certificateOwnerStakeDelegation);
 
-        assertEquals(fees.perVoteCertificateFee.certificateVotePlan, expectedFees.perVoteCertificateFee.certificateVotePlan);
-        assertEquals(fees.perVoteCertificateFee.certificateVoteCast, expectedFees.perVoteCertificateFee.certificateVoteCast);
+        assertEquals(fees.perVoteCertificateFee.certificateVotePlan,
+                expectedFees.perVoteCertificateFee.certificateVotePlan);
+        assertEquals(fees.perVoteCertificateFee.certificateVoteCast,
+                expectedFees.perVoteCertificateFee.certificateVoteCast);
 
         final Settings.Discrimination foundDiscrimination = Settings.discrimination(settingsPtr);
 
@@ -292,6 +295,47 @@ public class WalletTest {
             assertEquals(sizeAfter, 0);
 
             PendingTransactions.delete(after);
+        } catch (final Exception e) {
+            Proposal.delete(proposalPtr);
+            Settings.delete(settingsPtr);
+            Wallet.delete(walletPtr);
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    @Test
+    public void fragmentId() throws IOException {
+        final long walletPtr = Wallet.recover(
+                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+
+        final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
+
+        final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
+
+        final byte[] id = new byte[Proposal.ID_SIZE];
+        final long proposalPtr = Proposal.withPublicPayload(id, 0, 3);
+
+        Wallet.setState(walletPtr, 10000000, 0);
+
+        try {
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+
+            final long fragment = Fragment.fromBytes(transaction);
+            final byte[] fragmentId = Fragment.id(fragment);
+            Fragment.delete(fragment);
+
+            final long pending = Wallet.pendingTransactions(walletPtr);
+
+            final int sizeBefore = PendingTransactions.len(pending);
+
+            final byte[] expectedFragmentId = PendingTransactions.get(pending, 0);
+
+            for (int i = 0; i < fragmentId.length; i++) {
+                assertEquals(fragmentId[i], expectedFragmentId[i]);
+            }
+
+            PendingTransactions.delete(pending);
         } catch (final Exception e) {
             Proposal.delete(proposalPtr);
             Settings.delete(settingsPtr);

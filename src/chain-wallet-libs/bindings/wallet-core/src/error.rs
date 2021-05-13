@@ -61,6 +61,9 @@ pub enum ErrorCode {
     /// vote encryption key is invalid
     /// either because is not valid bech32, or because of the underlying bytes
     InvalidVoteEncryptionKey = 8,
+
+    /// wallet out of funds
+    NotEnoughFunds = 9,
 }
 
 #[derive(Debug)]
@@ -94,6 +97,9 @@ pub enum ErrorKind {
     /// vote encryption key is invalid
     /// either because is not valid bech32, or because of the underlying bytes
     InvalidVoteEncryptionKey,
+
+    /// wallet out of funds
+    NotEnoughFunds,
 }
 
 impl ErrorKind {
@@ -111,6 +117,7 @@ impl ErrorKind {
             Self::SymmetricCipherError => ErrorCode::SymmetricCipherError,
             Self::SymmetricCipherInvalidPassword => ErrorCode::SymmetricCipherInvalidPassword,
             Self::InvalidVoteEncryptionKey => ErrorCode::InvalidVoteEncryptionKey,
+            Self::NotEnoughFunds => ErrorCode::NotEnoughFunds,
         }
     }
 }
@@ -208,6 +215,13 @@ impl Error {
     pub fn invalid_vote_encryption_key() -> Self {
         Self {
             kind: ErrorKind::InvalidVoteEncryptionKey,
+            details: None,
+        }
+    }
+
+    pub fn not_enough_funds() -> Self {
+        Self {
+            kind: ErrorKind::NotEnoughFunds,
             details: None,
         }
     }
@@ -354,6 +368,7 @@ impl Display for ErrorKind {
             Self::SymmetricCipherError => f.write_str("malformed encryption or decryption payload"),
             Self::SymmetricCipherInvalidPassword => f.write_str("invalid decryption password"),
             Self::InvalidVoteEncryptionKey => f.write_str("invalid vote encryption key"),
+            Self::NotEnoughFunds => f.write_str("not enough funds to create transaction"),
         }
     }
 }

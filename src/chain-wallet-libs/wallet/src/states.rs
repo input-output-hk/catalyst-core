@@ -36,6 +36,12 @@ pub struct States<K, S> {
     tail: *mut State<K, S>,
 }
 
+impl<K: std::fmt::Debug, S: std::fmt::Debug> std::fmt::Debug for States<K, S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_list().entries(self.iter()).finish()
+    }
+}
+
 impl<K, S> State<K, S> {
     fn new(key: K, state: S, status: Status) -> Self {
         Self {

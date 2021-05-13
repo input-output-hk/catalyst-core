@@ -8,7 +8,7 @@ use wallet::Settings;
 
 pub struct State {
     block0: Block,
-    ledger: Ledger,
+    pub ledger: Ledger,
 }
 
 impl State {

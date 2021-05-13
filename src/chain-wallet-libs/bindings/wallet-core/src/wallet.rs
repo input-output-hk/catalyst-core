@@ -244,29 +244,39 @@ impl Wallet {
     ///
     /// TODO: this might need to be updated to have a more user friendly
     ///       API. Currently do this for simplicity
-    pub fn pending_transactions(&self) -> std::collections::HashSet<FragmentId> {
-        let mut set = std::collections::HashSet::new();
+    pub fn pending_transactions(&self) -> Vec<FragmentId> {
+        let mut check = std::collections::HashSet::new();
+        let mut result = vec![];
 
         if let Some(daedalus) = &self.daedalus {
             for id in daedalus.pending_transactions() {
-                set.insert(*id);
+                if check.insert(*id) {
+                    result.push(*id);
+                }
             }
         }
 
         if let Some(icarus) = &self.icarus {
             for id in icarus.pending_transactions() {
-                set.insert(*id);
+                if check.insert(*id) {
+                    result.push(*id);
+                }
             }
         }
 
         for id in self.free_keys.pending_transactions() {
-            set.insert(*id);
+            if check.insert(*id) {
+                result.push(*id);
+            }
         }
 
         for id in self.account.pending_transactions() {
-            set.insert(*id);
+            if check.insert(*id) {
+                result.push(*id);
+            }
         }
-        set
+
+        result
     }
 
     /// remove a given pending transaction returning the associated Inputs

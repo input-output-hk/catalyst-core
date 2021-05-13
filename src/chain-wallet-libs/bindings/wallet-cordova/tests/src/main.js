@@ -159,6 +159,9 @@ const tests = [
 
         expect(await spendingCounter(walletPtr)).toBe(1);
 
+        const pending = await getPendingTransactions(walletPtr);
+        expect(pending.length).toBe(1);
+
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
         await deleteProposal(proposalPtr);

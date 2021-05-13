@@ -328,12 +328,7 @@ pub unsafe fn wallet_pending_transactions(
     let wallet = non_null!(wallet);
 
     let pending_transactions = PendingTransactions {
-        fragment_ids: wallet
-            .pending_transactions()
-            .iter()
-            .cloned()
-            .collect::<Vec<_>>()
-            .into_boxed_slice(),
+        fragment_ids: wallet.pending_transactions().into_boxed_slice(),
     };
 
     *pending_transactions_out =

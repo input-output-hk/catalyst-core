@@ -10,6 +10,7 @@ import com.iohk.jormungandrwallet.Wallet;
 import com.iohk.jormungandrwallet.Conversion;
 import com.iohk.jormungandrwallet.Proposal;
 import com.iohk.jormungandrwallet.SymmetricCipher;
+import com.iohk.jormungandrwallet.Fragment;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -119,6 +120,9 @@ public class WalletPlugin extends CordovaPlugin {
             break;
         case "SETTINGS_GET":
             settingsGet(args, callbackContext);
+            break;
+        case "FRAGMENT_ID":
+            fragmentId(args, callbackContext);
             break;
         case "WALLET_DELETE":
             walletDelete(args, callbackContext);
@@ -461,6 +465,19 @@ public class WalletPlugin extends CordovaPlugin {
 
         try {
             final byte[] id = Wallet.id(walletPtr);
+            callbackContext.success(id);
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void fragmentId(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final byte[] transaction = args.getArrayBuffer(0);
+
+        try {
+            final long fragmentPtr = Fragment.fromBytes(transaction);
+            final byte[] id = Fragment.id(fragmentPtr);
+            Fragment.delete(fragmentPtr);
             callbackContext.success(id);
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());

@@ -45,6 +45,7 @@ const pendingTransactionsGet = promisifyP(primitives.pendingTransactionsGet);
 const symmetricCipherDecrypt = promisifyP(primitives.symmetricCipherDecrypt);
 const settingsGet = promisifyP(primitives.settingsGet);
 const settingsNew = promisifyP(primitives.settingsNew);
+const fragmentId = promisifyP(primitives.fragmentId);
 
 
 const tests = [
@@ -297,6 +298,36 @@ const tests = [
         expect(settings.fees.certificateVoteCast).toBe(settingsExpected.fees.certificateVoteCast);
 
         await deleteSettings(settingsPtr);
+    }],
+    ['get vote fragment id', async function () {
+        const array = new Array(32);
+        for (let index = 0; index < array.length; index++) {
+            array[index] = index;
+        }
+
+        const votePlanId = new Uint8Array(array);
+        const index = 0;
+        const numChoices = 3;
+
+        const proposalPtr = await proposalNewPublic(votePlanId, index, numChoices);
+        const walletPtr = await restoreWallet(YOROI_WALLET);
+        const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
+        await walletSetState(walletPtr, 1000000, 0);
+
+        const tx1 = await walletVote(walletPtr, settingsPtr, proposalPtr, 1);
+        const tx2 = await walletVote(walletPtr, settingsPtr, proposalPtr, 2);
+
+        const id1 = await fragmentId(new Uint8Array(tx1));
+        const id2 = await fragmentId(new Uint8Array(tx2));
+
+        const pendingTransactions = await getPendingTransactions(walletPtr);
+
+        expect(uint8ArrayEquals(id1, pendingTransactions[0])).toBe(true);
+        expect(uint8ArrayEquals(id2, pendingTransactions[0])).toBe(true);
+
+        await deleteSettings(settingsPtr);
+        await deleteWallet(walletPtr);
+        await deleteProposal(proposalPtr);
     }],
 ]
 

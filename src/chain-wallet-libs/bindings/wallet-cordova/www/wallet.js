@@ -30,6 +30,7 @@ const PENDING_TRANSACTIONS_SIZE = 'PENDING_TRANSACTIONS_SIZE';
 const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
 const SETTINGS_NEW = 'SETTINGS_NEW';
 const SETTINGS_GET = 'SETTINGS_GET';
+const FRAGMENT_ID = 'FRAGMENT_ID';
 
 const VOTE_PLAN_ID_LENGTH = 32;
 const FRAGMENT_ID_LENGTH = 32;
@@ -90,6 +91,11 @@ var plugin = {
         PRODUCTION: 0,
         TEST: 1
     },
+
+    /**
+     * @callback TransactionIdCallback
+     * @param {Uint8Array} id
+     */
 
     /**
      * @param {string} mnemonics a string with the mnemonic phrase
@@ -255,7 +261,7 @@ var plugin = {
     /**
      * @param {string} ptr a pointer to a PendingTransactions object obtained with walletPendingTransactions
      * @param {number} index an index (starting from 0). Use pendingTransactionsSize to get the upper bound
-     * @param {function} successCallback callback that receives a transaction in binary form
+     * @param {TransactionIdCallback} successCallback callback that receives a transaction id in binary form
      * @param {errorCallback} errorCallback this function can fail if the index is out of range
      */
     pendingTransactionsGet: function (ptr, index, successCallback, errorCallback) {
@@ -384,6 +390,18 @@ var plugin = {
         };
 
         exec(decodeBase64, errorCallback, NATIVE_CLASS_NAME, SETTINGS_GET, [settingsPtr]);
+    },
+
+    /**
+     * @param {Uint8Array} transaction
+     * @param {TransactionIdCallback} successCallback
+     * @param {errorCallback} errorCallback
+     */
+    fragmentId: function (transaction, successCallback, errorCallback) {
+        argscheck.checkArgs('*ff', 'transactionId', arguments);
+        checkUint8Array({ name: 'transaction', testee: transaction });
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, FRAGMENT_ID, [transaction.buffer]);
     },
 
     /**

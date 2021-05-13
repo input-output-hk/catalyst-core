@@ -2,11 +2,12 @@
 //! C style bindings that we have (wallet-c, wallet-jni...)
 #[macro_use]
 mod macros;
+pub mod fragment;
 pub mod settings;
 pub mod vote;
 
 use crate::{Conversion, Error, Proposal, Result, Wallet};
-use chain_impl_mockchain::{transaction::Input, value::Value, vote::Choice};
+use chain_impl_mockchain::{fragment::Fragment, transaction::Input, value::Value, vote::Choice};
 use std::convert::TryInto;
 
 use thiserror::Error;
@@ -18,6 +19,7 @@ pub type ConversionPtr = *mut Conversion;
 pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
 pub type PendingTransactionsPtr = *mut PendingTransactions;
+pub type FragmentPtr = *mut Fragment;
 
 #[derive(Debug, Error)]
 #[error("null pointer")]

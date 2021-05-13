@@ -284,19 +284,23 @@ impl FragmentReplayer {
 
         for initial in &mut config.initial {
             if let Initial::Fund(ref mut utxos) = initial {
+                let mut new_committee_accounts = Vec::new();
                 for utxo in utxos.iter_mut() {
                     let wallet = Wallet::new_account_with_discrimination(
                         &mut rng,
                         chain_addr::Discrimination::Production,
                     );
-                    if committee_members.contains(&utxo.address) {
-                        eprintln!("Committee account found {}", &utxo.address);
-                        continue;
-                    }
                     let new_initial_utxo = wallet.to_initial_fund(utxo.value.into());
                     wallets.insert(utxo.address.clone(), wallet);
-                    *utxo = new_initial_utxo;
+                    if committee_members.contains(&utxo.address) {
+                        eprintln!("Committee account found {}", &utxo.address);
+                        // push new mirror address
+                        new_committee_accounts.push(new_initial_utxo);
+                    } else {
+                        *utxo = new_initial_utxo;
+                    }
                 }
+                utxos.append(&mut new_committee_accounts);
             }
         }
 

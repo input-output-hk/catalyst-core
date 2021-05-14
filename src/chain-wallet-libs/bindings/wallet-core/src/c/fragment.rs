@@ -66,11 +66,8 @@ pub unsafe fn fragment_id(fragment_ptr: FragmentPtr, id_out: *mut u8) -> Result 
 /// This function checks for null pointers, but take care that fragment_ptr was
 /// previously allocated by this library for example with fragment_from_raw
 ///
-// FIXME don't return result here, this is pointless
-pub unsafe fn fragment_delete(fragment_ptr: FragmentPtr) -> Result {
+pub unsafe fn fragment_delete(fragment_ptr: FragmentPtr) {
     if !fragment_ptr.is_null() {
         Box::from_raw(fragment_ptr as FragmentPtr);
     }
-
-    Result::success()
 }

@@ -1116,5 +1116,5 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Fragment_delete(
     _: JClass,
     fragment: jlong,
 ) {
-    let _ = fragment::fragment_delete(fragment as FragmentPtr);
+    fragment::fragment_delete(fragment as FragmentPtr);
 }

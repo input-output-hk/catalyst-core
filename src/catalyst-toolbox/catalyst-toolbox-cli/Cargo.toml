@@ -23,8 +23,9 @@ serde_json = "1.0"
 structopt = "0.3"
 thiserror = "1.0"
 rand = "0.8.3"
-
+stderrlog = "0.5"
 serde_yaml = "0.8.17"
+log = "0.4"
 
 [build-dependencies]
 versionisator = "1.0.3"

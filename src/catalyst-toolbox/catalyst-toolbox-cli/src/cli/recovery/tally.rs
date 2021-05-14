@@ -9,6 +9,7 @@ use jormungandr_lib::interfaces::{
     load_persistent_fragments_logs_from_folder_path, VotePlanStatus,
 };
 
+use log::warn;
 use std::io::{BufReader, Write};
 use std::path::PathBuf;
 
@@ -50,6 +51,10 @@ pub struct Replay {
 
     #[structopt(flatten)]
     output_format: OutputFormat,
+
+    /// Verbose mode (-v, -vv, -vvv, etc)
+    #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
+    verbose: usize,
 }
 
 fn read_block0(path: PathBuf) -> std::io::Result<Block> {
@@ -64,15 +69,18 @@ impl Replay {
             logs_path,
             output,
             output_format,
+            verbose,
         } = self;
+        stderrlog::new().verbosity(verbose).init().unwrap();
         let block0 = read_block0(block0_path)?;
+
         let fragments = load_persistent_fragments_logs_from_folder_path(&logs_path)?;
 
         let (ledger, failed) = recover_ledger_from_logs(&block0, fragments)?;
         if !failed.is_empty() {
-            eprintln!("{} fragments couldn't be properly processed", failed.len());
+            warn!("{} fragments couldn't be properly processed", failed.len());
             for failed_fragment in failed {
-                eprintln!("{}", failed_fragment.id());
+                warn!("{}", failed_fragment.id());
             }
         }
         let voteplans = ledger.active_vote_plans();

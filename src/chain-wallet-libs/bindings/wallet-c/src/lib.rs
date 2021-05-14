@@ -6,6 +6,7 @@ use std::{
 };
 pub use wallet::Settings as SettingsRust;
 use wallet_core::c::{
+    fragment::{fragment_delete, fragment_from_raw, fragment_id},
     symmetric_cipher_decrypt, vote, wallet_convert, wallet_convert_ignored,
     wallet_convert_transactions_get, wallet_convert_transactions_size, wallet_delete_conversion,
     wallet_delete_error, wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet,
@@ -13,8 +14,8 @@ use wallet_core::c::{
     wallet_spending_counter, wallet_total_value, wallet_vote_cast,
 };
 use wallet_core::{
-    Conversion as ConversionRust, Error as ErrorRust, Proposal as ProposalRust,
-    Wallet as WalletRust,
+    Conversion as ConversionRust, Error as ErrorRust, Fragment as FragmentRust,
+    Proposal as ProposalRust, Wallet as WalletRust,
 };
 
 #[repr(C)]
@@ -26,6 +27,8 @@ pub struct Conversion {}
 #[repr(C)]
 pub struct Proposal {}
 #[repr(C)]
+pub struct Fragment;
+#[repr(C)]
 pub struct Error {}
 
 #[repr(C)]
@@ -35,6 +38,7 @@ pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
 pub type ConversionPtr = *mut Conversion;
 pub type ProposalPtr = *mut Proposal;
+pub type FragmentPtr = *mut Fragment;
 pub type ErrorPtr = *mut Error;
 pub type EncryptingVoteKeyPtr = *mut EncryptingVoteKey;
 
@@ -657,6 +661,70 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_error_details(error: ErrorPtr) 
     }
 }
 
+/// deserialize a fragment from bytes
+///
+/// # Parameters
+///
+/// * `buffer` -- a pointer to the serialized fragment bytes.
+/// * `buffer_length` -- the length of the serialized fragment bytes array.
+/// * `fragment` -- the location of the pointer to the deserialized fragemnt.
+///
+/// # Errors
+///
+/// This functions may fail if:
+///
+/// * `buffer` is a null pointer.
+/// * `fragment` is a null pointer.
+/// * `buffer` contains invalid fragment bytes.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+/// Don't forget to delete the fragment object with `iohk_jormungandr_delete_fragment`.
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_fragment_from_raw(
+    buffer: *const u8,
+    buffer_length: usize,
+    fragment_out: *mut FragmentPtr,
+) -> ErrorPtr {
+    fragment_from_raw(
+        buffer,
+        buffer_length,
+        fragment_out as *mut *mut FragmentRust,
+    )
+    .into_c_api() as ErrorPtr
+}
+
+/// get the ID of the provided fragment
+///
+/// # Parameters
+///
+/// * `fragment` -- a pointer to fragment.
+/// * `fragment_id_out` -- a pointer to a pre-allocated 32 bytes array.
+///
+/// # Errors
+///
+/// This function would return an error if either of the provided pointers is null.
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors.
+///
+/// `fragment_id_out` is expected to be an already allocated 32 byte array. Doing otherwise may
+/// potentially result into an undefined behavior.
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_fragment_id(
+    fragment: FragmentPtr,
+    fragment_id_out: *mut u8,
+) -> ErrorPtr {
+    fragment_id(fragment as *mut FragmentRust, fragment_id_out).into_c_api() as ErrorPtr
+}
+
 /// Delete a null terminated string that was allocated by this library
 ///
 /// # Safety
@@ -753,4 +821,16 @@ pub extern "C" fn iohk_jormungandr_wallet_delete_conversion(conversion: Conversi
 #[no_mangle]
 pub extern "C" fn iohk_jormungandr_wallet_delete_proposal(proposal: ProposalPtr) {
     wallet_delete_proposal(proposal as *mut ProposalRust)
+}
+
+/// delete the pointer
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+#[no_mangle]
+pub unsafe extern "C" fn iohk_jormungandr_delete_fragment(fragment: FragmentPtr) {
+    fragment_delete(fragment as *mut FragmentRust);
 }

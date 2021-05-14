@@ -26,6 +26,8 @@
 - (void)SETTINGS_NEW:(CDVInvokedUrlCommand*)command;
 - (void)SETTINGS_GET:(CDVInvokedUrlCommand*)command;
 
+- (void)FRAGMENT_ID:(CDVInvokedUrlCommand*)command;
+
 - (void)WALLET_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)SETTINGS_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)CONVERSION_DELETE:(CDVInvokedUrlCommand*)command;

@@ -12,7 +12,7 @@ pub use self::{
 };
 pub use ::wallet::Settings;
 pub use chain_impl_mockchain::{
-    fragment::FragmentId,
+    fragment::{Fragment, FragmentId},
     value::Value,
     vote::{Choice, Options, PayloadType},
 };

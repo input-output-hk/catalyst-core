@@ -64,6 +64,9 @@ pub enum ErrorCode {
 
     /// wallet out of funds
     NotEnoughFunds = 9,
+
+    /// invalid fragment
+    InvalidFragment = 10,
 }
 
 #[derive(Debug)]
@@ -100,6 +103,9 @@ pub enum ErrorKind {
 
     /// wallet out of funds
     NotEnoughFunds,
+
+    /// invalid fragment
+    InvalidFragment,
 }
 
 impl ErrorKind {
@@ -118,6 +124,7 @@ impl ErrorKind {
             Self::SymmetricCipherInvalidPassword => ErrorCode::SymmetricCipherInvalidPassword,
             Self::InvalidVoteEncryptionKey => ErrorCode::InvalidVoteEncryptionKey,
             Self::NotEnoughFunds => ErrorCode::NotEnoughFunds,
+            Self::InvalidFragment => ErrorCode::InvalidFragment,
         }
     }
 }
@@ -222,6 +229,13 @@ impl Error {
     pub fn not_enough_funds() -> Self {
         Self {
             kind: ErrorKind::NotEnoughFunds,
+            details: None,
+        }
+    }
+
+    pub fn invalid_fragment() -> Self {
+        Self {
+            kind: ErrorKind::InvalidFragment,
             details: None,
         }
     }
@@ -369,6 +383,7 @@ impl Display for ErrorKind {
             Self::SymmetricCipherInvalidPassword => f.write_str("invalid decryption password"),
             Self::InvalidVoteEncryptionKey => f.write_str("invalid vote encryption key"),
             Self::NotEnoughFunds => f.write_str("not enough funds to create transaction"),
+            Self::InvalidFragment => f.write_str("invalid fragment"),
         }
     }
 }

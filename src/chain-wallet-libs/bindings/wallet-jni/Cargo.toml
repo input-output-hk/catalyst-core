@@ -1,6 +1,6 @@
 [package]
 name = "wallet-jni"
-version = "0.6.0-pre1"
+version = "0.6.0-pre2"
 authors = ["Daniel Sanchez Quiros <daniel.sanchez@iohk.io>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"

@@ -578,6 +578,43 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)FRAGMENT_ID:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+
+    NSData* fragment_raw = [command.arguments objectAtIndex:0];
+
+    if ([fragment_raw isEqual:[NSNull null]]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    FragmentPtr fragment_ptr = nil;
+    ErrorPtr result_fragment_from_raw =
+        iohk_jormungandr_fragment_from_raw(fragment_raw.bytes, fragment_raw.length, &fragment_ptr);
+
+    if (result_fragment_from_raw != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(result_fragment_from_raw);
+    } else {
+        uint8_t fragment_id[32];
+        ErrorPtr result_fragment_id = iohk_jormungandr_fragment_id(fragment_ptr, fragment_id);
+
+        if (result_fragment_id != nil) {
+            pluginResult = jormungandr_error_to_plugin_result(result_fragment_id);
+        } else {
+            NSData* returnValue = [NSData dataWithBytes:fragment_id length:32];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                        messageAsArrayBuffer:returnValue];
+        }
+
+        iohk_jormungandr_delete_fragment(fragment_ptr);
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)WALLET_DELETE:(CDVInvokedUrlCommand*)command
 {
     NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];

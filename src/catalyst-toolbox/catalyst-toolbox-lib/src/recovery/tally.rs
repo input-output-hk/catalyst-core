@@ -32,6 +32,7 @@ use jormungandr_lib::{
     time::SecondsSinceUnixEpoch,
 };
 use jormungandr_testing_utils::wallet::Wallet;
+use log::{debug, error, trace, warn};
 use std::collections::{HashMap, HashSet};
 
 #[allow(clippy::large_enum_variant)]
@@ -148,9 +149,10 @@ fn verify_original_tx(
                     SpendingCounter::from(new_spending_counter),
                 );
                 if witness.verify(account.as_ref(), &tidsc) == chain_crypto::Verification::Success {
-                    eprintln!(
+                    trace!(
                         "expected: {} found: {}",
-                        spending_counter, new_spending_counter
+                        spending_counter,
+                        new_spending_counter
                     );
                     return (true, new_spending_counter);
                 }
@@ -177,7 +179,6 @@ pub fn recover_ledger_from_logs(
 ) -> Result<(Ledger, Vec<Fragment>), Error> {
     let block0_configuration = Block0Configuration::from_block(block0).unwrap();
     let mut failed_fragments = Vec::new();
-
     let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(block0)?;
 
     // we use block0 header id instead of the new one, to keep validation on old tx that uses the original block0 id.
@@ -217,33 +218,30 @@ pub fn recover_ledger_from_logs(
                 let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger)
                     .expect("BlockDates should always be valid for logs timestamps");
 
-                eprintln!("Fragment processed {}", fragment.hash());
+                debug!("Fragment processed {}", fragment.hash());
                 let new_fragment = match &fragment {
                     fragment @ Fragment::VoteCast(_) => {
-                        if let Ok(new_fragment) =
-                            fragment_replayer.replay(fragment.clone()).map_err(|e| {
-                                eprintln!(
-                                    "Fragment {} couldn't be processed:\n\t {:?}",
-                                    fragment.id(),
-                                    e
-                                );
-                            })
-                        {
-                            if vote_start > block_date || vote_end <= block_date {
-                                eprintln!(
-                                    "Fragment {} skipped because it was out of voting time ({}-{}-{})",
-                                    fragment.id(),
-                                    vote_start,
-                                    block_date,
-                                    vote_end,
-                                );
-                                None
-                            } else {
-                                Some(new_fragment)
-                            }
-                        } else {
-                            failed_fragments.push(fragment.clone());
+                        if vote_start > block_date || vote_end <= block_date {
+                            warn!(
+                                "Fragment {} skipped because it was out of voting time ({}-{}-{})",
+                                fragment.id(),
+                                vote_start,
+                                block_date,
+                                vote_end,
+                            );
                             None
+                        } else {
+                            fragment_replayer
+                                .replay(fragment.clone())
+                                .map_err(|e| {
+                                    failed_fragments.push(fragment.clone());
+                                    warn!(
+                                        "Fragment {} couldn't be processed:\n\t {:?}",
+                                        fragment.id(),
+                                        e
+                                    );
+                                })
+                                .ok()
                         }
                     }
                     new_fragment @ Fragment::VoteTally(_) => {
@@ -261,7 +259,7 @@ pub fn recover_ledger_from_logs(
                 }
             }
             Err(e) => {
-                eprintln!("Error deserializing PersistentFragmentLog: {:?}", e);
+                error!("Error deserializing PersistentFragmentLog: {:?}", e);
             }
         }
     }
@@ -315,7 +313,7 @@ impl FragmentReplayer {
                     let new_initial_utxo = wallet.to_initial_fund(utxo.value.into());
                     wallets.insert(utxo.address.clone(), wallet);
                     if committee_members.contains(&utxo.address) {
-                        eprintln!("Committee account found {}", &utxo.address);
+                        trace!("Committee account found {}", &utxo.address);
                         // push new mirror address
                         new_committee_accounts.push(new_initial_utxo);
                     } else {
@@ -433,16 +431,24 @@ impl FragmentReplayer {
                 .voteplans
                 .get(vote_cast.vote_plan())
                 .ok_or(Error::MissingVoteplanError)?;
+            let proposals_idx = vote_cast.proposal_index();
 
             // we still use the old block0 hash because the new ledger will still use the old one for
             // verifications. This makes possible the usage of old VoteTally transactions without the need
             // to be replayed.
+            debug!(
+                "replaying vote from {}, vote plan: {}, proposal idx: {}, choice: {:?}",
+                identifier,
+                &vote_plan.to_id(),
+                proposals_idx,
+                &choice
+            );
             let res = wallet
                 .issue_vote_cast_cert(
                     &self.old_block0_hash,
                     &self.fees,
                     &vote_plan,
-                    vote_cast.proposal_index(),
+                    proposals_idx,
                     &choice,
                 )
                 .unwrap();

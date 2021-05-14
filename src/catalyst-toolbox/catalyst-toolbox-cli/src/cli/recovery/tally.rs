@@ -78,9 +78,9 @@ impl Replay {
         let voteplans = ledger.active_vote_plans();
         let voteplan_status: Vec<VotePlanStatus> =
             voteplans.into_iter().map(VotePlanStatus::from).collect();
-        let mut out_writter = output.open()?;
+        let mut out_writer = output.open()?;
         let content = output_format.format_json(serde_json::to_value(&voteplan_status)?)?;
-        out_writter.write_all(content.as_bytes())?;
+        out_writer.write_all(content.as_bytes())?;
         Ok(())
     }
 }

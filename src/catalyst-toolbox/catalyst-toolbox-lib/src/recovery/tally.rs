@@ -8,10 +8,13 @@ use chain_impl_mockchain::block::HeaderId;
 use chain_impl_mockchain::certificate::{VotePlan, VotePlanId};
 use chain_impl_mockchain::chaineval::ConsensusEvalContext;
 use chain_impl_mockchain::fee::LinearFee;
-use chain_impl_mockchain::transaction::{TransactionSignDataHash, Witness, WitnessAccountData};
+use chain_impl_mockchain::transaction::{
+    TransactionSignDataHash, TransactionSlice, Witness, WitnessAccountData,
+};
 use chain_impl_mockchain::{
     account,
     block::{Block, BlockDate},
+    certificate,
     fragment::Fragment,
     ledger::Ledger,
     transaction::InputEnum,
@@ -54,6 +57,9 @@ pub enum Error {
         id: String,
         range: std::ops::Range<u32>,
     },
+
+    #[error("Invalid ballot, only 1 input (subsequently 1 witness) and no output is accepted")]
+    InvalidVoteCast,
 
     #[error(
         "Fragment with id {id} and spending counter value {spending_counter} was already processed"
@@ -109,6 +115,19 @@ fn voteplans_from_block0(block0: &Block) -> HashMap<VotePlanId, VotePlan> {
             }
         })
         .collect()
+}
+
+/// check that the transaction input/outputs/witnesses is valid for the ballot
+/// * Only 1 input (subsequently 1 witness), no output
+pub(super) fn valid_vote_cast(tx: &TransactionSlice<certificate::VoteCast>) -> bool {
+    if tx.inputs().nb_inputs() != 1
+        || tx.witnesses().nb_witnesses() != 1
+        || tx.outputs().nb_outputs() != 0
+    {
+        return false;
+    }
+
+    true
 }
 
 fn verify_original_tx(
@@ -381,6 +400,11 @@ impl FragmentReplayer {
             } else {
                 panic!("utxo witnesses not supported");
             };
+
+            let is_valid_vote_cast = valid_vote_cast(&transaction_slice);
+            if !is_valid_vote_cast {
+                return Err(Error::InvalidVoteCast);
+            }
 
             let (is_valid_tx, sc) = verify_original_tx(
                 spending_counter,

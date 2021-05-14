@@ -23,6 +23,9 @@
 - (void)PROPOSAL_NEW_PUBLIC:(CDVInvokedUrlCommand*)command;
 - (void)PROPOSAL_NEW_PRIVATE:(CDVInvokedUrlCommand*)command;
 
+- (void)SETTINGS_NEW:(CDVInvokedUrlCommand*)command;
+- (void)SETTINGS_GET:(CDVInvokedUrlCommand*)command;
+
 - (void)WALLET_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)SETTINGS_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)CONVERSION_DELETE:(CDVInvokedUrlCommand*)command;

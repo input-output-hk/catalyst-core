@@ -454,6 +454,130 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void)SETTINGS_NEW:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+
+    NSData* block0_hash = [command.arguments objectAtIndex:0];
+    NSString* discrimination_raw = [command.arguments objectAtIndex:1];
+    NSDictionary* fees = [command.arguments objectAtIndex:2];
+
+    if ([block0_hash isEqual:[NSNull null]] || [fees isEqual:[NSNull null]]) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:@"missing argument"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    Discrimination discrimination = (uint8_t)[discrimination_raw intValue] == 0
+                                        ? Discrimination_Production
+                                        : Discrimination_Test;
+
+    uint64_t constant = (uint64_t)[fees[@"constant"] longLongValue];
+    uint64_t coefficient = (uint64_t)[fees[@"coefficient"] longLongValue];
+    uint64_t certificate = (uint64_t)[fees[@"certificate"] longLongValue];
+
+    uint64_t certificate_pool_registration =
+        (uint64_t)[fees[@"certificatePoolRegistration"] longLongValue];
+    uint64_t certificate_stake_delegation =
+        (uint64_t)[fees[@"certificateStakeDelegation"] longLongValue];
+    uint64_t certificate_owner_stake_delegation =
+        (uint64_t)[fees[@"certificateOwnerStakeDelegation"] longLongValue];
+    PerCertificateFee per_certificate_fees = { certificate_pool_registration,
+        certificate_stake_delegation,
+        certificate_owner_stake_delegation };
+
+    uint64_t certificate_vote_plan = (uint64_t)[fees[@"certificateVotePlan"] longLongValue];
+    uint64_t certificate_vote_cast = (uint64_t)[fees[@"certificateVoteCast"] longLongValue];
+    PerVoteCertificateFee per_vote_certificate_fees = { certificate_vote_plan,
+        certificate_vote_cast };
+
+    LinearFee linear_fees = { constant,
+        coefficient,
+        certificate,
+        per_certificate_fees,
+        per_vote_certificate_fees };
+
+    SettingsPtr settings_out_ptr = nil;
+    ErrorPtr result = iohk_jormungandr_wallet_settings_new(linear_fees,
+        discrimination,
+        block0_hash.bytes,
+        &settings_out_ptr);
+
+    if (result != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(result);
+    } else {
+        pluginResult = [CDVPluginResult
+            resultWithStatus:CDVCommandStatus_OK
+             messageAsString:[NSString stringWithFormat:@"%ld", (uintptr_t)settings_out_ptr]];
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)SETTINGS_GET:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+
+    NSString* settings_ptr_raw = [command.arguments objectAtIndex:0];
+    SettingsPtr settings_ptr = (uintptr_t)[settings_ptr_raw longLongValue];
+
+    if (settings_ptr == nil) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:@"invalid settings pointer"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    Discrimination discrimination;
+    uint8_t block0_hash[32];
+    LinearFee linear_fees;
+
+    ErrorPtr discrimination_result =
+        iohk_jormungandr_wallet_settings_discrimination(settings_ptr, &discrimination);
+    ErrorPtr block0_hash_result =
+        iohk_jormungandr_wallet_settings_block0_hash(settings_ptr, &block0_hash);
+    ErrorPtr linear_fees_result = iohk_jormungandr_wallet_settings_fees(settings_ptr, &linear_fees);
+
+    if (discrimination_result != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(discrimination_result);
+    } else if (block0_hash_result != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(block0_hash_result);
+    } else if (linear_fees_result != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(linear_fees_result);
+    } else {
+        NSDictionary* result = @{
+            @"discrimination" : [NSNumber numberWithUnsignedInt:(uint8_t)discrimination],
+            @"block0Hash" : [[NSData dataWithBytes:block0_hash
+                                            length:32] base64EncodedStringWithOptions:0],
+            @"fees" : @{
+                @"constant" : [NSString stringWithFormat:@"%ld", linear_fees.constant],
+                @"coefficient" : [NSString stringWithFormat:@"%ld", linear_fees.coefficient],
+                @"certificate" : [NSString stringWithFormat:@"%ld", linear_fees.certificate],
+                @"certificatePoolRegistration" :
+                    [NSString stringWithFormat:@"%ld",
+                              linear_fees.per_certificate_fees.certificate_pool_registration],
+                @"certificateStakeDelegation" :
+                    [NSString stringWithFormat:@"%ld",
+                              linear_fees.per_certificate_fees.certificate_stake_delegation],
+                @"certificateOwnerStakeDelegation" :
+                    [NSString stringWithFormat:@"%ld",
+                              linear_fees.per_certificate_fees.certificate_owner_stake_delegation],
+                @"certificateVotePlan" :
+                    [NSString stringWithFormat:@"%ld",
+                              linear_fees.per_vote_certificate_fees.certificate_vote_plan],
+                @"certificateVoteCast" :
+                    [NSString stringWithFormat:@"%ld",
+                              linear_fees.per_vote_certificate_fees.certificate_vote_cast],
+            },
+        };
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                     messageAsDictionary:result];
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void)WALLET_DELETE:(CDVInvokedUrlCommand*)command
 {
     NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];

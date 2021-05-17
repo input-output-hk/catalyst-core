@@ -8,6 +8,7 @@ use chain_impl_mockchain::block::HeaderId;
 use chain_impl_mockchain::certificate::{VotePlan, VotePlanId};
 use chain_impl_mockchain::chaineval::ConsensusEvalContext;
 use chain_impl_mockchain::fee::LinearFee;
+use chain_impl_mockchain::fragment::FragmentId;
 use chain_impl_mockchain::transaction::{
     TransactionSignDataHash, TransactionSlice, Witness, WitnessAccountData,
 };
@@ -69,6 +70,9 @@ pub enum Error {
 
     #[error("Tried to vote with a non registered account: {0}")]
     NonVotingAccount(String),
+
+    #[error(transparent)]
+    ValidationError(#[from] ValidationError),
 }
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
@@ -173,12 +177,160 @@ fn increment_ledger_time_up_to(ledger: Ledger, blockdate: BlockDate) -> Ledger {
         .finish(&ConsensusEvalContext::Bft)
 }
 
+pub fn deconstruct_account_transaction<P: chain_impl_mockchain::transaction::Payload>(
+    transaction: &TransactionSlice<P>,
+) -> (P, account::Identifier, account::Witness) {
+    let payload = transaction.payload().into_payload();
+    let account = transaction.inputs().iter().next().unwrap().to_enum();
+
+    let identifier = if let InputEnum::AccountInput(account, _) = account {
+        account.to_single_account().unwrap()
+    } else {
+        panic!("cannot handle utxo inputs");
+    };
+
+    let witness = if let Witness::Account(witness) = transaction.witnesses().iter().next().unwrap()
+    {
+        witness
+    } else {
+        panic!("utxo witnesses not supported");
+    };
+
+    (payload, identifier, witness)
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum ValidationError {
+    #[error("Could not verify transaction {id} signature with range {range:?}")]
+    InvalidTransactionSignature {
+        id: String,
+        range: std::ops::Range<u32>,
+    },
+
+    #[error("Invalid ballot, only 1 input (subsequently 1 witness) and no output is accepted")]
+    InvalidVoteCast,
+
+    #[error("Fragment with id {id} and spending counter value was already processed")]
+    DuplicatedFragment { id: FragmentId },
+}
+
+pub struct VoteFragmentFilter<I: Iterator<Item = PersistentFragmentLog>> {
+    block0: Hash,
+    vote_start: BlockDate,
+    vote_end: BlockDate,
+    range_check: Range<u32>,
+    fragments: I,
+    replay_protection: HashSet<FragmentId>,
+    spending_counters: HashMap<account::Identifier, u32>,
+}
+
+impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
+    pub fn new(
+        block0: Hash,
+        vote_start: BlockDate,
+        vote_end: BlockDate,
+        range_check: Range<u32>,
+        fragments: I,
+    ) -> Self {
+        Self {
+            block0,
+            vote_start,
+            vote_end,
+            range_check,
+            fragments,
+            replay_protection: HashSet::new(),
+            spending_counters: HashMap::new(),
+        }
+    }
+
+    fn validate_tx<P>(
+        &mut self,
+        identifier: &account::Identifier,
+        witness: &account::Witness,
+        transaction: &TransactionSlice<P>,
+    ) -> bool {
+        let spending_counter = self
+            .spending_counters
+            .entry(identifier.clone())
+            .or_default();
+        let (is_valid_tx, _) = verify_original_tx(
+            SpendingCounter::from(*spending_counter),
+            &self.block0.into_hash(),
+            &transaction.transaction_sign_data_hash(),
+            identifier,
+            witness,
+            self.range_check.clone(),
+        );
+        is_valid_tx
+    }
+}
+
+impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<I> {
+    type Item = Result<Fragment, (Fragment, ValidationError)>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.fragments.next().and_then(|persistent_fragment_log| {
+            let PersistentFragmentLog { fragment, time } = persistent_fragment_log;
+            match fragment {
+                Fragment::VoteCast(ref transaction) => {
+                    let transaction_slice = transaction.as_slice();
+                    let is_valid_vote_cast = valid_vote_cast(&transaction_slice);
+                    if !is_valid_vote_cast {
+                        return Some(Err((fragment, ValidationError::InvalidVoteCast)));
+                    }
+                    let (_, identifier, witness) =
+                        deconstruct_account_transaction(&transaction_slice);
+                    if !self.validate_tx(&identifier, &witness, &transaction_slice) {
+                        return Some(Err((
+                            fragment.clone(),
+                            ValidationError::InvalidTransactionSignature {
+                                id: fragment.clone().hash().to_string(),
+                                range: self.range_check.clone(),
+                            },
+                        )));
+                    }
+
+                    // check if fragment was processed already
+                    let fragment_id = fragment.id();
+                    if self.replay_protection.contains(&fragment_id) {
+                        return Some(Err((
+                            fragment,
+                            ValidationError::DuplicatedFragment { id: fragment_id },
+                        )));
+                    }
+
+                    self.replay_protection.insert(fragment_id);
+
+                    *self.spending_counters.get_mut(&identifier).unwrap() += 1;
+                    Some(Ok(fragment))
+                }
+                Fragment::VoteTally(ref transaction) => {
+                    let (_, identifier, witness) =
+                        deconstruct_account_transaction(&transaction.as_slice());
+
+                    if !self.validate_tx(&identifier, &witness, &transaction.as_slice()) {
+                        return Some(Err((
+                            fragment.clone(),
+                            ValidationError::InvalidTransactionSignature {
+                                id: fragment.hash().to_string(),
+                                range: self.range_check.clone(),
+                            },
+                        )));
+                    }
+                    *self.spending_counters.get_mut(&identifier).unwrap() += 1;
+                    Some(Ok(fragment))
+                }
+                _ => None,
+            }
+        })
+    }
+}
+
 pub fn recover_ledger_from_logs(
     block0: &Block,
     fragment_logs: impl Iterator<Item = Result<PersistentFragmentLog, FragmentLogDeserializeError>>,
 ) -> Result<(Ledger, Vec<Fragment>), Error> {
     let block0_configuration = Block0Configuration::from_block(block0).unwrap();
-    let mut failed_fragments = Vec::new();
     let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(block0)?;
 
     // we use block0 header id instead of the new one, to keep validation on old tx that uses the original block0 id.
@@ -212,68 +364,79 @@ pub fn recover_ledger_from_logs(
 
     // flag to check if we already incremented the time for tally (advance to vote_end)
     let mut inc_tally = true;
-    for fragment_log in fragment_logs {
-        match fragment_log {
-            Ok(PersistentFragmentLog { fragment, time }) => {
-                let block_date = fragment_log_timestamp_to_blockdate(time, &timeframe, &ledger)
-                    .expect("BlockDates should always be valid for logs timestamps");
 
-                debug!("Fragment processed {}", fragment.hash());
-                let new_fragment = match &fragment {
-                    fragment @ Fragment::VoteCast(_) => {
-                        if vote_start > block_date || vote_end <= block_date {
-                            warn!(
-                                "Fragment {} skipped because it was out of voting time ({}-{}-{})",
-                                fragment.id(),
-                                vote_start,
-                                block_date,
-                                vote_end,
-                            );
-                            None
-                        } else {
-                            fragment_replayer
-                                .replay(fragment.clone())
-                                .map_err(|e| {
-                                    failed_fragments.push(fragment.clone());
-                                    warn!(
-                                        "Fragment {} couldn't be processed:\n\t {:?}",
-                                        fragment.id(),
-                                        e
-                                    );
-                                })
-                                .ok()
-                        }
+    // deserialize fragments to get a clean iterator over them
+    let deserialized_fragment_logs = fragment_logs.filter_map(|fragment_log| match fragment_log {
+        Ok(fragment) => Some(fragment),
+        Err(e) => {
+            error!("Error deserializing PersistentFragmentLog: {:?}", e);
+            None
+        }
+    });
+
+    // use double of proposals range as possible spending counters to check
+    let spending_counter_max_check: u32 = voteplans_from_block0(&block0)
+        .values()
+        .flat_map(|voteplan| voteplan.proposals().iter())
+        .count() as u32
+        * 2;
+
+    let fragment_filter = VoteFragmentFilter::new(
+        block0.header.hash().into(),
+        vote_start,
+        vote_end,
+        0..spending_counter_max_check,
+        deserialized_fragment_logs,
+    );
+    let mut failed_fragments = Vec::new();
+    let mut block_date = vote_start.clone();
+    for filtered_fragment in fragment_filter {
+        let new_fragment = match filtered_fragment {
+            Ok(fragment) => match fragment {
+                fragment @ Fragment::VoteCast(_) => fragment_replayer
+                    .replay(fragment.clone())
+                    .map_err(|e| {
+                        failed_fragments.push(fragment.clone());
+                        warn!(
+                            "Fragment {} couldn't be processed:\n\t {:?}",
+                            fragment.id(),
+                            e
+                        );
+                    })
+                    .ok(),
+                fragment @ Fragment::VoteTally(_) => {
+                    if inc_tally {
+                        block_date = vote_end.clone();
+                        ledger = increment_ledger_time_up_to(ledger, vote_end);
+                        inc_tally = false;
                     }
-                    new_fragment @ Fragment::VoteTally(_) => {
-                        if inc_tally {
-                            ledger = increment_ledger_time_up_to(ledger, vote_end);
-                            inc_tally = false;
-                        }
-                        Some(new_fragment.clone())
-                    }
-                    _ => None,
-                };
-                if let Some(new_fragment) = new_fragment {
-                    ledger = ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date)
-                        .expect("Should be impossible to fail, since we should be using proper spending counters and signatures");
+                    Some(fragment.clone())
                 }
+                fragment => {
+                    debug!("Not votecast or votetally fragment: {:?}", fragment);
+                    None
+                }
+            },
+            Err((fragment, e)) => {
+                failed_fragments.push(fragment);
+                error!("Invalid fragment detected: {:?}", e);
+                None
             }
-            Err(e) => {
-                error!("Error deserializing PersistentFragmentLog: {:?}", e);
-            }
+        };
+        if let Some(new_fragment) = new_fragment {
+            ledger = ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date)
+                .expect("Should be impossible to fail, since we should be using proper spending counters and signatures");
         }
     }
+
     Ok((ledger, failed_fragments))
 }
 
 struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
-    spending_counters: HashMap<Address, Vec<u32>>,
-    processed_fragments: HashSet<(String, u32)>,
     voteplans: HashMap<VotePlanId, VotePlan>,
     old_block0_hash: Hash,
     fees: LinearFee,
-    range_check: Range<u32>,
 }
 
 impl FragmentReplayer {
@@ -283,13 +446,6 @@ impl FragmentReplayer {
             Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
 
         let voteplans = voteplans_from_block0(&block0);
-
-        // use double of proposals range as possible spending counters to check
-        let spending_counter_max_check: u32 = voteplans
-            .values()
-            .flat_map(|voteplan| voteplan.proposals().iter())
-            .count() as u32
-            * 2;
 
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();
@@ -329,12 +485,9 @@ impl FragmentReplayer {
         Ok((
             Self {
                 wallets,
-                spending_counters: HashMap::new(),
-                processed_fragments: HashSet::new(),
                 voteplans,
                 old_block0_hash: block0.header.id().into(),
                 fees,
-                range_check: (0..spending_counter_max_check),
             },
             config.to_block(),
         ))
@@ -345,21 +498,9 @@ impl FragmentReplayer {
         if let Fragment::VoteCast(ref transaction) = fragment {
             let transaction_slice = transaction.as_slice();
 
-            let vote_cast = transaction_slice.payload().into_payload();
-            let account = transaction
-                .as_slice()
-                .inputs()
-                .iter()
-                .next()
-                .unwrap()
-                .to_enum();
-
-            let identifier = if let InputEnum::AccountInput(account, _) = account {
-                Identifier::from(account.to_single_account().unwrap())
-            } else {
-                panic!("cannot handle utxo inputs");
-            };
-            let address = identifier.to_address(chain_addr::Discrimination::Production);
+            let (vote_cast, identifier, _) = deconstruct_account_transaction(&transaction_slice);
+            let address = Identifier::from(identifier.clone())
+                .to_address(chain_addr::Discrimination::Production);
 
             let choice = if let Payload::Public { choice } = vote_cast.payload() {
                 choice
@@ -367,65 +508,11 @@ impl FragmentReplayer {
                 panic!("cannot handle private votes");
             };
 
-            let sign_data_hash = transaction_slice.transaction_sign_data_hash();
-            let spending_counter = if let Wallet::Account(account) = self
+            let address: Address = address.into();
+            let wallet = self
                 .wallets
-                .get(&address.clone().into())
-                .ok_or_else(|| Error::NonVotingAccount(identifier.to_string()))?
-            {
-                account.internal_counter()
-            } else {
-                panic!("New accounts spending counters should always be valid.")
-            };
-
-            // check if fragment was processed already
-            let processed_key = (fragment.id().to_string(), spending_counter.into());
-            if self.processed_fragments.contains(&processed_key) {
-                return Err(Error::DuplicatedFragment {
-                    id: fragment.id().to_string(),
-                    spending_counter: spending_counter.into(),
-                });
-            }
-
-            if transaction_slice.nb_witnesses() != 1 {
-                unimplemented!("Multi-signature is not supported");
-            }
-
-            let witness = if let Witness::Account(witness) =
-                transaction_slice.witnesses().iter().next().unwrap()
-            {
-                witness
-            } else {
-                panic!("utxo witnesses not supported");
-            };
-
-            let is_valid_vote_cast = valid_vote_cast(&transaction_slice);
-            if !is_valid_vote_cast {
-                return Err(Error::InvalidVoteCast);
-            }
-
-            let (is_valid_tx, sc) = verify_original_tx(
-                spending_counter,
-                &self.old_block0_hash.into_hash(),
-                &sign_data_hash,
-                &identifier.to_inner(),
-                &witness,
-                self.range_check.clone(),
-            );
-
-            if !is_valid_tx {
-                return Err(Error::InvalidTransactionSignature {
-                    id: fragment.clone().hash().to_string(),
-                    range: self.range_check.clone(),
-                });
-            }
-
-            self.spending_counters
-                .entry(address.clone().into())
-                .or_insert_with(Vec::new)
-                .push(sc);
-
-            let wallet = self.wallets.get_mut(&address.into()).unwrap();
+                .get_mut(&address)
+                .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?;
 
             let vote_plan = self
                 .voteplans
@@ -453,8 +540,6 @@ impl FragmentReplayer {
                 )
                 .unwrap();
             wallet.confirm_transaction();
-            // add to processed list so it is not processed if duplicated
-            self.processed_fragments.insert(processed_key);
             Ok(res)
         } else {
             unimplemented!();

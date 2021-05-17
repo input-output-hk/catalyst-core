@@ -21,7 +21,7 @@ use chain_impl_mockchain::{
     transaction::InputEnum,
     vote::{CommitteeId, Payload},
 };
-use chain_time::{SlotDuration, TimeFrame, Timeline};
+use chain_time::{Epoch, Slot, SlotDuration, TimeEra, TimeFrame, Timeline};
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::CommitteeIdDef;
@@ -82,11 +82,11 @@ fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
 fn fragment_log_timestamp_to_blockdate(
     timestamp: SecondsSinceUnixEpoch,
     timeframe: &TimeFrame,
-    ledger: &Ledger,
+    era: &TimeEra,
 ) -> Option<BlockDate> {
     let slot = timestamp_to_system_time(timestamp);
     let new_slot = timeframe.slot_at(&slot)?;
-    let epoch_position = ledger.era().from_slot_to_era(new_slot)?;
+    let epoch_position = era.from_slot_to_era(new_slot)?;
     Some(BlockDate::from(epoch_position))
 }
 
@@ -95,7 +95,6 @@ fn timeframe_from_block0_start_and_slot_duration(
     slot_duration: Block0SlotDuration,
 ) -> TimeFrame {
     let timeline = Timeline::new(timestamp_to_system_time(block0_start));
-
     TimeFrame::new(
         timeline,
         SlotDuration::from_secs(<u8>::from(slot_duration) as u32),
@@ -210,6 +209,12 @@ pub enum ValidationError {
     #[error("Invalid ballot, only 1 input (subsequently 1 witness) and no output is accepted")]
     InvalidVoteCast,
 
+    #[error("Out of voting period")]
+    VotingPeriodError,
+
+    #[error("Out of tally period")]
+    TallyPeriodError,
+
     #[error("Fragment with id {id} and spending counter value was already processed")]
     DuplicatedFragment { id: FragmentId },
 }
@@ -218,29 +223,46 @@ pub struct VoteFragmentFilter<I: Iterator<Item = PersistentFragmentLog>> {
     block0: Hash,
     vote_start: BlockDate,
     vote_end: BlockDate,
+    committee_end: BlockDate,
     range_check: Range<u32>,
+    timeframe: TimeFrame,
+    era: TimeEra,
     fragments: I,
     replay_protection: HashSet<FragmentId>,
     spending_counters: HashMap<account::Identifier, u32>,
 }
 
 impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
-    pub fn new(
-        block0: Hash,
-        vote_start: BlockDate,
-        vote_end: BlockDate,
-        range_check: Range<u32>,
-        fragments: I,
-    ) -> Self {
-        Self {
-            block0,
+    pub fn new(block0: Block, range_check: Range<u32>, fragments: I) -> Result<Self, Error> {
+        let voteplans = voteplans_from_block0(&block0);
+        let block0_configuration = Block0Configuration::from_block(&block0)?;
+        let (_, voteplan) = voteplans.iter().next().ok_or(Error::MissingVoteplanError)?;
+        let vote_start = voteplan.vote_start();
+        let vote_end = voteplan.vote_end();
+        let committee_end = voteplan.committee_end();
+        let block0_start = block0_configuration.blockchain_configuration.block0_date;
+        let slot_duration = block0_configuration.blockchain_configuration.slot_duration;
+        let timeframe = timeframe_from_block0_start_and_slot_duration(block0_start, slot_duration);
+        let era = TimeEra::new(
+            Slot::from(0),
+            Epoch(0),
+            block0_configuration
+                .blockchain_configuration
+                .slots_per_epoch
+                .into(),
+        );
+        Ok(Self {
+            block0: block0.header.hash().into(),
             vote_start,
             vote_end,
+            committee_end,
             range_check,
+            timeframe,
+            era,
             fragments,
             replay_protection: HashSet::new(),
             spending_counters: HashMap::new(),
-        }
+        })
     }
 
     fn validate_tx<P>(
@@ -263,6 +285,18 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
         );
         is_valid_tx
     }
+
+    fn validate_timestamp(
+        &self,
+        timestamp: SecondsSinceUnixEpoch,
+        start: &BlockDate,
+        end: &BlockDate,
+    ) -> bool {
+        fragment_log_timestamp_to_blockdate(timestamp, &self.timeframe, &self.era)
+            .map_or(false, |ref blockdate| {
+                !(blockdate < start || blockdate >= end)
+            })
+    }
 }
 
 impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<I> {
@@ -280,6 +314,9 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
                     }
                     let (_, identifier, witness) =
                         deconstruct_account_transaction(&transaction_slice);
+                    if !self.validate_timestamp(time, &self.vote_start, &self.vote_end) {
+                        return Some(Err((fragment, ValidationError::VotingPeriodError)));
+                    }
                     if !self.validate_tx(&identifier, &witness, &transaction_slice) {
                         return Some(Err((
                             fragment.clone(),
@@ -307,7 +344,9 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
                 Fragment::VoteTally(ref transaction) => {
                     let (_, identifier, witness) =
                         deconstruct_account_transaction(&transaction.as_slice());
-
+                    if !self.validate_timestamp(time, &self.vote_end, &self.committee_end) {
+                        return Some(Err((fragment, ValidationError::TallyPeriodError)));
+                    }
                     if !self.validate_tx(&identifier, &witness, &transaction.as_slice()) {
                         return Some(Err((
                             fragment.clone(),
@@ -330,7 +369,6 @@ pub fn recover_ledger_from_logs(
     block0: &Block,
     fragment_logs: impl Iterator<Item = Result<PersistentFragmentLog, FragmentLogDeserializeError>>,
 ) -> Result<(Ledger, Vec<Fragment>), Error> {
-    let block0_configuration = Block0Configuration::from_block(block0).unwrap();
     let (mut fragment_replayer, new_block0) = FragmentReplayer::from_block0(block0)?;
 
     // we use block0 header id instead of the new one, to keep validation on old tx that uses the original block0 id.
@@ -338,17 +376,12 @@ pub fn recover_ledger_from_logs(
     let mut ledger =
         Ledger::new(block0.header.id(), new_block0.fragments()).map_err(Error::LedgerError)?;
 
-    let block0_start = block0_configuration.blockchain_configuration.block0_date;
-    let slot_duration = block0_configuration.blockchain_configuration.slot_duration;
-
     // we assume that voteplans use the same vote start/end BlockDates as well as committee and tally ones
     // hence we only take data from one of them
     let active_voteplans = ledger.active_vote_plans();
     let voteplan = active_voteplans.last().ok_or(Error::MissingVoteplanError)?;
     let vote_start = voteplan.vote_start;
     let vote_end = voteplan.vote_end;
-
-    let timeframe = timeframe_from_block0_start_and_slot_duration(block0_start, slot_duration);
 
     // do not update ledger epoch if we are already in expected Epoch(0)
     if vote_start.epoch != 0 {
@@ -382,14 +415,12 @@ pub fn recover_ledger_from_logs(
         * 2;
 
     let fragment_filter = VoteFragmentFilter::new(
-        block0.header.hash().into(),
-        vote_start,
-        vote_end,
+        block0.clone(),
         0..spending_counter_max_check,
         deserialized_fragment_logs,
-    );
+    )?;
     let mut failed_fragments = Vec::new();
-    let mut block_date = vote_start.clone();
+    let mut block_date = vote_start;
     for filtered_fragment in fragment_filter {
         let new_fragment = match filtered_fragment {
             Ok(fragment) => match fragment {
@@ -406,7 +437,7 @@ pub fn recover_ledger_from_logs(
                     .ok(),
                 fragment @ Fragment::VoteTally(_) => {
                     if inc_tally {
-                        block_date = vote_end.clone();
+                        block_date = vote_end;
                         ledger = increment_ledger_time_up_to(ledger, vote_end);
                         inc_tally = false;
                     }

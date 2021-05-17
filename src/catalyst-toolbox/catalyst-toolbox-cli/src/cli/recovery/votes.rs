@@ -1,13 +1,16 @@
 use super::Error;
-use chain_crypto::bech32::Bech32;
-use chain_crypto::PublicKey;
+use catalyst_toolbox_lib::recovery::tally::{deconstruct_account_transaction, VoteFragmentFilter};
+use chain_core::property::Deserialize;
+use chain_impl_mockchain::block::Block;
 use chain_impl_mockchain::fragment::Fragment;
-use chain_impl_mockchain::transaction::InputEnum;
+use chain_impl_mockchain::transaction::Transaction;
 use chain_impl_mockchain::vote::Payload;
-use jormungandr_lib::interfaces::{
-    load_persistent_fragments_logs_from_folder_path, PersistentFragmentLog,
-};
-use srde::Serialize;
+use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
+use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
+use serde::Serialize;
+use std::collections::HashMap;
+use std::io::BufReader;
+use std::io::Write;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -31,89 +34,79 @@ pub struct VotesPrintout {
 
 #[derive(Serialize)]
 struct VoteCast {
-    #[serde(serialize_with = "PublicKey::to_bech32_str")]
-    public_key: PublicKey,
-    voteplan: VotePlanId,
+    public_key: String,
+    voteplan: String,
     proposal: u8,
     choice: u8,
 }
 
-impl From<Transaction<VoteCast>> for VoteCast {
-    fn from(transaction: Transaction<VoteCast>) -> Self {
-        let (vote_cast, identifier, _) = deconstruct_transaction(transaction);
+impl From<Transaction<chain_impl_mockchain::certificate::VoteCast>> for VoteCast {
+    fn from(transaction: Transaction<chain_impl_mockchain::certificate::VoteCast>) -> Self {
+        let (vote_cast, identifier, _) = deconstruct_account_transaction(&transaction.as_slice());
         let choice = if let Payload::Public { choice } = vote_cast.payload() {
             choice
         } else {
             panic!("cannot handle private votes");
         };
         Self {
-            public_key: identifier.into(),
-            voteplan: vote_cast.vote_plan(),
+            public_key: identifier.to_string(),
+            voteplan: vote_cast.vote_plan().to_string(),
             proposal: vote_cast.proposal_index(),
-            choice: choice.into(),
+            choice: choice.as_byte(),
         }
     }
 }
 
-fn group_by_voter(fragments: impl Iterator<Item = Fragment>) -> HashMap<PublicKey, Vec<VoteCast>> {
+fn group_by_voter(fragments: Vec<Fragment>) -> HashMap<String, Vec<VoteCast>> {
     let mut res = HashMap::new();
+    for fragment in fragments {
+        if let Fragment::VoteCast(transaction) = fragment {
+            let vote_cast = VoteCast::from(transaction);
+            res.entry(vote_cast.public_key.clone())
+                .or_insert_with(Vec::new)
+                .push(vote_cast);
+        }
+    }
+    res
 }
 
 impl VotesPrintout {
     pub fn exec(self) -> Result<(), Error> {
-        let reader = std::fs::File::open(path)?;
-        Ok(Block::deserialize(BufReader::new(reader)).unwrap());
+        let VotesPrintout {
+            block0_path,
+            logs_path,
+            output,
+            output_format,
+        } = self;
 
-        let fragments =
-            load_persistent_fragments_logs_from_folder_path(&logs_path)?.collect::<Vec<_>>();
+        let reader = std::fs::File::open(block0_path)?;
+        let block0 = Block::deserialize(BufReader::new(reader)).unwrap();
 
-        let non_filtered = group_by_voter(fragments);
+        let (original, to_filter): (Vec<_>, Vec<_>) =
+            load_persistent_fragments_logs_from_folder_path(&logs_path)?
+                .filter_map(|fragment| match fragment {
+                    Ok(persistent) => Some((persistent.fragment.clone(), persistent)),
+                    _ => None,
+                })
+                .unzip();
 
-        let filtered = group_by_voter(filtered_fragments);
+        let non_filtered_votes = group_by_voter(original);
 
-        let ledger = Ledger::new(block0.header.id(), block0.fragments()).unwrap();
-        let voteplans = ledger.active_vote_plans();
-        let (vote_start, vote_end, committee_end) = (
-            voteplans[0].vote_start,
-            voteplans[0].vote_end,
-            voteplans[1].committee_end,
-        );
+        let filtered_fragments = VoteFragmentFilter::new(block0, 0..1000, to_filter.into_iter())
+            .unwrap()
+            .filter_map(Result::ok)
+            .collect::<Vec<_>>();
+
+        let filtered_votes = group_by_voter(filtered_fragments);
+
+        let res = serde_json::json!({
+            "original": non_filtered_votes,
+            "filtered": filtered_votes,
+        });
 
         let mut out_writer = output.open()?;
-        let content = output_format.format_json(serde_json::to_value(&voteplan_status)?)?;
+        let content = output_format.format_json(res)?;
         out_writer.write_all(content.as_bytes())?;
-        let fragments = load_persistent_fragments_logs_from_folder_path(&self.file)?;
-        for fragment in fragments {
-            let fragment = fragment?;
-            if let PersistentFragmentLog {
-                fragment: Fragment::VoteCast(transaction),
-                ..
-            } = fragment
-            {
-                let vote_cast = transaction.as_slice().payload().into_payload();
-                let account = transaction
-                    .as_slice()
-                    .inputs()
-                    .iter()
-                    .next()
-                    .unwrap()
-                    .to_enum();
-                let public_key: PublicKey<_> = if let InputEnum::AccountInput(account, _) = account
-                {
-                    account.to_single_account().unwrap().into()
-                } else {
-                    panic!("cannot handle utxo inputs");
-                };
-
-                println!(
-                    "public_key: {} | voteplan: {} | proposal index: {} |   choice: {:?} ",
-                    public_key.to_bech32_str(),
-                    vote_cast.vote_plan(),
-                    vote_cast.proposal_index(),
-                    choice
-                );
-            }
-        }
 
         Ok(())
     }

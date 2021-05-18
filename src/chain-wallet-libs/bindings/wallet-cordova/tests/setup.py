@@ -99,6 +99,7 @@ def install_test_plugin(app_dir: Path, reinstall=True):
 
     print(f"tests_path: {tests_path}")
 
+    subprocess.call(["npm", "install"], cwd=tests_path)
     subprocess.call(["npm", "run", "build"], cwd=tests_path)
 
     if reinstall:

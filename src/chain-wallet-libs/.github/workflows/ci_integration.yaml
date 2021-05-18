@@ -155,6 +155,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          target: x86_64-apple-darwin
           override: true
           default: true
 
@@ -183,11 +184,6 @@ jobs:
 
       - name: Setup cordova
         run: sudo npm install -g cordova
-
-      - uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: cross
 
       - uses: actions-rs/cargo@v1
         with:

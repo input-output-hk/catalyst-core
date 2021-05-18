@@ -181,8 +181,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Use oxr463/setup-cordova
-        uses: oxr463/setup-cordova@0.0.2
+      - name: Setup cordova
+        run: sudo npm install -g cordova
 
       - uses: actions-rs/cargo@v1
         with:

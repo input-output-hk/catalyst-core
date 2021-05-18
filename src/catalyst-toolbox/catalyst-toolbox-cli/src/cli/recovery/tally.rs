@@ -13,6 +13,7 @@ use log::warn;
 use std::io::{BufReader, Write};
 use std::path::PathBuf;
 
+use reqwest::Url;
 use structopt::StructOpt;
 
 #[allow(clippy::large_enum_variant)]
@@ -32,6 +33,9 @@ pub enum Error {
 
     #[error(transparent)]
     OutputFormatError(#[from] OutputFormatError),
+
+    #[error(transparent)]
+    RequestError(#[from] reqwest::Error),
 }
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
@@ -39,8 +43,12 @@ pub enum Error {
 #[structopt(rename_all = "kebab")]
 pub struct Replay {
     /// Path to the block0 binary file
-    #[structopt(long)]
+    #[structopt(long, conflicts_with = "block0_url")]
     block0_path: PathBuf,
+
+    /// Url to a block0 endpoint
+    #[structopt(long, conflicts_with = "block0_path")]
+    block0_url: Option<Url>,
 
     /// Path to the folder containing the log files used for the tally reconstruction
     #[structopt(long)]
@@ -62,17 +70,27 @@ fn read_block0(path: PathBuf) -> std::io::Result<Block> {
     Ok(Block::deserialize(BufReader::new(reader)).unwrap())
 }
 
+fn load_block0_from_url(url: Url) -> Result<Block, Error> {
+    let block0_body = reqwest::blocking::get(url)?.bytes()?;
+    Ok(Block::deserialize(BufReader::new(&block0_body[..])).unwrap())
+}
+
 impl Replay {
     pub fn exec(self) -> Result<(), Error> {
         let Replay {
             block0_path,
+            block0_url,
             logs_path,
             output,
             output_format,
             verbose,
         } = self;
         stderrlog::new().verbosity(verbose).init().unwrap();
-        let block0 = read_block0(block0_path)?;
+        let block0 = if let Some(url) = block0_url {
+            load_block0_from_url(url)?
+        } else {
+            read_block0(block0_path)?
+        };
 
         let fragments = load_persistent_fragments_logs_from_folder_path(&logs_path)?;
 

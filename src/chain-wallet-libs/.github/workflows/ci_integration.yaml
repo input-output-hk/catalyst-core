@@ -186,7 +186,8 @@ jobs:
 
       - uses: actions-rs/cargo@v1
         with:
-          use-cross: true
+          command: install
+          args: cross
 
       - name: build test app
         run: |

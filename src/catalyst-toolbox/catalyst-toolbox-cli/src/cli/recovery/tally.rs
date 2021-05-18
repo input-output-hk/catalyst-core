@@ -43,11 +43,11 @@ pub enum Error {
 #[structopt(rename_all = "kebab")]
 pub struct Replay {
     /// Path to the block0 binary file
-    #[structopt(long, conflicts_with = "block0_url")]
+    #[structopt(long, conflicts_with = "block0-url")]
     block0_path: PathBuf,
 
     /// Url to a block0 endpoint
-    #[structopt(long, conflicts_with = "block0_path")]
+    #[structopt(long)]
     block0_url: Option<Url>,
 
     /// Path to the folder containing the log files used for the tally reconstruction
@@ -65,14 +65,14 @@ pub struct Replay {
     verbose: usize,
 }
 
-fn read_block0(path: PathBuf) -> std::io::Result<Block> {
+fn read_block0(path: PathBuf) -> Result<Block, Error> {
     let reader = std::fs::File::open(path)?;
-    Ok(Block::deserialize(BufReader::new(reader)).unwrap())
+    Ok(Block::deserialize(BufReader::new(reader))?)
 }
 
 fn load_block0_from_url(url: Url) -> Result<Block, Error> {
     let block0_body = reqwest::blocking::get(url)?.bytes()?;
-    Ok(Block::deserialize(BufReader::new(&block0_body[..])).unwrap())
+    Ok(Block::deserialize(BufReader::new(&block0_body[..]))?)
 }
 
 impl Replay {

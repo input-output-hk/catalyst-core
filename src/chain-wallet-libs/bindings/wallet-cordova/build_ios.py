@@ -17,23 +17,23 @@ targets = {
 }
 
 
-def run():
+def run(release=True):
     lipo_args = ["lipo", "-create", "-output", "./src/ios/" + libname]
 
     for rust_target, apple_target in targets.items():
-        out = subprocess.run(
-            [
-                "cargo",
-                "rustc",
-                "--release",
-                "--target",
-                rust_target,
-                "-p" "jormungandrwallet",
-                "--",
-                "-C",
-                "lto",
-            ]
-        )
+        arguments = [
+            "cross",
+            "rustc",
+            "--target",
+            rust_target,
+            "-p",
+            "jormungandrwallet",
+        ]
+
+        if release:
+            arguments = arguments + ["--release", "--", "-C", "lto"]
+
+        out = subprocess.run(arguments)
         if out.returncode != 0:
             print("couldn't build for target: ", rust_target)
             sys.exit(1)

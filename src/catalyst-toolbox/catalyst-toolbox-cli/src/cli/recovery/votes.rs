@@ -1,6 +1,6 @@
 use super::Error;
 use catalyst_toolbox_lib::recovery::tally::{deconstruct_account_transaction, VoteFragmentFilter};
-use chain_core::property::Deserialize;
+use chain_core::property::{Deserialize, Fragment as _};
 use chain_impl_mockchain::block::Block;
 use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::transaction::Transaction;
@@ -36,7 +36,8 @@ pub struct VotesPrintout {
 struct VoteCast {
     public_key: String,
     voteplan: String,
-    proposal: u8,
+    fragment_id: String,
+    chain_proposal_index: u8,
     choice: u8,
 }
 
@@ -49,9 +50,10 @@ impl From<Transaction<chain_impl_mockchain::certificate::VoteCast>> for VoteCast
             panic!("cannot handle private votes");
         };
         Self {
+            fragment_id: Fragment::VoteCast(transaction).id().to_string(),
             public_key: identifier.to_string(),
             voteplan: vote_cast.vote_plan().to_string(),
-            proposal: vote_cast.proposal_index(),
+            chain_proposal_index: vote_cast.proposal_index(),
             choice: choice.as_byte(),
         }
     }

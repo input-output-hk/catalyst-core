@@ -36,6 +36,9 @@ pub enum Error {
 
     #[error(transparent)]
     RequestError(#[from] reqwest::Error),
+
+    #[error("Block0 should be provided either from a path (block0-path) or an url (block0-url)")]
+    Block0Unavailable,
 }
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
@@ -44,7 +47,7 @@ pub enum Error {
 pub struct Replay {
     /// Path to the block0 binary file
     #[structopt(long, conflicts_with = "block0-url")]
-    block0_path: PathBuf,
+    block0_path: Option<PathBuf>,
 
     /// Url to a block0 endpoint
     #[structopt(long)]
@@ -86,10 +89,13 @@ impl Replay {
             verbose,
         } = self;
         stderrlog::new().verbosity(verbose).init().unwrap();
-        let block0 = if let Some(url) = block0_url {
+
+        let block0 = if let Some(path) = block0_path {
+            read_block0(path)?
+        } else if let Some(url) = block0_url {
             load_block0_from_url(url)?
         } else {
-            read_block0(block0_path)?
+            return Err(Error::Block0Unavailable);
         };
 
         let fragments = load_persistent_fragments_logs_from_folder_path(&logs_path)?;

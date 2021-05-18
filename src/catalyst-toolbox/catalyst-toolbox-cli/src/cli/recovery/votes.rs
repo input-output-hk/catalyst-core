@@ -2,13 +2,14 @@ use super::Error;
 use catalyst_toolbox_lib::recovery::tally::{deconstruct_account_transaction, VoteFragmentFilter};
 use chain_core::property::{Deserialize, Fragment as _};
 use chain_impl_mockchain::{
-    block::Block, fragment::Fragment, transaction::Transaction, vote::Payload,
+    account::SpendingCounter, block::Block, fragment::Fragment, vote::Payload,
 };
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::io::{BufReader, Write};
+use std::iter::IntoIterator;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -37,32 +38,33 @@ struct VoteCast {
     fragment_id: String,
     chain_proposal_index: u8,
     choice: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    spending_counter: Option<u32>,
 }
 
-impl From<Transaction<chain_impl_mockchain::certificate::VoteCast>> for VoteCast {
-    fn from(transaction: Transaction<chain_impl_mockchain::certificate::VoteCast>) -> Self {
-        let (vote_cast, identifier, _) = deconstruct_account_transaction(&transaction.as_slice())
-            .expect("utxo votes not supported");
-        let choice = if let Payload::Public { choice } = vote_cast.payload() {
-            choice
-        } else {
-            panic!("cannot handle private votes");
-        };
-        Self {
-            fragment_id: Fragment::VoteCast(transaction).id().to_string(),
-            public_key: identifier.to_string(),
-            voteplan: vote_cast.vote_plan().to_string(),
-            chain_proposal_index: vote_cast.proposal_index(),
-            choice: choice.as_byte(),
-        }
-    }
-}
-
-fn group_by_voter(fragments: Vec<Fragment>) -> HashMap<String, Vec<VoteCast>> {
+fn group_by_voter<I: IntoIterator<Item = (Fragment, Option<SpendingCounter>)>>(
+    fragments: I,
+) -> HashMap<String, Vec<VoteCast>> {
     let mut res = HashMap::new();
-    for fragment in fragments {
-        if let Fragment::VoteCast(transaction) = fragment {
-            let vote_cast = VoteCast::from(transaction);
+    for (fragment, spending_counter) in fragments.into_iter() {
+        if let Fragment::VoteCast(ref transaction) = fragment {
+            let (vote_cast, identifier, _) =
+                deconstruct_account_transaction(&transaction.as_slice())
+                    .expect("utxo votes not supported");
+            let choice = if let Payload::Public { choice } = vote_cast.payload() {
+                choice
+            } else {
+                panic!("cannot handle private votes");
+            };
+            let vote_cast = VoteCast {
+                fragment_id: fragment.id().to_string(),
+                public_key: identifier.to_string(),
+                voteplan: vote_cast.vote_plan().to_string(),
+                chain_proposal_index: vote_cast.proposal_index(),
+                spending_counter: spending_counter.map(Into::into),
+                choice: choice.as_byte(),
+            };
+
             res.entry(vote_cast.public_key.clone())
                 .or_insert_with(Vec::new)
                 .push(vote_cast);
@@ -86,7 +88,7 @@ impl VotesPrintout {
         let (original, to_filter): (Vec<_>, Vec<_>) =
             load_persistent_fragments_logs_from_folder_path(&logs_path)?
                 .filter_map(|fragment| match fragment {
-                    Ok(persistent) => Some((persistent.fragment.clone(), persistent)),
+                    Ok(persistent) => Some(((persistent.fragment.clone(), None), persistent)),
                     _ => None,
                 })
                 .unzip();
@@ -96,6 +98,7 @@ impl VotesPrintout {
         let filtered_fragments = VoteFragmentFilter::new(block0, 0..1000, to_filter.into_iter())
             .unwrap()
             .filter_map(Result::ok)
+            .map(|(f, sc)| (f, Some(sc)))
             .collect::<Vec<_>>();
 
         let filtered_votes = group_by_voter(filtered_fragments);

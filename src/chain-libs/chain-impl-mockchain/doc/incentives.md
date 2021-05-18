@@ -22,17 +22,17 @@ stake pool owners (representing their operating costs and incentives to run a
 public secure/working/maintained pool), and the individual contributing
 stake towards this specific pool.
 
-    ┏━━━━━━━━━━━━━┓ 
+    ┏━━━━━━━━━━━━━┓
     ┃Reward Escrow┃
-    ┗━━━━━━━━━━━━━┛                    ╭ Block        ╭ 
+    ┗━━━━━━━━━━━━━┛                    ╭ Block        ╭
                │   ┏━━━━━━━━━━━━━┓     │ Creators     │  Stake
                ╞══>┃Epoch Rewards┃═╤═> │ For      ═╤═>│ Delegators
-               │   ┗━━━━━━━━━━━━━┛ │   │ This      │  ╰ 
-          Σ Fees                   │   ╰ Epoch     │  
+               │   ┗━━━━━━━━━━━━━┛ │   │ This      │  ╰
+          Σ Fees                   │   ╰ Epoch     │
                                    │               ╰─>─ Pool Owners
-                                   │   ┏━━━━━━━━┓ 
+                                   │   ┏━━━━━━━━┓
                                    ╰─>─┃Treasury┃
-                                       ┗━━━━━━━━┛ 
+                                       ┗━━━━━━━━┛
 
 ## Reward collection
 
@@ -156,7 +156,7 @@ for pool in pools
     DISTRIBUTE_TO(pool, pool_reward)
 TREASURY += pools_contribution
 ```
-    
+
 Any non null amount could be arbitrarily gifted further to the treasury, or
 could be considered a bootstrap contribution toward the next epoch reward pot.
 
@@ -192,7 +192,7 @@ for each contributor
     contributor_reward = DOWNSCALE_STAKE(contributor.stake * staker_unit_reward)
     contributor.account += contributor_reward
     stakers_contribution -= contributor_reward
-TREASURY += stakers_contribution 
+TREASURY += stakers_contribution
 ```
 
 Note: The stake scaling is stronger here as the precision required is also more
@@ -207,7 +207,7 @@ Note: The treasury gets all reward what doesn't get assigned
 Every arithmetic operations are conducted on ℕ (natural numbers).
 
 All due care has been taken so that algorithm related to coins are lossless and
-implemented using fixed size unsigned integer. Overflow or underflow are 
+implemented using fixed size unsigned integer. Overflow or underflow are
 designed to not happens, and if they occur should be a fatal error and the
 result of using the wrong fixed size types.
 

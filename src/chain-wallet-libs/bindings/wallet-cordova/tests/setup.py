@@ -121,12 +121,9 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--directory", type=Path)
     parser.add_argument("-r", "--run", choices=platform_choices)
 
-    parser.add_argument(
-        "--cargo-build",
-        default=True,
-        action=argparse.BooleanOptionalAction,
-        dest="cargo_build",
-    )
+    parser.add_argument("--cargo-build", dest="cargo_build", action="store_true")
+    parser.add_argument("--no-cargo-build", dest="cargo_build", action="store_false")
+    parser.set_defaults(feature=True)
 
     args = parser.parse_args()
 

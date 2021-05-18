@@ -85,7 +85,7 @@ def install_main_plugin(
         if cargo_build:
             build_jni(release=False)
         else:
-            copy_jni_libs()
+            copy_jni_libs(release=False)
             copy_jni_definitions()
 
     if ios and cargo_build:

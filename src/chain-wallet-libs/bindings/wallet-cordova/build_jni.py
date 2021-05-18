@@ -19,12 +19,14 @@ targets = {
 }
 
 
-def copy_libs():
+def copy_libs(release=True):
     for rust_target, android_target in targets.items():
         dst = script_directory / copy_to / android_target
         dst.mkdir(parents=True, exist_ok=True)
 
-        src = root_directory / rust_target / "release" / libname
+        debug_or_release = "release" if release else "debug"
+
+        src = root_directory / rust_target / debug_or_release / libname
         shutil.copy(src, dst)
 
 
@@ -48,7 +50,7 @@ def run(release=True):
             print("couldn't build for target: ", rust_target)
             sys.exit(1)
 
-    copy_libs()
+    copy_libs(release)
     copy_definitions()
 
 

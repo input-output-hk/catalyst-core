@@ -334,9 +334,14 @@ fn votes_outside_voting_phase() {
         time: jump_to_epoch(1, generator.block0_config()),
     });
 
+    let early_tally = Ok(PersistentFragmentLog {
+        fragment: tally_fragments[0].as_ref().unwrap().fragment.clone(),
+        time: jump_to_epoch(0, generator.block0_config()),
+    });
+
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &block0,
-        vec![fragment_yes, fragment_no]
+        vec![early_tally, fragment_yes, fragment_no]
             .into_iter()
             .chain(tally_fragments.into_iter()),
     )
@@ -350,7 +355,7 @@ fn votes_outside_voting_phase() {
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert_eq!(tally.result().unwrap().results()[1], 0.into());
     assert_eq!(tally.result().unwrap().results()[2], 0.into());
-    assert_eq!(failed_fragments.len(), 2);
+    assert_eq!(failed_fragments.len(), 3);
 }
 
 fn assert_tally_eq(mut r1: Vec<VotePlanStatus>, mut r2: Vec<VotePlanStatus>) {

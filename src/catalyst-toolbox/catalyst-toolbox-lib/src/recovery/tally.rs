@@ -124,14 +124,9 @@ fn voteplans_from_block0(block0: &Block) -> HashMap<VotePlanId, VotePlan> {
 /// check that the transaction input/outputs/witnesses is valid for the ballot
 /// * Only 1 input (subsequently 1 witness), no output
 pub(super) fn valid_vote_cast(tx: &TransactionSlice<certificate::VoteCast>) -> bool {
-    if tx.inputs().nb_inputs() != 1
+    tx.inputs().nb_inputs() != 1
         || tx.witnesses().nb_witnesses() != 1
         || tx.outputs().nb_outputs() != 0
-    {
-        return false;
-    }
-
-    true
 }
 
 fn verify_original_tx(

@@ -136,7 +136,7 @@ fn verify_original_tx(
     account: &account::Identifier,
     witness: &account::Witness,
     range_check: Range<u32>,
-) -> bool {
+) -> (bool, SpendingCounter) {
     let spending_counter: u32 = <u32>::from(spending_counter);
     for i in range_check {
         for op in &[u32::checked_add, u32::checked_sub] {
@@ -152,12 +152,12 @@ fn verify_original_tx(
                         spending_counter,
                         new_spending_counter
                     );
-                    return true;
+                    return (true, new_spending_counter.into());
                 }
             }
         }
     }
-    false
+    (false, 0.into())
 }
 
 fn increment_ledger_time_up_to(ledger: Ledger, blockdate: BlockDate) -> Ledger {
@@ -277,7 +277,7 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
         identifier: &account::Identifier,
         witness: &account::Witness,
         transaction: &TransactionSlice<P>,
-    ) -> bool {
+    ) -> (bool, SpendingCounter) {
         let spending_counter = self
             .spending_counters
             .entry(identifier.clone())
@@ -306,7 +306,7 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
 }
 
 impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<I> {
-    type Item = Result<Fragment, (Fragment, ValidationError)>;
+    type Item = Result<(Fragment, SpendingCounter), (Fragment, ValidationError)>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.fragments.next().map(|persistent_fragment_log| {
@@ -330,7 +330,9 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
                     if !self.validate_timestamp(time, &self.vote_start, &self.vote_end) {
                         return Err((fragment, ValidationError::VotingPeriodError));
                     }
-                    if !self.validate_tx(&identifier, &witness, &transaction_slice) {
+
+                    let (valid, sc) = self.validate_tx(&identifier, &witness, &transaction_slice);
+                    if !valid {
                         return Err((
                             fragment.clone(),
                             ValidationError::InvalidTransactionSignature {
@@ -352,7 +354,7 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
                     self.replay_protection.insert(fragment_id);
 
                     *self.spending_counters.get_mut(&identifier).unwrap() += 1;
-                    Ok(fragment)
+                    Ok((fragment, sc))
                 }
                 Fragment::VoteTally(ref transaction) => {
                     let transaction_slice = transaction.as_slice();
@@ -366,7 +368,8 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
                     if !self.validate_timestamp(time, &self.vote_end, &self.committee_end) {
                         return Err((fragment, ValidationError::TallyPeriodError));
                     }
-                    if !self.validate_tx(&identifier, &witness, &transaction.as_slice()) {
+                    let (valid, sc) = self.validate_tx(&identifier, &witness, &transaction_slice);
+                    if !valid {
                         return Err((
                             fragment.clone(),
                             ValidationError::InvalidTransactionSignature {
@@ -376,7 +379,7 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
                         ));
                     }
                     *self.spending_counters.get_mut(&identifier).unwrap() += 1;
-                    Ok(fragment)
+                    Ok((fragment, sc))
                 }
                 other => Err((other, ValidationError::NotAVotingFragment)),
             }
@@ -442,7 +445,7 @@ pub fn recover_ledger_from_logs(
     let mut block_date = vote_start;
     for filtered_fragment in fragment_filter {
         let new_fragment = match filtered_fragment {
-            Ok(fragment) => match fragment {
+            Ok((fragment, _)) => match fragment {
                 fragment @ Fragment::VoteCast(_) => fragment_replayer
                     .replay(fragment.clone())
                     .map_err(|e| {

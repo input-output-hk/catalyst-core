@@ -43,14 +43,14 @@ def sed(original: str, replacement: str, file: Path):
 def create_hello_world(build_dir: Path):
     os.makedirs(build_dir, exist_ok=True)
 
-    subprocess.call(
+    subprocess.check_call(
         ["cordova", "create", "hello", "com.example.hello", "HelloWorld"],
         cwd=build_dir,
     )
 
 
 def install_test_framework(app_dir: Path):
-    subprocess.call(
+    subprocess.check_call(
         ["cordova", "plugin", "add", "cordova-plugin-test-framework"], cwd=app_dir
     )
 
@@ -63,10 +63,10 @@ def install_test_framework(app_dir: Path):
 
 def install_platforms(app_dir: Path, android=True, ios=True):
     if android:
-        subprocess.call(["cordova", "platform", "add", "android"], cwd=app_dir)
+        subprocess.check_call(["cordova", "platform", "add", "android"], cwd=app_dir)
 
     if ios:
-        subprocess.call(["cordova", "platform", "add", "ios"], cwd=app_dir)
+        subprocess.check_call(["cordova", "platform", "add", "ios"], cwd=app_dir)
 
 
 def install_main_plugin(
@@ -77,7 +77,7 @@ def install_main_plugin(
     print(f"plugin_path: {plugin_path}")
 
     if reinstall:
-        subprocess.call(
+        subprocess.check_call(
             ["cordova", "plugin", "rm", "wallet-cordova-plugin"], cwd=app_dir
         )
 
@@ -91,7 +91,7 @@ def install_main_plugin(
     if ios and cargo_build:
         build_ios()
 
-    subprocess.call(["cordova", "plugin", "add", str(plugin_path)], cwd=app_dir)
+    subprocess.check_call(["cordova", "plugin", "add", str(plugin_path)], cwd=app_dir)
 
 
 def install_test_plugin(app_dir: Path, reinstall=True):
@@ -99,15 +99,15 @@ def install_test_plugin(app_dir: Path, reinstall=True):
 
     print(f"tests_path: {tests_path}")
 
-    subprocess.call(["npm", "install"], cwd=tests_path)
-    subprocess.call(["npm", "run", "build"], cwd=tests_path)
+    subprocess.check_call(["npm", "install"], cwd=tests_path)
+    subprocess.check_call(["npm", "run", "build"], cwd=tests_path)
 
     if reinstall:
-        subprocess.call(
+        subprocess.check_call(
             ["cordova", "plugin", "rm", "wallet-cordova-plugin-tests"], cwd=app_dir
         )
 
-    subprocess.call(["cordova", "plugin", "add", str(tests_path)], cwd=app_dir)
+    subprocess.check_call(["cordova", "plugin", "add", str(tests_path)], cwd=app_dir)
 
 
 if __name__ == "__main__":
@@ -154,6 +154,6 @@ if __name__ == "__main__":
     if args.command == "tests":
         install_test_plugin(app_dir, reinstall=True)
 
-    subprocess.call(["cordova", "build"], cwd=app_dir)
+    subprocess.check_call(["cordova", "build"], cwd=app_dir)
     if args.run:
-        subprocess.call(["cordova", "run", args.run], cwd=app_dir)
+        subprocess.check_call(["cordova", "run", args.run], cwd=app_dir)

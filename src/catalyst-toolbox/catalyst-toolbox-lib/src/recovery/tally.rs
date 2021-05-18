@@ -141,7 +141,7 @@ fn verify_original_tx(
     account: &account::Identifier,
     witness: &account::Witness,
     range_check: Range<u32>,
-) -> (bool, u32) {
+) -> bool {
     let spending_counter: u32 = <u32>::from(spending_counter);
     for i in range_check {
         for op in &[u32::checked_add, u32::checked_sub] {
@@ -157,12 +157,12 @@ fn verify_original_tx(
                         spending_counter,
                         new_spending_counter
                     );
-                    return (true, new_spending_counter);
+                    return true;
                 }
             }
         }
     }
-    (false, 0)
+    false
 }
 
 fn increment_ledger_time_up_to(ledger: Ledger, blockdate: BlockDate) -> Ledger {
@@ -178,24 +178,24 @@ fn increment_ledger_time_up_to(ledger: Ledger, blockdate: BlockDate) -> Ledger {
 
 pub fn deconstruct_account_transaction<P: chain_impl_mockchain::transaction::Payload>(
     transaction: &TransactionSlice<P>,
-) -> (P, account::Identifier, account::Witness) {
+) -> Result<(P, account::Identifier, account::Witness), ValidationError> {
     let payload = transaction.payload().into_payload();
     let account = transaction.inputs().iter().next().unwrap().to_enum();
 
     let identifier = if let InputEnum::AccountInput(account, _) = account {
         account.to_single_account().unwrap()
     } else {
-        panic!("cannot handle utxo inputs");
+        return Err(ValidationError::InvalidUtxoInputs);
     };
 
     let witness = if let Witness::Account(witness) = transaction.witnesses().iter().next().unwrap()
     {
         witness
     } else {
-        panic!("utxo witnesses not supported");
+        return Err(ValidationError::InvalidUtxoWitnesses);
     };
 
-    (payload, identifier, witness)
+    Ok((payload, identifier, witness))
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -215,8 +215,20 @@ pub enum ValidationError {
     #[error("Out of tally period")]
     TallyPeriodError,
 
+    #[error("Fragment should be either a votecast or a votetally")]
+    NotAVotingFragment,
+
+    #[error("Cannot handle utxo inputs")]
+    InvalidUtxoInputs,
+
+    #[error("Cannot handle utxo witnesses")]
+    InvalidUtxoWitnesses,
+
     #[error("Fragment with id {id} and spending counter value was already processed")]
     DuplicatedFragment { id: FragmentId },
+
+    #[error("Unsupported private votes")]
+    UnsupportedPrivateVotes,
 }
 
 pub struct VoteFragmentFilter<I: Iterator<Item = PersistentFragmentLog>> {
@@ -275,15 +287,14 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
             .spending_counters
             .entry(identifier.clone())
             .or_default();
-        let (is_valid_tx, _) = verify_original_tx(
+        verify_original_tx(
             SpendingCounter::from(*spending_counter),
             &self.block0.into_hash(),
             &transaction.transaction_sign_data_hash(),
             identifier,
             witness,
             self.range_check.clone(),
-        );
-        is_valid_tx
+        )
     }
 
     fn validate_timestamp(
@@ -303,63 +314,76 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
     type Item = Result<Fragment, (Fragment, ValidationError)>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.fragments.next().and_then(|persistent_fragment_log| {
+        self.fragments.next().map(|persistent_fragment_log| {
             let PersistentFragmentLog { fragment, time } = persistent_fragment_log;
             match fragment {
                 Fragment::VoteCast(ref transaction) => {
                     let transaction_slice = transaction.as_slice();
                     let is_valid_vote_cast = valid_vote_cast(&transaction_slice);
                     if !is_valid_vote_cast {
-                        return Some(Err((fragment, ValidationError::InvalidVoteCast)));
+                        return Err((fragment, ValidationError::InvalidVoteCast));
                     }
+
                     let (_, identifier, witness) =
-                        deconstruct_account_transaction(&transaction_slice);
+                        match deconstruct_account_transaction(&transaction_slice) {
+                            Ok(data) => data,
+                            Err(e) => {
+                                return Err((fragment, e));
+                            }
+                        };
+
                     if !self.validate_timestamp(time, &self.vote_start, &self.vote_end) {
-                        return Some(Err((fragment, ValidationError::VotingPeriodError)));
+                        return Err((fragment, ValidationError::VotingPeriodError));
                     }
                     if !self.validate_tx(&identifier, &witness, &transaction_slice) {
-                        return Some(Err((
+                        return Err((
                             fragment.clone(),
                             ValidationError::InvalidTransactionSignature {
                                 id: fragment.clone().hash().to_string(),
                                 range: self.range_check.clone(),
                             },
-                        )));
+                        ));
                     }
 
                     // check if fragment was processed already
                     let fragment_id = fragment.id();
                     if self.replay_protection.contains(&fragment_id) {
-                        return Some(Err((
+                        return Err((
                             fragment,
                             ValidationError::DuplicatedFragment { id: fragment_id },
-                        )));
+                        ));
                     }
 
                     self.replay_protection.insert(fragment_id);
 
                     *self.spending_counters.get_mut(&identifier).unwrap() += 1;
-                    Some(Ok(fragment))
+                    Ok(fragment)
                 }
                 Fragment::VoteTally(ref transaction) => {
+                    let transaction_slice = transaction.as_slice();
                     let (_, identifier, witness) =
-                        deconstruct_account_transaction(&transaction.as_slice());
+                        match deconstruct_account_transaction(&transaction_slice) {
+                            Ok(data) => data,
+                            Err(e) => {
+                                return Err((fragment, e));
+                            }
+                        };
                     if !self.validate_timestamp(time, &self.vote_end, &self.committee_end) {
-                        return Some(Err((fragment, ValidationError::TallyPeriodError)));
+                        return Err((fragment, ValidationError::TallyPeriodError));
                     }
                     if !self.validate_tx(&identifier, &witness, &transaction.as_slice()) {
-                        return Some(Err((
+                        return Err((
                             fragment.clone(),
                             ValidationError::InvalidTransactionSignature {
                                 id: fragment.hash().to_string(),
                                 range: self.range_check.clone(),
                             },
-                        )));
+                        ));
                     }
                     *self.spending_counters.get_mut(&identifier).unwrap() += 1;
-                    Some(Ok(fragment))
+                    Ok(fragment)
                 }
-                _ => None,
+                other => Err((other, ValidationError::NotAVotingFragment)),
             }
         })
     }
@@ -529,14 +553,14 @@ impl FragmentReplayer {
         if let Fragment::VoteCast(ref transaction) = fragment {
             let transaction_slice = transaction.as_slice();
 
-            let (vote_cast, identifier, _) = deconstruct_account_transaction(&transaction_slice);
+            let (vote_cast, identifier, _) = deconstruct_account_transaction(&transaction_slice)?;
             let address = Identifier::from(identifier.clone())
                 .to_address(chain_addr::Discrimination::Production);
 
             let choice = if let Payload::Public { choice } = vote_cast.payload() {
                 choice
             } else {
-                panic!("cannot handle private votes");
+                return Err(ValidationError::UnsupportedPrivateVotes.into());
             };
 
             let address: Address = address.into();

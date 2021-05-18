@@ -19,6 +19,15 @@ targets = {
 }
 
 
+def copy_libs():
+    for rust_target, android_target in targets.items():
+        dst = script_directory / copy_to / android_target
+        dst.mkdir(parents=True, exist_ok=True)
+
+        src = root_directory / rust_target / "release" / libname
+        shutil.copy(src, dst)
+
+
 def run(release=True):
     for rust_target, android_target in targets.items():
         arguments = [
@@ -39,12 +48,7 @@ def run(release=True):
             print("couldn't build for target: ", rust_target)
             sys.exit(1)
 
-        dst = script_directory / copy_to / android_target
-        dst.mkdir(parents=True, exist_ok=True)
-
-        src = root_directory / rust_target / "release" / libname
-        shutil.copy(src, dst)
-
+    copy_libs()
     copy_definitions()
 
 

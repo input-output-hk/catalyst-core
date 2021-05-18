@@ -189,11 +189,36 @@ jobs:
           command: install
           args: cross
 
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: rustc
+          args: --target aarch64-linux-android -p wallet-jni -- -C link-args=-ldl
+
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: rustc
+          args: --target armv7-linux-androideabi -p wallet-jni -- -C link-args=-ldl
+
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: rustc
+          args: --target i686-linux-android -p wallet-jni -- -C link-args=-ldl
+
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: rustc
+          args: --target x86_64 -p wallet-jni -- -C link-args=-ldl
+
       - name: build test app
         run: |
           python3 bindings/wallet-cordova/tests/setup.py \
             --directory test_app \
             --platform android \
+            --no-cargo-build \
             -- setup
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}

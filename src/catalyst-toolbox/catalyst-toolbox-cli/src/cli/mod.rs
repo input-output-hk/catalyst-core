@@ -1,4 +1,5 @@
 mod notifications;
+mod recovery;
 mod rewards;
 
 use std::error::Error;
@@ -27,6 +28,7 @@ pub enum CatalystCommand {
     /// Rewards related operations
     Rewards(rewards::Rewards),
     PushNotification(notifications::PushNotifications),
+    Recover(recovery::Recover),
 }
 
 impl Cli {
@@ -51,6 +53,7 @@ impl CatalystCommand {
         match self {
             Rewards(rewards) => rewards.exec()?,
             PushNotification(notifications) => notifications.exec()?,
+            Recover(recover) => recover.exec()?,
         };
         Ok(())
     }

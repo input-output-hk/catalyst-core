@@ -1,31 +1,23 @@
 [package]
-name = "catalyst-toolbox-cli"
+name = "catalyst-toolbox-tests"
 version = "0.1.0"
-authors = ["danielsanchezq <daniel.sanchez@iohk.io>"]
+authors = ["Giacomo Pasini <giacomo.pasini@iohk.io>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-csv = "1.1"
+catalyst-toolbox-lib = { path = "../../catalyst-toolbox-lib" }
+
+rand = "0.8.3"
+rand_chacha = "0.3"
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chrono = "0.4"
-catalyst-toolbox-lib = { path = "../catalyst-toolbox-lib" }
-itertools = "0.10"
 jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-fixed = "1.7"
-reqwest = { version = "0.11", features = ["blocking", "json"] }
-serde = "1.0"
-serde_json = "1.0"
-structopt = "0.3"
-thiserror = "1.0"
-rand = "0.8.3"
-stderrlog = "0.5"
-serde_yaml = "0.8.17"
-log = "0.4"
-
-[build-dependencies]
-versionisator = "1.0.3"

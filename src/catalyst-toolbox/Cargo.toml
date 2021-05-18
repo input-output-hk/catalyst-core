@@ -1,4 +1,6 @@
 [workspace]
 members = [
     "catalyst-toolbox-cli",
+    "catalyst-toolbox-lib",
+    "testing/catalyst-toolbox-tests"
 ]

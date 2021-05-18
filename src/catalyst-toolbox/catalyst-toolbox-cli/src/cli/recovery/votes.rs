@@ -1,16 +1,14 @@
 use super::Error;
 use catalyst_toolbox_lib::recovery::tally::{deconstruct_account_transaction, VoteFragmentFilter};
 use chain_core::property::{Deserialize, Fragment as _};
-use chain_impl_mockchain::block::Block;
-use chain_impl_mockchain::fragment::Fragment;
-use chain_impl_mockchain::transaction::Transaction;
-use chain_impl_mockchain::vote::Payload;
+use chain_impl_mockchain::{
+    block::Block, fragment::Fragment, transaction::Transaction, vote::Payload,
+};
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
 use serde::Serialize;
 use std::collections::HashMap;
-use std::io::BufReader;
-use std::io::Write;
+use std::io::{BufReader, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -43,7 +41,8 @@ struct VoteCast {
 
 impl From<Transaction<chain_impl_mockchain::certificate::VoteCast>> for VoteCast {
     fn from(transaction: Transaction<chain_impl_mockchain::certificate::VoteCast>) -> Self {
-        let (vote_cast, identifier, _) = deconstruct_account_transaction(&transaction.as_slice());
+        let (vote_cast, identifier, _) = deconstruct_account_transaction(&transaction.as_slice())
+            .expect("utxo votes not supported");
         let choice = if let Payload::Public { choice } = vote_cast.payload() {
             choice
         } else {

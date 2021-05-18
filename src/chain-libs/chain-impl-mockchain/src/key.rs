@@ -395,8 +395,8 @@ impl Readable for GenesisPraosLeader {
         let vrf_public_key = deserialize_public_key(buf)?;
         let kes_public_key = deserialize_public_key(buf)?;
         Ok(GenesisPraosLeader {
-            vrf_public_key,
             kes_public_key,
+            vrf_public_key,
         })
     }
 }

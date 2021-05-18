@@ -138,10 +138,9 @@ impl TimeFrame {
     /// Note if the slot is not supposed to be in this reference frame, then
     /// None is returned
     pub fn slot_to_systemtime(&self, slot: Slot) -> Option<SystemTime> {
-        match slot.0.checked_sub(self.slot_offset.0) {
-            None => None,
-            Some(sd) => Some(self.timeline.0 + Duration::from_secs(sd * self.slot_duration.0)),
-        }
+        slot.0
+            .checked_sub(self.slot_offset.0)
+            .map(|sd| self.timeline.0 + Duration::from_secs(sd * self.slot_duration.0))
     }
 
     /// Returns slot duration value.

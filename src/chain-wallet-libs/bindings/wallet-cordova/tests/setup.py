@@ -22,6 +22,8 @@ import re
 
 sys.path.append(str(Path(__file__).parent.parent))
 from build_jni import run as build_jni
+from build_jni import copy_libs as copy_jni_libs
+from copy_jni_definitions import run as copy_jni_definitions
 from build_ios import run as build_ios
 
 root_directory = Path("../../../")
@@ -67,7 +69,9 @@ def install_platforms(app_dir: Path, android=True, ios=True):
         subprocess.call(["cordova", "platform", "add", "ios"], cwd=app_dir)
 
 
-def install_main_plugin(app_dir: Path, reinstall=True, android=False, ios=False):
+def install_main_plugin(
+    app_dir: Path, reinstall=True, android=False, ios=False, cargo_build=True
+):
     plugin_path = Path(__file__).parent.parent
 
     print(f"plugin_path: {plugin_path}")
@@ -78,9 +82,13 @@ def install_main_plugin(app_dir: Path, reinstall=True, android=False, ios=False)
         )
 
     if android:
-        build_jni(release=False)
+        if cargo_build:
+            build_jni(release=False)
+        else:
+            copy_jni_libs()
+            copy_jni_definitions()
 
-    if ios:
+    if ios and cargo_build:
         build_ios()
 
     subprocess.call(["cordova", "plugin", "add", str(plugin_path)], cwd=app_dir)
@@ -113,6 +121,13 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--directory", type=Path)
     parser.add_argument("-r", "--run", choices=platform_choices)
 
+    parser.add_argument(
+        "--cargo-build",
+        default=True,
+        action=argparse.BooleanOptionalAction,
+        dest="cargo_build",
+    )
+
     args = parser.parse_args()
 
     android = "android" in args.platform
@@ -126,7 +141,13 @@ if __name__ == "__main__":
         create_hello_world(build_dir)
         install_platforms(app_dir, android=android, ios=ios)
         install_test_framework(app_dir)
-        install_main_plugin(app_dir, reinstall=False, android=android, ios=ios)
+        install_main_plugin(
+            app_dir,
+            reinstall=False,
+            android=android,
+            ios=ios,
+            cargo_build=args.cargo_build,
+        )
         install_test_plugin(app_dir, reinstall=False)
 
     if args.command == "plugin":

@@ -65,3 +65,63 @@ jobs:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
           args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto
+
+
+  build_cordova_app:
+    name: Check cordova plugin 
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.config.toolchain }}
+          target: ${{ matrix.config.target }}
+          override: true
+          default: true
+
+      - name: build wasm for electron 
+        run: python3 ./bindings/wallet-cordova/build_wasm.py 
+
+      - name: build jni libs
+        run: python3 ./bindings/wallet-cordova/build_jni.py
+
+      - name: build ios libs
+        run: python3 ./bindings/wallet-cordova/build_ios.py
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Setup Android NDK
+      - uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r21e
+          add-to-path: false
+      - run: ./build.sh
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Use oxr463/setup-cordova
+        uses: oxr463/setup-cordova@0.0.2
+
+      - name: build test app
+        run: |  
+          python3 ./bindings/wallet-cordova/tests/prepare_test.py \
+            --platform android \
+            -- setup
+

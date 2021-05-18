@@ -206,7 +206,7 @@ jobs:
         with:
           use-cross: true
           command: rustc
-          args: --target x86_64 -p wallet-jni -- -C link-args=-ldl
+          args: --target x86_64-linux-android -p wallet-jni -- -C link-args=-ldl
 
       - name: build test app
         run: |

@@ -190,7 +190,8 @@ jobs:
 
       - name: build test app
         run: |
-          python3 bindings/wallet-cordova/tests/prepare_test.py \
+          python3 bindings/wallet-cordova/tests/setup.py \
+            --directory test_app \
             --platform android \
             -- setup
         env:

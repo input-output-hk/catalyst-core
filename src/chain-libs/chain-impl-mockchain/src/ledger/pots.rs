@@ -84,10 +84,7 @@ impl<'a> Iterator for Values<'a> {
     type Item = Value;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.0.next() {
-            None => None,
-            Some(e) => Some(e.value()),
-        }
+        self.0.next().map(|e| e.value())
     }
 }
 

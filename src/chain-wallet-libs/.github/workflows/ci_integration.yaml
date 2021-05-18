@@ -146,7 +146,7 @@ jobs:
 
   build_cordova_app:
     name: Check cordova plugin
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -155,7 +155,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          target: x86_64-apple-darwin
           override: true
           default: true
 

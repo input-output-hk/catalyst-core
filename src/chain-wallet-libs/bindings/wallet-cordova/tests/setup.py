@@ -80,7 +80,7 @@ def install_main_plugin(
             copy_jni_libs(release=False)
             copy_jni_definitions()
 
-    if ios and cargo_build:
+    if ios:
         build_ios()
 
     subprocess.check_call(["cordova", "plugin", "add", str(plugin_path)], cwd=app_dir)

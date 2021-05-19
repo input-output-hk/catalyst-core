@@ -1,5 +1,7 @@
 use super::Error;
-use catalyst_toolbox_lib::recovery::tally::{deconstruct_account_transaction, VoteFragmentFilter};
+use catalyst_toolbox_lib::recovery::tally::{
+    deconstruct_account_transaction, ValidationError, VoteFragmentFilter,
+};
 use chain_core::property::{Deserialize, Fragment as _};
 use chain_impl_mockchain::{
     account::SpendingCounter, block::Block, fragment::Fragment, vote::Payload,
@@ -29,6 +31,10 @@ pub struct VotesPrintout {
 
     #[structopt(flatten)]
     output_format: OutputFormat,
+
+    /// Verbose mode (-v, -vv, -vvv, etc)
+    #[structopt(short = "v", long = "verbose", parse(from_occurrences))]
+    verbose: usize,
 }
 
 #[derive(Serialize)]
@@ -48,29 +54,39 @@ fn group_by_voter<I: IntoIterator<Item = (Fragment, Option<SpendingCounter>)>>(
     let mut res = HashMap::new();
     for (fragment, spending_counter) in fragments.into_iter() {
         if let Fragment::VoteCast(ref transaction) = fragment {
-            let (vote_cast, identifier, _) =
-                deconstruct_account_transaction(&transaction.as_slice())
-                    .expect("utxo votes not supported");
-            let choice = if let Payload::Public { choice } = vote_cast.payload() {
-                choice
-            } else {
-                panic!("cannot handle private votes");
-            };
-            let vote_cast = VoteCast {
-                fragment_id: fragment.id().to_string(),
-                public_key: identifier.to_string(),
-                voteplan: vote_cast.vote_plan().to_string(),
-                chain_proposal_index: vote_cast.proposal_index(),
-                spending_counter: spending_counter.map(Into::into),
-                choice: choice.as_byte(),
-            };
-
-            res.entry(vote_cast.public_key.clone())
-                .or_insert_with(Vec::new)
-                .push(vote_cast);
+            let transaction_info = deconstruct_account_transaction(&transaction.as_slice())
+                .and_then(|(vote_cast, identifier, _)| {
+                    if let Payload::Public { choice } = vote_cast.payload().clone() {
+                        Ok((vote_cast, identifier, choice))
+                    } else {
+                        Err(ValidationError::UnsupportedPrivateVotes)
+                    }
+                });
+            match transaction_info {
+                Ok((vote_cast, identifier, choice)) => {
+                    let vote_cast = VoteCast {
+                        fragment_id: fragment.id().to_string(),
+                        public_key: identifier.to_string(),
+                        voteplan: vote_cast.vote_plan().to_string(),
+                        chain_proposal_index: vote_cast.proposal_index(),
+                        spending_counter: spending_counter.map(Into::into),
+                        choice: choice.as_byte(),
+                    };
+                    res.entry(vote_cast.public_key.clone())
+                        .or_insert_with(Vec::new)
+                        .push(vote_cast);
+                }
+                Err(e) => log::error!("Invalid transaction: {}", e),
+            }
         }
     }
     res
+}
+
+#[derive(Serialize)]
+struct RecoveredVotes {
+    original: HashMap<String, Vec<VoteCast>>,
+    filtered: HashMap<String, Vec<VoteCast>>,
 }
 
 impl VotesPrintout {
@@ -80,8 +96,10 @@ impl VotesPrintout {
             logs_path,
             output,
             output_format,
+            verbose,
         } = self;
 
+        stderrlog::new().verbosity(verbose).init().unwrap();
         let reader = std::fs::File::open(block0_path)?;
         let block0 = Block::deserialize(BufReader::new(reader)).unwrap();
 
@@ -95,21 +113,22 @@ impl VotesPrintout {
 
         let non_filtered_votes = group_by_voter(original);
 
-        let filtered_fragments = VoteFragmentFilter::new(block0, 0..1000, to_filter.into_iter())
-            .unwrap()
-            .filter_map(Result::ok)
-            .map(|(f, sc)| (f, Some(sc)))
-            .collect::<Vec<_>>();
+        let filtered_fragments: Vec<_> =
+            VoteFragmentFilter::new(block0, 0..1000, to_filter.into_iter())
+                .unwrap()
+                .filter_map(Result::ok)
+                .map(|(f, sc)| (f, Some(sc)))
+                .collect();
 
         let filtered_votes = group_by_voter(filtered_fragments);
 
-        let res = serde_json::json!({
-            "original": non_filtered_votes,
-            "filtered": filtered_votes,
-        });
+        let res = RecoveredVotes {
+            original: non_filtered_votes,
+            filtered: filtered_votes,
+        };
 
         let mut out_writer = output.open()?;
-        let content = output_format.format_json(res)?;
+        let content = output_format.format_json(serde_json::to_value(res)?)?;
         out_writer.write_all(content.as_bytes())?;
 
         Ok(())

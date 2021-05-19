@@ -6,10 +6,11 @@ import sys
 import shutil
 
 libname = "libjormungandrwallet.a"
-root_directory = Path("../../target/")
+script_directory = Path(__file__).parent
+root_directory = script_directory.parent.parent / "target"
 
-library_header_src = Path("../wallet-c/wallet.h")
-library_header_dst = Path("src/ios/LibWallet.h")
+library_header_src = script_directory / Path("../wallet-c/wallet.h")
+library_header_dst = script_directory / Path("src/ios/LibWallet.h")
 
 targets = {
     "x86_64-apple-ios": "x86_64",
@@ -18,7 +19,7 @@ targets = {
 
 
 def run(release=True):
-    lipo_args = ["lipo", "-create", "-output", "./src/ios/" + libname]
+    lipo_args = ["lipo", "-create", "-output", str(script_directory / "src/ios/" / libname)]
 
     for rust_target, apple_target in targets.items():
         arguments = [

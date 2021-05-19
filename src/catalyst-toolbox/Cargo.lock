@@ -350,6 +350,7 @@ dependencies = [
  "jormungandr-testing-utils",
  "log",
  "rand 0.8.3",
+ "reqwest",
  "serde",
  "serde_json",
  "structopt",

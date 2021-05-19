@@ -1,18 +1,18 @@
-use crate::cli::notifications::{
-    api_params::{ApiParams, DEFAULT_PUSHWOOSH_API_URL},
+use crate::cli::notifications::api_params::{ApiParams, DEFAULT_PUSHWOOSH_API_URL};
+use catalyst_toolbox_lib::notifications::{
     requests::{
         create_message::{
             ContentSettingsBuilder, ContentType, CreateMessage, CreateMessageBuilder, DATETIME_FMT,
         },
         Request, RequestData,
     },
-    responses::create_message::CreateMessageResponse,
+    send::send_create_message,
     Error,
 };
 use jcli_lib::utils::io;
 
 use chrono::{DateTime, FixedOffset};
-use reqwest::{blocking::Client, StatusCode, Url};
+use reqwest::Url;
 use structopt::StructOpt;
 
 use std::io::Read;
@@ -135,10 +135,6 @@ impl SendNotification {
     }
 }
 
-fn parse_date_time(dt: &str) -> chrono::ParseResult<DateTime<FixedOffset>> {
-    DateTime::parse_from_str(dt, DATETIME_FMT)
-}
-
 impl Content {
     pub fn get_content(&self) -> Result<String, Error> {
         let mut reader = io::open_file_read(&self.content_path).map_err(Error::FileError)?;
@@ -148,28 +144,6 @@ impl Content {
     }
 }
 
-pub fn send_create_message(
-    url: Url,
-    notification: &Request,
-) -> Result<CreateMessageResponse, Error> {
-    let client = Client::new();
-    let response = client
-        .post(url)
-        .body(serde_json::to_string(&notification)?)
-        .send()?;
-    match response.status() {
-        StatusCode::OK => {}
-        StatusCode::BAD_REQUEST => {
-            return Err(Error::BadDataSent {
-                request: serde_json::to_string_pretty(&notification)?,
-            })
-        }
-        _ => {
-            return Err(Error::UnsuccessfulRequest {
-                response: response.text()?,
-            })
-        }
-    };
-    let response_message = response.json()?;
-    Ok(response_message)
+fn parse_date_time(dt: &str) -> chrono::ParseResult<DateTime<FixedOffset>> {
+    DateTime::parse_from_str(dt, DATETIME_FMT)
 }

@@ -144,9 +144,41 @@ jobs:
           command: rustc
           args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto
 
-  build_cordova_app:
-    name: Check cordova plugin
+  build_cordova_ios_app:
+    name: Build cordova test app on ios
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          default: true
+
+      - run: rustup target add x86_64-apple-ios
+      - run: rustup target add aarch64-apple-ios
+
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Setup cordova
+        run: sudo npm install -g cordova
+
+      - name: build test app
+        run: |
+          python3 bindings/wallet-cordova/tests/setup.py \
+            --directory test_app \
+            --platform ios \
+            -- setup
+
+  build_cordova_android_app:
+    name: Build cordova test app on android
+    runs-on: macos-latest
 
     steps:
       - name: Checkout code

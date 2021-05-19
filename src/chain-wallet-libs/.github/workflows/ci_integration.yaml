@@ -169,6 +169,8 @@ jobs:
       - name: Setup cordova
         run: sudo npm install -g cordova
 
+      - run: brew install ios-deploy
+
       - name: build test app
         run: |
           python3 bindings/wallet-cordova/tests/setup.py \

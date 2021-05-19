@@ -146,7 +146,7 @@ jobs:
 
   build_cordova_ios_app:
     name: Build cordova test app on ios
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout code
@@ -178,7 +178,7 @@ jobs:
 
   build_cordova_android_app:
     name: Build cordova test app on android
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code

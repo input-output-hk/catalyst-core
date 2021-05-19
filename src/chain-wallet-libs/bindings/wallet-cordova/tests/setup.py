@@ -56,9 +56,11 @@ def install_test_framework(app_dir: Path):
 def install_platforms(app_dir: Path, android=True, ios=True):
     if android:
         subprocess.check_call(["cordova", "platform", "add", "android"], cwd=app_dir)
+        subprocess.check_call(["cordova", "requirements", "android"], cwd=app_dir)
 
     if ios:
         subprocess.check_call(["cordova", "platform", "add", "ios"], cwd=app_dir)
+        subprocess.check_call(["cordova", "requirements", "ios"], cwd=app_dir)
 
 
 def install_main_plugin(

@@ -81,7 +81,7 @@ def install_main_plugin(
             copy_jni_definitions()
 
     if ios:
-        build_ios()
+        build_ios(release=False)
 
     subprocess.check_call(["cordova", "plugin", "add", str(plugin_path)], cwd=app_dir)
 

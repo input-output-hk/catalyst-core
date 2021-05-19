@@ -22,7 +22,7 @@ def run(release=True):
 
     for rust_target, apple_target in targets.items():
         arguments = [
-            "cross",
+            "cargo",
             "rustc",
             "--target",
             rust_target,

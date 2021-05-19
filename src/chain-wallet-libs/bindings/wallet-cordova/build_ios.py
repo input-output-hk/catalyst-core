@@ -37,10 +37,13 @@ def run(release=True):
         if out.returncode != 0:
             print("couldn't build for target: ", rust_target)
             sys.exit(1)
+
+        debug_or_release = "release" if release else "debug"
+
         lipo_args += [
             "-arch",
             apple_target,
-            str(root_directory / rust_target / "release" / libname),
+            str(root_directory / rust_target / debug_or_release / libname),
         ]
 
     out = subprocess.run(lipo_args)

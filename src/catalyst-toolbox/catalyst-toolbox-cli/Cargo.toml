@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 csv = "1.1"
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

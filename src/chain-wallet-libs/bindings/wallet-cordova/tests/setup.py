@@ -1,15 +1,5 @@
 #!/usr/bin/env python
 
-# cordova create hello com.example.hello HelloWorld
-# cd hello
-# cordova platform add android
-# cordova plugin add cordova-plugin-test-framework
-# cordova plugin add this-plugin-path
-# cordova plugin add path-to-wallet-cordova/tests
-# sed 's/<content src="index.html" \/>/<content src="cdvtests\/index.html" \/>/' config.xml -i
-# cordova build
-# cordova run android
-
 import subprocess
 
 from pathlib import Path
@@ -20,6 +10,8 @@ import argparse
 import os
 import re
 
+# TODO: probably should move this to the parent directory
+# this makes it possible to include the python scripts in the directory above
 sys.path.append(str(Path(__file__).parent.parent))
 from build_jni import run as build_jni
 from build_jni import copy_libs as copy_jni_libs

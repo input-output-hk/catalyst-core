@@ -955,7 +955,7 @@ dependencies = [
  "digest",
  "rand_core 0.5.1",
  "subtle",
- "zeroize 1.2.0",
+ "zeroize",
 ]
 
 [[package]]
@@ -968,7 +968,7 @@ dependencies = [
  "digest",
  "rand_core 0.6.2",
  "subtle-ng",
- "zeroize 1.2.0",
+ "zeroize",
 ]
 
 [[package]]
@@ -1084,14 +1084,14 @@ dependencies = [
 
 [[package]]
 name = "dialoguer"
-version = "0.7.1"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "70f807b2943dc90f9747497d9d65d7e92472149be0b88bf4ce1201b4ac979c26"
+checksum = "c9dd058f8b65922819fabb4a41e7d1964e56344042c26efbccd465202c23fa0c"
 dependencies = [
- "console 0.13.0",
+ "console 0.14.1",
  "lazy_static",
  "tempfile",
- "zeroize 0.9.3",
+ "zeroize",
 ]
 
 [[package]]
@@ -1215,7 +1215,7 @@ dependencies = [
  "rand 0.7.3",
  "serde",
  "sha2",
- "zeroize 1.2.0",
+ "zeroize",
 ]
 
 [[package]]
@@ -2146,8 +2146,8 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 
 [[package]]
 name = "jormungandr-integration-tests"
-version = "0.11.0-rc2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=407e04596be8cc864058cce15b23cb173a01c4d9#407e04596be8cc864058cce15b23cb173a01c4d9"
+version = "0.11.0-rc3"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=dde67634c9f0c2c631ed7bd268226952c04326ff#dde67634c9f0c2c631ed7bd268226952c04326ff"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2190,8 +2190,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-lib"
-version = "0.11.0-rc2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=407e04596be8cc864058cce15b23cb173a01c4d9#407e04596be8cc864058cce15b23cb173a01c4d9"
+version = "0.11.0-rc3"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=dde67634c9f0c2c631ed7bd268226952c04326ff#dde67634c9f0c2c631ed7bd268226952c04326ff"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2220,8 +2220,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-scenario-tests"
-version = "0.11.0-rc2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=407e04596be8cc864058cce15b23cb173a01c4d9#407e04596be8cc864058cce15b23cb173a01c4d9"
+version = "0.11.0-rc3"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=dde67634c9f0c2c631ed7bd268226952c04326ff#dde67634c9f0c2c631ed7bd268226952c04326ff"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2232,7 +2232,7 @@ dependencies = [
  "chrono",
  "console 0.14.1",
  "custom_debug",
- "dialoguer 0.7.1",
+ "dialoguer 0.8.0",
  "error-chain",
  "function_name",
  "futures 0.3.14",
@@ -2262,8 +2262,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-testing-utils"
-version = "0.11.0-rc2"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=407e04596be8cc864058cce15b23cb173a01c4d9#407e04596be8cc864058cce15b23cb173a01c4d9"
+version = "0.11.0-rc3"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=dde67634c9f0c2c631ed7bd268226952c04326ff#dde67634c9f0c2c631ed7bd268226952c04326ff"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -5118,7 +5118,7 @@ dependencies = [
  "chrono",
  "console 0.13.0",
  "custom_debug",
- "dialoguer 0.7.1",
+ "dialoguer 0.8.0",
  "diffy",
  "error-chain",
  "function_name",
@@ -5501,12 +5501,6 @@ checksum = "56c1936c4cc7a1c9ab21a1ebb602eb942ba868cbd44a99cb7cdc5892335e1c85"
 dependencies = [
  "linked-hash-map",
 ]
-
-[[package]]
-name = "zeroize"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45af6a010d13e4cf5b54c94ba5a2b2eba5596b9e46bf5875612d332a1f2b3f86"
 
 [[package]]
 name = "zeroize"

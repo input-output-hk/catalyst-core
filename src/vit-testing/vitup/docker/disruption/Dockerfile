@@ -21,7 +21,7 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/jormungandr && \
 	cd jormungandr && \
-	git checkout 407e04596be8cc864058cce15b23cb173a01c4d9
+	git checkout dde67634c9f0c2c631ed7bd268226952c04326ff
 
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-servicing-station && \

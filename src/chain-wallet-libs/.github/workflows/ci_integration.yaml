@@ -252,3 +252,8 @@ jobs:
             -- setup
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: android-plugin
+          path: ./test_app/hello/platforms/android/app/build/outputs/apk/debug/app-debug.apk

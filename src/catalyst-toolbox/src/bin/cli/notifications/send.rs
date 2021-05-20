@@ -1,5 +1,5 @@
-use crate::cli::notifications::api_params::{ApiParams, DEFAULT_PUSHWOOSH_API_URL};
-use catalyst_toolbox_lib::notifications::{
+use super::api_params::{ApiParams, DEFAULT_PUSHWOOSH_API_URL};
+use catalyst_toolbox::notifications::{
     requests::{
         create_message::{
             ContentSettingsBuilder, ContentType, CreateMessage, CreateMessageBuilder, DATETIME_FMT,

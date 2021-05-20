@@ -2,6 +2,7 @@ mod blockchain;
 
 mod generator;
 
+use catalyst_toolbox;
 use chain_addr::Discrimination;
 pub use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::{
@@ -13,7 +14,6 @@ use jormungandr_lib::{
     interfaces::{FragmentLogDeserializeError, PersistentFragmentLog},
     time::SecondsSinceUnixEpoch,
 };
-
 use jormungandr_testing_utils::wallet::Wallet;
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
@@ -83,12 +83,11 @@ fn tally_ok() {
         in_order = true
     };
 
-    let (ledger, failed_fragments) =
-        catalyst_toolbox_lib::recovery::tally::recover_ledger_from_logs(
-            &generator.block0(),
-            vote_fragments.chain(tally_fragments.into_iter()),
-        )
-        .unwrap();
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &generator.block0(),
+        vote_fragments.chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.tally());
     assert!(failed_fragments.is_empty());
@@ -109,12 +108,11 @@ fn shuffle_tally_ok() {
         in_order = false
     };
 
-    let (ledger, failed_fragments) =
-        catalyst_toolbox_lib::recovery::tally::recover_ledger_from_logs(
-            &generator.block0(),
-            vote_fragments.chain(tally_fragments.into_iter()),
-        )
-        .unwrap();
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &generator.block0(),
+        vote_fragments.chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.tally());
     assert!(failed_fragments.is_empty());
@@ -145,17 +143,16 @@ fn wallet_not_in_block0() {
         1,
     );
 
-    let (ledger, failed_fragments) =
-        catalyst_toolbox_lib::recovery::tally::recover_ledger_from_logs(
-            &block0,
-            vote_fragments
-                .chain(std::iter::once(Ok(PersistentFragmentLog {
-                    time: SecondsSinceUnixEpoch::now(),
-                    fragment,
-                })))
-                .chain(tally_fragments.into_iter()),
-        )
-        .unwrap();
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &block0,
+        vote_fragments
+            .chain(std::iter::once(Ok(PersistentFragmentLog {
+                time: SecondsSinceUnixEpoch::now(),
+                fragment,
+            })))
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.tally());
     assert_eq!(failed_fragments.len(), 1);
@@ -188,20 +185,19 @@ fn only_last_vote_is_counted() {
     let fragment_yes_2 = cast_vote(&mut wallet, &generator, 0, 1);
     wallet.confirm_transaction();
 
-    let (ledger, failed_fragments) =
-        catalyst_toolbox_lib::recovery::tally::recover_ledger_from_logs(
-            &block0,
-            vec![fragment_yes_1, fragment_no, fragment_yes_2]
-                .into_iter()
-                .map(|fragment| {
-                    Ok(PersistentFragmentLog {
-                        time: SecondsSinceUnixEpoch::now(),
-                        fragment,
-                    })
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &block0,
+        vec![fragment_yes_1, fragment_no, fragment_yes_2]
+            .into_iter()
+            .map(|fragment| {
+                Ok(PersistentFragmentLog {
+                    time: SecondsSinceUnixEpoch::now(),
+                    fragment,
                 })
-                .chain(tally_fragments.into_iter()),
-        )
-        .unwrap();
+            })
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
 
     let tally = ledger.active_vote_plans()[0].proposals[0]
         .tally
@@ -238,20 +234,19 @@ fn replay_not_counted() {
     let fragment_no = cast_vote(&mut wallet, &generator, 0, 2);
     wallet.confirm_transaction();
 
-    let (ledger, failed_fragments) =
-        catalyst_toolbox_lib::recovery::tally::recover_ledger_from_logs(
-            &block0,
-            vec![fragment_yes.clone(), fragment_no, fragment_yes]
-                .into_iter()
-                .map(|fragment| {
-                    Ok(PersistentFragmentLog {
-                        time: SecondsSinceUnixEpoch::now(),
-                        fragment,
-                    })
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &block0,
+        vec![fragment_yes.clone(), fragment_no, fragment_yes]
+            .into_iter()
+            .map(|fragment| {
+                Ok(PersistentFragmentLog {
+                    time: SecondsSinceUnixEpoch::now(),
+                    fragment,
                 })
-                .chain(tally_fragments.into_iter()),
-        )
-        .unwrap();
+            })
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
 
     let tally = ledger.active_vote_plans()[0].proposals[0]
         .tally
@@ -283,12 +278,11 @@ fn multi_voteplan_ok() {
         in_order = false
     };
 
-    let (ledger, failed_fragments) =
-        catalyst_toolbox_lib::recovery::tally::recover_ledger_from_logs(
-            &generator.block0(),
-            vote_fragments.chain(tally_fragments.into_iter()),
-        )
-        .unwrap();
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &generator.block0(),
+        vote_fragments.chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.tally());
     assert!(failed_fragments.is_empty());

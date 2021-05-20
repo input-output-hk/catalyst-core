@@ -9,10 +9,10 @@ Rust based CLI utility for catalyst operations.
 Build with `cargo build` and run, or run with `cargo run -- PARAMS` as per the examples.
 
 ```shell
-catalyst-toolbox-cli 0.1.0
+catalyst-toolbox 0.1.0
 
 USAGE:
-    catalyst-toolbox-cli.exe [FLAGS] [SUBCOMMAND]
+    catalyst-toolbox.exe [FLAGS] [SUBCOMMAND]
 
 FLAGS:
         --full-version      display full version details (software version, source
@@ -37,7 +37,7 @@ SUBCOMMANDS:
 Calculate rewards for voters base on their stake
 
 USAGE:
-    catalyst-toolbox-cli rewards voters [OPTIONS] --total-rewards <total-rewards>
+    catalyst-toolbox rewards voters [OPTIONS] --total-rewards <total-rewards>
 
 FLAGS:
     -h, --help
@@ -65,7 +65,7 @@ You can send a push notification directly from `catalyst-toolbox-cli` with:
 
 ```shell
 USAGE:
-    catalyst-toolbox-cli push-notification send <SUBCOMMAND>
+    catalyst-toolbox push-notification send <SUBCOMMAND>
 
 FLAGS:
     -h, --help       Prints help information
@@ -85,7 +85,7 @@ a preloaded json file as input.
 
 ```shell
 USAGE:
-    catalyst-toolbox-cli push-notification send from-args [FLAGS] [OPTIONS] --access-token <acces
+    catalyst-toolbox push-notification send from-args [FLAGS] [OPTIONS] --access-token <acces
 s-token> --application <application> [content-path]
 
 FLAGS:
@@ -132,7 +132,7 @@ A json style object with international language code as keys and message as valu
 
 ```shell
 USAGE:
-    catalyst-toolbox-cli push-notification send from-json [OPTIONS] [content-path]
+    catalyst-toolbox push-notification send from-json [OPTIONS] [content-path]
 
 FLAGS:
     -h, --help       Prints help information

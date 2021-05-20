@@ -1,7 +1,8 @@
-mod cli;
-
 use std::error::Error;
-use structopt::StructOpt;
+
+use structopt::StructOpt as _;
+
+pub mod cli;
 
 fn main() {
     cli::Cli::from_args().exec().unwrap_or_else(report_error)

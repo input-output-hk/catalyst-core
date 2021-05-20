@@ -11,7 +11,7 @@ pub enum Error {
     FileError(#[from] std::io::Error),
 
     #[error(transparent)]
-    NotificationError(#[from] catalyst_toolbox_lib::notifications::Error),
+    NotificationError(#[from] catalyst_toolbox::notifications::Error),
 }
 
 #[derive(StructOpt)]

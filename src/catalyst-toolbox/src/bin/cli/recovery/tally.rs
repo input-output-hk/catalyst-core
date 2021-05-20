@@ -1,4 +1,4 @@
-use catalyst_toolbox_lib::recovery::tally::recover_ledger_from_logs;
+use catalyst_toolbox::recovery::tally::recover_ledger_from_logs;
 use chain_core::property::{Deserialize, Fragment};
 use chain_impl_mockchain::block::Block;
 use jcli_lib::utils::{
@@ -26,7 +26,7 @@ pub enum Error {
     SerializationError(#[from] serde_json::Error),
 
     #[error(transparent)]
-    RecoveryError(#[from] catalyst_toolbox_lib::recovery::tally::Error),
+    RecoveryError(#[from] catalyst_toolbox::recovery::tally::Error),
 
     #[error(transparent)]
     OutputFileError(#[from] OutputFileError),

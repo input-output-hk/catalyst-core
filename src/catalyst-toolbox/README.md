@@ -12,7 +12,7 @@ Build with `cargo build` and run, or run with `cargo run -- PARAMS` as per the e
 catalyst-toolbox 0.1.0
 
 USAGE:
-    catalyst-toolbox.exe [FLAGS] [SUBCOMMAND]
+    catalyst-toolbox [FLAGS] [SUBCOMMAND]
 
 FLAGS:
         --full-version      display full version details (software version, source

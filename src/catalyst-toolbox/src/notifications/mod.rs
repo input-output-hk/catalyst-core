@@ -1,9 +1,7 @@
-mod api_params;
-mod requests;
-mod responses;
-mod send;
+pub mod requests;
+pub mod responses;
+pub mod send;
 
-use structopt::StructOpt;
 use thiserror::Error;
 
 #[allow(clippy::large_enum_variant)]
@@ -26,20 +24,4 @@ pub enum Error {
 
     #[error("request was unsuccessful, feedback:\n {response}")]
     UnsuccessfulRequest { response: String },
-}
-
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
-pub enum PushNotifications {
-    Send(send::SendNotification),
-}
-
-impl PushNotifications {
-    pub fn exec(self) -> Result<(), Error> {
-        use self::PushNotifications::*;
-        match self {
-            Send(cmd) => cmd.exec()?,
-        };
-        Ok(())
-    }
 }

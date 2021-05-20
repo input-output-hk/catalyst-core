@@ -79,7 +79,7 @@ impl BlockchainBuilder {
         );
         blockchain.add_leader("we just need a consensus leader id");
         blockchain.set_discrimination(chain_addr::Discrimination::Production);
-        // it is much easier not to account for feers in the testing verification alg
+        // it is much easier not to account for feers in the tests verification alg
         blockchain.set_linear_fee(LinearFee::new(0, 0, 0));
         for _ in 0..self.n_wallets {
             let name: String = rng

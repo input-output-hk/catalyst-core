@@ -1,9 +1,7 @@
-pub mod tally;
-pub mod votes;
+mod tally;
+mod votes;
 
 use structopt::StructOpt;
-
-use crate::cli::recovery::tally::Error;
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -13,7 +11,7 @@ pub enum Recover {
 }
 
 impl Recover {
-    pub fn exec(self) -> Result<(), Error> {
+    pub fn exec(self) -> Result<(), tally::Error> {
         match self {
             Recover::Tally(cmd) => cmd.exec(),
             Recover::VotesPrintout(cmd) => cmd.exec(),

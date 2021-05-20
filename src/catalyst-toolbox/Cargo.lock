@@ -308,22 +308,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "catalyst-toolbox-cli"
+name = "catalyst-toolbox"
 version = "0.1.0"
 dependencies = [
- "catalyst-toolbox-lib",
  "chain-addr",
  "chain-core",
  "chain-crypto",
  "chain-impl-mockchain",
+ "chain-ser",
+ "chain-time",
  "chrono",
  "csv",
  "fixed",
- "itertools 0.10.0",
  "jcli",
  "jormungandr-lib",
+ "jormungandr-testing-utils",
  "log",
  "rand 0.8.3",
+ "rand_chacha 0.3.0",
  "reqwest",
  "serde",
  "serde_json",
@@ -332,47 +334,6 @@ dependencies = [
  "structopt",
  "thiserror",
  "versionisator",
-]
-
-[[package]]
-name = "catalyst-toolbox-lib"
-version = "0.1.0"
-dependencies = [
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-ser",
- "chain-time",
- "chrono",
- "jcli",
- "jormungandr-lib",
- "jormungandr-testing-utils",
- "log",
- "rand 0.8.3",
- "serde",
- "serde_json",
- "structopt",
- "thiserror",
-]
-
-[[package]]
-name = "catalyst-toolbox-tests"
-version = "0.1.0"
-dependencies = [
- "catalyst-toolbox-lib",
- "chain-addr",
- "chain-core",
- "chain-crypto",
- "chain-impl-mockchain",
- "chain-ser",
- "chain-time",
- "chrono",
- "jcli",
- "jormungandr-lib",
- "jormungandr-testing-utils",
- "rand 0.8.3",
- "rand_chacha 0.3.0",
 ]
 
 [[package]]

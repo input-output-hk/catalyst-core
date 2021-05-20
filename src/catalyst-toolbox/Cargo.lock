@@ -320,7 +320,6 @@ dependencies = [
  "chrono",
  "csv",
  "fixed",
- "itertools 0.10.0",
  "jcli",
  "jormungandr-lib",
  "jormungandr-testing-utils",

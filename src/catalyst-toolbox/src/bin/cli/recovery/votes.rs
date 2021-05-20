@@ -1,5 +1,5 @@
-use super::Error;
-use catalyst_toolbox_lib::recovery::tally::{
+use super::tally::Error;
+use catalyst_toolbox::recovery::tally::{
     deconstruct_account_transaction, ValidationError, VoteFragmentFilter,
 };
 use chain_core::property::{Deserialize, Fragment as _};

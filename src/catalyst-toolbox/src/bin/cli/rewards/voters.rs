@@ -1,16 +1,18 @@
 use super::Error;
-use jcli_lib::jcli_lib::block::Common;
-
-use structopt::StructOpt;
+use catalyst_toolbox::rewards::voters::{
+    calculate_reward_share, calculate_stake, reward_from_share, ADA_TO_LOVELACE_FACTOR,
+};
 
 use chain_addr::{Discrimination, Kind};
 use chain_impl_mockchain::vote::CommitteeId;
+use jcli_lib::jcli_lib::block::Common;
+use jormungandr_lib::interfaces::{Address, Block0Configuration};
+
 use fixed::types::U64F64;
-use jormungandr_lib::interfaces::{Address, Block0Configuration, Initial};
+use structopt::StructOpt;
+
 use std::collections::{HashMap, HashSet};
 use std::ops::Div;
-
-const ADA_TO_LOVELACE_FACTOR: u64 = 1_000_000;
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -20,48 +22,6 @@ pub struct VotersRewards {
     /// Reward (in LOVELACE) to be distributed
     #[structopt(long = "total-rewards")]
     total_rewards: u64,
-}
-
-fn calculate_stake<'address>(
-    committee_keys: &HashSet<Address>,
-    block0: &'address Block0Configuration,
-) -> (u64, HashMap<&'address Address, u64>) {
-    let mut total_stake: u64 = 0;
-    let mut stake_per_voter: HashMap<&'address Address, u64> = HashMap::new();
-
-    for fund in &block0.initial {
-        match fund {
-            Initial::Fund(fund) => {
-                for utxo in fund {
-                    if !committee_keys.contains(&utxo.address) {
-                        let value: u64 = utxo.value.into();
-                        total_stake += value;
-                        let entry = stake_per_voter.entry(&utxo.address).or_default();
-                        *entry += value;
-                    }
-                }
-            }
-            Initial::Cert(_) => {}
-            Initial::LegacyFund(_) => {}
-        }
-    }
-    (total_stake, stake_per_voter)
-}
-
-/// Rewards are u64 for keeping the it we would calculate the inverse total_stake/voter_stake
-fn calculate_inverse_reward_share<'address>(
-    total_stake: u64,
-    stake_per_voter: &HashMap<&'address Address, u64>,
-) -> HashMap<&'address Address, U64F64> {
-    stake_per_voter
-        .iter()
-        .map(|(k, v)| (*k, fixed::types::U64F64::from_num(*v) / total_stake as u128))
-        .collect()
-}
-
-/// get the proportional reward from a share total reward from the inverse of the the reward share
-fn reward_from_share(share: U64F64, total_reward: u64) -> fixed::types::U64F64 {
-    fixed::types::U64F64::from_num(total_reward) * share
 }
 
 fn write_rewards_results(
@@ -119,7 +79,7 @@ impl VotersRewards {
             .collect();
 
         let (total_stake, stake_per_voter) = calculate_stake(&committee_keys, &block0);
-        let rewards = calculate_inverse_reward_share(total_stake, &stake_per_voter);
+        let rewards = calculate_reward_share(total_stake, &stake_per_voter);
         write_rewards_results(common, &stake_per_voter, &rewards, total_rewards)?;
         Ok(())
     }

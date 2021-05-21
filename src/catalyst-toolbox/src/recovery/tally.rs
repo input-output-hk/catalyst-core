@@ -593,29 +593,33 @@ impl FragmentReplayer {
                 Ok(res)
             }
             Fragment::Transaction(ref transaction) => {
-                warn!("replaying a plain transaction, this is not coming from the app, might want to look into this");
                 let transaction_slice = transaction.as_slice();
                 let (_, identifier, _) = deconstruct_account_transaction(&transaction_slice)?;
-                let address =
-                    Identifier::from(identifier).to_address(chain_addr::Discrimination::Production);
+                let address = Identifier::from(identifier.clone())
+                    .to_address(chain_addr::Discrimination::Production);
 
                 let address: Address = address.into();
-                let wallet = self
-                    .wallets
-                    .get_mut(&address)
-                    .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?;
-
                 if transaction.nb_outputs() != 1 {
                     // The wallet lib we use does not corrently expose this functionality
                     return Err(Error::UnsupportedMultipleOutputs);
                 }
 
                 let output = transaction_slice.outputs().iter().next().unwrap();
+                let output_address = self
+                    .wallets
+                    .get(&output.address.into())
+                    .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?
+                    .address();
+                let wallet = self
+                    .wallets
+                    .get_mut(&address)
+                    .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?;
 
+                warn!("replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this", identifier, output_address, output.value);
                 let res = wallet.transaction_to(
                     &self.old_block0_hash,
                     &self.fees,
-                    output.address.into(),
+                    output_address,
                     output.value.into(),
                 )?;
                 wallet.confirm_transaction();

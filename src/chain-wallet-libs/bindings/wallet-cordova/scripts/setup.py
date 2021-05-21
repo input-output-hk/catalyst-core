@@ -10,15 +10,11 @@ import argparse
 import os
 import re
 
-# TODO: probably should move this to the parent directory
-# this makes it possible to include the python scripts in the directory above
-sys.path.append(str(Path(__file__).parent.parent))
 from build_jni import run as build_jni
 from build_jni import copy_libs as copy_jni_libs
 from copy_jni_definitions import run as copy_jni_definitions
 from build_ios import run as build_ios
-
-root_directory = Path("../../../")
+from directories import repository_directory, plugin_directory, tests_directory
 
 
 def sed(original: str, replacement: str, file: Path):
@@ -66,10 +62,6 @@ def install_platforms(app_dir: Path, android=True, ios=True):
 def install_main_plugin(
     app_dir: Path, reinstall=True, android=False, ios=False, cargo_build=True
 ):
-    plugin_path = Path(__file__).parent.parent
-
-    print(f"plugin_path: {plugin_path}")
-
     if reinstall:
         subprocess.check_call(
             ["cordova", "plugin", "rm", "wallet-cordova-plugin"], cwd=app_dir
@@ -85,23 +77,23 @@ def install_main_plugin(
     if ios:
         build_ios(release=False)
 
-    subprocess.check_call(["cordova", "plugin", "add", str(plugin_path)], cwd=app_dir)
+    subprocess.check_call(
+        ["cordova", "plugin", "add", str(plugin_directory)], cwd=app_dir
+    )
 
 
 def install_test_plugin(app_dir: Path, reinstall=True):
-    tests_path = Path(__file__).parent
-
-    print(f"tests_path: {tests_path}")
-
-    subprocess.check_call(["npm", "install"], cwd=tests_path)
-    subprocess.check_call(["npm", "run", "build"], cwd=tests_path)
+    subprocess.check_call(["npm", "install"], cwd=tests_directory)
+    subprocess.check_call(["npm", "run", "build"], cwd=tests_directory)
 
     if reinstall:
         subprocess.check_call(
             ["cordova", "plugin", "rm", "wallet-cordova-plugin-tests"], cwd=app_dir
         )
 
-    subprocess.check_call(["cordova", "plugin", "add", str(tests_path)], cwd=app_dir)
+    subprocess.check_call(
+        ["cordova", "plugin", "add", str(tests_directory)], cwd=app_dir
+    )
 
 
 if __name__ == "__main__":
@@ -112,7 +104,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--platform", required=True, nargs="+", choices=platform_choices
     )
-    parser.add_argument("command", choices=["setup", "plugin", "tests"])
+    parser.add_argument("command", choices=["full", "reload-plugin", "reload-tests"])
     parser.add_argument("-d", "--directory", type=Path)
     parser.add_argument("-r", "--run", choices=platform_choices)
 
@@ -129,7 +121,7 @@ if __name__ == "__main__":
 
     app_dir = build_dir / "hello"
 
-    if args.command == "setup":
+    if args.command == "full":
         create_hello_world(build_dir)
         install_platforms(app_dir, android=android, ios=ios)
         install_test_framework(app_dir)
@@ -142,10 +134,10 @@ if __name__ == "__main__":
         )
         install_test_plugin(app_dir, reinstall=False)
 
-    if args.command == "plugin":
+    if args.command == "reload-plugin":
         install_main_plugin(app_dir, reinstall=True, android=android, ios=ios)
 
-    if args.command == "tests":
+    if args.command == "reload-tests":
         install_test_plugin(app_dir, reinstall=True)
 
     subprocess.check_call(["cordova", "build"], cwd=app_dir)

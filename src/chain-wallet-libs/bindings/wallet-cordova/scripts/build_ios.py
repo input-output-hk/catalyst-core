@@ -4,10 +4,9 @@ from pathlib import Path
 import subprocess
 import sys
 import shutil
+from directories import repository_directory, script_directory, rust_build_directory
 
 libname = "libjormungandrwallet.a"
-script_directory = Path(__file__).parent
-root_directory = script_directory.parent.parent / "target"
 
 library_header_src = script_directory / Path("../wallet-c/wallet.h")
 library_header_dst = script_directory / Path("src/ios/LibWallet.h")
@@ -19,7 +18,12 @@ targets = {
 
 
 def run(release=True):
-    lipo_args = ["lipo", "-create", "-output", str(script_directory / "src/ios/" / libname)]
+    lipo_args = [
+        "lipo",
+        "-create",
+        "-output",
+        str(script_directory / "src/ios/" / libname),
+    ]
 
     for rust_target, apple_target in targets.items():
         arguments = [
@@ -44,7 +48,7 @@ def run(release=True):
         lipo_args += [
             "-arch",
             apple_target,
-            str(root_directory / rust_target / debug_or_release / libname),
+            str(rust_build_directory / rust_target / debug_or_release / libname),
         ]
 
     out = subprocess.run(lipo_args)

@@ -5,11 +5,10 @@ import subprocess
 import sys
 import shutil
 from copy_jni_definitions import run as copy_definitions
+from directories import rust_build_directory, plugin_directory
 
 libname = "libwallet_jni.so"
-copy_to = Path("src/android/libs")
-script_directory = Path(__file__).parent
-root_directory = script_directory.parent.parent / "target"
+android_libs_directory = Path("src/android/libs")
 
 targets = {
     "aarch64-linux-android": "arm64-v8a",
@@ -21,12 +20,12 @@ targets = {
 
 def copy_libs(release=True):
     for rust_target, android_target in targets.items():
-        dst = script_directory / copy_to / android_target
+        dst = plugin_directory / android_libs_directory / android_target
         dst.mkdir(parents=True, exist_ok=True)
 
         debug_or_release = "release" if release else "debug"
 
-        src = root_directory / rust_target / debug_or_release / libname
+        src = rust_build_directory / rust_target / debug_or_release / libname
         shutil.copy(src, dst)
 
 

@@ -4,8 +4,7 @@ from pathlib import Path
 import subprocess
 import sys
 import shutil
-
-script_directory = Path(__file__).parent
+from directories import repository_directory, plugin_directory
 
 
 def run():
@@ -14,7 +13,8 @@ def run():
     package_path = Path("com/iohk/jormungandrwallet")
 
     src_files = (
-        script_directory.parent
+        repository_directory
+        / "bindings"
         / "wallet-jni"
         / "java"
         / "com"
@@ -22,7 +22,7 @@ def run():
         / "jormungandrwallet"
     ).glob("*java")
 
-    dst = script_directory / Path("src/android/jormungandrwallet")
+    dst = plugin_directory / Path("src/android/jormungandrwallet")
     dst.mkdir(parents=True, exist_ok=True)
 
     print("Copy java definitions from jni directory")

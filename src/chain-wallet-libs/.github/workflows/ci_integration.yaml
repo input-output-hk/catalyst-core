@@ -209,10 +209,10 @@ jobs:
 
       - name: build test app
         run: |
-          python3 bindings/wallet-cordova/tests/setup.py \
+          python3 bindings/wallet-cordova/scripts/run_tests.py \
             --directory test_app \
             --platform ios \
-            -- setup
+            -- full
 
   build_cordova_android_app:
     name: Build cordova test app on android
@@ -280,7 +280,7 @@ jobs:
 
       - name: build test app
         run: |
-          python3 bindings/wallet-cordova/tests/setup.py \
+          python3 bindings/wallet-cordova/scripts/run_tests.py \
             --directory test_app \
             --platform android \
             --no-cargo-build \

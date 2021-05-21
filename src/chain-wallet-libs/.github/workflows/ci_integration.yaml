@@ -179,6 +179,7 @@ jobs:
         with:
           name: jni ${{ matrix.config.target }}
           path: ./target/${{ matrix.config.target }}/debug/libwallet_jni.so
+          retention-days: 1
 
   build_cordova_ios_app:
     name: Build cordova test app on ios

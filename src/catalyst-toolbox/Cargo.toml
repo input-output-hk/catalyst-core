@@ -23,15 +23,16 @@ jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "m
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 fixed = "1.7"
+log = "0.4"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
+rand = "0.8.3"
 serde = "1.0"
 serde_json = "1.0"
 structopt = "0.3"
-thiserror = "1.0"
-rand = "0.8.3"
 stderrlog = "0.5"
 serde_yaml = "0.8.17"
-log = "0.4"
+sscanf = "0.1"
+thiserror = "1.0"
 
 [dev-dependencies]
 rand_chacha = "0.3"

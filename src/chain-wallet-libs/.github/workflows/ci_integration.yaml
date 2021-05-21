@@ -177,7 +177,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: jni-${{ matrix.config.target }}
+          name: jni ${{ matrix.config.target }}
           path: ./target/${{ matrix.config.target }}/debug/libwallet_jni.so
 
   build_cordova_ios_app:

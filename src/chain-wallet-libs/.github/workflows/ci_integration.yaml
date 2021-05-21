@@ -288,7 +288,15 @@ jobs:
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
+      - name: package plugin
+        run: npm pack ./bindings/wallet-cordova
+
       - uses: actions/upload-artifact@v2
         with:
-          name: android-plugin
+          name: plugin
+          path: wallet-cordova-plugin*.tgz
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-harness-apk
           path: ./test_app/hello/platforms/android/app/build/outputs/apk/debug/app-debug.apk

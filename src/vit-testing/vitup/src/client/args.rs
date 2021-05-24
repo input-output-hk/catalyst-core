@@ -3,9 +3,9 @@ use crate::client::rest::VitupDisruptionRestClient;
 use crate::client::rest::VitupRest;
 use crate::config::VitStartParameters;
 use crate::error::Result;
-use structopt::StructOpt;
-use std::path::PathBuf;
 use jormungandr_testing_utils::testing::fragments::PersistentLogViewer;
+use std::path::PathBuf;
+use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 pub struct VitupClientCommand {
@@ -33,7 +33,7 @@ impl VitupClientCommand {
         match self.command {
             Command::Disruption(disruption_command) => disruption_command.exec(rest.into()),
             Command::Mock(mock_command) => mock_command.exec(rest.into()),
-            _ => panic!("should not happen")
+            _ => panic!("should not happen"),
         }
     }
 }
@@ -45,7 +45,7 @@ pub enum Command {
     /// mock
     Mock(MockCommand),
     /// utils
-    Utils(UtilsCommand)
+    Utils(UtilsCommand),
 }
 
 #[derive(StructOpt, Debug)]
@@ -254,7 +254,6 @@ impl MockCommand {
 pub enum UtilsCommand {
     /// persistent log comamnds
     PersistentLog(PersistentLogCommand),
-
 }
 
 impl UtilsCommand {
@@ -264,7 +263,6 @@ impl UtilsCommand {
         }
     }
 }
-
 
 #[derive(StructOpt, Debug)]
 pub enum PersistentLogCommand {
@@ -280,19 +278,16 @@ impl PersistentLogCommand {
     }
 }
 
-
-
 #[derive(StructOpt, Debug)]
 pub struct CountPersistentLogCommand {
     /// count commands  
     #[structopt(long = "folder")]
     pub folder: PathBuf,
-
 }
 
 impl CountPersistentLogCommand {
     pub fn exec(self) -> Result<()> {
-        println!("{}",PersistentLogViewer::new(self.folder).count());
+        println!("{}", PersistentLogViewer::new(self.folder).count());
         Ok(())
     }
 }

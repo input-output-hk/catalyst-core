@@ -4,6 +4,7 @@ use crate::{
     service::ManagerService,
     Context,
 };
+use futures::future::FutureExt;
 use std::sync::Mutex;
 use std::{
     path::{Path, PathBuf},
@@ -22,7 +23,7 @@ pub struct TriggerServiceCommand {
 }
 
 impl TriggerServiceCommand {
-    pub fn exec(self) -> Result<(), Error> {
+    pub async fn exec(self) -> Result<(), Error> {
         let mut configuration: Configuration = read_config(&self.config)?;
 
         if self.token.is_some() {
@@ -35,27 +36,37 @@ impl TriggerServiceCommand {
         )));
 
         let mut manager = ManagerService::new(control_context.clone());
-        manager.spawn();
+        let handle = manager.spawn();
 
-        loop {
-            if let Some((job_id, params)) = manager.request_to_start() {
-                let mut job_result_dir = configuration.result_dir.clone();
-                job_result_dir.push(job_id.to_string());
-                std::fs::create_dir_all(job_result_dir.clone())?;
+        let request_to_start_task = async {
+            loop {
+                if let Some((job_id, params)) = manager.request_to_start() {
+                    let mut job_result_dir = configuration.result_dir.clone();
+                    job_result_dir.push(job_id.to_string());
+                    std::fs::create_dir_all(job_result_dir.clone())?;
 
-                let mut child = configuration.spawn_command(job_id, params).unwrap();
+                    let mut child = configuration.spawn_command(job_id, params).unwrap();
 
-                control_context.lock().unwrap().run_started().unwrap();
+                    control_context.lock().unwrap().run_started().unwrap();
 
-                child.wait().unwrap();
-                control_context.lock().unwrap().run_finished().unwrap();
+                    child.wait().unwrap();
+                    control_context.lock().unwrap().run_finished().unwrap();
 
-                let status = control_context.lock().unwrap().status_by_id(job_id)?;
-                job_result_dir.push("status.yaml");
-                persist_status(&job_result_dir, status)
-                    .map_err(|_| Error::CannotPersistJobState)?;
+                    let status = control_context.lock().unwrap().status_by_id(job_id)?;
+                    job_result_dir.push("status.yaml");
+                    persist_status(&job_result_dir, status)
+                        .map_err(|_| Error::CannotPersistJobState)?;
+                }
+                tokio::time::sleep(std::time::Duration::from_secs(5)).await;
             }
-            std::thread::sleep(std::time::Duration::from_secs(5));
+        }
+        .fuse();
+
+        tokio::pin!(request_to_start_task);
+
+        futures::select! {
+            result = request_to_start_task => result,
+            _ = handle.fuse() => Ok(()),
         }
     }
 }

@@ -77,6 +77,9 @@ pub enum Error {
 
     #[error("Multiple outputs for a single transaction are not supported")]
     UnsupportedMultipleOutputs,
+
+    #[error("Account {0} is not known")]
+    AccountNotFound(String),
 }
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
@@ -503,6 +506,7 @@ pub fn recover_ledger_from_logs(
 
 struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
+    non_voting_wallets: HashMap<Address, Wallet>,
     voteplans: HashMap<VotePlanId, VotePlan>,
     old_block0_hash: Hash,
     fees: LinearFee,
@@ -554,6 +558,7 @@ impl FragmentReplayer {
         Ok((
             Self {
                 wallets,
+                non_voting_wallets: HashMap::new(),
                 voteplans,
                 old_block0_hash: block0.header.id().into(),
                 fees,
@@ -563,7 +568,7 @@ impl FragmentReplayer {
     }
 
     // rebuild a fragment to be used in the new ledger configuration with the account mirror account.
-    fn replay(&mut self, fragment: Fragment) -> Result<Fragment, Error> {
+    fn replay(&mut self, fragment: Fragment) -> Result<(Fragment, &mut Wallet), Error> {
         match fragment {
             Fragment::VoteCast(ref transaction) => {
                 let transaction_slice = transaction.as_slice();
@@ -610,8 +615,7 @@ impl FragmentReplayer {
                         &choice,
                     )
                     .unwrap();
-                wallet.confirm_transaction();
-                Ok(res)
+                Ok((res, wallet))
             }
             Fragment::Transaction(ref transaction) => {
                 let transaction_slice = transaction.as_slice();
@@ -626,15 +630,29 @@ impl FragmentReplayer {
                 }
 
                 let output = transaction_slice.outputs().iter().next().unwrap();
-                let output_address = self
-                    .wallets
-                    .get(&output.address.into())
-                    .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?
-                    .address();
-                let wallet = self
-                    .wallets
-                    .get_mut(&address)
-                    .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?;
+                let output_address = if let Some(wlt) = self.wallets.get(&output.address.into()) {
+                    wlt.address()
+                } else {
+                    self.non_voting_wallets
+                        .entry(address.clone())
+                        .or_insert_with(|| {
+                            Wallet::new_account_with_discrimination(
+                                &mut rand::thread_rng(),
+                                chain_addr::Discrimination::Production,
+                            )
+                        })
+                        .address()
+                };
+
+                // Double self borrows are not allowed in closures, so this is written as an
+                // if let instead of chaining methods on options
+                let wallet = if let Some(wlt) = self.wallets.get_mut(&address) {
+                    wlt
+                } else {
+                    self.non_voting_wallets
+                        .get_mut(&address)
+                        .ok_or_else(|| Error::AccountNotFound(address.to_string()))?
+                };
 
                 warn!("replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this", identifier, output_address, output.value);
                 let res = wallet.transaction_to(
@@ -643,8 +661,7 @@ impl FragmentReplayer {
                     output_address,
                     output.value.into(),
                 )?;
-                wallet.confirm_transaction();
-                Ok(res)
+                Ok((res, wallet))
             }
             _ => unimplemented!(),
         }

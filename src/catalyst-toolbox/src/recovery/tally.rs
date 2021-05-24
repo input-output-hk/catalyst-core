@@ -479,13 +479,13 @@ pub fn recover_ledger_from_logs(
                 None
             }
         };
-        if let Some((new_fragment, wlt)) = new_fragment {
+        if let Some((new_fragment, wallet)) = new_fragment {
             let new_ledger =
                 ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date);
             match new_ledger {
                 Ok(new_ledger) => {
-                    if let Some(wlt) = wlt {
-                        wlt.confirm_transaction();
+                    if let Some(wallet) = wallet {
+                        wallet.confirm_transaction();
                     }
                     ledger = new_ledger;
                 }

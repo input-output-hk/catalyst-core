@@ -45,7 +45,7 @@ impl VerifyQrCommand {
                 let bin: [u8; 64] = secret.leak_secret().as_ref().try_into().unwrap();
 
                 let secret_key: SecretKey<Ed25519Extended> = SecretKey::from_binary(&bin).unwrap();
-                let kind = Kind::Single(secret_key.to_public());
+                let kind = Kind::Account(secret_key.to_public());
                 let address = chain_addr::Address(Discrimination::Production, kind);
                 println!(
                     "{}",

@@ -92,7 +92,8 @@ pub fn setup_network(
         SpawnParams::new(WALLET_NODE)
             .passive()
             .persistence_mode(PersistenceMode::Persistent)
-            .explorer(Explorer { enabled: true }),
+            .explorer(Explorer { enabled: true })
+            .persistent_fragment_log(controller.working_directory().path().join("persistent_log")),
     )?;
     wallet_node.wait_for_bootstrap()?;
 

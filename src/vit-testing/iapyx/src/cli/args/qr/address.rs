@@ -48,7 +48,7 @@ impl GetAddressFromQrCommand {
         let secret = pin_reader.read_qr(&self.qr)?;
         let bin: [u8; 64] = secret.leak_secret().as_ref().try_into().unwrap();
         let secret_key: SecretKey<Ed25519Extended> = SecretKey::from_binary(&bin).unwrap();
-        let kind = Kind::Single(secret_key.to_public());
+        let kind = Kind::Account(secret_key.to_public());
         let address = chain_addr::Address(Discrimination::Production, kind);
 
         if let Some(block0_path) = &self.block0 {

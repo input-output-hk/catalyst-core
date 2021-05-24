@@ -12,7 +12,7 @@ chrono = "0.4"
 walkdir = "2.3.1"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "b38e067ea29267e6af65938c5603dbe05418e6f7" } 
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "dde67634c9f0c2c631ed7bd268226952c04326ff" } 
 futures = "0.3.8"
 serde = { version="=1.0.118", features = ["derive"] }
 warp = "0.3"

@@ -44,16 +44,18 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/jormungandr && \
 	cd jormungandr && \
-	git checkout 409d6715e57c0cfe8d40d9049705bca03edac12f
+	git checkout dde67634c9f0c2c631ed7bd268226952c04326ff
 
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-servicing-station && \
 	cd vit-servicing-station && \
-	git checkout 5c545145036d3c117ac5e0cf9ea0c7a90acd256a
+	git checkout 59f8cfbd1be864c2a3b67d6e7df63605eec17193
 	
  RUN cd ${ENV_PREFIX} && \
-    git clone https://github.com/input-output-hk/vit-testing
-
+    git clone https://github.com/input-output-hk/vit-testing && \
+    cd vit-testing && \
+	git checkout db350d558ca9e7c3e473eaf26a58494a09abd19d
+    
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-servicing-station && \
     ~/.cargo/bin/cargo install --locked --force --path vit-servicing-station-server
@@ -73,4 +75,4 @@ ENV PATH="/root/.cargo/bin/:${PATH}"
 EXPOSE 80 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010 3030
 
 WORKDIR ${ENV_PREFIX}/vit-testing/vitup
-ENTRYPOINT ~/.cargo/bin/vitup start quick --jormungandr ~/.cargo/bin/jormungandr --jcli ~/.cargo/bin/jcli --endpoint 0.0.0.0:80 --vote-start-epoch $ENV_VOTE_START_EPOCH --tally-start-epoch $ENV_TALLY_START_EPOCH --tally-end-epoch $ENV_TALLY_END_EPOCH --slot-duration $ENV_SLOT_DURATION --slots-in-epoch $ENV_SLOTS_IN_EPOCH --progress-bar-mode standard --root-dir $ENV_DATA $ENV_PRIVATE --mode service
+ENTRYPOINT ~/.cargo/bin/vitup start quick --jormungandr ~/.cargo/bin/jormungandr --jcli ~/.cargo/bin/jcli --endpoint 0.0.0.0:80 --vote-start-epoch $ENV_VOTE_START_EPOCH --tally-start-epoch $ENV_TALLY_START_EPOCH --tally-end-epoch $ENV_TALLY_END_EPOCH --slot-duration $ENV_SLOT_DURATION --slots-in-epoch $ENV_SLOTS_IN_EPOCH --progress-bar-mode standard --root-dir $ENV_DATA $ENV_PRIVATE --mode service --version "2.0"

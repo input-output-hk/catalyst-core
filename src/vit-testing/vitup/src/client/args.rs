@@ -3,6 +3,8 @@ use crate::client::rest::VitupDisruptionRestClient;
 use crate::client::rest::VitupRest;
 use crate::config::VitStartParameters;
 use crate::error::Result;
+use jormungandr_testing_utils::testing::fragments::PersistentLogViewer;
+use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -11,7 +13,7 @@ pub struct VitupClientCommand {
     token: Option<String>,
 
     #[structopt(short, long, env = "VIT_ENDPOINT")]
-    endpoint: String,
+    endpoint: Option<String>,
 
     #[structopt(subcommand)]
     command: Command,
@@ -19,14 +21,19 @@ pub struct VitupClientCommand {
 
 impl VitupClientCommand {
     pub fn exec(self) -> Result<()> {
+        if let Command::Utils(command) = self.command {
+            return command.exec();
+        }
+        let endpoint = self.endpoint.expect("no 'endpoint' arg defined");
         let rest = match self.token {
-            Some(token) => VitupRest::new_with_token(token, self.endpoint),
-            None => VitupRest::new(self.endpoint),
+            Some(token) => VitupRest::new_with_token(token, endpoint),
+            None => VitupRest::new(endpoint),
         };
 
         match self.command {
             Command::Disruption(disruption_command) => disruption_command.exec(rest.into()),
             Command::Mock(mock_command) => mock_command.exec(rest.into()),
+            _ => panic!("should not happen"),
         }
     }
 }
@@ -37,6 +44,8 @@ pub enum Command {
     Disruption(DisruptionCommand),
     /// mock
     Mock(MockCommand),
+    /// utils
+    Utils(UtilsCommand),
 }
 
 #[derive(StructOpt, Debug)]
@@ -238,5 +247,47 @@ impl MockCommand {
                 Ok(())
             }
         }
+    }
+}
+
+#[derive(StructOpt, Debug)]
+pub enum UtilsCommand {
+    /// persistent log comamnds
+    PersistentLog(PersistentLogCommand),
+}
+
+impl UtilsCommand {
+    pub fn exec(self) -> Result<()> {
+        match self {
+            Self::PersistentLog(persistent_logs_command) => persistent_logs_command.exec(),
+        }
+    }
+}
+
+#[derive(StructOpt, Debug)]
+pub enum PersistentLogCommand {
+    /// persistent log commands
+    Count(CountPersistentLogCommand),
+}
+
+impl PersistentLogCommand {
+    pub fn exec(self) -> Result<()> {
+        match self {
+            Self::Count(count_command) => count_command.exec(),
+        }
+    }
+}
+
+#[derive(StructOpt, Debug)]
+pub struct CountPersistentLogCommand {
+    /// count commands  
+    #[structopt(long = "folder")]
+    pub folder: PathBuf,
+}
+
+impl CountPersistentLogCommand {
+    pub fn exec(self) -> Result<()> {
+        println!("{}", PersistentLogViewer::new(self.folder).count());
+        Ok(())
     }
 }

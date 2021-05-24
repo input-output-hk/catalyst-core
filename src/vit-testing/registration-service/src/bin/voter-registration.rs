@@ -1,6 +1,8 @@
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+
+use futures::future::FutureExt;
 use structopt::StructOpt;
 use thiserror::Error;
 
@@ -8,7 +10,11 @@ use thiserror::Error;
 pub async fn main() -> Result<(), Error> {
     std::env::set_var("RUST_BACKTRACE", "full");
 
-    VoterRegistrationCommand::from_args().exec()
+    let cli_future = tokio::task::spawn_blocking(|| VoterRegistrationCommand::from_args().exec())
+        .map(|res| res.expect("CLI command failed for an unknown reason"))
+        .fuse();
+
+    signals_handler::with_signal_handler(cli_future).await
 }
 
 #[derive(StructOpt, Debug)]

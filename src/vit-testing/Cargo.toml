@@ -4,5 +4,6 @@ members = [
   "vitup",
   "integration-tests",
   "registration-service",
-  "snapshot-trigger-service"
+  "snapshot-trigger-service",
+  "signals-handler",
 ]

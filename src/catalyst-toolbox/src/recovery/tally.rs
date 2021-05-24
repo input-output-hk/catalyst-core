@@ -13,12 +13,13 @@ use chain_impl_mockchain::transaction::{
     TransactionSignDataHash, TransactionSlice, Witness, WitnessAccountData,
 };
 use chain_impl_mockchain::{
-    account,
+    account::{self, LedgerError},
     block::{Block, BlockDate},
     certificate,
     fragment::Fragment,
-    ledger::Ledger,
+    ledger::{self, Ledger},
     transaction::InputEnum,
+    value::ValueError,
     vote::{CommitteeId, Payload},
 };
 use chain_time::{Epoch, Slot, SlotDuration, TimeEra, TimeFrame, Timeline};
@@ -442,6 +443,7 @@ pub fn recover_ledger_from_logs(
                 fragment @ Fragment::VoteCast(_) | fragment @ Fragment::Transaction(_) => {
                     fragment_replayer
                         .replay(fragment.clone())
+                        .map(|(frag, wlt)| (frag, Some(wlt)))
                         .map_err(|e| {
                             failed_fragments.push(fragment.clone());
                             warn!(
@@ -458,10 +460,13 @@ pub fn recover_ledger_from_logs(
                         ledger = increment_ledger_time_up_to(ledger, vote_end);
                         inc_tally = false;
                     }
-                    Some(fragment.clone())
+                    Some((fragment.clone(), None))
                 }
                 fragment => {
-                    debug!("Not votecast or votetally fragment: {:?}", fragment);
+                    debug!(
+                        "Not votecast, transaction or votetally fragment: {:?}",
+                        fragment
+                    );
                     None
                 }
             },
@@ -471,9 +476,25 @@ pub fn recover_ledger_from_logs(
                 None
             }
         };
-        if let Some(new_fragment) = new_fragment {
-            ledger = ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date)
-                .expect("Should be impossible to fail, since we should be using proper spending counters and signatures");
+        if let Some((new_fragment, wlt)) = new_fragment {
+            let new_ledger =
+                ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date);
+            match new_ledger {
+                Ok(new_ledger) => {
+                    if let Some(wlt) = wlt {
+                        wlt.confirm_transaction();
+                    }
+                    ledger = new_ledger;
+                }
+                // Checking the account balance when validating the fragment would require to keep
+                // track of movements as well (i.e. re-implement a ledger)
+                Err(ledger::Error::Account(LedgerError::ValueError(
+                    ValueError::NegativeAmount,
+                ))) => {
+                    warn!("Account balance not enough to process fragment")
+                }
+                Err(_) => panic!("Should be impossible to fail, since we should be using proper spending counters and signatures"),
+            }
         }
     }
 

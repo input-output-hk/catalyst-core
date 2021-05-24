@@ -153,6 +153,7 @@ impl VoteRegistrationJob {
         command
             .arg("query")
             .arg("utxo")
+            .arg("--mary-era")
             .arg_network(self.network)
             .arg("--address")
             .arg(&payment_address);

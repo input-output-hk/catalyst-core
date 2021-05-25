@@ -21,8 +21,6 @@ tempfile = "3"
 rand_core = "0.5"
 assert_fs = "1.0.0"
 assert_cmd = "1.0.1"
-askama = "0.8"
-askama_shared = "0.8"
 hyper = "0.14.2"
 vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
 lazy_static = "1.4"

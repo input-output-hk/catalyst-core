@@ -227,13 +227,16 @@ Full Example:
    "vote_start":3,
    "vote_tally":100,
    "tally_end":110,
-   "proposals":100,
+   "proposals":285,
    "slot_duration":1,
    "slots_per_epoch":60,
    "voting_power":8000,
+   "challenges": 7,
    "fund_name":"fund_3",
+   "fund_id": 1,
    "private":true,
-   "protocol":"Http"
+   "protocol":"Http",
+   "version": "2.0"
 }
 ```
 

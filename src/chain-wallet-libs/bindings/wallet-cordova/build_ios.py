@@ -16,15 +16,32 @@ targets = {
     "aarch64-apple-ios": "arm64",
 }
 
+
 def run():
     lipo_args = ["lipo", "-create", "-output", "./src/ios/" + libname]
 
     for rust_target, apple_target in targets.items():
-        out = subprocess.run(["cargo", "rustc", "--release", "--target", rust_target, "-p" "jormungandrwallet", "--", "-C", "lto"])
+        out = subprocess.run(
+            [
+                "cargo",
+                "rustc",
+                "--release",
+                "--target",
+                rust_target,
+                "-p" "jormungandrwallet",
+                "--",
+                "-C",
+                "lto",
+            ]
+        )
         if out.returncode != 0:
             print("couldn't build for target: ", rust_target)
             sys.exit(1)
-        lipo_args += ["-arch", apple_target, str(root_directory / rust_target / "release" / libname)]
+        lipo_args += [
+            "-arch",
+            apple_target,
+            str(root_directory / rust_target / "release" / libname),
+        ]
 
     out = subprocess.run(lipo_args)
     if out.returncode != 0:

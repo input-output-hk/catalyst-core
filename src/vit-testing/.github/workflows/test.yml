@@ -85,7 +85,21 @@ jobs:
       - name: Fetch dependencies and update cargo registry
         run: cargo fetch --locked
 
+  build_disruption_mock:
+    name: Build disruption mock 
+    steps:
+      - name: Build the tagged Docker image
+        run: docker build . --file Dockerfile --tag disruption
+        with:
+          path: ./vitup/docker/disruption/
 
+  build_local_mock:
+    name: Build local mock
+    steps:
+      - name: Build the tagged Docker image
+        run: docker build .  --tag local
+        with:
+          path: ./vitup/docker/local/
 
   lints:
     name: Lints

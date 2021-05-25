@@ -290,6 +290,11 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
         transaction: &TransactionSlice<P>,
         fragment_id: FragmentId,
     ) -> Result<SpendingCounter, ValidationError> {
+        // check if fragment was processed already
+        if self.replay_protection.contains(&fragment_id) {
+            return Err(ValidationError::DuplicatedFragment { id: fragment_id });
+        }
+
         let (_, identifier, witness) = deconstruct_account_transaction(&transaction)?;
 
         transaction.verify_strictly_balanced(self.fees.calculate_tx(transaction))?;
@@ -315,13 +320,7 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
             });
         }
 
-        // check if fragment was processed already
-        if self.replay_protection.contains(&fragment_id) {
-            return Err(ValidationError::DuplicatedFragment { id: fragment_id });
-        }
-
         self.replay_protection.insert(fragment_id);
-
         *self.spending_counters.get_mut(&identifier).unwrap() += 1;
         Ok(sc)
     }
@@ -496,7 +495,7 @@ pub fn recover_ledger_from_logs(
                 ))) => {
                     warn!("Account balance not enough to process fragment")
                 }
-                Err(_) => panic!("Should be impossible to fail, since we should be using proper spending counters and signatures"),
+                Err(_) => unreachable!("Should be impossible to fail, since we should be using proper spending counters and signatures"),
             }
         }
     }

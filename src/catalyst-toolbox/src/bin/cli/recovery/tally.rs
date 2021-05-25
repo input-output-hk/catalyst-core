@@ -40,11 +40,11 @@ pub enum Error {
     #[error("Block0 should be provided either from a path (block0-path) or an url (block0-url)")]
     Block0Unavailable,
 
-    #[error("Could not load persistent logs from path: {0}")]
-    PersistenLogsLoadingError(std::io::Error),
+    #[error("Could not load persistent logs from path")]
+    PersistenLogsLoadingError(#[source] std::io::Error),
 
-    #[error("Could not load block0: {0}")]
-    Block0LoadingError(std::io::Error),
+    #[error("Could not load block0")]
+    Block0LoadingError(#[source] std::io::Error),
 }
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.

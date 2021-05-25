@@ -11,12 +11,28 @@ use chain_impl_mockchain::{
 };
 use generator::{TestStrategy, VoteRoundGenerator};
 use jormungandr_lib::{
-    interfaces::{FragmentLogDeserializeError, PersistentFragmentLog},
+    interfaces::{Block0Configuration, FragmentLogDeserializeError, PersistentFragmentLog},
     time::SecondsSinceUnixEpoch,
 };
 use jormungandr_testing_utils::wallet::Wallet;
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
+
+fn jump_to_epoch(epoch: u64, block0_config: &Block0Configuration) -> SecondsSinceUnixEpoch {
+    let slots_per_epoch: u32 = block0_config
+        .blockchain_configuration
+        .slots_per_epoch
+        .into();
+    let slot_duration: u8 = block0_config
+        .blockchain_configuration
+        .slot_duration
+        .clone()
+        .into();
+    SecondsSinceUnixEpoch::from_secs(
+        SecondsSinceUnixEpoch::now().to_secs()
+            + slot_duration as u64 * slots_per_epoch as u64 * epoch,
+    )
+}
 
 macro_rules! setup_run {
     (
@@ -42,21 +58,17 @@ macro_rules! setup_run {
                     .with_n_wallets($wallets)
                 )?
                 .build(&mut rng);
-            let slots_per_epoch: u32 = blockchain.slots_per_epoch().clone().into();
-            let slot_duration: u8 = blockchain.slot_duration().clone().into();
-            let vote_end = SecondsSinceUnixEpoch::from_secs(
-                SecondsSinceUnixEpoch::now().to_secs() + slot_duration as u64 * slots_per_epoch as u64 * $vote_end as u64,
-            );
             let mut generator = VoteRoundGenerator::new(blockchain, &mut rng);
+            let vote_end = jump_to_epoch($vote_end, generator.block0_config());
             let vote_fragments = generator
                 .generate_vote_fragments(TestStrategy::Random(seed), $votes, !$in_order, &mut rng)
                 .into_iter()
                 .map(|fragment| {
                     Ok::<PersistentFragmentLog, FragmentLogDeserializeError>(PersistentFragmentLog {
-                        time: SecondsSinceUnixEpoch::now(),
+                        time: jump_to_epoch($vote_start, generator.block0_config()),
                         fragment,
                     })
-                });
+                }).collect::<Vec<_>>();
             let tally_fragments = generator.tally_transactions().into_iter().map(|fragment| {
                 Ok(PersistentFragmentLog {
                     time: vote_end,
@@ -85,7 +97,9 @@ fn tally_ok() {
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments.chain(tally_fragments.into_iter()),
+        vote_fragments
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
     )
     .unwrap();
 
@@ -110,7 +124,9 @@ fn shuffle_tally_ok() {
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments.chain(tally_fragments.into_iter()),
+        vote_fragments
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
     )
     .unwrap();
 
@@ -146,8 +162,9 @@ fn wallet_not_in_block0() {
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &block0,
         vote_fragments
+            .into_iter()
             .chain(std::iter::once(Ok(PersistentFragmentLog {
-                time: SecondsSinceUnixEpoch::now(),
+                time: jump_to_epoch(0, generator.block0_config()),
                 fragment,
             })))
             .chain(tally_fragments.into_iter()),
@@ -191,7 +208,7 @@ fn only_last_vote_is_counted() {
             .into_iter()
             .map(|fragment| {
                 Ok(PersistentFragmentLog {
-                    time: SecondsSinceUnixEpoch::now(),
+                    time: jump_to_epoch(0, generator.block0_config()),
                     fragment,
                 })
             })
@@ -240,7 +257,7 @@ fn replay_not_counted() {
             .into_iter()
             .map(|fragment| {
                 Ok(PersistentFragmentLog {
-                    time: SecondsSinceUnixEpoch::now(),
+                    time: jump_to_epoch(0, generator.block0_config()),
                     fragment,
                 })
             })
@@ -280,12 +297,65 @@ fn multi_voteplan_ok() {
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments.chain(tally_fragments.into_iter()),
+        vote_fragments
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
     )
     .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.tally());
     assert!(failed_fragments.is_empty());
+}
+
+#[test]
+fn votes_outside_voting_phase() {
+    let (mut generator, _, tally_fragments) = setup_run! {
+        seed = [0; 32],
+        voteplans = [
+            dates 0 => 1 => 2,
+            plans = [
+                one with 1 proposals
+            ]
+        ],
+        votes = 0,
+        in_order = false
+    };
+
+    let block0 = generator.block0();
+
+    let mut wallet = generator.wallets().values().next().unwrap().clone();
+    let fragment_yes = Ok(PersistentFragmentLog {
+        fragment: cast_vote(&mut wallet, &generator, 0, 1),
+        time: SecondsSinceUnixEpoch::from_secs(0),
+    });
+    wallet.confirm_transaction();
+    let fragment_no = Ok(PersistentFragmentLog {
+        fragment: cast_vote(&mut wallet, &generator, 0, 2),
+        time: jump_to_epoch(1, generator.block0_config()),
+    });
+
+    let early_tally = Ok(PersistentFragmentLog {
+        fragment: tally_fragments[0].as_ref().unwrap().fragment.clone(),
+        time: jump_to_epoch(0, generator.block0_config()),
+    });
+
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &block0,
+        vec![early_tally, fragment_yes, fragment_no]
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
+
+    let tally = ledger.active_vote_plans()[0].proposals[0]
+        .tally
+        .clone()
+        .unwrap();
+    dbg!(&tally);
+    assert_eq!(tally.result().unwrap().results()[0], 0.into());
+    assert_eq!(tally.result().unwrap().results()[1], 0.into());
+    assert_eq!(tally.result().unwrap().results()[2], 0.into());
+    assert_eq!(failed_fragments.len(), 3);
 }
 
 fn assert_tally_eq(mut r1: Vec<VotePlanStatus>, mut r2: Vec<VotePlanStatus>) {

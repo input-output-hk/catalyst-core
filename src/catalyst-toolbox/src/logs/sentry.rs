@@ -1,10 +1,10 @@
 use crate::recovery::tally::{deconstruct_account_transaction, ValidationError};
 use chain_core::property::Fragment as _;
-use chain_impl_mockchain::account::SpendingCounter;
 use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::vote::Payload;
 use jormungandr_lib::interfaces::PersistentFragmentLog;
 use reqwest::{blocking::Client, Method, Url};
+use std::collections::HashSet;
 use std::str::FromStr;
 
 pub type RawLog = serde_json::Value;
@@ -94,7 +94,7 @@ impl IntoIterator for LazySentryLogs {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SentryFragmentLog {
     pub public_key: String,
     pub chain_proposal_index: u8,
@@ -111,13 +111,23 @@ pub struct LogCmpFields {
     pub chain_proposal_index: u8,
     pub voteplan_id: String,
     pub choice: u8,
-    pub spending_counter: u64,
     pub fragment_id: String,
 }
 
-pub fn fragment_to_log_cmp_fields(
+impl From<SentryFragmentLog> for LogCmpFields {
+    fn from(log: SentryFragmentLog) -> Self {
+        Self {
+            public_key: log.public_key,
+            chain_proposal_index: log.chain_proposal_index,
+            voteplan_id: log.voteplan_id,
+            choice: log.choice,
+            fragment_id: log.fragment_id,
+        }
+    }
+}
+
+pub fn persistent_fragment_log_to_log_cmp_fields(
     fragment: &PersistentFragmentLog,
-    spending_counter: SpendingCounter,
 ) -> Result<LogCmpFields, Error> {
     if let Fragment::VoteCast(ref transaction) = fragment.fragment.clone() {
         let (vote_cast, identifier, choice) = deconstruct_account_transaction(
@@ -134,7 +144,6 @@ pub fn fragment_to_log_cmp_fields(
             fragment_id: fragment.fragment.id().to_string(),
             public_key: identifier.to_string(),
             chain_proposal_index: vote_cast.proposal_index(),
-            spending_counter: u32::from(spending_counter) as u64,
             choice: choice.as_byte(),
             voteplan_id: vote_cast.vote_plan().to_string(),
         })
@@ -142,6 +151,62 @@ pub fn fragment_to_log_cmp_fields(
         Err(Error::NotVoteCastTransaction {
             fragment_id: fragment.fragment.id().to_string(),
         })
+    }
+}
+
+pub struct LogCmpStats {
+    pub sentry_logs_size: usize,
+    pub fragment_logs_size: usize,
+    pub duplicated_sentry_logs: usize,
+    pub duplicated_fragment_logs: usize,
+    pub fragment_ids_differ: HashSet<String>,
+    pub unhandled_fragment_logs: Vec<(Fragment, Error)>,
+}
+
+pub fn compare_logs(
+    sentry_logs: &[SentryFragmentLog],
+    fragment_logs: &[PersistentFragmentLog],
+) -> LogCmpStats {
+    let sentry_logs_size = sentry_logs.len();
+    let fragment_logs_size = fragment_logs.len();
+    let sentry_cmp: Vec<LogCmpFields> = sentry_logs.iter().cloned().map(Into::into).collect();
+
+    let (fragments_cmp, unhandled_fragment_logs): (Vec<LogCmpFields>, Vec<(Fragment, Error)>) =
+        fragment_logs.iter().fold(
+            (Vec::new(), Vec::new()),
+            |(mut success, mut errored), log| {
+                match persistent_fragment_log_to_log_cmp_fields(log) {
+                    Ok(log) => {
+                        success.push(log);
+                    }
+                    Err(e) => errored.push((log.fragment.clone(), e)),
+                };
+                (success, errored)
+            },
+        );
+
+    let sentry_fragments_ids: HashSet<String> = sentry_cmp
+        .iter()
+        .map(|e| e.fragment_id.to_string())
+        .collect();
+    let fragment_logs_ids: HashSet<String> = fragments_cmp
+        .iter()
+        .map(|e| e.fragment_id.to_string())
+        .collect();
+    let fragment_ids_differ: HashSet<String> = sentry_fragments_ids
+        .difference(&fragment_logs_ids)
+        .cloned()
+        .collect();
+    let duplicated_sentry_logs = sentry_logs_size - sentry_fragments_ids.len();
+    let duplicated_fragment_logs = fragment_logs_size - fragment_logs_ids.len();
+
+    LogCmpStats {
+        sentry_logs_size,
+        fragment_logs_size,
+        duplicated_sentry_logs,
+        duplicated_fragment_logs,
+        fragment_ids_differ,
+        unhandled_fragment_logs,
     }
 }
 
@@ -187,6 +252,7 @@ impl FromStr for SentryFragmentLog {
 #[cfg(test)]
 mod tests {
     use super::SentryFragmentLog;
+
     use std::str::FromStr;
 
     #[test]

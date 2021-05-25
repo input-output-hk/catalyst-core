@@ -1,28 +1,40 @@
 use crate::config::JobParameters;
 use crate::context::{ContextLock, State};
 use crate::rest::start_rest_server;
-use tokio::runtime::Runtime;
+use tokio::runtime::{Handle, Runtime};
+use tokio::task::JoinHandle;
 use uuid::Uuid;
 
 pub struct ManagerService {
     context: ContextLock,
-    runtime: Runtime,
+    runtime: Option<Runtime>,
 }
 
 impl ManagerService {
     pub fn new(context: ContextLock) -> Self {
-        Self {
-            runtime: Runtime::new().unwrap(),
-            context,
-        }
+        // Do not create a new runtime when already running within a tokio runtime. This is
+        // pointless and will result into panic when dropping this structure.
+        let runtime = match Handle::try_current() {
+            Ok(_) => None,
+            Err(_) => Some(Runtime::new().unwrap()),
+        };
+
+        Self { context, runtime }
     }
 
-    pub fn spawn(&mut self) {
+    pub fn spawn(&mut self) -> JoinHandle<()> {
         let server_fut = start_rest_server(self.context.clone());
 
-        self.runtime.spawn(async move {
+        // Obtain a handle to the current runtime if present.
+        let handle = self
+            .runtime
+            .as_ref()
+            .map(|rt| rt.handle().clone())
+            .unwrap_or_else(Handle::current);
+
+        handle.spawn(async move {
             server_fut.await;
-        });
+        })
     }
 
     pub fn request_to_start(&self) -> Option<(Uuid, JobParameters)> {

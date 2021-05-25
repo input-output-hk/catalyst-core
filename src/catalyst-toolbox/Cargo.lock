@@ -334,6 +334,7 @@ dependencies = [
  "stderrlog",
  "structopt",
  "thiserror",
+ "url",
  "versionisator",
 ]
 

@@ -1,3 +1,4 @@
+mod kedqr;
 mod logs;
 mod notifications;
 mod recovery;
@@ -34,6 +35,8 @@ pub enum CatalystCommand {
     Recover(recovery::Recover),
     /// Download, compare and get stats from sentry and persistent fragment logs
     Logs(logs::Logs),
+    /// Generate qr codes
+    Kedqr(kedqr::QRcodeApp),
 }
 
 impl Cli {
@@ -60,6 +63,7 @@ impl CatalystCommand {
             PushNotification(notifications) => notifications.exec()?,
             Recover(recover) => recover.exec()?,
             Logs(logs) => logs.exec()?,
+            Kedqr(kedqr) => kedqr.exec()?,
         };
         Ok(())
     }

@@ -2,7 +2,6 @@ mod blockchain;
 
 mod generator;
 
-use catalyst_toolbox;
 use chain_addr::Discrimination;
 pub use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::{
@@ -11,12 +10,15 @@ use chain_impl_mockchain::{
 };
 use generator::{TestStrategy, VoteRoundGenerator};
 use jormungandr_lib::{
-    interfaces::{Block0Configuration, FragmentLogDeserializeError, PersistentFragmentLog},
+    interfaces::{
+        Block0Configuration, FragmentLogDeserializeError, Initial, PersistentFragmentLog,
+    },
     time::SecondsSinceUnixEpoch,
 };
 use jormungandr_testing_utils::wallet::Wallet;
 use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
+use std::collections::HashMap;
 
 fn jump_to_epoch(epoch: u64, block0_config: &Block0Configuration) -> SecondsSinceUnixEpoch {
     let slots_per_epoch: u32 = block0_config
@@ -356,6 +358,106 @@ fn votes_outside_voting_phase() {
     assert_eq!(tally.result().unwrap().results()[1], 0.into());
     assert_eq!(tally.result().unwrap().results()[2], 0.into());
     assert_eq!(failed_fragments.len(), 3);
+}
+
+#[test]
+fn transaction_transfer() {
+    let (mut generator, _, tally_fragments) = setup_run! {
+        seed = [0; 32],
+        wallets = 4,
+        voteplans = [
+            dates 0 => 1 => 2,
+            plans = [
+                one with 1 proposals
+            ]
+        ],
+        votes = 0,
+        in_order = false
+    };
+    let mut wallets = generator
+        .wallets()
+        .values()
+        .take(2)
+        .cloned()
+        .collect::<Vec<_>>();
+    assert_eq!(wallets.len(), 2);
+
+    let gen_wallets = generator.wallets().clone();
+
+    let config = generator.block0_config();
+    let wallets_stake = config
+        .initial
+        .iter()
+        .filter_map(|initial| {
+            if let Initial::Fund(utxos) = initial {
+                Some(utxos.iter())
+            } else {
+                None
+            }
+        })
+        .flatten()
+        .map(|utxo| (utxo.address.clone(), utxo.value))
+        .filter(|(addr, _)| gen_wallets.contains_key(addr.as_ref()))
+        .collect::<HashMap<_, _>>();
+
+    // transfer all funds from the first wallet to the second
+    let wallet1_address = wallets[1].address();
+    let wallet0_address = wallets[0].address();
+    let transaction = (&mut wallets[0])
+        .transaction_to(
+            &generator.block0().header.id().into(),
+            &generator
+                .block0_config()
+                .blockchain_configuration
+                .linear_fees,
+            wallet1_address.clone(),
+            *wallets_stake.get(&wallet0_address).unwrap(),
+        )
+        .unwrap();
+
+    let transaction = Ok(PersistentFragmentLog {
+        fragment: transaction,
+        time: SecondsSinceUnixEpoch::now(),
+    });
+
+    let fragment_yes = Ok(PersistentFragmentLog {
+        fragment: cast_vote(&mut wallets[0], &generator, 0, 1),
+        time: SecondsSinceUnixEpoch::now(),
+    });
+    let fragment_no = Ok(PersistentFragmentLog {
+        fragment: cast_vote(&mut wallets[1], &generator, 0, 2),
+        time: SecondsSinceUnixEpoch::now(),
+    });
+
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &generator.block0(),
+        vec![transaction, fragment_yes, fragment_no]
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
+
+    dbg!(ledger.accounts());
+    let tally = ledger.active_vote_plans()[0].proposals[0]
+        .tally
+        .clone()
+        .unwrap();
+    assert_eq!(tally.result().unwrap().results()[0], 0.into());
+    // the first wallet has not voting power anymore
+    assert_eq!(tally.result().unwrap().results()[1], 0.into());
+    // the second wallet should have all the voting power
+    assert_eq!(
+        tally.result().unwrap().results()[2],
+        wallets_stake
+            .values()
+            .cloned()
+            .map(<u64>::from)
+            .sum::<u64>()
+            .into()
+    );
+    // No fragments are rejected because there are no fees in the current configuration, otherwise the first wallet
+    // would not have enough funds for the vote cast transaction
+    assert!(failed_fragments.is_empty());
 }
 
 fn assert_tally_eq(mut r1: Vec<VotePlanStatus>, mut r2: Vec<VotePlanStatus>) {

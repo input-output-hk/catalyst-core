@@ -9,8 +9,17 @@ import shutil
 def run():
     wallet_js = Path("../wallet-js")
     relative_path_from_wallet_js = Path("../wallet-cordova/src/electron/pkg")
-    out = subprocess.run(["wasm-pack", "build", "--target",
-                          "no-modules", "-d", relative_path_from_wallet_js, wallet_js])
+    out = subprocess.run(
+        [
+            "wasm-pack",
+            "build",
+            "--target",
+            "no-modules",
+            "-d",
+            relative_path_from_wallet_js,
+            wallet_js,
+        ]
+    )
 
     if out.returncode != 0:
         print("couldn't build js bindings ")

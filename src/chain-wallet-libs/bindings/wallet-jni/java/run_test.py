@@ -16,11 +16,12 @@ javafilesdir = Path("com/iohk/jormungandrwallet")
 
 
 def compile_java_classes():
-    packageFiles = map(str, (
-        Path("com/iohk/jormungandrwallet")).glob("*.java"))
+    packageFiles = map(str, (Path("com/iohk/jormungandrwallet")).glob("*.java"))
 
-    out = subprocess.run([
-        "javac", "-cp", classpath, "WalletTest.java", *packageFiles], cwd=scriptdirectory)
+    out = subprocess.run(
+        ["javac", "-cp", classpath, "WalletTest.java", *packageFiles],
+        cwd=scriptdirectory,
+    )
 
     if out.returncode != 0:
         print("couldn't compile java files")
@@ -42,21 +43,35 @@ def compile_jni(target):
 
 
 def run():
-    parser = argparse.ArgumentParser(description='run tests')
-    parser.add_argument('--target', metavar='TARGET', type=str,
-                        help='target to use with cargo build', default=None)
+    parser = argparse.ArgumentParser(description="run tests")
+    parser.add_argument(
+        "--target",
+        metavar="TARGET",
+        type=str,
+        help="target to use with cargo build",
+        default=None,
+    )
 
     args = parser.parse_args()
 
     compile_java_classes()
     compile_jni(args.target)
 
-    dynlibdirectory = rootdirectory / "target" / \
-        (args.target if args.target else ".") / "debug"
+    dynlibdirectory = (
+        rootdirectory / "target" / (args.target if args.target else ".") / "debug"
+    )
 
-    out = subprocess.run([
-        "java", f"-Djava.library.path={dynlibdirectory.resolve()}", "-cp", classpath, "org.junit.runner.JUnitCore", "WalletTest"
-    ], cwd=scriptdirectory)
+    out = subprocess.run(
+        [
+            "java",
+            f"-Djava.library.path={dynlibdirectory.resolve()}",
+            "-cp",
+            classpath,
+            "org.junit.runner.JUnitCore",
+            "WalletTest",
+        ],
+        cwd=scriptdirectory,
+    )
 
     if out.returncode != 0:
         print(f"command: {' '.join(out.args) }")

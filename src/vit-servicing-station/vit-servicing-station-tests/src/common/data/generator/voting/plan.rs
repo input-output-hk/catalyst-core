@@ -225,7 +225,7 @@ impl ValidVotePlanGenerator {
                 };
 
                 let mut challenge = fund.challenges.get_mut(challenge_idx).unwrap();
-
+                println!("{:?}",proposal_template.proposal_funds);
                 let proposal_funds = proposal_template.proposal_funds.parse().unwrap();
                 let chain_vote_options = proposal_template.chain_vote_options.clone();
 

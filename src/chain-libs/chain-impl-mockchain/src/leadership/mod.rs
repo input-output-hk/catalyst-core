@@ -30,7 +30,7 @@ pub enum ErrorKind {
 #[derive(Debug)]
 pub struct Error {
     kind: ErrorKind,
-    cause: Option<Box<dyn std::error::Error>>,
+    cause: Option<Box<dyn std::error::Error + Send + Sync>>,
 }
 
 /// Verification type for when validating a block
@@ -240,7 +240,7 @@ impl Error {
 
     pub fn new_<E>(kind: ErrorKind, cause: E) -> Self
     where
-        E: std::error::Error + 'static,
+        E: std::error::Error + Send + Sync + 'static,
     {
         Error {
             kind,
@@ -269,6 +269,7 @@ impl std::fmt::Display for ErrorKind {
         }
     }
 }
+
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         if let Some(cause) = &self.cause {
@@ -278,8 +279,11 @@ impl std::fmt::Display for Error {
         }
     }
 }
+
 impl std::error::Error for Error {
-    fn cause(&self) -> Option<&dyn std::error::Error> {
-        self.cause.as_deref()
+    fn cause(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.cause
+            .as_ref()
+            .map(|cause| -> &(dyn std::error::Error + 'static) { cause.as_ref() })
     }
 }

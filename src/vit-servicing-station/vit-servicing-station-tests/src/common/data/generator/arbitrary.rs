@@ -60,6 +60,10 @@ impl ArbitraryGenerator {
         }
     }
 
+    pub fn random_index(&mut self, limit: usize) -> usize {
+        (self.id_generator.next_u32() as usize) % limit
+    }
+
     fn random_size(&mut self) -> usize {
         (self.id_generator.next_u32() as usize) % 100 + 1
     }
@@ -121,7 +125,7 @@ impl ArbitraryGenerator {
             next_fund_start_time: dates.next.timestamp(),
             registration_snapshot_time: dates.snapshot.timestamp(),
             chain_vote_plans: vec![self.voteplan_with_fund_id(id.abs())],
-            challenges: vec![self.challenge_with_fund_id(id.abs())],
+            challenges: self.challenges_with_fund_id(id.abs()),
         }
     }
 
@@ -298,6 +302,34 @@ impl ArbitraryGenerator {
             chain_vote_encryption_key: "".to_string(),
             fund_id,
         }
+    }
+
+    pub fn challenges_with_fund_id(&mut self, fund_id: i32) -> Vec<Challenge> {
+        let simple_id = self.id_generator.next_u32() as i32;
+        let community_choice_id = self.id_generator.next_u32() as i32;
+
+        vec![
+            Challenge {
+                id: simple_id.abs(),
+                challenge_type: ChallengeType::Simple,
+                title: CatchPhase().fake::<String>(),
+                description: Buzzword().fake::<String>(),
+                rewards_total: 100500,
+                proposers_rewards: 100000,
+                fund_id,
+                challenge_url: self.gen_http_address(),
+            },
+            Challenge {
+                id: community_choice_id.abs(),
+                challenge_type: ChallengeType::CommunityChoice,
+                title: CatchPhase().fake::<String>(),
+                description: Buzzword().fake::<String>(),
+                rewards_total: 100500,
+                proposers_rewards: 100000,
+                fund_id,
+                challenge_url: self.gen_http_address(),
+            },
+        ]
     }
 
     pub fn challenge_with_fund_id(&mut self, fund_id: i32) -> Challenge {

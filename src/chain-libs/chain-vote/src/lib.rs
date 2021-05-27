@@ -8,7 +8,7 @@ mod encrypted;
 pub mod encryption;
 mod gang;
 mod math;
-pub mod shvzk;
+pub mod private_voting;
 mod unit_vector;
 
 // re-export under a debug module
@@ -17,8 +17,8 @@ pub mod debug {
     pub mod gang {
         pub use crate::gang::*;
     }
-    pub mod shvzk {
-        pub use crate::shvzk::*;
+    pub mod private_voting {
+        pub use crate::private_voting::*;
     }
 }
 
@@ -51,10 +51,10 @@ pub type Vote = UnitVector;
 /// the tally opener.
 pub type EncryptedVote = Vec<Ciphertext>;
 
-pub type ProofOfCorrectVote = shvzk::Proof;
+pub type ProofOfCorrectVote = private_voting::unit_vector_zkp::Proof;
 
 /// Common Reference String
-pub type Crs = committee::Crs;
+pub type Crs = GroupElement;
 
 /// Take a vote and encrypt it + provide a proof of correct voting
 pub fn encrypt_vote<R: RngCore + CryptoRng>(
@@ -64,7 +64,7 @@ pub fn encrypt_vote<R: RngCore + CryptoRng>(
     vote: Vote,
 ) -> (EncryptedVote, ProofOfCorrectVote) {
     let ev = EncryptingVote::prepare(rng, &public_key.0, &vote);
-    let proof = shvzk::prove(rng, &crs, &public_key.0, ev.clone());
+    let proof = private_voting::Proof::generate(rng, &crs, &public_key.0, ev.clone());
     (ev.ciphertexts, proof)
 }
 
@@ -76,7 +76,7 @@ pub fn verify_vote(
     vote: &EncryptedVote,
     proof: &ProofOfCorrectVote,
 ) -> bool {
-    shvzk::verify(&crs, &public_key.0, vote, proof)
+    proof.verify(&crs, &public_key.0, vote)
 }
 
 /// The encrypted tally

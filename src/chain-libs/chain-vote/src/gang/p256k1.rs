@@ -184,6 +184,22 @@ impl Scalar {
         IScalar::from_slice(slice).map(Scalar)
     }
 
+    pub fn hash_to_scalar(b: &Blake2b) -> Scalar {
+        let mut h = [0u8; 64];
+        let mut i = 0u8;
+        let mut hash = b.clone();
+        loop {
+            hash.input(&i.to_be_bytes());
+            hash.result(&mut h);
+            hash.reset();
+
+            if let Some(scalar) = Self::from_bytes(&h[..32]) {
+                break scalar;
+            }
+            i += 1;
+        }
+    }
+
     pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         let mut r = [0u8; 32];
         loop {
@@ -212,6 +228,38 @@ impl Scalar {
             sum = &sum + &v;
         }
         Some(sum)
+    }
+
+    /// Return an iterator of the powers of `x`.
+    pub fn exp_iter(&self) -> ScalarExp {
+        let next_exp_x = Scalar::one();
+        ScalarExp {
+            x: self.clone(),
+            next_exp_x,
+        }
+    }
+}
+
+/// Provides an iterator over the powers of a `Scalar`.
+///
+/// This struct is created by the `exp_iter` function.
+#[derive(Clone)]
+pub struct ScalarExp {
+    x: Scalar,
+    next_exp_x: Scalar,
+}
+
+impl Iterator for ScalarExp {
+    type Item = Scalar;
+
+    fn next(&mut self) -> Option<Scalar> {
+        let exp_x = self.next_exp_x.clone();
+        self.next_exp_x = &self.next_exp_x * &self.x;
+        Some(exp_x)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (usize::MAX, None)
     }
 }
 

@@ -1,6 +1,7 @@
 use crate::encryption::{HybridCiphertext, PublicKey, SecretKey};
 use crate::gang::{GroupElement, Scalar};
 use crate::math::Polynomial;
+use crate::Crs;
 use rand_core::{CryptoRng, RngCore};
 
 /// Committee member election secret key
@@ -38,8 +39,6 @@ pub struct MemberState {
     es: Vec<GroupElement>,
     encrypted: Vec<(HybridCiphertext, HybridCiphertext)>,
 }
-
-pub type Crs = GroupElement;
 
 impl MemberState {
     /// Generate a new member state from random, where the number

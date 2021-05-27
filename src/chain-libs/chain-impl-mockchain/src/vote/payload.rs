@@ -1,7 +1,6 @@
 use crate::vote::Choice;
 use chain_core::mempack::{ReadBuf, ReadError};
-use chain_vote::shvzk;
-use chain_vote::{Ciphertext, Scalar};
+use chain_vote::Ciphertext;
 use std::convert::{TryFrom, TryInto as _};
 use std::hash::Hash;
 use thiserror::Error;
@@ -131,36 +130,7 @@ impl ProofOfCorrectVote {
     }
 
     pub(crate) fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let bits = buf.get_u8()? as usize;
-        let mut ibas = Vec::with_capacity(bits);
-        for _ in 0..bits {
-            let elem_buf = buf.get_slice(shvzk::Iba::BYTES_LEN)?;
-            let iba = shvzk::Iba::from_bytes(elem_buf)
-                .ok_or_else(|| ReadError::StructureInvalid("Invalid IBA component".to_string()))?;
-            ibas.push(iba);
-        }
-        let mut bs = Vec::with_capacity(bits);
-        for _ in 0..bits {
-            let elem_buf = buf.get_slice(Ciphertext::BYTES_LEN)?;
-            let ciphertext = Ciphertext::from_bytes(elem_buf).ok_or_else(|| {
-                ReadError::StructureInvalid("Invalid encoded ciphertext".to_string())
-            })?;
-            bs.push(ciphertext);
-        }
-        let mut zwvs = Vec::with_capacity(bits);
-        for _ in 0..bits {
-            let elem_buf = buf.get_slice(shvzk::Zwv::BYTES_LEN)?;
-            let zwv = shvzk::Zwv::from_bytes(elem_buf)
-                .ok_or_else(|| ReadError::StructureInvalid("Invalid ZWV component".to_string()))?;
-            zwvs.push(zwv);
-        }
-        let r_buf = buf.get_slice(Scalar::BYTES_LEN)?;
-        let r = Scalar::from_bytes(r_buf).ok_or_else(|| {
-            ReadError::StructureInvalid("Invalid Proof encoded R scalar".to_string())
-        })?;
-        Ok(Self(chain_vote::ProofOfCorrectVote::from_parts(
-            ibas, bs, zwvs, r,
-        )))
+        chain_vote::ProofOfCorrectVote::from_buffer(buf).map(Self)
     }
 }
 

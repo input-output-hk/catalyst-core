@@ -1,85 +1,99 @@
 use crate::gang::{GroupElement, Scalar};
-use std::ops::{Add, Mul};
+use crate::Crs;
+use rand_core::{CryptoRng, RngCore};
 
-/// Pedersen commitment
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Commitment {
-    c: GroupElement,
-}
-
+/// Pedersen Commitment key
 #[derive(Clone)]
 pub struct CommitmentKey {
     pub h: GroupElement,
 }
 
 impl CommitmentKey {
-    pub fn generate_from_seed(buffer: &mut [u8]) -> Self {
-        CommitmentKey {
-            h: GroupElement::from_hash(buffer),
+    pub fn to_bytes(&self) -> [u8; GroupElement::BYTES_LEN] {
+        self.h.to_bytes()
+    }
+
+    /// Return a commitment with the given opening, `o`
+    pub(crate) fn commit_with_open(&self, o: &Open) -> GroupElement {
+        self.commit_with_random(&o.m, &o.r)
+    }
+
+    /// Return a commitment with the given message, `m`,  and opening key, `r`
+    fn commit_with_random(&self, m: &Scalar, r: &Scalar) -> GroupElement {
+        GroupElement::generator() * m + &self.h * r
+    }
+
+    /// Return a commitment, and the used randomness, `r`, where the latter is computed
+    /// from a `Rng + CryptoRng`
+    pub(crate) fn commit<R>(&self, m: &Scalar, rng: &mut R) -> (GroupElement, Scalar)
+    where
+        R: CryptoRng + RngCore,
+    {
+        let r = Scalar::random(rng);
+        (self.commit_with_random(m, &r), r)
+    }
+
+    /// Return a commitment of a boolean value, and the used randomness, `r`, where the latter is computed
+    /// from a `Rng + CryptoRng`
+    pub(crate) fn commit_bool<R>(&self, m: bool, rng: &mut R) -> (GroupElement, Scalar)
+    where
+        R: CryptoRng + RngCore,
+    {
+        let r = Scalar::random(rng);
+        if m {
+            (GroupElement::generator() + &self.h * &r, r)
+        } else {
+            (&self.h * &r, r)
         }
+    }
+
+    /// Verify that a given `commitment` opens to `o` under commitment key `self`
+    #[allow(dead_code)]
+    pub fn verify(&self, commitment: &GroupElement, o: &Open) -> bool {
+        let other = self.commit_with_open(o);
+        commitment == &other
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub enum Validity {
-    Valid,
-    Invalid,
+impl From<Crs> for CommitmentKey {
+    fn from(crs: Crs) -> Self {
+        CommitmentKey { h: crs }
+    }
 }
 
 #[derive(Clone)]
 pub struct Open {
-    m: Scalar,
-    r: Scalar,
+    pub m: Scalar,
+    pub r: Scalar,
 }
 
-impl Commitment {
-    pub const BYTES_LEN: usize = GroupElement::BYTES_LEN;
+#[cfg(tests)]
+mod tests {
+    use super::*;
+    use rand_chacha::rand_core::SeedableRng;
+    use rand_chacha::ChaCha20Rng;
 
-    pub fn new_open(ck: &CommitmentKey, o: &Open) -> Self {
-        let c = GroupElement::generator() * &o.m + &ck.h * &o.r;
-        Commitment { c }
-    }
+    #[test]
+    fn commit_and_open() {
+        let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+        let crs = Crs::from_hash(&[0u8]);
+        let commitment_key = CommitmentKey::from(crs);
+        let message = Scalar::random(&mut rng);
+        let (comm, rand) = commitment_key.commit(&message, &mut rng);
 
-    pub fn new(ck: &CommitmentKey, m: &Scalar, r: &Scalar) -> Self {
-        let c = GroupElement::generator() * m + &ck.h * r;
-        Commitment { c }
-    }
+        let opening = Open {
+            m: message,
+            r: rand,
+        };
 
-    pub fn verify(&self, ck: &CommitmentKey, o: &Open) -> Validity {
-        let other = GroupElement::generator() * &o.m + &ck.h * &o.r;
-        if self.c == other {
-            Validity::Valid
-        } else {
-            Validity::Invalid
-        }
-    }
+        assert!(commitment_key.verify(&comm, &opening));
 
-    pub fn to_bytes(&self) -> [u8; Self::BYTES_LEN] {
-        self.c.to_bytes()
-    }
+        let comm_with_rand = commitment_key.commit_with_random(&message, &rand);
 
-    pub fn from_bytes(buf: &[u8]) -> Option<Self> {
-        Some(Self {
-            c: GroupElement::from_bytes(buf)?,
-        })
+        assert_eq!(comm_with_rand, comm);
+
+        let comm_with_open = commitment_key.commit_with_open(&opening);
+
+        assert_eq!(comm_with_open, comm);
     }
 }
-
-impl<'a, 'b> Add<&'b Commitment> for &'a Commitment {
-    type Output = Commitment;
-    fn add(self, rhs: &'b Commitment) -> Self::Output {
-        let c = &self.c + &rhs.c;
-        Commitment { c }
-    }
-}
-
-std_ops_gen!(Commitment, Add, Commitment, Commitment, add);
-
-impl<'a, 'b> Mul<&'b Scalar> for &'a Commitment {
-    type Output = Commitment;
-    fn mul(self, rhs: &'b Scalar) -> Self::Output {
-        Commitment { c: &self.c * rhs }
-    }
-}
-
-std_ops_gen!(Commitment, Mul, Scalar, Commitment, mul);

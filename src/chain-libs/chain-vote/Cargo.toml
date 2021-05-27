@@ -5,6 +5,8 @@ authors = ["Vincent Hanquez <vincent.hanquez@iohk.io>"]
 edition = "2018"
 
 [dependencies]
+chain-core = { path = "../chain-core" }
+rand = "0.8"
 rand_core = "0.6"
 rayon = "1.5"
 thiserror = "1.0"
@@ -12,24 +14,22 @@ cryptoxide = "0.3"
 # TODO replace with the crates.io version once it has faster scalar multiplication
 eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch = "fast-u64-scalar-mul", features = ["fast-u64-scalar-mul"], optional = true }
 curve25519-dalek-ng = { version = "4.0.1", optional = true}
-criterion = { version = "0.3", optional = true }
 
 [dev-dependencies]
 rand_chacha = "0.3"
 smoke = "^0.2.1"
 
+criterion = "0.3"
+
 [features]
 default = ["p256k1"]
 p256k1 = ["eccoxide"]
 ristretto255 = ["curve25519-dalek-ng"]
-with-bench = ["criterion"]
 
 [[bench]]
 harness = false
 name = "shvzk"
-required-features = ["with-bench"]
 
 [[bench]]
 harness = false
 name = "curve"
-required-features = ["with-bench"]

@@ -6,7 +6,7 @@
 
 use crate::gang::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Sub};
 
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::chacha20::ChaCha20;
@@ -36,8 +36,8 @@ pub struct Keypair {
 /// ElGamal ciphertext. Given a message M represented by a group element, and ElGamal
 /// ciphertext consists of (r * G; M + r * `PublicKey`), where r is a random `Scalar`.
 pub struct Ciphertext {
-    e1: GroupElement,
-    e2: GroupElement,
+    pub(crate) e1: GroupElement,
+    pub(crate) e2: GroupElement,
 }
 
 #[derive(Clone)]
@@ -257,6 +257,19 @@ impl<'a, 'b> Add<&'b Ciphertext> for &'a Ciphertext {
 }
 
 std_ops_gen!(Ciphertext, Add, Ciphertext, Ciphertext, add);
+
+impl<'a, 'b> Sub<&'b Ciphertext> for &'a Ciphertext {
+    type Output = Ciphertext;
+
+    fn sub(self, other: &'b Ciphertext) -> Ciphertext {
+        Ciphertext {
+            e1: &self.e1 - &other.e1,
+            e2: &self.e2 - &other.e2,
+        }
+    }
+}
+
+std_ops_gen!(Ciphertext, Sub, Ciphertext, Ciphertext, sub);
 
 impl<'a, 'b> Mul<&'b Scalar> for &'a Ciphertext {
     type Output = Ciphertext;

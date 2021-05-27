@@ -3,6 +3,7 @@
 
 use chain_vote::debug::gang;
 use chain_vote::debug::gang::GroupElement;
+use chain_vote::Scalar;
 use criterion::{criterion_group, criterion_main, Criterion};
 use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;
@@ -69,6 +70,11 @@ fn scalar_inversion(c: &mut Criterion) {
     c.bench_function("Scalar inversion", |b| b.iter(|| scalar.inverse()));
 }
 
+fn random_scalar(c: &mut Criterion) {
+    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    c.bench_function("Random scalar", |b| b.iter(|| Scalar::random(&mut rng)));
+}
+
 criterion_group!(
     name = group_ops;
     config = Criterion::default();
@@ -81,5 +87,6 @@ criterion_group!(
     scalar_multiplication,
     scalar_power,
     scalar_inversion,
+    random_scalar
 );
 criterion_main!(group_ops);

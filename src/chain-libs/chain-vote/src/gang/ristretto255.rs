@@ -12,6 +12,7 @@ use rand_core::{CryptoRng, RngCore};
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, Mul, Sub};
 
+use curve25519_dalek_ng::traits::VartimeMultiscalarMul;
 use std::array::TryFromSliceError;
 use std::convert::TryInto;
 
@@ -80,6 +81,16 @@ impl GroupElement {
         }
         sum
     }
+    pub fn multiscalar_multiplication<I, J>(scalars: I, points: J) -> Self
+    where
+        I: IntoIterator<Item = Scalar>,
+        J: IntoIterator<Item = GroupElement>,
+    {
+        GroupElement(Point::vartime_multiscalar_mul(
+            scalars.into_iter().map(|s| s.0),
+            points.into_iter().map(|p| p.0),
+        ))
+    }
 }
 
 impl Scalar {
@@ -121,6 +132,12 @@ impl Scalar {
         }
     }
 
+    pub fn hash_to_scalar(b: &Blake2b) -> Scalar {
+        let mut h = [0u8; 64];
+        b.clone().result(&mut h);
+        Scalar(IScalar::from_bytes_mod_order_wide(&h))
+    }
+
     pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         Scalar(IScalar::random(rng))
     }
@@ -155,6 +172,38 @@ impl Scalar {
             sum = sum + v;
         }
         Some(sum)
+    }
+
+    /// Return an iterator of the powers of `x`.
+    pub fn exp_iter(&self) -> ScalarExp {
+        let next_exp_x = Scalar::one();
+        ScalarExp {
+            x: self.clone(),
+            next_exp_x,
+        }
+    }
+}
+
+/// Provides an iterator over the powers of a `Scalar`.
+///
+/// This struct is created by the `exp_iter` function.
+#[derive(Clone, Copy)]
+pub struct ScalarExp {
+    x: Scalar,
+    next_exp_x: Scalar,
+}
+
+impl Iterator for ScalarExp {
+    type Item = Scalar;
+
+    fn next(&mut self) -> Option<Scalar> {
+        let exp_x = self.next_exp_x;
+        self.next_exp_x = self.next_exp_x * self.x;
+        Some(exp_x)
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (usize::MAX, None)
     }
 }
 

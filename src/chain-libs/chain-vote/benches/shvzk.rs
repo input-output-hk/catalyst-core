@@ -62,7 +62,7 @@ fn verify(c: &mut Criterion) {
 
 criterion_group!(
     name = shvzk;
-    config = Criterion::default();
+    config = Criterion::default().sample_size(500);
     targets =
     encrypt_and_prove,
     verify,

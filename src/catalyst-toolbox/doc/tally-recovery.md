@@ -25,6 +25,19 @@ fragment; in the alternative tallying process described here, the chronological
 order of fragments is used to decide which choice applies when multiple ballots
 for the same proposal have been received from a single account.
 
+The format of the log entries is bincode serialization of a Rust structure
+containing the unsigned integer timestamp in seconds since the Unix epoch,
+and the fragment serialized in the binary blockchain format: 
+
+```rust
+pub struct FragmentLogEntry {
+    /// The time this fragment was registered and accepted by the pool
+    pub time: SecondsSinceUnixEpoch,
+    /// Fragment body serialized as byte array
+    pub fragment: RawFragment,
+}
+```
+
 ## Initial state: voter accounts in block0
 
 To determine which accounts can legitimately vote, the tool parses the

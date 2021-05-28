@@ -40,15 +40,17 @@ pub struct FragmentLogEntry {
 }
 ```
 
-## Initial state: voter accounts in block0
+## Initial state in block0
 
-To determine which accounts can legitimately vote, the tool parses the
-genesis block of the Catalyst blockchain. It is assumed that the registered
-voters' account balances are created in the initial fund distribution in the
-genesis block. The initial ledger state is recreated from the genesis block
-just like in the blockchain node (with some technical twists: a
-mirror set of accounts is created because we need some private keys to
-supply to the library code performing ledger state transitions).
+To set up the initial state for tallying, the tool parses the
+genesis block of the Catalyst blockchain. It is assumed that the account
+balances of registered voters are created in the initial fund distribution
+in the genesis block. Likewise, it is assumed that all vote plans on the
+blockchain are already present in the genesis block. The initial ledger state
+is recreated from the genesis block just like in the blockchain node
+(with some technical twists: a mirror set of stake owners' accounts is created
+because we need some private keys to supply to the library code performing
+ledger state transitions).
 
 ## Replay of transactions
 

@@ -33,15 +33,5 @@ pub mod utxo;
 pub mod value;
 pub mod vote;
 
-#[macro_use]
-extern crate cfg_if;
-
-cfg_if! {
-    if #[cfg(test)] {
-        pub mod testing;
-        extern crate ed25519_bip32;
-    } else if #[cfg(any(feature = "property-test-api",feature = "with-bench"))] {
-        pub mod testing;
-        extern crate ed25519_bip32;
-    }
-}
+#[cfg(any(test, feature = "property-test-api", feature = "with-bench"))]
+pub mod testing;

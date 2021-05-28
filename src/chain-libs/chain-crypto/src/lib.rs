@@ -1,21 +1,9 @@
-#[macro_use]
-extern crate cfg_if;
-
-#[cfg(test)]
-extern crate quickcheck;
 #[cfg(test)]
 #[macro_use(quickcheck)]
 extern crate quickcheck_macros;
-extern crate hex;
-extern crate rand_core;
 
-cfg_if! {
-    if #[cfg(test)] {
-        mod testing;
-    } else if #[cfg(feature = "property-test-api")] {
-        pub mod testing;
-    }
-}
+#[cfg(any(test, feature = "property-test-api"))]
+pub mod testing;
 
 pub mod algorithms;
 pub mod asymlock;

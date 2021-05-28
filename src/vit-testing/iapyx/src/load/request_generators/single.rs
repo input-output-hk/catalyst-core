@@ -2,7 +2,7 @@ use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
 use chain_impl_mockchain::fragment::FragmentId;
 use jortestkit::load::{Id, RequestFailure, RequestGenerator};
-use rand::RngCore;
+use rand::{seq::SliceRandom, Rng};
 use rand_core::OsRng;
 use wallet_core::Choice;
 
@@ -31,18 +31,11 @@ impl WalletRequestGen {
         }
     }
 
-    pub fn next_usize(&mut self) -> usize {
-        self.rand.next_u32() as usize
-    }
-
     pub fn random_vote(&mut self) -> Result<FragmentId, MultiControllerError> {
-        let proposal_index = self.next_usize() % self.proposals.len();
-        let wallet_index = self.next_usize() % self.multi_controller.wallet_count();
+        let wallet_index = self.rand.gen_range(0..self.multi_controller.wallet_count());
 
-        let proposal: Proposal = self.proposals.get(proposal_index).unwrap().clone();
-
-        let choice_index = self.next_usize() % self.options.len();
-        let choice = Choice::new(*self.options.get(choice_index).unwrap());
+        let proposal = self.proposals.choose(&mut self.rand).unwrap();
+        let choice = Choice::new(*self.options.choose(&mut self.rand).unwrap());
 
         self.multi_controller.refresh_wallet(wallet_index)?;
         self.multi_controller.vote(wallet_index, &proposal, choice)

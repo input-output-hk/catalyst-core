@@ -51,12 +51,13 @@ supply to the library code performing ledger state transitions).
 ## Replay of transactions
 
 The tally recovery command parses the persistent fragment logs and applies
-the fragments in order they were received, to replay changes in the ledger state
-of a blockchain node that would process transactions to the same effect, if
-the account spending counters used to sign transactions spending form the same
-account incremented in order of submission by the client.
+the fragments in order they were received. The processing aims to replay
+changes in the ledger's account and vote plan states, as they would be
+applied by the blockchain consensus if the spending counters used
+to sign consecutive transactions spending from one account were incremented
+in order of submission of the fragments by the client.
 
-Transaction validity checks are performed just like in the blockchain node
+Transaction validity checks are performed just like in a blockchain node
 validating transactions for a block, with the exception that the witness
 signature check for account inputs is performed repeatedly with multiple
 candidate values of the spending counter until a matching signature is found
@@ -80,11 +81,12 @@ these kinds:
 - Plain value transfer transactions with one account input and one account
   output. The recovery tool updates the voting power with the results of
   the transfer and adds the output accounts.
+- VoteTally transactions, processed as a signal to reveal the tally results.
 
-Other kinds of fragments are not expected to be submitted by voting users,
-so the recovery tool only reports such fragments in warning messages.
-The party performing the tally recovery should to examine the atypical
-fragments to decide if they could affect the recovered tally.
+Other kinds of fragments are not expected to be submitted by voting users
+or committee members, so the recovery tool only reports such fragments
+in warning messages. The party performing the tally recovery should examine
+the atypical fragments to decide if they could affect the recovered tally.
 
 ## Output: Tally
 

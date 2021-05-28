@@ -3,7 +3,7 @@
 use crate::data::ServiceVersion;
 use crate::data::{Fund, Proposal};
 use hyper::StatusCode;
-use reqwest::blocking::Response;
+use reqwest::blocking::{Client, Response};
 use thiserror::Error;
 pub const API_TOKEN_HEADER: &str = "API-Token";
 
@@ -48,6 +48,7 @@ pub struct VitStationRestClient {
     path_builder: RestPathBuilder,
     api_token: Option<String>,
     logger: RestClientLogger,
+    client: Client,
 }
 
 impl VitStationRestClient {
@@ -56,6 +57,7 @@ impl VitStationRestClient {
             api_token: None,
             path_builder: RestPathBuilder::new(address),
             logger: RestClientLogger { enabled: false },
+            client: Client::new(),
         }
     }
 
@@ -164,8 +166,7 @@ impl VitStationRestClient {
 
     pub fn get(&self, path: &str) -> Result<reqwest::blocking::Response, reqwest::Error> {
         self.logger.log_request(path);
-        let client = reqwest::blocking::Client::new();
-        let mut res = client.get(path);
+        let mut res = self.client.get(path);
 
         if let Some(api_token) = &self.api_token {
             res = res.header(API_TOKEN_HEADER, api_token.to_string());
@@ -200,8 +201,7 @@ impl VitStationRestClient {
     }
 
     pub fn post(&self, path: &str, data: String) -> Result<serde_json::Value, RestError> {
-        let client = reqwest::blocking::Client::new();
-        let mut res = client.post(path).body(String::into_bytes(data));
+        let mut res = self.client.post(path).body(String::into_bytes(data));
 
         if let Some(api_token) = &self.api_token {
             res = res.header(API_TOKEN_HEADER, api_token.to_string());

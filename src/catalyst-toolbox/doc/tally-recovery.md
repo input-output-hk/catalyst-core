@@ -23,7 +23,9 @@ minimal sanity checks, but otherwise their validity for inclusion into a block
 is not verified. The timestamp of fragment arrival is stored along with the
 fragment; in the alternative tallying process described here, the chronological
 order of fragments is used to decide which choice applies when multiple ballots
-for the same proposal have been received from a single account.
+for the same proposal have been received from a single account. The timestamp
+is also used instead of the block date to check if the ballot is accounted
+within the declared voting period.
 
 The format of the log entries is bincode serialization of a Rust structure
 containing the unsigned integer timestamp in seconds since the Unix epoch,
@@ -58,14 +60,27 @@ to sign consecutive transactions spending from one account were incremented
 in order of submission of the fragments by the client.
 
 Transaction validity checks are performed just like in a blockchain node
-validating transactions for a block, with the exception that the witness
-signature check for account inputs is performed repeatedly with multiple
-candidate values of the spending counter until a matching signature is found
-or the search range is exhausted, searching with increasing difference
-above and below the next expected counter value for the account
-as per the normal transaction validation rule. This ensures that transactions
-submitted by a participant in control of the account private key, but
+validating transactions for a block, with the following exceptions:
+
+* The witness signature check for account inputs is performed repeatedly
+with multiple candidate values of the spending counter, until a matching
+signature is found or the search range is exhausted. The search is started
+at the next expected counter value for the account as per the normal witness
+validation rule, and proceeds with incrementing distance above and below
+the starting value. The search limit is taken to be several times the total
+number of proposals in all vote plans. This ensures that transactions
+submitted by a participant in control of the account's private key, but
 with out-of-order values of the spending counter, are processed as valid.
+
+* As the recovery tool lacks information about blockchain time, it uses
+the timestamp in the fragment log entry to check whether the ballot transaction
+falls within the voting time period declared in the vote plan. This creates a
+small possibility for ballots to be counted by the recovery tool, while
+being rejected by the blockchain consensus because they were processed too
+late by the slot leader. Likewise, ballots submitted just before voting starts
+may be rejected by the recovery tool, but admitted by the blockchain.
+The likelihood of occurrence of such edge cases is considered to be low enough
+to ignore this potential discrepancy.
 
 Potential replay attacks are prevented by keeping a record of all fragment
 hashes encountered and rejecting any duplicate fragments. It is assumed that

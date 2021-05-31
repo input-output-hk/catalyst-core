@@ -156,7 +156,9 @@ impl VoteRegistrationJob {
             .arg("--mary-era")
             .arg_network(self.network)
             .arg("--address")
-            .arg(&payment_address);
+            .arg(&payment_address)
+            .arg("--out-file")
+            .arg("/dev/stdout");
 
         println!("Running cardano_cli: {:?}", command);
         let funds = get_funds(command.output()?.as_multi_line())?;

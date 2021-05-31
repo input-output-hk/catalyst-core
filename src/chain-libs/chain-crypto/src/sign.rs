@@ -1,6 +1,6 @@
 use crate::{
     bech32::{self, Bech32},
-    hex, key,
+    key,
 };
 use hex::FromHexError;
 use std::{fmt, marker::PhantomData, str::FromStr};

@@ -35,9 +35,6 @@
 #[macro_use]
 extern crate quickcheck;
 
-#[macro_use]
-extern crate cfg_if;
-
 use bech32::{self, FromBase32, ToBase32};
 use std::string::ToString;
 
@@ -46,13 +43,8 @@ use chain_crypto::{Ed25519, PublicKey, PublicKeyError};
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property::{self, Serialize as PropertySerialize};
 
-cfg_if! {
-   if #[cfg(test)] {
-        mod testing;
-    } else if #[cfg(feature = "property-test-api")] {
-        mod testing;
-    }
-}
+#[cfg(any(test, feature = "property-test-api"))]
+mod testing;
 
 // Allow to differentiate between address in
 // production and testing setting, so that

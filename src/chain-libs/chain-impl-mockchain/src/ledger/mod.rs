@@ -15,8 +15,5 @@ pub use ledger::*;
 pub use pots::Pots;
 pub use reward_info::{EpochRewardsInfo, RewardsInfoParameters};
 
-cfg_if! {
-   if #[cfg(test)] {
-        pub mod tests;
-   }
-}
+#[cfg(test)]
+pub mod tests;

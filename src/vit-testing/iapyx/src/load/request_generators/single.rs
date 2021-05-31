@@ -37,7 +37,6 @@ impl WalletRequestGen {
         let proposal = self.proposals.choose(&mut self.rand).unwrap();
         let choice = Choice::new(*self.options.choose(&mut self.rand).unwrap());
 
-        self.multi_controller.refresh_wallet(wallet_index)?;
         self.multi_controller.vote(wallet_index, &proposal, choice)
     }
 }

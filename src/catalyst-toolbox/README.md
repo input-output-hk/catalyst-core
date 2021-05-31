@@ -180,7 +180,24 @@ notification fields:
     * `timezone`: Timezone of the provided `send_date`. [Available timezones](https://www.php.net/manual/en/timezones.php).
     * `campaign`: Campaign name for filtering push. Should exist in pushwoosh app configuration.
     * `filter`: Filter name string. Should exist in pushwoosh app configuration. As described in [pushwoosh documentation](https://docs.pushwoosh.com/platform-docs/api-reference/messages/api-prerequisites#filter)
-    
+
+#### Recover tally from permanent logs
+
+A stopgap vote tallying scheme processing ballot transactions from node's
+persistent fragment logs with relaxed transaction consistency checks,
+to compensate for Catalyst app's occasionally erroneous use of spending counters
+which results in user's vote transactions rejected by the blockchain.
+
+This command processes the votes as if they were submitted with correctly
+incrementing spending counters in order of submission. See
+[this document](./doc/tally-recovery.md) for details.
+
+Usage:
+
+```shell
+catalyst-toolbox recover tally --block0-path block0.bin --logs-path ./logs/fragments
+```
+
 ## Python scripts
 
 Use an updated version of `python3` and either create a venv or just install the dependencies from the

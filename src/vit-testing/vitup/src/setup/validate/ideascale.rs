@@ -52,6 +52,8 @@ impl IdeascaleValidateCommand {
             }
         };
         self.check_proposals_wrong_syntax(&mut proposals);
+        self.check_and_eventually_fix_proposal_funds(&mut proposals);
+
         if self.fix {
             self.save_proposals(&mut proposals)?;
         }
@@ -68,6 +70,19 @@ impl IdeascaleValidateCommand {
         println!("Corrected proposals: {:?}..", output);
         let mut file = File::create(output)?;
         file.write_all(content.as_bytes()).map_err(Into::into)
+    }
+
+    pub fn check_and_eventually_fix_proposal_funds(&self, data: &mut Vec<Value>) {
+        for proposal in data.iter_mut() {
+            if let Some(proposal_funds) = proposal.get_mut("proposal_funds") {
+                if self.fix {
+                    let before = proposal_funds.as_str().unwrap();
+                    let after = proposal_funds.as_str().as_mut().unwrap().replace(",", "");
+                    println!("Fixing illegal chars in proposal funds {}-{}", before, after);
+                    *proposal_funds = Value::String(after);
+                }
+            }
+        }
     }
 
     pub fn check_proposals_wrong_syntax(&self, data: &mut Vec<Value>) {

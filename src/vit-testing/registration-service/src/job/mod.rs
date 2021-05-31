@@ -160,8 +160,9 @@ impl VoteRegistrationJob {
             .arg("--out-file")
             .arg("/dev/stdout");
 
-        println!("Running cardano_cli: {:?}", command);
-        let funds = get_funds(command.output()?.as_multi_line())?;
+        let output = command.output()?.as_multi_line();
+        println!("Running cardano_cli: {:?} -> {:?}", command, output);
+        let funds = get_funds(output)?;
         println!("cardano_cli finished");
 
         let vote_registration_path = Path::new(&self.working_dir).join("vote-registration.tx");

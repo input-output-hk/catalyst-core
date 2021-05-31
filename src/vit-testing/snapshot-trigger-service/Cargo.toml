@@ -13,7 +13,7 @@ walkdir = "2.3.1"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 futures = "0.3.8"
-serde = { version="=1.0.118", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 warp = "0.3"
 thiserror = "1.0"
 tokio = { version = "1.2", features = ["macros","rt","process"] }

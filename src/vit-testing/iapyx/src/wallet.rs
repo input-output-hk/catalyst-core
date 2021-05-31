@@ -104,7 +104,7 @@ impl Wallet {
     }
 
     pub fn pending_transactions(&self) -> HashSet<FragmentId> {
-        self.inner.pending_transactions()
+        self.inner.pending_transactions().into_iter().collect()
     }
 
     pub fn remove_pending_transaction(&mut self, id: &FragmentId) -> Option<Vec<Input>> {

@@ -5,6 +5,7 @@ use crate::data::{Fund, Proposal};
 use hyper::StatusCode;
 use reqwest::blocking::{Client, Response};
 use thiserror::Error;
+use crate::data::Challenge;
 pub const API_TOKEN_HEADER: &str = "API-Token";
 
 #[derive(Debug, Clone)]
@@ -131,6 +132,19 @@ impl VitStationRestClient {
         self.get(&self.path_builder().proposal(id))
             .map_err(RestError::RequestError)
     }
+    
+    pub fn challenges_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder().challenges())
+            .map_err(RestError::RequestError)
+    }
+
+    pub fn challenges(&self) -> Result<Vec<Challenge>, RestError> {
+        let response = self.challenges_raw()?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.logger.log_text(&content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
 
     pub fn fund(&self, id: &str) -> Result<Fund, RestError> {
         let response = self.fund_raw(id)?;
@@ -233,6 +247,10 @@ impl RestPathBuilder {
 
     pub fn proposals(&self) -> String {
         self.path("proposals")
+    }
+
+    pub fn challenges(&self) -> String {
+        self.path("challenges")
     }
 
     pub fn funds(&self) -> String {

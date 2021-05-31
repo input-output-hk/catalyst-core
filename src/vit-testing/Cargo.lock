@@ -1810,6 +1810,7 @@ dependencies = [
  "hex",
  "hyper 0.13.10",
  "image",
+ "itertools 0.9.0",
  "jormungandr-lib",
  "jormungandr-testing-utils",
  "jortestkit",

@@ -11,6 +11,7 @@ use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentId},
 };
+use crate::data::Challenge;
 use chain_ser::deser::Deserialize;
 use jormungandr_lib::interfaces::AccountIdentifier;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
@@ -118,6 +119,10 @@ impl WalletBackend {
 
     pub fn funds(&self) -> Result<Fund, WalletBackendError> {
         Ok(self.vit_client.funds()?)
+    }
+
+    pub fn challenges(&self) -> Result<Vec<Challenge>, WalletBackendError> {
+        Ok(self.vit_client.challenges()?)
     }
 
     pub fn block0(&self) -> Result<Vec<u8>, WalletBackendError> {

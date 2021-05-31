@@ -141,6 +141,12 @@ impl QuickVitBackendSettingsBuilder {
         self.parameters.proposals = proposals_count;
         self
     }
+
+    pub fn challenges_count(&mut self, challenges_count: usize) -> &mut Self {
+        self.parameters.challenges = challenges_count;
+        self
+    }
+
     pub fn voting_power(&mut self, voting_power: u64) -> &mut Self {
         self.parameters.voting_power = voting_power;
         self
@@ -188,6 +194,11 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn fund_name(&self) -> String {
         self.parameters.fund_name.to_string()
+    }
+
+    pub fn fund_id(&mut self, id: i32) -> &mut Self {
+        self.parameters.fund_id = id;
+        self
     }
 
     pub fn private(&mut self, private: bool) -> &mut Self {

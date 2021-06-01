@@ -1,3 +1,4 @@
+mod logs;
 mod notifications;
 mod recovery;
 mod rewards;
@@ -29,6 +30,7 @@ pub enum CatalystCommand {
     Rewards(rewards::Rewards),
     PushNotification(notifications::PushNotifications),
     Recover(recovery::Recover),
+    Logs(logs::Logs),
 }
 
 impl Cli {
@@ -54,6 +56,7 @@ impl CatalystCommand {
             Rewards(rewards) => rewards.exec()?,
             PushNotification(notifications) => notifications.exec()?,
             Recover(recover) => recover.exec()?,
+            Logs(logs) => logs.exec()?,
         };
         Ok(())
     }

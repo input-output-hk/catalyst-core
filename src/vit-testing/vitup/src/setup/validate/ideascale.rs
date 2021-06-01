@@ -78,7 +78,10 @@ impl IdeascaleValidateCommand {
                 if self.fix {
                     let before = proposal_funds.as_str().unwrap();
                     let after = proposal_funds.as_str().as_mut().unwrap().replace(",", "");
-                    println!("Fixing illegal chars in proposal funds {}-{}", before, after);
+                    println!(
+                        "Fixing illegal chars in proposal funds {}-{}",
+                        before, after
+                    );
                     *proposal_funds = Value::String(after);
                 }
             }

@@ -39,6 +39,12 @@ pub enum Error {
 
     #[error("Block0 should be provided either from a path (block0-path) or an url (block0-url)")]
     Block0Unavailable,
+
+    #[error("Could not load persistent logs from path")]
+    PersistenLogsLoadingError(#[source] std::io::Error),
+
+    #[error("Could not load block0")]
+    Block0LoadingError(#[source] std::io::Error),
 }
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
@@ -70,12 +76,12 @@ pub struct Replay {
 
 fn read_block0(path: PathBuf) -> Result<Block, Error> {
     let reader = std::fs::File::open(path)?;
-    Ok(Block::deserialize(BufReader::new(reader))?)
+    Block::deserialize(BufReader::new(reader)).map_err(Error::Block0LoadingError)
 }
 
 fn load_block0_from_url(url: Url) -> Result<Block, Error> {
     let block0_body = reqwest::blocking::get(url)?.bytes()?;
-    Ok(Block::deserialize(BufReader::new(&block0_body[..]))?)
+    Block::deserialize(BufReader::new(&block0_body[..])).map_err(Error::Block0LoadingError)
 }
 
 impl Replay {
@@ -98,7 +104,8 @@ impl Replay {
             return Err(Error::Block0Unavailable);
         };
 
-        let fragments = load_persistent_fragments_logs_from_folder_path(&logs_path)?;
+        let fragments = load_persistent_fragments_logs_from_folder_path(&logs_path)
+            .map_err(Error::PersistenLogsLoadingError)?;
 
         let (ledger, failed) = recover_ledger_from_logs(&block0, fragments)?;
         if !failed.is_empty() {

@@ -1,23 +1,23 @@
-{  
-  "initials": [
+{   
+   "initials": [
     {
-      "above_threshold": 50,
+      "above_threshold": 1,
       "pin": "1234"
     }
-  ],
+  ], 
   "vote_start": 0,
-  "vote_tally": 41,
-  "tally_end": 51,
-  "refresh_time": "2021-04-13T09:00:00",
-  "next_vote_start_time": "2021-04-30T21:00:00",
-  "proposals": 285,
+  "vote_tally": 22,
+  "tally_end": 32,
+  "refresh_time": "2021-06-11T11:00:00",
+  "next_vote_start_time": "2021-07-05T16:00:00",
+  "proposals": 280,
   "challenges": 7,
   "slot_duration": 20,
-  "slots_per_epoch": 90,
+  "slots_per_epoch": 4320,
   "voting_power": 450,
   "fund_name": "Fund4",
   "private": false,
-  "fund_id":42,
+  "fund_id": 4,
   "linear_fees": {
     "constant": 0,
     "coefficient": 0,
@@ -28,5 +28,5 @@
     "ed25519_pk1qvq6prs87lmg6aeurdhq93fhtrx034yzc3jgj6lc3xc3a8lff98qtgw4dw",
     "ed25519_pk1g0mftq89wpwaymtegmuppyxtfnsp4jcc42cwcz4p6flvd7c5zn4qm3lmtp"
   ],
-  "version":"0.1"
+  "version":"3.0"
 }

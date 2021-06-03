@@ -1,9 +1,15 @@
-{  
-  "vote_start": 14,
-  "vote_tally": 24,
-  "tally_end": 34,
+{   
+   "initials": [
+    {
+      "above_threshold": 1,
+      "pin": "1234"
+    }
+  ], 
+  "vote_start": 12,
+  "vote_tally": 22,
+  "tally_end": 32,
   "refresh_time": "2021-06-11T11:00:00",
-  "next_vote_start_time": "2021-06-15T11:00:00",
+  "next_vote_start_time": "2021-07-05T16:00:00",
   "proposals": 280,
   "challenges": 7,
   "slot_duration": 20,

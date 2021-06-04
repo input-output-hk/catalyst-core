@@ -8,6 +8,7 @@ use jormungandr_integration_tests::common::jcli::JCli;
 use jortestkit::prelude::read_file;
 use jortestkit::prelude::ProcessOutput;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -159,9 +160,8 @@ impl VoteRegistrationJob {
             .arg("--out-file")
             .arg("/dev/stdout");
 
-        let output = command.output()?.as_multi_line();
-        println!("Running cardano_cli: {:?} -> {:?}", command, output);
-        let funds = get_funds(output)?;
+        println!("Running cardano_cli: {:?}", command);
+        let funds = get_funds(command.output()?.as_lossy_string())?;
         println!("cardano_cli finished");
 
         let vote_registration_path = Path::new(&self.working_dir).join("vote-registration.tx");
@@ -282,22 +282,53 @@ pub enum Error {
     #[error("cannot parse voter-registration output: {0:?}")]
     CannotParseVoterRegistrationOutput(Vec<String>),
     #[error("cannot parse cardano cli output: {0:?}")]
-    CannotParseCardanoCliOutput(Vec<String>),
+    CannotParseCardanoCliOutput(String),
 }
 
-/// Supported output: https://docs.cardano.org/projects/cardano-node/en/latest/reference/shelley-genesis.html?highlight=funds#submitting-the-signed-transaction
-///                             TxHash                                 TxIx        Lovelace
-/// ----------------------------------------------------------------------------------------
-/// d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000
-pub fn get_funds(output: Vec<String>) -> Result<u64, Error> {
-    output
-        .get(2)
-        .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
-        .split_whitespace()
-        .nth(2)
-        .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
-        .parse()
-        .map_err(|_| Error::CannotParseCardanoCliOutput(output.clone()))
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
+pub struct FundsResponse {
+    #[serde(flatten)]
+    content: HashMap<String, FundsEntry>,
+}
+
+impl FundsResponse {
+    pub fn get_first(&self) -> Result<FundsEntry, Error> {
+        Ok(self
+            .content
+            .iter()
+            .next()
+            .ok_or(Error::CannotParseCardanoCliOutput(
+                "empty response".to_string(),
+            ))?
+            .1
+            .clone())
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
+pub struct FundsEntry {
+    address: String,
+    value: FundsValue,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
+pub struct FundsValue {
+    lovelace: u64,
+}
+
+/// Supported output
+/// {
+///     "bf810bff3f979e28441775077524d41741542d1f237b0b7d6a698164dcded29b#0": {
+///         "address": "addr_test1vqtsh379yx9hmn8ypedzx270q9ueea24suf3zu85p2mv2sgra46ef",
+///         "value": {
+///             "lovelace": 9643918
+///         }
+///     }
+/// }
+pub fn get_funds(output: String) -> Result<u64, Error> {
+    let response: FundsResponse =
+        serde_json::from_str(&output).map_err(|_| Error::CannotParseCardanoCliOutput(output))?;
+    Ok(response.get_first()?.value.lovelace)
 }
 
 /// Supported output:
@@ -326,11 +357,15 @@ mod tests {
     #[test]
     pub fn test_funds_extraction() {
         let content = vec![
-            "    TxHash                                 TxIx        Lovelace".to_string(),
-            "----------------------------------------------------------------------------------------".to_string(),
-            "d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000".to_string()
-        ];
-        assert_eq!(get_funds(content).unwrap(), 500000000);
+        "{", 
+        "    \"bf810bff3f979e28441775077524d41741542d1f237b0b7d6a698164dcded29b#0\": {",
+        "        \"address\": \"addr_test1vqtsh379yx9hmn8ypedzx270q9ueea24suf3zu85p2mv2sgra46ef\",",
+        "        \"value\": {", 
+        "            \"lovelace\": 9643918", 
+        "        }", 
+        "    }", 
+        "}"];
+        assert_eq!(get_funds(content.join(" ")).unwrap(), 9643918);
     }
 
     #[test]

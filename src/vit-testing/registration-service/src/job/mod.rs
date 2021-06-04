@@ -87,7 +87,7 @@ impl Default for VoteRegistrationJob {
 }
 
 impl VoteRegistrationJob {
-    pub fn generate_address<P: AsRef<Path>, Q: AsRef<Path>>(
+    pub fn generate_payment_address<P: AsRef<Path>, Q: AsRef<Path>>(
         &self,
         verification_key: P,
         output: Q,
@@ -102,6 +102,24 @@ impl VoteRegistrationJob {
             .arg(output.as_ref())
             .arg_network(self.network);
         println!("generate addres: {:?}", command);
+        command.status().map_err(Into::into)
+    }
+
+    pub fn generate_stake_address<P: AsRef<Path>, Q: AsRef<Path>>(
+        &self,
+        verification_key: P,
+        output: Q,
+    ) -> Result<ExitStatus, Error> {
+        let mut command = Command::new(&self.cardano_cli);
+        command
+            .arg("stake-address")
+            .arg("build")
+            .arg("--verification-key-file")
+            .arg(verification_key.as_ref())
+            .arg("--out-file")
+            .arg(output.as_ref())
+            .arg_network(self.network);
+        println!("generate stake-address: {:?}", command);
         command.status().map_err(Into::into)
     }
 
@@ -145,12 +163,12 @@ impl VoteRegistrationJob {
 
         println!("saving payment.addr...");
         let payment_address_path = Path::new(&self.working_dir).join("payment.addr");
-        self.generate_address(&payment_vkey_path, &payment_address_path)?;
+        self.generate_payment_address(&payment_vkey_path, &payment_address_path)?;
         println!("payment.addr saved");
 
         println!("saving rewards.addr...");
         let rewards_address_path = Path::new(&self.working_dir).join("rewards.addr");
-        self.generate_address(&stake_vkey_path, &rewards_address_path)?;
+        self.generate_stake_address(&stake_vkey_path, &rewards_address_path)?;
         println!("rewards.addr saved");
 
         let payment_address = read_file(&payment_address_path);

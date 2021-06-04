@@ -184,7 +184,13 @@ impl VoteRegistrationJob {
             .arg(&vote_registration_path);
 
         println!("Running voter-registration: {:?}", command);
-        let slot_no = get_slot_no(command.output()?.as_multi_line())?;
+
+        let output = command.output()?;
+
+        println!("status: {}", output.status);
+        std::io::stdout().write_all(&output.stdout).unwrap();
+        std::io::stderr().write_all(&output.stderr).unwrap();
+        let slot_no = get_slot_no(output.as_multi_line())?;
         println!("voter-registration finished");
 
         let mut command = Command::new(&self.cardano_cli);
@@ -297,9 +303,7 @@ impl FundsResponse {
             .content
             .iter()
             .next()
-            .ok_or(Error::CannotParseCardanoCliOutput(
-                "empty response".to_string(),
-            ))?
+            .ok_or_else(|| Error::CannotParseCardanoCliOutput("empty response".to_string()))?
             .1
             .clone())
     }

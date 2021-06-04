@@ -23,8 +23,8 @@ jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormung
 jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "dde67634c9f0c2c631ed7bd268226952c04326ff" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "dde67634c9f0c2c631ed7bd268226952c04326ff" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "59f8cfbd1be864c2a3b67d6e7df63605eec17193" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "59f8cfbd1be864c2a3b67d6e7df63605eec17193" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "04a04f56b259267c435597a4e6368ff71a3aee51" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "04a04f56b259267c435597a4e6368ff71a3aee51" }
 iapyx = { path = "../iapyx" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"

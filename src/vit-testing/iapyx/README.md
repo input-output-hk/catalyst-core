@@ -22,9 +22,6 @@ rustc --version # if this fails, try a new command window, or add the path (see 
   * Homebrew on macOS.
   * `vcpkg` on Windows.
   * `pkg-config` on other Unix-like systems.
-* C compiler (see [cc-rs](https://github.com/alexcrichton/cc-rs) for more details):
-  * Must be available as `cc` on Unix and MinGW.
-  * Or as `cl.exe` on Windows.
 
 #### Path
 

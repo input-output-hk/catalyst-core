@@ -87,7 +87,7 @@ impl Default for VoteRegistrationJob {
 }
 
 impl VoteRegistrationJob {
-    pub fn generate_payment_address<P: AsRef<Path>, Q: AsRef<Path>>(
+    pub fn generate_address<P: AsRef<Path>, Q: AsRef<Path>>(
         &self,
         verification_key: P,
         output: Q,
@@ -101,7 +101,7 @@ impl VoteRegistrationJob {
             .arg("--out-file")
             .arg(output.as_ref())
             .arg_network(self.network);
-        println!("generate payment addres: {:?}", command);
+        println!("generate addres: {:?}", command);
         command.status().map_err(Into::into)
     }
 
@@ -145,10 +145,16 @@ impl VoteRegistrationJob {
 
         println!("saving payment.addr...");
         let payment_address_path = Path::new(&self.working_dir).join("payment.addr");
-        self.generate_payment_address(&payment_vkey_path, &payment_address_path)?;
+        self.generate_address(&payment_vkey_path, &payment_address_path)?;
         println!("payment.addr saved");
 
+        println!("saving rewards.addr...");
+        let rewards_address_path = Path::new(&self.working_dir).join("rewards.addr");
+        self.generate_address(&stake_vkey_path, &rewards_address_path)?;
+        println!("rewards.addr saved");
+
         let payment_address = read_file(&payment_address_path);
+        let rewards_address = read_file(&rewards_address_path);
 
         let mut command = Command::new(&self.cardano_cli);
         command
@@ -172,6 +178,8 @@ impl VoteRegistrationJob {
             .arg(&payment_skey_path)
             .arg("--payment-address")
             .arg(&payment_address)
+            .arg("--rewards-address")
+            .arg(&rewards_address)
             .arg("--stake-signing-key")
             .arg(&stake_skey_path)
             .arg("--vote-public-key")
@@ -190,6 +198,7 @@ impl VoteRegistrationJob {
         println!("status: {}", output.status);
         std::io::stdout().write_all(&output.stdout).unwrap();
         std::io::stderr().write_all(&output.stderr).unwrap();
+
         let slot_no = get_slot_no(output.as_multi_line())?;
         println!("voter-registration finished");
 

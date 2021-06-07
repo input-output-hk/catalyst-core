@@ -9,6 +9,7 @@ pub mod openssl;
 pub mod predicates;
 pub mod process;
 pub mod web;
+pub mod string;
 
 #[macro_use(lazy_static)]
 extern crate lazy_static;

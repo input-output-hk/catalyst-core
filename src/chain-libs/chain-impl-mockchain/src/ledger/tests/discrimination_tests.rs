@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use crate::{
+    date::BlockDate,
     testing::{
         arbitrary::KindTypeWithoutMultisig,
         builders::TestTxBuilder,
@@ -73,7 +74,7 @@ pub fn ledger_verifies_transaction_discrimination(
         .get_fragment();
 
     let are_discriminations_unified = arbitrary_input_disc == arbitrary_output_disc;
-    let actual_result = ledger.apply_transaction(fragment);
+    let actual_result = ledger.apply_transaction(fragment, BlockDate::first());
 
     match (are_discriminations_unified, actual_result) {
         (true, Ok(_)) => TestResult::passed(),

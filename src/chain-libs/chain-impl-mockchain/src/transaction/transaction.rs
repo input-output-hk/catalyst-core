@@ -4,6 +4,7 @@ use super::input::{Input, INPUT_SIZE};
 use super::payload::{Payload, PayloadAuthSlice, PayloadSlice};
 use super::transfer::Output;
 use super::witness::Witness;
+use crate::date::BlockDate;
 use crate::value::{Value, ValueError};
 use chain_addr::Address;
 use chain_core::mempack::{ReadBuf, Readable};
@@ -34,6 +35,7 @@ impl<P> Debug for Transaction<P> {
             .field("payload", &tx.payload().0)
             .field("nb_inputs", &tx.nb_inputs())
             .field("nb_outputs", &tx.nb_outputs())
+            .field("validity", &tx.validity())
             .field("nb_witnesses", &tx.nb_witnesses())
             .field("total_input_value", &self.total_input())
             .field("total_output_value", &self.total_output())
@@ -224,6 +226,7 @@ impl<'a> InputsWitnessesSlice<'a> {
 pub enum TransactionStructError {
     CannotReadNbInputs,
     CannotReadNbOutputs,
+    CannotReadDate,
     PayloadInvalid,
     InputsInvalid,
     OutputsInvalid,
@@ -238,6 +241,8 @@ pub(super) struct TransactionStruct {
     pub(super) sz: usize,
     pub(super) nb_inputs: u8,
     pub(super) nb_outputs: u8,
+    pub(super) valid_start_date: BlockDate,
+    pub(super) valid_end_date: BlockDate,
     pub(super) inputs: usize,
     pub(super) outputs: usize,
     pub(super) witnesses: usize,
@@ -261,6 +266,19 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
     let nb_outputs = rb
         .get_u8()
         .map_err(|_| TransactionStructError::CannotReadNbOutputs)?;
+
+    fn read_date(rb: &mut ReadBuf) -> Result<BlockDate, TransactionStructError> {
+        let epoch = rb
+            .get_u32()
+            .map_err(|_| TransactionStructError::CannotReadDate)?;
+        let slot_id = rb
+            .get_u32()
+            .map_err(|_| TransactionStructError::CannotReadDate)?;
+        Ok(BlockDate { epoch, slot_id })
+    }
+
+    let valid_start_date = read_date(&mut rb)?;
+    let valid_end_date = read_date(&mut rb)?;
 
     let inputs_pos = rb.position();
     rb.skip_bytes(nb_inputs as usize * INPUT_SIZE)
@@ -293,6 +311,8 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
         sz,
         nb_inputs,
         nb_outputs,
+        valid_start_date,
+        valid_end_date,
         inputs: inputs_pos,
         outputs: outputs_pos,
         witnesses: witnesses_pos,
@@ -447,6 +467,10 @@ impl<'a, P> TransactionSlice<'a, P> {
 
     pub fn nb_inputs(&self) -> u8 {
         self.tstruct.nb_inputs
+    }
+
+    pub fn validity(&self) -> (BlockDate, BlockDate) {
+        (self.tstruct.valid_start_date, self.tstruct.valid_end_date)
     }
 
     pub fn nb_outputs(&self) -> u8 {

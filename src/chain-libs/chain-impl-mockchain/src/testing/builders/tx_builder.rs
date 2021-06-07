@@ -1,5 +1,6 @@
 use crate::{
     chaintypes::HeaderId,
+    date::BlockDate,
     fee::FeeAlgorithm,
     fragment::{Fragment, FragmentId},
     testing::{
@@ -102,9 +103,10 @@ impl TestTxBuilder {
         TestTx { tx }
     }
 
-    pub fn move_to_outputs_from_faucet(
+    pub fn move_to_outputs_from_faucet_with_validity(
         &self,
         test_ledger: &mut TestLedger,
+        validity: Option<(BlockDate, BlockDate)>,
         destination: &[Output<Address>],
     ) -> TestTx {
         assert_eq!(
@@ -125,6 +127,10 @@ impl TestTxBuilder {
         )];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_validity(
+                validity.map(|range| range.0).unwrap_or(BlockDate::first()),
+                validity.map(|range| range.1).unwrap_or(BlockDate::first()),
+            )
             .set_ios(&inputs, &destination);
 
         let witness =
@@ -133,6 +139,14 @@ impl TestTxBuilder {
 
         let tx = tx_builder.set_witnesses(&witnesses).set_payload_auth(&());
         TestTx { tx }
+    }
+
+    pub fn move_to_outputs_from_faucet(
+        &self,
+        test_ledger: &mut TestLedger,
+        destination: &[Output<Address>],
+    ) -> TestTx {
+        self.move_to_outputs_from_faucet_with_validity(test_ledger, None, destination)
     }
 
     pub fn move_all_funds(

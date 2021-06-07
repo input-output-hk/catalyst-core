@@ -5,6 +5,7 @@ use super::transaction::{
 };
 use super::transfer::Output;
 use super::witness::Witness;
+use crate::date::BlockDate;
 use chain_addr::Address;
 use std::marker::PhantomData;
 
@@ -52,6 +53,8 @@ impl TxBuilder {
                 sz: 0,
                 nb_inputs: 0,
                 nb_outputs: 0,
+                valid_start_date: BlockDate::first(),
+                valid_end_date: BlockDate::first(),
                 inputs: 0,
                 outputs: 0,
                 witnesses: 0,
@@ -65,6 +68,14 @@ impl TxBuilder {
 impl<State> TxBuilderState<State> {
     fn current_pos(&self) -> usize {
         self.data.len() - FRAGMENT_OVERHEAD
+    }
+
+    // this is not exported to outside this module, as someone
+    // can set the validity after the witness, with would render
+    // the witness invalid, instead use set_validity when available
+    fn _set_validity(&mut self, start: BlockDate, end: BlockDate) {
+        self.tstruct.valid_start_date = start;
+        self.tstruct.valid_end_date = end;
     }
 }
 
@@ -85,9 +96,19 @@ impl TxBuilderState<SetPayload> {
     pub fn set_nopayload(self) -> TxBuilderState<SetIOs<NoExtra>> {
         self.set_payload(&NoExtra)
     }
+
+    pub fn set_validity(mut self, start: BlockDate, end: BlockDate) -> Self {
+        self._set_validity(start, end);
+        self
+    }
 }
 
 impl<P> TxBuilderState<SetIOs<P>> {
+    pub fn set_validity(mut self, start: BlockDate, end: BlockDate) -> Self {
+        self._set_validity(start, end);
+        self
+    }
+
     /// Set the inputs and outputs of this transaction
     ///
     /// This cannot accept more than 255 inputs, 255 outputs, since
@@ -108,6 +129,14 @@ impl<P> TxBuilderState<SetIOs<P>> {
 
         self.data.push(nb_inputs);
         self.data.push(nb_outputs);
+
+        fn write_date(data: &mut Vec<u8>, date: BlockDate) {
+            data.extend_from_slice(&date.epoch.to_be_bytes());
+            data.extend_from_slice(&date.slot_id.to_be_bytes());
+        }
+
+        write_date(&mut self.data, self.tstruct.valid_start_date);
+        write_date(&mut self.data, self.tstruct.valid_end_date);
 
         self.tstruct.nb_inputs = nb_inputs;
         self.tstruct.nb_outputs = nb_outputs;

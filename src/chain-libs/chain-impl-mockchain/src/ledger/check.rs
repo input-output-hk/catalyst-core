@@ -1,5 +1,6 @@
 use super::{Block0Error, Error};
 use crate::certificate;
+use crate::date::BlockDate;
 use crate::transaction::*;
 use crate::value::Value;
 use chain_addr::Address;
@@ -142,6 +143,12 @@ pub(super) fn valid_pool_update_certificate(reg: &certificate::PoolUpdate) -> Le
 pub enum TxVerifyError {
     #[error("too many outputs, expected maximum of {expected}, but received {actual}")]
     TooManyOutputs { expected: u8, actual: u8 },
+    #[error("Transaction is not yet within validity range")]
+    TransactionValidityInFuture,
+    #[error("Transaction validity expired")]
+    TransactionValidityExpired,
+    #[error("Transaction validity range is invalid")]
+    TransactionValidityRangeInvalid,
 }
 
 #[allow(clippy::absurd_extreme_comparisons)]
@@ -162,6 +169,26 @@ pub(super) fn valid_transaction_ios_number<P>(
         });
     }
     Ok(())
+}
+
+pub(super) fn valid_transaction_date<P>(
+    tx: &TransactionSlice<P>,
+    date: BlockDate,
+) -> Result<(), TxVerifyError> {
+    // if end and start are BlockDate::first, we expect that the transaction has no validity range
+    let (start, end) = tx.validity();
+    if end == start && end == BlockDate::first() {
+        return Ok(());
+    }
+    if start >= end {
+        return Err(TxVerifyError::TransactionValidityRangeInvalid);
+    } else if date < start {
+        return Err(TxVerifyError::TransactionValidityInFuture);
+    } else if date > end {
+        return Err(TxVerifyError::TransactionValidityExpired);
+    } else {
+        return Ok(());
+    }
 }
 
 #[cfg(test)]

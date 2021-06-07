@@ -468,13 +468,14 @@ pub struct TestLedger {
 }
 
 impl TestLedger {
-    pub fn apply_transaction(&mut self, fragment: Fragment) -> Result<(), Error> {
+    pub fn apply_transaction(&mut self, fragment: Fragment, date: BlockDate) -> Result<(), Error> {
         let fragment_id = fragment.hash();
         match fragment {
             Fragment::Transaction(tx) => {
                 match self.ledger.clone().apply_transaction(
                     &fragment_id,
                     &tx.as_slice(),
+                    date,
                     &self.parameters,
                 ) {
                     Err(err) => Err(err),

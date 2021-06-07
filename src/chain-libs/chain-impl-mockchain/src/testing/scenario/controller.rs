@@ -3,6 +3,7 @@ use crate::{
         DecryptedPrivateTally, EncryptedVoteTally, ExternalProposalId, Proposal, VoteCast,
         VotePlan, VoteTally,
     },
+    date::BlockDate,
     fee::LinearFee,
     key::Hash,
     ledger::Error as LedgerError,
@@ -113,7 +114,7 @@ impl Controller {
         let transaction = self
             .fragment_factory
             .transaction(from, to, test_ledger, funds);
-        test_ledger.apply_transaction(transaction)
+        test_ledger.apply_transaction(transaction, BlockDate::first())
     }
 
     pub fn register(

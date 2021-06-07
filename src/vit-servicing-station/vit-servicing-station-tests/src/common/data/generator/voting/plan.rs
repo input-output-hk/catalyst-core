@@ -197,7 +197,7 @@ impl ValidVotePlanGenerator {
                     .challenges
                     .iter_mut()
                     .find(|x| x.id == challenge_idx)
-                    .expect(&format!("Cannot find proposal with id: {}", challenge_idx));
+                    .expect(&format!("Cannot find challenge with id: {}", challenge_idx));
                 let proposal_funds = proposal_template.proposal_funds.parse().unwrap();
                 let chain_vote_options = proposal_template.chain_vote_options.clone();
 

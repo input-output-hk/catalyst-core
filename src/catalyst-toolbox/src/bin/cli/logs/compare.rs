@@ -1,5 +1,6 @@
+use catalyst_toolbox::logs::compare::{compare_logs, LogCmpStats};
 use catalyst_toolbox::logs::sentry;
-use catalyst_toolbox::logs::sentry::{LogCmpStats, RawLog, SentryFragmentLog};
+use catalyst_toolbox::logs::sentry::{RawLog, SentryFragmentLog};
 use chain_core::property::Fragment;
 use jcli_lib::utils::io;
 use jormungandr_lib::interfaces::{
@@ -107,7 +108,7 @@ impl Compare {
                 })
                 .collect();
 
-        let cmp_result = sentry::compare_logs(&sentry_logs_data, &permanent_logs_data);
+        let cmp_result = compare_logs(&sentry_logs_data, &permanent_logs_data);
         print_results(&cmp_result);
         Ok(())
     }

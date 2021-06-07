@@ -68,7 +68,7 @@ impl Compare {
             .iter()
             .enumerate()
             .filter_map(
-                |(i, raw_log)| match raw_log.get("message").map(|v| v.as_str()).flatten() {
+                |(i, raw_log)| match raw_log.get("message").and_then(|v| v.as_str()) {
                     None => {
                         // if we could deserialize should be safe to re-serialize it again
                         eprintln!(

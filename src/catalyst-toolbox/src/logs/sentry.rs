@@ -40,6 +40,16 @@ impl SentryLogClient {
         }
     }
 
+    pub fn get_raw_logs(&self) -> Result<String, Error> {
+        self.client
+            .request(Method::GET, self.api_url.clone())
+            .bearer_auth(&self.auth_token)
+            .send()?
+            .bytes()
+            .map(|b| std::str::from_utf8(&b).unwrap().to_string())
+            .map_err(Error::RequestError)
+    }
+
     pub fn get_json_logs(&self) -> Result<Vec<RawLog>, Error> {
         self.client
             .request(Method::GET, self.api_url.clone())

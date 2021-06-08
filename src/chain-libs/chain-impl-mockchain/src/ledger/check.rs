@@ -181,13 +181,13 @@ pub(super) fn valid_transaction_date<P>(
         return Ok(());
     }
     if start >= end {
-        return Err(TxVerifyError::TransactionValidityRangeInvalid);
+        Err(TxVerifyError::TransactionValidityRangeInvalid)
     } else if date < start {
-        return Err(TxVerifyError::TransactionValidityInFuture);
+        Err(TxVerifyError::TransactionValidityInFuture)
     } else if date > end {
-        return Err(TxVerifyError::TransactionValidityExpired);
+        Err(TxVerifyError::TransactionValidityExpired)
     } else {
-        return Ok(());
+        Ok(())
     }
 }
 

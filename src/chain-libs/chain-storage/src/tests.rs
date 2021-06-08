@@ -69,7 +69,7 @@ fn tag_non_existent_block() {
     let (_file, store) = prepare_store();
     match store.put_tag("tip", &BlockId(0).serialize_as_vec()) {
         Err(Error::BlockNotFound) => {}
-        err => panic!(err),
+        err => panic!("{:?}", err),
     }
 }
 

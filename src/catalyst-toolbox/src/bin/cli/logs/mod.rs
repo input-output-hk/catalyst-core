@@ -22,7 +22,9 @@ pub enum Error {
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub enum Logs {
+    /// Operate over sentry logs
     Sentry(sentry::SentryLogs),
+    /// Compare Sentry and Persistent fragment logs
     Compare(compare::Compare),
 }
 

@@ -10,6 +10,7 @@ use url::Url;
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub enum SentryLogs {
+    /// Download logs from sentry
     Download(Download),
 }
 

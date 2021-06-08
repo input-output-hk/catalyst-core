@@ -4,9 +4,12 @@ use jcli_lib::utils::io::open_file_write;
 
 use std::path::PathBuf;
 
+use chrono::{DateTime, FixedOffset};
 use std::str::FromStr;
 use structopt::StructOpt;
 use url::Url;
+
+const DATE_TIME_TAG: &str = "dateCreated";
 
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
@@ -21,16 +24,34 @@ pub enum Mode {
 }
 
 #[derive(StructOpt)]
+pub struct DateFilter {
+    #[structopt(parse(try_from_str = DateTime::parse_from_rfc3339))]
+    init: Option<DateTime<FixedOffset>>,
+    #[structopt(parse( try_from_str = DateTime::parse_from_rfc3339))]
+    end: Option<DateTime<FixedOffset>>,
+}
+
+#[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Download {
+    /// Sentry logs url
     #[structopt(long)]
     url: Url,
+
+    /// Sentry access token
     #[structopt(long)]
     token: String,
+
+    /// Path to the ouput file, will be overwritten if exists.
     #[structopt(long)]
     out: PathBuf,
+
+    /// Choose between latest logs or full logs download
     #[structopt(long, default_value = "latest")]
     mode: Mode,
+
+    #[structopt(flatten)]
+    dates: DateFilter,
 }
 
 impl FromStr for Mode {
@@ -63,8 +84,67 @@ impl Download {
             token,
             out,
             mode,
+            dates,
         } = self;
-        request_sentry_logs_and_dump_to_file(url, token, mode, out)
+        let dates = flip_dates_if_wrong(dates);
+
+        request_sentry_logs_and_dump_to_file(url, token, mode, dates, out)
+    }
+}
+
+fn filter_logs_by_date(
+    logs: impl Iterator<Item = RawLog>,
+    dates: DateFilter,
+) -> impl Iterator<Item = RawLog> {
+    let DateFilter { init, end } = dates;
+
+    logs.filter(move |l| {
+        let date_time = DateTime::parse_from_rfc3339(
+            l.get(DATE_TIME_TAG)
+                .expect("A dateCreated entry should be present in sentry logs")
+                .as_str()
+                .expect("dateCreated should be a str"),
+        )
+        .expect("A rfc3339 compatible DateTime str");
+        match init {
+            None => true,
+            Some(init_date) => init_date > date_time,
+        }
+    })
+    .take_while(move |l| {
+        let date_time = DateTime::parse_from_rfc3339(
+            l.get(DATE_TIME_TAG)
+                .expect("A dateCreated entry should be present in sentry logs")
+                .as_str()
+                .expect("dateCreated should be a str"),
+        )
+        .expect("A rfc3339 compatible DateTime str");
+        match end {
+            None => true,
+            Some(end_date) => end_date < date_time,
+        }
+    })
+}
+
+fn flip_dates_if_wrong(dates: DateFilter) -> DateFilter {
+    match dates {
+        DateFilter {
+            init: Some(init),
+            end: Some(end),
+        } => {
+            if init < end {
+                DateFilter {
+                    init: Some(init),
+                    end: Some(end),
+                }
+            } else {
+                DateFilter {
+                    init: Some(end),
+                    end: Some(init),
+                }
+            }
+        }
+        other => other,
     }
 }
 
@@ -72,15 +152,16 @@ fn request_sentry_logs_and_dump_to_file(
     url: Url,
     token: String,
     mode: Mode,
+    dates: DateFilter,
     out: PathBuf,
 ) -> Result<(), Error> {
     let client = SentryLogClient::new(url, token);
     let logs: Vec<RawLog> = match mode {
         Mode::Full => {
             let sentry_logs = LazySentryLogs::new(client, 1000);
-            sentry_logs.into_iter().collect()
+            filter_logs_by_date(sentry_logs.into_iter(), dates).collect()
         }
-        Mode::Latest => client.get_json_logs()?,
+        Mode::Latest => filter_logs_by_date(client.get_json_logs()?.into_iter(), dates).collect(),
     };
 
     dump_logs_to_json(&logs, out)

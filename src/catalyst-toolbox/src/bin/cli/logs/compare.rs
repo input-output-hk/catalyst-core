@@ -9,7 +9,6 @@ use jormungandr_lib::interfaces::{
 use serde::de::DeserializeOwned;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use url::Url;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -32,14 +31,8 @@ pub enum Error {
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Compare {
-    #[structopt(long, conflicts_with = "sentry-logs")]
-    sentry_url: Option<Url>,
-
-    #[structopt(long, conflicts_with = "sentry-logs")]
-    api_token: Option<String>,
-
     #[structopt(long)]
-    sentry_logs: Option<PathBuf>,
+    sentry_logs: PathBuf,
 
     #[structopt(long)]
     permanent_logs: PathBuf,
@@ -48,22 +41,10 @@ pub struct Compare {
 impl Compare {
     pub fn exec(self) -> Result<(), Error> {
         let Self {
-            sentry_url,
-            api_token,
             sentry_logs,
             permanent_logs,
         } = self;
-        let sentry_logs: Vec<RawLog> = if let Some(url) = sentry_url {
-            if let Some(token) = api_token {
-                load_sentry_logs_from_url(url, token)?
-            } else {
-                return Err(Error::MissingTokenParameter);
-            }
-        } else if let Some(path) = sentry_logs {
-            load_logs_from_file(path)?
-        } else {
-            unreachable!()
-        };
+        let sentry_logs: Vec<RawLog> = load_logs_from_file(sentry_logs)?;
 
         let sentry_logs_data: Vec<SentryFragmentLog> = sentry_logs
             .iter()
@@ -112,11 +93,6 @@ impl Compare {
         print_results(&cmp_result);
         Ok(())
     }
-}
-
-pub fn load_sentry_logs_from_url(url: Url, token: String) -> Result<Vec<sentry::RawLog>, Error> {
-    let client = sentry::SentryLogClient::new(url, token);
-    client.get_json_logs().map_err(Error::SentryLogsError)
 }
 
 pub fn load_logs_from_file<L: DeserializeOwned>(path: PathBuf) -> Result<Vec<L>, Error> {

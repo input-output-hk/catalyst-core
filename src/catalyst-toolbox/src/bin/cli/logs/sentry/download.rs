@@ -11,13 +11,6 @@ use url::Url;
 
 const DATE_TIME_TAG: &str = "dateCreated";
 
-#[derive(StructOpt)]
-#[structopt(rename_all = "kebab-case")]
-pub enum SentryLogs {
-    /// Download logs from sentry
-    Download(Download),
-}
-
 pub enum Mode {
     Full,
     Latest,
@@ -69,14 +62,6 @@ impl FromStr for Mode {
                 "Could not parse Mode {}. Any of 'f', 'full', 'l' or 'latest' is required",
                 s
             )),
-        }
-    }
-}
-
-impl SentryLogs {
-    pub fn exec(self) -> Result<(), Error> {
-        match self {
-            SentryLogs::Download(download) => download.exec(),
         }
     }
 }

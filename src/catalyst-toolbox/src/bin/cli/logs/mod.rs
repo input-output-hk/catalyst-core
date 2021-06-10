@@ -1,19 +1,12 @@
 mod compare;
 mod sentry;
 
-use catalyst_toolbox::logs::sentry::Error as SentryLogError;
 use structopt::StructOpt;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    SentryLogError(#[from] SentryLogError),
-
-    #[error(transparent)]
-    IoError(#[from] std::io::Error),
-
-    #[error(transparent)]
-    JsonError(#[from] serde_json::Error),
+    SentryError(#[from] sentry::Error),
 
     #[error(transparent)]
     CompareError(#[from] compare::Error),

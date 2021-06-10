@@ -9,6 +9,8 @@ pub mod server;
 #[cfg(feature = "legacy")]
 pub mod legacy;
 
+pub mod watch;
+
 mod convert;
 mod streaming;
 

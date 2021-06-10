@@ -4,6 +4,9 @@ use crate::recovery::tally::ValidationError;
 use reqwest::{blocking::Client, Method, Url};
 use std::str::FromStr;
 
+const REGISTERED_MESSAGE: &str = "User registered with public_key";
+const MALFORMED_QR_MESSAGE: &str = "malformed encryption or decryption payload";
+
 pub type RawLog = serde_json::Value;
 
 #[derive(Debug, thiserror::Error)]
@@ -101,6 +104,26 @@ impl IntoIterator for LazySentryLogs {
     }
 }
 
+trait Stat {
+    fn check_raw_log(&mut self, log: &RawLog);
+    fn report(&self);
+}
+
+pub struct SuccessfulScan {
+    total: usize,
+}
+
+pub struct MalformedQr {
+    total: usize,
+}
+
+pub enum SentryLogsStatChecker {
+    SuccessfulScans(SuccessfulScan),
+    MalformedQr(MalformedQr),
+}
+
+pub struct SentryLogsStatsExecutor(Vec<SentryLogsStatChecker>);
+
 #[derive(Debug, Clone)]
 pub struct SentryFragmentLog {
     pub public_key: String,
@@ -110,6 +133,66 @@ pub struct SentryFragmentLog {
     pub choice: u8,
     pub spending_counter: u64,
     pub fragment_id: String,
+}
+
+fn raw_log_message_starts_with(log: &RawLog, pattern: &str) -> bool {
+    log.get("message")
+        .and_then(|message| message.as_str().map(|s| s.starts_with(pattern)))
+        .unwrap_or(false)
+}
+
+impl Stat for SuccessfulScan {
+    fn check_raw_log(&mut self, log: &RawLog) {
+        if raw_log_message_starts_with(log, REGISTERED_MESSAGE) {
+            self.total += 1;
+        }
+    }
+
+    fn report(&self) {
+        println!("Total successful scans: {}", self.total);
+    }
+}
+
+impl Stat for MalformedQr {
+    fn check_raw_log(&mut self, log: &RawLog) {
+        if raw_log_message_starts_with(log, MALFORMED_QR_MESSAGE) {
+            self.total += 1;
+        }
+    }
+
+    fn report(&self) {
+        println!("Total malformed QR scans: {}", self.total);
+    }
+}
+
+impl Stat for SentryLogsStatChecker {
+    fn check_raw_log(&mut self, log: &RawLog) {
+        match self {
+            SentryLogsStatChecker::SuccessfulScans(scan) => scan.check_raw_log(log),
+            SentryLogsStatChecker::MalformedQr(qr) => qr.check_raw_log(log),
+        };
+    }
+
+    fn report(&self) {
+        match self {
+            SentryLogsStatChecker::SuccessfulScans(scan) => scan.report(),
+            SentryLogsStatChecker::MalformedQr(qr) => qr.report(),
+        };
+    }
+}
+
+impl Stat for SentryLogsStatsExecutor {
+    fn check_raw_log(&mut self, log: &RawLog) {
+        for checker in self.0.iter_mut() {
+            checker.check_raw_log(log);
+        }
+    }
+
+    fn report(&self) {
+        for checker in &self.0 {
+            checker.report();
+        }
+    }
 }
 
 impl From<SentryFragmentLog> for LogCmpFields {

@@ -22,12 +22,15 @@ pub enum Error {
 pub enum SentryLogs {
     /// Download logs from sentry
     Download(download::Download),
+    /// Stats report about logs
+    Stats(stats::Stats),
 }
 
 impl SentryLogs {
     pub fn exec(self) -> Result<(), Error> {
         match self {
             SentryLogs::Download(download) => download.exec(),
+            SentryLogs::Stats(stats) => stats.exec(),
         }
     }
 }

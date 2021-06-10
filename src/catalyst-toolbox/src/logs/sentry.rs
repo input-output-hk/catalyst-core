@@ -104,17 +104,17 @@ impl IntoIterator for LazySentryLogs {
     }
 }
 
-trait Stat {
+pub trait Stat {
     fn check_raw_log(&mut self, log: &RawLog);
     fn report(&self);
 }
 
 pub struct SuccessfulScan {
-    total: usize,
+    pub total: usize,
 }
 
 pub struct MalformedQr {
-    total: usize,
+    pub total: usize,
 }
 
 pub enum SentryLogsStatChecker {
@@ -165,6 +165,30 @@ impl Stat for MalformedQr {
     }
 }
 
+impl SuccessfulScan {
+    pub fn new() -> Self {
+        Default::default()
+    }
+}
+
+impl MalformedQr {
+    pub fn new() -> Self {
+        Default::default()
+    }
+}
+
+impl Default for SuccessfulScan {
+    fn default() -> Self {
+        Self { total: 0 }
+    }
+}
+
+impl Default for MalformedQr {
+    fn default() -> Self {
+        Self { total: 0 }
+    }
+}
+
 impl Stat for SentryLogsStatChecker {
     fn check_raw_log(&mut self, log: &RawLog) {
         match self {
@@ -192,6 +216,12 @@ impl Stat for SentryLogsStatsExecutor {
         for checker in &self.0 {
             checker.report();
         }
+    }
+}
+
+impl SentryLogsStatsExecutor {
+    pub fn new(checkers: Vec<SentryLogsStatChecker>) -> Self {
+        Self(checkers)
     }
 }
 

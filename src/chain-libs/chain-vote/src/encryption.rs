@@ -69,7 +69,7 @@ impl PublicKey {
     }
 
     /// Given a `message` represented as a group element, return a ciphertext.
-    fn encrypt_point<R>(&self, message: &GroupElement, rng: &mut R) -> Ciphertext
+    pub(crate) fn encrypt_point<R>(&self, message: &GroupElement, rng: &mut R) -> Ciphertext
     where
         R: RngCore + CryptoRng,
     {

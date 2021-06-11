@@ -1,11 +1,24 @@
+//! Non-interactive Zero Knowledge proof for correct ElGamal
+//! decryption. We use the notation and scheme presented in
+//! Figure 5 of the Treasury voting protocol spec.
+//!
+//! The proof is the following:
+//!
+//! `NIZK{(pk, C, M), (sk): M = Dec_sk(C) AND pk = g^sk}`
+//!
+//! which makes the statement, the public key, `pk`, the ciphertext
+//! `(e1, e2)`, and the message, `m`. The witness, on the other hand
+//! is the secret key, `sk`.
 use super::gang::{GroupElement, Scalar};
 use super::encryption::Ciphertext;
 use cryptoxide::digest::Digest;
 use cryptoxide::sha2::Sha512;
+use rand::{CryptoRng, RngCore};
+use crate::encryption::{PublicKey, SecretKey};
 
-/// Proof of discrete logarithm equivalence
+/// Proof of correct decryption.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Proof {
+pub struct ProofDecrypt {
     a1: GroupElement,
     a2: GroupElement,
     z: Scalar,
@@ -13,7 +26,45 @@ pub struct Proof {
 
 pub(crate) const PROOF_SIZE: usize = 162; // Scalar is 32 bytes
 
-impl Proof {
+impl ProofDecrypt {
+    /// Generate a decryption zero knowledge proof
+    pub fn generate<R>(
+        c: &Ciphertext,
+        pk: &PublicKey,
+        sk: &SecretKey,
+        rng: &mut R
+    ) -> Self
+    where
+        R: CryptoRng + RngCore
+    {
+        let w = Scalar::random(rng);
+        let a1 = GroupElement::generator() * w;
+        let a2 = c.e1 * w;
+        let d = c.e1 * sk.sk;
+        let e = challenge(pk, c, &d, &a1, &a2);
+        let z = sk.sk * &e.0 + w;
+
+        ProofDecrypt { a1, a2, z }
+    }
+
+    /// Verify a decryption zero knowledge proof
+    pub fn verify(
+        &self,
+        c: &Ciphertext,
+        m: &GroupElement,
+        pk: &PublicKey,
+    ) -> bool {
+        let d = c.e2 - m;
+        let e = challenge(pk, c, &d, &self.a1, &self.a2);
+        let gz = GroupElement::generator() * &self.z;
+        let he = pk.pk * &e.0;
+        let he_a1 = he + &self.a1;
+        let c1z = c.e1 * &self.z;
+        let de = d * &e.0;
+        let de_a2 = de + &self.a2;
+        gz == he_a1 && c1z == de_a2
+    }
+
     pub fn to_bytes(&self) -> [u8; PROOF_SIZE] {
         let mut output = [0u8; PROOF_SIZE];
         output[0..65].copy_from_slice(&self.a1.to_bytes());
@@ -37,31 +88,27 @@ impl Proof {
         let a2 = GroupElement::from_bytes(&slice[65..130])?;
         let z = Scalar::from_bytes(&slice[130..162])?;
 
-        let proof = Proof { a1, a2, z };
+        let proof = ProofDecrypt { a1, a2, z };
         Some(proof)
     }
 }
 
-/// Parameters for DLEQ where g1^a = h1, h2^a = h2
-pub struct DecrNIZK<'a> {
-    pub c: &'a Ciphertext,
-    pub g: &'a GroupElement,
-    pub h1: &'a GroupElement,
-    pub g2: &'a GroupElement,
-    pub h2: &'a GroupElement,
-}
-
+/// The challenge computation takes as input the two announcements
+/// computed in the sigma protocol, `a1` and `a2`, and the full
+/// statement.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct Challenge(Scalar);
 
 fn challenge(
-    c: &GroupElement,
+    pk: &PublicKey,
+    c: &Ciphertext,
     d: &GroupElement,
     a1: &GroupElement,
     a2: &GroupElement,
 ) -> Challenge {
     let mut out = [0u8; 64];
     let mut ctx = Sha512::new();
+    ctx.input(&pk.to_bytes());
     ctx.input(&c.to_bytes());
     ctx.input(&d.to_bytes());
     ctx.input(&a1.to_bytes());
@@ -70,55 +117,27 @@ fn challenge(
     Challenge(Scalar::from_bytes(&out[0..32]).unwrap())
 }
 
-/// Generate a decryption zero knowledge proof
-pub fn generate(w: &Scalar, share: &GroupElement, sk: &Scalar) -> Proof {
-    let a1 = GroupElement::generator() * w;
-    let a2 = share * w;
-    let d = share * sk;
-    let e = challenge(share, &d, &a1, &a2);
-    let z = sk * &e.0 + w;
-
-    Proof { a1, a2, z }
-}
-
-/// Verify a decryption zero knowledge proof
-pub fn verify(
-    share: &GroupElement,
-    decrypted_share: &GroupElement,
-    pk: &GroupElement,
-    proof: &Proof,
-) -> bool {
-    let e = challenge(share, decrypted_share, &proof.a1, &proof.a2);
-    let gz = GroupElement::generator() * &proof.z;
-    let he = pk * &e.0;
-    let he_a1 = he + &proof.a1;
-    let c1z = share * &proof.z;
-    let de = decrypted_share * &e.0;
-    let de_a2 = de + &proof.a2;
-    gz == he_a1 && c1z == de_a2
-}
-
 #[cfg(test)]
 mod tests {
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
 
     use super::{generate, verify, GroupElement, Scalar};
+    use crate::decr_nizk::ProofDecrypt;
+    use crate::encryption::{PublicKey, Keypair};
+    // use chain_crypto::algorithms::vrf::dleq::*;
 
     #[test]
     pub fn it_works() {
         let mut r = ChaCha20Rng::from_seed([0u8; 32]);
 
-        let sk = Scalar::random(&mut r);
-        let w = Scalar::random(&mut r);
-        let share_r = Scalar::random(&mut r);
+        let keypair = Keypair::generate(&mut r);
 
-        let pk = GroupElement::generator() * &sk;
-        let share = GroupElement::generator() * &share_r;
-        let decrypted_share = &share * &sk;
+        let plaintext = GroupElement::from_hash(&[0u8]);
+        let ciphertext = keypair.public_key.encrypt_point(&plaintext, &mut r);
 
-        let proof = generate(&w, &share, &sk);
-        let verified = verify(&share, &decrypted_share, &pk, &proof);
+        let proof = ProofDecrypt::generate(&ciphertext, &keypair.public_key, &keypair.secret_key, &mut rng);
+        let verified = proof.verify(&ciphertext, &plaintext, &keypair.public_key);
         assert_eq!(verified, true);
     }
 }

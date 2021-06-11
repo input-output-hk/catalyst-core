@@ -144,7 +144,9 @@ impl From<PublicKey> for MemberPublicKey {
 
 impl From<&MemberSecretKey> for MemberPublicKey {
     fn from(sk: &MemberSecretKey) -> Self {
-        MemberPublicKey(PublicKey{ pk: GroupElement::generator() * &sk.0.sk})
+        MemberPublicKey(PublicKey {
+            pk: GroupElement::generator() * &sk.0.sk,
+        })
     }
 }
 

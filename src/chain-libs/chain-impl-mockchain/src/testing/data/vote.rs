@@ -3,9 +3,9 @@ use chain_vote::{
     committee::MemberSecretKey, Crs, MemberCommunicationKey, MemberPublicKey, MemberState,
     TallyDecryptShare,
 };
+use rand::thread_rng;
 use rand_core::CryptoRng;
 use rand_core::RngCore;
-use rand::thread_rng;
 
 pub struct CommitteeMembersManager {
     members: Vec<CommitteeMember>,
@@ -64,7 +64,9 @@ impl CommitteeMember {
             .map(|proposal| {
                 let tally_state = proposal.tally.as_ref().unwrap();
                 let encrypted_tally = tally_state.private_encrypted().unwrap().0.clone();
-                encrypted_tally.finish(&mut thread_rng(), self.secret_key()).1
+                encrypted_tally
+                    .finish(&mut thread_rng(), self.secret_key())
+                    .1
             })
             .collect()
     }

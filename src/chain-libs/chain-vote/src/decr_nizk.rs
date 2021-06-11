@@ -9,12 +9,13 @@
 //! which makes the statement, the public key, `pk`, the ciphertext
 //! `(e1, e2)`, and the message, `m`. The witness, on the other hand
 //! is the secret key, `sk`.
-use super::gang::{GroupElement, Scalar};
+#![allow(clippy::many_single_char_names)]
 use super::encryption::Ciphertext;
+use super::gang::{GroupElement, Scalar};
+use crate::encryption::{PublicKey, SecretKey};
 use cryptoxide::digest::Digest;
 use cryptoxide::sha2::Sha512;
 use rand::{CryptoRng, RngCore};
-use crate::encryption::{PublicKey, SecretKey};
 
 /// Proof of correct decryption.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -28,14 +29,9 @@ pub(crate) const PROOF_SIZE: usize = 162; // Scalar is 32 bytes
 
 impl ProofDecrypt {
     /// Generate a decryption zero knowledge proof
-    pub fn generate<R>(
-        c: &Ciphertext,
-        pk: &PublicKey,
-        sk: &SecretKey,
-        rng: &mut R
-    ) -> Self
+    pub fn generate<R>(c: &Ciphertext, pk: &PublicKey, sk: &SecretKey, rng: &mut R) -> Self
     where
-        R: CryptoRng + RngCore
+        R: CryptoRng + RngCore,
     {
         let w = Scalar::random(rng);
         let a1 = GroupElement::generator() * &w;
@@ -48,12 +44,7 @@ impl ProofDecrypt {
     }
 
     /// Verify a decryption zero knowledge proof
-    pub fn verify(
-        &self,
-        c: &Ciphertext,
-        m: &GroupElement,
-        pk: &PublicKey,
-    ) -> bool {
+    pub fn verify(&self, c: &Ciphertext, m: &GroupElement, pk: &PublicKey) -> bool {
         let d = &c.e2 - m;
         let e = challenge(pk, c, &d, &self.a1, &self.a2);
         let gz = GroupElement::generator() * &self.z;
@@ -122,8 +113,8 @@ mod tests {
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
 
-    use super::{ProofDecrypt, GroupElement, Scalar};
-    use crate::encryption::{PublicKey, Keypair};
+    use super::{GroupElement, ProofDecrypt, Scalar};
+    use crate::encryption::{Keypair, PublicKey};
     // use chain_crypto::algorithms::vrf::dleq::*;
 
     #[test]
@@ -135,7 +126,12 @@ mod tests {
         let plaintext = GroupElement::from_hash(&[0u8]);
         let ciphertext = keypair.public_key.encrypt_point(&plaintext, &mut r);
 
-        let proof = ProofDecrypt::generate(&ciphertext, &keypair.public_key, &keypair.secret_key, &mut r);
+        let proof = ProofDecrypt::generate(
+            &ciphertext,
+            &keypair.public_key,
+            &keypair.secret_key,
+            &mut r,
+        );
         let verified = proof.verify(&ciphertext, &plaintext, &keypair.public_key);
         assert_eq!(verified, true);
     }

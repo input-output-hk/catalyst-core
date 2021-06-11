@@ -38,11 +38,11 @@ impl ProofDecrypt {
         R: CryptoRng + RngCore
     {
         let w = Scalar::random(rng);
-        let a1 = GroupElement::generator() * w;
-        let a2 = c.e1 * w;
-        let d = c.e1 * sk.sk;
+        let a1 = GroupElement::generator() * &w;
+        let a2 = &c.e1 * &w;
+        let d = &c.e1 * &sk.sk;
         let e = challenge(pk, c, &d, &a1, &a2);
-        let z = sk.sk * &e.0 + w;
+        let z = &sk.sk * &e.0 + &w;
 
         ProofDecrypt { a1, a2, z }
     }
@@ -54,12 +54,12 @@ impl ProofDecrypt {
         m: &GroupElement,
         pk: &PublicKey,
     ) -> bool {
-        let d = c.e2 - m;
+        let d = &c.e2 - m;
         let e = challenge(pk, c, &d, &self.a1, &self.a2);
         let gz = GroupElement::generator() * &self.z;
-        let he = pk.pk * &e.0;
+        let he = &pk.pk * &e.0;
         let he_a1 = he + &self.a1;
-        let c1z = c.e1 * &self.z;
+        let c1z = &c.e1 * &self.z;
         let de = d * &e.0;
         let de_a2 = de + &self.a2;
         gz == he_a1 && c1z == de_a2
@@ -122,8 +122,7 @@ mod tests {
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
 
-    use super::{generate, verify, GroupElement, Scalar};
-    use crate::decr_nizk::ProofDecrypt;
+    use super::{ProofDecrypt, GroupElement, Scalar};
     use crate::encryption::{PublicKey, Keypair};
     // use chain_crypto::algorithms::vrf::dleq::*;
 
@@ -136,7 +135,7 @@ mod tests {
         let plaintext = GroupElement::from_hash(&[0u8]);
         let ciphertext = keypair.public_key.encrypt_point(&plaintext, &mut r);
 
-        let proof = ProofDecrypt::generate(&ciphertext, &keypair.public_key, &keypair.secret_key, &mut rng);
+        let proof = ProofDecrypt::generate(&ciphertext, &keypair.public_key, &keypair.secret_key, &mut r);
         let verified = proof.verify(&ciphertext, &plaintext, &keypair.public_key);
         assert_eq!(verified, true);
     }

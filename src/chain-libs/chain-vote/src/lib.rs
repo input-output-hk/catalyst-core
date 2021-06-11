@@ -23,6 +23,8 @@ pub mod debug {
     }
 }
 
+use decr_nizk::ProofDecrypt;
+
 pub use committee::{
     MemberCommunicationKey, MemberCommunicationPublicKey, MemberPublicKey, MemberState,
 };
@@ -94,7 +96,7 @@ pub struct TallyDecryptShare {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct ProvenDecryptShare {
     r1: gang::GroupElement,
-    pi: decr_nizk::Proof,
+    pi: ProofDecrypt,
 }
 
 #[derive(Clone)]
@@ -139,15 +141,15 @@ impl EncryptedTally {
         let mut dshares = Vec::with_capacity(self.r.len());
         let mut r2s = Vec::with_capacity(self.r.len());
         for r in &self.r {
-            let (r1, r2) = r.elements();
-            let decrypted_share = r1 * &secret_key.0.sk;
-            let w = Scalar::random(rng);
-            let proof = decr_nizk::generate(&w, r1, &secret_key.0.sk);
+            // todo: we are decrypting twice, we can probably improve this
+            let decrypted_share = &r.e1 * &secret_key.0.sk;
+            let pk = MemberPublicKey::from(secret_key);
+            let proof = ProofDecrypt::generate(&r, &pk.0, &secret_key.0, rng);
             dshares.push(ProvenDecryptShare {
                 r1: decrypted_share,
                 pi: proof,
             });
-            r2s.push(r2.clone());
+            r2s.push(r.e2.clone());
         }
         (TallyState { r2s }, TallyDecryptShare { elements: dshares })
     }
@@ -203,7 +205,7 @@ impl ProvenDecryptShare {
         }
 
         let r1 = gang::GroupElement::from_bytes(&bytes[0..GroupElement::BYTES_LEN])?;
-        let proof = decr_nizk::Proof::from_slice(&bytes[GroupElement::BYTES_LEN..])?;
+        let proof = decr_nizk::ProofDecrypt::from_slice(&bytes[GroupElement::BYTES_LEN..])?;
         Some(ProvenDecryptShare { r1, pi: proof })
     }
 }
@@ -292,7 +294,7 @@ pub fn verify_decrypt_share(
     decrypt_share: &TallyDecryptShare,
 ) -> bool {
     for (element, r) in decrypt_share.elements.iter().zip(encrypted_tally.r.iter()) {
-        if !decr_nizk::verify(&r.elements().0, &element.r1, &pk.0.pk, &element.pi) {
+        if !element.pi.verify(&r, &(&r.e2 - &element.r1), &pk.0) {
             return false;
         }
     }

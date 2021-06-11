@@ -142,6 +142,12 @@ impl From<PublicKey> for MemberPublicKey {
     }
 }
 
+impl From<&MemberSecretKey> for MemberPublicKey {
+    fn from(sk: &MemberSecretKey) -> Self {
+        MemberPublicKey(PublicKey{ pk: GroupElement::generator() * &sk.0.sk})
+    }
+}
+
 impl MemberCommunicationKey {
     pub fn new<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         let sk = SecretKey::generate(rng);

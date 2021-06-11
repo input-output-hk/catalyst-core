@@ -1,5 +1,5 @@
 use super::gang::{GroupElement, Scalar};
-use super::gargamel::Ciphertext;
+use super::encryption::Ciphertext;
 use cryptoxide::digest::Digest;
 use cryptoxide::sha2::Sha512;
 

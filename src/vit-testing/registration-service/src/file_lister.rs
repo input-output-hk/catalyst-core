@@ -8,22 +8,27 @@ use walkdir::WalkDir;
 pub struct FolderDump {
     content: Vec<String>,
     #[serde(skip_serializing)]
-    root: PathBuf,
+    root: Option<PathBuf>,
 }
 
 impl FolderDump {
     pub fn new<P: AsRef<Path>>(root: P) -> Self {
         Self {
             content: Vec::new(),
-            root: root.as_ref().to_path_buf(),
+            root: Some(root.as_ref().to_path_buf()),
         }
     }
 
     pub fn push<S: Into<String>>(&mut self, data: S) {
         let item = data.into();
-        let root_file_name = format!("{}", self.root.display());
+        let root_file_name = format!("{}", self.root.as_ref().unwrap().display());
         self.content
             .push(item.replace(&root_file_name, "").replace("\\", "/"));
+    }
+
+    pub fn find_qr<S: Into<String>>(&self, job_id: S) -> Option<&String> {
+        let job_id = job_id.into();
+        self.content.iter().find(|x| x.contains(&job_id) && x.contains("png"))
     }
 }
 

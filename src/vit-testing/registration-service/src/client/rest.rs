@@ -5,6 +5,7 @@ use jortestkit::{prelude::Wait, process::WaitError};
 use std::io::Write;
 use std::path::Path;
 use thiserror::Error;
+use std::path::PathBuf;
 
 pub struct RegistrationRestClient {
     token: Option<String>,
@@ -63,9 +64,15 @@ impl RegistrationRestClient {
     pub fn download_qr<S: Into<String>, P: AsRef<Path>>(
         &self,
         id: S,
-        output: P,
-    ) -> Result<(), Error> {
-        self.download(format!("{}/qrcode_pin_1234.png", id.into()), output)
+        output_dir: P,
+    ) -> Result<PathBuf, Error> {
+        let folder_dump = self.list_files()?;
+        let id = id.into();
+        let qr_code_file_sub_url = folder_dump.find_qr(id.clone()).ok_or(Error::CannotFindQrCode(id.clone()))?;
+        let file_name =  Path::new(&qr_code_file_sub_url).file_name().ok_or(Error::CannotFindQrCode(id.clone()))?;
+        let output_path = output_dir.as_ref().join(file_name);
+        self.download(Self::rem_first(qr_code_file_sub_url), output_path.clone())?;
+        Ok(output_path.to_path_buf())
     }
 
     pub fn download<S: Into<String>, P: AsRef<Path>>(
@@ -73,10 +80,22 @@ impl RegistrationRestClient {
         sub_location: S,
         output: P,
     ) -> Result<(), Error> {
-        let content = self.get(format!("api/job/files/get/{}", sub_location.into()))?;
+
+        let local_path = format!("api/job/files/get/{}", sub_location.into());
+        let path = self.path(local_path);
+        let client = reqwest::blocking::Client::new();
+        let request = self.set_header(client.get(&path));
+        let bytes = request.send()?.bytes()?;
         let mut file = std::fs::File::create(&output)?;
-        file.write_all(content.as_bytes())?;
+        file.write_all(&bytes)?;
         Ok(())
+    }
+
+    pub fn get_catalyst_sk<S: Into<String>>(
+        &self,
+        id: S,
+    ) -> Result<String, Error> {
+        Ok(self.get(format!("api/job/files/get/{}/catalyst-vote.skey", id.into()))?)
     }
 
     pub fn job_new(&self, request: Request) -> Result<String, Error> {
@@ -89,9 +108,10 @@ impl RegistrationRestClient {
             .send()?
             .text()
             .map_err(Into::into)
+            .map(|text| text.replace("\"",""))
     }
 
-    pub fn job_status<S: Into<String>>(&self, id: S) -> Result<State, Error> {
+    pub fn job_status<S: Into<String>>(&self, id: S) -> Result<Result<State,crate::context::Error>, Error> {
         let content = self.get(format!("api/job/status/{}", id.into()))?;
         serde_yaml::from_str(&content).map_err(Into::into)
     }
@@ -104,8 +124,10 @@ impl RegistrationRestClient {
         let job_id = id.into();
         loop {
             let response = self.job_status(job_id.clone())?;
-            if let State::Finished { .. } = response {
-                return Ok(response);
+            if let Ok(response) = response {
+                if let State::Finished { .. } = response {
+                    return Ok(response);
+                }
             }
             wait.check_timeout()?;
             wait.advance();
@@ -120,10 +142,18 @@ impl RegistrationRestClient {
         }
         false
     }
+
+    fn rem_first(value: &str) -> &str {
+        let mut chars = value.chars();
+        chars.next();
+        chars.as_str()
+    }
 }
 
 #[derive(Error, Debug)]
-pub enum Error {
+pub enum Error {    
+    #[error("qr code not found for job id ({0})")]
+    CannotFindQrCode(String),
     #[error("internal rest error")]
     ReqwestError(#[from] reqwest::Error),
     #[error("json response serialization error")]
@@ -134,4 +164,6 @@ pub enum Error {
     IoError(#[from] std::io::Error),
     #[error("timeout error")]
     WaitError(#[from] WaitError),
+    #[error("unexpected response: {0}")]
+    UnexpectedResponse(String),
 }

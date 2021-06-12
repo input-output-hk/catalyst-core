@@ -86,7 +86,7 @@ pub struct StatusCommand {
 }
 
 impl StatusCommand {
-    pub fn exec(self, rest: RegistrationRestClient) -> Result<State, Error> {
+    pub fn exec(self, rest: RegistrationRestClient) -> Result<Result<State,crate::context::Error>, Error> {
         rest.job_status(self.job_id).map_err(Into::into)
     }
 }

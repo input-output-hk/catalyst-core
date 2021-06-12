@@ -1,9 +1,8 @@
-use crate::non_functional::build_load_config;
-use crate::non_functional::private_vote_test_scenario;
-use crate::setup::vitup_setup;
+use crate::common::{
+    load::build_load_config, load::private_vote_test_scenario, vitup_setup, VoteTiming,
+};
 use assert_fs::TempDir;
 use iapyx::{IapyxLoad, Protocol};
-use jormungandr_testing_utils::testing::node::time;
 use jortestkit::measurement::Status;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::scenario::network::setup_network;
@@ -56,7 +55,7 @@ pub fn load_test_public_100_000_votes() {
         assert!(benchmark.status() == Status::Green, "too low efficiency");
     }
 
-    vote_timing.wait_for_vote_end(nodes.get(0).unwrap().explorer());
+    vote_timing.wait_for_tally_start(nodes.get(0).unwrap().explorer());
 
     let mut committee = controller.wallet("committee").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();

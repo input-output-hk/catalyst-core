@@ -68,6 +68,10 @@ impl WalletProxyController {
         self.settings.address()
     }
 
+    pub fn rest(&self) -> JormungandrRest {
+        JormungandrRest::new(self.address())
+    }
+
     pub fn as_named_process(&self) -> NamedProcess {
         NamedProcess::new(self.alias().to_string(), self.process.id() as usize)
     }

@@ -7,4 +7,4 @@ pub mod rest;
 pub mod service;
 
 pub use args::{Error, TriggerServiceCommand};
-pub use context::Context;
+pub use context::{Context,State};

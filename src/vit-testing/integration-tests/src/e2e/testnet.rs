@@ -6,16 +6,22 @@ use snapshot_trigger_service::{client::rest::SnapshotRestClient, config::JobPara
 
 #[test]
 pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
-
-    let registration_token = std::env::var("REGISTRATION_TOKEN").unwrap_or_else(|_| "REGISTRATION_TOKEN not defined".to_owned());
-    let registration_address = std::env::var("REGISTRATION_ADDRESS").unwrap_or_else(|_| "REGISTRATION_ADDRESS not defined".to_owned());
-    let snapshot_token = std::env::var("SNAPSHOT_TOKEN").unwrap_or_else(|_| "SNAPSHOT_TOKEN not defined".to_owned());
-    let snapshot_address = std::env::var("SNAPSHOT_ADDRESS").unwrap_or_else(|_| "SNAPSHOT_ADDRESS not defined".to_owned());
-    let payment_skey = std::env::var("PAYMENT_SKEY").unwrap_or_else(|_| "PAYMENT_SKEY not defined".to_owned());
-    let payment_vkey = std::env::var("PAYMENT_VKEY").unwrap_or_else(|_| "PAYMENT_VKEY not defined".to_owned());
-    let stake_skey = std::env::var("STAKE_SKEY").unwrap_or_else(|_| "STAKE_SKEY not defined".to_owned());
-    let stake_vkey = std::env::var("STAKE_VKEY").unwrap_or_else(|_| "STAKE_VKEY not defined".to_owned());
-
+    let registration_token = std::env::var("REGISTRATION_TOKEN")
+        .unwrap_or_else(|_| "REGISTRATION_TOKEN not defined".to_owned());
+    let registration_address = std::env::var("REGISTRATION_ADDRESS")
+        .unwrap_or_else(|_| "REGISTRATION_ADDRESS not defined".to_owned());
+    let snapshot_token =
+        std::env::var("SNAPSHOT_TOKEN").unwrap_or_else(|_| "SNAPSHOT_TOKEN not defined".to_owned());
+    let snapshot_address = std::env::var("SNAPSHOT_ADDRESS")
+        .unwrap_or_else(|_| "SNAPSHOT_ADDRESS not defined".to_owned());
+    let payment_skey =
+        std::env::var("PAYMENT_SKEY").unwrap_or_else(|_| "PAYMENT_SKEY not defined".to_owned());
+    let payment_vkey =
+        std::env::var("PAYMENT_VKEY").unwrap_or_else(|_| "PAYMENT_VKEY not defined".to_owned());
+    let stake_skey =
+        std::env::var("STAKE_SKEY").unwrap_or_else(|_| "STAKE_SKEY not defined".to_owned());
+    let stake_vkey =
+        std::env::var("STAKE_VKEY").unwrap_or_else(|_| "STAKE_VKEY not defined".to_owned());
 
     let registration_client = RegistrationRestClient::new_with_token(
         registration_token.to_string(),

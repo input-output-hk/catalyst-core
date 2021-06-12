@@ -9,7 +9,6 @@ use chain_impl_mockchain::{
 };
 use hdkeygen::account::AccountId;
 use jormungandr_lib::interfaces::AccountIdentifier;
-use std::collections::HashSet;
 use std::str::FromStr;
 use thiserror::Error;
 use wallet::Settings;
@@ -103,7 +102,7 @@ impl Wallet {
         self.inner.confirm_transaction(id);
     }
 
-    pub fn pending_transactions(&self) -> HashSet<FragmentId> {
+    pub fn pending_transactions(&self) -> Vec<FragmentId> {
         self.inner.pending_transactions().into_iter().collect()
     }
 

@@ -1,6 +1,7 @@
 use crate::logs::compare::LogCmpFields;
 use crate::recovery::tally::ValidationError;
 
+use regex::Regex;
 use reqwest::{blocking::Client, Method, Url};
 use std::str::FromStr;
 
@@ -64,7 +65,6 @@ impl SentryLogClient {
 
     pub fn get_json_logs_chunks(&self, chunk: usize) -> Result<Vec<RawLog>, Error> {
         let api_url = self.api_url.join(&format!("?&cursor=0:{}:0", chunk))?;
-        println!("{}", api_url);
         self.client
             .request(Method::GET, api_url)
             .bearer_auth(&self.auth_token)
@@ -117,9 +117,17 @@ pub struct MalformedQr {
     pub total: usize,
 }
 
+pub struct RegexMatch {
+    key: String,
+    re: Regex,
+    total_checked: usize,
+    pub matches: usize,
+}
+
 pub enum SentryLogsStatChecker {
     SuccessfulScans(SuccessfulScan),
     MalformedQr(MalformedQr),
+    RegexMatch(RegexMatch),
 }
 
 pub struct SentryLogsStatsExecutor(Vec<SentryLogsStatChecker>);
@@ -165,6 +173,27 @@ impl Stat for MalformedQr {
     }
 }
 
+impl Stat for RegexMatch {
+    fn check_raw_log(&mut self, log: &RawLog) {
+        self.total_checked += 1;
+        if let Some(entry) = log.get(&self.key).and_then(|value| value.as_str()) {
+            if self.re.is_match(entry) {
+                self.matches += 1;
+            }
+        }
+    }
+
+    fn report(&self) {
+        println!(
+            "Total matches for [{}]: {}/{}, {}%",
+            self.re.as_str(),
+            self.matches,
+            self.total_checked,
+            (self.matches * 100) / self.total_checked
+        );
+    }
+}
+
 impl SuccessfulScan {
     pub fn new() -> Self {
         Default::default()
@@ -174,6 +203,17 @@ impl SuccessfulScan {
 impl MalformedQr {
     pub fn new() -> Self {
         Default::default()
+    }
+}
+
+impl RegexMatch {
+    pub fn new(re: Regex, key: String) -> Self {
+        Self {
+            re,
+            key,
+            total_checked: 0,
+            matches: 0,
+        }
     }
 }
 
@@ -194,6 +234,7 @@ impl Stat for SentryLogsStatChecker {
         match self {
             SentryLogsStatChecker::SuccessfulScans(scan) => scan.check_raw_log(log),
             SentryLogsStatChecker::MalformedQr(qr) => qr.check_raw_log(log),
+            SentryLogsStatChecker::RegexMatch(re) => re.check_raw_log(log),
         };
     }
 
@@ -201,6 +242,7 @@ impl Stat for SentryLogsStatChecker {
         match self {
             SentryLogsStatChecker::SuccessfulScans(scan) => scan.report(),
             SentryLogsStatChecker::MalformedQr(qr) => qr.report(),
+            SentryLogsStatChecker::RegexMatch(re) => re.report(),
         };
     }
 }

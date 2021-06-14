@@ -326,6 +326,7 @@ dependencies = [
  "log",
  "rand 0.8.3",
  "rand_chacha 0.3.0",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",

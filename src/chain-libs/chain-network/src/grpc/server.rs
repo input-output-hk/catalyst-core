@@ -16,7 +16,7 @@ use tonic::metadata::MetadataValue;
 use std::convert::TryFrom;
 use std::net::SocketAddr;
 
-pub type Server<T> = proto::node_server::NodeServer<NodeService<T>>;
+pub type Server<T> = proto::node::node_server::NodeServer<NodeService<T>>;
 
 /// Builder to customize the gRPC server.
 #[derive(Default)]
@@ -112,19 +112,19 @@ fn remote_addr_to_peer(maybe_addr: Option<SocketAddr>) -> Result<Peer, Status> {
 }
 
 #[tonic::async_trait]
-impl<T> proto::node_server::Node for NodeService<T>
+impl<T> proto::node::node_server::Node for NodeService<T>
 where
     T: Node,
 {
     async fn handshake(
         &self,
-        req: tonic::Request<proto::HandshakeRequest>,
-    ) -> Result<tonic::Response<proto::HandshakeResponse>, tonic::Status> {
+        req: tonic::Request<proto::node::HandshakeRequest>,
+    ) -> Result<tonic::Response<proto::node::HandshakeResponse>, tonic::Status> {
         let peer = remote_addr_to_peer(req.remote_addr())?;
         let req = req.into_inner();
         let nonce = &req.nonce;
         let hr = self.inner.handshake(peer, nonce).await?;
-        let res = proto::HandshakeResponse {
+        let res = proto::node::HandshakeResponse {
             version: PROTOCOL_VERSION,
             block0: hr.block0_id.as_bytes().into(),
             node_id: hr.auth.id().as_bytes().into(),
@@ -136,24 +136,24 @@ where
 
     async fn client_auth(
         &self,
-        req: tonic::Request<proto::ClientAuthRequest>,
-    ) -> Result<tonic::Response<proto::ClientAuthResponse>, tonic::Status> {
+        req: tonic::Request<proto::node::ClientAuthRequest>,
+    ) -> Result<tonic::Response<proto::node::ClientAuthResponse>, tonic::Status> {
         let peer = remote_addr_to_peer(req.remote_addr())?;
         let req = req.into_inner();
         let node_id = NodeId::try_from(&req.node_id[..])?;
         let auth = node_id.authenticated(&req.signature)?;
         self.inner.client_auth(peer, auth).await?;
-        let res = proto::ClientAuthResponse {};
+        let res = proto::node::ClientAuthResponse {};
         Ok(tonic::Response::new(res))
     }
 
     async fn tip(
         &self,
-        _: tonic::Request<proto::TipRequest>,
-    ) -> Result<tonic::Response<proto::TipResponse>, tonic::Status> {
+        _: tonic::Request<proto::node::TipRequest>,
+    ) -> Result<tonic::Response<proto::node::TipResponse>, tonic::Status> {
         let service = self.block_service()?;
         let header = service.tip().await?;
-        let res = proto::TipResponse {
+        let res = proto::node::TipResponse {
             block_header: header.into(),
         };
         Ok(tonic::Response::new(res))
@@ -161,11 +161,11 @@ where
 
     async fn peers(
         &self,
-        req: tonic::Request<proto::PeersRequest>,
-    ) -> Result<tonic::Response<proto::PeersResponse>, tonic::Status> {
+        req: tonic::Request<proto::node::PeersRequest>,
+    ) -> Result<tonic::Response<proto::node::PeersResponse>, tonic::Status> {
         let service = self.gossip_service()?;
         let peers = service.peers(req.into_inner().limit).await?;
-        let res = proto::PeersResponse {
+        let res = proto::node::PeersResponse {
             peers: peers
                 .nodes
                 .to_vec()
@@ -180,7 +180,7 @@ where
 
     async fn get_blocks(
         &self,
-        req: tonic::Request<proto::BlockIds>,
+        req: tonic::Request<proto::types::BlockIds>,
     ) -> Result<tonic::Response<Self::GetBlocksStream>, tonic::Status> {
         let service = self.block_service()?;
         let ids = block::try_ids_from_iter(req.into_inner().ids)?;
@@ -192,7 +192,7 @@ where
 
     async fn get_headers(
         &self,
-        req: tonic::Request<proto::BlockIds>,
+        req: tonic::Request<proto::types::BlockIds>,
     ) -> Result<tonic::Response<Self::GetHeadersStream>, tonic::Status> {
         let service = self.block_service()?;
         let ids = block::try_ids_from_iter(req.into_inner().ids)?;
@@ -205,7 +205,7 @@ where
 
     async fn get_fragments(
         &self,
-        req: tonic::Request<proto::FragmentIds>,
+        req: tonic::Request<proto::types::FragmentIds>,
     ) -> Result<tonic::Response<Self::GetFragmentsStream>, tonic::Status> {
         let service = self.fragment_service()?;
         let ids = fragment::try_ids_from_iter(req.into_inner().ids)?;
@@ -218,7 +218,7 @@ where
 
     async fn pull_headers(
         &self,
-        req: tonic::Request<proto::PullHeadersRequest>,
+        req: tonic::Request<proto::node::PullHeadersRequest>,
     ) -> Result<tonic::Response<Self::PullHeadersStream>, tonic::Status> {
         let service = self.block_service()?;
         let (from, to) = {
@@ -236,7 +236,7 @@ where
 
     async fn pull_blocks(
         &self,
-        req: tonic::Request<proto::PullBlocksRequest>,
+        req: tonic::Request<proto::node::PullBlocksRequest>,
     ) -> Result<tonic::Response<Self::PullBlocksStream>, tonic::Status> {
         let service = self.block_service()?;
         let req = req.into_inner();
@@ -251,7 +251,7 @@ where
 
     async fn pull_blocks_to_tip(
         &self,
-        req: tonic::Request<proto::PullBlocksToTipRequest>,
+        req: tonic::Request<proto::node::PullBlocksToTipRequest>,
     ) -> Result<tonic::Response<Self::PullBlocksToTipStream>, tonic::Status> {
         let service = self.block_service()?;
         let from = block::try_ids_from_iter(req.into_inner().from)?;
@@ -261,22 +261,22 @@ where
 
     async fn push_headers(
         &self,
-        req: tonic::Request<tonic::Streaming<proto::Header>>,
-    ) -> Result<tonic::Response<proto::PushHeadersResponse>, tonic::Status> {
+        req: tonic::Request<tonic::Streaming<proto::types::Header>>,
+    ) -> Result<tonic::Response<proto::node::PushHeadersResponse>, tonic::Status> {
         let service = self.block_service()?;
         let stream = InboundStream::new(req.into_inner());
         service.push_headers(Box::pin(stream)).await?;
-        Ok(tonic::Response::new(proto::PushHeadersResponse {}))
+        Ok(tonic::Response::new(proto::node::PushHeadersResponse {}))
     }
 
     async fn upload_blocks(
         &self,
-        req: tonic::Request<tonic::Streaming<proto::Block>>,
-    ) -> Result<tonic::Response<proto::UploadBlocksResponse>, tonic::Status> {
+        req: tonic::Request<tonic::Streaming<proto::types::Block>>,
+    ) -> Result<tonic::Response<proto::node::UploadBlocksResponse>, tonic::Status> {
         let service = self.block_service()?;
         let stream = InboundStream::new(req.into_inner());
         service.upload_blocks(Box::pin(stream)).await?;
-        Ok(tonic::Response::new(proto::UploadBlocksResponse {}))
+        Ok(tonic::Response::new(proto::node::UploadBlocksResponse {}))
     }
 
     type BlockSubscriptionStream =
@@ -284,7 +284,7 @@ where
 
     async fn block_subscription(
         &self,
-        req: tonic::Request<tonic::Streaming<proto::Header>>,
+        req: tonic::Request<tonic::Streaming<proto::types::Header>>,
     ) -> Result<tonic::Response<Self::BlockSubscriptionStream>, tonic::Status> {
         let service = self.block_service()?;
         let peer = remote_addr_to_peer(req.remote_addr())?;
@@ -299,7 +299,7 @@ where
 
     async fn fragment_subscription(
         &self,
-        req: tonic::Request<tonic::Streaming<proto::Fragment>>,
+        req: tonic::Request<tonic::Streaming<proto::types::Fragment>>,
     ) -> Result<tonic::Response<Self::FragmentSubscriptionStream>, tonic::Status> {
         let service = self.fragment_service()?;
         let peer = remote_addr_to_peer(req.remote_addr())?;
@@ -316,7 +316,7 @@ where
 
     async fn gossip_subscription(
         &self,
-        req: tonic::Request<tonic::Streaming<proto::Gossip>>,
+        req: tonic::Request<tonic::Streaming<proto::node::Gossip>>,
     ) -> Result<tonic::Response<Self::GossipSubscriptionStream>, tonic::Status> {
         let service = self.gossip_service()?;
         let peer = remote_addr_to_peer(req.remote_addr())?;

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package iohk.chain.watch;
+import "types.proto";
 
-message Block { bytes content = 1; }
+package iohk.chain.watch;
 
 message BlockSubscriptionRequest {}
 
@@ -12,21 +12,19 @@ message MempoolSubscriptionRequest {}
 
 message SyncMultiverseRequest {
   // send blocks with this chain_length or greater
-  uint32 from = 1;
+  uint32 from_length = 1;
 }
-
-message BlockId { bytes content = 1; }
 
 service Watch {
   // get a stream of blocks succesfully processed by the node, this means they
   // are already validated.
   // the parent of a block will always be streamed before the block itself.
-  rpc BlockSubscription(BlockSubscriptionRequest) returns (stream Block);
+  rpc BlockSubscription(BlockSubscriptionRequest) returns (stream types.Block);
 
   // get tip updates
-  rpc TipSubscription(TipSubscriptionRequest) returns (stream BlockId);
+  rpc TipSubscription(TipSubscriptionRequest) returns (stream types.Header);
 
   // fetch all blocks from the given initial chainlength to the tip, from all
   // possible branches and in increasing order
-  rpc SyncMultiverse(SyncMultiverseRequest) returns (stream Block);
+  rpc SyncMultiverse(SyncMultiverseRequest) returns (stream types.Block);
 }

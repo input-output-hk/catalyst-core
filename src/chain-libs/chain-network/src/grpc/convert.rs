@@ -79,56 +79,56 @@ where
     ids.into_iter().map(|id| id.as_ref().to_vec()).collect()
 }
 
-impl FromProtobuf<proto::Block> for Block {
-    fn from_message(message: proto::Block) -> Result<Self, Error> {
+impl FromProtobuf<proto::types::Block> for Block {
+    fn from_message(message: proto::types::Block) -> Result<Self, Error> {
         Ok(Block::from_bytes(message.content))
     }
 }
 
 impl IntoProtobuf for Block {
-    type Message = proto::Block;
+    type Message = proto::types::Block;
 
-    fn into_message(self) -> proto::Block {
-        proto::Block {
+    fn into_message(self) -> proto::types::Block {
+        proto::types::Block {
             content: self.into(),
         }
     }
 }
 
-impl FromProtobuf<proto::Header> for Header {
-    fn from_message(message: proto::Header) -> Result<Self, Error> {
+impl FromProtobuf<proto::types::Header> for Header {
+    fn from_message(message: proto::types::Header) -> Result<Self, Error> {
         Ok(Header::from_bytes(message.content))
     }
 }
 
 impl IntoProtobuf for Header {
-    type Message = proto::Header;
+    type Message = proto::types::Header;
 
-    fn into_message(self) -> proto::Header {
-        proto::Header {
+    fn into_message(self) -> proto::types::Header {
+        proto::types::Header {
             content: self.into(),
         }
     }
 }
 
-impl FromProtobuf<proto::Fragment> for Fragment {
-    fn from_message(message: proto::Fragment) -> Result<Self, Error> {
+impl FromProtobuf<proto::types::Fragment> for Fragment {
+    fn from_message(message: proto::types::Fragment) -> Result<Self, Error> {
         Ok(Fragment::from_bytes(message.content))
     }
 }
 
 impl IntoProtobuf for Fragment {
-    type Message = proto::Fragment;
+    type Message = proto::types::Fragment;
 
-    fn into_message(self) -> proto::Fragment {
-        proto::Fragment {
+    fn into_message(self) -> proto::types::Fragment {
+        proto::types::Fragment {
             content: self.into(),
         }
     }
 }
 
-impl FromProtobuf<proto::Gossip> for Gossip {
-    fn from_message(message: proto::Gossip) -> Result<Self, Error> {
+impl FromProtobuf<proto::node::Gossip> for Gossip {
+    fn from_message(message: proto::node::Gossip) -> Result<Self, Error> {
         let gossip = Gossip {
             nodes: message
                 .nodes
@@ -142,10 +142,10 @@ impl FromProtobuf<proto::Gossip> for Gossip {
 }
 
 impl IntoProtobuf for Gossip {
-    type Message = proto::Gossip;
+    type Message = proto::node::Gossip;
 
-    fn into_message(self) -> proto::Gossip {
-        proto::Gossip {
+    fn into_message(self) -> proto::node::Gossip {
+        proto::node::Gossip {
             nodes: self
                 .nodes
                 .into_vec()
@@ -156,8 +156,8 @@ impl IntoProtobuf for Gossip {
     }
 }
 
-impl FromProtobuf<proto::PeersResponse> for Gossip {
-    fn from_message(message: proto::PeersResponse) -> Result<Self, Error> {
+impl FromProtobuf<proto::node::PeersResponse> for Gossip {
+    fn from_message(message: proto::node::PeersResponse) -> Result<Self, Error> {
         let gossip = Gossip {
             nodes: message
                 .peers
@@ -170,9 +170,9 @@ impl FromProtobuf<proto::PeersResponse> for Gossip {
     }
 }
 
-impl FromProtobuf<proto::BlockEvent> for BlockEvent {
-    fn from_message(msg: proto::BlockEvent) -> Result<Self, Error> {
-        use proto::block_event::Item::*;
+impl FromProtobuf<proto::node::BlockEvent> for BlockEvent {
+    fn from_message(msg: proto::node::BlockEvent) -> Result<Self, Error> {
+        use proto::node::block_event::Item::*;
 
         match msg.item {
             Some(Announce(header)) => {
@@ -197,26 +197,26 @@ impl FromProtobuf<proto::BlockEvent> for BlockEvent {
 }
 
 impl IntoProtobuf for BlockEvent {
-    type Message = proto::BlockEvent;
+    type Message = proto::node::BlockEvent;
 
-    fn into_message(self) -> proto::BlockEvent {
-        use proto::block_event::Item;
+    fn into_message(self) -> proto::node::BlockEvent {
+        use proto::node::block_event::Item;
         let item = match self {
             BlockEvent::Announce(header) => Item::Announce(header.into_message()),
             BlockEvent::Solicit(block_ids) => {
-                let block_ids = proto::BlockIds {
+                let block_ids = proto::types::BlockIds {
                     ids: ids_into_repeated_bytes(block_ids.iter()),
                 };
                 Item::Solicit(block_ids)
             }
             BlockEvent::Missing(ChainPullRequest { from, to }) => {
-                let request = proto::PullHeadersRequest {
+                let request = proto::node::PullHeadersRequest {
                     from: ids_into_repeated_bytes(from.iter()),
                     to: to.as_bytes().into(),
                 };
                 Item::Missing(request)
             }
         };
-        proto::BlockEvent { item: Some(item) }
+        proto::node::BlockEvent { item: Some(item) }
     }
 }

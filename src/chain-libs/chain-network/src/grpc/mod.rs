@@ -1,7 +1,4 @@
-// Generated protobuf/gRPC code.
-mod proto {
-    tonic::include_proto!("iohk.chain.node");
-}
+mod proto;
 
 pub mod client;
 pub mod server;

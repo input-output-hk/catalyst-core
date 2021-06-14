@@ -121,7 +121,6 @@ fn challenge(
 mod tests {
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
-
     use super::{GroupElement, ProofDecrypt};
     use crate::encryption::Keypair;
     // use chain_crypto::algorithms::vrf::dleq::*;

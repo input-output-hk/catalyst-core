@@ -119,10 +119,10 @@ fn challenge(
 
 #[cfg(test)]
 mod tests {
-    use rand_chacha::ChaCha20Rng;
-    use rand_core::SeedableRng;
     use super::{GroupElement, ProofDecrypt};
     use crate::encryption::Keypair;
+    use rand_chacha::ChaCha20Rng;
+    use rand_core::SeedableRng;
     // use chain_crypto::algorithms::vrf::dleq::*;
 
     #[test]

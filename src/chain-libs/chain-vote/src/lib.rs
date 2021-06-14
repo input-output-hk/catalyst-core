@@ -220,7 +220,9 @@ impl TallyDecryptShare {
     /// Size of the byte representation for a tally decrypt share
     /// with the given number of options.
     pub fn bytes_len(options: usize) -> usize {
-        (decr_nizk::PROOF_SIZE + GroupElement::BYTES_LEN).checked_mul(options).expect("integer overflow")
+        (decr_nizk::PROOF_SIZE + GroupElement::BYTES_LEN)
+            .checked_mul(options)
+            .expect("integer overflow")
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
@@ -234,7 +236,6 @@ impl TallyDecryptShare {
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() % ProvenDecryptShare::SIZE != 0 {
-            println!("invalid size: {:?}. Expected multiple of {:?} ", bytes.len(), ProvenDecryptShare::SIZE);
             return None;
         }
 
@@ -351,6 +352,7 @@ impl Tally {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::encryption::Keypair;
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
 
@@ -617,5 +619,37 @@ mod tests {
         let bytes = tally.to_bytes();
         let deserialized_tally = EncryptedTally::from_bytes(&bytes).unwrap();
         assert_eq!(tally, deserialized_tally);
+    }
+
+    #[test]
+    fn serialize_tally_decrypt_share() {
+        let mut r = ChaCha20Rng::from_seed([0u8; 32]);
+
+        let keypair = Keypair::generate(&mut r);
+
+        let plaintext = GroupElement::from_hash(&[0u8]);
+        let ciphertext = keypair.public_key.encrypt_point(&plaintext, &mut r);
+
+        let proof = ProofDecrypt::generate(
+            &ciphertext,
+            &keypair.public_key,
+            &keypair.secret_key,
+            &mut r,
+        );
+
+        let share = &ciphertext.e1 * &keypair.secret_key.sk;
+        let prover_share = ProvenDecryptShare {
+            pi: proof,
+            r1: share,
+        };
+        let tally_dec_share = TallyDecryptShare {
+            elements: vec![prover_share],
+        };
+        let bytes = tally_dec_share.to_bytes();
+
+        assert_eq!(bytes.len(), TallyDecryptShare::bytes_len(1));
+
+        let tally_from_bytes = TallyDecryptShare::from_bytes(&bytes);
+        assert!(tally_from_bytes.is_some());
     }
 }

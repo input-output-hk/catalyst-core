@@ -59,16 +59,20 @@ impl ProofDecrypt {
     pub fn to_bytes(&self) -> [u8; PROOF_SIZE] {
         let mut output = [0u8; PROOF_SIZE];
         output[0..GroupElement::BYTES_LEN].copy_from_slice(&self.a1.to_bytes());
-        output[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)].copy_from_slice(&self.a2.to_bytes());
-        output[(2 * GroupElement::BYTES_LEN)..(2 * GroupElement::BYTES_LEN) + Scalar::BYTES_LEN].copy_from_slice(&self.z.to_bytes());
+        output[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)]
+            .copy_from_slice(&self.a2.to_bytes());
+        output[(2 * GroupElement::BYTES_LEN)..(2 * GroupElement::BYTES_LEN) + Scalar::BYTES_LEN]
+            .copy_from_slice(&self.z.to_bytes());
         output
     }
 
     pub fn to_slice_mut(&self, output: &mut [u8]) {
         assert_eq!(output.len(), PROOF_SIZE);
         output[0..GroupElement::BYTES_LEN].copy_from_slice(&self.a1.to_bytes());
-        output[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)].copy_from_slice(&self.a2.to_bytes());
-        output[(2 * GroupElement::BYTES_LEN)..(2 * GroupElement::BYTES_LEN) + Scalar::BYTES_LEN].copy_from_slice(&self.z.to_bytes());
+        output[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)]
+            .copy_from_slice(&self.a2.to_bytes());
+        output[(2 * GroupElement::BYTES_LEN)..(2 * GroupElement::BYTES_LEN) + Scalar::BYTES_LEN]
+            .copy_from_slice(&self.z.to_bytes());
     }
 
     pub fn from_slice(slice: &[u8]) -> Option<Self> {
@@ -76,8 +80,13 @@ impl ProofDecrypt {
             return None;
         }
         let a1 = GroupElement::from_bytes(&slice[0..GroupElement::BYTES_LEN])?;
-        let a2 = GroupElement::from_bytes(&slice[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)])?;
-        let z = Scalar::from_bytes(&slice[(2 * GroupElement::BYTES_LEN)..(2 * GroupElement::BYTES_LEN) + Scalar::BYTES_LEN])?;
+        let a2 = GroupElement::from_bytes(
+            &slice[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)],
+        )?;
+        let z = Scalar::from_bytes(
+            &slice
+                [(2 * GroupElement::BYTES_LEN)..(2 * GroupElement::BYTES_LEN) + Scalar::BYTES_LEN],
+        )?;
 
         let proof = ProofDecrypt { a1, a2, z };
         Some(proof)
@@ -114,7 +123,7 @@ mod tests {
     use rand_core::SeedableRng;
 
     use super::{GroupElement, ProofDecrypt};
-    use crate::encryption::{Keypair};
+    use crate::encryption::Keypair;
     // use chain_crypto::algorithms::vrf::dleq::*;
 
     #[test]

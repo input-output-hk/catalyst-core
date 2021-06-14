@@ -348,10 +348,11 @@ impl BlockStore {
             return Ok(true);
         }
 
-        self.info_tree
-            .get(block_id)
-            .map(|maybe_block| maybe_block.is_some())
-            .map_err(Into::into)
+        self.block_exists_volatile(block_id)
+    }
+
+    fn block_exists_volatile(&self, block_id: &[u8]) -> Result<bool, Error> {
+        self.info_tree.contains_key(block_id).map_err(Into::into)
     }
 
     /// Determine whether block identified by `ancestor_id` is an ancestor of

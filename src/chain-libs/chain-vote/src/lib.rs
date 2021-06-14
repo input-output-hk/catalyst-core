@@ -220,7 +220,7 @@ impl TallyDecryptShare {
     /// Size of the byte representation for a tally decrypt share
     /// with the given number of options.
     pub fn bytes_len(options: usize) -> usize {
-        group_elements_bytes_len(options)
+        (decr_nizk::PROOF_SIZE + GroupElement::BYTES_LEN).checked_mul(options).expect("integer overflow")
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {

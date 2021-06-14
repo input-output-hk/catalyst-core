@@ -234,6 +234,7 @@ impl TallyDecryptShare {
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() % ProvenDecryptShare::SIZE != 0 {
+            println!("invalid size: {:?}. Expected multiple of {:?} ", bytes.len(), ProvenDecryptShare::SIZE);
             return None;
         }
 

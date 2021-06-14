@@ -468,6 +468,69 @@ impl BlockStore {
         Ok(current)
     }
 
+    /// Find the lowest common ancestor block (commonly referred to as lca) of two blocks in the chain
+    ///
+    /// In case there are more than one common ancestor, pick the one with the biggest chain length.
+    pub fn find_lowest_common_ancestor(
+        &self,
+        block1: &[u8],
+        block2: &[u8],
+    ) -> Result<Option<BlockInfo>, Error> {
+        let pstore1 = self.permanent.get_block_info(block1)?;
+        let pstore2 = self.permanent.get_block_info(block2)?;
+
+        match (pstore1, pstore2) {
+            // if both blocks are in permanent store then the oldest one is the lca
+            (Some(block1), Some(block2)) => {
+                if block1.chain_length() < block2.chain_length() {
+                    return Ok(Some(block1));
+                } else {
+                    return Ok(Some(block2));
+                }
+            }
+            // similarly, if only one of then is in the permament storage then it's the lca
+            (Some(block), None) => {
+                if self.block_exists_volatile(block2)? {
+                    return Ok(Some(block));
+                }
+                return Err(Error::BlockNotFound);
+            }
+            (None, Some(block)) => {
+                if self.block_exists_volatile(block1)? {
+                    return Ok(Some(block));
+                }
+                return Err(Error::BlockNotFound);
+            }
+            _ => (),
+        }
+
+        // if we are at this stage it means that no block was found in the permanent storage, thus
+        // we only need to search among volatile blocks
+        let mut current1 = self.get_block_info_volatile(block1)?;
+        let mut current2 = self.get_block_info_volatile(block2)?;
+
+        // let current1 be the block deeper in the chain
+        if current1.chain_length() > current2.chain_length() {
+            std::mem::swap(&mut current1, &mut current2);
+        }
+
+        current2 = self.get_nth_ancestor(
+            current2.id().as_ref(),
+            current2.chain_length() - current1.chain_length(),
+        )?;
+
+        while current2.id() != current1.id() && current1.chain_length() > 0 {
+            current1 = self.get_block_info(current1.parent_id().as_ref())?;
+            current2 = self.get_block_info(current2.parent_id().as_ref())?;
+        }
+
+        if current1.id() != current2.id() {
+            return Ok(None);
+        }
+
+        Ok(Some(current1))
+    }
+
     /// Move all blocks up to the provided block ID to the permanent block
     /// storage.
     ///

@@ -16,9 +16,33 @@ pub async fn filter(
     let v0_root = warp::path!("v0" / ..);
     let service_version_root = warp::path!("vit-version" / ..);
     // log request statistics
-    let log = warp::log::custom(|info| {
-        tracing::info!("Request elapsed time: {}ms", info.elapsed().as_millis())
+    let log = warp::filters::trace::trace(|info| {
+        use http_zipkin::get_trace_context;
+        use tracing::field::Empty;
+        let span = tracing::span!(
+            tracing::Level::DEBUG,
+            "rest_api_request",
+            method = %info.method(),
+            path = info.path(),
+            version = ?info.version(),
+            remote_addr = Empty,
+            trace_id = Empty,
+            span_id = Empty,
+            parent_span_id = Empty,
+        );
+        if let Some(remote_addr) = info.remote_addr() {
+            span.record("remote_addr", &remote_addr.to_string().as_str());
+        }
+        if let Some(trace_context) = get_trace_context(info.request_headers()) {
+            span.record("trace_id", &trace_context.trace_id().to_string().as_str());
+            span.record("span_id", &trace_context.span_id().to_string().as_str());
+            if let Some(parent_span_id) = trace_context.parent_id() {
+                span.record("parent_span_id", &parent_span_id.to_string().as_str());
+            }
+        }
+        span
     });
+
     let v0 = endpoints::filter(v0_root.boxed(), ctx.clone(), enable_api_tokens).await;
 
     let service_version =

@@ -8,6 +8,7 @@ pub mod measurement;
 pub mod openssl;
 pub mod predicates;
 pub mod process;
+pub mod string;
 pub mod web;
 
 #[macro_use(lazy_static)]

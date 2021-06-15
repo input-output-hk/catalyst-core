@@ -1,10 +1,9 @@
 #![allow(dead_code)]
 
 use fs_extra::dir::{copy, CopyOptions};
-use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::{
-    fs,
+    fs::{self, File, OpenOptions},
     path::{Path, PathBuf},
 };
 
@@ -82,4 +81,28 @@ pub fn get_file_as_byte_vec<P: AsRef<Path>>(filename: P) -> Vec<u8> {
     f.read_exact(&mut buffer).expect("buffer overflow");
 
     buffer
+}
+
+pub fn append<P: AsRef<Path>, S: Into<String>>(filename: P, line: S) -> Result<(), std::io::Error> {
+    let mut file = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(filename.as_ref())?;
+
+    writeln!(file, "{}", line.into())
+}
+
+pub fn write_lines<P: AsRef<Path>, S: Into<String>>(
+    filename: P,
+    lines: Vec<S>,
+) -> Result<(), std::io::Error> {
+    let mut file = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(filename.as_ref())?;
+
+    for line in lines {
+        writeln!(file, "{}", line.into())?;
+    }
+    Ok(())
 }

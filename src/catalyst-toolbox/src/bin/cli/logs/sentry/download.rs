@@ -138,15 +138,30 @@ fn request_sentry_logs_and_dump_to_file(
     chunk_size: usize,
 ) -> Result<(), Error> {
     let client = SentryLogClient::new(url, token);
-    let logs: Vec<RawLog> = match mode {
+
+    let iter_logs = match mode {
         Mode::Full => {
             let sentry_logs = LazySentryLogs::new(client, chunk_size);
-            filter_logs_by_date(sentry_logs.into_iter(), dates).collect()
+            filter_logs_by_date(sentry_logs.into_iter(), dates)
         }
-        Mode::Latest => filter_logs_by_date(client.get_json_logs()?.into_iter(), dates).collect(),
+        Mode::Latest => {
+            let iter_vec: Box<dyn Iterator<Item = RawLog>> =
+                Box::new(client.get_json_logs()?.into_iter());
+            filter_logs_by_date(iter_vec, dates)
+        }
     };
 
-    dump_logs_to_json(&logs, out)
+    println!("Starting downloading...");
+    let logs: Vec<RawLog> = iter_logs.collect();
+
+    dump_logs_to_json(&logs, out.clone())?;
+    println!("Finished downloading");
+    println!(
+        "Downloaded {} log entries at: {}",
+        logs.len(),
+        out.to_string_lossy()
+    );
+    Ok(())
 }
 
 fn dump_logs_to_json(logs: &[RawLog], out: PathBuf) -> Result<(), Error> {

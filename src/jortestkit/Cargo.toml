@@ -20,7 +20,7 @@ humantime = "2.0"
 custom_debug = "0.5"
 thiserror = "1.0"
 sysinfo = { version = "0.14.10" }
-os_info = { version = "2.0.6", default-features = false }
+os_info = { version = "3.0.6", default-features = false }
 zip = "0.5.12"
 flate2 = "1.0.16"
 tar = "0.4"

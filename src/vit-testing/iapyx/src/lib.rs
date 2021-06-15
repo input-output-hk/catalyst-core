@@ -6,6 +6,7 @@ mod controller;
 mod data;
 mod load;
 mod qr;
+pub mod stats;
 pub mod utils;
 mod wallet;
 

@@ -113,7 +113,7 @@ fn flip_dates_if_wrong(dates: DateFilter) -> DateFilter {
             start_date: Some(init),
             end_date: Some(end),
         } => {
-            if init < end {
+            if init > end {
                 DateFilter {
                     start_date: Some(init),
                     end_date: Some(end),

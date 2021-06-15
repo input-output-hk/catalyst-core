@@ -81,14 +81,8 @@ impl Stats {
         let mut checker = self.build_checkers();
         let logs_reader = open_file_read(&Some(self.file))?;
         let logs: Vec<RawLog> = serde_json::from_reader(logs_reader)?;
-        check_stats(&mut checker, &logs);
+        checker.process_raw_logs(logs.iter());
         checker.report();
         Ok(())
-    }
-}
-
-fn check_stats(executor: &mut SentryLogsStatsExecutor, logs: &[RawLog]) {
-    for log in logs {
-        executor.check_raw_log(log);
     }
 }

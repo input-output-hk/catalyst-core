@@ -107,6 +107,11 @@ impl IntoIterator for LazySentryLogs {
 pub trait Stat {
     fn check_raw_log(&mut self, log: &RawLog);
     fn report(&self);
+    fn process_raw_logs<'l>(&mut self, logs: impl Iterator<Item = &'l RawLog>) {
+        for log in logs {
+            self.check_raw_log(log);
+        }
+    }
 }
 
 pub struct SuccessfulScan {

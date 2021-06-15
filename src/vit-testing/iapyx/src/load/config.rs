@@ -11,7 +11,7 @@ pub struct IapyxLoadConfig {
     pub criterion: Option<u8>,
     pub address: String,
     pub debug: bool,
-    pub use_https_for_post: bool,
+    pub use_https: bool,
     pub read_pin_from_filename: bool,
     pub reuse_accounts: bool,
     pub global_pin: String,
@@ -24,7 +24,7 @@ impl IapyxLoadConfig {
     pub fn rest_settings(&self) -> RestSettings {
         RestSettings {
             enable_debug: self.debug,
-            use_https_for_post: self.use_https_for_post,
+            use_https: self.use_https,
             ..Default::default()
         }
     }

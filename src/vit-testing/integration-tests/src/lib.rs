@@ -9,7 +9,7 @@ cfg_if::cfg_if! {
 }
 
 use jormungandr_testing_utils::testing::node::time;
-use jormungandr_testing_utils::testing::node::Explorer;
+use jormungandr_testing_utils::testing::node::JormungandrRest;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -51,11 +51,11 @@ impl VoteTiming {
         }
     }
 
-    pub fn wait_for_tally_start(self, explorer: Explorer) {
-        time::wait_for_epoch(self.tally_start as u64, explorer);
+    pub fn wait_for_tally_start(self, rest: JormungandrRest) {
+        time::wait_for_epoch(self.tally_start, rest);
     }
 
-    pub fn wait_for_tally_end(self, explorer: Explorer) {
-        time::wait_for_epoch(self.tally_end as u64, explorer);
+    pub fn wait_for_tally_end(self, rest: JormungandrRest) {
+        time::wait_for_epoch(self.tally_end, rest);
     }
 }

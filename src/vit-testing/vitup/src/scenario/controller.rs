@@ -69,7 +69,7 @@ impl VitController {
         wallet_proxy: &WalletProxyController,
     ) -> Result<iapyx::Controller> {
         let settings = iapyx::WalletBackendSettings {
-            use_https_for_post: false,
+            use_https: false,
             enable_debug: true,
             certificate: None,
         };
@@ -94,7 +94,7 @@ impl VitController {
         wallet_proxy: &WalletProxyController,
     ) -> Result<iapyx::Controller> {
         let settings = iapyx::WalletBackendSettings {
-            use_https_for_post: false,
+            use_https: false,
             enable_debug: true,
             certificate: None,
         };

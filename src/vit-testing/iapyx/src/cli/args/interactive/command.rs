@@ -220,7 +220,7 @@ pub struct Connect {
 
     /// uses https for sending fragments
     #[structopt(short = "s", long = "use-https")]
-    pub use_https_for_post: bool,
+    pub use_https: bool,
 
     /// uses https for sending fragments
     #[structopt(short = "d", long = "enable-debug")]
@@ -230,7 +230,7 @@ pub struct Connect {
 impl Connect {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         let settings = RestSettings {
-            use_https_for_post: self.use_https_for_post,
+            use_https: self.use_https,
             enable_debug: self.enable_debug,
             ..Default::default()
         };

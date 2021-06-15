@@ -49,11 +49,12 @@ impl MonitorThread {
                 if logger.exists() {
                     append(logger, stats.entry()).unwrap();
                 } else {
+                    std::fs::File::create(logger).unwrap();
                     append(logger, stats.header()).unwrap();
                     append(logger, stats.entry()).unwrap();
                 }
             }
-            thread::sleep(std::time::Duration::from_millis(settings.interval));
+            thread::sleep(std::time::Duration::from_secs(settings.interval));
         });
 
         Self {

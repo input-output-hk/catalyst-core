@@ -8,7 +8,7 @@ use jormungandr_testing_utils::testing::node::JormungandrRest;
 use url::Url;
 
 pub fn count_active_voters<S: Into<String>>(endpoint: S) -> Result<(), IapyxStatsCommandError> {
-    let endpoint = endpoint.into().clone();
+    let endpoint = endpoint.into();
     let block0_path = format!("{}/v0/block0", &endpoint);
     println!("Reading block0 from location {:?}...", block0_path);
     let block = {
@@ -22,7 +22,7 @@ pub fn count_active_voters<S: Into<String>>(endpoint: S) -> Result<(), IapyxStat
         }
     };
     let genesis = Block0Configuration::from_block(&block)?;
-    let rest_client = JormungandrRest::new(endpoint.clone());
+    let rest_client = JormungandrRest::new(endpoint);
     let mut stats: Stats = Default::default();
 
     let mut total = 0;

@@ -43,7 +43,7 @@ pub struct Snapshot {
 
 impl Snapshot {
     pub fn header(&self) -> String {
-        format!("date,\tvotes-count,\tpending,\ttotal-tx")
+        "date,\tvotes-count,\tpending,\ttotal-tx".to_string()
     }
 
     pub fn entry(&self) -> String {
@@ -58,7 +58,7 @@ impl Snapshot {
 
     pub fn to_console_output(&self) -> String {
         format!(
-            "date: {},\tvotes-coutn: {},\tpending: {},\ttotal-tx: {}",
+            "date: {},\tvotes-count: {},\tpending: {},\ttotal-tx: {}",
             self.timestamp.to_rfc3339_opts(SecondsFormat::Secs, true),
             self.votes_count,
             self.pending,

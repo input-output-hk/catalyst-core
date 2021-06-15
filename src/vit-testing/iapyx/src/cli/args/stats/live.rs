@@ -21,6 +21,8 @@ pub struct LiveStatsCommand {
     pub console: ProgressBarMode,
     #[structopt(long = "logger")]
     pub file: Option<PathBuf>,
+    #[structopt(long = "duration")]
+    pub duration: u64,
 }
 
 impl LiveStatsCommand {
@@ -30,14 +32,17 @@ impl LiveStatsCommand {
             progress: self.console,
             interval: self.interval,
             logger: self.file.clone(),
+            duration: self.duration,
         };
 
         let harvester = Harvester::new(self.endpoint.clone());
-        let _monitor = MonitorThread::start(
+        let monitor = MonitorThread::start(
             harvester,
             settings,
             &format!("{} monitoring", self.endpoint),
         );
+        std::thread::sleep(std::time::Duration::from_secs(300));
+        monitor.stop();
         Ok(())
     }
 }

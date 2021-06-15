@@ -14,7 +14,7 @@ pub enum IapyxStatsCommand {
 }
 
 impl IapyxStatsCommand {
-    pub async fn exec(self) -> Result<(), IapyxStatsCommandError> {
+    pub fn exec(self) -> Result<(), IapyxStatsCommandError> {
         match self {
             Self::Block0(block0) => block0.exec(),
             Self::Live(live) => live.exec(),

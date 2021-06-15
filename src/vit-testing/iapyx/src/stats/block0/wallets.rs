@@ -115,8 +115,11 @@ impl fmt::Debug for Stats {
 }
 
 fn format_big_number<S: Into<String>>(number: S) -> String {
+    #[allow(clippy::trivial_regex)]
     let mld = Regex::new(r"000000000$").unwrap();
+    #[allow(clippy::trivial_regex)]
     let mln = Regex::new(r"000000$").unwrap();
+    #[allow(clippy::trivial_regex)]
     let k = Regex::new(r"000$").unwrap();
 
     let mut output = mld.replace_all(&number.into(), " MLD").to_string();

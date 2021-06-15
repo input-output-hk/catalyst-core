@@ -7,6 +7,7 @@ pub struct Settings {
     pub interval: u64,
     pub logger: Option<PathBuf>,
     pub progress: ProgressBarMode,
+    pub duration: u64,
 }
 
 impl Settings {
@@ -19,6 +20,6 @@ impl Settings {
     }
 
     pub fn progress_bar_mode(&self) -> ProgressBarMode {
-        self.progress.clone()
+        self.progress
     }
 }

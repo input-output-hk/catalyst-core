@@ -140,6 +140,23 @@ if __name__ == "__main__":
     if args.command == "reload-tests":
         install_test_plugin(app_dir, reinstall=True)
 
-    subprocess.check_call(["cordova", "build"], cwd=app_dir)
+    if ios:
+        subprocess.check_call(
+            [
+                "cordova",
+                "build",
+                "ios",
+                "--debug",
+                "--device",
+                "--buildConfig",
+                "-d",
+                "--no-telemetry",
+            ],
+            cwd=app_dir,
+        )
+
+    if android:
+        subprocess.check_call(["cordova", "build", "android"], cwd=app_dir)
+
     if args.run:
         subprocess.check_call(["cordova", "run", args.run], cwd=app_dir)

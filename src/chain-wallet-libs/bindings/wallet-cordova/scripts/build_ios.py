@@ -4,12 +4,17 @@ from pathlib import Path
 import subprocess
 import sys
 import shutil
-from directories import repository_directory, script_directory, rust_build_directory
+from directories import (
+    repository_directory,
+    script_directory,
+    rust_build_directory,
+    plugin_directory,
+)
 
 libname = "libjormungandrwallet.a"
 
-library_header_src = script_directory / Path("../wallet-c/wallet.h")
-library_header_dst = script_directory / Path("src/ios/LibWallet.h")
+library_header_src = repository_directory / Path("bindings/wallet-c/wallet.h")
+library_header_dst = plugin_directory / Path("src/ios/LibWallet.h")
 
 targets = {
     "x86_64-apple-ios": "x86_64",
@@ -22,7 +27,7 @@ def run(release=True):
         "lipo",
         "-create",
         "-output",
-        str(script_directory / "src/ios/" / libname),
+        str(plugin_directory / "src/ios/" / libname),
     ]
 
     for rust_target, apple_target in targets.items():

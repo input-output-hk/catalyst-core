@@ -13,6 +13,7 @@ mod stats;
 mod status;
 
 use crate::load::request::run_request;
+pub use progress::{use_as_monitor_progress_bar,use_as_status_progress_bar};
 pub use config::{Configuration, Monitor, Strategy};
 pub use monitor::MonitorThread;
 pub use request::{Id, RequestFailure, RequestGenerator, RequestSendMode, RequestStatus, Response};

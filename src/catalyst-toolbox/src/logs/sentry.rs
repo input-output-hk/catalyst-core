@@ -326,11 +326,91 @@ impl FromStr for SentryFragmentLog {
 #[cfg(test)]
 mod tests {
     use super::SentryFragmentLog;
+    use crate::logs::sentry::{
+        MalformedQr, RawLog, RegexMatch, SentryLogsStatChecker, SentryLogsStatsExecutor, Stat,
+        SuccessfulScan, MALFORMED_QR_MESSAGE, REGISTERED_MESSAGE,
+    };
 
     use std::str::FromStr;
+
+    use regex::Regex;
+
+    fn generate_test_raw_log_set(success: usize, unssucess: usize) -> Vec<RawLog> {
+        let successful_scan_log = serde_json::json!({ "message": REGISTERED_MESSAGE });
+        let unsuccessful_scan_log = serde_json::json!({ "message": MALFORMED_QR_MESSAGE });
+
+        let success_logs = (0..success)
+            .into_iter()
+            .map(|_| successful_scan_log.clone());
+
+        let unsuccessful_logs = (0..unssucess)
+            .into_iter()
+            .map(|_| unsuccessful_scan_log.clone());
+
+        success_logs.chain(unsuccessful_logs).collect()
+    }
 
     #[test]
     fn test_parse_log() {
         let _: SentryFragmentLog = SentryFragmentLog::from_str("public_key: 193cea42a72c8a4e6b4f71368f042fa072a8b5551b95ca56b68dcb368a97f78f | chain proposal index: 207 | proposal index: 238 | voteplan: ee699d301f1c6d9f9908efff4e466af0238af29e0e2df30db21a9c75d665c099 | choice: 1 | spending counter: 7 | fragment id: e747108894709e62db346d550353a62f8d410de9913e520fc3955061e4596ea7").unwrap();
+    }
+
+    #[test]
+    fn test_successful_scan() {
+        let logs = generate_test_raw_log_set(10, 3);
+        let mut checker = SuccessfulScan::new();
+        checker.process_raw_logs(logs.iter());
+        assert_eq!(checker.total, 10);
+    }
+
+    #[test]
+    fn test_unsuccessful_scan() {
+        let logs = generate_test_raw_log_set(3, 10);
+        let mut checker = MalformedQr::new();
+        checker.process_raw_logs(logs.iter());
+        assert_eq!(checker.total, 10);
+    }
+
+    #[test]
+    fn test_regex_match_scan() {
+        let logs = generate_test_raw_log_set(10, 15);
+        let mut checker = RegexMatch::new(
+            Regex::from_str("User registered with public_key").unwrap(),
+            "message".to_string(),
+        );
+        checker.process_raw_logs(logs.iter());
+        assert_eq!(checker.total_checked, 25);
+        assert_eq!(checker.matches, 10);
+    }
+
+    #[test]
+    fn test_executor_scan() {
+        let total_success = 10;
+        let total_malformed = 15;
+        let logs = generate_test_raw_log_set(total_success, total_malformed);
+        let re = SentryLogsStatChecker::RegexMatch(RegexMatch::new(
+            Regex::from_str("User registered with public_key").unwrap(),
+            "message".to_string(),
+        ));
+        let success = SentryLogsStatChecker::SuccessfulScans(Default::default());
+        let qr = SentryLogsStatChecker::MalformedQr(Default::default());
+
+        let mut checker = SentryLogsStatsExecutor::new(vec![success, qr, re]);
+
+        checker.process_raw_logs(logs.iter());
+        for inner in &checker.0 {
+            match inner {
+                SentryLogsStatChecker::SuccessfulScans(ss) => {
+                    assert_eq!(ss.total, total_success);
+                }
+                SentryLogsStatChecker::MalformedQr(qr) => {
+                    assert_eq!(qr.total, total_malformed);
+                }
+                SentryLogsStatChecker::RegexMatch(re) => {
+                    assert_eq!(re.total_checked, total_malformed + total_success);
+                    assert_eq!(re.matches, total_success);
+                }
+            }
+        }
     }
 }

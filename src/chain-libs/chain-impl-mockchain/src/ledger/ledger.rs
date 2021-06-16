@@ -1619,6 +1619,10 @@ impl Ledger {
 }
 
 impl ApplyBlockLedger {
+    pub fn block_date(&self) -> BlockDate {
+        self.block_date
+    }
+
     pub fn apply_fragment(&self, fragment: &Fragment) -> Result<Self, Error> {
         let ledger = self
             .ledger

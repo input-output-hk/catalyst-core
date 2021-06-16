@@ -141,7 +141,7 @@ pub struct SentryLogsStatsExecutor(Vec<SentryLogsStatChecker>);
 pub struct SentryFragmentLog {
     pub public_key: String,
     pub chain_proposal_index: u8,
-    pub proposal_index: u8,
+    pub proposal_index: u32,
     pub voteplan_id: String,
     pub choice: u8,
     pub spending_counter: u64,
@@ -293,7 +293,7 @@ impl FromStr for SentryFragmentLog {
             "public_key: {} | chain proposal index: {} | proposal index: {} | voteplan: {} | choice: {} | spending counter: {} | fragment id: {}",
             String,
             u8,
-            u8,
+            u32,
             String,
             u8,
             u64,
@@ -352,7 +352,7 @@ mod tests {
 
     #[test]
     fn test_parse_log() {
-        let _: SentryFragmentLog = SentryFragmentLog::from_str("public_key: 193cea42a72c8a4e6b4f71368f042fa072a8b5551b95ca56b68dcb368a97f78f | chain proposal index: 207 | proposal index: 238 | voteplan: ee699d301f1c6d9f9908efff4e466af0238af29e0e2df30db21a9c75d665c099 | choice: 1 | spending counter: 7 | fragment id: e747108894709e62db346d550353a62f8d410de9913e520fc3955061e4596ea7").unwrap();
+        let _: SentryFragmentLog = SentryFragmentLog::from_str("public_key: 7013d6d804d141b89591936a1a4892f498a8901d3c20487ed130f96f9b8446e1 | chain proposal index: 247 | proposal index: 272 | voteplan: aed19eed570c715c847739aefdcf72c5bd2b51c89ddca26f653fb33f83247481 | choice: 1 | spending counter: 18 | fragment id: 43cd7b5f91c257aba6ae114f28f1acd9bb0aa5547ae11f29f7c33b93eddefe37").unwrap();
     }
 
     #[test]

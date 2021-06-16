@@ -7,6 +7,9 @@ use std::{collections::HashSet, iter::FromIterator};
 
 const SIMULTANEOUS_READ_WRITE_ITERS: usize = 50;
 const BLOCK_NUM_PERMANENT_TEST: usize = 1024;
+const MAIN_BRANCH_LEN: usize = 100;
+const SECOND_BRANCH_LEN: usize = 25;
+const BIFURCATION_POINT: usize = 50;
 const FLUSH_TO_BLOCK: usize = 512;
 const FLUSH_TO_BLOCK_2: usize = 768;
 
@@ -401,11 +404,11 @@ fn get_blocks_by_chain_length() {
     assert_eq!(expected, actual);
 }
 
-fn generate_two_branches() -> (tempfile::TempDir, BlockStore, Vec<Block>, Vec<Block>) {
-    const MAIN_BRANCH_LEN: usize = 100;
-    const SECOND_BRANCH_LEN: usize = 25;
-    const BIFURCATION_POINT: usize = 50;
-
+fn generate_two_branches(
+    main_branch_len: usize,
+    second_branch_len: usize,
+    bifurcation_point: usize,
+) -> (tempfile::TempDir, BlockStore, Vec<Block>, Vec<Block>) {
     let (file, store) = prepare_store();
 
     let mut main_branch_blocks = vec![];
@@ -424,7 +427,7 @@ fn generate_two_branches() -> (tempfile::TempDir, BlockStore, Vec<Block>, Vec<Bl
 
     main_branch_blocks.push(genesis_block);
 
-    for _i in 1..MAIN_BRANCH_LEN {
+    for _i in 1..main_branch_len {
         let block_info = BlockInfo::new(
             block.id.serialize_as_vec(),
             block.parent.serialize_as_vec(),
@@ -437,11 +440,11 @@ fn generate_two_branches() -> (tempfile::TempDir, BlockStore, Vec<Block>, Vec<Bl
         block = block.make_child(None);
     }
 
-    let mut second_branch_blocks = vec![main_branch_blocks[BIFURCATION_POINT].clone()];
+    let mut second_branch_blocks = vec![main_branch_blocks[bifurcation_point].clone()];
 
-    block = main_branch_blocks[BIFURCATION_POINT].make_child(None);
+    block = main_branch_blocks[bifurcation_point].make_child(None);
 
-    for _i in 1..SECOND_BRANCH_LEN {
+    for _i in 1..second_branch_len {
         let block_info = BlockInfo::new(
             block.id.serialize_as_vec(),
             block.parent.serialize_as_vec(),
@@ -458,11 +461,104 @@ fn generate_two_branches() -> (tempfile::TempDir, BlockStore, Vec<Block>, Vec<Bl
 }
 
 #[test]
+fn lca_same_block() {
+    let (_, store, main_branch, _) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, BIFURCATION_POINT);
+    assert_eq!(
+        store
+            .find_lowest_common_ancestor(
+                &main_branch[0].id.serialize_as_vec()[..],
+                &main_branch[0].id.serialize_as_vec()[..]
+            )
+            .unwrap()
+            .unwrap()
+            .id()
+            .as_ref(),
+        &main_branch[0].id.serialize_as_vec()[..]
+    )
+}
+
+#[test]
+fn lca_ancestor() {
+    let (_, store, main_branch, second_branch) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, BIFURCATION_POINT);
+    assert_eq!(
+        store
+            .find_lowest_common_ancestor(
+                &main_branch[1].id.serialize_as_vec()[..],
+                &second_branch[2].id.serialize_as_vec()[..]
+            )
+            .unwrap()
+            .unwrap()
+            .id()
+            .as_ref(),
+        &main_branch[1].id.serialize_as_vec()[..]
+    )
+}
+#[test]
+fn lca_different_branches() {
+    let (_, store, main_branch, second_branch) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, BIFURCATION_POINT);
+    assert_eq!(
+        store
+            .find_lowest_common_ancestor(
+                &main_branch.last().unwrap().id.serialize_as_vec()[..],
+                &second_branch.last().unwrap().id.serialize_as_vec()[..]
+            )
+            .unwrap()
+            .unwrap()
+            .id()
+            .as_ref(),
+        &main_branch[BIFURCATION_POINT].id.serialize_as_vec()[..]
+    )
+}
+
+#[test]
+fn lca_genesis() {
+    let (_, store, main_branch, second_branch) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, 0);
+
+    // two branchs diverging at the genesis blocks have the genesis as the lca
+    assert_eq!(
+        store
+            .find_lowest_common_ancestor(
+                &main_branch[MAIN_BRANCH_LEN - 1].id.serialize_as_vec()[..],
+                &second_branch[SECOND_BRANCH_LEN - 1].id.serialize_as_vec()[..]
+            )
+            .unwrap()
+            .unwrap()
+            .id()
+            .as_ref(),
+        &main_branch[0].id.serialize_as_vec()[..]
+    );
+
+    let genesis_block = Block::genesis(None);
+    let genesis_block_info = BlockInfo::new(
+        genesis_block.id.serialize_as_vec(),
+        genesis_block.parent.serialize_as_vec(),
+        genesis_block.chain_length,
+    );
+    store
+        .put_block(&genesis_block.serialize_as_vec(), genesis_block_info)
+        .unwrap();
+    // It is in fact possible to have multiple blocks originating from the storage root_id
+    // In that case there is no common ancestor
+    assert!(store
+        .find_lowest_common_ancestor(
+            &main_branch[MAIN_BRANCH_LEN - 1].id.serialize_as_vec()[..],
+            &genesis_block.id.serialize_as_vec()[..]
+        )
+        .unwrap()
+        .is_none())
+}
+
+#[test]
 fn is_ancestor_same_branch() {
     const FIRST: usize = 20;
     const SECOND: usize = 30;
 
-    let (_file, store, main_branch_blocks, _) = generate_two_branches();
+    let (_file, store, main_branch_blocks, _) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, BIFURCATION_POINT);
 
     let result = store
         .is_ancestor(
@@ -479,7 +575,8 @@ fn is_ancestor_wrong_order() {
     const FIRST: usize = 30;
     const SECOND: usize = 20;
 
-    let (_file, store, main_branch_blocks, _) = generate_two_branches();
+    let (_file, store, main_branch_blocks, _) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, BIFURCATION_POINT);
 
     let result = store
         .is_ancestor(
@@ -495,7 +592,8 @@ fn is_ancestor_different_branches() {
     const FIRST: usize = 60;
     const SECOND: usize = 10;
 
-    let (_file, store, main_branch_blocks, second_branch_blocks) = generate_two_branches();
+    let (_file, store, main_branch_blocks, second_branch_blocks) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, BIFURCATION_POINT);
 
     let result = store
         .is_ancestor(
@@ -512,7 +610,8 @@ fn is_ancestor_permanent_volatile() {
     const FIRST: usize = 10;
     const SECOND: usize = 50;
 
-    let (_file, store, main_branch_blocks, _) = generate_two_branches();
+    let (_file, store, main_branch_blocks, _) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, BIFURCATION_POINT);
 
     store
         .flush_to_permanent_store(
@@ -539,7 +638,8 @@ fn is_ancestor_only_permanent() {
     const FIRST: usize = 10;
     const SECOND: usize = 20;
 
-    let (_file, store, main_branch_blocks, _) = generate_two_branches();
+    let (_file, store, main_branch_blocks, _) =
+        generate_two_branches(MAIN_BRANCH_LEN, SECOND_BRANCH_LEN, BIFURCATION_POINT);
 
     store
         .flush_to_permanent_store(

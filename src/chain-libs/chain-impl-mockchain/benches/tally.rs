@@ -18,7 +18,7 @@ use chain_impl_mockchain::{
 };
 use criterion::{criterion_group, criterion_main, Criterion};
 use rand::{
-    distributions::{Bernoulli, Distribution, Uniform, WeightedIndex},
+    distributions::{Distribution, Uniform, WeightedIndex},
     Rng, SeedableRng,
 };
 use rayon::prelude::*;

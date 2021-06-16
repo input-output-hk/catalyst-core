@@ -18,10 +18,12 @@ pub enum Mode {
 
 #[derive(StructOpt)]
 pub struct DateFilter {
+    // Optional [From, To] date range, start
     #[structopt(long, parse(try_from_str = DateTime::parse_from_rfc3339))]
-    start_date: Option<DateTime<FixedOffset>>,
+    from: Option<DateTime<FixedOffset>>,
+    // Optional [From, To] date range, end
     #[structopt(long, parse( try_from_str = DateTime::parse_from_rfc3339))]
-    end_date: Option<DateTime<FixedOffset>>,
+    to: Option<DateTime<FixedOffset>>,
 }
 
 #[derive(StructOpt)]
@@ -86,23 +88,20 @@ fn filter_logs_by_date(
     logs: impl Iterator<Item = RawLog>,
     dates: DateFilter,
 ) -> impl Iterator<Item = RawLog> {
-    let DateFilter {
-        start_date: init,
-        end_date: end,
-    } = dates;
+    let DateFilter { from, to } = dates;
 
-    logs.filter(move |l| {
+    logs.take_while(move |l| {
         let date_time = date_time_from_raw_log(l);
-        match init {
+        match from {
             None => true,
-            Some(init_date) => init_date > date_time,
+            Some(from_date) => date_time >= from_date,
         }
     })
-    .take_while(move |l| {
+    .filter(move |l| {
         let date_time = date_time_from_raw_log(l);
-        match end {
+        match to {
             None => true,
-            Some(end_date) => end_date < date_time,
+            Some(to_date) => date_time <= to_date,
         }
     })
 }
@@ -110,18 +109,18 @@ fn filter_logs_by_date(
 fn flip_dates_if_wrong(dates: DateFilter) -> DateFilter {
     match dates {
         DateFilter {
-            start_date: Some(init),
-            end_date: Some(end),
+            from: Some(from),
+            to: Some(to),
         } => {
-            if init > end {
+            if from < to {
                 DateFilter {
-                    start_date: Some(init),
-                    end_date: Some(end),
+                    from: Some(from),
+                    to: Some(to),
                 }
             } else {
                 DateFilter {
-                    start_date: Some(end),
-                    end_date: Some(init),
+                    from: Some(to),
+                    to: Some(from),
                 }
             }
         }
@@ -139,7 +138,8 @@ fn request_sentry_logs_and_dump_to_file(
 ) -> Result<(), Error> {
     let client = SentryLogClient::new(url, token);
 
-    let iter_logs = match mode {
+    println!("Starting downloading...");
+    let logs: Vec<RawLog> = match mode {
         Mode::Full => {
             let sentry_logs = LazySentryLogs::new(client, chunk_size);
             filter_logs_by_date(sentry_logs.into_iter(), dates)
@@ -149,10 +149,8 @@ fn request_sentry_logs_and_dump_to_file(
                 Box::new(client.get_json_logs()?.into_iter());
             filter_logs_by_date(iter_vec, dates)
         }
-    };
-
-    println!("Starting downloading...");
-    let logs: Vec<RawLog> = iter_logs.collect();
+    }
+    .collect();
 
     dump_logs_to_json(&logs, out.clone())?;
     println!("Finished downloading");

@@ -290,7 +290,7 @@ fn group_elements_from_bytes(bytes: &[u8]) -> Option<Vec<gang::GroupElement>> {
     Some(elements)
 }
 
-pub fn verify_decrypt_share(
+fn verify_decrypt_share(
     encrypted_tally: &EncryptedTally,
     pk: &committee::MemberPublicKey,
     decrypt_share: &TallyDecryptShare,
@@ -332,12 +332,26 @@ pub fn tally(
 }
 
 impl Tally {
+    /// Verifies that `TallyDecryptShare` are correct decryptions of `encrypted_tally` for public
+    /// keys `pks`.
+    ///
     /// Verifies that the decrypted tally was correctly obtained from the given
     /// `TallyState` and `TallyDecryptShare` parts.
     ///
     /// This can be used for quick online validation for the tallying
     /// performed offline.
-    pub fn verify(&self, tally_state: &TallyState, decrypt_shares: &[TallyDecryptShare]) -> bool {
+    pub fn verify(&self,
+                  encrypted_tally: &EncryptedTally,
+                  pks: &[committee::MemberPublicKey],
+                  tally_state: &TallyState,
+                  decrypt_shares: &[TallyDecryptShare])
+        -> bool {
+        for (pk, decrypt_share) in pks.iter().zip(decrypt_shares.iter()) {
+            if !verify_decrypt_share(encrypted_tally, pk, decrypt_share) {
+                return false;
+            }
+        }
+
         let r_results = result_vector(tally_state, decrypt_shares);
         let gen = gang::GroupElement::generator();
         for (i, &w) in self.votes.iter().enumerate() {
@@ -406,7 +420,7 @@ mod tests {
         assert_eq!(tr.votes[1], 5, "vote for option 1");
 
         println!("verifying");
-        assert!(tr.verify(&ts, &shares));
+        assert!(tr.verify(&tally, &participants, &ts, &shares));
     }
 
     #[test]
@@ -472,7 +486,7 @@ mod tests {
         assert_eq!(tr.votes[1], 3, "vote for option 1");
 
         println!("verifying");
-        assert!(tr.verify(&ts, &shares));
+        assert!(tr.verify(&tally, &participants, &ts, &shares));
     }
 
     #[test]
@@ -519,7 +533,7 @@ mod tests {
         assert_eq!(tr.votes[1], 0, "vote for option 1");
 
         println!("verifying");
-        assert!(tr.verify(&ts, &shares));
+        assert!(tr.verify(&tally, &participants, &ts, &shares));
     }
 
     #[test]
@@ -558,7 +572,7 @@ mod tests {
         assert_eq!(tr.votes[1], 0, "vote for option 1");
 
         println!("verifying");
-        assert!(tr.verify(&ts, &shares));
+        assert!(tr.verify(&tally, &[m1.public_key()], &ts, &shares));
     }
 
     #[test]

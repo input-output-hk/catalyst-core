@@ -58,11 +58,7 @@ impl ProofDecrypt {
 
     pub fn to_bytes(&self) -> [u8; PROOF_SIZE] {
         let mut output = [0u8; PROOF_SIZE];
-        output[0..GroupElement::BYTES_LEN].copy_from_slice(&self.a1.to_bytes());
-        output[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)]
-            .copy_from_slice(&self.a2.to_bytes());
-        output[(2 * GroupElement::BYTES_LEN)..(2 * GroupElement::BYTES_LEN) + Scalar::BYTES_LEN]
-            .copy_from_slice(&self.z.to_bytes());
+        self.to_slice_mut(&mut output);
         output
     }
 
@@ -123,7 +119,6 @@ mod tests {
     use crate::encryption::Keypair;
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
-    // use chain_crypto::algorithms::vrf::dleq::*;
 
     #[test]
     pub fn it_works() {

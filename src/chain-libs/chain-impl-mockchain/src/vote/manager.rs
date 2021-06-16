@@ -11,7 +11,7 @@ use crate::{
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
-use chain_vote::{Crs, EncryptedTally};
+use chain_vote::{Crs, EncryptedTally, committee};
 use imhamt::Hamt;
 use thiserror::Error;
 
@@ -247,6 +247,7 @@ impl ProposalManager {
 
     pub fn finalize_private_tally<F>(
         &self,
+        committee_pks: &[committee::MemberPublicKey],
         decrypted_proposal: &DecryptedPrivateTallyProposal,
         governance: &Governance,
         mut f: F,
@@ -261,7 +262,7 @@ impl ProposalManager {
         let verifiable_tally = chain_vote::Tally {
             votes: decrypted_proposal.tally_result.to_vec(),
         };
-        if !verifiable_tally.verify(&state, &decrypted_proposal.decrypt_shares) {
+        if !verifiable_tally.verify(&encrypted_tally, committee_pks, &state, &decrypted_proposal.decrypt_shares) {
             return Err(TallyError::InvalidDecryption);
         }
 
@@ -454,6 +455,7 @@ impl ProposalManagers {
 
     pub fn finalize_private_tally<F>(
         &self,
+        committee_pks: &[committee::MemberPublicKey],
         decrypted_tally: &DecryptedPrivateTally,
         governance: &Governance,
         mut f: F,
@@ -464,6 +466,7 @@ impl ProposalManagers {
         let mut proposals = Vec::with_capacity(self.0.len());
         for (proposal_manager, decrypted_proposal) in self.0.iter().zip(decrypted_tally.iter()) {
             proposals.push(proposal_manager.finalize_private_tally(
+                committee_pks,
                 decrypted_proposal,
                 governance,
                 &mut f,
@@ -690,9 +693,10 @@ impl VotePlanManager {
     where
         F: FnMut(&VoteAction),
     {
+        let committee_pks = self.plan.committee_public_keys();
         let proposal_managers =
             self.proposal_managers
-                .finalize_private_tally(decrypted_tally, governance, f)?;
+                .finalize_private_tally(committee_pks, decrypted_tally,  governance, f)?;
         Ok(Self {
             proposal_managers,
             plan: Arc::clone(&self.plan),

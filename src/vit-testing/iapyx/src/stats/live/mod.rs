@@ -1,6 +1,5 @@
 mod harvester;
 mod monitor;
-mod progress;
 mod settings;
 
 pub use harvester::Harvester;

@@ -3,6 +3,8 @@ use crate::recovery::tally::ValidationError;
 
 use regex::Regex;
 use reqwest::{blocking::Client, Method, Url};
+
+use std::fmt::{self, Display, Formatter, Write};
 use std::str::FromStr;
 
 const REGISTERED_MESSAGE: &str = "User registered with public_key";
@@ -106,7 +108,7 @@ impl IntoIterator for LazySentryLogs {
 
 pub trait Stat {
     fn check_raw_log(&mut self, log: &RawLog);
-    fn report(&self);
+    fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result;
     fn process_raw_logs<'l>(&mut self, logs: impl Iterator<Item = &'l RawLog>) {
         for log in logs {
             self.check_raw_log(log);
@@ -161,8 +163,8 @@ impl Stat for SuccessfulScan {
         }
     }
 
-    fn report(&self) {
-        println!("Total successful scans: {}", self.total);
+    fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
+        formatter.write_fmt(format_args!("Total successful scans: {}", self.total))
     }
 }
 
@@ -173,8 +175,8 @@ impl Stat for MalformedQr {
         }
     }
 
-    fn report(&self) {
-        println!("Total malformed QR scans: {}", self.total);
+    fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
+        formatter.write_fmt(format_args!("Total malformed QR scans: {}", self.total))
     }
 }
 
@@ -188,14 +190,14 @@ impl Stat for RegexMatch {
         }
     }
 
-    fn report(&self) {
-        println!(
+    fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
+        formatter.write_fmt(format_args!(
             "Total matches for [{}]: {}/{}, {}%",
             self.re.as_str(),
             self.matches,
             self.total_checked,
             (self.matches * 100) / self.total_checked
-        );
+        ))
     }
 }
 
@@ -243,12 +245,12 @@ impl Stat for SentryLogsStatChecker {
         };
     }
 
-    fn report(&self) {
+    fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
         match self {
-            SentryLogsStatChecker::SuccessfulScans(scan) => scan.report(),
-            SentryLogsStatChecker::MalformedQr(qr) => qr.report(),
-            SentryLogsStatChecker::RegexMatch(re) => re.report(),
-        };
+            SentryLogsStatChecker::SuccessfulScans(scan) => scan.report(formatter),
+            SentryLogsStatChecker::MalformedQr(qr) => qr.report(formatter),
+            SentryLogsStatChecker::RegexMatch(re) => re.report(formatter),
+        }
     }
 }
 
@@ -259,10 +261,18 @@ impl Stat for SentryLogsStatsExecutor {
         }
     }
 
-    fn report(&self) {
+    fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
         for checker in &self.0 {
-            checker.report();
+            checker.report(formatter)?;
+            formatter.write_char('\n')?;
         }
+        Ok(())
+    }
+}
+
+impl Display for SentryLogsStatsExecutor {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.report(f)
     }
 }
 

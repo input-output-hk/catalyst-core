@@ -82,7 +82,7 @@ impl Stats {
         let logs_reader = open_file_read(&Some(self.file))?;
         let logs: Vec<RawLog> = serde_json::from_reader(logs_reader)?;
         checker.process_raw_logs(logs.iter());
-        checker.report();
+        println!("{}", checker);
         Ok(())
     }
 }

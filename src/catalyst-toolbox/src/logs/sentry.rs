@@ -4,7 +4,7 @@ use crate::recovery::tally::ValidationError;
 use regex::Regex;
 use reqwest::{blocking::Client, Method, Url};
 
-use std::fmt::{self, Display, Formatter, Write};
+use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 
 const REGISTERED_MESSAGE: &str = "User registered with public_key";
@@ -164,7 +164,7 @@ impl Stat for SuccessfulScan {
     }
 
     fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
-        formatter.write_fmt(format_args!("Total successful scans: {}", self.total))
+        write!(formatter, "Total successful scans: {}", self.total)
     }
 }
 
@@ -176,7 +176,7 @@ impl Stat for MalformedQr {
     }
 
     fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
-        formatter.write_fmt(format_args!("Total malformed QR scans: {}", self.total))
+        write!(formatter, "Total malformed QR scans: {}", self.total)
     }
 }
 
@@ -191,13 +191,14 @@ impl Stat for RegexMatch {
     }
 
     fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
-        formatter.write_fmt(format_args!(
+        write!(
+            formatter,
             "Total matches for [{}]: {}/{}, {}%",
             self.re.as_str(),
             self.matches,
             self.total_checked,
-            (self.matches * 100) / self.total_checked
-        ))
+            (self.matches * 100) / self.total_checked,
+        )
     }
 }
 
@@ -264,7 +265,7 @@ impl Stat for SentryLogsStatsExecutor {
     fn report(&self, formatter: &mut std::fmt::Formatter) -> fmt::Result {
         for checker in &self.0 {
             checker.report(formatter)?;
-            formatter.write_char('\n')?;
+            writeln!(formatter)?;
         }
         Ok(())
     }

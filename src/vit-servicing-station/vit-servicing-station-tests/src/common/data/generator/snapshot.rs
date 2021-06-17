@@ -69,7 +69,7 @@ impl Snapshot {
     }
 
     pub fn any_token(&self) -> (String, ApiTokenData) {
-        let (hash, token) = self.tokens.iter().next().clone().unwrap();
+        let (hash, token) = self.tokens.iter().next().unwrap();
         (hash.to_string(), token.clone())
     }
 

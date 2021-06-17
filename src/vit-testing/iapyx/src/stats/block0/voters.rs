@@ -1,27 +1,15 @@
 use crate::cli::args::stats::IapyxStatsCommandError;
-use chain_core::mempack::ReadBuf;
-use chain_core::mempack::Readable;
 use chain_crypto::bech32::Bech32;
-use chain_impl_mockchain::block::Block;
-use jormungandr_lib::interfaces::{Block0Configuration, Initial};
+use jormungandr_lib::interfaces::Initial;
+use jormungandr_testing_utils::testing::block0::get_block;
 use jormungandr_testing_utils::testing::node::JormungandrRest;
-use url::Url;
 
 pub fn count_active_voters<S: Into<String>>(endpoint: S) -> Result<(), IapyxStatsCommandError> {
     let endpoint = endpoint.into();
     let block0_path = format!("{}/v0/block0", &endpoint);
     println!("Reading block0 from location {:?}...", block0_path);
-    let block = {
-        if Url::parse(&block0_path).is_ok() {
-            let response = reqwest::blocking::get(&block0_path)?;
+    let genesis = get_block(block0_path)?;
 
-            let block0_bytes = response.bytes()?.to_vec();
-            Block::read(&mut ReadBuf::from(&block0_bytes))?
-        } else {
-            panic!("cannot obtain block0 for endpoint");
-        }
-    };
-    let genesis = Block0Configuration::from_block(&block)?;
     let rest_client = JormungandrRest::new(endpoint);
     let mut stats: Stats = Default::default();
 

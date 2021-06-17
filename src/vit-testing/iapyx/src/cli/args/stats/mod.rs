@@ -3,6 +3,7 @@ mod live;
 
 use block0::Block0StatsCommand;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
+use jormungandr_testing_utils::testing::block0::GetBlock0Error;
 use live::LiveStatsCommand;
 use structopt::StructOpt;
 use thiserror::Error;
@@ -26,6 +27,8 @@ impl IapyxStatsCommand {
 pub enum IapyxStatsCommandError {
     #[error("proxy error")]
     ProxyError(#[from] crate::backend::ProxyServerError),
+    #[error("get block0 ")]
+    GetBlock0Error(#[from] GetBlock0Error),
     #[error("pin error")]
     PinError(#[from] crate::qr::PinReadError),
     #[error("reqwest error")]

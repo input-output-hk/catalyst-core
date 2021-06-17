@@ -1,43 +1,22 @@
 use crate::cli::args::stats::IapyxStatsCommandError;
-use chain_core::mempack::ReadBuf;
-use chain_core::mempack::Readable;
-use chain_core::property::Deserialize;
-use chain_impl_mockchain::block::Block;
+use chain_addr::{Discrimination, Kind};
+use chain_crypto::Ed25519;
+use chain_impl_mockchain::vote::CommitteeId;
 use core::ops::Range;
-use jormungandr_lib::interfaces::Block0Configuration;
+use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::Initial;
+use jormungandr_testing_utils::testing::block0::get_block;
 use regex::Regex;
 use std::collections::HashMap;
-use std::io::BufReader;
-use std::path::Path;
-use url::Url;
 
 pub fn calculate_wallet_distribution<S: Into<String>>(
     block0: S,
     threshold: u64,
-) -> Result<(), IapyxStatsCommandError> {
+    support_lovelace: bool,
+) -> Result<Stats, IapyxStatsCommandError> {
     let block0 = block0.into();
     println!("Reading block0 from location {:?}...", &block0);
-
-    let block = {
-        if Path::new(&block0).exists() {
-            let reader = std::fs::OpenOptions::new()
-                .create(false)
-                .write(false)
-                .read(true)
-                .append(false)
-                .open(&block0)?;
-            let reader = BufReader::new(reader);
-            Block::deserialize(reader)?
-        } else if Url::parse(&block0).is_ok() {
-            let response = reqwest::blocking::get(&block0)?;
-            let block0_bytes = response.bytes()?.to_vec();
-            Block::read(&mut ReadBuf::from(&block0_bytes))?
-        } else {
-            panic!(" block0 should be either path to filesystem or url ");
-        }
-    };
-    let genesis = Block0Configuration::from_block(&block)?;
+    let genesis = get_block(block0)?;
 
     let headers = vec![
         (0..threshold),
@@ -57,60 +36,107 @@ pub fn calculate_wallet_distribution<S: Into<String>>(
 
     let mut stats = Stats::new(headers);
 
+    let blacklist: Vec<Address> = genesis
+        .blockchain_configuration
+        .committees
+        .iter()
+        .cloned()
+        .map(|x| {
+            let committee_id: CommitteeId = x.into();
+            let public: chain_crypto::PublicKey<Ed25519> =
+                chain_crypto::PublicKey::from_binary(committee_id.as_ref()).unwrap();
+
+            Address(
+                "ca".to_string(),
+                chain_addr::Address(Discrimination::Production, Kind::Account(public)),
+            )
+        })
+        .collect();
+
     for initial in genesis.initial.iter() {
         if let Initial::Fund(initial_utxos) = initial {
             for x in initial_utxos {
-                stats.add(x.value.into())
+                if !blacklist.contains(&x.address) {
+                    let mut value: u64 = x.value.into();
+                    if support_lovelace {
+                        value /= 1_000_000;
+                    }
+                    stats.add(value);
+                }
             }
         }
     }
-
-    println!("Wallet distribution: \n{:#?}", stats);
-    Ok(())
+    Ok(stats)
 }
 
-struct Stats {
-    pub content: HashMap<Range<u64>, u32>,
+pub struct Record {
+    pub count: u32,
+    pub total: u64,
+}
+
+impl Default for Record {
+    fn default() -> Self {
+        Record { count: 0, total: 0 }
+    }
+}
+
+pub struct Stats {
+    pub content: HashMap<Range<u64>, Record>,
 }
 
 impl Stats {
     pub fn new(header: Vec<Range<u64>>) -> Self {
         Self {
-            content: header.into_iter().map(|range| (range, 0u32)).collect(),
+            content: header
+                .into_iter()
+                .map(|range| (range, Default::default()))
+                .collect(),
         }
     }
 
     pub fn add(&mut self, value: u64) {
-        for (range, count) in self.content.iter_mut() {
+        for (range, record) in self.content.iter_mut() {
             if range.contains(&value) {
-                *count += 1;
+                record.count += 1;
+                record.total += value;
                 return;
             }
         }
     }
 
-    pub fn sum(&self) -> u32 {
-        self.content.values().sum()
-    }
-}
-
-use std::fmt;
-
-impl fmt::Debug for Stats {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    pub fn print_count_per_level(&self) {
         let mut keys = self.content.keys().cloned().collect::<Vec<Range<u64>>>();
         keys.sort_by_key(|x| x.start);
 
         for key in keys {
             let start = format_big_number(key.start.to_string());
             let end = format_big_number(key.end.to_string());
-            f.write_str(&format!(
-                "{} .. {} -> {} \n",
-                start, end, self.content[&key]
-            ))?;
+            println!("{} .. {} -> {} ", start, end, self.content[&key].count);
         }
-        f.write_str(&format!("Total -> {} ", self.sum()))?;
-        Ok(())
+        println!(
+            "Total -> {} ",
+            self.content.values().map(|x| x.count).sum::<u32>()
+        );
+    }
+
+    pub fn print_ada_per_level(&self) {
+        let mut keys = self.content.keys().cloned().collect::<Vec<Range<u64>>>();
+        keys.sort_by_key(|x| x.start);
+
+        for key in keys {
+            let start = format_big_number(key.start.to_string());
+            let end = format_big_number(key.end.to_string());
+            println!(
+                "{} .. {} -> {} ",
+                start,
+                end,
+                format_big_number(self.content[&key].total.to_string())
+            );
+        }
+        println!(
+            "Total -> {} ",
+            self.content.values().map(|x| x.total).sum::<u64>()
+        );
     }
 }
 

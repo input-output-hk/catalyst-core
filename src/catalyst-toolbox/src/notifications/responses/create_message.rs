@@ -2,21 +2,21 @@ use reqwest::StatusCode;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct InnerResponse {
     #[serde(alias = "Messages")]
-    messages: Vec<String>,
+    pub messages: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CreateMessageResponse {
     #[serde(
         deserialize_with = "deserialize_status_code",
         serialize_with = "serialize_status_code"
     )]
-    status_code: StatusCode,
-    status_message: String,
-    response: InnerResponse,
+    pub status_code: StatusCode,
+    pub status_message: String,
+    pub response: InnerResponse,
 }
 
 fn deserialize_status_code<'de, D>(deserializer: D) -> Result<StatusCode, D::Error>

@@ -1,3 +1,4 @@
+mod logs;
 mod notifications;
 mod recovery;
 mod rewards;
@@ -27,8 +28,12 @@ pub struct Cli {
 pub enum CatalystCommand {
     /// Rewards related operations
     Rewards(rewards::Rewards),
+    /// Send push notification to pushwoosh service
     PushNotification(notifications::PushNotifications),
+    /// Tally recovery utility
     Recover(recovery::Recover),
+    /// Download, compare and get stats from sentry and persistent fragment logs
+    Logs(logs::Logs),
 }
 
 impl Cli {
@@ -54,6 +59,7 @@ impl CatalystCommand {
             Rewards(rewards) => rewards.exec()?,
             PushNotification(notifications) => notifications.exec()?,
             Recover(recover) => recover.exec()?,
+            Logs(logs) => logs.exec()?,
         };
         Ok(())
     }

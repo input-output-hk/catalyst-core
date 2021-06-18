@@ -15,18 +15,17 @@ USAGE:
     catalyst-toolbox [FLAGS] [SUBCOMMAND]
 
 FLAGS:
-        --full-version      display full version details (software version, source
-                            version, targets and compiler used)
+        --full-version      display full version details (software version, source version, targets and compiler used)
     -h, --help              Prints help information
-        --source-version    display the sources version, allowing to check the
-                            source's hash used to compile this executable. this
-                            option is useful for scripting retrieving the logs of the
-                            version of this application
+        --source-version    display the sources version, allowing to check the source's hash used to compile this executable. this option is useful for scripting retrieving the logs of the version of this application
     -V, --version           Prints version information
 
 SUBCOMMANDS:
-    help       Prints this message or the help of the given subcommand(s)
-    rewards    Rewards related operations
+    help                 Prints this message or the help of the given subcommand(s)
+    logs                 Download, compare and get stats from sentry and persistent fragment logs
+    push-notification    Send push notification to pushwoosh service
+    recover              Tally recovery utility
+    rewards              Rewards related operations
 ```
 
 ### Supported operations
@@ -197,6 +196,26 @@ Usage:
 ```shell
 catalyst-toolbox recover tally --block0-path block0.bin --logs-path ./logs/fragments
 ```
+
+#### Logs
+There are a set of utilities to work with catalyst related logs
+
+```shell
+Download, compare and get stats from sentry and persistent fragment logs
+
+USAGE:
+    catalyst-toolbox logs <SUBCOMMAND>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    compare    Compare Sentry and Persistent fragment logs
+    help       Prints this message or the help of the given subcommand(s)
+    sentry     Operate over sentry logs
+```
+
 
 ## Python scripts
 

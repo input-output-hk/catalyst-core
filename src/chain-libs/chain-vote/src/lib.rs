@@ -340,12 +340,13 @@ impl Tally {
     ///
     /// This can be used for quick online validation for the tallying
     /// performed offline.
-    pub fn verify(&self,
-                  encrypted_tally: &EncryptedTally,
-                  pks: &[committee::MemberPublicKey],
-                  tally_state: &TallyState,
-                  decrypt_shares: &[TallyDecryptShare])
-        -> bool {
+    pub fn verify(
+        &self,
+        encrypted_tally: &EncryptedTally,
+        pks: &[committee::MemberPublicKey],
+        tally_state: &TallyState,
+        decrypt_shares: &[TallyDecryptShare],
+    ) -> bool {
         for (pk, decrypt_share) in pks.iter().zip(decrypt_shares.iter()) {
             if !verify_decrypt_share(encrypted_tally, pk, decrypt_share) {
                 return false;

@@ -11,7 +11,7 @@ use crate::{
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
-use chain_vote::{Crs, EncryptedTally, committee};
+use chain_vote::{committee, Crs, EncryptedTally};
 use imhamt::Hamt;
 use thiserror::Error;
 
@@ -262,7 +262,12 @@ impl ProposalManager {
         let verifiable_tally = chain_vote::Tally {
             votes: decrypted_proposal.tally_result.to_vec(),
         };
-        if !verifiable_tally.verify(&encrypted_tally, committee_pks, &state, &decrypted_proposal.decrypt_shares) {
+        if !verifiable_tally.verify(
+            &encrypted_tally,
+            committee_pks,
+            &state,
+            &decrypted_proposal.decrypt_shares,
+        ) {
             return Err(TallyError::InvalidDecryption);
         }
 
@@ -694,9 +699,12 @@ impl VotePlanManager {
         F: FnMut(&VoteAction),
     {
         let committee_pks = self.plan.committee_public_keys();
-        let proposal_managers =
-            self.proposal_managers
-                .finalize_private_tally(committee_pks, decrypted_tally,  governance, f)?;
+        let proposal_managers = self.proposal_managers.finalize_private_tally(
+            committee_pks,
+            decrypted_tally,
+            governance,
+            f,
+        )?;
         Ok(Self {
             proposal_managers,
             plan: Arc::clone(&self.plan),

@@ -120,8 +120,12 @@ pub fn print_results(results: &LogCmpStats) {
     println!("Fragment logs size {}", fragment_logs_size);
     println!("Duplicated sentry logs {}", duplicated_sentry_logs);
     println!("Duplicated fragments logs {}", duplicated_fragment_logs);
-    println!("Duplicated fragment id's:");
-    for id in fragment_ids_differ {
-        println!("\t{}", id);
+    if !fragment_ids_differ.is_empty() {
+        println!("Non matching (sentry over persistent logs) fragment id's:");
+        for id in fragment_ids_differ {
+            println!("\t{}", id);
+        }
+    } else {
+        println!("All fragment ids match (sentry over persistent logs)");
     }
 }

@@ -20,7 +20,7 @@ pub fn get_funds_list_is_not_empty() -> Result<(), Box<dyn std::error::Error>> {
 pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
     use pretty_assertions::assert_eq;
     let temp_dir = TempDir::new().unwrap().into_persistent();
-    let expected_fund = data::funds().first().unwrap().clone();
+    let mut expected_fund = data::funds().first().unwrap().clone();
     let (hash, token) = data::token();
 
     let db_path = DbBuilder::new()
@@ -36,6 +36,7 @@ pub fn get_funds_by_id() -> Result<(), Box<dyn std::error::Error>> {
     let rest_client = server.rest_client_with_token(&hash);
 
     let actual_fund = rest_client.fund(&expected_fund.id.to_string())?;
+    expected_fund.challenges.sort_by_key(|c| c.id);
     assert_eq!(expected_fund, actual_fund);
 
     // non existing

@@ -12,6 +12,9 @@ use fake::{
 #[derive(Clone)]
 pub struct ArbitraryValidVotingTemplateGenerator {
     generator: ArbitraryGenerator,
+    funds: Vec<FundTemplate>,
+    challenges: Vec<ChallengeTemplate>,
+    proposals: Vec<ProposalTemplate>,
     next_proposal_id: i32,
     next_challenge_id: i32,
 }
@@ -28,6 +31,9 @@ impl ArbitraryValidVotingTemplateGenerator {
             generator: ArbitraryGenerator::new(),
             next_proposal_id: 1,
             next_challenge_id: 1,
+            funds: Vec::new(),
+            challenges: Vec::new(),
+            proposals: Vec::new(),
         }
     }
 
@@ -47,9 +53,14 @@ impl ArbitraryValidVotingTemplateGenerator {
 impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
     fn next_proposal(&mut self) -> ProposalTemplate {
         let proposal_url = self.generator.gen_http_address();
-        let challenge_type = self.generator.challenge_type();
+        let challenge = self
+            .challenges
+            .get(self.generator.random_index(self.challenges.len()))
+            .unwrap()
+            .clone();
+        let challenge_type = challenge.challenge_type.clone();
         let proposal_challenge_info = self.generator.proposals_challenge_info(&challenge_type);
-        ProposalTemplate {
+        let proposal_template = ProposalTemplate {
             proposal_id: self.next_proposal_id().to_string(),
             internal_id: self.generator.id().to_string(),
             category_name: Industry().fake::<String>(),
@@ -65,14 +76,16 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             proposer_name: Name().fake::<String>(),
             proposer_url: self.generator.gen_http_address(),
             chain_vote_type: "public".to_string(),
-            challenge_id: None,
+            challenge_id: Some(challenge.id),
             challenge_type,
             proposal_challenge_info,
-        }
+        };
+        self.proposals.push(proposal_template.clone());
+        proposal_template
     }
 
     fn next_challenge(&mut self) -> ChallengeTemplate {
-        ChallengeTemplate {
+        let challenge = ChallengeTemplate {
             id: self.next_challenge_id().to_string(),
             challenge_type: self.generator.challenge_type(),
             title: CatchPhase().fake::<String>(),
@@ -81,15 +94,19 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             proposers_rewards: "100000".to_string(),
             challenge_url: self.generator.gen_http_address(),
             fund_id: None,
-        }
+        };
+        self.challenges.push(challenge.clone());
+        challenge
     }
 
     fn next_fund(&mut self) -> FundTemplate {
-        FundTemplate {
+        let fund = FundTemplate {
             id: self.generator.id().abs(),
             goal: "How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?".to_string(),
             rewards_info: Sentence(3..5).fake::<String>(),
             threshold: None,
-        }
+        };
+        self.funds.push(fund.clone());
+        fund
     }
 }

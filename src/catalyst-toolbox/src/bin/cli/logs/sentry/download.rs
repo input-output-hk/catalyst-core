@@ -47,10 +47,6 @@ pub struct Download {
 
     #[structopt(flatten)]
     dates: DateFilter,
-
-    /// Size of retrieved logs, only used in "full" Mode
-    #[structopt(long, default_value = "1000")]
-    chunk_size: usize,
 }
 
 impl FromStr for Mode {
@@ -76,11 +72,12 @@ impl Download {
             out,
             mode,
             dates,
-            chunk_size,
         } = self;
         let dates = flip_dates_if_wrong(dates);
 
-        request_sentry_logs_and_dump_to_file(url, token, mode, dates, out, chunk_size)
+        // notice that we use chunk_size of 100. Right now sentry api limits this to 100 per pagination entry
+        // so we must request them 100 at a time...
+        request_sentry_logs_and_dump_to_file(url, token, mode, dates, out, 100)
     }
 }
 

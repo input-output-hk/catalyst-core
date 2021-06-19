@@ -143,12 +143,8 @@ pub(super) fn valid_pool_update_certificate(reg: &certificate::PoolUpdate) -> Le
 pub enum TxVerifyError {
     #[error("too many outputs, expected maximum of {expected}, but received {actual}")]
     TooManyOutputs { expected: u8, actual: u8 },
-    #[error("Transaction is not yet within validity range")]
-    TransactionValidityInFuture,
     #[error("Transaction validity expired")]
-    TransactionValidityExpired,
-    #[error("Transaction validity range is invalid")]
-    TransactionValidityRangeInvalid,
+    TransactionExpired,
 }
 
 #[allow(clippy::absurd_extreme_comparisons)]
@@ -176,16 +172,12 @@ pub(super) fn valid_transaction_date<P>(
     date: BlockDate,
 ) -> Result<(), TxVerifyError> {
     // if end and start are BlockDate::first, we expect that the transaction has no validity range
-    let (start, end) = tx.validity();
-    if end == start && end == BlockDate::first() {
+    let valid_until = tx.valid_until();
+    if valid_until == BlockDate::first() {
         return Ok(());
     }
-    if start >= end {
-        Err(TxVerifyError::TransactionValidityRangeInvalid)
-    } else if date < start {
-        Err(TxVerifyError::TransactionValidityInFuture)
-    } else if date > end {
-        Err(TxVerifyError::TransactionValidityExpired)
+    if date > valid_until {
+        Err(TxVerifyError::TransactionExpired)
     } else {
         Ok(())
     }

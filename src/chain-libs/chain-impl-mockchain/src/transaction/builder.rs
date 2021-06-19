@@ -53,8 +53,7 @@ impl TxBuilder {
                 sz: 0,
                 nb_inputs: 0,
                 nb_outputs: 0,
-                valid_start_date: BlockDate::first(),
-                valid_end_date: BlockDate::first(),
+                valid_until: BlockDate::first(),
                 inputs: 0,
                 outputs: 0,
                 witnesses: 0,
@@ -73,9 +72,8 @@ impl<State> TxBuilderState<State> {
     // this is not exported to outside this module, as someone
     // can set the validity after the witness, with would render
     // the witness invalid, instead use set_validity when available
-    fn _set_validity(&mut self, start: BlockDate, end: BlockDate) {
-        self.tstruct.valid_start_date = start;
-        self.tstruct.valid_end_date = end;
+    fn _set_validity(&mut self, valid_until: BlockDate) {
+        self.tstruct.valid_until = valid_until;
     }
 }
 
@@ -97,15 +95,15 @@ impl TxBuilderState<SetPayload> {
         self.set_payload(&NoExtra)
     }
 
-    pub fn set_validity(mut self, start: BlockDate, end: BlockDate) -> Self {
-        self._set_validity(start, end);
+    pub fn set_validity(mut self, valid_until: BlockDate) -> Self {
+        self._set_validity(valid_until);
         self
     }
 }
 
 impl<P> TxBuilderState<SetIOs<P>> {
-    pub fn set_validity(mut self, start: BlockDate, end: BlockDate) -> Self {
-        self._set_validity(start, end);
+    pub fn set_validity(mut self, valid_until: BlockDate) -> Self {
+        self._set_validity(valid_until);
         self
     }
 
@@ -135,8 +133,7 @@ impl<P> TxBuilderState<SetIOs<P>> {
             data.extend_from_slice(&date.slot_id.to_be_bytes());
         }
 
-        write_date(&mut self.data, self.tstruct.valid_start_date);
-        write_date(&mut self.data, self.tstruct.valid_end_date);
+        write_date(&mut self.data, self.tstruct.valid_until);
 
         self.tstruct.nb_inputs = nb_inputs;
         self.tstruct.nb_outputs = nb_outputs;

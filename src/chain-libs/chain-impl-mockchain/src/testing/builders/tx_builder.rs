@@ -106,7 +106,7 @@ impl TestTxBuilder {
     pub fn move_to_outputs_from_faucet_with_validity(
         &self,
         test_ledger: &mut TestLedger,
-        validity: Option<(BlockDate, BlockDate)>,
+        validity: Option<BlockDate>,
         destination: &[Output<Address>],
     ) -> TestTx {
         assert_eq!(
@@ -127,10 +127,7 @@ impl TestTxBuilder {
         )];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(
-                validity.map(|range| range.0).unwrap_or(BlockDate::first()),
-                validity.map(|range| range.1).unwrap_or(BlockDate::first()),
-            )
+            .set_validity(validity.unwrap_or(BlockDate::first()))
             .set_ios(&inputs, &destination);
 
         let witness =

@@ -35,7 +35,7 @@ impl<P> Debug for Transaction<P> {
             .field("payload", &tx.payload().0)
             .field("nb_inputs", &tx.nb_inputs())
             .field("nb_outputs", &tx.nb_outputs())
-            .field("validity", &tx.validity())
+            .field("valid_until", &tx.valid_until())
             .field("nb_witnesses", &tx.nb_witnesses())
             .field("total_input_value", &self.total_input())
             .field("total_output_value", &self.total_output())
@@ -241,8 +241,7 @@ pub(super) struct TransactionStruct {
     pub(super) sz: usize,
     pub(super) nb_inputs: u8,
     pub(super) nb_outputs: u8,
-    pub(super) valid_start_date: BlockDate,
-    pub(super) valid_end_date: BlockDate,
+    pub(super) valid_until: BlockDate,
     pub(super) inputs: usize,
     pub(super) outputs: usize,
     pub(super) witnesses: usize,
@@ -277,8 +276,7 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
         Ok(BlockDate { epoch, slot_id })
     }
 
-    let valid_start_date = read_date(&mut rb)?;
-    let valid_end_date = read_date(&mut rb)?;
+    let valid_until = read_date(&mut rb)?;
 
     let inputs_pos = rb.position();
     rb.skip_bytes(nb_inputs as usize * INPUT_SIZE)
@@ -311,8 +309,7 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
         sz,
         nb_inputs,
         nb_outputs,
-        valid_start_date,
-        valid_end_date,
+        valid_until,
         inputs: inputs_pos,
         outputs: outputs_pos,
         witnesses: witnesses_pos,
@@ -469,8 +466,8 @@ impl<'a, P> TransactionSlice<'a, P> {
         self.tstruct.nb_inputs
     }
 
-    pub fn validity(&self) -> (BlockDate, BlockDate) {
-        (self.tstruct.valid_start_date, self.tstruct.valid_end_date)
+    pub fn valid_until(&self) -> BlockDate {
+        self.tstruct.valid_until
     }
 
     pub fn nb_outputs(&self) -> u8 {

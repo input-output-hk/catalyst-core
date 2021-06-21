@@ -68,7 +68,7 @@ impl LedgerState {
     pub fn statuses(&self, ids: Vec<FragmentId>) -> HashMap<String, FragmentStatus> {
         self.fragment_logs
             .iter()
-            .filter(|x| ids.contains(&x.fragment_id().clone().into_hash()))
+            .filter(|x| ids.contains(&(*x.fragment_id()).into_hash()))
             .map(|x| (x.fragment_id().to_string(), x.status().clone()))
             .collect()
     }

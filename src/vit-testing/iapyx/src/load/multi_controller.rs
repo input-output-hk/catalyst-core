@@ -142,7 +142,7 @@ impl MultiController {
         let txs = votes_data
             .into_iter()
             .map(|(p, c)| {
-                wallet.set_state(account_state.value().clone().into(), counter);
+                wallet.set_state((*account_state.value()).into(), counter);
                 let tx = wallet
                     .vote(settings.clone(), &p.clone().into(), c)
                     .unwrap()

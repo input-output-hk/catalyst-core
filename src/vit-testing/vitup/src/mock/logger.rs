@@ -21,7 +21,7 @@ impl Logger {
     pub fn log<S: Into<String>>(&mut self, message: S) {
         let message = message.into();
         let timestamp = SystemTime::now();
-        let datetime: DateTime<Utc> = timestamp.clone().into();
+        let datetime: DateTime<Utc> = timestamp.into();
 
         println!("{}", self.format_log(message.clone(), datetime));
 

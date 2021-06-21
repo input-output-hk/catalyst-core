@@ -2,6 +2,7 @@ mod node;
 mod proxy;
 mod vit_station;
 
+use crate::data::Challenge;
 use crate::Fund;
 use crate::Proposal;
 use crate::SimpleVoteStatus;
@@ -11,7 +12,6 @@ use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentId},
 };
-use crate::data::Challenge;
 use chain_ser::deser::Deserialize;
 use jormungandr_lib::interfaces::AccountIdentifier;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};

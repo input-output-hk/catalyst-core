@@ -1,9 +1,9 @@
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options};
-use jormungandr_testing_utils::wallet::committee::election_key_from_base32;
+use itertools::Itertools;
+use jormungandr_testing_utils::wallet::committee::encrypting_key_from_base32;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom, fmt, str};
 pub use wallet_core::{Choice, Value};
-use itertools::Itertools;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Fund {
@@ -140,7 +140,6 @@ pub struct Challenge {
     pub challenge_url: String,
     #[serde(alias = "proposers_rewards")]
     pub proposers_rewards: u32,
-    
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -223,7 +222,6 @@ pub type VoteOptionsMap = HashMap<String, u8>;
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct VoteOptions(pub VoteOptionsMap);
-
 
 impl VoteOptions {
     pub fn as_csv_string(&self) -> String {

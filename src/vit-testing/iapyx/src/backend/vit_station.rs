@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 
+use crate::data::Challenge;
 use crate::data::ServiceVersion;
 use crate::data::{Fund, Proposal};
 use hyper::StatusCode;
 use reqwest::blocking::{Client, Response};
 use thiserror::Error;
-use crate::data::Challenge;
 pub const API_TOKEN_HEADER: &str = "API-Token";
 
 #[derive(Debug, Clone)]
@@ -132,7 +132,7 @@ impl VitStationRestClient {
         self.get(&self.path_builder().proposal(id))
             .map_err(RestError::RequestError)
     }
-    
+
     pub fn challenges_raw(&self) -> Result<Response, RestError> {
         self.get(&self.path_builder().challenges())
             .map_err(RestError::RequestError)

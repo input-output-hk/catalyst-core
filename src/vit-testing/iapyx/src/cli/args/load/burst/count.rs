@@ -47,7 +47,7 @@ pub struct BurstCountIapyxLoadCommand {
 
     /// use https for sending fragments
     #[structopt(short = "h", long = "https")]
-    pub use_https_for_post: bool,
+    pub use_https: bool,
 
     /// use https for sending fragments
     #[structopt(short = "d", long = "debug")]
@@ -109,7 +109,7 @@ impl BurstCountIapyxLoadCommand {
             secrets_folder: self.secrets_folder.clone(),
             global_pin: self.global_pin.clone(),
             read_pin_from_filename: self.read_pin_from_filename,
-            use_https_for_post: self.use_https_for_post,
+            use_https: self.use_https,
             debug: self.debug,
         }
     }

@@ -66,9 +66,8 @@ impl IapyxLoad {
                 measurement_name,
             )
         } else {
-            jortestkit::load::start_async(
+            jortestkit::load::start_sync(
                 WalletRequestGen::new(multicontroller?),
-                VoteStatusProvider::new(backend, self.config.debug),
                 self.config.config,
                 measurement_name,
             )

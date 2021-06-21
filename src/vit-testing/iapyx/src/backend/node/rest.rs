@@ -35,6 +35,7 @@ impl WalletNodeRestClient {
                     .iter()
                     .map(|tx| Fragment::deserialize(tx.as_slice()).unwrap())
                     .collect(),
+                true,
             )?;
             Ok(())
         } else {

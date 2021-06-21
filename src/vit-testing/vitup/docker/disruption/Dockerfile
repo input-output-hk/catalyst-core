@@ -26,7 +26,7 @@ RUN cd ${ENV_PREFIX} && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-servicing-station && \
 	cd vit-servicing-station && \
-	git checkout 59f8cfbd1be864c2a3b67d6e7df63605eec17193
+	git checkout 75a3c30211892c32a0edf1ff6b4b368d5e3a0e82
 	
  RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-testing
@@ -52,4 +52,4 @@ EXPOSE 80 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010 3030
 WORKDIR ${ENV_PREFIX}/vit-testing/vitup
 RUN mkdir -p ./mock
 
-ENTRYPOINT ~/.cargo/bin/vitup start mock --config ./example/mock/config.yaml
+ENTRYPOINT ~/.cargo/bin/vitup start mock --config ./example/mock/config.yaml --params ./example/mock/start_params.yaml

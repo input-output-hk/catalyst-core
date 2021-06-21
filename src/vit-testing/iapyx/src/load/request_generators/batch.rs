@@ -52,7 +52,7 @@ impl BatchWalletRequestGen {
         let choices: Vec<Choice> =
             std::iter::from_fn(|| Some(self.next_usize() % self.options.len()))
                 .take(batch_size)
-                .map(|index| Choice::new(*options.get(index).clone().unwrap()))
+                .map(|index| Choice::new(*options.get(index).unwrap()))
                 .collect();
 
         self.multi_controller

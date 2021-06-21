@@ -75,4 +75,5 @@ ENV PATH="/root/.cargo/bin/:${PATH}"
 EXPOSE 80 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010 3030
 
 WORKDIR ${ENV_PREFIX}/vit-testing/vitup
+RUN mkdir -p mock
 ENTRYPOINT ~/.cargo/bin/vitup start quick --jormungandr ~/.cargo/bin/jormungandr --jcli ~/.cargo/bin/jcli --endpoint 0.0.0.0:80 --vote-start-epoch $ENV_VOTE_START_EPOCH --tally-start-epoch $ENV_TALLY_START_EPOCH --tally-end-epoch $ENV_TALLY_END_EPOCH --slot-duration $ENV_SLOT_DURATION --slots-in-epoch $ENV_SLOTS_IN_EPOCH --progress-bar-mode standard --root-dir $ENV_DATA $ENV_PRIVATE --mode service --version "2.0"

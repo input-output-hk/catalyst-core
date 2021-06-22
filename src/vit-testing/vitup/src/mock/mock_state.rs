@@ -18,6 +18,7 @@ use vit_servicing_station_tests::common::data::ValidVotePlanGenerator;
 
 pub struct MockState {
     pub available: bool,
+    pub error_code: u16,
     version: VitVersion,
     ledger_state: LedgerState,
     vit_state: Snapshot,
@@ -57,6 +58,7 @@ impl MockState {
 
         Ok(Self {
             available: true,
+            error_code: 400,
             ledger_state: LedgerState::new(
                 controller.settings().network_settings.block0.clone(),
                 controller.block0_file(),

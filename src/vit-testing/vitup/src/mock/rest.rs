@@ -109,6 +109,11 @@ pub async fn start_rest_server(context: ContextLock) {
                 .and(with_context.clone())
                 .and_then(command_available);
 
+            let set_error_code = warp::path!("error-code" / u16)
+                .and(warp::post())
+                .and(with_context.clone())
+                .and_then(command_error_code);
+
             let fund_id = warp::path!("fund" / "id" / i32)
                 .and(warp::post())
                 .and(with_context.clone())
@@ -148,6 +153,7 @@ pub async fn start_rest_server(context: ContextLock) {
             root.and(
                 reset
                     .or(availability)
+                    .or(set_error_code)
                     .or(fund_id)
                     .or(fragment_strategy)
                     .or(version),
@@ -350,9 +356,13 @@ pub async fn get_active_vote_plans(context: ContextLock) -> Result<impl Reply, R
     let mut context_lock = context.lock().unwrap();
     context_lock.log("get_active_vote_plans");
 
-    if !context_lock.available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+    if !context.lock().unwrap().available() {
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let vp: Vec<VotePlanStatus> = context
@@ -399,6 +409,18 @@ pub async fn command_available(
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     context.lock().unwrap().state_mut().available = available;
+    Ok(warp::reply())
+}
+
+pub async fn command_error_code(
+    error_code: u16,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .log(&format!("set-error-code: {}", error_code));
+    context.lock().unwrap().state_mut().error_code = error_code;
     Ok(warp::reply())
 }
 
@@ -460,11 +482,12 @@ pub async fn post_message(
     let fragment = match Fragment::deserialize(message.as_ref()) {
         Ok(fragment) => fragment,
         Err(err) => {
+            let code = context.lock().unwrap().state().error_code;
             context.lock().unwrap().log(format!(
-                "post_message with wrong fragment. Reason '{:?}'...",
-                err
+                "post_message with wrong fragment. Reason '{:?}'... Error code: {}",
+                err, code
             ));
-            return Err(warp::reject());
+            return Err(warp::reject::custom(ForcedErrorCode { code }));
         }
     };
 
@@ -474,8 +497,12 @@ pub async fn post_message(
         .log(format!("post_message {}...", fragment.id()));
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let fragment_id: jormungandr_lib::crypto::hash::Hash = context
@@ -510,8 +537,12 @@ pub async fn get_fragment_statuses(
         .log(format!("get_fragment_statuses {:?}...", query));
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let ids = query.fragment_ids.split(',');
@@ -535,8 +566,12 @@ pub async fn post_fragments(
     context.lock().unwrap().log("post_fragments");
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let fragments: Vec<Fragment> = messages
@@ -563,8 +598,12 @@ pub async fn get_fragment_logs(context: ContextLock) -> Result<impl Reply, Rejec
     context.lock().unwrap().log("get_fragment_logs");
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     Ok(HandlerResult(Ok(context
@@ -579,8 +618,12 @@ pub async fn get_challenges(context: ContextLock) -> Result<impl Reply, Rejectio
     context.lock().unwrap().log("get_challenges");
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     Ok(HandlerResult(Ok(context
@@ -598,8 +641,12 @@ pub async fn get_challenge_by_id(id: i32, context: ContextLock) -> Result<impl R
         .log(format!("get_challenge_by_id {} ...", id));
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let challenge = context
@@ -633,8 +680,12 @@ pub async fn get_all_proposals(context: ContextLock) -> Result<impl Reply, Rejec
     context.lock().unwrap().log("get_all_proposals");
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     Ok(HandlerResult(Ok(context
@@ -655,8 +706,12 @@ pub async fn get_proposal(id: i32, context: ContextLock) -> Result<impl Reply, R
         .log(format!("get_proposal {} ...", id));
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let proposal = context
@@ -680,8 +735,12 @@ pub async fn get_fund_by_id(id: i32, context: ContextLock) -> Result<impl Reply,
         .log(format!("get_fund_by_id {} ...", id));
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let funds = context.lock().unwrap().state().vit().funds();
@@ -695,8 +754,12 @@ pub async fn get_fund(context: ContextLock) -> Result<impl Reply, Rejection> {
     context.lock().unwrap().log("get_fund ...");
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let funds: Vec<Fund> = context.lock().unwrap().state().vit().funds().to_vec();
@@ -708,8 +771,12 @@ pub async fn get_settings(context: ContextLock) -> Result<impl Reply, Rejection>
     context.lock().unwrap().log("get_settings...");
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
     let settings = context.lock().unwrap().state().ledger().settings();
@@ -733,8 +800,12 @@ pub async fn get_account(
         .log(format!("get_account {}...", &account_bech32));
 
     if !context.lock().unwrap().available() {
-        context.lock().unwrap().log("unavailability mode is on");
-        return Err(warp::reject());
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
     let account_state: Result<jormungandr_lib::interfaces::AccountState, _> = context
         .lock()
@@ -753,18 +824,24 @@ pub async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(warp::reply())
 }
 
+#[derive(Debug)]
+struct ForcedErrorCode {
+    pub code: u16,
+}
+
+impl warp::reject::Reject for ForcedErrorCode {}
+
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
-    /* if let Some(e) = r.find::<file_lister::Error>() {
-        Ok(warp::reply::with_status(
-            e.to_string(),
-            StatusCode::BAD_REQUEST,
-        ))
-    } else {*/
+    if let Some(forced_error_code) = r.find::<ForcedErrorCode>() {
+        return Ok(warp::reply::with_status(
+            "forced rejections".to_string(),
+            StatusCode::from_u16(forced_error_code.code).unwrap(),
+        ));
+    }
     Ok(warp::reply::with_status(
         format!("internal error: {:?}", r),
         StatusCode::INTERNAL_SERVER_ERROR,
     ))
-    // }
 }
 
 pub async fn authorize_token(

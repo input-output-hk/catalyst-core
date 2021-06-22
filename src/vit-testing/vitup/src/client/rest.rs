@@ -92,6 +92,11 @@ impl VitupDisruptionRestClient {
         self.inner.post_skip_response("api/control/available/false")
     }
 
+    pub fn set_error_code(&self, error_code: u16) -> Result<(), Error> {
+        self.inner
+            .post_skip_response(format!("api/control/availabl/error-code/{}", error_code))
+    }
+
     pub fn make_available(&self) -> Result<(), Error> {
         self.inner.post_skip_response("api/control/available/true")
     }

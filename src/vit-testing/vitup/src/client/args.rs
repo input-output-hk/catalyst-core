@@ -108,6 +108,7 @@ impl FilesCommand {
 pub enum ControlCommand {
     Reset,
     SetUnavailable,
+    SetErrorCode(SetErrorCodeCommand),
     SetAvailable,
     SetFundId(SetFundIdCommand),
     Fragments(FragmentsCommand),
@@ -119,6 +120,9 @@ impl ControlCommand {
         match self {
             Self::Reset => rest.reset().map_err(Into::into),
             Self::SetUnavailable => rest.make_unavailable().map_err(Into::into),
+            Self::SetErrorCode(set_error_code) => {
+                rest.set_error_code(set_error_code.code).map_err(Into::into)
+            }
             Self::SetAvailable => rest.make_available().map_err(Into::into),
             Self::SetFundId(set_fund_id) => {
                 rest.set_fund_id(set_fund_id.fund_id).map_err(Into::into)
@@ -143,6 +147,12 @@ impl ControlCommand {
 pub struct SetFundIdCommand {
     #[structopt(long = "fund-id")]
     fund_id: u32,
+}
+
+#[derive(StructOpt, Debug)]
+pub struct SetErrorCodeCommand {
+    #[structopt(long = "code")]
+    code: u16,
 }
 
 #[derive(StructOpt, Debug)]

@@ -90,6 +90,7 @@ impl VoteRegistrationJob {
     pub fn generate_payment_address<P: AsRef<Path>, Q: AsRef<Path>>(
         &self,
         verification_key: P,
+        stake_verification_key: P,
         output: Q,
     ) -> Result<ExitStatus, Error> {
         let mut command = Command::new(&self.cardano_cli);
@@ -98,6 +99,8 @@ impl VoteRegistrationJob {
             .arg("build")
             .arg("--verification-key-file")
             .arg(verification_key.as_ref())
+            .arg("--stake-verification-key-file")
+            .arg(stake_verification_key.as_ref())
             .arg("--out-file")
             .arg(output.as_ref())
             .arg_network(self.network);
@@ -161,19 +164,21 @@ impl VoteRegistrationJob {
         write_content(&public_key, &public_key_path)?;
         println!("catalyst-vote.pkey saved");
 
-        println!("saving payment.addr...");
-        let payment_address_path = Path::new(&self.working_dir).join("payment.addr");
-        self.generate_payment_address(&payment_vkey_path, &payment_address_path)?;
-        println!("payment.addr saved");
-
-        let payment_address = read_file(&payment_address_path);
-
         println!("saving rewards.addr...");
         let rewards_address_path = Path::new(&self.working_dir).join("rewards.addr");
         self.generate_stake_address(&stake_vkey_path, &rewards_address_path)?;
         println!("rewards.addr saved");
 
         let rewards_address = read_file(&rewards_address_path);
+        println!("rewards.addr: {}", rewards_address);
+
+        println!("saving payment.addr...");
+        let payment_address_path = Path::new(&self.working_dir).join("payment.addr");
+        self.generate_payment_address(&payment_vkey_path, &stake_vkey_path, &payment_address_path)?;
+        println!("payment.addr saved");
+
+        let payment_address = read_file(&payment_address_path);
+        println!("payment.addr: {}", payment_address);
 
         let mut command = Command::new(&self.cardano_cli);
         command
@@ -358,6 +363,7 @@ pub struct FundsValue {
 ///     }
 /// }
 pub fn get_funds(output: String) -> Result<u64, Error> {
+    println!("get_funds: {}", output);
     let response: FundsResponse =
         serde_json::from_str(&output).map_err(|_| Error::CannotParseCardanoCliOutput(output))?;
     Ok(response.get_first()?.value.lovelace)

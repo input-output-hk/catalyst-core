@@ -1887,9 +1887,11 @@ version = "0.1.0"
 dependencies = [
  "assert_fs",
  "cfg-if 1.0.0",
+ "chain-addr",
  "chain-impl-mockchain",
  "chrono",
  "iapyx",
+ "jormungandr-integration-tests",
  "jormungandr-lib",
  "jormungandr-scenario-tests",
  "jormungandr-testing-utils",

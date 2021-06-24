@@ -8,11 +8,13 @@ edition = "2018"
 
 [dependencies]
 jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "26f6fc15911863b5f3cf047d6d1789cd0cc39ba0" } 
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "26f6fc15911863b5f3cf047d6d1789cd0cc39ba0" } 
 jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "26f6fc15911863b5f3cf047d6d1789cd0cc39ba0" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "26f6fc15911863b5f3cf047d6d1789cd0cc39ba0" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "75a3c30211892c32a0edf1ff6b4b368d5e3a0e82" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "75a3c30211892c32a0edf1ff6b4b368d5e3a0e82" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }

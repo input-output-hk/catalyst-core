@@ -90,18 +90,24 @@ impl SnapshotRestClient {
     pub fn job_new(&self, params: JobParameters) -> Result<String, Error> {
         let client = reqwest::blocking::Client::new();
         let path = self.path("api/job/new");
-        println!("Calling: {}", path);      
+        println!("Calling: {}", path);
         let request = self.set_header(client.post(&path));
-        request.json(&params).send()?.text().map_err(Into::into).map(|text| text.replace("\"",""))
+        request
+            .json(&params)
+            .send()?
+            .text()
+            .map_err(Into::into)
+            .map(|text| text.replace("\"", ""))
     }
 
-    pub fn job_status<S: Into<String>>(&self, id: S) -> Result<Result<State,crate::context::Error>, Error> {
+    pub fn job_status<S: Into<String>>(
+        &self,
+        id: S,
+    ) -> Result<Result<State, crate::context::Error>, Error> {
         let content = self.get(format!("api/job/status/{}", id.into()))?;
         serde_yaml::from_str(&content).map_err(Into::into)
     }
 
-
-    
     pub fn wait_for_job_finish<S: Into<String>>(
         &self,
         id: S,

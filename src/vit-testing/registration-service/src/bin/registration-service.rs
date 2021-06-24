@@ -1,11 +1,11 @@
 pub use registration_service::{
     args::{Error, RegistrationServiceCommand},
     context::Context,
-    utils::*
+    utils::*,
 };
 
-use structopt::StructOpt;
 use futures::future::FutureExt;
+use structopt::StructOpt;
 
 #[tokio::main]
 pub async fn main() -> Result<(), Error> {

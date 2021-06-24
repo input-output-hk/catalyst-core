@@ -86,7 +86,10 @@ pub struct StatusCommand {
 }
 
 impl StatusCommand {
-    pub fn exec(self, rest: SnapshotRestClient) -> Result<Result<State,crate::context::Error>, Error> {
+    pub fn exec(
+        self,
+        rest: SnapshotRestClient,
+    ) -> Result<Result<State, crate::context::Error>, Error> {
         rest.job_status(self.job_id).map_err(Into::into)
     }
 }

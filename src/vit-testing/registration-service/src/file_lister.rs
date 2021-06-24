@@ -28,7 +28,9 @@ impl FolderDump {
 
     pub fn find_qr<S: Into<String>>(&self, job_id: S) -> Option<&String> {
         let job_id = job_id.into();
-        self.content.iter().find(|x| x.contains(&job_id) && x.contains("png"))
+        self.content
+            .iter()
+            .find(|x| x.contains(&job_id) && x.contains("png"))
     }
 }
 

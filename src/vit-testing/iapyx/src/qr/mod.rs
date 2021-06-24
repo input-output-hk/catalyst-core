@@ -1,11 +1,11 @@
+use bech32::ToBase32;
+use chain_crypto::AsymmetricKey;
+use chain_crypto::Ed25519Extended;
 use jormungandr_testing_utils::qr_code::KeyQrCode;
 use jormungandr_testing_utils::qr_code::KeyQrCodeError;
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;
-use chain_crypto::Ed25519Extended;
-use chain_crypto::AsymmetricKey;
-use bech32::ToBase32;
 
 #[derive(Clone, Debug)]
 pub enum PinReadMode {
@@ -63,13 +63,10 @@ impl QrReader {
         Ok(secret.first().unwrap().clone())
     }
 
-    pub fn read_qr_as_bech32<P: AsRef<Path>>(
-        &self,
-        qr: P,
-    ) -> Result<String, PinReadError> {
-       let sk = self.read_qr(qr)?;
-       let hrp = Ed25519Extended::SECRET_BECH32_HRP;
-       Ok(bech32::encode(hrp, sk.leak_secret().to_base32())?)
+    pub fn read_qr_as_bech32<P: AsRef<Path>>(&self, qr: P) -> Result<String, PinReadError> {
+        let sk = self.read_qr(qr)?;
+        let hrp = Ed25519Extended::SECRET_BECH32_HRP;
+        Ok(bech32::encode(hrp, sk.leak_secret().to_base32())?)
     }
 
     pub fn read_qrs<P: AsRef<Path>>(

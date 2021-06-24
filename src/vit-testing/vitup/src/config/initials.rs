@@ -100,20 +100,20 @@ impl Initials {
         for initial in initials.iter() {
             if let jormungandr_lib::interfaces::Initial::Fund(initial_utxos) = initial {
                 for utxo in initial_utxos.iter() {
-                    templates.push(Initial::External{
+                    templates.push(Initial::External {
                         address: utxo.address.to_string(),
-                        funds:  utxo.value.into(),
+                        funds: utxo.value.into(),
                     });
                 }
             }
         }
         Self(templates)
-    } 
+    }
 
     pub fn external_templates(&self) -> Vec<ExternalWalletTemplate> {
         let mut templates = Vec::new();
         for (index, initial) in self.0.iter().enumerate() {
-            if let Initial::External{ funds, address} = initial {
+            if let Initial::External { funds, address } = initial {
                 templates.push(ExternalWalletTemplate::new(
                     format!("wallet_{}", index + 1),
                     Value(*funds as u64),

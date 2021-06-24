@@ -152,7 +152,7 @@ pub enum State {
         end: NaiveDateTime,
         request: Request,
         info: JobOutputInfo,
-    }
+    },
 }
 
 use thiserror::Error;

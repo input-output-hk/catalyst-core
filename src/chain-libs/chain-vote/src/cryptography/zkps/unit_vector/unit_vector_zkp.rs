@@ -51,7 +51,7 @@ impl Zkp {
         crs: &Crs,
         public_key: &PublicKey,
         unit_vector: &UnitVector,
-        encryption_randomness: &Vec<Scalar>,
+        encryption_randomness: &[Scalar],
         ciphertexts: &[Ciphertext],
     ) -> Self {
         let ck = CommitmentKey::from(crs.clone());

@@ -57,11 +57,11 @@ impl Zkp {
 
     pub fn to_bytes(&self) -> [u8; Self::PROOF_SIZE] {
         let mut output = [0u8; Self::PROOF_SIZE];
-        self.to_slice_mut(&mut output);
+        self.to_mut_slice(&mut output);
         output
     }
 
-    pub fn to_slice_mut(&self, output: &mut [u8]) {
+    pub fn to_mut_slice(&self, output: &mut [u8]) {
         assert_eq!(output.len(), Self::PROOF_SIZE);
         output[0..GroupElement::BYTES_LEN].copy_from_slice(&self.a1.to_bytes());
         output[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)]

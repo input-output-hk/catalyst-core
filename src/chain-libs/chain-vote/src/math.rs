@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-// Math module define polynomial types and operations that is used to setup the scheme.
+/// Math module define polynomial types and operations that is used to setup the scheme.
 use crate::gang::Scalar;
 use rand_core::{CryptoRng, RngCore};
 
@@ -22,21 +22,6 @@ impl std::fmt::Display for Polynomial {
             }
         }
         Ok(())
-    }
-}
-
-fn power_of(n: &Scalar) -> PowerIterator {
-    PowerIterator(Scalar::one(), n.clone())
-}
-
-pub struct PowerIterator(Scalar, Scalar);
-
-impl Iterator for PowerIterator {
-    type Item = Scalar;
-    fn next(&mut self) -> Option<Self::Item> {
-        let mut next = &self.0 * &self.1;
-        std::mem::swap(&mut self.0, &mut next);
-        Some(next)
     }
 }
 
@@ -79,13 +64,9 @@ impl Polynomial {
         Polynomial { elements: vec }
     }
 
-    pub fn len(&self) -> usize {
-        self.elements.len()
-    }
-
     /// get the value of a polynomial a0 + a1 * x^1 + a2 * x^2 + .. + an * x^n for a value x=at
     pub fn evaluate(&self, at: &Scalar) -> Scalar {
-        Scalar::sum(self.elements.iter().zip(power_of(at)).map(|(e, x)| e * x))
+        Scalar::sum(self.elements.iter().zip(at.exp_iter()).map(|(e, x)| e * x))
             .expect("empty polynomial")
     }
 
@@ -142,6 +123,43 @@ impl std::ops::Mul<Polynomial> for Polynomial {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     #[test]
-    fn mul_degree() {}
+    fn poly_tests() {
+        let poly_deg_4 = Polynomial::new(4).set2(Scalar::one(), Scalar::from_u64(3));
+
+        assert_eq!(poly_deg_4.degree(), 4);
+        assert_eq!(
+            poly_deg_4.evaluate(&Scalar::from_u64(3)),
+            Scalar::from_u64(10)
+        );
+        assert_eq!(poly_deg_4.at_zero(), Scalar::one());
+
+        let poly_deg_2 = Polynomial::new(2).set2(Scalar::from_u64(13), Scalar::from_u64(2));
+        let added_polys = poly_deg_4.clone() + poly_deg_2.clone();
+
+        let expected_poly = Polynomial::from_vec(vec![Scalar::from_u64(14), Scalar::from_u64(5)]);
+
+        for (a, b) in added_polys
+            .get_coefficients()
+            .zip(expected_poly.get_coefficients())
+        {
+            assert_eq!(a, b);
+        }
+
+        let mult_poly = poly_deg_4 * poly_deg_2;
+
+        let expected_mult = Polynomial::from_vec(vec![
+            Scalar::from_u64(13),
+            Scalar::from_u64(41),
+            Scalar::from_u64(6),
+        ]);
+
+        for (a, b) in mult_poly
+            .get_coefficients()
+            .zip(expected_mult.get_coefficients())
+        {
+            assert_eq!(a, b);
+        }
+    }
 }

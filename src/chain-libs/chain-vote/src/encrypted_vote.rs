@@ -1,8 +1,5 @@
 use crate::cryptography::{Ciphertext, UnitVectorZkp};
 use crate::gang::Scalar;
-use crate::{Crs, ElectionPublicKey};
-use cryptoxide::blake2b::Blake2b;
-use cryptoxide::digest::Digest;
 /// A vote is represented by a standard basis unit vector of an N dimensional space
 ///
 /// Effectively each possible vote is represented by an axis, where the actual voted option

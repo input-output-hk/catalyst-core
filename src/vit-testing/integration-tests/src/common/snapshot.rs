@@ -39,6 +39,7 @@ pub fn do_snapshot(temp_dir: &TempDir, job_params: JobParameters) -> Result<Snap
     })
 }
 
+#[derive(Debug)]
 pub struct SnapshotResult {
     status: State,
     snapshot_file: PathBuf,

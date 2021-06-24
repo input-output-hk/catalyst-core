@@ -70,6 +70,7 @@ pub fn do_registration(temp_dir: &TempDir) -> RegistrationResult {
     }
 }
 
+#[derive(Debug)]
 pub struct RegistrationResult {
     status: State,
     qr_code: PathBuf,

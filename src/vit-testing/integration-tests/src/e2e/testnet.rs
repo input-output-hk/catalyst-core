@@ -9,22 +9,23 @@ use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
 use iapyx::Protocol;
 use jormungandr_testing_utils::testing::node::time;
-use jortestkit::prelude::WaitBuilder;
 use registration_service::context::State;
 use snapshot_trigger_service::{client::rest::SnapshotRestClient, config::JobParameters};
-use std::path::Path;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::config::Initials;
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::QuickVitBackendSettingsBuilder;
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 
 #[test]
 pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
-    let temp_dir = TempDir::new().unwrap();
+    let temp_dir = TempDir::new().unwrap().into_persistent();
     let result = do_registration(&temp_dir);
 
     result.assert_status_is_finished();
     result.assert_qr_equals_to_sk();
+
+    println!("Registraton Result: {:?}", result);
 
     let job_param = JobParameters {
         slot_no: Some(result.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
@@ -33,6 +34,8 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
 
     wait_for_db_sync();
     let snapshot_result = do_snapshot(&temp_dir, job_param).unwrap();
+
+    println!("Snapshot: {:?}", snapshot_result);
 
     let entry = snapshot_result
         .by_address(&result.address())
@@ -51,6 +54,9 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .slots_in_epoch_count(30)
         .proposals_count(300)
         .voting_power(1)
+        .initials(Initials::new_from_external(
+            snapshot_result.initials().unwrap(),
+        ))
         .private(false);
 
     println!("{:?}", testing_directory.path().to_path_buf());
@@ -73,7 +79,7 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     let wallet_node = &nodes[4];
     let mut committee = controller.wallet("committee_1").unwrap();
 
-    // start mainnet wallets
+    // start wallets
     let mut alice = vit_controller
         .iapyx_wallet_from_qr(&result.qr_code(), &result.pin(), &wallet_proxy)
         .unwrap();

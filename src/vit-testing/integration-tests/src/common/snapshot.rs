@@ -69,8 +69,7 @@ impl SnapshotResult {
                         address_readable.to_address() == address
                     }));
                 }
-                Initial::Cert(cert) => (),
-                Initial::LegacyFund(utxo) => (),
+                _ => (),
             }
         }
         Ok(None)

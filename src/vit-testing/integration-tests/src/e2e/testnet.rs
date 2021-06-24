@@ -1,16 +1,12 @@
 use crate::common::registration::do_registration;
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
-use crate::common::{
-    asserts::VotePlanStatusAssert, vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote,
-    VoteTiming,
-};
+use crate::common::{asserts::VotePlanStatusAssert, vitup_setup, Vote, VoteTiming};
 use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
 use iapyx::Protocol;
 use jormungandr_testing_utils::testing::node::time;
-use registration_service::context::State;
-use snapshot_trigger_service::{client::rest::SnapshotRestClient, config::JobParameters};
+use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::Initials;
 use vitup::scenario::network::setup_network;

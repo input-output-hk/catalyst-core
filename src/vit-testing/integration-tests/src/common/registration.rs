@@ -1,6 +1,3 @@
-use crate::common::snapshot::do_snapshot;
-use crate::common::vitup_setup;
-use crate::common::VoteTiming;
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use chain_addr::Discrimination;
@@ -12,11 +9,9 @@ use jortestkit::prelude::WaitBuilder;
 use registration_service::{
     client::rest::RegistrationRestClient, context::State, request::Request,
 };
-use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
-use vitup::scenario::network::setup_network;
 
 pub fn do_registration(temp_dir: &TempDir) -> RegistrationResult {
     let registration_token = std::env::var("REGISTRATION_TOKEN")

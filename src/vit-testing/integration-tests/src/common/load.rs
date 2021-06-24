@@ -169,7 +169,7 @@ pub fn build_load_config(
         global_pin: "".to_string(),
         reuse_accounts: false,
         read_pin_from_filename: true,
-        use_https_for_post: false,
+        use_https: false,
         debug: false,
     }
 }

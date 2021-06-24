@@ -89,7 +89,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout 407e04596be8cc864058cce15b23cb173a01c4d9
+            git checkout 26f6fc15911863b5f3cf047d6d1789cd0cc39ba0
       - run:
           name: install jormungandr
           command: |
@@ -101,7 +101,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-            git checkout 59f8cfbd1be864c2a3b67d6e7df63605eec17193
+            git checkout 75a3c30211892c32a0edf1ff6b4b368d5e3a0e82
       - run:
           name: install vit-station-service
           command: |

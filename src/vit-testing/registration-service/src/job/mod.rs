@@ -8,6 +8,7 @@ use jormungandr_integration_tests::common::jcli::JCli;
 use jortestkit::prelude::read_file;
 use jortestkit::prelude::ProcessOutput;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -89,6 +90,7 @@ impl VoteRegistrationJob {
     pub fn generate_payment_address<P: AsRef<Path>, Q: AsRef<Path>>(
         &self,
         verification_key: P,
+        stake_verification_key: P,
         output: Q,
     ) -> Result<ExitStatus, Error> {
         let mut command = Command::new(&self.cardano_cli);
@@ -97,10 +99,30 @@ impl VoteRegistrationJob {
             .arg("build")
             .arg("--verification-key-file")
             .arg(verification_key.as_ref())
+            .arg("--stake-verification-key-file")
+            .arg(stake_verification_key.as_ref())
             .arg("--out-file")
             .arg(output.as_ref())
             .arg_network(self.network);
-        println!("generate payment addres: {:?}", command);
+        println!("generate addres: {:?}", command);
+        command.status().map_err(Into::into)
+    }
+
+    pub fn generate_stake_address<P: AsRef<Path>, Q: AsRef<Path>>(
+        &self,
+        verification_key: P,
+        output: Q,
+    ) -> Result<ExitStatus, Error> {
+        let mut command = Command::new(&self.cardano_cli);
+        command
+            .arg("stake-address")
+            .arg("build")
+            .arg("--stake-verification-key-file")
+            .arg(verification_key.as_ref())
+            .arg("--out-file")
+            .arg(output.as_ref())
+            .arg_network(self.network);
+        println!("generate stake-address: {:?}", command);
         command.status().map_err(Into::into)
     }
 
@@ -142,24 +164,34 @@ impl VoteRegistrationJob {
         write_content(&public_key, &public_key_path)?;
         println!("catalyst-vote.pkey saved");
 
+        println!("saving rewards.addr...");
+        let rewards_address_path = Path::new(&self.working_dir).join("rewards.addr");
+        self.generate_stake_address(&stake_vkey_path, &rewards_address_path)?;
+        println!("rewards.addr saved");
+
+        let rewards_address = read_file(&rewards_address_path);
+        println!("rewards.addr: {}", rewards_address);
+
         println!("saving payment.addr...");
         let payment_address_path = Path::new(&self.working_dir).join("payment.addr");
-        self.generate_payment_address(&payment_vkey_path, &payment_address_path)?;
+        self.generate_payment_address(&payment_vkey_path, &stake_vkey_path, &payment_address_path)?;
         println!("payment.addr saved");
 
         let payment_address = read_file(&payment_address_path);
+        println!("payment.addr: {}", payment_address);
 
         let mut command = Command::new(&self.cardano_cli);
         command
             .arg("query")
             .arg("utxo")
-            .arg("--mary-era")
             .arg_network(self.network)
             .arg("--address")
-            .arg(&payment_address);
+            .arg(&payment_address)
+            .arg("--out-file")
+            .arg("/dev/stdout");
 
         println!("Running cardano_cli: {:?}", command);
-        let funds = get_funds(command.output()?.as_multi_line())?;
+        let funds = get_funds(command.output()?.as_lossy_string())?;
         println!("cardano_cli finished");
 
         let vote_registration_path = Path::new(&self.working_dir).join("vote-registration.tx");
@@ -170,6 +202,8 @@ impl VoteRegistrationJob {
             .arg(&payment_skey_path)
             .arg("--payment-address")
             .arg(&payment_address)
+            .arg("--rewards-address")
+            .arg(&rewards_address)
             .arg("--stake-signing-key")
             .arg(&stake_skey_path)
             .arg("--vote-public-key")
@@ -182,7 +216,14 @@ impl VoteRegistrationJob {
             .arg(&vote_registration_path);
 
         println!("Running voter-registration: {:?}", command);
-        let slot_no = get_slot_no(command.output()?.as_multi_line())?;
+
+        let output = command.output()?;
+
+        println!("status: {}", output.status);
+        std::io::stdout().write_all(&output.stdout).unwrap();
+        std::io::stderr().write_all(&output.stderr).unwrap();
+
+        let slot_no = get_slot_no(output.as_multi_line())?;
         println!("voter-registration finished");
 
         let mut command = Command::new(&self.cardano_cli);
@@ -280,22 +321,52 @@ pub enum Error {
     #[error("cannot parse voter-registration output: {0:?}")]
     CannotParseVoterRegistrationOutput(Vec<String>),
     #[error("cannot parse cardano cli output: {0:?}")]
-    CannotParseCardanoCliOutput(Vec<String>),
+    CannotParseCardanoCliOutput(String),
 }
 
-/// Supported output: https://docs.cardano.org/projects/cardano-node/en/latest/reference/shelley-genesis.html?highlight=funds#submitting-the-signed-transaction
-///                             TxHash                                 TxIx        Lovelace
-/// ----------------------------------------------------------------------------------------
-/// d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000
-pub fn get_funds(output: Vec<String>) -> Result<u64, Error> {
-    output
-        .get(2)
-        .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
-        .split_whitespace()
-        .nth(2)
-        .ok_or_else(|| Error::CannotParseCardanoCliOutput(output.clone()))?
-        .parse()
-        .map_err(|_| Error::CannotParseCardanoCliOutput(output.clone()))
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
+pub struct FundsResponse {
+    #[serde(flatten)]
+    content: HashMap<String, FundsEntry>,
+}
+
+impl FundsResponse {
+    pub fn get_first(&self) -> Result<FundsEntry, Error> {
+        Ok(self
+            .content
+            .iter()
+            .next()
+            .ok_or_else(|| Error::CannotParseCardanoCliOutput("empty response".to_string()))?
+            .1
+            .clone())
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
+pub struct FundsEntry {
+    address: String,
+    value: FundsValue,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
+pub struct FundsValue {
+    lovelace: u64,
+}
+
+/// Supported output
+/// {
+///     "bf810bff3f979e28441775077524d41741542d1f237b0b7d6a698164dcded29b#0": {
+///         "address": "addr_test1vqtsh379yx9hmn8ypedzx270q9ueea24suf3zu85p2mv2sgra46ef",
+///         "value": {
+///             "lovelace": 9643918
+///         }
+///     }
+/// }
+pub fn get_funds(output: String) -> Result<u64, Error> {
+    println!("get_funds: {}", output);
+    let response: FundsResponse =
+        serde_json::from_str(&output).map_err(|_| Error::CannotParseCardanoCliOutput(output))?;
+    Ok(response.get_first()?.value.lovelace)
 }
 
 /// Supported output:
@@ -324,11 +395,15 @@ mod tests {
     #[test]
     pub fn test_funds_extraction() {
         let content = vec![
-            "    TxHash                                 TxIx        Lovelace".to_string(),
-            "----------------------------------------------------------------------------------------".to_string(),
-            "d17b4303135a76574f18b28fda25bc82cf29c72eb52e12ad317319714a5aafdb     0         500000000".to_string()
-        ];
-        assert_eq!(get_funds(content).unwrap(), 500000000);
+        "{", 
+        "    \"bf810bff3f979e28441775077524d41741542d1f237b0b7d6a698164dcded29b#0\": {",
+        "        \"address\": \"addr_test1vqtsh379yx9hmn8ypedzx270q9ueea24suf3zu85p2mv2sgra46ef\",",
+        "        \"value\": {", 
+        "            \"lovelace\": 9643918", 
+        "        }", 
+        "    }", 
+        "}"];
+        assert_eq!(get_funds(content.join(" ")).unwrap(), 9643918);
     }
 
     #[test]

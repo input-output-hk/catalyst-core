@@ -10,24 +10,21 @@
 //! `(e1, e2)`, and the message, `m`. The witness, on the other hand
 //! is the secret key, `sk`.
 #![allow(clippy::many_single_char_names)]
-use super::encryption::Ciphertext;
-use super::gang::{GroupElement, Scalar};
-use crate::encryption::{PublicKey, SecretKey};
-use cryptoxide::digest::Digest;
-use cryptoxide::sha2::Sha512;
+use super::challenge_context::ChallengeContext;
+use crate::cryptography::{Ciphertext, PublicKey, SecretKey};
+use crate::gang::{GroupElement, Scalar};
 use rand::{CryptoRng, RngCore};
 
 /// Proof of correct decryption.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ProofDecrypt {
+pub struct Zkp {
     a1: GroupElement,
     a2: GroupElement,
     z: Scalar,
 }
 
-pub(crate) const PROOF_SIZE: usize = 2 * GroupElement::BYTES_LEN + Scalar::BYTES_LEN; // Scalar is 32 bytes
-
-impl ProofDecrypt {
+impl Zkp {
+    pub(crate) const PROOF_SIZE: usize = 2 * GroupElement::BYTES_LEN + Scalar::BYTES_LEN; // Scalar is 32 bytes
     /// Generate a decryption zero knowledge proof
     pub fn generate<R>(c: &Ciphertext, pk: &PublicKey, sk: &SecretKey, rng: &mut R) -> Self
     where
@@ -37,33 +34,35 @@ impl ProofDecrypt {
         let a1 = GroupElement::generator() * &w;
         let a2 = &c.e1 * &w;
         let d = &c.e1 * &sk.sk;
-        let e = challenge(pk, c, &d, &a1, &a2);
-        let z = &sk.sk * &e.0 + &w;
+        let mut challenge = ChallengeContext::new(pk, c, &d);
+        let e = challenge.first_challenge(&a1, &a2);
+        let z = &sk.sk * &e + &w;
 
-        ProofDecrypt { a1, a2, z }
+        Zkp { a1, a2, z }
     }
 
     /// Verify a decryption zero knowledge proof
     pub fn verify(&self, c: &Ciphertext, m: &GroupElement, pk: &PublicKey) -> bool {
         let d = &c.e2 - m;
-        let e = challenge(pk, c, &d, &self.a1, &self.a2);
+        let mut challenge = ChallengeContext::new(pk, c, &d);
+        let e = challenge.first_challenge(&self.a1, &self.a2);
         let gz = GroupElement::generator() * &self.z;
-        let he = &pk.pk * &e.0;
+        let he = &pk.pk * &e;
         let he_a1 = he + &self.a1;
         let c1z = &c.e1 * &self.z;
-        let de = d * &e.0;
+        let de = d * &e;
         let de_a2 = de + &self.a2;
         gz == he_a1 && c1z == de_a2
     }
 
-    pub fn to_bytes(&self) -> [u8; PROOF_SIZE] {
-        let mut output = [0u8; PROOF_SIZE];
+    pub fn to_bytes(&self) -> [u8; Self::PROOF_SIZE] {
+        let mut output = [0u8; Self::PROOF_SIZE];
         self.to_slice_mut(&mut output);
         output
     }
 
     pub fn to_slice_mut(&self, output: &mut [u8]) {
-        assert_eq!(output.len(), PROOF_SIZE);
+        assert_eq!(output.len(), Self::PROOF_SIZE);
         output[0..GroupElement::BYTES_LEN].copy_from_slice(&self.a1.to_bytes());
         output[GroupElement::BYTES_LEN..(2 * GroupElement::BYTES_LEN)]
             .copy_from_slice(&self.a2.to_bytes());
@@ -72,7 +71,7 @@ impl ProofDecrypt {
     }
 
     pub fn from_slice(slice: &[u8]) -> Option<Self> {
-        if slice.len() != PROOF_SIZE {
+        if slice.len() != Self::PROOF_SIZE {
             return None;
         }
         let a1 = GroupElement::from_bytes(&slice[0..GroupElement::BYTES_LEN])?;
@@ -84,39 +83,15 @@ impl ProofDecrypt {
                 [(2 * GroupElement::BYTES_LEN)..(2 * GroupElement::BYTES_LEN) + Scalar::BYTES_LEN],
         )?;
 
-        let proof = ProofDecrypt { a1, a2, z };
+        let proof = Zkp { a1, a2, z };
         Some(proof)
     }
 }
 
-/// The challenge computation takes as input the two announcements
-/// computed in the sigma protocol, `a1` and `a2`, and the full
-/// statement.
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct Challenge(Scalar);
-
-fn challenge(
-    pk: &PublicKey,
-    c: &Ciphertext,
-    d: &GroupElement,
-    a1: &GroupElement,
-    a2: &GroupElement,
-) -> Challenge {
-    let mut out = [0u8; 64];
-    let mut ctx = Sha512::new();
-    ctx.input(&pk.to_bytes());
-    ctx.input(&c.to_bytes());
-    ctx.input(&d.to_bytes());
-    ctx.input(&a1.to_bytes());
-    ctx.input(&a2.to_bytes());
-    ctx.result(&mut out);
-    Challenge(Scalar::from_bytes(&out[0..32]).unwrap())
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{GroupElement, ProofDecrypt};
-    use crate::encryption::Keypair;
+    use super::*;
+    use crate::cryptography::Keypair;
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
 
@@ -129,13 +104,13 @@ mod tests {
         let plaintext = GroupElement::from_hash(&[0u8]);
         let ciphertext = keypair.public_key.encrypt_point(&plaintext, &mut r);
 
-        let proof = ProofDecrypt::generate(
+        let proof = Zkp::generate(
             &ciphertext,
             &keypair.public_key,
             &keypair.secret_key,
             &mut r,
         );
         let verified = proof.verify(&ciphertext, &plaintext, &keypair.public_key);
-        assert_eq!(verified, true);
+        assert!(verified);
     }
 }

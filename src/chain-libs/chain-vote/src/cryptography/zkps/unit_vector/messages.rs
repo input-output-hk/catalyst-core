@@ -1,11 +1,10 @@
-//! Structures used by the prover during the proof generation. We use the same
-//! notation defined in Figure 8
+//! Structures used by the prover of `unit_vector_zkp` during the proof generation. We use the
+//! same notation defined in Figure 8
 
-use crate::commitment::CommitmentKey;
-use crate::gang::GroupElement;
+use crate::cryptography::CommitmentKey;
+use crate::encrypted_vote::binrep;
+use crate::gang::{GroupElement, Scalar};
 use crate::math::Polynomial;
-use crate::unit_vector::binrep;
-use crate::Scalar;
 use rand_core::{CryptoRng, RngCore};
 
 /// Randomness generated in the proof, used for the hiding property.
@@ -157,6 +156,5 @@ pub(crate) fn generate_polys(
         pjs.push(acc)
     }
 
-    assert_eq!(pjs.len(), ciphers_len);
     pjs
 }

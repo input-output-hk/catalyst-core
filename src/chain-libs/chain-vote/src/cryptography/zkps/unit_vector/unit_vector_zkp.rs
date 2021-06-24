@@ -1,23 +1,27 @@
+//! Implementation of the Unit Vector ZK argument presented by
+//! Zhang, Oliynykov and Balogum in
+//! ["A Treasury System for Cryptocurrencies: Enabling Better Collaborative Intelligence"](https://www.ndss-symposium.org/wp-content/uploads/2019/02/ndss2019_02A-2_Zhang_paper.pdf).
+//! We use the notation presented in the technical
+//! [spec](https://github.com/input-output-hk/treasury-crypto/blob/master/docs/voting_protocol_spec/Treasury_voting_protocol_spec.pdf),
+//! written by Dmytro Kaidalov.
+
 use chain_core::mempack::{ReadBuf, ReadError};
 use rand_core::{CryptoRng, RngCore};
 #[cfg(feature = "ristretto255")]
 use {rand::thread_rng, std::iter};
 
-use crate::commitment::CommitmentKey;
+use super::challenge_context::ChallengeContext;
+use super::messages::{generate_polys, Announcement, BlindingRandomness, ResponseRandomness};
+use crate::cryptography::CommitmentKey;
 #[cfg(not(feature = "ristretto255"))]
-use crate::commitment::Open;
-use crate::encrypted::{EncryptingVote, Ptp};
-use crate::encryption::{Ciphertext, PublicKey};
+use crate::cryptography::Open;
+use crate::cryptography::{Ciphertext, PublicKey};
+use crate::encrypted_vote::{binrep, Ptp, UnitVector};
 use crate::gang::{GroupElement, Scalar};
-use crate::private_voting::{
-    messages::{generate_polys, Announcement, BlindingRandomness, ResponseRandomness},
-    ChallengeContext,
-};
-use crate::unit_vector::binrep;
-use crate::Crs;
+use crate::tally::Crs;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct Proof {
+pub struct Zkp {
     /// Commitment to the proof randomness and bits of binary representaion of `i`
     ibas: Vec<Announcement>,
     /// Encryption to the polynomial coefficients used in the proof
@@ -29,16 +33,16 @@ pub struct Proof {
 }
 
 #[allow(clippy::len_without_is_empty)]
-impl Proof {
+impl Zkp {
     /// Generate a unit vector proof. In this proof, a prover encrypts each entry of a
-    /// vector `encrypting_vote.unit_vector`, and proves
+    /// vector `unit_vector`, and proves
     /// that the vector is a unit vector. In particular, it proves that it is the `i`th unit
     /// vector without disclosing `i`.
     /// Common Reference String (`Crs`): Pedersen Commitment Key
-    /// Statement: public key `pk`, and ciphertexts `encrypting_vote.ciphertexts`
+    /// Statement: public key `pk`, and ciphertexts `ciphertexts`
     /// C_0=Enc_pk(r_0; v_0), ..., C_{m-1}=Enc_pk(r_{m-1}; v_{m-1})
-    /// Witness: the unit vector `encrypting_vote.unit_vector`, and randomness
-    /// `encrypting_vote.random_elements`.
+    /// Witness: the unit vector `unit_vector`, and randomness used for
+    /// encryption `encryption_randomness`.
     ///
     /// The proof communication complexity is logarithmic with respect to the size of
     /// the encrypted tuple. Description of the proof available in Figure 8.
@@ -46,11 +50,13 @@ impl Proof {
         rng: &mut R,
         crs: &Crs,
         public_key: &PublicKey,
-        encrypting_vote: EncryptingVote,
+        unit_vector: &UnitVector,
+        encryption_randomness: &Vec<Scalar>,
+        ciphertexts: &[Ciphertext],
     ) -> Self {
         let ck = CommitmentKey::from(crs.clone());
-        let ciphers = Ptp::new(encrypting_vote.ciphertexts, Ciphertext::zero);
-        let cipher_randoms = Ptp::new(encrypting_vote.random_elements, Scalar::zero);
+        let ciphers = Ptp::new(ciphertexts.to_vec(), Ciphertext::zero);
+        let cipher_randoms = Ptp::new(encryption_randomness.to_vec(), Scalar::zero);
 
         assert_eq!(ciphers.bits(), cipher_randoms.bits());
 
@@ -58,7 +64,7 @@ impl Proof {
 
         let mut blinding_randomness_vec = Vec::with_capacity(bits);
         let mut first_announcement_vec = Vec::with_capacity(bits);
-        let idx_binary_rep = binrep(encrypting_vote.unit_vector.ith(), bits as u32);
+        let idx_binary_rep = binrep(unit_vector.ith(), bits as u32);
         for &i in idx_binary_rep.iter() {
             let (b_rand, ann) = BlindingRandomness::gen_and_commit(&ck, i, rng);
             blinding_randomness_vec.push(b_rand);
@@ -127,7 +133,7 @@ impl Proof {
             p1 + p2
         };
 
-        Proof {
+        Zkp {
             ibas: first_announcement_vec,
             ds: poly_coeff_enc,
             zwvs: randomness_response_vec,
@@ -136,18 +142,13 @@ impl Proof {
     }
 
     /// Verify a unit vector proof. The verifier checks that the plaintexts encrypted in `ciphertexts`,
-    /// under `public_key` is a unit vector.
+    /// under `public_key` represent a unit vector.
     /// Common Reference String (`crs`): Pedersen Commitment Key
-    /// Statement: public key `pk`, and ciphertexts `encrypting_vote.ciphertexts`
+    /// Statement: public key `pk`, and ciphertexts `ciphertexts`
     /// C_0=Enc_pk(r_0; v_0), ..., C_{m-1}=Enc_pk(r_{m-1}; v_{m-1})
     ///
     /// Description of the verification procedure available in Figure 9.
-    pub(crate) fn verify(
-        &self,
-        crs: &Crs,
-        public_key: &PublicKey,
-        ciphertexts: &[Ciphertext],
-    ) -> bool {
+    pub fn verify(&self, crs: &Crs, public_key: &PublicKey, ciphertexts: &[Ciphertext]) -> bool {
         let ck = CommitmentKey::from(crs.clone());
         let ciphertexts = Ptp::new(ciphertexts.to_vec(), Ciphertext::zero);
         let bits = ciphertexts.bits();
@@ -343,7 +344,7 @@ impl Proof {
     ) -> Self {
         assert_eq!(ibas.len(), ds.len());
         assert_eq!(ibas.len(), zwvs.len());
-        Proof { ibas, ds, zwvs, r }
+        Zkp { ibas, ds, zwvs, r }
     }
 
     /// Returns the length of the size of the witness vector
@@ -430,78 +431,136 @@ fn powers_z_encs_iter(z: &[ResponseRandomness], challenge_x: &Scalar, bit_size: 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::encrypted::EncryptingVote;
-    use crate::encryption::Keypair;
-    use crate::unit_vector::UnitVector;
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
 
     #[test]
     fn prove_verify1() {
         let mut r = ChaCha20Rng::from_seed([0u8; 32]);
-        let public_key = Keypair::generate(&mut r).public_key;
+        let public_key = PublicKey {
+            pk: GroupElement::from_hash(&[1u8]),
+        };
         let unit_vector = UnitVector::new(2, 0);
-        let ev = EncryptingVote::prepare(&mut r, &public_key, &unit_vector);
+        let encryption_randomness = vec![Scalar::random(&mut r); unit_vector.len()];
+        let ciphertexts: Vec<Ciphertext> = unit_vector
+            .iter()
+            .zip(encryption_randomness.iter())
+            .map(|(i, r)| public_key.encrypt_with_r(&Scalar::from(i), r))
+            .collect();
 
         let mut shared_string =
             b"Example of a shared string. This could be the latest block hash".to_owned();
         let crs = Crs::from_hash(&mut shared_string);
 
-        let proof = Proof::generate(&mut r, &crs, &public_key, ev.clone());
-        assert!(proof.verify(&crs, &public_key, &ev.ciphertexts))
+        let proof = Zkp::generate(
+            &mut r,
+            &crs,
+            &public_key,
+            &unit_vector,
+            &encryption_randomness,
+            &ciphertexts,
+        );
+        assert!(proof.verify(&crs, &public_key, &ciphertexts))
     }
 
     #[test]
     fn prove_verify() {
         let mut r = ChaCha20Rng::from_seed([0u8; 32]);
-        let public_key = Keypair::generate(&mut r).public_key;
-        let unit_vector = UnitVector::new(5, 1);
-        let ev = EncryptingVote::prepare(&mut r, &public_key, &unit_vector);
+        let public_key = PublicKey {
+            pk: GroupElement::from_hash(&[1u8]),
+        };
+        let unit_vector = UnitVector::new(2, 0);
+        let encryption_randomness = vec![Scalar::random(&mut r); unit_vector.len()];
+        let ciphertexts: Vec<Ciphertext> = unit_vector
+            .iter()
+            .zip(encryption_randomness.iter())
+            .map(|(i, r)| public_key.encrypt_with_r(&Scalar::from(i), r))
+            .collect();
 
         let mut shared_string =
             b"Example of a shared string. This could be the latest block hash".to_owned();
         let crs = Crs::from_hash(&mut shared_string);
 
-        let proof = Proof::generate(&mut r, &crs, &public_key, ev.clone());
-        assert!(proof.verify(&crs, &public_key, &ev.ciphertexts))
+        let proof = Zkp::generate(
+            &mut r,
+            &crs,
+            &public_key,
+            &unit_vector,
+            &encryption_randomness,
+            &ciphertexts,
+        );
+        assert!(proof.verify(&crs, &public_key, &ciphertexts))
     }
 
     #[test]
     fn false_proof() {
         let mut r = ChaCha20Rng::from_seed([0u8; 32]);
-        let public_key = Keypair::generate(&mut r).public_key;
-        let unit_vector = UnitVector::new(5, 1);
-        let ev = EncryptingVote::prepare(&mut r, &public_key, &unit_vector);
+        let public_key = PublicKey {
+            pk: GroupElement::from_hash(&[1u8]),
+        };
+        let unit_vector = UnitVector::new(2, 0);
+        let encryption_randomness = vec![Scalar::random(&mut r); unit_vector.len()];
+        let ciphertexts: Vec<Ciphertext> = unit_vector
+            .iter()
+            .zip(encryption_randomness.iter())
+            .map(|(i, r)| public_key.encrypt_with_r(&Scalar::from(i), r))
+            .collect();
 
         let mut shared_string =
             b"Example of a shared string. This could be the latest block hash".to_owned();
         let crs = Crs::from_hash(&mut shared_string);
 
-        let proof = Proof::generate(&mut r, &crs, &public_key, ev.clone());
+        let proof = Zkp::generate(
+            &mut r,
+            &crs,
+            &public_key,
+            &unit_vector,
+            &encryption_randomness,
+            &ciphertexts,
+        );
 
-        let fake_unit_vector = UnitVector::new(5, 3);
-        let fake_encryption = EncryptingVote::prepare(&mut r, &public_key, &fake_unit_vector);
-        assert!(!proof.verify(&crs, &public_key, &fake_encryption.ciphertexts))
+        let fake_encryption = [
+            Ciphertext::zero(),
+            Ciphertext::zero(),
+            Ciphertext::zero(),
+            Ciphertext::zero(),
+            Ciphertext::zero(),
+        ];
+        assert!(!proof.verify(&crs, &public_key, &fake_encryption))
     }
 
     #[test]
     fn challenge_context() {
         let mut r = ChaCha20Rng::from_seed([0u8; 32]);
-        let public_key = Keypair::generate(&mut r).public_key;
-        let unit_vector = UnitVector::new(5, 1);
-        let ev = EncryptingVote::prepare(&mut r, &public_key, &unit_vector);
+        let public_key = PublicKey {
+            pk: GroupElement::from_hash(&[1u8]),
+        };
+        let unit_vector = UnitVector::new(2, 0);
+        let encryption_randomness = vec![Scalar::random(&mut r); unit_vector.len()];
+        let ciphertexts: Vec<Ciphertext> = unit_vector
+            .iter()
+            .zip(encryption_randomness.iter())
+            .map(|(i, r)| public_key.encrypt_with_r(&Scalar::from(i), r))
+            .collect();
 
         let crs = GroupElement::from_hash(&[0u8]);
         let ck = CommitmentKey::from(crs.clone());
 
-        let proof = Proof::generate(&mut r, &crs, &public_key, ev.clone());
+        let proof = Zkp::generate(
+            &mut r,
+            &crs,
+            &public_key,
+            &unit_vector,
+            &encryption_randomness,
+            &ciphertexts,
+        );
 
-        let mut cc1 = ChallengeContext::new(&ck, &public_key, ev.ciphertexts.as_ref());
+        let mut cc1 = ChallengeContext::new(&ck, &public_key, &ciphertexts);
         let cy1 = cc1.first_challenge(&proof.ibas);
         let cx1 = cc1.second_challenge(&proof.ds);
 
         // if we set up a new challenge context, the results should be equal
-        let mut cc2 = ChallengeContext::new(&ck, &public_key, ev.ciphertexts.as_ref());
+        let mut cc2 = ChallengeContext::new(&ck, &public_key, &ciphertexts);
         let cy2 = cc2.first_challenge(&proof.ibas);
         let cx2 = cc2.second_challenge(&proof.ds);
 
@@ -511,7 +570,7 @@ mod tests {
         // if we set up a new challenge with incorrect initialisation, results should differ
         let crs_diff = GroupElement::from_hash(&[1u8]);
         let ck_diff = CommitmentKey::from(crs_diff.clone());
-        let mut cc3 = ChallengeContext::new(&ck_diff, &public_key, ev.ciphertexts.as_ref());
+        let mut cc3 = ChallengeContext::new(&ck_diff, &public_key, &ciphertexts);
         let cy3 = cc3.first_challenge(&proof.ibas);
         let cx3 = cc3.second_challenge(&proof.ds);
 
@@ -519,8 +578,15 @@ mod tests {
         assert_ne!(cx1, cx3);
 
         // if we generate a new challenge with different IBAs, but same Ds, both results should differ
-        let proof_diff = Proof::generate(&mut r, &crs, &public_key, ev.clone());
-        let mut cc4 = ChallengeContext::new(&ck, &public_key, ev.ciphertexts.as_ref());
+        let proof_diff = Zkp::generate(
+            &mut r,
+            &crs,
+            &public_key,
+            &unit_vector,
+            &encryption_randomness,
+            &ciphertexts,
+        );
+        let mut cc4 = ChallengeContext::new(&ck, &public_key, &ciphertexts);
         let cy4 = cc4.first_challenge(&proof_diff.ibas);
         let cx4 = cc4.second_challenge(&proof.ds);
 
@@ -528,7 +594,7 @@ mod tests {
         assert_ne!(cx1, cx4);
 
         // if we generate a challenge with different Ds, only the second scalar should differ
-        let mut cc5 = ChallengeContext::new(&ck, &public_key, ev.ciphertexts.as_ref());
+        let mut cc5 = ChallengeContext::new(&ck, &public_key, &ciphertexts);
         let cy5 = cc5.first_challenge(&proof.ibas);
         let cx5 = cc5.second_challenge(&proof_diff.ds);
 

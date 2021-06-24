@@ -1,14 +1,13 @@
-use crate::commitment::CommitmentKey;
-use crate::encryption::PublicKey;
-use crate::private_voting::Announcement;
-use crate::{Ciphertext, Scalar};
+use super::messages::Announcement;
+use crate::cryptography::{Ciphertext, CommitmentKey, PublicKey};
+use crate::gang::Scalar;
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 
 /// Challenge context for the Unit Vector Zero Knowledge Proof. The common reference string
 /// is a commitment key, and the statement consists of a public key, and the encryption of each
 /// entry of the vector.
-pub(crate) struct ChallengeContext(Blake2b);
+pub struct ChallengeContext(Blake2b);
 
 impl ChallengeContext {
     /// Initialise the challenge context, by including the common reference string and the full statement

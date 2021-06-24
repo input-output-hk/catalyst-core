@@ -68,11 +68,11 @@ impl RegistrationRestClient {
     ) -> Result<PathBuf, Error> {
         let folder_dump = self.list_files()?;
         let id = id.into();
-        let qr_code_file_sub_url = folder_dump.find_qr(id.clone()).ok_or(Error::CannotFindQrCode(id.clone()))?;
-        let file_name =  Path::new(&qr_code_file_sub_url).file_name().ok_or(Error::CannotFindQrCode(id.clone()))?;
+        let qr_code_file_sub_url = folder_dump.find_qr(id.clone()).ok_or_else(|| Error::CannotFindQrCode(id.clone()))?;
+        let file_name =  Path::new(&qr_code_file_sub_url).file_name().ok_or(Error::CannotFindQrCode(id))?;
         let output_path = output_dir.as_ref().join(file_name);
         self.download(Self::rem_first(qr_code_file_sub_url), output_path.clone())?;
-        Ok(output_path.to_path_buf())
+        Ok(output_path)
     }
 
     pub fn download<S: Into<String>, P: AsRef<Path>>(
@@ -95,7 +95,7 @@ impl RegistrationRestClient {
         &self,
         id: S,
     ) -> Result<String, Error> {
-        Ok(self.get(format!("api/job/files/get/{}/catalyst-vote.skey", id.into()))?)
+        self.get(format!("api/job/files/get/{}/catalyst-vote.skey", id.into()))
     }
 
     pub fn job_new(&self, request: Request) -> Result<String, Error> {

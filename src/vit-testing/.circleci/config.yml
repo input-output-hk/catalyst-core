@@ -101,7 +101,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-            git checkout 59f8cfbd1be864c2a3b67d6e7df63605eec17193
+            git checkout 75a3c30211892c32a0edf1ff6b4b368d5e3a0e82
       - run:
           name: install vit-station-service
           command: |

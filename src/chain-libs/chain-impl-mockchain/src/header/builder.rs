@@ -101,7 +101,7 @@ impl HeaderBuilder<HeaderSetParenting> {
     ) -> HeaderBuilder<HeaderSetDate> {
         let mut hdr = self.0;
         hdr.set_height(chain_length.0);
-        hdr.set_parent_hash(&parent_hash.clone().into());
+        hdr.set_parent_hash(&(*parent_hash).into());
         HeaderBuilder(hdr, PhantomData)
     }
 }

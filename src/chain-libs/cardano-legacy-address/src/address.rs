@@ -382,7 +382,7 @@ impl<'a> cbor_event::se::Serialize for SpendingData<'a> {
         &self,
         serializer: &'se mut Serializer<W>,
     ) -> cbor_event::Result<&'se mut Serializer<W>> {
-        let ar: [u8; 64] = self.0.clone().into();
+        let ar: [u8; 64] = (*self.0).into();
         serializer
             .write_array(cbor_event::Len::Len(2))?
             .write_unsigned_integer(SPENDING_DATA_TAG_PUBKEY)?

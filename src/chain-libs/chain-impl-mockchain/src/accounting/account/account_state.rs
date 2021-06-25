@@ -40,7 +40,7 @@ impl DelegationRatio {
     pub fn is_valid(&self) -> bool {
         // map to u32 before summing to make sure we don't overflow
         let total: u32 = self.pools.iter().map(|x| x.1 as u32).sum();
-        let has_no_zero = self.pools.iter().find(|x| x.1 == 0).is_none();
+        let has_no_zero = !self.pools.iter().any(|x| x.1 == 0);
         has_no_zero
             && self.parts > 1
             && self.pools.len() > 1
@@ -50,7 +50,7 @@ impl DelegationRatio {
 
     pub fn new(parts: u8, pools: Vec<(PoolId, u8)>) -> Option<DelegationRatio> {
         let total: u32 = pools.iter().map(|x| x.1 as u32).sum();
-        let has_no_zero = pools.iter().find(|x| x.1 == 0).is_none();
+        let has_no_zero = !pools.iter().any(|x| x.1 == 0);
         if has_no_zero
             && parts > 1
             && pools.len() > 1

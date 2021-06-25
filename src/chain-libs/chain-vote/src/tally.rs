@@ -191,7 +191,7 @@ impl ProvenDecryptShare {
 impl TallyDecryptShare {
     /// Given the member's public key `MemberPublicKey`, and the `EncryptedTally`, verifies the
     /// correctness of the `TallyDecryptShare`.
-    fn verify_decrypt_share(&self, encrypted_tally: &EncryptedTally, pk: &MemberPublicKey) -> bool {
+    pub fn verify(&self, encrypted_tally: &EncryptedTally, pk: &MemberPublicKey) -> bool {
         for (element, r) in self.elements.iter().zip(encrypted_tally.r.iter()) {
             if !element.pi.verify(&r, &(&r.e2 - &element.r1), &pk.0) {
                 return false;
@@ -252,7 +252,7 @@ impl Tally {
         decrypt_shares: &[TallyDecryptShare],
     ) -> bool {
         for (pk, decrypt_share) in pks.iter().zip(decrypt_shares.iter()) {
-            if !decrypt_share.verify_decrypt_share(encrypted_tally, pk) {
+            if !decrypt_share.verify(encrypted_tally, pk) {
                 return false;
             }
         }
@@ -370,7 +370,7 @@ mod tests {
         let tds3 = encrypted_tally.partial_decrypt(&mut rng, m3.secret_key());
 
         // check a mismatch parameters (m2 key with m1's share) is detected
-        assert!(!tds1.verify_decrypt_share(&encrypted_tally, &m2.public_key()));
+        assert!(!tds1.verify(&encrypted_tally, &m2.public_key()));
 
         let max_votes = 20;
 

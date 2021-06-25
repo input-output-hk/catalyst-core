@@ -1,18 +1,18 @@
+use crate::config::Initials;
 use crate::manager::ControlContext;
 use crate::manager::ManagerService;
 use crate::scenario::network::single_run;
 use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::setup::generate::read_config;
+use crate::setup::generate::read_initials;
 use crate::setup::start::quick::parse_mode_from_str;
 use crate::setup::start::quick::Mode;
 use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
-use crate::config::Initials;
 use jormungandr_scenario_tests::programs::prepare_command;
 use jormungandr_scenario_tests::{
     parse_progress_bar_mode_from_str, Context, ProgressBarMode, Seed,
 };
-use crate::setup::generate::read_initials;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -134,7 +134,12 @@ impl AdvancedStartCommandArgs {
 
         if let Some(snapshot) = self.snapshot {
             let initials = read_initials(snapshot)?;
-            config.params.initials.as_mut().unwrap().extend(&Initials::new_from_external(initials));
+            config
+                .params
+                .initials
+                .as_mut()
+                .unwrap()
+                .extend(&Initials::new_from_external(initials));
         }
 
         println!("{:?}", config.params);

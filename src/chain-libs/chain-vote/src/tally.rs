@@ -1,13 +1,16 @@
 use crate::{
     committee::*,
     cryptography::{Ciphertext, CorrectElGamalDecrZkp},
-    encrypted_vote::EncryptedVote,
+    encrypted_vote::Ballot,
 };
 
 use chain_crypto::ec::{
     baby_step_giant_step, BabyStepsTable as TallyOptimizationTable, GroupElement,
 };
+use cryptoxide::blake2b::Blake2b;
+use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};
+use std::convert::TryInto;
 
 /// Secret key for opening vote
 pub type OpeningVoteKey = MemberSecretKey;
@@ -21,11 +24,36 @@ pub type ProofOfCorrectShare = CorrectElGamalDecrZkp;
 /// Common Reference String
 pub type Crs = GroupElement;
 
+/// An encrypted vote is only valid for specific values of the election public key and crs.
+/// It may be useful to check early if a vote is valid before actually adding it to the tally,
+/// and it is therefore important to verify that it is later added to an encrypted tally that
+/// is consistent with the election public key and crs it was verified against.
+/// To reduce memory occupation, we use a hash of those two values.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(crate) struct ElectionFingerprint([u8; ElectionFingerprint::BYTES_LEN]);
+
+impl ElectionFingerprint {
+    const BYTES_LEN: usize = 32;
+}
+
+impl From<(&ElectionPublicKey, &Crs)> for ElectionFingerprint {
+    fn from(from: (&ElectionPublicKey, &Crs)) -> Self {
+        let (election_pk, crs) = from;
+        let mut hasher = Blake2b::new(32);
+        hasher.input(&crs.to_bytes());
+        hasher.input(&election_pk.to_bytes());
+        let mut fingerprint = [0; 32];
+        hasher.result(&mut fingerprint);
+        Self(fingerprint)
+    }
+}
+
 /// `EncryptedTally` is formed by one ciphertext per existing option, the `election_pk`, and the
 /// `crs`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EncryptedTally {
     r: Vec<Ciphertext>,
+    fingerprint: ElectionFingerprint,
 }
 
 /// `TallyDecryptShare` contains one decryption share per existing option. All committee
@@ -79,20 +107,26 @@ impl EncryptedTally {
     /// Initialise a new tally with N different options. The `EncryptedTally` is computed using
     /// the additive homomorphic property of the elgamal `Ciphertext`s, and is therefore initialised
     /// with zero ciphertexts.
-    pub fn new(options: usize) -> Self {
+    pub fn new(options: usize, election_pk: ElectionPublicKey, crs: Crs) -> Self {
         let r = vec![Ciphertext::zero(); options];
-        EncryptedTally { r }
+        EncryptedTally {
+            r,
+            fingerprint: (&election_pk, &crs).into(),
+        }
     }
 
-    /// Add a submitted `ballot`, with a specific `weight` to the tally, if
-    /// the `ballot` contains a valid proof. If the proof is invalid, it will
-    /// panic. todo: maybe we want to handle these errors?
+    /// Add a submitted `ballot`, with a specific `weight` to the tally.
+    /// Remember that a vote is only valid for a specific election (i.e. pair of
+    /// election public key and crs), and trying to add a ballot validated for a
+    /// different one will result in a panic.
     ///
     /// Note that the encrypted vote needs to have the exact same number of
     /// options as the initialised tally, otherwise an assert will trigger.
     #[allow(clippy::ptr_arg)]
-    pub fn add(&mut self, vote: &EncryptedVote, weight: u64) {
-        for (ri, ci) in self.r.iter_mut().zip(vote.iter()) {
+    pub fn add(&mut self, ballot: &Ballot, weight: u64) {
+        assert_eq!(ballot.vote.len(), self.r.len());
+        assert_eq!(ballot.fingerprint, self.fingerprint);
+        for (ri, ci) in self.r.iter_mut().zip(ballot.vote.iter()) {
             *ri = &*ri + &(ci * weight);
         }
     }
@@ -140,7 +174,10 @@ impl EncryptedTally {
 
     /// Returns a byte array with every ciphertext in the `EncryptedTally`
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes: Vec<u8> = Vec::with_capacity(Ciphertext::BYTES_LEN * self.r.len());
+        let mut bytes: Vec<u8> = Vec::with_capacity(
+            Ciphertext::BYTES_LEN * self.r.len() + ElectionFingerprint::BYTES_LEN,
+        );
+        bytes.extend_from_slice(&self.fingerprint.0);
         for ri in &self.r {
             bytes.extend_from_slice(ri.to_bytes().as_ref());
         }
@@ -150,15 +187,17 @@ impl EncryptedTally {
     /// Tries to generate an `EncryptedTally` out of an array of bytes. Returns `None` if the
     /// size of the byte array is not a multiply of `Ciphertext::BYTES_LEN`.
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-        if bytes.len() % Ciphertext::BYTES_LEN != 0 {
+        if (bytes.len() - ElectionFingerprint::BYTES_LEN) % Ciphertext::BYTES_LEN != 0 {
             return None;
         }
-        let r = bytes
+        let fingerprint =
+            ElectionFingerprint(bytes[0..ElectionFingerprint::BYTES_LEN].try_into().unwrap());
+        let r = bytes[ElectionFingerprint::BYTES_LEN..]
             .chunks(Ciphertext::BYTES_LEN)
             .map(Ciphertext::from_bytes)
             .collect::<Option<Vec<_>>>()?;
 
-        Some(Self { r })
+        Some(Self { r, fingerprint })
     }
 }
 
@@ -207,7 +246,10 @@ impl std::ops::Add for EncryptedTally {
             .zip(rhs.r.iter())
             .map(|(left, right)| left + right)
             .collect();
-        Self { r }
+        Self {
+            r,
+            fingerprint: self.fingerprint,
+        }
     }
 }
 

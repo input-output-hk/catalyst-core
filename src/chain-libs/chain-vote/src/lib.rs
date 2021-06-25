@@ -19,6 +19,6 @@ pub use chain_crypto::ec::BabyStepsTable as TallyOptimizationTable;
 pub use crate::{
     committee::{ElectionPublicKey, MemberCommunicationKey, MemberPublicKey, MemberState},
     cryptography::Ciphertext, //todo: why this?
-    encrypted_vote::{EncryptedVote, ProofOfCorrectVote, Vote},
+    encrypted_vote::{Ballot, BallotVerificationError, EncryptedVote, ProofOfCorrectVote, Vote},
     tally::{Crs, EncryptedTally, Tally, TallyDecryptShare},
 };

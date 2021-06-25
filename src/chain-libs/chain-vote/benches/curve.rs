@@ -2,8 +2,8 @@
 //! group), instantiated with default flag and ristretto225 respectively.
 
 use chain_vote::debug::gang;
-use chain_vote::debug::gang::GroupElement;
-use chain_vote::Scalar;
+use chain_vote::debug::gang::{GroupElement, Scalar};
+
 use criterion::{criterion_group, criterion_main, Criterion};
 use rand_chacha::ChaCha20Rng;
 use rand_core::SeedableRng;

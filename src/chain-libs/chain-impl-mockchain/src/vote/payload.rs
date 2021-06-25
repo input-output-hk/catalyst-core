@@ -204,9 +204,7 @@ mod tests {
 
     impl Arbitrary for Payload {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            use chain_vote::{
-                encrypt_vote, Crs, EncryptingVoteKey, MemberCommunicationKey, MemberState, Vote,
-            };
+            use chain_vote::{Crs, ElectionPublicKey, MemberCommunicationKey, MemberState, Vote};
             use rand_core::SeedableRng;
 
             match PayloadType::arbitrary(g) {
@@ -220,13 +218,12 @@ mod tests {
                     let h = Crs::from_hash(&mut seed);
                     let m = MemberState::new(&mut gen, threshold, &h, &[mc.to_public()], 0);
                     let participants = vec![m.public_key()];
-                    let ek = EncryptingVoteKey::from_participants(&participants);
+                    let ek = ElectionPublicKey::from_participants(&participants);
                     let vote_options = 3;
                     let choice = g.next_u32() % vote_options;
-                    let (vote, proof) = encrypt_vote(
+                    let (vote, proof) = ek.encrypt_and_prove_vote(
                         &mut gen,
                         &h,
-                        &ek,
                         Vote::new(vote_options as usize, choice as usize),
                     );
                     Payload::private(

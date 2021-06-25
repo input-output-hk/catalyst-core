@@ -271,7 +271,7 @@ impl Tally {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cryptography::{Keypair, PublicKey};
+    use crate::cryptography::Keypair;
     use crate::encrypted_vote::Vote;
     use rand_chacha::ChaCha20Rng;
     use rand_core::SeedableRng;
@@ -280,9 +280,9 @@ mod tests {
     fn encdec1() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
-        let mut shared_string =
+        let shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = Crs::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc = [mc1.to_public()];
@@ -297,25 +297,16 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let (e1, p1) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
-        let (e2, p2) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
-        let (e3, p3) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let (e1, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let (e2, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
+        let (e3, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
 
         println!("tallying");
 
-        let mut encrypted_tally = EncryptedTally::new(vote_options, &ek, &h);
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e1, p1, &h, &ek).unwrap(),
-            6,
-        );
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e2, p2, &h, &ek).unwrap(),
-            5,
-        );
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e3, p3, &h, &ek).unwrap(),
-            4,
-        );
+        let mut encrypted_tally = EncryptedTally::new(vote_options);
+        encrypted_tally.add(&e1, 6);
+        encrypted_tally.add(&e2, 5);
+        encrypted_tally.add(&e3, 4);
 
         let tds1 = encrypted_tally.partial_decrypt(&mut rng, m1.secret_key());
 
@@ -326,9 +317,7 @@ mod tests {
         println!("resulting");
         let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
         let tr = encrypted_tally
-            .validate_partial_decryptions(&participants, &shares)
-            .unwrap()
-            .decrypt_tally(max_votes, &table)
+            .decrypt_tally(max_votes, &shares, &table)
             .unwrap();
 
         println!("{:?}", tr);
@@ -344,9 +333,9 @@ mod tests {
     fn encdec3() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
-        let mut shared_string =
+        let shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = Crs::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc2 = MemberCommunicationKey::new(&mut rng);
@@ -365,25 +354,16 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let (e1, p1) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
-        let (e2, p2) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
-        let (e3, p3) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let (e1, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let (e2, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
+        let (e3, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
 
         println!("tallying");
 
-        let mut encrypted_tally = EncryptedTally::new(vote_options, &ek, &h);
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e1, p1, &h, &ek).unwrap(),
-            1,
-        );
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e2, p2, &h, &ek).unwrap(),
-            3,
-        );
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e3, p3, &h, &ek).unwrap(),
-            4,
-        );
+        let mut encrypted_tally = EncryptedTally::new(vote_options);
+        encrypted_tally.add(&e1, 1);
+        encrypted_tally.add(&e2, 3);
+        encrypted_tally.add(&e3, 4);
 
         let tds1 = encrypted_tally.partial_decrypt(&mut rng, m1.secret_key());
         let tds2 = encrypted_tally.partial_decrypt(&mut rng, m2.secret_key());
@@ -399,9 +379,7 @@ mod tests {
         println!("resulting");
         let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
         let tr = encrypted_tally
-            .validate_partial_decryptions(&participants, &shares)
-            .unwrap()
-            .decrypt_tally(max_votes, &table)
+            .decrypt_tally(max_votes, &shares, &table)
             .unwrap();
 
         println!("{:?}", tr);
@@ -417,9 +395,9 @@ mod tests {
     fn zero_and_max_votes() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
-        let mut shared_string =
+        let shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = Crs::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc = [mc1.to_public()];
@@ -434,15 +412,12 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let (e1, p1) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let (e1, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
 
         println!("tallying");
 
-        let mut encrypted_tally = EncryptedTally::new(vote_options, &ek, &h);
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e1, p1, &h, &ek).unwrap(),
-            42,
-        );
+        let mut encrypted_tally = EncryptedTally::new(vote_options);
+        encrypted_tally.add(&e1, 42);
 
         let tds1 = encrypted_tally.partial_decrypt(&mut rng, m1.secret_key());
 
@@ -453,9 +428,7 @@ mod tests {
         println!("resulting");
         let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
         let tr = encrypted_tally
-            .validate_partial_decryptions(&participants, &shares)
-            .unwrap()
-            .decrypt_tally(max_votes, &table)
+            .decrypt_tally(max_votes, &shares, &table)
             .unwrap();
 
         println!("{:?}", tr);
@@ -471,9 +444,9 @@ mod tests {
     fn empty_tally() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
-        let mut shared_string =
+        let shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = Crs::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc = [mc1.to_public()];
@@ -482,14 +455,11 @@ mod tests {
 
         let m1 = MemberState::new(&mut rng, threshold, &h, &mc, 0);
 
-        let participants = vec![m1.public_key()];
-        let ek = ElectionPublicKey::from_participants(&participants);
-
         let vote_options = 2;
 
         println!("tallying");
 
-        let encrypted_tally = EncryptedTally::new(vote_options, &ek, &h);
+        let encrypted_tally = EncryptedTally::new(vote_options);
         let tds1 = encrypted_tally.partial_decrypt(&mut rng, m1.secret_key());
 
         let max_votes = 2;
@@ -499,9 +469,7 @@ mod tests {
         println!("resulting");
         let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
         let tr = encrypted_tally
-            .validate_partial_decryptions(&[m1.public_key()], &shares)
-            .unwrap()
-            .decrypt_tally(max_votes, &table)
+            .decrypt_tally(max_votes, &shares, &table)
             .unwrap();
 
         println!("{:?}", tr);
@@ -538,23 +506,14 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let (e1, p1) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
-        let (e2, p2) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
-        let (e3, p3) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let (e1, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let (e2, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
+        let (e3, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
 
-        let mut encrypted_tally = EncryptedTally::new(vote_options, &ek, &h);
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e1, p1, &h, &ek).unwrap(),
-            10,
-        );
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e2, p2, &h, &ek).unwrap(),
-            3,
-        );
-        encrypted_tally.add(
-            &Ballot::try_from_vote_and_proof(e3, p3, &h, &ek).unwrap(),
-            40,
-        );
+        let mut encrypted_tally = EncryptedTally::new(vote_options);
+        encrypted_tally.add(&e1, 10);
+        encrypted_tally.add(&e2, 3);
+        encrypted_tally.add(&e3, 40);
 
         let tds1 = encrypted_tally.partial_decrypt(&mut rng, m1.secret_key());
         let tds2 = encrypted_tally.partial_decrypt(&mut rng, m2.secret_key());
@@ -566,10 +525,7 @@ mod tests {
 
         println!("resulting");
         let table = TallyOptimizationTable::generate_with_balance(max_votes, 1);
-        let res = encrypted_tally
-            .validate_partial_decryptions(&participants, &shares)
-            .unwrap()
-            .decrypt_tally(max_votes, &table);
+        let res = encrypted_tally.decrypt_tally(max_votes, &shares, &table);
 
         assert!(
             res.is_err(),
@@ -580,11 +536,7 @@ mod tests {
 
     #[test]
     fn zero_encrypted_tally_serialization_sanity() {
-        let election_key = ElectionPublicKey(PublicKey {
-            pk: GroupElement::from_hash(&[1u8]),
-        });
-        let h = Crs::from_hash(&[1u8]);
-        let tally = EncryptedTally::new(3, &election_key, &h);
+        let tally = EncryptedTally::new(3);
         let bytes = tally.to_bytes();
         let deserialized_tally = EncryptedTally::from_bytes(&bytes).unwrap();
         assert_eq!(tally, deserialized_tally);

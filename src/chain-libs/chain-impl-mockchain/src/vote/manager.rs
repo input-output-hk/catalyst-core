@@ -747,35 +747,52 @@ mod tests {
     #[test]
     pub fn proposal_manager_insert_vote() {
         let vote_plan = VoteTestGen::vote_plan();
-        let vote_cast_payload = vote::Payload::public(vote::Choice::new(1));
+        let vote_choice = vote::Choice::new(1);
+        let vote_cast_payload = vote::Payload::public(vote_choice);
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload.clone());
 
         let mut proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
 
-        let identifier = TestGen::unspecified_account_identifier();
-        proposal_manager = proposal_manager
-            .vote(identifier.clone(), vote_cast)
+        let vote = proposal_manager
+            .validate_vote(vote_cast, &vote_plan)
             .unwrap();
+
+        let identifier = TestGen::unspecified_account_identifier();
+        proposal_manager = proposal_manager.vote(identifier.clone(), vote).unwrap();
 
         let (_, actual_vote_cast_payload) = proposal_manager
             .votes_by_voters
             .iter()
             .find(|(x, _y)| **x == identifier)
             .unwrap();
-        assert_eq!(*actual_vote_cast_payload, vote_cast_payload);
+        assert_eq!(
+            *actual_vote_cast_payload,
+            ValidatedVote::Public(vote_choice)
+        );
     }
 
     #[test]
     pub fn proposal_manager_replace_vote() {
         let vote_plan = VoteTestGen::vote_plan();
-        let first_vote_cast_payload = VoteTestGen::vote_cast_payload();
-        let second_vote_cast_payload = VoteTestGen::vote_cast_payload();
-
-        let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload);
-        let second_vote_cast =
-            VoteCast::new(vote_plan.to_id(), 0, second_vote_cast_payload.clone());
+        let first_vote_choice = vote::Choice::new(1);
+        let second_vote_choice = vote::Choice::new(2);
+        let first_vote_cast_payload = vote::Payload::public(first_vote_choice);
+        let second_vote_cast_payload = vote::Payload::public(second_vote_choice);
 
         let mut proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
+
+        let first_vote_cast = proposal_manager
+            .validate_vote(
+                VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload),
+                &vote_plan,
+            )
+            .unwrap();
+        let second_vote_cast = proposal_manager
+            .validate_vote(
+                VoteCast::new(vote_plan.to_id(), 0, second_vote_cast_payload.clone()),
+                &vote_plan,
+            )
+            .unwrap();
 
         let identifier = TestGen::unspecified_account_identifier();
         proposal_manager = proposal_manager
@@ -790,7 +807,10 @@ mod tests {
             .iter()
             .find(|(x, _y)| **x == identifier)
             .unwrap();
-        assert_eq!(*actual_vote_cast_payload, second_vote_cast_payload);
+        assert_eq!(
+            *actual_vote_cast_payload,
+            ValidatedVote::Public(second_vote_choice)
+        );
     }
 
     const CENT: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(100) };
@@ -1062,20 +1082,30 @@ mod tests {
 
         let identifier = TestGen::unspecified_account_identifier();
 
-        let first_vote_cast = VoteCast::new(
-            vote_plan.to_id(),
-            0,
-            VoteTestGen::vote_cast_payload_for(&favorable),
-        );
+        let first_vote_cast = first_proposal_manager
+            .validate_vote(
+                VoteCast::new(
+                    vote_plan.to_id(),
+                    0,
+                    VoteTestGen::vote_cast_payload_for(&favorable),
+                ),
+                &vote_plan,
+            )
+            .unwrap();
         first_proposal_manager = first_proposal_manager
             .vote(identifier.clone(), first_vote_cast.clone())
             .unwrap();
 
-        let second_vote_cast = VoteCast::new(
-            vote_plan.to_id(),
-            1,
-            VoteTestGen::vote_cast_payload_for(&favorable),
-        );
+        let second_vote_cast = first_proposal_manager
+            .validate_vote(
+                VoteCast::new(
+                    vote_plan.to_id(),
+                    1,
+                    VoteTestGen::vote_cast_payload_for(&favorable),
+                ),
+                &vote_plan,
+            )
+            .unwrap();
         second_proposal_manager = second_proposal_manager
             .vote(identifier.clone(), second_vote_cast.clone())
             .unwrap();
@@ -1086,8 +1116,8 @@ mod tests {
         stake_controlled = stake_controlled.add_unassigned(Stake(49));
 
         let proposals = ProposalManagers::new(&vote_plan);
-        let _ = proposals.vote(identifier.clone(), first_vote_cast);
-        let _ = proposals.vote(identifier, second_vote_cast);
+        let _ = proposals.vote(identifier.clone(), 0, first_vote_cast);
+        let _ = proposals.vote(identifier, 0, second_vote_cast);
 
         let governance = governance_50_percent(blank, favorable, rejection);
         proposals_vote_tally_succesful(&proposals, &stake_controlled, &governance);
@@ -1153,8 +1183,9 @@ mod tests {
     #[test]
     pub fn proposal_managers_many_votes() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(2);
-        let first_vote_cast_payload = VoteTestGen::vote_cast_payload();
-        let second_vote_cast_payload = VoteTestGen::vote_cast_payload();
+        let choice = Choice::new(1);
+        let first_vote_cast_payload = VoteTestGen::vote_cast_payload_for(&choice);
+        let second_vote_cast_payload = VoteTestGen::vote_cast_payload_for(&choice);
 
         let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload.clone());
         let second_vote_cast =
@@ -1162,12 +1193,27 @@ mod tests {
 
         let mut proposal_managers = ProposalManagers::new(&vote_plan);
 
+        let (first_vote_cast_validated, first_prop_idx) = proposal_managers
+            .validate_vote(first_vote_cast, &vote_plan)
+            .unwrap();
+        let (second_vote_cast_validated, second_prop_idx) = proposal_managers
+            .validate_vote(second_vote_cast.clone(), &vote_plan)
+            .unwrap();
+
         let identifier = TestGen::unspecified_account_identifier();
         proposal_managers = proposal_managers
-            .vote(identifier.clone(), first_vote_cast)
+            .vote(
+                identifier.clone(),
+                first_prop_idx,
+                first_vote_cast_validated,
+            )
             .unwrap();
         proposal_managers = proposal_managers
-            .vote(identifier.clone(), second_vote_cast)
+            .vote(
+                identifier.clone(),
+                second_prop_idx,
+                second_vote_cast_validated,
+            )
             .unwrap();
 
         let (_, actual_vote_cast_payload) = proposal_managers
@@ -1178,7 +1224,10 @@ mod tests {
             .iter()
             .find(|(x, _y)| **x == identifier)
             .unwrap();
-        assert_eq!(*actual_vote_cast_payload, first_vote_cast_payload);
+        assert_eq!(
+            *actual_vote_cast_payload,
+            ValidatedVote::Public(choice.clone())
+        );
 
         let (_, actual_vote_cast_payload) = proposal_managers
             .0
@@ -1188,38 +1237,53 @@ mod tests {
             .iter()
             .find(|(x, _y)| **x == identifier)
             .unwrap();
-        assert_eq!(*actual_vote_cast_payload, second_vote_cast_payload);
+        assert_eq!(
+            *actual_vote_cast_payload,
+            ValidatedVote::Public(choice.clone())
+        );
     }
 
     #[test]
     pub fn vote_for_nonexisting_proposal() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(1);
-        let vote_cast = VoteCast::new(vote_plan.to_id(), 2, VoteTestGen::vote_cast_payload());
-
         let proposal_managers = ProposalManagers::new(&vote_plan);
         assert!(proposal_managers
-            .vote(TestGen::unspecified_account_identifier(), vote_cast)
+            .validate_vote(
+                VoteCast::new(vote_plan.to_id(), 2, VoteTestGen::vote_cast_payload()),
+                &vote_plan,
+            )
             .is_err());
     }
 
     #[test]
     pub fn proposal_managers_update_vote() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(2);
-        let first_vote_cast_payload = VoteTestGen::vote_cast_payload();
-        let second_vote_cast_payload = VoteTestGen::vote_cast_payload();
-
-        let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload);
-        let second_vote_cast =
-            VoteCast::new(vote_plan.to_id(), 0, second_vote_cast_payload.clone());
+        let first_choice = Choice::new(0);
+        let second_choice = Choice::new(1);
+        let first_vote_cast_payload = VoteTestGen::vote_cast_payload_for(&first_choice);
+        let second_vote_cast_payload = VoteTestGen::vote_cast_payload_for(&second_choice);
 
         let mut proposal_managers = ProposalManagers::new(&vote_plan);
 
+        let (first_vote_cast, first_proposal) = proposal_managers
+            .validate_vote(
+                VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload),
+                &vote_plan,
+            )
+            .unwrap();
+        let (second_vote_cast, second_proposal) = proposal_managers
+            .validate_vote(
+                VoteCast::new(vote_plan.to_id(), 0, second_vote_cast_payload.clone()),
+                &vote_plan,
+            )
+            .unwrap();
+
         let identifier = TestGen::unspecified_account_identifier();
         proposal_managers = proposal_managers
-            .vote(identifier.clone(), first_vote_cast)
+            .vote(identifier.clone(), first_proposal, first_vote_cast)
             .unwrap();
         proposal_managers = proposal_managers
-            .vote(identifier.clone(), second_vote_cast)
+            .vote(identifier.clone(), second_proposal, second_vote_cast)
             .unwrap();
 
         let (_, actual_vote_cast_payload) = proposal_managers
@@ -1230,7 +1294,10 @@ mod tests {
             .iter()
             .find(|(x, _y)| **x == identifier)
             .unwrap();
-        assert_eq!(*actual_vote_cast_payload, second_vote_cast_payload);
+        assert_eq!(
+            *actual_vote_cast_payload,
+            ValidatedVote::Public(second_choice)
+        );
     }
 
     #[quickcheck]

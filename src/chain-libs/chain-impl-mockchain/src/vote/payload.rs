@@ -190,6 +190,7 @@ impl Default for PayloadType {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
+    use chain_vote::{Crs, ElectionPublicKey};
     use quickcheck::{Arbitrary, Gen};
 
     impl Arbitrary for PayloadType {
@@ -204,7 +205,7 @@ mod tests {
 
     impl Arbitrary for Payload {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            use chain_vote::{Crs, ElectionPublicKey, MemberCommunicationKey, MemberState, Vote};
+            use chain_vote::{MemberCommunicationKey, MemberState, Vote};
             use rand_core::SeedableRng;
 
             match PayloadType::arbitrary(g) {

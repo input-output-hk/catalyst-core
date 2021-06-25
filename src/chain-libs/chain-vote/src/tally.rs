@@ -350,10 +350,21 @@ impl Tally {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cryptography::Keypair;
+    use crate::cryptography::{Keypair, PublicKey};
     use crate::encrypted_vote::Vote;
+    use crate::Ballot;
     use rand_chacha::ChaCha20Rng;
-    use rand_core::SeedableRng;
+    use rand_core::{CryptoRng, RngCore, SeedableRng};
+
+    fn get_encrypted_ballot<R: RngCore + CryptoRng>(
+        rng: &mut R,
+        pk: &ElectionPublicKey,
+        crs: &Crs,
+        vote: Vote,
+    ) -> Ballot {
+        let (enc, proof) = pk.encrypt_and_prove_vote(rng, &crs, vote);
+        Ballot::try_from_vote_and_proof(enc, &proof, crs, pk).unwrap()
+    }
 
     #[test]
     fn encdec1() {
@@ -376,13 +387,13 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let (e1, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
-        let (e2, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
-        let (e3, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
+        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1));
+        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
 
         println!("tallying");
 
-        let mut encrypted_tally = EncryptedTally::new(vote_options);
+        let mut encrypted_tally = EncryptedTally::new(vote_options, ek.clone(), h.clone());
         encrypted_tally.add(&e1, 6);
         encrypted_tally.add(&e2, 5);
         encrypted_tally.add(&e3, 4);
@@ -435,13 +446,13 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let (e1, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
-        let (e2, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
-        let (e3, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
+        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1));
+        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
 
         println!("tallying");
 
-        let mut encrypted_tally = EncryptedTally::new(vote_options);
+        let mut encrypted_tally = EncryptedTally::new(vote_options, ek, h);
         encrypted_tally.add(&e1, 1);
         encrypted_tally.add(&e2, 3);
         encrypted_tally.add(&e3, 4);
@@ -495,12 +506,14 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let (e1, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
 
         println!("tallying");
 
-        let mut encrypted_tally = EncryptedTally::new(vote_options);
-        encrypted_tally.add(&e1, 42);
+        let mut encrypted_tally = EncryptedTally::new(vote_options, ek.clone(), h.clone());
+        encrypted_tally.add(
+            &get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0)),
+            42,
+        );
 
         let tds1 = encrypted_tally.partial_decrypt(&mut rng, m1.secret_key());
 
@@ -544,7 +557,11 @@ mod tests {
 
         println!("tallying");
 
-        let encrypted_tally = EncryptedTally::new(vote_options);
+        let encrypted_tally = EncryptedTally::new(
+            vote_options,
+            ElectionPublicKey::from_participants(&[m1.public_key()]),
+            h,
+        );
         let tds1 = encrypted_tally.partial_decrypt(&mut rng, m1.secret_key());
 
         let max_votes = 2;
@@ -593,11 +610,11 @@ mod tests {
         println!("encrypting vote");
 
         let vote_options = 2;
-        let (e1, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
-        let (e2, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 1));
-        let (e3, _) = ek.encrypt_and_prove_vote(&mut rng, &h, Vote::new(vote_options, 0));
+        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
+        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1));
+        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
 
-        let mut encrypted_tally = EncryptedTally::new(vote_options);
+        let mut encrypted_tally = EncryptedTally::new(vote_options, ek, h);
         encrypted_tally.add(&e1, 10);
         encrypted_tally.add(&e2, 3);
         encrypted_tally.add(&e3, 40);
@@ -626,7 +643,11 @@ mod tests {
 
     #[test]
     fn zero_encrypted_tally_serialization_sanity() {
-        let tally = EncryptedTally::new(3);
+        let election_key = ElectionPublicKey(PublicKey {
+            pk: GroupElement::from_hash(&[1u8]),
+        });
+        let h = Crs::from_hash(&[1u8]);
+        let tally = EncryptedTally::new(3, election_key, h);
         let bytes = tally.to_bytes();
         let deserialized_tally = EncryptedTally::from_bytes(&bytes).unwrap();
         assert_eq!(tally, deserialized_tally);

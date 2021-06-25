@@ -67,6 +67,7 @@ impl InitialsAssert for Vec<Initial> {
                         "Address {} found but value is different",
                         address_readable
                     );
+                    return;
                 }
             }
         }

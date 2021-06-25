@@ -4,7 +4,6 @@ use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
 use assert_fs::TempDir;
 use snapshot_trigger_service::config::JobParameters;
-
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 
 //SR001
@@ -19,8 +18,8 @@ pub fn multiple_registration() {
 
     let overriden_entry = first_registartion.snapshot_entry().unwrap();
 
-    println!("Waiting 3 mins before running next registration");
-    std::thread::sleep(std::time::Duration::from_secs(3 * 60));
+    println!("Waiting 10 mins before running next registration");
+    std::thread::sleep(std::time::Duration::from_secs(5 * 60));
     println!("Wait finished.");
 
     let second_registartion = do_registration(&temp_dir);
@@ -31,7 +30,7 @@ pub fn multiple_registration() {
 
     let job_param = JobParameters {
         slot_no: Some(second_registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
-        threshold: 1_000_000,
+        threshold: (second_registartion.funds_in_lovelace().unwrap() - 2_000_000).into(),
     };
 
     wait_for_db_sync();
@@ -55,7 +54,7 @@ pub fn wallet_has_less_than_threshold() {
 
     let job_param = JobParameters {
         slot_no: Some(registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
-        threshold: (u64::from(too_low_funds_entry.value) + 1).into(),
+        threshold: (registartion.funds_in_lovelace().unwrap() + 1_000_000).into(),
     };
 
     wait_for_db_sync();
@@ -76,10 +75,11 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
     registartion.assert_qr_equals_to_sk();
 
     let correct_entry = registartion.snapshot_entry().unwrap();
+    registartion.print_snapshot_entry().unwrap();
 
     let job_param = JobParameters {
         slot_no: Some(registartion.slot_no().unwrap() + GRACE_PERIOD_FOR_SNAPSHOT),
-        threshold: (u64::from(correct_entry.value) - 1).into(),
+        threshold: (registartion.funds_in_lovelace().unwrap() - 1_000_000).into(),
     };
 
     wait_for_db_sync();

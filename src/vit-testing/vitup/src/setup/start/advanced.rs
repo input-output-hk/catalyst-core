@@ -7,10 +7,12 @@ use crate::setup::start::quick::parse_mode_from_str;
 use crate::setup::start::quick::Mode;
 use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
+use crate::config::Initials;
 use jormungandr_scenario_tests::programs::prepare_command;
 use jormungandr_scenario_tests::{
     parse_progress_bar_mode_from_str, Context, ProgressBarMode, Seed,
 };
+use crate::setup::generate::read_initials;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -128,7 +130,12 @@ impl AdvancedStartCommandArgs {
             log_level,
         );
 
-        let config = read_config(&self.config)?;
+        let mut config = read_config(&self.config)?;
+
+        if let Some(snapshot) = self.snapshot {
+            let initials = read_initials(snapshot)?;
+            config.params.initials.as_mut().unwrap().extend(&Initials::new_from_external(initials));
+        }
 
         println!("{:?}", config.params);
 

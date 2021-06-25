@@ -193,4 +193,10 @@ impl Initials {
         }
         templates
     }
+
+    pub fn extend(&mut self, initials: &Initials) {
+        for element in initials.0.iter() {
+            self.0.push(element.clone());
+        }
+    }
 }

@@ -6,6 +6,7 @@ use jormungandr_integration_tests::common::jcli::JCli;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::InitialUTxO;
 use jortestkit::prelude::WaitBuilder;
+use math::round;
 use registration_service::{
     client::rest::RegistrationRestClient, context::State, request::Request,
 };
@@ -114,8 +115,17 @@ impl RegistrationResult {
     pub fn snapshot_entry(&self) -> Result<InitialUTxO, Error> {
         Ok(InitialUTxO {
             address: Address::from_str(&self.address())?,
-            value: self.funds()?.into(),
+            value: self.funds_in_ada()?.into(),
         })
+    }
+
+    pub fn print_snapshot_entry(&self) -> Result<(), Error> {
+        println!(
+            "[address: {}, funds:{}",
+            self.address(),
+            self.funds_in_ada()?
+        );
+        Ok(())
     }
 
     pub fn address(&self) -> String {
@@ -132,9 +142,19 @@ impl RegistrationResult {
         }
     }
 
-    pub fn funds(&self) -> Result<u64, Error> {
+    pub fn funds_in_ada(&self) -> Result<u64, Error> {
         match self.status() {
-            State::Finished { info, .. } => Ok((info.funds / 1_000_000) + 1),
+            State::Finished { info, .. } => {
+                let rounded = round::floor(info.funds as f64, -6);
+                Ok((rounded as u64) / 1_000_000)
+            }
+            _ => Err(Error::CannotGetFundsFromRegistrationResult),
+        }
+    }
+
+    pub fn funds_in_lovelace(&self) -> Result<u64, Error> {
+        match self.status() {
+            State::Finished { info, .. } => Ok(info.funds),
             _ => Err(Error::CannotGetFundsFromRegistrationResult),
         }
     }

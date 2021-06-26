@@ -1,16 +1,8 @@
-mod args;
-mod config;
-mod context;
-mod file_lister;
-mod job;
-mod request;
-mod rest;
-mod service;
-mod utils;
-
-pub use args::{Error, RegistrationServiceCommand};
-pub use context::Context;
-pub use utils::*;
+pub use registration_service::{
+    args::{Error, RegistrationServiceCommand},
+    context::Context,
+    utils::*,
+};
 
 use futures::future::FutureExt;
 use structopt::StructOpt;

@@ -1,28 +1,28 @@
-use crate::client::rest::SnapshotRestClient;
-use crate::config::JobParameters;
+use crate::client::rest::RegistrationRestClient;
 use crate::context::State;
+use crate::request::Request;
 use structopt::StructOpt;
 use thiserror::Error;
 
 #[derive(StructOpt, Debug)]
-pub struct TriggerServiceCliCommand {
+pub struct RegistrationServiceCliCommand {
     /// token, which is necessary to perform admin operations
-    #[structopt(short, long, env = "SNAPSHOT_TOKEN")]
+    #[structopt(short, long, env = "REGISTRATION_TOKEN")]
     token: Option<String>,
 
     /// snapshot endpoint
-    #[structopt(short, long, env = "SNAPSHOT_ENDPOINT")]
+    #[structopt(short, long, env = "REGISTRATION_ENDPOINT")]
     endpoint: String,
 
     #[structopt(subcommand)]
     command: Command,
 }
 
-impl TriggerServiceCliCommand {
+impl RegistrationServiceCliCommand {
     pub fn exec(self) -> Result<(), Error> {
         let rest = match self.token {
-            Some(token) => SnapshotRestClient::new_with_token(token, self.endpoint),
-            None => SnapshotRestClient::new(self.endpoint),
+            Some(token) => RegistrationRestClient::new_with_token(token, self.endpoint),
+            None => RegistrationRestClient::new(self.endpoint),
         };
 
         self.command.exec(rest)
@@ -40,7 +40,7 @@ pub enum Command {
 }
 
 impl Command {
-    pub fn exec(self, rest: SnapshotRestClient) -> Result<(), Error> {
+    pub fn exec(self, rest: RegistrationRestClient) -> Result<(), Error> {
         match self {
             Self::Health => {
                 match rest.is_up() {
@@ -64,7 +64,7 @@ pub enum JobCommand {
 }
 
 impl JobCommand {
-    pub fn exec(self, rest: SnapshotRestClient) -> Result<(), Error> {
+    pub fn exec(self, rest: RegistrationRestClient) -> Result<(), Error> {
         match self {
             Self::New(new_job_command) => {
                 println!("{}", new_job_command.exec(rest)?);
@@ -88,7 +88,7 @@ pub struct StatusCommand {
 impl StatusCommand {
     pub fn exec(
         self,
-        rest: SnapshotRestClient,
+        rest: RegistrationRestClient,
     ) -> Result<Result<State, crate::context::Error>, Error> {
         rest.job_status(self.job_id).map_err(Into::into)
     }
@@ -96,22 +96,28 @@ impl StatusCommand {
 
 #[derive(StructOpt, Debug)]
 pub struct NewJobCommand {
-    /// slot no
-    #[structopt(short, long)]
-    slot_no: Option<u64>,
+    #[structopt(long = "payment-skey")]
+    payment_skey: String,
 
-    /// threshold
-    #[structopt(short, long)]
-    threshold: u64,
+    #[structopt(long = "payment-vkey")]
+    payment_vkey: String,
+
+    #[structopt(long = "stake-skey")]
+    stake_skey: String,
+
+    #[structopt(long = "stake-vkey")]
+    stake_vkey: String,
 }
 
 impl NewJobCommand {
-    pub fn exec(self, rest: SnapshotRestClient) -> Result<String, Error> {
-        let params = JobParameters {
-            slot_no: self.slot_no,
-            threshold: self.threshold,
+    pub fn exec(self, rest: RegistrationRestClient) -> Result<String, Error> {
+        let request = Request {
+            payment_skey: self.payment_skey.clone(),
+            payment_vkey: self.payment_vkey.clone(),
+            stake_skey: self.stake_skey.clone(),
+            stake_vkey: self.stake_vkey,
         };
-        rest.job_new(params).map_err(Into::into)
+        rest.job_new(request).map_err(Into::into)
     }
 }
 
@@ -121,7 +127,7 @@ pub enum FilesCommand {
 }
 
 impl FilesCommand {
-    pub fn exec(self, rest: SnapshotRestClient) -> Result<(), Error> {
+    pub fn exec(self, rest: RegistrationRestClient) -> Result<(), Error> {
         match self {
             Self::List => {
                 println!("{}", serde_json::to_string_pretty(&rest.list_files()?)?);

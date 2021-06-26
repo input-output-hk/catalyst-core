@@ -1,4 +1,4 @@
-use crate::non_functional::private_vote_test_scenario;
+use crate::common::load::private_vote_test_scenario;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 #[test]

@@ -1,17 +1,18 @@
-use crate::config::JobParameters;
 use crate::context::State;
 use crate::file_lister::FolderDump;
+use crate::request::Request;
 use jortestkit::{prelude::Wait, process::WaitError};
 use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 use thiserror::Error;
 
-pub struct SnapshotRestClient {
+pub struct RegistrationRestClient {
     token: Option<String>,
     address: String,
 }
 
-impl SnapshotRestClient {
+impl RegistrationRestClient {
     pub fn new_with_token(token: String, address: String) -> Self {
         Self {
             token: Some(token),
@@ -60,20 +61,22 @@ impl SnapshotRestClient {
         serde_json::from_str(&self.get("api/job/files/list")?).map_err(Into::into)
     }
 
-    pub fn download_snapshot<S: Into<String>, P: AsRef<Path>>(
+    pub fn download_qr<S: Into<String>, P: AsRef<Path>>(
         &self,
         id: S,
-        output: P,
-    ) -> Result<(), Error> {
-        self.download(format!("{}/snapshot.json", id.into()), output)
-    }
-
-    pub fn download_job_status<S: Into<String>, P: AsRef<Path>>(
-        &self,
-        id: S,
-        output: P,
-    ) -> Result<(), Error> {
-        self.download(format!("{}/status.yaml", id.into()), output)
+        output_dir: P,
+    ) -> Result<PathBuf, Error> {
+        let folder_dump = self.list_files()?;
+        let id = id.into();
+        let qr_code_file_sub_url = folder_dump
+            .find_qr(id.clone())
+            .ok_or_else(|| Error::CannotFindQrCode(id.clone()))?;
+        let file_name = Path::new(&qr_code_file_sub_url)
+            .file_name()
+            .ok_or(Error::CannotFindQrCode(id))?;
+        let output_path = output_dir.as_ref().join(file_name);
+        self.download(Self::rem_first(qr_code_file_sub_url), output_path.clone())?;
+        Ok(output_path)
     }
 
     pub fn download<S: Into<String>, P: AsRef<Path>>(
@@ -81,19 +84,30 @@ impl SnapshotRestClient {
         sub_location: S,
         output: P,
     ) -> Result<(), Error> {
-        let content = self.get(format!("api/job/files/get/{}", sub_location.into()))?;
+        let local_path = format!("api/job/files/get/{}", sub_location.into());
+        let path = self.path(local_path);
+        let client = reqwest::blocking::Client::new();
+        let request = self.set_header(client.get(&path));
+        let bytes = request.send()?.bytes()?;
         let mut file = std::fs::File::create(&output)?;
-        file.write_all(content.as_bytes())?;
+        file.write_all(&bytes)?;
         Ok(())
     }
 
-    pub fn job_new(&self, params: JobParameters) -> Result<String, Error> {
+    pub fn get_catalyst_sk<S: Into<String>>(&self, id: S) -> Result<String, Error> {
+        self.get(format!(
+            "api/job/files/get/{}/catalyst-vote.skey",
+            id.into()
+        ))
+    }
+
+    pub fn job_new(&self, request: Request) -> Result<String, Error> {
         let client = reqwest::blocking::Client::new();
         let path = self.path("api/job/new");
         println!("Calling: {}", path);
-        let request = self.set_header(client.post(&path));
-        request
-            .json(&params)
+        let request_builder = self.set_header(client.post(&path));
+        request_builder
+            .json(&request)
             .send()?
             .text()
             .map_err(Into::into)
@@ -134,10 +148,18 @@ impl SnapshotRestClient {
         }
         false
     }
+
+    fn rem_first(value: &str) -> &str {
+        let mut chars = value.chars();
+        chars.next();
+        chars.as_str()
+    }
 }
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("qr code not found for job id ({0})")]
+    CannotFindQrCode(String),
     #[error("internal rest error")]
     ReqwestError(#[from] reqwest::Error),
     #[error("json response serialization error")]
@@ -148,4 +170,6 @@ pub enum Error {
     IoError(#[from] std::io::Error),
     #[error("timeout error")]
     WaitError(#[from] WaitError),
+    #[error("unexpected response: {0}")]
+    UnexpectedResponse(String),
 }

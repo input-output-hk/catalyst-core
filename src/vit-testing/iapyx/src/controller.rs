@@ -8,7 +8,6 @@ use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
 use jormungandr_testing_utils::qr_code::KeyQrCode;
 use jormungandr_testing_utils::testing::node::RestSettings;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::convert::TryInto;
 use std::path::Path;
 use thiserror::Error;
@@ -142,7 +141,7 @@ impl Controller {
         self.wallet.confirm_transaction(id)
     }
 
-    pub fn pending_transactions(&self) -> HashSet<FragmentId> {
+    pub fn pending_transactions(&self) -> Vec<FragmentId> {
         self.wallet.pending_transactions()
     }
 
@@ -152,7 +151,7 @@ impl Controller {
     ) -> Result<(), ControllerError> {
         let mut limit = 60;
         loop {
-            let ids: Vec<FragmentId> = self.pending_transactions().iter().cloned().collect();
+            let ids: Vec<FragmentId> = self.pending_transactions().to_vec();
 
             if limit <= 0 {
                 return Err(ControllerError::TransactionsWerePendingForTooLong { fragments: ids });

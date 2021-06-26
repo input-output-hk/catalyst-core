@@ -29,7 +29,7 @@ pub enum Initial {
     },
     External {
         address: String,
-        funds: usize,
+        funds: u64,
     },
 }
 
@@ -88,17 +88,32 @@ impl Initials {
         None
     }
 
-    pub fn new_above_threshold(count: usize, pin: &str) -> Initials {
+    pub fn new_above_threshold(count: usize, pin: &str) -> Self {
         Self(vec![Initial::AboveThreshold {
             above_threshold: count,
             pin: pin.to_string(),
         }])
     }
 
+    pub fn new_from_external(initials: Vec<jormungandr_lib::interfaces::Initial>) -> Self {
+        let mut templates = Vec::new();
+        for initial in initials.iter() {
+            if let jormungandr_lib::interfaces::Initial::Fund(initial_utxos) = initial {
+                for utxo in initial_utxos.iter() {
+                    templates.push(Initial::External {
+                        address: utxo.address.to_string(),
+                        funds: utxo.value.into(),
+                    });
+                }
+            }
+        }
+        Self(templates)
+    }
+
     pub fn external_templates(&self) -> Vec<ExternalWalletTemplate> {
         let mut templates = Vec::new();
         for (index, initial) in self.0.iter().enumerate() {
-            if let Initial::External { address, funds } = initial {
+            if let Initial::External { funds, address } = initial {
                 templates.push(ExternalWalletTemplate::new(
                     format!("wallet_{}", index + 1),
                     Value(*funds as u64),
@@ -177,5 +192,11 @@ impl Initials {
             }
         }
         templates
+    }
+
+    pub fn extend(&mut self, initials: &Initials) {
+        for element in initials.0.iter() {
+            self.0.push(element.clone());
+        }
     }
 }

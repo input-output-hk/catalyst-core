@@ -1,8 +1,10 @@
+use crate::config::Initials;
 use crate::manager::ControlContext;
 use crate::manager::ManagerService;
 use crate::scenario::network::single_run;
 use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::setup::generate::read_config;
+use crate::setup::generate::read_initials;
 use crate::setup::start::quick::parse_mode_from_str;
 use crate::setup::start::quick::Mode;
 use crate::setup::start::QuickVitBackendSettingsBuilder;
@@ -128,7 +130,17 @@ impl AdvancedStartCommandArgs {
             log_level,
         );
 
-        let config = read_config(&self.config)?;
+        let mut config = read_config(&self.config)?;
+
+        if let Some(snapshot) = self.snapshot {
+            let initials = read_initials(snapshot)?;
+            config
+                .params
+                .initials
+                .as_mut()
+                .unwrap()
+                .extend(&Initials::new_from_external(initials));
+        }
 
         println!("{:?}", config.params);
 

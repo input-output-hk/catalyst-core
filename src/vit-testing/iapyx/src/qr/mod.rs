@@ -1,3 +1,6 @@
+use bech32::ToBase32;
+use chain_crypto::AsymmetricKey;
+use chain_crypto::Ed25519Extended;
 use jormungandr_testing_utils::qr_code::KeyQrCode;
 use jormungandr_testing_utils::qr_code::KeyQrCodeError;
 use std::path::Path;
@@ -31,6 +34,8 @@ pub enum PinReadError {
     UnableToSplitFileName(PathBuf),
     #[error("Cannot read qr from file")]
     UnableToReadQr(#[from] std::io::Error),
+    #[error("Cannot get secret key")]
+    UnableToGetSecretKey(#[from] bech32::Error),
     #[error("Cannot decode qr from file")]
     UnableToDecodeQr(#[from] KeyQrCodeError),
     #[error("cannot open image")]
@@ -56,6 +61,12 @@ impl QrReader {
         let img = image::open(qr.as_ref())?;
         let secret = KeyQrCode::decode(img, &pin)?;
         Ok(secret.first().unwrap().clone())
+    }
+
+    pub fn read_qr_as_bech32<P: AsRef<Path>>(&self, qr: P) -> Result<String, PinReadError> {
+        let sk = self.read_qr(qr)?;
+        let hrp = Ed25519Extended::SECRET_BECH32_HRP;
+        Ok(bech32::encode(hrp, sk.leak_secret().to_base32())?)
     }
 
     pub fn read_qrs<P: AsRef<Path>>(

@@ -1,13 +1,9 @@
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-        pub mod common;
-        pub mod backend;
-        pub mod non_functional;
-        pub mod registration;
-        pub mod e2e;
-        pub mod snapshot;
-    }
-}
+pub mod asserts;
+mod backend;
+pub mod load;
+pub mod registration;
+pub mod snapshot;
+pub use backend::*;
 
 use jormungandr_testing_utils::testing::node::time;
 use jormungandr_testing_utils::testing::node::JormungandrRest;

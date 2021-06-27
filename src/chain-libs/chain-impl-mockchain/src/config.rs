@@ -82,6 +82,7 @@ pub enum ConfigParam {
     AddCommitteeId(CommitteeId),
     RemoveCommitteeId(CommitteeId),
     PerVoteCertificateFees(PerVoteCertificateFee),
+    TransactionMaximumExpiryEpochs(u8),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -153,6 +154,8 @@ pub enum Tag {
     RemoveCommitteeId = 27,
     #[strum(to_string = "per-vote-certificate-fees")]
     PerVoteCertificateFees = 28,
+    #[strum(to_string = "transaction-maximum-expiry-epochs")]
+    TransactionMaximumExpiryEpochs = 29,
 }
 
 impl Tag {
@@ -183,6 +186,7 @@ impl Tag {
             26 => Some(Tag::AddCommitteeId),
             27 => Some(Tag::RemoveCommitteeId),
             28 => Some(Tag::PerVoteCertificateFees),
+            29 => Some(Tag::TransactionMaximumExpiryEpochs),
             _ => None,
         }
     }
@@ -218,6 +222,7 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::AddCommitteeId(..) => Tag::AddCommitteeId,
             ConfigParam::RemoveCommitteeId(..) => Tag::RemoveCommitteeId,
             ConfigParam::PerVoteCertificateFees(..) => Tag::PerVoteCertificateFees,
+            ConfigParam::TransactionMaximumExpiryEpochs(..) => Tag::TransactionMaximumExpiryEpochs,
         }
     }
 }
@@ -298,6 +303,8 @@ impl Readable for ConfigParam {
             Tag::PerVoteCertificateFees => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::PerVoteCertificateFees)
             }
+            Tag::TransactionMaximumExpiryEpochs => ConfigParamVariant::from_payload(bytes)
+                .map(ConfigParam::TransactionMaximumExpiryEpochs),
         }
         .map_err(Into::into)
     }
@@ -334,6 +341,7 @@ impl property::Serialize for ConfigParam {
             ConfigParam::AddCommitteeId(data) => data.to_payload(),
             ConfigParam::RemoveCommitteeId(data) => data.to_payload(),
             ConfigParam::PerVoteCertificateFees(data) => data.to_payload(),
+            ConfigParam::TransactionMaximumExpiryEpochs(data) => data.to_payload(),
         };
         let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
             io::Error::new(
@@ -858,7 +866,7 @@ mod test {
 
     impl Arbitrary for ConfigParam {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            match u8::arbitrary(g) % 29 {
+            match u8::arbitrary(g) % 30 {
                 0 => ConfigParam::Block0Date(Arbitrary::arbitrary(g)),
                 1 => ConfigParam::Discrimination(Arbitrary::arbitrary(g)),
                 2 => ConfigParam::ConsensusVersion(Arbitrary::arbitrary(g)),
@@ -888,6 +896,7 @@ mod test {
                 26 => ConfigParam::AddCommitteeId(Arbitrary::arbitrary(g)),
                 27 => ConfigParam::RemoveCommitteeId(Arbitrary::arbitrary(g)),
                 28 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)),
+                29 => ConfigParam::TransactionMaximumExpiryEpochs(Arbitrary::arbitrary(g)),
                 _ => unreachable!(),
             }
         }

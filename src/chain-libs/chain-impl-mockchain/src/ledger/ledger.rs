@@ -973,7 +973,7 @@ impl Ledger {
         LinearFee: FeeAlgorithm,
     {
         check::valid_transaction_ios_number(tx)?;
-        check::valid_transaction_date(tx, cur_date)?;
+        check::valid_transaction_date(&self.settings, tx, cur_date)?;
         let fee = calculate_fee(tx, dyn_params);
         tx.verify_strictly_balanced(fee)?;
         self = self.apply_tx_inputs(tx)?;

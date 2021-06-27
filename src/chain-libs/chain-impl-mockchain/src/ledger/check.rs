@@ -1,6 +1,7 @@
 use super::{Block0Error, Error};
 use crate::certificate;
 use crate::date::BlockDate;
+use crate::setting;
 use crate::transaction::*;
 use crate::value::Value;
 use chain_addr::Address;
@@ -145,6 +146,8 @@ pub enum TxVerifyError {
     TooManyOutputs { expected: u8, actual: u8 },
     #[error("Transaction validity expired")]
     TransactionExpired,
+    #[error("Transaction validity is too far in the future")]
+    TransactionValidForTooLong,
 }
 
 #[allow(clippy::absurd_extreme_comparisons)]
@@ -168,6 +171,7 @@ pub(super) fn valid_transaction_ios_number<P>(
 }
 
 pub(super) fn valid_transaction_date<P>(
+    settings: &setting::Settings,
     tx: &TransactionSlice<P>,
     date: BlockDate,
 ) -> Result<(), TxVerifyError> {
@@ -176,11 +180,19 @@ pub(super) fn valid_transaction_date<P>(
     if valid_until == BlockDate::first() {
         return Ok(());
     }
-    if date > valid_until {
-        Err(TxVerifyError::TransactionExpired)
-    } else {
-        Ok(())
-    }
+
+    // if current date epoch is less than until.epoch - setting, then
+    // the transaction has a validity range that is too big to be accepted
+    if_cond_fail_with!(
+        date.epoch
+            < valid_until
+                .epoch
+                .saturating_sub(settings.transaction_maximum_expiry_epochs.into()),
+        TxVerifyError::TransactionValidForTooLong
+    )?;
+    // if current date is passed the validity until, the transaction is expired
+    if_cond_fail_with!(date > valid_until, TxVerifyError::TransactionExpired)?;
+    Ok(())
 }
 
 #[cfg(test)]

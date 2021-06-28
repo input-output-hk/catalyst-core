@@ -99,6 +99,7 @@ pub async fn start_rest_server(context: ContextLock) {
             .and(files.or(status).or(new))
             .boxed()
     };
+
     let api = root.and(health.or(job)).recover(report_invalid).boxed();
 
     let server = warp::serve(api);

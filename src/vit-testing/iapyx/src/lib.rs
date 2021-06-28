@@ -19,4 +19,4 @@ pub use load::{
     IapyxLoad, IapyxLoadConfig, IapyxLoadError, MultiController, VoteStatusProvider,
     WalletRequestGen,
 };
-pub use qr::{get_pin, pin_to_bytes, PinReadMode, QrReader};
+pub use qr::{get_pin, pin_to_bytes, PinReadError, PinReadMode, QrReader};

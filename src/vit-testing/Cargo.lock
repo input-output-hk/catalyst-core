@@ -3388,6 +3388,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "registration-verify-service"
+version = "0.1.0"
+dependencies = [
+ "chain-addr",
+ "chain-crypto",
+ "chrono",
+ "futures",
+ "iapyx",
+ "jormungandr-integration-tests",
+ "jormungandr-lib",
+ "jortestkit",
+ "reqwest 0.10.10",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "signals-handler",
+ "snapshot-trigger-service",
+ "structopt",
+ "thiserror",
+ "tokio 1.5.0",
+ "uuid",
+ "walkdir",
+ "warp",
+]
+
+[[package]]
 name = "remove_dir_all"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3874,8 +3900,11 @@ checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
 name = "snapshot-trigger-service"
 version = "0.1.0"
 dependencies = [
+ "assert_fs",
+ "chain-addr",
  "chrono",
  "futures",
+ "jormungandr-lib",
  "jortestkit",
  "reqwest 0.10.10",
  "serde",

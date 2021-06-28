@@ -10,10 +10,10 @@ use thiserror::Error;
 pub struct Configuration {
     pub port: u16,
     #[serde(rename = "snapshot-token")]
-    pub snaphot_token: PathBuf,
+    pub snaphot_token: String,
+    #[serde(rename = "snapshot-address")]
+    pub snaphot_address: String,
     pub jcli: PathBuf,
-    #[serde(rename = "cardano-cli")]
-    pub cardano_cli: PathBuf,
     pub network: NetworkType,
     pub token: Option<String>,
 }

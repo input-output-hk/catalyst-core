@@ -5,5 +5,6 @@ pub struct Request {
     pub qr: Vec<u8>,
     pub pin: String,
     pub expected_funds: u64,
+    pub threshold: u64,
     pub slot_no: u64,
 }

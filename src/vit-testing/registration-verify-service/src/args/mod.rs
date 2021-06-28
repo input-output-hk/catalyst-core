@@ -1,10 +1,12 @@
-use crate::job::VoteRegistrationJobBuilder;
 use crate::{
     config::{read_config, Configuration},
-    context::Context,
+    context::{Context, ContextLock},
     service::ManagerService,
 };
+
+use crate::job::RegistrationVerifyJobBuilder;
 use futures::future::FutureExt;
+use reqwest::blocking::multipart::Form;
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
 use structopt::StructOpt;
@@ -27,10 +29,8 @@ impl RegistrationVerifyServiceCommand {
             configuration.token = self.token;
         }
 
-        let control_context = Arc::new(Mutex::new(Context::new(
-            configuration.clone(),
-            &configuration.result_dir,
-        )));
+        let control_context: ContextLock =
+            Arc::new(Mutex::new(Context::new(configuration.clone())));
 
         let mut manager = ManagerService::new(control_context.clone());
         let handle = manager.spawn();
@@ -38,21 +38,13 @@ impl RegistrationVerifyServiceCommand {
         let request_to_start_task = async {
             loop {
                 if let Some((job_id, request)) = manager.request_to_start() {
-                    let mut job_result_dir = configuration.result_dir.clone();
-                    job_result_dir.push(job_id.to_string());
-                    std::fs::create_dir_all(job_result_dir.clone())?;
-
-                    let job = VoteRegistrationJobBuilder::new()
+                    let job = RegistrationVerifyJobBuilder::new()
                         .with_jcli(&configuration.jcli)
-                        .with_cardano_cli(&configuration.cardano_cli)
-                        .with_voter_registration(&configuration.voter_registration)
                         .with_network(configuration.network)
-                        .with_kedqr(&configuration.vit_kedqr)
-                        .with_working_dir(&job_result_dir)
                         .build();
 
                     control_context.lock().unwrap().run_started().unwrap();
-                    let output_info = job.start(request).unwrap();
+                    let output_info = job.start(request, control_context.clone()).unwrap();
                     control_context
                         .lock()
                         .unwrap()

@@ -1,18 +1,18 @@
 use crate::context::State;
-use crate::file_lister::FolderDump;
 use crate::request::Request;
 use jortestkit::{prelude::Wait, process::WaitError};
+use reqwest::blocking::multipart;
 use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;
 
-pub struct RegistrationRestClient {
+pub struct RegistrationVerifyRestClient {
     token: Option<String>,
     address: String,
 }
 
-impl RegistrationRestClient {
+impl RegistrationVerifyRestClient {
     pub fn new_with_token(token: String, address: String) -> Self {
         Self {
             token: Some(token),
@@ -57,57 +57,13 @@ impl RegistrationRestClient {
         request_builder
     }
 
-    pub fn list_files(&self) -> Result<FolderDump, Error> {
-        serde_json::from_str(&self.get("api/job/files/list")?).map_err(Into::into)
-    }
-
-    pub fn download_qr<S: Into<String>, P: AsRef<Path>>(
-        &self,
-        id: S,
-        output_dir: P,
-    ) -> Result<PathBuf, Error> {
-        let folder_dump = self.list_files()?;
-        let id = id.into();
-        let qr_code_file_sub_url = folder_dump
-            .find_qr(id.clone())
-            .ok_or_else(|| Error::CannotFindQrCode(id.clone()))?;
-        let file_name = Path::new(&qr_code_file_sub_url)
-            .file_name()
-            .ok_or(Error::CannotFindQrCode(id))?;
-        let output_path = output_dir.as_ref().join(file_name);
-        self.download(Self::rem_first(qr_code_file_sub_url), output_path.clone())?;
-        Ok(output_path)
-    }
-
-    pub fn download<S: Into<String>, P: AsRef<Path>>(
-        &self,
-        sub_location: S,
-        output: P,
-    ) -> Result<(), Error> {
-        let local_path = format!("api/job/files/get/{}", sub_location.into());
-        let path = self.path(local_path);
-        let client = reqwest::blocking::Client::new();
-        let request = self.set_header(client.get(&path));
-        let bytes = request.send()?.bytes()?;
-        let mut file = std::fs::File::create(&output)?;
-        file.write_all(&bytes)?;
-        Ok(())
-    }
-
-    pub fn get_catalyst_sk<S: Into<String>>(&self, id: S) -> Result<String, Error> {
-        self.get(format!(
-            "api/job/files/get/{}/catalyst-vote.skey",
-            id.into()
-        ))
-    }
-
-    pub fn job_new(&self, request: Request) -> Result<String, Error> {
+    pub fn job_new(&self, form: multipart::Form) -> Result<String, Error> {
         let client = reqwest::blocking::Client::new();
         let path = self.path("api/job/new");
         println!("Calling: {}", path);
         let request_builder = self.set_header(client.post(&path));
         request_builder
-            .json(&request)
+            .multipart(form)
             .send()?
             .text()
             .map_err(Into::into)

@@ -12,9 +12,14 @@ walkdir = "2.3.1"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "26f6fc15911863b5f3cf047d6d1789cd0cc39ba0" } 
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "26f6fc15911863b5f3cf047d6d1789cd0cc39ba0" } 
 futures = "0.3.8"
+snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 serde = { version = "1", features = ["derive"] }
 warp = "0.3"
+iapyx = { path = "../iapyx"} 
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 thiserror = "1.0"
 tokio = { version = "1.2", features = ["macros","rt","process"] }
 serde_json = "1.0"

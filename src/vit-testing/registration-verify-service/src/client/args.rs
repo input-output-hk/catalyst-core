@@ -1,6 +1,8 @@
-use crate::client::rest::RegistrationRestClient;
+use crate::client::rest::RegistrationVerifyRestClient;
 use crate::context::State;
 use crate::request::Request;
+use reqwest::blocking::multipart::Form;
+use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;
 
@@ -100,37 +102,25 @@ pub struct NewJobCommand {
     pin: String,
 
     #[structopt(long = "expected-funds")]
-    funds: Option<u64>,
+    funds: u64,
+
+    #[structopt(long = "threshold")]
+    threshold: u64,
 
     #[structopt(long = "slot-no")]
-    slot-no: u64,
+    slot_no: u64,
 }
 
 impl NewJobCommand {
     pub fn exec(self, rest: RegistrationVerifyRestClient) -> Result<String, Error> {
-        let request = Request {
-            payment_skey: self.payment_skey.clone(),
-            payment_vkey: self.payment_vkey.clone(),
-            stake_skey: self.stake_skey.clone(),
-            stake_vkey: self.stake_vkey,
-        };
-        rest.job_new(request).map_err(Into::into)
-    }
-}
+        let form = Form::new()
+            .text("pin", self.pin)
+            .text("funds", self.funds.to_string())
+            .text("threshold", self.threshold.to_string())
+            .text("slot-no", self.slot_no.to_string())
+            .file("qr", &self.qr)?;
 
-#[derive(StructOpt, Debug)]
-pub enum FilesCommand {
-    List,
-}
-
-impl FilesCommand {
-    pub fn exec(self, rest: RegistrationRestClient) -> Result<(), Error> {
-        match self {
-            Self::List => {
-                println!("{}", serde_json::to_string_pretty(&rest.list_files()?)?);
-                Ok(())
-            }
-        }
+        rest.job_new(form).map_err(Into::into)
     }
 }
 
@@ -142,4 +132,6 @@ pub enum Error {
     SerdeError(#[from] serde_json::Error),
     #[error("rest error")]
     RestError(#[from] super::rest::Error),
+    #[error("io error")]
+    IoError(#[from] std::io::Error),
 }

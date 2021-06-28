@@ -16,18 +16,16 @@ use uuid::Uuid;
 pub struct Context {
     server_stopper: Option<ServerStopper>,
     config: Configuration,
-    working_dir: PathBuf,
     address: SocketAddr,
     state: State,
 }
 
 impl Context {
-    pub fn new<P: AsRef<Path>>(config: Configuration, working_dir: P) -> Self {
+    pub fn new(config: Configuration) -> Self {
         Self {
             server_stopper: None,
             address: ([0, 0, 0, 0], config.port).into(),
             config,
-            working_dir: working_dir.as_ref().to_path_buf(),
             state: State::Idle,
         }
     }
@@ -61,6 +59,7 @@ impl Context {
                     job_id: *job_id,
                     start: Utc::now().naive_utc(),
                     request: request.clone(),
+                    step: Step::RunningSnapshot,
                 };
                 Ok(())
             }
@@ -74,6 +73,7 @@ impl Context {
                 job_id,
                 start,
                 request,
+                step: Step::RunningSnapshot,
             } => {
                 self.state = State::Finished {
                     job_id: *job_id,
@@ -113,12 +113,12 @@ impl Context {
         &self.state
     }
 
-    pub fn address(&self) -> &SocketAddr {
-        &self.address
+    pub fn state_mut(&mut self) -> &mut State {
+        &mut self.state
     }
 
-    pub fn working_directory(&self) -> &PathBuf {
-        &self.working_dir
+    pub fn address(&self) -> &SocketAddr {
+        &self.address
     }
 
     pub fn config(&self) -> &Configuration {
@@ -145,7 +145,7 @@ pub enum State {
         job_id: Uuid,
         start: NaiveDateTime,
         request: Request,
-        step: Step
+        step: Step,
     },
     Finished {
         job_id: Uuid,
@@ -156,10 +156,19 @@ pub enum State {
     },
 }
 
-pub enum Step{
-    ExtractingQRCode,
+impl State {
+    pub fn update_running_step(&mut self, new_step: Step) {
+        if let State::Running { step, .. } = self {
+            *step = new_step;
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+pub enum Step {
     RunningSnapshot,
-    VerifyingRegistration
+    ExtractingQRCode,
+    VerifyingRegistration,
 }
 
 use thiserror::Error;

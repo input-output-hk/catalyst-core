@@ -1,7 +1,7 @@
 use crate::context::{Context, ContextLock};
-use crate::file_lister;
 use crate::request::Request;
 use futures::FutureExt;
+use futures::TryStreamExt;
 use futures::{channel::mpsc, StreamExt};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
@@ -9,9 +9,10 @@ use std::convert::Infallible;
 use std::sync::Arc;
 use thiserror::Error;
 use uuid::Uuid;
+use warp::multipart::FormData;
+use warp::Buf;
 use warp::{http::StatusCode, reject::Reject, Filter, Rejection, Reply};
 
-impl Reject for file_lister::Error {}
 impl Reject for crate::context::Error {}
 
 #[allow(clippy::large_enum_variant)]
@@ -32,7 +33,8 @@ impl ServerStopper {
     }
 }
 
-fn job_prameters_binary_body() -> impl Filter<Extract = (Request,), Error = warp::Rejection> + Clone {
+fn job_prameters_binary_body() -> impl Filter<Extract = (Request,), Error = warp::Rejection> + Clone
+{
     warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }
 
@@ -46,7 +48,6 @@ pub async fn start_rest_server(context: ContextLock) {
 
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();
-    let working_dir = context.lock().unwrap().working_directory().clone();
     let with_context = warp::any().map(move || context.clone());
 
     let root = warp::path!("api" / ..).boxed();
@@ -61,8 +62,7 @@ pub async fn start_rest_server(context: ContextLock) {
 
         let new = warp::path!("new")
             .and(warp::post())
-            .and()
-            .and(job_prameters_binary_body())
+            .and(warp::multipart::form().max_length(5_000_000))
             .and(with_context.clone())
             .and_then(job_new_handler)
             .boxed();
@@ -84,9 +84,7 @@ pub async fn start_rest_server(context: ContextLock) {
             warp::any().boxed()
         };
 
-        root.and(api_token_filter)
-            .and(status.or(new))
-            .boxed()
+        root.and(api_token_filter).and(status.or(new)).boxed()
     };
     let api = root.and(health.or(job)).recover(report_invalid).boxed();
 
@@ -106,8 +104,8 @@ pub async fn job_new_handler(
     form: FormData,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
+    let request = parse_upload_multipart(form).await.unwrap();
     let mut context_lock = context.lock().unwrap();
-    let request = parse_upload_multipart(form)?;
     let id = context_lock.new_run(request)?;
     Ok(id).map(|r| warp::reply::json(&r))
 }
@@ -115,61 +113,57 @@ pub async fn job_new_handler(
 async fn readall(
     stream: impl futures::Stream<Item = Result<impl Buf, warp::Error>>,
 ) -> Result<Vec<u8>, warp::Error> {
-  stream
-    .try_fold(vec![], |mut result, buf| {
-      result.append(&mut buf.bytes().into());
-      async move { Ok(result) }
-    })
-    .await
+    stream
+        .try_fold(vec![], |mut result, buf| {
+            result.append(&mut buf.bytes().into());
+            async move { Ok(result) }
+        })
+        .await
 }
 
 async fn parse_upload_multipart(
     form: warp::multipart::FormData,
 ) -> Result<Request, Box<dyn std::error::Error>> {
-  let mut parts = form.try_collect::<Vec<_>>().await?;
+    let mut parts = form.try_collect::<Vec<_>>().await?;
 
-  let mut get_part = |name: &str| {
-    parts
-      .iter()
-      .position(|part| part.name() == name)
-      .map(|p| parts.swap_remove(p))
-      .ok_or(format!("{} part not found", name))
-  };
+    let mut get_part = |name: &str| {
+        parts
+            .iter()
+            .position(|part| part.name() == name)
+            .map(|p| parts.swap_remove(p))
+            .ok_or(format!("{} part not found", name))
+    };
 
-  let pin_part = get_part("pin")?;
-  let slot_no_part = get_part("slot-no")?;
-  let funds_part = get_part("funds")?;
-  let qr_part = get_part("qr")?;
+    let pin_part = get_part("pin")?;
+    let threshold_part = get_part("threshold")?;
+    let slot_no_part = get_part("slot-no")?;
+    let funds_part = get_part("funds")?;
+    let qr_part = get_part("qr")?;
 
-  let qr = readall(qr_part.stream()).await?;
-  let pin = String::from_utf8(readall(pin_part.stream()).await?);
-  let funds: u64 = String::from_utf8(readall(funds_part.stream()).await?).parse()?;
-  let slot_no: u64 = String::from_utf8(readall(slot_no_part.stream()).await?).parse()?;
+    let qr = readall(qr_part.stream()).await?;
+    let pin = String::from_utf8(readall(pin_part.stream()).await?)?.parse()?;
+    let expected_funds: u64 = String::from_utf8(readall(funds_part.stream()).await?)?.parse()?;
+    let slot_no: u64 = String::from_utf8(readall(slot_no_part.stream()).await?)?.parse()?;
+    let threshold: u64 = String::from_utf8(readall(threshold_part.stream()).await?)?.parse()?;
 
-  Ok(Request {
-    qr,
-    pin,
-    funds,
-    slot_no
-  })
-
+    Ok(Request {
+        qr,
+        pin,
+        expected_funds,
+        slot_no,
+        threshold,
+    })
+}
 
 pub async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(warp::reply())
 }
 
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
-    if let Some(e) = r.find::<file_lister::Error>() {
-        Ok(warp::reply::with_status(
-            e.to_string(),
-            StatusCode::BAD_REQUEST,
-        ))
-    } else {
-        Ok(warp::reply::with_status(
-            format!("internal error: {:?}", r),
-            StatusCode::INTERNAL_SERVER_ERROR,
-        ))
-    }
+    Ok(warp::reply::with_status(
+        format!("internal error: {:?}", r),
+        StatusCode::INTERNAL_SERVER_ERROR,
+    ))
 }
 
 pub async fn authorize_token(

@@ -1,8 +1,10 @@
 use bech32::ToBase32;
 use chain_crypto::AsymmetricKey;
 use chain_crypto::Ed25519Extended;
+use image::io::Reader as ImageReader;
 use jormungandr_testing_utils::qr_code::KeyQrCode;
 use jormungandr_testing_utils::qr_code::KeyQrCodeError;
+use std::io::Cursor;
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -59,6 +61,20 @@ impl QrReader {
         let pin = get_pin(&self.pin_read_mode, &qr)?;
         let pin = pin_to_bytes(&pin);
         let img = image::open(qr.as_ref())?;
+        let secret = KeyQrCode::decode(img, &pin)?;
+        Ok(secret.first().unwrap().clone())
+    }
+
+    pub fn read_qr_from_bytes(
+        &self,
+        bytes: Vec<u8>,
+    ) -> Result<chain_crypto::SecretKey<chain_crypto::Ed25519Extended>, PinReadError> {
+        let pin = match self.pin_read_mode {
+            PinReadMode::Global(ref global) => global,
+            _ => panic!("when reading qr from bytes Global pin read mode should be used"),
+        };
+        let pin = pin_to_bytes(&pin);
+        let img = ImageReader::new(Cursor::new(bytes)).decode()?;
         let secret = KeyQrCode::decode(img, &pin)?;
         Ok(secret.first().unwrap().clone())
     }

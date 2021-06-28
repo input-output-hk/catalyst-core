@@ -68,6 +68,10 @@ impl SnapshotRestClient {
         self.download(format!("{}/snapshot.json", id.into()), output)
     }
 
+    pub fn get_snapshot<S: Into<String>>(&self, id: S) -> Result<String, Error> {
+        self.get(format!("api/job/files/get/{}/snapshot.json", id.into()))
+    }
+
     pub fn download_job_status<S: Into<String>, P: AsRef<Path>>(
         &self,
         id: S,

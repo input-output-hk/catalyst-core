@@ -225,26 +225,26 @@ fn tally_benchmark(
 
     let decrypt_tally = || {
         let table = chain_vote::TallyOptimizationTable::generate(total_votes);
+        let members_pk = vote_plan.committee_public_keys();
+
         vote_plan_status
             .proposals
             .par_iter()
             .enumerate()
             .map(|(i, proposal)| {
-                let tally_state = proposal
+                let ek = proposal
                     .tally
                     .clone()
                     .unwrap()
                     .private_encrypted()
                     .unwrap()
                     .0
-                    .state();
-                chain_vote::tally(
-                    total_votes_per_proposal[i],
-                    &tally_state,
-                    &decrypt_shares[i],
-                    &table,
-                )
-                .unwrap()
+                    .clone();
+                for (share_idx, share) in decrypt_shares[i].iter().enumerate() {
+                    share.verify(&ek, &members_pk[share_idx]);
+                }
+                ek.decrypt_tally(total_votes_per_proposal[i], &decrypt_shares[i], &table)
+                    .unwrap()
             })
             .collect::<Vec<_>>()
     };

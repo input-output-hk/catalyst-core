@@ -126,7 +126,7 @@ impl WitnessBuilder {
     pub fn append(&mut self, index: TreeIndex, publickey: Pk, sig: Sig) {
         // TODO turn this into a proper error
         let r = self.0.insert(index, (publickey, sig));
-        assert_eq!(r.is_none(), true);
+        assert!(r.is_none());
     }
 
     pub fn finalize(&self) -> Witness {

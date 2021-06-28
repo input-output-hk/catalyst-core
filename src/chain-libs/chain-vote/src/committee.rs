@@ -1,7 +1,8 @@
-use crate::encryption::{HybridCiphertext, PublicKey, SecretKey};
+use crate::cryptography::{Ciphertext, HybridCiphertext, PublicKey, SecretKey};
+use crate::encrypted_vote::{EncryptedVote, ProofOfCorrectVote, Vote};
 use crate::gang::{GroupElement, Scalar};
 use crate::math::Polynomial;
-use crate::Crs;
+use crate::tally::Crs;
 use rand_core::{CryptoRng, RngCore};
 
 /// Committee member election secret key
@@ -20,13 +21,38 @@ pub struct MemberCommunicationKey(SecretKey);
 pub struct MemberCommunicationPublicKey(PublicKey);
 
 /// The overall committee public key used for everyone to encrypt their vote to.
-#[derive(Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ElectionPublicKey(pub(crate) PublicKey);
 
 impl ElectionPublicKey {
     #[doc(hidden)]
     pub fn as_raw(&self) -> &PublicKey {
         &self.0
+    }
+
+    /// Take a vote and encrypt it + provide a proof of correct voting
+    pub fn encrypt_and_prove_vote<R: RngCore + CryptoRng>(
+        &self,
+        rng: &mut R,
+        crs: &Crs,
+        vote: Vote,
+    ) -> (EncryptedVote, ProofOfCorrectVote) {
+        let encryption_randomness = vec![Scalar::random(rng); vote.len()];
+        let ciphertexts: Vec<Ciphertext> = encryption_randomness
+            .iter()
+            .zip(vote.iter())
+            .map(|(r, v)| self.as_raw().encrypt_with_r(&Scalar::from(v), r))
+            .collect();
+
+        let proof = ProofOfCorrectVote::generate(
+            rng,
+            &crs,
+            &self.0,
+            &vote,
+            &encryption_randomness,
+            &ciphertexts,
+        );
+        (ciphertexts, proof)
     }
 }
 
@@ -139,6 +165,14 @@ impl MemberPublicKey {
 impl From<PublicKey> for MemberPublicKey {
     fn from(pk: PublicKey) -> MemberPublicKey {
         MemberPublicKey(pk)
+    }
+}
+
+impl From<&MemberSecretKey> for MemberPublicKey {
+    fn from(sk: &MemberSecretKey) -> Self {
+        MemberPublicKey(PublicKey {
+            pk: GroupElement::generator() * &sk.0.sk,
+        })
     }
 }
 

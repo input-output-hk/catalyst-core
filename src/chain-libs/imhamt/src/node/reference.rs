@@ -183,12 +183,12 @@ impl<K, V> Node<K, V> {
     }
 
     pub fn get_child(&self, at: ArrayIndex) -> &SharedRef<Entry<K, V>> {
-        assert_eq!(at.is_not_found(), false);
+        assert!(!at.is_not_found());
         &self.children[at.get_found()]
     }
 
     pub fn set_at(&self, idx: LevelIndex, child: SharedRef<Entry<K, V>>) -> Self {
-        assert_eq!(self.bitmap.is_set(idx), false);
+        assert!(!self.bitmap.is_set(idx));
 
         let pos = self.bitmap.get_sparse_pos(idx);
         let v = helper::clone_array_and_insert_at_pos(&self.children, child, pos.get_found());
@@ -200,7 +200,7 @@ impl<K, V> Node<K, V> {
     }
 
     pub fn clear_at(&self, idx: LevelIndex) -> Option<Self> {
-        assert_eq!(self.bitmap.is_set(idx), true);
+        assert!(self.bitmap.is_set(idx));
         let new_bitmap = self.bitmap.clear_index(idx);
         if new_bitmap.is_empty() {
             None
@@ -234,7 +234,7 @@ impl<K, V> Node<K, V> {
         idx: LevelIndex,
         child: Option<SharedRef<Entry<K, V>>>,
     ) -> Option<Self> {
-        assert_eq!(self.bitmap.is_set(idx), true);
+        assert!(self.bitmap.is_set(idx));
         match child {
             None => self.clear_at(idx),
             Some(v) => {

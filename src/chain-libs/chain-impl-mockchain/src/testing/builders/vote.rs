@@ -4,6 +4,8 @@ use crate::{
     vote::VotePlanStatus,
 };
 
+use rand::thread_rng;
+
 pub fn decrypt_tally(
     vote_plan_status: &VotePlanStatus,
     members: &CommitteeMembersManager,
@@ -33,11 +35,11 @@ pub fn decrypt_tally(
                 .members()
                 .iter()
                 .map(|member| member.secret_key())
-                .map(|secret_key| encrypted_tally.finish(secret_key).1)
+                .map(|secret_key| encrypted_tally.partial_decrypt(&mut thread_rng(), secret_key))
                 .collect::<Vec<_>>();
-            let tally_state = encrypted_tally.state();
-            let tally =
-                chain_vote::tally(max_votes, &tally_state, &decrypt_shares, &table).unwrap();
+            let tally = encrypted_tally
+                .decrypt_tally(max_votes, &decrypt_shares, &table)
+                .unwrap();
             DecryptedPrivateTallyProposal {
                 decrypt_shares: decrypt_shares.into_boxed_slice(),
                 tally_result: tally.votes.into_boxed_slice(),

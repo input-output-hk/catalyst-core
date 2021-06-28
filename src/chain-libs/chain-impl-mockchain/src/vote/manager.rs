@@ -11,7 +11,7 @@ use crate::{
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
-use chain_vote::{Crs, EncryptedTally};
+use chain_vote::{committee, Crs, ElectionPublicKey, EncryptedTally};
 use imhamt::Hamt;
 use thiserror::Error;
 
@@ -247,6 +247,7 @@ impl ProposalManager {
 
     pub fn finalize_private_tally<F>(
         &self,
+        committee_pks: &[committee::MemberPublicKey],
         decrypted_proposal: &DecryptedPrivateTallyProposal,
         governance: &Governance,
         mut f: F,
@@ -256,12 +257,15 @@ impl ProposalManager {
     {
         let tally = self.tally.as_ref().ok_or(TallyError::NoEncryptedTally)?;
         let (encrypted_tally, total_stake) = tally.private_encrypted()?;
-        let state = encrypted_tally.state();
 
         let verifiable_tally = chain_vote::Tally {
             votes: decrypted_proposal.tally_result.to_vec(),
         };
-        if !verifiable_tally.verify(&state, &decrypted_proposal.decrypt_shares) {
+        if !verifiable_tally.verify(
+            &encrypted_tally,
+            committee_pks,
+            &decrypted_proposal.decrypt_shares,
+        ) {
             return Err(TallyError::InvalidDecryption);
         }
 
@@ -454,6 +458,7 @@ impl ProposalManagers {
 
     pub fn finalize_private_tally<F>(
         &self,
+        committee_pks: &[committee::MemberPublicKey],
         decrypted_tally: &DecryptedPrivateTally,
         governance: &Governance,
         mut f: F,
@@ -464,6 +469,7 @@ impl ProposalManagers {
         let mut proposals = Vec::with_capacity(self.0.len());
         for (proposal_manager, decrypted_proposal) in self.0.iter().zip(decrypted_tally.iter()) {
             proposals.push(proposal_manager.finalize_private_tally(
+                committee_pks,
                 decrypted_proposal,
                 governance,
                 &mut f,
@@ -591,10 +597,8 @@ impl VotePlanManager {
                 let crs = Crs::from_hash(&self.plan.as_ref().to_id().as_ref());
                 let ciphertext = encrypted_vote.as_inner();
                 self.proposal_managers.validate_vote(&cast)?;
-                let pk = chain_vote::EncryptingVoteKey::from_participants(
-                    self.plan.committee_public_keys(),
-                );
-                if !chain_vote::verify_vote(&crs, &pk, ciphertext, proof.as_inner()) {
+                let pk = ElectionPublicKey::from_participants(self.plan.committee_public_keys());
+                if !proof.as_inner().verify(&crs, &pk.as_raw(), ciphertext) {
                     Err(VoteError::VoteVerificationError)
                 } else {
                     Ok(())
@@ -690,9 +694,13 @@ impl VotePlanManager {
     where
         F: FnMut(&VoteAction),
     {
-        let proposal_managers =
-            self.proposal_managers
-                .finalize_private_tally(decrypted_tally, governance, f)?;
+        let committee_pks = self.plan.committee_public_keys();
+        let proposal_managers = self.proposal_managers.finalize_private_tally(
+            committee_pks,
+            decrypted_tally,
+            governance,
+            f,
+        )?;
         Ok(Self {
             proposal_managers,
             plan: Arc::clone(&self.plan),

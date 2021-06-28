@@ -125,7 +125,7 @@ impl ArrayIndex {
     }
 
     pub fn get_found(self) -> usize {
-        assert_eq!(self.is_not_found(), false);
+        assert!(!self.is_not_found());
         self.0
     }
 

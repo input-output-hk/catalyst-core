@@ -1,7 +1,79 @@
-pub use crate::gang::Scalar;
+use crate::cryptography::{Ciphertext, UnitVectorZkp};
+use crate::gang::Scalar;
+/// A vote is represented by a standard basis unit vector of an N dimensional space
+///
+/// Effectively each possible vote is represented by an axis, where the actual voted option
+/// is represented by the unit vector this axis.
+///
+/// E.g.: given a 3 possible votes in the 0-indexed set {option 0, option 1, option 2}, then
+/// the vote "001" represents a vote for "option 2"
+pub type Vote = UnitVector;
+
+/// Encrypted vote is a unit vector where each element is an ElGamal Ciphertext, encrypted with
+/// the Election Public Key.
+pub type EncryptedVote = Vec<Ciphertext>;
+
+/// A proof of correct vote encryption consists of a unit vector zkp, where the voter proves that
+/// the `EncryptedVote` is indeed a unit vector, and contains a vote for a single candidate.
+pub type ProofOfCorrectVote = UnitVectorZkp;
+
+/// To achieve logarithmic communication complexity in the unit_vector ZKP, we represent
+/// votes as Power of Two Padded vector structures.
+#[derive(Clone)]
+pub struct Ptp<A> {
+    pub elements: Vec<A>,
+    pub orig_len: usize,
+}
+
+impl<A: Clone> Ptp<A> {
+    /// Returns the size of the extended vector
+    pub fn len(&self) -> usize {
+        self.elements.len()
+    }
+
+    /// Returns the bit size of the extended vector
+    pub fn bits(&self) -> usize {
+        let len = self.elements.len();
+        assert!(len.is_power_of_two());
+        len.trailing_zeros() as usize
+    }
+
+    /// Generates a new `Ptp` by extending the received `vec` to the next
+    /// power of two, padded with `extended_value`.
+    pub fn new<F>(mut vec: Vec<A>, extended_value: F) -> Ptp<A>
+    where
+        A: Clone,
+        F: Fn() -> A,
+    {
+        let orig_len = vec.len();
+
+        let expected_len = orig_len.next_power_of_two();
+        if orig_len < expected_len {
+            let a = extended_value();
+            while vec.len() < expected_len {
+                vec.push(a.clone());
+            }
+        }
+        Ptp {
+            orig_len,
+            elements: vec,
+        }
+    }
+
+    /// Iterates over the elements
+    pub fn iter(&self) -> std::slice::Iter<'_, A> {
+        self.elements.iter()
+    }
+}
+
+impl<A> AsRef<[A]> for Ptp<A> {
+    fn as_ref(&self) -> &[A] {
+        &self.elements
+    }
+}
 
 #[derive(Clone, Copy)]
-/// Represent a Unit vector which size is @size and the @ith element (0-indexed) is enabled
+/// Represents a Unit vector which size is @size and the @ith element (0-indexed) is enabled
 pub struct UnitVector {
     ith: usize,
     size: usize,
@@ -23,7 +95,7 @@ impl std::fmt::Display for UnitVector {
 // as the size will always be > 0 as enforced in new()
 #[allow(clippy::len_without_is_empty)]
 impl UnitVector {
-    /// Create a new
+    /// Create a new `ith` unit vector, with `size` greater than zero, and greater than `ith`.
     pub fn new(size: usize, ith: usize) -> Self {
         assert!(size > 0);
         assert!(ith < size);

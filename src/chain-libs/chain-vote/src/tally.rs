@@ -48,8 +48,8 @@ impl From<(&ElectionPublicKey, &Crs)> for ElectionFingerprint {
     }
 }
 
-/// `EncryptedTally` is formed by one ciphertext per existing option, the `election_pk`, and the
-/// `crs`.
+/// `EncryptedTally` is formed by one ciphertext per existing option and a fingerprint that
+/// identifies the election parameters used (crs and election public key)
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EncryptedTally {
     r: Vec<Ciphertext>,

@@ -659,7 +659,6 @@ pub fn update(secret: &mut SecretKey) -> Result<(), Error> {
             if diff == 1 {
                 let keypair = common::keygen_1(&seed);
                 secret.set_sk(&keypair);
-                secret.set_t(secret.t() + 1);
             } else {
                 let (sec_child, pub_child) = keygen(Depth((diff - 1) as usize), &seed);
                 assert_eq!(
@@ -673,8 +672,8 @@ pub fn update(secret: &mut SecretKey) -> Result<(), Error> {
                     secret.set_merkle_pks(offset + i, &c)
                 }
                 secret.set_sk(&sec_child.sk());
-                secret.set_t(secret.t() + 1);
             }
+            secret.set_t(secret.t() + 1);
             Ok(())
         }
     }

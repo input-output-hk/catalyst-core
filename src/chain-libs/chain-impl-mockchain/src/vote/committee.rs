@@ -22,7 +22,7 @@ impl CommitteeId {
     pub const COMMITTEE_ID_SIZE: usize = 32;
 
     /// returns the identifier encoded in hexadecimal string
-    pub fn to_hex(&self) -> String {
+    pub fn to_hex(self) -> String {
         hex::encode(self.0)
     }
 
@@ -34,7 +34,7 @@ impl CommitteeId {
     }
 
     pub fn public_key(&self) -> PublicKey<Ed25519> {
-        self.clone().into()
+        (*self).into()
     }
 }
 

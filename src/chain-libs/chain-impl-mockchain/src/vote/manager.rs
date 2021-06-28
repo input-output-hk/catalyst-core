@@ -11,7 +11,7 @@ use crate::{
     transaction::UnspecifiedAccountIdentifier,
     vote::{self, CommitteeId, Options, Tally, TallyResult, VotePlanStatus, VoteProposalStatus},
 };
-use chain_vote::{committee, Crs, EncryptedTally};
+use chain_vote::{committee, Crs, ElectionPublicKey, EncryptedTally};
 use imhamt::Hamt;
 use thiserror::Error;
 
@@ -257,7 +257,6 @@ impl ProposalManager {
     {
         let tally = self.tally.as_ref().ok_or(TallyError::NoEncryptedTally)?;
         let (encrypted_tally, total_stake) = tally.private_encrypted()?;
-        let state = encrypted_tally.state();
 
         let verifiable_tally = chain_vote::Tally {
             votes: decrypted_proposal.tally_result.to_vec(),
@@ -265,7 +264,6 @@ impl ProposalManager {
         if !verifiable_tally.verify(
             &encrypted_tally,
             committee_pks,
-            &state,
             &decrypted_proposal.decrypt_shares,
         ) {
             return Err(TallyError::InvalidDecryption);
@@ -599,10 +597,8 @@ impl VotePlanManager {
                 let crs = Crs::from_hash(&self.plan.as_ref().to_id().as_ref());
                 let ciphertext = encrypted_vote.as_inner();
                 self.proposal_managers.validate_vote(&cast)?;
-                let pk = chain_vote::EncryptingVoteKey::from_participants(
-                    self.plan.committee_public_keys(),
-                );
-                if !chain_vote::verify_vote(&crs, &pk, ciphertext, proof.as_inner()) {
+                let pk = ElectionPublicKey::from_participants(self.plan.committee_public_keys());
+                if !proof.as_inner().verify(&crs, &pk.as_raw(), ciphertext) {
                     Err(VoteError::VoteVerificationError)
                 } else {
                     Ok(())

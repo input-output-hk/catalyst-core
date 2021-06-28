@@ -124,9 +124,9 @@ impl EncryptedTally {
     /// options as the initialised tally, otherwise an assert will trigger.
     #[allow(clippy::ptr_arg)]
     pub fn add(&mut self, ballot: &Ballot, weight: u64) {
-        assert_eq!(ballot.vote.len(), self.r.len());
-        assert_eq!(ballot.fingerprint, self.fingerprint);
-        for (ri, ci) in self.r.iter_mut().zip(ballot.vote.iter()) {
+        assert_eq!(ballot.vote().len(), self.r.len());
+        assert_eq!(ballot.fingerprint(), &self.fingerprint);
+        for (ri, ci) in self.r.iter_mut().zip(ballot.vote().iter()) {
             *ri = &*ri + &(ci * weight);
         }
     }

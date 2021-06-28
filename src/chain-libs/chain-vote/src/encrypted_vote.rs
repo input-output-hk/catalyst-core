@@ -24,10 +24,10 @@ pub type ProofOfCorrectVote = UnitVectorZkp;
 /// checks down the chain.
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Ballot {
-    pub vote: EncryptedVote,
+    vote: EncryptedVote,
     // Used to verify that the ballot is applied to the correct
     // encrypted tally
-    pub(super) fingerprint: ElectionFingerprint,
+    fingerprint: ElectionFingerprint,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
@@ -49,6 +49,14 @@ impl Ballot {
             vote,
             fingerprint: (pk, crs).into(),
         })
+    }
+
+    pub fn vote(&self) -> &EncryptedVote {
+        &self.vote
+    }
+
+    pub(super) fn fingerprint(&self) -> &ElectionFingerprint {
+        &self.fingerprint
     }
 }
 

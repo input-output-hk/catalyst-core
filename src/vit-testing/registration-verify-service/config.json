@@ -1,0 +1,7 @@
+{
+    "port": 9999,
+    "snapshot-token": "UarouhaiNgiiwahcaNgai8aexaiTh0me",
+    "snapshot-address": "https://snapshot-testnet.vit.iohk.io",
+    "jcli": ".",
+    "network": "mainnet"
+}

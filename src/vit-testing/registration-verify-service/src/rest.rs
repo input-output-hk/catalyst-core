@@ -1,11 +1,12 @@
 use crate::context::{Context, ContextLock};
 use crate::request::Request;
+use futures::stream::TryStreamExt;
 use futures::FutureExt;
-use futures::TryStreamExt;
 use futures::{channel::mpsc, StreamExt};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
 use std::convert::Infallible;
+use std::io::prelude::*;
 use std::sync::Arc;
 use thiserror::Error;
 use uuid::Uuid;
@@ -20,6 +21,8 @@ impl Reject for crate::context::Error {}
 pub enum Error {
     #[error("cannot parse uuid")]
     CannotParseUuid(#[from] uuid::Error),
+    #[error("warp error")]
+    WarpError(#[from] warp::Error),
 }
 
 impl Reject for Error {}
@@ -110,12 +113,16 @@ pub async fn job_new_handler(
     Ok(id).map(|r| warp::reply::json(&r))
 }
 
+use bytes::BufMut;
+use std::borrow::Borrow;
+use warp::multipart::Part;
+
 async fn readall(
     stream: impl futures::Stream<Item = Result<impl Buf, warp::Error>>,
 ) -> Result<Vec<u8>, warp::Error> {
     stream
         .try_fold(vec![], |mut result, buf| {
-            result.append(&mut buf.bytes().into());
+            result.put(buf);
             async move { Ok(result) }
         })
         .await
@@ -124,7 +131,7 @@ async fn readall(
 async fn parse_upload_multipart(
     form: warp::multipart::FormData,
 ) -> Result<Request, Box<dyn std::error::Error>> {
-    let mut parts = form.try_collect::<Vec<_>>().await?;
+    let mut parts: Vec<Part> = form.try_collect().await?;
 
     let mut get_part = |name: &str| {
         parts
@@ -141,7 +148,7 @@ async fn parse_upload_multipart(
     let qr_part = get_part("qr")?;
 
     let qr = readall(qr_part.stream()).await?;
-    let pin = String::from_utf8(readall(pin_part.stream()).await?)?.parse()?;
+    let pin = String::from_utf8(readall(pin_part.stream()).await?)?;
     let expected_funds: u64 = String::from_utf8(readall(funds_part.stream()).await?)?.parse()?;
     let slot_no: u64 = String::from_utf8(readall(slot_no_part.stream()).await?)?.parse()?;
     let threshold: u64 = String::from_utf8(readall(threshold_part.stream()).await?)?.parse()?;

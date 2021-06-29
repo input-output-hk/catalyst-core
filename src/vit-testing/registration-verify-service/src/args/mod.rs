@@ -45,6 +45,7 @@ impl RegistrationVerifyServiceCommand {
 
                     control_context.lock().unwrap().run_started().unwrap();
                     let output_info = job.start(request, control_context.clone()).unwrap();
+
                     control_context
                         .lock()
                         .unwrap()

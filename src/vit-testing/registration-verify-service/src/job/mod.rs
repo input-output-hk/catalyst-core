@@ -110,11 +110,11 @@ impl RegistrationVerifyJob {
             .state_mut()
             .update_running_step(Step::RunningSnapshot);
 
-        let snapshot_result = do_snapshot(
+        /*    let snapshot_result = do_snapshot(
             jobs_params,
             self.snapshot_token.to_string(),
             self.snapshot_address.to_string(),
-        )?;
+        )?;*/
 
         context
             .lock()
@@ -122,18 +122,32 @@ impl RegistrationVerifyJob {
             .state_mut()
             .update_running_step(Step::ExtractingQRCode);
 
-        let secret_key = QrReader::new(PinReadMode::Global(request.pin.clone()))
-            .read_qr_from_bytes(request.qr.clone())?;
+        let address = match QrReader::new(PinReadMode::Global(request.pin.clone()))
+            .read_qr_from_bytes(request.qr.clone())
+        {
+            Ok(secret_key) => {
+                checks.push(Assert::Passed(format!(
+                    "succesfully read qr code:  ('{}')",
+                    address_readable
+                )));
+                chain_addr::Address(
+                    Discrimination::Production,
+                    Kind::Account(secret_key.to_public()),
+                )
+            }
+            Err(err) => {
+                checks.push(Assert::Failed(format!(
+                    "malformed qr:  ('{}')",
+                    err.to_string()
+                )));
+            }
+        };
 
-        let address = chain_addr::Address(
-            Discrimination::Production,
-            Kind::Single(secret_key.to_public()),
-        );
+        let mut checks: Checks = Default::default();
 
-        let checks: Checks = Default::default();
-
-        let entry = snapshot_result.by_address(&address)?;
+        //    let entry = snapshot_result.by_address(&address)?;
         let address_readable = AddressReadable::from_address("ca", &address);
+        println!("succesfully read qr code:  ('{}')", address_readable);
 
         context
             .lock()
@@ -141,42 +155,43 @@ impl RegistrationVerifyJob {
             .state_mut()
             .update_running_step(Step::VerifyingRegistration);
 
-        match entry {
-            Some(entry) => {
-                checks.push(Assert::Passed(format!(
-                    "entry found in snapshot ('{}') with funds: '{}'",
-                    address_readable, entry.value
-                )));
-                checks.push(Assert::Passed(format!(
-                    "adress is above threshold ('{}') with funds: '{}'",
-                    request.expected_funds, entry.value
-                )));
-                checks.push(Assert::from_eq(
-                    entry.value,
-                    request.expected_funds.into(),
-                    format!("correct funds amount '{}'", request.expected_funds),
-                    format!(
-                        "wrong funds amount '{}' != '{}'",
-                        entry.value, request.expected_funds
-                    ),
-                ));
-            }
-            None => {
-                checks.push(Assert::Failed(format!(
-                    "entry not found in snapshot {}",
-                    address_readable
-                )));
-                checks.push(Assert::Failed(format!(
-                    "entry not found in snapshot {}",
-                    address_readable
-                )));
-                checks.push(Assert::Failed(format!(
-                    "entry not found in snapshot {}",
-                    address_readable
-                )));
-            }
-        }
-
+        /*
+                match entry {
+                    Some(entry) => {
+                        checks.push(Assert::Passed(format!(
+                            "entry found in snapshot ('{}') with funds: '{}'",
+                            address_readable, entry.value
+                        )));
+                        checks.push(Assert::Passed(format!(
+                            "adress is above threshold ('{}') with funds: '{}'",
+                            request.expected_funds, entry.value
+                        )));
+                        checks.push(Assert::from_eq(
+                            entry.value,
+                            request.expected_funds.into(),
+                            format!("correct funds amount '{}'", request.expected_funds),
+                            format!(
+                                "wrong funds amount '{}' != '{}'",
+                                entry.value, request.expected_funds
+                            ),
+                        ));
+                    }
+                    None => {
+                        checks.push(Assert::Failed(format!(
+                            "entry not found in snapshot {}",
+                            address_readable
+                        )));
+                        checks.push(Assert::Failed(format!(
+                            "entry not found in snapshot {}",
+                            address_readable
+                        )));
+                        checks.push(Assert::Failed(format!(
+                            "entry not found in snapshot {}",
+                            address_readable
+                        )));
+                    }
+                }
+        */
         Ok(JobOutputInfo {
             checks,
             registration: RegistrationInfo {

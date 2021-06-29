@@ -68,12 +68,14 @@ impl Context {
     }
 
     pub fn run_finished(&mut self, info: JobOutputInfo) -> Result<(), Error> {
+        println!("{:?}", self.state);
+
         match &self.state {
             State::Running {
                 job_id,
                 start,
                 request,
-                step: Step::RunningSnapshot,
+                step,
             } => {
                 self.state = State::Finished {
                     job_id: *job_id,

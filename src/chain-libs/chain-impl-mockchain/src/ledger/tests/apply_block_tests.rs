@@ -20,10 +20,7 @@ pub fn apply_block_increases_leaders_log() {
         .unwrap();
 
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
-    let date = BlockDate {
-        epoch: 1,
-        slot_id: 0,
-    };
+    let date = BlockDate::first();
     let block = GenesisPraosBlockBuilder::new()
         .with_date(date)
         .with_chain_length(ledger.chain_length())
@@ -142,10 +139,7 @@ pub fn apply_block_incorrect_fragment() {
     let alice = controller.wallet("Alice").unwrap();
     let bob = controller.wallet("Bob").unwrap();
 
-    let date = BlockDate {
-        epoch: 1,
-        slot_id: 0,
-    };
+    let date = BlockDate::first();
 
     let fragment = TestTxBuilder::new(ledger.block0_hash)
         .move_funds(

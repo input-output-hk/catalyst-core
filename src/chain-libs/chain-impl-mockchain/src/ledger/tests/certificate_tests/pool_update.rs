@@ -81,11 +81,11 @@ pub fn pool_update_wrong_last_hash() {
     };
     let certificate = build_stake_pool_update_cert(&pool_update);
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[alice], &certificate);
+        .make_transaction(test_ledger.date(), &[alice], &certificate);
 
     assert_eq!(
         test_ledger
-            .apply_fragment(&fragment, BlockDate::first())
+            .apply_fragment(&fragment, test_ledger.date())
             .err()
             .unwrap(),
         Error::PoolUpdateLastHashDoesntMatch
@@ -119,7 +119,7 @@ pub fn pool_update_not_enough_fee() {
     };
     let certificate = build_stake_pool_update_cert(&pool_update);
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, LinearFee::new(0, 0, 0))
-        .make_transaction(&[alice], &certificate);
+        .make_transaction(test_ledger.date(), &[alice], &certificate);
 
     assert_eq!(
         test_ledger
@@ -161,7 +161,7 @@ pub fn pool_update_wrong_pool_id() {
     };
     let certificate = build_stake_pool_update_cert(&pool_update);
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[alice], &certificate);
+        .make_transaction(test_ledger.date(), &[alice], &certificate);
 
     assert_eq!(
         test_ledger
@@ -203,7 +203,7 @@ pub fn pool_update_use_old_hash() {
 
     let certificate = build_stake_pool_update_cert(&pool_update);
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(Some(&alice), &certificate);
+        .make_transaction(test_ledger.date(), Some(&alice), &certificate);
 
     assert!(test_ledger
         .apply_fragment(&fragment, BlockDate::first())
@@ -222,7 +222,7 @@ pub fn pool_update_use_old_hash() {
 
     let certificate = build_stake_pool_update_cert(&pool_update);
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(Some(&alice), &certificate);
+        .make_transaction(test_ledger.date(), Some(&alice), &certificate);
 
     assert!(test_ledger
         .apply_fragment(&fragment, BlockDate::first())
@@ -242,7 +242,7 @@ pub fn pool_update_use_old_hash() {
 
     let certificate = build_stake_pool_update_cert(&pool_update);
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[alice], &certificate);
+        .make_transaction(test_ledger.date(), &[alice], &certificate);
 
     assert!(test_ledger
         .apply_fragment(&fragment, BlockDate::first())
@@ -276,7 +276,7 @@ pub fn pool_update_update_fee_is_not_allowed() {
 
     let certificate = build_stake_pool_update_cert(&pool_update);
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(&[alice], &certificate);
+        .make_transaction(test_ledger.date(), &[alice], &certificate);
 
     assert_eq!(
         test_ledger
@@ -310,7 +310,7 @@ pub fn pool_update_without_any_change() {
     };
     let certificate = build_stake_pool_update_cert(&pool_update);
     let fragment = TestTxCertBuilder::new(test_ledger.block0_hash, test_ledger.fee())
-        .make_transaction(Some(&alice), &certificate);
+        .make_transaction(test_ledger.date(), Some(&alice), &certificate);
 
     assert!(test_ledger
         .apply_fragment(&fragment, BlockDate::first())

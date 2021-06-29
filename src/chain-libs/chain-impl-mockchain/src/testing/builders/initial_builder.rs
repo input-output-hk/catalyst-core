@@ -1,6 +1,7 @@
 use crate::{
     account::DelegationType,
     certificate::{Certificate, PoolUpdate, VoteCast, VotePlan, VoteTally},
+    date::BlockDate,
     fragment::Fragment,
     key::EitherEd25519SecretKey,
     ledger::ledger::OutputAddress,
@@ -74,6 +75,7 @@ pub fn create_initial_vote_tally(vote_tally: &VoteTally, owners: &[Wallet]) -> F
 pub fn create_initial_transaction(wallet: &Wallet) -> Fragment {
     let tx = TxBuilder::new()
         .set_nopayload()
+        .set_validity(BlockDate::first().next_epoch())
         .set_ios(&[], &[wallet.make_output()])
         .set_witnesses_unchecked(&[])
         .set_payload_auth(&());
@@ -92,11 +94,12 @@ pub fn create_initial_stake_pool_owner_delegation(delegation_type: DelegationTyp
 }
 
 fn set_initial_ios<P: Payload>(
-    builder: TxBuilderState<SetIOs<P>>,
+    builder: TxBuilderState<SetValidity<P>>,
     inputs: &[Input],
     outputs: &[OutputAddress],
 ) -> TxBuilderState<SetAuthData<P>> {
     builder
+        .set_validity(BlockDate::first().next_epoch())
         .set_ios(inputs, outputs)
         .set_witnesses_unchecked(&[])
 }
@@ -199,6 +202,7 @@ impl InitialFaultTolerantTxBuilder {
         let output = self.reciever.make_output_with_value(Value(1));
         let tx = TxBuilder::new()
             .set_nopayload()
+            .set_validity(BlockDate::first().next_epoch())
             .set_ios(&[input], &[output])
             .set_witnesses_unchecked(&[])
             .set_payload_auth(&());
@@ -209,6 +213,7 @@ impl InitialFaultTolerantTxBuilder {
         let input = self.sender.make_input_with_value(Value(1));
         let tx = TxBuilder::new()
             .set_nopayload()
+            .set_validity(BlockDate::first().next_epoch())
             .set_ios(&[input], &[])
             .set_witnesses_unchecked(&[])
             .set_payload_auth(&());
@@ -216,7 +221,10 @@ impl InitialFaultTolerantTxBuilder {
     }
 
     pub fn transaction_with_witness_only(&self) -> Fragment {
-        let tx = TxBuilder::new().set_nopayload().set_ios(&[], &[]);
+        let tx = TxBuilder::new()
+            .set_nopayload()
+            .set_validity(BlockDate::first().next_epoch())
+            .set_ios(&[], &[]);
         let witness = self
             .sender
             .clone()

@@ -123,9 +123,9 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .stake_pool_registration(funder, stake_pool);
+        let fragment =
+            self.fragment_factory
+                .stake_pool_registration(test_ledger.date(), funder, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -135,7 +135,9 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self.fragment_factory.delegation(from, stake_pool);
+        let fragment = self
+            .fragment_factory
+            .delegation(test_ledger.date(), from, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -146,9 +148,12 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .delegation_different_funder(funder, delegation, stake_pool);
+        let fragment = self.fragment_factory.delegation_different_funder(
+            test_ledger.date(),
+            funder,
+            delegation,
+            stake_pool,
+        );
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -157,7 +162,9 @@ impl Controller {
         from: &Wallet,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self.fragment_factory.delegation_remove(from);
+        let fragment = self
+            .fragment_factory
+            .delegation_remove(test_ledger.date(), from);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -167,7 +174,9 @@ impl Controller {
         distribution: &[(&StakePool, u8)],
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self.fragment_factory.delegation_to_many(from, distribution);
+        let fragment =
+            self.fragment_factory
+                .delegation_to_many(test_ledger.date(), from, distribution);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -177,7 +186,9 @@ impl Controller {
         stake_pool: &StakePool,
         test_ledger: &mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self.fragment_factory.owner_delegation(from, stake_pool);
+        let fragment = self
+            .fragment_factory
+            .owner_delegation(test_ledger.date(), from, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -187,7 +198,9 @@ impl Controller {
         stake_pool: &'a StakePool,
         test_ledger: &'a mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self.fragment_factory.stake_pool_retire(owners, stake_pool);
+        let fragment =
+            self.fragment_factory
+                .stake_pool_retire(test_ledger.date(), owners, stake_pool);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -198,9 +211,9 @@ impl Controller {
         owners: impl IntoIterator<Item = &'a Wallet>,
         test_ledger: &'a mut TestLedger,
     ) -> Result<(), LedgerError> {
-        let fragment = self
-            .fragment_factory
-            .stake_pool_update(owners, stake_pool, update);
+        let fragment =
+            self.fragment_factory
+                .stake_pool_update(test_ledger.date(), owners, stake_pool, update);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -271,7 +284,9 @@ impl Controller {
             .expect("cannot find proposal");
         let payload = payload_producer(&vote_plan, proposal);
         let vote_cast = VoteCast::new(vote_plan.to_id(), index, payload);
-        let fragment = self.fragment_factory.vote_cast(owner, vote_cast);
+        let fragment = self
+            .fragment_factory
+            .vote_cast(test_ledger.date(), owner, vote_cast);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -283,9 +298,9 @@ impl Controller {
     ) -> Result<(), LedgerError> {
         let vote_plan: VotePlan = vote_plan_def.clone().into();
         let encrypted_tally = EncryptedVoteTally::new(vote_plan.to_id());
-        let fragment = self
-            .fragment_factory
-            .vote_encrypted_tally(owner, encrypted_tally);
+        let fragment =
+            self.fragment_factory
+                .vote_encrypted_tally(test_ledger.date(), owner, encrypted_tally);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -298,7 +313,9 @@ impl Controller {
         let vote_plan: VotePlan = vote_plan_def.clone().into();
         let vote_tally = VoteTally::new_public(vote_plan.to_id());
 
-        let fragment = self.fragment_factory.vote_tally(owner, vote_tally);
+        let fragment = self
+            .fragment_factory
+            .vote_tally(test_ledger.date(), owner, vote_tally);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 
@@ -312,7 +329,9 @@ impl Controller {
         let vote_plan: VotePlan = vote_plan_def.clone().into();
         let vote_tally = VoteTally::new_private(vote_plan.to_id(), decrypted_tally);
 
-        let fragment = self.fragment_factory.vote_tally(owner, vote_tally);
+        let fragment = self
+            .fragment_factory
+            .vote_tally(test_ledger.date(), owner, vote_tally);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 }

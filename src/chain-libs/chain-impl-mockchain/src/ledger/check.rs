@@ -175,11 +175,7 @@ pub(super) fn valid_transaction_date<P>(
     tx: &TransactionSlice<P>,
     date: BlockDate,
 ) -> Result<(), TxVerifyError> {
-    // if end and start are BlockDate::first, we expect that the transaction has no validity range
     let valid_until = tx.valid_until();
-    if valid_until == BlockDate::first() {
-        return Ok(());
-    }
 
     // if current date epoch is less than until.epoch - setting, then
     // the transaction has a validity range that is too big to be accepted

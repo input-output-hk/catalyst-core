@@ -93,6 +93,7 @@ impl TestTxBuilder {
         }];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_validity(BlockDate::first().next_epoch())
             .set_ios(&inputs, &outputs);
 
         let witness =
@@ -197,6 +198,7 @@ impl TestTxBuilder {
             .collect();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_validity(BlockDate::first().next_epoch())
             .set_ios(&inputs, &destinations);
 
         let witnesses: Vec<Witness> = sources

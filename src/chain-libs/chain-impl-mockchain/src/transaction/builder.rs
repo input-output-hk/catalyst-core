@@ -27,6 +27,7 @@ impl<T> Clone for TxBuilderState<T> {
 }
 
 pub enum SetPayload {}
+pub struct SetValidity<P>(PhantomData<P>);
 pub struct SetIOs<P>(PhantomData<P>);
 pub struct SetWitnesses<P>(PhantomData<P>);
 pub struct SetAuthData<P: Payload>(PhantomData<P>);
@@ -68,18 +69,11 @@ impl<State> TxBuilderState<State> {
     fn current_pos(&self) -> usize {
         self.data.len() - FRAGMENT_OVERHEAD
     }
-
-    // this is not exported to outside this module, as someone
-    // can set the validity after the witness, with would render
-    // the witness invalid, instead use set_validity when available
-    fn _set_validity(&mut self, valid_until: BlockDate) {
-        self.tstruct.valid_until = valid_until;
-    }
 }
 
 impl TxBuilderState<SetPayload> {
     /// Set the payload of this transaction
-    pub fn set_payload<P: Payload>(mut self, payload: &P) -> TxBuilderState<SetIOs<P>> {
+    pub fn set_payload<P: Payload>(mut self, payload: &P) -> TxBuilderState<SetValidity<P>> {
         if P::HAS_DATA {
             self.data.extend_from_slice(payload.payload_data().as_ref());
         }
@@ -91,22 +85,28 @@ impl TxBuilderState<SetPayload> {
         }
     }
 
-    pub fn set_nopayload(self) -> TxBuilderState<SetIOs<NoExtra>> {
+    pub fn set_nopayload(self) -> TxBuilderState<SetValidity<NoExtra>> {
         self.set_payload(&NoExtra)
     }
+}
 
-    pub fn set_validity(mut self, valid_until: BlockDate) -> Self {
-        self._set_validity(valid_until);
-        self
+impl<P> TxBuilderState<SetValidity<P>> {
+    pub fn set_validity(mut self, valid_until: BlockDate) -> TxBuilderState<SetIOs<P>> {
+        fn write_date(data: &mut Vec<u8>, date: BlockDate) {
+            data.extend_from_slice(&date.epoch.to_be_bytes());
+            data.extend_from_slice(&date.slot_id.to_be_bytes());
+        }
+        write_date(&mut self.data, valid_until);
+        self.tstruct.valid_until = valid_until;
+        TxBuilderState {
+            data: self.data,
+            tstruct: self.tstruct,
+            phantom: PhantomData,
+        }
     }
 }
 
 impl<P> TxBuilderState<SetIOs<P>> {
-    pub fn set_validity(mut self, valid_until: BlockDate) -> Self {
-        self._set_validity(valid_until);
-        self
-    }
-
     /// Set the inputs and outputs of this transaction
     ///
     /// This cannot accept more than 255 inputs, 255 outputs, since
@@ -127,13 +127,6 @@ impl<P> TxBuilderState<SetIOs<P>> {
 
         self.data.push(nb_inputs);
         self.data.push(nb_outputs);
-
-        fn write_date(data: &mut Vec<u8>, date: BlockDate) {
-            data.extend_from_slice(&date.epoch.to_be_bytes());
-            data.extend_from_slice(&date.slot_id.to_be_bytes());
-        }
-
-        write_date(&mut self.data, self.tstruct.valid_until);
 
         self.tstruct.nb_inputs = nb_inputs;
         self.tstruct.nb_outputs = nb_outputs;
@@ -245,6 +238,7 @@ mod tests {
         let block0_hash = TestGen::hash();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_validity(BlockDate::first().next_epoch())
             .set_ios(&[faucets[0].make_input(None)], &[reciever.make_output()]);
 
         let witness1 = make_witness(
@@ -269,10 +263,13 @@ mod tests {
         ];
         let reciever = AddressData::utxo(Discrimination::Test);
         let block0_hash = TestGen::hash();
-        let tx_builder = TxBuilder::new().set_payload(&NoExtra).set_ios(
-            &[faucets[0].make_input(None), faucets[1].make_input(None)],
-            &[reciever.make_output(Value(2))],
-        );
+        let tx_builder = TxBuilder::new()
+            .set_payload(&NoExtra)
+            .set_validity(BlockDate::first().next_epoch())
+            .set_ios(
+                &[faucets[0].make_input(None), faucets[1].make_input(None)],
+                &[reciever.make_output(Value(2))],
+            );
 
         let witness = make_witness(
             &block0_hash,

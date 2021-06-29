@@ -258,6 +258,15 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
         P::read_validate(&mut rb).map_err(|_| TransactionStructError::PayloadInvalid)?;
     }
 
+    // read date
+    let epoch = rb
+        .get_u32()
+        .map_err(|_| TransactionStructError::CannotReadDate)?;
+    let slot_id = rb
+        .get_u32()
+        .map_err(|_| TransactionStructError::CannotReadDate)?;
+    let valid_until = BlockDate { epoch, slot_id };
+
     // read input and outputs
     let nb_inputs = rb
         .get_u8()
@@ -265,18 +274,6 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
     let nb_outputs = rb
         .get_u8()
         .map_err(|_| TransactionStructError::CannotReadNbOutputs)?;
-
-    fn read_date(rb: &mut ReadBuf) -> Result<BlockDate, TransactionStructError> {
-        let epoch = rb
-            .get_u32()
-            .map_err(|_| TransactionStructError::CannotReadDate)?;
-        let slot_id = rb
-            .get_u32()
-            .map_err(|_| TransactionStructError::CannotReadDate)?;
-        Ok(BlockDate { epoch, slot_id })
-    }
-
-    let valid_until = read_date(&mut rb)?;
 
     let inputs_pos = rb.position();
     rb.skip_bytes(nb_inputs as usize * INPUT_SIZE)
@@ -361,6 +358,7 @@ impl<P> Transaction<P> {
     {
         TxBuilder::new()
             .set_payload(payload)
+            .set_validity(BlockDate::first().next_epoch())
             .set_ios(&[], &[])
             .set_witnesses(&[])
             .set_payload_auth(payload_auth)
@@ -372,6 +370,7 @@ impl<P> Transaction<P> {
     {
         TxBuilder::new()
             .set_payload(payload)
+            .set_validity(BlockDate::first().next_epoch())
             .set_ios(&[], &[])
             .set_witnesses(&[])
     }

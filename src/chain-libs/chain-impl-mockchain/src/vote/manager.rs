@@ -1007,9 +1007,11 @@ mod tests {
             3,
         );
 
+        let vote_start = BlockDate::from_epoch_slot_id(1, 0);
+        let vote_end = BlockDate::from_epoch_slot_id(2, 0);
         let vote_plan = VotePlan::new(
-            BlockDate::from_epoch_slot_id(1, 0),
-            BlockDate::from_epoch_slot_id(2, 0),
+            vote_start,
+            vote_end,
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             PayloadType::Public,
@@ -1044,7 +1046,7 @@ mod tests {
             )
             .unwrap();
 
-        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+        let tally_proof = get_tally_proof(vote_start, &committee, vote_plan.to_id());
 
         let block_date = BlockDate {
             epoch: 2,
@@ -1076,9 +1078,11 @@ mod tests {
         let committee = Wallet::from_value(Value(100));
         let proposals = VoteTestGen::proposals(3);
 
+        let vote_start = BlockDate::from_epoch_slot_id(1, 0);
+        let vote_end = BlockDate::from_epoch_slot_id(2, 0);
         let vote_plan = VotePlan::new(
-            BlockDate::from_epoch_slot_id(1, 0),
-            BlockDate::from_epoch_slot_id(2, 0),
+            vote_start,
+            vote_end,
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             PayloadType::Public,
@@ -1094,7 +1098,7 @@ mod tests {
         stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
         stake_controlled = stake_controlled.add_unassigned(Stake(49));
 
-        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+        let tally_proof = get_tally_proof(vote_start, &committee, vote_plan.to_id());
 
         let block_date = BlockDate {
             epoch: 2,
@@ -1130,9 +1134,11 @@ mod tests {
         let committee = Wallet::from_value(Value(100));
         let proposals = VoteTestGen::proposals(3);
 
+        let vote_start = BlockDate::from_epoch_slot_id(1, 0);
+        let vote_end = BlockDate::from_epoch_slot_id(2, 0);
         let vote_plan = VotePlan::new(
-            BlockDate::from_epoch_slot_id(1, 0),
-            BlockDate::from_epoch_slot_id(2, 0),
+            vote_start,
+            vote_end,
             BlockDate::from_epoch_slot_id(3, 0),
             proposals,
             PayloadType::Public,
@@ -1148,7 +1154,7 @@ mod tests {
         stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
         stake_controlled = stake_controlled.add_unassigned(Stake(49));
 
-        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+        let tally_proof = get_tally_proof(vote_start, &committee, vote_plan.to_id());
 
         let invalid_block_date = BlockDate {
             epoch: 0,
@@ -1196,7 +1202,7 @@ mod tests {
         let mut stake_controlled = StakeControl::new();
         stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
 
-        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+        let tally_proof = get_tally_proof(vote_plan.vote_start(), &committee, vote_plan.to_id());
 
         let block_date = BlockDate {
             epoch: 2,
@@ -1251,7 +1257,7 @@ mod tests {
         let mut stake_controlled = StakeControl::new();
         stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
 
-        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+        let tally_proof = get_tally_proof(vote_plan.vote_start(), &committee, vote_plan.to_id());
 
         let block_date = BlockDate {
             epoch: 2,
@@ -1274,10 +1280,10 @@ mod tests {
         );
     }
 
-    fn get_tally_proof(wallet: &Wallet, id: VotePlanId) -> TallyProof {
+    fn get_tally_proof(date: BlockDate, wallet: &Wallet, id: VotePlanId) -> TallyProof {
         let certificate = build_vote_tally_cert(id);
         let fragment = TestTxCertBuilder::new(TestGen::hash(), LinearFee::new(0, 0, 0))
-            .make_transaction(Some(wallet), &certificate);
+            .make_transaction(date, Some(wallet), &certificate);
 
         match fragment {
             Fragment::VoteTally(tx) => {

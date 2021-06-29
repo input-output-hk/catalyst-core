@@ -105,7 +105,6 @@ class Challenge(pydantic.BaseModel):
     title: str
     description: str
     rewards_total: int
-    proposers_rewards: int
     fund_id: int
     challenge_url: str
 
@@ -451,7 +450,7 @@ def calculate_rewards(
         results = calc_results(
             challenge_proposals,
             challenge_voteplan_proposals,
-            challenge.proposers_rewards,
+            challenge.rewards_total,
             conversion_factor,
             approval_threshold,
         )

@@ -1,4 +1,5 @@
 pub type ContextLock = Arc<Mutex<Context>>;
+use crate::cardano::CardanoCliExecutor;
 use crate::config::Configuration;
 use crate::job::JobOutputInfo;
 use crate::request::Request;
@@ -12,7 +13,6 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use uuid::Uuid;
-use crate::cardano::CardanoCliExecutor;
 
 pub struct Context {
     server_stopper: Option<ServerStopper>,

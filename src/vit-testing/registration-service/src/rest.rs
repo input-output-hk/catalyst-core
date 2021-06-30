@@ -131,7 +131,6 @@ pub async fn start_rest_server(context: ContextLock) {
     server_fut.await;
 }
 
-
 pub async fn status_handler(id: String, context: ContextLock) -> Result<impl Reply, Rejection> {
     let uuid = Uuid::parse_str(&id).map_err(Error::CannotParseUuid)?;
     let context_lock = context.lock().unwrap();
@@ -148,7 +147,10 @@ pub async fn submit_transaction_handler(
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let context_lock = context.lock().unwrap();
-    Ok(context_lock.cardano_cli_executor().transaction_submit(bytes.to_vec()))
+    context_lock
+        .cardano_cli_executor()
+        .transaction_submit(bytes.to_vec())?;
+    Ok(warp::reply())
 }
 
 pub async fn job_new_handler(

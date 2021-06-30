@@ -334,6 +334,49 @@ pub fn vote_cast_by_non_committe_member() {
 }
 
 #[test]
+pub fn vote_on_same_proposal() {
+    let _blank = Choice::new(0);
+    let favorable = Choice::new(1);
+    let rejection = Choice::new(2);
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000)),
+        )
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .owns(STAKE_POOL)
+            .committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_rewards_add(100),
+            )])
+        .build()
+        .unwrap();
+
+    let mut alice = controller.wallet(ALICE).unwrap();
+
+    let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
+    let proposal = vote_plan.proposal(0);
+
+    controller
+        .cast_vote_public(&alice, &vote_plan, &proposal.id(), favorable, &mut ledger)
+        .unwrap();
+
+    alice.confirm_transaction();
+
+    assert!(controller
+        .cast_vote_public(&alice, &vote_plan, &proposal.id(), rejection, &mut ledger)
+        .is_err());
+}
+
+#[test]
 pub fn votes_with_fees() {
     let favorable = Choice::new(1);
     let rewards_add = 100;

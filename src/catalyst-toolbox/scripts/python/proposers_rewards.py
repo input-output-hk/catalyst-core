@@ -329,7 +329,7 @@ def calc_results(
         if funded:
             depletion -= proposal.proposal_funds
 
-        ada_to_be_payed = proposal.proposal_funds * conversion_factor if funded else 0
+        ada_to_be_payed = proposal.proposal_funds / conversion_factor if funded else 0
 
         result = Result(
             proposal_id=proposal_id,

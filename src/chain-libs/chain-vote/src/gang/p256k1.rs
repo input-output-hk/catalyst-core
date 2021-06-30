@@ -346,15 +346,25 @@ impl<'a> Mul<&'a GroupElement> for u64 {
     type Output = GroupElement;
 
     fn mul(self, other: &'a GroupElement) -> GroupElement {
-        GroupElement(&other.0 * self)
+        other * self
     }
 }
 
 impl<'a> Mul<u64> for &'a GroupElement {
     type Output = GroupElement;
 
-    fn mul(self, other: u64) -> GroupElement {
-        GroupElement(other * &self.0)
+    fn mul(self, mut other: u64) -> GroupElement {
+        let mut a = self.0.clone();
+        let mut q = Point::infinity();
+
+        while other != 0 {
+            if other & 1 != 0 {
+                q = &q + &a;
+            }
+            a = &a + &a;
+            other >>= 1;
+        }
+        GroupElement(q)
     }
 }
 

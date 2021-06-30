@@ -10,9 +10,9 @@ use thiserror::Error;
 pub struct Configuration {
     pub port: u16,
     #[serde(rename = "snapshot-token")]
-    pub snaphot_token: String,
+    pub snapshot_token: String,
     #[serde(rename = "snapshot-address")]
-    pub snaphot_address: String,
+    pub snapshot_address: String,
     pub jcli: PathBuf,
     pub network: NetworkType,
     pub token: Option<String>,

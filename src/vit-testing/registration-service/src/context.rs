@@ -12,6 +12,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use uuid::Uuid;
+use crate::cardano::CardanoCliExecutor;
 
 pub struct Context {
     server_stopper: Option<ServerStopper>,
@@ -38,6 +39,10 @@ impl Context {
 
     pub fn server_stopper(&self) -> &Option<ServerStopper> {
         &self.server_stopper
+    }
+
+    pub fn cardano_cli_executor(&self) -> CardanoCliExecutor {
+        CardanoCliExecutor::new(self.config.clone())
     }
 
     pub fn new_run(&mut self, request: Request) -> Result<Uuid, Error> {

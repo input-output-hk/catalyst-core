@@ -1,17 +1,15 @@
 use crate::context::{Context, ContextLock};
-use crate::request::Request;
-use futures::stream::TryStreamExt;
+use crate::multipart::parse_multipart;
 use futures::FutureExt;
 use futures::{channel::mpsc, StreamExt};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
+use serde::Serialize;
 use std::convert::Infallible;
-use std::io::prelude::*;
 use std::sync::Arc;
 use thiserror::Error;
 use uuid::Uuid;
 use warp::multipart::FormData;
-use warp::Buf;
 use warp::{http::StatusCode, reject::Reject, Filter, Rejection, Reply};
 
 impl Reject for crate::context::Error {}
@@ -34,11 +32,6 @@ impl ServerStopper {
     pub fn stop(&self) {
         self.0.clone().try_send(()).unwrap();
     }
-}
-
-fn job_prameters_binary_body() -> impl Filter<Extract = (Request,), Error = warp::Rejection> + Clone
-{
-    warp::body::content_length_limit(1024 * 16).and(warp::body::json())
 }
 
 pub async fn start_rest_server(context: ContextLock) {
@@ -107,59 +100,10 @@ pub async fn job_new_handler(
     form: FormData,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    let request = parse_upload_multipart(form).await.unwrap();
+    let request = crate::rest::parse_multipart(form).await?;
     let mut context_lock = context.lock().unwrap();
     let id = context_lock.new_run(request)?;
     Ok(id).map(|r| warp::reply::json(&r))
-}
-
-use bytes::BufMut;
-use std::borrow::Borrow;
-use warp::multipart::Part;
-
-async fn readall(
-    stream: impl futures::Stream<Item = Result<impl Buf, warp::Error>>,
-) -> Result<Vec<u8>, warp::Error> {
-    stream
-        .try_fold(vec![], |mut result, buf| {
-            result.put(buf);
-            async move { Ok(result) }
-        })
-        .await
-}
-
-async fn parse_upload_multipart(
-    form: warp::multipart::FormData,
-) -> Result<Request, Box<dyn std::error::Error>> {
-    let mut parts: Vec<Part> = form.try_collect().await?;
-
-    let mut get_part = |name: &str| {
-        parts
-            .iter()
-            .position(|part| part.name() == name)
-            .map(|p| parts.swap_remove(p))
-            .ok_or(format!("{} part not found", name))
-    };
-
-    let pin_part = get_part("pin")?;
-    let threshold_part = get_part("threshold")?;
-    let slot_no_part = get_part("slot-no")?;
-    let funds_part = get_part("funds")?;
-    let qr_part = get_part("qr")?;
-
-    let qr = readall(qr_part.stream()).await?;
-    let pin = String::from_utf8(readall(pin_part.stream()).await?)?;
-    let expected_funds: u64 = String::from_utf8(readall(funds_part.stream()).await?)?.parse()?;
-    let slot_no: u64 = String::from_utf8(readall(slot_no_part.stream()).await?)?.parse()?;
-    let threshold: u64 = String::from_utf8(readall(threshold_part.stream()).await?)?.parse()?;
-
-    Ok(Request {
-        qr,
-        pin,
-        expected_funds,
-        slot_no,
-        threshold,
-    })
 }
 
 pub async fn health_handler() -> Result<impl Reply, Rejection> {
@@ -167,10 +111,23 @@ pub async fn health_handler() -> Result<impl Reply, Rejection> {
 }
 
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
-    Ok(warp::reply::with_status(
-        format!("internal error: {:?}", r),
-        StatusCode::INTERNAL_SERVER_ERROR,
-    ))
+    let code;
+    let message;
+
+    if let Some(e) = r.find::<crate::multipart::Error>() {
+        code = StatusCode::BAD_REQUEST;
+        message = e.to_string();
+    } else {
+        message = format!("internal error: {:?}", r);
+        code = StatusCode::INTERNAL_SERVER_ERROR;
+    }
+
+    let json = warp::reply::json(&ErrorMessage {
+        code: code.as_u16(),
+        message,
+    });
+
+    Ok(warp::reply::with_status(json, code))
 }
 
 pub async fn authorize_token(
@@ -190,4 +147,10 @@ pub async fn authorize_token(
         return Err(warp::reject::custom(TokenError::UnauthorizedToken));
     }
     Ok(())
+}
+
+#[derive(Serialize)]
+struct ErrorMessage {
+    code: u16,
+    message: String,
 }

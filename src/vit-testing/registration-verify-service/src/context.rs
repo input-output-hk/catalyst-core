@@ -7,8 +7,6 @@ use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::net::SocketAddr;
-use std::path::Path;
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use uuid::Uuid;
@@ -75,7 +73,7 @@ impl Context {
                 job_id,
                 start,
                 request,
-                step,
+                step: _,
             } => {
                 self.state = State::Finished {
                     job_id: *job_id,

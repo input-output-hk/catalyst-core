@@ -22,6 +22,7 @@ pub enum Error {
 }
 
 impl Reject for Error {}
+impl Reject for crate::cardano::Error {}
 
 #[derive(Clone)]
 pub struct ServerStopper(mpsc::Sender<()>);
@@ -50,6 +51,17 @@ pub async fn start_rest_server(context: ContextLock) {
     let with_context = warp::any().map(move || context.clone());
 
     let root = warp::path!("api" / ..).boxed();
+
+    let api_token_filter = if is_token_enabled {
+        warp::header::header(API_TOKEN_HEADER)
+            .and(with_context.clone())
+            .and_then(authorize_token)
+            .and(warp::any())
+            .untuple_one()
+            .boxed()
+    } else {
+        warp::any().boxed()
+    };
 
     let files = {
         let root = warp::path!("files" / ..).boxed();
@@ -81,26 +93,37 @@ pub async fn start_rest_server(context: ContextLock) {
         let status = warp::path!("status" / String)
             .and(warp::get())
             .and(with_context.clone())
-            .and_then(job_status_handler)
+            .and_then(status_handler)
             .boxed();
 
-        let api_token_filter = if is_token_enabled {
-            warp::header::header(API_TOKEN_HEADER)
-                .and(with_context.clone())
-                .and_then(authorize_token)
-                .and(warp::any())
-                .untuple_one()
-                .boxed()
-        } else {
-            warp::any().boxed()
-        };
-
-        root.and(api_token_filter)
+        root.and(api_token_filter.clone())
             .and(files.or(status).or(new))
             .boxed()
     };
 
-    let api = root.and(health.or(job)).recover(report_invalid).boxed();
+    let cardano = {
+        let root = warp::path!("cardano" / ..).boxed();
+
+        let tip = warp::path!("network" / "tip")
+            .and(warp::get())
+            .and(with_context.clone())
+            .and_then(network_tip_handler)
+            .boxed();
+
+        let transaction = warp::path!("transaction" / "submit")
+            .and(warp::post())
+            .and(warp::body::content_length_limit(1024 * 16).and(warp::body::bytes()))
+            .and(with_context.clone())
+            .and_then(submit_transaction_handler)
+            .boxed();
+
+        root.and(tip.or(transaction)).boxed()
+    };
+
+    let api = root
+        .and(health.or(job).or(cardano))
+        .recover(report_invalid)
+        .boxed();
 
     let server = warp::serve(api);
 
@@ -108,10 +131,24 @@ pub async fn start_rest_server(context: ContextLock) {
     server_fut.await;
 }
 
-pub async fn job_status_handler(id: String, context: ContextLock) -> Result<impl Reply, Rejection> {
+
+pub async fn status_handler(id: String, context: ContextLock) -> Result<impl Reply, Rejection> {
     let uuid = Uuid::parse_str(&id).map_err(Error::CannotParseUuid)?;
     let context_lock = context.lock().unwrap();
     Ok(context_lock.status_by_id(uuid)).map(|r| warp::reply::json(&r))
+}
+
+pub async fn network_tip_handler(context: ContextLock) -> Result<impl Reply, Rejection> {
+    let context_lock = context.lock().unwrap();
+    Ok(context_lock.cardano_cli_executor().tip()).map(|r| warp::reply::json(&r))
+}
+
+pub async fn submit_transaction_handler(
+    bytes: warp::hyper::body::Bytes,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let context_lock = context.lock().unwrap();
+    Ok(context_lock.cardano_cli_executor().transaction_submit(bytes.to_vec()))
 }
 
 pub async fn job_new_handler(

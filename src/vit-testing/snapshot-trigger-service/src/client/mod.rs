@@ -4,15 +4,11 @@ pub mod rest;
 use crate::client::rest::SnapshotRestClient;
 use crate::config::JobParameters;
 use crate::State;
-use assert_fs::fixture::PathChild;
-use assert_fs::TempDir;
 use chain_addr::Address;
 use chain_addr::AddressReadable;
 use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::InitialUTxO;
 use jortestkit::prelude::WaitBuilder;
-use std::path::Path;
-use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
 
@@ -60,7 +56,7 @@ impl SnapshotResult {
     }
 
     pub fn status(&self) -> State {
-        self.status.clone()
+        self.status
     }
 
     pub fn initials(&self) -> &Vec<Initial> {
@@ -70,14 +66,11 @@ impl SnapshotResult {
     pub fn by_address_str(&self, address: &str) -> Result<Option<InitialUTxO>, Error> {
         let address_readable = AddressReadable::from_str(address)?;
         for initial in self.initials() {
-            match initial {
-                Initial::Fund(utxos) => {
-                    return Ok(utxos.iter().cloned().find(|x| {
-                        let address: chain_addr::Address = x.address.clone().into();
-                        address_readable.to_address() == address
-                    }));
-                }
-                _ => (),
+            if let Initial::Fund(utxos) = initial {
+                return Ok(utxos.iter().cloned().find(|x| {
+                    let address: chain_addr::Address = x.address.clone().into();
+                    address_readable.to_address() == address
+                }));
             }
         }
         Ok(None)
@@ -85,14 +78,11 @@ impl SnapshotResult {
 
     pub fn by_address(&self, expected_address: &Address) -> Result<Option<InitialUTxO>, Error> {
         for initial in self.initials() {
-            match initial {
-                Initial::Fund(utxos) => {
-                    return Ok(utxos.iter().cloned().find(|x| {
-                        let address: chain_addr::Address = x.address.clone().into();
-                        *expected_address == address
-                    }));
-                }
-                _ => (),
+            if let Initial::Fund(utxos) = initial {
+                return Ok(utxos.iter().cloned().find(|x| {
+                    let address: chain_addr::Address = x.address.clone().into();
+                    *expected_address == address
+                }));
             }
         }
         Ok(None)

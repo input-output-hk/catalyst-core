@@ -1,6 +1,5 @@
 use crate::client::rest::RegistrationVerifyRestClient;
 use crate::context::State;
-use crate::request::Request;
 use reqwest::blocking::multipart::Form;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -108,17 +107,20 @@ pub struct NewJobCommand {
     threshold: u64,
 
     #[structopt(long = "slot-no")]
-    slot_no: u64,
+    slot_no: Option<u64>,
 }
 
 impl NewJobCommand {
     pub fn exec(self, rest: RegistrationVerifyRestClient) -> Result<String, Error> {
-        let form = Form::new()
+        let mut form = Form::new()
             .text("pin", self.pin)
             .text("funds", self.funds.to_string())
             .text("threshold", self.threshold.to_string())
-            .text("slot-no", self.slot_no.to_string())
             .file("qr", &self.qr)?;
+
+        if let Some(slot_no) = self.slot_no {
+            form = form.text("slot-no", slot_no.to_string());
+        }
 
         rest.job_new(form).map_err(Into::into)
     }

@@ -6,7 +6,6 @@ use crate::{
 
 use crate::job::RegistrationVerifyJobBuilder;
 use futures::future::FutureExt;
-use reqwest::blocking::multipart::Form;
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
 use structopt::StructOpt;
@@ -37,9 +36,11 @@ impl RegistrationVerifyServiceCommand {
 
         let request_to_start_task = async {
             loop {
-                if let Some((job_id, request)) = manager.request_to_start() {
+                if let Some((_job_id, request)) = manager.request_to_start() {
                     let job = RegistrationVerifyJobBuilder::new()
                         .with_jcli(&configuration.jcli)
+                        .with_snapshot_token(&configuration.snapshot_token)
+                        .with_snapshot_address(&configuration.snapshot_address)
                         .with_network(configuration.network)
                         .build();
 

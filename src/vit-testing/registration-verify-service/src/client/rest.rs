@@ -1,10 +1,6 @@
 use crate::context::State;
-use crate::request::Request;
 use jortestkit::{prelude::Wait, process::WaitError};
 use reqwest::blocking::multipart;
-use std::io::Write;
-use std::path::Path;
-use std::path::PathBuf;
 use thiserror::Error;
 
 pub struct RegistrationVerifyRestClient {
@@ -103,12 +99,6 @@ impl RegistrationVerifyRestClient {
             }
         }
         false
-    }
-
-    fn rem_first(value: &str) -> &str {
-        let mut chars = value.chars();
-        chars.next();
-        chars.as_str()
     }
 }
 

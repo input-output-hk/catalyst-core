@@ -8,7 +8,7 @@ pub struct Request {
     pub pin: String,
     pub expected_funds: u64,
     pub threshold: u64,
-    pub slot_no: u64,
+    pub slot_no: Option<u64>,
 }
 
 impl fmt::Debug for Request {

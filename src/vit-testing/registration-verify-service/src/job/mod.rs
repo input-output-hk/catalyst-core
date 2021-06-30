@@ -2,32 +2,21 @@ mod info;
 
 use crate::config::NetworkType;
 use crate::context::ContextLock;
-use crate::context::{Context, Step};
+use crate::context::Step;
 use crate::job::info::Assert;
 use crate::job::info::Checks;
 use crate::job::info::RegistrationInfo;
 use crate::job::info::SnapshotInfo;
 use crate::request::Request;
 use chain_addr::AddressReadable;
-use chain_addr::{Address, Discrimination, Kind};
-use chain_crypto::AsymmetricKey;
-use chain_crypto::Ed25519Extended;
+use chain_addr::{Discrimination, Kind};
 use iapyx::PinReadMode;
 use iapyx::QrReader;
 pub use info::JobOutputInfo;
-use jormungandr_integration_tests::common::jcli::JCli;
-use jortestkit::prelude::read_file;
-use jortestkit::prelude::ProcessOutput;
-use serde::{Deserialize, Serialize};
 use snapshot_trigger_service::client::do_snapshot;
 use snapshot_trigger_service::config::JobParameters;
-use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::process::ExitStatus;
 use std::str::FromStr;
-use std::sync::Arc;
-use std::sync::Mutex;
 use thiserror::Error;
 
 pub struct RegistrationVerifyJobBuilder {
@@ -100,8 +89,51 @@ impl Default for RegistrationVerifyJob {
 impl RegistrationVerifyJob {
     pub fn start(&self, request: Request, context: ContextLock) -> Result<JobOutputInfo, Error> {
         let jobs_params = JobParameters {
-            slot_no: Some(request.slot_no),
+            slot_no: request.slot_no,
             threshold: request.threshold,
+        };
+
+        let registration = RegistrationInfo {
+            expected_funds: request.expected_funds,
+        };
+        let snapshot = SnapshotInfo {
+            threshold: request.threshold,
+            slot_no: request.slot_no,
+        };
+
+        context
+            .lock()
+            .unwrap()
+            .state_mut()
+            .update_running_step(Step::ExtractingQRCode);
+
+        let mut checks: Checks = Default::default();
+
+        let address = match QrReader::new(PinReadMode::Global(request.pin.clone()))
+            .read_qr_from_bytes(request.qr.clone())
+        {
+            Ok(secret_key) => {
+                let address = chain_addr::Address(
+                    Discrimination::Production,
+                    Kind::Account(secret_key.to_public()),
+                );
+                checks.push(Assert::Passed(format!(
+                    "succesfully read qr code: '{}'",
+                    AddressReadable::from_address("ca", &address)
+                )));
+                address
+            }
+            Err(err) => {
+                checks.push(Assert::Failed(format!(
+                    "malformed qr: '{}'",
+                    err.to_string()
+                )));
+                return Ok(JobOutputInfo {
+                    checks,
+                    registration,
+                    snapshot,
+                });
+            }
         };
 
         context
@@ -110,44 +142,14 @@ impl RegistrationVerifyJob {
             .state_mut()
             .update_running_step(Step::RunningSnapshot);
 
-        /*    let snapshot_result = do_snapshot(
+        let snapshot_result = do_snapshot(
             jobs_params,
             self.snapshot_token.to_string(),
             self.snapshot_address.to_string(),
-        )?;*/
+        )?;
 
-        context
-            .lock()
-            .unwrap()
-            .state_mut()
-            .update_running_step(Step::ExtractingQRCode);
-
-        let address = match QrReader::new(PinReadMode::Global(request.pin.clone()))
-            .read_qr_from_bytes(request.qr.clone())
-        {
-            Ok(secret_key) => {
-                checks.push(Assert::Passed(format!(
-                    "succesfully read qr code:  ('{}')",
-                    address_readable
-                )));
-                chain_addr::Address(
-                    Discrimination::Production,
-                    Kind::Account(secret_key.to_public()),
-                )
-            }
-            Err(err) => {
-                checks.push(Assert::Failed(format!(
-                    "malformed qr:  ('{}')",
-                    err.to_string()
-                )));
-            }
-        };
-
-        let mut checks: Checks = Default::default();
-
-        //    let entry = snapshot_result.by_address(&address)?;
+        let entry = snapshot_result.by_address(&address)?;
         let address_readable = AddressReadable::from_address("ca", &address);
-        println!("succesfully read qr code:  ('{}')", address_readable);
 
         context
             .lock()
@@ -155,52 +157,38 @@ impl RegistrationVerifyJob {
             .state_mut()
             .update_running_step(Step::VerifyingRegistration);
 
-        /*
-                match entry {
-                    Some(entry) => {
-                        checks.push(Assert::Passed(format!(
-                            "entry found in snapshot ('{}') with funds: '{}'",
-                            address_readable, entry.value
-                        )));
-                        checks.push(Assert::Passed(format!(
-                            "adress is above threshold ('{}') with funds: '{}'",
-                            request.expected_funds, entry.value
-                        )));
-                        checks.push(Assert::from_eq(
-                            entry.value,
-                            request.expected_funds.into(),
-                            format!("correct funds amount '{}'", request.expected_funds),
-                            format!(
-                                "wrong funds amount '{}' != '{}'",
-                                entry.value, request.expected_funds
-                            ),
-                        ));
-                    }
-                    None => {
-                        checks.push(Assert::Failed(format!(
-                            "entry not found in snapshot {}",
-                            address_readable
-                        )));
-                        checks.push(Assert::Failed(format!(
-                            "entry not found in snapshot {}",
-                            address_readable
-                        )));
-                        checks.push(Assert::Failed(format!(
-                            "entry not found in snapshot {}",
-                            address_readable
-                        )));
-                    }
-                }
-        */
+        match entry {
+            Some(entry) => {
+                checks.push(Assert::Passed(format!(
+                    "wallet found in snapshot ('{}') with funds: '{}'",
+                    address_readable, entry.value
+                )));
+                checks.push(Assert::Passed(format!(
+                    "wallat is eligible for voting (has more than threshold '{}') with funds: '{}'",
+                    request.threshold, entry.value
+                )));
+                checks.push(Assert::from_eq(
+                    entry.value,
+                    request.expected_funds.into(),
+                    format!("correct wallet funds '{}'", request.expected_funds),
+                    format!(
+                        "incorrect wallet funds '{}' != '{}'",
+                        entry.value, request.expected_funds
+                    ),
+                ));
+            }
+            None => {
+                checks.push(Assert::Failed(format!(
+                    "wallet not found in snapshot '{}' or has less than theshold: '{}'",
+                    address_readable, request.threshold
+                )));
+            }
+        }
+        checks.calculate_passed();
         Ok(JobOutputInfo {
             checks,
-            registration: RegistrationInfo {
-                expected_funds: request.expected_funds,
-            },
-            snapshot: SnapshotInfo {
-                threshold: request.threshold,
-                slot_no: request.slot_no,
-            },
+            registration,
+            snapshot,
         })
     }
 }

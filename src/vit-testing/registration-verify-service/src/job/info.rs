@@ -15,20 +15,33 @@ pub struct RegistrationInfo {
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
 pub struct SnapshotInfo {
     pub threshold: u64,
-    pub slot_no: u64,
+    pub slot_no: Option<u64>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
-pub struct Checks(Vec<Assert>);
+pub struct Checks {
+    asserts: Vec<Assert>,
+    passed: bool,
+}
 
 impl Checks {
     pub fn push(&mut self, assert: Assert) {
-        self.0.push(assert);
+        self.asserts.push(assert);
+    }
+
+    pub fn calculate_passed(&mut self) {
+        self.passed = !self
+            .asserts
+            .iter()
+            .any(|x| matches!(x, Assert::Failed { .. }));
     }
 }
 impl Default for Checks {
     fn default() -> Self {
-        Self(vec![])
+        Self {
+            asserts: vec![],
+            passed: true,
+        }
     }
 }
 

@@ -67,6 +67,28 @@ impl CardanoCliExecutor {
         println!("raw output of query tip: {}", content);
         Ok(content)
     }
+
+    pub fn query_utxo<S: Into<String>>(&self, payment_address: S) -> Result<String, Error> {
+        let mut command = Command::new(&self.cardano_cli);
+        command
+            .arg("query")
+            .arg("utxo")
+            .arg_network(self.config.network)
+            .arg("--address")
+            .arg(payment_address.into())
+            .arg("--out-file")
+            .arg("/dev/stdout");
+
+        println!("Running cardano_cli: {:?}", command);
+        
+        let content = command
+            .output()
+            .map_err(|x| Error::CannotGetOutputFromCommand(x.to_string()))?
+            .as_lossy_string();
+
+        println!("raw output of query utxo: {}", content);
+        Ok(content)
+    }
 }
 
 #[derive(Debug, Error, Deserialize, Serialize)]

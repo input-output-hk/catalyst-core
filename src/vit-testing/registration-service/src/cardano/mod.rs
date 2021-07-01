@@ -1,7 +1,6 @@
 use crate::config::Configuration;
 use crate::utils::CommandExt;
 use jortestkit::prelude::ProcessOutput;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
@@ -39,12 +38,20 @@ impl CardanoCliExecutor {
             .arg("--tx-file")
             .arg(&tx_signed_file)
             .arg_network(self.config.network);
+
+        println!("Running cardano_cli: {:?}", command);
+
+        let content = command
+            .output()
+            .map_err(|x| Error::CannotGetOutputFromCommand(x.to_string()))?
+            .as_lossy_string();
+
+        println!("Output of cardano_cli: {:?}", content);
+
         Ok(())
     }
 
-    pub fn tip(&self) -> Result<u64, Error> {
-        let regex = r#"\"slot\": (\d+)"#.to_string();
-
+    pub fn tip(&self) -> Result<String, Error> {
         let mut command = Command::new(&self.config.cardano_cli);
         command
             .arg("query")
@@ -58,18 +65,7 @@ impl CardanoCliExecutor {
             .map_err(|x| Error::CannotGetOutputFromCommand(x.to_string()))?
             .as_lossy_string();
         println!("raw output of query tip: {}", content);
-        let rg = Regex::new(&regex).map_err(|x| Error::RegexError(x.to_string()))?;
-        match rg.captures(&content) {
-            Some(x) => Ok(x
-                .get(1)
-                .ok_or_else(|| {
-                    Error::RegexError("wrong regex match no capture of slot-no".to_string())
-                })?
-                .as_str()
-                .parse()
-                .map_err(|x: std::num::ParseIntError| Error::ParseIntError(x.to_string()))?),
-            None => Err(Error::CannotExtractSlotId { regex, content }),
-        }
+        Ok(content)
     }
 }
 

@@ -40,7 +40,7 @@ impl CardanoCliExecutor {
     }
 
     pub fn tip(&self) -> Result<u64, Error> {
-        let regex = r"unSlotNo = (\d+)";
+        let regex = r#"\"slot\": (\d+)"#.to_string();
 
         let mut command = Command::new(&self.config.cardano_cli);
         command
@@ -55,7 +55,7 @@ impl CardanoCliExecutor {
             .map_err(|x| Error::CannotGetOutputFromCommand(x.to_string()))?
             .as_lossy_string();
         println!("raw output of query tip: {}", content);
-        let rg = Regex::new(regex.clone()).map_err(|x| Error::RegexError(x.to_string()))?;
+        let rg = Regex::new(&regex).map_err(|x| Error::RegexError(x.to_string()))?;
         match rg.captures(&content) {
             Some(x) => Ok(x
                 .get(1)
@@ -65,10 +65,7 @@ impl CardanoCliExecutor {
                 .as_str()
                 .parse()
                 .map_err(|x: std::num::ParseIntError| Error::ParseIntError(x.to_string()))?),
-            None => Err(Error::CannotExtractSlotId {
-                regex: regex.to_string(),
-                content,
-            }),
+            None => Err(Error::CannotExtractSlotId { regex, content }),
         }
     }
 }

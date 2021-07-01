@@ -69,7 +69,7 @@ impl CardanoCliExecutor {
     }
 
     pub fn query_utxo<S: Into<String>>(&self, payment_address: S) -> Result<String, Error> {
-        let mut command = Command::new(&self.cardano_cli);
+        let mut command = Command::new(&self.config.cardano_cli);
         command
             .arg("query")
             .arg("utxo")
@@ -80,7 +80,7 @@ impl CardanoCliExecutor {
             .arg("/dev/stdout");
 
         println!("Running cardano_cli: {:?}", command);
-        
+
         let content = command
             .output()
             .map_err(|x| Error::CannotGetOutputFromCommand(x.to_string()))?

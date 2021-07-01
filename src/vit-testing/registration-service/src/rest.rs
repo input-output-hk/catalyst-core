@@ -117,7 +117,7 @@ pub async fn start_rest_server(context: ContextLock) {
             .and_then(submit_transaction_handler)
             .boxed();
 
-        let utxo = warp::path!("utxo" / String )
+        let utxo = warp::path!("utxo" / String)
             .and(warp::get())
             .and(with_context.clone())
             .and_then(query_utxo_handler)
@@ -148,9 +148,12 @@ pub async fn network_tip_handler(context: ContextLock) -> Result<impl Reply, Rej
     Ok(context_lock.cardano_cli_executor().tip()).map(|r| warp::reply::json(&r))
 }
 
-pub async fn query_utxo_handler(address: String, context: ContextLock) -> Result<impl Reply, Rejection> {
+pub async fn query_utxo_handler(
+    address: String,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
     let context_lock = context.lock().unwrap();
-    Ok(context_lock.cardano_cli_executor().utxo(address)).map(|r| warp::reply::json(&r))
+    Ok(context_lock.cardano_cli_executor().query_utxo(address)).map(|r| warp::reply::json(&r))
 }
 
 pub async fn submit_transaction_handler(

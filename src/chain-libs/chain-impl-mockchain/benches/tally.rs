@@ -5,7 +5,6 @@ use chain_impl_mockchain::{
         DecryptedPrivateTally, DecryptedPrivateTallyProposal, EncryptedVoteTally, VoteCast,
         VotePlan, VoteTally,
     },
-    date::BlockDate,
     fee::LinearFee,
     header::BlockDate,
     testing::{

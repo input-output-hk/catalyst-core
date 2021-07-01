@@ -24,6 +24,9 @@ impl CardanoCliExecutor {
         tx_signed_file.push(id.to_string());
         tx_signed_file.push("tx.signed");
 
+        std::fs::create_dir_all(tx_signed_file.parent().unwrap())
+            .map_err(|x| Error::CannotCreateParentDirectory(x.to_string()))?;
+
         let mut file =
             File::create(&tx_signed_file).map_err(|x| Error::CannotCreateAFile(x.to_string()))?;
         file.write_all(&raw)
@@ -76,6 +79,8 @@ pub enum Error {
     CannotExtractSlotId { regex: String, content: String },
     #[error("io error: {0}")]
     CannotCreateAFile(String),
+    #[error("io error: {0}")]
+    CannotCreateParentDirectory(String),
     #[error("io error: {0}")]
     CannotWriteAFile(String),
     #[error("io error: {0}")]

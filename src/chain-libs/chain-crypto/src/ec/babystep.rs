@@ -1,3 +1,5 @@
+//! Implementation of baby steps giant step algorithm to solve the discrete logarithm over
+//! a group of prime order.
 use super::*;
 // use crate::error::CryptoError;
 use rayon::prelude::*;
@@ -44,14 +46,14 @@ impl BabyStepsTable {
         #[cfg(not(feature = "ristretto255"))]
         for i in 0..=baby_step_size / 2 {
             bs.insert(e.compress().map(|(c, _sign)| c.to_bytes()), i);
-            e = &e + &gen;
+            e = e + &gen;
         }
         // Not with ristretto group. the ristretto group API does not allow to use the x coordinate
         // for security properties (see [here](https://github.com/dalek-cryptography/curve25519-dalek/issues/235))
         #[cfg(feature = "ristretto255")]
         for i in 0..=baby_step_size {
             bs.insert(Some(e.to_bytes()), i);
-            e = &e + &gen;
+            e = e + &gen;
         }
         assert!(!bs.is_empty());
         assert!(baby_step_size > 0);
@@ -66,7 +68,7 @@ impl BabyStepsTable {
 #[derive(Debug)]
 pub struct MaxLogExceeded;
 
-// Solve the discrete log on ECC using baby step giant step algorithm
+/// Solve the discrete log on ECC using baby step giant step algorithm
 pub fn baby_step_giant_step(
     points: Vec<GroupElement>,
     max_log: u64,

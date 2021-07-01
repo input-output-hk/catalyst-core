@@ -4,7 +4,7 @@
 //! corresponding structures. In particular, we use (lifted) ElGamal cryptosystem, and combine with ChaCha
 //! stream cipher to produce a hybrid encryption scheme.
 
-use crate::gang::{GroupElement, Scalar};
+use chain_crypto::ec::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul, Sub};
 
@@ -77,8 +77,8 @@ impl PublicKey {
         self.encrypt_point_with_r(&message, &r)
     }
 
-    /// Given a `message` represented as a group element, return a ciphertext and the
-    /// randomness used.
+    // Given a `message` represented as a group element, return a ciphertext and the
+    // randomness used.
     fn encrypt_point_return_r<R>(&self, message: &GroupElement, rng: &mut R) -> (Ciphertext, Scalar)
     where
         R: RngCore + CryptoRng,
@@ -87,10 +87,10 @@ impl PublicKey {
         (self.encrypt_point_with_r(&message, &r), r)
     }
 
-    /// Given a `message` represented as a group element, and some value used as `randomness`,
-    /// return the corresponding ciphertext. This function should only be called when the
-    /// randomness value needs to be a particular value (e.g. verification procedure of the unit vector ZKP).
-    /// Otherwise, `encrypt_point` should be used.
+    // Given a `message` represented as a group element, and some value used as `randomness`,
+    // return the corresponding ciphertext. This function should only be called when the
+    // randomness value needs to be a particular value (e.g. verification procedure of the unit vector ZKP).
+    // Otherwise, `encrypt_point` should be used.
     fn encrypt_point_with_r(&self, message: &GroupElement, randomness: &Scalar) -> Ciphertext {
         Ciphertext {
             e1: &GroupElement::generator() * randomness,
@@ -173,7 +173,7 @@ impl SymmetricKey {
         }
     }
 
-    /// Initialise encryption, by hashing the group element
+    // Initialise encryption, by hashing the group element
     fn initialise_encryption(&self) -> ChaCha20 {
         let mut out = [0u8; 44];
         let mut h = Blake2b::new(44);
@@ -182,7 +182,7 @@ impl SymmetricKey {
         ChaCha20::new(&out[0..32], &out[32..44])
     }
 
-    /// Encrypt/decrypt a message using the symmetric key
+    // Encrypt/decrypt a message using the symmetric key
     fn process(&self, m: &[u8]) -> Vec<u8> {
         let mut key = self.initialise_encryption();
         let mut dat = m.to_vec();

@@ -12,7 +12,7 @@
 #![allow(clippy::many_single_char_names)]
 use super::challenge_context::ChallengeContext;
 use crate::cryptography::{Ciphertext, PublicKey, SecretKey};
-use crate::gang::{GroupElement, Scalar};
+use chain_crypto::ec::{GroupElement, Scalar};
 use rand::{CryptoRng, RngCore};
 
 /// Proof of correct decryption.

@@ -16,7 +16,7 @@ pub struct Curve25519_2HashDh;
 impl AsymmetricPublicKey for Curve25519_2HashDh {
     type Public = vrf::PublicKey;
     const PUBLIC_BECH32_HRP: &'static str = "vrf_pk";
-    const PUBLIC_KEY_SIZE: usize = vrf::PUBLIC_SIZE;
+    const PUBLIC_KEY_SIZE: usize = vrf::PublicKey::BYTES_LEN;
     fn public_from_binary(data: &[u8]) -> Result<Self::Public, PublicKeyError> {
         vrf::PublicKey::from_bytes(data)
     }
@@ -37,11 +37,11 @@ impl AsymmetricKey for Curve25519_2HashDh {
     }
 
     fn secret_from_binary(data: &[u8]) -> Result<Self::Secret, SecretKeyError> {
-        if data.len() != vrf::SECRET_SIZE {
+        if data.len() != vrf::SecretKey::BYTES_LEN {
             return Err(SecretKeyError::SizeInvalid);
         }
-        let mut buf = [0; vrf::SECRET_SIZE];
-        buf[0..vrf::SECRET_SIZE].clone_from_slice(data);
+        let mut buf = [0; vrf::SecretKey::BYTES_LEN];
+        buf[0..vrf::SecretKey::BYTES_LEN].clone_from_slice(data);
         match vrf::SecretKey::from_bytes(buf) {
             None => Err(SecretKeyError::StructureInvalid),
             Some(k) => Ok(k),
@@ -50,7 +50,7 @@ impl AsymmetricKey for Curve25519_2HashDh {
 }
 
 impl SecretKeySizeStatic for Curve25519_2HashDh {
-    const SECRET_KEY_SIZE: usize = vrf::SECRET_SIZE;
+    const SECRET_KEY_SIZE: usize = vrf::SecretKey::BYTES_LEN;
 }
 
 impl VerifiableRandomFunction for Curve25519_2HashDh {
@@ -58,7 +58,7 @@ impl VerifiableRandomFunction for Curve25519_2HashDh {
     type RandomOutput = vrf::OutputSeed;
     type Input = [u8];
 
-    const VERIFIED_RANDOM_SIZE: usize = vrf::PROOF_SIZE;
+    const VERIFIED_RANDOM_SIZE: usize = vrf::ProvenOutputSeed::BYTES_LEN;
 
     fn evaluate_and_prove<T: RngCore + CryptoRng>(
         secret: &Self::Secret,

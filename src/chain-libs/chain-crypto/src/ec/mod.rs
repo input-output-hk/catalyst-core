@@ -1,8 +1,13 @@
-mod babystep;
+//! Module defining the Group Elements and Scalar structures in one primer order group (over sec2
+//! curves), or the other (ristretto255).
+#[macro_use]
+mod macros;
 #[cfg(not(feature = "ristretto255"))]
 mod p256k1;
 #[cfg(feature = "ristretto255")]
 mod ristretto255;
+
+mod babystep;
 
 #[cfg(not(feature = "ristretto255"))]
 pub use self::p256k1::*;
@@ -14,14 +19,20 @@ pub use babystep::{baby_step_giant_step, BabyStepsTable};
 #[cfg(test)]
 mod tests {
     use super::*;
+    use cryptoxide::blake2b::Blake2b;
+    use cryptoxide::digest::Digest;
     use smoke::{
         generator::{self, BoxGenerator},
         Generator,
     };
 
     fn fe_generator() -> BoxGenerator<Scalar> {
-        generator::Array32::new(generator::num::<u8>())
-            .map(|a| Scalar::from_bytes(&a).unwrap())
+        generator::Array5::new(generator::num::<u8>())
+            .map(|a| {
+                let mut hash = Blake2b::new(64);
+                hash.input(&a);
+                Scalar::hash_to_scalar(&mut hash)
+            })
             .into_boxed()
     }
 

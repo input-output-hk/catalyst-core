@@ -6,6 +6,7 @@
 //! written by Dmytro Kaidalov.
 
 use chain_core::mempack::{ReadBuf, ReadError};
+use chain_crypto::ec::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 #[cfg(feature = "ristretto255")]
 use {rand::thread_rng, std::iter};
@@ -17,7 +18,6 @@ use crate::cryptography::CommitmentKey;
 use crate::cryptography::Open;
 use crate::cryptography::{Ciphertext, PublicKey};
 use crate::encrypted_vote::{binrep, Ptp, UnitVector};
-use crate::gang::{GroupElement, Scalar};
 use crate::tally::Crs;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -236,7 +236,7 @@ impl Zkp {
         mega_check == GroupElement::zero()
     }
 
-    /// Final verification of the proof. We do not use the multiscalar optimisation when using sec2 curves.
+    // Final verification of the proof. We do not use the multiscalar optimisation when using sec2 curves.
     #[cfg(not(feature = "ristretto255"))]
     fn verify_statements(
         &self,
@@ -373,7 +373,7 @@ impl Zkp {
     }
 }
 
-/// Computes the product of the powers of `z` given the `challenge_x`, `index` and a `bit_size`
+// Computes the product of the powers of `z` given the `challenge_x`, `index` and a `bit_size`
 fn powers_z_encs(
     z: &[ResponseRandomness],
     challenge_x: Scalar,
@@ -417,7 +417,7 @@ impl Iterator for ZPowExp {
     }
 }
 
-/// Return an iterator of the powers of `ZPowExp`.
+// Return an iterator of the powers of `ZPowExp`.
 #[allow(dead_code)] // can be removed if the default flag is ristretto instead of sec2
 fn powers_z_encs_iter(z: &[ResponseRandomness], challenge_x: &Scalar, bit_size: &u32) -> ZPowExp {
     ZPowExp {

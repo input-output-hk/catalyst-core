@@ -3,8 +3,8 @@
 
 use crate::cryptography::CommitmentKey;
 use crate::encrypted_vote::binrep;
-use crate::gang::{GroupElement, Scalar};
 use crate::math::Polynomial;
+use chain_crypto::ec::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 
 /// Randomness generated in the proof, used for the hiding property.

@@ -10,6 +10,8 @@ pub mod asymlock;
 pub mod bech32;
 pub mod digest;
 mod evolving;
+#[macro_use]
+pub mod ec;
 pub mod hash;
 mod kes;
 mod key;

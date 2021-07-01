@@ -1,6 +1,6 @@
 use super::messages::Announcement;
 use crate::cryptography::{Ciphertext, CommitmentKey, PublicKey};
-use crate::gang::Scalar;
+use chain_crypto::ec::Scalar;
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 

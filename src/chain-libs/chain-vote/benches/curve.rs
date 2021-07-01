@@ -1,8 +1,7 @@
 //! Benchmarks to compare the different curves, sec2 and curve25519 (with ristretto prime order
 //! group), instantiated with default flag and ristretto225 respectively.
 
-use chain_vote::debug::gang;
-use chain_vote::debug::gang::{GroupElement, Scalar};
+use chain_crypto::ec::{GroupElement, Scalar};
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use rand_chacha::ChaCha20Rng;
@@ -10,15 +9,15 @@ use rand_core::SeedableRng;
 
 fn mul(c: &mut Criterion) {
     let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
-    let g = gang::GroupElement::from_hash(b"random element");
-    let scalar = gang::Scalar::random(&mut rng);
+    let g = GroupElement::from_hash(b"random element");
+    let scalar = Scalar::random(&mut rng);
 
     c.bench_function("Point - Scalar multiplication", |b| b.iter(|| &g * &scalar));
 }
 
 fn addition(c: &mut Criterion) {
-    let point1 = gang::GroupElement::from_hash(b"random element");
-    let point2 = gang::GroupElement::from_hash(b"random element");
+    let point1 = GroupElement::from_hash(b"random element");
+    let point2 = GroupElement::from_hash(b"random element");
 
     c.bench_function("Group element addition", |b| b.iter(|| &point1 + &point2));
 }
@@ -48,15 +47,15 @@ fn decompress(c: &mut Criterion) {
 
 fn scalar_multiplication(c: &mut Criterion) {
     let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
-    let scalar1 = gang::Scalar::random(&mut rng);
-    let scalar2 = gang::Scalar::random(&mut rng);
+    let scalar1 = Scalar::random(&mut rng);
+    let scalar2 = Scalar::random(&mut rng);
 
     c.bench_function("Scalar multiplication", |b| b.iter(|| &scalar1 * &scalar2));
 }
 
 fn scalar_power(c: &mut Criterion) {
     let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
-    let scalar = gang::Scalar::random(&mut rng);
+    let scalar = Scalar::random(&mut rng);
 
     c.bench_function("Scalar exponentiation", |b| {
         b.iter(|| scalar.power(191328475619823764usize))
@@ -65,7 +64,7 @@ fn scalar_power(c: &mut Criterion) {
 
 fn scalar_inversion(c: &mut Criterion) {
     let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
-    let scalar = gang::Scalar::random(&mut rng);
+    let scalar = Scalar::random(&mut rng);
 
     c.bench_function("Scalar inversion", |b| b.iter(|| scalar.inverse()));
 }

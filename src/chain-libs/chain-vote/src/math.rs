@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
-/// Math module define polynomial types and operations that is used to setup the scheme.
-use crate::gang::Scalar;
+// Math module define polynomial types and operations that is used to setup the scheme.
+use chain_crypto::ec::Scalar;
 use rand_core::{CryptoRng, RngCore};
 
 /// A polynomial of specific degree d

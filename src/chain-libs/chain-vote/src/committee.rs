@@ -1,8 +1,8 @@
 use crate::cryptography::{Ciphertext, HybridCiphertext, PublicKey, SecretKey};
 use crate::encrypted_vote::{EncryptedVote, ProofOfCorrectVote, Vote};
-use crate::gang::{GroupElement, Scalar};
 use crate::math::Polynomial;
 use crate::tally::Crs;
+use chain_crypto::ec::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 
 /// Committee member election secret key

@@ -1,6 +1,6 @@
 //! Similar to asymlock but takes a set of recipients instead of a unique receiver
 //!
-//! * ristretto-curve25519 for DH
+//! * prime order group for DH
 //! * HKDF for KDF
 //! * chacha20poly1305 for symmetric encryption algorithm
 //!
@@ -10,7 +10,7 @@
 //! * 1 byte of magic set to 0x12
 //! * 1 byte of magic set to 0x34
 //! * 1 byte from the number of participants
-//! * ephemeral public key: 32 bytes
+//! * ephemeral public key: base GroupElement size bytes
 //! * recipient data (number of participants time) where each recipient is:
 //!   * recipient public key
 //!   * session key
@@ -20,13 +20,11 @@
 //!
 //! the data encrypted with a ephemeral public key in prefix and
 //! the poly1305 tag in suffix.
+#![allow(clippy::op_ref)] // This needs to be here because the points of sec2 backend do not implement Copy
+use crate::ec::{GroupElement, Scalar};
 use cryptoxide::chacha20poly1305::ChaCha20Poly1305;
 use cryptoxide::hkdf::hkdf_expand;
 use cryptoxide::sha2;
-use curve25519_dalek_ng::constants::RISTRETTO_BASEPOINT_POINT;
-use curve25519_dalek_ng::ristretto::CompressedRistretto;
-use curve25519_dalek_ng::ristretto::RistrettoPoint;
-use curve25519_dalek_ng::scalar::Scalar;
 use rand_core::{CryptoRng, RngCore};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -48,9 +46,9 @@ fn shared_key_to_symmetric_key(app_level_info: &[u8], prk: &[u8]) -> ChaCha20Pol
 }
 
 const HEADER_SIZE: usize = 4;
-const EPHEMERAL_PK_SIZE: usize = 32;
+const EPHEMERAL_PK_SIZE: usize = GroupElement::BYTES_LEN;
 const TAG_SIZE: usize = 16;
-const RECIPIENT_KEY_SIZE: usize = 32;
+const RECIPIENT_KEY_SIZE: usize = GroupElement::BYTES_LEN;
 const SESSION_KEY_SIZE: usize = 16;
 
 // version 1 padding
@@ -70,10 +68,9 @@ fn recipient_public_key_nth(slice: &[u8], ith: usize) -> &[u8] {
 fn recipient_public_key_nth_point(
     slice: &[u8],
     ith: usize,
-) -> Result<RistrettoPoint, DecryptionError> {
+) -> Result<GroupElement, DecryptionError> {
     let pk_slice = recipient_public_key_nth(slice, ith);
-    let pk = CompressedRistretto::from_slice(pk_slice);
-    pk.decompress().ok_or(DecryptionError::PointInvalid)
+    GroupElement::from_bytes(pk_slice).ok_or(DecryptionError::PointInvalid)
 }
 
 fn recipient_session_key_nth(slice: &[u8], ith: usize) -> &[u8] {
@@ -86,7 +83,7 @@ const fn prefix_size(participants: usize) -> usize {
 }
 
 const fn scheme_overhead(participants: usize) -> usize {
-    // 32 bytes for each public keys and 16 bytes for each session keys + 16 bytes of tag
+    // base GroupElement size bytes for each public keys and 16 bytes for each session keys + 16 bytes of tag
     prefix_size(participants) + TAG_SIZE
 }
 
@@ -94,7 +91,7 @@ const fn scheme_overhead(participants: usize) -> usize {
 pub fn encrypt<R: RngCore + CryptoRng>(
     rng: &mut R,
     app_info: &[u8],
-    receiver_pks: &[RistrettoPoint],
+    receiver_pks: &[GroupElement],
     data: &[u8],
 ) -> Vec<u8> {
     assert!(!receiver_pks.is_empty() && receiver_pks.len() < 256);
@@ -107,18 +104,18 @@ pub fn encrypt<R: RngCore + CryptoRng>(
         session_key
     };
 
-    let pk = RISTRETTO_BASEPOINT_POINT * r;
+    let pk = GroupElement::generator() * &r;
 
     // encrypt the data with the context
     let mut out = vec![1, PAD1, PAD2, receiver_pks.len() as u8];
 
     // Copy the ephemeral key first
-    out.extend_from_slice(pk.compress().as_bytes());
+    out.extend_from_slice(&pk.to_bytes());
 
     for receiver_pk in receiver_pks {
-        let shared_point = r * receiver_pk;
-        out.extend_from_slice(&receiver_pk.compress().to_bytes());
-        let receiver_shared = shared_point.compress().to_bytes();
+        let shared_point = &r * receiver_pk;
+        out.extend_from_slice(&receiver_pk.to_bytes());
+        let receiver_shared = shared_point.to_bytes();
         for (s1, s2) in session_key.iter().zip(receiver_shared.iter()) {
             out.push(s1 ^ s2)
         }
@@ -168,8 +165,8 @@ pub fn decrypt(
     assert_eq!(data.len() - scheme_overhead(participants), out.len());
 
     let recipient_key = {
-        let pk = RISTRETTO_BASEPOINT_POINT * sk;
-        let pk_bytes = pk.compress().to_bytes();
+        let pk = GroupElement::generator() * sk;
+        let pk_bytes = pk.to_bytes();
         let mut found = None;
         for i in 0..participants {
             if recipient_public_key_nth(data, i) == pk_bytes {
@@ -184,15 +181,14 @@ pub fn decrypt(
         }
     };
 
-    let pk_data = &data[4..36];
-    let pk = CompressedRistretto::from_slice(pk_data);
-    let shared = sk * pk.decompress().ok_or(DecryptionError::PointInvalid)?;
+    let pk_data = &data[4..GroupElement::BYTES_LEN + 4];
+    let pk = GroupElement::from_bytes(pk_data);
+    let shared = sk * pk.ok_or(DecryptionError::PointInvalid)?;
     let mut session_key = [0u8; 16];
-    for (o, (x1, x2)) in session_key.iter_mut().zip(
-        recipient_key
-            .iter()
-            .zip(shared.compress().to_bytes().iter()),
-    ) {
+    for (o, (x1, x2)) in session_key
+        .iter_mut()
+        .zip(recipient_key.iter().zip(shared.to_bytes().iter()))
+    {
         *o = x1 ^ x2
     }
 
@@ -229,7 +225,7 @@ pub fn nb_participants(data: &[u8]) -> Result<usize, DecryptionError> {
     Ok(participants)
 }
 
-pub fn participants(data: &[u8]) -> Result<Vec<RistrettoPoint>, DecryptionError> {
+pub fn participants(data: &[u8]) -> Result<Vec<GroupElement>, DecryptionError> {
     let nb = nb_participants(data)?;
     let mut parts = Vec::new();
 
@@ -259,7 +255,7 @@ mod test {
 
         let participant_pks = participants
             .iter()
-            .map(|sk| RISTRETTO_BASEPOINT_POINT * sk)
+            .map(|sk| GroupElement::generator() * sk)
             .collect::<Vec<_>>();
 
         let app_info = b"hello";
@@ -268,7 +264,6 @@ mod test {
         let encrypted = encrypt(&mut r, app_info, &participant_pks, msg);
         for (i, sk) in participants.iter().enumerate() {
             let mut out = vec![0; msg.len()];
-            //let pk = RISTRETTO_BASEPOINT_POINT * sk;
             decrypt(app_info, &sk, &encrypted, &mut out).unwrap();
             assert_eq!(out, msg, "cannot decrypt for participant {}", i);
         }

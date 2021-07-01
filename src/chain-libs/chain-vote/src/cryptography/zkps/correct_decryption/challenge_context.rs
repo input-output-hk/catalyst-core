@@ -1,5 +1,5 @@
 use crate::cryptography::{Ciphertext, PublicKey};
-use crate::gang::{GroupElement, Scalar};
+use chain_crypto::ec::{GroupElement, Scalar};
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 

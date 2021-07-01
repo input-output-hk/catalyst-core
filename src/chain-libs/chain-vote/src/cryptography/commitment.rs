@@ -1,5 +1,5 @@
-use crate::gang::{GroupElement, Scalar};
 use crate::tally::Crs;
+use chain_crypto::ec::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 
 /// Pedersen Commitment key
@@ -18,7 +18,7 @@ impl CommitmentKey {
         self.commit_with_random(&o.m, &o.r)
     }
 
-    /// Return a commitment with the given message, `m`,  and opening key, `r`
+    // Return a commitment with the given message, `m`,  and opening key, `r`
     fn commit_with_random(&self, m: &Scalar, r: &Scalar) -> GroupElement {
         GroupElement::generator() * m + &self.h * r
     }

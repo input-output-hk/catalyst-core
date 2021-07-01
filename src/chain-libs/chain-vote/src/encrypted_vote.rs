@@ -1,5 +1,5 @@
 use crate::cryptography::{Ciphertext, UnitVectorZkp};
-use crate::gang::Scalar;
+use chain_crypto::ec::Scalar;
 /// A vote is represented by a standard basis unit vector of an N dimensional space
 ///
 /// Effectively each possible vote is represented by an axis, where the actual voted option

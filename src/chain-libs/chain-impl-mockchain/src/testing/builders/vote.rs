@@ -28,6 +28,12 @@ pub fn decrypt_tally(
         .unwrap();
     let table = chain_vote::TallyOptimizationTable::generate_with_balance(absolute_max_votes, 1);
 
+    let members_pks: Vec<chain_vote::MemberPublicKey> = members
+        .members()
+        .iter()
+        .map(|member| member.public_key())
+        .collect();
+
     let proposals = encrypted_tally
         .into_iter()
         .map(|(encrypted_tally, max_votes)| {
@@ -37,9 +43,10 @@ pub fn decrypt_tally(
                 .map(|member| member.secret_key())
                 .map(|secret_key| encrypted_tally.partial_decrypt(&mut thread_rng(), secret_key))
                 .collect::<Vec<_>>();
-            let tally = encrypted_tally
-                .decrypt_tally(max_votes, &decrypt_shares, &table)
-                .unwrap();
+            let validated_tally = encrypted_tally
+                .validate_partial_decryptions(&members_pks, &decrypt_shares)
+                .expect("Invalid shares");
+            let tally = validated_tally.decrypt_tally(max_votes, &table).unwrap();
             DecryptedPrivateTallyProposal {
                 decrypt_shares: decrypt_shares.into_boxed_slice(),
                 tally_result: tally.votes.into_boxed_slice(),

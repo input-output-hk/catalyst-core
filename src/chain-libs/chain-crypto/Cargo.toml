@@ -20,7 +20,7 @@ rand_core = "0.6"
 rand = { version = "0.8", features = ["small_rng"], optional = true }
 rayon = "1.5"
 quickcheck = { version = "0.9", optional = true }
-ed25519-bip32 = "0.3"
+ed25519-bip32 = "0.4"
 hex = "0.4.0"
 typed-bytes = { path = "../typed-bytes" }
 

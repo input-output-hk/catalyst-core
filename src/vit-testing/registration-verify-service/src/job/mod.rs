@@ -1,6 +1,5 @@
 mod info;
 
-use crate::config::NetworkType;
 use crate::context::ContextLock;
 use crate::context::Step;
 use crate::job::info::Assert;
@@ -45,11 +44,6 @@ impl RegistrationVerifyJobBuilder {
         self
     }
 
-    pub fn with_network(mut self, network: NetworkType) -> Self {
-        self.job.network = network;
-        self
-    }
-
     pub fn with_working_dir<P: AsRef<Path>>(mut self, working_dir: P) -> Self {
         self.job.working_dir = working_dir.as_ref().to_path_buf();
         self
@@ -62,7 +56,6 @@ impl RegistrationVerifyJobBuilder {
 
 pub struct RegistrationVerifyJob {
     jcli: PathBuf,
-    network: NetworkType,
     snapshot_token: String,
     snapshot_address: String,
     working_dir: PathBuf,
@@ -80,7 +73,6 @@ impl Default for RegistrationVerifyJob {
             jcli: PathBuf::from_str("jcli").unwrap(),
             snapshot_token: "".to_string(),
             snapshot_address: "".to_string(),
-            network: NetworkType::Mainnet,
             working_dir: PathBuf::from_str(".").unwrap(),
         }
     }

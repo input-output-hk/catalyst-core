@@ -1,6 +1,5 @@
 mod network;
 
-pub use network::NetworkType;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::path::PathBuf;
@@ -14,7 +13,6 @@ pub struct Configuration {
     #[serde(rename = "snapshot-address")]
     pub snapshot_address: String,
     pub jcli: PathBuf,
-    pub network: NetworkType,
     pub token: Option<String>,
 }
 

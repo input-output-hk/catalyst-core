@@ -41,7 +41,6 @@ impl RegistrationVerifyServiceCommand {
                         .with_jcli(&configuration.jcli)
                         .with_snapshot_token(&configuration.snapshot_token)
                         .with_snapshot_address(&configuration.snapshot_address)
-                        .with_network(configuration.network)
                         .build();
 
                     control_context.lock().unwrap().run_started().unwrap();

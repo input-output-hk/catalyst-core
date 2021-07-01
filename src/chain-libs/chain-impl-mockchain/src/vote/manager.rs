@@ -51,8 +51,8 @@ enum ProposalManagers {
     },
     Private {
         managers: Vec<ProposalManager>,
-        crs: Crs,
-        election_pk: ElectionPublicKey,
+        crs: Arc<Crs>,
+        election_pk: Arc<ElectionPublicKey>,
     },
 }
 
@@ -433,9 +433,10 @@ impl ProposalManagers {
         match plan.payload_type() {
             PayloadType::Public => Self::Public { managers },
             PayloadType::Private => {
-                let crs = Crs::from_hash(plan.to_id().as_ref());
-                let election_pk =
-                    ElectionPublicKey::from_participants(plan.committee_public_keys());
+                let crs = Arc::new(Crs::from_hash(plan.to_id().as_ref()));
+                let election_pk = Arc::new(ElectionPublicKey::from_participants(
+                    plan.committee_public_keys(),
+                ));
 
                 Self::Private {
                     managers,

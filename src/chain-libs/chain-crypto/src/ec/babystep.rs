@@ -13,9 +13,9 @@ const DEFAULT_BALANCE: u64 = 2;
 /// for solving discrete log on ECC
 #[derive(Debug, Clone)]
 pub struct BabyStepsTable {
-    #[cfg(not(feature = "ristretto255"))]
+    #[cfg(feature = "p256k1")]
     table: HashMap<Option<[u8; Coordinate::BYTES_LEN]>, u64>,
-    #[cfg(feature = "ristretto255")]
+    #[cfg(not(feature = "p256k1"))]
     table: HashMap<Option<[u8; GroupElement::BYTES_LEN]>, u64>,
     baby_step_size: u64,
     giant_step: GroupElement,
@@ -43,14 +43,14 @@ impl BabyStepsTable {
         let mut e = GroupElement::zero();
 
         // With sec2 curves we can use the property that P and -P share a coordinate
-        #[cfg(not(feature = "ristretto255"))]
+        #[cfg(feature = "p256k1")]
         for i in 0..=baby_step_size / 2 {
             bs.insert(e.compress().map(|(c, _sign)| c.to_bytes()), i);
             e = e + &gen;
         }
         // Not with ristretto group. the ristretto group API does not allow to use the x coordinate
         // for security properties (see [here](https://github.com/dalek-cryptography/curve25519-dalek/issues/235))
-        #[cfg(feature = "ristretto255")]
+        #[cfg(not(feature = "p256k1"))]
         for i in 0..=baby_step_size {
             bs.insert(Some(e.to_bytes()), i);
             e = e + &gen;
@@ -82,7 +82,7 @@ pub fn baby_step_giant_step(
         .map(|mut point| {
             let mut a = 0;
             loop {
-                #[cfg(not(feature = "ristretto255"))]
+                #[cfg(feature = "p256k1")]
                 if let Some(x) = table.get(&point.compress().map(|(c, _sign)| c.to_bytes())) {
                     let r = if Scalar::from_u64(*x) * GroupElement::generator() == point {
                         a * baby_step_size + x
@@ -92,7 +92,7 @@ pub fn baby_step_giant_step(
                     return Ok(r);
                 }
 
-                #[cfg(feature = "ristretto255")]
+                #[cfg(not(feature = "p256k1"))]
                 if let Some(x) = table.get(&Some(point.to_bytes())) {
                     let r = a * baby_step_size + x;
                     return Ok(r);

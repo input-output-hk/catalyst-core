@@ -109,7 +109,7 @@ impl EncryptedTally {
         for r in &self.r {
             // todo: we are decrypting twice, we can probably improve this
             let decrypted_share = &r.e1 * &secret_key.0.sk;
-            let pk = MemberPublicKey::from(secret_key);
+            let pk = secret_key.to_public();
             let proof = ProofOfCorrectShare::generate(&r, &pk.0, &secret_key.0, rng);
             dshares.push(ProvenDecryptShare {
                 r1: decrypted_share,

@@ -148,6 +148,12 @@ impl MemberSecretKey {
         let sk = Scalar::from_bytes(bytes)?;
         Some(Self(SecretKey { sk }))
     }
+
+    pub fn to_public(&self) -> MemberPublicKey {
+        MemberPublicKey(PublicKey {
+            pk: GroupElement::generator() * &self.0.sk,
+        })
+    }
 }
 
 impl MemberPublicKey {
@@ -165,14 +171,6 @@ impl MemberPublicKey {
 impl From<PublicKey> for MemberPublicKey {
     fn from(pk: PublicKey) -> MemberPublicKey {
         MemberPublicKey(pk)
-    }
-}
-
-impl From<&MemberSecretKey> for MemberPublicKey {
-    fn from(sk: &MemberSecretKey) -> Self {
-        MemberPublicKey(PublicKey {
-            pk: GroupElement::generator() * &sk.0.sk,
-        })
     }
 }
 
@@ -197,13 +195,19 @@ impl MemberCommunicationKey {
     }
 }
 
-impl MemberCommunicationPublicKey {
-    pub fn from_public_key(pk: PublicKey) -> Self {
+impl From<PublicKey> for MemberCommunicationPublicKey {
+    fn from(pk: PublicKey) -> MemberCommunicationPublicKey {
         Self(pk)
     }
+}
 
+impl MemberCommunicationPublicKey {
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.to_bytes()
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        PublicKey::from_bytes(bytes).map(Self)
     }
 }
 

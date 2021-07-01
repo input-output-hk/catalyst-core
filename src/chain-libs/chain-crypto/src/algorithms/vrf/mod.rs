@@ -11,9 +11,9 @@ use rand_core::{CryptoRng, RngCore};
 pub use vrf::ProvenOutputSeed;
 
 /// VRF
-pub struct Curve25519_2HashDh;
+pub struct EllipticCurve2hashDh;
 
-impl AsymmetricPublicKey for Curve25519_2HashDh {
+impl AsymmetricPublicKey for EllipticCurve2hashDh {
     type Public = vrf::PublicKey;
     const PUBLIC_BECH32_HRP: &'static str = "vrf_pk";
     const PUBLIC_KEY_SIZE: usize = vrf::PublicKey::BYTES_LEN;
@@ -22,9 +22,9 @@ impl AsymmetricPublicKey for Curve25519_2HashDh {
     }
 }
 
-impl AsymmetricKey for Curve25519_2HashDh {
+impl AsymmetricKey for EllipticCurve2hashDh {
     type Secret = vrf::SecretKey;
-    type PubAlg = Curve25519_2HashDh;
+    type PubAlg = EllipticCurve2hashDh;
 
     const SECRET_BECH32_HRP: &'static str = "vrf_sk";
 
@@ -49,11 +49,11 @@ impl AsymmetricKey for Curve25519_2HashDh {
     }
 }
 
-impl SecretKeySizeStatic for Curve25519_2HashDh {
+impl SecretKeySizeStatic for EllipticCurve2hashDh {
     const SECRET_KEY_SIZE: usize = vrf::SecretKey::BYTES_LEN;
 }
 
-impl VerifiableRandomFunction for Curve25519_2HashDh {
+impl VerifiableRandomFunction for EllipticCurve2hashDh {
     type VerifiedRandomOutput = vrf::ProvenOutputSeed;
     type RandomOutput = vrf::OutputSeed;
     type Input = [u8];

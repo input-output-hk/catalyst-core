@@ -1,6 +1,7 @@
 // lowlevel header binary accessors, use module qualified and fundamentally allow to do invalid construction
 #![allow(dead_code)]
 
+use chain_crypto::{EllipticCurve2hashDh, VerifiableRandomFunction};
 use std::mem::size_of;
 
 // ************************************************************************
@@ -19,7 +20,8 @@ pub(super) type BftLeaderId = [u8; 32];
 pub(super) type BftSignature = [u8; 64];
 
 pub(super) type GpNodeId = [u8; 32];
-pub(super) type GpVrfProof = [u8; 96];
+pub(super) type GpVrfProof =
+    [u8; <EllipticCurve2hashDh as VerifiableRandomFunction>::VerifiedRandomOutput::BYTES_LEN];
 pub(super) type GpKesSignature = [u8; 484];
 
 // common parts
@@ -440,7 +442,7 @@ mod tests {
         let mut header = Header::new(VERSION_GP);
         let gp_node_id = [0; 32];
         header.set_gp_node_id_slice(&gp_node_id);
-        let gp_vrf_proof_slice = [0; 96];
+        let gp_vrf_proof_slice = [0; size_of::<GpVrfProof>()];
         header.set_gp_vrf_proof_slice(&gp_vrf_proof_slice);
         let gp_kes_signature = [0; 484];
         header.set_gp_kes_signature(&gp_kes_signature);

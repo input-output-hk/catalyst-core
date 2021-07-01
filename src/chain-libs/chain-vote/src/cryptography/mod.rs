@@ -3,7 +3,7 @@ mod elgamal;
 mod zkps;
 
 pub(crate) use self::{
-    commitment::{CommitmentKey, Open},
+    commitment::CommitmentKey,
     elgamal::{HybridCiphertext, PublicKey, SecretKey},
     zkps::{CorrectElGamalDecrZkp, UnitVectorZkp},
 };

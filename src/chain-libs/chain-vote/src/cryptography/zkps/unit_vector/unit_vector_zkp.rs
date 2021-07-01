@@ -8,14 +8,11 @@
 use chain_core::mempack::{ReadBuf, ReadError};
 use chain_crypto::ec::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
-#[cfg(feature = "ristretto255")]
 use {rand::thread_rng, std::iter};
 
 use super::challenge_context::ChallengeContext;
 use super::messages::{generate_polys, Announcement, BlindingRandomness, ResponseRandomness};
 use crate::cryptography::CommitmentKey;
-#[cfg(not(feature = "ristretto255"))]
-use crate::cryptography::Open;
 use crate::cryptography::{Ciphertext, PublicKey};
 use crate::encrypted_vote::{binrep, Ptp, UnitVector};
 use crate::tally::Crs;
@@ -169,7 +166,6 @@ impl Zkp {
 
     /// Final verification of the proof, that we compute in a single vartime multiscalar
     /// multiplication.
-    #[cfg(feature = "ristretto255")]
     fn verify_statements(
         &self,
         public_key: &PublicKey,
@@ -193,109 +189,48 @@ impl Zkp {
         let batch_challenge = Scalar::random(&mut thread_rng());
 
         for (zwv, iba) in self.zwvs.iter().zip(self.ibas.iter()) {
-            if GroupElement::multiscalar_multiplication(
-                iter::once(zwv.z)
-                    .chain(iter::once(zwv.w + batch_challenge * zwv.v))
+            if GroupElement::vartime_multiscalar_multiplication(
+                iter::once(zwv.z.clone())
+                    .chain(iter::once(&zwv.w + &batch_challenge * &zwv.v))
                     .chain(iter::once(
-                        batch_challenge * (zwv.z - challenge_x) - challenge_x,
+                        &batch_challenge * (&zwv.z - challenge_x) - challenge_x,
                     ))
                     .chain(iter::once(Scalar::one().negate()))
                     .chain(iter::once(batch_challenge.negate())),
                 iter::once(GroupElement::generator())
-                    .chain(iter::once(commitment_key.h))
-                    .chain(iter::once(iba.i))
-                    .chain(iter::once(iba.b))
-                    .chain(iter::once(iba.a)),
+                    .chain(iter::once(commitment_key.h.clone()))
+                    .chain(iter::once(iba.i.clone()))
+                    .chain(iter::once(iba.b.clone()))
+                    .chain(iter::once(iba.a.clone())),
             ) != GroupElement::zero()
             {
                 return false;
             }
         }
 
-        let mega_check = GroupElement::multiscalar_multiplication(
+        let mega_check = GroupElement::vartime_multiscalar_multiplication(
             powers_cy
+                .clone()
                 .take(length)
-                .map(|s| s * cx_pow)
-                .chain(powers_cy.take(length).map(|s| s * cx_pow))
+                .map(|s| s * &cx_pow)
+                .chain(powers_cy.clone().take(length).map(|s| s * &cx_pow))
                 .chain(powers_cy.take(length))
-                .chain(powers_cx.take(bits))
+                .chain(powers_cx.clone().take(bits))
                 .chain(powers_cx.take(bits))
                 .chain(iter::once(Scalar::one().negate()))
                 .chain(iter::once(Scalar::one().negate())),
             ciphertexts
                 .iter()
-                .map(|ctxt| ctxt.e2)
-                .chain(ciphertexts.iter().map(|ctxt| ctxt.e1))
+                .map(|ctxt| ctxt.e2.clone())
+                .chain(ciphertexts.iter().map(|ctxt| ctxt.e1.clone()))
                 .chain(powers_z_iterator.take(length))
-                .chain(self.ds.iter().map(|ctxt| ctxt.e1))
-                .chain(self.ds.iter().map(|ctxt| ctxt.e2))
-                .chain(iter::once(zero.e1))
+                .chain(self.ds.iter().map(|ctxt| ctxt.e1.clone()))
+                .chain(self.ds.iter().map(|ctxt| ctxt.e2.clone()))
+                .chain(iter::once(zero.e1.clone()))
                 .chain(iter::once(zero.e2)),
         );
 
         mega_check == GroupElement::zero()
-    }
-
-    // Final verification of the proof. We do not use the multiscalar optimisation when using sec2 curves.
-    #[cfg(not(feature = "ristretto255"))]
-    fn verify_statements(
-        &self,
-        public_key: &PublicKey,
-        commitment_key: &CommitmentKey,
-        ciphertexts: &Ptp<Ciphertext>,
-        challenge_x: &Scalar,
-        challenge_y: &Scalar,
-    ) -> bool {
-        // check commitments are 0 / 1
-        for (iba, zwv) in self.ibas.iter().zip(self.zwvs.iter()) {
-            if !commitment_key.verify(
-                &(&iba.i * challenge_x + &iba.b),
-                &Open {
-                    m: zwv.z.clone(),
-                    r: zwv.w.clone(),
-                },
-            ) {
-                return false;
-            }
-
-            if !commitment_key.verify(
-                &(&iba.i * (challenge_x - &zwv.z) + &iba.a),
-                &Open {
-                    m: Scalar::zero(),
-                    r: zwv.v.clone(),
-                },
-            ) {
-                return false;
-            }
-        }
-
-        let bits = ciphertexts.bits();
-        let cx_pow = challenge_x.power(bits);
-
-        let p1 = ciphertexts
-            .as_ref()
-            .iter()
-            .zip(challenge_y.exp_iter())
-            .enumerate()
-            .fold(Ciphertext::zero(), |acc, (i, (c, cy_pows))| {
-                let multz = powers_z_encs(&self.zwvs, challenge_x.clone(), i, bits as u32);
-                let enc = public_key.encrypt_with_r(&multz.negate(), &Scalar::zero());
-                let mult_c = c * &cx_pow;
-                let t = (&mult_c + &enc) * cy_pows;
-                &acc + &t
-            });
-
-        let dsum = self
-            .ds
-            .iter()
-            .zip(challenge_x.exp_iter())
-            .fold(Ciphertext::zero(), |acc, (d, cx_pows)| {
-                &acc + &(d * cx_pows)
-            });
-
-        let zero = public_key.encrypt_with_r(&Scalar::zero(), self.r());
-
-        &p1 + &dsum - zero == Ciphertext::zero()
     }
 
     /// Try to generate a `Proof` from a buffer

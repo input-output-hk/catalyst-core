@@ -70,7 +70,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         toolchain: [stable]
-        mode: ['', '--release', '--features p256k1']
+        mode: ['', '--release', '--features chain-crypto/p256k1']
         experimental: [false]
         include:
           - os: ubuntu-latest

@@ -1,4 +1,6 @@
 use crate::cryptography::{Ciphertext, UnitVectorZkp};
+use crate::tally::ElectionFingerprint;
+use crate::{Crs, ElectionPublicKey};
 use chain_crypto::ec::Scalar;
 /// A vote is represented by a standard basis unit vector of an N dimensional space
 ///
@@ -16,6 +18,47 @@ pub type EncryptedVote = Vec<Ciphertext>;
 /// A proof of correct vote encryption consists of a unit vector zkp, where the voter proves that
 /// the `EncryptedVote` is indeed a unit vector, and contains a vote for a single candidate.
 pub type ProofOfCorrectVote = UnitVectorZkp;
+
+/// Submitted ballot, which contains an always verified vote.
+/// Used for early verification of a vote without requiring additional
+/// checks down the chain.
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub struct Ballot {
+    vote: EncryptedVote,
+    // Used to verify that the ballot is applied to the correct
+    // encrypted tally
+    fingerprint: ElectionFingerprint,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
+#[error("Invalid vote proof")]
+pub struct BallotVerificationError;
+
+impl Ballot {
+    pub fn try_from_vote_and_proof(
+        vote: EncryptedVote,
+        proof: &ProofOfCorrectVote,
+        crs: &Crs,
+        pk: &ElectionPublicKey,
+    ) -> Result<Self, BallotVerificationError> {
+        if !proof.verify(crs, &pk.0, &vote) {
+            return Err(BallotVerificationError);
+        }
+
+        Ok(Self {
+            vote,
+            fingerprint: (pk, crs).into(),
+        })
+    }
+
+    pub fn vote(&self) -> &EncryptedVote {
+        &self.vote
+    }
+
+    pub(super) fn fingerprint(&self) -> &ElectionFingerprint {
+        &self.fingerprint
+    }
+}
 
 /// To achieve logarithmic communication complexity in the unit_vector ZKP, we represent
 /// votes as Power of Two Padded vector structures.

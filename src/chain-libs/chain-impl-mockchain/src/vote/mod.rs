@@ -16,7 +16,7 @@ pub use self::{
     choice::{Choice, Options},
     committee::CommitteeId,
     ledger::{VotePlanLedger, VotePlanLedgerError},
-    manager::{VoteError, VotePlanManager},
+    manager::{ValidatedPayload, VoteError, VotePlanManager},
     payload::{EncryptedVote, Payload, PayloadType, ProofOfCorrectVote, TryFromIntError},
     privacy::encrypt_vote,
     status::{VotePlanStatus, VoteProposalStatus},

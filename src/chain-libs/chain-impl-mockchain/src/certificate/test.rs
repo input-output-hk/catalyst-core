@@ -181,7 +181,7 @@ impl Arbitrary for VotePlan {
 
         let mut keys = Vec::new();
         // it should have been 256 but is limited for the sake of adequate test times
-        let keys_n = g.next_u32() % 16;
+        let keys_n = g.next_u32() % 15 + 1;
         let mut seed = [0u8; 32];
         g.fill_bytes(&mut seed);
         let mut rng = rand_chacha::ChaCha20Rng::from_seed(seed);

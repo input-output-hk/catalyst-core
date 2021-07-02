@@ -2,7 +2,7 @@ use crate::{
     certificate::{ExternalProposalId, VotePlanId},
     date::BlockDate,
     transaction::UnspecifiedAccountIdentifier,
-    vote::{Options, Payload, PayloadType, Tally},
+    vote::{Options, PayloadType, Tally, ValidatedPayload},
 };
 use chain_vote::MemberPublicKey;
 use imhamt::Hamt;
@@ -23,5 +23,5 @@ pub struct VoteProposalStatus {
     pub proposal_id: ExternalProposalId,
     pub options: Options,
     pub tally: Option<Tally>,
-    pub votes: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, Payload>,
+    pub votes: Hamt<DefaultHasher, UnspecifiedAccountIdentifier, ValidatedPayload>,
 }

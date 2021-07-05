@@ -15,6 +15,11 @@ jobs:
       - checkout
       - run: git --version
       - run:
+          name: install build reqs
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install build-essential libssl-dev
+      - run:
           name: Get top commit hash of cargo registry index
           command: |
             git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master |

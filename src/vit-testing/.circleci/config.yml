@@ -14,6 +14,7 @@ jobs:
     steps:
       - checkout
       - run: git --version
+      - run: apk add openssl
       - run:
           name: Get top commit hash of cargo registry index
           command: |

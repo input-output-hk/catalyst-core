@@ -1,14 +1,15 @@
 mod info;
 
-use crate::context::ContextLock;
-use crate::context::Step;
+use crate::context::{ContextLock, Step};
 use crate::job::info::Assert;
 use crate::job::info::Checks;
 use crate::job::info::RegistrationInfo;
 use crate::job::info::SnapshotInfo;
-use crate::request::Request;
+use crate::request::{Request, Source};
+use chain_addr::Address;
 use chain_addr::AddressReadable;
 use chain_addr::{Discrimination, Kind};
+use chain_crypto::Ed25519;
 use iapyx::PinReadMode;
 use iapyx::QrReader;
 pub use info::JobOutputInfo;
@@ -79,6 +80,64 @@ impl Default for RegistrationVerifyJob {
 }
 
 impl RegistrationVerifyJob {
+    fn extract_address_from_request(
+        &self,
+        checks: &mut Checks,
+        request: &Request,
+    ) -> Option<Address> {
+        match &request.source {
+            Source::PublicKeyBytes(content) => {
+                match chain_crypto::PublicKey::from_binary(&content) {
+                    Ok(public_key) => Some(self.extract_address_from_public_key(
+                        public_key,
+                        checks,
+                        "successfully parsed public key",
+                    )),
+                    Err(err) => {
+                        checks.push(Assert::Failed(format!(
+                            "malformed public key: '{}'",
+                            err.to_string()
+                        )));
+                        None
+                    }
+                }
+            }
+            Source::Qr { pin, content } => {
+                match QrReader::new(PinReadMode::Global(pin.clone()))
+                    .read_qr_from_bytes(content.clone())
+                {
+                    Ok(secret_key) => Some(self.extract_address_from_public_key(
+                        secret_key.to_public(),
+                        checks,
+                        "succesfully read qr code",
+                    )),
+                    Err(err) => {
+                        checks.push(Assert::Failed(format!(
+                            "malformed qr: '{}'",
+                            err.to_string()
+                        )));
+                        None
+                    }
+                }
+            }
+        }
+    }
+
+    fn extract_address_from_public_key(
+        &self,
+        key: chain_crypto::PublicKey<Ed25519>,
+        checks: &mut Checks,
+        comment: &str,
+    ) -> Address {
+        let address = chain_addr::Address(Discrimination::Production, Kind::Account(key));
+        checks.push(Assert::Passed(format!(
+            "{}: '{}'",
+            comment,
+            AddressReadable::from_address("ca", &address)
+        )));
+        address
+    }
+
     pub fn start(&self, request: Request, context: ContextLock) -> Result<JobOutputInfo, Error> {
         let jobs_params = JobParameters {
             slot_no: request.slot_no,
@@ -93,33 +152,17 @@ impl RegistrationVerifyJob {
             slot_no: request.slot_no,
         };
 
+        let mut checks: Checks = Default::default();
+
         context
             .lock()
             .unwrap()
             .state_mut()
-            .update_running_step(Step::ExtractingQRCode);
+            .update_running_step(Step::BuildingAddress);
 
-        let mut checks: Checks = Default::default();
-
-        let address = match QrReader::new(PinReadMode::Global(request.pin.clone()))
-            .read_qr_from_bytes(request.qr.clone())
-        {
-            Ok(secret_key) => {
-                let address = chain_addr::Address(
-                    Discrimination::Production,
-                    Kind::Account(secret_key.to_public()),
-                );
-                checks.push(Assert::Passed(format!(
-                    "succesfully read qr code: '{}'",
-                    AddressReadable::from_address("ca", &address)
-                )));
-                address
-            }
-            Err(err) => {
-                checks.push(Assert::Failed(format!(
-                    "malformed qr: '{}'",
-                    err.to_string()
-                )));
+        let address = match self.extract_address_from_request(&mut checks, &request) {
+            Some(address) => address,
+            None => {
                 return Ok(JobOutputInfo {
                     checks,
                     registration,

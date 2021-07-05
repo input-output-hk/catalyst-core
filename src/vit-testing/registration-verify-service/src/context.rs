@@ -167,7 +167,7 @@ impl State {
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 pub enum Step {
     RunningSnapshot,
-    ExtractingQRCode,
+    BuildingAddress,
     VerifyingRegistration,
 }
 

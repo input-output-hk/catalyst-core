@@ -19,6 +19,8 @@ impl Reject for crate::context::Error {}
 pub enum Error {
     #[error("cannot parse uuid")]
     CannotParseUuid(#[from] uuid::Error),
+    #[error("cannot retrieve context: {0}")]
+    CannotGetContext(String),
     #[error("warp error")]
     WarpError(#[from] warp::Error),
 }
@@ -92,7 +94,9 @@ pub async fn start_rest_server(context: ContextLock) {
 
 pub async fn job_status_handler(id: String, context: ContextLock) -> Result<impl Reply, Rejection> {
     let uuid = Uuid::parse_str(&id).map_err(Error::CannotParseUuid)?;
-    let context_lock = context.lock().unwrap();
+    let context_lock = context
+        .lock()
+        .map_err(|e| Error::CannotGetContext(e.to_string()))?;
     Ok(context_lock.status_by_id(uuid)).map(|r| warp::reply::json(&r))
 }
 
@@ -111,15 +115,12 @@ pub async fn health_handler() -> Result<impl Reply, Rejection> {
 }
 
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
-    let code;
-    let message;
+    let mut message = format!("internal error: {:?}", r);
+    let mut code = StatusCode::INTERNAL_SERVER_ERROR;
 
     if let Some(e) = r.find::<crate::multipart::Error>() {
         code = StatusCode::BAD_REQUEST;
         message = e.to_string();
-    } else {
-        message = format!("internal error: {:?}", r);
-        code = StatusCode::INTERNAL_SERVER_ERROR;
     }
 
     let json = warp::reply::json(&ErrorMessage {

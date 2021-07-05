@@ -63,6 +63,20 @@ impl QrReader {
         Ok(secret.first().unwrap().clone())
     }
 
+    pub fn read_qr_from_bytes(
+        &self,
+        bytes: Vec<u8>,
+    ) -> Result<chain_crypto::SecretKey<chain_crypto::Ed25519Extended>, PinReadError> {
+        let pin = match self.pin_read_mode {
+            PinReadMode::Global(ref global) => global,
+            _ => panic!("when reading qr from bytes Global pin read mode should be used"),
+        };
+        let pin = pin_to_bytes(&pin);
+        let img = image::load_from_memory(&bytes)?;
+        let secret = KeyQrCode::decode(img, &pin)?;
+        Ok(secret.first().unwrap().clone())
+    }
+
     pub fn read_qr_as_bech32<P: AsRef<Path>>(&self, qr: P) -> Result<String, PinReadError> {
         let sk = self.read_qr(qr)?;
         let hrp = Ed25519Extended::SECRET_BECH32_HRP;

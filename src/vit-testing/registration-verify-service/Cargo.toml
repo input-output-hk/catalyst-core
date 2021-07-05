@@ -1,7 +1,6 @@
 [package]
-name = "registration-service"
+name = "registration-verify-service"
 version = "0.1.0"
-authors = ["dkijania <dariusz.kijania@iohk.io>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,17 +12,23 @@ walkdir = "2.3.1"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "26f6fc15911863b5f3cf047d6d1789cd0cc39ba0" } 
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "26f6fc15911863b5f3cf047d6d1789cd0cc39ba0" } 
 futures = "0.3.8"
+snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 serde = { version = "1", features = ["derive"] }
-warp = "0.3"
+warp = "0.3.1"
+hex = "0.4"
+iapyx = { path = "../iapyx"} 
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 thiserror = "1.0"
+bytes = "1.0"
 tokio = { version = "1.2", features = ["macros","rt","process"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
 signals-handler = { path = "../signals-handler" }
-regex = "1.5.4"
 
 [dependencies.reqwest]
 version = "0.10.10"
 default-features = false
-features = ["blocking", "rustls-tls", "json"]
+features = ["blocking", "rustls-tls"]

@@ -1,5 +1,4 @@
 pub type ContextLock = Arc<Mutex<Context>>;
-use crate::cardano::CardanoCliExecutor;
 use crate::config::Configuration;
 use crate::job::JobOutputInfo;
 use crate::request::Request;
@@ -8,8 +7,6 @@ use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::net::SocketAddr;
-use std::path::Path;
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
 use uuid::Uuid;
@@ -17,18 +14,16 @@ use uuid::Uuid;
 pub struct Context {
     server_stopper: Option<ServerStopper>,
     config: Configuration,
-    working_dir: PathBuf,
     address: SocketAddr,
     state: State,
 }
 
 impl Context {
-    pub fn new<P: AsRef<Path>>(config: Configuration, working_dir: P) -> Self {
+    pub fn new(config: Configuration) -> Self {
         Self {
             server_stopper: None,
             address: ([0, 0, 0, 0], config.port).into(),
             config,
-            working_dir: working_dir.as_ref().to_path_buf(),
             state: State::Idle,
         }
     }
@@ -39,10 +34,6 @@ impl Context {
 
     pub fn server_stopper(&self) -> &Option<ServerStopper> {
         &self.server_stopper
-    }
-
-    pub fn cardano_cli_executor(&self) -> CardanoCliExecutor {
-        CardanoCliExecutor::new(self.config.clone())
     }
 
     pub fn new_run(&mut self, request: Request) -> Result<Uuid, Error> {
@@ -66,6 +57,7 @@ impl Context {
                     job_id: *job_id,
                     start: Utc::now().naive_utc(),
                     request: request.clone(),
+                    step: Step::RunningSnapshot,
                 };
                 Ok(())
             }
@@ -74,11 +66,14 @@ impl Context {
     }
 
     pub fn run_finished(&mut self, info: JobOutputInfo) -> Result<(), Error> {
+        println!("{:?}", self.state);
+
         match &self.state {
             State::Running {
                 job_id,
                 start,
                 request,
+                step: _,
             } => {
                 self.state = State::Finished {
                     job_id: *job_id,
@@ -118,12 +113,12 @@ impl Context {
         &self.state
     }
 
-    pub fn address(&self) -> &SocketAddr {
-        &self.address
+    pub fn state_mut(&mut self) -> &mut State {
+        &mut self.state
     }
 
-    pub fn working_directory(&self) -> &PathBuf {
-        &self.working_dir
+    pub fn address(&self) -> &SocketAddr {
+        &self.address
     }
 
     pub fn config(&self) -> &Configuration {
@@ -150,6 +145,7 @@ pub enum State {
         job_id: Uuid,
         start: NaiveDateTime,
         request: Request,
+        step: Step,
     },
     Finished {
         job_id: Uuid,
@@ -158,6 +154,21 @@ pub enum State {
         request: Request,
         info: JobOutputInfo,
     },
+}
+
+impl State {
+    pub fn update_running_step(&mut self, new_step: Step) {
+        if let State::Running { step, .. } = self {
+            *step = new_step;
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+pub enum Step {
+    RunningSnapshot,
+    BuildingAddress,
+    VerifyingRegistration,
 }
 
 use thiserror::Error;

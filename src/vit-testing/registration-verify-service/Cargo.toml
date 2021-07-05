@@ -17,6 +17,7 @@ futures = "0.3.8"
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 serde = { version = "1", features = ["derive"] }
 warp = "0.3.1"
+hex = "0.4"
 iapyx = { path = "../iapyx"} 
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

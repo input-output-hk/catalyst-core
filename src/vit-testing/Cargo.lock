@@ -3397,6 +3397,7 @@ dependencies = [
  "chain-crypto",
  "chrono",
  "futures",
+ "hex",
  "iapyx",
  "jormungandr-integration-tests",
  "jormungandr-lib",

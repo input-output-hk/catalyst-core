@@ -3,18 +3,17 @@ version: 2.1
 executors:
   rust-stable:
     docker:
-      - image: cimg/rust:1.51.0
+      - image: cimg/rust:1.53.0-node
     working_directory: /home/circleci/build
     resource_class: xlarge
 
 jobs:
   cargo_fetch:
     docker:
-      - image: cimg/rust:1.51.0
+      - image: cimg/rust:1.53.0-node
     steps:
       - checkout
       - run: git --version
-      - run: apk add openssl
       - run:
           name: Get top commit hash of cargo registry index
           command: |

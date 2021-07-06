@@ -1,9 +1,7 @@
 use super::ProposalPtr;
-use crate::{
-    vote::{EncryptingVoteKey, PayloadTypeConfig},
-    Error, Proposal, Result as AbiResult,
-};
+use crate::{vote::PayloadTypeConfig, Error, Proposal, Result as AbiResult};
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options as VoteOptions};
+use chain_vote::ElectionPublicKey;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 pub use wallet::Settings;
@@ -46,7 +44,7 @@ impl<'a> TryInto<PayloadTypeConfig> for ProposalPrivate<'a> {
 
                 let bytes = Vec::<u8>::from_base32(&raw_key).unwrap();
 
-                EncryptingVoteKey::from_bytes(&bytes).ok_or_else(Error::invalid_vote_encryption_key)
+                ElectionPublicKey::from_bytes(&bytes).ok_or_else(Error::invalid_vote_encryption_key)
             })
             .map(PayloadTypeConfig::Private)
             .map_err(|_| Error::invalid_vote_encryption_key())
@@ -98,36 +96,4 @@ where
     *non_null_mut!(proposal_out) = Box::into_raw(Box::new(proposal));
 
     AbiResult::success()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use bech32::ToBase32;
-
-    #[test]
-    fn cast_private_vote() {
-        use chain_vote::encryption;
-        use rand::SeedableRng;
-        let vote_plan_id = [0u8; crate::vote::VOTE_PLAN_ID_LENGTH];
-        let mut rng = rand_chacha::ChaCha20Rng::from_seed([1u8; 32]);
-        let sk = encryption::SecretKey::generate(&mut rng);
-        let pk = encryption::Keypair::from_secretkey(sk).public_key;
-
-        let encrypting_vote_key =
-            bech32::encode(ENCRYPTION_VOTE_KEY_HRP, pk.to_bytes().to_base32()).unwrap();
-        let encrypting_vote_key = std::ffi::CString::new(encrypting_vote_key).unwrap();
-
-        let mut proposal: ProposalPtr = std::ptr::null_mut();
-        unsafe {
-            let result = proposal_new(
-                vote_plan_id.as_ptr(),
-                0,
-                2,
-                ProposalPrivate(&encrypting_vote_key),
-                (&mut proposal) as *mut ProposalPtr,
-            );
-            assert!(result.is_ok());
-        }
-    }
 }

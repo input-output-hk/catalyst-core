@@ -17,7 +17,6 @@ const UTXO1: &str = include_str!("../../test-vectors/free_keys/key2.prv");
 const UTXO2: &str = include_str!("../../test-vectors/free_keys/key3.prv");
 const WALLET_VALUE: Value = Value(10_000 + 1000);
 
-/// test to recover a daedalus style address in the test-vectors block0
 ///
 #[test]
 fn free_keys1() {

@@ -13,7 +13,6 @@ pub struct DumpIter<'a, W> {
     wallet: &'a mut W,
 }
 
-pub type DumpDaedalus<'a> = DumpIter<'a, crate::scheme::rindex::Wallet>;
 pub type DumpIcarus<'a> =
     DumpIter<'a, crate::scheme::bip44::Wallet<chain_impl_mockchain::legacy::OldAddress>>;
 pub type DumpFreeKeys<'a> = DumpIter<'a, crate::scheme::freeutxo::Wallet>;
@@ -63,18 +62,6 @@ pub fn send_to_one_address<K: Clone + Groupable, WB: WitnessBuilder>(
     }
 }
 
-pub fn dump_daedalus_utxo<'a>(
-    settings: &'a crate::Settings,
-    address: &'a chain_addr::Address,
-    wallet: &'a mut crate::scheme::rindex::Wallet,
-) -> DumpDaedalus<'a> {
-    DumpDaedalus {
-        settings,
-        address,
-        wallet,
-    }
-}
-
 pub fn dump_icarus_utxo<'a>(
     settings: &'a crate::Settings,
     address: &'a chain_addr::Address,
@@ -96,23 +83,6 @@ pub fn dump_free_utxo<'a>(
         settings,
         address,
         wallet,
-    }
-}
-
-impl<'a> Iterator for DumpDaedalus<'a> {
-    type Item = (Fragment, Vec<Input>);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
-            OldUtxoWitnessBuilder(key)
-        })
-        .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
-
-        if let Some((fragment, _)) = next.as_ref() {
-            self.wallet.check_fragment(&fragment.hash(), &fragment);
-        }
-
-        next
     }
 }
 

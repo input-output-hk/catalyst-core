@@ -7,10 +7,8 @@ use chain_crypto::{Ed25519Extended, SecretKey};
 use chain_impl_mockchain::legacy::OldAddress;
 use chain_path_derivation::{
     bip44::{self, Bip44},
-    rindex::{self, Rindex},
     AnyScheme,
 };
-use cryptoxide::digest::Digest;
 use ed25519_bip32::{self, DerivationScheme, XPrv, XPRV_SIZE};
 use hdkeygen::Key;
 use thiserror::Error;
@@ -105,19 +103,6 @@ impl RecoveryBuilder {
         self
     }
 
-    pub fn build_daedalus(&self) -> Result<wallet::rindex::Wallet, RecoveryError> {
-        if self.password.is_some() {
-            return Err(RecoveryError::SchemeDoesNotRequirePassword);
-        }
-
-        let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
-
-        let key = from_daedalus_entropy(entropy, ed25519_bip32::DerivationScheme::V1)
-            .expect("Cannot fail to serialize some bytes...");
-
-        Ok(wallet::rindex::Wallet::from_root_key(key))
-    }
-
     pub fn build_yoroi(&self) -> Result<wallet::bip44::Wallet<OldAddress>, RecoveryError> {
         let entropy = self.entropy.clone().ok_or(RecoveryError::MissingEntropy)?;
         let password = self.password.clone().unwrap_or_default();
@@ -160,52 +145,6 @@ impl RecoveryBuilder {
     }
 }
 
-/// Compatibility with daedalus mnemonic addresses
-///
-/// > 2 Level of randomly chosen hard derivation indexes wallets
-/// > uses the bip39 mnemonics but do not follow
-/// > the whole BIP39 specifications.
-///
-/// # considerations
-///
-/// It is recommended to avoid using it as this is a weak
-/// cryptographic scheme:
-///
-/// 1. it does not allow for mnemonic passwords (no plausible deniability);
-/// 2. the use of an invariant of the cryptographic scheme makes it less
-///
-/// # internals
-///
-/// 1. the mnemonic words are used to retrieve the entropy;
-/// 2. the entropy is serialized in CBOR;
-/// 3. the cbor serialised entropy is then hashed with Blake2b 256;
-/// 4. the blake2b digest is serialised in cbor;
-/// 5. the cbor serialised digest is then fed into HMAC sha256
-///
-/// There are many things that can go wrong when implementing this
-/// process, it is all done correctly by this function: prefer using
-/// this function.
-fn from_daedalus_entropy(
-    entropy: bip39::Entropy,
-    derivation_scheme: DerivationScheme,
-) -> Result<Key<XPrv, Rindex<rindex::Root>>, cbor_event::Error> {
-    let entropy_bytes = cbor_event::Value::Bytes(Vec::from(entropy.as_ref()));
-    let entropy_cbor = cbor_event::cbor!(&entropy_bytes)?;
-    let seed: Vec<u8> = {
-        let mut blake2b = cryptoxide::blake2b::Blake2b::new(32);
-        blake2b.input(&entropy_cbor);
-        let mut out = [0; 32];
-        blake2b.result(&mut out);
-        let mut se = cbor_event::se::Serializer::new_vec();
-        se.write_bytes(&Vec::from(&out[..]))?;
-        se.finalize()
-    };
-
-    let xprv = generate_from_daedalus_seed(&seed);
-    let key = Key::new_unchecked(xprv, rindex::new(), derivation_scheme);
-    Ok(key)
-}
-
 /// method to recover the private key from bip39 mnemonics
 ///
 /// this is the method used in yoroiwallet.com
@@ -219,36 +158,6 @@ fn from_bip39_entropy(
     let xprv = XPrv::normalize_bytes_force3rd(seed);
 
     Key::new_unchecked(xprv, Default::default(), derivation_scheme)
-}
-
-/// for some unknown design reasons Daedalus seeds are encoded in cbor
-/// We then expect the input here to be cbor encoded before hand.
-///
-fn generate_from_daedalus_seed(bytes: &[u8]) -> XPrv {
-    use cryptoxide::{hmac::Hmac, mac::Mac, sha2::Sha512};
-
-    let mut mac = Hmac::new(Sha512::new(), bytes);
-
-    let mut iter = 1;
-
-    loop {
-        let s = format!("Root Seed Chain {}", iter);
-        mac.reset();
-        mac.input(s.as_bytes());
-        let mut block = [0u8; 64];
-        mac.raw_result(&mut block);
-
-        let mut sk = [0; 32];
-        sk.clone_from_slice(&block.as_ref()[0..32]);
-        let mut cc = [0; 32];
-        cc.clone_from_slice(&block.as_ref()[32..64]);
-
-        if let Ok(xprv) = XPrv::from_nonextended_noforce(&sk, &cc) {
-            return xprv;
-        }
-
-        iter += 1;
-    }
 }
 
 impl Default for RecoveryBuilder {
@@ -290,91 +199,6 @@ mod tests {
         "Ae2tdPwUPEZ8og5u4WF5rmSyme5Gvp8RYiLM2u7Vm8CyDQzLN3VYTN895Wk",
         "Ae2tdPwUPEZEAjEsQsCtBMkLKANxQUEvzLkumPWWYugLeXcgkeMCDH1gnuL",
     ];
-
-    /// not sure yet, but it appears this test is not valid
-    ///
-    /// the mnemonics may not be correct?
-    #[test]
-    fn recover_daedalus1() {
-        let wallet = RecoveryBuilder::new()
-            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS1)
-            .unwrap()
-            .build_daedalus()
-            .unwrap();
-
-        for address in ADDRESSES1 {
-            use std::str::FromStr as _;
-            let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
-            assert!(wallet.check(&addr).is_some());
-        }
-    }
-
-    #[test]
-    fn recover_daedalus2() {
-        let wallet = RecoveryBuilder::new()
-            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS2)
-            .unwrap()
-            .build_daedalus()
-            .unwrap();
-
-        for address in ADDRESSES2 {
-            use std::str::FromStr as _;
-            let addr = cardano_legacy_address::Addr::from_str(address).unwrap();
-            assert!(wallet.check(&addr).is_some());
-        }
-    }
-
-    #[test]
-    fn recover_daedalus_paperwallet() {
-        const WALLET: &str =
-            "claim treat volume twin crumble surprise symbol survey wise access room avoid";
-        const PAPERWALLET: &str = "town lift more follow chronic lunch weird uniform earth census proof cave gap fancy topic year leader phrase state circle cloth reward dish survey act punch bounce";
-        const ADDRESS: &str = "DdzFFzCqrhtCvPjBLTJKJdNWzfhnJx3967QEcuhhm1PQ2ca13fNNMh5KZentH5aWLysjEBc1rKDYMS3noNKNyxdCL8NHUZznZj9gofQJ";
-
-        let builder = RecoveryBuilder::new()
-            .mnemonics(&bip39::dictionary::ENGLISH, PAPERWALLET)
-            .unwrap();
-
-        let original_wallet = builder
-            .to_mnemonics_string()
-            .expect("mnemonics were given already");
-        assert_eq!(WALLET, original_wallet);
-
-        let wallet = builder.build_daedalus().unwrap();
-        let address = ADDRESS.parse().unwrap();
-
-        assert!(wallet.check(&address).is_some());
-    }
-
-    #[test]
-    fn recover_daedalus_utxo_twice_fails() {
-        use chain_impl_mockchain::{
-            fragment::Fragment,
-            legacy::{OldAddress, UtxoDeclaration},
-            value::Value,
-        };
-
-        let mut wallet = RecoveryBuilder::new()
-            .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS1)
-            .unwrap()
-            .build_daedalus()
-            .unwrap();
-
-        let address: OldAddress = ADDRESSES1[0].parse().unwrap();
-        assert!(wallet.check(&address).is_some());
-
-        let fragment_value = Value(10);
-        let fragment = Fragment::OldUtxoDeclaration(UtxoDeclaration {
-            addrs: vec![(address, fragment_value)],
-        });
-        let fragment_id = fragment.hash();
-
-        assert_eq!(wallet.unconfirmed_value(), None);
-        assert!(wallet.check_fragment(&fragment_id, &fragment));
-        assert_eq!(wallet.unconfirmed_value(), Some(fragment_value));
-        assert!(wallet.check_fragment(&fragment_id, &fragment));
-        assert_eq!(wallet.unconfirmed_value(), Some(fragment_value));
-    }
 
     #[test]
     fn recover_yoroi_utxo_twice_fails() {

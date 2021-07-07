@@ -326,9 +326,9 @@ checksum = "81a18687293a1546b67c246452202bbbf143d239cb43494cc163da14979082da"
 
 [[package]]
 name = "bzip2"
-version = "0.3.3"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42b7c3cbf0fa9c1b82308d57191728ca0256cb821220f4e2fd410a72ade26e3b"
+checksum = "6afcd980b5f3a45017c57e57a2fcccbb351cc43a356ce117ef760ef8052b89b0"
 dependencies = [
  "bzip2-sys",
  "libc",
@@ -336,9 +336,9 @@ dependencies = [
 
 [[package]]
 name = "bzip2-sys"
-version = "0.1.10+1.0.8"
+version = "0.1.11+1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17fa3d1ac1ca21c5c4e36a97f3c3eb25084576f6fc47bf0139c1123434216c6c"
+checksum = "736a955f3fa7875102d57c82b8cac37ec45224a07fd32d58f9f7a186b6cd4cdc"
 dependencies = [
  "cc",
  "libc",
@@ -348,12 +348,12 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "cbor_event",
  "chain-ser",
  "cryptoxide",
- "ed25519-bip32",
+ "ed25519-bip32 0.4.0",
 ]
 
 [[package]]
@@ -392,7 +392,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "bech32",
  "chain-core",
@@ -404,7 +404,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "chain-ser",
 ]
@@ -412,19 +412,20 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "bech32",
  "cryptoxide",
  "curve25519-dalek-ng",
  "digest",
- "ed25519-bip32",
+ "ed25519-bip32 0.4.0",
  "ed25519-dalek",
  "generic-array",
  "hex",
  "quickcheck",
  "rand 0.8.3",
  "rand_core 0.6.2",
+ "rayon",
  "sha2",
  "typed-bytes",
 ]
@@ -432,7 +433,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -442,12 +443,13 @@ dependencies = [
  "chain-test-utils",
  "chain-time",
  "chain-vote",
- "ed25519-bip32",
+ "ed25519-bip32 0.4.0",
  "hex",
  "imhamt",
  "lazy_static",
  "quickcheck",
  "quickcheck_macros",
+ "rand 0.8.3",
  "rand_chacha 0.3.0",
  "rand_core 0.6.2",
  "rayon",
@@ -469,12 +471,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "criterion",
  "data-pile",
@@ -487,7 +489,7 @@ dependencies = [
 [[package]]
 name = "chain-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "chain-core",
  "quickcheck",
@@ -497,7 +499,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -509,11 +511,11 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "chain-core",
+ "chain-crypto",
  "cryptoxide",
- "eccoxide",
  "rand 0.8.3",
  "rand_core 0.6.2",
  "rayon",
@@ -820,9 +822,9 @@ dependencies = [
 
 [[package]]
 name = "darling"
-version = "0.12.4"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f2c43f534ea4b0b049015d00269734195e6d3f0f6635cb692251aca6f9f8b3c"
+checksum = "757c0ded2af11d8e739c4daea1ac623dd1624b06c844cf3f5a39f1bdbd99bb12"
 dependencies = [
  "darling_core",
  "darling_macro",
@@ -830,9 +832,9 @@ dependencies = [
 
 [[package]]
 name = "darling_core"
-version = "0.12.4"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e91455b86830a1c21799d94524df0845183fa55bafd9aa137b01c7d1065fa36"
+checksum = "2c34d8efb62d0c2d7f60ece80f75e5c63c1588ba68032740494b0b9a996466e3"
 dependencies = [
  "fnv",
  "ident_case",
@@ -844,9 +846,9 @@ dependencies = [
 
 [[package]]
 name = "darling_macro"
-version = "0.12.4"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29b5acf0dea37a7f66f7b25d2c5e93fd46f8f6968b1a5d7a3e02e97768afc95a"
+checksum = "ade7bff147130fe5e6d39f089c6bd49ec0250f35d70b2eebf72afdfc919f15cc"
 dependencies = [
  "darling_core",
  "quote 1.0.9",
@@ -1007,6 +1009,15 @@ name = "ed25519-bip32"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8827180a2b511141fbe49141e50b31a8d542465e0fb572f81f36feea2addfe92"
+dependencies = [
+ "cryptoxide",
+]
+
+[[package]]
+name = "ed25519-bip32"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c091ed784fcf257830c75851d6c88fd5991f98d2f3fa9ed23c3f6bac4eec3cc"
 dependencies = [
  "cryptoxide",
 ]
@@ -1533,7 +1544,7 @@ dependencies = [
  "chain-crypto",
  "chain-path-derivation",
  "cryptoxide",
- "ed25519-bip32",
+ "ed25519-bip32 0.3.2",
  "hex",
  "thiserror",
 ]
@@ -1755,7 +1766,7 @@ dependencies = [
  "cryptoxide",
  "dialoguer 0.6.2",
  "eccoxide",
- "ed25519-bip32",
+ "ed25519-bip32 0.3.2",
  "hdkeygen",
  "hex",
  "hyper 0.13.10",
@@ -1836,7 +1847,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 dependencies = [
  "thiserror",
 ]
@@ -1857,7 +1868,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7baab56125e25686df467fe470785512329883aab42696d661247aca2a2896e4"
 dependencies = [
- "console 0.14.1",
+ "console 0.13.0",
  "lazy_static",
  "number_prefix",
  "regex 1.5.4",
@@ -1949,8 +1960,8 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 
 [[package]]
 name = "jormungandr-integration-tests"
-version = "0.11.1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=26f6fc15911863b5f3cf047d6d1789cd0cc39ba0#26f6fc15911863b5f3cf047d6d1789cd0cc39ba0"
+version = "0.12.0-dev"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=18084f60e5e37a5f267d7ab6d21ed58366726e43#18084f60e5e37a5f267d7ab6d21ed58366726e43"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -1995,8 +2006,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-lib"
-version = "0.11.1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=26f6fc15911863b5f3cf047d6d1789cd0cc39ba0#26f6fc15911863b5f3cf047d6d1789cd0cc39ba0"
+version = "0.12.0-dev"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=18084f60e5e37a5f267d7ab6d21ed58366726e43#18084f60e5e37a5f267d7ab6d21ed58366726e43"
 dependencies = [
  "base64 0.13.0",
  "bech32",
@@ -2024,8 +2035,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-scenario-tests"
-version = "0.11.1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=26f6fc15911863b5f3cf047d6d1789cd0cc39ba0#26f6fc15911863b5f3cf047d6d1789cd0cc39ba0"
+version = "0.12.0-dev"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=18084f60e5e37a5f267d7ab6d21ed58366726e43#18084f60e5e37a5f267d7ab6d21ed58366726e43"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2065,8 +2076,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-testing-utils"
-version = "0.11.1"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=26f6fc15911863b5f3cf047d6d1789cd0cc39ba0#26f6fc15911863b5f3cf047d6d1789cd0cc39ba0"
+version = "0.12.0-dev"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=18084f60e5e37a5f267d7ab6d21ed58366726e43#18084f60e5e37a5f267d7ab6d21ed58366726e43"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -2131,7 +2142,7 @@ dependencies = [
 [[package]]
 name = "jortestkit"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jortestkit.git?branch=master#919e6e99ef064b9e810887bf72d961281ae2dd49"
+source = "git+https://github.com/input-output-hk/jortestkit.git?branch=master#9d74dca5ad8455a4cb2b70761700217632b2a1ad"
 dependencies = [
  "assert_fs",
  "base64 0.12.3",
@@ -2141,7 +2152,7 @@ dependencies = [
  "console 0.11.3",
  "csv",
  "custom_debug",
- "dialoguer 0.6.2",
+ "dialoguer 0.8.0",
  "flate2",
  "fs_extra",
  "hex",
@@ -2154,7 +2165,7 @@ dependencies = [
  "rand_chacha 0.2.2",
  "rand_core 0.5.1",
  "reqwest 0.11.3",
- "semver 0.11.0",
+ "semver 1.0.3",
  "serde",
  "serde_derive",
  "serde_json",
@@ -2888,12 +2899,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "podio"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b18befed8bc2b61abc79a457295e7e838417326da1586050b919414073977f19"
-
-[[package]]
 name = "poldercast"
 version = "0.14.0-dev"
 source = "git+https://github.com/primetype/poldercast.git?rev=8305f1560392a9d26673ca996e7646c8834533ef#8305f1560392a9d26673ca996e7646c8834533ef"
@@ -3580,6 +3585,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustversion"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61b3909d758bb75c79f23d4736fac9433868679d3ad2ea7a61e3c25cfda9a088"
+
+[[package]]
 name = "ryu"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3689,6 +3700,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "semver"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f3aac57ee7f3272d8395c6e4f502f434f0e289fcd62876f70daa008c20dcabe"
+
+[[package]]
 name = "semver-parser"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3705,9 +3722,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.118"
+version = "1.0.126"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06c64263859d87aa2eb554587e2d23183398d617427327cf2b3d0ed8c69e4800"
+checksum = "ec7505abeacaec74ae4778d9d9328fe5a5d04253220a85c4ee022239fc996d03"
 dependencies = [
  "serde_derive",
 ]
@@ -3724,9 +3741,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.118"
+version = "1.0.126"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c84d3526699cd55261af4b941e4e725444df67aa4f9e6a3564f18030d12672df"
+checksum = "963a7dbc9895aeac7ac90e74f34a5d5261828f79df35cbed41e10189d3804d43"
 dependencies = [
  "proc-macro2 1.0.26",
  "quote 1.0.9",
@@ -3758,19 +3775,20 @@ dependencies = [
 
 [[package]]
 name = "serde_with"
-version = "1.6.4"
+version = "1.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b44be9227e214a0420707c9ca74c2d4991d9955bae9415a8f93f05cebf561be5"
+checksum = "1ad9fdbb69badc8916db738c25efd04f0a65297d26c2f8de4b62e57b8c12bc72"
 dependencies = [
+ "rustversion",
  "serde",
  "serde_with_macros",
 ]
 
 [[package]]
 name = "serde_with_macros"
-version = "1.4.1"
+version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e48b35457e9d855d3dc05ef32a73e0df1e2c0fd72c38796a4ee909160c8eeec2"
+checksum = "e1569374bd54623ec8bd592cf22ba6e03c0f177ff55fbc8c29a49e296e7adecf"
 dependencies = [
  "darling",
  "proc-macro2 1.0.26",
@@ -3946,7 +3964,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 
 [[package]]
 name = "spin"
@@ -4634,7 +4652,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#f6bcb7f7e1030a2796a0dab1a27fe719e13d786e"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#271e6f0068d5e3dc8a1b35286f1c827fba9a0ed8"
 
 [[package]]
 name = "typenum"
@@ -4942,7 +4960,7 @@ dependencies = [
  "chain-path-derivation",
  "chain-time",
  "cryptoxide",
- "ed25519-bip32",
+ "ed25519-bip32 0.3.2",
  "hdkeygen",
  "hex",
  "imhamt",
@@ -5262,14 +5280,15 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "0.5.6"
+version = "0.5.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58287c28d78507f5f91f2a4cf1e8310e2c76fd4c6932f93ac60fd1ceb402db7d"
+checksum = "93ab48844d61251bb3835145c521d88aa4031d7139e8485990f60ca911fa0815"
 dependencies = [
+ "byteorder",
  "bzip2",
  "crc32fast",
  "flate2",
- "podio",
+ "thiserror",
  "time",
 ]
 

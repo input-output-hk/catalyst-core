@@ -371,6 +371,11 @@ impl QuickVitBackendSettingsBuilder {
             let png = folder.child(format!("{}_{}.png", alias, pin));
             println!("[{}/{}] Qr dumped to {:?}", idx + 1, total, png.path());
             wallet.save_qr_code(png.path(), &pin_to_bytes(&pin));
+            
+            let hash = folder.child(format!("{}_{}.txt", alias, pin))
+            println!("[{}/{}] QR hash dumped to {:?}", idx + 1, total, hash.path());
+            wallet.save_qr_code_hash(png.path(), &pin_to_bytes(&pin));
+
         }
 
         if let Some(initials) = &self.parameters.initials {
@@ -385,6 +390,9 @@ impl QuickVitBackendSettingsBuilder {
                     let img = qr.to_img();
                     let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
                     img.save(png.path())?;
+
+                    let hash = folder.child(format!("zero_funds_{}.txt", i)))
+                    jortestkit::append(hash,hash::generate())
                 }
             }
         }

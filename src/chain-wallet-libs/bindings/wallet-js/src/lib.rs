@@ -8,7 +8,7 @@ use wasm_bindgen::JsCast as _;
 
 mod utils;
 
-const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
+const ELECTION_PUBLIC_KEY_HRP: &str = "votepk";
 
 // `set_panic_hook` function can be called at least once during initialization,
 // to get better error messages if the code ever panics.
@@ -404,10 +404,10 @@ impl ElectionPublicKey {
         bech32::decode(bech32_str)
             .map_err(|e| JsValue::from_str(&format!("invalid bech32 string {}", e)))
             .and_then(|(hrp, raw_key)| {
-                if hrp != ENCRYPTION_VOTE_KEY_HRP {
+                if hrp != ELECTION_PUBLIC_KEY_HRP {
                     return Err(JsValue::from_str(&format!(
                         "expected hrp to be {} instead found {}",
-                        ENCRYPTION_VOTE_KEY_HRP, hrp
+                        ELECTION_PUBLIC_KEY_HRP, hrp
                     )));
                 }
 

@@ -6,7 +6,7 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 pub use wallet::Settings;
 
-const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
+const ELECTION_PUBLIC_KEY_HRP: &str = "votepk";
 
 // using generics in this module is questionable, but it's used just for code
 // re-use, the idea is to have two functions, and then it's exposed that way in
@@ -31,14 +31,14 @@ impl<'a> TryInto<PayloadTypeConfig> for ProposalPrivate<'a> {
     fn try_into(self) -> Result<PayloadTypeConfig, Error> {
         use bech32::FromBase32;
 
-        const INPUT_NAME: &str = "encrypting_vote_key";
+        const INPUT_NAME: &str = "election_public_key";
 
         self.0
             .to_str()
             .map_err(|_| Error::invalid_input(INPUT_NAME))
             .and_then(|s| bech32::decode(s).map_err(|_| Error::invalid_vote_encryption_key()))
             .and_then(|(hrp, raw_key)| {
-                if hrp != ENCRYPTION_VOTE_KEY_HRP {
+                if hrp != ELECTION_PUBLIC_KEY_HRP {
                     return Err(Error::invalid_vote_encryption_key());
                 }
 

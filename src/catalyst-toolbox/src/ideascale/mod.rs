@@ -34,7 +34,7 @@ pub struct IdeaScaleData {
 pub type Rewards = HashMap<i32, i64>;
 
 pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Error> {
-    let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(fund, api_token.clone()));
+    let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
     let funds_task = tokio::spawn(fetch::get_funds_data(api_token.clone()));
     let funnels = funnels_task
         .await??
@@ -106,13 +106,21 @@ pub fn build_challenges(
     rewards: &Rewards,
 ) -> Vec<models::se::Challenge> {
     let funnels = &ideascale_data.funnels;
+    println!(
+        "{}",
+        funnels
+            .keys()
+            .map(|k| k.to_string())
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
     ideascale_data
         .challenges
         .values()
         .map(|c| models::se::Challenge {
             challenge_type: funnels
                 .get(&c.funnel_id)
-                .unwrap()
+                .unwrap_or_else(|| panic!("A funnel with id {} wasn't found", c.funnel_id))
                 .is_community()
                 .then(|| "community-choice")
                 .unwrap_or("simple")
@@ -123,7 +131,7 @@ pub fn build_challenges(
             id: c.id.to_string(),
             // TODO: proposers_rewards to be removed
             proposers_rewards: "".to_string(),
-            rewards_total: rewards.get(&c.id).unwrap().to_string(),
+            rewards_total: rewards.get(&c.id).cloned().unwrap_or(0).to_string(),
             title: c.title.clone(),
         })
         .collect()
@@ -146,7 +154,11 @@ pub fn build_proposals(
             internal_id: i.to_string(),
             proposal_funds: p.custom_fields.proposal_funds.clone(),
             proposal_id: p.proposal_id.to_string(),
-            proposal_impact_score: scores.get(&p.proposal_id).unwrap().to_string(),
+            proposal_impact_score: scores
+                .get(&p.proposal_id)
+                .cloned()
+                .unwrap_or(0f32)
+                .to_string(),
             proposal_solution: p
                 .custom_fields
                 .extra
@@ -158,9 +170,14 @@ pub fn build_proposals(
             proposal_url: p.proposal_url.clone(),
             proposer_email: p.proposer.contact.clone(),
             proposer_name: p.proposer.name.clone(),
-            // TODO: Fill missing proposer data
-            proposer_relevant_experience: "".to_string(),
-            proposer_url: "".to_string(),
+            proposer_relevant_experience: p.custom_fields.proposal_relevant_experience.clone(),
+            proposer_url: p
+                .custom_fields
+                .extra
+                .get("website_github_repository__not_required_")
+                .map(|c| c.as_str().unwrap())
+                .unwrap_or("")
+                .to_string(),
         })
         .collect()
 }

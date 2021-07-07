@@ -5,7 +5,15 @@ use catalyst_toolbox::ideascale::{
 use structopt::StructOpt;
 
 use serde::Serialize;
+use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
+
+#[derive(Debug)]
+pub enum VoteType {
+    Public,
+    Private,
+}
 
 #[derive(Debug, StructOpt)]
 pub enum Idescale {
@@ -23,9 +31,14 @@ pub struct Import {
     #[structopt(long)]
     api_token: String,
 
+    #[structopt(long)]
     threshold: i64,
+
+    #[structopt(long)]
     rewards_info: String,
-    chain_vote_type: String,
+
+    #[structopt(long)]
+    chain_vote_type: VoteType,
 
     /// Path to a json file containing the related rewards per challenge.
     /// `{ challenge_id:  reward_amount}`
@@ -56,7 +69,10 @@ impl Import {
             save_folder,
         } = self;
 
-        let runtime = tokio::runtime::Builder::new_multi_thread().build()?;
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_io()
+            .enable_time()
+            .build()?;
 
         let idescale_data =
             futures::executor::block_on(runtime.spawn(fetch_all(*fund, api_token.clone())))??;
@@ -66,7 +82,7 @@ impl Import {
 
         let funds = build_fund(&idescale_data, *threshold, rewards_info.clone());
         let challenges = build_challenges(&idescale_data, &rewards);
-        let proposals = build_proposals(&idescale_data, chain_vote_type, *fund);
+        let proposals = build_proposals(&idescale_data, &chain_vote_type.to_string(), *fund);
 
         dump_content_to_file(
             funds,
@@ -90,6 +106,28 @@ impl Import {
         )?;
 
         Ok(())
+    }
+}
+
+impl FromStr for VoteType {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "public" => Ok(Self::Public),
+            "private" => Ok(Self::Private),
+            _ => Err("Only 'public' or 'private' are correct values for VoteType"),
+        }
+    }
+}
+
+impl Display for VoteType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            VoteType::Public => "public",
+            VoteType::Private => "private",
+        };
+        write!(f, "{}", s)
     }
 }
 

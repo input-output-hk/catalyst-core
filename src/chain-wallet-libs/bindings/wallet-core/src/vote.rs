@@ -2,8 +2,7 @@ use chain_impl_mockchain::{
     certificate::{VoteCast, VotePlanId},
     vote::{self, Choice, Options, Payload},
 };
-pub use chain_vote::EncryptingVoteKey;
-use chain_vote::Vote;
+use chain_vote::{ElectionPublicKey, Vote};
 
 pub const VOTE_PLAN_ID_LENGTH: usize = 32;
 
@@ -16,7 +15,7 @@ pub struct Proposal {
 
 pub enum PayloadTypeConfig {
     Public,
-    Private(chain_vote::EncryptingVoteKey),
+    Private(ElectionPublicKey),
 }
 
 impl Proposal {
@@ -42,7 +41,7 @@ impl Proposal {
         vote_plan_id: VotePlanId,
         index: u8,
         options: Options,
-        key: EncryptingVoteKey,
+        key: ElectionPublicKey,
     ) -> Self {
         Self::new(
             vote_plan_id,

@@ -67,9 +67,6 @@
 > **NFKD** - **N**ormalization **F**orm: Compatibility (**K**) **D**ecomposition.
 > Characters are decomposed by compatibility, and multiple combining characters are arranged *in a specific order*.
 
-This function is used to retrieve a wallet from the given mnemonics and password.
-It will work for all yoroi, daedalus and other wallets as it will try every kind of wallet anyway
-
 Can also be used to recover a wallet even after you have transferred all the funds to the new format (see the [wallet_convert](#wallet_convert) function), just keep in mind that it will reset the wallet internal state.
 
 ---
@@ -160,7 +157,7 @@ and from other interactions with the node (vote casting, ...)
   - `settings` - contains some ledger parameters retrieved from block0 (fees, block0 hash, block0 date, ...)
   - `error` - returned in case of failure (wallet not yet recovered, block0 corrupted, ...)
 
-This function is used to retrieve the funds from *daedalus* or *yoroi* wallet that are available in the given *block0*.
+This function is used to retrieve the funds from *yoroi* wallet that are available in the given *block0*.
 
 > This function may take some time to complete.
 

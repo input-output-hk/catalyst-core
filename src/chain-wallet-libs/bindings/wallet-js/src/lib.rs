@@ -8,7 +8,7 @@ use wasm_bindgen::JsCast as _;
 
 mod utils;
 
-const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
+const ELECTION_PUBLIC_KEY_HRP: &str = "votepk";
 
 // `set_panic_hook` function can be called at least once during initialization,
 // to get better error messages if the code ever panics.
@@ -59,7 +59,7 @@ pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed2
 pub struct FragmentId(wallet_core::FragmentId);
 
 #[wasm_bindgen]
-pub struct EncryptingVoteKey(chain_vote::EncryptingVoteKey);
+pub struct ElectionPublicKey(chain_vote::ElectionPublicKey);
 
 /// this is used only for giving the Array a type in the typescript generated notation
 #[wasm_bindgen]
@@ -255,7 +255,7 @@ impl Proposal {
         vote_plan_id: VotePlanId,
         index: u8,
         options: Options,
-        encrypting_vote_key: EncryptingVoteKey,
+        encrypting_vote_key: ElectionPublicKey,
     ) -> Self {
         Proposal(wallet_core::Proposal::new_private(
             vote_plan_id.0.into(),
@@ -391,23 +391,23 @@ impl FragmentId {
 }
 
 #[wasm_bindgen]
-impl EncryptingVoteKey {
-    pub fn from_bytes(bytes: &[u8]) -> Result<EncryptingVoteKey, JsValue> {
-        chain_vote::EncryptingVoteKey::from_bytes(&bytes)
+impl ElectionPublicKey {
+    pub fn from_bytes(bytes: &[u8]) -> Result<ElectionPublicKey, JsValue> {
+        chain_vote::ElectionPublicKey::from_bytes(&bytes)
             .ok_or_else(|| JsValue::from_str("invalid binary format"))
             .map(Self)
     }
 
-    pub fn from_bech32(bech32_str: &str) -> Result<EncryptingVoteKey, JsValue> {
+    pub fn from_bech32(bech32_str: &str) -> Result<ElectionPublicKey, JsValue> {
         use bech32::FromBase32;
 
         bech32::decode(bech32_str)
             .map_err(|e| JsValue::from_str(&format!("invalid bech32 string {}", e)))
             .and_then(|(hrp, raw_key)| {
-                if hrp != ENCRYPTION_VOTE_KEY_HRP {
+                if hrp != ELECTION_PUBLIC_KEY_HRP {
                     return Err(JsValue::from_str(&format!(
                         "expected hrp to be {} instead found {}",
-                        ENCRYPTION_VOTE_KEY_HRP, hrp
+                        ELECTION_PUBLIC_KEY_HRP, hrp
                     )));
                 }
 

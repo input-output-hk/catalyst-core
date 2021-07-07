@@ -1,14 +1,12 @@
 use super::ProposalPtr;
-use crate::{
-    vote::{EncryptingVoteKey, PayloadTypeConfig},
-    Error, Proposal, Result as AbiResult,
-};
+use crate::{vote::PayloadTypeConfig, Error, Proposal, Result as AbiResult};
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options as VoteOptions};
+use chain_vote::ElectionPublicKey;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 pub use wallet::Settings;
 
-const ENCRYPTION_VOTE_KEY_HRP: &str = "p256k1_votepk";
+const ELECTION_PUBLIC_KEY_HRP: &str = "votepk";
 
 // using generics in this module is questionable, but it's used just for code
 // re-use, the idea is to have two functions, and then it's exposed that way in
@@ -33,20 +31,20 @@ impl<'a> TryInto<PayloadTypeConfig> for ProposalPrivate<'a> {
     fn try_into(self) -> Result<PayloadTypeConfig, Error> {
         use bech32::FromBase32;
 
-        const INPUT_NAME: &str = "encrypting_vote_key";
+        const INPUT_NAME: &str = "election_public_key";
 
         self.0
             .to_str()
             .map_err(|_| Error::invalid_input(INPUT_NAME))
             .and_then(|s| bech32::decode(s).map_err(|_| Error::invalid_vote_encryption_key()))
             .and_then(|(hrp, raw_key)| {
-                if hrp != ENCRYPTION_VOTE_KEY_HRP {
+                if hrp != ELECTION_PUBLIC_KEY_HRP {
                     return Err(Error::invalid_vote_encryption_key());
                 }
 
                 let bytes = Vec::<u8>::from_base32(&raw_key).unwrap();
 
-                EncryptingVoteKey::from_bytes(&bytes).ok_or_else(Error::invalid_vote_encryption_key)
+                ElectionPublicKey::from_bytes(&bytes).ok_or_else(Error::invalid_vote_encryption_key)
             })
             .map(PayloadTypeConfig::Private)
             .map_err(|_| Error::invalid_vote_encryption_key())
@@ -103,20 +101,19 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bech32::ToBase32;
 
     #[test]
     fn cast_private_vote() {
-        use chain_vote::encryption;
-        use rand::SeedableRng;
+        use bech32::ToBase32;
+        use chain_crypto::ec::GroupElement;
         let vote_plan_id = [0u8; crate::vote::VOTE_PLAN_ID_LENGTH];
-        let mut rng = rand_chacha::ChaCha20Rng::from_seed([1u8; 32]);
-        let sk = encryption::SecretKey::generate(&mut rng);
-        let pk = encryption::Keypair::from_secretkey(sk).public_key;
+        let pk =
+            chain_vote::ElectionPublicKey::from_bytes(&GroupElement::from_hash(&[1]).to_bytes())
+                .unwrap();
 
-        let encrypting_vote_key =
-            bech32::encode(ENCRYPTION_VOTE_KEY_HRP, pk.to_bytes().to_base32()).unwrap();
-        let encrypting_vote_key = std::ffi::CString::new(encrypting_vote_key).unwrap();
+        let election_public_key =
+            bech32::encode(ELECTION_PUBLIC_KEY_HRP, pk.to_bytes().to_base32()).unwrap();
+        let election_public_key = std::ffi::CString::new(election_public_key).unwrap();
 
         let mut proposal: ProposalPtr = std::ptr::null_mut();
         unsafe {
@@ -124,7 +121,7 @@ mod tests {
                 vote_plan_id.as_ptr(),
                 0,
                 2,
-                ProposalPrivate(&encrypting_vote_key),
+                ProposalPrivate(&election_public_key),
                 (&mut proposal) as *mut ProposalPtr,
             );
             assert!(result.is_ok());

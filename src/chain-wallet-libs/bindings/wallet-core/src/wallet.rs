@@ -20,7 +20,6 @@ use wallet::{AccountId, Settings};
 ///
 pub struct Wallet {
     account: wallet::Wallet,
-    daedalus: Option<wallet::scheme::rindex::Wallet>,
     icarus: Option<wallet::scheme::bip44::Wallet<OldAddress>>,
     free_keys: wallet::scheme::freeutxo::Wallet,
 }
@@ -36,19 +35,16 @@ impl Wallet {
 
     /// retrieve a wallet from the given mnemonics, password and protocol magic
     ///
-    /// this function will work for all yoroi, daedalus and other wallets
-    /// as it will try every kind of wallet anyway
-    ///
-    /// You can also use this function to recover a wallet even after you have
-    /// transferred all the funds to the new format (see the _convert_ function)
+    /// You can also use this function to recover a wallet even after you have transferred all the
+    /// funds to the new format (see the _convert_ function)
     ///
     /// The recovered wallet will be returned in `wallet_out`.
     ///
     /// # parameters
     ///
-    /// * mnemonics: a null terminated utf8 string (already normalized NFKD) in english;
-    /// * password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
-    ///   this value is optional and passing a null pointer will result in no password;
+    /// * mnemonics: a null terminated utf8 string (already normalized NFKD) in english; *
+    /// password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
+    /// this value is optional and passing a null pointer will result in no password;
     ///
     /// # errors
     ///
@@ -69,15 +65,10 @@ impl Wallet {
             builder
         };
 
-        let daedalus = builder
-            .build_daedalus()
-            .map_err(|e| Error::wallet_recovering().with(e))?;
-
         let icarus = builder
             .build_yoroi()
             .map_err(|e| Error::wallet_recovering().with(e))?;
-        // calling this function cannot fail as we have set the mnemonics already
-        // and no password is valid (though it is weak security from daedalus wallet PoV)
+
         let account = builder
             .build_wallet()
             .expect("build the account cannot fail as expected");
@@ -88,7 +79,6 @@ impl Wallet {
 
         Ok(Wallet {
             account,
-            daedalus: Some(daedalus),
             icarus: Some(icarus),
             free_keys,
         })
@@ -129,20 +119,17 @@ impl Wallet {
 
         Ok(Wallet {
             account,
-            daedalus: None,
             icarus: None,
             free_keys,
         })
     }
 
-    /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
-    /// any other blocks).
+    /// retrieve funds from bip44 hd sequential wallet in the given block0 (or any other blocks).
     ///
-    /// Execute this function then you can check who much funds you have
-    /// retrieved from the given block.
+    /// Execute this function then you can check who much funds you have retrieved from the given
+    /// block.
     ///
-    /// this function may take sometimes so it is better to only call this
-    /// function if needed.
+    /// this function may take sometimes so it is better to only call this function if needed.
     ///
     /// # Errors
     ///
@@ -155,13 +142,10 @@ impl Wallet {
 
         let settings = wallet::Settings::new(&block0).unwrap();
         for fragment in block0.contents.iter() {
-            if let Some(daedalus) = &mut self.daedalus {
-                daedalus.check_fragment(&fragment.hash(), fragment);
-            }
-
             if let Some(icarus) = &mut self.icarus {
                 icarus.check_fragment(&fragment.hash(), fragment);
             }
+
             self.free_keys.check_fragment(&fragment.hash(), fragment);
 
             self.confirm_transaction(fragment.hash());
@@ -204,14 +188,6 @@ impl Wallet {
             for_each(fragment, ignored)
         }
 
-        if let Some(mut daedalus) = self.daedalus.as_mut() {
-            for (fragment, ignored) in
-                wallet::transaction::dump_daedalus_utxo(&settings, &address, &mut daedalus)
-            {
-                for_each(fragment, ignored)
-            }
-        }
-
         if let Some(mut icarus) = self.icarus.as_mut() {
             for (fragment, ignored) in
                 wallet::transaction::dump_icarus_utxo(&settings, &address, &mut icarus)
@@ -230,9 +206,6 @@ impl Wallet {
     ///
     /// This function will automatically update the state of the wallet
     pub fn confirm_transaction(&mut self, id: FragmentId) {
-        if let Some(daedalus) = self.daedalus.as_mut() {
-            daedalus.confirm(&id);
-        }
         if let Some(icarus) = self.icarus.as_mut() {
             icarus.confirm(&id);
         }
@@ -247,14 +220,6 @@ impl Wallet {
     pub fn pending_transactions(&self) -> Vec<FragmentId> {
         let mut check = std::collections::HashSet::new();
         let mut result = vec![];
-
-        if let Some(daedalus) = &self.daedalus {
-            for id in daedalus.pending_transactions() {
-                if check.insert(*id) {
-                    result.push(*id);
-                }
-            }
-        }
 
         if let Some(icarus) = &self.icarus {
             for id in icarus.pending_transactions() {
@@ -306,12 +271,6 @@ impl Wallet {
             .as_ref()
             .map(|icarus| icarus.utxos().total_value())
             .unwrap_or_else(Value::zero)
-            .saturating_add(
-                self.daedalus
-                    .as_ref()
-                    .map(|daedalus| daedalus.utxos().total_value())
-                    .unwrap_or_else(Value::zero),
-            )
             .saturating_add(self.free_keys.utxos().total_value())
             .saturating_add(self.account.value())
     }

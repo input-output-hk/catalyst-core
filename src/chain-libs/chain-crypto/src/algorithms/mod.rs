@@ -2,6 +2,7 @@ mod ed25519;
 mod ed25519_derive;
 mod ed25519_extended;
 pub mod vrf;
+pub mod zkps;
 
 #[cfg(not(feature = "with-bench"))]
 mod sumed25519;

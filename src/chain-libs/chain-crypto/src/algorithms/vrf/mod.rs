@@ -1,4 +1,3 @@
-mod dleq;
 #[allow(clippy::module_inception)]
 pub mod vrf;
 
@@ -65,7 +64,7 @@ impl VerifiableRandomFunction for EllipticCurve2hashDh {
         input: &Self::Input,
         mut rng: T,
     ) -> Self::VerifiedRandomOutput {
-        secret.evaluate_simple(&mut rng, input)
+        secret.evaluate(&mut rng, input)
     }
 
     fn verify(

@@ -1,5 +1,5 @@
 mod challenge_context;
 mod messages;
-mod unit_vector_zkp;
+mod zkp;
 
-pub use unit_vector_zkp::Zkp as UnitVectorZkp;
+pub use zkp::Zkp as UnitVectorZkp;

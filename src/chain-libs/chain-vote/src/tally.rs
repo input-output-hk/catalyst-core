@@ -1,6 +1,6 @@
 use crate::{
     committee::*,
-    cryptography::{Ciphertext, CorrectElGamalDecrZkp},
+    cryptography::{Ciphertext, CorrectShareGenerationZkp},
     encrypted_vote::Ballot,
 };
 
@@ -14,11 +14,6 @@ use std::convert::TryInto;
 
 /// Secret key for opening vote
 pub type OpeningVoteKey = MemberSecretKey;
-
-/// A proof of correct decryption share consists of a dleq zkp, where the committee member proves
-/// that the `DecryptionShare` is honestly derived from the `EncryptedTally` and the committee private
-/// key correspondig to its public key without disclosing it.
-pub type ProofOfCorrectShare = CorrectElGamalDecrZkp;
 
 /// Submitted vote, which constists of an `EncryptedVote` and a `
 /// Common Reference String
@@ -80,12 +75,12 @@ pub struct ValidatedTally {
     decrypt_shares: Vec<TallyDecryptShare>,
 }
 
-/// `ProvenDecryptShare` consists of a group element (the partial decryption), and `ProofOfCorrectShare`,
+/// `ProvenDecryptShare` consists of a group element (the partial decryption), and `CorrectShareGenerationZkp`,
 /// a proof of correct decryption.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 struct ProvenDecryptShare {
     r1: GroupElement,
-    pi: ProofOfCorrectShare,
+    pi: CorrectShareGenerationZkp,
 }
 
 /// `Tally` represents the decrypted tally, with one `u64` result for each of the options of the
@@ -143,8 +138,13 @@ impl EncryptedTally {
         for r in &self.r {
             // todo: we are decrypting twice, we can probably improve this
             let decrypted_share = &r.e1 * &secret_key.0.sk;
-            let pk = secret_key.to_public();
-            let proof = ProofOfCorrectShare::generate(&r, &pk.0, &secret_key.0, rng);
+            let proof = CorrectShareGenerationZkp::generate(
+                &r,
+                &secret_key.to_public().0,
+                &decrypted_share,
+                &secret_key.0,
+                rng,
+            );
             dshares.push(ProvenDecryptShare {
                 r1: decrypted_share,
                 pi: proof,
@@ -254,7 +254,7 @@ impl std::ops::Add for EncryptedTally {
 }
 
 impl ProvenDecryptShare {
-    const SIZE: usize = ProofOfCorrectShare::PROOF_SIZE + GroupElement::BYTES_LEN;
+    const SIZE: usize = CorrectShareGenerationZkp::PROOF_SIZE + GroupElement::BYTES_LEN;
 
     pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() != ProvenDecryptShare::SIZE {
@@ -262,7 +262,7 @@ impl ProvenDecryptShare {
         }
 
         let r1 = GroupElement::from_bytes(&bytes[0..GroupElement::BYTES_LEN])?;
-        let proof = ProofOfCorrectShare::from_slice(&bytes[GroupElement::BYTES_LEN..])?;
+        let proof = CorrectShareGenerationZkp::from_bytes(&bytes[GroupElement::BYTES_LEN..])?;
         Some(ProvenDecryptShare { r1, pi: proof })
     }
 }
@@ -272,7 +272,7 @@ impl TallyDecryptShare {
     /// correctness of the `TallyDecryptShare`.
     pub fn verify(&self, encrypted_tally: &EncryptedTally, pk: &MemberPublicKey) -> bool {
         for (element, r) in self.elements.iter().zip(encrypted_tally.r.iter()) {
-            if !element.pi.verify(&r, &(&r.e2 - &element.r1), &pk.0) {
+            if !element.pi.verify(&r, &&element.r1, &pk.0) {
                 return false;
             }
         }
@@ -288,7 +288,7 @@ impl TallyDecryptShare {
     /// Size of the byte representation for a tally decrypt share
     /// with the given number of options.
     pub fn bytes_len(options: usize) -> usize {
-        (ProofOfCorrectShare::PROOF_SIZE + GroupElement::BYTES_LEN)
+        (CorrectShareGenerationZkp::PROOF_SIZE + GroupElement::BYTES_LEN)
             .checked_mul(options)
             .expect("integer overflow")
     }
@@ -662,14 +662,16 @@ mod tests {
         let plaintext = GroupElement::from_hash(&[0u8]);
         let ciphertext = keypair.public_key.encrypt_point(&plaintext, &mut r);
 
-        let proof = ProofOfCorrectShare::generate(
+        let share = &ciphertext.e1 * &keypair.secret_key.sk;
+
+        let proof = CorrectShareGenerationZkp::generate(
             &ciphertext,
             &keypair.public_key,
+            &share,
             &keypair.secret_key,
             &mut r,
         );
 
-        let share = &ciphertext.e1 * &keypair.secret_key.sk;
         let prover_share = ProvenDecryptShare {
             pi: proof,
             r1: share,

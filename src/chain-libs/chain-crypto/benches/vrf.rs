@@ -27,14 +27,14 @@ fn generate(c: &mut Criterion) {
 
     c.bench_function("generate", |b| {
         b.iter(|| {
-            let _ = sk.evaluate_simple(&mut csprng, &b1[..]);
+            let _ = sk.evaluate(&mut csprng, &b1[..]);
         })
     });
 }
 
 fn verify_success(c: &mut Criterion) {
     let (mut csprng, sk, pk, b1, _) = common();
-    let po = sk.evaluate_simple(&mut csprng, &b1[..]);
+    let po = sk.evaluate(&mut csprng, &b1[..]);
 
     c.bench_function("verify_success", |b| {
         b.iter(|| {
@@ -46,7 +46,7 @@ fn verify_success(c: &mut Criterion) {
 fn verify_fail(c: &mut Criterion) {
     let (mut csprng, sk, _pk, b1, _b2) = common();
     let (_, _, pk2, _, _) = common();
-    let po = sk.evaluate_simple(&mut csprng, &b1[..]);
+    let po = sk.evaluate(&mut csprng, &b1[..]);
 
     c.bench_function("verify_fail", |b| {
         b.iter(|| {

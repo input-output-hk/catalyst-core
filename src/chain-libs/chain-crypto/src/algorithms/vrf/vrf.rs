@@ -7,8 +7,8 @@ use crate::hash::Blake2b256;
 use rand_core::{CryptoRng, RngCore};
 use std::hash::{Hash, Hasher};
 
-use super::dleq;
 use crate::key::PublicKeyError;
+use crate::zkps::dleq;
 
 /// VRF Secret Key
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -51,7 +51,7 @@ pub struct OutputSeed(GroupElement);
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProvenOutputSeed {
     pub(crate) u: OutputSeed,
-    dleq_proof: dleq::Proof,
+    dleq_proof: dleq::Zkp,
 }
 
 impl SecretKey {
@@ -100,50 +100,34 @@ impl SecretKey {
 
     /// Create a proof, for the given parameters; no check is made to make sure it's correct
     ///
-    /// the proof is randomized, so need a freshly randomly scalar for random.
-    /// use 'prove_simple' to use a RNG and avoid generating this random.
+    /// the proof is randomized, so need a secure RNG.
     ///
-    /// use 'evaluate' or 'evaluate_simple' for creating the proof directly from input
-    pub fn prove(&self, r: &Scalar, m_point: GroupElement, output: OutputSeed) -> ProvenOutputSeed {
-        let dleq = dleq::Dleq {
-            g1: &GroupElement::generator(),
-            h1: &self.public,
-            g2: &m_point,
-            h2: &output.0,
-        };
-        let dleq_proof = dleq::generate(&r, &self.secret, &dleq);
-        ProvenOutputSeed {
-            u: output.clone(),
-            dleq_proof,
-        }
-    }
-
-    pub fn prove_simple<T: RngCore + CryptoRng>(
+    /// use 'evaluate' for creating the proof directly from input
+    fn prove<T: RngCore + CryptoRng>(
         &self,
         rng: &mut T,
         m_point: GroupElement,
         output: OutputSeed,
     ) -> ProvenOutputSeed {
-        let w = Scalar::random(rng);
-        self.prove(&w, m_point, output)
+        let dleq_proof = dleq::Zkp::generate(
+            &GroupElement::generator(),
+            &m_point,
+            &self.public,
+            &output.0,
+            &self.secret,
+            rng,
+        );
+        ProvenOutputSeed {
+            u: output,
+            dleq_proof,
+        }
     }
 
     /// Generate a Proof
     ///
-    /// the proof is randomized, so need a freshly randomly scalar for random.
-    /// use 'evaluate_simple' for normal use.
-    pub fn evaluate(&self, r: &Scalar, input: &[u8]) -> ProvenOutputSeed {
+    pub fn evaluate<T: RngCore + CryptoRng>(&self, rng: &mut T, input: &[u8]) -> ProvenOutputSeed {
         let (m_point, output) = self.verifiable_output(input);
-        self.prove(r, m_point, output)
-    }
-
-    pub fn evaluate_simple<T: RngCore + CryptoRng>(
-        &self,
-        rng: &mut T,
-        input: &[u8],
-    ) -> ProvenOutputSeed {
-        let (m_point, output) = self.verifiable_output(input);
-        self.prove_simple(rng, m_point, output)
+        self.prove(rng, m_point, output)
     }
 
     /// Get the public key associated with a secret key
@@ -176,30 +160,27 @@ impl PublicKey {
 }
 
 impl ProvenOutputSeed {
-    pub const BYTES_LEN: usize = dleq::Proof::PROOF_SIZE + GroupElement::BYTES_LEN;
+    pub const BYTES_LEN: usize = dleq::Zkp::BYTES_LEN + GroupElement::BYTES_LEN;
     /// Verify a proof for a given public key and a data slice
     pub fn verify(&self, public_key: &PublicKey, input: &[u8]) -> bool {
-        let dleq = dleq::Dleq {
-            g1: &GroupElement::generator(),
-            h1: &public_key.0,
-            g2: &GroupElement::from_hash(&input),
-            h2: &self.u.0,
-        };
-        dleq::verify(&dleq, &self.dleq_proof)
+        self.dleq_proof.verify(
+            &GroupElement::generator(),
+            &GroupElement::from_hash(&input),
+            &public_key.0,
+            &self.u.0,
+        )
     }
 
     pub fn to_buffer(&self, output: &mut [u8]) {
         assert_eq!(output.len(), Self::BYTES_LEN);
         output[0..GroupElement::BYTES_LEN].copy_from_slice(&self.u.0.to_bytes());
         self.dleq_proof
-            .to_bytes(&mut output[GroupElement::BYTES_LEN..]);
+            .write_to_bytes(&mut output[GroupElement::BYTES_LEN..]);
     }
 
     pub fn bytes(&self) -> [u8; Self::BYTES_LEN] {
         let mut output = [0u8; Self::BYTES_LEN];
-        output[0..GroupElement::BYTES_LEN].copy_from_slice(&self.u.0.to_bytes());
-        self.dleq_proof
-            .to_bytes(&mut output[GroupElement::BYTES_LEN..]);
+        self.to_buffer(&mut output);
         output
     }
 
@@ -208,7 +189,7 @@ impl ProvenOutputSeed {
             return None;
         }
         let u = GroupElement::from_bytes(&bytes[0..GroupElement::BYTES_LEN])?;
-        let proof = dleq::Proof::from_bytes(&bytes[GroupElement::BYTES_LEN..])?;
+        let proof = dleq::Zkp::from_bytes(&bytes[GroupElement::BYTES_LEN..])?;
         Some(ProvenOutputSeed {
             u: OutputSeed(u),
             dleq_proof: proof,
@@ -272,7 +253,7 @@ mod tests {
             *i = csprng.next_u32() as u8;
         }
 
-        let proof = sk.evaluate_simple(&mut csprng, &b1[..]);
+        let proof = sk.evaluate(&mut csprng, &b1[..]);
 
         // make sure the test pass
         assert!(proof.verify(&pk, &b1[..]));
@@ -306,7 +287,7 @@ mod tests {
             *i = csprng.next_u32() as u8;
         }
 
-        let proof = sk.evaluate_simple(&mut csprng, &alpha[..]);
+        let proof = sk.evaluate(&mut csprng, &alpha[..]);
         let serialised_proof = proof.bytes();
         let deserialised_proof = ProvenOutputSeed::from_bytes_unverified(&serialised_proof);
         let verified_deserialised_proof =
@@ -328,7 +309,7 @@ mod tests {
             *i = csprng.next_u32() as u8;
         }
 
-        let proof = sk.evaluate_simple(&mut csprng, &alpha[..]);
+        let proof = sk.evaluate(&mut csprng, &alpha[..]);
 
         let mut buffer = [0u8; ProvenOutputSeed::BYTES_LEN + PublicKey::BYTES_LEN];
         pk.to_buffer(&mut buffer[..PublicKey::BYTES_LEN]);

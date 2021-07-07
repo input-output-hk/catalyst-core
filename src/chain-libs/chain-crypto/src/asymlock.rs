@@ -20,10 +20,10 @@ pub enum DecryptionError {
 
 fn shared_key_to_symmetric_key(app_level_info: &[u8], p: &GroupElement) -> ChaCha20Poly1305 {
     // use the compressed point as PRK directly
-    #[cfg(feature = "ristretto255")]
+    #[cfg(crypto_backend = "__internal_ex_backend_ristretto255")]
     let prk = &p.to_bytes();
     // if we work with sec2 curves, we use only the x coordinate as a key
-    #[cfg(not(feature = "ristretto255"))]
+    #[cfg(crypto_backend = "__internal_ex_backend_p256k1")]
     let prk = &p.to_bytes()[1..33];
     let mut symkey = [0u8; 32 + 12];
     hkdf_expand(sha2::Sha256::new(), prk, app_level_info, &mut symkey);

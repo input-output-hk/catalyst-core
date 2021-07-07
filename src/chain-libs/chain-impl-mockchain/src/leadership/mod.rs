@@ -7,7 +7,7 @@ use crate::{
     ledger::{Ledger, LedgerParameters},
     stake::StakeDistribution,
 };
-use chain_crypto::{Curve25519_2HashDh, Ed25519, SecretKey, SumEd25519_12};
+use chain_crypto::{Ed25519, EllipticCurve2hashDh, SecretKey, SumEd25519_12};
 use chain_time::era::TimeEra;
 
 pub mod bft;
@@ -55,7 +55,7 @@ pub struct BftLeader {
 pub struct GenesisLeader {
     pub node_id: PoolId,
     pub sig_key: SecretKey<SumEd25519_12>,
-    pub vrf_key: SecretKey<Curve25519_2HashDh>,
+    pub vrf_key: SecretKey<EllipticCurve2hashDh>,
 }
 
 pub struct Leader {

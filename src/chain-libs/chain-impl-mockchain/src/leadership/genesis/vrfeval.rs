@@ -5,7 +5,7 @@ use crate::date::SlotId;
 use crate::setting::ActiveSlotsCoeff;
 use crate::stake::PercentStake;
 use chain_crypto::{
-    vrf_evaluate_and_prove, vrf_verified_get_output, vrf_verify, Curve25519_2HashDh, PublicKey,
+    vrf_evaluate_and_prove, vrf_verified_get_output, vrf_verify, EllipticCurve2hashDh, PublicKey,
     SecretKey, VerifiableRandomFunction, VrfVerification,
 };
 use rand_core::OsRng;
@@ -44,8 +44,8 @@ impl Input {
 }
 
 /// Witness
-pub type Witness = <Curve25519_2HashDh as VerifiableRandomFunction>::VerifiedRandomOutput;
-pub type WitnessOutput = <Curve25519_2HashDh as VerifiableRandomFunction>::RandomOutput;
+pub type Witness = <EllipticCurve2hashDh as VerifiableRandomFunction>::VerifiedRandomOutput;
+pub type WitnessOutput = <EllipticCurve2hashDh as VerifiableRandomFunction>::RandomOutput;
 
 pub struct VrfEvaluator<'a> {
     pub stake: PercentStake,
@@ -55,7 +55,7 @@ pub struct VrfEvaluator<'a> {
 }
 
 pub(crate) fn witness_to_nonce(witness: &Witness) -> PraosNonce {
-    let r = vrf_verified_get_output::<Curve25519_2HashDh>(&witness);
+    let r = vrf_verified_get_output::<EllipticCurve2hashDh>(&witness);
     get_nonce(&r)
 }
 
@@ -72,11 +72,11 @@ impl<'a> VrfEvaluator<'a> {
     /// Evaluate if the threshold is above for a given input for the key and the associated stake
     ///
     /// On threshold success, the witness is returned, otherwise None is returned
-    pub fn evaluate(&self, key: &SecretKey<Curve25519_2HashDh>) -> Option<Witness> {
+    pub fn evaluate(&self, key: &SecretKey<EllipticCurve2hashDh>) -> Option<Witness> {
         let input = Input::create(self.nonce, self.slot_id);
         let csprng = OsRng;
         let vr = vrf_evaluate_and_prove(key, &input.0, csprng);
-        let r = vrf_verified_get_output::<Curve25519_2HashDh>(&vr);
+        let r = vrf_verified_get_output::<EllipticCurve2hashDh>(&vr);
         let t = get_threshold(&input, &r);
         if above_stake_threshold(t, &self.stake, self.active_slots_coeff) {
             Some(vr)
@@ -91,12 +91,12 @@ impl<'a> VrfEvaluator<'a> {
     /// On success, the nonce is returned, otherwise None is returned
     pub fn verify(
         &self,
-        key: &PublicKey<Curve25519_2HashDh>,
+        key: &PublicKey<EllipticCurve2hashDh>,
         witness: &'a Witness,
     ) -> Result<PraosNonce, VrfEvalFailure> {
         let input = Input::create(&self.nonce, self.slot_id);
         if vrf_verify(key, &input.0, witness) == VrfVerification::Success {
-            let r = vrf_verified_get_output::<Curve25519_2HashDh>(witness);
+            let r = vrf_verified_get_output::<EllipticCurve2hashDh>(witness);
             // compare threshold against phi-adjusted-stake
             let threshold = get_threshold(&input, &r);
             let phi_stake = phi(self.active_slots_coeff, &self.stake);

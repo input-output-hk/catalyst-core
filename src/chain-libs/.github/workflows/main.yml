@@ -76,6 +76,10 @@ jobs:
           - os: ubuntu-latest
             toolchain: nightly
             experimental: true
+          - os: ubuntu-latest
+            toolchain: stable
+            experimental: false
+            mode: '--features chain-crypto/p256k1'
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 30
@@ -153,6 +157,7 @@ jobs:
           args: >-
             ${{ matrix.mode }} --locked
             --manifest-path chain-network/Cargo.toml --no-default-features
+
 
   lints:
     name: Lints

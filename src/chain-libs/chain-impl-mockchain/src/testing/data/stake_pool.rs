@@ -3,7 +3,7 @@ use crate::{
     testing::{builders::StakePoolBuilder, data::address::AddressData, TestGen},
 };
 
-use chain_crypto::{Curve25519_2HashDh, Ed25519, KeyPair, PublicKey, SumEd25519_12};
+use chain_crypto::{Ed25519, EllipticCurve2hashDh, KeyPair, PublicKey, SumEd25519_12};
 use quickcheck::{Arbitrary, Gen};
 use std::iter;
 
@@ -11,7 +11,7 @@ use std::iter;
 pub struct StakePool {
     alias: String,
     id: PoolId,
-    vrf: KeyPair<Curve25519_2HashDh>,
+    vrf: KeyPair<EllipticCurve2hashDh>,
     kes: KeyPair<SumEd25519_12>,
     pool_info: PoolRegistration,
     reward_account: Option<AddressData>,
@@ -21,7 +21,7 @@ impl StakePool {
     pub fn new(
         alias: &str,
         id: PoolId,
-        vrf: KeyPair<Curve25519_2HashDh>,
+        vrf: KeyPair<EllipticCurve2hashDh>,
         kes: KeyPair<SumEd25519_12>,
         pool_info: PoolRegistration,
         reward_account: Option<AddressData>,
@@ -40,7 +40,7 @@ impl StakePool {
         self.id.clone()
     }
 
-    pub fn vrf(&self) -> KeyPair<Curve25519_2HashDh> {
+    pub fn vrf(&self) -> KeyPair<EllipticCurve2hashDh> {
         self.vrf.clone()
     }
 

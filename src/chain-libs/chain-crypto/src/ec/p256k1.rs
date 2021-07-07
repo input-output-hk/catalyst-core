@@ -168,7 +168,7 @@ impl GroupElement {
         I: IntoIterator<Item = Scalar>,
         J: IntoIterator<Item = GroupElement>,
     {
-        multiscalar_multiplication(scalar, points)
+        Self::multiscalar_multiplication(scalars, points)
     }
 }
 

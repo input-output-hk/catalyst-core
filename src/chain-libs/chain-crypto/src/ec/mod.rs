@@ -2,16 +2,16 @@
 //! curves), or the other (ristretto255).
 #[macro_use]
 mod macros;
-#[cfg(not(feature = "ristretto255"))]
+#[cfg(crypto_backend = "__internal_ex_backend_p256k1")]
 mod p256k1;
-#[cfg(feature = "ristretto255")]
+#[cfg(crypto_backend = "__internal_ex_backend_ristretto255")]
 mod ristretto255;
 
 mod babystep;
 
-#[cfg(not(feature = "ristretto255"))]
+#[cfg(crypto_backend = "__internal_ex_backend_p256k1")]
 pub use self::p256k1::*;
-#[cfg(feature = "ristretto255")]
+#[cfg(crypto_backend = "__internal_ex_backend_ristretto255")]
 pub use self::ristretto255::*;
 
 pub use babystep::{baby_step_giant_step, BabyStepsTable};

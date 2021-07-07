@@ -97,3 +97,34 @@ where
 
     AbiResult::success()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cast_private_vote() {
+        use bech32::ToBase32;
+        use chain_crypto::ec::GroupElement;
+        let vote_plan_id = [0u8; crate::vote::VOTE_PLAN_ID_LENGTH];
+        let pk =
+            chain_vote::ElectionPublicKey::from_bytes(&GroupElement::from_hash(&[1]).to_bytes())
+                .unwrap();
+
+        let election_public_key =
+            bech32::encode(ELECTION_PUBLIC_KEY_HRP, pk.to_bytes().to_base32()).unwrap();
+        let election_public_key = std::ffi::CString::new(election_public_key).unwrap();
+
+        let mut proposal: ProposalPtr = std::ptr::null_mut();
+        unsafe {
+            let result = proposal_new(
+                vote_plan_id.as_ptr(),
+                0,
+                2,
+                ProposalPrivate(&election_public_key),
+                (&mut proposal) as *mut ProposalPtr,
+            );
+            assert!(result.is_ok());
+        }
+    }
+}

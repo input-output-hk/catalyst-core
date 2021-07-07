@@ -2,45 +2,46 @@ use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct Challenge {
-    challenge_type: String,
-    challenge_url: String,
-    description: String,
-    fund_id: String,
-    id: String,
-    proposers_rewards: String,
-    rewards_total: String,
-    title: String,
+    pub challenge_type: String,
+    pub challenge_url: String,
+    pub description: String,
+    pub fund_id: String,
+    pub id: String,
+    pub proposers_rewards: String,
+    pub rewards_total: String,
+    pub title: String,
 }
 
 #[derive(Debug, Serialize)]
 pub struct Fund {
-    id: i64,
-    goal: String,
-    rewards_info: String,
-    threshold: i64,
+    pub id: i32,
+    pub goal: String,
+    pub rewards_info: String,
+    pub threshold: i64,
 }
 
 #[derive(Debug, Serialize)]
 pub struct Proposal {
-    category_name: String,
+    pub category_name: String,
     #[serde(default = "default_vote_options")]
-    chain_vote_options: String,
-    chain_vote_type: String,
-    internal_id: String,
-    proposal_funds: String,
-    proposal_id: String,
-    proposal_impact_score: String,
-    proposal_solution: String,
-    proposal_summary: String,
-    proposal_title: String,
-    proposal_url: String,
-    proposer_email: String,
-    proposer_name: String,
-    proposer_relevant_experience: String,
+    pub chain_vote_options: String,
+    pub chain_vote_type: String,
+    pub internal_id: String,
+    pub proposal_funds: String,
+    pub proposal_id: String,
+    pub proposal_impact_score: String,
+    pub proposal_solution: String,
+    pub proposal_summary: String,
+    pub proposal_title: String,
+    pub proposal_url: String,
+    pub proposer_email: String,
+    pub proposer_name: String,
+    pub proposer_relevant_experience: String,
     #[serde(default)]
-    proposer_url: String,
+    pub proposer_url: String,
 }
 
+#[allow(dead_code)]
 fn default_vote_options() -> &'static str {
     "blank,yes,no"
 }

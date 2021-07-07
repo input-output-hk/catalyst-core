@@ -4,11 +4,7 @@ mod models;
 use crate::ideascale::fetch::Scores;
 use crate::ideascale::models::de::{Challenge, Fund, Funnel, Proposal};
 
-use structopt::StructOpt;
-
 use std::collections::{HashMap, HashSet};
-use std::io;
-use std::path::{Path, PathBuf};
 
 // TODO: set error messages
 #[derive(thiserror::Error, Debug)]
@@ -23,7 +19,7 @@ pub enum Error {
     IoError(#[from] std::io::Error),
 
     #[error(transparent)]
-    DeserializeError(#[from] serde_json::Error),
+    SerdeError(#[from] serde_json::Error),
 }
 
 #[derive(Debug)]
@@ -90,4 +86,81 @@ pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, 
         proposals: proposals.into_iter().map(|p| (p.proposal_id, p)).collect(),
         scores,
     })
+}
+
+pub fn build_fund(
+    ideascale_data: &IdeaScaleData,
+    threshold: i64,
+    rewards_info: String,
+) -> Vec<models::se::Fund> {
+    vec![models::se::Fund {
+        id: ideascale_data.fund.id,
+        goal: ideascale_data.fund.name.clone(),
+        rewards_info,
+        threshold,
+    }]
+}
+
+pub fn build_challenges(
+    ideascale_data: &IdeaScaleData,
+    rewards: &Rewards,
+) -> Vec<models::se::Challenge> {
+    let funnels = &ideascale_data.funnels;
+    ideascale_data
+        .challenges
+        .values()
+        .map(|c| models::se::Challenge {
+            challenge_type: funnels
+                .get(&c.funnel_id)
+                .unwrap()
+                .is_community()
+                .then(|| "community-choice")
+                .unwrap_or("simple")
+                .to_string(),
+            challenge_url: c.challenge_url.clone(),
+            description: c.description.clone(),
+            fund_id: c.fund_id.to_string(),
+            id: c.id.to_string(),
+            // TODO: proposers_rewards to be removed
+            proposers_rewards: "".to_string(),
+            rewards_total: rewards.get(&c.id).unwrap().to_string(),
+            title: c.title.clone(),
+        })
+        .collect()
+}
+
+pub fn build_proposals(
+    ideascale_data: &IdeaScaleData,
+    chain_vote_type: &str,
+    fund: usize,
+) -> Vec<models::se::Proposal> {
+    let scores = &ideascale_data.scores;
+    ideascale_data
+        .proposals
+        .values()
+        .enumerate()
+        .map(|(i, p)| models::se::Proposal {
+            category_name: format!("Fund{}", fund),
+            chain_vote_options: "blank,yes,no".to_string(),
+            chain_vote_type: chain_vote_type.to_string(),
+            internal_id: i.to_string(),
+            proposal_funds: p.custom_fields.proposal_funds.clone(),
+            proposal_id: p.proposal_id.to_string(),
+            proposal_impact_score: scores.get(&p.proposal_id).unwrap().to_string(),
+            proposal_solution: p
+                .custom_fields
+                .extra
+                .get("proposal_solution")
+                .map_or("", |s| s.as_str().unwrap_or(""))
+                .to_string(),
+            proposal_summary: p.proposal_summary.clone(),
+            proposal_title: p.proposal_title.clone(),
+            proposal_url: p.proposal_url.clone(),
+            proposer_email: p.proposer.contact.clone(),
+            proposer_name: p.proposer.name.clone(),
+            // TODO: Fill missing proposer data
+            proposer_relevant_experience: "".to_string(),
+            proposer_url: "".to_string(),
+        })
+        .collect()
 }

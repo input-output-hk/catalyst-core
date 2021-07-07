@@ -32,6 +32,7 @@ pub struct IdeaScaleData {
 }
 
 pub type Rewards = HashMap<i32, i64>;
+const PROPOSER_URL_TAG: &str = "website_github_repository__not_required_";
 
 pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Error> {
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
@@ -174,7 +175,7 @@ pub fn build_proposals(
             proposer_url: p
                 .custom_fields
                 .extra
-                .get("website_github_repository__not_required_")
+                .get(PROPOSER_URL_TAG)
                 .map(|c| c.as_str().unwrap())
                 .unwrap_or("")
                 .to_string(),

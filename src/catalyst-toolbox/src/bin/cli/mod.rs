@@ -1,3 +1,4 @@
+mod ideascale;
 mod kedqr;
 mod logs;
 mod notifications;

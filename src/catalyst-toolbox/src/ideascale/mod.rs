@@ -26,25 +26,8 @@ pub enum Error {
     DeserializeError(#[from] serde_json::Error),
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(rename_all = "kebab")]
-pub struct Import {
-    /// Fund number id
-    #[structopt(long)]
-    fund: usize,
-
-    /// ideascale API token
-    #[structopt(long)]
-    api_token: String,
-
-    /// Path to a json file containing the related rewards per challenge.
-    /// `{ challenge_id:  reward_amount}`
-    #[structopt(long)]
-    rewards: PathBuf,
-}
-
 #[derive(Debug)]
-struct IdeaScaleData {
+pub struct IdeaScaleData {
     funnels: HashMap<i32, Funnel>,
     fund: Fund,
     challenges: HashMap<i32, Challenge>,
@@ -54,7 +37,7 @@ struct IdeaScaleData {
 
 pub type Rewards = HashMap<i32, i64>;
 
-async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Error> {
+pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Error> {
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(fund, api_token.clone()));
     let funds_task = tokio::spawn(fetch::get_funds_data(api_token.clone()));
     let funnels = funnels_task
@@ -107,32 +90,4 @@ async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Erro
         proposals: proposals.into_iter().map(|p| (p.proposal_id, p)).collect(),
         scores,
     })
-}
-
-fn load_json_from_file_path<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T, Error> {
-    let file = std::fs::File::open(path)?;
-    Ok(serde_json::from_reader(file)?)
-}
-
-impl Import {
-    fn exec(&self) -> Result<(), Error> {
-        let Import {
-            fund,
-            rewards,
-            api_token,
-        } = self;
-
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .build()
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:?}", e)))?;
-
-        let idescale_data =
-            futures::executor::block_on(runtime.spawn(fetch_all(*fund, api_token.clone())))?
-                .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:?}", e)))?;
-
-        let rewards: Rewards = load_json_from_file_path(rewards)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{:?}", e)))?;
-
-        Ok(())
-    }
 }

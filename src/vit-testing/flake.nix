@@ -67,10 +67,23 @@
               }
             '';
           });
+
+        registration-verify-service = prev.registration-verify-service.overrideAttrs
+          (oldAttrs: {
+            nativeBuildInputs = oldAttrs.nativeBuildInputs
+              ++ [ final.makeWrapper ];
+            postInstall = ''
+              wrapProgram $out/bin/registration-verify-service --prefix PATH : ${
+                final.lib.makeBinPath [
+                  jormungandr.packages.${final.system}.jcli
+                ]
+              }
+            '';
+          });
       };
 
       packages = { iapyx, vitup, integration-tests, snapshot-trigger-service
-        , registration-service }@pkgs:
+        , registration-service, registration-verify-service }@pkgs:
         pkgs;
 
       devShell = { mkShell, rustc, cargo, pkg-config, openssl, protobuf, rustfmt }:
@@ -81,7 +94,7 @@
         };
 
       hydraJobs = { iapyx, vitup, integration-tests, snapshot-trigger-service
-        , registration-service }@pkgs:
+        , registration-service, registration-verify-service }@pkgs:
         pkgs;
     };
 }

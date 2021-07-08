@@ -16,7 +16,7 @@ pub enum VoteType {
 }
 
 #[derive(Debug, StructOpt)]
-pub enum Idescale {
+pub enum Ideascale {
     Import(Import),
 }
 
@@ -53,10 +53,10 @@ pub struct Import {
     save_folder: PathBuf,
 }
 
-impl Idescale {
+impl Ideascale {
     pub fn exec(&self) -> Result<(), Error> {
         match self {
-            Idescale::Import(import) => import.exec(),
+            Ideascale::Import(import) => import.exec(),
         }
     }
 }

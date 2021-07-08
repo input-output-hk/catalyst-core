@@ -39,7 +39,7 @@ pub enum CatalystCommand {
     /// Generate qr codes
     QrCode(kedqr::QrCodeCmd),
     /// Interact with the Idescale API
-    Ideascale(ideascale::Idescale),
+    Ideascale(ideascale::Ideascale),
 }
 
 impl Cli {

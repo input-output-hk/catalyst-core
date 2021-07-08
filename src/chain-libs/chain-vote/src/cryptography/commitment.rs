@@ -1,5 +1,5 @@
 use crate::tally::Crs;
-use chain_crypto::ec::{GroupElement, Scalar};
+use crate::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 
 /// Pedersen Commitment key

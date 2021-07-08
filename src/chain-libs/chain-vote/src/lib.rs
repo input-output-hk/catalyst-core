@@ -14,7 +14,12 @@ pub mod debug {
     }
 }
 
-pub use chain_crypto::ec::BabyStepsTable as TallyOptimizationTable;
+#[cfg(crypto_backend = "__internal_ex_backend_p256k1")]
+pub(crate) use chain_crypto::ec::p256k1::*;
+#[cfg(crypto_backend = "__internal_ex_backend_ristretto255")]
+pub(crate) use chain_crypto::ec::ristretto255::*;
+
+pub use math::babystep::BabyStepsTable as TallyOptimizationTable;
 
 pub use crate::{
     committee::{ElectionPublicKey, MemberCommunicationKey, MemberPublicKey, MemberState},

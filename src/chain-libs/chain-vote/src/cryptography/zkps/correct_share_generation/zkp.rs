@@ -14,7 +14,7 @@
 //! which is a proof of discrete log equality. We can therefore proof
 //! correct decryption using a proof of discrete log equality.
 use crate::cryptography::{Ciphertext, PublicKey, SecretKey};
-use chain_crypto::ec::GroupElement;
+use crate::GroupElement;
 use chain_crypto::zkps::dleq;
 use rand::{CryptoRng, RngCore};
 

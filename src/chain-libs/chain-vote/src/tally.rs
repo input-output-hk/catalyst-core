@@ -2,11 +2,11 @@ use crate::{
     committee::*,
     cryptography::{Ciphertext, CorrectShareGenerationZkp},
     encrypted_vote::Ballot,
+    math::babystep::baby_step_giant_step,
+    TallyOptimizationTable,
 };
 
-use chain_crypto::ec::{
-    baby_step_giant_step, BabyStepsTable as TallyOptimizationTable, GroupElement,
-};
+use crate::GroupElement;
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};

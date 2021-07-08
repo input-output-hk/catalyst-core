@@ -445,3 +445,5 @@ mod test {
         assert_eq!(element, element2);
     }
 }
+
+gen_group_tests!();

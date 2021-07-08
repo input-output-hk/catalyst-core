@@ -46,13 +46,13 @@ dependencies = [
 
 [[package]]
 name = "assert_cmd"
-version = "1.0.3"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2475b58cd94eb4f70159f4fd8844ba3b807532fe3131b3373fae060bbe30396"
+checksum = "3d20831bd004dda4c7c372c19cdabff369f794a95e955b3f13fe460e3e1ae95f"
 dependencies = [
  "bstr",
  "doc-comment",
- "predicates",
+ "predicates 2.0.0",
  "predicates-core",
  "predicates-tree",
  "wait-timeout",
@@ -66,7 +66,7 @@ checksum = "3203d5bb9979ac7210f01a150578ebafef6f08b55e79f6db32673c0977b94340"
 dependencies = [
  "doc-comment",
  "globwalk",
- "predicates",
+ "predicates 1.0.7",
  "predicates-core",
  "predicates-tree",
  "tempfile",
@@ -612,6 +612,12 @@ name = "difference"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "524cbf6897b527295dff137cec09ecf3a05f4fddffd7dfcd1585403449e74198"
+
+[[package]]
+name = "difflib"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6184e33543162437515c2e2b48714794e37845ec9851711914eec9d308f6ebe8"
 
 [[package]]
 name = "digest"
@@ -1256,6 +1262,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69ddb889f9d0d08a67338271fa9b62996bc788c7796a5c18cf057420aaed5eaf"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1282,7 +1297,7 @@ dependencies = [
  "indicatif",
  "lazy_static",
  "os_info",
- "predicates",
+ "predicates 1.0.7",
  "rand 0.7.3",
  "rand_chacha 0.2.2",
  "rand_core 0.5.1",
@@ -1716,6 +1731,17 @@ dependencies = [
  "normalize-line-endings",
  "predicates-core",
  "regex 1.4.5",
+]
+
+[[package]]
+name = "predicates"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6e46ca79eb4e21e2ec14430340c71250ab69332abf85521c95d3a8bc336aa76"
+dependencies = [
+ "difflib",
+ "itertools 0.10.1",
+ "predicates-core",
 ]
 
 [[package]]
@@ -2959,7 +2985,7 @@ dependencies = [
  "dotenv",
  "eccoxide",
  "http-zipkin",
- "itertools",
+ "itertools 0.9.0",
  "libsqlite3-sys",
  "log",
  "rand 0.8.3",
@@ -3010,7 +3036,7 @@ dependencies = [
  "jortestkit",
  "lazy_static",
  "libsqlite3-sys",
- "predicates",
+ "predicates 1.0.7",
  "pretty_assertions",
  "rand 0.7.3",
  "rand_core 0.5.1",

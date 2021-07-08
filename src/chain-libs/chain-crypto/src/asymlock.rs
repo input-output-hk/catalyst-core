@@ -5,7 +5,7 @@
 //! * chacha20poly1305 for symmetric encryption algorithm
 //!
 #![allow(clippy::op_ref)] // This needs to be here because the points of sec2 backend do not implement Copy
-use crate::ec::{GroupElement, Scalar};
+use crate::ec::ristretto255::{GroupElement, Scalar};
 use cryptoxide::chacha20poly1305::ChaCha20Poly1305;
 use cryptoxide::hkdf::hkdf_expand;
 use cryptoxide::sha2;
@@ -19,12 +19,7 @@ pub enum DecryptionError {
 }
 
 fn shared_key_to_symmetric_key(app_level_info: &[u8], p: &GroupElement) -> ChaCha20Poly1305 {
-    // use the compressed point as PRK directly
-    #[cfg(crypto_backend = "__internal_ex_backend_ristretto255")]
     let prk = &p.to_bytes();
-    // if we work with sec2 curves, we use only the x coordinate as a key
-    #[cfg(crypto_backend = "__internal_ex_backend_p256k1")]
-    let prk = &p.to_bytes()[1..33];
     let mut symkey = [0u8; 32 + 12];
     hkdf_expand(sha2::Sha256::new(), prk, app_level_info, &mut symkey);
     ChaCha20Poly1305::new(&symkey[0..32], &symkey[32..], &[])

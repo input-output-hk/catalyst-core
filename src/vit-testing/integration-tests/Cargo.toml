@@ -7,10 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "3ae714a976bd645eb9a66ef7213cd983673a1ce8" } 
-jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "3ae714a976bd645eb9a66ef7213cd983673a1ce8" } 
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "3ae714a976bd645eb9a66ef7213cd983673a1ce8" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "3ae714a976bd645eb9a66ef7213cd983673a1ce8" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "52aa087c83aab1a468569089c67d58112755489d" } 
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "52aa087c83aab1a468569089c67d58112755489d" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "52aa087c83aab1a468569089c67d58112755489d" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "52aa087c83aab1a468569089c67d58112755489d" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "df9490ae33bb3abef8cb6877001091b179c5d38b" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "df9490ae33bb3abef8cb6877001091b179c5d38b" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }

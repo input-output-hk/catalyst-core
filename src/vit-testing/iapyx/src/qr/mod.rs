@@ -1,8 +1,7 @@
 use bech32::ToBase32;
 use chain_crypto::AsymmetricKey;
 use chain_crypto::Ed25519Extended;
-use jormungandr_testing_utils::qr_code::KeyQrCode;
-use jormungandr_testing_utils::qr_code::KeyQrCodeError;
+use jormungandr_testing_utils::qr_code::{KeyQrCode,KeyQrCodeError};
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;

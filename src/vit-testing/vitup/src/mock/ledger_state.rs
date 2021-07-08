@@ -1,3 +1,4 @@
+use chain_addr::Discrimination;
 use chain_core::property::Block;
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::Fragment;
@@ -202,6 +203,7 @@ impl LedgerState {
                     .block0_date
                     .to_secs(),
             ),
+            discrimination: Discrimination::Production,
             curr_slot_start_time: Some(self.curr_slot_start_time()),
             consensus_version: self
                 .block0_configuration

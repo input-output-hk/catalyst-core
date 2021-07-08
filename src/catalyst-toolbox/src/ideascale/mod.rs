@@ -6,7 +6,9 @@ use crate::ideascale::models::de::{Challenge, Fund, Funnel, Proposal};
 
 use std::collections::{HashMap, HashSet};
 
-// TODO: set error messages
+const PROPOSER_URL_TAG: &str = "website_github_repository__not_required_";
+const PROPOSAL_SOLUTION_TAG: &str = "proposal_solution";
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
@@ -32,7 +34,6 @@ pub struct IdeaScaleData {
 }
 
 pub type Rewards = HashMap<i32, i64>;
-const PROPOSER_URL_TAG: &str = "website_github_repository__not_required_";
 
 pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Error> {
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
@@ -107,14 +108,6 @@ pub fn build_challenges(
     rewards: &Rewards,
 ) -> Vec<models::se::Challenge> {
     let funnels = &ideascale_data.funnels;
-    println!(
-        "{}",
-        funnels
-            .keys()
-            .map(|k| k.to_string())
-            .collect::<Vec<_>>()
-            .join(", ")
-    );
     ideascale_data
         .challenges
         .values()
@@ -163,7 +156,7 @@ pub fn build_proposals(
             proposal_solution: p
                 .custom_fields
                 .extra
-                .get("proposal_solution")
+                .get(PROPOSAL_SOUTION_TAG)
                 .map_or("", |s| s.as_str().unwrap_or(""))
                 .to_string(),
             proposal_summary: p.proposal_summary.clone(),

@@ -27,7 +27,7 @@ struct Score {
 pub type Scores = HashMap<i32, f32>;
 
 lazy_static::lazy_static!(
-    static ref BASE_IDEASCALE_URL: url::Url = "https://apitest.ideascale.com/a/rest/v1/".try_into().unwrap();
+    static ref BASE_IDEASCALE_URL: url::Url = "https://cardano.ideascale.com/a/rest/v1/".try_into().unwrap();
     static ref CLIENT: reqwest::Client = reqwest::Client::new();
 );
 

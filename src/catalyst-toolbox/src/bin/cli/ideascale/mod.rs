@@ -31,12 +31,15 @@ pub struct Import {
     #[structopt(long)]
     api_token: String,
 
+    /// Fund approval threshold setting
     #[structopt(long)]
     threshold: i64,
 
+    /// Fund rewards description
     #[structopt(long)]
     rewards_info: String,
 
+    /// either "public" or "private"
     #[structopt(long)]
     chain_vote_type: VoteType,
 
@@ -45,6 +48,7 @@ pub struct Import {
     #[structopt(long)]
     rewards: PathBuf,
 
+    /// Path to folder where fund, challenges and proposals json files will be dumped
     #[structopt(long)]
     save_folder: PathBuf,
 }

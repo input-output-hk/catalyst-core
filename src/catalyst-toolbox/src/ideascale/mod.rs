@@ -103,10 +103,7 @@ pub fn build_fund(
     }]
 }
 
-pub fn build_challenges(
-    ideascale_data: &IdeaScaleData,
-    rewards: &Rewards,
-) -> Vec<models::se::Challenge> {
+pub fn build_challenges(ideascale_data: &IdeaScaleData) -> Vec<models::se::Challenge> {
     let funnels = &ideascale_data.funnels;
     ideascale_data
         .challenges
@@ -125,7 +122,7 @@ pub fn build_challenges(
             id: c.id.to_string(),
             // TODO: proposers_rewards to be removed
             proposers_rewards: "".to_string(),
-            rewards_total: rewards.get(&c.id).cloned().unwrap_or(0).to_string(),
+            rewards_total: c.rewards.clone(),
             title: c.title.clone(),
         })
         .collect()

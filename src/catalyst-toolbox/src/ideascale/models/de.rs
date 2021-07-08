@@ -1,10 +1,13 @@
-use serde::Deserialize;
+use serde::de::Error;
+use serde::{Deserialize, Deserializer};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {
     pub id: i32,
     #[serde(alias = "name")]
     pub title: String,
+    #[serde(alias = "tagline", deserialize_with = "deserialize_rewards")]
+    pub rewards: String,
     pub description: String,
     #[serde(alias = "groupId")]
     pub fund_id: i32,
@@ -83,4 +86,22 @@ impl Funnel {
     pub fn is_community(&self) -> bool {
         self.title.contains("Challenge Setting")
     }
+}
+
+fn deserialize_rewards<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+    let rewards_str = String::deserialize(deserializer)?;
+
+    // input is not standarized, hack an early return if it is just 0 ada
+    if rewards_str.starts_with("0 ada") {
+        return Ok("0".to_string());
+    }
+    sscanf::scanf!(rewards_str.trim_end(), "${} in ada", String)
+        // trim all . or , in between numbers
+        .map(|mut s| {
+            s.retain(|c: char| c.is_numeric());
+            s
+        })
+        .ok_or_else(|| {
+            D::Error::custom(&format!("Unable to read malformed value: {}", rewards_str))
+        })
 }

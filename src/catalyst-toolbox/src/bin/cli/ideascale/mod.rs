@@ -43,11 +43,6 @@ pub struct Import {
     #[structopt(long)]
     chain_vote_type: VoteType,
 
-    /// Path to a json file containing the related rewards per challenge.
-    /// `{ challenge_id:  reward_amount}`
-    #[structopt(long)]
-    rewards: PathBuf,
-
     /// Path to folder where fund, challenges and proposals json files will be dumped
     #[structopt(long)]
     save_folder: PathBuf,
@@ -65,7 +60,6 @@ impl Import {
     fn exec(&self) -> Result<(), Error> {
         let Import {
             fund,
-            rewards,
             api_token,
             threshold,
             rewards_info,
@@ -85,7 +79,7 @@ impl Import {
             serde_json::from_reader(jcli_lib::utils::io::open_file_read(&Some(rewards))?)?;
 
         let funds = build_fund(&idescale_data, *threshold, rewards_info.clone());
-        let challenges = build_challenges(&idescale_data, &rewards);
+        let challenges = build_challenges(&idescale_data);
         let proposals = build_proposals(&idescale_data, &chain_vote_type.to_string(), *fund);
 
         dump_content_to_file(

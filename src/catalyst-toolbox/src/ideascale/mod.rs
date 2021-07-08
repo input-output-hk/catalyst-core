@@ -156,7 +156,7 @@ pub fn build_proposals(
             proposal_solution: p
                 .custom_fields
                 .extra
-                .get(PROPOSAL_SOUTION_TAG)
+                .get(PROPOSAL_SOLUTION_TAG)
                 .map_or("", |s| s.as_str().unwrap_or(""))
                 .to_string(),
             proposal_summary: p.proposal_summary.clone(),

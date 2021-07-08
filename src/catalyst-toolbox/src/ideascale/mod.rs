@@ -41,20 +41,26 @@ pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, 
         .into_iter()
         .map(|f| (f.id, f))
         .collect();
+
     let funds = funds_task.await??;
+
     let challenges: Vec<Challenge> = funds
         .iter()
         .flat_map(|f| f.challenges.iter().cloned())
         .collect();
+
     let proposals_tasks: Vec<_> = challenges
         .iter()
         .map(|c| tokio::spawn(fetch::get_proposals_data(c.id, api_token.clone())))
         .collect();
+
     let proposals: Vec<Proposal> = futures::future::try_join_all(proposals_tasks)
         .await?
         .into_iter()
         .flatten()
         .flatten()
+        // filter out non
+        .filter(|p| filter_proposal_by_stage_type(&p.stage_type))
         .collect();
 
     let stage_ids: HashSet<i32> = proposals.iter().map(|p| p.stage_id).collect();
@@ -167,4 +173,8 @@ pub fn build_proposals(
                 .to_string(),
         })
         .collect()
+}
+
+fn filter_proposal_by_stage_type(stage: &str) -> bool {
+    matches!(stage, "Governance phase" | "Assess QA")
 }

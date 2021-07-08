@@ -57,6 +57,9 @@ pub struct Proposal {
     #[serde(alias = "stageId")]
     pub stage_id: i32,
 
+    #[serde(alias = "stageLabel")]
+    pub stage_type: String,
+
     #[serde(alias = "campaignId")]
     pub challenge_id: i32,
 }

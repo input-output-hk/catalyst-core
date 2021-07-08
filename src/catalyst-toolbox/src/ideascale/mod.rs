@@ -33,8 +33,6 @@ pub struct IdeaScaleData {
     scores: Scores,
 }
 
-pub type Rewards = HashMap<i32, i64>;
-
 pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Error> {
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
     let funds_task = tokio::spawn(fetch::get_funds_data(api_token.clone()));
@@ -120,8 +118,6 @@ pub fn build_challenges(ideascale_data: &IdeaScaleData) -> Vec<models::se::Chall
             description: c.description.clone(),
             fund_id: c.fund_id.to_string(),
             id: c.id.to_string(),
-            // TODO: proposers_rewards to be removed
-            proposers_rewards: "".to_string(),
             rewards_total: c.rewards.clone(),
             title: c.title.clone(),
         })

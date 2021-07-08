@@ -7,7 +7,6 @@ pub struct Challenge {
     pub description: String,
     pub fund_id: String,
     pub id: String,
-    pub proposers_rewards: String,
     pub rewards_total: String,
     pub title: String,
 }

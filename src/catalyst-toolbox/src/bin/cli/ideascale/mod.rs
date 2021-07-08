@@ -1,5 +1,5 @@
 use catalyst_toolbox::ideascale::{
-    build_challenges, build_fund, build_proposals, fetch_all, Error, Rewards,
+    build_challenges, build_fund, build_proposals, fetch_all, Error,
 };
 
 use structopt::StructOpt;
@@ -74,9 +74,6 @@ impl Import {
 
         let idescale_data =
             futures::executor::block_on(runtime.spawn(fetch_all(*fund, api_token.clone())))??;
-
-        let rewards: Rewards =
-            serde_json::from_reader(jcli_lib::utils::io::open_file_read(&Some(rewards))?)?;
 
         let funds = build_fund(&idescale_data, *threshold, rewards_info.clone());
         let challenges = build_challenges(&idescale_data);

@@ -26,7 +26,6 @@ table! {
         fund_goal -> Text,
         registration_snapshot_time -> BigInt,
         voting_power_threshold -> BigInt,
-        rewards_info -> Text,
         fund_start_time -> BigInt,
         fund_end_time -> BigInt,
         next_fund_start_time -> BigInt,

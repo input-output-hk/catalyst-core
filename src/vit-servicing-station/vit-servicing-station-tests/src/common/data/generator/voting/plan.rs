@@ -174,7 +174,6 @@ impl ValidVotePlanGenerator {
             fund_name: self.parameters.fund_name.clone(),
             fund_goal: fund_template.goal,
             voting_power_threshold: threshold,
-            rewards_info: fund_template.rewards_info,
             fund_start_time: voting_start,
             fund_end_time: voting_tally_start,
             next_fund_start_time,

@@ -15,7 +15,6 @@ use vit_servicing_station_lib::{
 use fake::{
     faker::chrono::en::DateTimeBetween,
     faker::company::en::{Buzzword, CatchPhase, CompanyName, Industry},
-    faker::lorem::en::*,
     faker::{internet::en::DomainSuffix, internet::en::SafeEmail, name::en::Name},
     Fake,
 };
@@ -118,7 +117,6 @@ impl ArbitraryGenerator {
             id: id.abs(),
             fund_name: CatchPhase().fake::<String>(),
             fund_goal: Buzzword().fake::<String>(),
-            rewards_info: Sentence(3..5).fake::<String>(),
             fund_start_time: dates.start.timestamp(),
             voting_power_threshold: self.id_generator.next_u64() as i64,
             fund_end_time: dates.end.timestamp(),

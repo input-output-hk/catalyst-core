@@ -2,7 +2,6 @@ use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 
 use std::collections::HashSet;
-use std::ops::Deref;
 
 lazy_static::lazy_static! {
     static ref DIRTY_CHARACTERS: HashSet<char> = ['*', '-', '/'].iter().copied().collect();
@@ -97,7 +96,7 @@ pub struct CleanString(#[serde(deserialize_with = "deserialize_clean_string")] S
 
 impl Funnel {
     pub fn is_community(&self) -> bool {
-        self.title.contains("Challenge Setting")
+        self.title.as_ref().contains("Challenge Setting")
     }
 }
 
@@ -107,10 +106,8 @@ impl ToString for CleanString {
     }
 }
 
-impl Deref for CleanString {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
+impl AsRef<str> for CleanString {
+    fn as_ref(&self) -> &str {
         &self.0
     }
 }

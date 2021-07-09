@@ -34,8 +34,8 @@ pub fn multiple_registration() {
     };
 
     wait_for_db_sync();
-    let snapshot_result = do_snapshot(&temp_dir, job_param).unwrap();
-    let initials = snapshot_result.initials().unwrap();
+    let snapshot_result = do_snapshot(job_param).unwrap();
+    let initials = snapshot_result.initials();
 
     initials.assert_contains(correct_entry);
     initials.assert_not_contain(overriden_entry);
@@ -58,10 +58,9 @@ pub fn wallet_has_less_than_threshold() {
     };
 
     wait_for_db_sync();
-    let snapshot_result = do_snapshot(&temp_dir, job_param).unwrap();
+    let snapshot_result = do_snapshot(job_param).unwrap();
     snapshot_result
         .initials()
-        .unwrap()
         .assert_not_contain(too_low_funds_entry);
 }
 
@@ -83,11 +82,8 @@ pub fn wallet_with_funds_equals_to_threshold_should_be_elligible_to_vote() {
     };
 
     wait_for_db_sync();
-    let snapshot_result = do_snapshot(&temp_dir, job_param).unwrap();
-    snapshot_result
-        .initials()
-        .unwrap()
-        .assert_contains(correct_entry);
+    let snapshot_result = do_snapshot(job_param).unwrap();
+    snapshot_result.initials().assert_contains(correct_entry);
 }
 
 //SR004
@@ -107,9 +103,8 @@ pub fn registration_after_snapshot_is_not_taken_into_account() {
     };
 
     wait_for_db_sync();
-    let snapshot_result = do_snapshot(&temp_dir, job_param).unwrap();
+    let snapshot_result = do_snapshot(job_param).unwrap();
     snapshot_result
         .initials()
-        .unwrap()
         .assert_not_contain(too_late_entry);
 }

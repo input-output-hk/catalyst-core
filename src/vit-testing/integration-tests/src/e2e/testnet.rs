@@ -29,12 +29,12 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     };
 
     wait_for_db_sync();
-    let snapshot_result = do_snapshot(&temp_dir, job_param).unwrap();
+    let snapshot_result = do_snapshot(job_param).unwrap();
 
     println!("Snapshot: {:?}", snapshot_result);
 
     let entry = snapshot_result
-        .by_address(&result.address())
+        .by_address(&result.address().unwrap().into())
         .unwrap()
         .unwrap();
 
@@ -51,7 +51,7 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .proposals_count(300)
         .voting_power(1)
         .initials(Initials::new_from_external(
-            snapshot_result.initials().unwrap(),
+            snapshot_result.initials().to_vec(),
         ))
         .private(false);
 

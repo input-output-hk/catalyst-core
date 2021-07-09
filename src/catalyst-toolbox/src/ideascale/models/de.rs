@@ -1,6 +1,13 @@
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 
+use std::collections::HashSet;
+use std::ops::Deref;
+
+lazy_static::lazy_static! {
+    static ref DIRTY_CHARACTERS: HashSet<char> = ['*', '-', '/'].iter().copied().collect();
+}
+
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {
     pub id: i32,
@@ -21,14 +28,14 @@ pub struct Challenge {
 pub struct Funnel {
     pub id: i32,
     #[serde(alias = "name")]
-    pub title: String,
-    pub description: String,
+    pub title: CleanString,
+    pub description: CleanString,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Fund {
     pub id: i32,
-    pub name: String,
+    pub name: CleanString,
     #[serde(alias = "campaigns")]
     pub challenges: Vec<Challenge>,
 }
@@ -37,11 +44,11 @@ pub struct Fund {
 pub struct Proposal {
     #[serde(alias = "id")]
     pub proposal_id: i32,
-    pub proposal_category: Option<String>,
+    pub proposal_category: Option<CleanString>,
     #[serde(alias = "title")]
-    pub proposal_title: String,
+    pub proposal_title: CleanString,
     #[serde(alias = "text")]
-    pub proposal_summary: String,
+    pub proposal_summary: CleanString,
 
     #[serde(alias = "url")]
     pub proposal_url: String,
@@ -78,12 +85,15 @@ pub struct ProposalCustomFieldsByKey {
     #[serde(alias = "requested_funds")]
     pub proposal_funds: String,
     #[serde(alias = "relevant_experience")]
-    pub proposal_relevant_experience: String,
+    pub proposal_relevant_experience: CleanString,
     #[serde(alias = "importance")]
-    pub proposal_why: Option<String>,
+    pub proposal_why: Option<CleanString>,
     #[serde(flatten)]
     pub extra: serde_json::Value,
 }
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct CleanString(#[serde(deserialize_with = "deserialize_clean_string")] String);
 
 impl Funnel {
     pub fn is_community(&self) -> bool {
@@ -91,6 +101,27 @@ impl Funnel {
     }
 }
 
+impl ToString for CleanString {
+    fn to_string(&self) -> String {
+        self.0.clone()
+    }
+}
+
+impl Deref for CleanString {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+fn deserialize_clean_string<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<String, D::Error> {
+    let mut rewards_str = String::deserialize(deserializer)?;
+    rewards_str.retain(|c| !DIRTY_CHARACTERS.contains(&c));
+    Ok(rewards_str)
+}
 fn deserialize_rewards<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
     let rewards_str = String::deserialize(deserializer)?;
 

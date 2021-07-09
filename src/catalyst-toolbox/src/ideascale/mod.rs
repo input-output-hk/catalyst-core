@@ -101,7 +101,7 @@ pub fn build_fund(
 ) -> Vec<models::se::Fund> {
     vec![models::se::Fund {
         id: ideascale_data.fund.id,
-        goal: ideascale_data.fund.name.clone(),
+        goal: ideascale_data.fund.name.to_string(),
         rewards_info,
         threshold,
     }]
@@ -158,12 +158,12 @@ pub fn build_proposals(
                 .get(PROPOSAL_SOLUTION_TAG)
                 .map_or("", |s| s.as_str().unwrap_or(""))
                 .to_string(),
-            proposal_summary: p.proposal_summary.clone(),
-            proposal_title: p.proposal_title.clone(),
-            proposal_url: p.proposal_url.clone(),
+            proposal_summary: p.proposal_summary.to_string(),
+            proposal_title: p.proposal_title.to_string(),
+            proposal_url: p.proposal_url.to_string(),
             proposer_email: p.proposer.contact.clone(),
             proposer_name: p.proposer.name.clone(),
-            proposer_relevant_experience: p.custom_fields.proposal_relevant_experience.clone(),
+            proposer_relevant_experience: p.custom_fields.proposal_relevant_experience.to_string(),
             proposer_url: p
                 .custom_fields
                 .extra

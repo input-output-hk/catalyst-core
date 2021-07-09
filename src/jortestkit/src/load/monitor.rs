@@ -17,10 +17,14 @@ pub struct MonitorThread {
 }
 
 impl MonitorThread {
-    pub fn start(requests: &Arc<Mutex<Vec<Response>>>, monitor: Monitor, title: &str) -> Self {
+    pub fn start_multi(
+        requests: &Arc<Mutex<Vec<Response>>>,
+        monitor: Monitor,
+        mut progress_bar: ProgressBar,
+        title: &str,
+    ) -> Self {
         let (tx, rx) = mpsc::channel();
         let request_clone = Arc::clone(&requests);
-        let mut progress_bar = ProgressBar::new(1);
         use_as_monitor_progress_bar(&monitor, title, &mut progress_bar);
 
         let monitor = thread::spawn(move || {
@@ -64,6 +68,11 @@ impl MonitorThread {
             stop_signal: tx,
             handle: monitor,
         }
+    }
+
+    pub fn start(requests: &Arc<Mutex<Vec<Response>>>, monitor: Monitor, title: &str) -> Self {
+        let progress_bar = ProgressBar::new(1);
+        Self::start_multi(requests, monitor, progress_bar, title)
     }
 
     pub fn stop(self) {

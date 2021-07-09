@@ -30,6 +30,36 @@ pub fn load_sanity_sync() {
     load::start_sync(SampleRequestGenerator { counter: 1 }, config, "Mock load");
 }
 
+#[test]
+pub fn load_sanity_multi_sync() {
+    let config = Configuration::duration(
+        1,
+        std::time::Duration::from_secs(5),
+        50,
+        Monitor::Progress(10),
+        0,
+        1,
+    );
+
+    load::start_multi_sync(vec![
+        (
+            SampleRequestGenerator { counter: 1 },
+            config.clone(),
+            "Mock multi load #1".to_string(),
+        ),
+        (
+            SampleRequestGenerator { counter: 1 },
+            config.clone(),
+            "Mock multi load #2".to_string(),
+        ),
+        (
+            SampleRequestGenerator { counter: 1 },
+            config.clone(),
+            "Mock multi load #3".to_string(),
+        ),
+    ]);
+}
+
 #[derive(Clone, Debug)]
 pub struct AsyncSampleRequestGenerator {
     counter: u32,

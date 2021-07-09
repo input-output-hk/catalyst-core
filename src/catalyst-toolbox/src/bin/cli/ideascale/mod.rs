@@ -35,10 +35,6 @@ pub struct Import {
     #[structopt(long)]
     threshold: i64,
 
-    /// Fund rewards description
-    #[structopt(long)]
-    rewards_info: String,
-
     /// either "public" or "private"
     #[structopt(long)]
     chain_vote_type: VoteType,
@@ -62,7 +58,6 @@ impl Import {
             fund,
             api_token,
             threshold,
-            rewards_info,
             chain_vote_type,
             save_folder,
         } = self;
@@ -75,7 +70,7 @@ impl Import {
         let idescale_data =
             futures::executor::block_on(runtime.spawn(fetch_all(*fund, api_token.clone())))??;
 
-        let funds = build_fund(&idescale_data, *threshold, rewards_info.clone());
+        let funds = build_fund(&idescale_data, *threshold);
         let challenges = build_challenges(&idescale_data);
         let proposals = build_proposals(&idescale_data, &chain_vote_type.to_string(), *fund);
 

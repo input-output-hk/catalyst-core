@@ -15,7 +15,6 @@ pub struct Challenge {
 pub struct Fund {
     pub id: i32,
     pub goal: String,
-    pub rewards_info: String,
     pub threshold: i64,
 }
 

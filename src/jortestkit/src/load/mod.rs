@@ -14,11 +14,64 @@ mod status;
 
 use crate::load::request::run_request;
 pub use config::{Configuration, Monitor, Strategy};
+pub use indicatif::{MultiProgress, ProgressBar};
 pub use monitor::MonitorThread;
 pub use progress::{use_as_monitor_progress_bar, use_as_status_progress_bar};
 pub use request::{Id, RequestFailure, RequestGenerator, RequestSendMode, RequestStatus, Response};
 pub use stats::Stats;
 pub use status::{RequestStatusProvider, Status, StatusUpdaterThread};
+
+pub fn start_multi_sync<R>(request_generators: Vec<(R, Configuration, String)>) -> Vec<Stats>
+where
+    R: RequestGenerator + Send + 'static,
+{
+    let mut child_threads = Vec::new();
+    let mut monitors = Vec::new();
+    let mut multi_responses = Vec::new();
+    let start = Instant::now();
+
+    let m = MultiProgress::new();
+
+    for (request_generator, config, title) in request_generators {
+        let responses = Arc::new(Mutex::new(Vec::new()));
+        let request_generator = Arc::new(Mutex::new(request_generator));
+        let threads = get_threads(
+            &request_generator,
+            &config,
+            RequestSendMode::Sync,
+            &responses,
+        );
+        multi_responses.push((responses.clone(), title.clone()));
+        let pb = m.add(ProgressBar::new(1));
+        monitors.push(MonitorThread::start_multi(
+            &responses,
+            config.monitor().clone(),
+            pb,
+            &title,
+        ));
+        child_threads.extend(threads);
+    }
+
+    m.join_and_clear().unwrap();
+
+    for t in child_threads.into_iter() {
+        let _child_threads = t.join();
+    }
+
+    for m in monitors.into_iter() {
+        m.stop();
+    }
+
+    multi_responses
+        .into_iter()
+        .map(|(resps, title)| {
+            let lock_request = &mut resps.lock().unwrap();
+            let stats = Stats::new(lock_request.to_vec(), start.elapsed());
+            stats.print_summary(&title);
+            stats
+        })
+        .collect()
+}
 
 pub fn start_sync<R>(request_generator: R, config: Configuration, title: &str) -> Stats
 where

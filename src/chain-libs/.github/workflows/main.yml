@@ -79,7 +79,7 @@ jobs:
           - os: ubuntu-latest
             toolchain: stable
             experimental: false
-            mode: '--features chain-crypto/p256k1'
+            mode: '--features chain-vote/p256k1'
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 30

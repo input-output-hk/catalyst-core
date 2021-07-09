@@ -19,7 +19,7 @@ impl Timestamp {
     }
 
     pub fn duration_since(&self, earlier: &Timestamp) -> Duration {
-        let system_time: SystemTime = earlier.clone().into();
+        let system_time: SystemTime = (*earlier).into();
         self.0.duration_since(system_time).unwrap()
     }
 

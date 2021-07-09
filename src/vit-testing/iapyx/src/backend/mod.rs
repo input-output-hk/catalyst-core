@@ -17,12 +17,12 @@ use jormungandr_lib::interfaces::AccountIdentifier;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use jormungandr_testing_utils::testing::node::Explorer;
 pub use jormungandr_testing_utils::testing::node::RestSettings as WalletBackendSettings;
-use node::{RestError as NodeRestError, WalletNodeRestClient};
+pub use node::{RestError as NodeRestError, WalletNodeRestClient};
 pub use proxy::{Protocol, ProxyClient, ProxyClientError, ProxyServerError, ProxyServerStub};
 use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
-use vit_station::{RestError as VitRestError, VitStationRestClient};
+pub use vit_station::{RestError as VitRestError, VitStationRestClient};
 use wallet::{AccountId, Settings};
 
 #[derive(Clone)]

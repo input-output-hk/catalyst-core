@@ -115,6 +115,11 @@ impl VitStationRestClient {
         })
     }
 
+    pub fn challenges_raw(&self) -> Result<Response, RestError> {
+        self.get(&self.path_builder.challenges())
+            .map_err(RestError::RequestError)
+    }
+
     pub fn proposals_raw(&self) -> Result<Response, RestError> {
         self.get(&self.path_builder.proposals())
             .map_err(RestError::RequestError)

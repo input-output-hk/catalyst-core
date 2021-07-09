@@ -7,7 +7,7 @@ use crate::{
     value::Value,
 };
 use chain_addr::Discrimination;
-use chain_crypto::{Ed25519, EllipticCurve2hashDh, KeyPair, PublicKey, SumEd25519_12};
+use chain_crypto::{Ed25519, RistrettoGroup2HashDh, KeyPair, PublicKey, SumEd25519_12};
 use chain_time::DurationSeconds;
 use std::num::NonZeroU64;
 
@@ -94,7 +94,7 @@ impl StakePoolBuilder {
     pub fn build(&self) -> StakePool {
         let mut rng = rand_core::OsRng;
 
-        let pool_vrf: KeyPair<EllipticCurve2hashDh> = KeyPair::generate(&mut rng);
+        let pool_vrf: KeyPair<RistrettoGroup2HashDh> = KeyPair::generate(&mut rng);
         let pool_kes: KeyPair<SumEd25519_12> = KeyPair::generate(&mut rng);
 
         let permissions = match self.pool_permissions {

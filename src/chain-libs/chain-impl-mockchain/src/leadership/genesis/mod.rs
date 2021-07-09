@@ -11,7 +11,7 @@ use crate::{
     stake::{PercentStake, PoolsState, Stake, StakeDistribution},
 };
 use chain_crypto::Verification as SigningVerification;
-use chain_crypto::{EllipticCurve2hashDh, SecretKey};
+use chain_crypto::{RistrettoGroup2HashDh, SecretKey};
 use thiserror::Error;
 pub(crate) use vrfeval::witness_to_nonce;
 use vrfeval::VrfEvaluator;
@@ -74,7 +74,7 @@ impl LeadershipData {
     pub fn leader(
         &self,
         pool_id: &PoolId,
-        vrf_key: &SecretKey<EllipticCurve2hashDh>,
+        vrf_key: &SecretKey<RistrettoGroup2HashDh>,
         date: BlockDate,
     ) -> Result<Option<Witness>, Error> {
         if date.epoch != self.epoch {
@@ -229,11 +229,11 @@ mod tests {
     };
     use crate::value::Value;
     use chain_core::property::ChainLength;
-    use chain_crypto::{EllipticCurve2hashDh, SecretKey};
+    use chain_crypto::{RistrettoGroup2HashDh, SecretKey};
 
     use std::collections::HashMap;
 
-    fn make_pool(ledger: &mut Ledger) -> (PoolId, SecretKey<EllipticCurve2hashDh>) {
+    fn make_pool(ledger: &mut Ledger) -> (PoolId, SecretKey<RistrettoGroup2HashDh>) {
         let stake_pool = StakePoolBuilder::new().build();
         ledger
             .delegation()
@@ -270,7 +270,7 @@ mod tests {
         }
     }
 
-    type Pools = HashMap<PoolId, (SecretKey<EllipticCurve2hashDh>, u64, Stake)>;
+    type Pools = HashMap<PoolId, (SecretKey<RistrettoGroup2HashDh>, u64, Stake)>;
 
     fn make_leadership_with_pools(ledger: &Ledger, pools: &Pools) -> LeadershipData {
         let mut selection = LeadershipData::new(0, &ledger);
@@ -308,7 +308,7 @@ mod tests {
             .expect("cannot build test ledger")
             .ledger;
 
-        let mut pools = HashMap::<PoolId, (SecretKey<EllipticCurve2hashDh>, u64, Stake)>::new();
+        let mut pools = HashMap::<PoolId, (SecretKey<RistrettoGroup2HashDh>, u64, Stake)>::new();
 
         for _i in 0..leader_election_parameters.pools_count {
             let (pool_id, pool_vrf_private_key) = make_pool(&mut ledger);

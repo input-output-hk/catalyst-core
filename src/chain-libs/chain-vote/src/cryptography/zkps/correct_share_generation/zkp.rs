@@ -15,17 +15,17 @@
 //! correct decryption using a proof of discrete log equality.
 use crate::cryptography::{Ciphertext, PublicKey, SecretKey};
 use crate::GroupElement;
-use chain_crypto::zkps::dleq;
+use super::super::dl_equality::DleqZkp;
 use rand::{CryptoRng, RngCore};
 
 /// Proof of correct decryption.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Zkp {
-    vshare_proof: dleq::Zkp,
+    vshare_proof: DleqZkp,
 }
 
 impl Zkp {
-    pub(crate) const PROOF_SIZE: usize = dleq::Zkp::BYTES_LEN;
+    pub(crate) const PROOF_SIZE: usize = DleqZkp::BYTES_LEN;
     /// Generate a valid share zero knowledge proof.
     pub fn generate<R>(
         c: &Ciphertext,
@@ -37,7 +37,7 @@ impl Zkp {
     where
         R: CryptoRng + RngCore,
     {
-        let vshare_proof = dleq::Zkp::generate(
+        let vshare_proof = DleqZkp::generate(
             &GroupElement::generator(),
             &c.e1,
             &pk.pk,
@@ -55,11 +55,10 @@ impl Zkp {
     }
 
     pub fn to_bytes(&self) -> [u8; Self::PROOF_SIZE] {
-        let mut output = [0u8; Self::PROOF_SIZE];
-        self.write_to_bytes(&mut output);
-        output
+        self.vshare_proof.to_bytes()
     }
 
+    #[allow(dead_code)]
     pub fn write_to_bytes(&self, output: &mut [u8]) {
         assert_eq!(output.len(), Self::PROOF_SIZE);
         self.vshare_proof.write_to_bytes(output);
@@ -69,7 +68,7 @@ impl Zkp {
         if slice.len() != Self::PROOF_SIZE {
             return None;
         }
-        let vshare_proof = dleq::Zkp::from_bytes(slice)?;
+        let vshare_proof = DleqZkp::from_bytes(slice)?;
 
         let proof = Zkp { vshare_proof };
         Some(proof)

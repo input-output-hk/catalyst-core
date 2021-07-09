@@ -1,6 +1,7 @@
 // Correct encryption will be used once we proceed with DKG protocol
 // mod correct_decryption;
 mod correct_share_generation;
+mod dl_equality;
 mod unit_vector;
 
 // pub use correct_decryption::CorrectElGamalDecrZkp;

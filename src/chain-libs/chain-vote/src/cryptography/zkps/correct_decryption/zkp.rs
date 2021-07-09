@@ -14,17 +14,17 @@
 //! correct decryption using a proof of discrete log equality.
 use crate::cryptography::{Ciphertext, PublicKey, SecretKey};
 use crate::GroupElement;
-use chain_crypto::zkps::dleq;
+use crate::cryptography::zkps::dl_equality::DleqZkp;
 use rand::{CryptoRng, RngCore};
 
 /// Proof of correct decryption.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Zkp {
-    dleq_proof: dleq::Zkp,
+    dleq_proof: DleqZkp,
 }
 
 impl Zkp {
-    pub(crate) const PROOF_SIZE: usize = dleq::Zkp::BYTES_LEN;
+    pub(crate) const PROOF_SIZE: usize = DleqZkp::BYTES_LEN;
     /// Generate a decryption zero knowledge proof.
     pub fn generate<R>(
         c: &Ciphertext,
@@ -37,7 +37,7 @@ impl Zkp {
         R: CryptoRng + RngCore,
     {
         let point_2 = &c.e2 - message;
-        let dleq_proof = dleq::Zkp::generate(
+        let dleq_proof = DleqZkp::generate(
             &GroupElement::generator(),
             &c.e1,
             &pk.pk,
@@ -70,7 +70,7 @@ impl Zkp {
         if slice.len() != Self::PROOF_SIZE {
             return None;
         }
-        let dleq_proof = dleq::Zkp::from_bytes(slice)?;
+        let dleq_proof = DleqZkp::from_bytes(slice)?;
 
         let proof = Zkp { dleq_proof };
         Some(proof)

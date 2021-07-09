@@ -22,7 +22,11 @@ use jormungandr_scenario_tests::scenario::{
 };
 use jormungandr_testing_utils::testing::network_builder::{Blockchain, Node, WalletTemplate};
 use jormungandr_testing_utils::wallet::LinearFee;
-use jormungandr_testing_utils::{qr_code::KeyQrCode, wallet::ElectionPublicKeyExtension};
+use jormungandr_testing_utils::{
+    qr_code::{generate, KeyQrCode},
+    wallet::ElectionPublicKeyExtension,
+};
+use jortestkit::prelude::append;
 use std::{collections::HashMap, iter};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
@@ -254,7 +258,7 @@ impl QuickVitBackendSettingsBuilder {
 
         if self.parameters.private {
             let private_key_data = settings.private_vote_plans.get(&self.fund_name()).unwrap();
-            let key: ElectionPublicKey = private_key_data.encrypting_vote_key();
+            let key: ElectionPublicKey = private_key_data.election_public_key();
             parameters.set_vote_encryption_key(key.to_base32().unwrap());
         }
         parameters
@@ -371,6 +375,15 @@ impl QuickVitBackendSettingsBuilder {
             let png = folder.child(format!("{}_{}.png", alias, pin));
             println!("[{}/{}] Qr dumped to {:?}", idx + 1, total, png.path());
             wallet.save_qr_code(png.path(), &pin_to_bytes(&pin));
+
+            let hash = folder.child(format!("{}_{}.txt", alias, pin));
+            println!(
+                "[{}/{}] QR hash dumped to {:?}",
+                idx + 1,
+                total,
+                hash.path()
+            );
+            wallet.save_qr_code_hash(hash.path(), &pin_to_bytes(&pin))?;
         }
 
         if let Some(initials) = &self.parameters.initials {
@@ -385,6 +398,9 @@ impl QuickVitBackendSettingsBuilder {
                     let img = qr.to_img();
                     let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
                     img.save(png.path())?;
+
+                    let hash = folder.child(format!("zero_funds_{}.txt", i));
+                    append(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
                 }
             }
         }

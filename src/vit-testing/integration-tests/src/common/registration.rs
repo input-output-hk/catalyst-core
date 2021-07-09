@@ -114,7 +114,7 @@ impl RegistrationResult {
 
     pub fn snapshot_entry(&self) -> Result<InitialUTxO, Error> {
         Ok(InitialUTxO {
-            address: Address::from_str(&self.address())?,
+            address: self.address()?,
             value: self.funds_in_ada()?.into(),
         })
     }
@@ -122,17 +122,21 @@ impl RegistrationResult {
     pub fn print_snapshot_entry(&self) -> Result<(), Error> {
         println!(
             "[address: {}, funds:{}",
-            self.address(),
+            self.address_as_str(),
             self.funds_in_ada()?
         );
         Ok(())
     }
 
-    pub fn address(&self) -> String {
+    pub fn address_as_str(&self) -> String {
         let jcli = JCli::new(PathBuf::from_str("jcli").expect("jcli not found on env"));
         let public_key = jcli.key().convert_to_public_string(&self.voting_sk);
         jcli.address()
             .account(public_key, None, Discrimination::Production)
+    }
+
+    pub fn address(&self) -> Result<Address, Error> {
+        Ok(Address::from_str(&self.address_as_str())?)
     }
 
     pub fn slot_no(&self) -> Result<u64, Error> {

@@ -3,7 +3,7 @@ use crate::{
     testing::{builders::StakePoolBuilder, data::address::AddressData, TestGen},
 };
 
-use chain_crypto::{Ed25519, RistrettoGroup2HashDh, KeyPair, PublicKey, SumEd25519_12};
+use chain_crypto::{Ed25519, KeyPair, PublicKey, RistrettoGroup2HashDh, SumEd25519_12};
 use quickcheck::{Arbitrary, Gen};
 use std::iter;
 

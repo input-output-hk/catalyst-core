@@ -5,9 +5,8 @@ use chain_core::mempack::{read_mut_slice, ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto as crypto;
 use chain_crypto::{
-    digest::DigestOf, AsymmetricKey, AsymmetricPublicKey, Blake2b256, Ed25519,
-    RistrettoGroup2HashDh, PublicKey, SecretKey, SigningAlgorithm, SumEd25519_12,
-    VerificationAlgorithm,
+    digest::DigestOf, AsymmetricKey, AsymmetricPublicKey, Blake2b256, Ed25519, PublicKey,
+    RistrettoGroup2HashDh, SecretKey, SigningAlgorithm, SumEd25519_12, VerificationAlgorithm,
 };
 use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
@@ -405,7 +404,7 @@ impl Readable for GenesisPraosLeader {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-    use chain_crypto::{testing, RistrettoGroup2HashDh, PublicKey, SecretKey, SumEd25519_12};
+    use chain_crypto::{testing, PublicKey, RistrettoGroup2HashDh, SecretKey, SumEd25519_12};
     #[cfg(test)]
     use chain_test_utils::property::serialization_bijection;
     use lazy_static::lazy_static;

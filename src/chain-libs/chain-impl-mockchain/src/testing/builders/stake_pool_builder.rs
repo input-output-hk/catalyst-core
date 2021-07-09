@@ -7,7 +7,7 @@ use crate::{
     value::Value,
 };
 use chain_addr::Discrimination;
-use chain_crypto::{Ed25519, RistrettoGroup2HashDh, KeyPair, PublicKey, SumEd25519_12};
+use chain_crypto::{Ed25519, KeyPair, PublicKey, RistrettoGroup2HashDh, SumEd25519_12};
 use chain_time::DurationSeconds;
 use std::num::NonZeroU64;
 

@@ -5,7 +5,7 @@ use crate::date::SlotId;
 use crate::setting::ActiveSlotsCoeff;
 use crate::stake::PercentStake;
 use chain_crypto::{
-    vrf_evaluate_and_prove, vrf_verified_get_output, vrf_verify, RistrettoGroup2HashDh, PublicKey,
+    vrf_evaluate_and_prove, vrf_verified_get_output, vrf_verify, PublicKey, RistrettoGroup2HashDh,
     SecretKey, VerifiableRandomFunction, VrfVerification,
 };
 use rand_core::OsRng;

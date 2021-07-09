@@ -47,3 +47,13 @@ required-features = ["with-bench"]
 harness = false
 name = "sumed25519"
 required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "ristretto"
+required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "p256k1"
+required-features = ["with-bench", "p256k1"]

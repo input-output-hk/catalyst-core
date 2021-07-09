@@ -16,19 +16,15 @@ cryptoxide = "0.3"
 [dev-dependencies]
 rand_chacha = "0.3"
 smoke = "^0.2.1"
+criterion = "0.3"
 
 [build-dependencies]
 cfg-if = "*"
 
-criterion = "0.3"
 
 [[bench]]
 harness = false
 name = "shvzk"
-
-[[bench]]
-harness = false
-name = "curve"
 
 [features]
 default = ["ristretto255"]

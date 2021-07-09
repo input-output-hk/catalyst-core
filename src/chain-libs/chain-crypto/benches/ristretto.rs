@@ -1,14 +1,12 @@
-//! Benchmarks to compare the different curves, sec2 and curve25519 (with ristretto prime order
-//! group), instantiated with default flag and ristretto225 respectively.
+//! Benchmarks of the ristretto group over curve25519
 
-use chain_crypto::ec::{GroupElement, Scalar};
+use chain_crypto::ec::ristretto255::{GroupElement, Scalar};
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use rand_chacha::ChaCha20Rng;
-use rand_core::SeedableRng;
+use rand_core::OsRng;
 
 fn mul(c: &mut Criterion) {
-    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    let mut rng = OsRng;
     let g = GroupElement::from_hash(b"random element");
     let scalar = Scalar::random(&mut rng);
 
@@ -46,7 +44,7 @@ fn decompress(c: &mut Criterion) {
 }
 
 fn scalar_multiplication(c: &mut Criterion) {
-    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    let mut rng = OsRng;
     let scalar1 = Scalar::random(&mut rng);
     let scalar2 = Scalar::random(&mut rng);
 
@@ -54,7 +52,7 @@ fn scalar_multiplication(c: &mut Criterion) {
 }
 
 fn scalar_power(c: &mut Criterion) {
-    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    let mut rng = OsRng;
     let scalar = Scalar::random(&mut rng);
 
     c.bench_function("Scalar exponentiation", |b| {
@@ -63,14 +61,14 @@ fn scalar_power(c: &mut Criterion) {
 }
 
 fn scalar_inversion(c: &mut Criterion) {
-    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    let mut rng = OsRng;
     let scalar = Scalar::random(&mut rng);
 
     c.bench_function("Scalar inversion", |b| b.iter(|| scalar.inverse()));
 }
 
 fn random_scalar(c: &mut Criterion) {
-    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    let mut rng = OsRng;
     c.bench_function("Random scalar", |b| b.iter(|| Scalar::random(&mut rng)));
 }
 

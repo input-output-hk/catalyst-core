@@ -67,8 +67,7 @@ impl Import {
             .enable_time()
             .build()?;
 
-        let idescale_data =
-            futures::executor::block_on(runtime.spawn(fetch_all(*fund, api_token.clone())))??;
+        let idescale_data = runtime.block_on(fetch_all(*fund, api_token.clone()))?;
 
         let funds = build_fund(&idescale_data, *threshold);
         let challenges = build_challenges(&idescale_data);

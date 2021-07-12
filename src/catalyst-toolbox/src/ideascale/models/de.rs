@@ -1,11 +1,11 @@
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 
+use once_cell::sync::Lazy;
 use std::collections::HashSet;
 
-lazy_static::lazy_static! {
-    static ref DIRTY_CHARACTERS: HashSet<char> = ['*', '-', '/'].iter().copied().collect();
-}
+static DIRTY_CHARACTERS: Lazy<HashSet<char>> =
+    Lazy::new(|| ['*', '-', '/'].iter().copied().collect());
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {

@@ -1,5 +1,6 @@
 use crate::ideascale::models::de::{Fund, Funnel, Proposal};
 
+use once_cell::sync::Lazy;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use url::Url;
@@ -26,10 +27,13 @@ struct Score {
 
 pub type Scores = HashMap<i32, f32>;
 
-lazy_static::lazy_static!(
-    static ref BASE_IDEASCALE_URL: url::Url = "https://cardano.ideascale.com/a/rest/v1/".try_into().unwrap();
-    static ref CLIENT: reqwest::Client = reqwest::Client::new();
-);
+static BASE_IDEASCALE_URL: Lazy<url::Url> = Lazy::new(|| {
+    "https://cardano.ideascale.com/a/rest/v1/"
+        .try_into()
+        .unwrap()
+});
+
+static CLIENT: Lazy<reqwest::Client> = Lazy::new(reqwest::Client::new);
 
 async fn request_data<T: DeserializeOwned>(api_token: String, url: Url) -> Result<T, Error> {
     CLIENT

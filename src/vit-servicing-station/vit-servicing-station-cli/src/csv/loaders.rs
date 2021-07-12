@@ -1,11 +1,11 @@
 use crate::db_utils::{backup_db_file, restore_db_file};
 use crate::{db_utils::db_file_exists, task::ExecTask};
 use csv::Trim;
-use thiserror::Error;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::io;
 use structopt::StructOpt;
+use thiserror::Error;
 use vit_servicing_station_lib::db::models::proposals::{
     community_choice, simple, ProposalChallengeInfo,
 };
@@ -20,7 +20,7 @@ pub enum Error {
     IoError(#[from] std::io::Error),
 
     #[error("Wrong number of input fund in {0}, just one fund data can be process at a time")]
-    InvalidFundData(String)
+    InvalidFundData(String),
 }
 
 #[derive(Debug, PartialEq, StructOpt)]

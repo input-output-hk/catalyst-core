@@ -8,9 +8,8 @@ use structopt::StructOpt;
 use thiserror::Error;
 use vit_servicing_station_lib::{
     db::{
-        Error as DbPoolError,
         load_db_connection_pool, models::api_tokens::ApiTokenData,
-        queries::api_tokens::insert_token_data, DbConnection,
+        queries::api_tokens::insert_token_data, DbConnection, Error as DbPoolError,
     },
     v0::api_token::ApiToken,
 };
@@ -18,23 +17,23 @@ use vit_servicing_station_lib::{
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("base64 encoded token `{token}` is not valid")]
-    Base64DecodeError{
+    Base64DecodeError {
         #[source]
         source: base64::DecodeError,
-        token: String
+        token: String,
     },
 
     #[error("Error with database")]
     DbError(#[from] diesel::result::Error),
 
     #[error("Error connecting db pool")]
-    DbPoolError (#[from] DbPoolError),
+    DbPoolError(#[from] DbPoolError),
 
     #[error("Error connecting to db")]
     DbConnectionError(#[from] r2d2::Error),
 
     #[error(transparent)]
-    IoError(#[from] std::io::Error)
+    IoError(#[from] std::io::Error),
 }
 
 #[derive(Debug, PartialEq, StructOpt)]
@@ -95,7 +94,7 @@ impl ApiTokenCmd {
                 base64::decode_config(&base64_token, base64::URL_SAFE_NO_PAD).map_err(|e| {
                     Error::Base64DecodeError {
                         source: e,
-                        token: base64_token
+                        token: base64_token,
                     }
                 })?;
             let api_token_data = ApiTokenData {
@@ -113,8 +112,7 @@ impl ApiTokenCmd {
         db_file_exists(db_url)?;
 
         let pool = load_db_connection_pool(db_url).map_err(Error::DbPoolError)?;
-        let db_conn = pool
-            .get()?;
+        let db_conn = pool.get()?;
 
         match tokens {
             // if not tokens are provided then listen to stdin for input ones

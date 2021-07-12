@@ -12,7 +12,7 @@ pub enum Error {
     #[error(transparent)]
     CsvDataError(#[from] CsvDataError),
     #[error(transparent)]
-    DbError(#[from] DbError)
+    DbError(#[from] DbError),
 }
 
 #[derive(StructOpt)]

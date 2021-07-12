@@ -79,7 +79,7 @@ jobs:
           - os: ubuntu-latest
             toolchain: stable
             experimental: false
-            mode: '--features chain-crypto/p256k1'
+            features: '--features chain-vote/p256k1'
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 30
@@ -126,7 +126,7 @@ jobs:
         continue-on-error: false
         with:
           command: build
-          args: --all-targets ${{ matrix.mode }} --locked
+          args: --all-targets ${{ matrix.mode }} ${{ matrix.features }} --locked
 
       # Note that currently all benchmarks within this workspace require it. An additional step may
       # be needed if some future benchmarks won't require that feature.
@@ -145,7 +145,7 @@ jobs:
         continue-on-error: false
         with:
           command: test
-          args: ${{ matrix.mode }} --locked
+          args: ${{ matrix.mode }} ${{ matrix.features }} --locked
 
       - name: Test chain-network without default features
         uses: actions-rs/cargo@v1

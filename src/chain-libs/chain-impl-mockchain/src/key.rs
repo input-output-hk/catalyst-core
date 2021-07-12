@@ -5,9 +5,8 @@ use chain_core::mempack::{read_mut_slice, ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto as crypto;
 use chain_crypto::{
-    digest::DigestOf, AsymmetricKey, AsymmetricPublicKey, Blake2b256, Ed25519,
-    EllipticCurve2hashDh, PublicKey, SecretKey, SigningAlgorithm, SumEd25519_12,
-    VerificationAlgorithm,
+    digest::DigestOf, AsymmetricKey, AsymmetricPublicKey, Blake2b256, Ed25519, PublicKey,
+    RistrettoGroup2HashDh, SecretKey, SigningAlgorithm, SumEd25519_12, VerificationAlgorithm,
 };
 use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
@@ -376,7 +375,7 @@ impl From<PublicKey<BftVerificationAlg>> for BftLeaderId {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct GenesisPraosLeader {
     pub kes_public_key: PublicKey<SumEd25519_12>,
-    pub vrf_public_key: PublicKey<EllipticCurve2hashDh>,
+    pub vrf_public_key: PublicKey<RistrettoGroup2HashDh>,
 }
 
 impl GenesisPraosLeader {
@@ -405,7 +404,7 @@ impl Readable for GenesisPraosLeader {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-    use chain_crypto::{testing, EllipticCurve2hashDh, PublicKey, SecretKey, SumEd25519_12};
+    use chain_crypto::{testing, PublicKey, RistrettoGroup2HashDh, SecretKey, SumEd25519_12};
     #[cfg(test)]
     use chain_test_utils::property::serialization_bijection;
     use lazy_static::lazy_static;
@@ -436,7 +435,7 @@ mod tests {
 
             let tcg = testing::TestCryptoGen::arbitrary(g);
             let mut rng = tcg.get_rng(0);
-            let vrf_sk: SecretKey<EllipticCurve2hashDh> = SecretKey::generate(&mut rng);
+            let vrf_sk: SecretKey<RistrettoGroup2HashDh> = SecretKey::generate(&mut rng);
             GenesisPraosLeader {
                 vrf_public_key: vrf_sk.to_public(),
                 kes_public_key: PK_KES.clone(),

@@ -3,7 +3,7 @@ use crate::chaintypes::ChainLength;
 use crate::header::{BftProof, BftSignature, Common, GenesisPraosProof, KesSignature};
 use crate::key::BftLeaderId;
 use chain_crypto::{
-    self, AsymmetricKey, Ed25519, EllipticCurve2hashDh, SecretKey, SumEd25519_12,
+    self, AsymmetricKey, Ed25519, RistrettoGroup2HashDh, SecretKey, SumEd25519_12,
     VerifiableRandomFunction,
 };
 use lazy_static::lazy_static;
@@ -61,8 +61,8 @@ impl Arbitrary for GenesisPraosProof {
         let node_id = Arbitrary::arbitrary(g);
 
         let vrf_proof = {
-            let sk = EllipticCurve2hashDh::generate(&mut tcg.get_rng(0));
-            EllipticCurve2hashDh::evaluate_and_prove(&sk, &[0, 1, 2, 3], &mut tcg.get_rng(1))
+            let sk = RistrettoGroup2HashDh::generate(&mut tcg.get_rng(0));
+            RistrettoGroup2HashDh::evaluate_and_prove(&sk, &[0, 1, 2, 3], &mut tcg.get_rng(1))
         };
 
         let kes_proof = {

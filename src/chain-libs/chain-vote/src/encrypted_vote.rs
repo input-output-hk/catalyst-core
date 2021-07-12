@@ -1,7 +1,7 @@
 use crate::cryptography::{Ciphertext, UnitVectorZkp};
 use crate::tally::ElectionFingerprint;
+use crate::Scalar;
 use crate::{Crs, ElectionPublicKey};
-use chain_crypto::ec::Scalar;
 /// A vote is represented by a standard basis unit vector of an N dimensional space
 ///
 /// Effectively each possible vote is represented by an axis, where the actual voted option

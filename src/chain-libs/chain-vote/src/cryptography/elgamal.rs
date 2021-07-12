@@ -4,7 +4,7 @@
 //! corresponding structures. In particular, we use (lifted) ElGamal cryptosystem, and combine with ChaCha
 //! stream cipher to produce a hybrid encryption scheme.
 
-use chain_crypto::ec::{GroupElement, Scalar};
+use crate::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 use std::ops::{Add, Mul, Sub};
 

@@ -1,7 +1,8 @@
 //! Implementation of baby steps giant step algorithm to solve the discrete logarithm over
 //! a group of prime order.
-use super::*;
-// use crate::error::CryptoError;
+#[cfg(crypto_backend = "__internal_ex_backend_p256k1")]
+use crate::Coordinate;
+use crate::{GroupElement, Scalar};
 use rayon::prelude::*;
 use std::collections::HashMap;
 

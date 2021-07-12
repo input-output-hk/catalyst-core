@@ -1,4 +1,4 @@
-use crate::ec::ristretto255::{GroupElement, Scalar};
+use crate::{GroupElement, Scalar};
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 

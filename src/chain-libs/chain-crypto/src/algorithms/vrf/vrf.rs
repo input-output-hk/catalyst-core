@@ -2,7 +2,7 @@
 //! using the 2-Hash-DH verifiable oblivious PRF
 //! defined in the Ouroboros Praos paper
 
-use crate::ec::{GroupElement, Scalar};
+use crate::ec::ristretto255::{GroupElement, Scalar};
 use crate::hash::Blake2b256;
 use rand_core::{CryptoRng, RngCore};
 use std::hash::{Hash, Hasher};

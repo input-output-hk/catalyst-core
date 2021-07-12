@@ -10,7 +10,7 @@
 //! is the discrete logarithm, `dlog`.
 #![allow(clippy::many_single_char_names)]
 use super::challenge_context::ChallengeContext;
-use crate::ec::ristretto255::{GroupElement, Scalar};
+use crate::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 
 /// Proof of correct decryption.

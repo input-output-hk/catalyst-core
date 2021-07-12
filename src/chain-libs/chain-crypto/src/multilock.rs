@@ -21,7 +21,7 @@
 //! the data encrypted with a ephemeral public key in prefix and
 //! the poly1305 tag in suffix.
 #![allow(clippy::op_ref)] // This needs to be here because the points of sec2 backend do not implement Copy
-use crate::ec::{GroupElement, Scalar};
+use crate::ec::ristretto255::{GroupElement, Scalar};
 use cryptoxide::chacha20poly1305::ChaCha20Poly1305;
 use cryptoxide::hkdf::hkdf_expand;
 use cryptoxide::sha2;

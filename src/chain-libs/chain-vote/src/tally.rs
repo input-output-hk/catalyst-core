@@ -2,11 +2,11 @@ use crate::{
     committee::*,
     cryptography::{Ciphertext, CorrectShareGenerationZkp},
     encrypted_vote::Ballot,
+    math::babystep::baby_step_giant_step,
+    TallyOptimizationTable,
 };
 
-use chain_crypto::ec::{
-    baby_step_giant_step, BabyStepsTable as TallyOptimizationTable, GroupElement,
-};
+use crate::GroupElement;
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};
@@ -265,6 +265,13 @@ impl ProvenDecryptShare {
         let proof = CorrectShareGenerationZkp::from_bytes(&bytes[GroupElement::BYTES_LEN..])?;
         Some(ProvenDecryptShare { r1, pi: proof })
     }
+
+    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
+        let mut output = [0u8; Self::SIZE];
+        output[0..GroupElement::BYTES_LEN].copy_from_slice(&self.r1.to_bytes());
+        output[GroupElement::BYTES_LEN..].copy_from_slice(&self.pi.to_bytes());
+        output
+    }
 }
 
 impl TallyDecryptShare {
@@ -296,8 +303,7 @@ impl TallyDecryptShare {
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut out = Vec::new();
         for element in self.elements.iter() {
-            out.extend_from_slice(element.r1.to_bytes().as_ref());
-            out.extend_from_slice(&element.pi.to_bytes());
+            out.extend_from_slice(&element.to_bytes());
         }
         out
     }

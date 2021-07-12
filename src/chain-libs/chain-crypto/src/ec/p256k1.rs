@@ -103,7 +103,7 @@ impl GroupElement {
         self.0.normalize()
     }
 
-    pub(crate) fn compress(&self) -> Option<(Coordinate, Sign)> {
+    pub fn compress(&self) -> Option<(Coordinate, Sign)> {
         self.0.to_affine().map(|p| {
             let (x, sign) = p.compress();
             (Coordinate(x.clone()), Sign(sign))
@@ -445,3 +445,5 @@ mod test {
         assert_eq!(element, element2);
     }
 }
+
+gen_group_tests!();

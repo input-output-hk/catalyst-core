@@ -9,7 +9,7 @@ keywords = [ "Crypto", "VRF", "Ed25519", "MMM" ]
 [dependencies]
 bech32 = "0.7"
 cryptoxide = "0.3"
-curve25519-dalek-ng = { version = "4.0", optional = true}
+curve25519-dalek-ng = { version = "4.0" }
 # TODO replace with the crates.io version once it has faster scalar multiplication
 eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch = "fast-u64-scalar-mul", features = ["fast-u64-scalar-mul"], optional = true }
 ed25519-dalek = "1.0"
@@ -33,14 +33,9 @@ quickcheck_macros = "0.9"
 rand = { version = "0.8", features = ["small_rng"] }
 smoke = "^0.2.1"
 
-[build-dependencies]
-cfg-if = "1"
-
 [features]
 with-bench = ["criterion"]
 property-test-api = [ "quickcheck", "rand" ]
-default = ["ristretto255"]
-ristretto255 = ["curve25519-dalek-ng"]
 p256k1 = ["eccoxide"]
 
 [[bench]]
@@ -52,3 +47,13 @@ required-features = ["with-bench"]
 harness = false
 name = "sumed25519"
 required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "ristretto"
+required-features = ["with-bench"]
+
+[[bench]]
+harness = false
+name = "p256k1"
+required-features = ["with-bench", "p256k1"]

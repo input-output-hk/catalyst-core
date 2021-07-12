@@ -5,8 +5,8 @@
 //! [spec](https://github.com/input-output-hk/treasury-crypto/blob/master/docs/voting_protocol_spec/Treasury_voting_protocol_spec.pdf),
 //! written by Dmytro Kaidalov.
 
+use crate::{GroupElement, Scalar};
 use chain_core::mempack::{ReadBuf, ReadError};
-use chain_crypto::ec::{GroupElement, Scalar};
 use rand_core::{CryptoRng, RngCore};
 use {rand::thread_rng, std::iter};
 

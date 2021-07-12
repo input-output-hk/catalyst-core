@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 chain-core = { path = "../chain-core" }
-chain-crypto = { path = "../chain-crypto", features = ["ristretto255"]}
+chain-crypto = { path = "../chain-crypto"}
 rand = "0.8"
 rand_core = "0.6"
 rayon = "1.5"
@@ -16,13 +16,17 @@ cryptoxide = "0.3"
 [dev-dependencies]
 rand_chacha = "0.3"
 smoke = "^0.2.1"
-
 criterion = "0.3"
+
+[build-dependencies]
+cfg-if = "*"
+
 
 [[bench]]
 harness = false
 name = "shvzk"
 
-[[bench]]
-harness = false
-name = "curve"
+[features]
+default = ["ristretto255"]
+ristretto255 = []
+p256k1 = ["chain-crypto/p256k1"]

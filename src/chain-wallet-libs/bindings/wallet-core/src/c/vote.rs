@@ -105,11 +105,26 @@ mod tests {
     #[test]
     fn cast_private_vote() {
         use bech32::ToBase32;
-        use chain_crypto::ec::GroupElement;
+        use chain_vote::{
+            committee::{MemberCommunicationKey, MemberState},
+            tally::Crs,
+        };
         let vote_plan_id = [0u8; crate::vote::VOTE_PLAN_ID_LENGTH];
-        let pk =
-            chain_vote::ElectionPublicKey::from_bytes(&GroupElement::from_hash(&[1]).to_bytes())
-                .unwrap();
+
+        let shared_string =
+            b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
+        let h = Crs::from_hash(&shared_string);
+
+        let mut rng = rand::thread_rng();
+
+        let mc1 = MemberCommunicationKey::new(&mut rng);
+        let mc = [mc1.to_public()];
+
+        let threshold = 1;
+
+        let m1 = MemberState::new(&mut rng, threshold, &h, &mc, 0);
+
+        let pk = ElectionPublicKey::from_participants(&[m1.public_key()]);
 
         let election_public_key =
             bech32::encode(ELECTION_PUBLIC_KEY_HRP, pk.to_bytes().to_base32()).unwrap();

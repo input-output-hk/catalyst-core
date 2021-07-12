@@ -2966,10 +2966,12 @@ dependencies = [
  "csv",
  "diesel",
  "diesel_migrations",
+ "r2d2",
  "rand 0.7.3",
  "serde",
  "structopt",
  "tempfile",
+ "thiserror",
  "vit-servicing-station-lib",
 ]
 

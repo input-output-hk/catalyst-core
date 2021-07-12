@@ -12,9 +12,10 @@ use crate::data::{Gossip, HandshakeResponse};
 use crate::error::{Error, HandshakeError};
 use crate::PROTOCOL_VERSION;
 use futures::prelude::*;
-use tonic::body::{Body, BoxBody};
+use http_body::Body;
+use tonic::body::BoxBody;
 use tonic::client::GrpcService;
-use tonic::codegen::{HttpBody, StdError};
+use tonic::codegen::StdError;
 
 #[cfg(feature = "legacy")]
 use tonic::metadata::MetadataValue;
@@ -23,6 +24,7 @@ use tonic::metadata::MetadataValue;
 use tonic::transport;
 
 use std::convert::TryFrom;
+use std::fmt::Debug;
 
 #[cfg(feature = "transport")]
 use std::convert::TryInto;
@@ -54,9 +56,9 @@ impl Builder {
     pub fn build<T>(&self, service: T) -> Client<T>
     where
         T: GrpcService<BoxBody>,
-        T::ResponseBody: Body + HttpBody + Send + 'static,
+        T::ResponseBody: Send + Sync + 'static,
         T::Error: Into<StdError>,
-        <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
+        <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     {
         Client {
             inner: proto::node_client::NodeClient::new(service),
@@ -110,9 +112,9 @@ impl Client<transport::Channel> {
 impl<T> Client<T>
 where
     T: GrpcService<BoxBody>,
-    T::ResponseBody: Body + HttpBody + Send + 'static,
+    T::ResponseBody: Send + Sync + 'static,
     T::Error: Into<StdError>,
-    <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
+    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
 {
     pub fn new(service: T) -> Self {
         Builder::new().build(service)
@@ -135,9 +137,10 @@ impl<T> Client<T>
 where
     T: GrpcService<BoxBody> + Send,
     T::Future: Send,
-    T::ResponseBody: Body + HttpBody + Send + 'static,
+    T::ResponseBody: Send + Sync + 'static,
     T::Error: Into<StdError>,
-    <T::ResponseBody as HttpBody>::Error: Into<StdError> + Send,
+    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
+    T: Debug, // https://github.com/hyperium/tonic/issues/718
 {
     /// Requests the identifier of the genesis block from the service node.
     ///

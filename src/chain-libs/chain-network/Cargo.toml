@@ -9,13 +9,14 @@ license = "MIT OR Apache-2.0"
 chain-crypto = { path = "../chain-crypto" }
 async-trait = "0.1"
 futures = "0.3"
+http-body = "0.4"
 pin-project = "1.0"
-prost = "0.7"
+prost = "0.8"
 rand_core = "0.6"
 thiserror = "1.0"
 
 [dependencies.tonic]
-version = "0.4"
+version = "0.5"
 default-features = false
 features = ["codegen", "prost"]
 
@@ -23,7 +24,7 @@ features = ["codegen", "prost"]
 rand = "0.8"
 
 [build-dependencies.tonic-build]
-version = "0.4"
+version = "0.5"
 default-features = false
 features = ["prost"]
 

@@ -69,9 +69,16 @@ impl Import {
 
         let idescale_data = runtime.block_on(fetch_all(*fund, api_token.clone()))?;
 
-        let funds = build_fund(&idescale_data, *threshold);
-        let challenges = build_challenges(&idescale_data);
-        let proposals = build_proposals(&idescale_data, &chain_vote_type.to_string(), *fund);
+        let funds = build_fund(*fund as i32, &idescale_data, *threshold);
+        let challenges = build_challenges(*fund as i32, &idescale_data);
+        let proposals = build_proposals(
+            &idescale_data,
+            &challenges,
+            &chain_vote_type.to_string(),
+            *fund,
+        );
+
+        let challenges: Vec<_> = challenges.values().collect();
 
         dump_content_to_file(
             funds,

@@ -7,7 +7,7 @@ use crate::ideascale::models::de::{Challenge, Fund, Funnel, Proposal};
 use std::collections::{HashMap, HashSet};
 
 const PROPOSER_URL_TAG: &str = "website_github_repository__not_required_";
-const PROPOSAL_SOLUTION_TAG: &str = "proposal_solution";
+const PROPOSAL_SOLUTION_TAG: &str = "problem_solution";
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -26,11 +26,11 @@ pub enum Error {
 
 #[derive(Debug)]
 pub struct IdeaScaleData {
-    funnels: HashMap<i32, Funnel>,
-    fund: Fund,
-    challenges: HashMap<i32, Challenge>,
-    proposals: HashMap<i32, Proposal>,
-    scores: Scores,
+    pub funnels: HashMap<i32, Funnel>,
+    pub fund: Fund,
+    pub challenges: HashMap<i32, Challenge>,
+    pub proposals: HashMap<i32, Proposal>,
+    pub scores: Scores,
 }
 
 pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Error> {
@@ -94,39 +94,53 @@ pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, 
     })
 }
 
-pub fn build_fund(ideascale_data: &IdeaScaleData, threshold: i64) -> Vec<models::se::Fund> {
+pub fn build_fund(
+    fund: i32,
+    ideascale_data: &IdeaScaleData,
+    threshold: i64,
+) -> Vec<models::se::Fund> {
     vec![models::se::Fund {
-        id: ideascale_data.fund.id,
+        id: fund,
         goal: ideascale_data.fund.name.to_string(),
         threshold,
     }]
 }
 
-pub fn build_challenges(ideascale_data: &IdeaScaleData) -> Vec<models::se::Challenge> {
+pub fn build_challenges(
+    fund: i32,
+    ideascale_data: &IdeaScaleData,
+) -> HashMap<i32, models::se::Challenge> {
     let funnels = &ideascale_data.funnels;
     ideascale_data
         .challenges
         .values()
-        .map(|c| models::se::Challenge {
-            challenge_type: funnels
-                .get(&c.funnel_id)
-                .unwrap_or_else(|| panic!("A funnel with id {} wasn't found", c.funnel_id))
-                .is_community()
-                .then(|| "community-choice")
-                .unwrap_or("simple")
-                .to_string(),
-            challenge_url: c.challenge_url.clone(),
-            description: c.description.clone(),
-            fund_id: c.fund_id.to_string(),
-            id: c.id.to_string(),
-            rewards_total: c.rewards.clone(),
-            title: c.title.clone(),
+        .enumerate()
+        .map(|(i, c)| {
+            (
+                c.id,
+                models::se::Challenge {
+                    challenge_type: funnels
+                        .get(&c.funnel_id)
+                        .unwrap_or_else(|| panic!("A funnel with id {} wasn't found", c.funnel_id))
+                        .is_community()
+                        .then(|| "community-choice")
+                        .unwrap_or("simple")
+                        .to_string(),
+                    challenge_url: c.challenge_url.clone(),
+                    description: c.description.to_string(),
+                    fund_id: fund.to_string(),
+                    id: i.to_string(),
+                    rewards_total: c.rewards.clone(),
+                    title: c.title.clone(),
+                },
+            )
         })
         .collect()
 }
 
 pub fn build_proposals(
     ideascale_data: &IdeaScaleData,
+    built_challenges: &HashMap<i32, models::se::Challenge>,
     chain_vote_type: &str,
     fund: usize,
 ) -> Vec<models::se::Proposal> {
@@ -135,37 +149,51 @@ pub fn build_proposals(
         .proposals
         .values()
         .enumerate()
-        .map(|(i, p)| models::se::Proposal {
-            category_name: format!("Fund{}", fund),
-            chain_vote_options: "blank,yes,no".to_string(),
-            chain_vote_type: chain_vote_type.to_string(),
-            internal_id: i.to_string(),
-            proposal_funds: p.custom_fields.proposal_funds.clone(),
-            proposal_id: p.proposal_id.to_string(),
-            proposal_impact_score: scores
-                .get(&p.proposal_id)
-                .cloned()
-                .unwrap_or(0f32)
-                .to_string(),
-            proposal_solution: p
-                .custom_fields
-                .extra
-                .get(PROPOSAL_SOLUTION_TAG)
-                .map_or("", |s| s.as_str().unwrap_or(""))
-                .to_string(),
-            proposal_summary: p.proposal_summary.to_string(),
-            proposal_title: p.proposal_title.to_string(),
-            proposal_url: p.proposal_url.to_string(),
-            proposer_email: p.proposer.contact.clone(),
-            proposer_name: p.proposer.name.clone(),
-            proposer_relevant_experience: p.custom_fields.proposal_relevant_experience.to_string(),
-            proposer_url: p
-                .custom_fields
-                .extra
-                .get(PROPOSER_URL_TAG)
-                .map(|c| c.as_str().unwrap())
-                .unwrap_or("")
-                .to_string(),
+        .map(|(i, p)| {
+            let challenge = &built_challenges.get(&p.challenge_id).unwrap_or_else(|| {
+                panic!(
+                    "Expected a challenge with id {} for proposal with id {}",
+                    p.challenge_id, p.proposal_id
+                )
+            });
+            models::se::Proposal {
+                category_name: format!("Fund{}", fund),
+                chain_vote_options: "blank,yes,no".to_string(),
+                challenge_id: challenge.id.clone(),
+                challenge_type: challenge.challenge_type.clone(),
+                chain_vote_type: chain_vote_type.to_string(),
+                internal_id: p.proposal_id.to_string(),
+                proposal_funds: p.custom_fields.proposal_funds.clone(),
+                proposal_id: i.to_string(),
+                proposal_impact_score: scores
+                    .get(&p.proposal_id)
+                    .cloned()
+                    .unwrap_or(0f32)
+                    .to_string(),
+                proposal_solution: p
+                    .custom_fields
+                    .extra
+                    .get(PROPOSAL_SOLUTION_TAG)
+                    .and_then(|value| value.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                proposal_summary: p.proposal_summary.to_string(),
+                proposal_title: p.proposal_title.to_string(),
+                proposal_url: p.proposal_url.to_string(),
+                proposer_email: p.proposer.contact.clone(),
+                proposer_name: p.proposer.name.clone(),
+                proposer_relevant_experience: p
+                    .custom_fields
+                    .proposal_relevant_experience
+                    .to_string(),
+                proposer_url: p
+                    .custom_fields
+                    .extra
+                    .get(PROPOSER_URL_TAG)
+                    .map(|c| c.as_str().unwrap())
+                    .unwrap_or("")
+                    .to_string(),
+            }
         })
         .collect()
 }

@@ -10,11 +10,11 @@ static DIRTY_CHARACTERS: Lazy<HashSet<char>> =
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {
     pub id: i32,
-    #[serde(alias = "name")]
+    #[serde(alias = "name", deserialize_with = "deserialize_clean_challenge_title")]
     pub title: String,
     #[serde(alias = "tagline", deserialize_with = "deserialize_rewards")]
     pub rewards: String,
-    pub description: String,
+    pub description: CleanString,
     #[serde(alias = "groupId")]
     pub fund_id: i32,
     #[serde(alias = "funnelId")]
@@ -119,6 +119,20 @@ fn deserialize_clean_string<'de, D: Deserializer<'de>>(
     rewards_str.retain(|c| !DIRTY_CHARACTERS.contains(&c));
     Ok(rewards_str)
 }
+fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<String, D::Error> {
+    let mut rewards_str = String::deserialize(deserializer)?;
+    // Remove leading `FX: `
+    if rewards_str.starts_with('F') {
+        if let Some(first_space) = rewards_str.find(' ') {
+            let (_, content) = rewards_str.split_at(first_space + 1);
+            rewards_str = content.to_string();
+        }
+    }
+    Ok(rewards_str)
+}
+
 fn deserialize_rewards<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
     let rewards_str = String::deserialize(deserializer)?;
 

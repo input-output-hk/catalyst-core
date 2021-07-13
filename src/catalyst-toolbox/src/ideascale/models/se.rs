@@ -23,6 +23,8 @@ pub struct Proposal {
     pub category_name: String,
     #[serde(default = "default_vote_options")]
     pub chain_vote_options: String,
+    pub challenge_id: String,
+    pub challenge_type: String,
     pub chain_vote_type: String,
     pub internal_id: String,
     pub proposal_funds: String,

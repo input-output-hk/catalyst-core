@@ -1,6 +1,6 @@
 use crate::stats::live::Harvester;
 use crate::stats::live::Settings;
-use indicatif::ProgressBar;
+use jortestkit::load::ProgressBar;
 use jortestkit::console::ProgressBarMode;
 use jortestkit::prelude::append;
 use std::{

@@ -13,7 +13,7 @@ jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormunga
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "b2b27dfd7e2dd9253c103e92df2ae86f159d06f7" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "df9490ae33bb3abef8cb6877001091b179c5d38b" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "df9490ae33bb3abef8cb6877001091b179c5d38b" }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="multi_sync_load_scenario" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 

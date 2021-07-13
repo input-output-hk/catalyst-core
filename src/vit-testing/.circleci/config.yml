@@ -53,6 +53,8 @@ jobs:
 
   vitup_test:
     description: "Steps for the vitup unit test jobs"
+    docker:
+      - image: cimg/rust:1.53.0-node
     parameters:
       mode:
         type: string

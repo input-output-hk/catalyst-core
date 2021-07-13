@@ -1,12 +1,8 @@
 use crate::backend::WalletNodeRestClient;
-use crate::load::{MultiController, MultiControllerError};
-use crate::Proposal;
 use crate::Wallet;
-use chain_impl_mockchain::fragment::FragmentId;
 use jortestkit::load::{Id, RequestFailure, RequestGenerator};
-use rand::{seq::SliceRandom, Rng};
+use rand::Rng;
 use rand_core::OsRng;
-use wallet_core::Choice;
 
 pub struct AccountRequestGen {
     rand: OsRng,
@@ -41,6 +37,6 @@ impl AccountRequestGen {
 
 impl RequestGenerator for AccountRequestGen {
     fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
-        self.random_account_request().map(|()| vec![])
+        self.random_account_request().map(|()| vec![None])
     }
 }

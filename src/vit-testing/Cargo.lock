@@ -1813,7 +1813,7 @@ dependencies = [
  "itertools 0.9.0",
  "jormungandr-lib",
  "jormungandr-testing-utils",
- "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=multi_sync_load_scenario)",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=812fd063d4d9d05dcefb94b925fd861040a63222)",
  "rand 0.8.4",
  "rand_core 0.6.3",
  "rayon",
@@ -1947,7 +1947,7 @@ dependencies = [
  "jormungandr-lib",
  "jormungandr-scenario-tests",
  "jormungandr-testing-utils",
- "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=multi_sync_load_scenario)",
  "libmath",
  "rand 0.8.4",
  "rand_chacha 0.2.2",
@@ -2226,6 +2226,47 @@ dependencies = [
 name = "jortestkit"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/jortestkit.git?branch=multi_sync_load_scenario#91847e9538bbb0dab1f7c1d8b0b069d54ca2363c"
+dependencies = [
+ "assert_fs",
+ "base64 0.12.3",
+ "bech32",
+ "bytesize",
+ "chrono",
+ "console 0.11.3",
+ "csv",
+ "custom_debug",
+ "dialoguer 0.8.0",
+ "flate2",
+ "fs_extra",
+ "hex",
+ "humantime",
+ "indicatif",
+ "lazy_static",
+ "os_info 2.0.8",
+ "predicates 1.0.8",
+ "rand 0.7.3",
+ "rand_chacha 0.2.2",
+ "rand_core 0.5.1",
+ "reqwest 0.11.4",
+ "semver 1.0.3",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_yaml",
+ "sha-1",
+ "sha2",
+ "sysinfo 0.14.15",
+ "tar",
+ "thiserror",
+ "tokio 1.8.1",
+ "warp",
+ "zip",
+]
+
+[[package]]
+name = "jortestkit"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/jortestkit.git?rev=812fd063d4d9d05dcefb94b925fd861040a63222#812fd063d4d9d05dcefb94b925fd861040a63222"
 dependencies = [
  "assert_fs",
  "base64 0.12.3",

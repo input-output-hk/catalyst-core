@@ -189,6 +189,12 @@ impl MultiController {
     }
 }
 
+impl Into<Vec<Wallet>> for MultiController {
+    fn into(self) -> Vec<Wallet> {
+        self.wallets
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum MultiControllerError {
     #[error("wallet error")]

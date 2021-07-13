@@ -19,9 +19,9 @@ chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.gi
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-time           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-vote           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "dc9bcdeaf6374fb00d63d4be58be3dbba95724c2" } 
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "dc9bcdeaf6374fb00d63d4be58be3dbba95724c2" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "dc9bcdeaf6374fb00d63d4be58be3dbba95724c2" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "9f328ec8f1595039cb728228233fca4d5b1059f0" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "9f328ec8f1595039cb728228233fca4d5b1059f0" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "9f328ec8f1595039cb728228233fca4d5b1059f0" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "df9490ae33bb3abef8cb6877001091b179c5d38b" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "df9490ae33bb3abef8cb6877001091b179c5d38b" }

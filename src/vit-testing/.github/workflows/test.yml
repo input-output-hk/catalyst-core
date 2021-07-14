@@ -91,7 +91,7 @@ jobs:
     steps:
       - name: Build the tagged Docker image
         run: |
-            cd ./vitup/docker/disruption/
+            cd /home/runner/work/vit-testing/vit-testing/vitup/docker/disruption/
             docker build . --file Dockerfile --tag disruption
        
   build_local_mock:
@@ -100,7 +100,7 @@ jobs:
     steps:
       - name: Build the tagged Docker image
         run: |
-            cd ./vitup/docker/local/
+            cd /home/runner/work/vit-testing/vit-testing/vitup/docker/local/
             docker build . --file Dockerfile --tag local
   lints:
     name: Lints

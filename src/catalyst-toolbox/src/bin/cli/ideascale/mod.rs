@@ -27,6 +27,10 @@ pub struct Import {
     #[structopt(long)]
     fund: usize,
 
+    /// Fund goal explanation
+    #[structopt(long)]
+    fund_goal: String,
+
     /// ideascale API token
     #[structopt(long)]
     api_token: String,
@@ -56,6 +60,7 @@ impl Import {
     fn exec(&self) -> Result<(), Error> {
         let Import {
             fund,
+            fund_goal,
             api_token,
             threshold,
             chain_vote_type,
@@ -69,7 +74,7 @@ impl Import {
 
         let idescale_data = runtime.block_on(fetch_all(*fund, api_token.clone()))?;
 
-        let funds = build_fund(*fund as i32, &idescale_data, *threshold);
+        let funds = build_fund(*fund as i32, fund_goal.clone(), *threshold);
         let challenges = build_challenges(*fund as i32, &idescale_data);
         let proposals = build_proposals(
             &idescale_data,

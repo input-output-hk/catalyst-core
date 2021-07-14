@@ -94,14 +94,10 @@ pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, 
     })
 }
 
-pub fn build_fund(
-    fund: i32,
-    ideascale_data: &IdeaScaleData,
-    threshold: i64,
-) -> Vec<models::se::Fund> {
+pub fn build_fund(fund: i32, goal: String, threshold: i64) -> Vec<models::se::Fund> {
     vec![models::se::Fund {
         id: fund,
-        goal: ideascale_data.fund.name.to_string(),
+        goal,
         threshold,
     }]
 }

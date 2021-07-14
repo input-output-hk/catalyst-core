@@ -1,7 +1,7 @@
 use crate::stats::live::Harvester;
 use crate::stats::live::Settings;
-use jortestkit::load::ProgressBar;
 use jortestkit::console::ProgressBarMode;
+use jortestkit::load::ProgressBar;
 use jortestkit::prelude::append;
 use std::{
     sync::mpsc::{self, Sender, TryRecvError},
@@ -46,13 +46,10 @@ impl MonitorThread {
             }
 
             if let Some(logger) = &settings.logger {
-                if logger.exists() {
-                    append(logger, stats.entry()).unwrap();
-                } else {
+                if !logger.exists() {
                     std::fs::File::create(logger).unwrap();
-                    append(logger, stats.header()).unwrap();
-                    append(logger, stats.entry()).unwrap();
                 }
+                append(logger, stats.header()).unwrap();
             }
             thread::sleep(std::time::Duration::from_secs(settings.interval));
         });

@@ -28,7 +28,7 @@ impl Harvester {
         Ok(Snapshot {
             timestamp: Utc::now(),
             pending: fragment_logs.iter().filter(|(_, x)| x.is_pending()).count(),
-            total_tx: fragment_logs.iter().count(),
+            total_tx: fragment_logs.len(),
             votes_count,
         })
     }

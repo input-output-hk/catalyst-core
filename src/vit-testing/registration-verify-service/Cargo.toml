@@ -11,8 +11,8 @@ chrono = "0.4"
 walkdir = "2.3.1"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "dc9bcdeaf6374fb00d63d4be58be3dbba95724c2" } 
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "dc9bcdeaf6374fb00d63d4be58be3dbba95724c2" } 
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "9f328ec8f1595039cb728228233fca4d5b1059f0" } 
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "9f328ec8f1595039cb728228233fca4d5b1059f0" } 
 futures = "0.3.8"
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 serde = { version = "1", features = ["derive"] }

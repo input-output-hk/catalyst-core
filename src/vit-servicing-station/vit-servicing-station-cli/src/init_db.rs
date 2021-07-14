@@ -1,9 +1,18 @@
 use crate::task::ExecTask;
-use std::io;
 use structopt::StructOpt;
+use thiserror::Error;
 use vit_servicing_station_lib::db::{
-    load_db_connection_pool, migrations::initialize_db_with_migration,
+    load_db_connection_pool, migrations::initialize_db_with_migration, Error as DbPoolError,
 };
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("Error connecting db pool")]
+    DbPoolError(#[from] DbPoolError),
+
+    #[error("Error connecting to db")]
+    DbConnectionError(#[from] r2d2::Error),
+}
 
 #[derive(Debug, PartialEq, StructOpt)]
 pub enum Db {
@@ -16,12 +25,9 @@ pub enum Db {
 }
 
 impl Db {
-    fn init_with_migrations(db_url: &str) -> io::Result<()> {
-        let pool = load_db_connection_pool(db_url)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, format!("{}", e)))?;
-        let db_conn = pool
-            .get()
-            .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{}", e)))?;
+    fn init_with_migrations(db_url: &str) -> Result<(), Error> {
+        let pool = load_db_connection_pool(db_url)?;
+        let db_conn = pool.get()?;
         initialize_db_with_migration(&db_conn);
         Ok(())
     }
@@ -29,8 +35,8 @@ impl Db {
 
 impl ExecTask for Db {
     type ResultValue = ();
-
-    fn exec(&self) -> io::Result<Self::ResultValue> {
+    type Error = Error;
+    fn exec(&self) -> Result<Self::ResultValue, Error> {
         match self {
             Db::Init { db_url } => Db::init_with_migrations(db_url),
         }

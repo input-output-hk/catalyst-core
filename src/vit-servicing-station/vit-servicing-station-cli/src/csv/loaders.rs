@@ -5,6 +5,7 @@ use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::io;
 use structopt::StructOpt;
+use thiserror::Error;
 use vit_servicing_station_lib::db::models::proposals::{
     community_choice, simple, ProposalChallengeInfo,
 };
@@ -12,6 +13,15 @@ use vit_servicing_station_lib::db::{
     load_db_connection_pool, models::challenges::Challenge, models::funds::Fund,
     models::proposals::Proposal, models::voteplans::Voteplan,
 };
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
+
+    #[error("Wrong number of input fund in {0}, just one fund data can be process at a time")]
+    InvalidFundData(String),
+}
 
 #[derive(Debug, PartialEq, StructOpt)]
 pub enum CsvDataCmd {
@@ -71,17 +81,11 @@ impl CsvDataCmd {
         voteplans_path: &str,
         proposals_path: &str,
         challenges_path: &str,
-    ) -> io::Result<()> {
+    ) -> Result<(), Error> {
         db_file_exists(db_url)?;
         let funds = CsvDataCmd::load_from_csv::<Fund>(funds_path)?;
         if funds.len() != 1 {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!(
-                    "Wrong number of input fund in {}, just one fund data can be process at a time",
-                    funds_path
-                ),
-            ));
+            return Err(Error::InvalidFundData(funds_path.to_string()));
         }
         let mut voteplans = CsvDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;
         let mut challenges: HashMap<i32, Challenge> =
@@ -182,7 +186,7 @@ impl CsvDataCmd {
         voteplans_path: &str,
         proposals_path: &str,
         challenges_path: &str,
-    ) -> io::Result<()> {
+    ) -> Result<(), Error> {
         let backup_file = backup_db_file(db_url)?;
         if let Err(e) = Self::handle_load(
             db_url,
@@ -201,8 +205,8 @@ impl CsvDataCmd {
 
 impl ExecTask for CsvDataCmd {
     type ResultValue = ();
-
-    fn exec(&self) -> std::io::Result<()> {
+    type Error = Error;
+    fn exec(&self) -> Result<(), Error> {
         match self {
             CsvDataCmd::Load {
                 db_url,

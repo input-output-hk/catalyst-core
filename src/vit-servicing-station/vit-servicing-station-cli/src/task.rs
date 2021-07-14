@@ -1,4 +1,5 @@
 pub trait ExecTask {
     type ResultValue;
-    fn exec(&self) -> std::io::Result<<Self as ExecTask>::ResultValue>;
+    type Error;
+    fn exec(&self) -> Result<<Self as ExecTask>::ResultValue, <Self as ExecTask>::Error>;
 }

@@ -78,6 +78,11 @@ jobs:
           name: Print version information
           command: rustc --version; cargo --version
       - run:
+          name: install build reqs
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install build-essential libssl-dev pkg-config          
+      - run:
           name: Run tests
           no_output_timeout: 60m
           environment:
@@ -184,6 +189,11 @@ commands:
       - run:
           name: Print version information
           command: rustc --version; cargo --version
+      - run:
+          name: install build reqs
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install build-essential libssl-dev pkg-config    
       - run:
           name: checkout jormungandr
           command: |

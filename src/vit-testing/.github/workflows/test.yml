@@ -89,18 +89,17 @@ jobs:
     name: Build disruption mock 
     steps:
       - name: Build the tagged Docker image
-        run: docker build . --file Dockerfile --tag disruption
-        with:
-          path: ./vitup/docker/disruption/
-
+        run: |
+            cd ./vitup/docker/disruption/
+            docker build . --file Dockerfile --tag disruption
+       
   build_local_mock:
     name: Build local mock
     steps:
       - name: Build the tagged Docker image
-        run: docker build .  --tag local
-        with:
-          path: ./vitup/docker/local/
-
+        run: |
+            cd ./vitup/docker/local/
+            docker build . --file Dockerfile --tag local
   lints:
     name: Lints
     needs: [cache_info, update_deps]

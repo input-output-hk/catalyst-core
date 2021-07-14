@@ -87,6 +87,7 @@ jobs:
 
   build_disruption_mock:
     name: Build disruption mock 
+    runs-on: ubuntu-latest
     steps:
       - name: Build the tagged Docker image
         run: |
@@ -95,6 +96,7 @@ jobs:
        
   build_local_mock:
     name: Build local mock
+    runs-on: ubuntu-latest
     steps:
       - name: Build the tagged Docker image
         run: |

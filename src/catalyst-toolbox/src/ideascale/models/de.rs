@@ -87,10 +87,11 @@ pub struct ProposalCustomFieldsByKey {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Stage {
+    #[serde(default)]
     pub label: String,
-    #[serde(alias = "funnelId")]
+    #[serde(alias = "funnelId", default)]
     pub funnel_id: u32,
-    #[serde(alias = "assessmentId")]
+    #[serde(alias = "assessmentId", default)]
     pub assessment_id: u32,
 }
 

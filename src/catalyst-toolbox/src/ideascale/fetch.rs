@@ -55,16 +55,7 @@ pub async fn get_funds_data(api_token: String) -> Result<Vec<Fund>, Error> {
 }
 
 pub async fn get_stages(api_token: String) -> Result<Vec<Stage>, Error> {
-    let raw_data: Vec<serde_json::Value> =
-        request_data(api_token, BASE_IDEASCALE_URL.join("stages").unwrap()).await?;
-    Ok(raw_data
-        .into_iter()
-        .filter_map(|v| {
-            // we can skip objects that can't be serialize because they are missing attributes here
-            // we do not care about them at this point
-            serde_json::from_value(v).ok()
-        })
-        .collect())
+    request_data(api_token, BASE_IDEASCALE_URL.join("stages").unwrap()).await
 }
 
 pub async fn get_assessments_score(assessment_id: u32, api_token: String) -> Result<Scores, Error> {

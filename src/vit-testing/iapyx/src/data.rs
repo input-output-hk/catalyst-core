@@ -1,6 +1,6 @@
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options};
 use itertools::Itertools;
-use jormungandr_testing_utils::wallet::committee::encrypting_key_from_base32;
+use jormungandr_testing_utils::wallet::committee::election_key_from_base32;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom, fmt, str};
 pub use wallet_core::{Choice, Value};

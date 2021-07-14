@@ -60,11 +60,9 @@ pub async fn get_stages(api_token: String) -> Result<Vec<Stage>, Error> {
     Ok(raw_data
         .into_iter()
         .filter_map(|v| {
-            if v.get("funnelId").is_some() {
-                serde_json::from_value(v).ok()
-            } else {
-                None
-            }
+            // we can skip objects that can't be serialize because they are missing attributes here
+            // we do not care about them at this point
+            serde_json::from_value(v).ok()
         })
         .collect())
 }

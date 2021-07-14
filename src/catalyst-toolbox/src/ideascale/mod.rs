@@ -2,9 +2,9 @@ mod fetch;
 mod models;
 
 use crate::ideascale::fetch::Scores;
-use crate::ideascale::models::de::{Challenge, Fund, Funnel, Proposal};
+use crate::ideascale::models::de::{Challenge, Fund, Funnel, Proposal, Stage};
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 const PROPOSER_URL_TAG: &str = "website_github_repository__not_required_";
 const PROPOSAL_SOLUTION_TAG: &str = "problem_solution";
@@ -63,13 +63,14 @@ pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, 
         .filter(|p| filter_proposal_by_stage_type(&p.stage_type))
         .collect();
 
-    let stage_ids: HashSet<u32> = proposals.iter().map(|p| p.stage_id).collect();
+    let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
+    stages.retain(|stage| filter_stages(stage, &funnels));
 
-    let scores_tasks: Vec<_> = stage_ids
+    let scores_tasks: Vec<_> = stages
         .iter()
-        .map(|id| {
-            tokio::spawn(fetch::get_assessments_scores_by_stage_id(
-                *id,
+        .map(|stage| {
+            tokio::spawn(fetch::get_assessments_score(
+                stage.assessment_id,
                 api_token.clone(),
             ))
         })
@@ -195,5 +196,9 @@ pub fn build_proposals(
 }
 
 fn filter_proposal_by_stage_type(stage: &str) -> bool {
-    matches!(stage, "Governance phase")
+    matches!(stage, "Governance phase" | "Assess QA")
+}
+
+fn filter_stages(stage: &Stage, funnel_ids: &HashMap<u32, Funnel>) -> bool {
+    matches!(stage.label.as_str(), "Assess") && funnel_ids.contains_key(&stage.funnel_id)
 }

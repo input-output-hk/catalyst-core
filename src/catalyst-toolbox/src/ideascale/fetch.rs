@@ -1,4 +1,4 @@
-use crate::ideascale::models::de::{Fund, Funnel, Proposal};
+use crate::ideascale::models::de::{Fund, Funnel, Proposal, Stage};
 
 use once_cell::sync::Lazy;
 use serde::de::DeserializeOwned;
@@ -54,22 +54,22 @@ pub async fn get_funds_data(api_token: String) -> Result<Vec<Fund>, Error> {
     .await
 }
 
-const ASSESSMENT_ID_ATTR: &str = "assessmentId";
-
-pub async fn get_stages(api_token: String) -> Result<u64, Error> {
-    let assessment: serde_json::Value =
+pub async fn get_stages(api_token: String) -> Result<Vec<Stage>, Error> {
+    let raw_data: Vec<serde_json::Value> =
         request_data(api_token, BASE_IDEASCALE_URL.join("stages").unwrap()).await?;
-    // should be safe to unwrap that the value is an i64
-    Ok(assessment
-        .get(ASSESSMENT_ID_ATTR)
-        .ok_or(Error::MissingAttribute {
-            attribute_name: ASSESSMENT_ID_ATTR,
-        })?
-        .as_i64()
-        .unwrap() as u64)
+    Ok(raw_data
+        .into_iter()
+        .filter_map(|v| {
+            if v.get("funnelId").is_some() {
+                serde_json::from_value(v).ok()
+            } else {
+                None
+            }
+        })
+        .collect())
 }
 
-pub async fn get_assessments_score(assessment_id: u64, api_token: String) -> Result<Scores, Error> {
+pub async fn get_assessments_score(assessment_id: u32, api_token: String) -> Result<Scores, Error> {
     let scores: Vec<Score> = request_data(
         api_token,
         BASE_IDEASCALE_URL
@@ -78,14 +78,6 @@ pub async fn get_assessments_score(assessment_id: u64, api_token: String) -> Res
     )
     .await?;
     Ok(scores.into_iter().map(|s| (s.id, s.score)).collect())
-}
-
-pub async fn get_assessments_scores_by_stage_id(
-    stage_id: u32,
-    api_token: String,
-) -> Result<Scores, Error> {
-    let assessment_id = get_assessment_id(stage_id, api_token.clone()).await?;
-    get_assessments_score(assessment_id, api_token).await
 }
 
 pub async fn get_proposals_data(

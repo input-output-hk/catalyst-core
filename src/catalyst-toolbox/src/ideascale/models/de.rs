@@ -86,6 +86,15 @@ pub struct ProposalCustomFieldsByKey {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct Stage {
+    pub label: String,
+    #[serde(alias = "funnelId")]
+    pub funnel_id: u32,
+    #[serde(alias = "assessmentId")]
+    pub assessment_id: u32,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct CleanString(#[serde(deserialize_with = "deserialize_clean_string")] String);
 
 impl Funnel {

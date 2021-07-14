@@ -11,6 +11,7 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::str::FromStr;
 use wallet::AccountId;
+#[derive(Clone)]
 pub struct WalletNodeRestClient {
     rest_client: JormungandrRest,
 }

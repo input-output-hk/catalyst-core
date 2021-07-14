@@ -1,18 +1,20 @@
-#[derive(Debug, Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Strategy {
     Duration(std::time::Duration),
     PerThread(u32),
     Overall(u32),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Monitor {
     Standard(u64),
     Progress(u64),
     Disabled(u64),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Configuration {
     thread_no: usize,
     strategy: Strategy,

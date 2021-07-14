@@ -8,7 +8,7 @@ use std::time::Duration;
 use std::{
     sync::{
         mpsc::{self, Sender, TryRecvError},
-        Arc, Mutex,
+        Arc, RwLock,
     },
     thread::{self, JoinHandle},
 };
@@ -93,18 +93,16 @@ pub trait RequestStatusProvider {
 }
 
 fn update_statuses(
-    responses_clone: &Arc<Mutex<Vec<Response>>>,
-    request_status_provider: &Arc<Mutex<impl RequestStatusProvider + Send>>,
+    responses_clone: &Arc<RwLock<Vec<Response>>>,
+    request_status_provider: &(impl RequestStatusProvider + Send),
 ) -> Vec<Status> {
-    let responses = &mut *responses_clone.lock().unwrap();
+    let mut responses = responses_clone.write().unwrap();
     let ids: Vec<Id> = responses
         .iter()
-        .cloned()
         .filter(|x| x.is_pending())
         .map(|resp| resp.id().as_ref().unwrap().clone())
         .collect();
-    let request_provider = &mut *request_status_provider.lock().unwrap();
-    let statuses = request_provider.get_statuses(&ids);
+    let statuses = request_status_provider.get_statuses(&ids);
     for status in statuses.iter() {
         for response in responses.iter_mut() {
             if response.has_id(status.id()) && !status.is_pending() {
@@ -117,8 +115,8 @@ fn update_statuses(
 
 impl StatusUpdaterThread {
     pub fn spawn<S>(
-        responses: &Arc<Mutex<Vec<Response>>>,
-        request_status_provider: &Arc<Mutex<S>>,
+        responses: &Arc<RwLock<Vec<Response>>>,
+        request_status_provider: S,
         monitor: Monitor,
         title: &str,
         shutdown_grace_period: u32,
@@ -129,7 +127,6 @@ impl StatusUpdaterThread {
     {
         let (tx, rx) = mpsc::channel();
         let responses_clone = Arc::clone(&responses);
-        let request_status_provider_clone = Arc::clone(&request_status_provider);
         let progress_bar = StatusProgressBar::new(
             ProgressBar::new(1),
             format!("[Load Scenario: {}]", title),
@@ -141,8 +138,7 @@ impl StatusUpdaterThread {
                     progress_bar.set_message("Waiting for all messages to be accepted or rejected");
 
                     for _ in 0..shutdown_grace_period {
-                        let statuses =
-                            update_statuses(&responses_clone, &request_status_provider_clone);
+                        let statuses = update_statuses(&responses_clone, &request_status_provider);
                         let pending_statuses: Vec<&Status> =
                             statuses.iter().filter(|x| x.is_pending()).collect();
 
@@ -161,7 +157,7 @@ impl StatusUpdaterThread {
                 }
                 Err(TryRecvError::Empty) => {}
             }
-            update_statuses(&responses_clone, &request_status_provider_clone);
+            update_statuses(&responses_clone, &request_status_provider);
             std::thread::sleep(std::time::Duration::from_secs(pace));
         });
         Self {

@@ -1,8 +1,6 @@
 use super::Status;
-use std::{
-    collections::HashMap,
-    time::{Duration, Instant},
-};
+use rayon::iter::plumbing::{Folder, UnindexedProducer};
+use std::{collections::HashMap, time::Duration};
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone)]
@@ -21,47 +19,49 @@ pub enum RequestSendMode {
 
 pub type Id = String;
 
-pub trait RequestGenerator {
-    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure>;
+pub struct Request {
+    pub ids: Vec<Option<Id>>,
+    pub duration: Duration,
+}
+
+/// Not a type alias because the split method is interpreted differently
+/// and we make assumptions about that which we don't want to make for the general
+/// type
+pub trait RequestGenerator: Send + Sized {
+    fn split(self) -> (Self, Option<Self>);
+    fn next(&mut self) -> Result<Request, RequestFailure>;
+}
+
+pub struct RayonWrapper<T>(T);
+
+impl<T> From<T> for RayonWrapper<T> {
+    fn from(other: T) -> Self {
+        Self(other)
+    }
+}
+
+impl<T: RequestGenerator> UnindexedProducer for RayonWrapper<T> {
+    type Item = Result<Request, RequestFailure>;
+    fn split(self) -> (Self, Option<Self>) {
+        let (a, b) = self.0.split();
+        (Self(a), b.map(Self))
+    }
+
+    fn fold_with<F>(mut self, mut folder: F) -> F
+    where
+        F: Folder<Self::Item>,
+    {
+        while !folder.full() {
+            folder = folder.consume(self.0.next());
+        }
+        folder
+    }
 }
 
 pub trait RequestStatusProvider {
     fn get_status(&self) -> HashMap<String, RequestStatus>;
 }
 
-pub fn run_request(
-    request: &mut impl RequestGenerator,
-    sync: RequestSendMode,
-    responses: &mut Vec<Response>,
-) {
-    match sync {
-        RequestSendMode::Sync => run_request_sync(request, responses),
-        RequestSendMode::Async => run_request_async(request, responses),
-    }
-}
-
-pub fn run_request_sync(request: &mut impl RequestGenerator, responses: &mut Vec<Response>) {
-    let start = Instant::now();
-    match request.next() {
-        Ok(ids) => responses.extend(
-            ids.iter()
-                .map(|id| Response::success(id.clone(), start.elapsed())),
-        ),
-        Err(failure) => responses.push(Response::failure(None, failure, start.elapsed())),
-    };
-}
-
-pub fn run_request_async(request: &mut impl RequestGenerator, responses: &mut Vec<Response>) {
-    let start = Instant::now();
-
-    match request.next() {
-        Ok(ids) => responses.extend(
-            ids.iter()
-                .map(|id| Response::pending(id.clone(), start.elapsed())),
-        ),
-        Err(failure) => responses.push(Response::failure(None, failure, start.elapsed())),
-    };
-}
 #[derive(Debug, Clone)]
 pub struct Response {
     id: Option<Id>,

@@ -1,19 +1,27 @@
 pub use jortestkit::load::{
-    self, Configuration, Id, Monitor, RequestFailure, RequestGenerator, RequestStatus,
+    self, Configuration, Id, Monitor, Request, RequestFailure, RequestGenerator, RequestStatus,
     RequestStatusProvider, Response,
 };
 use load::Status;
+use std::time::Duration;
 
 #[derive(Clone, Debug)]
 pub struct SampleRequestGenerator {
-    counter: u32,
+    counter: u64,
 }
 
 impl RequestGenerator for SampleRequestGenerator {
-    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
-        std::thread::sleep(std::time::Duration::from_millis(100));
-        self.counter = self.counter + 1;
-        Ok(vec![None])
+    fn next(&mut self) -> Result<Request, RequestFailure> {
+        std::thread::sleep(Duration::from_millis(100));
+        self.counter += 1;
+        Ok(Request {
+            ids: vec![None],
+            duration: Duration::ZERO,
+        })
+    }
+
+    fn split(self) -> (Self, Option<Self>) {
+        (self.clone(), None)
     }
 }
 
@@ -33,10 +41,10 @@ pub fn load_sanity_sync() {
 #[test]
 pub fn load_sanity_multi_sync() {
     let config = Configuration::duration(
-        1,
+        5,
         std::time::Duration::from_secs(5),
-        50,
-        Monitor::Progress(10),
+        10,
+        Monitor::Progress(100),
         0,
         1,
     );
@@ -66,11 +74,18 @@ pub struct AsyncSampleRequestGenerator {
 }
 
 impl RequestGenerator for AsyncSampleRequestGenerator {
-    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
-        std::thread::sleep(std::time::Duration::from_millis(100));
+    fn next(&mut self) -> Result<Request, RequestFailure> {
+        std::thread::sleep(Duration::from_millis(100));
         let id = self.counter.to_string();
-        self.counter = self.counter + 1;
-        Ok(vec![Some(id)])
+        self.counter += 1;
+        Ok(Request {
+            ids: vec![Some(id)],
+            duration: Duration::ZERO,
+        })
+    }
+
+    fn split(self) -> (Self, Option<Self>) {
+        (self.clone(), None)
     }
 }
 

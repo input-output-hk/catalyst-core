@@ -20,12 +20,12 @@ pub enum Error {
 #[derive(Debug, Deserialize)]
 struct Score {
     #[serde(alias = "ideaId")]
-    id: i32,
+    id: u32,
     #[serde(alias = "avgScoreOfIdea")]
     score: f32,
 }
 
-pub type Scores = HashMap<i32, f32>;
+pub type Scores = HashMap<u32, f32>;
 
 static BASE_IDEASCALE_URL: Lazy<url::Url> = Lazy::new(|| {
     "https://cardano.ideascale.com/a/rest/v1/"
@@ -56,14 +56,9 @@ pub async fn get_funds_data(api_token: String) -> Result<Vec<Fund>, Error> {
 
 const ASSESSMENT_ID_ATTR: &str = "assessmentId";
 
-pub async fn get_assessment_id(stage_id: i32, api_token: String) -> Result<i64, Error> {
-    let assessment: serde_json::Value = request_data(
-        api_token,
-        BASE_IDEASCALE_URL
-            .join(&format!("stages/{}", stage_id))
-            .unwrap(),
-    )
-    .await?;
+pub async fn get_stages(api_token: String) -> Result<u64, Error> {
+    let assessment: serde_json::Value =
+        request_data(api_token, BASE_IDEASCALE_URL.join("stages").unwrap()).await?;
     // should be safe to unwrap that the value is an i64
     Ok(assessment
         .get(ASSESSMENT_ID_ATTR)
@@ -71,10 +66,10 @@ pub async fn get_assessment_id(stage_id: i32, api_token: String) -> Result<i64, 
             attribute_name: ASSESSMENT_ID_ATTR,
         })?
         .as_i64()
-        .unwrap())
+        .unwrap() as u64)
 }
 
-pub async fn get_assessments_score(assessment_id: i64, api_token: String) -> Result<Scores, Error> {
+pub async fn get_assessments_score(assessment_id: u64, api_token: String) -> Result<Scores, Error> {
     let scores: Vec<Score> = request_data(
         api_token,
         BASE_IDEASCALE_URL
@@ -86,7 +81,7 @@ pub async fn get_assessments_score(assessment_id: i64, api_token: String) -> Res
 }
 
 pub async fn get_assessments_scores_by_stage_id(
-    stage_id: i32,
+    stage_id: u32,
     api_token: String,
 ) -> Result<Scores, Error> {
     let assessment_id = get_assessment_id(stage_id, api_token.clone()).await?;
@@ -94,7 +89,7 @@ pub async fn get_assessments_scores_by_stage_id(
 }
 
 pub async fn get_proposals_data(
-    challenge_id: i32,
+    challenge_id: u32,
     api_token: String,
 ) -> Result<Vec<Proposal>, Error> {
     request_data(

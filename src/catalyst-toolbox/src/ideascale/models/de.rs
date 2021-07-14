@@ -1,31 +1,25 @@
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 
-use once_cell::sync::Lazy;
-use std::collections::HashSet;
-
-static DIRTY_CHARACTERS: Lazy<HashSet<char>> =
-    Lazy::new(|| ['*', '-', '/'].iter().copied().collect());
-
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {
-    pub id: i32,
+    pub id: u32,
     #[serde(alias = "name", deserialize_with = "deserialize_clean_challenge_title")]
     pub title: String,
     #[serde(alias = "tagline", deserialize_with = "deserialize_rewards")]
     pub rewards: String,
     pub description: CleanString,
     #[serde(alias = "groupId")]
-    pub fund_id: i32,
+    pub fund_id: u32,
     #[serde(alias = "funnelId")]
-    pub funnel_id: i32,
+    pub funnel_id: u32,
     #[serde(alias = "campaignUrl")]
     pub challenge_url: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Funnel {
-    pub id: i32,
+    pub id: u32,
     #[serde(alias = "name")]
     pub title: CleanString,
     pub description: CleanString,
@@ -33,7 +27,7 @@ pub struct Funnel {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Fund {
-    pub id: i32,
+    pub id: u32,
     pub name: CleanString,
     #[serde(alias = "campaigns")]
     pub challenges: Vec<Challenge>,
@@ -42,7 +36,7 @@ pub struct Fund {
 #[derive(Debug, Deserialize, Clone)]
 pub struct Proposal {
     #[serde(alias = "id")]
-    pub proposal_id: i32,
+    pub proposal_id: u32,
     pub proposal_category: Option<CleanString>,
     #[serde(alias = "title")]
     pub proposal_title: CleanString,
@@ -61,13 +55,13 @@ pub struct Proposal {
     pub proposer: Proposer,
 
     #[serde(alias = "stageId")]
-    pub stage_id: i32,
+    pub stage_id: u32,
 
     #[serde(alias = "stageLabel")]
     pub stage_type: String,
 
     #[serde(alias = "campaignId")]
-    pub challenge_id: i32,
+    pub challenge_id: u32,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -116,7 +110,7 @@ fn deserialize_clean_string<'de, D: Deserializer<'de>>(
     deserializer: D,
 ) -> Result<String, D::Error> {
     let mut rewards_str = String::deserialize(deserializer)?;
-    rewards_str.retain(|c| !DIRTY_CHARACTERS.contains(&c));
+    rewards_str.retain(|c| !matches!(c, '*' | '-' | '/'));
     Ok(rewards_str)
 }
 fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(

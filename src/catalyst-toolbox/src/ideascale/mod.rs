@@ -26,10 +26,10 @@ pub enum Error {
 
 #[derive(Debug)]
 pub struct IdeaScaleData {
-    pub funnels: HashMap<i32, Funnel>,
+    pub funnels: HashMap<u32, Funnel>,
     pub fund: Fund,
-    pub challenges: HashMap<i32, Challenge>,
-    pub proposals: HashMap<i32, Proposal>,
+    pub challenges: HashMap<u32, Challenge>,
+    pub proposals: HashMap<u32, Proposal>,
     pub scores: Scores,
 }
 
@@ -63,7 +63,7 @@ pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, 
         .filter(|p| filter_proposal_by_stage_type(&p.stage_type))
         .collect();
 
-    let stage_ids: HashSet<i32> = proposals.iter().map(|p| p.stage_id).collect();
+    let stage_ids: HashSet<u32> = proposals.iter().map(|p| p.stage_id).collect();
 
     let scores_tasks: Vec<_> = stage_ids
         .iter()
@@ -105,7 +105,7 @@ pub fn build_fund(fund: i32, goal: String, threshold: i64) -> Vec<models::se::Fu
 pub fn build_challenges(
     fund: i32,
     ideascale_data: &IdeaScaleData,
-) -> HashMap<i32, models::se::Challenge> {
+) -> HashMap<u32, models::se::Challenge> {
     let funnels = &ideascale_data.funnels;
     ideascale_data
         .challenges
@@ -136,7 +136,7 @@ pub fn build_challenges(
 
 pub fn build_proposals(
     ideascale_data: &IdeaScaleData,
-    built_challenges: &HashMap<i32, models::se::Challenge>,
+    built_challenges: &HashMap<u32, models::se::Challenge>,
     chain_vote_type: &str,
     fund: usize,
 ) -> Vec<models::se::Proposal> {
@@ -195,5 +195,5 @@ pub fn build_proposals(
 }
 
 fn filter_proposal_by_stage_type(stage: &str) -> bool {
-    matches!(stage, "Governance phase" | "Assess QA")
+    matches!(stage, "Governance phase")
 }

@@ -32,7 +32,7 @@ pub struct Import {
     fund_goal: String,
 
     /// ideascale API token
-    #[structopt(long)]
+    #[structopt(long, env = "IDEASCALE_API_TOKEN")]
     api_token: String,
 
     /// Fund approval threshold setting
@@ -45,7 +45,7 @@ pub struct Import {
 
     /// Path to folder where fund, challenges and proposals json files will be dumped
     #[structopt(long)]
-    save_folder: PathBuf,
+    output_dir: PathBuf,
 }
 
 impl Ideascale {
@@ -64,7 +64,7 @@ impl Import {
             api_token,
             threshold,
             chain_vote_type,
-            save_folder,
+            output_dir: save_folder,
         } = self;
 
         let runtime = tokio::runtime::Builder::new_multi_thread()

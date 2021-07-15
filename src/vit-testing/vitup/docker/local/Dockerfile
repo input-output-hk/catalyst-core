@@ -52,9 +52,7 @@ RUN cd ${ENV_PREFIX} && \
 	git checkout df9490ae33bb3abef8cb6877001091b179c5d38b
 	
  RUN cd ${ENV_PREFIX} && \
-    git clone https://github.com/input-output-hk/vit-testing && \
-    cd vit-testing && \
-	git checkout ffb17a3864ca97d9e8b73bd74a3700c9cba9e431
+    git clone https://github.com/input-output-hk/vit-testing
     
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-servicing-station && \

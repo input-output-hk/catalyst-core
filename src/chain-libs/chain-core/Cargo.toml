@@ -7,6 +7,3 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 chain-ser = { path = "../chain-ser" }
-
-[dev-dependencies]
-quickcheck = "0.9"

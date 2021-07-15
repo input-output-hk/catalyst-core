@@ -85,8 +85,47 @@ jobs:
       - name: Fetch dependencies and update cargo registry
         run: cargo fetch --locked
 
+  build_disruption_mock:
+    name: Build disruption mock 
+    needs: [cache_info, update_deps]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          default: true
+          components: rustfmt, clippy
 
+      - name: Checkout code
+        uses: actions/checkout@v2
 
+      - name: Build the tagged Docker image
+        run: |
+            cd /home/runner/work/vit-testing/vit-testing/vitup/docker/disruption/
+            docker build . --file Dockerfile --tag disruption
+       
+  build_local_mock:
+    name: Build local mock
+    needs: [cache_info, update_deps]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          default: true
+          components: rustfmt, clippy
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        
+      - name: Build the tagged Docker image
+        run: |
+            cd /home/runner/work/vit-testing/vit-testing/vitup/docker/local/
+            docker build . --file Dockerfile --tag local
   lints:
     name: Lints
     needs: [cache_info, update_deps]

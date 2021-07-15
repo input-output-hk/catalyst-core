@@ -127,7 +127,7 @@ pub fn build_challenges(
                     description: c.description.to_string(),
                     fund_id: fund.to_string(),
                     id: i.to_string(),
-                    rewards_total: c.rewards.clone(),
+                    rewards_total: c.rewards.to_string(),
                     title: c.title.clone(),
                 },
             )

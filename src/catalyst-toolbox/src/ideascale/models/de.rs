@@ -1,13 +1,17 @@
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
+use std::fmt::{Display, Formatter};
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct AdaRewards(#[serde(deserialize_with = "deserialize_rewards")] u64);
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Challenge {
     pub id: u32,
     #[serde(alias = "name", deserialize_with = "deserialize_clean_challenge_title")]
     pub title: String,
-    #[serde(alias = "tagline", deserialize_with = "deserialize_rewards")]
-    pub rewards: String,
+    #[serde(alias = "tagline")]
+    pub rewards: AdaRewards,
     pub description: CleanString,
     #[serde(alias = "groupId")]
     pub fund_id: u32,
@@ -116,6 +120,18 @@ impl AsRef<str> for CleanString {
     }
 }
 
+impl From<AdaRewards> for u64 {
+    fn from(rewards: AdaRewards) -> Self {
+        rewards.0
+    }
+}
+
+impl Display for AdaRewards {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 fn deserialize_clean_string<'de, D: Deserializer<'de>>(
     deserializer: D,
 ) -> Result<String, D::Error> {
@@ -137,19 +153,20 @@ fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(
     Ok(rewards_str)
 }
 
-fn deserialize_rewards<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+fn deserialize_rewards<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64, D::Error> {
     let rewards_str = String::deserialize(deserializer)?;
 
     // input is not standarized, hack an early return if it is just 0 ada
     if rewards_str.starts_with("0 ada") {
-        return Ok("0".to_string());
+        return Ok(0);
     }
     sscanf::scanf!(rewards_str.trim_end(), "${} in ada", String)
         // trim all . or , in between numbers
-        .map(|mut s| {
-            s.retain(|c: char| c.is_numeric());
+        .map(|mut s: String| {
+            s.retain(|c: char| c.is_numeric() || matches!(c, '.'));
             s
         })
+        .and_then(|s| s.parse().ok())
         .ok_or_else(|| {
             D::Error::custom(&format!("Unable to read malformed value: {}", rewards_str))
         })

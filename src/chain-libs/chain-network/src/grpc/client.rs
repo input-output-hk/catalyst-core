@@ -24,7 +24,6 @@ use tonic::metadata::MetadataValue;
 use tonic::transport;
 
 use std::convert::TryFrom;
-use std::fmt::Debug;
 
 #[cfg(feature = "transport")]
 use std::convert::TryInto;
@@ -140,7 +139,6 @@ where
     T::ResponseBody: Send + Sync + 'static,
     T::Error: Into<StdError>,
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
-    T: Debug, // https://github.com/hyperium/tonic/issues/718
 {
     /// Requests the identifier of the genesis block from the service node.
     ///

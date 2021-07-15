@@ -33,7 +33,11 @@ pub struct IdeaScaleData {
     pub scores: Scores,
 }
 
-pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, Error> {
+pub async fn fetch_all(
+    fund: usize,
+    stage_label: &str,
+    api_token: String,
+) -> Result<IdeaScaleData, Error> {
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
     let funds_task = tokio::spawn(fetch::get_funds_data(api_token.clone()));
     let funnels = funnels_task
@@ -64,7 +68,7 @@ pub async fn fetch_all(fund: usize, api_token: String) -> Result<IdeaScaleData, 
         .collect();
 
     let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
-    stages.retain(|stage| filter_stages(stage, &funnels));
+    stages.retain(|stage| filter_stages(stage, stage_label, &funnels));
 
     let scores_tasks: Vec<_> = stages
         .iter()
@@ -199,6 +203,7 @@ fn filter_proposal_by_stage_type(stage: &str) -> bool {
     matches!(stage, "Governance phase" | "Assess QA")
 }
 
-fn filter_stages(stage: &Stage, funnel_ids: &HashMap<u32, Funnel>) -> bool {
-    matches!(stage.label.as_str(), "Assess") && funnel_ids.contains_key(&stage.funnel_id)
+fn filter_stages(stage: &Stage, stage_label: &str, funnel_ids: &HashMap<u32, Funnel>) -> bool {
+    stage.label.to_ascii_lowercase() == stage_label.to_ascii_lowercase()
+        && funnel_ids.contains_key(&stage.funnel_id)
 }

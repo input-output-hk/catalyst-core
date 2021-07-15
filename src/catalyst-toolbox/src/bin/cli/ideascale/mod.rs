@@ -31,6 +31,10 @@ pub struct Import {
     #[structopt(long)]
     fund_goal: String,
 
+    /// Stage label: stage identifiers that links to assessments scores in ideascale
+    #[structopt(long, default_value = "Assess")]
+    stage_label: String,
+
     /// ideascale API token
     #[structopt(long, env = "IDEASCALE_API_TOKEN")]
     api_token: String,
@@ -61,6 +65,7 @@ impl Import {
         let Import {
             fund,
             fund_goal,
+            stage_label,
             api_token,
             threshold,
             chain_vote_type,
@@ -72,7 +77,7 @@ impl Import {
             .enable_time()
             .build()?;
 
-        let idescale_data = runtime.block_on(fetch_all(*fund, api_token.clone()))?;
+        let idescale_data = runtime.block_on(fetch_all(*fund, &stage_label, api_token.clone()))?;
 
         let funds = build_fund(*fund as i32, fund_goal.clone(), *threshold);
         let challenges = build_challenges(*fund as i32, &idescale_data);

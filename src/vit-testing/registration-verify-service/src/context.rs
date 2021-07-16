@@ -125,12 +125,28 @@ impl Context {
         &self.config
     }
 
+    pub fn config_mut(&mut self) -> &mut Configuration {
+        &mut self.config
+    }
+
     pub fn api_token(&self) -> Option<String> {
-        self.config.token.clone()
+        self.config.client_token.clone()
     }
 
     pub fn set_api_token(&mut self, api_token: String) {
-        self.config.token = Some(api_token);
+        self.config.client_token = Some(api_token);
+    }
+
+    pub fn admin_token(&self) -> Option<String> {
+        self.config.admin_token.clone()
+    }
+
+    pub fn set_admin_token(&mut self, admin_token: String) {
+        self.config.admin_token = Some(admin_token);
+    }
+
+    pub fn set_snapshot_job_id(&mut self, snapshot_job_id: String) {
+        self.config.snapshot_job_id = Some(snapshot_job_id);
     }
 }
 

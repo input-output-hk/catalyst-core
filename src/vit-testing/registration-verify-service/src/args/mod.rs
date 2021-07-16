@@ -13,8 +13,11 @@ use thiserror::Error;
 
 #[derive(StructOpt, Debug)]
 pub struct RegistrationVerifyServiceCommand {
-    #[structopt(long = "token")]
-    pub token: Option<String>,
+    #[structopt(long = "api-token")]
+    pub api_token: Option<String>,
+
+    #[structopt(long = "admin-token")]
+    pub admin_token: Option<String>,
 
     #[structopt(long = "config")]
     pub config: PathBuf,
@@ -24,8 +27,12 @@ impl RegistrationVerifyServiceCommand {
     pub async fn exec(self) -> Result<(), Error> {
         let mut configuration: Configuration = read_config(&self.config)?;
 
-        if self.token.is_some() {
-            configuration.token = self.token;
+        if self.api_token.is_some() {
+            configuration.client_token = self.api_token;
+        }
+
+        if self.admin_token.is_some() {
+            configuration.admin_token = self.admin_token;
         }
 
         let control_context: ContextLock =
@@ -41,6 +48,7 @@ impl RegistrationVerifyServiceCommand {
                         .with_jcli(&configuration.jcli)
                         .with_snapshot_token(&configuration.snapshot_token)
                         .with_snapshot_address(&configuration.snapshot_address)
+                        .with_network(configuration.network)
                         .build();
 
                     control_context.lock().unwrap().run_started().unwrap();

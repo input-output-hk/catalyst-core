@@ -1,5 +1,6 @@
 mod info;
 
+use crate::config::NetworkType;
 use crate::context::{ContextLock, Step};
 use crate::job::info::Assert;
 use crate::job::info::Checks;
@@ -14,6 +15,7 @@ use iapyx::PinReadMode;
 use iapyx::QrReader;
 pub use info::JobOutputInfo;
 use snapshot_trigger_service::client::do_snapshot;
+use snapshot_trigger_service::client::get_snapshot_from_history_by_id;
 use snapshot_trigger_service::config::JobParameters;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -35,6 +37,11 @@ impl RegistrationVerifyJobBuilder {
         self
     }
 
+    pub fn with_network(mut self, network: NetworkType) -> Self {
+        self.job.network = network;
+        self
+    }
+
     pub fn with_snapshot_token<S: Into<String>>(mut self, snapshot_token: S) -> Self {
         self.job.snapshot_token = snapshot_token.into();
         self
@@ -42,6 +49,11 @@ impl RegistrationVerifyJobBuilder {
 
     pub fn with_snapshot_address<S: Into<String>>(mut self, snapshot_address: S) -> Self {
         self.job.snapshot_address = snapshot_address.into();
+        self
+    }
+
+    pub fn with_snapshot_initial_job_id(mut self, snapshot_job_id: Option<String>) -> Self {
+        self.job.snapshot_job_id = snapshot_job_id;
         self
     }
 
@@ -60,6 +72,8 @@ pub struct RegistrationVerifyJob {
     snapshot_token: String,
     snapshot_address: String,
     working_dir: PathBuf,
+    snapshot_job_id: Option<String>,
+    network: NetworkType,
 }
 
 impl Default for RegistrationVerifyJobBuilder {
@@ -75,6 +89,8 @@ impl Default for RegistrationVerifyJob {
             snapshot_token: "".to_string(),
             snapshot_address: "".to_string(),
             working_dir: PathBuf::from_str(".").unwrap(),
+            snapshot_job_id: None,
+            network: NetworkType::Testnet,
         }
     }
 }
@@ -177,11 +193,28 @@ impl RegistrationVerifyJob {
             .state_mut()
             .update_running_step(Step::RunningSnapshot);
 
-        let snapshot_result = do_snapshot(
-            jobs_params,
-            self.snapshot_token.to_string(),
-            self.snapshot_address.to_string(),
-        )?;
+        let snapshot_result = match self.network {
+            NetworkType::Testnet => do_snapshot(
+                jobs_params,
+                self.snapshot_token.to_string(),
+                self.snapshot_address.to_string(),
+            )?,
+            NetworkType::Mainnet => {
+                let context = context.lock().unwrap();
+
+                let job_id = context
+                    .config()
+                    .snapshot_job_id
+                    .as_ref()
+                    .ok_or(Error::SnapshotJobIdNotDefined)?;
+
+                get_snapshot_from_history_by_id(
+                    job_id,
+                    self.snapshot_token.to_string(),
+                    self.snapshot_address.to_string(),
+                )?
+            }
+        };
 
         let entry = snapshot_result.by_address(&address)?;
         let address_readable = AddressReadable::from_address("ca", &address);
@@ -244,4 +277,6 @@ pub enum Error {
     SnapshotTriggerService(#[from] snapshot_trigger_service::client::Error),
     #[error("snapshot trigger service")]
     PinReadError(#[from] iapyx::PinReadError),
+    #[error("in mainnet mode snapshot is not runned on each request. Can't find job id of last snapshot job")]
+    SnapshotJobIdNotDefined,
 }

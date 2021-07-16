@@ -43,7 +43,12 @@ impl SnapshotRestClient {
         println!("Calling: {}", path);
         let client = reqwest::blocking::Client::new();
         let request = self.set_header(client.get(&path));
-        request.send()?.text().map_err(Into::into)
+        let response = request.send()?;
+        if !response.status().is_success() {
+            let text = response.text()?;
+            return Err(Error::UnexpectedSnapshotRestResponse(text));
+        }
+        response.text().map_err(Into::into)
     }
 
     fn set_header(
@@ -78,6 +83,11 @@ impl SnapshotRestClient {
         output: P,
     ) -> Result<(), Error> {
         self.download(format!("{}/status.yaml", id.into()), output)
+    }
+
+    pub fn get_status<S: Into<String>>(&self, id: S) -> Result<State, Error> {
+        let status_string = self.get(format!("api/job/files/get/{}/status.yaml", id.into()))?;
+        Ok(serde_yaml::from_str(&status_string)?)
     }
 
     pub fn download<S: Into<String>, P: AsRef<Path>>(
@@ -152,4 +162,6 @@ pub enum Error {
     IoError(#[from] std::io::Error),
     #[error("timeout error")]
     WaitError(#[from] WaitError),
+    #[error("error recieved from call: {0}")]
+    UnexpectedSnapshotRestResponse(String)
 }

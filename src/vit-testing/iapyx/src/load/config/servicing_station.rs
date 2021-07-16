@@ -27,7 +27,7 @@ impl Config {
     pub fn get(&self, request_type: RequestType) -> Result<Configuration, Error> {
         self.config
             .get(&request_type)
-            .map(|x| x.clone())
+            .cloned()
             .ok_or(Error::CannotFindConfigurationFor(request_type))
     }
 }

@@ -38,7 +38,7 @@ impl ServicingStationLoad {
                 "proposal request".to_string(),
             ),
             (
-                ServicingStationRequestGen::new_proposals(vit_client.clone()),
+                ServicingStationRequestGen::new_proposals(vit_client),
                 self.config.get(RequestType::Proposals)?,
                 "proposals request".to_string(),
             ),

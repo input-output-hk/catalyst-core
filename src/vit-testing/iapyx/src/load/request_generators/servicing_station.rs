@@ -2,14 +2,18 @@ use crate::backend::VitStationRestClient;
 use crate::load::config::ServicingStationRequestType as RequestType;
 use crate::rand::RngCore;
 use crate::Proposal;
-use jortestkit::load::{Id, RequestFailure, RequestGenerator};
+use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::rngs::OsRng;
+use std::time::Instant;
+
+const DEFAULT_MAX_SPLITS: usize = 7; // equals to 128 splits, will likely not reach that value but it's there just to prevent a stack overflow
 
 pub struct ServicingStationRequestGen {
-    pub client: VitStationRestClient,
-    pub proposals: Vec<Proposal>,
-    pub rand: OsRng,
-    pub request_type: RequestType,
+    client: VitStationRestClient,
+    proposals: Vec<Proposal>,
+    rand: OsRng,
+    request_type: RequestType,
+    max_splits: usize, // avoid infinite splitting
 }
 
 impl ServicingStationRequestGen {
@@ -19,6 +23,7 @@ impl ServicingStationRequestGen {
             proposals: Vec::new(),
             rand: OsRng,
             request_type: RequestType::Fund,
+            max_splits: DEFAULT_MAX_SPLITS,
         }
     }
 
@@ -28,6 +33,7 @@ impl ServicingStationRequestGen {
             proposals: Vec::new(),
             rand: OsRng,
             request_type: RequestType::Challenges,
+            max_splits: DEFAULT_MAX_SPLITS,
         }
     }
 
@@ -37,6 +43,7 @@ impl ServicingStationRequestGen {
             proposals: Vec::new(),
             rand: OsRng,
             request_type: RequestType::Proposals,
+            max_splits: DEFAULT_MAX_SPLITS,
         }
     }
 
@@ -46,6 +53,7 @@ impl ServicingStationRequestGen {
             proposals,
             rand: OsRng,
             request_type: RequestType::Proposal,
+            max_splits: DEFAULT_MAX_SPLITS,
         }
     }
 
@@ -84,7 +92,31 @@ impl ServicingStationRequestGen {
 }
 
 impl RequestGenerator for ServicingStationRequestGen {
-    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
-        self.next_request()
+    fn next(&mut self) -> Result<Request, RequestFailure> {
+        let start = Instant::now();
+        match self.next_request() {
+            Ok(v) => Ok(Request {
+                ids: v,
+                duration: start.elapsed(),
+            }),
+            Err(e) => Err(RequestFailure::General(format!("{:?}", e))),
+        }
+    }
+
+    fn split(mut self) -> (Self, Option<Self>) {
+        if self.max_splits == 0 {
+            return (self, None);
+        }
+
+        self.max_splits -= 1;
+
+        let other = Self {
+            client: self.client.clone(),
+            proposals: self.proposals.clone(),
+            rand: OsRng,
+            request_type: self.request_type.clone(),
+            max_splits: self.max_splits,
+        };
+        (self, Some(other))
     }
 }

@@ -1,6 +1,7 @@
 use hyper::StatusCode;
 use thiserror::Error;
 
+#[derive(Clone)]
 pub struct ProxyClient {
     address: String,
     debug: bool,

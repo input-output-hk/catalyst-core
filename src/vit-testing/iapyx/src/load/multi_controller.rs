@@ -15,10 +15,11 @@ use wallet_core::{Choice, Value};
 
 unsafe impl Send for Wallet {}
 use std::convert::TryInto;
+
 pub struct MultiController {
-    backend: WalletBackend,
-    wallets: Vec<Wallet>,
-    settings: Settings,
+    pub(super) backend: WalletBackend,
+    pub(super) wallets: Vec<Wallet>,
+    pub(super) settings: Settings,
 }
 
 impl MultiController {

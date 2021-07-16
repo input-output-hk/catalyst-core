@@ -1,8 +1,9 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
-use jortestkit::load::{Id, RequestFailure, RequestGenerator};
+use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
+use std::time::Instant;
 use wallet_core::Choice;
 
 pub struct BatchWalletRequestGen {
@@ -70,8 +71,36 @@ impl BatchWalletRequestGen {
 }
 
 impl RequestGenerator for BatchWalletRequestGen {
-    fn next(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
-        self.random_votes()
-            .map_err(|e| RequestFailure::General(format!("{:?}", e)))
+    fn split(mut self) -> (Self, Option<Self>) {
+        let wallets_len = self.multi_controller.wallets.len();
+        if wallets_len <= 1 {
+            return (self, None);
+        }
+        let wallets = self.multi_controller.wallets.split_off(wallets_len / 2);
+        let new_gen = Self {
+            rand: self.rand,
+            multi_controller: MultiController {
+                wallets,
+                backend: self.multi_controller.backend.clone(),
+                settings: self.multi_controller.settings.clone(),
+            },
+            proposals: self.proposals.clone(),
+            options: self.options.clone(),
+            use_v1: self.use_v1,
+            batch_size: self.batch_size,
+        };
+
+        (self, Some(new_gen))
+    }
+
+    fn next(&mut self) -> Result<Request, RequestFailure> {
+        let start = Instant::now();
+        match self.random_votes() {
+            Ok(ids) => Ok(Request {
+                ids,
+                duration: start.elapsed(),
+            }),
+            Err(e) => Err(RequestFailure::General(format!("{:?}", e))),
+        }
     }
 }

@@ -24,6 +24,7 @@ use thiserror::Error;
 use vit_station::{RestError as VitRestError, VitStationRestClient};
 use wallet::{AccountId, Settings};
 
+#[derive(Clone)]
 pub struct WalletBackend {
     node_client: WalletNodeRestClient,
     vit_client: VitStationRestClient,

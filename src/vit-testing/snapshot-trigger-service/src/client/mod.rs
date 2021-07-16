@@ -37,6 +37,43 @@ pub fn do_snapshot<S: Into<String>, P: Into<String>>(
     })
 }
 
+pub fn get_snapshot_by_id<Q: Into<String>, S: Into<String>, P: Into<String>>(
+    job_id: Q,
+    snapshot_token: S,
+    snapshot_address: P,
+) -> Result<SnapshotResult, Error> {
+    let snapshot_client =
+        SnapshotRestClient::new_with_token(snapshot_token.into(), snapshot_address.into());
+    let job_id = job_id.into();
+
+    let snapshot = snapshot_client.get_snapshot(job_id.clone())?;
+    let status = snapshot_client.job_status(job_id)?;
+
+    Ok(SnapshotResult {
+        status: status?,
+        snapshot: read_initials(&snapshot)?,
+    })
+}
+
+pub fn get_snapshot_from_history_by_id<Q: Into<String>, S: Into<String>, P: Into<String>>(
+    job_id: Q,
+    snapshot_token: S,
+    snapshot_address: P,
+) -> Result<SnapshotResult, Error> {
+    let snapshot_client =
+        SnapshotRestClient::new_with_token(snapshot_token.into(), snapshot_address.into());
+    let job_id = job_id.into();
+
+    let snapshot = snapshot_client.get_snapshot(job_id.clone())?;
+    let status = snapshot_client.get_status(job_id)?;
+
+    Ok(SnapshotResult {
+        status,
+        snapshot: read_initials(&snapshot)?,
+    })
+}
+
+
 pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<Initial>, Error> {
     let snapshot = snapshot.into();
     let value: serde_json::Value = serde_json::from_str(&snapshot)?;
@@ -94,6 +131,8 @@ pub enum Error {
     #[error("cannot parse file {0}")]
     CannotParseSnapshotContent(String),
     #[error("rest error")]
+    ContextError(#[from] crate::context::Error),
+    #[error("context error")]
     RestError(#[from] crate::client::rest::Error),
     #[error("rest error")]
     ChainError(#[from] chain_addr::Error),

@@ -1,5 +1,7 @@
 mod network;
 
+pub use network::NetworkType;
+
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::path::PathBuf;
@@ -13,7 +15,13 @@ pub struct Configuration {
     #[serde(rename = "snapshot-address")]
     pub snapshot_address: String,
     pub jcli: PathBuf,
-    pub token: Option<String>,
+    #[serde(rename = "client-token")]
+    pub client_token: Option<String>,
+    #[serde(rename = "admin-token")]
+    pub admin_token: Option<String>,
+    #[serde(rename = "initial-snapshot-job-id")]
+    pub snapshot_job_id: Option<String>,
+    pub network: NetworkType,
 }
 
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Configuration, Error> {

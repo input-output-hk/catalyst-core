@@ -153,27 +153,24 @@ impl<'a, V> Iterator for FastSparseArrayIter<'a, V> {
 mod tests {
     use super::*;
 
-    #[quickcheck]
-    fn add_test(data: Vec<(u8, u8)>) -> bool {
-        let mut data = data;
-        data.sort_by(|a, b| a.0.cmp(&b.0));
-        data.dedup_by(|a, b| a.0.eq(&b.0));
+    use crate::testing::sparse_array_test_data;
+    use proptest::prelude::*;
+    use test_strategy::proptest;
 
+    #[proptest]
+    fn add_test(#[strategy(sparse_array_test_data())] data: Vec<(u8, u8)>) {
         let mut sparse_array = FastSparseArray::new();
         for (idx, value) in data.iter() {
             sparse_array.set(*idx, value);
         }
 
-        data.iter()
-            .all(|(idx, value)| sparse_array.get(*idx) == Some(&value))
+        prop_assert!(data
+            .iter()
+            .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));
     }
 
-    #[quickcheck]
-    fn remove_test(data: Vec<(u8, u8)>) -> bool {
-        let mut data = data;
-        data.sort_by(|a, b| a.0.cmp(&b.0));
-        data.dedup_by(|a, b| a.0.eq(&b.0));
-
+    #[proptest]
+    fn remove_test(#[strategy(sparse_array_test_data())] data: Vec<(u8, u8)>) {
         let mut sparse_array = FastSparseArray::new();
         for (idx, value) in data.iter() {
             sparse_array.set(*idx, value);
@@ -186,12 +183,12 @@ mod tests {
 
         sparse_array.shrink();
 
-        to_remove
+        prop_assert!(to_remove
             .iter()
-            .all(|(idx, _)| sparse_array.get(*idx) == None)
-            && to_set
-                .iter()
-                .all(|(idx, value)| sparse_array.get(*idx) == Some(&value))
+            .all(|(idx, _)| sparse_array.get(*idx) == None));
+        prop_assert!(to_set
+            .iter()
+            .all(|(idx, value)| sparse_array.get(*idx) == Some(&value)));
     }
 
     #[test]

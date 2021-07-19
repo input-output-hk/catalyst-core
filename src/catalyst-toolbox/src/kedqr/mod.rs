@@ -118,7 +118,7 @@ impl fmt::Display for KeyQrCode {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct QRPin {
+pub struct QrPin {
     pub password: [u8; 4],
 }
 
@@ -131,7 +131,7 @@ pub enum BadPinError {
     InvalidDigit(char),
 }
 
-impl FromStr for QRPin {
+impl FromStr for QrPin {
     type Err = BadPinError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -143,7 +143,7 @@ impl FromStr for QRPin {
         for (i, digit) in s.chars().enumerate() {
             pwd[i] = digit.to_digit(10).ok_or(BadPinError::InvalidDigit(digit))? as u8;
         }
-        Ok(QRPin { password: pwd })
+        Ok(QrPin { password: pwd })
     }
 }
 
@@ -158,14 +158,14 @@ mod tests {
             ("1123", [1, 1, 2, 3]),
             ("0002", [0, 0, 0, 2]),
         ] {
-            let qr_pin = QRPin::from_str(pin).unwrap();
-            assert_eq!(qr_pin, QRPin { password: *pwd })
+            let qr_pin = QrPin::from_str(pin).unwrap();
+            assert_eq!(qr_pin, QrPin { password: *pwd })
         }
     }
     #[test]
     fn pins_that_do_not_satisfy_length_reqs_return_error() {
         for bad_pin in &["", "1", "11", "111", "11111"] {
-            let qr_pin = QRPin::from_str(bad_pin);
+            let qr_pin = QrPin::from_str(bad_pin);
             assert!(qr_pin.is_err(),)
         }
     }
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn pins_that_do_not_satisfy_content_reqs_return_error() {
         for bad_pin in &["    ", " 111", "llll", "000u"] {
-            let qr_pin = QRPin::from_str(bad_pin);
+            let qr_pin = QrPin::from_str(bad_pin);
             assert!(qr_pin.is_err(),)
         }
     }

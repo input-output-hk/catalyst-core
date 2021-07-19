@@ -36,7 +36,7 @@ pub enum CatalystCommand {
     /// Download, compare and get stats from sentry and persistent fragment logs
     Logs(logs::Logs),
     /// Generate qr codes
-    Kedqr(kedqr::QRcodeApp),
+    QrCode(kedqr::QrCodeCmd),
 }
 
 impl Cli {
@@ -63,7 +63,7 @@ impl CatalystCommand {
             PushNotification(notifications) => notifications.exec()?,
             Recover(recover) => recover.exec()?,
             Logs(logs) => logs.exec()?,
-            Kedqr(kedqr) => kedqr.exec()?,
+            QrCode(kedqr) => kedqr.exec()?,
         };
         Ok(())
     }

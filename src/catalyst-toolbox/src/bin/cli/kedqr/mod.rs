@@ -1,4 +1,4 @@
-use catalyst_toolbox::kedqr::{KeyQrCode, QRPin};
+use catalyst_toolbox::kedqr::{KeyQrCode, QrPin};
 use chain_crypto::bech32::Bech32;
 use chain_crypto::{Ed25519Extended, SecretKey};
 use std::{
@@ -12,7 +12,7 @@ use structopt::StructOpt;
 /// QCode CLI toolkit
 #[derive(Debug, PartialEq, StructOpt)]
 #[structopt(rename_all = "kebab-case")]
-pub struct QRcodeApp {
+pub struct QrCodeCmd {
     /// Path to file containing ed25519extended bech32 value.
     #[structopt(short, long, parse(from_os_str))]
     input: PathBuf,
@@ -21,12 +21,12 @@ pub struct QRcodeApp {
     output: Option<PathBuf>,
     /// Pin code. 4-digit number is used on Catalyst.
     #[structopt(short, long, parse(try_from_str))]
-    pin: QRPin,
+    pin: QrPin,
 }
 
-impl QRcodeApp {
+impl QrCodeCmd {
     pub fn exec(self) -> Result<(), Box<dyn Error>> {
-        let QRcodeApp { input, output, pin } = self;
+        let QrCodeCmd { input, output, pin } = self;
         // open input key and parse it
         let key_file = OpenOptions::new()
             .create(false)

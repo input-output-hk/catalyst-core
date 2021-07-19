@@ -29,7 +29,7 @@ pub enum CatalystCommand {
     /// Rewards related operations
     Rewards(rewards::Rewards),
     /// Send push notification to pushwoosh service
-    PushNotification(notifications::PushNotifications),
+    Push(notifications::PushNotifications),
     /// Tally recovery utility
     Recover(recovery::Recover),
     /// Download, compare and get stats from sentry and persistent fragment logs
@@ -57,7 +57,7 @@ impl CatalystCommand {
         use self::CatalystCommand::*;
         match self {
             Rewards(rewards) => rewards.exec()?,
-            PushNotification(notifications) => notifications.exec()?,
+            Push(notifications) => notifications.exec()?,
             Recover(recover) => recover.exec()?,
             Logs(logs) => logs.exec()?,
         };

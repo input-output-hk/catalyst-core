@@ -11,6 +11,7 @@ members = [
     "chain-storage",
     "chain-test-utils",
     "chain-impl-mockchain",
+    "chain-evm",
     "cardano-legacy-address",
     "sparse-array",
     "typed-bytes",

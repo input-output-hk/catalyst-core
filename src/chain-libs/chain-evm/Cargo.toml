@@ -1,0 +1,12 @@
+[package]
+name = "chain-evm"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+imhamt = { path = "../imhamt" }
+primitive-types = "0.10.1"
+
+[dev-dependencies]
+proptest = "1.0.0"
+test-strategy = "0.1"

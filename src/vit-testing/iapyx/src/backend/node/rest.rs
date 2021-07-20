@@ -4,6 +4,8 @@ use chain_core::property::Deserialize;
 use chain_crypto::{bech32::Bech32, Ed25519, PublicKey};
 use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::fragment::FragmentId;
+use jormungandr_lib::interfaces::FragmentStatus;
+use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, NodeStatsDto, VotePlanStatus};
 pub use jormungandr_testing_utils::testing::node::RestError;
 use jormungandr_testing_utils::testing::node::{JormungandrRest, RestSettings};
@@ -56,6 +58,21 @@ impl WalletNodeRestClient {
             .collect())
     }
 
+    pub fn fragment_statuses(
+        &self,
+        statuses: Vec<String>,
+    ) -> Result<HashMap<FragmentId, FragmentStatus>, RestError> {
+        Ok(self
+            .rest_client
+            .fragments_statuses(statuses)?
+            .iter()
+            .map(|(id, entry)| {
+                let str = id.to_string();
+                (FragmentId::from_str(&str).unwrap(), entry.clone())
+            })
+            .collect())
+    }
+
     pub fn disable_logs(&mut self) {
         self.rest_client.disable_logger();
     }
@@ -72,6 +89,10 @@ impl WalletNodeRestClient {
         let public_key: PublicKey<Ed25519> = account_id.into();
         self.rest_client
             .account_state_by_pk(&public_key.to_bech32_str())
+    }
+
+    pub fn settings(&self) -> Result<SettingsDto, RestError> {
+        self.rest_client.settings()
     }
 
     pub fn account_exists(&self, account_id: AccountId) -> Result<bool, RestError> {

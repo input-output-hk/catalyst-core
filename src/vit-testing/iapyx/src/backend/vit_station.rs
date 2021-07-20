@@ -2,7 +2,7 @@
 
 use crate::data::Challenge;
 use crate::data::ServiceVersion;
-use crate::data::{Fund, Proposal};
+use crate::data::{Challenge, Fund, Proposal};
 use hyper::StatusCode;
 use reqwest::blocking::{Client, Response};
 use thiserror::Error;
@@ -115,11 +115,26 @@ impl VitStationRestClient {
         })
     }
 
+    pub fn challenges(&self) -> Result<Vec<Challenge>, RestError> {
+        let response = self.challenges_raw()?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.logger.log_text(&content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
     pub fn challenges_raw(&self) -> Result<Response, RestError> {
         self.get(&self.path_builder.challenges())
             .map_err(RestError::RequestError)
     }
 
+    pub fn challenge_raw(&self, id: &str) -> Result<Response, RestError> {
+        let response = self
+            .get(&self.path_builder.challenge(id))
+            .map_err(RestError::RequestError)?;
+        self.verify_status_code(&response)?;
+        Ok(response)
+    }
     pub fn proposals_raw(&self) -> Result<Response, RestError> {
         self.get(&self.path_builder.proposals())
             .map_err(RestError::RequestError)
@@ -256,6 +271,10 @@ impl RestPathBuilder {
 
     pub fn challenges(&self) -> String {
         self.path("challenges")
+    }
+
+    pub fn challenge(&self, id: &str) -> String {
+        self.path(&format!("challenges/{}", id))
     }
 
     pub fn funds(&self) -> String {

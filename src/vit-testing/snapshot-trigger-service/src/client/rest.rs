@@ -163,5 +163,5 @@ pub enum Error {
     #[error("timeout error")]
     WaitError(#[from] WaitError),
     #[error("error recieved from call: {0}")]
-    UnexpectedSnapshotRestResponse(String)
+    UnexpectedSnapshotRestResponse(String),
 }

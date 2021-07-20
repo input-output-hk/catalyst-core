@@ -13,6 +13,8 @@ pub enum RequestType {
     Proposal,
     #[serde(alias = "proposals")]
     Proposals,
+    #[serde(alias = "challenge")]
+    Challenge,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

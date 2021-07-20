@@ -12,10 +12,14 @@ pub enum RequestType {
     Fund,
     #[serde(alias = "challenges")]
     Challenges,
+    #[serde(alias = "challenge")]
+    Challenge,
     #[serde(alias = "proposal")]
     Proposal,
     #[serde(alias = "proposals")]
     Proposals,
+    #[serde(alias = "settings")]
+    Settings,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -25,5 +29,7 @@ pub struct Config {
     pub fund: Configuration,
     pub challenges: Configuration,
     pub proposal: Configuration,
-    pub proposals: Configuration,
+    //   pub proposals: Configuration,
+    pub challenge: Configuration,
+    pub settings: Configuration,
 }

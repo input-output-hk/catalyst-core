@@ -1,10 +1,10 @@
 use crate::backend::VitRestError;
 use crate::backend::VitStationRestClient;
-use crate::backend::WalletNodeRestClient;
 use crate::load::config::{ArtificialUserLoadConfig, ArtificialUserRequestType as RequestType};
 use crate::load::request_generators::AccountRequestGen;
 use crate::load::request_generators::ArtificialUserRequestGen;
 use crate::load::request_generators::BatchWalletRequestGen;
+use crate::load::request_generators::SettingsRequestGen;
 use crate::load::ServicingStationRequestGen;
 use jortestkit::measurement::EfficiencyBenchmarkFinish;
 use thiserror::Error;
@@ -22,19 +22,21 @@ impl ArtificialUserLoad {
         let measurement_name = "artificial user load";
 
         let vit_client = VitStationRestClient::new(self.config.vote.address.clone());
-        let node_client = WalletNodeRestClient::new(
-            self.config.vote.address.clone(),
-            self.config.vote.rest_settings(),
-        );
+        let multi_controller = self.config.vote.build_multi_controller()?;
+        let node_client = multi_controller.backend().node_client();
+
         let transactions = BatchWalletRequestGen::new(
-            self.config.vote.build_multi_controller()?,
+            multi_controller,
             self.config.vote.batch_size,
             self.config.vote.use_https,
         );
         let account = AccountRequestGen::new(
             self.config.vote.build_multi_controller()?.into(),
-            node_client,
+            node_client.clone(),
         );
+        let settings = SettingsRequestGen::new(node_client);
+        let challenge =
+            ServicingStationRequestGen::new_challenge(vit_client.clone(), vit_client.challenges()?);
         let fund = ServicingStationRequestGen::new_fund(vit_client.clone());
         let challenges = ServicingStationRequestGen::new_challenges(vit_client.clone());
         let proposal =
@@ -43,24 +45,34 @@ impl ArtificialUserLoad {
 
         let request_generators = vec![
             (
-                ArtificialUserRequestGen::new_static(fund, RequestType::Fund),
-                self.config.fund.clone(),
-                "fund request".to_string(),
-            ),
-            (
-                ArtificialUserRequestGen::new_static(challenges, RequestType::Challenges),
-                self.config.challenges.clone(),
-                "challenge request".to_string(),
-            ),
-            (
                 ArtificialUserRequestGen::new_static(proposal, RequestType::Proposal),
                 self.config.proposal.clone(),
                 "proposal request".to_string(),
             ),
             (
+                ArtificialUserRequestGen::new_static(fund, RequestType::Fund),
+                self.config.fund.clone(),
+                "fund request".to_string(),
+            ),
+            (
+                ArtificialUserRequestGen::new_static(challenge, RequestType::Challenge),
+                self.config.challenge.clone(),
+                "challenge request".to_string(),
+            ),
+            (
+                ArtificialUserRequestGen::new_static(challenges, RequestType::Challenges),
+                self.config.challenges.clone(),
+                "challenges request".to_string(),
+            ),
+            /*            (
                 ArtificialUserRequestGen::new_static(proposals, RequestType::Proposals),
                 self.config.proposals.clone(),
                 "proposals request".to_string(),
+            ),*/
+            (
+                ArtificialUserRequestGen::new_settings(settings),
+                self.config.settings.clone(),
+                "settings request".to_string(),
             ),
             (
                 ArtificialUserRequestGen::new_account(account),
@@ -70,7 +82,7 @@ impl ArtificialUserLoad {
             (
                 ArtificialUserRequestGen::new_node(transactions),
                 self.config.vote.config.clone(),
-                "proposals request".to_string(),
+                "vote request".to_string(),
             ),
         ];
 

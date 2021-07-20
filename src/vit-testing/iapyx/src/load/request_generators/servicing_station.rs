@@ -1,16 +1,17 @@
 use crate::backend::VitStationRestClient;
 use crate::load::config::ServicingStationRequestType as RequestType;
 use crate::rand::RngCore;
-use crate::Proposal;
+use crate::{Challenge, Proposal};
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::rngs::OsRng;
 use std::time::Instant;
 
-const DEFAULT_MAX_SPLITS: usize = 7; // equals to 128 splits, will likely not reach that value but it's there just to prevent a stack overflow
+const DEFAULT_MAX_SPLITS: usize = 20;
 
 pub struct ServicingStationRequestGen {
     client: VitStationRestClient,
     proposals: Vec<Proposal>,
+    challenges: Vec<Challenge>,
     rand: OsRng,
     request_type: RequestType,
     max_splits: usize, // avoid infinite splitting
@@ -21,8 +22,20 @@ impl ServicingStationRequestGen {
         Self {
             client,
             proposals: Vec::new(),
+            challenges: Vec::new(),
             rand: OsRng,
             request_type: RequestType::Fund,
+            max_splits: DEFAULT_MAX_SPLITS,
+        }
+    }
+
+    pub fn new_challenge(client: VitStationRestClient, challenges: Vec<Challenge>) -> Self {
+        Self {
+            client,
+            proposals: Vec::new(),
+            challenges,
+            rand: OsRng,
+            request_type: RequestType::Challenge,
             max_splits: DEFAULT_MAX_SPLITS,
         }
     }
@@ -31,6 +44,7 @@ impl ServicingStationRequestGen {
         Self {
             client,
             proposals: Vec::new(),
+            challenges: Vec::new(),
             rand: OsRng,
             request_type: RequestType::Challenges,
             max_splits: DEFAULT_MAX_SPLITS,
@@ -41,6 +55,7 @@ impl ServicingStationRequestGen {
         Self {
             client,
             proposals: Vec::new(),
+            challenges: Vec::new(),
             rand: OsRng,
             request_type: RequestType::Proposals,
             max_splits: DEFAULT_MAX_SPLITS,
@@ -50,6 +65,7 @@ impl ServicingStationRequestGen {
     pub fn new_proposal(client: VitStationRestClient, proposals: Vec<Proposal>) -> Self {
         Self {
             client,
+            challenges: Vec::new(),
             proposals,
             rand: OsRng,
             request_type: RequestType::Proposal,
@@ -69,6 +85,14 @@ impl ServicingStationRequestGen {
             .map_err(|e| RequestFailure::General(format!("{:?}", e)))
     }
 
+    fn random_challenge(&mut self) -> Result<reqwest::blocking::Response, RequestFailure> {
+        let index = self.next_usize() % self.challenges.len();
+        let challenge = self.challenges.get(index).unwrap().clone();
+        self.client
+            .challenge_raw(&challenge.id.to_string())
+            .map_err(|e| RequestFailure::General(format!("{:?}", e)))
+    }
+
     pub fn next_request(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
         match self.request_type {
             RequestType::Fund => self
@@ -79,6 +103,10 @@ impl ServicingStationRequestGen {
             RequestType::Challenges => self
                 .client
                 .challenges_raw()
+                .map(|_response| vec![None])
+                .map_err(|e| RequestFailure::General(format!("{:?}", e))),
+            RequestType::Challenge => self
+                .random_challenge()
                 .map(|_response| vec![None])
                 .map_err(|e| RequestFailure::General(format!("{:?}", e))),
             RequestType::Proposal => self.random_proposal().map(|_response| vec![None]),
@@ -112,6 +140,7 @@ impl RequestGenerator for ServicingStationRequestGen {
 
         let other = Self {
             client: self.client.clone(),
+            challenges: self.challenges.clone(),
             proposals: self.proposals.clone(),
             rand: OsRng,
             request_type: self.request_type.clone(),

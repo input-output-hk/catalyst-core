@@ -1,4 +1,5 @@
 use crate::load::config::ArtificialUserRequestType as RequestType;
+use crate::load::request_generators::jormungandr::SettingsRequestGen;
 use crate::load::request_generators::AccountRequestGen;
 use crate::load::request_generators::BatchWalletRequestGen;
 use crate::load::ServicingStationRequestGen;
@@ -14,6 +15,7 @@ pub struct ArtificialUserRequestGen {
     account_gen: Option<AccountRequestGen>,
     static_gen: Option<ServicingStationRequestGen>,
     node_gen: Option<BatchWalletRequestGen>,
+    settings_gen: Option<SettingsRequestGen>,
     request_type: RequestType,
     max_splits: usize, // avoid infinite splitting
 }
@@ -24,6 +26,7 @@ impl ArtificialUserRequestGen {
             account_gen: Some(account_gen),
             static_gen: None,
             node_gen: None,
+            settings_gen: None,
             request_type: RequestType::Account,
             max_splits: DEFAULT_MAX_SPLITS,
         }
@@ -34,7 +37,19 @@ impl ArtificialUserRequestGen {
             account_gen: None,
             static_gen: Some(static_gen),
             node_gen: None,
+            settings_gen: None,
             request_type,
+            max_splits: DEFAULT_MAX_SPLITS,
+        }
+    }
+
+    pub fn new_settings(settings_gen: SettingsRequestGen) -> Self {
+        Self {
+            account_gen: None,
+            static_gen: None,
+            node_gen: None,
+            settings_gen: Some(settings_gen),
+            request_type: RequestType::Settings,
             max_splits: DEFAULT_MAX_SPLITS,
         }
     }
@@ -43,6 +58,7 @@ impl ArtificialUserRequestGen {
         Self {
             account_gen: None,
             static_gen: None,
+            settings_gen: None,
             node_gen: Some(node_gen),
             request_type: RequestType::Vote,
             max_splits: DEFAULT_MAX_SPLITS,
@@ -62,6 +78,12 @@ impl ArtificialUserRequestGen {
                 .as_mut()
                 .unwrap()
                 .random_account_request()
+                .map(|()| vec![None]),
+            RequestType::Settings => self
+                .settings_gen
+                .as_mut()
+                .unwrap()
+                .settings_request()
                 .map(|()| vec![None]),
             _ => self.static_gen.as_mut().unwrap().next_request(),
         }
@@ -114,9 +136,19 @@ impl RequestGenerator for ArtificialUserRequestGen {
             }
         };
 
+        let (settings_gen_left, settings_gen_right) = {
+            if let Some(settings_gen) = self.settings_gen {
+                let (left, right) = settings_gen.split();
+                (Some(left), right)
+            } else {
+                (self.settings_gen, None)
+            }
+        };
+
         let other = Self {
             account_gen: account_right,
             static_gen: static_gen_right,
+            settings_gen: settings_gen_right,
             node_gen: node_gen_right,
             request_type: self.request_type.clone(),
             max_splits: self.max_splits,
@@ -125,6 +157,7 @@ impl RequestGenerator for ArtificialUserRequestGen {
         self.account_gen = account_left;
         self.static_gen = static_gen_left;
         self.node_gen = node_gen_left;
+        self.settings_gen = settings_gen_left;
 
         (self, Some(other))
     }

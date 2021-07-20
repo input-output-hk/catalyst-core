@@ -1,7 +1,9 @@
 mod vote;
 
+use chain_addr::Discrimination;
 pub use vote::VoteTestGen;
 
+use crate::fragment::Fragment;
 use crate::key::Hash;
 use crate::{
     account::Identifier,
@@ -10,6 +12,7 @@ use crate::{
     fragment::config::ConfigParams,
     header::VrfProof,
     key::BftLeaderId,
+    ledger::Ledger,
     rewards::{Ratio, TaxType},
     setting::Settings,
     testing::{
@@ -101,5 +104,20 @@ impl TestGen {
                 max_limit: Some(NonZeroU64::new(100).unwrap()),
             })
             .build()
+    }
+
+    pub fn ledger() -> Ledger {
+        // TODO: Randomize some of the config paramaters below
+        let leader_pair = TestGen::leader_pair();
+        let header_id = TestGen::hash();
+        let mut ie = ConfigParams::new();
+        ie.push(ConfigParam::Discrimination(Discrimination::Test));
+        ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+        ie.push(ConfigParam::SlotDuration(10u8));
+        ie.push(ConfigParam::SlotsPerEpoch(10u32));
+        ie.push(ConfigParam::KesUpdateSpeed(3600));
+        ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
+
+        Ledger::new(header_id, vec![&Fragment::Initial(ie)]).unwrap()
     }
 }

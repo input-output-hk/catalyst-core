@@ -287,3 +287,45 @@ impl std::error::Error for Error {
             .map(|cause| -> &(dyn std::error::Error + 'static) { cause.as_ref() })
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use crate::testing::TestGen;
+
+    #[test]
+    fn convensus_verify_version() {
+        let ledger = TestGen::ledger();
+
+        let data = bft::LeadershipData::new(&ledger).expect("Couldn't build leadership data");
+
+        let bft_leadership_consensus = LeadershipConsensus::Bft(data);
+
+        assert!(bft_leadership_consensus
+            .verify_version(BlockVersion::Ed25519Signed)
+            .success());
+        assert!(bft_leadership_consensus
+            .verify_version(BlockVersion::KesVrfproof)
+            .failure());
+        assert!(bft_leadership_consensus
+            .verify_version(BlockVersion::Genesis)
+            .failure());
+
+        let ledger = TestGen::ledger();
+
+        let data = genesis::LeadershipData::new(0, &ledger);
+
+        let gen_leadership_consensus = LeadershipConsensus::GenesisPraos(data);
+
+        assert!(gen_leadership_consensus
+            .verify_version(BlockVersion::Ed25519Signed)
+            .failure());
+        assert!(gen_leadership_consensus
+            .verify_version(BlockVersion::KesVrfproof)
+            .success());
+        assert!(gen_leadership_consensus
+            .verify_version(BlockVersion::Genesis)
+            .failure());
+    }
+}

@@ -84,4 +84,15 @@ mod test {
     fn sign_ko(input: (KeyPair<Ed25519Extended>, KeyPair<Ed25519Extended>, Vec<u8>)) -> bool {
         keypair_signing_ko(input)
     }
+
+    #[quickcheck]
+    /// `secret_from_binary` should fail if the provided byte array does not match the public key size
+    fn secret_from_binary_size_check(n: usize) {
+        let secret_key = Ed25519Extended::secret_from_binary(&vec![0; n]);
+
+        assert_eq!(
+            n != EXTENDED_KEY_SIZE,
+            matches!(secret_key, Err(SecretKeyError::SizeInvalid { .. }))
+        );
+    }
 }

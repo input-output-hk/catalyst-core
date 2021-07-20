@@ -336,7 +336,7 @@ def calc_results(
         result = Result(
             proposal_id=proposal_id,
             proposal=proposal.proposal_title,
-            overall_score=proposal.proposal_impact_score/100,
+            overall_score=proposal.proposal_impact_score / 100,
             yes=yes_result,
             no=no_result,
             result=total_result,

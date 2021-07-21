@@ -2,6 +2,8 @@ use super::*;
 use crate::chaintypes::ChainLength;
 use crate::header::{BftProof, BftSignature, Common, GenesisPraosProof, KesSignature};
 use crate::key::BftLeaderId;
+#[cfg(test)]
+use crate::testing::serialization::serialization_bijection_r;
 use chain_crypto::{
     self, AsymmetricKey, Ed25519, RistrettoGroup2HashDh, SecretKey, SumEd25519_12,
     VerifiableRandomFunction,
@@ -13,7 +15,7 @@ use quickcheck::{Arbitrary, Gen};
 
 quickcheck! {
     fn header_serialization_bijection(b: Header) -> TestResult {
-        chain_test_utils::property::serialization_bijection_r(b)
+        serialization_bijection_r(b)
     }
 }
 

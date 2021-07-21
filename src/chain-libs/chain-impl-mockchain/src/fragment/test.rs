@@ -1,6 +1,8 @@
 use super::*;
 use crate::config::ConfigParam;
 #[cfg(test)]
+use crate::testing::serialization::serialization_bijection_r;
+#[cfg(test)]
 use quickcheck::TestResult;
 use quickcheck::{Arbitrary, Gen};
 use quickcheck_macros::quickcheck;
@@ -35,7 +37,7 @@ fn fragment_serialization_bijection(b: Fragment) -> TestResult {
 
 quickcheck! {
     fn initial_ents_serialization_bijection(config_params: ConfigParams) -> TestResult {
-        chain_test_utils::property::serialization_bijection_r(config_params)
+        serialization_bijection_r(config_params)
     }
 }
 

@@ -72,6 +72,8 @@ pub fn public_vote_multiple_vote_plans() {
     )
     .unwrap();
 
+    std::thread::sleep(std::time::Duration::from_secs(10));
+
     let backend_client = WalletBackend::new(endpoint.to_string(), Default::default());
 
     let actual_fund = backend_client.funds().unwrap();

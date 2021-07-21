@@ -1947,7 +1947,7 @@ dependencies = [
  "jormungandr-lib",
  "jormungandr-scenario-tests",
  "jormungandr-testing-utils",
- "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=multi_sync_load_scenario)",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=c81e6d54fc2aa0d4cb31c50859a8b29328a10157)",
  "libmath",
  "rand 0.8.4",
  "rand_chacha 0.2.2",
@@ -2148,7 +2148,7 @@ dependencies = [
  "keynesis",
  "lazy_static",
  "netstat2",
- "os_info 3.0.6",
+ "os_info",
  "parity-multiaddr 0.11.2",
  "poldercast 1.2.0",
  "prost",
@@ -2200,53 +2200,12 @@ dependencies = [
  "humantime",
  "indicatif",
  "lazy_static",
- "os_info 3.0.6",
+ "os_info",
  "predicates 1.0.8",
  "rand 0.8.4",
  "rand_chacha 0.3.1",
  "rand_core 0.5.1",
  "rayon",
- "reqwest 0.11.4",
- "semver 1.0.3",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_yaml",
- "sha-1",
- "sha2",
- "sysinfo 0.14.15",
- "tar",
- "thiserror",
- "tokio 1.8.1",
- "warp",
- "zip",
-]
-
-[[package]]
-name = "jortestkit"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jortestkit.git?branch=multi_sync_load_scenario#812fd063d4d9d05dcefb94b925fd861040a63222"
-dependencies = [
- "assert_fs",
- "base64 0.12.3",
- "bech32 0.7.3",
- "bytesize",
- "chrono",
- "console 0.11.3",
- "csv",
- "custom_debug",
- "dialoguer 0.8.0",
- "flate2",
- "fs_extra",
- "hex",
- "humantime",
- "indicatif",
- "lazy_static",
- "os_info 2.0.8",
- "predicates 1.0.8",
- "rand 0.7.3",
- "rand_chacha 0.2.2",
- "rand_core 0.5.1",
  "reqwest 0.11.4",
  "semver 1.0.3",
  "serde",
@@ -2283,7 +2242,7 @@ dependencies = [
  "humantime",
  "indicatif",
  "lazy_static",
- "os_info 3.0.6",
+ "os_info",
  "predicates 1.0.8",
  "rand 0.8.4",
  "rand_chacha 0.3.1",
@@ -2826,16 +2785,6 @@ dependencies = [
  "libc",
  "pkg-config",
  "vcpkg",
-]
-
-[[package]]
-name = "os_info"
-version = "2.0.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2cc1b4330bb29087e791ae2a5cf56be64fb8946a4ff5aec2ba11c6ca51f5d60"
-dependencies = [
- "log",
- "winapi 0.3.9",
 ]
 
 [[package]]
@@ -3529,7 +3478,7 @@ dependencies = [
  "chrono",
  "futures",
  "jormungandr-integration-tests",
- "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=c81e6d54fc2aa0d4cb31c50859a8b29328a10157)",
  "regex 1.5.4",
  "reqwest 0.10.10",
  "serde",
@@ -3557,7 +3506,7 @@ dependencies = [
  "iapyx",
  "jormungandr-integration-tests",
  "jormungandr-lib",
- "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=c81e6d54fc2aa0d4cb31c50859a8b29328a10157)",
  "reqwest 0.10.10",
  "serde",
  "serde_json",
@@ -4062,7 +4011,7 @@ dependencies = [
  "chrono",
  "futures",
  "jormungandr-lib",
- "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=c81e6d54fc2aa0d4cb31c50859a8b29328a10157)",
  "reqwest 0.10.10",
  "serde",
  "serde_json",
@@ -5022,7 +4971,7 @@ dependencies = [
  "jormungandr-lib",
  "jormungandr-scenario-tests",
  "jormungandr-testing-utils",
- "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?branch=master)",
+ "jortestkit 0.1.0 (git+https://github.com/input-output-hk/jortestkit.git?rev=c81e6d54fc2aa0d4cb31c50859a8b29328a10157)",
  "json",
  "lazy_static",
  "poldercast 0.14.0-dev",

@@ -3,7 +3,7 @@ use crate::common::{
 };
 use assert_fs::TempDir;
 use chain_impl_mockchain::key::Hash;
-use iapyx::{IapyxLoad, IapyxLoadConfig, Protocol};
+use iapyx::{NodeLoad, NodeLoadConfig, Protocol};
 use jormungandr_lib::interfaces::BlockDate;
 use jormungandr_testing_utils::testing::node::time;
 use jortestkit::{
@@ -64,7 +64,7 @@ pub fn private_vote_test_scenario(
         batch_size,
         parameters,
     );
-    let iapyx_load = IapyxLoad::new(config);
+    let iapyx_load = NodeLoad::new(config);
     if let Some(benchmark) = iapyx_load.start().unwrap() {
         assert!(
             benchmark.status() == Status::Green,
@@ -147,7 +147,7 @@ pub fn build_load_config(
     threads_no: usize,
     batch_size: usize,
     parameters: VitStartParameters,
-) -> IapyxLoadConfig {
+) -> NodeLoadConfig {
     let config = Configuration::duration(
         threads_no,
         parameters.calculate_vote_duration(),
@@ -157,7 +157,7 @@ pub fn build_load_config(
         1,
     );
 
-    IapyxLoadConfig {
+    NodeLoadConfig {
         batch_size,
         use_v1: false,
         config,

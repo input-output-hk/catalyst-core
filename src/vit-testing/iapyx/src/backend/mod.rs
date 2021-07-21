@@ -6,23 +6,21 @@ use crate::data::Challenge;
 use crate::Fund;
 use crate::Proposal;
 use crate::SimpleVoteStatus;
-use chain_core::mempack::Readable;
-use chain_core::{mempack::ReadBuf, property::Fragment as _};
-use chain_impl_mockchain::{
-    block::Block,
-    fragment::{Fragment, FragmentId},
-};
+use chain_core::property::Fragment as _;
+use chain_impl_mockchain::fragment::{Fragment, FragmentId};
+use chain_impl_mockchain::key::Hash;
 use chain_ser::deser::Deserialize;
 use jormungandr_lib::interfaces::AccountIdentifier;
+use jormungandr_lib::interfaces::FragmentStatus;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use jormungandr_testing_utils::testing::node::Explorer;
 pub use jormungandr_testing_utils::testing::node::RestSettings as WalletBackendSettings;
-use node::{RestError as NodeRestError, WalletNodeRestClient};
+pub use node::{RestError as NodeRestError, WalletNodeRestClient};
 pub use proxy::{Protocol, ProxyClient, ProxyClientError, ProxyServerError, ProxyServerStub};
 use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
-use vit_station::{RestError as VitRestError, VitStationRestClient};
+pub use vit_station::{RestError as VitRestError, VitStationRestClient};
 use wallet::{AccountId, Settings};
 
 #[derive(Clone)]
@@ -65,6 +63,10 @@ impl WalletBackend {
         )
     }
 
+    pub fn node_client(&self) -> WalletNodeRestClient {
+        self.node_client.clone()
+    }
+
     pub fn send_fragment(&self, transaction: Vec<u8>) -> Result<FragmentId, WalletBackendError> {
         self.node_client.send_fragment(transaction.clone())?;
         let fragment = Fragment::deserialize(transaction.as_slice())?;
@@ -99,6 +101,13 @@ impl WalletBackend {
 
     pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, WalletBackendError> {
         self.node_client.fragment_logs().map_err(Into::into)
+    }
+
+    pub fn fragments_statuses(
+        &self,
+        ids: Vec<String>,
+    ) -> Result<HashMap<FragmentId, FragmentStatus>, WalletBackendError> {
+        self.node_client.fragment_statuses(ids).map_err(Into::into)
     }
 
     pub fn account_state(&self, account_id: AccountId) -> Result<AccountState, WalletBackendError> {
@@ -163,10 +172,12 @@ impl WalletBackend {
     }
 
     pub fn settings(&self) -> Result<Settings, WalletBackendError> {
-        let block0 = self.block0()?;
-        let mut block0_bytes = ReadBuf::from(&block0);
-        let block0 = Block::read(&mut block0_bytes).map_err(WalletBackendError::Block0ReadError)?;
-        Settings::new(&block0).map_err(|e| WalletBackendError::SettingsReadError(Box::new(e)))
+        let settings = self.node_client.settings()?;
+        Ok(Settings {
+            fees: settings.fees,
+            discrimination: settings.discrimination,
+            block0_initial_hash: Hash::from_str(&settings.block0_hash).unwrap(),
+        })
     }
 
     pub fn account_exists(&self, id: AccountId) -> Result<bool, WalletBackendError> {

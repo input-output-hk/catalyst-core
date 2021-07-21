@@ -189,6 +189,13 @@ impl MultiController {
     }
 }
 
+#[allow(clippy::from_over_into)]
+impl Into<Vec<Wallet>> for MultiController {
+    fn into(self) -> Vec<Wallet> {
+        self.wallets
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum MultiControllerError {
     #[error("wallet error")]

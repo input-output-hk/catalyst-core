@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
-use crate::data::Challenge;
 use crate::data::ServiceVersion;
-use crate::data::{Fund, Proposal};
+use crate::data::{Challenge, Fund, Proposal};
 use hyper::StatusCode;
 use reqwest::blocking::{Client, Response};
 use thiserror::Error;
@@ -115,6 +114,13 @@ impl VitStationRestClient {
         })
     }
 
+    pub fn challenge_raw(&self, id: &str) -> Result<Response, RestError> {
+        let response = self
+            .get(&self.path_builder.challenge(id))
+            .map_err(RestError::RequestError)?;
+        self.verify_status_code(&response)?;
+        Ok(response)
+    }
     pub fn proposals_raw(&self) -> Result<Response, RestError> {
         self.get(&self.path_builder.proposals())
             .map_err(RestError::RequestError)
@@ -251,6 +257,10 @@ impl RestPathBuilder {
 
     pub fn challenges(&self) -> String {
         self.path("challenges")
+    }
+
+    pub fn challenge(&self, id: &str) -> String {
+        self.path(&format!("challenges/{}", id))
     }
 
     pub fn funds(&self) -> String {

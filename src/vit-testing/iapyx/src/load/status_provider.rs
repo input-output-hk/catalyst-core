@@ -1,9 +1,6 @@
 use crate::WalletBackend;
 use chain_impl_mockchain::fragment::FragmentId;
-use jormungandr_lib::{
-    interfaces::{FragmentLog, FragmentStatus},
-    time::SystemTime,
-};
+use jormungandr_lib::interfaces::FragmentStatus;
 use jortestkit::load::RequestStatusProvider;
 use jortestkit::load::{Id, Status};
 
@@ -25,10 +22,12 @@ impl VoteStatusProvider {
 
 impl RequestStatusProvider for VoteStatusProvider {
     fn get_statuses(&self, ids: &[Id]) -> Vec<Status> {
-        match self.backend.fragment_logs() {
-            Ok(fragment_logs) => fragment_logs
+        match self
+            .backend
+            .fragments_statuses(ids.iter().map(|id| id.to_string()).collect())
+        {
+            Ok(fragments_statuses) => fragments_statuses
                 .iter()
-                .filter(|(id, _)| ids.contains(&id.to_string()))
                 .map(|(id, fragment_log)| into_status(fragment_log, id))
                 .collect(),
             Err(_) => vec![],
@@ -36,27 +35,18 @@ impl RequestStatusProvider for VoteStatusProvider {
     }
 }
 
-fn into_status(fragment_log: &FragmentLog, id: &FragmentId) -> Status {
-    match fragment_log.status() {
+fn into_status(fragment_status: &FragmentStatus, id: &FragmentId) -> Status {
+    match fragment_status {
         FragmentStatus::Pending => {
-            let duration = SystemTime::now()
-                .duration_since(*fragment_log.received_at())
-                .unwrap();
-            Status::new_pending(duration.into(), id.to_string())
+            Status::new_pending(std::time::Duration::from_secs(0), id.to_string())
         }
-        FragmentStatus::Rejected { reason } => {
-            let duration = fragment_log
-                .last_updated_at()
-                .duration_since(*fragment_log.received_at())
-                .unwrap();
-            Status::new_failure(duration.into(), id.to_string(), reason.to_string())
-        }
+        FragmentStatus::Rejected { reason } => Status::new_failure(
+            std::time::Duration::from_secs(0),
+            id.to_string(),
+            reason.to_string(),
+        ),
         FragmentStatus::InABlock { .. } => {
-            let duration = fragment_log
-                .last_updated_at()
-                .duration_since(*fragment_log.received_at())
-                .unwrap();
-            Status::new_success(duration.into(), id.to_string())
+            Status::new_success(std::time::Duration::from_secs(0), id.to_string())
         }
     }
 }

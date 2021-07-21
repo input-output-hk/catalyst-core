@@ -17,7 +17,6 @@ pub use backend::{
 pub use controller::{Controller, ControllerError};
 pub use data::{Challenge, Fund, Proposal, SimpleVoteStatus, VitVersion, Voteplan};
 pub use load::{
-    IapyxLoad, IapyxLoadConfig, IapyxLoadError, MultiController, VoteStatusProvider,
-    WalletRequestGen,
+    MultiController, NodeLoad, NodeLoadConfig, NodeLoadError, VoteStatusProvider, WalletRequestGen,
 };
 pub use qr::{get_pin, pin_to_bytes, PinReadError, PinReadMode, QrReader};

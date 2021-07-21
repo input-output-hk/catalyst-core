@@ -1,7 +1,7 @@
 use crate::cli::args::load::build_monitor;
 use crate::cli::args::load::IapyxLoadCommandError;
-use crate::load::IapyxLoad;
-use crate::load::IapyxLoadConfig;
+use crate::load::NodeLoad;
+use crate::load::NodeLoadConfig;
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
 use jortestkit::load::Configuration;
 use std::path::PathBuf;
@@ -80,14 +80,14 @@ pub struct BurstCountIapyxLoadCommand {
 impl BurstCountIapyxLoadCommand {
     pub fn exec(&self) -> Result<(), IapyxLoadCommandError> {
         let config = self.build_config();
-        let iapyx_load = IapyxLoad::new(config);
+        let iapyx_load = NodeLoad::new(config);
         if let Some(stats) = iapyx_load.start()? {
             stats.print()
         }
         Ok(())
     }
 
-    fn build_config(&self) -> IapyxLoadConfig {
+    fn build_config(&self) -> NodeLoadConfig {
         let config = Configuration::requests_per_thread(
             self.threads,
             self.count,
@@ -97,7 +97,7 @@ impl BurstCountIapyxLoadCommand {
             self.status_pace,
         );
 
-        IapyxLoadConfig {
+        NodeLoadConfig {
             config,
             use_v1: self.use_v1,
             batch_size: self.batch_size,

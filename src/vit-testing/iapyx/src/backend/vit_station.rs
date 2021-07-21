@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-use crate::data::Challenge;
 use crate::data::ServiceVersion;
 use crate::data::{Challenge, Fund, Proposal};
 use hyper::StatusCode;
@@ -113,19 +112,6 @@ impl VitStationRestClient {
             source: e,
             text: content.clone(),
         })
-    }
-
-    pub fn challenges(&self) -> Result<Vec<Challenge>, RestError> {
-        let response = self.challenges_raw()?;
-        self.verify_status_code(&response)?;
-        let content = response.text()?;
-        self.logger.log_text(&content);
-        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
-    }
-
-    pub fn challenges_raw(&self) -> Result<Response, RestError> {
-        self.get(&self.path_builder.challenges())
-            .map_err(RestError::RequestError)
     }
 
     pub fn challenge_raw(&self, id: &str) -> Result<Response, RestError> {

@@ -35,7 +35,10 @@ pub struct PerfDataCommandArgs {
     pub challenges: PathBuf,
 
     /// funds import json
-    #[structopt(long = "funds", default_value = "../../catalyst-resources/ideascale/fund5/funds.json")]
+    #[structopt(
+        long = "funds",
+        default_value = "../../catalyst-resources/ideascale/fund5/funds.json"
+    )]
     pub funds: PathBuf,
 
     #[structopt(long = "snapshot")]

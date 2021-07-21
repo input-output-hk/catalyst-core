@@ -23,9 +23,9 @@ use vitup::setup::start::QuickVitBackendSettingsBuilder;
 
 #[test]
 pub fn public_vote_multiple_vote_plans() {
-    let proposals_path = PathBuf::from_str("../resources/external/proposals.json").unwrap();
-    let challenges_path = PathBuf::from_str("../resources/external/challenges.json").unwrap();
-    let funds_path = PathBuf::from_str("../resources/external/funds.json").unwrap();
+    let proposals_path = PathBuf::from_str("../resources/tests/example/proposals.json").unwrap();
+    let challenges_path = PathBuf::from_str("../resources/tests/example/challenges.json").unwrap();
+    let funds_path = PathBuf::from_str("../resources/tests/example/funds.json").unwrap();
 
     let mut template_generator = ExternalValidVotingTemplateGenerator::new(
         proposals_path.clone(),

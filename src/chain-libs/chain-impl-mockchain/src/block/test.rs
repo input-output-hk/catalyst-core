@@ -2,6 +2,8 @@
 use crate::block::Header;
 #[cfg(test)]
 use crate::header::HeaderDesc;
+#[cfg(test)]
+use crate::testing::serialization::{serialization_bijection, serialization_bijection_r};
 use crate::{
     block::{Block, BlockVersion, HeaderRaw},
     fragment::{Contents, ContentsBuilder, Fragment},
@@ -10,26 +12,24 @@ use crate::{
 #[cfg(test)]
 use chain_core::property::{Block as _, Deserialize, HasHeader as _, Serialize};
 #[cfg(test)]
-use chain_test_utils::property;
-#[cfg(test)]
 use quickcheck::TestResult;
 use quickcheck::{Arbitrary, Gen};
 
 quickcheck! {
     fn headerraw_serialization_bijection(b: HeaderRaw) -> TestResult {
-        property::serialization_bijection(b)
+        serialization_bijection(b)
     }
 
     fn header_serialization_bijection(b: Header) -> TestResult {
-        property::serialization_bijection_r(b)
+        serialization_bijection_r(b)
     }
 
     fn block_serialization_bijection(b: Block) -> TestResult {
-        property::serialization_bijection(b)
+        serialization_bijection(b)
     }
 
     fn block_serialization_bijection_r(b: Block) -> TestResult {
-        property::serialization_bijection_r(b)
+        serialization_bijection_r(b)
     }
 
     fn block_properties(block: Block) -> TestResult {

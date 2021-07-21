@@ -404,9 +404,9 @@ impl Readable for GenesisPraosLeader {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-    use chain_crypto::{testing, PublicKey, RistrettoGroup2HashDh, SecretKey, SumEd25519_12};
     #[cfg(test)]
-    use chain_test_utils::property::serialization_bijection;
+    use crate::testing::serialization::serialization_bijection;
+    use chain_crypto::{testing, PublicKey, RistrettoGroup2HashDh, SecretKey, SumEd25519_12};
     use lazy_static::lazy_static;
     #[cfg(test)]
     use quickcheck::TestResult;

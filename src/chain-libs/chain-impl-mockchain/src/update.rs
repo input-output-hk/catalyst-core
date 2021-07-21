@@ -396,6 +396,8 @@ impl Readable for SignedUpdateVote {
 mod tests {
     use super::*;
     #[cfg(test)]
+    use crate::testing::serialization::serialization_bijection;
+    #[cfg(test)]
     use crate::{
         config::ConfigParam,
         testing::{
@@ -413,8 +415,6 @@ mod tests {
     };
     #[cfg(test)]
     use chain_addr::Discrimination;
-    #[cfg(test)]
-    use chain_test_utils::property::serialization_bijection;
     #[cfg(test)]
     use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};

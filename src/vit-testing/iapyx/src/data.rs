@@ -1,4 +1,5 @@
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options};
+use itertools::Itertools;
 use jormungandr_testing_utils::wallet::committee::election_key_from_base32;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom, fmt, str};
@@ -13,7 +14,7 @@ pub struct Fund {
     pub fund_goal: String,
     #[serde(alias = "votingPowerInfo")]
     pub voting_power_info: String,
-    pub voting_power_threshold: u32,
+    pub voting_power_threshold: u64,
     #[serde(alias = "rewardsInfo")]
     pub rewards_info: String,
     #[serde(alias = "fundStartTime")]
@@ -77,6 +78,7 @@ pub struct Proposer {
     pub proposer_email: String,
     #[serde(alias = "proposerUrl")]
     pub proposer_url: String,
+    pub proposer_relevant_experience: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug, Clone)]
@@ -103,6 +105,9 @@ pub struct Proposal {
     pub proposal_url: String,
     #[serde(alias = "proposalFilesUrl")]
     pub proposal_files_url: String,
+    pub proposal_impact_score: u32,
+    #[serde(alias = "challenge_id")]
+    pub challenge_id: u32,
     pub proposer: Proposer,
     #[serde(alias = "chainProposalId")]
     #[serde(serialize_with = "crate::utils::serde::serialize_bin_as_str")]
@@ -133,6 +138,8 @@ pub struct Challenge {
     pub fund_id: i32,
     #[serde(alias = "challengeUrl")]
     pub challenge_url: String,
+    #[serde(alias = "proposers_rewards")]
+    pub proposers_rewards: u32,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
@@ -140,6 +147,14 @@ pub struct Challenge {
 pub enum ChallengeType {
     Simple,
     CommunityChoice,
+}
+
+impl std::fmt::Display for ChallengeType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // should be implemented and safe to unwrap here
+        let repr = serde_json::to_string(&self).unwrap();
+        write!(f, "{}", repr.trim_matches('"'))
+    }
 }
 
 impl Proposal {
@@ -203,9 +218,20 @@ impl fmt::Display for SimpleVoteStatus {
     }
 }
 
+pub type VoteOptionsMap = HashMap<String, u8>;
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct VoteOptions(pub VoteOptionsMap);
-pub type VoteOptionsMap = HashMap<String, u8>;
+
+impl VoteOptions {
+    pub fn as_csv_string(&self) -> String {
+        self.0
+            .iter()
+            .sorted_by_key(|(_, &i)| i)
+            .map(|(v, _)| v)
+            .join(",")
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Debug)]
 pub struct VitVersion {

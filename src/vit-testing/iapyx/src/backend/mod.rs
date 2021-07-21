@@ -2,6 +2,7 @@ mod node;
 mod proxy;
 mod vit_station;
 
+use crate::data::Challenge;
 use crate::Fund;
 use crate::Proposal;
 use crate::SimpleVoteStatus;
@@ -118,6 +119,10 @@ impl WalletBackend {
 
     pub fn funds(&self) -> Result<Fund, WalletBackendError> {
         Ok(self.vit_client.funds()?)
+    }
+
+    pub fn challenges(&self) -> Result<Vec<Challenge>, WalletBackendError> {
+        Ok(self.vit_client.challenges()?)
     }
 
     pub fn block0(&self) -> Result<Vec<u8>, WalletBackendError> {

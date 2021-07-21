@@ -15,7 +15,7 @@ pub use backend::{
     Protocol, ProxyClient, WalletBackend, WalletBackendError, WalletBackendSettings,
 };
 pub use controller::{Controller, ControllerError};
-pub use data::{Fund, Proposal, SimpleVoteStatus, VitVersion, Voteplan};
+pub use data::{Challenge, Fund, Proposal, SimpleVoteStatus, VitVersion, Voteplan};
 pub use load::{
     IapyxLoad, IapyxLoadConfig, IapyxLoadError, MultiController, VoteStatusProvider,
     WalletRequestGen,

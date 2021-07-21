@@ -41,7 +41,6 @@ impl ArtificialUserLoad {
         let challenges = ServicingStationRequestGen::new_challenges(vit_client.clone());
         let proposal =
             ServicingStationRequestGen::new_proposal(vit_client.clone(), vit_client.proposals()?);
-        let proposals = ServicingStationRequestGen::new_proposals(vit_client);
 
         let request_generators = vec![
             (
@@ -64,11 +63,6 @@ impl ArtificialUserLoad {
                 self.config.challenges.clone(),
                 "challenges request".to_string(),
             ),
-            /*            (
-                ArtificialUserRequestGen::new_static(proposals, RequestType::Proposals),
-                self.config.proposals.clone(),
-                "proposals request".to_string(),
-            ),*/
             (
                 ArtificialUserRequestGen::new_settings(settings),
                 self.config.settings.clone(),

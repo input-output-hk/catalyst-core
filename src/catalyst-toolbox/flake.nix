@@ -12,7 +12,7 @@
       systems = [ "x86_64-linux" "aarch64-linux" ];
       preOverlays = [ rust-nix overlay ];
       overlay = final: prev: {
-         vit-kedqr = prev.rust-nix.buildPackage {
+         catalyst-toolbox = prev.rust-nix.buildPackage {
             inherit ((builtins.fromTOML
               (builtins.readFile (./Cargo.toml))).package)
               name version;

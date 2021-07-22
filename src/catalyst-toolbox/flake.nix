@@ -20,7 +20,7 @@
           };
       };
       packages =
-        { vit-kedqr }@pkgs:
+        { catalyst-toolbox }@pkgs:
         pkgs;
       devShell = { mkShell, rustc, cargo, pkg-config, openssl }: mkShell {
         buildInputs = [ rustc cargo pkg-config openssl ];

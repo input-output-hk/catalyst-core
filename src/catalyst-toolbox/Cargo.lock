@@ -317,6 +317,7 @@ dependencies = [
  "jcli",
  "jormungandr-lib",
  "jormungandr-testing-utils",
+ "jortestkit",
  "log",
  "qrcode",
  "quircs",

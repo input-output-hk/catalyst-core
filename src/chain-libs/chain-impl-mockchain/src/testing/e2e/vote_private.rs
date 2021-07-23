@@ -1,4 +1,5 @@
 use crate::testing::decrypt_tally;
+use crate::testing::TestGen;
 use crate::testing::VoteTestGen;
 use crate::{
     certificate::VotePlan,
@@ -12,27 +13,19 @@ use crate::{
     value::Value,
     vote::{Choice, PayloadType},
 };
-use rand_chacha::ChaCha20Rng;
-use rand_core::SeedableRng;
 
 const ALICE: &str = "Alice";
 const STAKE_POOL: &str = "stake_pool";
 const VOTE_PLAN: &str = "fund1";
 
+const MEMBERS_NO: usize = 3;
+const THRESHOLD: usize = 2;
+
 #[test]
 pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
-    const MEMBERS_NO: usize = 3;
-    const THRESHOLD: usize = 2;
-
-    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    let mut rng = TestGen::rand();
     let favorable = Choice::new(1);
-    let members = VoteTestGen::committee_members_manager(THRESHOLD, MEMBERS_NO);
-
-    let committee_keys = members
-        .members()
-        .iter()
-        .map(|committee_member| committee_member.public_key())
-        .collect::<Vec<_>>();
+    let members = VoteTestGen::committee_members_manager(MEMBERS_NO, THRESHOLD);
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
@@ -48,7 +41,7 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
             .owner(ALICE)
             .consecutive_epoch_dates()
             .payload_type(PayloadType::Private)
-            .committee_keys(committee_keys)
+            .committee_keys(members.members_keys())
             .with_proposal(
                 proposal(VoteTestGen::external_proposal_id())
                     .options(3)
@@ -138,4 +131,130 @@ pub fn private_vote_plan_without_keys() {
             )])
         .build()
         .unwrap();
+}
+
+#[test]
+pub fn vote_on_same_proposal() {
+    let mut rng = TestGen::rand();
+    let favorable = Choice::new(1);
+
+    let members = VoteTestGen::committee_members_manager(MEMBERS_NO, THRESHOLD);
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000)),
+        )
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .owns(STAKE_POOL)
+            .committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .payload_type(PayloadType::Private)
+            .committee_keys(members.members_keys())
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_transfer_to_rewards(100),
+            )])
+        .build()
+        .unwrap();
+
+    let mut alice = controller.wallet(ALICE).unwrap();
+
+    let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
+    let proposal = vote_plan.proposal(0);
+
+    controller
+        .cast_vote_private(
+            &alice,
+            &vote_plan,
+            &proposal.id(),
+            favorable,
+            &mut ledger,
+            &mut rng,
+        )
+        .unwrap();
+
+    alice.confirm_transaction();
+
+    assert!(controller
+        .cast_vote_private(
+            &alice,
+            &vote_plan,
+            &proposal.id(),
+            favorable,
+            &mut ledger,
+            &mut rng
+        )
+        .is_err());
+}
+
+#[test]
+pub fn vote_on_different_proposal() {
+    let mut rng = TestGen::rand();
+    let favorable = Choice::new(1);
+
+    let members = VoteTestGen::committee_members_manager(MEMBERS_NO, THRESHOLD);
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(
+            ConfigBuilder::new(0)
+                .with_fee(LinearFee::new(1, 1, 1))
+                .with_rewards(Value(1000)),
+        )
+        .with_initials(vec![wallet(ALICE)
+            .with(1_000)
+            .owns(STAKE_POOL)
+            .committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .payload_type(PayloadType::Private)
+            .committee_keys(members.members_keys())
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_transfer_to_rewards(100),
+            )
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_transfer_to_rewards(100),
+            )])
+        .build()
+        .unwrap();
+
+    let mut alice = controller.wallet(ALICE).unwrap();
+
+    let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
+    let first_proposal = vote_plan.proposal(0);
+    let second_proposal = vote_plan.proposal(1);
+
+    controller
+        .cast_vote_private(
+            &alice,
+            &vote_plan,
+            &first_proposal.id(),
+            favorable,
+            &mut ledger,
+            &mut rng,
+        )
+        .unwrap();
+
+    alice.confirm_transaction();
+
+    assert!(controller
+        .cast_vote_private(
+            &alice,
+            &vote_plan,
+            &second_proposal.id(),
+            favorable,
+            &mut ledger,
+            &mut rng
+        )
+        .is_ok());
 }

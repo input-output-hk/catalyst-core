@@ -1,8 +1,5 @@
 mod vote;
 
-use chain_addr::Discrimination;
-pub use vote::VoteTestGen;
-
 use crate::fragment::Fragment;
 use crate::key::Hash;
 use crate::{
@@ -22,10 +19,13 @@ use crate::{
     transaction::UnspecifiedAccountIdentifier,
     value::Value,
 };
-
+use chain_addr::Discrimination;
 use chain_crypto::{vrf_evaluate_and_prove, Ed25519, KeyPair, PublicKey};
+use rand::SeedableRng;
+use rand_chacha::ChaCha20Rng;
 use rand_core::RngCore;
 use std::{iter, num::NonZeroU64};
+pub use vote::VoteTestGen;
 
 /// TestGen is a clone of abritrary architecture. There is a need to generate random struct,
 /// which would be used just once (quickcheck run test method multiple times thus generating time-consuming test case).
@@ -35,6 +35,10 @@ pub struct TestGen;
 impl TestGen {
     pub fn hash() -> Hash {
         Hash::from_bytes(Self::bytes())
+    }
+
+    pub fn rand() -> ChaCha20Rng {
+        ChaCha20Rng::from_seed(Self::bytes())
     }
 
     pub fn bytes() -> [u8; 32] {

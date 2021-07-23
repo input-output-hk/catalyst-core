@@ -45,6 +45,13 @@ impl CommitteeMembersManager {
         &self.members
     }
 
+    pub fn members_keys(&self) -> Vec<MemberPublicKey> {
+        self.members()
+            .iter()
+            .map(|committee_member| committee_member.public_key())
+            .collect()
+    }
+
     pub fn election_pk(&self) -> ElectionPublicKey {
         let keys: Vec<_> = self.members().iter().map(|x| x.public_key()).collect();
         ElectionPublicKey::from_participants(&keys)

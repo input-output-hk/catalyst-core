@@ -299,3 +299,13 @@ impl<H: Default + Hasher, K: Eq + Hash, V: PartialEq> PartialEq for Hamt<H, K, V
 }
 
 impl<H: Default + Hasher, K: Eq + Hash, V: Eq> Eq for Hamt<H, K, V> {}
+
+impl<'a, H: Default + Hasher, K: Eq + Hash, V> IntoIterator for &'a Hamt<H, K, V> {
+    type Item = (&'a K, &'a V);
+
+    type IntoIter = HamtIter<'a, K, V>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}

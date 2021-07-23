@@ -1,4 +1,3 @@
-use crate::testing::data::CommitteeMembersManager;
 use crate::testing::decrypt_tally;
 use crate::testing::VoteTestGen;
 use crate::{
@@ -19,18 +18,15 @@ use rand_core::SeedableRng;
 const ALICE: &str = "Alice";
 const STAKE_POOL: &str = "stake_pool";
 const VOTE_PLAN: &str = "fund1";
-const CRS_SEED: &[u8] = b"This should be a shared seed among the different committee members. Could be the id of the previous VotePlan";
 
 #[test]
 pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
     const MEMBERS_NO: usize = 3;
     const THRESHOLD: usize = 2;
 
-    let favorable = Choice::new(1);
-
     let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
-
-    let members = CommitteeMembersManager::new(&mut rng, CRS_SEED, THRESHOLD, MEMBERS_NO);
+    let favorable = Choice::new(1);
+    let members = VoteTestGen::committee_members_manager(THRESHOLD, MEMBERS_NO);
 
     let committee_keys = members
         .members()

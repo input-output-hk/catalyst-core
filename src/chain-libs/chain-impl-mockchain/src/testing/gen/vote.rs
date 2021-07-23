@@ -6,11 +6,14 @@ use crate::{
         VoteTally,
     },
     ledger::governance::{ParametersGovernance, TreasuryGovernance},
+    testing::data::CommitteeMembersManager,
     vote::{self, Choice, EncryptedVote, Payload, ProofOfCorrectVote},
 };
 use chain_core::property::BlockDate as BlockDateProp;
 use chain_crypto::digest::DigestOf;
 use chain_vote::{Crs, ElectionPublicKey, Vote};
+use rand::SeedableRng;
+use rand_chacha::ChaCha20Rng;
 use rand_core::{CryptoRng, RngCore};
 use typed_bytes::ByteBuilder;
 
@@ -80,6 +83,32 @@ impl VoteTestGen {
             VoteTestGen::proposals(3),
             vote::PayloadType::Public,
             Vec::new(),
+        )
+    }
+
+    pub fn committee_members_manager(
+        members_no: usize,
+        threshold: usize,
+    ) -> CommitteeMembersManager {
+        let crs_seed = b"This should be a shared seed among the different committee members. Could be the id of the previous VotePlan";
+        let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+        CommitteeMembersManager::new(&mut rng, crs_seed, threshold, members_no)
+    }
+
+    pub fn private_vote_plan() -> VotePlan {
+        Self::private_vote_plan_with_committees_manager(&Self::committee_members_manager(3, 1))
+    }
+
+    pub fn private_vote_plan_with_committees_manager(
+        manager: &CommitteeMembersManager,
+    ) -> VotePlan {
+        VotePlan::new(
+            BlockDate::from_epoch_slot_id(1, 0),
+            BlockDate::from_epoch_slot_id(2, 0),
+            BlockDate::from_epoch_slot_id(3, 0),
+            VoteTestGen::proposals(3),
+            vote::PayloadType::Private,
+            manager.members().iter().map(|x| x.public_key()).collect(),
         )
     }
 

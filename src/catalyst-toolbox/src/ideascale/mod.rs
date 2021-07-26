@@ -169,7 +169,9 @@ pub fn build_proposals(
                 proposal_impact_score: scores
                     .get(&p.proposal_id)
                     .cloned()
-                    .unwrap_or(0f32)
+                    // it comes in the range of 0-5.0 => make it to the range of 0-500
+                    .map(|v| (v * 100f32).trunc() as u32)
+                    .unwrap_or(0u32)
                     .to_string(),
                 proposal_solution: p
                     .custom_fields

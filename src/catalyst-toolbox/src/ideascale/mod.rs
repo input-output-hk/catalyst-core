@@ -163,9 +163,9 @@ pub fn build_proposals(
                 challenge_id: challenge.id.clone(),
                 challenge_type: challenge.challenge_type.clone(),
                 chain_vote_type: chain_vote_type.to_string(),
-                internal_id: p.proposal_id.to_string(),
+                internal_id: i.to_string(),
                 proposal_funds: p.custom_fields.proposal_funds.clone(),
-                proposal_id: i.to_string(),
+                proposal_id: p.proposal_id.to_string(),
                 proposal_impact_score: scores
                     .get(&p.proposal_id)
                     .cloned()

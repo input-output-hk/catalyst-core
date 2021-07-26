@@ -77,7 +77,11 @@ impl Import {
             .enable_time()
             .build()?;
 
-        let idescale_data = runtime.block_on(fetch_all(*fund, &stage_label, api_token.clone()))?;
+        let idescale_data = runtime.block_on(fetch_all(
+            *fund,
+            &stage_label.to_lowercase(),
+            api_token.clone(),
+        ))?;
 
         let funds = build_fund(*fund as i32, fund_goal.clone(), *threshold);
         let challenges = build_challenges(*fund as i32, &idescale_data);

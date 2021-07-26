@@ -204,6 +204,5 @@ fn filter_proposal_by_stage_type(stage: &str) -> bool {
 }
 
 fn filter_stages(stage: &Stage, stage_label: &str, funnel_ids: &HashMap<u32, Funnel>) -> bool {
-    stage.label.to_ascii_lowercase() == stage_label.to_ascii_lowercase()
-        && funnel_ids.contains_key(&stage.funnel_id)
+    stage.label.to_ascii_lowercase() == stage_label && funnel_ids.contains_key(&stage.funnel_id)
 }

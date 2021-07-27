@@ -6,8 +6,13 @@ use crate::ideascale::models::de::{Challenge, Fund, Funnel, Proposal, Stage};
 
 use std::collections::HashMap;
 
+// TODO: extract tags into a config file
 const PROPOSER_URL_TAG: &str = "website_github_repository__not_required_";
 const PROPOSAL_SOLUTION_TAG: &str = "problem_solution";
+const CHALLENGE_BRIEF_TAG: &str = "challenge_brief";
+const IMPORTANCE_TAG: &str = "importance";
+const GOAL_TAG: &str = "describe_your_solution_to_the_problem";
+const METRICS_TAG: &str = "key_metrics_to_measure";
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -173,13 +178,6 @@ pub fn build_proposals(
                     .map(|v| (v * 100f32).trunc() as u32)
                     .unwrap_or(0u32)
                     .to_string(),
-                proposal_solution: p
-                    .custom_fields
-                    .extra
-                    .get(PROPOSAL_SOLUTION_TAG)
-                    .and_then(|value| value.as_str())
-                    .unwrap_or("")
-                    .to_string(),
                 proposal_summary: p.proposal_summary.to_string(),
                 proposal_title: p.proposal_title.to_string(),
                 proposal_url: p.proposal_url.to_string(),
@@ -196,6 +194,14 @@ pub fn build_proposals(
                     .map(|c| c.as_str().unwrap())
                     .unwrap_or("")
                     .to_string(),
+                proposal_solution: get_from_extra_fields(
+                    &p.custom_fields.extra,
+                    PROPOSAL_SOLUTION_TAG,
+                ),
+                proposal_brief: get_from_extra_fields(&p.custom_fields.extra, CHALLENGE_BRIEF_TAG),
+                proposal_importance: get_from_extra_fields(&p.custom_fields.extra, IMPORTANCE_TAG),
+                proposal_goal: get_from_extra_fields(&p.custom_fields.extra, GOAL_TAG),
+                proposal_metrics: get_from_extra_fields(&p.custom_fields.extra, METRICS_TAG),
             }
         })
         .collect()
@@ -207,4 +213,11 @@ fn filter_proposal_by_stage_type(stage: &str) -> bool {
 
 fn filter_stages(stage: &Stage, stage_label: &str, funnel_ids: &HashMap<u32, Funnel>) -> bool {
     stage.label.to_ascii_lowercase() == stage_label && funnel_ids.contains_key(&stage.funnel_id)
+}
+
+fn get_from_extra_fields(fields: &serde_json::Value, tag: &str) -> Option<String> {
+    fields
+        .get(tag)
+        .and_then(|value| value.as_str())
+        .map(ToString::to_string)
 }

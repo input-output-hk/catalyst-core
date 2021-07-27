@@ -30,7 +30,6 @@ pub struct Proposal {
     pub proposal_funds: String,
     pub proposal_id: String,
     pub proposal_impact_score: String,
-    pub proposal_solution: String,
     pub proposal_summary: String,
     pub proposal_title: String,
     pub proposal_url: String,
@@ -39,6 +38,16 @@ pub struct Proposal {
     pub proposer_relevant_experience: String,
     #[serde(default)]
     pub proposer_url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proposal_solution: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proposal_brief: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proposal_importance: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proposal_goal: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proposal_metrics: Option<String>,
 }
 
 #[allow(dead_code)]

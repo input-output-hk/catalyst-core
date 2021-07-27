@@ -1,12 +1,26 @@
 use catalyst_toolbox::ideascale::{
-    build_challenges, build_fund, build_proposals, fetch_all, Error,
+    build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags,
+    Error as IdeascaleError,
 };
+use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
 
 use structopt::StructOpt;
 
 use serde::Serialize;
 use std::path::{Path, PathBuf};
+
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    IdeascaleError(#[from] IdeascaleError),
+
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
+
+    #[error(transparent)]
+    SerdeError(#[from] serde_json::Error),
+}
 
 #[derive(Debug, StructOpt)]
 pub enum Ideascale {
@@ -43,6 +57,10 @@ pub struct Import {
     /// Path to folder where fund, challenges and proposals json files will be dumped
     #[structopt(long)]
     output_dir: PathBuf,
+
+    /// Path to json or yaml like file containing tag configuration for ideascale custom fields
+    #[structopt(long)]
+    tags: PathBuf,
 }
 
 impl Ideascale {
@@ -63,7 +81,10 @@ impl Import {
             threshold,
             chain_vote_type,
             output_dir: save_folder,
+            tags,
         } = self;
+
+        let tags: CustomFieldTags = read_tags_from_file(tags)?;
 
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_io()
@@ -83,6 +104,7 @@ impl Import {
             &challenges,
             &chain_vote_type.to_string(),
             *fund,
+            &tags,
         );
 
         let challenges: Vec<_> = challenges.values().collect();
@@ -115,4 +137,9 @@ impl Import {
 fn dump_content_to_file(content: impl Serialize, file_path: &Path) -> Result<(), Error> {
     let writer = jcli_lib::utils::io::open_file_write(&Some(file_path))?;
     serde_json::to_writer_pretty(writer, &content).map_err(Error::SerdeError)
+}
+
+fn read_tags_from_file(file_path: &Path) -> Result<CustomFieldTags, Error> {
+    let reader = io_utils::open_file_read(&Some(file_path))?;
+    serde_json::from_reader(reader).map_err(Error::SerdeError)
 }

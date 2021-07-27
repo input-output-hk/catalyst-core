@@ -6,13 +6,7 @@ use crate::ideascale::models::de::{Challenge, Fund, Funnel, Proposal, Stage};
 
 use std::collections::HashMap;
 
-// TODO: extract tags into a config file
-const PROPOSER_URL_TAG: &str = "website_github_repository__not_required_";
-const PROPOSAL_SOLUTION_TAG: &str = "problem_solution";
-const CHALLENGE_BRIEF_TAG: &str = "challenge_brief";
-const IMPORTANCE_TAG: &str = "importance";
-const GOAL_TAG: &str = "describe_your_solution_to_the_problem";
-const METRICS_TAG: &str = "key_metrics_to_measure";
+pub use crate::ideascale::models::custom_fields::CustomFieldTags;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -21,9 +15,6 @@ pub enum Error {
 
     #[error(transparent)]
     JoinError(#[from] tokio::task::JoinError),
-
-    #[error(transparent)]
-    IoError(#[from] std::io::Error),
 
     #[error(transparent)]
     SerdeError(#[from] serde_json::Error),
@@ -149,6 +140,7 @@ pub fn build_proposals(
     built_challenges: &HashMap<u32, models::se::Challenge>,
     chain_vote_type: &str,
     fund: usize,
+    tags: &CustomFieldTags,
 ) -> Vec<models::se::Proposal> {
     let scores = &ideascale_data.scores;
     ideascale_data
@@ -190,18 +182,24 @@ pub fn build_proposals(
                 proposer_url: p
                     .custom_fields
                     .extra
-                    .get(PROPOSER_URL_TAG)
+                    .get(&tags.proposer_url)
                     .map(|c| c.as_str().unwrap())
                     .unwrap_or("")
                     .to_string(),
                 proposal_solution: get_from_extra_fields(
                     &p.custom_fields.extra,
-                    PROPOSAL_SOLUTION_TAG,
+                    &tags.proposal_solution,
                 ),
-                proposal_brief: get_from_extra_fields(&p.custom_fields.extra, CHALLENGE_BRIEF_TAG),
-                proposal_importance: get_from_extra_fields(&p.custom_fields.extra, IMPORTANCE_TAG),
-                proposal_goal: get_from_extra_fields(&p.custom_fields.extra, GOAL_TAG),
-                proposal_metrics: get_from_extra_fields(&p.custom_fields.extra, METRICS_TAG),
+                proposal_brief: get_from_extra_fields(&p.custom_fields.extra, &tags.proposal_brief),
+                proposal_importance: get_from_extra_fields(
+                    &p.custom_fields.extra,
+                    &tags.proposal_importance,
+                ),
+                proposal_goal: get_from_extra_fields(&p.custom_fields.extra, &tags.proposal_goal),
+                proposal_metrics: get_from_extra_fields(
+                    &p.custom_fields.extra,
+                    &tags.proposal_metrics,
+                ),
             }
         })
         .collect()

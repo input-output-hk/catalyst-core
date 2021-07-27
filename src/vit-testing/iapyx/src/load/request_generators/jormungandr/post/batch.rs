@@ -13,10 +13,17 @@ pub struct BatchWalletRequestGen {
     proposals: Vec<Proposal>,
     options: Vec<u8>,
     use_v1: bool,
+    wallet_index: usize,
+    update_account_before_vote: bool,
 }
 
 impl BatchWalletRequestGen {
-    pub fn new(multi_controller: MultiController, batch_size: usize, use_v1: bool) -> Self {
+    pub fn new(
+        multi_controller: MultiController,
+        batch_size: usize,
+        use_v1: bool,
+        update_account_before_vote: bool,
+    ) -> Self {
         let proposals = multi_controller.proposals().unwrap();
         let options = proposals[0]
             .chain_vote_options
@@ -31,6 +38,8 @@ impl BatchWalletRequestGen {
             rand: OsRng,
             proposals,
             options,
+            wallet_index: 0,
+            update_account_before_vote,
         }
     }
 
@@ -39,7 +48,18 @@ impl BatchWalletRequestGen {
     }
 
     pub fn random_votes(&mut self) -> Result<Vec<Option<Id>>, MultiControllerError> {
-        let wallet_index = self.next_usize() % self.multi_controller.wallet_count();
+        let wallet_index = {
+            self.wallet_index += 1;
+            if self.wallet_index >= self.multi_controller.wallet_count() {
+                self.wallet_index = 0;
+            }
+            self.wallet_index
+        };
+
+        if self.update_account_before_vote {
+            self.multi_controller.update_wallet_state(wallet_index);
+        }
+
         let batch_size = self.batch_size;
         let proposals = self.proposals.clone();
         let options = self.options.clone();
@@ -88,6 +108,8 @@ impl RequestGenerator for BatchWalletRequestGen {
             options: self.options.clone(),
             use_v1: self.use_v1,
             batch_size: self.batch_size,
+            wallet_index: 0,
+            update_account_before_vote: self.update_account_before_vote,
         };
 
         (self, Some(new_gen))

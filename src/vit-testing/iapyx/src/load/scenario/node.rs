@@ -18,7 +18,11 @@ impl NodeLoad {
     pub fn start(self) -> Result<Option<EfficiencyBenchmarkFinish>, NodeLoadError> {
         let backend = self.config.address.clone();
 
-        let multicontroller = self.config.build_multi_controller()?;
+        let mut multicontroller = self.config.build_multi_controller()?;
+
+        if self.config.reuse_accounts_early {
+            multicontroller.update_wallets_state();
+        }
 
         let measurement_name = "iapyx load test";
 
@@ -28,6 +32,7 @@ impl NodeLoad {
                     multicontroller,
                     self.config.batch_size,
                     self.config.use_v1,
+                    self.config.reuse_accounts_lazy,
                 ),
                 VoteStatusProvider::new(backend, self.config.debug),
                 self.config.config,
@@ -35,7 +40,7 @@ impl NodeLoad {
             )
         } else {
             jortestkit::load::start_sync(
-                WalletRequestGen::new(multicontroller),
+                WalletRequestGen::new(multicontroller, self.config.reuse_accounts_lazy),
                 self.config.config,
                 measurement_name,
             )

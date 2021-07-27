@@ -1,14 +1,22 @@
 use chrono::{DateTime, SecondsFormat, Utc};
+use jormungandr_lib::interfaces::FragmentLog;
 use jormungandr_testing_utils::testing::node::JormungandrRest;
+use serde_json;
 
 pub struct Harvester {
     rest: JormungandrRest,
+    endpoint: String,
+    timeout: std::time::Duration,
 }
 
 impl Harvester {
-    pub fn new<S: Into<String>>(endpoint: S) -> Self {
+    pub fn new<S: Into<String>>(endpoint: S, timeout: std::time::Duration) -> Self {
+        let endpoint = endpoint.into();
+
         Self {
-            rest: JormungandrRest::new(endpoint.into()),
+            rest: JormungandrRest::new(endpoint.clone()),
+            timeout,
+            endpoint,
         }
     }
 
@@ -23,14 +31,27 @@ impl Harvester {
                 .sum::<usize>();
         }
 
-        let fragment_logs = self.rest.fragment_logs()?;
+        let fragment_logs = self.fragment_logs();
 
         Ok(Snapshot {
             timestamp: Utc::now(),
-            pending: fragment_logs.iter().filter(|(_, x)| x.is_pending()).count(),
+            pending: fragment_logs.iter().filter(|x| x.is_pending()).count(),
             total_tx: fragment_logs.len(),
             votes_count,
         })
+    }
+
+    pub fn fragment_logs(&self) -> Vec<FragmentLog> {
+        let client = reqwest::blocking::Client::builder()
+            .timeout(self.timeout)
+            .build()
+            .unwrap();
+
+        let res = client
+            .get(&format!("{}/v0/fragment/logs", self.endpoint))
+            .send()
+            .unwrap();
+        serde_json::from_str(&res.text().unwrap()).unwrap()
     }
 }
 

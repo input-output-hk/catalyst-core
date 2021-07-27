@@ -216,6 +216,48 @@ SUBCOMMANDS:
     sentry     Operate over sentry logs
 ```
 
+#### Ideascale import
+
+Import ideascale data needed to initialize vit-servicing-station database
+
+```shell
+catalyst-toolbox.exe-ideascale-import 0.2.0
+
+USAGE:
+    catalyst-toolbox ideascale import [OPTIONS] --api-token <api-token> --chain-vote-type <chain-vote-type> --fund <fund> --fund-goal <fund-goal> --output-dir <output-dir> --tags <tags> --threshold <threshold>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --api-token <api-token>                ideascale API token [env: IDEASCALE_API_TOKEN=]
+        --chain-vote-type <chain-vote-type>    either "public" or "private"
+        --fund <fund>                          Fund number id
+        --fund-goal <fund-goal>                Fund goal explanation
+        --output-dir <output-dir>              Path to folder where fund, challenges and proposals json files will be dumped
+        --stage-label <stage-label>            Stage label: stage identifiers that links to assessments scores in ideascale [default: Assess]
+        --tags <tags>                          Path to json or yaml like file containing tag configuration for ideascale custom fields
+        --threshold <threshold>
+```
+
+##### Tags file
+
+We need to provide a json like file that relates ideascale custom fields keys to our current attributes.
+An example would look like:
+
+```json
+{
+  "proposer_url": "website_github_repository__not_required_",
+  "proposal_solution": "problem_solution",
+  "proposal_brief": "challenge_brief",
+  "proposal_importance": "importance",
+  "proposal_goal": "describe_your_solution_to_the_problem",
+  "proposal_metrics": "key_metrics_to_measure"
+}
+```
+
+Where **all the keys are needed** and values are ideascale custom fields. 
 
 ## Python scripts
 

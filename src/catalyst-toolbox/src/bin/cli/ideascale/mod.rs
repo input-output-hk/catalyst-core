@@ -1,19 +1,12 @@
 use catalyst_toolbox::ideascale::{
     build_challenges, build_fund, build_proposals, fetch_all, Error,
 };
+use jormungandr_lib::interfaces::VotePrivacy;
 
 use structopt::StructOpt;
 
 use serde::Serialize;
-use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
-
-#[derive(Debug)]
-pub enum VoteType {
-    Public,
-    Private,
-}
 
 #[derive(Debug, StructOpt)]
 pub enum Ideascale {
@@ -45,7 +38,7 @@ pub struct Import {
 
     /// either "public" or "private"
     #[structopt(long)]
-    chain_vote_type: VoteType,
+    chain_vote_type: VotePrivacy,
 
     /// Path to folder where fund, challenges and proposals json files will be dumped
     #[structopt(long)]
@@ -116,28 +109,6 @@ impl Import {
         )?;
 
         Ok(())
-    }
-}
-
-impl FromStr for VoteType {
-    type Err = &'static str;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "public" => Ok(Self::Public),
-            "private" => Ok(Self::Private),
-            _ => Err("Only 'public' or 'private' are correct values for VoteType"),
-        }
-    }
-}
-
-impl Display for VoteType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            VoteType::Public => "public",
-            VoteType::Private => "private",
-        };
-        write!(f, "{}", s)
     }
 }
 

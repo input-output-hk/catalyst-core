@@ -1,3 +1,4 @@
+pub mod ideascale;
 pub mod kedqr;
 pub mod logs;
 pub mod notifications;

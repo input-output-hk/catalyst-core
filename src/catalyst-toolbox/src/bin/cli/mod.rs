@@ -1,3 +1,4 @@
+mod ideascale;
 mod kedqr;
 mod logs;
 mod notifications;
@@ -37,6 +38,8 @@ pub enum CatalystCommand {
     Logs(logs::Logs),
     /// Generate qr codes
     QrCode(kedqr::QrCodeCmd),
+    /// Interact with the Idescale API
+    Ideascale(ideascale::Ideascale),
 }
 
 impl Cli {
@@ -64,6 +67,7 @@ impl CatalystCommand {
             Recover(recover) => recover.exec()?,
             Logs(logs) => logs.exec()?,
             QrCode(kedqr) => kedqr.exec()?,
+            Ideascale(ideascale) => ideascale.exec()?,
         };
         Ok(())
     }

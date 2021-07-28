@@ -47,6 +47,9 @@ symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs
 
 [dev-dependencies]
 rand_chacha = "0.3"
+assert_cmd = "0.10"
+predicates = "1"
+assert_fs = "1.0.0"
 
 [build-dependencies]
 versionisator = "1.0.3"

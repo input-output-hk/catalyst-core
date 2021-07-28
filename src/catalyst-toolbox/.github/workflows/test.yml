@@ -93,6 +93,11 @@ jobs:
         with:
           command: build
           args: --locked
+
+      - name: Set testing env
+        run: |
+          echo "$NOTIFICATION_APP_CODE=${{ secrets.$NOTIFICATION_APP_CODE }}" >> $GITHUB_ENV
+          echo "NOTIFICATION_ACCESS_TOKEN=${{ secrets.$NOTIFICATION_ACCESS_TOKEN }}" >> $GITHUB_ENV
       - uses: actions-rs/cargo@v1
         continue-on-error: false
         with:

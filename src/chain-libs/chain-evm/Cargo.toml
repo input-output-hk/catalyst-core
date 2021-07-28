@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
+evm = "0.28.0"
 imhamt = { path = "../imhamt" }
 primitive-types = "0.10.1"
 

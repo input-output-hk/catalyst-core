@@ -377,7 +377,7 @@ pub fn vote_on_same_proposal() {
 }
 
 #[test]
-pub fn vote_on_differenet_proposal() {
+pub fn vote_on_different_proposal() {
     let _blank = Choice::new(0);
     let favorable = Choice::new(1);
     let rejection = Choice::new(2);

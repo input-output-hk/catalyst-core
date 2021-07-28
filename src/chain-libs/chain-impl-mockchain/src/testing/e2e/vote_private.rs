@@ -1,6 +1,8 @@
 use crate::testing::decrypt_tally;
 use crate::testing::TestGen;
 use crate::testing::VoteTestGen;
+use crate::vote::VoteError::AlreadyVoted;
+use crate::vote::VotePlanLedgerError::VoteError;
 use crate::{
     certificate::VotePlan,
     fee::LinearFee,
@@ -13,6 +15,7 @@ use crate::{
     value::Value,
     vote::{Choice, PayloadType},
 };
+use imhamt::UpdateError::ValueCallbackError;
 
 const ALICE: &str = "Alice";
 const STAKE_POOL: &str = "stake_pool";
@@ -181,16 +184,25 @@ pub fn vote_on_same_proposal() {
 
     alice.confirm_transaction();
 
-    assert!(controller
-        .cast_vote_private(
-            &alice,
-            &vote_plan,
-            &proposal.id(),
-            favorable,
-            &mut ledger,
-            &mut rng
-        )
-        .is_err());
+    let inner_vote_plan: VotePlan = vote_plan.clone().into();
+
+    assert_eq!(
+        controller
+            .cast_vote_private(
+                &alice,
+                &vote_plan,
+                &proposal.id(),
+                favorable,
+                &mut ledger,
+                &mut rng
+            )
+            .err()
+            .unwrap(),
+        crate::ledger::ledger::Error::VotePlan(VoteError {
+            id: inner_vote_plan.to_id(),
+            reason: ValueCallbackError(AlreadyVoted)
+        })
+    );
 }
 
 #[test]

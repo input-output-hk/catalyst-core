@@ -2,6 +2,7 @@ use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentRaw},
     ledger::{Error as LedgerError, Ledger},
+    value::Value,
 };
 use chain_ser::mempack::{ReadBuf, Readable as _};
 use wallet::Settings;
@@ -50,5 +51,16 @@ impl State {
         self.ledger = new_ledger;
 
         Ok(())
+    }
+
+    pub fn get_account_state(
+        &self,
+        account_id: wallet::AccountId,
+    ) -> Option<(chain_impl_mockchain::account::SpendingCounter, Value)> {
+        self.ledger
+            .accounts()
+            .get_state(&chain_crypto::PublicKey::from(account_id).into())
+            .ok()
+            .map(|account_state| (account_state.counter, account_state.value))
     }
 }

@@ -1,6 +1,7 @@
 mod utils;
 
 use self::utils::State;
+use chain_crypto::{bech32::Bech32, SecretKey};
 use chain_impl_mockchain::{
     certificate::VoteCast,
     fragment::Fragment,
@@ -8,9 +9,10 @@ use chain_impl_mockchain::{
     vote::{Choice, Payload},
 };
 use std::convert::TryInto;
-use wallet::{transaction::dump_free_utxo, RecoveryBuilder};
+use wallet::RecoveryBuilder;
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
+const ACCOUNT_KEY: &str = include_str!("../../test-vectors/free_keys/key1.prv");
 const MNEMONICS: &str =
     "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone";
 
@@ -24,38 +26,28 @@ fn update_state_overrides_old() {
 
     assert_eq!(account.confirmed_value(), Value::zero());
 
-    account.update_state(Value(110), 0);
+    account.update_state(Value(110), 0.into());
 
     assert_eq!(account.confirmed_value(), Value(110));
 }
 
 #[test]
 fn cast_vote() {
-    let wallet = RecoveryBuilder::new()
-        .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
-        .expect("valid mnemonics");
-
-    let mut utxos = wallet
-        .build_free_utxos()
-        .expect("recover an UTxO wallet");
-
-    let mut account = wallet.build_wallet().expect("recover account");
+    let mut account = wallet::RecoveryBuilder::new()
+        .account_secret_key(
+            SecretKey::try_from_bech32_str(String::from(ACCOUNT_KEY).trim()).unwrap(),
+        )
+        .build_wallet()
+        .expect("recover account");
 
     let mut state = State::new(BLOCK0);
     let settings = state.settings().expect("valid initial settings");
-    let address = account.account_id().address(settings.discrimination());
 
-    let (fragment, _ignored) = dump_free_utxo(&settings, &address, &mut utxos)
-        .next()
-        .expect("expected only one transaction");
-
-    assert!(account.check_fragment(&fragment.hash(), &fragment));
-
-    state
-        .apply_fragments(&[fragment.to_raw()])
-        .expect("the dump fragments should be valid");
-
-    account.confirm(&fragment.hash());
+    if let Some((initial_spending_counter, initial_funds)) =
+        state.get_account_state(account.account_id())
+    {
+        account.update_state(initial_funds, initial_spending_counter);
+    }
 
     let vote_plan_id: [u8; 32] = hex::decode(
         "4aa30d9df6d2dfdb45725c0de00d1a73394950c8bf3dabc8285f46f1e25e53fa",

@@ -49,9 +49,13 @@ pub struct ConstantCountIapyxLoadCommand {
     #[structopt(short = "d", long = "debug")]
     pub debug: bool,
 
-    /// use https for sending fragments
-    #[structopt(short = "r", long = "reuse_accounts")]
-    pub reuse_accounts: bool,
+    /// update all accounts state before sending any vote
+    #[structopt(long = "reuse-accounts-early")]
+    pub reuse_accounts_early: bool,
+
+    /// update account state just before sending vote
+    #[structopt(long = "reuse-accounts-lazy")]
+    pub reuse_accounts_lazy: bool,
 
     #[structopt(long = "status-pace", default_value = "1")]
     pub status_pace: u64,
@@ -98,7 +102,8 @@ impl ConstantCountIapyxLoadCommand {
             address: self.address.clone(),
             wallet_mnemonics_file: self.wallet_mnemonics_file.clone(),
             qr_codes_folder: self.qr_codes_folder.clone(),
-            reuse_accounts: self.reuse_accounts,
+            reuse_accounts_lazy: self.reuse_accounts_lazy,
+            reuse_accounts_early: self.reuse_accounts_early,
             secrets_folder: self.secrets_folder.clone(),
             global_pin: self.global_pin.clone(),
             read_pin_from_filename: self.read_pin_from_filename,

@@ -116,6 +116,23 @@ impl MultiController {
         &self.backend
     }
 
+    pub fn update_wallets_state(&mut self) {
+        let backend = self.backend().clone();
+        let count = self.wallets.len();
+        for (idx, wallet) in self.wallets.iter_mut().enumerate() {
+            let account_state = backend.account_state(wallet.id()).unwrap();
+            println!("{}/{} Updating account state", idx + 1, count);
+            wallet.set_state((*account_state.value()).into(), account_state.counter());
+        }
+    }
+
+    pub fn update_wallet_state(&mut self, wallet_index: usize) {
+        let backend = self.backend().clone();
+        let wallet = self.wallets.get_mut(wallet_index).unwrap();
+        let account_state = backend.account_state(wallet.id()).unwrap();
+        wallet.set_state((*account_state.value()).into(), account_state.counter());
+    }
+
     pub fn vote(
         &mut self,
         wallet_index: usize,

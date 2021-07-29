@@ -2,7 +2,7 @@ use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
 use chain_impl_mockchain::fragment::FragmentId;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
-use rand::{seq::SliceRandom, Rng};
+use rand::seq::SliceRandom;
 use rand_core::OsRng;
 use std::time::Instant;
 use wallet_core::Choice;
@@ -12,10 +12,12 @@ pub struct WalletRequestGen {
     multi_controller: MultiController,
     proposals: Vec<Proposal>,
     options: Vec<u8>,
+    wallet_index: usize,
+    update_account_before_vote: bool,
 }
 
 impl WalletRequestGen {
-    pub fn new(multi_controller: MultiController) -> Self {
+    pub fn new(multi_controller: MultiController, update_account_before_vote: bool) -> Self {
         let proposals = multi_controller.proposals().unwrap();
         let options = proposals[0]
             .chain_vote_options
@@ -29,16 +31,27 @@ impl WalletRequestGen {
             rand: OsRng,
             proposals,
             options,
+            wallet_index: 0,
+            update_account_before_vote,
         }
     }
 
     pub fn random_vote(&mut self) -> Result<FragmentId, MultiControllerError> {
-        let wallet_index = self.rand.gen_range(0..self.multi_controller.wallet_count());
+        let index = {
+            self.wallet_index += 1;
+            if self.wallet_index >= self.multi_controller.wallet_count() {
+                self.wallet_index = 0;
+            }
+            self.wallet_index
+        };
+
+        if self.update_account_before_vote {
+            self.multi_controller.update_wallet_state(index);
+        }
 
         let proposal = self.proposals.choose(&mut self.rand).unwrap();
         let choice = Choice::new(*self.options.choose(&mut self.rand).unwrap());
-
-        self.multi_controller.vote(wallet_index, &proposal, choice)
+        self.multi_controller.vote(index, &proposal, choice)
     }
 }
 
@@ -58,6 +71,8 @@ impl RequestGenerator for WalletRequestGen {
             },
             proposals: self.proposals.clone(),
             options: self.options.clone(),
+            wallet_index: 0,
+            update_account_before_vote: self.update_account_before_vote,
         };
 
         (self, Some(new_gen))

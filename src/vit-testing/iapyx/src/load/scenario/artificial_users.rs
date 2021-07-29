@@ -22,13 +22,19 @@ impl ArtificialUserLoad {
         let measurement_name = "artificial user load";
 
         let vit_client = VitStationRestClient::new(self.config.vote.address.clone());
-        let multi_controller = self.config.vote.build_multi_controller()?;
+        let mut multi_controller = self.config.vote.build_multi_controller()?;
+
+        if self.config.vote.reuse_accounts_early {
+            multi_controller.update_wallets_state();
+        }
+
         let node_client = multi_controller.backend().node_client();
 
         let transactions = BatchWalletRequestGen::new(
             multi_controller,
             self.config.vote.batch_size,
             self.config.vote.use_https,
+            self.config.vote.reuse_accounts_lazy,
         );
         let account = AccountRequestGen::new(
             self.config.vote.build_multi_controller()?.into(),

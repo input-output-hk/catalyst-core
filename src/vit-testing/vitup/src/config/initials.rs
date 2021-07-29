@@ -18,6 +18,11 @@ pub enum Initial {
         below_threshold: usize,
         pin: String,
     },
+    AroundLevel {
+        count: usize,
+        level: u64,
+        pin: String,
+    },
     ZeroFunds {
         zero_funds: usize,
         pin: String,
@@ -73,6 +78,11 @@ impl Initials {
                     pin: _,
                 } => sum += above_threshold,
                 Initial::Wallet { .. } => sum += 1,
+                Initial::AroundLevel {
+                    level: _,
+                    count,
+                    pin: _,
+                } => sum += count,
                 _ => {}
             }
         }
@@ -132,7 +142,7 @@ impl Initials {
         let mut rand = rand::thread_rng();
         let mut above_threshold_index = 0;
         let mut below_threshold_index = 0;
-
+        let mut around_level_index = 0;
         let mut templates = HashMap::new();
 
         for initial in self.0.iter() {
@@ -185,6 +195,18 @@ impl Initials {
                         ),
                         pin.to_string(),
                     );
+                }
+                Initial::AroundLevel { level, count, pin } => {
+                    for _ in 0..*count {
+                        around_level_index += 1;
+                        let wallet_alias =
+                            format!("wallet_{}_around_{}", around_level_index, threshold);
+                        let value: u64 = rand.gen_range(level - GRACE_VALUE..=level + GRACE_VALUE);
+                        templates.insert(
+                            WalletTemplate::new_account(wallet_alias, Value(value), discrimination),
+                            pin.to_string(),
+                        );
+                    }
                 }
                 _ => {
                     //skip

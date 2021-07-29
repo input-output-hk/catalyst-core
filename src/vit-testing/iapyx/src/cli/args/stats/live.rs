@@ -35,13 +35,16 @@ impl LiveStatsCommand {
             duration: self.duration,
         };
 
-        let harvester = Harvester::new(self.endpoint.clone());
+        let harvester = Harvester::new(
+            self.endpoint.clone(),
+            std::time::Duration::from_secs(self.interval),
+        );
         let monitor = MonitorThread::start(
             harvester,
             settings,
             &format!("{} monitoring", self.endpoint),
         );
-        std::thread::sleep(std::time::Duration::from_secs(300));
+        std::thread::sleep(std::time::Duration::from_secs(self.duration));
         monitor.stop();
         Ok(())
     }

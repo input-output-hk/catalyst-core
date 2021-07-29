@@ -77,7 +77,7 @@ impl Wallet {
 
     fn check(&self, pk: &PublicKey<Ed25519>) -> Option<SecretKey<Ed25519Extended>> {
         // FIXME: O(n)?
-        self.keys.iter().cloned().find(|k| &k.to_public() == pk)
+        self.keys.iter().find(|&k| &k.to_public() == pk).cloned()
     }
 
     pub fn check_fragment(&mut self, fragment_id: &FragmentId, fragment: &Fragment) -> bool {

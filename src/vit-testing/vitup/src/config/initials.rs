@@ -201,7 +201,7 @@ impl Initials {
                         around_level_index += 1;
                         let wallet_alias =
                             format!("wallet_{}_around_{}", around_level_index, threshold);
-                        let value: u64 = rand.gen_range(level- GRACE_VALUE..=level + GRACE_VALUE );
+                        let value: u64 = rand.gen_range(level - GRACE_VALUE..=level + GRACE_VALUE);
                         templates.insert(
                             WalletTemplate::new_account(wallet_alias, Value(value), discrimination),
                             pin.to_string(),

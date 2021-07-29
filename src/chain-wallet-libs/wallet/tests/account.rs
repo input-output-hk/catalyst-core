@@ -1,7 +1,7 @@
 mod utils;
 
 use self::utils::State;
-use chain_crypto::{bech32::Bech32, SecretKey};
+use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     certificate::VoteCast,
     fragment::Fragment,
@@ -35,7 +35,12 @@ fn update_state_overrides_old() {
 fn cast_vote() {
     let mut account = wallet::RecoveryBuilder::new()
         .account_secret_key(
-            SecretKey::try_from_bech32_str(String::from(ACCOUNT_KEY).trim()).unwrap(),
+            SecretKey::from_binary(
+                hex::decode(String::from(ACCOUNT_KEY).trim())
+                    .unwrap()
+                    .as_ref(),
+            )
+            .unwrap(),
         )
         .build_wallet()
         .expect("recover account");
@@ -45,6 +50,7 @@ fn cast_vote() {
 
     for fragment in state.initial_contents() {
         account.check_fragment(&fragment.hash(), fragment);
+        account.confirm(&fragment.hash());
     }
 
     let vote_plan_id: [u8; 32] = hex::decode(

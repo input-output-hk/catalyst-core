@@ -19,25 +19,21 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class WalletTest {
-    private byte[] accountKey() {
-        final byte[] accountKey = { -56, 101, -106, -62, -47, 32, -120, -123, -37, 31, -29, 101, -124, 6, -86, 15, 124,
-                -57, -72, -31, 60, 54, 47, -28, 106, 109, -78, 119, -4, 80, 100, 88, 62, 72, 117, -120, -55, -118, 108,
-                54, -30, -25, 68, 92, 10, -35, 54, -8, 63, 23, 28, -75, -52, -3, -127, 85, 9, -47, -100, -45, -114, -53,
-                10, -13, };
+    private byte[] accountKey() throws IOException{
+        final String accountKey = new String(
+                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key1.prv"))).trim();
 
-        return accountKey;
+        return hexStringToByteArray(accountKey);
     }
 
-    private byte[] utxoKeys() {
-        final byte[] utxoKeys = { 48, 21, 89, -52, -78, -44, -52, 126, -98, 84, -90, -11, 90, -128, -106, 11, -74, -111,
-                -73, -79, 64, -107, 73, -17, -122, -107, -87, 46, -92, 26, 111, 79, 64, 82, 49, -88, 6, -62, -25, -71,
-                -48, -37, 48, -31, 94, -32, -52, 31, 38, 28, 27, -97, -106, 21, 99, 107, 72, -67, -119, -2, 123, -26,
-                -22, 31, -88, -74, -67, -16, -128, -57, 79, -68, 49, 51, 126, -34, 75, 102, -110, -62, -21, -19, 126,
-                52, -81, 109, -104, -73, -69, -51, 71, -116, -16, 123, 13, 94, -39, 63, 126, -99, 74, -93, -81, -34, 50,
-                26, -31, -85, -74, 27, -125, 68, -62, 67, -55, -48, -76, 7, -53, -8, -111, 125, -74, -33, 44, 101, 61,
-                -22, };
+    private byte[] utxoKeys() throws IOException{
+        final String utxoKey1 = new String(
+                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key2.prv"))).trim();
 
-        return utxoKeys;
+        final String utxoKey2 = new String(
+                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key3.prv"))).trim();
+
+        return hexStringToByteArray(utxoKey1.concat(utxoKey2));
     }
 
     @Test

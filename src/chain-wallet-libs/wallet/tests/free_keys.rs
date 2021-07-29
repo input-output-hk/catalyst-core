@@ -30,13 +30,8 @@ fn test_free_utxo_key_dump() {
     let settings = state.settings().expect("valid initial settings");
     let address = account.account_id().address(settings.discrimination());
 
-    if let Some((initial_spending_counter, initial_funds)) =
-        state.get_account_state(account.account_id())
-    {
-        account.update_state(initial_funds, initial_spending_counter);
-    }
-
     for fragment in state.initial_contents() {
+        account.check_fragment(&fragment.hash(), fragment);
         free_keys.check_fragment(&fragment.hash(), fragment);
     }
 

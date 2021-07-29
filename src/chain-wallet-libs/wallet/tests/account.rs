@@ -43,10 +43,8 @@ fn cast_vote() {
     let mut state = State::new(BLOCK0);
     let settings = state.settings().expect("valid initial settings");
 
-    if let Some((initial_spending_counter, initial_funds)) =
-        state.get_account_state(account.account_id())
-    {
-        account.update_state(initial_funds, initial_spending_counter);
+    for fragment in state.initial_contents() {
+        account.check_fragment(&fragment.hash(), fragment);
     }
 
     let vote_plan_id: [u8; 32] = hex::decode(

@@ -9,8 +9,13 @@ use crate::{
     value::Value,
 };
 use chain_addr::Discrimination;
+use quickcheck_macros::quickcheck;
 
 use std::num::NonZeroU64;
+
+const ALICE: &str = "Alice";
+const BOB: &str = "Bob";
+const STAKE_POOL: &str = "stake_pool";
 
 #[test]
 pub fn per_certificate_fees() {
@@ -47,14 +52,14 @@ pub fn per_certificate_fees() {
                 )),
         )
         .with_initials(vec![
-            wallet("Alice").with(alice_funds),
-            wallet("Bob").with(bob_funds),
+            wallet(ALICE).with(alice_funds),
+            wallet(BOB).with(bob_funds),
         ])
         .build()
         .unwrap();
 
-    let mut alice = controller.wallet("Alice").unwrap();
-    let mut bob = controller.wallet("Bob").unwrap();
+    let mut alice = controller.wallet(ALICE).unwrap();
+    let mut bob = controller.wallet(BOB).unwrap();
     let stake_pool = StakePoolBuilder::new()
         .with_owners(vec![alice.public_key()])
         .build();
@@ -158,12 +163,12 @@ pub fn owner_delegates_fee() {
                 .with_discrimination(Discrimination::Test)
                 .with_fee(LinearFee::new(1, 1, 1)),
         )
-        .with_initials(vec![wallet("Alice").with(alice_funds).owns("stake_pool")])
+        .with_initials(vec![wallet(ALICE).with(alice_funds).owns(STAKE_POOL)])
         .build()
         .unwrap();
 
-    let mut alice = controller.wallet("Alice").unwrap();
-    let stake_pool = controller.stake_pool("stake_pool").unwrap();
+    let mut alice = controller.wallet(ALICE).unwrap();
+    let stake_pool = controller.stake_pool(STAKE_POOL).unwrap();
 
     LedgerStateVerifier::new(ledger.clone().into())
         .total_value_is(&Value(expected_total_funds_before));
@@ -181,4 +186,56 @@ pub fn owner_delegates_fee() {
         .has_fee_equals_to(&Value(expected_fee_amount));
 
     ledger_verifier.total_value_is(&Value(expected_total_funds_after));
+}
+
+#[test]
+/// Verifies that after a transaction in a ledger without fees, the total funds do not change and
+/// the fee pots remain empty.
+fn transaction_without_fees() {
+    verify_total_funds_after_transaction_with_fee(0);
+}
+
+/// Verifies that after a transaction in a ledger with fees, the total funds do not change and the
+/// fee pots contain the fee.
+#[quickcheck]
+fn transaction_with_fees(fee: u64) {
+    verify_total_funds_after_transaction_with_fee(fee);
+}
+
+fn verify_total_funds_after_transaction_with_fee(fee: u64) {
+    const BOB_FUNDS: u64 = 42;
+    let transfer = fee + 13; // The transfer should be large enough to cover the fee
+    let alice_funds = transfer + 13; // Alice should have enough funds to cover the transfer
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(ConfigBuilder::new(0).with_fee(LinearFee::new(fee, 0, 0)))
+        .with_initials(vec![
+            wallet(ALICE).with(alice_funds),
+            wallet(BOB).with(BOB_FUNDS),
+        ])
+        .build()
+        .expect("Could not build scenario");
+
+    let total_funds = ledger.total_funds();
+
+    let mut alice_wallet = controller.wallet(ALICE).unwrap();
+    let bob_wallet = controller.wallet(BOB).unwrap();
+
+    controller
+        .transfer_funds(&alice_wallet, &bob_wallet, &mut ledger, transfer)
+        .unwrap();
+    alice_wallet.confirm_transaction();
+
+    LedgerStateVerifier::new(ledger.clone().into())
+        .address_has_expected_balance(
+            alice_wallet.as_account_data(),
+            Value(alice_funds - transfer),
+        )
+        .address_has_expected_balance(
+            bob_wallet.as_account_data(),
+            Value(BOB_FUNDS + transfer - fee),
+        )
+        .total_value_is(&total_funds)
+        .pots()
+        .has_fee_equals_to(&Value(fee));
 }

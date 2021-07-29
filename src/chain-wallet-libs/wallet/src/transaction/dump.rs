@@ -1,7 +1,7 @@
 use crate::store::{Groupable, UtxoStore};
 
 use super::builder::{AddInputStatus, TransactionBuilder};
-use super::witness_builder::{OldUtxoWitnessBuilder, UtxoWitnessBuilder, WitnessBuilder};
+use super::witness_builder::{UtxoWitnessBuilder, WitnessBuilder};
 use chain_impl_mockchain::{
     fragment::Fragment,
     transaction::{Balance, Input, NoExtra, Output, Transaction},
@@ -62,18 +62,6 @@ pub fn send_to_one_address<K: Clone + Groupable, WB: WitnessBuilder>(
     }
 }
 
-pub fn dump_icarus_utxo<'a>(
-    settings: &'a crate::Settings,
-    address: &'a chain_addr::Address,
-    wallet: &'a mut crate::scheme::bip44::Wallet<chain_impl_mockchain::legacy::OldAddress>,
-) -> DumpIcarus<'a> {
-    DumpIcarus {
-        settings,
-        address,
-        wallet,
-    }
-}
-
 pub fn dump_free_utxo<'a>(
     settings: &'a crate::Settings,
     address: &'a chain_addr::Address,
@@ -83,23 +71,6 @@ pub fn dump_free_utxo<'a>(
         settings,
         address,
         wallet,
-    }
-}
-
-impl<'a> Iterator for DumpIcarus<'a> {
-    type Item = (Fragment, Vec<Input>);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
-            OldUtxoWitnessBuilder(key)
-        })
-        .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
-
-        if let Some((fragment, _)) = next.as_ref() {
-            self.wallet.check_fragment(&fragment.hash(), &fragment);
-        }
-
-        next
     }
 }
 

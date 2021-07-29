@@ -24,6 +24,7 @@ impl State {
         Self { block0, ledger }
     }
 
+    #[allow(dead_code)]
     pub fn initial_contents(&self) -> impl Iterator<Item = &'_ Fragment> {
         self.block0.contents.iter()
     }

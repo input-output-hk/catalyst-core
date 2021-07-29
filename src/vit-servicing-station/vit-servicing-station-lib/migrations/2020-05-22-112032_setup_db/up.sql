@@ -82,6 +82,14 @@ create table challenges
     challenge_url VARCHAR NOT NULL
 );
 
+create table community_advisors_reviews (
+  id INTEGER NOT NULL primary key autoincrement,
+  proposal_id INTEGER NOT NULL,
+  rating_given INTEGER NOT NULL,
+  assessor VARCHAR NOT NULL,
+  note VARCHAR NOT NULL
+);
+
 CREATE VIEW full_proposals_info
 AS
 SELECT

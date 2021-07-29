@@ -20,6 +20,16 @@ table! {
 }
 
 table! {
+    community_advisors_reviews (id) {
+        id -> Integer,
+        proposal_id -> Integer,
+        rating_given -> Integer,
+        assessor -> Text,
+        note -> Text,
+    }
+}
+
+table! {
     funds (id) {
         id -> Integer,
         fund_name -> Text,
@@ -89,6 +99,7 @@ table! {
 allow_tables_to_appear_in_same_query!(
     api_tokens,
     challenges,
+    community_advisors_reviews,
     funds,
     proposal_community_choice_challenge,
     proposal_simple_challenge,

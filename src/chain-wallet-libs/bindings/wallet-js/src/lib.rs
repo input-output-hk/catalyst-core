@@ -38,11 +38,6 @@ pub struct VotePlanId([u8; wallet_core::VOTE_PLAN_ID_LENGTH]);
 #[wasm_bindgen]
 pub struct Options(wallet_core::Options);
 
-#[wasm_bindgen]
-pub enum PayloadType {
-    Public,
-}
-
 impl_secret_key!(
     Ed25519ExtendedPrivate,
     chain_crypto::Ed25519Extended,

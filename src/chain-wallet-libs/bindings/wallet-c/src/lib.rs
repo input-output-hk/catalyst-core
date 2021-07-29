@@ -1,5 +1,4 @@
 pub mod settings;
-pub use chain_impl_mockchain::vote::PayloadType as PayloadTypeRust;
 use std::{
     ffi::{CStr, CString},
     os::raw::c_char,
@@ -41,20 +40,6 @@ pub type ProposalPtr = *mut Proposal;
 pub type FragmentPtr = *mut Fragment;
 pub type ErrorPtr = *mut Error;
 pub type EncryptingVoteKeyPtr = *mut EncryptingVoteKey;
-
-/// Payload type for voting
-#[repr(u8)]
-pub enum PayloadType {
-    Public = 1,
-}
-
-impl From<PayloadType> for PayloadTypeRust {
-    fn from(c_enum: PayloadType) -> Self {
-        match c_enum {
-            PayloadType::Public => PayloadTypeRust::Public,
-        }
-    }
-}
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
 ///

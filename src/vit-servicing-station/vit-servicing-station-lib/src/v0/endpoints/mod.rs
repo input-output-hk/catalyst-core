@@ -1,3 +1,4 @@
+mod advisor_reviews;
 mod challenges;
 mod funds;
 mod genesis;
@@ -36,6 +37,9 @@ pub async fn filter(
     let genesis_root = warp::path!("block0" / ..);
     let genesis_filter = genesis::filter(genesis_root.boxed(), context.clone());
 
+    let reviews_root = warp::path!("advisor-reviews");
+    let reviews_filter = advisor_reviews::filter(reviews_root.boxed(), context.clone()).await;
+
     let api_token_filter = if enable_api_tokens {
         api_token::api_token_filter(context).await.boxed()
     } else {
@@ -48,7 +52,8 @@ pub async fn filter(
                 .or(genesis_filter)
                 .or(chain_data_filter)
                 .or(funds_filter)
-                .or(challenges_filter),
+                .or(challenges_filter)
+                .or(reviews_filter),
         ),
     )
     .boxed()

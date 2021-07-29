@@ -6,7 +6,7 @@ edition = "2018"
 [dependencies]
 evm = "0.28.0"
 imhamt = { path = "../imhamt" }
-primitive-types = "0.10.1"
+primitive-types = "0.9.1"
 
 [dev-dependencies]
 proptest = "1.0.0"

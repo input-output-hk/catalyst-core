@@ -71,10 +71,7 @@ impl Wallet {
             .build_free_utxos()
             .expect("build without free keys cannot fail");
 
-        Ok(Wallet {
-            account,
-            free_keys,
-        })
+        Ok(Wallet { account, free_keys })
     }
 
     /// retrieve a wallet from a list of free keys used as utxo's
@@ -110,10 +107,7 @@ impl Wallet {
             .build_wallet()
             .expect("build the account cannot fail as expected");
 
-        Ok(Wallet {
-            account,
-            free_keys,
-        })
+        Ok(Wallet { account, free_keys })
     }
 
     /// retrieve funds from bip44 hd sequential wallet in the given block0 (or any other blocks).
@@ -224,7 +218,7 @@ impl Wallet {
     /// get the current spending counter
     ///
     pub fn spending_counter(&self) -> u32 {
-        self.account.spending_counter()
+        self.account.spending_counter().into()
     }
 
     /// get the total value in the wallet
@@ -236,7 +230,9 @@ impl Wallet {
     /// how much the wallet started with or retrieved from the chain.
     ///
     pub fn total_value(&self) -> Value {
-        self.free_keys.utxos().total_value()
+        self.free_keys
+            .utxos()
+            .total_value()
             .saturating_add(self.account.value())
     }
 
@@ -251,7 +247,7 @@ impl Wallet {
     /// nodes of the blockchain because of invalid signature state.
     ///
     pub fn set_state(&mut self, value: Value, counter: u32) {
-        self.account.update_state(value, counter)
+        self.account.update_state(value, counter.into())
     }
 
     /// Cast a vote

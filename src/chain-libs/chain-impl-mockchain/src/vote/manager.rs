@@ -894,6 +894,65 @@ mod tests {
             ValidatedPayload::Public(vote_choice)
         );
     }
+    use rand_core::OsRng;
+
+    #[test]
+    pub fn proposal_manager_cast_private_vote_in_public_voting() {
+        let vote_plan = VoteTestGen::private_vote_plan();
+        let vote_choice = vote::Choice::new(1);
+        let mut rng = OsRng;
+        let vote_cast_payload = VoteTestGen::private_vote_cast_payload_for(
+            &vote_plan,
+            vote_plan.proposals().get(0).unwrap(),
+            vote_choice,
+            &mut rng,
+        );
+        let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload.clone());
+
+        let identifier = TestGen::unspecified_account_identifier();
+
+        let proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
+
+        assert_eq!(
+            proposal_manager
+                .validate_public_vote(&identifier, vote_cast)
+                .err()
+                .unwrap(),
+            crate::vote::VoteError::InvalidPayloadType {
+                received: PayloadType::Private,
+                expected: PayloadType::Public
+            }
+        );
+    }
+
+    #[test]
+    pub fn proposal_manager_cast_public_vote_in_private_voting() {
+        let committee_manager = VoteTestGen::committee_members_manager(3, 1);
+        let vote_plan = VoteTestGen::private_vote_plan_with_committees_manager(&committee_manager);
+        let vote_choice = vote::Choice::new(1);
+        let vote_cast_payload = vote::Payload::public(vote_choice);
+        let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload.clone());
+
+        let identifier = TestGen::unspecified_account_identifier();
+
+        let proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
+
+        assert_eq!(
+            proposal_manager
+                .validate_private_vote(
+                    &identifier,
+                    vote_cast,
+                    committee_manager.crs(),
+                    &committee_manager.election_pk()
+                )
+                .err()
+                .unwrap(),
+            crate::vote::VoteError::InvalidPayloadType {
+                received: PayloadType::Public,
+                expected: PayloadType::Private
+            }
+        );
+    }
 
     const CENT: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(100) };
     use crate::certificate::Proposals;
@@ -1117,6 +1176,101 @@ mod tests {
                 )
                 .err()
                 .unwrap()
+        );
+    }
+
+    #[test]
+    pub fn vote_plan_manager_incorrect_tally_public() {
+        let blank = Choice::new(0);
+        let favorable = Choice::new(1);
+        let rejection = Choice::new(2);
+        let committee = Wallet::from_value(Value(100));
+
+        let committee_manager = VoteTestGen::committee_members_manager(3, 1);
+        let vote_plan = VoteTestGen::private_vote_plan_with_committees_manager(&committee_manager);
+
+        let mut committee_ids = HashSet::new();
+        committee_ids.insert(committee.public_key().into());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
+        let governance = governance_50_percent(blank, favorable, rejection);
+        let mut stake_controlled = StakeControl::new();
+        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
+
+        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+
+        let block_date = BlockDate {
+            epoch: 2,
+            slot_id: 10,
+        };
+
+        let committee_id = match tally_proof {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
+
+        assert_eq!(
+            vote_plan_manager
+                .public_tally(
+                    block_date,
+                    &stake_controlled,
+                    &governance,
+                    committee_id,
+                    |_| ()
+                )
+                .err()
+                .unwrap(),
+            crate::vote::VoteError::CannotTallyVotes {
+                source: crate::vote::TallyError::InvalidPrivacy
+            }
+        );
+    }
+
+    #[test]
+    pub fn vote_plan_manager_incorrect_tally_private() {
+        let committee = Wallet::from_value(Value(100));
+        let proposals = VoteTestGen::proposals_with_action(
+            VoteAction::Treasury {
+                action: TreasuryGovernanceAction::TransferToRewards { value: Value(30) },
+            },
+            3,
+        );
+
+        let vote_plan = VotePlan::new(
+            BlockDate::from_epoch_slot_id(1, 0),
+            BlockDate::from_epoch_slot_id(2, 0),
+            BlockDate::from_epoch_slot_id(3, 0),
+            proposals,
+            PayloadType::Public,
+            Vec::new(),
+        );
+
+        let mut committee_ids = HashSet::new();
+        committee_ids.insert(committee.public_key().into());
+        let vote_plan_manager = VotePlanManager::new(vote_plan.clone(), committee_ids);
+
+        let mut stake_controlled = StakeControl::new();
+        stake_controlled = stake_controlled.add_to(committee.public_key().into(), Stake(51));
+
+        let tally_proof = get_tally_proof(&committee, vote_plan.to_id());
+
+        let block_date = BlockDate {
+            epoch: 2,
+            slot_id: 10,
+        };
+
+        let committee_id = match tally_proof {
+            TallyProof::Public { id, .. } => id,
+            TallyProof::Private { id, .. } => id,
+        };
+
+        assert_eq!(
+            vote_plan_manager
+                .start_private_tally(block_date, &stake_controlled, committee_id)
+                .err()
+                .unwrap(),
+            crate::vote::VoteError::CannotTallyVotes {
+                source: crate::vote::TallyError::InvalidPrivacy
+            }
         );
     }
 

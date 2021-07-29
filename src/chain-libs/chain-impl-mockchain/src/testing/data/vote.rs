@@ -1,7 +1,7 @@
 use crate::vote::VotePlanStatus;
 use chain_vote::{
-    committee::MemberSecretKey, Crs, MemberCommunicationKey, MemberPublicKey, MemberState,
-    TallyDecryptShare,
+    committee::MemberSecretKey, Crs, ElectionPublicKey, MemberCommunicationKey, MemberPublicKey,
+    MemberState, TallyDecryptShare,
 };
 use rand::thread_rng;
 use rand_core::CryptoRng;
@@ -9,6 +9,7 @@ use rand_core::RngCore;
 
 pub struct CommitteeMembersManager {
     members: Vec<CommitteeMember>,
+    crs: Crs,
 }
 
 pub struct CommitteeMember {
@@ -37,11 +38,27 @@ impl CommitteeMembersManager {
             members.push(CommitteeMember { state })
         }
 
-        Self { members }
+        Self { members, crs }
     }
 
     pub fn members(&self) -> &[CommitteeMember] {
         &self.members
+    }
+
+    pub fn members_keys(&self) -> Vec<MemberPublicKey> {
+        self.members()
+            .iter()
+            .map(|committee_member| committee_member.public_key())
+            .collect()
+    }
+
+    pub fn election_pk(&self) -> ElectionPublicKey {
+        let keys: Vec<_> = self.members().iter().map(|x| x.public_key()).collect();
+        ElectionPublicKey::from_participants(&keys)
+    }
+
+    pub fn crs(&self) -> &Crs {
+        &self.crs
     }
 }
 

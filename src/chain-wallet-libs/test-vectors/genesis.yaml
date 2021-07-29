@@ -103,6 +103,10 @@ blockchain_configuration:
 # Initial state of the ledger. Each item is applied in order of this list
 initial:
   - fund:
+      # account address
+      - address: ca1qkn28szy0t4ee32v7epzhget9989u8p77mtc9u4vla98q62vf5txx4am2rc
+        value: 10000
+      # UTXO addresses
       - address: ca1qvhujnjpdjwtnvlha2ves34v6v07gekqjtsupk9kvdq8fhhcl8s7sl632wq
         value: 1000
       - address: ca1qvcq2yckqtjzggl3vcsmhessp0a85xnf4mjl6cgcm3vglehj4zhhccpplcd

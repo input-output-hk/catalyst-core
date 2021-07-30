@@ -1,5 +1,8 @@
 use wasm_bindgen::prelude::*;
 
+/// `set_panic_hook` function can be called at least once during initialization,
+/// to get better error messages if the code ever panics.
+/// The function has no parameters.
 #[wasm_bindgen]
 pub fn set_panic_hook() {
     // When the `console_error_panic_hook` feature is enabled, we can call the

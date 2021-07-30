@@ -10,8 +10,6 @@ mod utils;
 
 const ELECTION_PUBLIC_KEY_HRP: &str = "votepk";
 
-// `set_panic_hook` function can be called at least once during initialization,
-// to get better error messages if the code ever panics.
 pub use utils::set_panic_hook;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global

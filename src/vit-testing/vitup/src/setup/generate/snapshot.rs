@@ -29,6 +29,9 @@ pub struct SnapshotCommandArgs {
 
     #[structopt(long = "global-pin", default_value = "1234")]
     pub global_pin: String,
+
+    #[structopt(long = "skip-qr-generation")]
+    pub skip_qr_generation: bool,
 }
 
 impl SnapshotCommandArgs {
@@ -54,6 +57,10 @@ impl SnapshotCommandArgs {
             quick_setup.initials(initials);
         } else if let Some(initials_count) = self.initials {
             quick_setup.initials_count(initials_count, &self.global_pin);
+        }
+
+        if self.skip_qr_generation {
+            quick_setup.skip_qr_generation();
         }
 
         if !self.output_directory.exists() {
@@ -82,27 +89,30 @@ impl SnapshotCommandArgs {
             std::fs::remove_file(entry.path())?;
         }
 
-        //rename qr codes to {address}_{pin}.png syntax
-        let qr_codes = Path::new(&result_dir).join("qr-codes");
-        let mut i = 1;
-        for entry in std::fs::read_dir(&qr_codes)? {
-            let entry = entry?;
-            let path = entry.path();
+        if !self.skip_qr_generation {
+            //rename qr codes to {address}_{pin}.png syntax
+            let qr_codes = Path::new(&result_dir).join("qr-codes");
+            let mut i = 1;
+            for entry in std::fs::read_dir(&qr_codes)? {
+                let entry = entry?;
+                let path = entry.path();
 
-            let file_name = path
-                .file_stem()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .replace(&format!("_{}", self.global_pin), "");
+                let file_name = path
+                    .file_stem()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .replace(&format!("_{}", self.global_pin), "");
 
-            let wallet = controller.wallet(&file_name)?;
-            let new_file_name = format!("{}_{}_{}.png", i, wallet.address(), self.global_pin);
-            i += 1;
-            std::fs::rename(
-                path.clone(),
-                std::path::Path::new(path.parent().unwrap()).join(&new_file_name),
-            )?;
+                let wallet = controller.wallet(&file_name)?;
+                let new_file_name = format!("{}_{}_{}.png", i, wallet.address(), self.global_pin);
+                i += 1;
+                std::fs::rename(
+                    path.clone(),
+                    std::path::Path::new(path.parent().unwrap()).join(&new_file_name),
+                )?;
+            }
+            println!("Qr codes dumped into {:?}", qr_codes);
         }
 
         // write snapshot.json
@@ -124,7 +134,6 @@ impl SnapshotCommandArgs {
         std::fs::remove_file(genesis_yaml)?;
 
         println!("Snapshot dumped into {:?}", file);
-        println!("Qr codes dumped into {:?}", qr_codes);
 
         Ok(())
     }

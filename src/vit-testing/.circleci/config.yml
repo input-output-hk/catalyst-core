@@ -107,7 +107,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout b2b27dfd7e2dd9253c103e92df2ae86f159d06f7
+            git checkout 7f303883f3d0b6314e3391eb2669fc332d47846b
       - run:
           name: install jormungandr
           command: |

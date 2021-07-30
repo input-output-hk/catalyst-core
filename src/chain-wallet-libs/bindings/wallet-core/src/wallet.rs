@@ -101,7 +101,7 @@ impl Wallet {
 
         let free_keys = builder
             .build_free_utxos()
-            .map_err(|err| Error::invalid_input("todo").with(err))?;
+            .map_err(|err| Error::invalid_input("invalid secret keys for UTxO retrieval").with(err))?;
 
         let account = builder
             .build_wallet()

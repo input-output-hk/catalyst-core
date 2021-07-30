@@ -58,7 +58,7 @@ impl Wallet {
             .map_err(|err| Error::invalid_input("mnemonics").with(err))?;
 
         let builder = if !password.is_empty() {
-            todo!()
+            builder.password(password.to_vec().into())
         } else {
             builder
         };

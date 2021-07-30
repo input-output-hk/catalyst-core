@@ -6,11 +6,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Insertable, Queryable)]
 #[table_name = "community_advisors_reviews"]
 pub struct AdvisorReview {
-    id: i32,
-    proposal_id: i32,
-    rating_given: i32,
-    assessor: String,
-    note: String,
+    pub id: i32,
+    pub proposal_id: i32,
+    pub rating_given: i32,
+    pub assessor: String,
+    pub note: String,
 }
 
 #[cfg(test)]

@@ -86,6 +86,11 @@ impl SnapshotCommandArgs {
                 continue;
             }
 
+            //skip secret key generation
+            if entry.file_name().to_str().unwrap().contains("wallet") {
+                continue;
+            }
+
             std::fs::remove_file(entry.path())?;
         }
 

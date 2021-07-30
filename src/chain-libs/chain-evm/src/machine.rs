@@ -113,6 +113,60 @@ impl ApplyBackend for VirtualMachine {
     }
 }
 
+impl<'config> StackState<'config> for VirtualMachine {
+    fn metadata(&self) -> &evm::executor::StackSubstateMetadata<'config> {
+        todo!();
+    }
+    fn metadata_mut(&mut self) -> &mut evm::executor::StackSubstateMetadata<'config> {
+        todo!();
+    }
+    fn enter(&mut self, _gas_limit: u64, _is_static: bool) {
+        todo!();
+    }
+    fn exit_commit(&mut self) -> Result<(), evm::ExitError> {
+        todo!();
+    }
+    fn exit_revert(&mut self) -> Result<(), evm::ExitError> {
+        todo!();
+    }
+    fn exit_discard(&mut self) -> Result<(), evm::ExitError> {
+        todo!();
+    }
+    fn is_empty(&self, _address: H160) -> bool {
+        todo!();
+    }
+    fn deleted(&self, _address: H160) -> bool {
+        todo!();
+    }
+    fn inc_nonce(&mut self, _address: H160) {
+        todo!();
+    }
+    fn set_storage(&mut self, _address: H160, _key: H256, _value: H256) {
+        todo!();
+    }
+    fn reset_storage(&mut self, _address: H160) {
+        todo!();
+    }
+    fn log(&mut self, _address: H160, _topics: Vec<H256>, _data: Vec<u8>) {
+        todo!();
+    }
+    fn set_deleted(&mut self, _address: H160) {
+        todo!();
+    }
+    fn set_code(&mut self, _address: H160, _code: Vec<u8>) {
+        todo!();
+    }
+    fn transfer(&mut self, _transfer: evm::Transfer) -> Result<(), evm::ExitError> {
+        todo!();
+    }
+    fn reset_balance(&mut self, _address: H160) {
+        todo!();
+    }
+    fn touch(&mut self, _address: H160) {
+        todo!();
+    }
+}
+
 pub fn code_to_execute_evm_runtime() -> Result<(), String> {
     todo!("put together the puzzle of types needed to run evm code");
 }

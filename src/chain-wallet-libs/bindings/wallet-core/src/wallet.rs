@@ -23,6 +23,7 @@ pub struct Wallet {
 }
 
 impl Wallet {
+    /// Returns address of the account with the given chain discrimination.
     pub fn account(&self, discrimination: chain_addr::Discrimination) -> chain_addr::Address {
         self.account.account_id().address(discrimination)
     }
@@ -31,20 +32,19 @@ impl Wallet {
         self.account.account_id()
     }
 
-    /// retrieve a wallet from the given mnemonics, password and protocol magic
+    /// Retrieve a wallet from the given BIP39 mnemonics and password.
     ///
     /// You can also use this function to recover a wallet even after you have transferred all the
-    /// funds to the new format (see the _convert_ function)
+    /// funds to the account addressed by the public key (see the [convert] function).
     ///
-    /// The recovered wallet will be returned in `wallet_out`.
+    /// Returns the recovered wallet on success.
     ///
-    /// # parameters
+    /// Parameters
     ///
-    /// * mnemonics: a null terminated utf8 string (already normalized NFKD) in english; *
-    /// password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
-    /// this value is optional and passing a null pointer will result in no password;
-    ///
-    /// # errors
+    /// * `mnemonics`: a UTF-8 string (already normalized NFKD) with space-separated words in English;
+    /// * `password`: the password (any string of bytes).
+    /// 
+    /// # Errors
     ///
     /// The function may fail if:
     ///
@@ -77,12 +77,12 @@ impl Wallet {
     /// Retrieve a wallet from a list of free keys used as utxo's
     ///
     /// You can also use this function to recover a wallet even after you have
-    /// transferred all the funds to the new format (see the _convert_ function)
+    /// transferred all the funds to the new format (see the [Self::convert] function).
     ///
     /// Parameters
     ///
-    /// * account_key: the private key used for voting
-    /// * keys: single keys used as utxo inputs
+    /// * `account_key`: the private key used for voting
+    /// * `keys`: single keys used to retrieve UTxO inputs
     ///
     /// # Errors
     ///
@@ -112,10 +112,14 @@ impl Wallet {
 
     /// retrieve funds from bip44 hd sequential wallet in the given block0 (or any other blocks).
     ///
-    /// Execute this function then you can check who much funds you have retrieved from the given
-    /// block.
+    /// After this function is executed, the wallet user can check how much
+    /// funds have been retrieved from fragments of the given block.
     ///
-    /// this function may take sometimes so it is better to only call this function if needed.
+    /// This function can take some time to run, so it is better to only
+    /// call it if needed.
+    ///
+    /// This function should not be called twice with the same block.
+    /// In a future revision of this library, this limitation may be lifted.
     ///
     /// # Errors
     ///
@@ -188,10 +192,10 @@ impl Wallet {
         self.account.confirm(&id);
     }
 
-    /// get access to all the pending transaction
+    /// Get access to pending transactions that will change the wallet state.
     ///
-    /// TODO: this might need to be updated to have a more user friendly
-    ///       API. Currently do this for simplicity
+    // TODO: this might need to be updated to have a more user friendly
+    //       API. Currently do this for simplicity
     pub fn pending_transactions(&self) -> Vec<FragmentId> {
         let mut check = std::collections::HashSet::new();
         let mut result = vec![];
@@ -240,16 +244,16 @@ impl Wallet {
             .saturating_add(self.account.value())
     }
 
-    /// update the wallet account state
+    /// Update the wallet's account state.
     ///
-    /// this is the value retrieved from any jormungandr endpoint that allows to query
-    /// for the account state. It gives the value associated to the account as well as
-    /// the counter.
+    /// The values to update the account state with can be retrieved from a
+    /// Jormungandr API endpoint. It sets the balance value on the account
+    /// as well as the current spending counter.
     ///
-    /// It is important to be sure to have an updated wallet state before doing any
-    /// transactions otherwise future transactions may fail to be accepted by any
-    /// nodes of the blockchain because of invalid signature state.
-    ///
+    /// It is important to be sure to have an up to date wallet state
+    /// before doing any transactions, otherwise future transactions may fail
+    /// to be accepted by the blockchain nodes because of an invalid witness
+    /// signature.
     pub fn set_state(&mut self, value: Value, counter: u32) {
         self.account.update_state(value, counter.into())
     }

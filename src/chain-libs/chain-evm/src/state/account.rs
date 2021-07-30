@@ -15,7 +15,7 @@ pub struct Account {
     /// Account data storage.
     pub storage: Storage,
     /// EVM bytecode of this account.
-    pub code: Box<[u8]>,
+    pub code: Vec<u8>,
 }
 
 /// An address of an EVM account.

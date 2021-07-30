@@ -37,7 +37,7 @@ pub async fn filter(
     let genesis_root = warp::path!("block0" / ..);
     let genesis_filter = genesis::filter(genesis_root.boxed(), context.clone());
 
-    let reviews_root = warp::path!("advisor-reviews");
+    let reviews_root = warp::path!("reviews" / ..);
     let reviews_filter = advisor_reviews::filter(reviews_root.boxed(), context.clone()).await;
 
     let api_token_filter = if enable_api_tokens {

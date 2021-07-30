@@ -102,8 +102,8 @@ impl Backend for VirtualMachine {
     }
 }
 
-impl ApplyBackend for Machine {
-    fn apply<A, I, L>(&mut self, values: A, logs: L, delete_empty: bool)
+impl ApplyBackend for VirtualMachine {
+    fn apply<A, I, L>(&mut self, _values: A, _logs: L, _delete_empty: bool)
     where
         A: IntoIterator<Item = evm::backend::Apply<I>>,
         I: IntoIterator<Item = (H256, H256)>,
@@ -113,6 +113,6 @@ impl ApplyBackend for Machine {
     }
 }
 
-pub fn code_to_execute_evm_runtime() -> Result<(), ()> {
+pub fn code_to_execute_evm_runtime() -> Result<(), String> {
     todo!("put together the puzzle of types needed to run evm code");
 }

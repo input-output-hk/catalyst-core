@@ -137,7 +137,7 @@ pub unsafe fn wallet_import_keys(
     let utxo_keys: &[[u8; 64]] =
         std::slice::from_raw_parts(utxo_keys.as_ptr() as *const [u8; 64], utxo_keys_len);
 
-    let result = Wallet::recover_free_keys(account_key, &utxo_keys);
+    let result = Wallet::recover_free_keys(account_key, utxo_keys);
 
     match result {
         Ok(wallet) => {

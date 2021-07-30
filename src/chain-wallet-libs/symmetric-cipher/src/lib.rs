@@ -96,7 +96,7 @@ pub fn decrypt<T: AsRef<[u8]>>(password: impl AsRef<[u8]>, data: T) -> Result<Bo
 
     let mut key = derive_symmetric_key(password, data.salt().try_into().unwrap());
 
-    let mut chacha20 = ChaCha20Poly1305::new(&key, &data.nonce(), &aad);
+    let mut chacha20 = ChaCha20Poly1305::new(&key, data.nonce(), &aad);
 
     let mut plaintext = vec![0u8; data.encrypted_data().len()];
 

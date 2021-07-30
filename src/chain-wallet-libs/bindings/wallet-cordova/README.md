@@ -1,5 +1,3 @@
-# README
-
 # Usage
 
 ## Examples

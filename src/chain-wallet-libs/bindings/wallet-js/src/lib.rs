@@ -388,7 +388,7 @@ impl FragmentId {
 #[wasm_bindgen]
 impl ElectionPublicKey {
     pub fn from_bytes(bytes: &[u8]) -> Result<ElectionPublicKey, JsValue> {
-        chain_vote::ElectionPublicKey::from_bytes(&bytes)
+        chain_vote::ElectionPublicKey::from_bytes(bytes)
             .ok_or_else(|| JsValue::from_str("invalid binary format"))
             .map(Self)
     }

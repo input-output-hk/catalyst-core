@@ -199,7 +199,7 @@ where
         let mut accounts = self.accounts.iter_mut();
         let mut result = None;
 
-        while let Some(account) = accounts.next() {
+        for account in &mut accounts {
             if let Some(path) = account.lookup(address).cloned() {
                 if account.within_last_range(&path) {
                     account.extend_range_with(self.mk_key);
@@ -296,7 +296,7 @@ impl Wallet<PublicKey<Ed25519>> {
                         _ => None,
                     };
                     if let Some(pk) = pk {
-                        if let Some(key) = self.check(&pk) {
+                        if let Some(key) = self.check(pk) {
                             let pointer = UtxoPointer {
                                 transaction_id: *fragment_id,
                                 output_index: index as u8,
@@ -390,7 +390,7 @@ impl Wallet<OldAddress> {
 }
 
 fn mk_legacy_address(xpub: &XPub) -> OldAddress {
-    cardano_legacy_address::ExtendedAddr::new_simple(&xpub, None).to_address()
+    cardano_legacy_address::ExtendedAddr::new_simple(xpub, None).to_address()
 }
 
 fn mk_public_key(xpub: &XPub) -> PublicKey<Ed25519> {

@@ -84,7 +84,7 @@ impl<'a> Iterator for DumpFreeKeys<'a> {
         .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
 
         if let Some((fragment, _)) = next.as_ref() {
-            self.wallet.check_fragment(&fragment.hash(), &fragment);
+            self.wallet.check_fragment(&fragment.hash(), fragment);
         }
 
         next

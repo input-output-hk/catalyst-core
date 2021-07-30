@@ -1,6 +1,7 @@
 mod utils;
 
 use self::utils::State;
+use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     certificate::VoteCast,
     fragment::Fragment,
@@ -8,50 +9,12 @@ use chain_impl_mockchain::{
     vote::{Choice, Payload},
 };
 use std::convert::TryInto;
-use wallet::{transaction::dump_icarus_utxo, RecoveryBuilder};
+use wallet::RecoveryBuilder;
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
+const ACCOUNT_KEY: &str = include_str!("../../test-vectors/free_keys/key1.prv");
 const MNEMONICS: &str =
     "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone";
-
-#[test]
-fn dump_from_icarus() {
-    let wallet = RecoveryBuilder::new()
-        .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
-        .expect("valid mnemonics");
-
-    let mut yoroi = wallet
-        .build_yoroi()
-        .expect("recover an Icarus/Yoroi wallet");
-
-    let mut account = wallet.build_wallet().expect("recover account");
-
-    let mut state = State::new(BLOCK0);
-    let settings = state.settings().expect("valid initial settings");
-    let address = account.account_id().address(settings.discrimination());
-
-    assert!(
-        yoroi.check_fragments(state.initial_contents()),
-        "failed to check fragments"
-    );
-
-    let (fragment, _ignored) = dump_icarus_utxo(&settings, &address, &mut yoroi)
-        .next()
-        .expect("expected only one transaction");
-
-    assert!(account.check_fragment(&fragment.hash(), &fragment));
-
-    state
-        .apply_fragments(&[fragment.to_raw()])
-        .expect("the dump fragments should be valid");
-
-    assert_eq!(account.confirmed_value(), Value::zero());
-    assert_ne!(account.unconfirmed_value().unwrap(), Value::zero());
-
-    account.confirm(&fragment.hash());
-
-    assert_ne!(account.confirmed_value(), Value::zero());
-}
 
 #[test]
 fn update_state_overrides_old() {
@@ -63,43 +26,32 @@ fn update_state_overrides_old() {
 
     assert_eq!(account.confirmed_value(), Value::zero());
 
-    account.update_state(Value(110), 0);
+    account.update_state(Value(110), 0.into());
 
     assert_eq!(account.confirmed_value(), Value(110));
 }
 
 #[test]
 fn cast_vote() {
-    let wallet = RecoveryBuilder::new()
-        .mnemonics(&bip39::dictionary::ENGLISH, MNEMONICS)
-        .expect("valid mnemonics");
-
-    let mut yoroi = wallet
-        .build_yoroi()
-        .expect("recover an Icarus/Yoroi wallet");
-
-    let mut account = wallet.build_wallet().expect("recover account");
+    let mut account = wallet::RecoveryBuilder::new()
+        .account_secret_key(
+            SecretKey::from_binary(
+                hex::decode(String::from(ACCOUNT_KEY).trim())
+                    .unwrap()
+                    .as_ref(),
+            )
+            .unwrap(),
+        )
+        .build_wallet()
+        .expect("recover account");
 
     let mut state = State::new(BLOCK0);
     let settings = state.settings().expect("valid initial settings");
-    let address = account.account_id().address(settings.discrimination());
 
-    assert!(
-        yoroi.check_fragments(state.initial_contents()),
-        "failed to check fragments"
-    );
-
-    let (fragment, _ignored) = dump_icarus_utxo(&settings, &address, &mut yoroi)
-        .next()
-        .expect("expected only one transaction");
-
-    assert!(account.check_fragment(&fragment.hash(), &fragment));
-
-    state
-        .apply_fragments(&[fragment.to_raw()])
-        .expect("the dump fragments should be valid");
-
-    account.confirm(&fragment.hash());
+    for fragment in state.initial_contents() {
+        account.check_fragment(&fragment.hash(), fragment);
+        account.confirm(&fragment.hash());
+    }
 
     let vote_plan_id: [u8; 32] = hex::decode(
         "4aa30d9df6d2dfdb45725c0de00d1a73394950c8bf3dabc8285f46f1e25e53fa",

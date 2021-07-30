@@ -3,6 +3,7 @@ use crate::scheme::{on_tx_input_and_witnesses, on_tx_output};
 use crate::states::{States, Status};
 use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
 use chain_impl_mockchain::{
+    account::SpendingCounter,
     fragment::{Fragment, FragmentId},
     transaction::{Input, InputEnum},
     value::Value,
@@ -19,14 +20,14 @@ pub struct Wallet {
 #[derive(Debug)]
 pub struct State {
     value: Value,
-    counter: u32,
+    counter: SpendingCounter,
 }
 
 pub struct WalletBuildTx<'a> {
     wallet: &'a mut Wallet,
     needed_input: Value,
     next_value: Value,
-    current_counter: u32,
+    current_counter: SpendingCounter,
 }
 
 #[derive(Debug, Error)]
@@ -48,7 +49,7 @@ impl Wallet {
                 FragmentId::zero_hash(),
                 State {
                     value: Value::zero(),
-                    counter: 0,
+                    counter: SpendingCounter::zero(),
                 },
             ),
         }
@@ -61,7 +62,7 @@ impl Wallet {
                 FragmentId::zero_hash(),
                 State {
                     value: Value::zero(),
-                    counter: 0,
+                    counter: SpendingCounter::zero(),
                 },
             ),
         }
@@ -84,11 +85,11 @@ impl Wallet {
     ///
     /// TODO: change to a constructor/initializator?, or just make it so it resets the state
     ///
-    pub fn update_state(&mut self, value: Value, counter: u32) {
+    pub fn update_state(&mut self, value: Value, counter: SpendingCounter) {
         self.state = States::new(FragmentId::zero_hash(), State { value, counter });
     }
 
-    pub fn spending_counter(&self) -> u32 {
+    pub fn spending_counter(&self) -> SpendingCounter {
         self.state.last_state().1.counter
     }
 
@@ -209,10 +210,7 @@ impl Wallet {
         };
 
         let counter = if increment_counter {
-            state
-                .counter
-                .checked_add(1)
-                .expect("account counter overflow")
+            state.counter.increment().expect("account counter overflow")
         } else {
             state.counter
         };
@@ -237,12 +235,12 @@ impl<'a> WalletBuildTx<'a> {
         match &self.wallet.account {
             EitherAccount::Seed(account) => crate::transaction::AccountWitnessBuilder::Ed25519(
                 account.secret().clone(),
-                self.current_counter.into(),
+                self.current_counter,
             ),
             EitherAccount::Extended(account) => {
                 crate::transaction::AccountWitnessBuilder::Ed25519Extended(
                     account.secret().clone(),
-                    self.current_counter.into(),
+                    self.current_counter,
                 )
             }
         }
@@ -253,7 +251,7 @@ impl<'a> WalletBuildTx<'a> {
             fragment_id,
             State {
                 value: self.next_value,
-                counter: self.current_counter.checked_add(1).unwrap(),
+                counter: self.current_counter.increment().unwrap(),
             },
         );
     }

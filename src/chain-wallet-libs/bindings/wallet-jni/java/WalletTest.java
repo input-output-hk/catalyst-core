@@ -19,27 +19,26 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class WalletTest {
-    @Test
-    public void recoverWallet() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+    private byte[] accountKey() throws IOException{
+        final String accountKey = new String(
+                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key1.prv"))).trim();
 
-        final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
+        return hexStringToByteArray(accountKey);
+    }
 
-        final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
+    private byte[] utxoKeys() throws IOException{
+        final String utxoKey1 = new String(
+                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key2.prv"))).trim();
 
-        final int totalValue = Wallet.totalValue(walletPtr);
+        final String utxoKey2 = new String(
+                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key3.prv"))).trim();
 
-        assertEquals(1000000 + 10000 + 10000 + 1 + 100, totalValue);
-
-        Settings.delete(settingsPtr);
-        Wallet.delete(walletPtr);
+        return hexStringToByteArray(utxoKey1.concat(utxoKey2));
     }
 
     @Test
     public void extractSettings() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
@@ -64,7 +63,7 @@ public class WalletTest {
         // test vectors genesis?
         assertEquals(Settings.Discrimination.PRODUCTION, discrimination);
 
-        assertArrayEquals(hexStringToByteArray("182764b45bae25cc466143de8107618b37f0d28fe3daa0a0d39fd0ab5a2061e1"),
+        assertArrayEquals(hexStringToByteArray("8f7eb264426d2a81d5df7433e4713a38397deda81813115884b68c853f549dae"),
                 Settings.block0Hash(settingsPtr));
 
         Settings.delete(settingsPtr);
@@ -113,20 +112,7 @@ public class WalletTest {
 
     @Test
     public void importKeys() throws IOException {
-        final byte[] accountKey = { -56, 101, -106, -62, -47, 32, -120, -123, -37, 31, -29, 101, -124, 6, -86, 15, 124,
-                -57, -72, -31, 60, 54, 47, -28, 106, 109, -78, 119, -4, 80, 100, 88, 62, 72, 117, -120, -55, -118, 108,
-                54, -30, -25, 68, 92, 10, -35, 54, -8, 63, 23, 28, -75, -52, -3, -127, 85, 9, -47, -100, -45, -114, -53,
-                10, -13, };
-
-        final byte[] utxoKeys = { 48, 21, 89, -52, -78, -44, -52, 126, -98, 84, -90, -11, 90, -128, -106, 11, -74, -111,
-                -73, -79, 64, -107, 73, -17, -122, -107, -87, 46, -92, 26, 111, 79, 64, 82, 49, -88, 6, -62, -25, -71,
-                -48, -37, 48, -31, 94, -32, -52, 31, 38, 28, 27, -97, -106, 21, 99, 107, 72, -67, -119, -2, 123, -26,
-                -22, 31, -88, -74, -67, -16, -128, -57, 79, -68, 49, 51, 126, -34, 75, 102, -110, -62, -21, -19, 126,
-                52, -81, 109, -104, -73, -69, -51, 71, -116, -16, 123, 13, 94, -39, 63, 126, -99, 74, -93, -81, -34, 50,
-                26, -31, -85, -74, 27, -125, 68, -62, 67, -55, -48, -76, 7, -53, -8, -111, 125, -74, -33, 44, 101, 61,
-                -22, };
-
-        final long walletPtr = Wallet.importKeys(accountKey, utxoKeys);
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
@@ -134,7 +120,24 @@ public class WalletTest {
 
         final int totalValue = Wallet.totalValue(walletPtr);
 
-        assertEquals(10000 + 1000, totalValue);
+        assertEquals(10000 + 10000 + 1000, totalValue);
+
+        Settings.delete(settingsPtr);
+        Wallet.delete(walletPtr);
+    }
+
+    @Test
+    public void importOnlyAccountKey() throws IOException {
+        final byte[] emptyArray = {};
+        final long walletPtr = Wallet.importKeys(accountKey(), emptyArray);
+
+        final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
+
+        final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
+
+        final int totalValue = Wallet.totalValue(walletPtr);
+
+        assertEquals(10000, totalValue);
 
         Settings.delete(settingsPtr);
         Wallet.delete(walletPtr);
@@ -142,8 +145,7 @@ public class WalletTest {
 
     @Test
     public void convertWallet() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
@@ -157,14 +159,6 @@ public class WalletTest {
 
         final byte[] transaction = Conversion.transactionsGet(conversionPtr, 0);
 
-        Conversion.ignored(conversionPtr, new Conversion.IgnoredCallback() {
-            @Override
-            public void call(long value, long ignored) {
-                assertEquals(1, value);
-                assertEquals(1, ignored);
-            }
-        });
-
         Conversion.delete(conversionPtr);
         Settings.delete(settingsPtr);
         Wallet.delete(walletPtr);
@@ -172,8 +166,7 @@ public class WalletTest {
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void negativeIndexConversionTransaction() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
@@ -195,8 +188,20 @@ public class WalletTest {
 
     @Test
     public void voteCast() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+        final byte[] accountKey = { -56, 101, -106, -62, -47, 32, -120, -123, -37, 31, -29, 101, -124, 6, -86, 15, 124,
+                -57, -72, -31, 60, 54, 47, -28, 106, 109, -78, 119, -4, 80, 100, 88, 62, 72, 117, -120, -55, -118, 108,
+                54, -30, -25, 68, 92, 10, -35, 54, -8, 63, 23, 28, -75, -52, -3, -127, 85, 9, -47, -100, -45, -114, -53,
+                10, -13, };
+
+        final byte[] utxoKeys = { 48, 21, 89, -52, -78, -44, -52, 126, -98, 84, -90, -11, 90, -128, -106, 11, -74, -111,
+                -73, -79, 64, -107, 73, -17, -122, -107, -87, 46, -92, 26, 111, 79, 64, 82, 49, -88, 6, -62, -25, -71,
+                -48, -37, 48, -31, 94, -32, -52, 31, 38, 28, 27, -97, -106, 21, 99, 107, 72, -67, -119, -2, 123, -26,
+                -22, 31, -88, -74, -67, -16, -128, -57, 79, -68, 49, 51, 126, -34, 75, 102, -110, -62, -21, -19, 126,
+                52, -81, 109, -104, -73, -69, -51, 71, -116, -16, 123, 13, 94, -39, 63, 126, -99, 74, -93, -81, -34, 50,
+                26, -31, -85, -74, 27, -125, 68, -62, 67, -55, -48, -76, 7, -53, -8, -111, 125, -74, -33, 44, 101, 61,
+                -22, };
+
+        final long walletPtr = Wallet.importKeys(accountKey, utxoKeys);
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
@@ -224,8 +229,20 @@ public class WalletTest {
 
     @Test
     public void confirmConversionTransaction() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+        final byte[] accountKey = { -56, 101, -106, -62, -47, 32, -120, -123, -37, 31, -29, 101, -124, 6, -86, 15, 124,
+                -57, -72, -31, 60, 54, 47, -28, 106, 109, -78, 119, -4, 80, 100, 88, 62, 72, 117, -120, -55, -118, 108,
+                54, -30, -25, 68, 92, 10, -35, 54, -8, 63, 23, 28, -75, -52, -3, -127, 85, 9, -47, -100, -45, -114, -53,
+                10, -13, };
+
+        final byte[] utxoKeys = { 48, 21, 89, -52, -78, -44, -52, 126, -98, 84, -90, -11, 90, -128, -106, 11, -74, -111,
+                -73, -79, 64, -107, 73, -17, -122, -107, -87, 46, -92, 26, 111, 79, 64, 82, 49, -88, 6, -62, -25, -71,
+                -48, -37, 48, -31, 94, -32, -52, 31, 38, 28, 27, -97, -106, 21, 99, 107, 72, -67, -119, -2, 123, -26,
+                -22, 31, -88, -74, -67, -16, -128, -57, 79, -68, 49, 51, 126, -34, 75, 102, -110, -62, -21, -19, 126,
+                52, -81, 109, -104, -73, -69, -51, 71, -116, -16, 123, 13, 94, -39, 63, 126, -99, 74, -93, -81, -34, 50,
+                26, -31, -85, -74, 27, -125, 68, -62, 67, -55, -48, -76, 7, -53, -8, -111, 125, -74, -33, 44, 101, 61,
+                -22, };
+
+        final long walletPtr = Wallet.importKeys(accountKey, utxoKeys);
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
@@ -261,11 +278,9 @@ public class WalletTest {
 
     @Test
     public void confirmVoteCast() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
-
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
         final byte[] id = new byte[Proposal.ID_SIZE];
@@ -306,8 +321,7 @@ public class WalletTest {
 
     @Test
     public void fragmentId() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
@@ -347,8 +361,7 @@ public class WalletTest {
 
     @Test
     public void privateVoteCast() throws IOException {
-        final long walletPtr = Wallet.recover(
-                "neck bulb teach illegal soul cry monitor claw amount boring provide village rival draft stone");
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 

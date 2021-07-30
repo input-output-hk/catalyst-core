@@ -4,7 +4,6 @@ use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
     block::Block,
     fragment::{Fragment, FragmentId},
-    legacy::OldAddress,
     transaction::Input,
     value::Value,
     vote::Choice,
@@ -20,7 +19,6 @@ use wallet::{AccountId, Settings};
 ///
 pub struct Wallet {
     account: wallet::Wallet,
-    icarus: Option<wallet::scheme::bip44::Wallet<OldAddress>>,
     free_keys: wallet::scheme::freeutxo::Wallet,
 }
 
@@ -65,10 +63,6 @@ impl Wallet {
             builder
         };
 
-        let icarus = builder
-            .build_yoroi()
-            .map_err(|e| Error::wallet_recovering().with(e))?;
-
         let account = builder
             .build_wallet()
             .expect("build the account cannot fail as expected");
@@ -77,11 +71,7 @@ impl Wallet {
             .build_free_utxos()
             .expect("build without free keys cannot fail");
 
-        Ok(Wallet {
-            account,
-            icarus: Some(icarus),
-            free_keys,
-        })
+        Ok(Wallet { account, free_keys })
     }
 
     /// retrieve a wallet from a list of free keys used as utxo's
@@ -117,11 +107,7 @@ impl Wallet {
             .build_wallet()
             .expect("build the account cannot fail as expected");
 
-        Ok(Wallet {
-            account,
-            icarus: None,
-            free_keys,
-        })
+        Ok(Wallet { account, free_keys })
     }
 
     /// retrieve funds from bip44 hd sequential wallet in the given block0 (or any other blocks).
@@ -142,11 +128,8 @@ impl Wallet {
 
         let settings = wallet::Settings::new(&block0).unwrap();
         for fragment in block0.contents.iter() {
-            if let Some(icarus) = &mut self.icarus {
-                icarus.check_fragment(&fragment.hash(), fragment);
-            }
-
             self.free_keys.check_fragment(&fragment.hash(), fragment);
+            self.account.check_fragment(&fragment.hash(), fragment);
 
             self.confirm_transaction(fragment.hash());
         }
@@ -188,14 +171,6 @@ impl Wallet {
             for_each(fragment, ignored)
         }
 
-        if let Some(mut icarus) = self.icarus.as_mut() {
-            for (fragment, ignored) in
-                wallet::transaction::dump_icarus_utxo(&settings, &address, &mut icarus)
-            {
-                for_each(fragment, ignored)
-            }
-        }
-
         Conversion {
             ignored,
             transactions: raws,
@@ -206,9 +181,6 @@ impl Wallet {
     ///
     /// This function will automatically update the state of the wallet
     pub fn confirm_transaction(&mut self, id: FragmentId) {
-        if let Some(icarus) = self.icarus.as_mut() {
-            icarus.confirm(&id);
-        }
         self.free_keys.confirm(&id);
         self.account.confirm(&id);
     }
@@ -220,14 +192,6 @@ impl Wallet {
     pub fn pending_transactions(&self) -> Vec<FragmentId> {
         let mut check = std::collections::HashSet::new();
         let mut result = vec![];
-
-        if let Some(icarus) = &self.icarus {
-            for id in icarus.pending_transactions() {
-                if check.insert(*id) {
-                    result.push(*id);
-                }
-            }
-        }
 
         for id in self.free_keys.pending_transactions() {
             if check.insert(*id) {
@@ -255,7 +219,7 @@ impl Wallet {
     /// get the current spending counter
     ///
     pub fn spending_counter(&self) -> u32 {
-        self.account.spending_counter()
+        self.account.spending_counter().into()
     }
 
     /// get the total value in the wallet
@@ -267,11 +231,9 @@ impl Wallet {
     /// how much the wallet started with or retrieved from the chain.
     ///
     pub fn total_value(&self) -> Value {
-        self.icarus
-            .as_ref()
-            .map(|icarus| icarus.utxos().total_value())
-            .unwrap_or_else(Value::zero)
-            .saturating_add(self.free_keys.utxos().total_value())
+        self.free_keys
+            .utxos()
+            .total_value()
             .saturating_add(self.account.value())
     }
 
@@ -286,7 +248,7 @@ impl Wallet {
     /// nodes of the blockchain because of invalid signature state.
     ///
     pub fn set_state(&mut self, value: Value, counter: u32) {
-        self.account.update_state(value, counter)
+        self.account.update_state(value, counter.into())
     }
 
     /// Cast a vote

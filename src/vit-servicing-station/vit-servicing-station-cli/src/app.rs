@@ -8,11 +8,11 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    ApiTokenCmdError(#[from] ApiTokenError),
+    ApiTokenCmd(#[from] ApiTokenError),
     #[error(transparent)]
-    CsvDataError(#[from] CsvDataError),
+    CsvData(#[from] CsvDataError),
     #[error(transparent)]
-    DbError(#[from] DbError),
+    Db(#[from] DbError),
 }
 
 #[derive(StructOpt)]

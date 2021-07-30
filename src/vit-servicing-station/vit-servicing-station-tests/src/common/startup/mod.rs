@@ -74,11 +74,11 @@ pub fn get_available_port() -> u32 {
 pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, Snapshot), ServerBootstrapperError> {
     let snapshot = ArbitraryGenerator::new().snapshot();
 
-    let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
+    let db_path = DbBuilder::new().with_snapshot(&snapshot).build(temp_dir)?;
 
     let server = ServerBootstrapper::new()
         .with_db_path(db_path.to_str().unwrap())
-        .start(&temp_dir)?;
+        .start(temp_dir)?;
 
     if !server.is_up(&snapshot.token_hash()) {
         return Err(ServerBootstrapperError::FailToBootstrap);
@@ -88,5 +88,5 @@ pub fn quick_start(temp_dir: &TempDir) -> Result<(Server, Snapshot), ServerBoots
 }
 
 pub fn empty_db(temp_dir: &TempDir) -> PathBuf {
-    DbBuilder::new().build(&temp_dir).unwrap()
+    DbBuilder::new().build(temp_dir).unwrap()
 }

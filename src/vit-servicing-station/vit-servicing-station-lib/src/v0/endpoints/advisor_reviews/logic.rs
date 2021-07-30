@@ -10,5 +10,5 @@ pub async fn get_advisor_reviews_with_proposal_id(
     context: SharedContext,
 ) -> Result<Vec<AdvisorReview>, HandleError> {
     let pool = &context.read().await.db_connection_pool;
-    advisor_reviews_queries::query_reviews_by_fund_id(id, &pool).await
+    advisor_reviews_queries::query_reviews_by_fund_id(id, pool).await
 }

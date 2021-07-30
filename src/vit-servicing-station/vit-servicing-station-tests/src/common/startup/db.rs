@@ -103,7 +103,7 @@ impl DbBuilder {
 
     fn try_do_migration(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
         if let Some(migrations_folder) = &self.migrations_folder {
-            self.do_migration(&connection, migrations_folder)?;
+            self.do_migration(connection, migrations_folder)?;
         }
         Ok(())
     }

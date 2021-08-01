@@ -10,7 +10,7 @@
 //!
 
 use evm::{
-    backend::{ApplyBackend, Backend, Basic, MemoryVicinity},
+    backend::{Apply, ApplyBackend, Backend, Basic, Log, MemoryVicinity},
     executor::StackState,
     Config, Context,
 };
@@ -105,9 +105,9 @@ impl Backend for VirtualMachine {
 impl ApplyBackend for VirtualMachine {
     fn apply<A, I, L>(&mut self, _values: A, _logs: L, _delete_empty: bool)
     where
-        A: IntoIterator<Item = evm::backend::Apply<I>>,
+        A: IntoIterator<Item = Apply<I>>,
         I: IntoIterator<Item = (H256, H256)>,
-        L: IntoIterator<Item = evm::backend::Log>,
+        L: IntoIterator<Item = Log>,
     {
         todo!("Add code to apply logs and values in the machine state");
     }

@@ -18,6 +18,7 @@ use primitive_types::{H160, H256, U256};
 
 use crate::state::AccountTrie;
 
+/// Environment values for the machine backend.
 pub type Environment = MemoryVicinity;
 
 /// The context of the EVM runtime
@@ -27,56 +28,49 @@ pub type RuntimeContext = Context;
 /// necessary types used to get the runtime going.
 pub struct VirtualMachine {
     _context: RuntimeContext,
-    config: MachineConfig,
-    state: AccountTrie,
-}
-
-/// EVM configuration
-pub struct MachineConfig {
-    _evm_config: Config,
     environment: Environment,
 }
 
 impl Backend for VirtualMachine {
     fn gas_price(&self) -> U256 {
-        self.config.environment.gas_price
+        self.environment.gas_price
     }
     fn origin(&self) -> H160 {
-        self.config.environment.origin
+        self.environment.origin
     }
     fn block_hash(&self, number: U256) -> H256 {
-        if number >= self.config.environment.block_number
-            || self.config.environment.block_number - number - U256::one()
-                >= U256::from(self.config.environment.block_hashes.len())
+        if number >= self.environment.block_number
+            || self.environment.block_number - number - U256::one()
+                >= U256::from(self.environment.block_hashes.len())
         {
             H256::default()
         } else {
-            let index = (self.config.environment.block_number - number - U256::one()).as_usize();
-            self.config.environment.block_hashes[index]
+            let index = (self.environment.block_number - number - U256::one()).as_usize();
+            self.environment.block_hashes[index]
         }
     }
     fn block_number(&self) -> U256 {
-        self.config.environment.block_number
+        self.environment.block_number
     }
     fn block_coinbase(&self) -> H160 {
-        self.config.environment.block_coinbase
+        self.environment.block_coinbase
     }
     fn block_timestamp(&self) -> U256 {
-        self.config.environment.block_timestamp
+        self.environment.block_timestamp
     }
     fn block_difficulty(&self) -> U256 {
-        self.config.environment.block_difficulty
+        self.environment.block_difficulty
     }
     fn block_gas_limit(&self) -> U256 {
-        self.config.environment.block_gas_limit
+        self.environment.block_gas_limit
     }
     fn chain_id(&self) -> U256 {
-        self.config.environment.chain_id
+        self.environment.chain_id
     }
     fn exists(&self, address: H160) -> bool {
         self.state.contains(&address)
     }
-    fn basic(&self, address: H160) -> evm::backend::Basic {
+    fn basic(&self, address: H160) -> Basic {
         self.state
             .get(&address)
             .map(|a| Basic {

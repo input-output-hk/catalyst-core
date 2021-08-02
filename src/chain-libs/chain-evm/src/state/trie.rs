@@ -99,6 +99,8 @@ mod tests {
     fn insert_or_update(key: u8, value1: u8, value2: u8) {
         let mut storage = Trie::<u8, u8>::new();
 
+        prop_assert_eq!(None, storage.get(&key));
+
         storage.insert_or_update(key, value1);
         prop_assert_eq!(Some(&value1), storage.get(&key));
 

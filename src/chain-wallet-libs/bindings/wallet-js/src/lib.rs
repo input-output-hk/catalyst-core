@@ -395,6 +395,7 @@ macro_rules! impl_secret_key {
 
 #[wasm_bindgen]
 impl FragmentId {
+    /// Constructs a fragment identifier from a byte array.
     pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
         let array: [u8; std::mem::size_of::<wallet_core::FragmentId>()] = bytes
             .try_into()
@@ -403,6 +404,7 @@ impl FragmentId {
         Ok(FragmentId(array.into()))
     }
 
+    /// Returns a byte array representation of the fragment identifier.
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.as_bytes().to_vec()
     }

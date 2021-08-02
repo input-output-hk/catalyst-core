@@ -56,9 +56,9 @@ pub enum Error {
         text: String,
     },
     #[error("could not send reqeuest")]
-    RequestError(#[from] reqwest::Error),
+    Request(#[from] reqwest::Error),
     #[error("server is not up")]
     ServerIsNotUp,
     #[error("Error code recieved: {0}")]
-    ErrorStatusCode(StatusCode),
+    StatusCode(StatusCode),
 }

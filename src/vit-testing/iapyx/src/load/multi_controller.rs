@@ -138,8 +138,7 @@ impl MultiController {
         predicate: &dyn Fn(&Wallet) -> bool,
     ) {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
-
-        if predicate(&wallet) {
+        if predicate(wallet) {
             self.update_wallet_state(wallet_index)
         }
     }
@@ -227,11 +226,11 @@ impl Into<Vec<Wallet>> for MultiController {
 #[derive(Debug, Error)]
 pub enum MultiControllerError {
     #[error("wallet error")]
-    WalletError(#[from] crate::wallet::Error),
+    Wallet(#[from] crate::wallet::Error),
     #[error("wallet error")]
-    BackendError(#[from] crate::backend::WalletBackendError),
+    Backend(#[from] crate::backend::WalletBackendError),
     #[error("controller error")]
-    ControllerError(#[from] crate::ControllerError),
+    Controller(#[from] crate::ControllerError),
     #[error("pin read error")]
-    PinReadError(#[from] crate::qr::PinReadError),
+    PinRead(#[from] crate::qr::PinReadError),
 }

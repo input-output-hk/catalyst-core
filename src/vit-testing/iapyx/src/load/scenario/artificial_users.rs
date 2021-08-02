@@ -104,9 +104,9 @@ impl ArtificialUserLoad {
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("configuration error")]
-    LoadConfigError(#[from] crate::load::config::NodeLoadConfigError),
+    LoadConfig(#[from] crate::load::config::NodeLoadConfigError),
     #[error("configuration error")]
-    ServicingConfigError(#[from] crate::load::config::ServicingStationConfigError),
+    ServicingConfig(#[from] crate::load::config::ServicingStationConfigError),
     #[error("rest error")]
-    RestError(#[from] VitRestError),
+    Rest(#[from] VitRestError),
 }

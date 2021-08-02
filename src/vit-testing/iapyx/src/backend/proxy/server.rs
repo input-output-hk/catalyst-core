@@ -6,11 +6,11 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Malformed proxy address: {0}")]
-    MalformedProxyAddress(String),
+    Proxy(String),
     #[error("Malformed vit address: {0}")]
-    MalformedVitStationAddress(String),
+    VitStation(String),
     #[error("Malformed node rest address: {0}")]
-    MalformedNodeRestAddress(String),
+    NodeRest(String),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

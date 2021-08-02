@@ -103,7 +103,7 @@ impl RegistrationVerifyJob {
     ) -> Option<Address> {
         match &request.source {
             Source::PublicKeyBytes(content) => {
-                match chain_crypto::PublicKey::from_binary(&content) {
+                match chain_crypto::PublicKey::from_binary(content) {
                     Ok(public_key) => Some(self.extract_address_from_public_key(
                         public_key,
                         checks,

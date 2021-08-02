@@ -1,5 +1,6 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
+use crate::Wallet;
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
@@ -56,8 +57,13 @@ impl BatchWalletRequestGen {
             self.wallet_index
         };
 
+        // update state of wallet only before first vote.
+        // Then relay on mechanism of spending counter auto-update
         if self.update_account_before_vote {
-            self.multi_controller.update_wallet_state(wallet_index);
+            self.multi_controller
+                .update_wallet_state_if(wallet_index, &|wallet: &Wallet| {
+                    wallet.spending_counter() == 0
+                });
         }
 
         let batch_size = self.batch_size;

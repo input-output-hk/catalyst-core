@@ -36,6 +36,7 @@ pub fn calculate_wallet_distribution<S: Into<String>>(
 
     let mut stats = Stats::new(headers);
 
+    #[allow(clippy::needless_collect)]
     let blacklist: Vec<Address> = genesis
         .blockchain_configuration
         .committees

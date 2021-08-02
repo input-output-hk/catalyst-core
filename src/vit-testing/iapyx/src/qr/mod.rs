@@ -70,7 +70,7 @@ impl QrReader {
             PinReadMode::Global(ref global) => global,
             _ => panic!("when reading qr from bytes Global pin read mode should be used"),
         };
-        let pin = pin_to_bytes(&pin);
+        let pin = pin_to_bytes(pin);
         let img = image::load_from_memory(&bytes)?;
         let secret = KeyQrCode::decode(img, &pin)?;
         Ok(secret.first().unwrap().clone())

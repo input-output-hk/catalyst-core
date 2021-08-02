@@ -82,5 +82,5 @@ pub enum Error {
     #[error("cannot read folder {0:?}")]
     CannotReadQrs(PathBuf),
     #[error("multicontoller error")]
-    MultiControllerError(#[from] MultiControllerError),
+    MultiController(#[from] MultiControllerError),
 }

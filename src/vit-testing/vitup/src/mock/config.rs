@@ -20,9 +20,9 @@ pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Configuration, Error> {
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("cannot parse configuration")]
-    CannotParseConfiguration(#[from] serde_json::Error),
+    ParseConfiguration(#[from] serde_json::Error),
     #[error("cannot read configuration: {0:?}")]
-    CannotReadConfiguration(PathBuf),
+    ReadConfiguration(PathBuf),
     #[error("cannot spawn command")]
-    CannotSpawnCommand(#[from] std::io::Error),
+    SpawnCommand(#[from] std::io::Error),
 }

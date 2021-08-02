@@ -135,7 +135,7 @@ impl VitController {
             pb,
             alias,
             settings.clone(),
-            &block0_file.as_path(),
+            block0_file.as_path(),
             working_directory,
             &version,
         )
@@ -182,8 +182,8 @@ impl VitController {
             alias,
             settings_overriden,
             &node_setting,
-            &block0_file.as_path(),
-            &working_directory.path(),
+            block0_file.as_path(),
+            working_directory.path(),
             params.protocol.clone(),
         )
         .unwrap();

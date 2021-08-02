@@ -1,5 +1,6 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
+use crate::Wallet;
 use chain_impl_mockchain::fragment::FragmentId;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
 use rand::seq::SliceRandom;
@@ -45,13 +46,16 @@ impl WalletRequestGen {
             self.wallet_index
         };
 
+        // update state of wallet only before first vote.
+        // Then relay on mechanism of spending counter auto-update
         if self.update_account_before_vote {
-            self.multi_controller.update_wallet_state(index);
+            self.multi_controller
+                .update_wallet_state_if(index, &|wallet: &Wallet| wallet.spending_counter() == 0);
         }
 
         let proposal = self.proposals.choose(&mut self.rand).unwrap();
         let choice = Choice::new(*self.options.choose(&mut self.rand).unwrap());
-        self.multi_controller.vote(index, &proposal, choice)
+        self.multi_controller.vote(index, proposal, choice)
     }
 }
 

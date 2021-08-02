@@ -385,7 +385,7 @@ impl QuickVitBackendSettingsBuilder {
                 .unwrap();
             let png = folder.child(format!("{}_{}.png", alias, pin));
             println!("[{}/{}] Qr dumped to {:?}", idx + 1, total, png.path());
-            wallet.save_qr_code(png.path(), &pin_to_bytes(&pin));
+            wallet.save_qr_code(png.path(), &pin_to_bytes(pin));
 
             let hash = folder.child(format!("{}_{}.txt", alias, pin));
             println!(
@@ -394,7 +394,7 @@ impl QuickVitBackendSettingsBuilder {
                 total,
                 hash.path()
             );
-            wallet.save_qr_code_hash(hash.path(), &pin_to_bytes(&pin))?;
+            wallet.save_qr_code_hash(hash.path(), &pin_to_bytes(pin))?;
         }
 
         if let Some(initials) = &self.parameters.initials {
@@ -504,7 +504,7 @@ impl QuickVitBackendSettingsBuilder {
                 .block0_date,
         );
 
-        let parameters = self.vote_plan_parameters(controller.vote_plans(), &controller.settings());
+        let parameters = self.vote_plan_parameters(controller.vote_plans(), controller.settings());
         Ok((
             vit_controller,
             controller,

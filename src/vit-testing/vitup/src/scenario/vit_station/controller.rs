@@ -193,7 +193,7 @@ impl VitStation {
 
         let config_file = dir.join(VIT_CONFIG);
         let db_file = dir.join(STORAGE);
-        dump_settings_to_file(&config_file.to_str().unwrap(), &settings).unwrap();
+        dump_settings_to_file(config_file.to_str().unwrap(), &settings).unwrap();
 
         DbGenerator::new(parameters).build(&db_file, template_generator);
 

@@ -62,5 +62,5 @@ pub enum Error {
     #[error("context error")]
     Context(#[from] crate::mock::context::Error),
     #[error("join error")]
-    JoinError(#[from] tokio::task::JoinError),
+    Join(#[from] tokio::task::JoinError),
 }

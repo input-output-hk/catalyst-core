@@ -52,4 +52,4 @@ EXPOSE 80 8000 8001 8002 8003 8004 8005 8006 8007 8008 8009 8010 3030
 WORKDIR ${ENV_PREFIX}/vit-testing/vitup
 RUN mkdir -p ./mock
 
-ENTRYPOINT ~/.cargo/bin/vitup start mock --config ./example/mock/config.yaml --params ./example/mock/start_params.yaml
+ENTRYPOINT ~/.cargo/bin/vitup start mock --config ./example/mock/config.yaml

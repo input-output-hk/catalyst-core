@@ -53,6 +53,7 @@ impl_secret_key!(Ed25519Private, chain_crypto::Ed25519, Ed25519Public);
 
 impl_public_key!(Ed25519Public, chain_crypto::Ed25519);
 
+/// Signature obtained with the Ed25519 algorithm.
 #[wasm_bindgen]
 pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
 
@@ -60,8 +61,7 @@ pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed2
 #[wasm_bindgen]
 pub struct FragmentId(wallet_core::FragmentId);
 
-/// A public key for the election protocol round that is used to encrypt private
-/// ballots with 
+/// A public key for the election protocol that is used to encrypt private ballots.
 #[wasm_bindgen]
 pub struct ElectionPublicKey(chain_vote::ElectionPublicKey);
 
@@ -324,6 +324,7 @@ impl Ed25519Signature {
         Self::from_bytes(signature)
     }
 
+    /// Returns a byte array representation of the signature.
     pub fn to_bytes(&self) -> Box<[u8]> {
         self.0.as_ref().into()
     }
@@ -337,15 +338,19 @@ macro_rules! impl_public_key {
 
         #[wasm_bindgen]
         impl $name {
+            /// Returns a byte array representation of the public key.
+            // TODO: rename to `to_bytes` for harmonization with the rest of the API?
             pub fn bytes(&self) -> Box<[u8]> {
                 self.0.as_ref().into()
             }
 
+            /// Returns the key formatted as a string in Bech32 format.
             pub fn bech32(&self) -> String {
                 use chain_crypto::bech32::Bech32 as _;
                 self.0.to_bech32_str()
             }
 
+            /// Uses the given signature to verify the given message.
             pub fn verify(&self, signature: &Ed25519Signature, msg: &[u8]) -> bool {
                 let verification = signature.0.verify_slice(&self.0, msg);
                 match verification {
@@ -369,15 +374,17 @@ macro_rules! impl_secret_key {
 
         #[wasm_bindgen]
         impl $name {
+            /// Generates the key using OS-provided entropy.
             pub fn generate() -> $name {
                 Self(chain_crypto::SecretKey::<$wrapped_type>::generate(
                     rand::rngs::OsRng,
                 ))
             }
 
-            /// optional seed to generate the key, for the same entropy the same key will be generated (32
-            /// bytes). This seed will be fed to ChaChaRNG and allow pseudo random key
-            /// generation. Do not use if you are not sure
+            /// Generates the key from a seed value.
+            /// For the same entropy value of 32 bytes, the same key will be generated.
+            /// This seed will be fed to ChaChaRNG and allow pseudo random key generation.
+            /// Do not use if you are not sure.
             pub fn from_seed(seed: &[u8]) -> Result<$name, JsValue> {
                 let seed: [u8; 32] = seed
                     .try_into()
@@ -390,14 +397,20 @@ macro_rules! impl_secret_key {
                 )))
             }
 
+            /// Returns the public key corresponding to this secret key.
             pub fn public(&self) -> $public {
                 $public(self.0.to_public())
             }
 
+            /// Returns the key represented by an array of bytes.
+            /// Use with care: the secret key should not be revealed to external
+            /// observers or exposed to untrusted code.
+            // TODO: rename to leak_bytes() to emphasize the security caveats?
             pub fn bytes(&self) -> Box<[u8]> {
                 self.0.clone().leak_secret().as_ref().into()
             }
 
+            /// Signs the provided message with this secret key.
             pub fn sign(&self, msg: &[u8]) -> Ed25519Signature {
                 Ed25519Signature::from_bytes(self.0.sign(&msg).as_ref()).unwrap()
             }
@@ -429,12 +442,14 @@ impl FragmentId {
 
 #[wasm_bindgen]
 impl ElectionPublicKey {
+    /// Constructs a key from its byte array representation.
     pub fn from_bytes(bytes: &[u8]) -> Result<ElectionPublicKey, JsValue> {
         chain_vote::ElectionPublicKey::from_bytes(bytes)
             .ok_or_else(|| JsValue::from_str("invalid binary format"))
             .map(Self)
     }
 
+    /// Decodes the key from a string in Bech32 format.
     pub fn from_bech32(bech32_str: &str) -> Result<ElectionPublicKey, JsValue> {
         use bech32::FromBase32;
 

@@ -12,7 +12,7 @@
 use evm::{
     backend::{Apply, ApplyBackend, Backend, Basic, Log, MemoryVicinity},
     executor::StackState,
-    Config, Context,
+    Context,
 };
 use primitive_types::{H160, H256, U256};
 
@@ -98,7 +98,7 @@ impl Backend for VirtualMachine {
 }
 
 impl ApplyBackend for VirtualMachine {
-    fn apply<A, I, L>(&mut self, values: A, _logs: L, delete_empty: bool)
+    fn apply<A, I, L>(&mut self, values: A, _logs: L, _delete_empty: bool)
     where
         A: IntoIterator<Item = Apply<I>>,
         I: IntoIterator<Item = (H256, H256)>,
@@ -107,27 +107,16 @@ impl ApplyBackend for VirtualMachine {
         for apply in values {
             match apply {
                 Apply::Modify {
-                    address,
-                    basic,
-                    code,
-                    storage,
-                    reset_storage,
+                    address: _,
+                    basic: _,
+                    code: _,
+                    storage: _,
+                    reset_storage: _,
                 } => {
-                    let is_empty = {
-                        // modify existing or create default/empty account
-                        // apply field values
-                        // return whether the account is empty
-                        // save logs
-                        todo!("implement updating account values");
-                    };
-                    if is_empty && delete_empty {
-                        // if account is empty and the delete_empty flag is
-                        // present, we remove it from storage.
-                        //todo!("remove empty account after modification");
-                    }
+                    todo!();
                 }
-                Apply::Delete { address } => {
-                    todo!("remove empty account with address");
+                Apply::Delete { address: _ } => {
+                    todo!();
                 }
             }
         }

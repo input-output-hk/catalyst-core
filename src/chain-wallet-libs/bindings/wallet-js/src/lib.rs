@@ -312,10 +312,16 @@ impl Options {
 
 #[wasm_bindgen]
 impl Ed25519Signature {
-    pub fn from_binary(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
+    /// Constructs a signature object from its byte array representation.
+    pub fn from_bytes(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
         chain_crypto::Signature::from_binary(signature)
             .map(Self)
             .map_err(|e| JsValue::from_str(&format!("Invalid signature {}", e)))
+    }
+
+    /// Deprecated; use `from_bytes`.
+    pub fn from_binary(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
+        Self::from_bytes(signature)
     }
 
     pub fn to_bytes(&self) -> Box<[u8]> {
@@ -393,7 +399,7 @@ macro_rules! impl_secret_key {
             }
 
             pub fn sign(&self, msg: &[u8]) -> Ed25519Signature {
-                Ed25519Signature::from_binary(self.0.sign(&msg).as_ref()).unwrap()
+                Ed25519Signature::from_bytes(self.0.sign(&msg).as_ref()).unwrap()
             }
         }
     };

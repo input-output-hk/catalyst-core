@@ -286,12 +286,18 @@ impl Proposal {
 
 #[wasm_bindgen]
 impl VotePlanId {
-    pub fn new_from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
+    /// Constructs a VotePlanId value from its byte array representation.
+    pub fn from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
         let array: [u8; wallet_core::VOTE_PLAN_ID_LENGTH] = bytes
             .try_into()
             .map_err(|_| JsValue::from_str("Invalid vote plan id length"))?;
 
         Ok(VotePlanId(array))
+    }
+
+    /// Deprecated; use `from_bytes`.
+    pub fn new_from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
+        Self::from_bytes(bytes)
     }
 }
 
@@ -395,13 +401,18 @@ macro_rules! impl_secret_key {
 
 #[wasm_bindgen]
 impl FragmentId {
-    /// Constructs a fragment identifier from a byte array.
-    pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
+    /// Constructs a fragment identifier from its byte array representation.
+    pub fn from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
         let array: [u8; std::mem::size_of::<wallet_core::FragmentId>()] = bytes
             .try_into()
             .map_err(|_| JsValue::from_str("Invalid fragment id"))?;
 
         Ok(FragmentId(array.into()))
+    }
+
+    /// Deprecated; use `from_bytes`.
+    pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
+        Self::from_bytes(bytes)
     }
 
     /// Returns a byte array representation of the fragment identifier.

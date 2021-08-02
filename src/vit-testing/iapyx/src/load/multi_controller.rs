@@ -132,6 +132,17 @@ impl MultiController {
         let account_state = backend.account_state(wallet.id()).unwrap();
         wallet.set_state((*account_state.value()).into(), account_state.counter());
     }
+    pub fn update_wallet_state_if(
+        &mut self,
+        wallet_index: usize,
+        predicate: &dyn Fn(&Wallet) -> bool,
+    ) {
+        let wallet = self.wallets.get_mut(wallet_index).unwrap();
+
+        if predicate(&wallet) {
+            self.update_wallet_state(wallet_index)
+        }
+    }
 
     pub fn vote(
         &mut self,

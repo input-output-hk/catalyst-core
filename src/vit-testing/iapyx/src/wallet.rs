@@ -118,6 +118,10 @@ impl Wallet {
         self.inner.set_state(value, counter);
     }
 
+    pub fn spending_counter(&self) -> u32 {
+        self.inner.spending_counter()
+    }
+
     pub fn vote(
         &mut self,
         settings: Settings,

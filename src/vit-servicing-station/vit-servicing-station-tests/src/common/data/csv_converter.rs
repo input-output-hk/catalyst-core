@@ -1,6 +1,7 @@
 use jortestkit::csv::CsvFileBuilder;
 use std::path::Path;
 use thiserror::Error;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::{FullProposalInfo, ProposalChallengeInfo};
 use vit_servicing_station_lib::{
     db::models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
@@ -27,7 +28,7 @@ impl CsvConverter {
             "next_fund_start_time",
             "registration_snapshot_time",
         ];
-        let content: Vec<Vec<String>> = funds.iter().map(|x| convert_fund(x)).collect();
+        let content: Vec<Vec<String>> = funds.iter().map(convert_fund).collect();
         self.build_file(headers, content, path)
     }
 
@@ -46,7 +47,7 @@ impl CsvConverter {
             "chain_vote_encryption_key",
             "fund_id",
         ];
-        let content: Vec<Vec<String>> = voteplans.iter().map(|x| convert_voteplan(x)).collect();
+        let content: Vec<Vec<String>> = voteplans.iter().map(convert_voteplan).collect();
         self.build_file(headers, content, path)
     }
 
@@ -88,7 +89,7 @@ impl CsvConverter {
             "proposal_metrics",
         ];
 
-        let content: Vec<Vec<String>> = proposals.iter().map(|x| convert_proposal(x)).collect();
+        let content: Vec<Vec<String>> = proposals.iter().map(convert_proposal).collect();
         self.build_file(headers, content, path)
     }
 
@@ -108,7 +109,18 @@ impl CsvConverter {
             "challenge_url",
         ];
 
-        let content: Vec<Vec<String>> = challenges.iter().map(|x| convert_challenge(x)).collect();
+        let content: Vec<Vec<String>> = challenges.iter().map(convert_challenge).collect();
+        self.build_file(headers, content, path)
+    }
+
+    pub fn advisor_reviews<P: AsRef<Path>>(
+        &self,
+        challenges: Vec<AdvisorReview>,
+        path: P,
+    ) -> Result<(), Error> {
+        let headers = vec!["id", "proposal_id", "rating_given", "assessor", "note"];
+
+        let content: Vec<Vec<String>> = challenges.iter().map(convert_advisor_review).collect();
         self.build_file(headers, content, path)
     }
 
@@ -218,5 +230,15 @@ fn convert_challenge(challenge: &Challenge) -> Vec<String> {
         challenge.proposers_rewards.to_string(),
         challenge.fund_id.to_string(),
         challenge.challenge_url.clone(),
+    ]
+}
+
+fn convert_advisor_review(review: &AdvisorReview) -> Vec<String> {
+    vec![
+        review.id.to_string(),
+        review.proposal_id.to_string(),
+        review.rating_given.to_string(),
+        review.assessor.to_string(),
+        review.note.to_string(),
     ]
 }

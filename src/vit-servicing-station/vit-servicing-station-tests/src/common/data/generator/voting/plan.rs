@@ -265,6 +265,7 @@ impl ValidVotePlanGenerator {
             challenges,
             generator.tokens(),
             vote_plans,
+            vec![],
         )
     }
 }

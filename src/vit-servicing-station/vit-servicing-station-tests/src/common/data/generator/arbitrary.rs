@@ -22,6 +22,7 @@ use rand::{rngs::OsRng, RngCore};
 use std::{collections::HashMap, iter};
 
 use chrono::DateTime;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::{
     community_choice, simple, FullProposalInfo, ProposalChallengeInfo,
 };
@@ -286,6 +287,13 @@ impl ArbitraryGenerator {
         funds.iter().map(|x| self.gen_single_proposal(x)).collect()
     }
 
+    pub fn advisor_reviews(&mut self, funds: &[FullProposalInfo]) -> Vec<AdvisorReview> {
+        funds
+            .iter()
+            .map(|x| self.review_with_proposal_id(x.proposal.internal_id))
+            .collect()
+    }
+
     pub fn voteplan_with_fund_id(&mut self, fund_id: i32) -> Voteplan {
         let id = self.id_generator.next_u32() as i32;
         let dates = self.voteplan_date_times();
@@ -345,13 +353,26 @@ impl ArbitraryGenerator {
         }
     }
 
+    pub fn review_with_proposal_id(&mut self, proposal_id: i32) -> AdvisorReview {
+        let id = self.id_generator.next_u32() as i32;
+
+        AdvisorReview {
+            id: id.abs(),
+            proposal_id,
+            rating_given: (self.id_generator.next_u32() % 500) as i32,
+            assessor: Name().fake::<String>(),
+            note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
+        }
+    }
+
     pub fn snapshot(&mut self) -> Snapshot {
         let funds = self.funds();
         let voteplans = self.voteplans(&funds);
         let challenges = self.challenges(&funds);
         let proposals = self.proposals(&funds);
+        let reviews = self.advisor_reviews(&proposals);
         let tokens = self.tokens();
 
-        Snapshot::new(funds, proposals, challenges, tokens, voteplans)
+        Snapshot::new(funds, proposals, challenges, tokens, voteplans, reviews)
     }
 }

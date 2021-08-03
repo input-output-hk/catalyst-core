@@ -31,7 +31,7 @@ pub fn clone_array_and_remove_at_pos<A: Clone>(v: &[A], pos: usize) -> Box<[A]> 
 
 pub fn clone_array_and_extend<A: Clone>(v: &[A], end: A) -> Box<[A]> {
     let mut new_array: Vec<A> = Vec::with_capacity(v.len() + 1);
-    new_array.extend_from_slice(&v);
+    new_array.extend_from_slice(v);
     new_array.push(end);
     new_array.into()
 }

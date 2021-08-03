@@ -55,7 +55,7 @@ pub struct VrfEvaluator<'a> {
 }
 
 pub(crate) fn witness_to_nonce(witness: &Witness) -> PraosNonce {
-    let r = vrf_verified_get_output::<RistrettoGroup2HashDh>(&witness);
+    let r = vrf_verified_get_output::<RistrettoGroup2HashDh>(witness);
     get_nonce(&r)
 }
 
@@ -94,7 +94,7 @@ impl<'a> VrfEvaluator<'a> {
         key: &PublicKey<RistrettoGroup2HashDh>,
         witness: &'a Witness,
     ) -> Result<PraosNonce, VrfEvalFailure> {
-        let input = Input::create(&self.nonce, self.slot_id);
+        let input = Input::create(self.nonce, self.slot_id);
         if vrf_verify(key, &input.0, witness) == VrfVerification::Success {
             let r = vrf_verified_get_output::<RistrettoGroup2HashDh>(witness);
             // compare threshold against phi-adjusted-stake

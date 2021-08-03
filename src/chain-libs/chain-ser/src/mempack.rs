@@ -219,7 +219,7 @@ impl<'a> ReadBuf<'a> {
         for (i, x) in self.data.iter().enumerate() {
             //self.trace.iter().find(|(ofs,_)| ofs == &i).map(|(_,name)| { s.push_str(&name); s.push(' ') });
             if i == self.offset {
-                s.push_str(&".. ");
+                s.push_str(".. ");
             }
             let bytes = format!("{:02x} ", x);
             s.push_str(&bytes);

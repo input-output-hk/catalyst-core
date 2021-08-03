@@ -18,7 +18,7 @@ pub fn oldaddress_from_xpub(
     some_bytes: &[u8; 32],
 ) -> OldAddressMatchXPub {
     let mut pkraw = [0u8; 32];
-    pkraw.copy_from_slice(&pk.as_ref());
+    pkraw.copy_from_slice(pk.as_ref());
     address.identical_with_pubkey_raw(&pkraw, some_bytes)
 }
 

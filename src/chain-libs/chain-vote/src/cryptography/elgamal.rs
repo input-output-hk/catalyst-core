@@ -77,7 +77,7 @@ impl PublicKey {
         R: RngCore + CryptoRng,
     {
         let r = Scalar::random(rng);
-        self.encrypt_point_with_r(&message, &r)
+        self.encrypt_point_with_r(message, &r)
     }
 
     // Given a `message` represented as a group element, return a ciphertext and the
@@ -87,7 +87,7 @@ impl PublicKey {
         R: RngCore + CryptoRng,
     {
         let r = Scalar::random(rng);
-        (self.encrypt_point_with_r(&message, &r), r)
+        (self.encrypt_point_with_r(message, &r), r)
     }
 
     // Given a `message` represented as a group element, and some value used as `randomness`,

@@ -105,7 +105,7 @@ impl Encoder {
         assert!(bs.len() < 256);
         self.push_tag(Tag::Bytes)
             .push_byte(bs.len() as u8)
-            .push_slice(&bs)
+            .push_slice(bs)
             .incr()
     }
 

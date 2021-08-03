@@ -41,7 +41,7 @@ impl Zkp {
             &GroupElement::generator(),
             &c.e1,
             &pk.pk,
-            &share,
+            share,
             &sk.sk,
             rng,
         );
@@ -51,7 +51,7 @@ impl Zkp {
     /// Verify a valid share zero knowledge proof
     pub fn verify(&self, c: &Ciphertext, share: &GroupElement, pk: &PublicKey) -> bool {
         self.vshare_proof
-            .verify(&GroupElement::generator(), &c.e1, &pk.pk, &share)
+            .verify(&GroupElement::generator(), &c.e1, &pk.pk, share)
     }
 
     pub fn to_bytes(&self) -> [u8; Self::PROOF_SIZE] {

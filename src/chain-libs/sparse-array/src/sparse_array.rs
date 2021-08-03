@@ -71,7 +71,7 @@ impl<V> SparseArray<V> {
     }
 
     pub fn iter(&self) -> SparseArrayIter<V> {
-        SparseArrayIter::new(&self)
+        SparseArrayIter::new(self)
     }
 }
 

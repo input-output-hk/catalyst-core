@@ -219,8 +219,8 @@ impl ProposalManager {
                     Ok(ValidatedPayload::Private(Ballot::try_from_vote_and_proof(
                         encrypted_vote.as_inner().clone(),
                         proof.as_inner(),
-                        &crs,
-                        &election_pk,
+                        crs,
+                        election_pk,
                     )?))
                 }
             }
@@ -306,7 +306,7 @@ impl ProposalManager {
                 EncryptedTally::new(tally_size, election_pk.clone(), crs.clone()),
                 |mut tally, vote_with_stake| {
                     vote_with_stake.map(|(ballot, stake)| {
-                        tally.add(&ballot, stake);
+                        tally.add(ballot, stake);
                         tally
                     })
                 },
@@ -341,7 +341,7 @@ impl ProposalManager {
             votes: decrypted_proposal.tally_result.to_vec(),
         };
         if !verifiable_tally.verify(
-            &encrypted_tally,
+            encrypted_tally,
             committee_pks,
             &decrypted_proposal.decrypt_shares,
         ) {
@@ -475,7 +475,7 @@ impl ProposalManagers {
 
     fn managers(&self) -> &[ProposalManager] {
         match self {
-            Self::Public { managers } | Self::Private { managers, .. } => &managers,
+            Self::Public { managers } | Self::Private { managers, .. } => managers,
         }
     }
 
@@ -563,7 +563,7 @@ impl ProposalManagers {
                     num_proposals: managers.len(),
                     vote: cast.clone(),
                 })?
-                .validate_private_vote(identifier, cast, &crs, &election_pk),
+                .validate_private_vote(identifier, cast, crs, election_pk),
         }?;
 
         Ok(ValidatedVoteCast {
@@ -583,7 +583,7 @@ impl ProposalManagers {
             } => {
                 let proposals = managers
                     .par_iter()
-                    .map(|proposal| proposal.private_tally(stake, &election_pk, &crs))
+                    .map(|proposal| proposal.private_tally(stake, election_pk, crs))
                     .collect::<Result<_, _>>()?;
                 Ok(Self::Private {
                     managers: proposals,

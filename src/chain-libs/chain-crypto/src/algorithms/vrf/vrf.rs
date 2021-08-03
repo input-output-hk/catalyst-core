@@ -165,7 +165,7 @@ impl ProvenOutputSeed {
     pub fn verify(&self, public_key: &PublicKey, input: &[u8]) -> bool {
         self.dleq_proof.verify(
             &GroupElement::generator(),
-            &GroupElement::from_hash(&input),
+            &GroupElement::from_hash(input),
             &public_key.0,
             &self.u.0,
         )

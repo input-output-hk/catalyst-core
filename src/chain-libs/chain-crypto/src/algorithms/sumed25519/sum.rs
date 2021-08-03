@@ -6,7 +6,7 @@ use std::convert::TryFrom as _;
 
 #[derive(Debug)]
 pub enum Error {
-    Ed25519SignatureError(ed25519::SignatureError),
+    Ed25519Signature(ed25519::SignatureError),
     InvalidSecretKeySize(usize),
     InvalidPublicKeySize(usize),
     InvalidSignatureSize(usize),
@@ -16,7 +16,7 @@ pub enum Error {
 
 impl From<ed25519::SignatureError> for Error {
     fn from(sig: ed25519::SignatureError) -> Error {
-        Error::Ed25519SignatureError(sig)
+        Error::Ed25519Signature(sig)
     }
 }
 
@@ -140,7 +140,7 @@ impl SecretKey {
 
     pub fn sk(&self) -> ed25519::Keypair {
         let bytes = &self.data[Self::KEYPAIR_OFFSET..Self::MERKLE_PKS_OFFSET];
-        ed25519::Keypair::from_bytes(&bytes).expect("internal error: keypair invalid")
+        ed25519::Keypair::from_bytes(bytes).expect("internal error: keypair invalid")
     }
 
     fn merkle_pks(&self) -> MerklePublicKeys {
@@ -222,7 +222,7 @@ impl SecretKey {
         }
         assert_eq!(out.len(), 68 + pks.len() * 64);
         for r in rs {
-            out.extend_from_slice(&r.as_ref());
+            out.extend_from_slice(r.as_ref());
         }
 
         SecretKey { depth, data: out }
@@ -613,9 +613,9 @@ pub fn sign(secret: &SecretKey, m: &[u8]) -> Signature {
         for (i, p) in pks.iter().rev().enumerate() {
             let right = (secret.t() & (1 << i)) != 0;
             if right {
-                got = hash(&p, &got);
+                got = hash(p, &got);
             } else {
-                got = hash(&got, &p);
+                got = hash(&got, p);
             }
         }
         assert_eq!(scheme_pk, got);

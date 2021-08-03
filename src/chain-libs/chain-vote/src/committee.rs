@@ -46,7 +46,7 @@ impl ElectionPublicKey {
 
         let proof = ProofOfCorrectVote::generate(
             rng,
-            &crs,
+            crs,
             &self.0,
             &vote,
             &encryption_randomness,

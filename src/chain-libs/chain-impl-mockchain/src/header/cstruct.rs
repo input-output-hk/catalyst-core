@@ -296,12 +296,12 @@ impl<'a> HeaderSlice<'a> {
     }
 
     pub fn as_slice(&self) -> &'a [u8] {
-        &self.0
+        self.0
     }
 
     pub(super) fn to_owned(&self) -> Header {
         let mut new = Header::new(self.version());
-        new.as_slice_mut().copy_from_slice(&self.0);
+        new.as_slice_mut().copy_from_slice(self.0);
         new
     }
 

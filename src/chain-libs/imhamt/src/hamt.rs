@@ -205,7 +205,7 @@ impl<H: Hasher + Default, K: Hash + Eq, V> Hamt<H, K, V> {
                 LookupRet::Found(v) => return Some(v),
                 LookupRet::ContinueIn(subnode) => {
                     lvl += 1;
-                    n = &subnode;
+                    n = subnode;
                 }
             }
         }
@@ -238,7 +238,7 @@ impl<'a, K, V> Iterator for HamtIter<'a, K, V> {
             match x {
                 Some(mut iter) => match iter.next() {
                     None => self.content = None,
-                    Some(ref o) => {
+                    Some(o) => {
                         self.content = Some(iter);
                         return Some((&o.0, &o.1));
                     }
@@ -251,7 +251,7 @@ impl<'a, K, V> Iterator for HamtIter<'a, K, V> {
                         }
                         Some(next) => match next.as_ref() {
                             Entry::SubNode(ref sub) => self.stack.push(sub.iter()),
-                            Entry::Leaf(_, ref k, ref v) => return Some((&k, &v)),
+                            Entry::Leaf(_, k, v) => return Some((k, v)),
                             Entry::LeafMany(_, ref col) => self.content = Some(col.iter()),
                         },
                     },

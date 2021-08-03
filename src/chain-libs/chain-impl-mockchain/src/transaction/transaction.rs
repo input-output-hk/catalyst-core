@@ -311,7 +311,7 @@ impl<'a, P: Payload> From<&'a [u8]> for UnverifiedTransactionSlice<'a, P> {
 
 impl<'a, P: Payload> UnverifiedTransactionSlice<'a, P> {
     pub fn check(self) -> Result<TransactionSlice<'a, P>, TransactionStructError> {
-        let tstruct = get_spine::<P>(&self.data)?;
+        let tstruct = get_spine::<P>(self.data)?;
         Ok(TransactionSlice {
             data: self.data,
             tstruct,

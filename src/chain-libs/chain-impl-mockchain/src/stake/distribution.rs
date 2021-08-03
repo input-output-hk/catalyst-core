@@ -120,7 +120,7 @@ fn assign_account_value(
             // otherwise it get added to the dangling sum
             match sd.to_pools.get_mut(pool_id) {
                 None => sd.dangling += value,
-                Some(pool_info) => pool_info.add_value(&account_identifier, value),
+                Some(pool_info) => pool_info.add_value(account_identifier, value),
             }
         }
         DelegationType::Ratio(dr) => {
@@ -135,7 +135,7 @@ fn assign_account_value(
                     match sd.to_pools.get_mut(pool_id) {
                         None => sd.dangling += pool_value,
                         Some(pool_info) => {
-                            pool_info.add_value(&account_identifier, pool_value + r);
+                            pool_info.add_value(account_identifier, pool_value + r);
                             r = Stake::zero();
                         }
                     }
@@ -184,7 +184,7 @@ pub fn get_distribution(
         assign_account_value(
             &mut distribution,
             identifier,
-            &account_state.delegation(),
+            account_state.delegation(),
             Stake::from_value(account_state.value()),
         )
     }
@@ -212,7 +212,7 @@ pub fn get_distribution(
                     Ok(st) => assign_account_value(
                         &mut distribution,
                         &identifier,
-                        &st.delegation(),
+                        st.delegation(),
                         Stake::from_value(output.value),
                     ),
                 }

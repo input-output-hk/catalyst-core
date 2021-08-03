@@ -143,7 +143,7 @@ fn pack_account_identifier<W: std::io::Write>(
     identifier: &crate::account::Identifier,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    serialize_public_key(&identifier.as_ref(), codec)
+    serialize_public_key(identifier.as_ref(), codec)
 }
 
 fn unpack_account_identifier<R: std::io::BufRead>(

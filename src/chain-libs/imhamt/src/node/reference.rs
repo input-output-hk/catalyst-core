@@ -576,7 +576,7 @@ pub fn size_rec<K, V>(node: &Node<K, V>) -> usize {
         match &c.as_ref() {
             Entry::Leaf(_, _, _) => sum += 1,
             Entry::LeafMany(_, col) => sum += col.len(),
-            Entry::SubNode(sub) => sum += size_rec(&sub),
+            Entry::SubNode(sub) => sum += size_rec(sub),
         }
     }
     sum
@@ -594,7 +594,7 @@ pub mod debug {
                 Entry::Leaf(_, _, _) => {}
                 Entry::LeafMany(_, _) => {}
                 Entry::SubNode(sub) => {
-                    let child_depth = depth_rec(&sub);
+                    let child_depth = depth_rec(sub);
                     max_depth = cmp::max(max_depth, child_depth)
                 }
             }

@@ -139,7 +139,7 @@ impl EncryptedTally {
             // todo: we are decrypting twice, we can probably improve this
             let decrypted_share = &r.e1 * &secret_key.0.sk;
             let proof = CorrectShareGenerationZkp::generate(
-                &r,
+                r,
                 &secret_key.to_public().0,
                 &decrypted_share,
                 &secret_key.0,
@@ -279,7 +279,7 @@ impl TallyDecryptShare {
     /// correctness of the `TallyDecryptShare`.
     pub fn verify(&self, encrypted_tally: &EncryptedTally, pk: &MemberPublicKey) -> bool {
         for (element, r) in self.elements.iter().zip(encrypted_tally.r.iter()) {
-            if !element.pi.verify(&r, &&element.r1, &pk.0) {
+            if !element.pi.verify(r, &element.r1, &pk.0) {
                 return false;
             }
         }

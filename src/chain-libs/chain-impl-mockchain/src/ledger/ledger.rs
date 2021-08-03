@@ -621,7 +621,7 @@ impl Ledger {
                         new_ledger.distribute_poolid_rewards(
                             &mut rewards_info,
                             epoch,
-                            &pool_id,
+                            pool_id,
                             pool_total_reward,
                             pool_distribution,
                         )?;
@@ -673,12 +673,12 @@ impl Ledger {
             Some(reward_account) => match reward_account {
                 AccountIdentifier::Single(single_account) => {
                     self.accounts = self.accounts.add_rewards_to_account(
-                        &single_account,
+                        single_account,
                         epoch,
                         distr.taxed,
                         (),
                     )?;
-                    reward_info.add_to_account(&single_account, distr.taxed);
+                    reward_info.add_to_account(single_account, distr.taxed);
                 }
                 AccountIdentifier::Multi(_multi_account) => unimplemented!(),
             },
@@ -834,13 +834,13 @@ impl Ledger {
             Fragment::Transaction(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
                 new_ledger = new_ledger_;
             }
             Fragment::OwnerStakeDelegation(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_owner_stake_delegation(&tx, &ledger_params)?;
+                    new_ledger.apply_owner_stake_delegation(&tx, ledger_params)?;
                 new_ledger = new_ledger_;
             }
             Fragment::StakeDelegation(tx) => {
@@ -867,13 +867,13 @@ impl Ledger {
                 }
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
                 new_ledger = new_ledger_.apply_stake_delegation(&payload)?;
             }
             Fragment::PoolRegistration(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
                 new_ledger = new_ledger_.apply_pool_registration_signcheck(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -884,7 +884,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
                 new_ledger = new_ledger_.apply_pool_retirement(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -895,7 +895,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
                 new_ledger = new_ledger_.apply_pool_update(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -907,36 +907,36 @@ impl Ledger {
                     return Err(Error::UpdateNotAllowedYet);
                 }
                 new_ledger =
-                    new_ledger.apply_update_proposal(fragment_id, &update_proposal, block_date)?;
+                    new_ledger.apply_update_proposal(fragment_id, update_proposal, block_date)?;
             }
             Fragment::UpdateVote(vote) => {
                 if true {
                     return Err(Error::UpdateNotAllowedYet);
                 }
-                new_ledger = new_ledger.apply_update_vote(&vote)?;
+                new_ledger = new_ledger.apply_update_vote(vote)?;
             }
             Fragment::VotePlan(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
                 new_ledger = new_ledger_.apply_vote_plan(
                     &tx,
                     block_date,
                     tx.payload().into_payload(),
-                    &ledger_params,
+                    ledger_params,
                     tx.payload_auth().into_payload_auth(),
                 )?;
             }
             Fragment::VoteCast(tx) => {
                 let tx = tx.as_slice();
-                let (new_ledger_, _fee) = new_ledger.apply_vote_cast(&tx, &ledger_params)?;
+                let (new_ledger_, _fee) = new_ledger.apply_vote_cast(&tx, ledger_params)?;
                 new_ledger = new_ledger_;
             }
             Fragment::VoteTally(tx) => {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
 
                 new_ledger = new_ledger_.apply_vote_tally(
                     &tx.payload().into_payload(),
@@ -948,7 +948,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, &ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
 
                 new_ledger = new_ledger_.apply_encrypted_vote_tally(
                     &tx.payload().into_payload(),
@@ -1566,7 +1566,7 @@ impl Ledger {
                     sign_data_hash,
                     WitnessUtxoVersion::Legacy,
                 );
-                let verified = signature.verify(&pk, &data_to_verify);
+                let verified = signature.verify(pk, &data_to_verify);
                 if verified == chain_crypto::Verification::Failed {
                     return Err(Error::OldUtxoInvalidSignature {
                         utxo: *utxo,
@@ -1594,7 +1594,7 @@ impl Ledger {
                     WitnessUtxoVersion::Normal,
                 );
                 let verified = signature.verify(
-                    &associated_output.address.public_key().unwrap(),
+                    associated_output.address.public_key().unwrap(),
                     &data_to_verify,
                 );
                 if verified == chain_crypto::Verification::Failed {
@@ -1667,7 +1667,7 @@ fn apply_old_declaration(
         };
         outputs.push((i as u8, output))
     }
-    utxos = utxos.add(&fragment_id, &outputs)?;
+    utxos = utxos.add(fragment_id, &outputs)?;
     Ok(utxos)
 }
 
@@ -1714,7 +1714,7 @@ fn input_single_account_verify<'a>(
     value: Value,
 ) -> Result<account::Ledger, Error> {
     // .remove_value() check if there's enough value and if not, returns a Err.
-    let (new_ledger, spending_counter) = ledger.remove_value(&account, value)?;
+    let (new_ledger, spending_counter) = ledger.remove_value(account, value)?;
     ledger = new_ledger;
 
     let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
@@ -1737,9 +1737,9 @@ fn input_multi_account_verify<'a>(
     value: Value,
 ) -> Result<multisig::Ledger, Error> {
     // .remove_value() check if there's enough value and if not, returns a Err.
-    let (new_ledger, declaration, spending_counter) = ledger.remove_value(&account, value)?;
+    let (new_ledger, declaration, spending_counter) = ledger.remove_value(account, value)?;
 
-    let data_to_verify = WitnessMultisigData::new(&block0_hash, sign_data_hash, spending_counter);
+    let data_to_verify = WitnessMultisigData::new(block0_hash, sign_data_hash, spending_counter);
     if !witness.verify(declaration, &data_to_verify) {
         return Err(Error::MultisigInvalidSignature {
             multisig: account.clone(),

@@ -60,7 +60,7 @@ pub struct NodeId(PublicKey<Ed25519>);
 impl NodeId {
     #[inline]
     pub fn as_bytes(&self) -> &[u8] {
-        &self.0.as_ref()
+        self.0.as_ref()
     }
 
     /// Adds a signature given as a byte slice to produce an
@@ -107,7 +107,7 @@ impl AuthenticatedNodeId {
     }
 
     pub fn signature(&self) -> &[u8] {
-        &self.signature.as_ref()
+        self.signature.as_ref()
     }
 
     /// Verifies that the signature is correct for this node ID and

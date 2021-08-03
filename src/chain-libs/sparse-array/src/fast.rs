@@ -60,7 +60,7 @@ impl<V> FastSparseArray<V> {
     }
 
     pub fn iter(&self) -> FastSparseArrayIter<V> {
-        FastSparseArrayIter::new(&self)
+        FastSparseArrayIter::new(self)
     }
 
     pub fn shrink(&mut self)

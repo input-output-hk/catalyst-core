@@ -1,9 +1,6 @@
-use std::{
-    borrow::Borrow,
-    collections::HashMap,
-    hash::{Hash, Hasher},
-    iter::FusedIterator,
-};
+use std::{borrow::Borrow, hash::Hash};
+
+use hashlink::LinkedHashMap;
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub enum Status {
@@ -11,29 +8,15 @@ pub enum Status {
     Pending,
 }
 
-struct State<K, S> {
+#[derive(Debug)]
+pub struct StateRef<K, S> {
     key: K,
     state: S,
     status: Status,
-    prev: *mut State<K, S>,
-    next: *mut State<K, S>,
-}
-
-#[doc(hidden)]
-pub struct KeyRef<K>(*const K);
-
-pub struct StateIter<'a, K, S> {
-    forward: *mut State<K, S>,
-    backward: *mut State<K, S>,
-    len: usize,
-    _anchor: std::marker::PhantomData<&'a (K, S)>,
 }
 
 pub struct States<K, S> {
-    map: HashMap<KeyRef<K>, Box<State<K, S>>>,
-
-    head: *mut State<K, S>,
-    tail: *mut State<K, S>,
+    states: LinkedHashMap<K, StateRef<K, S>>,
 }
 
 impl<K: std::fmt::Debug, S: std::fmt::Debug> std::fmt::Debug for States<K, S> {
@@ -42,19 +25,25 @@ impl<K: std::fmt::Debug, S: std::fmt::Debug> std::fmt::Debug for States<K, S> {
     }
 }
 
-impl<K, S> State<K, S> {
+impl<K, S> StateRef<K, S> {
     fn new(key: K, state: S, status: Status) -> Self {
-        Self {
-            key,
-            state,
-            status,
-            prev: std::ptr::null_mut(),
-            next: std::ptr::null_mut(),
-        }
+        Self { key, state, status }
     }
 
-    fn confirmed(&self) -> bool {
-        self.status == Status::Confirmed
+    pub fn is_confirmed(&self) -> bool {
+        matches!(self.status, Status::Confirmed)
+    }
+
+    pub fn is_pending(&self) -> bool {
+        matches!(self.status, Status::Pending)
+    }
+
+    pub fn state(&self) -> &S {
+        &self.state
+    }
+
+    pub fn key(&self) -> &K {
+        &self.key
     }
 
     fn confirm(&mut self) {
@@ -64,319 +53,162 @@ impl<K, S> State<K, S> {
 
 impl<K, S> States<K, S>
 where
-    K: Hash + Eq,
+    K: Hash + Eq + Clone,
 {
     /// create a new States with the given initial state
     ///
     /// by default this state is always assumed confirmed
     pub fn new(key: K, state: S) -> Self {
-        let mut state = Box::new(State::new(key, state, Status::Confirmed));
-        let key_ref = KeyRef(&state.key);
-        let head: *mut State<K, S> = &mut *state;
-        let tail: *mut State<K, S> = &mut *state;
+        let state = StateRef::new(key.clone(), state, Status::Confirmed);
+        let mut states = LinkedHashMap::new();
+        states.insert(key, state);
 
-        let mut map = HashMap::with_capacity(12);
-        map.insert(key_ref, state);
-
-        Self { map, head, tail }
+        Self { states }
     }
 
     /// check wether the given state associate to this key is present
     /// in the States
     pub fn contains<Q: ?Sized>(&self, key: &Q) -> bool
     where
-        KeyRef<K>: Borrow<Q>,
+        K: Borrow<Q>,
         Q: Hash + Eq,
     {
-        self.map.contains_key(key)
+        self.states.contains_key(key)
     }
 
     /// get the underlying State associated to the given key
     pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<(&S, Status)>
     where
-        KeyRef<K>: Borrow<Q>,
+        K: Borrow<Q>,
         Q: Hash + Eq,
     {
-        self.map.get(key).map(|s| (&s.state, s.status))
+        self.states.get(key).map(|s| (&s.state, s.status))
     }
 
     /// push a new **unconfirmed** state in the States
     pub fn push(&mut self, key: K, state: S) {
-        let mut state = Box::new(State::new(key, state, Status::Pending));
-        let key_ref = KeyRef(&state.key);
+        let state = StateRef::new(key.clone(), state, Status::Pending);
 
-        state.prev = self.tail;
-        unsafe { (*self.tail).next = state.as_mut() };
-        self.tail = state.as_mut();
-
-        assert!(self.map.insert(key_ref, state).is_none());
+        assert!(self.states.insert(key, state).is_none());
     }
 
     pub fn confirm<Q: ?Sized>(&mut self, key: &Q)
     where
-        KeyRef<K>: Borrow<Q>,
+        K: Borrow<Q>,
         Q: Hash + Eq,
     {
-        if let Some(state) = self.map.get_mut(key) {
-            let state = &mut (*state) as &mut State<K, S>;
+        if let Some(state) = self.states.get_mut(key) {
             state.confirm();
         }
 
-        while self.pop_legacy_confirmed() {}
+        self.pop_old_confirmed_states()
     }
 
-    fn pop_legacy_confirmed(&mut self) -> bool {
-        let current = unsafe { &mut (*self.head) as &mut State<K, S> };
-        debug_assert!(current.confirmed());
+    fn pop_old_confirmed_states(&mut self) {
+        // maybe popping and re-inserting is better?
+        let remove: Vec<K> = self
+            .states
+            .iter()
+            .take_while(|(_, v)| v.is_confirmed())
+            .map(|(k, _)| k.clone())
+            .collect();
 
-        if let Some(next) = unsafe { current.next.as_mut() } {
-            if next.confirmed() {
-                let current = self.map.remove(&current.key);
-
-                self.head = current.expect("head reference is not in map").next;
-                next.prev = std::ptr::null_mut();
-
-                return true;
+        if let Some(elements_to_remove) = remove.len().checked_sub(1) {
+            for k in &remove[0..elements_to_remove] {
+                self.states.remove(k);
             }
         }
-
-        false
     }
 }
 
 impl<K, S> States<K, S> {
-    /// get the number of states in the States
-    pub fn len(&self) -> usize {
-        self.map.len()
-    }
-
-    /// always return false
-    pub fn is_empty(&self) -> bool {
-        debug_assert!(!self.map.is_empty());
-        self.map.is_empty()
-    }
-
     /// iterate through the states from the confirmed one up to the most
     /// recent one.
     ///
     /// there is always at least one element in the iterator (the confirmed one).
-    pub fn iter(&self) -> StateIter<'_, K, S> {
-        StateIter {
-            forward: self.head,
-            backward: self.tail,
-            len: self.len(),
-            _anchor: std::marker::PhantomData,
-        }
+    pub fn iter(&self) -> impl Iterator<Item = (&K, &StateRef<K, S>)> {
+        self.states.iter()
+    }
+
+    pub fn unconfirmed_states(&self) -> impl Iterator<Item = &StateRef<K, S>> {
+        self.states.values().filter(|s| s.is_pending())
     }
 
     /// access the confirmed state of the store verse
-    pub fn confirmed_state(&self) -> (&K, &S) {
-        if let Some(state) = unsafe { self.head.as_ref() } {
-            debug_assert!(state.confirmed());
-            (&state.key, &state.state)
-        } else {
-            unsafe { std::hint::unreachable_unchecked() }
-        }
+    pub fn confirmed_state(&self) -> &StateRef<K, S> {
+        self.states.front().map(|(_, v)| v).unwrap()
     }
 
     /// get the last state of the store
-    pub fn last_state(&self) -> (&K, &S, Status) {
-        let key = unsafe { &(*self.tail).key as &K };
-        let state = unsafe { &(*self.tail).state as &S };
-        let status = unsafe { (*self.tail).status };
-
-        (key, state, status)
+    pub fn last_state(&self) -> &StateRef<K, S> {
+        self.states.back().unwrap().1
     }
 }
-
-impl<K: Hash> Hash for KeyRef<K> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        unsafe { (*self.0).hash(state) }
-    }
-}
-
-impl<K: PartialEq> PartialEq for KeyRef<K> {
-    fn eq(&self, other: &KeyRef<K>) -> bool {
-        unsafe { (*self.0).eq(&*other.0) }
-    }
-}
-
-impl<K: Eq> Eq for KeyRef<K> {}
-
-#[cfg(not(feature = "nightly"))]
-impl<K> Borrow<K> for KeyRef<K> {
-    fn borrow(&self) -> &K {
-        unsafe { &*self.0 }
-    }
-}
-
-impl<'a, K, S> IntoIterator for &'a States<K, S> {
-    type Item = (&'a K, &'a S, Status);
-    type IntoIter = StateIter<'a, K, S>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
-}
-
-impl<'a, K, S> Iterator for StateIter<'a, K, S> {
-    type Item = (&'a K, &'a S, Status);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.len == 0 {
-            return None;
-        }
-
-        let key = unsafe { &(*self.forward).key as &K };
-        let state = unsafe { &(*self.forward).state as &S };
-        let status = unsafe { (*self.forward).status };
-
-        self.len -= 1;
-        self.forward = unsafe { (*self.forward).next };
-
-        Some((key, state, status))
-    }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.len, Some(self.len))
-    }
-
-    fn count(self) -> usize {
-        self.len
-    }
-}
-
-impl<'a, K, S> DoubleEndedIterator for StateIter<'a, K, S> {
-    fn next_back(&mut self) -> Option<Self::Item> {
-        if self.len == 0 {
-            return None;
-        }
-
-        let key = unsafe { &(*self.backward).key as &K };
-        let state = unsafe { &(*self.backward).state as &S };
-        let status = unsafe { (*self.backward).status };
-
-        self.len -= 1;
-        self.backward = unsafe { (*self.backward).prev };
-
-        Some((key, state, status))
-    }
-}
-
-impl<'a, K, S> FusedIterator for StateIter<'a, K, S> {}
-impl<'a, K, S> ExactSizeIterator for StateIter<'a, K, S> {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn forward_iterator() {
-        let mut multiverse = States::new(0u8, ());
-        multiverse.push(1, ());
-        multiverse.push(2, ());
-        multiverse.push(3, ());
-        multiverse.push(4, ());
-        multiverse.push(5, ());
-
-        assert_eq!(multiverse.len(), 6, "invalid length");
-        assert!(!multiverse.is_empty());
-
-        let mut iter = multiverse.iter();
-
-        assert_eq!(Some((&0, &(), Status::Confirmed)), iter.next());
-        assert_eq!(Some((&1, &(), Status::Pending)), iter.next());
-        assert_eq!(Some((&2, &(), Status::Pending)), iter.next());
-        assert_eq!(Some((&3, &(), Status::Pending)), iter.next());
-        assert_eq!(Some((&4, &(), Status::Pending)), iter.next());
-        assert_eq!(Some((&5, &(), Status::Pending)), iter.next());
-        assert_eq!(None, iter.next());
-        assert_eq!(None, iter.next());
-        assert_eq!(None, iter.next_back());
-        assert_eq!(None, iter.next_back());
+    impl PartialEq for StateRef<u8, ()> {
+        fn eq(&self, other: &Self) -> bool {
+            (self.key, self.status).eq(&(other.key, other.status))
+        }
     }
 
-    #[test]
-    fn backward_iterator() {
-        let mut multiverse = States::new(0u8, ());
-        multiverse.push(1, ());
-        multiverse.push(2, ());
-        multiverse.push(3, ());
-        multiverse.push(4, ());
-        multiverse.push(5, ());
-
-        assert_eq!(multiverse.len(), 6, "invalid length");
-        assert!(!multiverse.is_empty());
-
-        let mut iter = multiverse.iter();
-
-        assert_eq!(Some((&5, &(), Status::Pending)), iter.next_back());
-        assert_eq!(Some((&4, &(), Status::Pending)), iter.next_back());
-        assert_eq!(Some((&3, &(), Status::Pending)), iter.next_back());
-        assert_eq!(Some((&2, &(), Status::Pending)), iter.next_back());
-        assert_eq!(Some((&1, &(), Status::Pending)), iter.next_back());
-        assert_eq!(Some((&0, &(), Status::Confirmed)), iter.next_back());
-        assert_eq!(None, iter.next_back());
-        assert_eq!(None, iter.next_back());
-        assert_eq!(None, iter.next());
-        assert_eq!(None, iter.next());
+    impl PartialOrd for StateRef<u8, ()> {
+        fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+            (self.key, self.status).partial_cmp(&(other.key, other.status))
+        }
     }
 
-    #[test]
-    fn double_ended_iterator() {
-        let mut multiverse = States::new(0u8, ());
-        multiverse.push(1, ());
-        multiverse.push(2, ());
-        multiverse.push(3, ());
-        multiverse.push(4, ());
-        multiverse.push(5, ());
+    impl StateRef<u8, ()> {
+        fn new_confirmed(key: u8) -> Self {
+            Self {
+                key,
+                state: (),
+                status: Status::Confirmed,
+            }
+        }
 
-        assert_eq!(multiverse.len(), 6, "invalid length");
-        assert!(!multiverse.is_empty());
-
-        let mut iter = multiverse.iter();
-
-        assert_eq!(Some((&0, &(), Status::Confirmed)), iter.next());
-        assert_eq!(Some((&5, &(), Status::Pending)), iter.next_back());
-        assert_eq!(Some((&4, &(), Status::Pending)), iter.next_back());
-        assert_eq!(Some((&1, &(), Status::Pending)), iter.next());
-        assert_eq!(Some((&2, &(), Status::Pending)), iter.next());
-        assert_eq!(Some((&3, &(), Status::Pending)), iter.next());
-        assert_eq!(None, iter.next());
-        assert_eq!(None, iter.next());
-        assert_eq!(None, iter.next_back());
-        assert_eq!(None, iter.next_back());
-        assert_eq!(None, iter.next());
-        assert_eq!(None, iter.next_back());
+        fn new_pending(key: u8) -> Self {
+            Self {
+                key,
+                state: (),
+                status: Status::Pending,
+            }
+        }
     }
 
     #[test]
     fn confirmed_state() {
         let mut multiverse = States::new(0u8, ());
-        assert_eq!((&0, &()), multiverse.confirmed_state());
-        assert_eq!((&0, &(), Status::Confirmed), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(0), multiverse.confirmed_state());
+
+        assert_eq!(&StateRef::new_confirmed(0), multiverse.last_state());
 
         multiverse.push(1, ());
-        assert_eq!((&0, &()), multiverse.confirmed_state());
-        assert_eq!((&1, &(), Status::Pending), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(0), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_pending(1), multiverse.last_state());
 
         multiverse.push(2, ());
         multiverse.push(3, ());
         multiverse.push(4, ());
-        assert_eq!((&0, &()), multiverse.confirmed_state());
-        assert_eq!((&4, &(), Status::Pending), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(0), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_pending(4), multiverse.last_state());
 
         multiverse.confirm(&1);
-        assert_eq!((&1, &()), multiverse.confirmed_state());
-        assert_eq!((&4, &(), Status::Pending), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(1), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_pending(4), multiverse.last_state());
 
         multiverse.confirm(&4);
-        assert_eq!((&1, &()), multiverse.confirmed_state());
-        assert_eq!((&4, &(), Status::Confirmed), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(1), multiverse.confirmed_state());
+
+        assert_eq!(&StateRef::new_confirmed(4), multiverse.last_state());
 
         multiverse.confirm(&3);
         multiverse.confirm(&2);
-        assert_eq!((&4, &()), multiverse.confirmed_state());
-        assert_eq!((&4, &(), Status::Confirmed), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(4), multiverse.confirmed_state());
+
+        assert_eq!(&StateRef::new_confirmed(4), multiverse.last_state());
     }
 }

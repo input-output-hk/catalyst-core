@@ -55,7 +55,9 @@ impl TestTxCertBuilder {
             slot_id: current_date.slot_id,
         };
         //utxo not supported yet
-        let builder = builder.set_validity(valid_until).set_ios(inputs, outputs);
+        let builder = builder
+            .set_expiry_date(valid_until)
+            .set_ios(inputs, outputs);
 
         let witnesses: Vec<Witness> = {
             if should_make_witness {

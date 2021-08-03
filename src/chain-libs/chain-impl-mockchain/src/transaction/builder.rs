@@ -91,7 +91,7 @@ impl TxBuilderState<SetPayload> {
 }
 
 impl<P> TxBuilderState<SetValidity<P>> {
-    pub fn set_validity(mut self, valid_until: BlockDate) -> TxBuilderState<SetIOs<P>> {
+    pub fn set_expiry_date(mut self, valid_until: BlockDate) -> TxBuilderState<SetIOs<P>> {
         fn write_date(data: &mut Vec<u8>, date: BlockDate) {
             data.extend_from_slice(&date.epoch.to_be_bytes());
             data.extend_from_slice(&date.slot_id.to_be_bytes());
@@ -238,7 +238,7 @@ mod tests {
         let block0_hash = TestGen::hash();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucets[0].make_input(None)], &[reciever.make_output()]);
 
         let witness1 = make_witness(
@@ -265,7 +265,7 @@ mod tests {
         let block0_hash = TestGen::hash();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(
                 &[faucets[0].make_input(None), faucets[1].make_input(None)],
                 &[reciever.make_output(Value(2))],

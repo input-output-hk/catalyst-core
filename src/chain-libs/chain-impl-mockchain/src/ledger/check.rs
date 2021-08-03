@@ -183,7 +183,7 @@ pub(super) fn valid_transaction_date<P>(
         date.epoch
             < valid_until
                 .epoch
-                .saturating_sub(settings.transaction_maximum_expiry_epochs.into()),
+                .saturating_sub(settings.transaction_max_expiry_epochs.into()),
         TxVerifyError::TransactionValidForTooLong
     )?;
     // if current date is passed the validity until, the transaction is expired

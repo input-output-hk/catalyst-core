@@ -161,7 +161,7 @@ where
 
         TxBuilder::new()
             .set_payload(&payload)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &outputs)
             .set_witnesses(&witnesses)
             .set_payload_auth(&payload_auth)

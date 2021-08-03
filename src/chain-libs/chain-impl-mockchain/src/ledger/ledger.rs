@@ -1869,7 +1869,7 @@ mod tests {
         TestTx::new(
             TxBuilder::new()
                 .set_payload(&NoExtra)
-                .set_validity(BlockDate::first().next_epoch())
+                .set_expiry_date(BlockDate::first().next_epoch())
                 .set_ios(&[], &[])
                 .set_witnesses(&[])
                 .set_payload_auth(&()),
@@ -1880,7 +1880,7 @@ mod tests {
         TestTx::new(
             TxBuilder::new()
                 .set_payload(&NoExtra)
-                .set_validity(BlockDate::first().next_epoch())
+                .set_expiry_date(BlockDate::first().next_epoch())
                 .set_ios(inputs, outputs)
                 .set_witnesses(&[])
                 .set_payload_auth(&()),
@@ -1894,7 +1894,7 @@ mod tests {
     ) -> TestTx {
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[input], &[]);
 
         let witness = make_witness(
@@ -2459,7 +2459,7 @@ mod tests {
 
         let builder_tx = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &[reciever.make_output(Value(100))]);
 
         let witnesses: Vec<Witness> = faucets
@@ -2551,7 +2551,7 @@ mod tests {
         let inputs: Vec<Input> = faucets.iter().map(|x| x.make_input(None)).collect();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &[reciever.make_output(Value(2))]);
 
         let witness = make_witness(
@@ -2613,7 +2613,7 @@ mod tests {
         let block0_hash = test_ledger.block0_hash;
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(
                 &input_addresses.make_inputs(&test_ledger),
                 &output_addresses.make_outputs(),
@@ -2664,7 +2664,7 @@ mod tests {
         let inputs = [faucets[0].make_input(None), faucets[1].make_input(None)];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &[reciever.make_output(Value(2))]);
         let auth_data = tx_builder.get_auth_data_for_witness().hash();
         let witnesses = make_witnesses(
@@ -2743,7 +2743,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucet.make_input(utxo)], &[reciever.make_output()]);
 
         let witness = Witness::new_account(
@@ -2772,7 +2772,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch());
+            .set_expiry_date(BlockDate::first().next_epoch());
         let tx_builder = tx_builder.set_ios(&[faucet.make_input(None)], &[reciever.make_output()]);
 
         let random_bytes = TestGen::bytes();
@@ -2800,7 +2800,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucet.make_input(None)], &[reciever.make_output()]);
 
         let witness = make_witness(
@@ -2830,7 +2830,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucet.make_input(None)], &[reciever.make_output()]);
 
         let witness = make_witness(
@@ -2859,7 +2859,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucet.make_input(None)], &[reciever.make_output()]);
 
         let witness = make_witness(

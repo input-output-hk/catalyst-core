@@ -41,7 +41,7 @@ pub struct Settings {
     pub rewards_limit: rewards::Limit,
     pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
     pub committees: Arc<Box<[CommitteeId]>>,
-    pub transaction_maximum_expiry_epochs: u8,
+    pub transaction_max_expiry_epochs: u8,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -128,7 +128,7 @@ impl Settings {
             rewards_limit: rewards::Limit::None,
             pool_participation_capping: None,
             committees: Arc::new(Box::new([])),
-            transaction_maximum_expiry_epochs: 1,
+            transaction_max_expiry_epochs: 1,
         }
     }
 
@@ -239,8 +239,8 @@ impl Settings {
                             .into(),
                     );
                 }
-                ConfigParam::TransactionMaximumExpiryEpochs(max_expiry_epochs) => {
-                    new_state.transaction_maximum_expiry_epochs = *max_expiry_epochs;
+                ConfigParam::TransactionMaxExpiryEpochs(max_expiry_epochs) => {
+                    new_state.transaction_max_expiry_epochs = *max_expiry_epochs;
                 }
             }
         }
@@ -274,8 +274,8 @@ impl Settings {
         }
         params.push(ConfigParam::LinearFee(self.linear_fees));
         params.push(ConfigParam::ProposalExpiration(self.proposal_expiration));
-        params.push(ConfigParam::TransactionMaximumExpiryEpochs(
-            self.transaction_maximum_expiry_epochs,
+        params.push(ConfigParam::TransactionMaxExpiryEpochs(
+            self.transaction_max_expiry_epochs,
         ));
 
         match &self.reward_params {

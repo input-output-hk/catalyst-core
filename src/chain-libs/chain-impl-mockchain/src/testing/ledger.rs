@@ -339,7 +339,7 @@ impl LedgerBuilder {
     pub fn prefill_output(self, output: Output<Address>) -> Self {
         let tx = TxBuilder::new()
             .set_nopayload()
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[], &[output])
             .set_witnesses(&[])
             .set_payload_auth(&());
@@ -350,7 +350,7 @@ impl LedgerBuilder {
         for outputs_chunk in outputs.chunks(CHECK_TX_MAXIMUM_INPUTS.into()) {
             let tx = TxBuilder::new()
                 .set_nopayload()
-                .set_validity(BlockDate::first().next_epoch())
+                .set_expiry_date(BlockDate::first().next_epoch())
                 .set_ios(&[], outputs_chunk)
                 .set_witnesses(&[])
                 .set_payload_auth(&());
@@ -420,7 +420,7 @@ impl LedgerBuilder {
             {
                 let tx = TxBuilder::new()
                     .set_nopayload()
-                    .set_validity(BlockDate::first().next_epoch())
+                    .set_expiry_date(BlockDate::first().next_epoch())
                     .set_ios(&[], &group)
                     .set_witnesses(&[])
                     .set_payload_auth(&());

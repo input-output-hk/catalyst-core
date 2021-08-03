@@ -358,7 +358,7 @@ impl<P> Transaction<P> {
     {
         TxBuilder::new()
             .set_payload(payload)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[], &[])
             .set_witnesses(&[])
             .set_payload_auth(payload_auth)
@@ -370,7 +370,7 @@ impl<P> Transaction<P> {
     {
         TxBuilder::new()
             .set_payload(payload)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[], &[])
             .set_witnesses(&[])
     }

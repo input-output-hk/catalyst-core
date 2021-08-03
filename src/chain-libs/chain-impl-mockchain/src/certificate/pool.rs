@@ -740,7 +740,7 @@ mod tests {
 
         let builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_validity(BlockDate::first().next_epoch())
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&pool_owner_with_sign.inputs(), &[]);
         let auth_data_hash = builder.get_auth_data_for_witness().hash();
         let builder = builder

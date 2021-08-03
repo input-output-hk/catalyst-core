@@ -60,7 +60,7 @@ pub async fn fetch_all(
         .flatten()
         .flatten()
         // filter out non
-        .filter(|p| filter_proposal_by_stage_type(&p.stage_type));
+        .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type));
 
     let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
     stages.retain(|stage| filter_stages(stage, stage_label, &funnels));
@@ -107,10 +107,8 @@ pub fn build_challenges(
     ideascale_data: &IdeaScaleData,
 ) -> HashMap<u32, models::se::Challenge> {
     let funnels = &ideascale_data.funnels;
-    ideascale_data
-        .challenges
-        .values()
-        .enumerate()
+    (1..)
+        .zip(ideascale_data.challenges.values())
         .map(|(i, c)| {
             (
                 c.id,
@@ -177,7 +175,9 @@ pub fn build_proposals(
                 proposer_relevant_experience: p
                     .custom_fields
                     .proposal_relevant_experience
-                    .to_string(),
+                    .clone()
+                    .map(|s| s.to_string())
+                    .unwrap_or(String::default()),
                 proposer_url: p
                     .custom_fields
                     .extra

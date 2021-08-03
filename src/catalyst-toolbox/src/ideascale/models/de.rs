@@ -66,6 +66,9 @@ pub struct Proposal {
 
     #[serde(alias = "campaignId")]
     pub challenge_id: u32,
+
+    #[serde(alias = "flag", deserialize_with = "deserialize_approved")]
+    pub approved: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -78,11 +81,11 @@ pub struct Proposer {
 #[derive(Debug, Deserialize, Clone)]
 pub struct ProposalCustomFieldsByKey {
     #[serde(alias = "ada_payment_address")]
-    pub proposal_public_key: String,
+    pub proposal_public_key: Option<String>,
     #[serde(alias = "requested_funds")]
     pub proposal_funds: String,
     #[serde(alias = "relevant_experience")]
-    pub proposal_relevant_experience: CleanString,
+    pub proposal_relevant_experience: Option<CleanString>,
     #[serde(alias = "importance")]
     pub proposal_why: Option<CleanString>,
     #[serde(flatten)]
@@ -132,6 +135,11 @@ impl Display for AdaRewards {
     }
 }
 
+fn deserialize_approved<'de, D: Deserializer<'de>>(deserializer: D) -> Result<bool, D::Error> {
+    let approved = String::deserialize(deserializer)?;
+    Ok(matches!(approved.as_str(), "approved"))
+}
+
 fn deserialize_clean_string<'de, D: Deserializer<'de>>(
     deserializer: D,
 ) -> Result<String, D::Error> {
@@ -139,6 +147,7 @@ fn deserialize_clean_string<'de, D: Deserializer<'de>>(
     rewards_str.retain(|c| !matches!(c, '*' | '-' | '/'));
     Ok(rewards_str)
 }
+
 fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(
     deserializer: D,
 ) -> Result<String, D::Error> {

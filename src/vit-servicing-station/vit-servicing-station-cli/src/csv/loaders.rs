@@ -11,8 +11,11 @@ use vit_servicing_station_lib::db::models::proposals::{
     community_choice, simple, ProposalChallengeInfo,
 };
 use vit_servicing_station_lib::db::{
-    load_db_connection_pool, models::challenges::Challenge, models::funds::Fund,
-    models::proposals::Proposal, models::voteplans::Voteplan,
+    load_db_connection_pool,
+    models::{
+        challenges::Challenge, community_advisors_reviews::AdvisorReview, funds::Fund,
+        proposals::Proposal, voteplans::Voteplan,
+    },
 };
 
 #[derive(Error, Debug)]
@@ -90,7 +93,7 @@ impl CsvDataCmd {
         voteplans_path: &Path,
         proposals_path: &Path,
         challenges_path: &Path,
-        reviews: &Path,
+        reviews_path: &Path,
     ) -> Result<(), Error> {
         db_file_exists(db_url)?;
         let funds = CsvDataCmd::load_from_csv::<Fund>(funds_path)?;
@@ -106,6 +109,7 @@ impl CsvDataCmd {
                 .map(|c| (c.id, c))
                 .collect();
         let csv_proposals = CsvDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?;
+        let reviews = CsvDataCmd::load_from_csv::<AdvisorReview>(reviews_path)?;
         let mut proposals: Vec<Proposal> = Vec::new();
         let mut simple_proposals_data: Vec<simple::ChallengeSqlValues> = Vec::new();
         let mut community_proposals_data: Vec<community_choice::ChallengeSqlValues> = Vec::new();
@@ -188,6 +192,9 @@ impl CsvDataCmd {
             &db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+
+        vit_servicing_station_lib::db::queries::community_advisors_reviews::batch_insert_advisor_reviews(&reviews, &db_conn)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         Ok(())
     }

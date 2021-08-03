@@ -16,7 +16,7 @@ use evm::{
 };
 use primitive_types::{H160, H256, U256};
 
-use crate::state::AccountTrie;
+use crate::state::{Account, AccountAddress, AccountTrie, Balance, Nonce};
 
 /// Environment values for the machine backend.
 pub type Environment = MemoryVicinity;
@@ -97,6 +97,38 @@ impl Backend for VirtualMachine {
     }
 }
 
+fn modify_account(
+    state: &AccountTrie,
+    address: &AccountAddress,
+    balance: Balance,
+    nonce: Nonce,
+    reset_storage: bool,
+    code: Option<Vec<u8>>,
+) -> Account {
+    let account = if let Some(acct) = state.get(&address) {
+        acct.clone()
+    } else {
+        Default::default()
+    };
+    let storage = if reset_storage {
+        Default::default()
+    } else {
+        account.storage
+    };
+    let code = if let Some(code) = code {
+        code
+    } else {
+        account.code
+    };
+
+    Account {
+        nonce,
+        balance,
+        storage,
+        code,
+    }
+}
+
 impl ApplyBackend for VirtualMachine {
     fn apply<A, I, L>(&mut self, values: A, _logs: L, _delete_empty: bool)
     where
@@ -107,12 +139,17 @@ impl ApplyBackend for VirtualMachine {
         for apply in values {
             match apply {
                 Apply::Modify {
-                    address: _,
-                    basic: _,
-                    code: _,
-                    storage: _,
-                    reset_storage: _,
+                    address,
+                    basic: Basic { balance, nonce },
+                    code,
+                    storage: _apply_storage,
+                    reset_storage,
                 } => {
+                    // get the account if stored, else use default
+                    let _account =
+                        modify_account(&self.state, &address, balance, nonce, reset_storage, code);
+
+                    // WIP:
                     todo!();
                 }
                 Apply::Delete { address: _ } => {

@@ -210,6 +210,10 @@ impl MultiController {
         self.wallets.len()
     }
 
+    pub fn vote_plans_ids(&self) -> Vec<VotePlanId> {
+        self.backend.vote_plans()
+    }
+
     pub fn is_converted(&mut self, wallet_index: usize) -> Result<bool, MultiControllerError> {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         self.backend.account_exists(wallet.id()).map_err(Into::into)

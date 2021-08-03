@@ -3,6 +3,8 @@ use crate::Proposal;
 use crate::Wallet;
 use chain_impl_mockchain::fragment::FragmentId;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
+use jormungandr_testing_utils::testing::VoteCastCounter;
+use jormungandr_lib::interfaces::VotePlanId;
 use rand::seq::SliceRandom;
 use rand_core::OsRng;
 use std::time::Instant;
@@ -15,11 +17,14 @@ pub struct WalletRequestGen {
     options: Vec<u8>,
     wallet_index: usize,
     update_account_before_vote: bool,
+    vote_cast_counter: VoteCastCounter
 }
 
 impl WalletRequestGen {
     pub fn new(multi_controller: MultiController, update_account_before_vote: bool) -> Self {
         let proposals = multi_controller.proposals().unwrap();
+        let vote_plans_ids = multi_controller.vote_plans().unwrap();
+
         let options = proposals[0]
             .chain_vote_options
             .0
@@ -27,13 +32,16 @@ impl WalletRequestGen {
             .cloned()
             .collect();
 
+        let vote_plans = multi_controller.vote_plans();
+        let vote_cast_counter = VoteCastCounter::new_from_vote_plans(multi_controller.wallet_count(),vote_plans);
+
         Self {
             multi_controller,
-            rand: OsRng,
             proposals,
             options,
             wallet_index: 0,
             update_account_before_vote,
+            vote_cast_counter
         }
     }
 
@@ -53,7 +61,9 @@ impl WalletRequestGen {
                 .update_wallet_state_if(index, &|wallet: &Wallet| wallet.spending_counter() == 0);
         }
 
-        let proposal = self.proposals.choose(&mut self.rand).unwrap();
+        let proposals = self.vote_cast_counter.advance_single(index).unwrap();
+
+        let proposal = self.proposals.get(proposals.start as u8).unwrap();
         let choice = Choice::new(*self.options.choose(&mut self.rand).unwrap());
         self.multi_controller.vote(index, proposal, choice)
     }

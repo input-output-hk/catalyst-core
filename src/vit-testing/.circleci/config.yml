@@ -142,3 +142,11 @@ workflows:
     jobs:
       - test_debug
       - vitup_test
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+            filters:
+              branches:
+                only:
+                - main

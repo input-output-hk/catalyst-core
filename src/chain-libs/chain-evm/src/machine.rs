@@ -142,15 +142,18 @@ impl ApplyBackend for VirtualMachine {
                     address,
                     basic: Basic { balance, nonce },
                     code,
-                    storage: _apply_storage,
+                    storage: apply_storage,
                     reset_storage,
                 } => {
                     // get the account if stored, else use default
                     let _account =
                         modify_account(&self.state, &address, balance, nonce, reset_storage, code);
 
-                    // WIP:
-                    todo!();
+                    // iterate over the apply_storage keys and values
+                    // and put them into the AccountTrie.
+                    for (_index, _value) in apply_storage {
+                        todo!();
+                    }
                 }
                 Apply::Delete { address: _ } => {
                     todo!();

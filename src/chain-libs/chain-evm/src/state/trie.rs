@@ -1,4 +1,4 @@
-use imhamt::{Hamt, RemoveError};
+use imhamt::{Hamt, HamtIter, RemoveError};
 
 use std::collections::hash_map::DefaultHasher;
 use std::convert::Infallible;
@@ -65,6 +65,10 @@ impl<K: Clone + Hash + Eq, V: Clone> Trie<K, V> {
                 .expect("we already checked that the key does not exist")
         };
         *self = Self(new_state);
+    }
+
+    pub fn iter(&self) -> HamtIter<'_, K, V> {
+        self.0.iter()
     }
 }
 

@@ -107,7 +107,8 @@ impl Import {
             &tags,
         );
 
-        let challenges: Vec<_> = challenges.values().collect();
+        let mut challenges: Vec<_> = challenges.values().collect();
+        challenges.sort_by_key(|c| c.id.parse::<i32>().unwrap());
 
         dump_content_to_file(
             funds,

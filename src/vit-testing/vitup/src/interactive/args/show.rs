@@ -96,15 +96,15 @@ impl VoteTimeStatus {
         let mut dates = vec![
             (
                 "Voting period start",
-                self.calculate_date(blockchain_configuration, vote_plan.vote_start),
+                self.calculate_date(blockchain_configuration, vote_plan.vote_start.into()),
             ),
             (
                 "Voting period end",
-                self.calculate_date(blockchain_configuration, vote_plan.vote_end),
+                self.calculate_date(blockchain_configuration, vote_plan.vote_end.into()),
             ),
             (
                 "Tally period end",
-                self.calculate_date(blockchain_configuration, vote_plan.committee_end),
+                self.calculate_date(blockchain_configuration, vote_plan.committee_end.into()),
             ),
             ("> Current time", Utc::now().naive_utc()),
         ];

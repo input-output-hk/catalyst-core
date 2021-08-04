@@ -1,8 +1,8 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
 use crate::Wallet;
-use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use jormungandr_testing_utils::testing::VoteCastCounter;
+use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
 use std::time::Instant;
@@ -82,7 +82,10 @@ impl BatchWalletRequestGen {
         let batch_size = self.batch_size;
         let options = self.options.clone();
 
-        let counter = self.vote_cast_counter.advance_batch(batch_size, wallet_index).unwrap();
+        let counter = self
+            .vote_cast_counter
+            .advance_batch(batch_size, wallet_index)
+            .unwrap();
 
         let mut proposals = Vec::new();
 
@@ -93,7 +96,7 @@ impl BatchWalletRequestGen {
                         .iter()
                         .enumerate()
                         .find(|(idx, x)| x.chain_voteplan_id == item.id().to_string() && *idx == i)
-                        .map(|(_,x)| x)
+                        .map(|(_, x)| x)
                         .unwrap()
                         .clone(),
                 );

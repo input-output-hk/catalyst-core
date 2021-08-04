@@ -16,7 +16,7 @@ use evm::{
 };
 use primitive_types::{H160, H256, U256};
 
-use crate::state::{Account, AccountAddress, AccountTrie, Balance, Nonce};
+use crate::state::AccountTrie;
 
 /// Environment values for the machine backend.
 pub type Environment = MemoryVicinity;
@@ -97,38 +97,6 @@ impl Backend for VirtualMachine {
     }
 }
 
-fn modify_account(
-    state: &AccountTrie,
-    address: &AccountAddress,
-    balance: Balance,
-    nonce: Nonce,
-    reset_storage: bool,
-    code: Option<Vec<u8>>,
-) -> Account {
-    let account = if let Some(acct) = state.get(&address) {
-        acct.clone()
-    } else {
-        Default::default()
-    };
-    let storage = if reset_storage {
-        Default::default()
-    } else {
-        account.storage
-    };
-    let code = if let Some(code) = code {
-        code
-    } else {
-        account.code
-    };
-
-    Account {
-        nonce,
-        balance,
-        storage,
-        code,
-    }
-}
-
 impl ApplyBackend for VirtualMachine {
     fn apply<A, I, L>(&mut self, values: A, _logs: L, _delete_empty: bool)
     where
@@ -145,14 +113,23 @@ impl ApplyBackend for VirtualMachine {
                     storage: apply_storage,
                     reset_storage,
                 } => {
-                    // get the account if stored, else use default
-                    let _account =
-                        modify_account(&self.state, &address, balance, nonce, reset_storage, code);
+                    // get the account if stored, else use Default::default().
+                    // Then, modify the account balance, nonce, and code.
+                    // If reset_storage is set, the account's balance is
+                    // set to be Default::default().
+                    let mut account =
+                        self.state
+                            .modify_account(&address, balance, nonce, code, reset_storage);
 
                     // iterate over the apply_storage keys and values
-                    // and put them into the AccountTrie.
-                    for (_index, _value) in apply_storage {
-                        todo!();
+                    // and put them into the account.
+                    for (index, value) in apply_storage {
+                        if value == crate::state::Value::default() {
+                            // value is full of zeroes, remove it
+                            account.storage = account.storage.remove(&index);
+                        } else {
+                            account.storage = account.storage.put(index, value);
+                        }
                     }
                 }
                 Apply::Delete { address: _ } => {

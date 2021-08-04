@@ -23,3 +23,37 @@ pub type AccountAddress = H160;
 
 /// In-memory representation of all accounts.
 pub type AccountTrie = Trie<AccountAddress, Account>;
+
+impl AccountTrie {
+    pub fn modify_account(
+        &self,
+        address: &AccountAddress,
+        nonce: Nonce,
+        balance: Balance,
+        code: Option<Vec<u8>>,
+        reset_storage: bool,
+    ) -> Account {
+        let account = if let Some(acct) = self.get(&address) {
+            acct.clone()
+        } else {
+            Default::default()
+        };
+        let acct_storage = if reset_storage {
+            Default::default()
+        } else {
+            account.storage
+        };
+        let code = if let Some(code) = code {
+            code
+        } else {
+            account.code
+        };
+
+        Account {
+            nonce,
+            balance,
+            storage: acct_storage,
+            code,
+        }
+    }
+}

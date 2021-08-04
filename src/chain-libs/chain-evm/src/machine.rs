@@ -135,6 +135,8 @@ impl ApplyBackend for VirtualMachine {
 
                     if delete_empty && account.is_empty() {
                         self.state.delete(&address);
+                    } else {
+                        self.state.insert_or_update(address, account);
                     }
                 }
                 Apply::Delete { address } => {

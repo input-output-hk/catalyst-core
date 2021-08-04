@@ -834,7 +834,7 @@ impl Ledger {
             Fragment::Transaction(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
                 new_ledger = new_ledger_;
             }
             Fragment::OwnerStakeDelegation(tx) => {
@@ -867,13 +867,13 @@ impl Ledger {
                 }
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
                 new_ledger = new_ledger_.apply_stake_delegation(&payload)?;
             }
             Fragment::PoolRegistration(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
                 new_ledger = new_ledger_.apply_pool_registration_signcheck(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -884,7 +884,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
                 new_ledger = new_ledger_.apply_pool_retirement(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -895,7 +895,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
                 new_ledger = new_ledger_.apply_pool_update(
                     &tx.payload().into_payload(),
                     &tx.transaction_binding_auth_data(),
@@ -918,7 +918,7 @@ impl Ledger {
             Fragment::VotePlan(tx) => {
                 let tx = tx.as_slice();
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
                 new_ledger = new_ledger_.apply_vote_plan(
                     &tx,
                     block_date,
@@ -936,7 +936,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
 
                 new_ledger = new_ledger_.apply_vote_tally(
                     &tx.payload().into_payload(),
@@ -948,7 +948,7 @@ impl Ledger {
                 let tx = tx.as_slice();
 
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_transaction(&fragment_id, &tx, ledger_params)?;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
 
                 new_ledger = new_ledger_.apply_encrypted_vote_tally(
                     &tx.payload().into_payload(),
@@ -965,6 +965,7 @@ impl Ledger {
         mut self,
         fragment_id: &FragmentId,
         tx: &TransactionSlice<'a, Extra>,
+        cur_date: BlockDate,
         dyn_params: &LedgerParameters,
     ) -> Result<(Self, Value), Error>
     where
@@ -972,6 +973,7 @@ impl Ledger {
         LinearFee: FeeAlgorithm,
     {
         check::valid_transaction_ios_number(tx)?;
+        check::valid_transaction_date(&self.settings, tx, cur_date)?;
         let fee = calculate_fee(tx, dyn_params);
         tx.verify_strictly_balanced(fee)?;
         self = self.apply_tx_inputs(tx)?;
@@ -1867,6 +1869,7 @@ mod tests {
         TestTx::new(
             TxBuilder::new()
                 .set_payload(&NoExtra)
+                .set_expiry_date(BlockDate::first().next_epoch())
                 .set_ios(&[], &[])
                 .set_witnesses(&[])
                 .set_payload_auth(&()),
@@ -1877,6 +1880,7 @@ mod tests {
         TestTx::new(
             TxBuilder::new()
                 .set_payload(&NoExtra)
+                .set_expiry_date(BlockDate::first().next_epoch())
                 .set_ios(inputs, outputs)
                 .set_witnesses(&[])
                 .set_payload_auth(&()),
@@ -1890,6 +1894,7 @@ mod tests {
     ) -> TestTx {
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[input], &[]);
 
         let witness = make_witness(
@@ -2454,6 +2459,7 @@ mod tests {
 
         let builder_tx = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &[reciever.make_output(Value(100))]);
 
         let witnesses: Vec<Witness> = faucets
@@ -2471,7 +2477,9 @@ mod tests {
         let tx = builder_tx.set_witnesses(&witnesses).set_payload_auth(&());
 
         let fragment = TestTx::new(tx).get_fragment();
-        assert!(test_ledger.apply_transaction(fragment).is_err());
+        assert!(test_ledger
+            .apply_transaction(fragment, BlockDate::first())
+            .is_err());
     }
 
     #[test]
@@ -2497,7 +2505,7 @@ mod tests {
         );
         println!(
             "{:?}",
-            test_ledger.apply_transaction(test_tx.get_fragment())
+            test_ledger.apply_transaction(test_tx.get_fragment(), BlockDate::first())
         );
         TestResult::error("");
     }
@@ -2524,7 +2532,7 @@ mod tests {
             &[receiver],
         );
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 
@@ -2543,6 +2551,7 @@ mod tests {
         let inputs: Vec<Input> = faucets.iter().map(|x| x.make_input(None)).collect();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &[reciever.make_output(Value(2))]);
 
         let witness = make_witness(
@@ -2557,7 +2566,7 @@ mod tests {
         );
 
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 
@@ -2578,7 +2587,7 @@ mod tests {
             &reciever,
         );
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_ok());
         LedgerStateVerifier::new(test_ledger.into())
             .pots()
@@ -2602,10 +2611,13 @@ mod tests {
                 .unwrap();
 
         let block0_hash = test_ledger.block0_hash;
-        let tx_builder = TxBuilder::new().set_payload(&NoExtra).set_ios(
-            &input_addresses.make_inputs(&test_ledger),
-            &output_addresses.make_outputs(),
-        );
+        let tx_builder = TxBuilder::new()
+            .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
+            .set_ios(
+                &input_addresses.make_inputs(&test_ledger),
+                &output_addresses.make_outputs(),
+            );
 
         let witnesses: Vec<Witness> = input_addresses
             .as_addresses()
@@ -2625,7 +2637,7 @@ mod tests {
             .and_then(|balance| balance - fee);
         match (
             balance_res,
-            test_ledger.apply_transaction(test_tx.get_fragment()),
+            test_ledger.apply_transaction(test_tx.get_fragment(), BlockDate::first()),
         ) {
             (Ok(balance), Ok(_)) => TestResult::from_bool(balance == Value::zero()),
             (Err(err), Ok(_)) => TestResult::error(format!(
@@ -2652,6 +2664,7 @@ mod tests {
         let inputs = [faucets[0].make_input(None), faucets[1].make_input(None)];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &[reciever.make_output(Value(2))]);
         let auth_data = tx_builder.get_auth_data_for_witness().hash();
         let witnesses = make_witnesses(
@@ -2663,7 +2676,7 @@ mod tests {
         let tx = tx_builder.set_witnesses(&witnesses).set_payload_auth(&());
         let test_tx = TestTx::new(tx);
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 
@@ -2682,7 +2695,7 @@ mod tests {
         );
 
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 
@@ -2705,7 +2718,9 @@ mod tests {
         let fragment = TestTxBuilder::new(test_ledger.block0_hash)
             .move_all_funds(&mut test_ledger, &faucet, &reciever)
             .get_fragment();
-        assert!(test_ledger.apply_transaction(fragment).is_ok());
+        assert!(test_ledger
+            .apply_transaction(fragment, BlockDate::first())
+            .is_ok());
 
         LedgerStateVerifier::new(test_ledger.into())
             .address_has_expected_balance(reciever.into(), Value(1))
@@ -2728,6 +2743,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucet.make_input(utxo)], &[reciever.make_output()]);
 
         let witness = Witness::new_account(
@@ -2741,7 +2757,7 @@ mod tests {
         let test_tx = TestTx::new(tx);
 
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 
@@ -2754,7 +2770,9 @@ mod tests {
             .build()
             .unwrap();
 
-        let tx_builder = TxBuilder::new().set_payload(&NoExtra);
+        let tx_builder = TxBuilder::new()
+            .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch());
         let tx_builder = tx_builder.set_ios(&[faucet.make_input(None)], &[reciever.make_output()]);
 
         let random_bytes = TestGen::bytes();
@@ -2765,7 +2783,7 @@ mod tests {
         let tx = tx_builder.set_witnesses(&[witness]).set_payload_auth(&());
         let test_tx = TestTx::new(tx);
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 
@@ -2782,6 +2800,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucet.make_input(None)], &[reciever.make_output()]);
 
         let witness = make_witness(
@@ -2794,7 +2813,7 @@ mod tests {
         let test_tx = TestTx::new(tx);
 
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 
@@ -2811,6 +2830,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucet.make_input(None)], &[reciever.make_output()]);
 
         let witness = make_witness(
@@ -2823,7 +2843,7 @@ mod tests {
         let test_tx = TestTx::new(tx);
 
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 
@@ -2839,6 +2859,7 @@ mod tests {
 
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucet.make_input(None)], &[reciever.make_output()]);
 
         let witness = make_witness(
@@ -2849,7 +2870,7 @@ mod tests {
         let tx = tx_builder.set_witnesses(&[witness]).set_payload_auth(&());
         let test_tx = TestTx::new(tx);
         assert!(test_ledger
-            .apply_transaction(test_tx.get_fragment())
+            .apply_transaction(test_tx.get_fragment(), BlockDate::first())
             .is_err());
     }
 }

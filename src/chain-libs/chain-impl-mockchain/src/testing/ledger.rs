@@ -339,6 +339,7 @@ impl LedgerBuilder {
     pub fn prefill_output(self, output: Output<Address>) -> Self {
         let tx = TxBuilder::new()
             .set_nopayload()
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[], &[output])
             .set_witnesses(&[])
             .set_payload_auth(&());
@@ -349,6 +350,7 @@ impl LedgerBuilder {
         for outputs_chunk in outputs.chunks(CHECK_TX_MAXIMUM_INPUTS.into()) {
             let tx = TxBuilder::new()
                 .set_nopayload()
+                .set_expiry_date(BlockDate::first().next_epoch())
                 .set_ios(&[], outputs_chunk)
                 .set_witnesses(&[])
                 .set_payload_auth(&());
@@ -418,6 +420,7 @@ impl LedgerBuilder {
             {
                 let tx = TxBuilder::new()
                     .set_nopayload()
+                    .set_expiry_date(BlockDate::first().next_epoch())
                     .set_ios(&[], &group)
                     .set_witnesses(&[])
                     .set_payload_auth(&());
@@ -468,13 +471,14 @@ pub struct TestLedger {
 }
 
 impl TestLedger {
-    pub fn apply_transaction(&mut self, fragment: Fragment) -> Result<(), Error> {
+    pub fn apply_transaction(&mut self, fragment: Fragment, date: BlockDate) -> Result<(), Error> {
         let fragment_id = fragment.hash();
         match fragment {
             Fragment::Transaction(tx) => {
                 match self.ledger.clone().apply_transaction(
                     &fragment_id,
                     &tx.as_slice(),
+                    date,
                     &self.parameters,
                 ) {
                     Err(err) => Err(err),

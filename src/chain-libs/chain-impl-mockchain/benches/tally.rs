@@ -133,6 +133,7 @@ fn tally_benchmark(
                 );
 
                 res.push(controller.fragment_factory().vote_cast(
+                    BlockDate::first(),
                     private_voter,
                     VoteCast::new(vote_plan.to_id(), proposal_idx as u8, payload),
                 ));
@@ -171,9 +172,11 @@ fn tally_benchmark(
     let mut alice = controller.wallet(ALICE).unwrap();
 
     let encrypted_tally = EncryptedVoteTally::new(vote_plan.to_id());
-    let fragment = controller
-        .fragment_factory()
-        .vote_encrypted_tally(&alice, encrypted_tally);
+    let fragment = controller.fragment_factory().vote_encrypted_tally(
+        BlockDate::first(),
+        &alice,
+        encrypted_tally,
+    );
 
     let parameters = ledger.parameters.clone();
     let date = ledger.date();
@@ -264,9 +267,10 @@ fn tally_benchmark(
 
     let decrypted_tally =
         VoteTally::new_private(vote_plan.to_id(), DecryptedPrivateTally::new(shares));
-    let fragment = controller
-        .fragment_factory()
-        .vote_tally(&alice, decrypted_tally);
+    let fragment =
+        controller
+            .fragment_factory()
+            .vote_tally(BlockDate::first(), &alice, decrypted_tally);
 
     c.bench_function(&format!("vote_tally_{}", benchmark_name), |b| {
         b.iter(|| {

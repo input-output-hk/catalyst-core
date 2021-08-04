@@ -4,6 +4,7 @@ use super::input::{Input, INPUT_SIZE};
 use super::payload::{Payload, PayloadAuthSlice, PayloadSlice};
 use super::transfer::Output;
 use super::witness::Witness;
+use crate::date::BlockDate;
 use crate::value::{Value, ValueError};
 use chain_addr::Address;
 use chain_core::mempack::{ReadBuf, Readable};
@@ -34,6 +35,7 @@ impl<P> Debug for Transaction<P> {
             .field("payload", &tx.payload().0)
             .field("nb_inputs", &tx.nb_inputs())
             .field("nb_outputs", &tx.nb_outputs())
+            .field("valid_until", &tx.valid_until())
             .field("nb_witnesses", &tx.nb_witnesses())
             .field("total_input_value", &self.total_input())
             .field("total_output_value", &self.total_output())
@@ -224,6 +226,7 @@ impl<'a> InputsWitnessesSlice<'a> {
 pub enum TransactionStructError {
     CannotReadNbInputs,
     CannotReadNbOutputs,
+    CannotReadDate,
     PayloadInvalid,
     InputsInvalid,
     OutputsInvalid,
@@ -238,6 +241,7 @@ pub(super) struct TransactionStruct {
     pub(super) sz: usize,
     pub(super) nb_inputs: u8,
     pub(super) nb_outputs: u8,
+    pub(super) valid_until: BlockDate,
     pub(super) inputs: usize,
     pub(super) outputs: usize,
     pub(super) witnesses: usize,
@@ -253,6 +257,15 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
     if P::HAS_DATA {
         P::read_validate(&mut rb).map_err(|_| TransactionStructError::PayloadInvalid)?;
     }
+
+    // read date
+    let epoch = rb
+        .get_u32()
+        .map_err(|_| TransactionStructError::CannotReadDate)?;
+    let slot_id = rb
+        .get_u32()
+        .map_err(|_| TransactionStructError::CannotReadDate)?;
+    let valid_until = BlockDate { epoch, slot_id };
 
     // read input and outputs
     let nb_inputs = rb
@@ -293,6 +306,7 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
         sz,
         nb_inputs,
         nb_outputs,
+        valid_until,
         inputs: inputs_pos,
         outputs: outputs_pos,
         witnesses: witnesses_pos,
@@ -344,6 +358,7 @@ impl<P> Transaction<P> {
     {
         TxBuilder::new()
             .set_payload(payload)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[], &[])
             .set_witnesses(&[])
             .set_payload_auth(payload_auth)
@@ -355,6 +370,7 @@ impl<P> Transaction<P> {
     {
         TxBuilder::new()
             .set_payload(payload)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[], &[])
             .set_witnesses(&[])
     }
@@ -447,6 +463,10 @@ impl<'a, P> TransactionSlice<'a, P> {
 
     pub fn nb_inputs(&self) -> u8 {
         self.tstruct.nb_inputs
+    }
+
+    pub fn valid_until(&self) -> BlockDate {
+        self.tstruct.valid_until
     }
 
     pub fn nb_outputs(&self) -> u8 {

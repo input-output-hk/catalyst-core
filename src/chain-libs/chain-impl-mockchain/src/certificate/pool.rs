@@ -456,6 +456,7 @@ mod tests {
     use super::{PoolOwnersSigned, PoolPermissions};
     use crate::{
         chaintypes::HeaderId,
+        date::BlockDate,
         key::EitherEd25519SecretKey,
         testing::{
             builders::{make_witness, StakePoolBuilder},
@@ -739,6 +740,7 @@ mod tests {
 
         let builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&pool_owner_with_sign.inputs(), &[]);
         let auth_data_hash = builder.get_auth_data_for_witness().hash();
         let builder = builder

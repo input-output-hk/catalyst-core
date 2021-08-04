@@ -4,6 +4,7 @@ use super::{
 };
 #[cfg(test)]
 use crate::certificate::OwnerStakeDelegation;
+use crate::date::BlockDate;
 use crate::key::{EitherEd25519SecretKey, SpendingSignature};
 #[cfg(test)]
 use crate::testing::serialization::serialization_bijection_r;
@@ -160,6 +161,7 @@ where
 
         TxBuilder::new()
             .set_payload(&payload)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &outputs)
             .set_witnesses(&witnesses)
             .set_payload_auth(&payload_auth)

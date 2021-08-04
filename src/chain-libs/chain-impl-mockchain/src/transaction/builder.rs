@@ -5,6 +5,7 @@ use super::transaction::{
 };
 use super::transfer::Output;
 use super::witness::Witness;
+use crate::date::BlockDate;
 use chain_addr::Address;
 use std::marker::PhantomData;
 
@@ -26,6 +27,7 @@ impl<T> Clone for TxBuilderState<T> {
 }
 
 pub enum SetPayload {}
+pub struct SetValidity<P>(PhantomData<P>);
 pub struct SetIOs<P>(PhantomData<P>);
 pub struct SetWitnesses<P>(PhantomData<P>);
 pub struct SetAuthData<P: Payload>(PhantomData<P>);
@@ -52,6 +54,7 @@ impl TxBuilder {
                 sz: 0,
                 nb_inputs: 0,
                 nb_outputs: 0,
+                valid_until: BlockDate::first(),
                 inputs: 0,
                 outputs: 0,
                 witnesses: 0,
@@ -70,7 +73,7 @@ impl<State> TxBuilderState<State> {
 
 impl TxBuilderState<SetPayload> {
     /// Set the payload of this transaction
-    pub fn set_payload<P: Payload>(mut self, payload: &P) -> TxBuilderState<SetIOs<P>> {
+    pub fn set_payload<P: Payload>(mut self, payload: &P) -> TxBuilderState<SetValidity<P>> {
         if P::HAS_DATA {
             self.data.extend_from_slice(payload.payload_data().as_ref());
         }
@@ -82,8 +85,24 @@ impl TxBuilderState<SetPayload> {
         }
     }
 
-    pub fn set_nopayload(self) -> TxBuilderState<SetIOs<NoExtra>> {
+    pub fn set_nopayload(self) -> TxBuilderState<SetValidity<NoExtra>> {
         self.set_payload(&NoExtra)
+    }
+}
+
+impl<P> TxBuilderState<SetValidity<P>> {
+    pub fn set_expiry_date(mut self, valid_until: BlockDate) -> TxBuilderState<SetIOs<P>> {
+        fn write_date(data: &mut Vec<u8>, date: BlockDate) {
+            data.extend_from_slice(&date.epoch.to_be_bytes());
+            data.extend_from_slice(&date.slot_id.to_be_bytes());
+        }
+        write_date(&mut self.data, valid_until);
+        self.tstruct.valid_until = valid_until;
+        TxBuilderState {
+            data: self.data,
+            tstruct: self.tstruct,
+            phantom: PhantomData,
+        }
     }
 }
 
@@ -219,6 +238,7 @@ mod tests {
         let block0_hash = TestGen::hash();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&[faucets[0].make_input(None)], &[reciever.make_output()]);
 
         let witness1 = make_witness(
@@ -243,10 +263,13 @@ mod tests {
         ];
         let reciever = AddressData::utxo(Discrimination::Test);
         let block0_hash = TestGen::hash();
-        let tx_builder = TxBuilder::new().set_payload(&NoExtra).set_ios(
-            &[faucets[0].make_input(None), faucets[1].make_input(None)],
-            &[reciever.make_output(Value(2))],
-        );
+        let tx_builder = TxBuilder::new()
+            .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
+            .set_ios(
+                &[faucets[0].make_input(None), faucets[1].make_input(None)],
+                &[reciever.make_output(Value(2))],
+            );
 
         let witness = make_witness(
             &block0_hash,

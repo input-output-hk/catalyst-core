@@ -1,5 +1,6 @@
 use crate::{
     chaintypes::HeaderId,
+    date::BlockDate,
     fee::FeeAlgorithm,
     fragment::{Fragment, FragmentId},
     testing::{
@@ -92,6 +93,7 @@ impl TestTxBuilder {
         }];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &outputs);
 
         let witness =
@@ -102,9 +104,10 @@ impl TestTxBuilder {
         TestTx { tx }
     }
 
-    pub fn move_to_outputs_from_faucet(
+    pub fn move_to_outputs_from_faucet_with_validity(
         &self,
         test_ledger: &mut TestLedger,
+        validity: Option<BlockDate>,
         destination: &[Output<Address>],
     ) -> TestTx {
         assert_eq!(
@@ -125,6 +128,7 @@ impl TestTxBuilder {
         )];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(validity.unwrap_or(BlockDate::first()))
             .set_ios(&inputs, &destination);
 
         let witness =
@@ -133,6 +137,14 @@ impl TestTxBuilder {
 
         let tx = tx_builder.set_witnesses(&witnesses).set_payload_auth(&());
         TestTx { tx }
+    }
+
+    pub fn move_to_outputs_from_faucet(
+        &self,
+        test_ledger: &mut TestLedger,
+        destination: &[Output<Address>],
+    ) -> TestTx {
+        self.move_to_outputs_from_faucet_with_validity(test_ledger, None, destination)
     }
 
     pub fn move_all_funds(
@@ -186,6 +198,7 @@ impl TestTxBuilder {
             .collect();
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
+            .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &destinations);
 
         let witnesses: Vec<Witness> = sources

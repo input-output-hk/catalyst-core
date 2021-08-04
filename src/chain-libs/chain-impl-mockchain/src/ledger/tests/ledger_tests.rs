@@ -3,6 +3,7 @@
 use crate::{
     chaintypes::ConsensusType,
     config::ConfigParam,
+    date::BlockDate,
     fragment::{config::ConfigParams, Fragment},
     ledger::{
         ledger::{
@@ -38,7 +39,7 @@ pub fn ledger_accepts_correct_transaction(
         .move_funds(&mut ledger, &faucet, &receiver, faucet.value)
         .get_fragment();
     let total_funds_before = ledger.total_funds();
-    let result = ledger.apply_transaction(fragment);
+    let result = ledger.apply_transaction(fragment, BlockDate::first());
 
     if result.is_err() {
         return TestResult::error(format!("Error from ledger: {}", result.err().unwrap()));
@@ -72,7 +73,7 @@ pub fn total_funds_are_const_in_ledger(
         &transaction_data.output_addresses,
     );
     let total_funds_before = ledger.total_funds();
-    let result = ledger.apply_transaction(signed_tx.get_fragment());
+    let result = ledger.apply_transaction(signed_tx.get_fragment(), BlockDate::first());
 
     if result.is_err() {
         return TestResult::error(format!("Error from ledger: {:?}", result.err()));

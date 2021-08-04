@@ -134,7 +134,8 @@ UPDATE-VOTE       = TODO
 ; note: IOW stand for Inputs-Outputs-Witnesses
 ; ####################
 
-IOW               = SIZE-ELEMENT-8BIT ; number of inputs
+IOW               = BLOCK-DATE        ; end validity of this IOW
+                    SIZE-ELEMENT-8BIT ; number of inputs
                     SIZE-ELEMENT-8BIT ; number of outputs
                     *INPUT            ; as many as indicated in the number of inputs
                     *OUTPUT           ; sa many as indicated in the number of outputs

@@ -180,8 +180,8 @@ impl MultiController {
             })
             .rev()
             .collect();
-    
-      self.backend()
+
+        self.backend()
             .send_fragments_at_once(txs, use_v1)
             .map_err(Into::into)
     }

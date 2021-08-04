@@ -2,7 +2,7 @@ use crate::common::{
     load::build_load_config, load::private_vote_test_scenario, vitup_setup, VoteTiming,
 };
 use assert_fs::TempDir;
-use iapyx::{IapyxLoad, Protocol};
+use iapyx::{NodeLoad, Protocol};
 use jortestkit::measurement::Status;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::scenario::network::setup_network;
@@ -49,13 +49,19 @@ pub fn load_test_public_100_000_votes() {
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
     qr_codes_folder.push("vit_backend/qr-codes");
 
-    let config = build_load_config(endpoint, qr_codes_folder, no_of_threads, setup_parameters);
-    let iapyx_load = IapyxLoad::new(config);
+    let config = build_load_config(
+        endpoint,
+        qr_codes_folder,
+        no_of_threads,
+        1,
+        setup_parameters,
+    );
+    let iapyx_load = NodeLoad::new(config);
     if let Some(benchmark) = iapyx_load.start().unwrap() {
         assert!(benchmark.status() == Status::Green, "too low efficiency");
     }
 
-    vote_timing.wait_for_tally_start(nodes.get(0).unwrap().explorer());
+    vote_timing.wait_for_tally_start(nodes.get(0).unwrap().rest());
 
     let mut committee = controller.wallet("committee").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
@@ -96,7 +102,7 @@ pub fn load_test_private_pesimistic() {
         .voting_power(31_000)
         .private(true);
 
-    private_vote_test_scenario(quick_setup, endpoint, no_of_threads);
+    private_vote_test_scenario(quick_setup, endpoint, no_of_threads, 1);
 }
 
 #[test]
@@ -118,5 +124,5 @@ pub fn load_test_private_optimistic() {
         .voting_power(31_000)
         .private(true);
 
-    private_vote_test_scenario(quick_setup, endpoint, no_of_threads);
+    private_vote_test_scenario(quick_setup, endpoint, no_of_threads, 1);
 }

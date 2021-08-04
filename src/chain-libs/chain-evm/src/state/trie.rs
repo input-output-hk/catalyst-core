@@ -81,6 +81,10 @@ impl<K: Clone + Hash + Eq, V: Clone> Trie<K, V> {
     pub fn iter(&self) -> HamtIter<'_, K, V> {
         self.0.iter()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
 }
 
 #[cfg(test)]

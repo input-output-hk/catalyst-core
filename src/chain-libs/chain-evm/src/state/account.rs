@@ -18,6 +18,12 @@ pub struct Account {
     pub code: Vec<u8>,
 }
 
+impl Account {
+    pub fn is_empty(&self) -> bool {
+        self.nonce == Nonce::zero() && self.balance == Balance::zero() && self.storage.is_empty()
+    }
+}
+
 /// An address of an EVM account.
 pub type AccountAddress = H160;
 

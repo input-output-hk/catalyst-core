@@ -99,7 +99,7 @@ impl Backend for VirtualMachine {
 }
 
 impl ApplyBackend for VirtualMachine {
-    fn apply<A, I, L>(&mut self, values: A, logs: L, _delete_empty: bool)
+    fn apply<A, I, L>(&mut self, values: A, logs: L, delete_empty: bool)
     where
         A: IntoIterator<Item = Apply<I>>,
         I: IntoIterator<Item = (H256, H256)>,
@@ -131,6 +131,10 @@ impl ApplyBackend for VirtualMachine {
                         } else {
                             account.storage = account.storage.put(index, value);
                         }
+                    }
+
+                    if delete_empty && account.is_empty() {
+                        self.state.delete(&address);
                     }
                 }
                 Apply::Delete { address } => {

@@ -39,7 +39,7 @@ impl AccountTrie {
         code: Option<Vec<u8>>,
         reset_storage: bool,
     ) -> Account {
-        let account = if let Some(acct) = self.get(&address) {
+        let account = if let Some(acct) = self.get(address) {
             acct.clone()
         } else {
             Default::default()

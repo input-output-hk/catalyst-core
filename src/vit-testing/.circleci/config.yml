@@ -34,9 +34,7 @@ jobs:
           no_output_timeout: 60m
           environment:
             RUST_BACKTRACE: 1
-          command: |
-            cd vitup
-            cargo test --all-features --no-run
+          command: cargo test --all-features --no-run
   vitup_test:
     description: Steps for the vitup unit test jobs
     docker:

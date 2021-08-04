@@ -132,8 +132,8 @@ impl ApplyBackend for VirtualMachine {
                         }
                     }
                 }
-                Apply::Delete { address: _ } => {
-                    todo!();
+                Apply::Delete { address } => {
+                    self.state.delete(&address);
                 }
             }
         }

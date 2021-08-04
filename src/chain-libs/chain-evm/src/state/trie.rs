@@ -67,6 +67,17 @@ impl<K: Clone + Hash + Eq, V: Clone> Trie<K, V> {
         *self = Self(new_state);
     }
 
+    /// Similar to remove a value from a trie, but uses mutable reference.
+    pub fn delete(&mut self, key: &K) {
+        match self.0.remove(key) {
+            Ok(new_state) => *self = Self(new_state),
+            Err(RemoveError::KeyNotFound) => (),
+            Err(RemoveError::ValueNotMatching) => {
+                unreachable!("this error should never occur: we are not matching the removed value")
+            }
+        }
+    }
+
     pub fn iter(&self) -> HamtIter<'_, K, V> {
         self.0.iter()
     }

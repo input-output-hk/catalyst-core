@@ -30,6 +30,7 @@ pub struct VirtualMachine {
     _context: RuntimeContext,
     environment: Environment,
     state: AccountTrie,
+    logs: Vec<Log>,
 }
 
 impl Backend for VirtualMachine {
@@ -98,7 +99,7 @@ impl Backend for VirtualMachine {
 }
 
 impl ApplyBackend for VirtualMachine {
-    fn apply<A, I, L>(&mut self, values: A, _logs: L, _delete_empty: bool)
+    fn apply<A, I, L>(&mut self, values: A, logs: L, _delete_empty: bool)
     where
         A: IntoIterator<Item = Apply<I>>,
         I: IntoIterator<Item = (H256, H256)>,
@@ -136,6 +137,11 @@ impl ApplyBackend for VirtualMachine {
                     self.state.delete(&address);
                 }
             }
+        }
+
+        // save the logs
+        for log in logs {
+            self.logs.push(log);
         }
     }
 }

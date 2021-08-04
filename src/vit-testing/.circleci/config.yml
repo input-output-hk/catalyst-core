@@ -184,3 +184,5 @@ workflows:
             branches:
               only:
                 - main
+    jobs:
+      - test_debug

@@ -77,7 +77,6 @@ impl LedgerState {
     ) -> FragmentsProcessingSummary {
         let mut filtered_fragments = Vec::new();
         let mut rejected = Vec::new();
-
         let mut fragments = fragments.into_iter();
 
         for fragment in fragments.by_ref() {
@@ -121,7 +120,7 @@ impl LedgerState {
 
         let mut accepted = HashSet::new();
 
-        for fragment in fragments {
+        for fragment in filtered_fragments {
             let id = fragment.id();
             self.message(fragment);
             accepted.insert(id);

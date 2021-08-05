@@ -295,7 +295,7 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
             return Err(ValidationError::DuplicatedFragment { id: fragment_id });
         }
 
-        let (_, identifier, witness) = deconstruct_account_transaction(&transaction)?;
+        let (_, identifier, witness) = deconstruct_account_transaction(transaction)?;
 
         transaction.verify_strictly_balanced(self.fees.calculate_tx(transaction))?;
 
@@ -426,7 +426,7 @@ pub fn recover_ledger_from_logs(
     });
 
     // use double of proposals range as possible spending counters to check
-    let spending_counter_max_check: u32 = voteplans_from_block0(&block0)
+    let spending_counter_max_check: u32 = voteplans_from_block0(block0)
         .values()
         .flat_map(|voteplan| voteplan.proposals().iter())
         .count() as u32
@@ -517,7 +517,7 @@ impl FragmentReplayer {
         let mut config =
             Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
 
-        let voteplans = voteplans_from_block0(&block0);
+        let voteplans = voteplans_from_block0(block0);
 
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();
@@ -609,9 +609,9 @@ impl FragmentReplayer {
                     .issue_vote_cast_cert(
                         &self.old_block0_hash,
                         &self.fees,
-                        &vote_plan,
+                        vote_plan,
                         proposals_idx,
-                        &choice,
+                        choice,
                     )
                     .unwrap();
                 Ok((res, wallet))

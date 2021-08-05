@@ -13,13 +13,13 @@ use std::path::{Path, PathBuf};
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    IdeascaleError(#[from] IdeascaleError),
+    Ideascale(#[from] IdeascaleError),
 
     #[error(transparent)]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 
     #[error(transparent)]
-    SerdeError(#[from] serde_json::Error),
+    Serde(#[from] serde_json::Error),
 }
 
 #[derive(Debug, StructOpt)]
@@ -136,10 +136,10 @@ impl Import {
 
 fn dump_content_to_file(content: impl Serialize, file_path: &Path) -> Result<(), Error> {
     let writer = jcli_lib::utils::io::open_file_write(&Some(file_path))?;
-    serde_json::to_writer_pretty(writer, &content).map_err(Error::SerdeError)
+    serde_json::to_writer_pretty(writer, &content).map_err(Error::Serde)
 }
 
 fn read_tags_from_file(file_path: &Path) -> Result<CustomFieldTags, Error> {
     let reader = io_utils::open_file_read(&Some(file_path))?;
-    serde_json::from_reader(reader).map_err(Error::SerdeError)
+    serde_json::from_reader(reader).map_err(Error::Serde)
 }

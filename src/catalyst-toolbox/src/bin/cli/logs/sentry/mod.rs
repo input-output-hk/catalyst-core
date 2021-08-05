@@ -8,13 +8,13 @@ use structopt::StructOpt;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    SentryLogError(#[from] SentryLogError),
+    SentryLog(#[from] SentryLogError),
 
     #[error(transparent)]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 
     #[error(transparent)]
-    JsonError(#[from] serde_json::Error),
+    Json(#[from] serde_json::Error),
 }
 
 #[derive(StructOpt)]

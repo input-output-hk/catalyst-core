@@ -20,31 +20,31 @@ use structopt::StructOpt;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 
     #[error(transparent)]
-    SerializationError(#[from] serde_json::Error),
+    Serialization(#[from] serde_json::Error),
 
     #[error(transparent)]
-    RecoveryError(#[from] catalyst_toolbox::recovery::tally::Error),
+    Recovery(#[from] catalyst_toolbox::recovery::tally::Error),
 
     #[error(transparent)]
-    OutputFileError(#[from] OutputFileError),
+    OutputFile(#[from] OutputFileError),
 
     #[error(transparent)]
-    OutputFormatError(#[from] OutputFormatError),
+    OutputFormat(#[from] OutputFormatError),
 
     #[error(transparent)]
-    RequestError(#[from] reqwest::Error),
+    Request(#[from] reqwest::Error),
 
     #[error("Block0 should be provided either from a path (block0-path) or an url (block0-url)")]
     Block0Unavailable,
 
     #[error("Could not load persistent logs from path")]
-    PersistenLogsLoadingError(#[source] std::io::Error),
+    PersistenLogsLoading(#[source] std::io::Error),
 
     #[error("Could not load block0")]
-    Block0LoadingError(#[source] std::io::Error),
+    Block0Loading(#[source] std::io::Error),
 }
 
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
@@ -76,12 +76,12 @@ pub struct Replay {
 
 fn read_block0(path: PathBuf) -> Result<Block, Error> {
     let reader = std::fs::File::open(path)?;
-    Block::deserialize(BufReader::new(reader)).map_err(Error::Block0LoadingError)
+    Block::deserialize(BufReader::new(reader)).map_err(Error::Block0Loading)
 }
 
 fn load_block0_from_url(url: Url) -> Result<Block, Error> {
     let block0_body = reqwest::blocking::get(url)?.bytes()?;
-    Block::deserialize(BufReader::new(&block0_body[..])).map_err(Error::Block0LoadingError)
+    Block::deserialize(BufReader::new(&block0_body[..])).map_err(Error::Block0Loading)
 }
 
 impl Replay {
@@ -105,7 +105,7 @@ impl Replay {
         };
 
         let fragments = load_persistent_fragments_logs_from_folder_path(&logs_path)
-            .map_err(Error::PersistenLogsLoadingError)?;
+            .map_err(Error::PersistenLogsLoading)?;
 
         let (ledger, failed) = recover_ledger_from_logs(&block0, fragments)?;
         if !failed.is_empty() {

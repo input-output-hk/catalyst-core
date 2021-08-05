@@ -16,13 +16,13 @@ pub enum Error {
     MissingTokenParameter,
 
     #[error(transparent)]
-    SentryLogsError(#[from] sentry::Error),
+    SentryLogs(#[from] sentry::Error),
 
     #[error(transparent)]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 
     #[error("error deserializing logs from: {path}")]
-    DeserializeError {
+    Deserialize {
         path: PathBuf,
         source: serde_json::Error,
     },
@@ -97,7 +97,7 @@ impl Compare {
 
 pub fn load_logs_from_file<L: DeserializeOwned>(path: PathBuf) -> Result<Vec<L>, Error> {
     let reader = io::open_file_read(&Some(path.clone()))?;
-    serde_json::from_reader(reader).map_err(|e| Error::DeserializeError { path, source: e })
+    serde_json::from_reader(reader).map_err(|e| Error::Deserialize { path, source: e })
 }
 
 pub fn print_results(results: &LogCmpStats) {

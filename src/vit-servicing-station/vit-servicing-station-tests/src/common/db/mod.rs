@@ -1,6 +1,6 @@
 use diesel::expression_methods::ExpressionMethods;
 use diesel::query_dsl::RunQueryDsl;
-use diesel::SqliteConnection;
+use diesel::{Insertable, SqliteConnection};
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::{
@@ -215,7 +215,7 @@ impl<'a> DbInserter<'a> {
     pub fn insert_advisor_reviews(&self, reviews: &[AdvisorReview]) -> Result<(), DbInserterError> {
         for review in reviews {
             diesel::insert_or_ignore_into(community_advisors_reviews::table)
-                .values(review)
+                .values(review.clone().values())
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
         }

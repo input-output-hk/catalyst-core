@@ -87,7 +87,8 @@ create table community_advisors_reviews (
   proposal_id INTEGER NOT NULL,
   rating_given INTEGER NOT NULL,
   assessor VARCHAR NOT NULL,
-  note VARCHAR NOT NULL
+  note VARCHAR NOT NULL,
+  tag VARCHAR NOT NULL
 );
 
 CREATE VIEW full_proposals_info

@@ -26,6 +26,7 @@ table! {
         rating_given -> Integer,
         assessor -> Text,
         note -> Text,
+        tag -> Text,
     }
 }
 

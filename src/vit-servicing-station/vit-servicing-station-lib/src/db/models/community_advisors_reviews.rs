@@ -87,6 +87,7 @@ impl Queryable<community_advisors_reviews::SqlType, Db> for AdvisorReview {
 }
 
 impl Insertable<community_advisors_reviews::table> for AdvisorReview {
+    #[allow(clippy::type_complexity)]
     type Values = (
         diesel::dsl::Eq<community_advisors_reviews::proposal_id, i32>,
         diesel::dsl::Eq<community_advisors_reviews::rating_given, i32>,

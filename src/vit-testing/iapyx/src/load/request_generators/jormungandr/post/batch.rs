@@ -1,6 +1,7 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
 use crate::Wallet;
+use jormungandr_testing_utils::testing::VoteCastCounter;
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
@@ -16,6 +17,7 @@ pub struct BatchWalletRequestGen {
     use_v1: bool,
     wallet_index: usize,
     update_account_before_vote: bool,
+    vote_cast_counter: VoteCastCounter,
 }
 
 impl BatchWalletRequestGen {
@@ -26,12 +28,22 @@ impl BatchWalletRequestGen {
         update_account_before_vote: bool,
     ) -> Self {
         let proposals = multi_controller.proposals().unwrap();
+        let vote_plans = multi_controller.backend().vote_plan_statuses().unwrap();
         let options = proposals[0]
             .chain_vote_options
             .0
             .values()
             .cloned()
             .collect();
+
+        let vote_cast_counter = VoteCastCounter::new(
+            multi_controller.wallet_count(),
+            vote_plans
+                .iter()
+                .map(|v| (v.id.into(), v.proposals.len() as u8))
+                .collect(),
+        );
+
         Self {
             batch_size,
             use_v1,
@@ -41,6 +53,7 @@ impl BatchWalletRequestGen {
             options,
             wallet_index: 0,
             update_account_before_vote,
+            vote_cast_counter,
         }
     }
 
@@ -67,14 +80,28 @@ impl BatchWalletRequestGen {
         }
 
         let batch_size = self.batch_size;
-        let proposals = self.proposals.clone();
         let options = self.options.clone();
 
-        let proposals: Vec<Proposal> =
-            std::iter::from_fn(|| Some(self.next_usize() % self.proposals.len()))
-                .take(batch_size)
-                .map(|index| proposals.get(index).unwrap().clone())
-                .collect();
+        let counter = self
+            .vote_cast_counter
+            .advance_batch(batch_size, wallet_index)
+            .unwrap();
+
+        let mut proposals = Vec::new();
+
+        counter.iter().for_each(|item| {
+            for i in item.range() {
+                proposals.push(
+                    self.proposals
+                        .iter()
+                        .enumerate()
+                        .find(|(idx, x)| x.chain_voteplan_id == item.id().to_string() && *idx == i)
+                        .map(|(_, x)| x)
+                        .unwrap()
+                        .clone(),
+                );
+            }
+        });
 
         let choices: Vec<Choice> =
             std::iter::from_fn(|| Some(self.next_usize() % self.options.len()))
@@ -116,6 +143,7 @@ impl RequestGenerator for BatchWalletRequestGen {
             batch_size: self.batch_size,
             wallet_index: 0,
             update_account_before_vote: self.update_account_before_vote,
+            vote_cast_counter: self.vote_cast_counter.clone(),
         };
 
         (self, Some(new_gen))

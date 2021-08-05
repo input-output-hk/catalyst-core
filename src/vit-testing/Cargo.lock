@@ -2002,7 +2002,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.12.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=b2b27dfd7e2dd9253c103e92df2ae86f159d06f7#b2b27dfd7e2dd9253c103e92df2ae86f159d06f7"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f#48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2048,7 +2048,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.12.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=b2b27dfd7e2dd9253c103e92df2ae86f159d06f7#b2b27dfd7e2dd9253c103e92df2ae86f159d06f7"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f#48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.7.3",
@@ -2077,7 +2077,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.12.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=b2b27dfd7e2dd9253c103e92df2ae86f159d06f7#b2b27dfd7e2dd9253c103e92df2ae86f159d06f7"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f#48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2118,7 +2118,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.12.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=b2b27dfd7e2dd9253c103e92df2ae86f159d06f7#b2b27dfd7e2dd9253c103e92df2ae86f159d06f7"
+source = "git+https://github.com/input-output-hk/jormungandr.git?rev=48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f#48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",

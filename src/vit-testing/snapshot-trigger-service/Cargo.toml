@@ -12,7 +12,7 @@ chrono = "0.4"
 walkdir = "2.3.1"
 structopt = "0.3"
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev= "c81e6d54fc2aa0d4cb31c50859a8b29328a10157" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "b2b27dfd7e2dd9253c103e92df2ae86f159d06f7" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" } 
 futures = "0.3.8"
 assert_fs = "1.0"

@@ -54,14 +54,13 @@ pub async fn fetch_all(
         .map(|c| tokio::spawn(fetch::get_proposals_data(c.id, api_token.clone())))
         .collect();
 
-    let proposals: Vec<Proposal> = futures::future::try_join_all(proposals_tasks)
+    let proposals = futures::future::try_join_all(proposals_tasks)
         .await?
         .into_iter()
         .flatten()
         .flatten()
         // filter out non
-        .filter(|p| filter_proposal_by_stage_type(&p.stage_type))
-        .collect();
+        .filter(|p| filter_proposal_by_stage_type(&p.stage_type));
 
     let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
     stages.retain(|stage| filter_stages(stage, stage_label, &funnels));
@@ -90,7 +89,7 @@ pub async fn fetch_all(
             .find(|f| f.name.as_ref().contains(&format!("Fund{}", fund)))
             .unwrap_or_else(|| panic!("Selected fund {}, wasn't among the available funds", fund)),
         challenges: challenges.into_iter().map(|c| (c.id, c)).collect(),
-        proposals: proposals.into_iter().map(|p| (p.proposal_id, p)).collect(),
+        proposals: proposals.map(|p| (p.proposal_id, p)).collect(),
         scores,
     })
 }

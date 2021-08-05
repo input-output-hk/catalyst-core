@@ -19,5 +19,5 @@ pub fn soak_test_private_super_optimistic() {
         .voting_power(1_500_000)
         .private(true);
 
-    private_vote_test_scenario(quick_setup, endpoint, no_of_threads);
+    private_vote_test_scenario(quick_setup, endpoint, no_of_threads, 1);
 }

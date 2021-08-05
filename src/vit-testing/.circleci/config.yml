@@ -1,24 +1,51 @@
 version: 2.1
-
 executors:
   rust-stable:
     docker:
-      - image: cimg/rust:1.53.0-node
+      - image: 'cimg/rust:1.53.0-node'
     working_directory: /home/circleci/build
     resource_class: xlarge
-
 jobs:
-  vitup_test:
-    description: "Steps for the vitup unit test jobs"
+  build_all_targets:
+    description: Builds all test features
     docker:
-      - image: cimg/rust:1.53.0-node
+      - image: 'cimg/rust:1.53.0-node'
     parameters:
       mode:
         type: string
         default: ''
       cargo_behavior:
         type: string
-        default: --verbose
+        default: '--verbose'
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Print version information
+          command: rustc --version; cargo --version
+      - run:
+          name: install build reqs
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install build-essential libssl-dev pkg-config    
+      - run:
+          name: Run tests build
+          no_output_timeout: 60m
+          environment:
+            RUST_BACKTRACE: 1
+          command: cargo test --all-features --no-run --jobs 1
+  vitup_test:
+    description: Steps for the vitup unit test jobs
+    docker:
+      - image: 'cimg/rust:1.53.0-node'
+    parameters:
+      mode:
+        type: string
+        default: ''
+      cargo_behavior:
+        type: string
+        default: '--verbose'
     steps:
       - checkout
       - attach_workspace:
@@ -45,9 +72,12 @@ jobs:
             cargo install --path jcli --locked
       - run:
           name: checkout vit-station-service
-          command: |
-            git clone https://github.com/input-output-hk/vit-servicing-station.git
+          command: >
+            git clone
+            https://github.com/input-output-hk/vit-servicing-station.git
+
             cd vit-servicing-station
+
             git checkout df9490ae33bb3abef8cb6877001091b179c5d38b
       - run:
           name: install vit-station-service
@@ -66,25 +96,23 @@ jobs:
           command: |
             cd vitup
             cargo test --release -- --test-threads=1
-
   test_debug:
     executor: rust-stable
     environment:
-      RUSTFLAGS: -D warnings
+      RUSTFLAGS: '-D warnings'
       CARGO_INCREMENTAL: 0
     steps:
       - test
-
 commands:
   test:
-    description: "Steps for the test jobs"
+    description: Steps for the test jobs
     parameters:
       mode:
         type: string
         default: ''
       cargo_behavior:
         type: string
-        default: --verbose
+        default: '--verbose'
     steps:
       - checkout
       - attach_workspace:
@@ -116,9 +144,12 @@ commands:
             cargo install --path jcli --locked
       - run:
           name: checkout vit-station-service
-          command: |
-            git clone https://github.com/input-output-hk/vit-servicing-station.git
+          command: >
+            git clone
+            https://github.com/input-output-hk/vit-servicing-station.git
+
             cd vit-servicing-station
+
             git checkout df9490ae33bb3abef8cb6877001091b179c5d38b
       - run:
           name: install vit-station-service
@@ -142,3 +173,14 @@ workflows:
     jobs:
       - test_debug
       - vitup_test
+      - build_all_targets
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - test_debug

@@ -118,7 +118,14 @@ impl CsvConverter {
         challenges: Vec<AdvisorReview>,
         path: P,
     ) -> Result<(), Error> {
-        let headers = vec!["id", "proposal_id", "rating_given", "assessor", "note"];
+        let headers = vec![
+            "id",
+            "proposal_id",
+            "rating_given",
+            "assessor",
+            "note",
+            "tag",
+        ];
 
         let content: Vec<Vec<String>> = challenges.iter().map(convert_advisor_review).collect();
         self.build_file(headers, content, path)
@@ -240,5 +247,6 @@ fn convert_advisor_review(review: &AdvisorReview) -> Vec<String> {
         review.rating_given.to_string(),
         review.assessor.to_string(),
         review.note.to_string(),
+        review.tag.to_string(),
     ]
 }

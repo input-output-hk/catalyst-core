@@ -22,7 +22,7 @@ use rand::{rngs::OsRng, RngCore};
 use std::{collections::HashMap, iter};
 
 use chrono::DateTime;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::{AdvisorReview, ReviewTag};
 use vit_servicing_station_lib::db::models::proposals::{
     community_choice, simple, FullProposalInfo, ProposalChallengeInfo,
 };
@@ -362,6 +362,7 @@ impl ArbitraryGenerator {
             rating_given: (self.id_generator.next_u32() % 500) as i32,
             assessor: Name().fake::<String>(),
             note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
+            tag: ReviewTag::Alignment,
         }
     }
 

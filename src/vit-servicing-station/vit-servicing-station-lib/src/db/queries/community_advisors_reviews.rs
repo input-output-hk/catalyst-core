@@ -5,7 +5,7 @@ use crate::db::{
 };
 use crate::v0::errors::HandleError;
 
-use diesel::{ExpressionMethods, QueryDsl, QueryResult, RunQueryDsl};
+use diesel::{ExpressionMethods, Insertable, QueryDsl, QueryResult, RunQueryDsl};
 
 pub async fn query_reviews_by_fund_id(
     id: i32,
@@ -29,6 +29,12 @@ pub fn batch_insert_advisor_reviews(
     db_conn: &DbConnection,
 ) -> QueryResult<usize> {
     diesel::insert_into(community_advisors_reviews::table)
-        .values(reviews)
+        .values(
+            reviews
+                .iter()
+                .cloned()
+                .map(|r| r.values())
+                .collect::<Vec<_>>(),
+        )
         .execute(db_conn)
 }

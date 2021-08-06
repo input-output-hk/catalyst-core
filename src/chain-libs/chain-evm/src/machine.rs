@@ -125,22 +125,22 @@ impl ApplyBackend for VirtualMachine {
                     // iterate over the apply_storage keys and values
                     // and put them into the account.
                     for (index, value) in apply_storage {
-                        if value == crate::state::Value::default() {
+                        account.storage = if value == crate::state::Value::default() {
                             // value is full of zeroes, remove it
-                            account.storage = account.storage.remove(&index);
+                            account.storage.clone().remove(&index)
                         } else {
-                            account.storage = account.storage.put(index, value);
+                            account.storage.clone().put(index, value)
                         }
                     }
 
-                    if delete_empty && account.is_empty() {
-                        self.state.delete(&address);
+                    self.state = if delete_empty && account.is_empty() {
+                        self.state.clone().remove(&address)
                     } else {
-                        self.state.insert_or_update(address, account);
+                        self.state.clone().put(address, account)
                     }
                 }
                 Apply::Delete { address } => {
-                    self.state.delete(&address);
+                    self.state = self.state.clone().remove(&address);
                 }
             }
         }

@@ -48,36 +48,6 @@ impl<K: Clone + Hash + Eq, V: Clone> Trie<K, V> {
         }
     }
 
-    /// Put a value into a trie, replacing an existing value if there was any.
-    /// This method is useful when you have a mutable reference to the Trie.
-    ///
-    /// This method is similar to `Trie::put`, except that it uses `&mut self` to
-    /// modify the inner state.
-    pub fn insert_or_update(&mut self, key: K, value: V) {
-        // using two branches instead of `Hamt::insert_or_update` to avoid unnecessary cloning
-        let new_state = if self.0.contains_key(&key) {
-            self.0
-                .update(&key, |_| Ok::<_, Infallible>(Some(value)))
-                .expect("we already checked that the key is present")
-        } else {
-            self.0
-                .insert(key, value)
-                .expect("we already checked that the key does not exist")
-        };
-        *self = Self(new_state);
-    }
-
-    /// Similar to remove a value from a trie, but uses mutable reference.
-    pub fn delete(&mut self, key: &K) {
-        match self.0.remove(key) {
-            Ok(new_state) => *self = Self(new_state),
-            Err(RemoveError::KeyNotFound) => (),
-            Err(RemoveError::ValueNotMatching) => {
-                unreachable!("this error should never occur: we are not matching the removed value")
-            }
-        }
-    }
-
     pub fn iter(&self) -> HamtIter<'_, K, V> {
         self.0.iter()
     }
@@ -112,18 +82,5 @@ mod tests {
 
         // removing non-existent value should not error
         storage_new3.remove(&key);
-    }
-
-    #[proptest]
-    fn insert_or_update(key: u8, value1: u8, value2: u8) {
-        let mut storage = Trie::<u8, u8>::new();
-
-        prop_assert_eq!(None, storage.get(&key));
-
-        storage.insert_or_update(key, value1);
-        prop_assert_eq!(Some(&value1), storage.get(&key));
-
-        storage.insert_or_update(key, value2);
-        prop_assert_eq!(Some(&value2), storage.get(&key))
     }
 }

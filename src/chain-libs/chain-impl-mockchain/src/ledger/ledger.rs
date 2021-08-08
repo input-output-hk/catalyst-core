@@ -23,7 +23,7 @@ use crate::value::*;
 use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError, VotePlanStatus};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use crate::{
-    certificate::{PoolId, VoteAction, VotePlan},
+    certificate::{OwnerStakeDelegation, PoolId, VoteAction, VoteCast, VotePlan},
     chaineval::ConsensusEvalContext,
 };
 use chain_addr::{Address, Discrimination, Kind};
@@ -839,9 +839,26 @@ impl Ledger {
             }
             Fragment::OwnerStakeDelegation(tx) => {
                 let tx = tx.as_slice();
+                // this is a lightweight check, do this early to avoid doing any unnecessary computation
+                check::valid_stake_owner_delegation_transaction(&tx)?;
                 let (new_ledger_, _fee) =
-                    new_ledger.apply_owner_stake_delegation(&tx, ledger_params)?;
-                new_ledger = new_ledger_;
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+
+                // we've just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
+                let (account_id, witness) = match tx.inputs().iter().next().unwrap().to_enum() {
+                    InputEnum::UtxoInput(_) => {
+                        return Err(Error::OwnerStakeDelegationInvalidTransaction);
+                    }
+                    InputEnum::AccountInput(account_id, _) => {
+                        (account_id, tx.witnesses().iter().next().unwrap())
+                    }
+                };
+
+                new_ledger = new_ledger_.apply_owner_stake_delegation(
+                    &account_id,
+                    &witness,
+                    &tx.payload().into_payload(),
+                )?;
             }
             Fragment::StakeDelegation(tx) => {
                 let tx = tx.as_slice();
@@ -929,8 +946,21 @@ impl Ledger {
             }
             Fragment::VoteCast(tx) => {
                 let tx = tx.as_slice();
-                let (new_ledger_, _fee) = new_ledger.apply_vote_cast(&tx, ledger_params)?;
-                new_ledger = new_ledger_;
+                // this is a lightweight check, do this early to avoid doing any unnecessary computation
+                check::valid_vote_cast(&tx)?;
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+
+                // we've just verified that this is a valid transaction (i.e. contains 1 input and 1 witness)
+                let account_id = match tx.inputs().iter().next().unwrap().to_enum() {
+                    InputEnum::UtxoInput(_) => {
+                        return Err(Error::OwnerStakeDelegationInvalidTransaction);
+                    }
+                    InputEnum::AccountInput(account_id, _) => account_id,
+                };
+
+                new_ledger =
+                    new_ledger_.apply_vote_cast(account_id, tx.payload().into_payload())?;
             }
             Fragment::VoteTally(tx) => {
                 let tx = tx.as_slice();
@@ -1043,64 +1073,13 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_vote_cast<'a>(
+    pub fn apply_vote_cast(
         mut self,
-        tx: &TransactionSlice<'a, certificate::VoteCast>,
-        dyn_params: &LedgerParameters,
-    ) -> Result<(Self, Value), Error> {
-        let sign_data_hash = tx.transaction_sign_data_hash();
-
-        let (account_id, value, witness) = {
-            check::valid_vote_cast(tx)?;
-
-            let input = tx.inputs().iter().next().unwrap();
-            match input.to_enum() {
-                InputEnum::UtxoInput(_) => {
-                    return Err(Error::VoteCastInvalidTransaction);
-                }
-                InputEnum::AccountInput(account_id, value) => {
-                    let witness = tx.witnesses().iter().next().unwrap();
-                    (account_id, value, witness)
-                }
-            }
-        };
-
-        let fee = dyn_params.fees.calculate_tx(tx);
-        if fee != value {
-            return Err(Error::NotBalanced {
-                inputs: value,
-                outputs: fee,
-            });
-        }
-
-        match match_identifier_witness(&account_id, &witness)? {
-            MatchingIdentifierWitness::Single(account_id, witness) => {
-                self.accounts = input_single_account_verify(
-                    self.accounts,
-                    &self.static_params.block0_initial_hash,
-                    &sign_data_hash,
-                    &account_id,
-                    witness,
-                    value,
-                )?;
-            }
-            MatchingIdentifierWitness::Multi(account_id, witness) => {
-                self.multisig = input_multi_account_verify(
-                    self.multisig,
-                    &self.static_params.block0_initial_hash,
-                    &sign_data_hash,
-                    &account_id,
-                    witness,
-                    value,
-                )?;
-            }
-        };
-        self = self.apply_tx_fee(fee)?;
-
-        let vote = tx.payload().into_payload();
+        account_id: UnspecifiedAccountIdentifier,
+        vote: VoteCast,
+    ) -> Result<Self, Error> {
         self.votes = self.votes.apply_vote(self.date(), account_id, vote)?;
-
-        Ok((self, fee))
+        Ok(self)
     }
 
     pub fn active_vote_plans(&self) -> Vec<VotePlanStatus> {
@@ -1268,68 +1247,23 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_owner_stake_delegation<'a>(
+    pub fn apply_owner_stake_delegation(
         mut self,
-        tx: &TransactionSlice<'a, certificate::OwnerStakeDelegation>,
-        dyn_params: &LedgerParameters,
-    ) -> Result<(Self, Value), Error> {
-        let sign_data_hash = tx.transaction_sign_data_hash();
-
-        let (account_id, value, witness) = {
-            check::valid_stake_owner_delegation_transaction(tx)?;
-
-            let input = tx.inputs().iter().next().unwrap();
-            match input.to_enum() {
-                InputEnum::UtxoInput(_) => {
-                    return Err(Error::OwnerStakeDelegationInvalidTransaction);
-                }
-                InputEnum::AccountInput(account_id, value) => {
-                    let witness = tx.witnesses().iter().next().unwrap();
-                    (account_id, value, witness)
-                }
+        account_id: &UnspecifiedAccountIdentifier,
+        witness: &Witness,
+        delegation: &OwnerStakeDelegation,
+    ) -> Result<Self, Error> {
+        let delegation_type = delegation.get_delegation_type();
+        match match_identifier_witness(account_id, witness)? {
+            MatchingIdentifierWitness::Single(account_id, _witness) => {
+                self.accounts = self.accounts.set_delegation(&account_id, delegation_type)?;
+            }
+            MatchingIdentifierWitness::Multi(account_id, _witness) => {
+                self.multisig = self.multisig.set_delegation(&account_id, delegation_type)?;
             }
         };
 
-        let fee = dyn_params.fees.calculate_tx(tx);
-        if fee != value {
-            return Err(Error::NotBalanced {
-                inputs: value,
-                outputs: fee,
-            });
-        }
-
-        match match_identifier_witness(&account_id, &witness)? {
-            MatchingIdentifierWitness::Single(account_id, witness) => {
-                let single = input_single_account_verify(
-                    self.accounts,
-                    &self.static_params.block0_initial_hash,
-                    &sign_data_hash,
-                    &account_id,
-                    witness,
-                    value,
-                )?;
-                self.accounts = single.set_delegation(
-                    &account_id,
-                    tx.payload().into_payload().get_delegation_type(),
-                )?;
-            }
-            MatchingIdentifierWitness::Multi(account_id, witness) => {
-                let multi = input_multi_account_verify(
-                    self.multisig,
-                    &self.static_params.block0_initial_hash,
-                    &sign_data_hash,
-                    &account_id,
-                    witness,
-                    value,
-                )?;
-                self.multisig = multi.set_delegation(
-                    &account_id,
-                    tx.payload().into_payload().get_delegation_type(),
-                )?;
-            }
-        };
-        self = self.apply_tx_fee(fee)?;
-        Ok((self, fee))
+        Ok(self)
     }
 
     pub fn get_stake_distribution(&self) -> StakeDistribution {

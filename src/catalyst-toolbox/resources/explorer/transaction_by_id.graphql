@@ -1,0 +1,10 @@
+query TransactionById($id: String!){
+    transaction(id: $id) {
+        blocks {
+            id
+            branches {
+                id
+            }
+        }
+    }
+}

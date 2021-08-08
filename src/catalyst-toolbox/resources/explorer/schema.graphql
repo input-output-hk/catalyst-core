@@ -1,0 +1,447 @@
+"""Directs the executor to query only when the field exists."""
+directive @ifdef on FIELD
+
+type Address {
+  """The base32 representation of an address"""
+  id: String!
+  delegation: Pool!
+}
+
+type BftLeader {
+  id: PublicKey!
+}
+
+"""A Block"""
+type Block {
+  """The Block unique identifier"""
+  id: String!
+
+  """Date the Block was included in the blockchain"""
+  date: BlockDate!
+
+  """The transactions contained in the block"""
+  transactions(first: Int, last: Int, before: String, after: String): TransactionConnection!
+  chainLength: ChainLength!
+  leader: Leader
+  previousBlock: Block!
+  totalInput: Value!
+  totalOutput: Value!
+  treasury: Treasury
+  isConfirmed: Boolean!
+  branches: [Branch!]!
+}
+
+type BlockConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [BlockEdge]
+  totalCount: Int!
+}
+
+"""Block's date, composed of an Epoch and a Slot"""
+type BlockDate {
+  epoch: Epoch!
+  slot: Slot!
+}
+
+"""An edge in a connection."""
+type BlockEdge {
+  """The item at the end of the edge"""
+  node: Block!
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type Branch {
+  id: String!
+  block: Block!
+  blocks(first: Int, last: Int, before: String, after: String): BlockConnection!
+  transactionsByAddress(addressBech32: String!, first: Int, last: Int, before: String, after: String): TransactionConnection!
+  allVotePlans(first: Int, last: Int, before: String, after: String): VotePlanStatusConnection!
+  allStakePools(first: Int, last: Int, before: String, after: String): PoolConnection!
+
+  """Get a paginated view of all the blocks in this epoch"""
+  blocksByEpoch(epoch: EpochNumber!, first: Int, last: Int, before: String, after: String): BlockConnection
+}
+
+union Certificate = StakeDelegation | OwnerStakeDelegation | PoolRegistration | PoolRetirement | PoolUpdate | VotePlan | VoteCast | VoteTally | EncryptedVoteTally
+
+"""
+Custom scalar type that represents a block's position in the blockchain.
+It's either 0 (the genesis block) or a positive number
+"""
+scalar ChainLength
+
+type EncryptedVoteTally {
+  votePlan: VotePlanId!
+}
+
+type Epoch {
+  id: EpochNumber!
+
+  """Not yet implemented"""
+  stakeDistribution: StakeDistribution!
+  firstBlock: Block
+  lastBlock: Block
+  totalBlocks: Int!
+}
+
+scalar EpochNumber
+
+scalar ExternalProposalId
+
+type FeeSettings {
+  constant: Value!
+  coefficient: Value!
+  certificate: Value!
+  certificatePoolRegistration: Value!
+  certificateStakeDelegation: Value!
+  certificateOwnerStakeDelegation: Value!
+  certificateVotePlan: Value!
+  certificateVoteCast: Value!
+}
+
+union Leader = Pool | BftLeader
+
+scalar NonZero
+
+type OwnerStakeDelegation {
+  pools: [Pool!]!
+}
+
+"""Information about pagination in a connection"""
+type PageInfo {
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
+enum PayloadType {
+  PUBLIC
+  PRIVATE
+}
+
+type Pool {
+  id: PoolId!
+  blocks(first: Int, last: Int, before: String, after: String): BlockConnection!
+  registration: PoolRegistration!
+  retirement: PoolRetirement
+}
+
+type PoolConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [PoolEdge]
+  totalCount: Int!
+}
+
+"""An edge in a connection."""
+type PoolEdge {
+  """The item at the end of the edge"""
+  node: Pool!
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+scalar PoolId
+
+type PoolRegistration {
+  pool: Pool!
+
+  """
+  Beginning of validity for this pool, this is used
+  to keep track of the period of the expected key and the expiry
+  """
+  startValidity: TimeOffsetSeconds!
+
+  """Management threshold for owners, this need to be <= #owners and > 0"""
+  managementThreshold: Int!
+
+  """Owners of this pool"""
+  owners: [PublicKey!]!
+  operators: [PublicKey!]!
+  rewards: TaxType!
+
+  """Reward account"""
+  rewardAccount: Address
+}
+
+type PoolRetirement {
+  poolId: PoolId!
+  retirementTime: TimeOffsetSeconds!
+}
+
+type PoolStakeDistribution {
+  pool: Pool!
+  delegatedStake: Value!
+}
+
+type PoolUpdate {
+  poolId: PoolId!
+  startValidity: TimeOffsetSeconds!
+}
+
+type Proposal {
+  externalId: ExternalProposalId!
+
+  """
+  get the vote options range
+
+  this is the available range of choices to make for the given
+  proposal. all casted votes for this proposals ought to be in
+  within the given range
+  """
+  options: VoteOptionRange!
+}
+
+scalar PublicKey
+
+type Query {
+  block(id: String!): Block!
+  blocksByChainLength(length: ChainLength!): [Block!]!
+  transaction(id: String!): Transaction!
+
+  """get all current tips, sorted (descending) by their length"""
+  branches: [Branch!]!
+
+  """
+  get the block that the ledger currently considers as the main branch's
+  tip
+  """
+  tip: Branch!
+  branch(id: String!): Branch!
+  epoch(id: EpochNumber!): Epoch!
+  address(bech32: String!): Address!
+  stakePool(id: PoolId!): Pool!
+  settings: Settings!
+  votePlan(id: String!): VotePlanStatus!
+}
+
+type Ratio {
+  numerator: Value!
+  denominator: NonZero!
+}
+
+type Settings {
+  fees: FeeSettings!
+  epochStabilityDepth: String!
+}
+
+scalar Slot
+
+type StakeDelegation {
+  account: Address!
+  pools: [Pool!]!
+}
+
+type StakeDistribution {
+  pools: [PoolStakeDistribution!]!
+}
+
+type Subscription {
+  tip: Branch!
+}
+
+type TallyPrivateStatus {
+  results: [Weight!]
+  options: VoteOptionRange!
+}
+
+type TallyPublicStatus {
+  results: [Weight!]!
+  options: VoteOptionRange!
+}
+
+union TallyStatus = TallyPublicStatus | TallyPrivateStatus
+
+type TaxType {
+  """what get subtracted as fixed value"""
+  fixed: Value!
+
+  """Ratio of tax after fixed amout subtracted"""
+  ratio: Ratio!
+
+  """Max limit of tax"""
+  maxLimit: NonZero
+}
+
+scalar TimeOffsetSeconds
+
+"""A transaction in the blockchain"""
+type Transaction {
+  """The hash that identifies the transaction"""
+  id: String!
+
+  """All the blocks this transaction is included in"""
+  blocks: [Block!]!
+  inputs: [TransactionInput!]!
+  outputs: [TransactionOutput!]!
+  certificate: Certificate
+}
+
+type TransactionConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [TransactionEdge]
+}
+
+"""An edge in a connection."""
+type TransactionEdge {
+  """The item at the end of the edge"""
+  node: Transaction!
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type TransactionInput {
+  amount: Value!
+  address: Address!
+}
+
+type TransactionOutput {
+  amount: Value!
+  address: Address!
+}
+
+type Treasury {
+  rewards: Value!
+  treasury: Value!
+  treasuryTax: TaxType!
+}
+
+scalar Value
+
+type VoteCast {
+  votePlan: VotePlanId!
+  proposalIndex: Int!
+}
+
+"""
+Vote option range
+
+provide a range of available choices for a given proposal. Usual value would
+be `[0, 3[` (or `0..3` in rust's range syntax), meaning there are 3 options
+available: `0`, `1` and `2`
+"""
+type VoteOptionRange {
+  """the start of the vote option range, starting from 0 usually"""
+  start: Int!
+
+  """the exclusive upper bound of the option range. minimal value is 1"""
+  end: Int!
+}
+
+type VotePayloadPrivateStatus {
+  proof: String!
+  encryptedVote: String!
+}
+
+type VotePayloadPublicStatus {
+  choice: Int!
+}
+
+union VotePayloadStatus = VotePayloadPublicStatus | VotePayloadPrivateStatus
+
+type VotePlan {
+  """the vote start validity"""
+  voteStart: BlockDate!
+
+  """
+  the duration within which it is possible to vote for one of the proposals
+  of this voting plan.
+  """
+  voteEnd: BlockDate!
+
+  """
+  the committee duration is the time allocated to the committee to open
+  the ballots and publish the results on chain
+  """
+  committeeEnd: BlockDate!
+  payloadType: PayloadType!
+
+  """the proposals to vote for"""
+  proposals: [Proposal!]!
+}
+
+scalar VotePlanId
+
+type VotePlanStatus {
+  id: VotePlanId!
+  voteStart: BlockDate!
+  voteEnd: BlockDate!
+  committeeEnd: BlockDate!
+  payloadType: PayloadType!
+  proposals: [VoteProposalStatus!]!
+}
+
+type VotePlanStatusConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [VotePlanStatusEdge]
+  totalCount: Int!
+}
+
+"""An edge in a connection."""
+type VotePlanStatusEdge {
+  """The item at the end of the edge"""
+  node: VotePlanStatus!
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type VoteProposalStatus {
+  proposalId: ExternalProposalId!
+  options: VoteOptionRange!
+  tally: TallyStatus
+  votes(first: Int, last: Int, before: String, after: String): VoteStatusConnection!
+}
+
+type VoteStatus {
+  address: Address!
+  payload: VotePayloadStatus!
+}
+
+type VoteStatusConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [VoteStatusEdge]
+  totalCount: Int!
+}
+
+"""An edge in a connection."""
+type VoteStatusEdge {
+  """The item at the end of the edge"""
+  node: VoteStatus!
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type VoteTally {
+  votePlan: VotePlanId!
+}
+
+scalar Weight
+

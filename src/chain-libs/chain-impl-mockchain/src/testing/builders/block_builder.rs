@@ -1,9 +1,9 @@
 use crate::{
-    block::Block,
+    block::{self, Block},
     chaintypes::ChainLength,
     date::BlockDate,
     fragment::{Contents, ContentsBuilder, Fragment},
-    header::{BlockVersion, Header, HeaderBuilderNew},
+    header::{BlockVersion, Header},
     key::Hash,
     testing::{data::StakePool, TestGen},
 };
@@ -72,18 +72,21 @@ impl GenesisPraosBlockBuilder {
         }
         let vrf_proof = TestGen::vrf_proof(stake_pool);
         let contents: Contents = self.contents_builder.clone().into();
-        let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents)
-            .set_parent(
-                &self.parent_id.unwrap(),
-                self.chain_length.unwrap().increase(),
+        block::builder(BlockVersion::KesVrfproof, contents, |builder| {
+            Ok::<_, ()>(
+                builder
+                    .set_parent(
+                        &self.parent_id.unwrap(),
+                        self.chain_length.unwrap().increase(),
+                    )
+                    .set_date(self.date.unwrap().next(time_era))
+                    .into_genesis_praos_builder()
+                    .unwrap()
+                    .set_consensus_data(&stake_pool.id(), &vrf_proof)
+                    .sign_using(stake_pool.kes().private_key())
+                    .generalize(),
             )
-            .set_date(self.date.unwrap().next(time_era))
-            .into_genesis_praos_builder()
-            .unwrap()
-            .set_consensus_data(&stake_pool.id(), &vrf_proof)
-            .sign_using(stake_pool.kes().private_key())
-            .generalize();
-
-        Block { header, contents }
+        })
+        .unwrap()
     }
 }

@@ -1,9 +1,9 @@
 use crate::{
-    block::Block,
+    block::{self, Block},
     chaintypes::HeaderId,
     date::BlockDate,
     fragment::Contents,
-    header::{BlockVersion, HeaderBuilderNew},
+    header::BlockVersion,
     ledger::ledger::Ledger,
     testing::arbitrary::update_proposal::UpdateProposalData,
     testing::{ConfigBuilder, LedgerBuilder},
@@ -45,11 +45,11 @@ pub fn ledger_adopt_settings_from_update_proposal(
         date.next_epoch(),
         &update_proposal_data.block_signing_key,
     );
-    let header_meta = block.header.get_content_eval_context();
+    let header_meta = block.header().get_content_eval_context();
     ledger = ledger
         .apply_block(
             ledger.get_ledger_parameters(),
-            &block.contents,
+            block.contents(),
             &header_meta,
         )
         .unwrap();
@@ -88,12 +88,16 @@ fn build_block(
     block_signing_key: &SecretKey<Ed25519>,
 ) -> Block {
     let contents = Contents::empty();
-    let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents)
-        .set_parent(&block0_hash, ledger.chain_length.increase())
-        .set_date(date.next_epoch())
-        .into_bft_builder()
-        .unwrap()
-        .sign_using(block_signing_key)
-        .generalize();
-    Block { header, contents }
+    block::builder(BlockVersion::Ed25519Signed, contents, |header_builder| {
+        Ok::<_, ()>(
+            header_builder
+                .set_parent(&block0_hash, ledger.chain_length.increase())
+                .set_date(date.next_epoch())
+                .into_bft_builder()
+                .unwrap()
+                .sign_using(block_signing_key)
+                .generalize(),
+        )
+    })
+    .unwrap()
 }

@@ -9,5 +9,6 @@ pub fn builder<E, F>(version: BlockVersion, contents: Contents, hdr_builder: F) 
 where
     F: FnOnce(HeaderBuilderNew) -> Result<Header, E>,
 {
-    hdr_builder(HeaderBuilderNew::new(version, &contents)).map(|header| Block { header, contents })
+    hdr_builder(HeaderBuilderNew::new(version, &contents))
+        .map(|header| Block::new_unchecked(header, contents))
 }

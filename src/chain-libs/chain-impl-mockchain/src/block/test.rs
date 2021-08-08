@@ -10,7 +10,7 @@ use crate::{
     header::{BftProof, GenesisPraosProof, HeaderBuilderNew},
 };
 #[cfg(test)]
-use chain_core::property::{Block as _, Deserialize, HasHeader as _, Serialize};
+use chain_core::property::{Block as _, Deserialize, Serialize};
 #[cfg(test)]
 use quickcheck::TestResult;
 use quickcheck::{Arbitrary, Gen};

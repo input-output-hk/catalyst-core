@@ -196,12 +196,12 @@ impl<S> Default for Multiverse<S> {
 mod test {
     use super::{Multiverse, Ref};
     use crate::{
-        block::{Block, Contents, ContentsBuilder},
+        block::{self, Block, Contents, ContentsBuilder},
         chaintypes::{ChainLength, ConsensusType, HeaderId},
         config::{Block0Date, ConfigParam},
         date::BlockDate,
         fragment::{ConfigParams, Fragment},
-        header::{BlockVersion, HeaderBuilderNew},
+        header::BlockVersion,
         key::Hash,
         ledger::Ledger,
         milli::Milli,
@@ -247,15 +247,19 @@ mod test {
 
             let cur_block = store.get(&cur_hash).unwrap();
             blocks_to_apply.push(cur_hash);
-            cur_hash = Hash::deserialize(cur_block.header.block_parent_hash().as_ref()).unwrap();
+            cur_hash = Hash::deserialize(cur_block.header().block_parent_hash().as_ref()).unwrap();
         };
 
         for hash in blocks_to_apply.iter().rev() {
             let block = store.get(hash).unwrap();
-            let header_meta = block.header.get_content_eval_context();
+            let header_meta = block.header().get_content_eval_context();
             let state = state_ref.state();
             let state = state
-                .apply_block(state.get_ledger_parameters(), &block.contents, &header_meta)
+                .apply_block(
+                    state.get_ledger_parameters(),
+                    block.contents(),
+                    &header_meta,
+                )
                 .unwrap();
             state_ref = multiverse.add(*hash, state);
         }
@@ -265,13 +269,13 @@ mod test {
 
     fn apply_block(state: &Ledger, block: &Block) -> Ledger {
         if state.chain_length().0 != 0 {
-            assert_eq!(state.chain_length().0 + 1, block.header.chain_length().0);
+            assert_eq!(state.chain_length().0 + 1, block.header().chain_length().0);
         }
         state
             .apply_block(
                 state.get_ledger_parameters(),
-                &block.contents,
-                &block.header.get_content_eval_context(),
+                block.contents(),
+                &block.header().get_content_eval_context(),
             )
             .unwrap()
     }
@@ -305,16 +309,17 @@ mod test {
         let mut genesis_content = ContentsBuilder::new();
         genesis_content.push(Fragment::Initial(ents));
         let genesis_content = genesis_content.into();
-        let genesis_header = HeaderBuilderNew::new(BlockVersion::Genesis, &genesis_content)
-            .set_genesis()
-            .set_date(BlockDate::first())
-            .into_unsigned_header()
-            .unwrap()
-            .generalize();
-        Block {
-            header: genesis_header,
-            contents: genesis_content,
-        }
+        block::builder(BlockVersion::Genesis, genesis_content, |header_builder| {
+            Ok::<_, ()>(
+                header_builder
+                    .set_genesis()
+                    .set_date(BlockDate::first())
+                    .into_unsigned_header()
+                    .unwrap()
+                    .generalize(),
+            )
+        })
+        .unwrap()
     }
 
     fn build_bft_block(
@@ -323,16 +328,19 @@ mod test {
         chain_length: ChainLength,
         leader: &LeaderPair,
     ) -> Block {
-        let block_ver = BlockVersion::Ed25519Signed;
         let contents = Contents::empty();
-        let header = HeaderBuilderNew::new(block_ver, &contents)
-            .set_parent(&parent, chain_length)
-            .set_date(date)
-            .into_bft_builder()
-            .unwrap()
-            .sign_using(&leader.key())
-            .generalize();
-        Block { header, contents }
+        block::builder(BlockVersion::Ed25519Signed, contents, |header_builder| {
+            Ok::<_, ()>(
+                header_builder
+                    .set_parent(parent, chain_length)
+                    .set_date(date)
+                    .into_bft_builder()
+                    .unwrap()
+                    .sign_using(&leader.key())
+                    .generalize(),
+            )
+        })
+        .unwrap()
     }
 
     #[test]
@@ -346,22 +354,22 @@ mod test {
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();
         let genesis_state =
-            Ledger::new(genesis_block.header.id(), genesis_block.contents.iter()).unwrap();
+            Ledger::new(genesis_block.header().id(), genesis_block.contents().iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
-        store.insert(genesis_block.header.id(), genesis_block.clone());
-        let _root = multiverse.add(genesis_block.header.id(), genesis_state.clone());
+        store.insert(genesis_block.header().id(), genesis_block.clone());
+        let _root = multiverse.add(genesis_block.header().id(), genesis_state.clone());
 
         let mut state = genesis_state;
         let mut _ref = None;
-        let mut parent = genesis_block.header.id();
+        let mut parent = genesis_block.header().id();
         let mut ids = vec![];
         for i in 1..10001 {
             date = date.next(&era);
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
             assert_eq!(state.chain_length().0, i);
-            assert_eq!(state.date, block.header.block_date());
-            let block_id = block.header.id();
+            assert_eq!(state.date, block.header().block_date());
+            let block_id = block.header().id();
             store.insert(block_id, block);
             _ref = Some(multiverse.add(block_id, state.clone()));
             multiverse.gc(SUFFIX_TO_KEEP);
@@ -406,13 +414,13 @@ mod test {
         let genesis_block = genesis_block(&leader, slot_duration, NUM_BLOCK_PER_EPOCH);
         let mut date = BlockDate::first();
         let genesis_state =
-            Ledger::new(genesis_block.header.id(), genesis_block.contents.iter()).unwrap();
+            Ledger::new(genesis_block.header().id(), genesis_block.contents().iter()).unwrap();
         assert_eq!(genesis_state.chain_length().0, 0);
-        let _root = multiverse.add(genesis_block.header.id(), genesis_state.clone());
+        let _root = multiverse.add(genesis_block.header().id(), genesis_state.clone());
 
         let mut state = genesis_state;
         let mut _ref = None;
-        let mut parent = genesis_block.header.id();
+        let mut parent = genesis_block.header().id();
         let mut ids = vec![];
 
         let first_fork_length = 100;
@@ -421,9 +429,9 @@ mod test {
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
-            _ref = Some(multiverse.add(block.header.id(), state.clone()));
-            ids.push(block.header.id());
-            parent = block.header.id();
+            _ref = Some(multiverse.add(block.header().id(), state.clone()));
+            ids.push(block.header().id());
+            parent = block.header().id();
         }
 
         multiverse.gc(SUFFIX_TO_KEEP);
@@ -434,16 +442,16 @@ mod test {
             "first fork length incorrect"
         );
 
-        let mut parent = genesis_block.header.id();
+        let mut parent = genesis_block.header().id();
         let second_fork_length = 102;
         for _ in 0..second_fork_length {
             date = date.next(&era);
             let block = build_bft_block(&parent, date, state.chain_length.increase(), &leader);
             state = apply_block(&state, &block);
 
-            _ref = Some(multiverse.add(block.header.id(), state.clone()));
-            ids.push(block.header.id());
-            parent = block.header.id();
+            _ref = Some(multiverse.add(block.header().id(), state.clone()));
+            ids.push(block.header().id());
+            parent = block.header().id();
         }
 
         multiverse.gc(SUFFIX_TO_KEEP);

@@ -563,7 +563,7 @@ mod tests {
             .with_parent_id(testledger.block0_hash)
             .build(&stake_pool, ledger.era());
 
-        assert!(selection.verify(&block.header).failure());
+        assert!(selection.verify(block.header()).failure());
     }
 
     #[test]
@@ -616,7 +616,7 @@ mod tests {
             .with_chain_length(ledger.chain_length())
             .with_parent_id(testledger.block0_hash)
             .build(&stake_pool, ledger.era());
-        assert!(selection.verify(&block.header).failure());
+        assert!(selection.verify(block.header()).failure());
     }
 
     #[test]
@@ -641,7 +641,7 @@ mod tests {
             .with_parent_id(testledger.block0_hash)
             .build(&stake_pool, ledger.era());
 
-        assert!(selection.verify(&block.header).failure());
+        assert!(selection.verify(block.header()).failure());
     }
 
     #[test]
@@ -661,7 +661,7 @@ mod tests {
             .with_parent_id(testledger.block0_hash)
             .build(&stake_pool, ledger.era());
 
-        assert!(selection.verify(&block.header).failure());
+        assert!(selection.verify(block.header()).failure());
     }
 
     #[test]

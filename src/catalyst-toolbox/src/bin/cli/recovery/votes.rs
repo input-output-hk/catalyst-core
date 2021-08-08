@@ -1,6 +1,6 @@
 use super::tally::Error;
 use catalyst_toolbox::recovery::tally::{
-    deconstruct_account_transaction, ValidationError, VoteFragmentFilter,
+    deconstruct_account_transaction, ValidatedFragment, ValidationError, VoteFragmentFilter,
 };
 use chain_core::property::{Deserialize, Fragment as _};
 use chain_impl_mockchain::{
@@ -117,7 +117,13 @@ impl VotesPrintout {
             VoteFragmentFilter::new(block0, 0..1000, to_filter.into_iter())
                 .unwrap()
                 .filter_map(Result::ok)
-                .map(|(f, sc)| (f, Some(sc)))
+                .map(
+                    |ValidatedFragment {
+                         fragment,
+                         spending_counter,
+                         ..
+                     }| (fragment, Some(spending_counter)),
+                )
                 .collect();
 
         let filtered_votes = group_by_voter(filtered_fragments);

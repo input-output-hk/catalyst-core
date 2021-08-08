@@ -538,6 +538,40 @@ fn transaction_transfer() {
     assert!(failed_fragments.is_empty());
 }
 
+#[test]
+fn expired_transaction() {
+    let (mut generator, _, tally_fragments) = setup_run! {
+        seed = [0; 32],
+        wallets = 1000,
+        voteplans = [
+            dates 0 => 2 => 3,
+            plans = [
+                one with 255 proposals
+            ]
+        ],
+        votes = 0,
+        in_order = false,
+        payload = PayloadType::Private
+    };
+    let mut wallet = generator.wallets().values().next().unwrap().clone();
+
+    let fragment_yes = Ok(PersistentFragmentLog {
+        fragment: cast_vote(&mut wallet, &generator, 0, 1),
+        time: jump_to_epoch(2, generator.block0_config()),
+    });
+
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &generator.block0(),
+        vec![fragment_yes]
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
+
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_eq!(failed_fragments.len(), 1);
+}
+
 fn assert_tally_eq(mut r1: Vec<VotePlanStatus>, mut r2: Vec<VotePlanStatus>) {
     r1.sort_by_key(|plan| plan.id.clone());
     r2.sort_by_key(|plan| plan.id.clone());

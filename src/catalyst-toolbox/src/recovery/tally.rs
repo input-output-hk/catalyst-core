@@ -18,9 +18,10 @@ use chain_impl_mockchain::{
     certificate,
     fragment::Fragment,
     ledger::{self, Ledger},
+    testing::scenario::FragmentFactory,
     transaction::InputEnum,
     value::ValueError,
-    vote::{CommitteeId, Payload, VoteError, VotePlanLedgerError},
+    vote::{CommitteeId, VoteError, VotePlanLedgerError},
 };
 use chain_time::{Epoch, Slot, SlotDuration, TimeEra, TimeFrame, Timeline};
 use imhamt::UpdateError;
@@ -372,6 +373,16 @@ impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<
                         .map_err(|e| (fragment.clone(), e))?;
                     Ok((fragment, sc))
                 }
+                Fragment::EncryptedVoteTally(ref transaction) => {
+                    if !self.validate_timestamp(time, &self.vote_end, &self.committee_end) {
+                        return Err((fragment, ValidationError::TallyPeriodError));
+                    }
+
+                    let sc = self
+                        .validate_tx(&transaction.as_slice(), fragment.id())
+                        .map_err(|e| (fragment.clone(), e))?;
+                    Ok((fragment, sc))
+                }
                 Fragment::Transaction(ref transaction) => {
                     let sc = self
                         .validate_tx(&transaction.as_slice(), fragment.id())
@@ -457,7 +468,7 @@ pub fn recover_ledger_from_logs(
                         })
                         .ok()
                 }
-                fragment @ Fragment::VoteTally(_) => {
+                fragment @ Fragment::VoteTally(_) | fragment @ Fragment::EncryptedVoteTally(_) => {
                     if inc_tally {
                         block_date = vote_end;
                         ledger = increment_ledger_time_up_to(ledger, vote_end);
@@ -509,7 +520,6 @@ pub fn recover_ledger_from_logs(
 struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
     non_voting_wallets: HashMap<Address, Wallet>,
-    voteplans: HashMap<VotePlanId, VotePlan>,
     old_block0_hash: Hash,
     fees: LinearFee,
 }
@@ -519,8 +529,6 @@ impl FragmentReplayer {
     fn from_block0(block0: &Block) -> Result<(Self, Block), Error> {
         let mut config =
             Block0Configuration::from_block(block0).map_err(Error::Block0ConfigurationError)?;
-
-        let voteplans = voteplans_from_block0(block0);
 
         let mut wallets = HashMap::new();
         let mut rng = rand::thread_rng();
@@ -561,7 +569,6 @@ impl FragmentReplayer {
             Self {
                 wallets,
                 non_voting_wallets: HashMap::new(),
-                voteplans,
                 old_block0_hash: block0.header.id().into(),
                 fees,
             },
@@ -577,14 +584,8 @@ impl FragmentReplayer {
 
                 let (vote_cast, identifier, _) =
                     deconstruct_account_transaction(&transaction_slice)?;
-                let address = Identifier::from(identifier.clone())
-                    .to_address(chain_addr::Discrimination::Production);
-
-                let choice = if let Payload::Public { choice } = vote_cast.payload() {
-                    choice
-                } else {
-                    return Err(ValidationError::UnsupportedPrivateVotes.into());
-                };
+                let address =
+                    Identifier::from(identifier).to_address(chain_addr::Discrimination::Production);
 
                 let address: Address = address.into();
                 let wallet = self
@@ -592,31 +593,12 @@ impl FragmentReplayer {
                     .get_mut(&address)
                     .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?;
 
-                let vote_plan = self
-                    .voteplans
-                    .get(vote_cast.vote_plan())
-                    .ok_or(Error::MissingVoteplanError)?;
-                let proposals_idx = vote_cast.proposal_index();
-
                 // we still use the old block0 hash because the new ledger will still use the old one for
                 // verifications. This makes possible the usage of old VoteTally transactions without the need
                 // to be replayed.
-                debug!(
-                    "replaying vote from {}, vote plan: {}, proposal idx: {}, choice: {:?}",
-                    identifier,
-                    &vote_plan.to_id(),
-                    proposals_idx,
-                    &choice
-                );
-                let res = wallet
-                    .issue_vote_cast_cert(
-                        &self.old_block0_hash,
-                        &self.fees,
-                        vote_plan,
-                        proposals_idx,
-                        choice,
-                    )
-                    .unwrap();
+                let res = FragmentFactory::new(self.old_block0_hash.into_hash(), self.fees)
+                    .vote_cast(&wallet.clone().into(), vote_cast);
+                debug!("replaying vote cast transaction");
                 Ok((res, wallet))
             }
             Fragment::Transaction(ref transaction) => {

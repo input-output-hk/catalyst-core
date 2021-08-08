@@ -329,6 +329,7 @@ dependencies = [
  "futures",
  "hex",
  "image",
+ "imhamt",
  "jcli",
  "jormungandr-lib",
  "jormungandr-testing-utils",

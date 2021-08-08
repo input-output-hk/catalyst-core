@@ -20,9 +20,10 @@ use chain_impl_mockchain::{
     ledger::{self, Ledger},
     transaction::InputEnum,
     value::ValueError,
-    vote::{CommitteeId, Payload},
+    vote::{CommitteeId, Payload, VoteError, VotePlanLedgerError},
 };
 use chain_time::{Epoch, Slot, SlotDuration, TimeEra, TimeFrame, Timeline};
+use imhamt::UpdateError;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::CommitteeIdDef;
@@ -495,7 +496,9 @@ pub fn recover_ledger_from_logs(
                 ))) => {
                     warn!("Account balance not enough to process fragment")
                 }
-                Err(_) => unreachable!("Should be impossible to fail, since we should be using proper spending counters and signatures"),
+                // allows this as it has nothing to do with spending counters / signatures
+                Err(ledger::Error::VotePlan(VotePlanLedgerError::VoteError{reason: UpdateError::ValueCallbackError(VoteError::AlreadyVoted), ..})) => (),
+                Err(_) => unreachable!("Should be impossible to fail, since we should be using proper spending counters and signatures")
             }
         }
     }

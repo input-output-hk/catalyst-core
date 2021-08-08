@@ -1,27 +1,24 @@
 use chain_impl_mockchain::block::Block;
 
-use chain_addr::Address;
-use chain_impl_mockchain::certificate::{
-    DecryptedPrivateTally, DecryptedPrivateTallyProposal, VotePlan, VotePlanId, VoteTallyPayload,
-};
-use chain_impl_mockchain::fee::LinearFee;
-use chain_impl_mockchain::fragment::Fragment;
-use chain_impl_mockchain::ledger::Ledger;
-use chain_impl_mockchain::stake::StakeControl;
-
 use super::blockchain::TestBlockchain;
-use chain_impl_mockchain::testing::data::CommitteeMembersManager;
-use chain_impl_mockchain::transaction::{
-    InputEnum, TransactionSlice, UnspecifiedAccountIdentifier,
+use chain_addr::Address;
+use chain_impl_mockchain::{
+    certificate::{
+        DecryptedPrivateTally, DecryptedPrivateTallyProposal, VotePlan, VotePlanId,
+        VoteTallyPayload,
+    },
+    fee::LinearFee,
+    fragment::Fragment,
+    ledger::Ledger,
+    stake::StakeControl,
+    testing::data::CommitteeMembersManager,
+    transaction::{InputEnum, TransactionSlice, UnspecifiedAccountIdentifier},
+    utxo,
+    vote::{Choice, PayloadType, VotePlanManager, VotePlanStatus},
 };
-use chain_impl_mockchain::utxo;
-use chain_impl_mockchain::vote::{Choice, PayloadType, VotePlanManager, VotePlanStatus};
-use jormungandr_lib::crypto::hash::Hash;
-use jormungandr_lib::interfaces::Block0Configuration;
+use jormungandr_lib::{crypto::hash::Hash, interfaces::Block0Configuration};
 use jormungandr_testing_utils::wallet::Wallet;
 use rand::prelude::*;
-use rand::Rng;
-use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
 use std::collections::HashMap;
 

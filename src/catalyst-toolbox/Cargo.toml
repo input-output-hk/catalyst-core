@@ -16,7 +16,7 @@ bench = false
 [dependencies]
 assert_fs = "1"
 csv = "1.1"
-wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", rev = "61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab" }
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
@@ -24,7 +24,6 @@ chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch 
 chain-storage = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chrono = "0.4"
 jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }

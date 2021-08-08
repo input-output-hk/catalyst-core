@@ -5,13 +5,17 @@ use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::fragment::FragmentId;
 use chain_impl_mockchain::ledger::{Error as LedgerError, Ledger};
 use chain_impl_mockchain::testing::TestGen;
+use chain_impl_mockchain::transaction::Transaction;
 use chain_impl_mockchain::vote::VotePlanStatus;
 use chain_time::TimeEra;
 use jormungandr_lib::interfaces::Block0Configuration;
+use jormungandr_lib::interfaces::RejectedFragmentInfo;
 use jormungandr_lib::interfaces::{BlockDate, SettingsDto};
 use jormungandr_lib::interfaces::{FragmentLog, FragmentOrigin, FragmentStatus};
+use jormungandr_lib::interfaces::{FragmentRejectionReason, FragmentsProcessingSummary};
 use jormungandr_lib::time::SystemTime;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::ops::Add;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -64,6 +68,66 @@ impl LedgerState {
         self.set_fragment_status(&mut fragment_log, self.fragment_strategy, result);
         self.fragment_logs.push(fragment_log);
         fragment_id
+    }
+
+    pub fn batch_message(
+        &mut self,
+        fragments: Vec<Fragment>,
+        fail_fast: bool,
+    ) -> FragmentsProcessingSummary {
+        let mut filtered_fragments = Vec::new();
+        let mut rejected = Vec::new();
+        let mut fragments = fragments.into_iter();
+
+        for fragment in fragments.by_ref() {
+            let id = fragment.id();
+            if self
+                .fragment_logs
+                .iter()
+                .any(|x| *x.fragment_id() == id.into())
+            {
+                rejected.push(RejectedFragmentInfo {
+                    id,
+                    reason: FragmentRejectionReason::FragmentAlreadyInLog,
+                });
+                continue;
+            }
+
+            if !is_fragment_valid(&fragment) {
+                rejected.push(RejectedFragmentInfo {
+                    id,
+                    reason: FragmentRejectionReason::FragmentInvalid,
+                });
+
+                if fail_fast {
+                    break;
+                }
+
+                continue;
+            }
+            filtered_fragments.push(fragment);
+        }
+
+        if fail_fast {
+            for fragment in fragments.by_ref() {
+                let id = fragment.id();
+                rejected.push(RejectedFragmentInfo {
+                    id,
+                    reason: FragmentRejectionReason::PreviousFragmentInvalid,
+                })
+            }
+        }
+
+        let mut accepted = HashSet::new();
+
+        for fragment in filtered_fragments {
+            let id = fragment.id();
+            self.message(fragment);
+            accepted.insert(id);
+        }
+
+        let accepted = accepted.into_iter().collect();
+        FragmentsProcessingSummary { accepted, rejected }
     }
 
     pub fn statuses(&self, ids: Vec<FragmentId>) -> HashMap<String, FragmentStatus> {
@@ -264,8 +328,34 @@ pub fn override_fragment_status(
     }
 }
 
+fn is_fragment_valid(fragment: &Fragment) -> bool {
+    match fragment {
+        // never valid in the pool, only acceptable in genesis
+        Fragment::Initial(_) => false,
+        Fragment::OldUtxoDeclaration(_) => false,
+        // general transactions stuff
+        Fragment::Transaction(ref tx) => is_transaction_valid(tx),
+        Fragment::StakeDelegation(ref tx) => is_transaction_valid(tx),
+        Fragment::OwnerStakeDelegation(ref tx) => is_transaction_valid(tx),
+        Fragment::PoolRegistration(ref tx) => is_transaction_valid(tx),
+        Fragment::PoolRetirement(ref tx) => is_transaction_valid(tx),
+        Fragment::PoolUpdate(ref tx) => is_transaction_valid(tx),
+        // vote stuff
+        Fragment::UpdateProposal(_) => false, // TODO: enable when ready
+        Fragment::UpdateVote(_) => false,     // TODO: enable when ready
+        Fragment::VotePlan(ref tx) => is_transaction_valid(tx),
+        Fragment::VoteCast(ref tx) => is_transaction_valid(tx),
+        Fragment::VoteTally(ref tx) => is_transaction_valid(tx),
+        Fragment::EncryptedVoteTally(ref tx) => is_transaction_valid(tx),
+    }
+}
+
+fn is_transaction_valid<E>(tx: &Transaction<E>) -> bool {
+    tx.verify_possibly_balanced().is_ok()
+}
+
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("ledger error")]
-    LedgerError(#[from] chain_impl_mockchain::ledger::Error),
+    Ledger(#[from] chain_impl_mockchain::ledger::Error),
 }

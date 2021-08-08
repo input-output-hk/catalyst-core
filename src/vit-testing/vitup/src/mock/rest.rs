@@ -5,6 +5,8 @@ use chain_core::property::Deserialize;
 use chain_crypto::PublicKey;
 use chain_impl_mockchain::account::AccountAlg;
 use chain_impl_mockchain::account::Identifier;
+use jormungandr_lib::interfaces::FragmentsBatch;
+use jormungandr_lib::interfaces::FragmentsProcessingSummary;
 use jormungandr_lib::interfaces::VotePlanStatus;
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
@@ -560,10 +562,10 @@ pub async fn get_fragment_statuses(
 }
 
 pub async fn post_fragments(
-    messages: Vec<String>,
+    batch: FragmentsBatch,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    context.lock().unwrap().log("post_fragments");
+    context.lock().unwrap().log("post_fragments_v1");
 
     if !context.lock().unwrap().available() {
         let code = context.lock().unwrap().state().error_code;
@@ -574,24 +576,17 @@ pub async fn post_fragments(
         return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
-    let fragments: Vec<Fragment> = messages
-        .into_iter()
-        .map(|message| {
-            let message = hex::decode(message).unwrap();
-            Fragment::deserialize(message.as_slice()).unwrap()
-        })
-        .collect();
-    let fragment_ids: Vec<String> = fragments
-        .iter()
-        .map(|fragment| fragment.id().to_string())
-        .collect();
-
     let mut context = context.lock().unwrap();
+    let summary = context
+        .state_mut()
+        .ledger_mut()
+        .batch_message(batch.fragments, batch.fail_fast);
 
-    for fragment in fragments.into_iter() {
-        let _ = context.state_mut().ledger_mut().message(fragment);
+    if !summary.rejected.is_empty() {
+        Err(warp::reject::custom(InvalidBatch { summary, code: 400 }))
+    } else {
+        Ok(HandlerResult(Ok(summary)))
     }
-    Ok(HandlerResult(Ok(fragment_ids)))
 }
 
 pub async fn get_fragment_logs(context: ContextLock) -> Result<impl Reply, Rejection> {
@@ -829,13 +824,26 @@ struct ForcedErrorCode {
     pub code: u16,
 }
 
+#[derive(Debug)]
+struct InvalidBatch {
+    pub summary: FragmentsProcessingSummary,
+    pub code: u16,
+}
+
 impl warp::reject::Reject for ForcedErrorCode {}
+impl warp::reject::Reject for InvalidBatch {}
 
 async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
     if let Some(forced_error_code) = r.find::<ForcedErrorCode>() {
         return Ok(warp::reply::with_status(
             "forced rejections".to_string(),
             StatusCode::from_u16(forced_error_code.code).unwrap(),
+        ));
+    }
+    if let Some(invalid_batch) = r.find::<InvalidBatch>() {
+        return Ok(warp::reply::with_status(
+            serde_json::to_string(&invalid_batch.summary).unwrap(),
+            StatusCode::from_u16(invalid_batch.code).unwrap(),
         ));
     }
     Ok(warp::reply::with_status(

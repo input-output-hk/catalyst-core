@@ -48,7 +48,11 @@ pub enum Error {
 }
 
 impl CheckNode {
-    pub fn spawn(storage: PathBuf, genesis_block_hash: String) -> Result<Self, Error> {
+    pub fn spawn(
+        storage: PathBuf,
+        genesis_block_hash: String,
+        jormungandr_bin: Option<PathBuf>,
+    ) -> Result<Self, Error> {
         // FIXME: we are using test tools which are not always keen to keep
         // stdout clean of unwanted output.
         // This guard redirects stdout to null untils it's dropped
@@ -79,7 +83,7 @@ impl CheckNode {
         config.write_node_config();
 
         let inner = Starter::new()
-            .jormungandr_app(PathBuf::from(JORMUNGANDR_APP))
+            .jormungandr_app(jormungandr_bin.unwrap_or_else(|| PathBuf::from(JORMUNGANDR_APP)))
             .verify_by(StartupVerificationMode::Log)
             .timeout(DEFAULT_TIMEOUT)
             .verbose(false)

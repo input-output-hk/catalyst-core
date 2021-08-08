@@ -314,9 +314,25 @@ Given a dump of the blockchain of a Jormungandr deployment, verify that the prov
 the tallies of relevant vote plans were correctly computed.
 This is done by replaying all transactions in a local trusted node, and thus requires Jormungandr to be installed in the system.
 
+```shell
+USAGE:
+    catalyst-toolbox vote-check [OPTIONS] --blockchain <blockchain> --expected-results <expected-results> --genesis-block-hash <genesis-block-hash>
 
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
 
+OPTIONS:
+    -b, --blockchain <blockchain>                    Path to folder containing the full blockchain history saved in Jormungandr storage
+                                                     format
+    -e, --expected-results <expected-results>        Path to the expected results of the election, in Json format as returned by the
+                                                     /vote/active/plans endpoint
+    -g, --genesis-block-hash <genesis-block-hash>    Genesis block hash
+    -j, --jormungandr-bin <jormungandr-bin>          Path to the Jormungandr binary. If not provided, will look for 'jormungandr' in
+                                                     PATH
+    -t, --transactions <transactions>...             Ids of the transactions to check
 
+```
 
 ## Python scripts
 

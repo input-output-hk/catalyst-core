@@ -26,6 +26,9 @@ pub struct VoteCheck {
     /// Path to the expected results of the election, in Json format as returned by the /vote/active/plans endpoint
     #[structopt(short, long)]
     expected_results: PathBuf,
+    /// Path to the Jormungandr binary. If not provided, will look for 'jormungandr' in PATH
+    #[structopt(short, long)]
+    jormungandr_bin: Option<PathBuf>,
 }
 
 impl VoteCheck {
@@ -37,7 +40,11 @@ impl VoteCheck {
     ///    in the main chain
     ///
     pub fn exec(self) -> Result<(), Error> {
-        let node = CheckNode::spawn(self.blockchain.clone(), self.genesis_block_hash.clone())?;
+        let node = CheckNode::spawn(
+            self.blockchain.clone(),
+            self.genesis_block_hash.clone(),
+            self.jormungandr_bin,
+        )?;
 
         let expected_results: Vec<VotePlanStatus> =
             serde_json::from_reader(File::open(self.expected_results)?)?;

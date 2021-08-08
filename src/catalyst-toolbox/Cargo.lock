@@ -323,6 +323,7 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-ser",
  "chain-time",
+ "chain-vote",
  "chrono",
  "csv",
  "fixed",

@@ -45,7 +45,7 @@ pub enum CatalystCommand {
     /// Dump information related to catalyst fund
     Archive(archive::Archive),
     /// Validate catalyst elections
-    VoteCheck(vote_check::VoteCheck)
+    VoteCheck(vote_check::VoteCheck),
 }
 
 impl Cli {
@@ -74,11 +74,8 @@ impl CatalystCommand {
             Logs(logs) => logs.exec()?,
             QrCode(kedqr) => kedqr.exec()?,
             Ideascale(ideascale) => ideascale.exec()?,
-<<<<<<< HEAD
             Archive(archive) => archive.exec()?,
-=======
             VoteCheck(vote_check) => vote_check.exec()?,
->>>>>>> 054e523 (add tool to check votes have been correctly tallied)
         };
         Ok(())
     }

@@ -308,6 +308,16 @@ option the account has voted for.
 
 _Not yet implemented._
 
+#### Vote check
+
+Given a dump of the blockchain of a Jormungandr deployment, verify that the provided transactions were indeed confirmed in the chain and
+the tallies of relevant vote plans were correctly computed.
+This is done by replaying all transactions in a local trusted node, and thus requires Jormungandr to be installed in the system.
+
+
+
+
+
 ## Python scripts
 
 Use an updated version of `python3` and either create a venv or just install the dependencies from the

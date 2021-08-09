@@ -116,7 +116,7 @@ impl Backend for VirtualMachine {
     fn code(&self, address: H160) -> Vec<u8> {
         self.state
             .get(&address)
-            .map(|val| val.code.clone())
+            .map(|val| val.code.to_vec())
             .unwrap_or_default()
     }
     fn storage(&self, address: H160, index: H256) -> H256 {

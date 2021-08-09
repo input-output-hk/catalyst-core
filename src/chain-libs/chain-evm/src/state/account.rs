@@ -15,7 +15,7 @@ pub struct Account {
     /// Account data storage.
     pub storage: Storage,
     /// EVM bytecode of this account.
-    pub code: Vec<u8>,
+    pub code: Box<[u8]>,
 }
 
 impl Account {
@@ -50,7 +50,7 @@ impl AccountTrie {
             account.storage
         };
         let code = if let Some(code) = code {
-            code
+            code.into_boxed_slice()
         } else {
             account.code
         };

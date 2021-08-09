@@ -184,7 +184,49 @@ impl ApplyBackend for VirtualMachine {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use std::rc::Rc;
 
-pub fn code_to_execute_evm_runtime() -> Result<(), String> {
-    todo!("put together the puzzle of types needed to run evm code");
+    use evm::{Capture, ExitReason, ExitSucceed};
+
+    use super::*;
+
+    #[test]
+    fn code_to_execute_evm_runtime_with_defaults_and_no_code_no_data() {
+        let environment = Environment {
+            gas_price: Default::default(),
+            origin: Default::default(),
+            chain_id: Default::default(),
+            block_hashes: Default::default(),
+            block_number: Default::default(),
+            block_coinbase: Default::default(),
+            block_timestamp: Default::default(),
+            block_difficulty: Default::default(),
+            block_gas_limit: Default::default(),
+        };
+        let state = AccountTrie::default();
+
+        let vm = VirtualMachine::new(environment, state);
+
+        let gas_limit = u64::max_value();
+        let config = Config::istanbul();
+        let mut executor = vm.executor(gas_limit, &config);
+
+        let code = Rc::new(Vec::new());
+        let data = Rc::new(Vec::new());
+        let context = RuntimeContext {
+            address: Default::default(),
+            caller: Default::default(),
+            apparent_value: Default::default(),
+        };
+        let mut runtime = vm.runtime(code, data, context, &config);
+
+        let reason = runtime.run(&mut executor);
+        if let Capture::Exit(ExitReason::Succeed(ExitSucceed::Stopped)) = reason {
+            assert!(true);
+        } else {
+            panic!("unexpected evm result");
+        }
+    }
 }

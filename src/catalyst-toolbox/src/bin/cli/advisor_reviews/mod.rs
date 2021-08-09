@@ -32,11 +32,11 @@ pub enum OutputFormat {
 
 #[derive(StructOpt)]
 pub enum Reviews {
-    Transform(Transform),
+    Export(Export),
 }
 
 #[derive(StructOpt)]
-pub struct Transform {
+pub struct Export {
     /// Path to vca aggreagted file
     #[structopt(long)]
     from: PathBuf,
@@ -69,13 +69,13 @@ impl FromStr for OutputFormat {
 impl Reviews {
     pub fn exec(self) -> Result<(), Error> {
         match self {
-            Reviews::Transform(transform) => transform.exec()?,
+            Reviews::Export(transform) => transform.exec()?,
         };
         Ok(())
     }
 }
 
-impl Transform {
+impl Export {
     pub fn exec(self) -> Result<(), Error> {
         let Self {
             from,

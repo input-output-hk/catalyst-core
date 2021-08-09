@@ -7,9 +7,11 @@ use crate::data::Challenge;
 use crate::Fund;
 use crate::Proposal;
 use crate::SimpleVoteStatus;
+use chain_core::mempack::{ReadBuf, Readable};
 use chain_core::property::Fragment as _;
+use chain_impl_mockchain::block::Block;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
-use chain_impl_mockchain::key::Hash;
+
 use chain_ser::deser::Deserialize;
 use jormungandr_lib::interfaces::AccountIdentifier;
 use jormungandr_lib::interfaces::FragmentStatus;
@@ -177,12 +179,8 @@ impl WalletBackend {
     }
 
     pub fn settings(&self) -> Result<Settings, WalletBackendError> {
-        let settings = self.node_client.settings()?;
-        Ok(Settings {
-            fees: settings.fees,
-            discrimination: settings.discrimination,
-            block0_initial_hash: Hash::from_str(&settings.block0_hash).unwrap(),
-        })
+        let block0 = Block::read(&mut ReadBuf::from(&self.block0()?))?;
+        Ok(Settings::new(&block0).unwrap())
     }
 
     pub fn account_exists(&self, id: AccountId) -> Result<bool, WalletBackendError> {

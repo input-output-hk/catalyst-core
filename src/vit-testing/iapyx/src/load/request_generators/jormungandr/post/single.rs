@@ -1,7 +1,7 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
 use crate::Wallet;
-use chain_impl_mockchain::fragment::FragmentId;
+use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
 use jormungandr_testing_utils::testing::VoteCastCounter;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
 use rand::seq::SliceRandom;
@@ -73,7 +73,8 @@ impl WalletRequestGen {
             .get(counter.first().unwrap().first() as usize)
             .unwrap();
         let choice = Choice::new(*self.options.choose(&mut self.rand).unwrap());
-        self.multi_controller.vote(index, proposal, choice)
+        self.multi_controller
+            .vote(index, proposal, choice, &BlockDate::first().next_epoch()) // TODO: this will produce valid transactions only up to the first epoch
     }
 }
 

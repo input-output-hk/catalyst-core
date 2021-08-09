@@ -4,6 +4,7 @@ use chain_addr::{AddressReadable, Discrimination};
 use chain_core::property::Deserialize;
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::{
+    block::BlockDate,
     fragment::{Fragment, FragmentId},
     transaction::Input,
 };
@@ -75,13 +76,16 @@ impl Wallet {
             .map_err(|e| Error::CannotRetrieveFunds(e.to_string()))
     }
 
-    pub fn convert(&mut self, settings: Settings) -> Conversion {
-        self.inner.convert(settings)
+    pub fn convert(&mut self, settings: Settings, valid_until: &BlockDate) -> Conversion {
+        self.inner.convert(settings, valid_until)
     }
 
-    pub fn conversion_fragment_ids(&mut self, settings: Settings) -> Vec<FragmentId> {
-        let conversion = self.convert(settings);
-        conversion
+    pub fn conversion_fragment_ids(
+        &mut self,
+        settings: Settings,
+        valid_until: &BlockDate,
+    ) -> Vec<FragmentId> {
+        self.convert(settings, valid_until)
             .transactions()
             .iter()
             .map(|x| {
@@ -127,9 +131,10 @@ impl Wallet {
         settings: Settings,
         proposal: &Proposal,
         choice: Choice,
+        valid_until: &BlockDate,
     ) -> Result<Box<[u8]>, Error> {
         self.inner
-            .vote(settings, proposal, choice)
+            .vote(settings, proposal, choice, valid_until)
             .map_err(|e| Error::CannotSendVote(e.to_string()))
     }
 

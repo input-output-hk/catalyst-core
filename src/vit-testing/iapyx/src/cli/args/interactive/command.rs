@@ -3,6 +3,7 @@ use crate::cli::args::interactive::UserInteractionContoller;
 use crate::Controller;
 use bip39::Type;
 use chain_addr::{AddressReadable, Discrimination};
+use chain_impl_mockchain::block::BlockDate;
 use jormungandr_testing_utils::testing::node::RestSettings;
 use std::path::PathBuf;
 use structopt::{clap::AppSettings, StructOpt};
@@ -187,6 +188,9 @@ pub struct Vote {
     /// chain proposal id
     #[structopt(short = "p", long = "id")]
     pub proposal_id: String,
+    // transaction expiry time
+    #[structopt(short, long)]
+    pub valid_until: BlockDate,
 }
 
 impl Vote {
@@ -204,7 +208,7 @@ impl Vote {
                 .0
                 .get(&self.choice)
                 .ok_or_else(|| IapyxCommandError::GeneralError("wrong choice".to_string()))?;
-            controller.vote(proposal, Choice::new(*choice))?;
+            controller.vote(proposal, Choice::new(*choice), &self.valid_until)?;
             return Ok(());
         }
         Err(IapyxCommandError::GeneralError(

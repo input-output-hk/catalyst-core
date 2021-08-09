@@ -3,7 +3,7 @@ use crate::Wallet;
 use crate::{data::Proposal as VitProposal, WalletBackend};
 use bech32::FromBase32;
 use bip39::Type;
-use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
+use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId, transaction::Input};
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
 use jormungandr_testing_utils::qr_code::KeyQrCode;
 use jormungandr_testing_utils::testing::node::RestSettings;
@@ -215,6 +215,7 @@ impl Controller {
         vote_plan_id: String,
         proposal_index: u32,
         choice: u8,
+        valid_until: &BlockDate,
     ) -> Result<FragmentId, ControllerError> {
         let proposals = self.get_proposals()?;
         let proposal = proposals
@@ -232,6 +233,7 @@ impl Controller {
             self.settings.clone(),
             &proposal.clone().into(),
             Choice::new(choice),
+            valid_until,
         )?;
         Ok(self.backend.send_fragment(transaction.to_vec())?)
     }
@@ -240,10 +242,14 @@ impl Controller {
         &mut self,
         proposal: &VitProposal,
         choice: Choice,
+        valid_until: &BlockDate,
     ) -> Result<FragmentId, ControllerError> {
-        let transaction =
-            self.wallet
-                .vote(self.settings.clone(), &proposal.clone().into(), choice)?;
+        let transaction = self.wallet.vote(
+            self.settings.clone(),
+            &proposal.clone().into(),
+            choice,
+            valid_until,
+        )?;
         Ok(self.backend.send_fragment(transaction.to_vec())?)
     }
 

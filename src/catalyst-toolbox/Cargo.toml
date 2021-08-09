@@ -15,6 +15,7 @@ bench = false
 
 [dependencies]
 csv = "1.1"
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", rev = "61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

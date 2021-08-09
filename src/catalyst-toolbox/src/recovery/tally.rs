@@ -3,6 +3,7 @@ use std::time::{Duration, SystemTime};
 
 use chain_addr::{Discrimination, Kind};
 use chain_core::property::Fragment as _;
+use chain_crypto::{Ed25519Extended, PublicKey, SecretKey};
 use chain_impl_mockchain::{
     account::{self, LedgerError, SpendingCounter},
     block::{Block, BlockDate, HeaderId},
@@ -11,9 +12,9 @@ use chain_impl_mockchain::{
     fee::{FeeAlgorithm, LinearFee},
     fragment::{Fragment, FragmentId},
     ledger::{self, Ledger},
-    testing::scenario::FragmentFactory,
     transaction::{
-        InputEnum, TransactionSignDataHash, TransactionSlice, Witness, WitnessAccountData,
+        InputEnum, NoExtra, Output, TransactionSignDataHash, TransactionSlice, Witness,
+        WitnessAccountData,
     },
     value::ValueError,
     vote::{CommitteeId, VoteError, VotePlanLedgerError},
@@ -24,13 +25,13 @@ use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::{
         Address, Block0Configuration, CommitteeIdDef, FragmentLogDeserializeError, Initial,
-        PersistentFragmentLog, SlotDuration as Block0SlotDuration,
+        InitialUTxO, PersistentFragmentLog, SlotDuration as Block0SlotDuration,
     },
     time::SecondsSinceUnixEpoch,
 };
-use jormungandr_testing_utils::wallet::Wallet;
 use log::{debug, error, trace, warn};
 use std::collections::{HashMap, HashSet};
+use wallet::{Settings, TransactionBuilder, Wallet};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(thiserror::Error, Debug)]
@@ -489,7 +490,15 @@ pub fn recover_ledger_from_logs(
             match new_ledger {
                 Ok(new_ledger) => {
                     if let Some(wallet) = wallet {
-                        wallet.confirm_transaction();
+                        // FIX: this is a horrible temporary workaround because Wallet::check_fragment
+                        // is broken and the fix requires us to update to the new version
+                        // which also includes changes in the transaction expiry time 
+                        // We will update this tool to account for transaction ttl right after this change
+                        // but in a separate PR.
+                        let state = new_ledger.accounts().get_state(&<PublicKey<_>>::from(wallet
+                            .account_id())
+                            .into()).unwrap();
+                        wallet.update_state(state.value(), state.get_counter().into());
                     }
                     ledger = new_ledger;
                 }
@@ -513,8 +522,7 @@ pub fn recover_ledger_from_logs(
 struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
     non_voting_wallets: HashMap<Address, Wallet>,
-    old_block0_hash: Hash,
-    fees: LinearFee,
+    settings: Settings,
 }
 
 impl FragmentReplayer {
@@ -538,11 +546,16 @@ impl FragmentReplayer {
             if let Initial::Fund(ref mut utxos) = initial {
                 let mut new_committee_accounts = Vec::new();
                 for utxo in utxos.iter_mut() {
-                    let wallet = Wallet::new_account_with_discrimination(
-                        &mut rng,
-                        chain_addr::Discrimination::Production,
-                    );
-                    let new_initial_utxo = wallet.to_initial_fund(utxo.value.into());
+                    let mut wallet =
+                        Wallet::new_from_key(<SecretKey<Ed25519Extended>>::generate(&mut rng));
+                    let new_initial_utxo = InitialUTxO {
+                        address: wallet
+                            .account_id()
+                            .address(Discrimination::Production)
+                            .into(),
+                        value: utxo.value,
+                    };
+                    wallet.update_state(utxo.value.into(), 0.into());
                     wallets.insert(utxo.address.clone(), wallet);
                     if committee_members.contains(&utxo.address) {
                         trace!("Committee account found {}", &utxo.address);
@@ -556,14 +569,11 @@ impl FragmentReplayer {
             }
         }
 
-        let fees = config.blockchain_configuration.linear_fees;
-
         Ok((
             Self {
                 wallets,
                 non_voting_wallets: HashMap::new(),
-                old_block0_hash: block0.header.id().into(),
-                fees,
+                settings: Settings::new(block0).unwrap(),
             },
             config.to_block(),
         ))
@@ -586,12 +596,14 @@ impl FragmentReplayer {
                     .get_mut(&address)
                     .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?;
 
-                // we still use the old block0 hash because the new ledger will still use the old one for
-                // verifications. This makes possible the usage of old VoteTally transactions without the need
-                // to be replayed.
-                let res = FragmentFactory::new(self.old_block0_hash.into_hash(), self.fees)
-                    .vote_cast(&wallet.clone().into(), vote_cast);
-                debug!("replaying vote cast transaction");
+                let builder_help =
+                    // unwrap checked in the validation step
+                    wallet.new_transaction(transaction_slice.total_input().unwrap()).unwrap();
+                let mut builder = TransactionBuilder::new(&self.settings, vote_cast);
+                builder.add_input(builder_help.input(), builder_help.witness_builder());
+                let res = Fragment::VoteCast(builder.finalize_tx(()).unwrap());
+
+                debug!("replaying vote cast transaction from {}", address);
                 Ok((res, wallet))
             }
             Fragment::Transaction(ref transaction) => {
@@ -608,18 +620,18 @@ impl FragmentReplayer {
 
                 let output = transaction_slice.outputs().iter().next().unwrap();
                 let output_address = if let Some(wlt) = self.wallets.get(&output.address.into()) {
-                    wlt.address()
+                    wlt.account_id()
                 } else {
                     self.non_voting_wallets
                         .entry(address.clone())
                         .or_insert_with(|| {
-                            Wallet::new_account_with_discrimination(
+                            Wallet::new_from_key(<SecretKey<Ed25519Extended>>::generate(
                                 &mut rand::thread_rng(),
-                                chain_addr::Discrimination::Production,
-                            )
+                            ))
                         })
-                        .address()
-                };
+                        .account_id()
+                }
+                .address(Discrimination::Production);
 
                 // Double self borrows are not allowed in closures, so this is written as an
                 // if let instead of chaining methods on options
@@ -632,12 +644,14 @@ impl FragmentReplayer {
                 };
 
                 warn!("replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this", identifier, output_address, output.value);
-                let res = wallet.transaction_to(
-                    &self.old_block0_hash,
-                    &self.fees,
-                    output_address,
-                    output.value.into(),
-                )?;
+                let builder_help =
+                    // unwrap checked in the validation step
+                    wallet.new_transaction(transaction_slice.total_input().unwrap()).unwrap();
+                let mut builder = TransactionBuilder::new(&self.settings, NoExtra);
+                builder.add_input(builder_help.input(), builder_help.witness_builder());
+                builder.add_output(Output::from_address(output_address, output.value));
+                let res = Fragment::Transaction(builder.finalize_tx(()).unwrap());
+
                 Ok((res, wallet))
             }
             _ => unimplemented!(),

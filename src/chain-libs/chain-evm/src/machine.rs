@@ -9,10 +9,12 @@
 //! ## StackState<'config>
 //!
 
+use std::rc::Rc;
+
 use evm::{
     backend::{Apply, ApplyBackend, Backend, Basic, Log, MemoryVicinity},
-    executor::StackState,
-    Context,
+    executor::{MemoryStackState, StackExecutor, StackSubstateMetadata},
+    Config, Context, Runtime,
 };
 use primitive_types::{H160, H256, U256};
 
@@ -27,10 +29,40 @@ pub type RuntimeContext = Context;
 /// Top-level abstraction for the EVM with the
 /// necessary types used to get the runtime going.
 pub struct VirtualMachine {
-    _context: RuntimeContext,
     environment: Environment,
     state: AccountTrie,
     logs: Vec<Log>,
+}
+
+impl VirtualMachine {
+    /// Creates a new `VirtualMachine` given environment values and account storage.
+    pub fn new(environment: Environment, state: AccountTrie) -> Self {
+        Self {
+            environment,
+            state,
+            logs: Default::default(),
+        }
+    }
+    /// Returns an initialized instance of `evm::executor::StackExecutor`.
+    pub fn executor<'backend, 'config>(
+        &'backend self,
+        gas_limit: u64,
+        config: &'config Config,
+    ) -> StackExecutor<'config, MemoryStackState<'backend, 'config, VirtualMachine>> {
+        let metadata = StackSubstateMetadata::new(gas_limit, config);
+        let memory_stack_state = MemoryStackState::new(metadata, self);
+        StackExecutor::new(memory_stack_state, config)
+    }
+    /// Returns an initialized instance of `evm::Runtime`.
+    pub fn runtime<'config>(
+        &self,
+        code: Rc<Vec<u8>>,
+        data: Rc<Vec<u8>>,
+        context: RuntimeContext,
+        config: &'config Config,
+    ) -> Runtime<'config> {
+        Runtime::new(code, data, context, config)
+    }
 }
 
 impl Backend for VirtualMachine {

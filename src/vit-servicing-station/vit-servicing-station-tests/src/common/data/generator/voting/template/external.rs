@@ -1,4 +1,6 @@
-use super::{ChallengeTemplate, FundTemplate, ProposalTemplate, ValidVotingTemplateGenerator};
+use super::{
+    ChallengeTemplate, FundTemplate, ProposalTemplate, ReviewTemplate, ValidVotingTemplateGenerator,
+};
 use std::{collections::LinkedList, path::PathBuf};
 use thiserror::Error;
 
@@ -20,6 +22,12 @@ impl ValidVotingTemplateGenerator for ExternalValidVotingTemplateGenerator {
             .pop_front()
             .unwrap_or_else(|| panic!("no more funds"))
     }
+
+    fn next_review(&mut self) -> ReviewTemplate {
+        self.reviews
+            .pop_front()
+            .unwrap_or_else(|| panic!("no more reviews"))
+    }
 }
 
 #[derive(Clone)]
@@ -27,6 +35,7 @@ pub struct ExternalValidVotingTemplateGenerator {
     proposals: LinkedList<ProposalTemplate>,
     challenges: LinkedList<ChallengeTemplate>,
     funds: LinkedList<FundTemplate>,
+    reviews: LinkedList<ReviewTemplate>,
 }
 
 impl ExternalValidVotingTemplateGenerator {
@@ -34,11 +43,13 @@ impl ExternalValidVotingTemplateGenerator {
         proposals: PathBuf,
         challenges: PathBuf,
         funds: PathBuf,
-    ) -> Result<Self, TemplateLoadError> {
+        reviews: PathBuf,
+    ) -> Result<Self, TemplateLoad> {
         Ok(Self {
             proposals: parse_proposals(proposals)?,
             challenges: parse_challenges(challenges)?,
             funds: parse_funds(funds)?,
+            reviews: parse_reviews(reviews)?,
         })
     }
 
@@ -51,31 +62,36 @@ impl ExternalValidVotingTemplateGenerator {
     }
 }
 
-pub fn parse_proposals(
-    proposals: PathBuf,
-) -> Result<LinkedList<ProposalTemplate>, TemplateLoadError> {
+pub fn parse_proposals(proposals: PathBuf) -> Result<LinkedList<ProposalTemplate>, TemplateLoad> {
     serde_json::from_str(&jortestkit::file::read_file(&proposals))
-        .map_err(|err| TemplateLoadError::ProposalTemplate(err.to_string()))
+        .map_err(|err| TemplateLoad::Proposal(err.to_string()))
 }
 
 pub fn parse_challenges(
     challenges: PathBuf,
-) -> Result<LinkedList<ChallengeTemplate>, TemplateLoadError> {
+) -> Result<LinkedList<ChallengeTemplate>, TemplateLoad> {
     serde_json::from_str(&jortestkit::file::read_file(&challenges))
-        .map_err(|err| TemplateLoadError::ChallengeTemplate(err.to_string()))
+        .map_err(|err| TemplateLoad::Challenge(err.to_string()))
 }
 
-pub fn parse_funds(funds: PathBuf) -> Result<LinkedList<FundTemplate>, TemplateLoadError> {
+pub fn parse_funds(funds: PathBuf) -> Result<LinkedList<FundTemplate>, TemplateLoad> {
     serde_json::from_str(&jortestkit::file::read_file(&funds))
-        .map_err(|err| TemplateLoadError::FundTemplate(err.to_string()))
+        .map_err(|err| TemplateLoad::Fund(err.to_string()))
+}
+
+pub fn parse_reviews(reviews: PathBuf) -> Result<LinkedList<ReviewTemplate>, TemplateLoad> {
+    serde_json::from_str(&jortestkit::file::read_file(&reviews))
+        .map_err(|err| TemplateLoad::Review(err.to_string()))
 }
 
 #[derive(Debug, Error)]
-pub enum TemplateLoadError {
+pub enum TemplateLoad {
     #[error("cannot parse proposals, due to {0}")]
-    ProposalTemplate(String),
+    Proposal(String),
     #[error("cannot parse challenges, due to: {0}")]
-    ChallengeTemplate(String),
+    Challenge(String),
     #[error("cannot parse funds, due to: {0}")]
-    FundTemplate(String),
+    Fund(String),
+    #[error("cannot parse reviews, due to: {0}")]
+    Review(String),
 }

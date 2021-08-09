@@ -4,10 +4,12 @@ mod external;
 pub use arbitrary::ArbitraryValidVotingTemplateGenerator;
 pub use external::{
     parse_challenges, parse_funds, parse_proposals, ExternalValidVotingTemplateGenerator,
-    TemplateLoadError,
+    TemplateLoad,
 };
 use serde::{Deserialize, Serialize};
+use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewTag;
 use vit_servicing_station_lib::db::models::proposals::{ChallengeType, ProposalChallengeInfo};
+use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FundTemplate {
@@ -34,7 +36,7 @@ pub struct ProposalTemplate {
     pub proposer_url: String,
     #[serde(default)]
     pub proposer_relevant_experience: String,
-    pub chain_vote_options: String,
+    pub chain_vote_options: VoteOptions,
     pub chain_vote_type: String,
     pub challenge_id: Option<String>,
     pub challenge_type: ChallengeType,
@@ -55,6 +57,15 @@ pub struct ChallengeTemplate {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+pub struct ReviewTemplate {
+    pub id: String,
+    pub rating_given: i32,
+    pub assessor: String,
+    pub note: String,
+    pub tag: ReviewTag,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ProposalChallengeInfoTemplate {
     pub id: i32,
 }
@@ -63,4 +74,5 @@ pub trait ValidVotingTemplateGenerator {
     fn next_proposal(&mut self) -> ProposalTemplate;
     fn next_challenge(&mut self) -> ChallengeTemplate;
     fn next_fund(&mut self) -> FundTemplate;
+    fn next_review(&mut self) -> ReviewTemplate;
 }

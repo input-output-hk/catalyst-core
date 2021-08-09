@@ -222,10 +222,7 @@ impl ValidVotePlanGenerator {
                     proposal_public_key: generator.hash(),
                     proposal_funds,
                     proposal_url: proposal_template.proposal_url.clone(),
-                    proposal_impact_score: proposal_template
-                        .proposal_impact_score
-                        .parse()
-                        .unwrap_or_else(|_| panic!("cannot convert impact score to integer")),
+                    proposal_impact_score: proposal_template.proposal_impact_score.parse().unwrap(),
                     proposal_files_url: proposal_template.files_url,
                     proposer: Proposer {
                         proposer_name: proposal_template.proposer_name,
@@ -236,9 +233,11 @@ impl ValidVotePlanGenerator {
                     },
                     chain_proposal_id: proposal.id().to_string().as_bytes().to_vec(),
                     chain_proposal_index: index as i64,
-                    chain_vote_options: self.parameters.vote_options.clone().unwrap_or_else(|| {
-                        VoteOptions::parse_coma_separated_value(&chain_vote_options)
-                    }),
+                    chain_vote_options: self
+                        .parameters
+                        .vote_options
+                        .clone()
+                        .unwrap_or(chain_vote_options),
                     chain_voteplan_id: vote_plan.chain_voteplan_id.clone(),
                     chain_vote_start_time: vote_plan.chain_vote_start_time,
                     chain_vote_end_time: vote_plan.chain_vote_end_time,

@@ -2,9 +2,10 @@ use catalyst_toolbox::vca_reviews::{
     read_vca_reviews_aggregated_file, Error as ReviewsError, TagsMap,
 };
 use jcli_lib::utils::io::{open_file_read, open_file_write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use structopt::StructOpt;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -88,14 +89,7 @@ impl Transform {
         let reviews = read_vca_reviews_aggregated_file(&from, &worksheet, &tags_map)?;
         match format {
             OutputFormat::Csv => {
-                let mut writer = csv::WriterBuilder::new()
-                    .delimiter(b';')
-                    .double_quote(true)
-                    .has_headers(true)
-                    .from_path(&to)?;
-                for review in &reviews {
-                    writer.serialize(review)?;
-                }
+                write_csv(&reviews, &to)?;
             }
             OutputFormat::Json => {
                 serde_json::to_writer(open_file_write(&Some(to))?, &reviews)?;
@@ -103,4 +97,16 @@ impl Transform {
         };
         Ok(())
     }
+}
+
+pub fn write_csv(reviews: &[AdvisorReview], filepath: &Path) -> Result<(), Error> {
+    let mut writer = csv::WriterBuilder::new()
+        .delimiter(b',')
+        .double_quote(true)
+        .has_headers(true)
+        .from_path(filepath)?;
+    for review in &reviews {
+        writer.serialize(review)?;
+    }
+    Ok(())
 }

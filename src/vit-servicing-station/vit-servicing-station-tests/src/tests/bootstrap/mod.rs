@@ -9,7 +9,7 @@ pub mod arguments;
 #[test]
 pub fn bootstrap_with_random_data() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap().into_persistent();
-    let snapshot = data::ArbitraryGenerator::new().snapshot();
+    let snapshot = data::ArbitrarySnapshotGenerator::default().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
@@ -18,5 +18,6 @@ pub fn bootstrap_with_random_data() -> Result<(), Box<dyn std::error::Error>> {
 
     std::thread::sleep(std::time::Duration::from_secs(1));
     assert!(server.is_up(&snapshot.any_token().0));
+    std::thread::sleep(std::time::Duration::from_secs(1000000));
     Ok(())
 }

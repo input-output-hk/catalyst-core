@@ -1,6 +1,6 @@
 use crate::common::{
     clients::RestClient,
-    data::ArbitraryGenerator,
+    data::ArbitrarySnapshotGenerator,
     startup::{
         db::DbBuilder,
         server::{BootstrapCommandBuilder, ServerBootstrapper},
@@ -12,7 +12,7 @@ use assert_fs::TempDir;
 #[test]
 pub fn cors_illegal_domain() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let snapshot = ArbitraryGenerator::new().snapshot();
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
@@ -40,7 +40,7 @@ fn assert_request_failed_due_to_cors(
 #[test]
 pub fn cors_malformed_domain_no_http() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let snapshot = ArbitraryGenerator::new().snapshot();
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();
@@ -56,7 +56,7 @@ pub fn cors_malformed_domain_no_http() -> Result<(), Box<dyn std::error::Error>>
 #[test]
 pub fn cors_ip_versus_domain() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let snapshot = ArbitraryGenerator::new().snapshot();
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
@@ -75,7 +75,7 @@ pub fn cors_ip_versus_domain() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 pub fn cors_wrong_delimiter() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let snapshot = ArbitraryGenerator::new().snapshot();
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let mut command_builder: BootstrapCommandBuilder = Default::default();
@@ -91,7 +91,7 @@ pub fn cors_wrong_delimiter() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 pub fn cors_single_domain() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let snapshot = ArbitraryGenerator::new().snapshot();
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
@@ -110,7 +110,7 @@ pub fn cors_single_domain() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 pub fn cors_https() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap();
-    let snapshot = ArbitraryGenerator::new().snapshot();
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()
@@ -129,7 +129,7 @@ pub fn cors_https() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 pub fn cors_multi_domain() -> Result<(), Box<dyn std::error::Error>> {
     let temp_dir = TempDir::new().unwrap().into_persistent();
-    let snapshot = ArbitraryGenerator::new().snapshot();
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
     let db_path = DbBuilder::new().with_snapshot(&snapshot).build(&temp_dir)?;
 
     let server = ServerBootstrapper::new()

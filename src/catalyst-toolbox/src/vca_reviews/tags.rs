@@ -18,13 +18,14 @@ pub struct TagsMap {
 impl Default for TagsMap {
     fn default() -> Self {
         let setting_alignment =
-            "This challenge is critical to achieve Cardano's mission".to_string();
-        let setting_verifiability = "Success criteria and suggested metrics are set correctly to measure progress in addressing the challenge".to_string();
+            "Alignment: This challenge is critical to achieve Cardano's mission.".to_string();
+        let setting_verifiability = "Verifiability: Success criteria and suggested metrics are set correctly to measure progress in addressing the challenge.".to_string();
         let setting_feasibility =
-            "The Catalyst community has the capacity to address the challenge".to_string();
+            "Feasibility: The Catalyst community has the capacity to address the challenge."
+                .to_string();
         let standard_impact = "This proposal effectively addresses the challenge".to_string();
         let standard_feasibility = "Given experience and plan presented it is highly likely this proposal will be implemented successfully".to_string();
-        let standard_auditability = "The information provided is sufficient to audit the progress and the success of the proposal".to_string();
+        let standard_auditability = "The information provided is sufficient to audit the progress and the success of the proposal.".to_string();
         Self::new(
             setting_alignment,
             setting_verifiability,

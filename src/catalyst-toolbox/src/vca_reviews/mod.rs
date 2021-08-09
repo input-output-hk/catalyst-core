@@ -28,7 +28,7 @@ pub enum Error {
     CouldntParseTag(String),
 }
 
-type AdvisorReviewExtras = HashMap<String, String>;
+type AdvisorReviewExtras = serde_json::Value;
 
 #[derive(Clone, Deserialize)]
 struct AdvisorReviewRow {

@@ -2,7 +2,9 @@ use crate::cryptography::{Ciphertext, HybridCiphertext, PublicKey, SecretKey};
 use crate::encrypted_vote::{EncryptedVote, ProofOfCorrectVote, Vote};
 use crate::math::polynomial::Polynomial;
 use crate::tally::Crs;
-use crate::{GroupElement, Scalar};
+use crate::{GroupElement, Scalar, CURVE_HRP};
+use chain_crypto::bech32::{to_bech32_from_bytes, try_from_bech32_to_bytes, Bech32, Error};
+use const_format::concatcp;
 use rand_core::{CryptoRng, RngCore};
 
 /// Committee member election secret key
@@ -53,6 +55,37 @@ impl ElectionPublicKey {
             &ciphertexts,
         );
         (ciphertexts, proof)
+    }
+
+    /// Create an election public key from all the participants of this committee
+    pub fn from_participants(pks: &[MemberPublicKey]) -> Self {
+        let mut k = pks[0].0.pk.clone();
+        for pk in &pks[1..] {
+            k = k + &pk.0.pk;
+        }
+        ElectionPublicKey(PublicKey { pk: k })
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes()
+    }
+
+    pub fn from_bytes(buf: &[u8]) -> Option<Self> {
+        PublicKey::from_bytes(buf).map(ElectionPublicKey)
+    }
+}
+
+impl Bech32 for ElectionPublicKey {
+    const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_votepk");
+
+    fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
+        try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
+            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+        })
+    }
+
+    fn to_bech32_str(&self) -> String {
+        to_bech32_from_bytes::<Self>(&self.to_bytes())
     }
 }
 
@@ -156,6 +189,20 @@ impl MemberSecretKey {
     }
 }
 
+impl Bech32 for MemberSecretKey {
+    const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_membersk");
+
+    fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
+        try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
+            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+        })
+    }
+
+    fn to_bech32_str(&self) -> String {
+        to_bech32_from_bytes::<Self>(&self.to_bytes())
+    }
+}
+
 impl MemberPublicKey {
     pub const BYTES_LEN: usize = PublicKey::BYTES_LEN;
 
@@ -165,6 +212,20 @@ impl MemberPublicKey {
 
     pub fn from_bytes(buf: &[u8]) -> Option<Self> {
         Some(Self(PublicKey::from_bytes(buf)?))
+    }
+}
+
+impl Bech32 for MemberPublicKey {
+    const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_memberpk");
+
+    fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
+        try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
+            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+        })
+    }
+
+    fn to_bech32_str(&self) -> String {
+        to_bech32_from_bytes::<Self>(&self.to_bytes())
     }
 }
 
@@ -195,6 +256,20 @@ impl MemberCommunicationKey {
     }
 }
 
+impl Bech32 for MemberCommunicationKey {
+    const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_vcommsk");
+
+    fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
+        try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
+            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+        })
+    }
+
+    fn to_bech32_str(&self) -> String {
+        to_bech32_from_bytes::<Self>(&self.to_bytes())
+    }
+}
+
 impl From<PublicKey> for MemberCommunicationPublicKey {
     fn from(pk: PublicKey) -> MemberCommunicationPublicKey {
         Self(pk)
@@ -211,21 +286,16 @@ impl MemberCommunicationPublicKey {
     }
 }
 
-impl ElectionPublicKey {
-    /// Create an election public key from all the participants of this committee
-    pub fn from_participants(pks: &[MemberPublicKey]) -> Self {
-        let mut k = pks[0].0.pk.clone();
-        for pk in &pks[1..] {
-            k = k + &pk.0.pk;
-        }
-        ElectionPublicKey(PublicKey { pk: k })
+impl Bech32 for MemberCommunicationPublicKey {
+    const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_vcommpk");
+
+    fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
+        try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
+            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+        })
     }
 
-    pub fn to_bytes(&self) -> Vec<u8> {
-        self.0.to_bytes()
-    }
-
-    pub fn from_bytes(buf: &[u8]) -> Option<Self> {
-        PublicKey::from_bytes(buf).map(ElectionPublicKey)
+    fn to_bech32_str(&self) -> String {
+        to_bech32_from_bytes::<Self>(&self.to_bytes())
     }
 }

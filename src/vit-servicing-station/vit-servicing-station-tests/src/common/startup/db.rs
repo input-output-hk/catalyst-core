@@ -14,6 +14,7 @@ use crate::common::{
     db::{DbInserter, DbInserterError},
     paths::MIGRATION_DIR,
 };
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 pub struct DbBuilder {
@@ -22,6 +23,7 @@ pub struct DbBuilder {
     proposals: Option<Vec<FullProposalInfo>>,
     funds: Option<Vec<Fund>>,
     challenges: Option<Vec<Challenge>>,
+    advisor_reviews: Option<Vec<AdvisorReview>>,
 }
 
 impl DbBuilder {
@@ -32,6 +34,7 @@ impl DbBuilder {
             proposals: None,
             funds: None,
             challenges: None,
+            advisor_reviews: None,
         }
     }
 
@@ -68,6 +71,11 @@ impl DbBuilder {
         self
     }
 
+    pub fn with_advisor_reviews(&mut self, reviews: Vec<AdvisorReview>) -> &mut Self {
+        self.advisor_reviews = Some(reviews);
+        self
+    }
+
     pub fn disable_migrations(&mut self) -> &mut Self {
         self.migrations_folder = None;
         self
@@ -95,7 +103,7 @@ impl DbBuilder {
 
     fn try_do_migration(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
         if let Some(migrations_folder) = &self.migrations_folder {
-            self.do_migration(&connection, migrations_folder)?;
+            self.do_migration(connection, migrations_folder)?;
         }
         Ok(())
     }
@@ -128,6 +136,13 @@ impl DbBuilder {
         Ok(())
     }
 
+    fn try_insert_reviews(&self, connection: &SqliteConnection) -> Result<(), DbBuilderError> {
+        if let Some(reviews) = &self.advisor_reviews {
+            DbInserter::new(connection).insert_advisor_reviews(reviews)?;
+        }
+        Ok(())
+    }
+
     pub fn build(&self, temp_dir: &TempDir) -> Result<PathBuf, DbBuilderError> {
         let db = temp_dir.child("vit_station.db");
         let db_path = db
@@ -142,6 +157,7 @@ impl DbBuilder {
         self.try_insert_funds(&connection)?;
         self.try_insert_proposals(&connection)?;
         self.try_insert_challenges(&connection)?;
+        self.try_insert_reviews(&connection)?;
         Ok(PathBuf::from(db.path()))
     }
 }

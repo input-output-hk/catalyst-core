@@ -1,6 +1,7 @@
 use hyper::StatusCode;
 use reqwest::blocking::Response;
 use thiserror::Error;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::{
     db::models::{funds::Fund, proposals::Proposal},
@@ -169,6 +170,19 @@ impl RestClient {
             .map_err(RestError::RequestError)
     }
 
+    pub fn advisor_reviews(&self, proposal_id: &str) -> Result<Vec<AdvisorReview>, RestError> {
+        let response = self.advisor_reviews_raw(proposal_id)?;
+        self.verify_status_code(&response)?;
+        let content = response.text()?;
+        self.logger.log_text(&content);
+        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
+    }
+
+    pub fn advisor_reviews_raw(&self, proposal_id: &str) -> Result<Response, RestError> {
+        self.get(&self.path_builder.advisor_reviews(proposal_id))
+            .map_err(RestError::RequestError)
+    }
+
     pub fn get(&self, path: &str) -> Result<reqwest::blocking::Response, reqwest::Error> {
         self.logger.log_request(path);
         let client = reqwest::blocking::Client::new();
@@ -259,6 +273,10 @@ impl RestPathBuilder {
 
     pub fn fund(&self, id: &str) -> String {
         self.path(&format!("fund/{}", id))
+    }
+
+    pub fn advisor_reviews(&self, id: &str) -> String {
+        self.path(&format!("reviews/{}", id))
     }
 
     pub fn genesis(&self) -> String {

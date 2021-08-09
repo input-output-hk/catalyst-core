@@ -38,15 +38,19 @@ pub enum Reviews {
 #[derive(StructOpt)]
 pub struct Transform {
     /// Path to vca aggreagted file
+    #[structopt(long)]
     from: PathBuf,
     /// Output file
+    #[structopt(long)]
     to: PathBuf,
     /// Output format either csv or json
-    #[structopt(default_value = "csv")]
+    #[structopt(long, default_value = "csv")]
     format: OutputFormat,
     /// Worksheet name
+    #[structopt(long)]
     worksheet: String,
     /// Tags json file
+    #[structopt(long)]
     tags: Option<PathBuf>,
 }
 
@@ -105,7 +109,7 @@ pub fn write_csv(reviews: &[AdvisorReview], filepath: &Path) -> Result<(), Error
         .double_quote(true)
         .has_headers(true)
         .from_path(filepath)?;
-    for review in &reviews {
+    for review in reviews {
         writer.serialize(review)?;
     }
     Ok(())

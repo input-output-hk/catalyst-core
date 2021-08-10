@@ -4,16 +4,17 @@
 mod macros;
 pub mod fragment;
 pub mod settings;
+pub mod time;
 pub mod vote;
 
 use crate::{Conversion, Error, Proposal, Result, Wallet};
-use chain_impl_mockchain::{
-    block::BlockDate, fragment::Fragment, transaction::Input, value::Value, vote::Choice,
-};
+use chain_impl_mockchain::{fragment::Fragment, transaction::Input, value::Value, vote::Choice};
 use std::convert::TryInto;
 
 use thiserror::Error;
 pub use wallet::Settings;
+
+use self::time::BlockDate;
 
 pub type WalletPtr = *mut Wallet;
 pub type SettingsPtr = *mut Settings;
@@ -22,7 +23,6 @@ pub type ProposalPtr = *mut Proposal;
 pub type ErrorPtr = *mut Error;
 pub type PendingTransactionsPtr = *mut PendingTransactions;
 pub type FragmentPtr = *mut Fragment;
-pub type BlockDatePtr = *mut BlockDate;
 
 #[derive(Debug, Error)]
 #[error("null pointer")]
@@ -383,7 +383,7 @@ pub unsafe fn wallet_confirm_transaction(wallet: WalletPtr, fragment_id: *const 
 pub unsafe fn wallet_convert(
     wallet: WalletPtr,
     settings: SettingsPtr,
-    valid_until: BlockDatePtr,
+    valid_until: BlockDate,
     conversion_out: *mut ConversionPtr,
 ) -> Result {
     let wallet: &mut Wallet = if let Some(wallet) = wallet.as_mut() {
@@ -402,9 +402,7 @@ pub unsafe fn wallet_convert(
         return Error::invalid_input("conversion_out").with(NulPtr).into();
     };
 
-    let valid_until = non_null!(valid_until);
-
-    let conversion = wallet.convert(settings, valid_until);
+    let conversion = wallet.convert(settings, &valid_until.into());
 
     *conversion_out = Box::into_raw(Box::new(conversion));
 
@@ -613,7 +611,7 @@ pub unsafe fn wallet_vote_cast(
     settings: SettingsPtr,
     proposal: ProposalPtr,
     choice: u8,
-    valid_until: BlockDatePtr,
+    valid_until: BlockDate,
     transaction_out: *mut *const u8,
     len_out: *mut usize,
 ) -> Result {
@@ -635,8 +633,6 @@ pub unsafe fn wallet_vote_cast(
         return Error::invalid_input("proposal").with(NulPtr).into();
     };
 
-    let valid_until = non_null!(valid_until);
-
     if transaction_out.is_null() {
         return Error::invalid_input("transaction_out").with(NulPtr).into();
     }
@@ -646,7 +642,7 @@ pub unsafe fn wallet_vote_cast(
 
     let choice = Choice::new(choice);
 
-    let transaction = match wallet.vote(settings, proposal, choice, valid_until) {
+    let transaction = match wallet.vote(settings, proposal, choice, &valid_until.into()) {
         Ok(transaction) => Box::leak(transaction),
         Err(err) => return err.into(),
     };

@@ -23,7 +23,7 @@ public class Wallet {
 
     public native static void setState(long wallet, long value, long counter);
 
-    public native static byte[] voteCast(long wallet, long settings, long proposal, int choice);
+    public native static byte[] voteCast(long wallet, long settings, long proposal, int choice, long valid_until);
 
     public native static void confirmTransaction(long wallet, byte[] fragmentId);
 

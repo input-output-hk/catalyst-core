@@ -19,19 +19,19 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class WalletTest {
-    private byte[] accountKey() throws IOException{
-        final String accountKey = new String(
-                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key1.prv"))).trim();
+    private byte[] accountKey() throws IOException {
+        final String accountKey = new String(Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key1.prv")))
+                .trim();
 
         return hexStringToByteArray(accountKey);
     }
 
-    private byte[] utxoKeys() throws IOException{
-        final String utxoKey1 = new String(
-                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key2.prv"))).trim();
+    private byte[] utxoKeys() throws IOException {
+        final String utxoKey1 = new String(Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key2.prv")))
+                .trim();
 
-        final String utxoKey2 = new String(
-                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key3.prv"))).trim();
+        final String utxoKey2 = new String(Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key3.prv")))
+                .trim();
 
         return hexStringToByteArray(utxoKey1.concat(utxoKey2));
     }
@@ -77,9 +77,11 @@ public class WalletTest {
         final Settings.LinearFees expectedFees = new Settings.LinearFees(1, 2, 3,
                 new Settings.PerCertificateFee(4, 5, 6), new Settings.PerVoteCertificateFee(7, 8));
 
+        final Settings.TimeEra timeEra = new Settings.TimeEra(0, 0, 100);
+
         Settings.PerCertificateFee test = new Settings.PerCertificateFee(4, 5, 6);
 
-        final long settingsPtr = Settings.build(expectedFees, discrimination, blockId);
+        final long settingsPtr = Settings.build(expectedFees, discrimination, blockId, 10, (short) 15, timeEra, (short) 2);
 
         final Settings.LinearFees fees = Settings.fees(settingsPtr);
 
@@ -215,7 +217,7 @@ public class WalletTest {
         assertEquals(Wallet.spendingCounter(walletPtr), 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, 0);
 
             assertEquals(Wallet.spendingCounter(walletPtr), 1);
         } catch (final Exception e) {
@@ -289,7 +291,7 @@ public class WalletTest {
         Wallet.setState(walletPtr, 10000000, 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, 0);
 
             final long before = Wallet.pendingTransactions(walletPtr);
 
@@ -333,7 +335,7 @@ public class WalletTest {
         Wallet.setState(walletPtr, 10000000, 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, 0);
 
             final long fragment = Fragment.fromBytes(transaction);
             final byte[] fragmentId = Fragment.id(fragment);
@@ -374,7 +376,7 @@ public class WalletTest {
 
         Wallet.setState(walletPtr, 10000000, 0);
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, 0);
 
             final long before = Wallet.pendingTransactions(walletPtr);
 

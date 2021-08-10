@@ -1,15 +1,32 @@
-use jni::objects::{JClass, JObject, JString, JValue};
-use jni::sys::{jbyte, jbyteArray, jint, jlong};
-use jni::JNIEnv;
+use jni::{
+    objects::{JClass, JObject, JString, JValue},
+    signature::JavaType,
+};
+use jni::{
+    signature::Primitive,
+    sys::{jbyte, jbyteArray, jint, jlong},
+};
+use jni::{sys::jshort, JNIEnv};
 use std::convert::TryInto;
 use std::ptr::{null, null_mut};
-use wallet_core::c::*;
-use wallet_core::c::{
-    fragment::{fragment_from_raw, fragment_id},
-    settings::{
-        settings_block0_hash, settings_discrimination, settings_fees, settings_new, Discrimination,
-        LinearFee, PerCertificateFee, PerVoteCertificateFee,
+use wallet_core::{
+    c::{
+        delete_buffer,
+        fragment::{self, fragment_from_raw, fragment_id},
+        pending_transactions_delete, pending_transactions_get, pending_transactions_len,
+        settings::{
+            settings_block0_hash, settings_discrimination, settings_fees, settings_new,
+            Discrimination, LinearFee, PerCertificateFee, PerVoteCertificateFee, TimeEra,
+        },
+        symmetric_cipher_decrypt, vote, wallet_confirm_transaction, wallet_convert,
+        wallet_convert_ignored, wallet_convert_transactions_get, wallet_convert_transactions_size,
+        wallet_delete_conversion, wallet_delete_proposal, wallet_delete_settings,
+        wallet_delete_wallet, wallet_id, wallet_import_keys, wallet_pending_transactions,
+        wallet_recover, wallet_retrieve_funds, wallet_set_state, wallet_spending_counter,
+        wallet_total_value, wallet_vote_cast, BlockDatePtr, ConversionPtr, FragmentPtr,
+        PendingTransactionsPtr, ProposalPtr, SettingsPtr, WalletPtr, FRAGMENT_ID_LENGTH,
     },
+    Settings,
 };
 
 ///
@@ -140,7 +157,33 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_build(
     linear_fees: JObject,
     discrimination: JObject,
     block0_hash: jbyteArray,
+    block0_date: jlong,
+    slot_duration: jshort,
+    time_era: JObject,
+    transaction_max_expiry_epochs: jshort,
 ) -> jlong {
+    let slot_duration: u8 = match slot_duration.try_into() {
+        Ok(n) => n,
+        Err(_) => {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "slot duration must fit in the 0-255 range",
+            );
+            return std::ptr::null::<Settings>() as jlong;
+        }
+    };
+
+    let transaction_max_expiry_epochs: u8 = match transaction_max_expiry_epochs.try_into() {
+        Ok(n) => n,
+        Err(_) => {
+            let _ = env.throw_new(
+                "java/lang/IllegalArgumentException",
+                "transaction max expiry epochs must fit in the 0-255 range",
+            );
+            return std::ptr::null::<Settings>() as jlong;
+        }
+    };
+
     let discrimination = match env.call_method(discrimination, "discriminant", "()B", &[]) {
         Ok(JValue::Byte(0)) => Discrimination::Production,
         Ok(JValue::Byte(1)) => Discrimination::Test,
@@ -176,6 +219,59 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_build(
         Err(_) => return std::ptr::null::<Settings>() as jlong,
     };
 
+    let time_era =
+        match env
+            .find_class("com/iohk/jormungandrwallet/Settings$TimeEra")
+            .and_then(|class_id| {
+                // TODO: check the ranges for epochStart and slotsPerEpoch
+                let epoch_start =
+                    env.get_field_id(class_id, "epochStart", "J")
+                        .and_then(|field_id| {
+                            match env.get_field_unchecked(
+                                time_era,
+                                field_id,
+                                JavaType::Primitive(Primitive::Long),
+                            )? {
+                                JValue::Long(l) => Ok(l.try_into().unwrap()),
+                                _ => unreachable!("type signature mismatch"),
+                            }
+                        })?;
+                let slot_start =
+                    env.get_field_id(class_id, "slotStart", "J")
+                        .and_then(|field_id| {
+                            match env.get_field_unchecked(
+                                time_era,
+                                field_id,
+                                JavaType::Primitive(Primitive::Long),
+                            )? {
+                                JValue::Long(l) => Ok(l as u64),
+                                _ => unreachable!("type signature mismatch"),
+                            }
+                        })?;
+                let slots_per_epoch = env.get_field_id(class_id, "slotsPerEpoch", "J").and_then(
+                    |field_id| match env.get_field_unchecked(
+                        time_era,
+                        field_id,
+                        JavaType::Primitive(Primitive::Long),
+                    )? {
+                        JValue::Long(l) => Ok(l.try_into().unwrap()),
+                        _ => unreachable!("type signature mismatch"),
+                    },
+                )?;
+
+                Ok(TimeEra {
+                    epoch_start,
+                    slot_start,
+                    slots_per_epoch,
+                })
+            }) {
+            Ok(time_era) => time_era,
+            Err(error) => {
+                let _ = env.throw(error.to_string());
+                return std::ptr::null::<Settings>() as jlong;
+            }
+        };
+
     let len = env
         .get_array_length(block0_hash)
         .expect("Couldn't get block0 array length") as usize;
@@ -194,6 +290,10 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_build(
             linear_fees,
             discrimination,
             bytes.as_mut_ptr() as *mut u8,
+            block0_date as u64,
+            slot_duration,
+            time_era,
+            transaction_max_expiry_epochs,
             &mut settings_out as *mut *mut Settings,
         )
     };
@@ -533,13 +633,17 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
     _: JClass,
     wallet: jlong,
     settings: jlong,
+    valid_until: jlong,
 ) -> jlong {
     let wallet_ptr = wallet as WalletPtr;
     let settings_ptr = settings as SettingsPtr;
+    let valid_until_ptr = valid_until as BlockDatePtr;
+
     let mut conversion_out = null_mut();
     let result = wallet_convert(
         wallet_ptr,
         settings_ptr,
+        valid_until_ptr,
         (&mut conversion_out) as *mut ConversionPtr,
     );
 
@@ -837,10 +941,12 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
     settings: jlong,
     proposal: jlong,
     choice: jint,
+    valid_until: jlong,
 ) -> jbyteArray {
     let wallet_ptr = wallet as WalletPtr;
     let settings_ptr = settings as SettingsPtr;
     let proposal_ptr = proposal as ProposalPtr;
+    let valid_until_ptr = valid_until as BlockDatePtr;
 
     let choice: u8 = match choice.try_into() {
         Ok(index) => index,
@@ -863,6 +969,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
             settings_ptr,
             proposal_ptr,
             choice,
+            valid_until_ptr,
             &mut transaction_out as *mut *const u8,
             &mut transaction_size as *mut usize,
         )

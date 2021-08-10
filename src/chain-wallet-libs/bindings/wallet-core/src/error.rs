@@ -67,6 +67,10 @@ pub enum ErrorCode {
 
     /// invalid fragment
     InvalidFragment = 10,
+
+    /// invalid transaction validity date, it's either before the current blockchain or after the
+    /// maximum possible interval
+    InvalidTransactionValidityDate = 11,
 }
 
 #[derive(Debug)]
@@ -106,6 +110,9 @@ pub enum ErrorKind {
 
     /// invalid fragment
     InvalidFragment,
+
+    /// invalid transaction validity date
+    InvalidTransactionValidityDate,
 }
 
 impl ErrorKind {
@@ -125,6 +132,7 @@ impl ErrorKind {
             Self::InvalidVoteEncryptionKey => ErrorCode::InvalidVoteEncryptionKey,
             Self::NotEnoughFunds => ErrorCode::NotEnoughFunds,
             Self::InvalidFragment => ErrorCode::InvalidFragment,
+            Self::InvalidTransactionValidityDate => ErrorCode::InvalidTransactionValidityDate,
         }
     }
 }
@@ -236,6 +244,13 @@ impl Error {
     pub fn invalid_fragment() -> Self {
         Self {
             kind: ErrorKind::InvalidFragment,
+            details: None,
+        }
+    }
+
+    pub fn invalid_transaction_validity_date() -> Self {
+        Self {
+            kind: ErrorKind::InvalidTransactionValidityDate,
             details: None,
         }
     }
@@ -384,6 +399,9 @@ impl Display for ErrorKind {
             Self::InvalidVoteEncryptionKey => f.write_str("invalid vote encryption key"),
             Self::NotEnoughFunds => f.write_str("not enough funds to create transaction"),
             Self::InvalidFragment => f.write_str("invalid fragment"),
+            Self::InvalidTransactionValidityDate => {
+                f.write_str("invalid transaction validity date")
+            }
         }
     }
 }

@@ -23,6 +23,9 @@ wasm-pack build --dev
 
 ## Documentation
 
+The API documentation can be generated from the built JavaScript bindings
+with the following command:
+
 ```
 jsdoc pkg -c ../../jsdoc.json -d pkg/doc -R README.md
 ```

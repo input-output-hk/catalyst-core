@@ -239,24 +239,26 @@ var plugin = {
      * @param {string} settingsPtr a pointer to a Settings object obtained with walletRetrieveFunds
      * @param {string} proposalPtr a pointer to a Proposal object obtained with proposalNew
      * @param {number} choice a number between 0 and Proposal's numChoices - 1
+     * @param {BlockDate} validUntil maximum date in which this fragment can be applied to the ledger
      * @param {function} successCallback on success the callback returns a byte array representing a transaction
      * @param {function} errorCallback can fail if the choice doesn't validate with the given proposal
      *
      */
-    walletVote: function (walletPtr, settingsPtr, proposalPtr, choice, successCallback, errorCallback) {
-        argscheck.checkArgs('sssnff', 'walletVote', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_VOTE_ACTION_TAG, [walletPtr, settingsPtr, proposalPtr, choice]);
+    walletVote: function (walletPtr, settingsPtr, proposalPtr, choice, validUntil, successCallback, errorCallback) {
+        argscheck.checkArgs('sssn*ff', 'walletVote', arguments);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_VOTE_ACTION_TAG, [walletPtr, settingsPtr, proposalPtr, choice, validUntil]);
     },
 
     /**
      * @param {string} walletPtr a pointer to a wallet obtained with walletRestore
      * @param {string} settingsPtr a pointer to a settings object obtained with walletRetrieveFunds
+     * @param {BlockDate} validUntil maximum date in which this fragment can be applied to the ledger
      * @param {pointerCallback} successCallback returns a Conversion object
      * @param {errorCallback} errorCallback description (TODO)
      */
-    walletConvert: function (walletPtr, settingsPtr, successCallback, errorCallback) {
-        argscheck.checkArgs('ssff', 'walletConvert', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_CONVERT_ACTION_TAG, [walletPtr, settingsPtr]);
+    walletConvert: function (walletPtr, settingsPtr, validUntil, successCallback, errorCallback) {
+        argscheck.checkArgs('ss*ff', 'walletConvert', arguments);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_CONVERT_ACTION_TAG, [walletPtr, settingsPtr, validUntil]);
     },
 
     /**

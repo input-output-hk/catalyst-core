@@ -213,18 +213,34 @@ mod tests {
         let config = Config::istanbul();
         let mut executor = vm.executor(gas_limit, &config);
 
+        // Byte-encoded smart contract code
         let code = Rc::new(Vec::new());
+        // Byte-encoded input data used for smart contract code
         let data = Rc::new(Vec::new());
+        // EVM Context
         let context = RuntimeContext {
             address: Default::default(),
             caller: Default::default(),
             apparent_value: Default::default(),
         };
+        // Handle for the EVM runtime
         let mut runtime = vm.runtime(code, data, context, &config);
 
-        let reason = runtime.run(&mut executor);
-        if let Capture::Exit(ExitReason::Succeed(ExitSucceed::Stopped)) = reason {
-            assert!(true);
+        let exit_reason = runtime.run(&mut executor);
+
+        if let Capture::Exit(ExitReason::Succeed(ExitSucceed::Stopped)) = exit_reason {
+            // We consume the executor to extract the stack state after executing
+            // the code.
+            let state = executor.into_state();
+            // Next, we consume the stack state and extract the values and logs
+            // used to modify the accounts trie in the VirtualMachine.
+            let (values, logs) = state.deconstruct();
+
+            // We assert that there are no values or logs from the code execution.
+            assert_eq!(0, values.into_iter().count());
+            assert_eq!(0, logs.into_iter().count());
+            // // Here is where we would apply the changes in the backend
+            // vm.apply(values, logs, true);
         } else {
             panic!("unexpected evm result");
         }

@@ -200,9 +200,9 @@ public class WalletPlugin extends CordovaPlugin {
         final int discriminationInput = args.getInt(1);
         final JSONObject fees = (JSONObject) args.get(2);
         final long block0Date = Long.parseUnsignedLong(args.getString(3));
-        final short slotDuration = (short) args.get(4);
+        final short slotDuration = Short.parseShort(args.getString(4));
         final JSONObject era = (JSONObject) args.get(5);
-        final short transactionMaxExpiryEpochs = (short) args.get(6);
+        final short transactionMaxExpiryEpochs = Short.parseShort(args.getString(6));
 
         try {
             final long constant = Long.parseUnsignedLong(fees.getString("constant"));

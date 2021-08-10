@@ -4,14 +4,18 @@ use csv::Trim;
 use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::io;
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::proposals::{
     community_choice, simple, ProposalChallengeInfo,
 };
 use vit_servicing_station_lib::db::{
-    load_db_connection_pool, models::challenges::Challenge, models::funds::Fund,
-    models::proposals::Proposal, models::voteplans::Voteplan,
+    load_db_connection_pool,
+    models::{
+        challenges::Challenge, community_advisors_reviews::AdvisorReview, funds::Fund,
+        proposals::Proposal, voteplans::Voteplan,
+    },
 };
 
 #[derive(Error, Debug)]
@@ -33,24 +37,28 @@ pub enum CsvDataCmd {
 
         /// Path to the csv containing funds information
         #[structopt(long = "funds")]
-        funds: String,
+        funds: PathBuf,
 
         /// Path to the csv containing voteplans information
         #[structopt(long = "voteplans")]
-        voteplans: String,
+        voteplans: PathBuf,
 
         /// Path to the csv containing proposals information
         #[structopt(long = "proposals")]
-        proposals: String,
+        proposals: PathBuf,
 
         /// Path to the csv containing challenges information
         #[structopt(long = "challenges")]
-        challenges: String,
+        challenges: PathBuf,
+
+        /// Path to the csv containing advisor reviews information
+        #[structopt(long = "reviews")]
+        reviews: PathBuf,
     },
 }
 
 impl CsvDataCmd {
-    fn load_from_csv<T: DeserializeOwned>(csv_path: &str) -> io::Result<Vec<T>> {
+    fn load_from_csv<T: DeserializeOwned>(csv_path: &Path) -> io::Result<Vec<T>> {
         let mut reader = csv::ReaderBuilder::new()
             .flexible(true)
             .has_headers(true)
@@ -67,7 +75,11 @@ impl CsvDataCmd {
                 Err(e) => {
                     return Err(io::Error::new(
                         io::ErrorKind::InvalidInput,
-                        format!("Error in file {}.\nCause:\n\t{}", csv_path, e),
+                        format!(
+                            "Error in file {}.\nCause:\n\t{}",
+                            csv_path.to_string_lossy(),
+                            e
+                        ),
                     ))
                 }
             }
@@ -77,15 +89,18 @@ impl CsvDataCmd {
 
     fn handle_load(
         db_url: &str,
-        funds_path: &str,
-        voteplans_path: &str,
-        proposals_path: &str,
-        challenges_path: &str,
+        funds_path: &Path,
+        voteplans_path: &Path,
+        proposals_path: &Path,
+        challenges_path: &Path,
+        reviews_path: &Path,
     ) -> Result<(), Error> {
         db_file_exists(db_url)?;
         let funds = CsvDataCmd::load_from_csv::<Fund>(funds_path)?;
         if funds.len() != 1 {
-            return Err(Error::InvalidFundData(funds_path.to_string()));
+            return Err(Error::InvalidFundData(
+                funds_path.to_string_lossy().to_string(),
+            ));
         }
         let mut voteplans = CsvDataCmd::load_from_csv::<Voteplan>(voteplans_path)?;
         let mut challenges: HashMap<i32, Challenge> =
@@ -94,6 +109,7 @@ impl CsvDataCmd {
                 .map(|c| (c.id, c))
                 .collect();
         let csv_proposals = CsvDataCmd::load_from_csv::<super::models::Proposal>(proposals_path)?;
+        let reviews = CsvDataCmd::load_from_csv::<AdvisorReview>(reviews_path)?;
         let mut proposals: Vec<Proposal> = Vec::new();
         let mut simple_proposals_data: Vec<simple::ChallengeSqlValues> = Vec::new();
         let mut community_proposals_data: Vec<community_choice::ChallengeSqlValues> = Vec::new();
@@ -177,15 +193,19 @@ impl CsvDataCmd {
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
+        vit_servicing_station_lib::db::queries::community_advisors_reviews::batch_insert_advisor_reviews(&reviews, &db_conn)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+
         Ok(())
     }
 
     fn handle_load_with_db_backup(
         db_url: &str,
-        funds_path: &str,
-        voteplans_path: &str,
-        proposals_path: &str,
-        challenges_path: &str,
+        funds_path: &Path,
+        voteplans_path: &Path,
+        proposals_path: &Path,
+        challenges_path: &Path,
+        reviews: &Path,
     ) -> Result<(), Error> {
         let backup_file = backup_db_file(db_url)?;
         if let Err(e) = Self::handle_load(
@@ -194,6 +214,7 @@ impl CsvDataCmd {
             voteplans_path,
             proposals_path,
             challenges_path,
+            reviews,
         ) {
             restore_db_file(backup_file, db_url)?;
             Err(e)
@@ -214,7 +235,10 @@ impl ExecTask for CsvDataCmd {
                 voteplans,
                 proposals,
                 challenges,
-            } => Self::handle_load_with_db_backup(db_url, funds, voteplans, proposals, challenges),
+                reviews,
+            } => Self::handle_load_with_db_backup(
+                db_url, funds, voteplans, proposals, challenges, reviews,
+            ),
         }
     }
 }

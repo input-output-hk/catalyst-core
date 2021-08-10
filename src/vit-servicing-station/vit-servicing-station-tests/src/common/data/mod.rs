@@ -7,14 +7,14 @@ mod csv_converter;
 mod generator;
 pub use csv_converter::CsvConverter;
 pub use generator::{
-    parse_challenges, parse_funds, parse_proposals, ArbitraryGenerator,
+    parse_challenges, parse_funds, parse_proposals, ArbitraryGenerator, ArbitrarySnapshotGenerator,
     ArbitraryValidVotingTemplateGenerator, ChallengeTemplate, ExternalValidVotingTemplateGenerator,
-    FundTemplate, ProposalTemplate, Snapshot, TemplateLoadError, ValidVotePlanGenerator,
+    FundTemplate, ProposalTemplate, Snapshot, TemplateLoad, ValidVotePlanGenerator,
     ValidVotePlanParameters, ValidVotingTemplateGenerator,
 };
 
 pub fn token() -> (String, ApiTokenData) {
-    ArbitraryGenerator::new().token()
+    ArbitrarySnapshotGenerator::default().token()
 }
 
 pub fn token_hash() -> String {
@@ -22,23 +22,23 @@ pub fn token_hash() -> String {
 }
 
 pub fn proposals() -> Vec<FullProposalInfo> {
-    let mut gen = ArbitraryGenerator::new();
+    let mut gen = ArbitrarySnapshotGenerator::default();
     let funds = gen.funds();
     gen.proposals(&funds)
 }
 
 pub fn funds() -> Vec<Fund> {
-    ArbitraryGenerator::new().funds()
+    ArbitrarySnapshotGenerator::default().funds()
 }
 
 pub fn voteplans() -> Vec<Voteplan> {
-    let mut gen = ArbitraryGenerator::new();
+    let mut gen = ArbitrarySnapshotGenerator::default();
     let funds = gen.funds();
     gen.voteplans(&funds)
 }
 
 pub fn challenges() -> Vec<Challenge> {
-    let mut gen = ArbitraryGenerator::new();
+    let mut gen = ArbitrarySnapshotGenerator::default();
     let funds = gen.funds();
     gen.challenges(&funds)
 }

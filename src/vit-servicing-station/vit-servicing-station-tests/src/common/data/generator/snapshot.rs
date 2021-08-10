@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData, challenges::Challenge, funds::Fund, voteplans::Voteplan,
@@ -11,6 +12,7 @@ pub struct Snapshot {
     challenges: Vec<Challenge>,
     tokens: HashMap<String, ApiTokenData>,
     voteplans: Vec<Voteplan>,
+    reviews: Vec<AdvisorReview>,
 }
 
 impl Snapshot {
@@ -20,6 +22,7 @@ impl Snapshot {
         challenges: Vec<Challenge>,
         tokens: HashMap<String, ApiTokenData>,
         voteplans: Vec<Voteplan>,
+        reviews: Vec<AdvisorReview>,
     ) -> Self {
         Self {
             funds,
@@ -27,6 +30,7 @@ impl Snapshot {
             challenges,
             tokens,
             voteplans,
+            reviews,
         }
     }
 
@@ -83,5 +87,13 @@ impl Snapshot {
 
     pub fn challenges_mut(&mut self) -> &mut Vec<Challenge> {
         &mut self.challenges
+    }
+
+    pub fn advisor_reviews(&self) -> Vec<AdvisorReview> {
+        self.reviews.clone()
+    }
+
+    pub fn advisor_reviews_mut(&mut self) -> &mut Vec<AdvisorReview> {
+        &mut self.reviews
     }
 }

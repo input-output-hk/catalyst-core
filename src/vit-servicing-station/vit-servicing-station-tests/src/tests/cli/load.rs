@@ -1,7 +1,7 @@
 use crate::common::{
     cli::VitCliCommand,
     data::{
-        ArbitraryGenerator, ArbitraryValidVotingTemplateGenerator, CsvConverter,
+        ArbitrarySnapshotGenerator, ArbitraryValidVotingTemplateGenerator, CsvConverter,
         ValidVotePlanGenerator, ValidVotePlanParameters,
     },
     startup::{db::DbBuilder, server::ServerBootstrapper},
@@ -15,7 +15,7 @@ use chrono::NaiveDateTime;
 pub fn load_data_test() {
     let temp_dir = TempDir::new().unwrap();
     let db_file = temp_dir.child("db.sqlite");
-    let snapshot = ArbitraryGenerator::new().snapshot();
+    let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
     let csv_converter = CsvConverter;
 
     let funds = temp_dir.child("funds.csv");
@@ -50,6 +50,11 @@ pub fn load_data_test() {
         )
         .unwrap();
 
+    let reviews = temp_dir.child("reviews.csv");
+    csv_converter
+        .advisor_reviews(snapshot.advisor_reviews(), reviews.path())
+        .unwrap();
+
     let vit_cli: VitCliCommand = Default::default();
     vit_cli
         .db()
@@ -68,6 +73,7 @@ pub fn load_data_test() {
         .proposals(proposals.path())
         .voteplans(voteplans.path())
         .challenges(challenges.path())
+        .advisor_reviews(reviews.path())
         .build()
         .assert()
         .success();

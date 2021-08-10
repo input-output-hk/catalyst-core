@@ -34,6 +34,11 @@ impl LoadCsvCommand {
         self
     }
 
+    pub fn advisor_reviews<P: AsRef<Path>>(mut self, reviews: P) -> Self {
+        self.command.arg("--reviews").arg(reviews.as_ref());
+        self
+    }
+
     pub fn build(self) -> Command {
         self.command
     }

@@ -194,7 +194,7 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
         let values = self
             .0
             .iter()
-            .map(|(_, account_state)| account_state.get_value());
+            .map(|(_, account_state)| account_state.value());
         Value::sum(values)
     }
 
@@ -504,13 +504,11 @@ mod tests {
         value_to_remove: Value,
     ) -> TestResult {
         let mut ledger = Ledger::new();
-        ledger = ledger
-            .add_account(&id, account_state.get_value(), ())
-            .unwrap();
+        ledger = ledger.add_account(&id, account_state.value(), ()).unwrap();
         let result = ledger.remove_value(&id, value_to_remove);
-        let expected_result = account_state.get_value() - value_to_remove;
+        let expected_result = account_state.value() - value_to_remove;
         match (result, expected_result) {
-            (Err(_), Err(_)) => verify_total_value(ledger, account_state.get_value()),
+            (Err(_), Err(_)) => verify_total_value(ledger, account_state.value()),
             (Ok(_), Err(_)) => TestResult::failed(),
             (Err(_), Ok(_)) => TestResult::failed(),
             (Ok((ledger, _)), Ok(value)) => verify_total_value(ledger, value),
@@ -535,11 +533,9 @@ mod tests {
         account_state: AccountState<()>,
     ) -> TestResult {
         let mut ledger = Ledger::new();
-        ledger = ledger
-            .add_account(&id, account_state.get_value(), ())
-            .unwrap();
+        ledger = ledger.add_account(&id, account_state.value(), ()).unwrap();
         let result = ledger.remove_account(&id);
-        let expected_zero = account_state.get_value() == Value::zero();
+        let expected_zero = account_state.value() == Value::zero();
         match (result, expected_zero) {
             (Err(_), false) => verify_account_exists(&ledger, &id),
             (Ok(_), false) => TestResult::failed(),

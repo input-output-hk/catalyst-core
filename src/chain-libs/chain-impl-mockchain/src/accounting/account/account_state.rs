@@ -277,7 +277,7 @@ mod tests {
                 .get_current_counter()
                 .increment_nth(subs);
             let mut delegation = initial_account_state.delegation().clone();
-            let mut result_value = initial_account_state.get_value();
+            let mut result_value = initial_account_state.value();
 
             for operation in operations {
                 match operation {
@@ -393,12 +393,12 @@ mod tests {
     }
 
     fn should_add_fail(account_state: AccountState<()>, value: Value) -> bool {
-        (value + account_state.get_value()).is_err()
+        (value + account_state.value()).is_err()
     }
 
     fn should_sub_fail(account_state: AccountState<()>, value: Value) -> bool {
         // should fail if we recieve negative result
-        (account_state.get_value() - value).is_err()
+        (account_state.value() - value).is_err()
     }
 
     #[test]

@@ -1876,7 +1876,7 @@ mod tests {
     ) -> TestResult {
         let mut account_ledger = account::Ledger::new();
         account_ledger = account_ledger
-            .add_account(&id, account_state.get_value(), ())
+            .add_account(&id, account_state.value(), ())
             .unwrap();
         let result = super::input_single_account_verify(
             account_ledger,

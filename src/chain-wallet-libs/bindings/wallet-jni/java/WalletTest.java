@@ -6,6 +6,8 @@ import com.iohk.jormungandrwallet.Proposal;
 import com.iohk.jormungandrwallet.PendingTransactions;
 import com.iohk.jormungandrwallet.SymmetricCipher;
 import com.iohk.jormungandrwallet.Fragment;
+import com.iohk.jormungandrwallet.Time;
+import com.iohk.jormungandrwallet.Time.BlockDate;
 
 import java.util.Properties;
 import java.util.Enumeration;
@@ -153,7 +155,7 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr);
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.ttlFromDate(settingsPtr, 0));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -174,7 +176,7 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr);
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.ttlFromDate(settingsPtr, 0));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -217,7 +219,7 @@ public class WalletTest {
         assertEquals(Wallet.spendingCounter(walletPtr), 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, 0);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.ttlFromDate(settingsPtr, 0));
 
             assertEquals(Wallet.spendingCounter(walletPtr), 1);
         } catch (final Exception e) {
@@ -250,7 +252,7 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr);
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.ttlFromDate(settingsPtr, 0));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -291,7 +293,7 @@ public class WalletTest {
         Wallet.setState(walletPtr, 10000000, 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, 0);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.ttlFromDate(settingsPtr, 0));
 
             final long before = Wallet.pendingTransactions(walletPtr);
 
@@ -335,7 +337,7 @@ public class WalletTest {
         Wallet.setState(walletPtr, 10000000, 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, 0);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.ttlFromDate(settingsPtr, 0));
 
             final long fragment = Fragment.fromBytes(transaction);
             final byte[] fragmentId = Fragment.id(fragment);
@@ -376,7 +378,7 @@ public class WalletTest {
 
         Wallet.setState(walletPtr, 10000000, 0);
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, 0);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.ttlFromDate(settingsPtr, 0));
 
             final long before = Wallet.pendingTransactions(walletPtr);
 

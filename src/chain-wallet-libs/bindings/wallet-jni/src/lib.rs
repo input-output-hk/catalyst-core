@@ -18,13 +18,15 @@ use wallet_core::{
             settings_block0_hash, settings_discrimination, settings_fees, settings_new,
             Discrimination, LinearFee, PerCertificateFee, PerVoteCertificateFee, TimeEra,
         },
-        symmetric_cipher_decrypt, vote, wallet_confirm_transaction, wallet_convert,
-        wallet_convert_ignored, wallet_convert_transactions_get, wallet_convert_transactions_size,
+        symmetric_cipher_decrypt,
+        time::{compute_end_date, BlockDate},
+        vote, wallet_confirm_transaction, wallet_convert, wallet_convert_ignored,
+        wallet_convert_transactions_get, wallet_convert_transactions_size,
         wallet_delete_conversion, wallet_delete_proposal, wallet_delete_settings,
         wallet_delete_wallet, wallet_id, wallet_import_keys, wallet_pending_transactions,
         wallet_recover, wallet_retrieve_funds, wallet_set_state, wallet_spending_counter,
-        wallet_total_value, wallet_vote_cast, BlockDatePtr, ConversionPtr, FragmentPtr,
-        PendingTransactionsPtr, ProposalPtr, SettingsPtr, WalletPtr, FRAGMENT_ID_LENGTH,
+        wallet_total_value, wallet_vote_cast, ConversionPtr, FragmentPtr, PendingTransactionsPtr,
+        ProposalPtr, SettingsPtr, WalletPtr, FRAGMENT_ID_LENGTH,
     },
     Settings,
 };
@@ -633,17 +635,53 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_convert(
     _: JClass,
     wallet: jlong,
     settings: jlong,
-    valid_until: jlong,
+    valid_until: JObject,
 ) -> jlong {
     let wallet_ptr = wallet as WalletPtr;
     let settings_ptr = settings as SettingsPtr;
-    let valid_until_ptr = valid_until as BlockDatePtr;
+
+    let valid_until = match env
+        .find_class("com/iohk/jormungandrwallet/Time$BlockDate")
+        .and_then(|class_id| {
+            let epoch = env
+                .get_field_id(class_id, "epoch", "J")
+                .and_then(|field_id| {
+                    match env.get_field_unchecked(
+                        valid_until,
+                        field_id,
+                        JavaType::Primitive(Primitive::Long),
+                    )? {
+                        JValue::Long(l) => Ok(l.try_into().unwrap()),
+                        _ => unreachable!("type signature mismatch"),
+                    }
+                })?;
+            let slot = env
+                .get_field_id(class_id, "slot", "J")
+                .and_then(|field_id| {
+                    match env.get_field_unchecked(
+                        valid_until,
+                        field_id,
+                        JavaType::Primitive(Primitive::Long),
+                    )? {
+                        JValue::Long(l) => Ok(l.try_into().unwrap()),
+                        _ => unreachable!("type signature mismatch"),
+                    }
+                })?;
+
+            Ok(BlockDate { epoch, slot })
+        }) {
+        Ok(block_date) => block_date,
+        Err(error) => {
+            let _ = env.throw(error.to_string());
+            return std::ptr::null::<Settings>() as jlong;
+        }
+    };
 
     let mut conversion_out = null_mut();
     let result = wallet_convert(
         wallet_ptr,
         settings_ptr,
-        valid_until_ptr,
+        valid_until,
         (&mut conversion_out) as *mut ConversionPtr,
     );
 
@@ -941,12 +979,11 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
     settings: jlong,
     proposal: jlong,
     choice: jint,
-    valid_until: jlong,
+    valid_until: JObject,
 ) -> jbyteArray {
     let wallet_ptr = wallet as WalletPtr;
     let settings_ptr = settings as SettingsPtr;
     let proposal_ptr = proposal as ProposalPtr;
-    let valid_until_ptr = valid_until as BlockDatePtr;
 
     let choice: u8 = match choice.try_into() {
         Ok(index) => index,
@@ -960,6 +997,43 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
         }
     };
 
+    let valid_until = match env
+        .find_class("com/iohk/jormungandrwallet/Time$BlockDate")
+        .and_then(|class_id| {
+            let epoch = env
+                .get_field_id(class_id, "epoch", "J")
+                .and_then(|field_id| {
+                    match env.get_field_unchecked(
+                        valid_until,
+                        field_id,
+                        JavaType::Primitive(Primitive::Long),
+                    )? {
+                        JValue::Long(l) => Ok(l.try_into().unwrap()),
+                        _ => unreachable!("type signature mismatch"),
+                    }
+                })?;
+            let slot = env
+                .get_field_id(class_id, "slot", "J")
+                .and_then(|field_id| {
+                    match env.get_field_unchecked(
+                        valid_until,
+                        field_id,
+                        JavaType::Primitive(Primitive::Long),
+                    )? {
+                        JValue::Long(l) => Ok(l.try_into().unwrap()),
+                        _ => unreachable!("type signature mismatch"),
+                    }
+                })?;
+
+            Ok(BlockDate { epoch, slot })
+        }) {
+        Ok(block_date) => block_date,
+        Err(error) => {
+            let _ = env.throw(error.to_string());
+            return null_mut() as jbyteArray;
+        }
+    };
+
     let mut transaction_out: *const u8 = null();
     let mut transaction_size: usize = 0;
 
@@ -969,7 +1043,7 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_voteCast(
             settings_ptr,
             proposal_ptr,
             choice,
-            valid_until_ptr,
+            valid_until,
             &mut transaction_out as *mut *const u8,
             &mut transaction_size as *mut usize,
         )
@@ -1208,6 +1282,59 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Fragment_id(
     };
 
     array
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Time_ttlFromDate(
+    env: JNIEnv,
+    _: JClass,
+    settings: jlong,
+    date: jlong,
+) -> jni::sys::jobject {
+    let settings = settings as SettingsPtr;
+
+    let mut block_date = BlockDate { epoch: 0, slot: 0 };
+
+    let result = compute_end_date(
+        settings,
+        std::num::NonZeroU64::new(date as u64),
+        (&mut block_date) as *mut _,
+    );
+
+    match result.error() {
+        None => {
+            let date = match env
+                .find_class("com/iohk/jormungandrwallet/Time$BlockDate")
+                .and_then(|class_id| {
+                    env.new_object(
+                        class_id,
+                        "(JJ)V",
+                        &[
+                            JValue::Long(block_date.epoch as i64),
+                            JValue::Long(block_date.slot as i64),
+                        ],
+                    )
+                }) {
+                Ok(date) => date,
+                Err(e) => {
+                    unreachable!("internal error {}", e)
+                }
+            };
+
+            *date
+        }
+        Some(error) => {
+            let _ = env.throw(error.to_string());
+            null_mut()
+        }
+    }
 }
 
 ///

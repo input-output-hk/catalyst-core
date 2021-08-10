@@ -6,6 +6,7 @@
 
 pub mod account_state;
 pub mod last_rewards;
+pub mod spending;
 use crate::{date::Epoch, value::*};
 use imhamt::{Hamt, InsertError, UpdateError};
 use std::collections::hash_map::DefaultHasher;
@@ -15,6 +16,7 @@ use thiserror::Error;
 
 pub use account_state::*;
 pub use last_rewards::LastRewards;
+pub use spending::{SpendingCounter, SpendingCounterIncreasing};
 
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod test;
@@ -25,8 +27,6 @@ pub enum LedgerError {
     NonExistent,
     #[error("Account already exists")]
     AlreadyExists,
-    #[error("Operation counter reached its maximum and next operation must be full withdrawal")]
-    NeedTotalWithdrawal,
     #[error("Removed account is not empty")]
     NonZero,
     #[error("Value calculation failed")]
@@ -181,7 +181,9 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
         let counter = self
             .0
             .lookup(identifier)
-            .map_or(Err(LedgerError::NonExistent), |st| Ok(st.counter))?;
+            .map_or(Err(LedgerError::NonExistent), |st| {
+                Ok(st.spending.get_current_counter())
+            })?;
         self.0
             .update(identifier, |st| st.sub(value))
             .map(|ledger| (Ledger(ledger), counter))
@@ -393,7 +395,7 @@ mod tests {
         match ledger.get_state(&account_id) {
             Ok(account_state) => {
                 let expected_account_state = AccountState {
-                    counter: SpendingCounter::zero(),
+                    spending: SpendingCounterIncreasing::default(),
                     last_rewards: LastRewards {
                         epoch: 0,
                         reward: value,

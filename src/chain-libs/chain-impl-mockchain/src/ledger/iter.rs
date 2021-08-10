@@ -423,10 +423,7 @@ mod tests {
                 Entry::Account((id, state)) => {
                     println!(
                         "Account {} {} {:?} {}",
-                        id,
-                        u32::from(state.counter),
-                        state.delegation,
-                        state.value,
+                        id, state.spending, state.delegation, state.value,
                     );
                 }
                 Entry::ConfigParam(param) => {
@@ -445,10 +442,7 @@ mod tests {
                 Entry::MultisigAccount((id, state)) => {
                     println!(
                         "MultisigAccount {} {} {:?} {}",
-                        id,
-                        u32::from(state.counter),
-                        state.delegation,
-                        state.value,
+                        id, state.spending, state.delegation, state.value,
                     );
                 }
                 Entry::MultisigDeclaration((id, decl)) => {

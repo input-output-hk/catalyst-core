@@ -163,7 +163,7 @@ impl AddressData {
     }
 
     pub fn confirm_transaction(&self) {
-        self.spending_counter.map(|sp| sp.increment().unwrap());
+        self.spending_counter.map(|sp| sp.increment());
     }
 
     pub fn spending_counter(&self) -> Option<SpendingCounter> {

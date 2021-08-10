@@ -40,6 +40,7 @@ use super::{Entry, EntryOwned};
 use crate::account::AccountAlg;
 use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
+    SpendingCounterIncreasing,
 };
 use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VoteAction, VotePlan};
 use crate::config::ConfigParam;
@@ -160,11 +161,27 @@ fn unpack_account_identifier<R: std::io::BufRead>(
     }
 }
 
+fn pack_spending_strategy<W: std::io::Write>(
+    spending_strategy: &SpendingCounterIncreasing,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    let counter = spending_strategy.get_current_counter();
+    codec.put_u32(counter.into())?;
+    Ok(())
+}
+
+fn unpack_spending_strategy<R: std::io::BufRead>(
+    codec: &mut Codec<R>,
+) -> Result<SpendingCounterIncreasing, std::io::Error> {
+    let counter = SpendingCounter(codec.get_u32()?);
+    Ok(SpendingCounterIncreasing::new_from_counter(counter))
+}
+
 fn pack_account_state<W: std::io::Write>(
     account_state: &AccountState<()>,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    codec.put_u32(account_state.counter.0)?;
+    pack_spending_strategy(&account_state.spending, codec)?;
     pack_delegation_type(&account_state.delegation, codec)?;
     codec.put_u64(account_state.value.0)?;
     pack_last_rewards(&account_state.last_rewards, codec)?;
@@ -174,12 +191,12 @@ fn pack_account_state<W: std::io::Write>(
 fn unpack_account_state<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<AccountState<()>, std::io::Error> {
-    let counter = codec.get_u32()?;
+    let spending = unpack_spending_strategy(codec)?;
     let delegation = unpack_delegation_type(codec)?;
     let value = codec.get_u64()?;
     let last_rewards = unpack_last_rewards(codec)?;
     Ok(AccountState {
-        counter: SpendingCounter(counter),
+        spending,
         delegation,
         value: Value(value),
         last_rewards,

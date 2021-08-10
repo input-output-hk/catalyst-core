@@ -3,6 +3,7 @@ use crate::date::Epoch;
 use crate::value::*;
 use imhamt::HamtIter;
 
+use super::spending::SpendingCounterIncreasing;
 use super::{LastRewards, LedgerError};
 
 /// Set the choice of delegation:
@@ -77,7 +78,7 @@ impl DelegationRatio {
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct AccountState<Extra> {
-    pub counter: SpendingCounter,
+    pub spending: SpendingCounterIncreasing,
     pub delegation: DelegationType,
     pub value: Value,
     pub last_rewards: LastRewards,
@@ -88,7 +89,7 @@ impl<Extra> AccountState<Extra> {
     /// Create a new account state with a specific start value
     pub fn new(v: Value, e: Extra) -> Self {
         Self {
-            counter: SpendingCounter(0),
+            spending: SpendingCounterIncreasing::default(),
             delegation: DelegationType::NonDelegated,
             value: v,
             last_rewards: LastRewards::default(),
@@ -109,15 +110,6 @@ impl<Extra> AccountState<Extra> {
 
     pub fn value(&self) -> Value {
         self.value
-    }
-
-    // deprecated use value()
-    pub fn get_value(&self) -> Value {
-        self.value
-    }
-
-    pub fn get_counter(&self) -> u32 {
-        self.counter.into()
     }
 }
 
@@ -153,26 +145,12 @@ impl<Extra: Clone> AccountState<Extra> {
     ///
     /// Note that this *also* increment the counter, as this function would be usually call
     /// for spending.
-    ///
-    /// If the counter is also reaching the extremely rare of max, we only authorise
-    /// a total withdrawal of fund otherwise the fund would be stuck forever in limbo.
     pub fn sub(&self, v: Value) -> Result<Option<Self>, LedgerError> {
         let new_value = (self.value - v)?;
-        match self.counter.increment() {
-            None => {
-                if new_value == Value::zero() {
-                    Ok(None)
-                } else {
-                    Err(LedgerError::NeedTotalWithdrawal)
-                }
-            }
-            Some(new_counter) => {
-                let mut r = self.clone();
-                r.counter = new_counter;
-                r.value = new_value;
-                Ok(Some(r))
-            }
-        }
+        let mut r = self.clone();
+        r.spending = self.spending.next();
+        r.value = new_value;
+        Ok(Some(r))
     }
 
     /// Set delegation
@@ -180,42 +158,6 @@ impl<Extra: Clone> AccountState<Extra> {
         let mut st = self.clone();
         st.delegation = delegation;
         st
-    }
-}
-
-/// Spending counter associated to an account.
-///
-/// every time the owner is spending from an account,
-/// the counter is incremented. A matching counter
-/// needs to be used in the spending phase to make
-/// sure we have non-replayability of a transaction.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SpendingCounter(pub(crate) u32);
-
-impl SpendingCounter {
-    pub fn zero() -> Self {
-        SpendingCounter(0)
-    }
-
-    #[must_use = "this function does not modify the state"]
-    pub fn increment(self) -> Option<Self> {
-        self.0.checked_add(1).map(SpendingCounter)
-    }
-
-    pub fn to_bytes(self) -> [u8; 4] {
-        self.0.to_le_bytes()
-    }
-}
-
-impl From<u32> for SpendingCounter {
-    fn from(v: u32) -> Self {
-        SpendingCounter(v)
-    }
-}
-
-impl From<SpendingCounter> for u32 {
-    fn from(v: SpendingCounter) -> u32 {
-        v.0
     }
 }
 
@@ -232,13 +174,10 @@ impl<'a, ID, Extra> Iterator for Iter<'a, ID, Extra> {
 #[cfg(test)]
 mod tests {
     use super::{
-        AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
+        AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounterIncreasing,
         DELEGATION_RATIO_MAX_DECLS,
     };
-    use crate::{
-        accounting::account::LedgerError, certificate::PoolId, testing::builders::StakePoolBuilder,
-        value::Value,
-    };
+    use crate::{certificate::PoolId, testing::builders::StakePoolBuilder, value::Value};
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::iter;
@@ -250,23 +189,11 @@ mod tests {
         counter: u32,
     ) -> TestResult {
         let mut account_state = AccountState::new(init_value, ());
-        account_state.counter = counter.into();
+        account_state.spending = SpendingCounterIncreasing::new_from_counter(counter.into());
         TestResult::from_bool(
             should_sub_fail(account_state.clone(), sub_value)
                 == account_state.sub(sub_value).is_err(),
         )
-    }
-
-    #[test]
-    pub fn max_counter() {
-        let mut account_state = AccountState::new(Value(10), ());
-        account_state.counter = SpendingCounter(u32::MAX);
-        assert_eq!(account_state.get_counter(), u32::MAX);
-        assert!(account_state.sub(Value(10)).unwrap().is_none());
-        assert_eq!(
-            account_state.sub(Value(1)).err().unwrap(),
-            LedgerError::NeedTotalWithdrawal
-        );
     }
 
     #[quickcheck]
@@ -345,7 +272,10 @@ mod tests {
             operations: std::slice::Iter<ArbitraryAccountStateOp>,
             subs: u32,
         ) -> AccountState<()> {
-            let result_spending_counter = initial_account_state.counter.0 + subs;
+            let result_spending_counter = initial_account_state
+                .spending
+                .get_current_counter()
+                .increment_nth(subs);
             let mut delegation = initial_account_state.delegation().clone();
             let mut result_value = initial_account_state.get_value();
 
@@ -372,7 +302,7 @@ mod tests {
                 }
             }
             AccountState {
-                counter: SpendingCounter(result_spending_counter),
+                spending: SpendingCounterIncreasing::new_from_counter(result_spending_counter),
                 delegation,
                 value: result_value,
                 last_rewards: LastRewards::default(),
@@ -468,10 +398,7 @@ mod tests {
 
     fn should_sub_fail(account_state: AccountState<()>, value: Value) -> bool {
         // should fail if we recieve negative result
-        // or if we reached counter limit and it's now full withdrawal
         (account_state.get_value() - value).is_err()
-            || (account_state.counter.0.checked_add(1).is_none()
-                && account_state.get_value() != value)
     }
 
     #[test]

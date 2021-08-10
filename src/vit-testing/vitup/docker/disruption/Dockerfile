@@ -31,7 +31,7 @@ RUN cd ${ENV_PREFIX} && \
  RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-testing && \
 	cd vit-testing && \
-	git checkout 92273e7c82bd7cefc3fd9879a713bb2868e311c4
+	git checkout mock-disruption
     
 
 # install the node and jcli from source

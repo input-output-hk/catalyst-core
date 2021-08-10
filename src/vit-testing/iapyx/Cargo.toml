@@ -23,8 +23,8 @@ rand_core = "0.6"
 itertools = "0.9.0"
 cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
-jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", rev = "48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f" }
+jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", rev = "bd2da9cc7393af57ac9b95d52c99e4da44311552" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "bd2da9cc7393af57ac9b95d52c99e4da44311552" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev="c81e6d54fc2aa0d4cb31c50859a8b29328a10157" }
 hyper = "0.13.6"
 thiserror = "1.0"

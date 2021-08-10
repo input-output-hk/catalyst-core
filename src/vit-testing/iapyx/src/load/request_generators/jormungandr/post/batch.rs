@@ -94,9 +94,10 @@ impl BatchWalletRequestGen {
                 proposals.push(
                     self.proposals
                         .iter()
-                        .enumerate()
-                        .find(|(idx, x)| x.chain_voteplan_id == item.id().to_string() && *idx == i)
-                        .map(|(_, x)| x)
+                        .find(|x| {
+                            x.chain_voteplan_id == item.id().to_string()
+                                && (x.internal_id % u8::MAX as i64) == i as i64
+                        })
                         .unwrap()
                         .clone(),
                 );

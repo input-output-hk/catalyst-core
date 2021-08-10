@@ -264,7 +264,8 @@ impl Controller {
 
 pub fn read_bech32(path: impl AsRef<Path>) -> Result<(String, Vec<bech32::u5>), ControllerError> {
     let line = jortestkit::file::read_file(path);
-    bech32::decode(&line).map_err(Into::into)
+    let line_without_special_characters = line.replace(&['\n', '\r'][..], "");
+    bech32::decode(&line_without_special_characters).map_err(Into::into)
 }
 
 #[derive(Debug, Error)]

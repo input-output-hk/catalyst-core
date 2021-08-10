@@ -45,9 +45,14 @@ fn test_free_utxo_key_dump() {
 
     assert_eq!(free_keys.confirmed_value(), WALLET_VALUE);
 
-    let (fragment, ignored) = dump_free_utxo(&settings, &address, &mut free_keys)
-        .next()
-        .unwrap();
+    let (fragment, ignored) = dump_free_utxo(
+        &settings,
+        &address,
+        &mut free_keys,
+        wallet::time::compute_end_date(&settings, None).unwrap(),
+    )
+    .next()
+    .unwrap();
 
     assert!(ignored.is_empty());
 

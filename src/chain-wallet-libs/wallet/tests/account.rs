@@ -67,7 +67,11 @@ fn cast_vote() {
 
     let cast = VoteCast::new(vote_plan_id.into(), index, payload);
 
-    let mut builder = wallet::TransactionBuilder::new(&settings, cast);
+    let mut builder = wallet::TransactionBuilder::new(
+        &settings,
+        cast,
+        wallet::time::compute_end_date(&settings, None).unwrap(),
+    );
 
     let value = builder.estimate_fee_with(1, 0);
 

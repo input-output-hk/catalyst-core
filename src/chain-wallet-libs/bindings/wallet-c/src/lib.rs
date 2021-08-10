@@ -29,6 +29,8 @@ pub struct Proposal {}
 pub struct Fragment;
 #[repr(C)]
 pub struct Error {}
+#[repr(C)]
+pub struct BlockDate {}
 
 #[repr(C)]
 pub struct EncryptingVoteKey {}
@@ -40,6 +42,7 @@ pub type ProposalPtr = *mut Proposal;
 pub type FragmentPtr = *mut Fragment;
 pub type ErrorPtr = *mut Error;
 pub type EncryptingVoteKeyPtr = *mut EncryptingVoteKey;
+pub type BlockDatePtr = *mut BlockDate;
 
 /// retrieve a wallet from the given mnemonics, password and protocol magic
 ///
@@ -255,11 +258,13 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
 pub unsafe extern "C" fn iohk_jormungandr_wallet_convert(
     wallet: WalletPtr,
     settings: SettingsPtr,
+    valid_until: BlockDatePtr,
     conversion_out: *mut ConversionPtr,
 ) -> ErrorPtr {
     let r = wallet_convert(
         wallet as *mut WalletRust,
         settings as *mut SettingsRust,
+        valid_until as wallet_core::c::BlockDatePtr,
         conversion_out as *mut *mut ConversionRust,
     );
 
@@ -534,6 +539,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
     settings: SettingsPtr,
     proposal: ProposalPtr,
     choice: u8,
+    valid_until: BlockDatePtr,
     transaction_out: *mut *const u8,
     len_out: *mut usize,
 ) -> ErrorPtr {
@@ -542,6 +548,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
         settings as *mut SettingsRust,
         proposal as *mut ProposalRust,
         choice,
+        valid_until as wallet_core::c::BlockDatePtr,
         transaction_out,
         len_out,
     );

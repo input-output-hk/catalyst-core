@@ -18,7 +18,7 @@ PASSWORD[0] = 1;
 PASSWORD[1] = 2;
 PASSWORD[2] = 3;
 PASSWORD[3] = 4;
-const VOTE_ENCRYPTION_KEY = "p256k1_votepk1q30fm0td4pavzzellykgce2a6qv2e3gvexy7q0vj9aalumuc9ankvvpcxm5vmy09n650h73srhq30568023lsr9vcfnvnyatttsxwppept8fnt";
+const VOTE_ENCRYPTION_KEY = "votepk1nc988wtjlrm5k0z43088p0rrvd5yhvc96k7zh99p6w74gupxggtqwym0vm";
 
 let promisifyP = f => promisify(primitives, f)
 const restoreWallet = promisifyP(primitives.walletRestore);
@@ -46,6 +46,7 @@ const symmetricCipherDecrypt = promisifyP(primitives.symmetricCipherDecrypt);
 const settingsGet = promisifyP(primitives.settingsGet);
 const settingsNew = promisifyP(primitives.settingsNew);
 const fragmentId = promisifyP(primitives.fragmentId);
+const ttlFromDate = promisifyP(primitives.ttlFromDAte);
 
 
 const tests = [
@@ -120,7 +121,7 @@ const tests = [
         expect(wallet !== 0).toBe(true);
 
         const settings = await retrieveFunds(wallet, hexStringToBytes(BLOCK0));
-        const conversion = await convertWallet(wallet, settings);
+        const conversion = await convertWallet(wallet, settings, ttlFromDate(settings, 0));
         const transactions = await conversionGetTransactions(conversion);
         expect(transactions.length).toBe(1);
 
@@ -156,7 +157,7 @@ const tests = [
 
         expect(await spendingCounter(walletPtr)).toBe(0);
 
-        await walletVote(walletPtr, settingsPtr, proposalPtr, 0);
+        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, ttlFromDate(settingsPtr, 0));
 
         expect(await spendingCounter(walletPtr)).toBe(1);
 
@@ -181,7 +182,7 @@ const tests = [
         const walletPtr = await restoreWallet(YOROI_WALLET);
         const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
         await walletSetState(walletPtr, 1000000, 1);
-        await walletVote(walletPtr, settingsPtr, proposalPtr, 0);
+        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, ttlFromDate(settingsPtr, 0));
 
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
@@ -277,7 +278,15 @@ const tests = [
             }
         };
 
-        const settingsPtr = await settingsNew(settingsExpected.block0Hash, settingsExpected.discrimination, settingsExpected.fees);
+        const block0Date = "110";
+        const slotDuration = "10";
+        const era = {epochStart: "0", slotStart: "0", slotsPerEpoch: "100"};
+        const transactionMaxExpiryEpochs = "2";
+
+        const settingsPtr = await settingsNew(settingsExpected.block0Hash,
+            settingsExpected.discrimination, settingsExpected.fees, block0Date,
+            slotDuration, era, transactionMaxExpiryEpochs
+        );
 
         expect(settingsPtr !== 0).toBe(true);
 
@@ -314,8 +323,8 @@ const tests = [
         const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
         await walletSetState(walletPtr, 1000000, 0);
 
-        const tx1 = await walletVote(walletPtr, settingsPtr, proposalPtr, 1);
-        const tx2 = await walletVote(walletPtr, settingsPtr, proposalPtr, 2);
+        const tx1 = await walletVote(walletPtr, settingsPtr, proposalPtr, 1, ttlFromDate(settingsPtr, 0));
+        const tx2 = await walletVote(walletPtr, settingsPtr, proposalPtr, 2, ttlFromDate(settingsPtr, 0));
 
         const id1 = await fragmentId(new Uint8Array(tx1));
         const id2 = await fragmentId(new Uint8Array(tx2));

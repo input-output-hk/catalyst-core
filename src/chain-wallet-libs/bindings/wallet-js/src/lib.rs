@@ -260,6 +260,12 @@ impl Conversion {
 
 #[wasm_bindgen]
 impl Proposal {
+    /// Constructs a description of a public vote proposal from its constituent data.
+    ///
+    /// Parameters:
+    /// * `vote_plan_id`: Identifier of the vote plan.
+    /// * `index`: 0-based index of the proposal in the vote plan.
+    /// * `options`: Descriptor of vote plan options, detailing the number of choices.
     pub fn new_public(vote_plan_id: VotePlanId, index: u8, options: Options) -> Self {
         Proposal(wallet_core::Proposal::new(
             vote_plan_id.0.into(),
@@ -269,17 +275,24 @@ impl Proposal {
         ))
     }
 
+    /// Constructs a description of a private vote proposalfrom its constituent data.
+    ///
+    /// Parameters:
+    /// * `vote_plan_id`: Identifier of the vote plan.
+    /// * `index`: 0-based index of the proposal in the vote plan.
+    /// * `options`: Descriptor of vote plan options, detailing the number of choices.
+    /// * `election_key`: The public key for the vote plan used to encrypt ballots.
     pub fn new_private(
         vote_plan_id: VotePlanId,
         index: u8,
         options: Options,
-        encrypting_vote_key: ElectionPublicKey,
+        election_key: ElectionPublicKey,
     ) -> Self {
         Proposal(wallet_core::Proposal::new_private(
             vote_plan_id.0.into(),
             index,
             options.0,
-            encrypting_vote_key.0,
+            election_key.0,
         ))
     }
 }

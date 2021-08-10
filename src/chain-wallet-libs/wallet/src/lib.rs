@@ -6,6 +6,7 @@ mod recovering;
 pub mod scheme;
 mod states;
 mod store;
+pub mod time;
 pub mod transaction;
 
 pub use self::{

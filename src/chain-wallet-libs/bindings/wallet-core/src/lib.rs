@@ -1,6 +1,7 @@
 pub mod c;
 mod conversion;
 mod error;
+pub mod time;
 mod vote;
 mod wallet;
 

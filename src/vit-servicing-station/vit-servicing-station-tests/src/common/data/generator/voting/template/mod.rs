@@ -36,6 +36,9 @@ pub struct ProposalTemplate {
     pub proposer_url: String,
     #[serde(default)]
     pub proposer_relevant_experience: String,
+    #[serde(
+        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_vote_options_from_string"
+    )]
     pub chain_vote_options: VoteOptions,
     pub chain_vote_type: String,
     pub challenge_id: Option<String>,

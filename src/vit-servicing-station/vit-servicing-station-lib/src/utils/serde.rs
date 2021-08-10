@@ -1,3 +1,4 @@
+use crate::db::models::vote_options::VoteOptions;
 use crate::utils::datetime::unix_timestamp_to_datetime;
 use chrono::{DateTime, Utc};
 use serde::de::Visitor;
@@ -103,4 +104,30 @@ where
         }
     }
     deserializer.deserialize_str(I64Deserializer())
+}
+
+pub fn deserialize_vote_options_from_string<'de, D>(
+    deserializer: D,
+) -> Result<VoteOptions, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct VoteOptionsDeserializer();
+
+    impl<'de> Visitor<'de> for VoteOptionsDeserializer {
+        type Value = VoteOptions;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("A coma separated values are needed")
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<VoteOptions, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(VoteOptions::parse_coma_separated_value(value))
+        }
+    }
+
+    deserializer.deserialize_str(VoteOptionsDeserializer())
 }

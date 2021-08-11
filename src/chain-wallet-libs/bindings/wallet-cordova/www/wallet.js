@@ -31,7 +31,7 @@ const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
 const SETTINGS_NEW = 'SETTINGS_NEW';
 const SETTINGS_GET = 'SETTINGS_GET';
 const FRAGMENT_ID = 'FRAGMENT_ID';
-const TTL_FROM_DATE = "TTL_FROM_DATE";
+const TTL_FROM_DATE = 'TTL_FROM_DATE';
 
 const VOTE_PLAN_ID_LENGTH = 32;
 const FRAGMENT_ID_LENGTH = 32;
@@ -385,7 +385,6 @@ var plugin = {
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SYMMETRIC_CIPHER_DECRYPT, [password.buffer, ciphertext.buffer]);
     },
 
-
     /**
      * @param {Uint8Array} block0Hash
      * @param {Discrimination} discrimination
@@ -398,28 +397,28 @@ var plugin = {
      * @param {errorCallback} errorCallback
      */
     settingsNew: function (
-      block0Hash,
-      discrimination,
-      fees,
-      block0Date,
-      slotDuration,
-      era,
-      transactionMaxExpiryEpochs,
-      successCallback,
-      errorCallback
-    ) {
-      argscheck.checkArgs('*n*ss*sff', 'settingsNew', arguments);
-      checkUint8Array({ name: 'block0Hash', testee: block0Hash });
-
-      exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SETTINGS_NEW, [
-        block0Hash.buffer,
+        block0Hash,
         discrimination,
         fees,
         block0Date,
         slotDuration,
         era,
         transactionMaxExpiryEpochs,
-      ]);
+        successCallback,
+        errorCallback
+    ) {
+        argscheck.checkArgs('*n*ss*sff', 'settingsNew', arguments);
+        checkUint8Array({ name: 'block0Hash', testee: block0Hash });
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SETTINGS_NEW, [
+            block0Hash.buffer,
+            discrimination,
+            fees,
+            block0Date,
+            slotDuration,
+            era,
+            transactionMaxExpiryEpochs
+        ]);
     },
 
     /**
@@ -513,7 +512,7 @@ var plugin = {
     }
 };
 
-function checkUint8Array(arg) {
+function checkUint8Array (arg) {
     var typeName = require('cordova/utils').typeName;
     var validType = arg.testee && typeName(arg.testee) === 'Uint8Array';
     if (!validType) {

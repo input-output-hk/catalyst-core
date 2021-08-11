@@ -13,11 +13,11 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_new(
     linear_fee: LinearFee,
     discrimination: Discrimination,
     block_0_hash: *const u8,
-    settings_out: *mut SettingsPtr,
     block0_date: u64,
     slot_duration: u8,
     time_era: TimeEra,
     transaction_max_expiry_epochs: u8,
+    settings_out: *mut SettingsPtr,
 ) -> ErrorPtr {
     settings_new(
         linear_fee,

@@ -241,7 +241,7 @@ impl ArbitrarySnapshotGenerator {
     pub fn review_with_proposal_id(&mut self, proposal_id: i32) -> AdvisorReview {
         let review = (self.template_generator).next_review();
         AdvisorReview {
-            id: review.id.parse().unwrap(),
+            id: review.id,
             proposal_id,
             rating_given: review.rating_given,
             assessor: review.assessor,

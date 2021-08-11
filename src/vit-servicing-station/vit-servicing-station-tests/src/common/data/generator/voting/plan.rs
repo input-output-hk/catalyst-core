@@ -2,6 +2,7 @@ use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingTe
 use chain_impl_mockchain::certificate::VotePlan;
 use chain_impl_mockchain::testing::scenario::template::ProposalDef;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
@@ -46,6 +47,7 @@ pub struct ValidVotePlanParameters {
     pub registration_snapshot_time: Option<i64>,
     pub vote_options: Option<VoteOptions>,
     pub challenges_count: usize,
+    pub reviews_count: usize,
     pub fund_id: Option<i32>,
     pub calculate_challenges_total_funds: bool,
 }
@@ -68,6 +70,7 @@ impl ValidVotePlanParameters {
             registration_snapshot_time: None,
             vote_options: Some(VoteOptions::parse_coma_separated_value("blank,yes,no")),
             challenges_count: 4,
+            reviews_count: 1,
             fund_id: Some(1),
             calculate_challenges_total_funds: false,
         }
@@ -108,6 +111,10 @@ impl ValidVotePlanParameters {
 
     pub fn set_challenges_count(&mut self, challenges_count: usize) {
         self.challenges_count = challenges_count;
+    }
+
+    pub fn set_reviews_count(&mut self, reviews_count: usize) {
+        self.reviews_count = reviews_count;
     }
 
     pub fn set_vote_options(&mut self, vote_options: VoteOptions) {
@@ -283,8 +290,22 @@ impl ValidVotePlanGenerator {
                 });
             }
         }
-
         let challenges = fund.challenges.clone();
+
+        let reviews: Vec<AdvisorReview> = std::iter::from_fn(|| {
+            let review_data = template_generator.next_review();
+
+            Some(AdvisorReview {
+                id: review_data.id,
+                proposal_id: review_data.proposal_id.parse().unwrap(),
+                rating_given: review_data.rating_given,
+                assessor: review_data.assessor,
+                note: review_data.note,
+                tag: review_data.tag,
+            })
+        })
+        .take(self.parameters.reviews_count)
+        .collect();
 
         Snapshot::new(
             vec![fund],
@@ -292,7 +313,7 @@ impl ValidVotePlanGenerator {
             challenges,
             generator.tokens(),
             vote_plans,
-            vec![],
+            reviews,
         )
     }
 }

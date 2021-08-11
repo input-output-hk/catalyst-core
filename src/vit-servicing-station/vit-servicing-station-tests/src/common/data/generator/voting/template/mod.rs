@@ -61,7 +61,7 @@ pub struct ChallengeTemplate {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ReviewTemplate {
-    pub id: String,
+    pub id: i32,
     pub proposal_id: String,
     pub rating_given: i32,
     pub assessor: String,

@@ -63,6 +63,7 @@ impl DbBuilder {
         self.with_tokens(snapshot.tokens().values().cloned().collect());
         self.with_funds(snapshot.funds());
         self.with_challenges(snapshot.challenges());
+        self.with_advisor_reviews(snapshot.advisor_reviews());
         self
     }
 

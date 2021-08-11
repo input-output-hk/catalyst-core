@@ -197,8 +197,15 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
     }
 
     fn next_review(&mut self) -> ReviewTemplate {
+        let proposal_id = self
+            .proposals
+            .get(self.generator.random_index(self.proposals.len()))
+            .map(|proposal| proposal.proposal_id.clone())
+            .unwrap();
+
         let review = ReviewTemplate {
-            id: self.generator.id().abs().to_string(),
+            id: None,
+            proposal_id,
             rating_given: (self.generator.next_u32() % 500) as i32,
             assessor: Name().fake::<String>(),
             note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),

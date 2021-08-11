@@ -31,15 +31,40 @@ impl From<BlockDate> for chain_impl_mockchain::block::BlockDate {
 ///
 /// settings should be a pointer to a valid settings object allocated by this library with, for
 /// example, settings_build.
-pub unsafe fn compute_end_date(
+pub unsafe fn block_date_from_system_time(
     settings: *const Settings,
-    final_date: Option<std::num::NonZeroU64>,
+    date: u64,
     block_date_out: *mut BlockDate,
 ) -> Result {
     let settings = non_null!(settings);
-    match wallet::time::compute_end_date(
+    match wallet::time::block_date_from_system_time(
         settings,
-        final_date.map(|n| SystemTime::UNIX_EPOCH + Duration::from_secs(n.into())),
+        SystemTime::UNIX_EPOCH + Duration::from_secs(date),
+    ) {
+        Ok(block_date) => {
+            (*block_date_out).epoch = block_date.epoch;
+            (*block_date_out).slot = block_date.slot_id;
+
+            Result::success()
+        }
+        Err(_) => Error::invalid_transaction_validity_date().into(),
+    }
+}
+
+///
+/// # Safety
+///
+/// settings should be a pointer to a valid settings object allocated by this library with, for
+/// example, settings_build.
+pub unsafe fn max_epiration_date(
+    settings: *const Settings,
+    current_time: u64,
+    block_date_out: *mut BlockDate,
+) -> Result {
+    let settings = non_null!(settings);
+    match wallet::time::max_expiration_date(
+        settings,
+        SystemTime::UNIX_EPOCH + Duration::from_secs(current_time),
     ) {
         Ok(block_date) => {
             (*block_date_out).epoch = block_date.epoch;

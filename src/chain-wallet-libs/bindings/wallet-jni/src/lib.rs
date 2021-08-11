@@ -19,7 +19,7 @@ use wallet_core::{
             Discrimination, LinearFee, PerCertificateFee, PerVoteCertificateFee, TimeEra,
         },
         symmetric_cipher_decrypt,
-        time::{compute_end_date, BlockDate},
+        time::{block_date_from_system_time, max_epiration_date, BlockDate},
         vote, wallet_confirm_transaction, wallet_convert, wallet_convert_ignored,
         wallet_convert_transactions_get, wallet_convert_transactions_size,
         wallet_delete_conversion, wallet_delete_proposal, wallet_delete_settings,
@@ -1292,7 +1292,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Fragment_id(
 /// in or you may see unexpected behaviors
 ///
 #[no_mangle]
-pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Time_ttlFromDate(
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Time_blockDateFromSystemTime(
     env: JNIEnv,
     _: JClass,
     settings: jlong,
@@ -1302,39 +1302,64 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Time_ttlFromDate(
 
     let mut block_date = BlockDate { epoch: 0, slot: 0 };
 
-    let result = compute_end_date(
-        settings,
-        std::num::NonZeroU64::new(date as u64),
-        (&mut block_date) as *mut _,
-    );
+    let result = block_date_from_system_time(settings, date as u64, (&mut block_date) as *mut _);
 
     match result.error() {
-        None => {
-            let date = match env
-                .find_class("com/iohk/jormungandrwallet/Time$BlockDate")
-                .and_then(|class_id| {
-                    env.new_object(
-                        class_id,
-                        "(JJ)V",
-                        &[
-                            JValue::Long(block_date.epoch as i64),
-                            JValue::Long(block_date.slot as i64),
-                        ],
-                    )
-                }) {
-                Ok(date) => date,
-                Err(e) => {
-                    unreachable!("internal error {}", e)
-                }
-            };
-
-            *date
-        }
+        None => new_block_date(&env, block_date),
         Some(error) => {
             let _ = env.throw(error.to_string());
             null_mut()
         }
     }
+}
+
+///
+/// # Safety
+///
+/// This function dereference raw pointers. Even though
+/// the function checks if the pointers are null. Mind not to put random values
+/// in or you may see unexpected behaviors
+///
+#[no_mangle]
+pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Time_maxExpirationDate(
+    env: JNIEnv,
+    _: JClass,
+    settings: jlong,
+    current_date: jlong,
+) -> jni::sys::jobject {
+    let settings = settings as SettingsPtr;
+    let mut block_date = BlockDate { epoch: 0, slot: 0 };
+
+    let result = max_epiration_date(settings, current_date as u64, (&mut block_date) as *mut _);
+
+    match result.error() {
+        None => new_block_date(&env, block_date),
+        Some(error) => {
+            let _ = env.throw(error.to_string());
+            null_mut()
+        }
+    }
+}
+
+fn new_block_date(env: &JNIEnv, block_date: BlockDate) -> *mut jni::sys::_jobject {
+    let date = match env
+        .find_class("com/iohk/jormungandrwallet/Time$BlockDate")
+        .and_then(|class_id| {
+            env.new_object(
+                class_id,
+                "(JJ)V",
+                &[
+                    JValue::Long(block_date.epoch as i64),
+                    JValue::Long(block_date.slot as i64),
+                ],
+            )
+        }) {
+        Ok(date) => date,
+        Err(e) => {
+            unreachable!("internal error {}", e)
+        }
+    };
+    *date
 }
 
 ///

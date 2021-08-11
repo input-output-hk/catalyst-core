@@ -11,5 +11,6 @@ public class Time {
         }
     }
 
-    public native static BlockDate ttlFromDate(long settings, long unixEpoch);
+    public native static BlockDate blockDateFromSystemTime(long settings, long date);
+    public native static BlockDate maxExpirationDate(long settings, long currentDate);
 }

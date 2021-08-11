@@ -5,8 +5,9 @@ const primitives = require('wallet-cordova-plugin.wallet');
 
 const { hexStringToBytes, promisify, uint8ArrayEquals } = require('./src/utils.js');
 const keys = require('../../../test-vectors/free_keys/keys.json');
-const BLOCK0 = '0052000000000464000000000000000000000000466e8737a3d6193daf384a9d925f948d299c015f4c791d24a7241dc06ce67620000000000000000000000000000000000000000000000000000000000000000000a60000000e0088000000005e922c7000410100c200010398000000000000000a000000000000000200000000000000640104000000b401411404040000a8c00208000000000000006402440001900001840000006405810104c800005af3107a40000521020000000000000064000000000000000d0000000000000013000000010000000302e00258e06557efa50c2b94a585c49f45abf67ade94174e6ea6426d126ab36176a6016f00010500000000000f4240004c82d818584283581c0992e6e3970dd01055ba919cff5b670a6813f41c588eb701231e3cf0a101581e581c4bff51e6e1bcf245c7bcb610415fad427c2d8b87faca8452215970f6001a660a147700000000000186a0004c82d818584283581c3657ed91ad2f25ad3ebc4faec404779f8dafafc03fa181743c76aa61a101581e581cd7c99cfa13e81ca55d026fe0395124646e39b188c475fb276525975d001ab75977f20000000000002710002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c70000000000000001004c82d818584283581c4baebf60011d051b02143a3417514fed6f25c8c03d2253025aa2ed5fa101581e581c4bff51e6e1bcf245c7bcb5104c7ca9ed201e1b1a6c6dfbe93eadeece001a318972700000000000000064002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c7014e00010500000000000f4240002b82d818582183581c783fd3008d0d8fb4532885481360cb6e97dc7801c8843f300ed69a56a0001a7d83a21d0000000000002710002b82d818582183581cadff678b11b127aef0c296e88bfb4769c905284716c23e5d63278787a0001a63f679c70000000000000001002b82d818582183581c783fd3008d0d8fb4532885481360cb6e97dc7801c8843f300ed69a56a0001a7d83a21d0000000000000064004c82d818584283581cffd85f20cf3f289fd091e0b033285ecad725496bc57035a504b84a10a101581e581c4bff51e6e1bcf245c7bcb4105299a598c50eabacdd0f72815c016da7001a57f9068f00000000000003f2004c82d818584283581c847329097386f263121520fc9c364047b436298b37c9148a15efddb4a101581e581cd7c99cfa13e81ce17f4221e0aed54c08625a0a8c687d9748f462a6b2001af866b8b9005600020002032fc94e416c9cb9b3f7ea999846acd31fe466c092e1c0d8b6634074def8f9e1e800000000000003e8033005131602e42423f16621bbe6100bfa7a1a69aee5fd6118dc588fe6f2a8af7c000000000000271000a1000a0000000000000000000000010000000000000002000000000101000000000000000000000000000000000000000000000000000000000000000003000000000258e06557efa50c2b94a585c49f45abf67ade94174e6ea6426d126ab36176a69a634f0787cdec57882a436501b774bb53cddef938f7e966c2d93662a5f353378933b7d9ba61c0dc8740edf01bea95ef7eec83433d5f876dc41d83605dbc490a';
-const BLOCK0_ID = '182764b45bae25cc466143de8107618b37f0d28fe3daa0a0d39fd0ab5a2061e1'
+const genesis = require('../../../test-vectors/block0.json');
+const BLOCK0 = genesis.hex;
+const BLOCK0_ID = genesis.id;
 const ENCRYPTED_WALLET = keys.encrypted;
 const PASSWORD = new Uint8Array(4);
 PASSWORD[0] = keys.password[0];
@@ -14,6 +15,9 @@ PASSWORD[1] = keys.password[1];
 PASSWORD[2] = keys.password[2];
 PASSWORD[3] = keys.password[3];
 const VOTE_ENCRYPTION_KEY = 'votepk1nc988wtjlrm5k0z43088p0rrvd5yhvc96k7zh99p6w74gupxggtqwym0vm';
+
+// TODO: write settings getter for this
+const BLOCK0_DATE = 1586637936;
 
 let promisifyP = f => promisify(primitives, f)
 const restoreWallet = promisifyP(primitives.walletRestore);
@@ -41,12 +45,13 @@ const symmetricCipherDecrypt = promisifyP(primitives.symmetricCipherDecrypt);
 const settingsGet = promisifyP(primitives.settingsGet);
 const settingsNew = promisifyP(primitives.settingsNew);
 const fragmentId = promisifyP(primitives.fragmentId);
-const ttlFromDate = promisifyP(primitives.ttlFromDAte);
+const blockDateFromSystemTime = promisifyP(primitives.blockDateFromSystemTime);
+const maxExpirationDate = promisifyP(primitives.maxExpirationDate);
 
 async function walletFromFile() {
     const accountKey = hexStringToBytes(keys.account.private_key);
-    const utxoKeys = Uint8Array.from(keys.utxo_keys.map(utxo => utxo.private_key).concat());
-    return await importKeys(accountKey, utxoKeys);
+    const utxoKeys = keys.utxo_keys.map(utxo => utxo.private_key).reduce((accum, current) => accum + current);
+    return await importKeys(accountKey, hexStringToBytes(utxoKeys));
 }
 
 const tests = [
@@ -57,7 +62,7 @@ const tests = [
 
         expect(settingsPtr !== 0).toBe(true);
         const funds = await totalFunds(walletPtr);
-        expect(parseInt(funds)).toBe(10000 + 1000);
+        expect(parseInt(funds)).toBe(21000);
 
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
@@ -96,13 +101,12 @@ const tests = [
         expect(wallet !== 0).toBe(true);
 
         const settings = await retrieveFunds(wallet, hexStringToBytes(BLOCK0));
-        const conversion = await convertWallet(wallet, settings, ttlFromDate(settings, 0));
+        const conversion = await convertWallet(wallet, settings, await maxExpirationDate(settings, BLOCK0_DATE + 600));
         const transactions = await conversionGetTransactions(conversion);
         expect(transactions.length).toBe(1);
 
         const ignoredValue = await conversionGetIgnored(conversion);
-        expect(Number(ignoredValue.value)).toBe(1);
-        expect(ignoredValue.ignored).toBe(1);
+        expect(ignoredValue.ignored).toBe(0);
 
         const pendingBefore = await getPendingTransactions(wallet);
         expect(pendingBefore.length).toBe(1);
@@ -133,7 +137,7 @@ const tests = [
 
         expect(await spendingCounter(walletPtr)).toBe(0);
 
-        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, ttlFromDate(settingsPtr, 0));
+        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600));
 
         expect(await spendingCounter(walletPtr)).toBe(1);
 
@@ -158,7 +162,7 @@ const tests = [
         const walletPtr = await walletFromFile();
         const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
         await walletSetState(walletPtr, 1000000, 1);
-        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, ttlFromDate(settingsPtr, 0));
+        await walletVote(walletPtr, settingsPtr, proposalPtr, 0, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600));
 
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
@@ -283,8 +287,8 @@ const tests = [
         const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
         await walletSetState(walletPtr, 1000000, 0);
 
-        const tx1 = await walletVote(walletPtr, settingsPtr, proposalPtr, 1, ttlFromDate(settingsPtr, 0));
-        const tx2 = await walletVote(walletPtr, settingsPtr, proposalPtr, 2, ttlFromDate(settingsPtr, 0));
+        const tx1 = await walletVote(walletPtr, settingsPtr, proposalPtr, 1, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600));
+        const tx2 = await walletVote(walletPtr, settingsPtr, proposalPtr, 2, await maxExpirationDate(settingsPtr, BLOCK0_DATE + 600));
 
         const id1 = await fragmentId(new Uint8Array(tx1));
         const id2 = await fragmentId(new Uint8Array(tx2));
@@ -297,6 +301,26 @@ const tests = [
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
         await deleteProposal(proposalPtr);
+    }],
+    ['systemtime to date', async function () {
+        const walletPtr = await walletFromFile();
+        const settingsPtr = await retrieveFunds(walletPtr, hexStringToBytes(BLOCK0));
+
+        let first = await blockDateFromSystemTime(settingsPtr, BLOCK0_DATE);
+        expect(first.epoch).toBe("0");
+        expect(first.slot).toBe("0");
+
+        // TODO: implement getters for this.
+        let slots_per_epoch = 180;
+        let slot_duration = 20;
+
+        let second = await blockDateFromSystemTime(settingsPtr, BLOCK0_DATE + slot_duration + 1);
+        expect(second.epoch).toBe("0");
+        expect(second.slot).toBe("1");
+
+        let third = await blockDateFromSystemTime(settingsPtr, BLOCK0_DATE + slot_duration * slots_per_epoch);
+        expect(third.epoch).toBe("1");
+        expect(third.slot).toBe("0");
     }],
 ]
 

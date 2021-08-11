@@ -125,8 +125,11 @@ public class WalletPlugin extends CordovaPlugin {
         case "FRAGMENT_ID":
             fragmentId(args, callbackContext);
             break;
-        case "TTL_FROM_DATE":
-            ttlFromDate(args, callbackContext);
+        case "BLOCK_DATE_FROM_SYSTEM_TIME":
+            blockDateFromSystemTime(args, callbackContext);
+            break;
+        case "MAX_EXPIRATION_DATE":
+            maxExpirationDate(args, callbackContext);
             break;
         case "WALLET_DELETE":
             walletDelete(args, callbackContext);
@@ -508,12 +511,27 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
-    private void ttlFromDate(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+    private void blockDateFromSystemTime(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
         final Long settingsPtr = args.getLong(0);
         final Long unixEpoch = args.getLong(1);
 
         try {
-            final Time.BlockDate date = Time.ttlFromDate(settingsPtr, unixEpoch);
+            final Time.BlockDate date = Time.blockDateFromSystemTime(settingsPtr, unixEpoch);
+
+            final JSONObject json = new JSONObject().put("epoch", Long.toUnsignedString(date.epoch)).put("slot",
+                    Long.toUnsignedString(date.slot));
+            callbackContext.success(json);
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void maxExpirationDate(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long settingsPtr = args.getLong(0);
+        final Long unixEpoch = args.getLong(1);
+
+        try {
+            final Time.BlockDate date = Time.maxExpirationDate(settingsPtr, unixEpoch);
 
             final JSONObject json = new JSONObject().put("epoch", Long.toUnsignedString(date.epoch)).put("slot",
                     Long.toUnsignedString(date.slot));

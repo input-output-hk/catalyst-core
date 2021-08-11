@@ -31,7 +31,8 @@ const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
 const SETTINGS_NEW = 'SETTINGS_NEW';
 const SETTINGS_GET = 'SETTINGS_GET';
 const FRAGMENT_ID = 'FRAGMENT_ID';
-const TTL_FROM_DATE = 'TTL_FROM_DATE';
+const BLOCK_DATE_FROM_SYSTEM_TIME = 'BLOCK_DATE_FROM_SYSTEM_TIME';
+const MAX_EXPIRATION_DATE = 'MAX_EXPIRATION_DATE';
 
 const VOTE_PLAN_ID_LENGTH = 32;
 const FRAGMENT_ID_LENGTH = 32;
@@ -451,14 +452,26 @@ var plugin = {
 
     /**
      * @param {string} settingsPtr
-     * @param {number} unixEpoch
+     * @param {number} date
      * @param {BlockDateCallback} successCallback
      * @param {errorCallback} errorCallback
      */
-    ttlFromDate: function (settingsPtr, unixEpoch, successCallback, errorCallback) {
-        argscheck.checkArgs('snff', 'ttlFromDate', arguments);
+    blockDateFromSystemTime: function (settingsPtr, date, successCallback, errorCallback) {
+        argscheck.checkArgs('snff', 'blockDateFromSystemTime', arguments);
 
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, TTL_FROM_DATE, [settingsPtr, unixEpoch]);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, BLOCK_DATE_FROM_SYSTEM_TIME, [settingsPtr, date]);
+    },
+
+    /**
+     * @param {string} settingsPtr
+     * @param {number} currentTime
+     * @param {BlockDateCallback} successCallback
+     * @param {errorCallback} errorCallback
+     */
+    maxExpirationDate: function (settingsPtr, currentTime, successCallback, errorCallback) {
+        argscheck.checkArgs('snff', 'maxExpirationDate', arguments);
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, MAX_EXPIRATION_DATE, [settingsPtr, currentTime]);
     },
 
     /**

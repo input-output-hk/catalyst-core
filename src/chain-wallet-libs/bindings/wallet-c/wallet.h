@@ -93,6 +93,15 @@ typedef struct LinearFee
   struct PerVoteCertificateFee per_vote_certificate_fees;
 } LinearFee;
 
+typedef uint32_t Epoch;
+typedef uint64_t Slot;
+
+typedef struct TimeEra {
+    Epoch epoch_start;
+    Slot slot_start;
+    uint32_t slots_per_epoch;
+} TimeEra;
+
 /**
  * delete the pointer
  *
@@ -680,6 +689,10 @@ ErrorPtr iohk_jormungandr_wallet_settings_fees(SettingsPtr settings,
 ErrorPtr iohk_jormungandr_wallet_settings_new(struct LinearFee linear_fee,
                                               enum Discrimination discrimination,
                                               const uint8_t *block_0_hash,
+                                              uint64_t block0_date,
+                                              uint8_t slot_duration,
+                                              TimeEra time_era,
+                                              uint8_t transaction_max_expiry_epochs,
                                               SettingsPtr *settings_out);
 
 /**

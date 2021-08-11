@@ -41,6 +41,13 @@ pub struct PerfDataCommandArgs {
     )]
     pub funds: PathBuf,
 
+    /// reviews import json
+    #[structopt(
+        long = "reviews",
+        default_value = "../../catalyst-resources/ideascale/fund5/reviews.json"
+    )]
+    pub reviews: PathBuf,
+
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
@@ -84,6 +91,7 @@ impl PerfDataCommandArgs {
             self.proposals.clone(),
             self.challenges.clone(),
             self.funds.clone(),
+            self.reviews.clone(),
         )
         .unwrap();
 

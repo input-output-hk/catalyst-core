@@ -1,10 +1,7 @@
 use super::config::Configuration;
 use crate::config::VitStartParameters;
 use crate::mock::ledger_state::LedgerState;
-use crate::{
-    scenario::network::build_template_generator,
-    setup::start::quick::QuickVitBackendSettingsBuilder,
-};
+use crate::setup::start::quick::QuickVitBackendSettingsBuilder;
 use iapyx::VitVersion;
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::{Context, ProgressBarMode};
@@ -13,6 +10,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
+use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::Snapshot;
 use vit_servicing_station_tests::common::data::ValidVotePlanGenerator;
 
@@ -50,11 +48,11 @@ impl MockState {
         let context = context(&config.working_dir);
         quick_setup.upload_parameters(params);
 
-        let template_generator = Box::leak(build_template_generator(config.ideascale));
+        let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
         let (_, controller, vit_parameters, version) = quick_setup.build(context).unwrap();
 
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
-        let snapshot = generator.build(template_generator);
+        let snapshot = generator.build(&mut template_generator);
 
         Ok(Self {
             available: true,

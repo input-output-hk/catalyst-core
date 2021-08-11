@@ -26,6 +26,11 @@ async fn main() {
             "".to_string(),
             server_stub.http_vit_address(),
         ));
+        
+        let fund = warp::path!("reviews" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_vit_address(),
+        ));
 
         let account = warp::path!("account" / ..).and(reverse_proxy_filter(
             "".to_string(),

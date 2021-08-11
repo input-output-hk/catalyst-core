@@ -24,11 +24,9 @@ use rand_chacha::ChaChaRng;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::Mutex;
+use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
-use vit_servicing_station_tests::common::data::{
-    ArbitraryValidVotingTemplateGenerator, ExternalValidVotingTemplateGenerator,
-};
 
 pub fn setup_network(
     controller: &mut Controller,
@@ -178,7 +176,6 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
     working_dir: P,
     mut quick_setup: QuickVitBackendSettingsBuilder,
     endpoint: String,
-    ideascale: bool,
     token: Option<String>,
 ) -> Result<()> {
     let protocol = quick_setup.protocol().clone();
@@ -199,7 +196,7 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
                 std::fs::remove_dir_all(testing_directory)?;
             }
 
-            let template_generator = Box::leak(build_template_generator(ideascale));
+            let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
 
             let parameters = manager.setup();
             quick_setup.upload_parameters(parameters);
@@ -210,25 +207,13 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
                 quick_setup.clone(),
                 endpoint.clone(),
                 &protocol,
-                template_generator,
+                &mut template_generator,
             )?;
         }
 
         std::thread::sleep(std::time::Duration::from_secs(30));
     }
     Ok(())
-}
-
-pub fn build_template_generator(ideascale: bool) -> Box<dyn ValidVotingTemplateGenerator> {
-    if ideascale {
-        let proposals = Path::new("../").join("resources/external/proposals.json");
-        let challenges = Path::new("../").join("resources/external/challenges.json");
-        let funds = Path::new("../").join("resources/external/funds.json");
-        return Box::new(
-            ExternalValidVotingTemplateGenerator::new(proposals, challenges, funds).unwrap(),
-        );
-    }
-    Box::new(ArbitraryValidVotingTemplateGenerator::new())
 }
 
 pub fn single_run(

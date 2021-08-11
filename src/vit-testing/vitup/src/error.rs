@@ -19,7 +19,7 @@ error_chain! {
         ExplorerError(jormungandr_testing_utils::testing::node::ExplorerError);
         VitStationControllerError(VitStationControllerError);
         WalletProxyError(WalletProxyError);
-        TemplateLoadError(vit_servicing_station_tests::common::data::TemplateLoadError);
+        TemplateLoadError(vit_servicing_station_tests::common::data::TemplateLoad);
         SerdeError(serde_json::Error);
         SerdeYamlError(serde_yaml::Error);
         Block0EncodeError(chain_impl_mockchain::ledger::Error);

@@ -501,6 +501,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Wallet_initialFund
             let _ = env.throw(error.to_string());
         }
     }
+
     settings as jlong
 }
 
@@ -1299,13 +1300,12 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Time_blockDateFrom
     date: jlong,
 ) -> jni::sys::jobject {
     let settings = settings as SettingsPtr;
-
     let mut block_date = BlockDate { epoch: 0, slot: 0 };
 
     let result = block_date_from_system_time(settings, date as u64, (&mut block_date) as *mut _);
 
     match result.error() {
-        None => new_block_date(&env, block_date),
+        None => new_block_date(&env, block_date).into_inner(),
         Some(error) => {
             let _ = env.throw(error.to_string());
             null_mut()
@@ -1333,7 +1333,7 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Time_maxExpiration
     let result = max_epiration_date(settings, current_date as u64, (&mut block_date) as *mut _);
 
     match result.error() {
-        None => new_block_date(&env, block_date),
+        None => new_block_date(&env, block_date).into_inner(),
         Some(error) => {
             let _ = env.throw(error.to_string());
             null_mut()
@@ -1341,8 +1341,8 @@ pub unsafe extern "system" fn Java_com_iohk_jormungandrwallet_Time_maxExpiration
     }
 }
 
-fn new_block_date(env: &JNIEnv, block_date: BlockDate) -> *mut jni::sys::_jobject {
-    let date = match env
+fn new_block_date<'a>(env: &'a JNIEnv, block_date: BlockDate) -> JObject<'a> {
+    match env
         .find_class("com/iohk/jormungandrwallet/Time$BlockDate")
         .and_then(|class_id| {
             env.new_object(
@@ -1356,10 +1356,10 @@ fn new_block_date(env: &JNIEnv, block_date: BlockDate) -> *mut jni::sys::_jobjec
         }) {
         Ok(date) => date,
         Err(e) => {
-            unreachable!("internal error {}", e)
+            let _ = env.throw(e.to_string());
+            JObject::null()
         }
-    };
-    *date
+    }
 }
 
 ///

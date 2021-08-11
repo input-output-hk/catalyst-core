@@ -128,9 +128,15 @@ impl Controller {
     }
 
     pub fn send_fragment(&self, transaction: &[u8]) -> Result<FragmentId, ControllerError> {
-        self.backend
-            .send_fragment(transaction.to_vec())
-            .map_err(Into::into)
+        self.send_fragments(vec![transaction.to_vec()])
+            .map(|v| *v.first().unwrap())
+    }
+
+    pub fn send_fragments(
+        &self,
+        transaction: Vec<Vec<u8>>,
+    ) -> Result<Vec<FragmentId>, ControllerError> {
+        self.backend.send_fragments(transaction).map_err(Into::into)
     }
 
     pub fn confirm_all_transactions(&mut self) {

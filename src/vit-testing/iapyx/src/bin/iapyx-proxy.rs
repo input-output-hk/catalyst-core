@@ -26,8 +26,8 @@ async fn main() {
             "".to_string(),
             server_stub.http_vit_address(),
         ));
-        
-        let fund = warp::path!("reviews" / ..).and(reverse_proxy_filter(
+
+        let reviews = warp::path!("reviews" / ..).and(reverse_proxy_filter(
             "".to_string(),
             server_stub.http_vit_address(),
         ));
@@ -73,6 +73,7 @@ async fn main() {
                 .or(account)
                 .or(fragment)
                 .or(message)
+                .or(reviews)
                 .or(settings)
                 .or(explorer)
                 .or(vote)

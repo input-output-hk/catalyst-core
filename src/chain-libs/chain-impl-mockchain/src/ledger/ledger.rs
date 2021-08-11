@@ -1382,8 +1382,8 @@ impl Ledger {
         self.chain_length
     }
 
-    pub fn settings(&mut self) -> &mut setting::Settings {
-        &mut self.settings
+    pub fn settings(&self) -> &setting::Settings {
+        &self.settings
     }
 
     pub fn delegation(&self) -> &PoolsState {

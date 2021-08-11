@@ -451,6 +451,19 @@ public class WalletTest {
         SymmetricCipher.decrypt(password, encrypted);
     }
 
+    @Test
+    public void testBlockDateFromSystemTime() throws IOException {
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
+
+        final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
+
+        final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
+
+        final BlockDate date =  Time.blockDateFromSystemTime(settingsPtr, block0Date() + 20 * 180);
+        assertEquals(date.epoch, 1);
+        assertEquals(date.slot, 0);
+    }
+
     public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];

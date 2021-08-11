@@ -1,5 +1,6 @@
 use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingTemplateGenerator};
 use chain_impl_mockchain::certificate::VotePlan;
+use chain_impl_mockchain::testing::scenario::template::ProposalDef;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::db::models::{
@@ -10,16 +11,39 @@ use vit_servicing_station_lib::db::models::{
     voteplans::Voteplan,
 };
 
+pub struct SingleVotePlanParameters {
+    vote_plan: VotePlanDef,
+    vote_encryption_key: Option<String>,
+}
+
+impl SingleVotePlanParameters {
+    pub fn proposals(&self) -> Vec<ProposalDef> {
+        self.vote_plan.proposals()
+    }
+
+    pub fn alias(&self) -> String {
+        self.vote_plan.alias()
+    }
+}
+
+impl From<VotePlanDef> for SingleVotePlanParameters {
+    fn from(vote_plan: VotePlanDef) -> Self {
+        Self {
+            vote_plan,
+            vote_encryption_key: None,
+        }
+    }
+}
+
 pub struct ValidVotePlanParameters {
     pub fund_name: String,
-    pub vote_plans: Vec<VotePlanDef>,
+    pub vote_plans: Vec<SingleVotePlanParameters>,
     pub voting_power_threshold: Option<i64>,
     pub voting_start: Option<i64>,
     pub voting_tally_start: Option<i64>,
     pub voting_tally_end: Option<i64>,
     pub next_fund_start_time: Option<i64>,
     pub registration_snapshot_time: Option<i64>,
-    pub vote_encryption_key: Option<String>,
     pub vote_options: Option<VoteOptions>,
     pub challenges_count: usize,
     pub fund_id: Option<i32>,
@@ -34,7 +58,7 @@ impl ValidVotePlanParameters {
 
     pub fn new(vote_plans: Vec<VotePlanDef>, fund_name: String) -> Self {
         Self {
-            vote_plans,
+            vote_plans: vote_plans.into_iter().map(Into::into).collect(),
             fund_name,
             voting_power_threshold: Some(8000),
             voting_start: None,
@@ -42,7 +66,6 @@ impl ValidVotePlanParameters {
             voting_tally_end: None,
             next_fund_start_time: None,
             registration_snapshot_time: None,
-            vote_encryption_key: None,
             vote_options: Some(VoteOptions::parse_coma_separated_value("blank,yes,no")),
             challenges_count: 4,
             fund_id: Some(1),
@@ -54,8 +77,13 @@ impl ValidVotePlanParameters {
         self.voting_power_threshold = Some(voting_power_threshold);
     }
 
-    pub fn set_vote_encryption_key(&mut self, vote_encryption_key: String) {
-        self.vote_encryption_key = Some(vote_encryption_key);
+    pub fn set_vote_encryption_key(&mut self, vote_encryption_key: String, alias: &str) {
+        let vote_plan = self
+            .vote_plans
+            .iter_mut()
+            .find(|x| x.alias() == alias)
+            .unwrap();
+        vote_plan.vote_encryption_key = Some(vote_encryption_key);
     }
 
     pub fn set_voting_start(&mut self, voting_start: i64) {
@@ -104,8 +132,8 @@ impl ValidVotePlanGenerator {
         Self { parameters }
     }
 
-    fn convert_to_vote_plan(vote_plan_def: &VotePlanDef) -> VotePlan {
-        vote_plan_def.clone().into()
+    fn convert_to_vote_plan(single_vote_plan: &SingleVotePlanParameters) -> VotePlan {
+        single_vote_plan.vote_plan.clone().into()
     }
 
     pub fn build(&mut self, template_generator: &mut dyn ValidVotingTemplateGenerator) -> Snapshot {
@@ -128,8 +156,9 @@ impl ValidVotePlanGenerator {
             .parameters
             .vote_plans
             .iter()
-            .map(Self::convert_to_vote_plan)
-            .map(|vote_plan| {
+            .map(|single_vote_plan| {
+                let vote_plan = Self::convert_to_vote_plan(single_vote_plan);
+
                 let payload_type = match vote_plan.payload_type() {
                     chain_impl_mockchain::vote::PayloadType::Public => "public",
                     chain_impl_mockchain::vote::PayloadType::Private => "private",
@@ -142,8 +171,7 @@ impl ValidVotePlanGenerator {
                     chain_vote_end_time: voting_tally_start,
                     chain_committee_end_time: voting_tally_end,
                     chain_voteplan_payload: payload_type.to_string(),
-                    chain_vote_encryption_key: self
-                        .parameters
+                    chain_vote_encryption_key: single_vote_plan
                         .vote_encryption_key
                         .clone()
                         .unwrap_or_else(|| "".to_string()),

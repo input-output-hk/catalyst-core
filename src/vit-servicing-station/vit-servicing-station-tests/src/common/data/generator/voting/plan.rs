@@ -296,7 +296,11 @@ impl ValidVotePlanGenerator {
             let review_data = template_generator.next_review();
 
             Some(AdvisorReview {
-                id: review_data.id,
+                id: review_data
+                    .id
+                    .unwrap_or_else(|| 0.to_string())
+                    .parse()
+                    .unwrap(),
                 proposal_id: review_data.proposal_id.parse().unwrap(),
                 rating_given: review_data.rating_given,
                 assessor: review_data.assessor,

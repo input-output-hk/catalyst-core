@@ -204,7 +204,7 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             .unwrap();
 
         let review = ReviewTemplate {
-            id: self.generator.id(),
+            id: None,
             proposal_id,
             rating_given: (self.generator.next_u32() % 500) as i32,
             assessor: Name().fake::<String>(),

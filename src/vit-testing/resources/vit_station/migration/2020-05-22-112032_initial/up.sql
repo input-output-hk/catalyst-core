@@ -6,7 +6,6 @@ create table funds
     fund_goal VARCHAR NOT NULL,
     registration_snapshot_time BIGINT NOT NULL,
     voting_power_threshold BIGINT NOT NULL,
-    rewards_info VARCHAR NOT NULL,
     fund_start_time BIGINT NOT NULL,
     fund_end_time BIGINT NOT NULL,
     next_fund_start_time BIGINT NOT NULL
@@ -81,6 +80,15 @@ create table challenges
     proposers_rewards BIGINT NOT NULL,
     fund_id INTEGER NOT NULL,
     challenge_url VARCHAR NOT NULL
+);
+
+create table community_advisors_reviews (
+  id INTEGER NOT NULL primary key autoincrement,
+  proposal_id INTEGER NOT NULL,
+  rating_given INTEGER NOT NULL,
+  assessor VARCHAR NOT NULL,
+  note VARCHAR NOT NULL,
+  tag VARCHAR NOT NULL
 );
 
 CREATE VIEW full_proposals_info

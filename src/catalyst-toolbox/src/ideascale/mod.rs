@@ -57,9 +57,11 @@ pub async fn fetch_all(
     let proposals = futures::future::try_join_all(proposals_tasks)
         .await?
         .into_iter()
+        // forcefully unwrap to pop errors directly
+        // TODO: Handle error better here
+        .map(Result::unwrap)
         .flatten()
-        .flatten()
-        // filter out non
+        // filter out non approved or staged proposals
         .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type));
 
     let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
@@ -158,7 +160,7 @@ pub fn build_proposals(
                 challenge_type: challenge.challenge_type.clone(),
                 chain_vote_type: chain_vote_type.to_string(),
                 internal_id: i.to_string(),
-                proposal_funds: p.custom_fields.proposal_funds.clone(),
+                proposal_funds: p.custom_fields.proposal_funds.clone().unwrap_or_default(),
                 proposal_id: p.proposal_id.to_string(),
                 proposal_impact_score: scores
                     .get(&p.proposal_id)
@@ -177,7 +179,7 @@ pub fn build_proposals(
                     .proposal_relevant_experience
                     .clone()
                     .map(|s| s.to_string())
-                    .unwrap_or(String::default()),
+                    .unwrap_or_default(),
                 proposer_url: p
                     .custom_fields
                     .extra

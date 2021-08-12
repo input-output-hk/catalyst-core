@@ -26,7 +26,7 @@ RUN cd ${ENV_PREFIX} && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-servicing-station && \
 	cd vit-servicing-station && \
-	git checkout 76d629878efb2516148354a115e522b2e24e23e6
+	git checkout a4aa65035a019268093255ad16caf360fc59b82f
 	
  RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-testing && \

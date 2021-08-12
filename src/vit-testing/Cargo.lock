@@ -4884,7 +4884,7 @@ checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.2"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=76d629878efb2516148354a115e522b2e24e23e6#76d629878efb2516148354a115e522b2e24e23e6"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=a4aa65035a019268093255ad16caf360fc59b82f#a4aa65035a019268093255ad16caf360fc59b82f"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -4911,7 +4911,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.2"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=76d629878efb2516148354a115e522b2e24e23e6#76d629878efb2516148354a115e522b2e24e23e6"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=a4aa65035a019268093255ad16caf360fc59b82f#a4aa65035a019268093255ad16caf360fc59b82f"
 dependencies = [
  "assert_cmd",
  "assert_fs",

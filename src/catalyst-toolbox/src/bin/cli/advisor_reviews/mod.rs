@@ -37,7 +37,7 @@ pub enum Reviews {
 
 #[derive(StructOpt)]
 pub struct Export {
-    /// Path to vca aggreagted file
+    /// Path to vca aggregated file
     #[structopt(long)]
     from: PathBuf,
     /// Output file
@@ -113,4 +113,29 @@ pub fn write_csv(reviews: &[AdvisorReview], filepath: &Path) -> Result<(), Error
         writer.serialize(review)?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::{Export, OutputFormat};
+    use jcli_lib::utils::io;
+    use std::io::BufRead;
+
+    #[test]
+    fn test_output_csv() {
+        let resource_input = "./resources/testing/reviews.xlsx";
+        let tmp_file = assert_fs::NamedTempFile::new("outfile.csv").unwrap();
+
+        let export = Export {
+            from: resource_input.into(),
+            to: tmp_file.path().into(),
+            format: OutputFormat::Csv,
+            worksheet: "Valid Assessments".to_string(),
+            tags: None,
+        };
+
+        export.exec().unwrap();
+        let reader = io::open_file_read(&Some(tmp_file.path())).unwrap();
+        assert_eq!(reader.lines().count(), 10);
+    }
 }

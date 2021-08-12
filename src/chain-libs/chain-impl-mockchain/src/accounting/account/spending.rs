@@ -1,4 +1,5 @@
 //! Spending strategies
+use super::LedgerError;
 
 /// Simple strategy to spend from an increasing counter
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,6 +20,15 @@ impl SpendingCounterIncreasing {
     pub fn next(&self) -> Self {
         SpendingCounterIncreasing {
             next: self.next.increment(),
+        }
+    }
+
+    #[must_use = "this function does not modify the state"]
+    pub fn next_verify(&self, counter: SpendingCounter) -> Result<Self, LedgerError> {
+        if self.next != counter {
+            Err(LedgerError::SpendingCredentialInvalid)
+        } else {
+            Ok(self.next())
         }
     }
 }

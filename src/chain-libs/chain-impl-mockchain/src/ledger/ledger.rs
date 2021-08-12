@@ -1657,10 +1657,12 @@ fn input_single_account_verify<'a>(
     value: Value,
 ) -> Result<account::Ledger, Error> {
     // .remove_value() check if there's enough value and if not, returns a Err.
-    let (new_ledger, spending_counter) = ledger.remove_value(account, value)?;
+    let account_state = ledger.get_state(account)?;
+    let account_counter = account_state.spending.get_current_counter();
+    let new_ledger = ledger.remove_value(account, account_counter, value)?;
     ledger = new_ledger;
 
-    let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
+    let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, account_counter);
     let verified = witness.verify(account.as_ref(), &tidsc);
     if verified == chain_crypto::Verification::Failed {
         return Err(Error::AccountInvalidSignature {

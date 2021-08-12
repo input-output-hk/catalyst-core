@@ -117,7 +117,14 @@ impl Ledger {
             .declarations
             .lookup(identifier)
             .ok_or(LedgerError::DoesntExist)?;
-        let (new_accts, spending_counter) = self.accounts.remove_value(identifier, value)?;
+        let spending_counter = self
+            .accounts
+            .get_state(identifier)?
+            .spending
+            .get_current_counter();
+        let new_accts = self
+            .accounts
+            .remove_value(identifier, spending_counter, value)?;
         Ok((
             Self {
                 accounts: new_accts,

@@ -1,0 +1,50 @@
+[
+    {
+        "id": "2244",
+        "proposal_id": "351102",
+        "rating_given":  3,
+        "assessor": "z_assessor_52",
+        "note": "While this is a potentially useful project, it is not as innovative as other proposals in this challenge and the effects are not as far-reaching. Those funds would be better spent on other projects within this challenge.",
+        "tag": "Impact"
+    },
+    {
+        "id": "2546",
+        "proposal_id": "351198",
+        "rating_given":  3,
+        "assessor": "z_assessor_22",
+        "note": "The proposal claims that Cardano projects essentially will look the same. If that was the case, then maybe instead of JavaScript, this should be a Haskell project. This proposal, if implemented in presented manner, would do nothing for the Cardano ecosystem.",
+        "tag": "Auditability"
+    },
+    {
+        "id": "2866",
+        "proposal_id": "351380",
+        "rating_given":  3,
+        "assessor": "z_assessor_46",
+        "note": "The proposal is simple and aims to provide a transparent government-approved exchange service, This has minimal risks, so the proposers will be able to implement the proposal.",
+        "tag": "Feasibility"
+    },
+    {
+        "id": "2931",
+        "proposal_id": "351403",
+        "rating_given":  3,
+        "assessor": "z_assessor_57",
+        "note": " It includes stages that the project will go through in order to materialize, as well as a division explaining how the funding would be used, in percentage, for what purpose. We are also told the expectation of how the project would be impacting the lives of local residents (according to the data provided, 50K people would be using water transport in 6 months). Therefore, I believe that the project is well planned, very detailed in relation to an action plan and expectations to be achieved. ",
+        "tag": "Auditability"
+    },
+    {
+        "id": "2972",
+        "proposal_id": "351471",
+        "rating_given":  3,
+        "assessor": "z_assessor_108",
+        "note": "There is no technical documentation or WP included in this proposal and the timeline included says the dApp won't go live for 12 months, this is uncompetitive. This is also not DeFi if you need to rely on government utility depts/billing agencies that is CeFi.",
+        "tag": "Impact"
+    },
+    {
+        "id": "2980",
+        "proposal_id": "351471",
+        "rating_given":  3,
+        "assessor": "z_assessor_108",
+        "note": "There is no way to verify the experience of the proposer beyond the \"relevant experience\", no GH links, no demo app/website. The roadmap is also for 12 months out for go-live, given the requested budget 1 year out is way too long to have a production dApp.",
+        "tag": "Feasibility"
+    }
+]

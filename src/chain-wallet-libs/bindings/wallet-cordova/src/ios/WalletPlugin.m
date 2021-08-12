@@ -1,4 +1,5 @@
 #import "WalletPlugin.h"
+#include <bits/stdint-uintn.h>
 
 #import <Foundation/Foundation.h>
 
@@ -610,6 +611,82 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         }
 
         iohk_jormungandr_delete_fragment(fragment_ptr);
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)BLOCK_DATE_FROM_SYSTEM_TIME:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+
+    NSString* settings_ptr_raw = [command.arguments objectAtIndex:0];
+    SettingsPtr settings_ptr = (uintptr_t)[settings_ptr_raw longLongValue];
+
+    NSString* seconds_raw = [command.arguments objectAtIndex:1];
+
+    uint64_t date = (uint64_t)[index_raw longLongValue];
+
+    if (settings_ptr == nil) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:@"invalid settings pointer"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    BlockDate block_date;
+
+    ErrorPtr result_c_call =
+        iohk_jormungandr_block_date_from_system_time(settings_ptr, date, &block_date_out);
+
+    if (result_c_call != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(result_c_call);
+    } else {
+        NSDictionary* result = @{
+            @"epoch" : [NSNumber numberWithUnsignedInt:block_date.epoch],
+            @"slot" : [NSNumber numberWithUnsignedInt:block_date.slot],
+        };
+
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                     messageAsDictionary:result];
+    }
+
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)MAX_EXPIRATION_DATE:(CDVInvokedUrlCommand*)command
+{
+    CDVPluginResult* pluginResult = nil;
+
+    NSString* settings_ptr_raw = [command.arguments objectAtIndex:0];
+    SettingsPtr settings_ptr = (uintptr_t)[settings_ptr_raw longLongValue];
+
+    NSString* seconds_raw = [command.arguments objectAtIndex:1];
+
+    uint64_t date = (uint64_t)[index_raw longLongValue];
+
+    if (settings_ptr == nil) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString:@"invalid settings pointer"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+
+    BlockDate block_date;
+
+    ErrorPtr result_c_call =
+        iohk_jormungandr_max_expiration_date(settings_ptr, date, &block_date_out);
+
+    if (result_c_call != nil) {
+        pluginResult = jormungandr_error_to_plugin_result(result_c_call);
+    } else {
+        NSDictionary* result = @{
+            @"epoch" : [NSNumber numberWithUnsignedInt:block_date.epoch],
+            @"slot" : [NSNumber numberWithUnsignedInt:block_date.slot],
+        };
+
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                     messageAsDictionary:result];
     }
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];

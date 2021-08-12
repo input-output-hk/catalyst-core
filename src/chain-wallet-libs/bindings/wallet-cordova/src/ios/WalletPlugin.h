@@ -28,6 +28,9 @@
 
 - (void)FRAGMENT_ID:(CDVInvokedUrlCommand*)command;
 
+- (void)BLOCK_DATE_FROM_SYSTEM_TIME:(CDVInvokedUrlCommand*)command;
+- (void)MAX_EXPIRATION_DATE:(CDVInvokedUrlCommand*)command;
+
 - (void)WALLET_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)SETTINGS_DELETE:(CDVInvokedUrlCommand*)command;
 - (void)CONVERSION_DELETE:(CDVInvokedUrlCommand*)command;

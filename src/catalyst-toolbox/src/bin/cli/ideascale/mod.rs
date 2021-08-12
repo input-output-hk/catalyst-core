@@ -60,7 +60,7 @@ pub struct Import {
 
     /// Path to json or yaml like file containing tag configuration for ideascale custom fields
     #[structopt(long)]
-    tags: PathBuf,
+    tags: Option<PathBuf>,
 }
 
 impl Ideascale {
@@ -84,7 +84,11 @@ impl Import {
             tags,
         } = self;
 
-        let tags: CustomFieldTags = read_tags_from_file(tags)?;
+        let tags: CustomFieldTags = if let Some(tags_path) = tags {
+            read_tags_from_file(tags_path)?
+        } else {
+            Default::default()
+        };
 
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_io()

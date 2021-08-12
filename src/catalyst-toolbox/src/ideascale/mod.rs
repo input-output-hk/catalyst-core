@@ -2,7 +2,7 @@ mod fetch;
 mod models;
 
 use crate::ideascale::fetch::Scores;
-use crate::ideascale::models::de::{Challenge, Fund, Funnel, Proposal, Stage};
+use crate::ideascale::models::de::{clean_str, Challenge, Fund, Funnel, Proposal, Stage};
 
 use std::collections::HashMap;
 
@@ -160,7 +160,12 @@ pub fn build_proposals(
                 challenge_type: challenge.challenge_type.clone(),
                 chain_vote_type: chain_vote_type.to_string(),
                 internal_id: i.to_string(),
-                proposal_funds: p.custom_fields.proposal_funds.clone().unwrap_or_default(),
+                // this may change to an integer type in the future, would have to get from json value as so
+                proposal_funds: get_from_extra_fields(
+                    &p.custom_fields.fields,
+                    &tags.proposal_funds,
+                )
+                .unwrap_or_default(),
                 proposal_id: p.proposal_id.to_string(),
                 proposal_impact_score: scores
                     .get(&p.proposal_id)
@@ -174,31 +179,30 @@ pub fn build_proposals(
                 proposal_url: p.proposal_url.to_string(),
                 proposer_email: p.proposer.contact.clone(),
                 proposer_name: p.proposer.name.clone(),
-                proposer_relevant_experience: p
-                    .custom_fields
-                    .proposal_relevant_experience
-                    .clone()
-                    .map(|s| s.to_string())
+                proposer_relevant_experience: get_from_extra_fields(
+                    &p.custom_fields.fields,
+                    &tags.proposal_relevant_experience,
+                )
+                .map(|s| clean_str(&s))
+                .unwrap_or_default(),
+                proposer_url: get_from_extra_fields(&p.custom_fields.fields, &tags.proposer_url)
                     .unwrap_or_default(),
-                proposer_url: p
-                    .custom_fields
-                    .extra
-                    .get(&tags.proposer_url)
-                    .map(|c| c.as_str().unwrap())
-                    .unwrap_or("")
-                    .to_string(),
                 proposal_solution: get_from_extra_fields(
-                    &p.custom_fields.extra,
+                    &p.custom_fields.fields,
                     &tags.proposal_solution,
                 ),
-                proposal_brief: get_from_extra_fields(&p.custom_fields.extra, &tags.proposal_brief),
-                proposal_importance: get_from_extra_fields(
-                    &p.custom_fields.extra,
-                    &tags.proposal_importance,
+                proposal_brief: get_from_extra_fields(
+                    &p.custom_fields.fields,
+                    &tags.proposal_brief,
                 ),
-                proposal_goal: get_from_extra_fields(&p.custom_fields.extra, &tags.proposal_goal),
+                proposal_importance: get_from_extra_fields(
+                    &p.custom_fields.fields,
+                    &tags.proposal_importance,
+                )
+                .map(|s| clean_str(&s)),
+                proposal_goal: get_from_extra_fields(&p.custom_fields.fields, &tags.proposal_goal),
                 proposal_metrics: get_from_extra_fields(
-                    &p.custom_fields.extra,
+                    &p.custom_fields.fields,
                     &tags.proposal_metrics,
                 ),
             }

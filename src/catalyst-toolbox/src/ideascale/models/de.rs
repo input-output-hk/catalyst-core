@@ -80,16 +80,8 @@ pub struct Proposer {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ProposalCustomFieldsByKey {
-    #[serde(alias = "ada_payment_address")]
-    pub proposal_public_key: Option<String>,
-    #[serde(alias = "requested_funds")]
-    pub proposal_funds: Option<String>,
-    #[serde(alias = "relevant_experience")]
-    pub proposal_relevant_experience: Option<CleanString>,
-    #[serde(alias = "importance")]
-    pub proposal_why: Option<CleanString>,
     #[serde(flatten)]
-    pub extra: serde_json::Value,
+    pub fields: serde_json::Value,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -140,12 +132,17 @@ fn deserialize_approved<'de, D: Deserializer<'de>>(deserializer: D) -> Result<bo
     Ok(matches!(approved.as_str(), "approved"))
 }
 
+pub fn clean_str(s: &str) -> String {
+    let mut result = s.to_string();
+    result.retain(|c| !matches!(c, '*' | '-' | '/'));
+    result
+}
+
 fn deserialize_clean_string<'de, D: Deserializer<'de>>(
     deserializer: D,
 ) -> Result<String, D::Error> {
-    let mut rewards_str = String::deserialize(deserializer)?;
-    rewards_str.retain(|c| !matches!(c, '*' | '-' | '/'));
-    Ok(rewards_str)
+    let rewards_str = String::deserialize(deserializer)?;
+    Ok(clean_str(&rewards_str))
 }
 
 fn deserialize_clean_challenge_title<'de, D: Deserializer<'de>>(

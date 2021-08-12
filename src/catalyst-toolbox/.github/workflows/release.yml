@@ -121,16 +121,9 @@ jobs:
         cross: [false]
         include:
           # Windows
-          - config: {os: windows-latest, target: x86_64-pc-windows-gnu}
-            toolchain: stable-x86_64-pc-windows-gnu
-            cross: false
           - config: {os: windows-latest, target: x86_64-pc-windows-msvc}
             toolchain: stable-x86_64-pc-windows-msvc
             cross: false
-          # Cross targets
-          - config: {os: ubuntu-latest,  target: x86_64-unknown-linux-musl}
-            toolchain: stable
-            cross: true
 
     steps:
 
@@ -145,6 +138,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+
+      - name: Add rust components
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rustfmt
+          override: true
 
       - name: Restore cargo registry index
         uses: actions/cache@v2
@@ -164,7 +164,9 @@ jobs:
           mkdir .cargo
           cat > .cargo/config.toml <<EOF
           [target.${{ matrix.config.target }}]
-          rustflags = ["-Ctarget-cpu=generic", "-Clto", "-Cembed-bitcode=yes"]
+          rustflags = ["-Ctarget-cpu=generic", "-Cembed-bitcode=yes"]
+          [profile.release]
+          lto = "thin"
           EOF
 
       - if: ${{ matrix.cross }}
@@ -184,8 +186,8 @@ jobs:
           use-cross: ${{ matrix.cross }}
           command: build
           args: >
-            --manifest-path catalyst-toolbox-cli/Cargo.toml
-            --bin catalyst-toolbox-cli
+            --manifest-path ./Cargo.toml
+            --bin catalyst-toolbox
             --verbose
             --locked
             --release
@@ -194,9 +196,9 @@ jobs:
       - name: Pack binaries (Unix)
         if: matrix.config.os != 'windows-latest'
         run: |
-          archive=catalyst-toolbox-cli-${{ needs.create_release.outputs.version }}-${{ matrix.config.target }}.tar.gz
+          archive=catalyst-toolbox-${{ needs.create_release.outputs.version }}-${{ matrix.config.target }}.tar.gz
           tar -C ./target/${{ matrix.config.target }}/release -czvf $archive \
-            catalyst-toolbox-cli
+            catalyst-toolbox
           cat <<EOF >> $GITHUB_ENV
           RELEASE_ARCHIVE=$archive
           RELEASE_CONTENT_TYPE=application/gzip
@@ -205,9 +207,9 @@ jobs:
       - name: Pack binaries (Windows)
         if: matrix.config.os == 'windows-latest'
         run: |
-          $archive = "catalyst-toolbox-cli-${{ needs.create_release.outputs.version }}-${{ matrix.config.target }}.zip"
+          $archive = "catalyst-toolbox-${{ needs.create_release.outputs.version }}-${{ matrix.config.target }}.zip"
           $args = @{
-            Path  = "./target/${{ matrix.config.target }}/release/catalyst-toolbox-cli.exe"
+            Path  = "./target/${{ matrix.config.target }}/release/catalyst-toolbox.exe"
             DestinationPath = $archive
           }
           Compress-Archive @args

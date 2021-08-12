@@ -3,8 +3,8 @@ mod external;
 
 pub use arbitrary::ArbitraryValidVotingTemplateGenerator;
 pub use external::{
-    parse_challenges, parse_funds, parse_proposals, ExternalValidVotingTemplateGenerator,
-    TemplateLoad,
+    parse_challenges, parse_funds, parse_proposals, parse_reviews,
+    ExternalValidVotingTemplateGenerator, TemplateLoad,
 };
 use serde::{Deserialize, Serialize};
 use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewTag;

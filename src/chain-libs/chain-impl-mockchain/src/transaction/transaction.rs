@@ -222,17 +222,27 @@ impl<'a> InputsWitnessesSlice<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum TransactionStructError {
+    #[error("number of inputs is invalid")]
     CannotReadNbInputs,
+    #[error("number of outputs is invalid")]
     CannotReadNbOutputs,
-    CannotReadDate,
+    #[error("expiry block date is invalid")]
+    CannotReadExpiryDate,
+    #[error("transaction payload is invalid")]
     PayloadInvalid,
+    #[error("invalid inputs")]
     InputsInvalid,
+    #[error("invalid outputs")]
     OutputsInvalid,
+    #[error("invalid witnesses")]
     WitnessesInvalid,
+    #[error("spurious trailing data")]
     SpuriousTrailingData,
+    #[error("payload authentication is missing")]
     PayloadAuthMissing,
+    #[error("payload authentication is invalid")]
     PayloadAuthInvalid,
 }
 
@@ -261,10 +271,10 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
     // read date
     let epoch = rb
         .get_u32()
-        .map_err(|_| TransactionStructError::CannotReadDate)?;
+        .map_err(|_| TransactionStructError::CannotReadExpiryDate)?;
     let slot_id = rb
         .get_u32()
-        .map_err(|_| TransactionStructError::CannotReadDate)?;
+        .map_err(|_| TransactionStructError::CannotReadExpiryDate)?;
     let valid_until = BlockDate { epoch, slot_id };
 
     // read input and outputs

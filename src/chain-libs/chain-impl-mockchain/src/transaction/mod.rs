@@ -40,7 +40,7 @@ impl<Extra: Payload> Readable for Transaction<Extra> {
         let utx = UnverifiedTransactionSlice::from(buf.get_slice_end());
         match utx.check() {
             Ok(tx) => Ok(tx.to_owned()),
-            Err(_) => Err(ReadError::StructureInvalid("transaction".to_string())),
+            Err(e) => Err(ReadError::StructureInvalid(e.to_string())),
         }
     }
 }

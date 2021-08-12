@@ -7,10 +7,10 @@ mod csv_converter;
 mod generator;
 pub use csv_converter::CsvConverter;
 pub use generator::{
-    parse_challenges, parse_funds, parse_proposals, ArbitraryGenerator, ArbitrarySnapshotGenerator,
-    ArbitraryValidVotingTemplateGenerator, ChallengeTemplate, ExternalValidVotingTemplateGenerator,
-    FundTemplate, ProposalTemplate, Snapshot, TemplateLoad, ValidVotePlanGenerator,
-    ValidVotePlanParameters, ValidVotingTemplateGenerator,
+    parse_challenges, parse_funds, parse_proposals, parse_reviews, ArbitraryGenerator,
+    ArbitrarySnapshotGenerator, ArbitraryValidVotingTemplateGenerator, ChallengeTemplate,
+    ExternalValidVotingTemplateGenerator, FundTemplate, ProposalTemplate, Snapshot, TemplateLoad,
+    ValidVotePlanGenerator, ValidVotePlanParameters, ValidVotingTemplateGenerator,
 };
 
 pub fn token() -> (String, ApiTokenData) {

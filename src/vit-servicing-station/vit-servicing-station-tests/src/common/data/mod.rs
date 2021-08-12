@@ -9,8 +9,8 @@ pub use csv_converter::CsvConverter;
 pub use generator::{
     parse_challenges, parse_funds, parse_proposals, parse_reviews, ArbitraryGenerator,
     ArbitrarySnapshotGenerator, ArbitraryValidVotingTemplateGenerator, ChallengeTemplate,
-    ExternalValidVotingTemplateGenerator, FundTemplate, ProposalTemplate, Snapshot, TemplateLoad,
-    ValidVotePlanGenerator, ValidVotePlanParameters, ValidVotingTemplateGenerator,
+    ExternalValidVotingTemplateGenerator, FundTemplate, ProposalTemplate, ReviewTemplate, Snapshot,
+    TemplateLoad, ValidVotePlanGenerator, ValidVotePlanParameters, ValidVotingTemplateGenerator,
 };
 
 pub fn token() -> (String, ApiTokenData) {

@@ -83,7 +83,7 @@ pub struct ProposalCustomFieldsByKey {
     #[serde(alias = "ada_payment_address")]
     pub proposal_public_key: Option<String>,
     #[serde(alias = "requested_funds")]
-    pub proposal_funds: String,
+    pub proposal_funds: Option<String>,
     #[serde(alias = "relevant_experience")]
     pub proposal_relevant_experience: Option<CleanString>,
     #[serde(alias = "importance")]

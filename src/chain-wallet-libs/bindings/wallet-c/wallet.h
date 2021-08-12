@@ -99,6 +99,8 @@ typedef struct LinearFee
   struct PerVoteCertificateFee per_vote_certificate_fees;
 } LinearFee;
 
+typedef uint64_t Block0Date;
+
 typedef uint32_t Epoch;
 
 typedef uint64_t Slot;
@@ -109,6 +111,20 @@ typedef struct TimeEra
   Slot slot_start;
   uint32_t slots_per_epoch;
 } TimeEra;
+
+typedef struct SettingsInit
+{
+  struct LinearFee fees;
+  enum Discrimination discrimination;
+  /**
+   * block_0_initial_hash is assumed to point to 32 bytes of readable memory
+   */
+  const uint8_t *block0_initial_hash;
+  Block0Date block0_date;
+  uint8_t slot_duration;
+  struct TimeEra time_era;
+  uint8_t transaction_max_expiry_epochs;
+} SettingsInit;
 
 /**
  * This function dereference raw pointers. Even though the function checks if
@@ -738,13 +754,7 @@ ErrorPtr iohk_jormungandr_wallet_settings_fees(SettingsPtr settings,
  * settings_out must point to valid writable memory
  * block_0_hash is assumed to point to 32 bytes of readable memory
  */
-ErrorPtr iohk_jormungandr_wallet_settings_new(struct LinearFee linear_fee,
-                                              enum Discrimination discrimination,
-                                              const uint8_t *block_0_hash,
-                                              uint64_t block0_date,
-                                              uint8_t slot_duration,
-                                              struct TimeEra time_era,
-                                              uint8_t transaction_max_expiry_epochs,
+ErrorPtr iohk_jormungandr_wallet_settings_new(struct SettingsInit settings_init,
                                               SettingsPtr *settings_out);
 
 /**

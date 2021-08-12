@@ -1,6 +1,6 @@
 use super::NulPtr;
 use crate::{Error, Result};
-use chain_impl_mockchain::{config::Block0Date, fee, header::HeaderId};
+use chain_impl_mockchain::{config, fee, header::HeaderId};
 use std::{convert::TryInto, num::NonZeroU64};
 use wallet::Settings;
 
@@ -57,20 +57,34 @@ impl From<TimeEra> for chain_time::TimeEra {
     }
 }
 
+type Block0Date = u64;
+
+#[repr(C)]
+pub struct SettingsInit {
+    pub fees: LinearFee,
+    pub discrimination: Discrimination,
+    /// block_0_initial_hash is assumed to point to 32 bytes of readable memory
+    pub block0_initial_hash: *const u8,
+    pub block0_date: Block0Date,
+    pub slot_duration: u8,
+    pub time_era: TimeEra,
+    pub transaction_max_expiry_epochs: u8,
+}
+
 /// # Safety
 ///
 /// settings_out must point to valid writable memory
-/// block_0_hash is assumed to point to 32 bytes of readable memory
-pub unsafe fn settings_new(
-    fees: LinearFee,
-    discrimination: Discrimination,
-    block0_hash: *const u8,
-    block0_date: u64,
-    slot_duration: u8,
-    time_era: TimeEra,
-    transaction_max_expiry_epochs: u8,
-    settings_out: *mut *mut Settings,
-) -> Result {
+pub unsafe fn settings_new(settings: SettingsInit, settings_out: *mut *mut Settings) -> Result {
+    let SettingsInit {
+        fees,
+        discrimination,
+        block0_initial_hash,
+        block0_date,
+        slot_duration,
+        time_era,
+        transaction_max_expiry_epochs,
+    } = settings;
+
     let settings_out = non_null_mut!(settings_out);
 
     let discrimination = match discrimination {
@@ -79,7 +93,7 @@ pub unsafe fn settings_new(
     };
 
     let block0_initial_hash =
-        HeaderId::from_bytes(non_null_array!(block0_hash, 32).try_into().unwrap());
+        HeaderId::from_bytes(non_null_array!(block0_initial_hash, 32).try_into().unwrap());
 
     let linear_fee = fee::LinearFee {
         constant: fees.constant,
@@ -110,7 +124,7 @@ pub unsafe fn settings_new(
         fees: linear_fee,
         discrimination,
         block0_initial_hash,
-        block0_date: Block0Date(block0_date),
+        block0_date: config::Block0Date(block0_date),
         slot_duration,
         time_era: time_era.into(),
         transaction_max_expiry_epochs,

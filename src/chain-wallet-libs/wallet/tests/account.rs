@@ -67,7 +67,14 @@ fn cast_vote() {
 
     let cast = VoteCast::new(vote_plan_id.into(), index, payload);
 
-    let mut builder = wallet::TransactionBuilder::new(&settings, cast);
+    let current_time =
+        std::time::SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(settings.block0_date.0);
+
+    let mut builder = wallet::TransactionBuilder::new(
+        &settings,
+        cast,
+        wallet::time::max_expiration_date(&settings, current_time).unwrap(),
+    );
 
     let value = builder.estimate_fee_with(1, 0);
 

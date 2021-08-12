@@ -1,6 +1,6 @@
 use super::NulPtr;
 use crate::{Error, Result};
-use chain_impl_mockchain::{fee, header::HeaderId};
+use chain_impl_mockchain::{config::Block0Date, fee, header::HeaderId};
 use std::{convert::TryInto, num::NonZeroU64};
 use wallet::Settings;
 
@@ -37,6 +37,26 @@ pub enum Discrimination {
     Test,
 }
 
+pub type Epoch = u32;
+pub type Slot = u64;
+
+#[repr(C)]
+pub struct TimeEra {
+    pub epoch_start: Epoch,
+    pub slot_start: Slot,
+    pub slots_per_epoch: u32,
+}
+
+impl From<TimeEra> for chain_time::TimeEra {
+    fn from(te: TimeEra) -> Self {
+        chain_time::TimeEra::new(
+            te.slot_start.into(),
+            chain_time::Epoch(te.epoch_start),
+            te.slots_per_epoch,
+        )
+    }
+}
+
 /// # Safety
 ///
 /// settings_out must point to valid writable memory
@@ -44,7 +64,11 @@ pub enum Discrimination {
 pub unsafe fn settings_new(
     fees: LinearFee,
     discrimination: Discrimination,
-    block_0_hash: *const u8,
+    block0_hash: *const u8,
+    block0_date: u64,
+    slot_duration: u8,
+    time_era: TimeEra,
+    transaction_max_expiry_epochs: u8,
     settings_out: *mut *mut Settings,
 ) -> Result {
     let settings_out = non_null_mut!(settings_out);
@@ -55,7 +79,7 @@ pub unsafe fn settings_new(
     };
 
     let block0_initial_hash =
-        HeaderId::from_bytes(non_null_array!(block_0_hash, 32).try_into().unwrap());
+        HeaderId::from_bytes(non_null_array!(block0_hash, 32).try_into().unwrap());
 
     let linear_fee = fee::LinearFee {
         constant: fees.constant,
@@ -86,6 +110,10 @@ pub unsafe fn settings_new(
         fees: linear_fee,
         discrimination,
         block0_initial_hash,
+        block0_date: Block0Date(block0_date),
+        slot_duration,
+        time_era: time_era.into(),
+        transaction_max_expiry_epochs,
     }));
 
     *settings_out = ptr;

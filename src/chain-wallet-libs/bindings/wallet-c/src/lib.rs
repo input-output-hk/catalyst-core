@@ -1,4 +1,5 @@
 pub mod settings;
+pub mod time;
 use std::{
     ffi::{CStr, CString},
     os::raw::c_char,
@@ -6,10 +7,12 @@ use std::{
 pub use wallet::Settings as SettingsRust;
 use wallet_core::c::{
     fragment::{fragment_delete, fragment_from_raw, fragment_id},
-    symmetric_cipher_decrypt, vote, wallet_convert, wallet_convert_ignored,
-    wallet_convert_transactions_get, wallet_convert_transactions_size, wallet_delete_conversion,
-    wallet_delete_error, wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet,
-    wallet_id, wallet_import_keys, wallet_recover, wallet_retrieve_funds, wallet_set_state,
+    symmetric_cipher_decrypt,
+    time::BlockDate,
+    vote, wallet_convert, wallet_convert_ignored, wallet_convert_transactions_get,
+    wallet_convert_transactions_size, wallet_delete_conversion, wallet_delete_error,
+    wallet_delete_proposal, wallet_delete_settings, wallet_delete_wallet, wallet_id,
+    wallet_import_keys, wallet_recover, wallet_retrieve_funds, wallet_set_state,
     wallet_spending_counter, wallet_total_value, wallet_vote_cast,
 };
 use wallet_core::{
@@ -255,11 +258,13 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_retrieve_funds(
 pub unsafe extern "C" fn iohk_jormungandr_wallet_convert(
     wallet: WalletPtr,
     settings: SettingsPtr,
+    valid_until: BlockDate,
     conversion_out: *mut ConversionPtr,
 ) -> ErrorPtr {
     let r = wallet_convert(
         wallet as *mut WalletRust,
         settings as *mut SettingsRust,
+        valid_until,
         conversion_out as *mut *mut ConversionRust,
     );
 
@@ -534,6 +539,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
     settings: SettingsPtr,
     proposal: ProposalPtr,
     choice: u8,
+    valid_until: BlockDate,
     transaction_out: *mut *const u8,
     len_out: *mut usize,
 ) -> ErrorPtr {
@@ -542,6 +548,7 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_vote_cast(
         settings as *mut SettingsRust,
         proposal as *mut ProposalRust,
         choice,
+        valid_until,
         transaction_out,
         len_out,
     );

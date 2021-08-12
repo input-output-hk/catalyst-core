@@ -64,6 +64,9 @@ extern "C" {
 }
 
 #[wasm_bindgen]
+pub struct BlockDate(chain_impl_mockchain::block::BlockDate);
+
+#[wasm_bindgen]
 impl Wallet {
     /// retrieve a wallet from the given mnemonics and password
     ///
@@ -94,8 +97,8 @@ impl Wallet {
             .map(Wallet)
     }
 
-    pub fn convert(&mut self, settings: &Settings) -> Conversion {
-        Conversion(self.0.convert(settings.0.clone()))
+    pub fn convert(&mut self, settings: &Settings, valid_until: &BlockDate) -> Conversion {
+        Conversion(self.0.convert(settings.0.clone(), &valid_until.0))
     }
 
     /// get the account ID bytes
@@ -155,6 +158,7 @@ impl Wallet {
     /// * `proposal` - proposal information including the range of values
     ///   allowed in `choice`.
     /// * `choice` - the option to vote for.
+    /// * `valid_until` - the date until this transaction can be applied
     ///
     /// # Errors
     ///
@@ -165,12 +169,14 @@ impl Wallet {
         settings: &Settings,
         proposal: &Proposal,
         choice: u8,
+        valid_until: &BlockDate,
     ) -> Result<Box<[u8]>, JsValue> {
         self.0
             .vote(
                 settings.0.clone(),
                 &proposal.0,
                 wallet_core::Choice::new(choice),
+                &valid_until.0,
             )
             .map_err(|e| JsValue::from(e.to_string()))
     }

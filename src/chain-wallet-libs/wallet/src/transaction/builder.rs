@@ -2,10 +2,11 @@ use super::witness_builder::WitnessBuilder;
 use crate::Settings;
 use chain_addr::Address;
 use chain_impl_mockchain::{
+    block::BlockDate,
     fee::FeeAlgorithm as _,
     transaction::{
-        Balance, Input, Output, Payload, SetAuthData, SetIOs, SetWitnesses, Transaction,
-        TxBuilderState,
+        Balance, Input, Output, Payload, SetAuthData, SetIOs, SetValidity, SetWitnesses,
+        Transaction, TxBuilderState,
     },
     value::Value,
 };
@@ -18,6 +19,7 @@ pub struct BalancingError;
 pub struct TransactionBuilder<'settings, P: Payload> {
     settings: &'settings Settings,
     payload: P,
+    validity: BlockDate,
     outputs: Vec<Output<Address>>,
     inputs: Vec<Input>,
     witness_builders: Vec<Box<dyn WitnessBuilder>>,
@@ -31,10 +33,11 @@ pub enum AddInputStatus {
 
 impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
     /// create a new transaction builder with the given settings and outputs
-    pub fn new(settings: &'settings Settings, payload: P) -> Self {
+    pub fn new(settings: &'settings Settings, payload: P, validity: BlockDate) -> Self {
         Self {
             settings,
             payload,
+            validity,
             outputs: Vec::with_capacity(255),
             inputs: Vec::with_capacity(255),
             witness_builders: Vec::with_capacity(255),
@@ -145,10 +148,15 @@ impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
         let builder = TxBuilderState::new();
         let builder = builder.set_payload(&self.payload);
 
+        let builder = self.set_validity(builder);
         let builder = self.set_ios(builder);
         let builder = self.set_witnesses(builder);
 
         Ok(builder.set_payload_auth(&auth))
+    }
+
+    fn set_validity(&self, builder: TxBuilderState<SetValidity<P>>) -> TxBuilderState<SetIOs<P>> {
+        builder.set_expiry_date(self.validity)
     }
 
     fn set_ios(&self, builder: TxBuilderState<SetIOs<P>>) -> TxBuilderState<SetWitnesses<P>> {

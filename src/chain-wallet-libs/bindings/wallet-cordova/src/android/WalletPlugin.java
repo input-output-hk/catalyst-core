@@ -11,6 +11,7 @@ import com.iohk.jormungandrwallet.Conversion;
 import com.iohk.jormungandrwallet.Proposal;
 import com.iohk.jormungandrwallet.SymmetricCipher;
 import com.iohk.jormungandrwallet.Fragment;
+import com.iohk.jormungandrwallet.Time;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -124,6 +125,12 @@ public class WalletPlugin extends CordovaPlugin {
         case "FRAGMENT_ID":
             fragmentId(args, callbackContext);
             break;
+        case "BLOCK_DATE_FROM_SYSTEM_TIME":
+            blockDateFromSystemTime(args, callbackContext);
+            break;
+        case "MAX_EXPIRATION_DATE":
+            maxExpirationDate(args, callbackContext);
+            break;
         case "WALLET_DELETE":
             walletDelete(args, callbackContext);
             break;
@@ -195,19 +202,25 @@ public class WalletPlugin extends CordovaPlugin {
         final byte[] block0Hash = args.getArrayBuffer(0);
         final int discriminationInput = args.getInt(1);
         final JSONObject fees = (JSONObject) args.get(2);
+        final long block0Date = Long.parseUnsignedLong(args.getString(3));
+        final short slotDuration = Short.parseShort(args.getString(4));
+        final JSONObject era = (JSONObject) args.get(5);
+        final short transactionMaxExpiryEpochs = Short.parseShort(args.getString(6));
 
         try {
-            final long constant = Long.parseLong(fees.getString("constant"));
-            final long coefficient = Long.parseLong(fees.getString("coefficient"));
-            final long certificate = Long.parseLong(fees.getString("certificate"));
+            final long constant = Long.parseUnsignedLong(fees.getString("constant"));
+            final long coefficient = Long.parseUnsignedLong(fees.getString("coefficient"));
+            final long certificate = Long.parseUnsignedLong(fees.getString("certificate"));
 
-            final long certificatePoolRegistration = Long.parseLong(fees.getString("certificatePoolRegistration"));
-            final long certificateStakeDelegation = Long.parseLong(fees.getString("certificateStakeDelegation"));
+            final long certificatePoolRegistration = Long
+                    .parseUnsignedLong(fees.getString("certificatePoolRegistration"));
+            final long certificateStakeDelegation = Long
+                    .parseUnsignedLong(fees.getString("certificateStakeDelegation"));
             final long certificateOwnerStakeDelegation = Long
-                    .parseLong(fees.getString("certificateOwnerStakeDelegation"));
+                    .parseUnsignedLong(fees.getString("certificateOwnerStakeDelegation"));
 
-            final long certificateVotePlan = Long.parseLong(fees.getString("certificateVotePlan"));
-            final long certificateVoteCast = Long.parseLong(fees.getString("certificateVoteCast"));
+            final long certificateVotePlan = Long.parseUnsignedLong(fees.getString("certificateVotePlan"));
+            final long certificateVoteCast = Long.parseUnsignedLong(fees.getString("certificateVoteCast"));
 
             final Settings.LinearFees linearFees = new Settings.LinearFees(constant, coefficient, certificate,
                     new Settings.PerCertificateFee(certificatePoolRegistration, certificateStakeDelegation,
@@ -217,7 +230,12 @@ public class WalletPlugin extends CordovaPlugin {
             final Settings.Discrimination discrimination = discriminationInput == 0 ? Settings.Discrimination.PRODUCTION
                     : Settings.Discrimination.TEST;
 
-            final long settingsPtr = Settings.build(linearFees, discrimination, block0Hash);
+            final Settings.TimeEra timeEra = new Settings.TimeEra(Long.parseUnsignedLong(era.getString("epochStart")),
+                    Long.parseUnsignedLong(era.getString("slotStart")),
+                    Long.parseUnsignedLong(era.getString("slotsPerEpoch")));
+
+            final long settingsPtr = Settings.build(linearFees, discrimination, block0Hash, block0Date, slotDuration,
+                    timeEra, transactionMaxExpiryEpochs);
 
             callbackContext.success(Long.toString(settingsPtr));
         } catch (final Exception e) {
@@ -283,7 +301,8 @@ public class WalletPlugin extends CordovaPlugin {
         }
     }
 
-    private void walletSpendingCounter(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+    private void walletSpendingCounter(final CordovaArgs args, final CallbackContext callbackContext)
+            throws JSONException {
         final Long walletPtr = args.getLong(0);
 
         try {
@@ -312,9 +331,13 @@ public class WalletPlugin extends CordovaPlugin {
         final Long settings = args.getLong(1);
         final Long proposal = args.getLong(2);
         final Integer choice = args.getInt(3);
+        final JSONObject expirationDate = (JSONObject) args.get(4);
+
+        final long epoch = Long.parseUnsignedLong(expirationDate.getString("epoch"));
+        final long slot = Long.parseUnsignedLong(expirationDate.getString("slot"));
 
         try {
-            final byte[] tx = Wallet.voteCast(wallet, settings, proposal, choice);
+            final byte[] tx = Wallet.voteCast(wallet, settings, proposal, choice, new Time.BlockDate(epoch, slot));
             callbackContext.success(tx);
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());
@@ -374,11 +397,15 @@ public class WalletPlugin extends CordovaPlugin {
     private void walletConvert(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
         final Long walletPtr = args.getLong(0);
         final Long settingsPtr = args.getLong(1);
+        final JSONObject expirationDate = (JSONObject) args.get(2);
+
+        final long epoch = Long.parseUnsignedLong(expirationDate.getString("epoch"));
+        final long slot = Long.parseUnsignedLong(expirationDate.getString("slot"));
 
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 try {
-                    final long conversionPtr = Wallet.convert(walletPtr, settingsPtr);
+                    final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, new Time.BlockDate(epoch, slot));
                     callbackContext.success(Long.toString(conversionPtr));
                 } catch (final Exception e) {
                     callbackContext.error(e.getMessage());
@@ -479,6 +506,36 @@ public class WalletPlugin extends CordovaPlugin {
             final byte[] id = Fragment.id(fragmentPtr);
             Fragment.delete(fragmentPtr);
             callbackContext.success(id);
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void blockDateFromSystemTime(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long settingsPtr = args.getLong(0);
+        final Long unixEpoch = args.getLong(1);
+
+        try {
+            final Time.BlockDate date = Time.blockDateFromSystemTime(settingsPtr, unixEpoch);
+
+            final JSONObject json = new JSONObject().put("epoch", Long.toUnsignedString(date.epoch)).put("slot",
+                    Long.toUnsignedString(date.slot));
+            callbackContext.success(json);
+        } catch (final Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void maxExpirationDate(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
+        final Long settingsPtr = args.getLong(0);
+        final Long unixEpoch = args.getLong(1);
+
+        try {
+            final Time.BlockDate date = Time.maxExpirationDate(settingsPtr, unixEpoch);
+
+            final JSONObject json = new JSONObject().put("epoch", Long.toUnsignedString(date.epoch)).put("slot",
+                    Long.toUnsignedString(date.slot));
+            callbackContext.success(json);
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());
         }

@@ -6,7 +6,12 @@ public class Settings {
     }
 
     // new can't be used as the name for this
-    public native static long build(LinearFees fees, Discrimination discrimination, byte[] block0_hash);
+    public native static long build(
+        LinearFees fees, Discrimination discrimination, 
+        byte[] block0_hash, long block0_date, 
+        short slot_duration, TimeEra time_era,
+        short transaction_max_expiry_epochs
+    );
 
     public native static LinearFees fees(long settings);
 
@@ -97,6 +102,22 @@ public class Settings {
         public PerVoteCertificateFee(long votePlan, long voteCast) {
             certificateVotePlan = votePlan;
             certificateVoteCast = voteCast;
+        }
+    }
+
+    public static class TimeEra {
+        // this is a 32 bytes unsigned integer, it's passed as long because java doesn't have unsigned types
+        public long epochStart;
+        // this is a 64 bytes unsigned integer, it's casted internally
+        public long slotStart;
+        // this is a 32 bytes unsigned integer, it's passed as long because java doesn't have unsigned types
+        public long slotsPerEpoch;
+
+
+        public TimeEra(long epochStart, long slotStart, long slotsPerEpoch) {
+            this.epochStart = epochStart;
+            this.slotStart = slotStart;
+            this.slotsPerEpoch = slotsPerEpoch;
         }
     }
 }

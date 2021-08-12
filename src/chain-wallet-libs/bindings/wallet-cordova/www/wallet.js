@@ -31,6 +31,8 @@ const SYMMETRIC_CIPHER_DECRYPT = 'SYMMETRIC_CIPHER_DECRYPT';
 const SETTINGS_NEW = 'SETTINGS_NEW';
 const SETTINGS_GET = 'SETTINGS_GET';
 const FRAGMENT_ID = 'FRAGMENT_ID';
+const BLOCK_DATE_FROM_SYSTEM_TIME = 'BLOCK_DATE_FROM_SYSTEM_TIME';
+const MAX_EXPIRATION_DATE = 'MAX_EXPIRATION_DATE';
 
 const VOTE_PLAN_ID_LENGTH = 32;
 const FRAGMENT_ID_LENGTH = 32;
@@ -63,6 +65,11 @@ var plugin = {
      */
 
     /**
+     * @callback BlockDateCallback
+     * @param {BlockDate} date
+     */
+
+    /**
      * @typedef Settings
      * @type {object}
      * @property {Uint8Array} block0Hash
@@ -81,6 +88,21 @@ var plugin = {
      * @property {string} certificateOwnerStakeDelegation
      * @property {string} certificateVotePlan
      * @property {string} certificateVoteCast
+     */
+
+    /**
+     * @typedef TimeEra
+     * @type {object}
+     * @property {string} epochStart
+     * @property {string} slotStart
+     * @property {string} slotsPerEpoch
+     */
+
+    /**
+     * @typedef BlockDate
+     * @type {object}
+     * @property {string} epoch
+     * @property {string} slot
      */
 
     /**
@@ -218,24 +240,26 @@ var plugin = {
      * @param {string} settingsPtr a pointer to a Settings object obtained with walletRetrieveFunds
      * @param {string} proposalPtr a pointer to a Proposal object obtained with proposalNew
      * @param {number} choice a number between 0 and Proposal's numChoices - 1
+     * @param {BlockDate} validUntil maximum date in which this fragment can be applied to the ledger
      * @param {function} successCallback on success the callback returns a byte array representing a transaction
      * @param {function} errorCallback can fail if the choice doesn't validate with the given proposal
      *
      */
-    walletVote: function (walletPtr, settingsPtr, proposalPtr, choice, successCallback, errorCallback) {
-        argscheck.checkArgs('sssnff', 'walletVote', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_VOTE_ACTION_TAG, [walletPtr, settingsPtr, proposalPtr, choice]);
+    walletVote: function (walletPtr, settingsPtr, proposalPtr, choice, validUntil, successCallback, errorCallback) {
+        argscheck.checkArgs('sssn*ff', 'walletVote', arguments);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_VOTE_ACTION_TAG, [walletPtr, settingsPtr, proposalPtr, choice, validUntil]);
     },
 
     /**
      * @param {string} walletPtr a pointer to a wallet obtained with walletRestore
      * @param {string} settingsPtr a pointer to a settings object obtained with walletRetrieveFunds
+     * @param {BlockDate} validUntil maximum date in which this fragment can be applied to the ledger
      * @param {pointerCallback} successCallback returns a Conversion object
      * @param {errorCallback} errorCallback description (TODO)
      */
-    walletConvert: function (walletPtr, settingsPtr, successCallback, errorCallback) {
-        argscheck.checkArgs('ssff', 'walletConvert', arguments);
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_CONVERT_ACTION_TAG, [walletPtr, settingsPtr]);
+    walletConvert: function (walletPtr, settingsPtr, validUntil, successCallback, errorCallback) {
+        argscheck.checkArgs('ss*ff', 'walletConvert', arguments);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, WALLET_CONVERT_ACTION_TAG, [walletPtr, settingsPtr, validUntil]);
     },
 
     /**
@@ -366,14 +390,36 @@ var plugin = {
      * @param {Uint8Array} block0Hash
      * @param {Discrimination} discrimination
      * @param {Fees} fees
+     * @param {string} block0Date
+     * @param {string} slotDuration
+     * @param {TimeEra} era
+     * @param {string} transactionMaxExpiryEpochs
      * @param {pointerCallback} successCallback
      * @param {errorCallback} errorCallback
      */
-    settingsNew: function (block0Hash, discrimination, fees, successCallback, errorCallback) {
-        argscheck.checkArgs('*n*ff', 'settingsNew', arguments);
+    settingsNew: function (
+        block0Hash,
+        discrimination,
+        fees,
+        block0Date,
+        slotDuration,
+        era,
+        transactionMaxExpiryEpochs,
+        successCallback,
+        errorCallback
+    ) {
+        argscheck.checkArgs('*n*ss*sff', 'settingsNew', arguments);
         checkUint8Array({ name: 'block0Hash', testee: block0Hash });
 
-        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SETTINGS_NEW, [block0Hash.buffer, discrimination, fees]);
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, SETTINGS_NEW, [
+            block0Hash.buffer,
+            discrimination,
+            fees,
+            block0Date,
+            slotDuration,
+            era,
+            transactionMaxExpiryEpochs
+        ]);
     },
 
     /**
@@ -402,6 +448,30 @@ var plugin = {
         checkUint8Array({ name: 'transaction', testee: transaction });
 
         exec(successCallback, errorCallback, NATIVE_CLASS_NAME, FRAGMENT_ID, [transaction.buffer]);
+    },
+
+    /**
+     * @param {string} settingsPtr
+     * @param {number} date
+     * @param {BlockDateCallback} successCallback
+     * @param {errorCallback} errorCallback
+     */
+    blockDateFromSystemTime: function (settingsPtr, date, successCallback, errorCallback) {
+        argscheck.checkArgs('snff', 'blockDateFromSystemTime', arguments);
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, BLOCK_DATE_FROM_SYSTEM_TIME, [settingsPtr, date]);
+    },
+
+    /**
+     * @param {string} settingsPtr
+     * @param {number} currentTime
+     * @param {BlockDateCallback} successCallback
+     * @param {errorCallback} errorCallback
+     */
+    maxExpirationDate: function (settingsPtr, currentTime, successCallback, errorCallback) {
+        argscheck.checkArgs('snff', 'maxExpirationDate', arguments);
+
+        exec(successCallback, errorCallback, NATIVE_CLASS_NAME, MAX_EXPIRATION_DATE, [settingsPtr, currentTime]);
     },
 
     /**

@@ -3,6 +3,7 @@ mod utils;
 use self::utils::State;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::value::Value;
+use std::time::SystemTime;
 use wallet::transaction::dump_free_utxo;
 
 const BLOCK0: &[u8] = include_bytes!("../../test-vectors/block0");
@@ -45,9 +46,16 @@ fn test_free_utxo_key_dump() {
 
     assert_eq!(free_keys.confirmed_value(), WALLET_VALUE);
 
-    let (fragment, ignored) = dump_free_utxo(&settings, &address, &mut free_keys)
-        .next()
-        .unwrap();
+    let current_time =
+        SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(settings.block0_date.0);
+    let (fragment, ignored) = dump_free_utxo(
+        &settings,
+        &address,
+        &mut free_keys,
+        wallet::time::max_expiration_date(&settings, current_time).unwrap(),
+    )
+    .next()
+    .unwrap();
 
     assert!(ignored.is_empty());
 

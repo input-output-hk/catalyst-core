@@ -19,6 +19,7 @@ chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.gi
 chain-path-derivation = {path = "../../chain-path-derivation"}
 chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 hdkeygen = {path = "../../hdkeygen"}
 symmetric-cipher = {path = "../../symmetric-cipher"}
 thiserror = {version = "1.0.13", default-features = false}

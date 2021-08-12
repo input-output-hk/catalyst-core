@@ -1,7 +1,7 @@
 use super::{ErrorPtr, SettingsPtr};
 use wallet_core::c::settings::{
     settings_block0_hash, settings_discrimination, settings_fees, settings_new, Discrimination,
-    LinearFee,
+    LinearFee, TimeEra,
 };
 
 /// # Safety
@@ -13,12 +13,20 @@ pub unsafe extern "C" fn iohk_jormungandr_wallet_settings_new(
     linear_fee: LinearFee,
     discrimination: Discrimination,
     block_0_hash: *const u8,
+    block0_date: u64,
+    slot_duration: u8,
+    time_era: TimeEra,
+    transaction_max_expiry_epochs: u8,
     settings_out: *mut SettingsPtr,
 ) -> ErrorPtr {
     settings_new(
         linear_fee,
         discrimination,
         block_0_hash,
+        block0_date,
+        slot_duration,
+        time_era,
+        transaction_max_expiry_epochs,
         settings_out as *mut *mut wallet_core::Settings,
     )
     .into_c_api() as ErrorPtr

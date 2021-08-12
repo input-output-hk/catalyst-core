@@ -3,6 +3,7 @@ use crate::store::{Groupable, UtxoStore};
 use super::builder::{AddInputStatus, TransactionBuilder};
 use super::witness_builder::{UtxoWitnessBuilder, WitnessBuilder};
 use chain_impl_mockchain::{
+    block::BlockDate,
     fragment::Fragment,
     transaction::{Balance, Input, NoExtra, Output, Transaction},
 };
@@ -11,6 +12,7 @@ pub struct DumpIter<'a, W> {
     settings: &'a crate::Settings,
     address: &'a chain_addr::Address,
     wallet: &'a mut W,
+    valid_until: BlockDate,
 }
 
 pub type DumpIcarus<'a> =
@@ -22,10 +24,11 @@ pub fn send_to_one_address<K: Clone + Groupable, WB: WitnessBuilder>(
     address: &chain_addr::Address,
     utxo_store: &UtxoStore<K>,
     mk_witness: &'static dyn Fn(K) -> WB,
+    valid_until: BlockDate,
 ) -> Option<(Transaction<NoExtra>, Vec<Input>)> {
     let payload = chain_impl_mockchain::transaction::NoExtra;
 
-    let mut builder = TransactionBuilder::new(settings, payload);
+    let mut builder = TransactionBuilder::new(settings, payload, valid_until);
     let utxos = utxo_store.utxos();
 
     let mut ignored = vec![];
@@ -66,11 +69,13 @@ pub fn dump_free_utxo<'a>(
     settings: &'a crate::Settings,
     address: &'a chain_addr::Address,
     wallet: &'a mut crate::scheme::freeutxo::Wallet,
+    valid_until: BlockDate,
 ) -> DumpFreeKeys<'a> {
     DumpFreeKeys {
         settings,
         address,
         wallet,
+        valid_until,
     }
 }
 
@@ -78,9 +83,13 @@ impl<'a> Iterator for DumpFreeKeys<'a> {
     type Item = (Fragment, Vec<Input>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let next = send_to_one_address(self.settings, self.address, self.wallet.utxos(), &|key| {
-            UtxoWitnessBuilder(key)
-        })
+        let next = send_to_one_address(
+            self.settings,
+            self.address,
+            self.wallet.utxos(),
+            &|key| UtxoWitnessBuilder(key),
+            self.valid_until,
+        )
         .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));
 
         if let Some((fragment, _)) = next.as_ref() {

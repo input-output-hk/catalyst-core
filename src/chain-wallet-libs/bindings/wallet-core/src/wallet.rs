@@ -2,7 +2,7 @@ use crate::{Conversion, Error, Proposal};
 use chain_core::property::Serialize as _;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::{
-    block::Block,
+    block::{Block, BlockDate},
     fragment::{Fragment, FragmentId},
     transaction::Input,
     value::Value,
@@ -152,7 +152,7 @@ impl Wallet {
     /// the function checks if the pointers are null. Mind not to put random values
     /// in or you may see unexpected behaviors
     ///
-    pub fn convert(&mut self, settings: Settings) -> Conversion {
+    pub fn convert(&mut self, settings: Settings, valid_until: &BlockDate) -> Conversion {
         let address = self.account.account_id().address(settings.discrimination());
 
         let mut raws = Vec::new();
@@ -165,9 +165,12 @@ impl Wallet {
             account.check_fragment(&fragment.hash(), &fragment);
         };
 
-        for (fragment, ignored) in
-            wallet::transaction::dump_free_utxo(&settings, &address, &mut self.free_keys)
-        {
+        for (fragment, ignored) in wallet::transaction::dump_free_utxo(
+            &settings,
+            &address,
+            &mut self.free_keys,
+            *valid_until,
+        ) {
             for_each(fragment, ignored)
         }
 
@@ -271,6 +274,7 @@ impl Wallet {
         settings: Settings,
         proposal: &Proposal,
         choice: Choice,
+        valid_until: &BlockDate,
     ) -> Result<Box<[u8]>, Error> {
         let payload = if let Some(payload) = proposal.vote(choice) {
             payload
@@ -278,7 +282,7 @@ impl Wallet {
             return Err(Error::wallet_vote_range());
         };
 
-        let mut builder = wallet::TransactionBuilder::new(&settings, payload);
+        let mut builder = wallet::TransactionBuilder::new(&settings, payload, *valid_until);
 
         let value = builder.estimate_fee_with(1, 0);
 

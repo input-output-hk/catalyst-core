@@ -1,5 +1,7 @@
 package com.iohk.jormungandrwallet;
 
+import com.iohk.jormungandrwallet.*;
+
 public class Wallet {
     static {
         System.loadLibrary("wallet_jni");
@@ -17,13 +19,14 @@ public class Wallet {
 
     public native static long initialFunds(long wallet, byte[] block0);
 
-    public native static long convert(long wallet, long settings);
+    public native static long convert(long wallet, long settings, Time.BlockDate valid_until);
 
     public native static byte[] id(long wallet);
 
     public native static void setState(long wallet, long value, long counter);
 
-    public native static byte[] voteCast(long wallet, long settings, long proposal, int choice);
+    public native static byte[] voteCast(long wallet, long settings, long proposal, int choice,
+            Time.BlockDate valid_until);
 
     public native static void confirmTransaction(long wallet, byte[] fragmentId);
 

@@ -6,6 +6,8 @@ import com.iohk.jormungandrwallet.Proposal;
 import com.iohk.jormungandrwallet.PendingTransactions;
 import com.iohk.jormungandrwallet.SymmetricCipher;
 import com.iohk.jormungandrwallet.Fragment;
+import com.iohk.jormungandrwallet.Time;
+import com.iohk.jormungandrwallet.Time.BlockDate;
 
 import java.util.Properties;
 import java.util.Enumeration;
@@ -19,19 +21,24 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class WalletTest {
-    private byte[] accountKey() throws IOException{
-        final String accountKey = new String(
-                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key1.prv"))).trim();
+    private long block0Date() {
+        // TODO: hardcoded.
+        return 1586637936;
+    }
+
+    private byte[] accountKey() throws IOException {
+        final String accountKey = new String(Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key1.prv")))
+                .trim();
 
         return hexStringToByteArray(accountKey);
     }
 
-    private byte[] utxoKeys() throws IOException{
-        final String utxoKey1 = new String(
-                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key2.prv"))).trim();
+    private byte[] utxoKeys() throws IOException {
+        final String utxoKey1 = new String(Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key2.prv")))
+                .trim();
 
-        final String utxoKey2 = new String(
-                Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key3.prv"))).trim();
+        final String utxoKey2 = new String(Files.readAllBytes(Paths.get("../../../test-vectors/free_keys/key3.prv")))
+                .trim();
 
         return hexStringToByteArray(utxoKey1.concat(utxoKey2));
     }
@@ -63,7 +70,7 @@ public class WalletTest {
         // test vectors genesis?
         assertEquals(Settings.Discrimination.PRODUCTION, discrimination);
 
-        assertArrayEquals(hexStringToByteArray("8f7eb264426d2a81d5df7433e4713a38397deda81813115884b68c853f549dae"),
+        assertArrayEquals(hexStringToByteArray("6335a93181f9eeadda2df5d1bc341391a7c3b9814cea62843d254701d13935df"),
                 Settings.block0Hash(settingsPtr));
 
         Settings.delete(settingsPtr);
@@ -77,9 +84,11 @@ public class WalletTest {
         final Settings.LinearFees expectedFees = new Settings.LinearFees(1, 2, 3,
                 new Settings.PerCertificateFee(4, 5, 6), new Settings.PerVoteCertificateFee(7, 8));
 
+        final Settings.TimeEra timeEra = new Settings.TimeEra(0, 0, 100);
+
         Settings.PerCertificateFee test = new Settings.PerCertificateFee(4, 5, 6);
 
-        final long settingsPtr = Settings.build(expectedFees, discrimination, blockId);
+        final long settingsPtr = Settings.build(expectedFees, discrimination, blockId, 10, (short) 15, timeEra, (short) 2);
 
         final Settings.LinearFees fees = Settings.fees(settingsPtr);
 
@@ -151,7 +160,7 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr);
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -172,7 +181,7 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr);
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -188,18 +197,9 @@ public class WalletTest {
 
     @Test
     public void voteCast() throws IOException {
-        final byte[] accountKey = { -56, 101, -106, -62, -47, 32, -120, -123, -37, 31, -29, 101, -124, 6, -86, 15, 124,
-                -57, -72, -31, 60, 54, 47, -28, 106, 109, -78, 119, -4, 80, 100, 88, 62, 72, 117, -120, -55, -118, 108,
-                54, -30, -25, 68, 92, 10, -35, 54, -8, 63, 23, 28, -75, -52, -3, -127, 85, 9, -47, -100, -45, -114, -53,
-                10, -13, };
+        final byte[] accountKey = accountKey();
 
-        final byte[] utxoKeys = { 48, 21, 89, -52, -78, -44, -52, 126, -98, 84, -90, -11, 90, -128, -106, 11, -74, -111,
-                -73, -79, 64, -107, 73, -17, -122, -107, -87, 46, -92, 26, 111, 79, 64, 82, 49, -88, 6, -62, -25, -71,
-                -48, -37, 48, -31, 94, -32, -52, 31, 38, 28, 27, -97, -106, 21, 99, 107, 72, -67, -119, -2, 123, -26,
-                -22, 31, -88, -74, -67, -16, -128, -57, 79, -68, 49, 51, 126, -34, 75, 102, -110, -62, -21, -19, 126,
-                52, -81, 109, -104, -73, -69, -51, 71, -116, -16, 123, 13, 94, -39, 63, 126, -99, 74, -93, -81, -34, 50,
-                26, -31, -85, -74, 27, -125, 68, -62, 67, -55, -48, -76, 7, -53, -8, -111, 125, -74, -33, 44, 101, 61,
-                -22, };
+        final byte[] utxoKeys = utxoKeys();
 
         final long walletPtr = Wallet.importKeys(accountKey, utxoKeys);
 
@@ -215,7 +215,7 @@ public class WalletTest {
         assertEquals(Wallet.spendingCounter(walletPtr), 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
             assertEquals(Wallet.spendingCounter(walletPtr), 1);
         } catch (final Exception e) {
@@ -248,7 +248,7 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr);
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -289,7 +289,7 @@ public class WalletTest {
         Wallet.setState(walletPtr, 10000000, 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
             final long before = Wallet.pendingTransactions(walletPtr);
 
@@ -333,7 +333,7 @@ public class WalletTest {
         Wallet.setState(walletPtr, 10000000, 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
             final long fragment = Fragment.fromBytes(transaction);
             final byte[] fragmentId = Fragment.id(fragment);
@@ -374,7 +374,7 @@ public class WalletTest {
 
         Wallet.setState(walletPtr, 10000000, 0);
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1);
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
             final long before = Wallet.pendingTransactions(walletPtr);
 
@@ -449,6 +449,19 @@ public class WalletTest {
         final byte[] encrypted = hexStringToByteArray(hex);
         final byte[] password = { 127, 127, 127, 127 };
         SymmetricCipher.decrypt(password, encrypted);
+    }
+
+    @Test
+    public void testBlockDateFromSystemTime() throws IOException {
+        final long walletPtr = Wallet.importKeys(accountKey(), utxoKeys());
+
+        final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
+
+        final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
+
+        final BlockDate date =  Time.blockDateFromSystemTime(settingsPtr, block0Date() + 20 * 180);
+        assertEquals(date.epoch, 1);
+        assertEquals(date.slot, 0);
     }
 
     public static byte[] hexStringToByteArray(String s) {

@@ -12,11 +12,8 @@ pub struct Fund {
     pub fund_name: String,
     #[serde(alias = "fundGoal")]
     pub fund_goal: String,
-    #[serde(alias = "votingPowerInfo")]
-    pub voting_power_info: String,
+    pub registration_snapshot_time: String,
     pub voting_power_threshold: u64,
-    #[serde(alias = "rewardsInfo")]
-    pub rewards_info: String,
     #[serde(alias = "fundStartTime")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
@@ -53,7 +50,6 @@ pub struct Voteplan {
     pub chain_committee_end_time: i64,
     #[serde(alias = "chainVoteplanPayload")]
     pub chain_voteplan_payload: String,
-
     pub chain_vote_encryption_key: String,
     #[serde(alias = "fundId")]
     pub fund_id: i32,
@@ -123,6 +119,38 @@ pub struct Proposal {
     pub chain_voteplan_payload: String,
     #[serde(alias = "chainVoteEncryptionKey")]
     pub chain_vote_encryption_key: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct AdvisorReview {
+    pub id: i32,
+    pub proposal_id: i32,
+    pub rating_given: i32,
+    pub assessor: String,
+    pub note: String,
+    pub tag: ReviewTag,
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq)]
+pub enum ReviewTag {
+    Alignment,
+    Verifiability,
+    Feasibility,
+    Impact,
+    Auditability,
+}
+
+impl ToString for ReviewTag {
+    fn to_string(&self) -> String {
+        match self {
+            ReviewTag::Alignment => "Alignment",
+            ReviewTag::Verifiability => "Verifiability",
+            ReviewTag::Feasibility => "Feasibility",
+            ReviewTag::Impact => "Impact",
+            ReviewTag::Auditability => "Auditability",
+        }
+        .to_string()
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]

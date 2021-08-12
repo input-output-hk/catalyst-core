@@ -94,7 +94,7 @@ pub fn create_initial_stake_pool_owner_delegation(delegation_type: DelegationTyp
 }
 
 fn set_initial_ios<P: Payload>(
-    builder: TxBuilderState<SetValidity<P>>,
+    builder: TxBuilderState<SetTtl<P>>,
     inputs: &[Input],
     outputs: &[OutputAddress],
 ) -> TxBuilderState<SetAuthData<P>> {

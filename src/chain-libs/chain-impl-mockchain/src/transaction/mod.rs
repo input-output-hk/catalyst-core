@@ -17,7 +17,7 @@ use chain_core::property;
 
 // to remove..
 pub use builder::{
-    SetAuthData, SetIOs, SetPayload, SetValidity, SetWitnesses, TxBuilder, TxBuilderState,
+    SetAuthData, SetIOs, SetPayload, SetTtl, SetWitnesses, TxBuilder, TxBuilderState,
 };
 pub use element::*;
 pub use input::*;

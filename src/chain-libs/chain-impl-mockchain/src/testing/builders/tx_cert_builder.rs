@@ -13,7 +13,7 @@ use crate::{
     ledger::ledger::OutputAddress,
     testing::{data::Wallet, make_witness},
     transaction::{
-        AccountBindingSignature, Input, Payload, SetAuthData, SetValidity,
+        AccountBindingSignature, Input, Payload, SetAuthData, SetTtl,
         SingleAccountBindingSignature, TxBuilder, TxBuilderState, Witness,
     },
     value::Value,
@@ -44,7 +44,7 @@ impl TestTxCertBuilder {
     fn set_initial_ios<P: Payload>(
         &self,
         current_date: BlockDate,
-        builder: TxBuilderState<SetValidity<P>>,
+        builder: TxBuilderState<SetTtl<P>>,
         funder: &Wallet,
         inputs: &[Input],
         outputs: &[OutputAddress],

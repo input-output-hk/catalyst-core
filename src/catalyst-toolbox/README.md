@@ -244,6 +244,22 @@ An example would look like:
 
 Where **all the keys are needed** and values are ideascale custom fields. 
 
+#### QR code generation
+
+Generator of voting keys for testing purposes, encrypted into QR codes.
+
+```shell
+catalyst-toolbox qr-code --input <input> --pin <pin>
+```
+
+The `--input` option value should give path to a file containing an
+ed25519extended voting key in the Bech32 text format.
+The PIN code used to encrypt and decrypt the key is given with the `--pin`
+option.
+
+See the [protocol document](./doc/private-key-and-qr-code.md) for the format
+of the QR code payload.
+
 ## Python scripts
 
 Use an updated version of `python3` and either create a venv or just install the dependencies from the

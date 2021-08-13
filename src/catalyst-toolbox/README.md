@@ -6,27 +6,12 @@ Catalyst Tools, cli's and scripts related
 
 Rust based CLI utility for catalyst operations.
 
-Build with `cargo build` and run, or run with `cargo run -- PARAMS` as per the examples.
+Build the tool binary with `cargo build`.
+The binary can be installed with `cargo install`, or run in the tree with
+`cargo run`.
 
-```shell
-catalyst-toolbox 0.1.0
-
-USAGE:
-    catalyst-toolbox [FLAGS] [SUBCOMMAND]
-
-FLAGS:
-        --full-version      display full version details (software version, source version, targets and compiler used)
-    -h, --help              Prints help information
-        --source-version    display the sources version, allowing to check the source's hash used to compile this executable. this option is useful for scripting retrieving the logs of the version of this application
-    -V, --version           Prints version information
-
-SUBCOMMANDS:
-    help                 Prints this message or the help of the given subcommand(s)
-    logs                 Download, compare and get stats from sentry and persistent fragment logs
-    push                 Send push notification to pushwoosh service
-    recover              Tally recovery utility
-    rewards              Rewards related operations
-```
+Run `catalyst-toolbox --help` (or `cargo run -- --help`) to see the list of
+available commands. Detailed descriptions of commands are provided below.
 
 ### Supported operations
 

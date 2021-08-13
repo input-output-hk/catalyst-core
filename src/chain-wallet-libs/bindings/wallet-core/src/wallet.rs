@@ -192,7 +192,10 @@ impl Wallet {
         self.account.confirm(&id);
     }
 
-    /// Get IDs of all pending transactions produced by `convert`.
+    /// Get IDs of all pending transactions. Pending transactions
+    /// can be produced by `convert`, and remain in this list until confirmed
+    /// with the `confirm_transaction` method, or removed
+    /// with the `remove_pending_transaction` method.
     ///
     // TODO: this might need to be updated to have a more user friendly
     //       API. Currently do this for simplicity

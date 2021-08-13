@@ -63,6 +63,8 @@ pub struct SettingsInit {
     pub discrimination: Discrimination,
     /// block_0_initial_hash is assumed to point to 32 bytes of readable memory
     pub block0_initial_hash: *const u8,
+    /// Unix timestamp of the genesis block.
+    /// Provides an anchor to compute block dates from calendar date/time.
     pub block0_date: u64,
     pub slot_duration: u8,
     pub time_era: TimeEra,

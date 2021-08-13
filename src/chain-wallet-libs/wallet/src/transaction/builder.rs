@@ -5,8 +5,8 @@ use chain_impl_mockchain::{
     block::BlockDate,
     fee::FeeAlgorithm as _,
     transaction::{
-        Balance, Input, Output, Payload, SetAuthData, SetIOs, SetValidity, SetWitnesses,
-        Transaction, TxBuilderState,
+        Balance, Input, Output, Payload, SetAuthData, SetIOs, SetTtl, SetWitnesses, Transaction,
+        TxBuilderState,
     },
     value::Value,
 };
@@ -155,7 +155,7 @@ impl<'settings, P: Payload> TransactionBuilder<'settings, P> {
         Ok(builder.set_payload_auth(&auth))
     }
 
-    fn set_validity(&self, builder: TxBuilderState<SetValidity<P>>) -> TxBuilderState<SetIOs<P>> {
+    fn set_validity(&self, builder: TxBuilderState<SetTtl<P>>) -> TxBuilderState<SetIOs<P>> {
         builder.set_expiry_date(self.validity)
     }
 

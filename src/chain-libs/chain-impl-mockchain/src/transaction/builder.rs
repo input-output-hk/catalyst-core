@@ -27,7 +27,7 @@ impl<T> Clone for TxBuilderState<T> {
 }
 
 pub enum SetPayload {}
-pub struct SetValidity<P>(PhantomData<P>);
+pub struct SetTtl<P>(PhantomData<P>);
 pub struct SetIOs<P>(PhantomData<P>);
 pub struct SetWitnesses<P>(PhantomData<P>);
 pub struct SetAuthData<P: Payload>(PhantomData<P>);
@@ -73,7 +73,7 @@ impl<State> TxBuilderState<State> {
 
 impl TxBuilderState<SetPayload> {
     /// Set the payload of this transaction
-    pub fn set_payload<P: Payload>(mut self, payload: &P) -> TxBuilderState<SetValidity<P>> {
+    pub fn set_payload<P: Payload>(mut self, payload: &P) -> TxBuilderState<SetTtl<P>> {
         if P::HAS_DATA {
             self.data.extend_from_slice(payload.payload_data().as_ref());
         }
@@ -85,12 +85,12 @@ impl TxBuilderState<SetPayload> {
         }
     }
 
-    pub fn set_nopayload(self) -> TxBuilderState<SetValidity<NoExtra>> {
+    pub fn set_nopayload(self) -> TxBuilderState<SetTtl<NoExtra>> {
         self.set_payload(&NoExtra)
     }
 }
 
-impl<P> TxBuilderState<SetValidity<P>> {
+impl<P> TxBuilderState<SetTtl<P>> {
     pub fn set_expiry_date(mut self, valid_until: BlockDate) -> TxBuilderState<SetIOs<P>> {
         fn write_date(data: &mut Vec<u8>, date: BlockDate) {
             data.extend_from_slice(&date.epoch.to_be_bytes());

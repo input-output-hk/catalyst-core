@@ -76,15 +76,6 @@ where
         self.states.contains_key(key)
     }
 
-    /// get the underlying State associated to the given key
-    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<(&S, Status)>
-    where
-        K: Borrow<Q>,
-        Q: Hash + Eq,
-    {
-        self.states.get(key).map(|s| (&s.state, s.status))
-    }
-
     /// push a new **unconfirmed** state in the States
     pub fn push(&mut self, key: K, state: S) {
         let state = StateRef::new(key.clone(), state, Status::Pending);

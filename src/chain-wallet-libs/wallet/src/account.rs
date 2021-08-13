@@ -130,9 +130,11 @@ impl Wallet {
     pub fn unconfirmed_value(&self) -> Option<Value> {
         let s = self.state.last_state();
 
-        Some(s)
-            .filter(|s| !s.is_confirmed())
-            .map(|s| s.state().value)
+        if s.is_confirmed() {
+            None
+        } else {
+            Some(s.state().value)
+        }
     }
 
     pub fn new_transaction(&mut self, needed_input: Value) -> Result<WalletBuildTx, Error> {

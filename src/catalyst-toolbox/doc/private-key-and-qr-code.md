@@ -53,6 +53,4 @@ Algorithm:
    * Use the symmetric encryption key derived in step 3
    * Use the NONCE
 
-Outputs:
-* Encode the result in the format defined in the previous section
-* Memzero everything else
+Outputs: encode the result in the format defined in the previous section.

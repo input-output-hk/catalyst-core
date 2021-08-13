@@ -16,7 +16,8 @@ use wallet_core::{
         pending_transactions_delete, pending_transactions_get, pending_transactions_len,
         settings::{
             settings_block0_hash, settings_discrimination, settings_fees, settings_new,
-            Discrimination, LinearFee, PerCertificateFee, PerVoteCertificateFee, TimeEra,
+            Discrimination, LinearFee, PerCertificateFee, PerVoteCertificateFee, SettingsInit,
+            TimeEra,
         },
         symmetric_cipher_decrypt,
         time::{block_date_from_system_time, max_epiration_date, BlockDate},
@@ -287,18 +288,17 @@ pub extern "system" fn Java_com_iohk_jormungandrwallet_Settings_build(
 
     let mut settings_out = std::ptr::null_mut();
 
-    let result = unsafe {
-        settings_new(
-            linear_fees,
-            discrimination,
-            bytes.as_mut_ptr() as *mut u8,
-            block0_date as u64,
-            slot_duration,
-            time_era,
-            transaction_max_expiry_epochs,
-            &mut settings_out as *mut *mut Settings,
-        )
+    let settings_init = SettingsInit {
+        fees: linear_fees,
+        discrimination,
+        block0_initial_hash: bytes.as_mut_ptr() as *mut u8,
+        block0_date: block0_date as u64,
+        slot_duration,
+        time_era,
+        transaction_max_expiry_epochs,
     };
+
+    let result = unsafe { settings_new(settings_init, &mut settings_out as *mut *mut Settings) };
 
     if let Some(error) = result.error() {
         let _ = env.throw(error.to_string());

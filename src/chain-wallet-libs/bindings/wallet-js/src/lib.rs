@@ -82,7 +82,8 @@ impl Wallet {
     /// You can also use this function to recover a wallet even after you have
     /// transferred all the funds to the new format (see the `convert` method).
     ///
-    /// The mnemonics should be in English, or normalized using NFKD.
+    /// The mnemonics should be in the normalized Unicode form NFKD.
+    /// A string of plain English words satisfies this requirement.
     pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Wallet, JsValue> {
         wallet_core::Wallet::recover(mnemonics, password)
             .map_err(|e| JsValue::from(e.to_string()))

@@ -192,7 +192,7 @@ impl Wallet {
         self.account.confirm(&id);
     }
 
-    /// Get access to pending transactions that will change the wallet state.
+    /// Get IDs of all pending transactions produced by `convert`.
     ///
     // TODO: this might need to be updated to have a more user friendly
     //       API. Currently do this for simplicity

@@ -99,8 +99,6 @@ typedef struct LinearFee
   struct PerVoteCertificateFee per_vote_certificate_fees;
 } LinearFee;
 
-typedef uint64_t Block0Date;
-
 typedef uint32_t Epoch;
 
 typedef uint64_t Slot;
@@ -120,7 +118,11 @@ typedef struct SettingsInit
    * block_0_initial_hash is assumed to point to 32 bytes of readable memory
    */
   const uint8_t *block0_initial_hash;
-  Block0Date block0_date;
+  /**
+   * Unix timestamp of the genesis block.
+   * Provides an anchor to compute block dates from calendar date/time.
+   */
+  uint64_t block0_date;
   uint8_t slot_duration;
   struct TimeEra time_era;
   uint8_t transaction_max_expiry_epochs;

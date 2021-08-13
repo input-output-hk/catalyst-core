@@ -57,15 +57,13 @@ impl From<TimeEra> for chain_time::TimeEra {
     }
 }
 
-type Block0Date = u64;
-
 #[repr(C)]
 pub struct SettingsInit {
     pub fees: LinearFee,
     pub discrimination: Discrimination,
     /// block_0_initial_hash is assumed to point to 32 bytes of readable memory
     pub block0_initial_hash: *const u8,
-    pub block0_date: Block0Date,
+    pub block0_date: u64,
     pub slot_duration: u8,
     pub time_era: TimeEra,
     pub transaction_max_expiry_epochs: u8,

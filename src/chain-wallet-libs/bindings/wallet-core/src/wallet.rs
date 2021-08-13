@@ -43,7 +43,7 @@ impl Wallet {
     ///
     /// * `mnemonics`: a UTF-8 string (already normalized NFKD) with space-separated words in English;
     /// * `password`: the password (any string of bytes).
-    /// 
+    ///
     /// # Errors
     ///
     /// The function may fail if:
@@ -99,9 +99,9 @@ impl Wallet {
             builder.add_key(SecretKey::from_binary(key.as_ref()).unwrap())
         });
 
-        let free_keys = builder
-            .build_free_utxos()
-            .map_err(|err| Error::invalid_input("invalid secret keys for UTxO retrieval").with(err))?;
+        let free_keys = builder.build_free_utxos().map_err(|err| {
+            Error::invalid_input("invalid secret keys for UTxO retrieval").with(err)
+        })?;
 
         let account = builder
             .build_wallet()

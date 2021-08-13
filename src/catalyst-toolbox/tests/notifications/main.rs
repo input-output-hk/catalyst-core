@@ -24,7 +24,7 @@ pub fn sanity_notification() {
 
     let result = Command::cargo_bin("catalyst-toolbox")
         .unwrap()
-        .arg("push-notification")
+        .arg("push")
         .arg("send")
         .arg("from-args")
         .arg("--access-token")

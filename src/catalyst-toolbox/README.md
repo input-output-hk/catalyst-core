@@ -23,7 +23,7 @@ FLAGS:
 SUBCOMMANDS:
     help                 Prints this message or the help of the given subcommand(s)
     logs                 Download, compare and get stats from sentry and persistent fragment logs
-    push-notification    Send push notification to pushwoosh service
+    push                 Send push notification to pushwoosh service
     recover              Tally recovery utility
     rewards              Rewards related operations
 ```
@@ -64,7 +64,7 @@ You can send a push notification directly from `catalyst-toolbox-cli` with:
 
 ```shell
 USAGE:
-    catalyst-toolbox push-notification send <SUBCOMMAND>
+    catalyst-toolbox push send <SUBCOMMAND>
 
 FLAGS:
     -h, --help       Prints help information
@@ -84,7 +84,7 @@ a preloaded json file as input.
 
 ```shell
 USAGE:
-    catalyst-toolbox push-notification send from-args [FLAGS] [OPTIONS] --access-token <acces
+    catalyst-toolbox push send from-args [FLAGS] [OPTIONS] --access-token <acces
 s-token> --application <application> [content-path]
 
 FLAGS:
@@ -115,7 +115,7 @@ Should be a message surrounded by `"`, json style. For example:
 "Hello pushwoosh app!"
 ```
 
-###### Plain string
+###### Multi-language content
 A json style object with international language code as keys and message as value:
 
 ```json
@@ -131,7 +131,7 @@ A json style object with international language code as keys and message as valu
 
 ```shell
 USAGE:
-    catalyst-toolbox push-notification send from-json [OPTIONS] [content-path]
+    catalyst-toolbox push send from-json [OPTIONS] [content-path]
 
 FLAGS:
     -h, --help       Prints help information

@@ -24,7 +24,7 @@ pub struct Settings {
 impl Settings {
     pub fn new(block: &Block) -> Result<Self, Error> {
         let header_id = block.header.id();
-        let mut ledger = Ledger::new(header_id, block.contents.iter())?;
+        let ledger = Ledger::new(header_id, block.contents.iter())?;
 
         let static_parameters = ledger.get_static_parameters().clone();
         let parameters = ledger.get_ledger_parameters();

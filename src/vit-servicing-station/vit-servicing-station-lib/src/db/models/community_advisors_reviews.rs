@@ -5,8 +5,9 @@ use diesel::prelude::*;
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
+use strum_macros::EnumIter;
 
-#[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq, EnumIter)]
 pub enum ReviewTag {
     Alignment,
     Verifiability,
@@ -62,7 +63,7 @@ impl FromStr for ReviewTag {
             "verifiability" => Ok(Self::Verifiability),
             "feasibility" => Ok(Self::Feasibility),
             "impact" => Ok(Self::Impact),
-            "Auditability" => Ok(Self::Auditability),
+            "auditability" => Ok(Self::Auditability),
             tag => Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
                 format!("Unrecognized review tag {}", tag),
@@ -112,6 +113,7 @@ pub mod test {
     use super::*;
     use crate::db::DbConnectionPool;
     use diesel::RunQueryDsl;
+    use strum::IntoEnumIterator;
 
     pub fn get_test_advisor_review_with_proposal_id(proposal_id: i32) -> AdvisorReview {
         AdvisorReview {
@@ -130,5 +132,16 @@ pub mod test {
             .values(review.clone().values())
             .execute(&connection)
             .unwrap();
+    }
+
+    #[test]
+    pub fn advisor_review_bijection() {
+        for tag in ReviewTag::iter() {
+            assert_eq!(
+                tag,
+                ReviewTag::from_str(&tag.to_string())
+                    .expect(&format!("cannot convert {:?} to string", tag))
+            );
+        }
     }
 }

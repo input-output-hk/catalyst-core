@@ -176,8 +176,8 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             challenge_type: self.challenge_type(),
             title: CatchPhase().fake::<String>(),
             description: Buzzword().fake::<String>(),
-            rewards_total: "0".to_string(),
-            proposers_rewards: "100000".to_string(),
+            rewards_total: (self.generator.next_u32() % 10000).to_string(),
+            proposers_rewards: (self.generator.next_u32() % 10000).to_string(),
             challenge_url: self.gen_http_address(),
             fund_id: None,
         };

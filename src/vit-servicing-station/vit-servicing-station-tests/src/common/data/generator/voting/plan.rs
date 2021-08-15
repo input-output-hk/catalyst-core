@@ -246,7 +246,7 @@ impl ValidVotePlanGenerator {
 
                 let proposal = Proposal {
                     internal_id: proposal_template.internal_id.parse().unwrap(),
-                    proposal_id: proposal.id().to_string(),
+                    proposal_id: proposal_template.proposal_id.to_string(),
                     proposal_category: Category {
                         category_id: "".to_string(),
                         category_name: proposal_template.category_name,

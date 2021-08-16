@@ -114,27 +114,12 @@ impl VitStationRestClient {
         })
     }
 
-    pub fn review(&self, id: &str) -> Result<AdvisorReview, RestError> {
+    pub fn review(&self, id: &str) -> Result<Vec<AdvisorReview>, RestError> {
         let response = self.review_raw(id)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;
         self.logger.log_text(&content);
         serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
-    }
-
-    pub fn reviews(&self) -> Result<Vec<AdvisorReview>, RestError> {
-        let response = self.reviews_raw()?;
-        self.verify_status_code(&response)?;
-        let content = response.text()?;
-        self.logger.log_text(&content);
-        serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
-    }
-
-    pub fn reviews_raw(&self) -> Result<Response, RestError> {
-        let response = self
-            .get(&self.path_builder.reviews())
-            .map_err(RestError::RequestError)?;
-        Ok(response)
     }
 
     pub fn review_raw(&self, id: &str) -> Result<Response, RestError> {
@@ -299,7 +284,7 @@ impl RestPathBuilder {
     }
 
     pub fn review(&self, id: &str) -> String {
-        self.path(&format!("review/{}", id))
+        self.path(&format!("reviews/{}", id))
     }
 
     pub fn reviews(&self) -> String {

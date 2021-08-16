@@ -1,7 +1,8 @@
 mod private;
 mod public;
 
-use iapyx::{AdvisorReview, Challenge, Fund, Proposal};
+use iapyx::WalletBackend;
+use iapyx::{Challenge, Fund, Proposal};
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::scenario::Controller;
 use jormungandr_scenario_tests::Seed;
@@ -64,21 +65,19 @@ pub fn challenges_eq(expected_list: LinkedList<ChallengeTemplate>, actual_list: 
     }
 }
 
-pub fn reviews_eq(expected_list: LinkedList<ReviewTemplate>, actual_list: Vec<AdvisorReview>) {
-    if expected_list.len() != actual_list.len() {
-        panic!("challenges count invalid");
-    }
-
-    for (expected, actual) in expected_list.iter().zip(actual_list.iter()) {
-        assert_eq!(
-            expected.proposal_id.to_string(),
-            actual.proposal_id.to_string(),
-            "proposal id"
-        );
-        assert_eq!(expected.rating_given, actual.rating_given, "rating given");
-        assert_eq!(expected.assessor, actual.assessor, "rating_given");
-        assert_eq!(expected.note, actual.note.to_string(), "note");
-        assert_eq!(expected.tag.to_string(), actual.tag.to_string(), "tag");
+pub fn reviews_eq(expected_list: LinkedList<ReviewTemplate>, backend_client: WalletBackend) {
+    for expected in expected_list.iter() {
+        for actual in backend_client.review(&expected.proposal_id).unwrap() {
+            assert_eq!(
+                expected.proposal_id.to_string(),
+                actual.proposal_id.to_string(),
+                "proposal id"
+            );
+            assert_eq!(expected.rating_given, actual.rating_given, "rating given");
+            assert_eq!(expected.assessor, actual.assessor, "rating_given");
+            assert_eq!(expected.note, actual.note.to_string(), "note");
+            assert_eq!(expected.tag.to_string(), actual.tag.to_string(), "tag");
+        }
     }
 }
 

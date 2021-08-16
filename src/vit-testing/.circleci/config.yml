@@ -78,7 +78,7 @@ jobs:
 
             cd vit-servicing-station
 
-            git checkout a4aa65035a019268093255ad16caf360fc59b82f
+            git checkout 02d6274e878b3b6a411ae8cb68357c00320229c4
       - run:
           name: install vit-station-service
           command: |
@@ -150,7 +150,7 @@ commands:
 
             cd vit-servicing-station
 
-            git checkout a4aa65035a019268093255ad16caf360fc59b82f
+            git checkout 02d6274e878b3b6a411ae8cb68357c00320229c4
       - run:
           name: install vit-station-service
           command: |

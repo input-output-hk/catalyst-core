@@ -75,12 +75,11 @@ pub fn public_vote_multiple_vote_plans() {
     let actual_fund = backend_client.funds().unwrap();
     let actual_challenges = backend_client.challenges().unwrap();
     let actual_proposals = backend_client.proposals().unwrap();
-    let actual_reviews = backend_client.reviews().unwrap();
 
     funds_eq(expected_fund, actual_fund);
     challenges_eq(expected_challenges, actual_challenges);
     proposals_eq(expected_proposals, actual_proposals);
-    reviews_eq(expected_reviews, actual_reviews);
+    reviews_eq(expected_reviews, backend_client);
 
     vit_station.shutdown();
     wallet_proxy.shutdown();

@@ -131,8 +131,8 @@ impl WalletBackend {
         Ok(self.vit_client.funds()?)
     }
 
-    pub fn reviews(&self) -> Result<Vec<AdvisorReview>, WalletBackendError> {
-        Ok(self.vit_client.reviews()?)
+    pub fn review(&self, proposal_id: &str) -> Result<Vec<AdvisorReview>, WalletBackendError> {
+        Ok(self.vit_client.review(proposal_id)?)
     }
 
     pub fn challenges(&self) -> Result<Vec<Challenge>, WalletBackendError> {

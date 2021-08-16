@@ -6,19 +6,28 @@ use std::str::FromStr;
 
 use crate::data::vitup_setup;
 use jortestkit::prelude::read_file;
+use vit_servicing_station_tests::common::data::parse_funds;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::QuickVitBackendSettingsBuilder;
 
 #[test]
 pub fn private_vote_multiple_vote_plans() {
+    let funds_path = PathBuf::from_str("../resources/tests/example/funds.json").unwrap();
     let mut template_generator = ExternalValidVotingTemplateGenerator::new(
         PathBuf::from_str("../resources/tests/example/proposals.json").unwrap(),
         PathBuf::from_str("../resources/tests/example/challenges.json").unwrap(),
-        PathBuf::from_str("../resources/tests/example/funds.json").unwrap(),
+        funds_path.clone(),
         PathBuf::from_str("../resources/tests/example/review.json").unwrap(),
     )
     .unwrap();
+    let expected_funds = parse_funds(funds_path).unwrap();
+
+    if expected_funds.len() > 1 {
+        panic!("more than 1 expected fund is not supported");
+    }
+
+    let expected_fund = expected_funds.iter().next().unwrap().clone();
 
     let endpoint = "127.0.0.1:8080";
     let testing_directory = TempDir::new().unwrap().into_persistent();
@@ -27,12 +36,12 @@ pub fn private_vote_multiple_vote_plans() {
         .vote_start_epoch(0)
         .tally_start_epoch(1)
         .tally_end_epoch(2)
-        .fund_id(1)
+        .fund_id(expected_fund.id)
         .slot_duration_in_seconds(2)
         .slots_in_epoch_count(30)
         .proposals_count(template_generator.proposals_count() as u32)
         .challenges_count(template_generator.challenges_count() as usize)
-        .voting_power(100)
+        .voting_power(expected_fund.threshold.unwrap() as u64)
         .private(true);
 
     let title = quick_setup.title().clone();

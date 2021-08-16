@@ -21,6 +21,7 @@ chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", bran
 chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chrono = "0.4"
 jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }

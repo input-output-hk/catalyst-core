@@ -273,8 +273,8 @@ fn replay_not_counted() {
         .unwrap();
     dbg!(&tally);
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
-    assert_eq!(tally.result().unwrap().results()[1], 0.into());
-    assert!(tally.result().unwrap().results()[2] > 0.into());
+    assert!(tally.result().unwrap().results()[1] > 0.into());
+    assert_eq!(tally.result().unwrap().results()[2], 0.into());
     assert_eq!(failed_fragments.len(), 1);
 }
 

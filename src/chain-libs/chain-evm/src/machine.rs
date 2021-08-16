@@ -44,7 +44,7 @@ impl VirtualMachine {
         }
     }
     /// Returns an initialized instance of `evm::executor::StackExecutor`.
-    pub fn executor<'backend, 'config>(
+    fn executor<'backend, 'config>(
         &'backend self,
         gas_limit: u64,
         config: &'config Config,
@@ -54,7 +54,7 @@ impl VirtualMachine {
         StackExecutor::new(memory_stack_state, config)
     }
     /// Returns an initialized instance of `evm::Runtime`.
-    pub fn runtime<'config>(
+    fn runtime<'config>(
         &self,
         code: Rc<Vec<u8>>,
         data: Rc<Vec<u8>>,

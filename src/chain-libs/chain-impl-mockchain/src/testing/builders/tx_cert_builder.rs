@@ -43,17 +43,13 @@ impl TestTxCertBuilder {
 
     fn set_initial_ios<P: Payload>(
         &self,
-        current_date: BlockDate,
+        valid_until: BlockDate,
         builder: TxBuilderState<SetTtl<P>>,
         funder: &Wallet,
         inputs: &[Input],
         outputs: &[OutputAddress],
         should_make_witness: bool,
     ) -> TxBuilderState<SetAuthData<P>> {
-        let valid_until = BlockDate {
-            epoch: current_date.epoch + 1,
-            slot_id: current_date.slot_id,
-        };
         //utxo not supported yet
         let builder = builder
             .set_expiry_date(valid_until)
@@ -76,7 +72,7 @@ impl TestTxCertBuilder {
 
     fn fragment(
         &self,
-        current_date: BlockDate,
+        valid_until: BlockDate,
         cert: &Certificate,
         keys: Vec<EitherEd25519SecretKey>,
         inputs: &[Input],
@@ -87,7 +83,7 @@ impl TestTxCertBuilder {
         match cert {
             Certificate::StakeDelegation(s) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(s),
                     &funder,
                     inputs,
@@ -103,7 +99,7 @@ impl TestTxCertBuilder {
             }
             Certificate::PoolRegistration(s) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(s),
                     &funder,
                     inputs,
@@ -116,7 +112,7 @@ impl TestTxCertBuilder {
             }
             Certificate::PoolRetirement(s) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(s),
                     &funder,
                     inputs,
@@ -129,7 +125,7 @@ impl TestTxCertBuilder {
             }
             Certificate::PoolUpdate(s) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(s),
                     &funder,
                     inputs,
@@ -142,7 +138,7 @@ impl TestTxCertBuilder {
             }
             Certificate::OwnerStakeDelegation(s) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(s),
                     &funder,
                     inputs,
@@ -154,7 +150,7 @@ impl TestTxCertBuilder {
             }
             Certificate::VotePlan(vp) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(vp),
                     &funder,
                     inputs,
@@ -167,7 +163,7 @@ impl TestTxCertBuilder {
             }
             Certificate::VoteCast(vp) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(vp),
                     &funder,
                     inputs,
@@ -179,7 +175,7 @@ impl TestTxCertBuilder {
             }
             Certificate::VoteTally(vt) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(vt),
                     &funder,
                     inputs,
@@ -192,7 +188,7 @@ impl TestTxCertBuilder {
             }
             Certificate::EncryptedVoteTally(vote_tally) => {
                 let builder = self.set_initial_ios(
-                    current_date,
+                    valid_until,
                     TxBuilder::new().set_payload(vote_tally),
                     &funder,
                     inputs,
@@ -208,7 +204,7 @@ impl TestTxCertBuilder {
 
     pub fn make_transaction<'a, T>(
         self,
-        date: BlockDate,
+        valid_until: BlockDate,
         signers: T,
         certificate: &Certificate,
     ) -> Fragment
@@ -218,7 +214,7 @@ impl TestTxCertBuilder {
         let mut remainder = signers.into_iter();
         let funder = remainder.next().expect("needs at least one signer");
         self.make_transaction_different_signers(
-            date,
+            valid_until,
             funder,
             iter::once(funder).chain(remainder),
             certificate,
@@ -227,7 +223,7 @@ impl TestTxCertBuilder {
 
     pub fn make_transaction_different_signers<'a, T>(
         self,
-        date: BlockDate,
+        valid_until: BlockDate,
         funder: &'a Wallet,
         signers: T,
         certificate: &Certificate,
@@ -237,7 +233,7 @@ impl TestTxCertBuilder {
     {
         let keys = signers.into_iter().map(|x| x.private_key()).collect();
         let input = funder.make_input_with_value(self.fee(certificate));
-        self.fragment(date, certificate, keys, &[input], &[], true, funder)
+        self.fragment(valid_until, certificate, keys, &[input], &[], true, funder)
     }
 }
 
@@ -310,7 +306,7 @@ pub fn pool_owner_signed<P: Payload>(
 /// in order to test robustness of ledger
 pub struct FaultTolerantTxCertBuilder {
     builder: TestTxCertBuilder,
-    date: BlockDate,
+    valid_until: BlockDate,
     cert: Certificate,
     funder: Wallet,
 }
@@ -320,14 +316,14 @@ impl FaultTolerantTxCertBuilder {
         block0_hash: HeaderId,
         fee: LinearFee,
         cert: Certificate,
-        date: BlockDate,
+        valid_until: BlockDate,
         funder: Wallet,
     ) -> Self {
         Self {
             builder: TestTxCertBuilder::new(block0_hash, fee),
             cert,
             funder,
-            date,
+            valid_until,
         }
     }
 
@@ -337,7 +333,7 @@ impl FaultTolerantTxCertBuilder {
             .funder
             .make_input_with_value(self.builder.fee(&self.cert));
         self.builder.fragment(
-            self.date,
+            self.valid_until,
             &self.cert,
             keys,
             &[input],
@@ -353,7 +349,7 @@ impl FaultTolerantTxCertBuilder {
         let input = self.funder.make_input_with_value(input_value);
         let output = self.funder.make_output_with_value(Value(2));
         self.builder.fragment(
-            self.date,
+            self.valid_until,
             &self.cert,
             keys,
             &[input],
@@ -369,7 +365,7 @@ impl FaultTolerantTxCertBuilder {
         let input = self.funder.make_input_with_value(input_value);
         let output = self.funder.make_output_with_value(Value(1));
         self.builder.fragment(
-            self.date,
+            self.valid_until,
             &self.cert,
             keys,
             &[input],
@@ -385,7 +381,7 @@ impl FaultTolerantTxCertBuilder {
             .funder
             .make_output_with_value(self.builder.fee(&self.cert));
         self.builder.fragment(
-            self.date,
+            self.valid_until,
             &self.cert,
             keys,
             &[],
@@ -401,7 +397,7 @@ impl FaultTolerantTxCertBuilder {
             .funder
             .make_input_with_value(self.builder.fee(&self.cert));
         self.builder.fragment(
-            self.date,
+            self.valid_until,
             &self.cert,
             keys,
             &[input],
@@ -417,7 +413,7 @@ impl FaultTolerantTxCertBuilder {
             .funder
             .make_input_with_value(self.builder.fee(&self.cert));
         self.builder.fragment(
-            self.date,
+            self.valid_until,
             &self.cert,
             keys,
             &[input],

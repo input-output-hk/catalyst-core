@@ -96,19 +96,32 @@ where
     }
 
     fn pop_old_confirmed_states(&mut self) {
-        // maybe popping and re-inserting is better?
-        let remove: Vec<K> = self
-            .states
-            .iter()
-            .take_while(|(_, v)| v.is_confirmed())
-            .map(|(k, _)| k.clone())
-            .collect();
+        let mut stack = std::collections::VecDeque::with_capacity(2);
 
-        if let Some(elements_to_remove) = remove.len().checked_sub(1) {
-            for k in &remove[0..elements_to_remove] {
-                self.states.remove(k);
+        loop {
+            if stack.len() == 2 {
+                stack.pop_front();
+            }
+
+            if let Some((key, state)) = self.states.pop_front() {
+                let is_pending = state.is_pending();
+
+                stack.push_back((key, state));
+
+                if is_pending {
+                    break;
+                }
+            } else {
+                break;
             }
         }
+
+        for (key, state) in stack.drain(..).rev() {
+            self.states.insert(key.clone(), state);
+            self.states.to_front(&key);
+        }
+
+        debug_assert!(self.states.front().unwrap().1.is_confirmed());
     }
 }
 

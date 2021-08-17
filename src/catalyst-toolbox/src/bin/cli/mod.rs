@@ -41,8 +41,7 @@ pub enum CatalystCommand {
     QrCode(kedqr::QrCodeCmd),
     /// Interact with the Idescale API
     Ideascale(ideascale::Ideascale),
-
-    /// Jormungandr archival tool
+    /// Dump information related to catalyst fund
     Archive(archive::Archive),
 }
 

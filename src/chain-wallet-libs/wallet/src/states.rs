@@ -96,29 +96,23 @@ where
     }
 
     fn pop_old_confirmed_states(&mut self) {
-        let mut stack = std::collections::VecDeque::with_capacity(2);
-
         loop {
-            if stack.len() == 2 {
-                stack.pop_front();
-            }
+            let (key, state) = self.states.pop_front().unwrap();
 
-            if let Some((key, state)) = self.states.pop_front() {
-                let is_pending = state.is_pending();
+            let finished = self
+                .states
+                .front()
+                .map(|(_, state)| state.is_pending())
+                .unwrap_or(true);
 
-                stack.push_back((key, state));
-
-                if is_pending {
-                    break;
-                }
-            } else {
+            if finished {
+                // unfortunately, I don't see an api to insert directly at the beginning, so I
+                // don't know how to avoid cloning the key. Calling back() and then to_front()
+                // won't satisfy the borrow checker, of course.
+                self.states.insert(key.clone(), state);
+                self.states.to_front(&key);
                 break;
             }
-        }
-
-        for (key, state) in stack.drain(..).rev() {
-            self.states.insert(key.clone(), state);
-            self.states.to_front(&key);
         }
 
         debug_assert!(self.states.front().unwrap().1.is_confirmed());

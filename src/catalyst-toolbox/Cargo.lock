@@ -322,6 +322,7 @@ dependencies = [
  "chain-crypto",
  "chain-impl-mockchain",
  "chain-ser",
+ "chain-storage",
  "chain-time",
  "chrono",
  "csv",

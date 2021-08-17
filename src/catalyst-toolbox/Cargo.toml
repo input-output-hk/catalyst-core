@@ -19,6 +19,7 @@ chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-storage = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

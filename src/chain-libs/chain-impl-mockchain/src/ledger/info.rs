@@ -19,9 +19,10 @@ impl Ledger {
             leaders_log: _,
             votes: _,
             governance: _,
+            evm,
         } = self;
 
-        vec![
+        let mut stats = vec![
             format!(
                 "utxos   : #{} Total={:?}",
                 utxos.iter().count(),
@@ -42,7 +43,11 @@ impl Ledger {
                 multisig.iter_accounts().count(),
                 Value::sum(multisig.iter_accounts().map(|x| x.1.value))
             ),
-        ]
+        ];
+
+        stats.extend(evm.stats());
+
+        stats
     }
 
     pub fn info_eq(&self, other: &Self) -> Vec<String> {
@@ -62,6 +67,7 @@ impl Ledger {
             leaders_log: leaders_log1,
             votes: votes1,
             governance: governance1,
+            evm: evm1,
         } = self;
 
         let Ledger {
@@ -80,9 +86,10 @@ impl Ledger {
             leaders_log: leaders_log2,
             votes: votes2,
             governance: governance2,
+            evm: evm2,
         } = other;
 
-        vec![
+        let mut info = vec![
             format!("utxos-same: {}", utxos1 == utxos2),
             format!("oldutxos-same: {}", oldutxos1 == oldutxos2),
             format!("accounts-same: {}", accounts1 == accounts2),
@@ -98,6 +105,10 @@ impl Ledger {
             format!("leaders-log-same: {}", leaders_log1 == leaders_log2),
             format!("vote-plans: {}", votes1 == votes2),
             format!("governance: {}", governance1 == governance2),
-        ]
+        ];
+
+        info.extend(evm1.info_eq(evm2));
+
+        info
     }
 }

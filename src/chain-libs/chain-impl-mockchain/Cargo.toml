@@ -12,6 +12,7 @@ chain-crypto = { path = "../chain-crypto" }
 chain-ser = { path = "../chain-ser" }
 chain-time = { path = "../chain-time" }
 chain-vote = { path = "../chain-vote" }
+chain-evm = { path = "../chain-evm", optional = true }
 typed-bytes = { path = "../typed-bytes" }
 rand_core = "0.6"
 imhamt = { path = "../imhamt" }
@@ -41,6 +42,7 @@ property-test-api = [
         "rand_chacha",
         "ed25519-bip32"]
 with-bench = ["criterion","property-test-api"]
+evm = ["chain-evm"]
 
 [dev-dependencies]
 quickcheck = "0.9"

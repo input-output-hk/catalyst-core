@@ -6,7 +6,7 @@ pub type Nonce = U256;
 pub type Balance = U256;
 
 /// A represantation of an EVM account.
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct Account {
     /// Account nonce. A number of value transfers from this account.
     pub nonce: Nonce,

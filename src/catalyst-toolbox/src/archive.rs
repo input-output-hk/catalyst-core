@@ -21,6 +21,9 @@ pub enum Error {
 
     #[error(transparent)]
     Csv(#[from] csv::Error),
+
+    #[error("Only accounts inputs are supported not Utxos")]
+    UnhandledInput,
 }
 
 #[derive(Serialize)]
@@ -64,7 +67,7 @@ pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) ->
                     AccountIdentifier::from(account_id)
                         .into_address(Discrimination::Production, "ca")
                 } else {
-                    panic!();
+                    return Err(Error::UnhandledInput);
                 };
                 let certificate = tx.as_slice().payload().into_payload();
 

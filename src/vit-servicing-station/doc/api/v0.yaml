@@ -111,6 +111,8 @@ paths:
               schema:
                 items:
                   $ref: "#/components/schemas/Challenge"
+        "404":
+          description: The requested challenge was not found
 
   /api/v0/challenges/{id}:
     get:
@@ -135,6 +137,27 @@ paths:
                 $ref: "#/components/schemas/ChallengeWithProposals"
         "404":
           description: The requested challenge was not found
+
+  /api/v0/reviews/{proposal_id}:
+    get:
+      operationId: getProposalReviews
+      summary: Get reviews related to a proposal
+      tags: [reviews]
+      description: |
+        Retrieves advisor reviews information for the provided proposal id.
+      parameters:
+        - in: path
+          name: proposal_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdvisorReviews"
 
 components:
   schemas:
@@ -441,3 +464,40 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Proposal"
+
+    ReviewTag:
+      type: string
+      enum:
+        - Alignment
+        - Verifiability
+        - Feasibility
+        - Impact
+        - Auditability
+
+    Review:
+      properties:
+        id:
+          type: integer
+          format: i32
+        proposal_id:
+          type: integer
+          format: i32
+        rating_given:
+          type: integer
+          format: i32
+        assessor:
+          type: string
+        note:
+          type: string
+        tag:
+          type: ReviewTag
+
+    AdvisorReviews:
+      allOf:
+        - $ref: "#/components/schemas/Review"
+        - type: object
+          properties:
+            proposals:
+              type: array
+              items:
+                $ref: "#/components/schemas/Review"

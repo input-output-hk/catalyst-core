@@ -1,10 +1,10 @@
 use crate::state::trie::Trie;
 
-use primitive_types::U256;
+use primitive_types::H256;
 
-/// Representation of a storage key. 256-bit big-endian integer.
-pub type Key = U256;
-/// Representation of a storage key. 256-bit big-endian integer.
-pub type Value = U256;
+/// Representation of a storage key. Fixed-size uninterpreted hash type with 32 bytes (256 bits) size.
+pub type Key = H256;
+/// Representation of a storage key. Fixed-size uninterpreted hash type with 32 bytes (256 bits) size.
+pub type Value = H256;
 /// In-memory representation of account storage.
 pub type Storage = Trie<Key, Value>;

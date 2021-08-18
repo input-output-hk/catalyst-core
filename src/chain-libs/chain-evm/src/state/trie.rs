@@ -1,4 +1,4 @@
-use imhamt::{Hamt, RemoveError};
+use imhamt::{Hamt, HamtIter, RemoveError};
 
 use std::collections::hash_map::DefaultHasher;
 use std::convert::Infallible;
@@ -46,6 +46,14 @@ impl<K: Clone + Hash + Eq, V: Clone> Trie<K, V> {
                 unreachable!("this error should never occur: we are not matching the removed value")
             }
         }
+    }
+
+    pub fn iter(&self) -> HamtIter<'_, K, V> {
+        self.0.iter()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 }
 

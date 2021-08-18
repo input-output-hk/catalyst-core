@@ -9,5 +9,5 @@ mod storage;
 mod trie;
 
 pub use account::{Account, AccountAddress, AccountTrie, Balance, Nonce};
-pub use storage::Storage;
+pub use storage::{Key, Storage, Value};
 pub use trie::Trie;

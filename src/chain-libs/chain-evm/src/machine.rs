@@ -43,6 +43,8 @@ impl VirtualMachine {
             logs: Default::default(),
         }
     }
+
+    #[allow(dead_code)]
     /// Returns an initialized instance of `evm::executor::StackExecutor`.
     fn executor<'backend, 'config>(
         &'backend self,
@@ -53,6 +55,8 @@ impl VirtualMachine {
         let memory_stack_state = MemoryStackState::new(metadata, self);
         StackExecutor::new(memory_stack_state, config)
     }
+
+    #[allow(dead_code)]
     /// Returns an initialized instance of `evm::Runtime`.
     fn runtime<'config>(
         &self,

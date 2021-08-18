@@ -11,6 +11,18 @@ use std::{collections::HashMap, path::Path};
 
 const MAIN_TAG: &str = "HEAD";
 
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    Storage(#[from] chain_storage::Error),
+
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
+    #[error(transparent)]
+    Csv(#[from] csv::Error),
+}
+
 #[derive(Serialize)]
 struct Vote {
     fragment_id: String,
@@ -21,25 +33,25 @@ struct Vote {
     raw_fragment: String,
 }
 
-pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) -> Result<(), ()> {
+pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) -> Result<(), Error> {
     let db = chain_storage::BlockStore::file(
         jormungandr_database,
         HeaderId::zero_hash()
             .as_bytes()
             .to_owned()
             .into_boxed_slice(),
-    )
-    .unwrap();
+    )?;
 
-    let tip_id = db.get_tag(MAIN_TAG).unwrap().unwrap();
-    let distance = db.get_block_info(tip_id.as_ref()).unwrap().chain_length();
+    // Tag should be present
+    let tip_id = db.get_tag(MAIN_TAG)?.unwrap();
+    let distance = db.get_block_info(tip_id.as_ref())?.chain_length();
 
     let mut vote_plan_files = HashMap::new();
 
-    let block_iter = db.iter(tip_id.as_ref(), distance).unwrap();
+    let block_iter = db.iter(tip_id.as_ref(), distance)?;
 
     for iter_res in block_iter {
-        let block_bin = iter_res.unwrap();
+        let block_bin = iter_res?;
         let mut buf = ReadBuf::from(block_bin.as_ref());
         let block: Block = Readable::read(&mut buf).unwrap();
 
@@ -72,16 +84,14 @@ pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) ->
                     }
                 };
 
-                writer
-                    .serialize(Vote {
-                        fragment_id: fragment_id.to_string(),
-                        caster,
-                        proposal: certificate.proposal_index(),
-                        time: block.header.block_date().to_string(),
-                        raw_fragment: hex::encode(tx.as_ref()),
-                        choice,
-                    })
-                    .unwrap();
+                writer.serialize(Vote {
+                    fragment_id: fragment_id.to_string(),
+                    caster,
+                    proposal: certificate.proposal_index(),
+                    time: block.header.block_date().to_string(),
+                    raw_fragment: hex::encode(tx.as_ref()),
+                    choice,
+                })?;
             }
         }
     }

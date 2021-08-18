@@ -1,8 +1,7 @@
-use catalyst_toolbox::archive::generate_archive_files;
+use catalyst_toolbox::archive::{generate_archive_files, Error};
 
 use structopt::StructOpt;
 
-use std::error::Error;
 use std::path::PathBuf;
 
 #[derive(Debug, StructOpt)]
@@ -15,8 +14,7 @@ pub struct Archive {
 }
 
 impl Archive {
-    pub fn exec(self) -> Result<(), Box<dyn Error>> {
-        generate_archive_files(&self.jormungandr_database, &self.output_dir).unwrap();
-        Ok(())
+    pub fn exec(self) -> Result<(), Error> {
+        generate_archive_files(&self.jormungandr_database, &self.output_dir)
     }
 }

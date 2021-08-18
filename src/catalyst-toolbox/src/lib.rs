@@ -1,3 +1,4 @@
+pub mod archive;
 pub mod ideascale;
 pub mod kedqr;
 pub mod logs;

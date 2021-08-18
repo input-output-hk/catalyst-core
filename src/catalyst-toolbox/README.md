@@ -206,7 +206,7 @@ SUBCOMMANDS:
 Import ideascale data needed to initialize vit-servicing-station database
 
 ```shell
-catalyst-toolbox.exe-ideascale-import 0.2.0
+catalyst-toolbox-ideascale-import 0.2.0
 
 USAGE:
     catalyst-toolbox ideascale import [OPTIONS] --api-token <api-token> --chain-vote-type <chain-vote-type> --fund <fund> --fund-goal <fund-goal> --output-dir <output-dir> --tags <tags> --threshold <threshold>
@@ -259,6 +259,54 @@ option.
 
 See the [protocol document](./doc/private-key-and-qr-code.md) for the format
 of the QR code payload.
+
+#### Catalyst Funds archive tool
+
+This is the tool intended to create an easy-to-read archive of information
+related to Catalyst funds.
+
+###### Usage
+
+```
+Dump information related to catalyst fund
+
+USAGE:
+    catalyst-toolbox.exe archive <jormungandr-database> <output-dir>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <jormungandr-database>    The path to the Jormungandr database to dump transactions from
+    <output-dir>              CSV output directory
+```
+
+##### Output format
+
+This tool outputs a set of CSV files. Each file has a name in the following
+format: `vote_plan_<vote plan id>.csv`.
+
+The set of columns depends on the type of a vote plan (private or public).
+
+For each type the following information is included:
+
+| Name | Description |
+| --- | --- |
+| `fragment_id` | The ID of a vote transaction (hex) |
+| `caster` | The address of the account that casted this vote |
+| `proposal` | The number of the proposal this vote was for (number) |
+| `time` | The time this vote was casted in the format `epoch.slot` |
+| `raw_fragment` | hex-encoded transaction |
+
+##### Public vote plans
+
+They carry and additional column named `choice` that carries the number of the
+option the account has voted for.
+
+##### Private vote plans
+
+_Not yet implemented._
 
 ## Python scripts
 

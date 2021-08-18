@@ -1,3 +1,4 @@
+mod archive;
 mod ideascale;
 mod kedqr;
 mod logs;
@@ -40,6 +41,8 @@ pub enum CatalystCommand {
     QrCode(kedqr::QrCodeCmd),
     /// Interact with the Idescale API
     Ideascale(ideascale::Ideascale),
+    /// Dump information related to catalyst fund
+    Archive(archive::Archive),
 }
 
 impl Cli {
@@ -68,6 +71,7 @@ impl CatalystCommand {
             Logs(logs) => logs.exec()?,
             QrCode(kedqr) => kedqr.exec()?,
             Ideascale(ideascale) => ideascale.exec()?,
+            Archive(archive) => archive.exec()?,
         };
         Ok(())
     }

@@ -1,5 +1,6 @@
 use hyper::StatusCode;
 use reqwest::blocking::Response;
+use std::collections::HashMap;
 use thiserror::Error;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
@@ -170,7 +171,10 @@ impl RestClient {
             .map_err(RestError::RequestError)
     }
 
-    pub fn advisor_reviews(&self, proposal_id: &str) -> Result<Vec<AdvisorReview>, RestError> {
+    pub fn advisor_reviews(
+        &self,
+        proposal_id: &str,
+    ) -> Result<HashMap<String, Vec<AdvisorReview>>, RestError> {
         let response = self.advisor_reviews_raw(proposal_id)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;

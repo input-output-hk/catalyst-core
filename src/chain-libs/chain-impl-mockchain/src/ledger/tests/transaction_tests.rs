@@ -81,6 +81,38 @@ pub fn transaction_fail_when_validity_out_of_range() {
 }
 
 #[test]
+pub fn transaction_fail_when_validity_too_far() {
+    const MAX_EXPIRY_EPOCHS: u8 = 5;
+
+    let mut test_ledger = LedgerBuilder::from_config(
+        ConfigBuilder::new(0).with_transcation_max_expiry_epochs(MAX_EXPIRY_EPOCHS),
+    )
+    .faucet_value(Value(1000))
+    .build()
+    .expect("cannot build test ledger");
+
+    let receiver = AddressData::utxo(Discrimination::Test);
+    let output = Output {
+        address: receiver.address,
+        value: Value(1),
+    };
+
+    let valid_until = BlockDate {
+        epoch: MAX_EXPIRY_EPOCHS as u32 + 1,
+        slot_id: 0,
+    };
+
+    let fragment = TestTxBuilder::new(test_ledger.block0_hash)
+        .move_to_outputs_from_faucet_with_validity(&mut test_ledger, Some(valid_until), &[output])
+        .get_fragment();
+
+    assert_err!(
+        TransactionMalformed(TxVerifyError::TransactionValidForTooLong),
+        test_ledger.apply_transaction(fragment, BlockDate::first())
+    );
+}
+
+#[test]
 pub fn duplicated_account_transaction() {
     let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
         .faucet_value(Value(1000))

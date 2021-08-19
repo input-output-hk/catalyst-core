@@ -57,6 +57,7 @@ pub struct ConfigBuilder {
     block0_date: Block0Date,
     consensus_version: ConsensusVersion,
     pool_capping_ratio: Ratio,
+    transcation_max_expiry_epochs: Option<u8>,
 }
 
 impl ConfigBuilder {
@@ -93,6 +94,7 @@ impl ConfigBuilder {
             kes_update_speed: 3600 * 12,
             block0_date: Block0Date(0),
             consensus_version: ConsensusVersion::Bft,
+            transcation_max_expiry_epochs: None,
         }
     }
 
@@ -201,6 +203,11 @@ impl ConfigBuilder {
         self
     }
 
+    pub fn with_transcation_max_expiry_epochs(mut self, n_epochs: u8) -> Self {
+        self.transcation_max_expiry_epochs = Some(n_epochs);
+        self
+    }
+
     fn create_single_bft_leader() -> BftLeaderId {
         let leader_prv_key: SecretKey<Ed25519Extended> = SecretKey::generate(rand_core::OsRng);
         let leader_pub_key = leader_prv_key.to_public();
@@ -244,15 +251,19 @@ impl ConfigBuilder {
             ie.push(ConfigParam::BlockContentMaxSize(block_content_max_size));
         }
 
-        if self.per_certificate_fee.is_some() {
-            ie.push(ConfigParam::PerCertificateFees(
-                self.per_certificate_fee.clone().unwrap(),
+        if let Some(per_certificate_fee) = self.per_certificate_fee {
+            ie.push(ConfigParam::PerCertificateFees(per_certificate_fee));
+        }
+
+        if let Some(per_vote_certificate_fee) = self.per_vote_certificate_fee {
+            ie.push(ConfigParam::PerVoteCertificateFees(
+                per_vote_certificate_fee,
             ));
         }
 
-        if self.per_vote_certificate_fee.is_some() {
-            ie.push(ConfigParam::PerVoteCertificateFees(
-                self.per_vote_certificate_fee.clone().unwrap(),
+        if let Some(transcation_max_expiry_epochs) = self.transcation_max_expiry_epochs {
+            ie.push(ConfigParam::TransactionMaxExpiryEpochs(
+                transcation_max_expiry_epochs,
             ));
         }
 
@@ -372,7 +383,7 @@ impl LedgerBuilder {
         if fund.is_utxo() {
             self = self.utxos(&[fund.make_output()]);
         } else {
-            self = self.faucet(&fund);
+            self = self.faucet(fund);
         }
         self
     }
@@ -531,7 +542,7 @@ impl TestLedger {
     }
 
     pub fn accounts(&self) -> &AccountLedger {
-        &self.ledger.accounts()
+        self.ledger.accounts()
     }
 
     pub fn block0_hash(&self) -> &HeaderId {
@@ -655,7 +666,7 @@ impl TestLedger {
             if selection
                 .leader(
                     &stake_pool.id(),
-                    &stake_pool.vrf().private_key(),
+                    stake_pool.vrf().private_key(),
                     self.ledger.date(),
                 )
                 .expect("cannot calculate leader")
@@ -674,9 +685,9 @@ impl TestLedger {
     }
 }
 
-impl Into<Ledger> for TestLedger {
-    fn into(self) -> Ledger {
-        self.ledger
+impl From<TestLedger> for Ledger {
+    fn from(from: TestLedger) -> Self {
+        from.ledger
     }
 }
 

@@ -33,7 +33,10 @@ pub fn get_advisor_reviews() -> Result<(), Box<dyn std::error::Error>> {
     let rest_client = server.rest_client_with_token(&hash);
 
     let actual_review = rest_client.advisor_reviews(&expected_review.proposal_id.to_string())?;
-    assert_eq!(expected_review, actual_review[0]);
+    assert_eq!(
+        expected_review,
+        actual_review.get(&expected_review.assessor).unwrap()[0]
+    );
 
     // non existing
     let empty_reviews = rest_client.advisor_reviews("0")?;

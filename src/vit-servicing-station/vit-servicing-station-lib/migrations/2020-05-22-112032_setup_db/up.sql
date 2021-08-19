@@ -95,6 +95,7 @@ CREATE VIEW full_proposals_info
 AS
 SELECT
     proposals.*,
+    reviews_count,
     proposal_simple_challenge.proposal_solution,
     proposal_community_choice_challenge.proposal_brief,
     proposal_community_choice_challenge.proposal_importance,
@@ -108,12 +109,13 @@ SELECT
     voteplans.fund_id,
     challenges.challenge_type
 FROM
-    proposals
-        INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
-        INNER JOIN challenges on challenges.id = proposals.challenge_id
-        LEFT JOIN proposal_simple_challenge
-            on proposals.proposal_id = proposal_simple_challenge.proposal_id
-            and challenges.challenge_type = 'simple'
-        LEFT JOIN proposal_community_choice_challenge
-            on proposals.proposal_id = proposal_community_choice_challenge.proposal_id
-            and challenges.challenge_type = 'community-choice'
+    INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
+          INNER JOIN challenges on challenges.id = proposals.challenge_id
+          LEFT JOIN proposal_simple_challenge
+                    on proposals.proposal_id = proposal_simple_challenge.proposal_id
+                        and challenges.challenge_type = 'simple'
+          LEFT JOIN proposal_community_choice_challenge
+                    on proposals.proposal_id = proposal_community_choice_challenge.proposal_id
+                        and challenges.challenge_type = 'community-choice'
+          LEFT JOIN (select Count(distinct assessor) as reviews_count from community_advisors_reviews group by proposal_id)
+                    on proposals.proposal_id

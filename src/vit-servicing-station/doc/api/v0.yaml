@@ -474,7 +474,7 @@ components:
         - Impact
         - Auditability
 
-    Review:
+    AdvisorReview:
       properties:
         id:
           type: integer
@@ -493,11 +493,17 @@ components:
           type: ReviewTag
 
     AdvisorReviews:
-      allOf:
-        - $ref: "#/components/schemas/Review"
-        - type: object
-          properties:
-            proposals:
-              type: array
-              items:
-                $ref: "#/components/schemas/Review"
+      type: array
+      items:
+        $ref: "#/components/schemas/Review"
+      example:
+        [
+          {
+            "id": 1,
+            "proposal_id": 1234,
+            "rating_given": 0,
+            "assessor": "za_assessor_432",
+            "note": "foo bar",
+            "tag": "Alignment"
+          }
+        ]

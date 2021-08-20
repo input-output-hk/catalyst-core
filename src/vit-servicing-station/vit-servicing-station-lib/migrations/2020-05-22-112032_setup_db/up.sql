@@ -109,6 +109,7 @@ SELECT
     voteplans.fund_id,
     challenges.challenge_type
 FROM
+     proposals
     INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
           INNER JOIN challenges on challenges.id = proposals.challenge_id
           LEFT JOIN proposal_simple_challenge

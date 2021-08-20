@@ -343,6 +343,10 @@ components:
             challenge_id:
               type: integer
               format: int32
+            reviews_count:
+              type: integer
+              format: int32
+              description: Total amount of individual reviews per assessor
             challenge_type:
               $ref: "#/components/schemas/ChallengeType"
 
@@ -485,6 +489,9 @@ components:
         rating_given:
           type: integer
           format: i32
+          minimum: 0
+          maximum: 500
+          description: Rating in range [0, 500] (0 stars to 5 stars)
         assessor:
           type: string
         note:

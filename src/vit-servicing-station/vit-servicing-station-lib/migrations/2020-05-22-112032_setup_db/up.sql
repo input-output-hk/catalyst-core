@@ -109,14 +109,14 @@ SELECT
     voteplans.fund_id,
     challenges.challenge_type
 FROM
-     proposals
-    INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
-          INNER JOIN challenges on challenges.id = proposals.challenge_id
-          LEFT JOIN proposal_simple_challenge
-                    on proposals.proposal_id = proposal_simple_challenge.proposal_id
-                        and challenges.challenge_type = 'simple'
-          LEFT JOIN proposal_community_choice_challenge
-                    on proposals.proposal_id = proposal_community_choice_challenge.proposal_id
-                        and challenges.challenge_type = 'community-choice'
-          LEFT JOIN (SELECT proposal_id as review_proposal_id, COUNT (DISTINCT assessor) as reviews_count FROM community_advisors_reviews GROUP BY proposal_id)
-                    on proposals.proposal_id = review_proposal_id;
+    proposals
+        INNER JOIN voteplans ON proposals.chain_voteplan_id = voteplans.chain_voteplan_id
+        INNER JOIN challenges on challenges.id = proposals.challenge_id
+        LEFT JOIN proposal_simple_challenge
+            on proposals.proposal_id = proposal_simple_challenge.proposal_id
+            and challenges.challenge_type = 'simple'
+        LEFT JOIN proposal_community_choice_challenge
+            on proposals.proposal_id = proposal_community_choice_challenge.proposal_id
+            and challenges.challenge_type = 'community-choice'
+        LEFT JOIN (SELECT proposal_id as review_proposal_id, COUNT (DISTINCT assessor) as reviews_count FROM community_advisors_reviews GROUP BY proposal_id)
+            on proposals.proposal_id = review_proposal_id;

@@ -17,6 +17,7 @@ pub mod test {
         migrations as db_testing,
         models::{
             challenges::{test as challenges_testing, Challenge},
+            community_advisors_reviews::test as reviews_testing,
             proposals::{test as proposals_testing, *},
         },
     };
@@ -33,11 +34,17 @@ pub mod test {
         // initialize db
         let pool = &shared_context.read().await.db_connection_pool;
         db_testing::initialize_db_with_migration(&pool.get().unwrap());
-        let proposal: FullProposalInfo = proposals_testing::get_test_proposal();
+        let mut proposal: FullProposalInfo = proposals_testing::get_test_proposal();
         proposals_testing::populate_db_with_proposal(&proposal, &pool);
         let challenge: Challenge =
             challenges_testing::get_test_challenge_with_fund_id(proposal.proposal.fund_id);
         challenges_testing::populate_db_with_challenge(&challenge, &pool);
+
+        let review = reviews_testing::get_test_advisor_review_with_proposal_id(
+            proposal.proposal.proposal_id.parse().unwrap(),
+        );
+        reviews_testing::pupulate_db_with_advisor_review(&review, &pool);
+        proposal.proposal.reviews_count = 1;
         // build filter
         let filter = warp::path!(i32)
             .and(warp::get())

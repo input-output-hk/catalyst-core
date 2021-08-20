@@ -78,7 +78,7 @@ jobs:
 
             cd vit-servicing-station
 
-            git checkout 1937db6507a58520c17a23296927091f0a78e74b
+            git checkout 75f38f66eb02d4711c28b7ca702c5707d5d4994e
       - run:
           name: install vit-station-service
           command: |
@@ -135,7 +135,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout 43e48a7ef91a109de3f87f043d6d44be2e82cc55
+            git checkout d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b
       - run:
           name: install jormungandr
           command: |
@@ -150,7 +150,7 @@ commands:
 
             cd vit-servicing-station
 
-            git checkout 1937db6507a58520c17a23296927091f0a78e74b
+            git checkout 75f38f66eb02d4711c28b7ca702c5707d5d4994e
       - run:
           name: install vit-station-service
           command: |

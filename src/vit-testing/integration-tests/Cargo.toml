@@ -7,12 +7,12 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "43e48a7ef91a109de3f87f043d6d44be2e82cc55" } 
-jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "43e48a7ef91a109de3f87f043d6d44be2e82cc55" } 
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "43e48a7ef91a109de3f87f043d6d44be2e82cc55" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "43e48a7ef91a109de3f87f043d6d44be2e82cc55" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "1937db6507a58520c17a23296927091f0a78e74b" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "1937db6507a58520c17a23296927091f0a78e74b" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b" } 
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git",  rev = "d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "75f38f66eb02d4711c28b7ca702c5707d5d4994e" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "75f38f66eb02d4711c28b7ca702c5707d5d4994e" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev="c81e6d54fc2aa0d4cb31c50859a8b29328a10157" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 vitup = { path = "../vitup"} 

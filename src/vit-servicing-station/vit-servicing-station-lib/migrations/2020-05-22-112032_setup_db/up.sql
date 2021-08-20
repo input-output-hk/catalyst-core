@@ -95,7 +95,7 @@ CREATE VIEW full_proposals_info
 AS
 SELECT
     proposals.*,
-    coalesce(reviews_count, 0) as reviews_count,
+    ifnull(reviews_count, 0) as reviews_count,
     proposal_simple_challenge.proposal_solution,
     proposal_community_choice_challenge.proposal_brief,
     proposal_community_choice_challenge.proposal_importance,

@@ -183,9 +183,9 @@ impl Wallet {
             Fragment::OldUtxoDeclaration(_utxos) => {}
             _ => {
                 on_tx_input_and_witnesses(fragment, |(input, _witness)| {
-                    if let InputEnum::AccountInput(id, value) = input.to_enum() {
+                    if let InputEnum::AccountInput(id, input_value) = input.to_enum() {
                         if self.account_id().as_ref() == id.as_ref() {
-                            new_value = value.checked_sub(new_value).expect("value overflow");
+                            new_value = new_value.checked_sub(input_value).expect("value overflow");
                         }
                         increment_counter = true;
                     }

@@ -92,6 +92,7 @@ impl ArbitrarySnapshotGenerator {
             proposal_funds: proposal.proposal_funds.parse().unwrap(),
             proposal_url: proposal.proposal_url,
             proposal_impact_score: proposal.proposal_impact_score.parse().unwrap(),
+            reviews_count: 0,
             proposal_files_url: proposal.files_url,
             proposer: self.template_generator.proposer(),
             chain_proposal_id: self.id_generator.hash().as_bytes().to_vec(),

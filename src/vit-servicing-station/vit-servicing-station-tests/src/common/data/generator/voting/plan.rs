@@ -258,6 +258,7 @@ impl ValidVotePlanGenerator {
                     proposal_funds,
                     proposal_url: proposal_template.proposal_url.clone(),
                     proposal_impact_score: proposal_template.proposal_impact_score.parse().unwrap(),
+                    reviews_count: 0,
                     proposal_files_url: proposal_template.files_url,
                     proposer: Proposer {
                         proposer_name: proposal_template.proposer_name,

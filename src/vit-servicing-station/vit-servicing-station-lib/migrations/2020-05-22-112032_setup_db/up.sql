@@ -95,6 +95,7 @@ CREATE VIEW full_proposals_info
 AS
 SELECT
     proposals.*,
+    ifnull(reviews_count, 0) as reviews_count,
     proposal_simple_challenge.proposal_solution,
     proposal_community_choice_challenge.proposal_brief,
     proposal_community_choice_challenge.proposal_importance,
@@ -117,3 +118,5 @@ FROM
         LEFT JOIN proposal_community_choice_challenge
             on proposals.proposal_id = proposal_community_choice_challenge.proposal_id
             and challenges.challenge_type = 'community-choice'
+        LEFT JOIN (SELECT proposal_id as review_proposal_id, COUNT (DISTINCT assessor) as reviews_count FROM community_advisors_reviews GROUP BY proposal_id)
+            on proposals.proposal_id = review_proposal_id;

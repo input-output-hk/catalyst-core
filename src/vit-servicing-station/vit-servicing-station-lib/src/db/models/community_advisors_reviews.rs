@@ -126,7 +126,7 @@ pub mod test {
         }
     }
 
-    pub fn pupulate_db_with_advisor_review(review: &AdvisorReview, pool: &DbConnectionPool) {
+    pub fn populate_db_with_advisor_review(review: &AdvisorReview, pool: &DbConnectionPool) {
         let connection = pool.get().unwrap();
         diesel::insert_into(community_advisors_reviews::table)
             .values(review.clone().values())

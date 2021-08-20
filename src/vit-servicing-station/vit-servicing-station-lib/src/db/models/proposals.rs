@@ -113,6 +113,8 @@ pub struct Proposal {
     pub fund_id: i32,
     #[serde(alias = "challengeId")]
     pub challenge_id: i32,
+    #[serde(alias = "reviewsCount")]
+    pub reviews_count: i32,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -213,17 +215,19 @@ type FullProposalsInfoRow = (
     i32,
     // 24 -> challenge_id
     i32,
-    // 25 -> challenge_type
+    // 25 -> reviews_count
+    i32,
+    // 26 -> challenge_type
     String,
-    // 26 -> proposal_solution
+    // 27 -> proposal_solution
     Option<String>,
-    // 27 -> proposal_brief
+    // 28 -> proposal_brief
     Option<String>,
-    // 28 -> proposal_importance
+    // 29 -> proposal_importance
     Option<String>,
-    // 29 -> proposal_goal
+    // 30 -> proposal_goal
     Option<String>,
-    // 30 -> proposal_metrics
+    // 31 -> proposal_metrics
     Option<String>,
 );
 
@@ -263,6 +267,7 @@ impl Queryable<full_proposals_info::SqlType, Db> for Proposal {
             chain_vote_encryption_key: row.22,
             fund_id: row.23,
             challenge_id: row.24,
+            reviews_count: row.25,
         }
     }
 }
@@ -271,19 +276,19 @@ impl Queryable<full_proposals_info::SqlType, Db> for FullProposalInfo {
     type Row = FullProposalsInfoRow;
 
     fn build(row: Self::Row) -> Self {
-        let challenge_type = row.25.parse().unwrap();
+        let challenge_type = row.26.parse().unwrap();
         // It should be safe to unwrap this values here if DB is sanitized and hence tables have data
         // relative to the challenge type.
         let challenge_info = match challenge_type {
             ChallengeType::Simple => ProposalChallengeInfo::Simple(simple::ChallengeInfo {
-                proposal_solution: row.26.clone().unwrap(),
+                proposal_solution: row.27.clone().unwrap(),
             }),
             ChallengeType::CommunityChoice => {
                 ProposalChallengeInfo::CommunityChoice(community_choice::ChallengeInfo {
-                    proposal_brief: row.27.clone().unwrap(),
-                    proposal_importance: row.28.clone().unwrap(),
-                    proposal_goal: row.29.clone().unwrap(),
-                    proposal_metrics: row.30.clone().unwrap(),
+                    proposal_brief: row.28.clone().unwrap(),
+                    proposal_importance: row.29.clone().unwrap(),
+                    proposal_goal: row.30.clone().unwrap(),
+                    proposal_metrics: row.31.clone().unwrap(),
                 })
             }
         };
@@ -408,6 +413,7 @@ pub mod test {
                 proposal_url: "http://foo.bar".to_string(),
                 proposal_files_url: "http://foo.bar/files".to_string(),
                 proposal_impact_score: 100,
+                reviews_count: 0,
                 proposer: Proposer {
                     proposer_name: "tester".to_string(),
                     proposer_email: "tester@tester.tester".to_string(),

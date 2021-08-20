@@ -122,6 +122,7 @@ impl Proposal {
             proposal_url: self.proposal_url,
             proposal_files_url: self.proposal_files_url,
             proposal_impact_score: self.proposal_impact_score,
+            reviews_count: 0,
             proposer: Proposer {
                 proposer_name: self.proposer_name,
                 proposer_email: self.proposer_email,

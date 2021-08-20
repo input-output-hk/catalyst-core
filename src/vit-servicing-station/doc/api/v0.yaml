@@ -111,6 +111,8 @@ paths:
               schema:
                 items:
                   $ref: "#/components/schemas/Challenge"
+        "404":
+          description: The requested challenge was not found
 
   /api/v0/challenges/{id}:
     get:
@@ -135,6 +137,27 @@ paths:
                 $ref: "#/components/schemas/ChallengeWithProposals"
         "404":
           description: The requested challenge was not found
+
+  /api/v0/reviews/{proposal_id}:
+    get:
+      operationId: getProposalReviews
+      summary: Get reviews related to a proposal
+      tags: [reviews]
+      description: |
+        Retrieves advisor reviews information for the provided proposal id.
+      parameters:
+        - in: path
+          name: proposal_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdvisorReviews"
 
 components:
   schemas:
@@ -320,6 +343,10 @@ components:
             challenge_id:
               type: integer
               format: int32
+            reviews_count:
+              type: integer
+              format: int32
+              description: Total amount of individual reviews per assessor
             challenge_type:
               $ref: "#/components/schemas/ChallengeType"
 
@@ -441,3 +468,49 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Proposal"
+
+    ReviewTag:
+      type: string
+      enum:
+        - Alignment
+        - Verifiability
+        - Feasibility
+        - Impact
+        - Auditability
+
+    AdvisorReview:
+      properties:
+        id:
+          type: integer
+          format: i32
+        proposal_id:
+          type: integer
+          format: i32
+        rating_given:
+          type: integer
+          format: i32
+          minimum: 0
+          maximum: 500
+          description: Rating in range [0, 500] (0 stars to 5 stars)
+        assessor:
+          type: string
+        note:
+          type: string
+        tag:
+          type: ReviewTag
+
+    AdvisorReviews:
+      type: array
+      items:
+        $ref: "#/components/schemas/Review"
+      example:
+        [
+          {
+            "id": 1,
+            "proposal_id": 1234,
+            "rating_given": 0,
+            "assessor": "za_assessor_432",
+            "note": "foo bar",
+            "tag": "Alignment"
+          }
+        ]

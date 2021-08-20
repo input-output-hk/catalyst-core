@@ -43,7 +43,7 @@ pub mod test {
         let review = reviews_testing::get_test_advisor_review_with_proposal_id(
             proposal.proposal.proposal_id.parse().unwrap(),
         );
-        reviews_testing::pupulate_db_with_advisor_review(&review, &pool);
+        reviews_testing::populate_db_with_advisor_review(&review, &pool);
         proposal.proposal.reviews_count = 1;
         // build filter
         let filter = warp::path!(i32)

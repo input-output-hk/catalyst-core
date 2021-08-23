@@ -76,10 +76,6 @@ jobs:
           - os: ubuntu-latest
             toolchain: nightly
             experimental: true
-          - os: ubuntu-latest
-            toolchain: stable
-            experimental: false
-            features: '--features chain-vote/p256k1'
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 30
@@ -158,6 +154,27 @@ jobs:
             ${{ matrix.mode }} --locked
             --manifest-path chain-network/Cargo.toml --no-default-features
 
+      - name: Test chain-vote with p256k1 backend
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        env:
+          RUSTFLAGS: -D warnings
+        with:
+          command: test
+          args: >-
+            ${{ matrix.mode }} --locked
+            --manifest-path chain-vote/Cargo.toml --features p256k1
+
+      - name: Test evm support in the ledger
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        env:
+          RUSTFLAGS: -D warnings
+        with:
+          command: test
+          args: >-
+            ${{ matrix.mode }} --locked
+            --manifest-path chain-impl-mockchain/Cargo.toml --features evm
 
   lints:
     name: Lints

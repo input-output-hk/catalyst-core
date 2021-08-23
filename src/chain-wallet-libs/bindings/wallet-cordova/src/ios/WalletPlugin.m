@@ -462,6 +462,13 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     NSData* block0_hash = [command.arguments objectAtIndex:0];
     NSString* discrimination_raw = [command.arguments objectAtIndex:1];
     NSDictionary* fees = [command.arguments objectAtIndex:2];
+    NSString* block0_date_raw = [command.arguments objectAtIndex:3];
+    uint64_t block0_date = (uint64_t)[block0_date_raw longLongValue];
+    NSString* slot_duration_raw = [command.arguments objectAtIndex:4];
+    uint8_t slot_duration = (uint8_t)[slot_duration_raw longLongValue];
+    NSDictionary* era = [command.arguments objectAtIndex:5];
+    NSString* max_expiry_epochs_raw = [command.arguments objectAtIndex:6];
+    uint8_t max_expiry_epochs = (uint8_t)[slot_duration_raw longLongValue];
 
     if ([block0_hash isEqual:[NSNull null]] || [fees isEqual:[NSNull null]]) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
@@ -499,10 +506,24 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         per_certificate_fees,
         per_vote_certificate_fees };
 
+    uint32_t epoch_start = (uint32_t)[era[@"epochStart"] longLongValue];
+    uint64_t slot_start = (uint64_t)[era[@"slotStart"] longLongValue];
+    uint32_t slots_per_epoch = (uint32_t)[era[@"slotsPerEpoch"] longLongValue];
+
+    TimeEra time_era = {
+        epoch_start,
+        slot_start,
+        slots_per_epoch,
+    };
+
     SettingsPtr settings_out_ptr = nil;
     ErrorPtr result = iohk_jormungandr_wallet_settings_new(linear_fees,
         discrimination,
         block0_hash.bytes,
+        block0_date,
+        slot_duration,
+        time_era,
+        transaction_max_expiry_epochs,
         &settings_out_ptr);
 
     if (result != nil) {

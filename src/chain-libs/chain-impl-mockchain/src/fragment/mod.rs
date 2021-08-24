@@ -7,7 +7,7 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 
 pub use config::ConfigParams;
-pub use raw::{FragmentId, FragmentRaw, FRAGMENT_SIZE_BYTES_LEN};
+pub use raw::{FragmentId, FragmentRaw};
 
 pub use content::{BlockContentHash, BlockContentSize, Contents, ContentsBuilder};
 

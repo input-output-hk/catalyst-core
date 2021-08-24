@@ -2,6 +2,7 @@ use crate::key::Hash;
 use chain_core::property;
 
 pub type FragmentId = Hash;
+pub const FRAGMENT_SIZE_BYTES_LEN: usize = 4;
 
 /// A serialized Message
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -9,7 +10,7 @@ pub struct FragmentRaw(pub(super) Vec<u8>);
 
 impl FragmentRaw {
     pub fn size_bytes_plus_size(&self) -> usize {
-        4 + self.0.len()
+        FRAGMENT_SIZE_BYTES_LEN + self.0.len()
     }
 
     pub fn id(&self) -> FragmentId {

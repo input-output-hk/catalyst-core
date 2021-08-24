@@ -13,7 +13,9 @@ mod headerraw;
 pub mod test;
 
 //pub use self::builder::BlockBuilder;
-pub use crate::fragment::{BlockContentHash, BlockContentSize, Contents, ContentsBuilder};
+pub use crate::fragment::{
+    BlockContentHash, BlockContentSize, Contents, ContentsBuilder, FRAGMENT_SIZE_BYTES_LEN,
+};
 
 pub use self::headerraw::HeaderRaw;
 pub use crate::header::{
@@ -145,7 +147,9 @@ impl Readable for Block {
         let mut contents = ContentsBuilder::new();
 
         while remaining_content_size > 0 {
-            let message_size = buf.get_u32()?;
+            let mut size_buf = [0u8; FRAGMENT_SIZE_BYTES_LEN];
+            size_buf.copy_from_slice(buf.get_slice(FRAGMENT_SIZE_BYTES_LEN)?);
+            let message_size = u32::from_be_bytes(size_buf);
             let mut message_buf = buf.split_to(message_size as usize)?;
 
             // return error here if message serialize sized is bigger than remaining size
@@ -153,7 +157,7 @@ impl Readable for Block {
             let message = Fragment::read(&mut message_buf)?;
             contents.push(message);
 
-            remaining_content_size -= 4 + message_size as u32;
+            remaining_content_size -= FRAGMENT_SIZE_BYTES_LEN as u32 + message_size as u32;
         }
 
         Ok(Block {

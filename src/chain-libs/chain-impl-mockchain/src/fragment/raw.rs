@@ -9,7 +9,7 @@ pub struct FragmentRaw(pub(super) Vec<u8>);
 
 impl FragmentRaw {
     pub fn size_bytes_plus_size(&self) -> usize {
-        2 + self.0.len()
+        4 + self.0.len()
     }
 
     pub fn id(&self) -> FragmentId {
@@ -28,7 +28,7 @@ impl property::Deserialize for FragmentRaw {
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         use chain_core::packer::*;
         let mut codec = Codec::new(reader);
-        let size = codec.get_u16()?;
+        let size = codec.get_u32()?;
         let mut v = vec![0u8; size as usize];
         codec.into_inner().read_exact(&mut v)?;
         Ok(FragmentRaw(v))
@@ -41,7 +41,7 @@ impl property::Serialize for FragmentRaw {
         use chain_core::packer::*;
 
         let mut codec = Codec::new(writer);
-        codec.put_u16(self.0.len() as u16)?;
+        codec.put_u32(self.0.len() as u32)?;
         codec.into_inner().write_all(&self.0)?;
         Ok(())
     }

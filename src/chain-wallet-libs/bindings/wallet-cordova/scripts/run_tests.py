@@ -147,10 +147,6 @@ if __name__ == "__main__":
                 "build",
                 "ios",
                 "--debug",
-                "--device",
-                "--buildConfig",
-                "-d",
-                "--no-telemetry",
             ],
             cwd=app_dir,
         )

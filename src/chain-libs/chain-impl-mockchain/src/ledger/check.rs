@@ -144,6 +144,10 @@ pub(super) fn valid_pool_update_certificate(reg: &certificate::PoolUpdate) -> Le
 pub enum TxVerifyError {
     #[error("too many outputs, expected maximum of {expected}, but received {actual}")]
     TooManyOutputs { expected: u8, actual: u8 },
+}
+
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum TxValidityError {
     #[error("Transaction validity expired")]
     TransactionExpired,
     #[error("Transaction validity is too far in the future")]
@@ -174,7 +178,7 @@ pub fn valid_transaction_date(
     settings: &setting::Settings,
     valid_until: BlockDate,
     date: BlockDate,
-) -> Result<(), TxVerifyError> {
+) -> Result<(), TxValidityError> {
     // if current date epoch is less than until.epoch - setting, then
     // the transaction has a validity range that is too big to be accepted
     if_cond_fail_with!(
@@ -182,10 +186,10 @@ pub fn valid_transaction_date(
             < valid_until
                 .epoch
                 .saturating_sub(settings.transaction_max_expiry_epochs.into()),
-        TxVerifyError::TransactionValidForTooLong
+        TxValidityError::TransactionValidForTooLong
     )?;
     // if current date is passed the validity until, the transaction is expired
-    if_cond_fail_with!(date > valid_until, TxVerifyError::TransactionExpired)?;
+    if_cond_fail_with!(date > valid_until, TxValidityError::TransactionExpired)?;
     Ok(())
 }
 

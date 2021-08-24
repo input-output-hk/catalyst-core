@@ -284,8 +284,12 @@ jobs:
       - name: Setup cordova
         run: sudo npm install -g cordova
 
+      # build-tools workaround taken from here
+      # https://github.com/apache/cordova-android/issues/1288
       - name: build test app
         run: |
+          $ANDROID_SDK_ROOT/tools/bin/sdkmanager --uninstall "build-tools;31.0.0"
+          $ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "build-tools;30.0.3"
           python3 bindings/wallet-cordova/scripts/run_tests.py \
             --directory test_app \
             --platform android \

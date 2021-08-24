@@ -264,6 +264,12 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     NSString* settings_ptr_raw = [command.arguments objectAtIndex:1];
     NSString* proposal_ptr_raw = [command.arguments objectAtIndex:2];
     NSString* choice_raw = [command.arguments objectAtIndex:3];
+    NSDictionary* expirationDate = [command.arguments objectAtIndex:4];
+
+    uint32_t epoch = (uint32_t)[expirationDate[@"epoch"] longLongValue];
+    uint32_t slot = (uint32_t)[expirationDate[@"slot"] longLongValue];
+
+    BlockDate date = { epoch, slot };
 
     WalletPtr wallet_ptr = (WalletPtr)[wallet_ptr_raw longLongValue];
     SettingsPtr settings_ptr = (SettingsPtr)[settings_ptr_raw longLongValue];
@@ -277,6 +283,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         settings_ptr,
         proposal_ptr,
         choice,
+        date,
         &transaction_out,
         &len_out);
 
@@ -298,12 +305,18 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
     CDVPluginResult* pluginResult = nil;
     NSString* wallet_ptr_raw = [command.arguments objectAtIndex:0];
     NSString* settings_ptr_raw = [command.arguments objectAtIndex:1];
+    NSDictionary* expirationDate = [command.arguments objectAtIndex:2];
+
+    uint32_t epoch = (uint32_t)[expirationDate[@"epoch"] longLongValue];
+    uint32_t slot = (uint32_t)[expirationDate[@"slot"] longLongValue];
+    BlockDate date = { epoch, slot };
 
     WalletPtr wallet_ptr = (WalletPtr)[wallet_ptr_raw longLongValue];
     SettingsPtr settings_ptr = (SettingsPtr)[settings_ptr_raw longLongValue];
 
     ConversionPtr conversion_ptr = nil;
-    ErrorPtr result = iohk_jormungandr_wallet_convert(wallet_ptr, settings_ptr, &conversion_ptr);
+    ErrorPtr result =
+        iohk_jormungandr_wallet_convert(wallet_ptr, settings_ptr, date, &conversion_ptr);
 
     if (result != nil) {
         pluginResult = jormungandr_error_to_plugin_result(result);
@@ -516,15 +529,18 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         slots_per_epoch,
     };
 
-    SettingsPtr settings_out_ptr = nil;
-    ErrorPtr result = iohk_jormungandr_wallet_settings_new(linear_fees,
+    SettingsInit settings_init = {
+        linear_fees,
         discrimination,
         block0_hash.bytes,
         block0_date,
         slot_duration,
         time_era,
-        transaction_max_expiry_epochs,
-        &settings_out_ptr);
+        max_expiry_epochs,
+    };
+
+    SettingsPtr settings_out_ptr = nil;
+    ErrorPtr result = iohk_jormungandr_wallet_settings_new(settings_init, &settings_out_ptr);
 
     if (result != nil) {
         pluginResult = jormungandr_error_to_plugin_result(result);
@@ -646,7 +662,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
 
     NSString* seconds_raw = [command.arguments objectAtIndex:1];
 
-    uint64_t date = (uint64_t)[index_raw longLongValue];
+    uint64_t date = (uint64_t)[seconds_raw longLongValue];
 
     if (settings_ptr == nil) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
@@ -655,7 +671,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         return;
     }
 
-    BlockDate block_date;
+    BlockDate block_date_out;
 
     ErrorPtr result_c_call =
         iohk_jormungandr_block_date_from_system_time(settings_ptr, date, &block_date_out);
@@ -664,8 +680,8 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         pluginResult = jormungandr_error_to_plugin_result(result_c_call);
     } else {
         NSDictionary* result = @{
-            @"epoch" : [NSNumber numberWithUnsignedInt:block_date.epoch],
-            @"slot" : [NSNumber numberWithUnsignedInt:block_date.slot],
+            @"epoch" : [NSNumber numberWithUnsignedInt:block_date_out.epoch],
+            @"slot" : [NSNumber numberWithUnsignedInt:block_date_out.slot],
         };
 
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
@@ -684,7 +700,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
 
     NSString* seconds_raw = [command.arguments objectAtIndex:1];
 
-    uint64_t date = (uint64_t)[index_raw longLongValue];
+    uint64_t date = (uint64_t)[seconds_raw longLongValue];
 
     if (settings_ptr == nil) {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR
@@ -693,7 +709,7 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         return;
     }
 
-    BlockDate block_date;
+    BlockDate block_date_out;
 
     ErrorPtr result_c_call =
         iohk_jormungandr_max_expiration_date(settings_ptr, date, &block_date_out);
@@ -702,8 +718,8 @@ jormungandr_error_to_plugin_result(ErrorPtr error)
         pluginResult = jormungandr_error_to_plugin_result(result_c_call);
     } else {
         NSDictionary* result = @{
-            @"epoch" : [NSNumber numberWithUnsignedInt:block_date.epoch],
-            @"slot" : [NSNumber numberWithUnsignedInt:block_date.slot],
+            @"epoch" : [NSNumber numberWithUnsignedInt:block_date_out.epoch],
+            @"slot" : [NSNumber numberWithUnsignedInt:block_date_out.slot],
         };
 
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK

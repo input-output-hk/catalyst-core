@@ -215,6 +215,11 @@ jobs:
             --platform ios \
             -- full
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-harness-ios-sim
+          path: ./test_app/hello/platforms/ios/build/emulator/HelloWorld.app
+
   build_cordova_android_app:
     name: Build cordova test app on android
     runs-on: ubuntu-latest

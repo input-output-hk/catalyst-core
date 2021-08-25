@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- *breaking change*: `wallet_vote_cast` and `wallet_convert` now require the TTL argument.
+- *breaking change*: `settings_new` takes new arguments needed for managing time.
+
+### Added
+
+- max_expiration_date
+- block_date_from_system_time
+
 ## [0.6.0-pre2] 2021-05-14
 
 ### Added

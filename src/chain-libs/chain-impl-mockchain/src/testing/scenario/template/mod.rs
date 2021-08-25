@@ -89,10 +89,7 @@ pub struct StakePoolDef {
 
 impl StakePoolDef {
     pub fn pool_permission(&self) -> Option<PoolPermissions> {
-        match self.permissions_threshold {
-            Some(permissions_threshold) => Some(PoolPermissions::new(permissions_threshold)),
-            None => None,
-        }
+        self.permissions_threshold.map(PoolPermissions::new)
     }
 }
 
@@ -139,20 +136,20 @@ impl VotePlanDef {
     }
 }
 
-impl Into<VotePlan> for VotePlanDef {
-    fn into(self) -> VotePlan {
+impl From<VotePlanDef> for VotePlan {
+    fn from(dto: VotePlanDef) -> Self {
         let mut proposals = Proposals::new();
-        for proposal in self.proposals.iter().cloned() {
+        for proposal in dto.proposals.iter().cloned() {
             let _ = proposals.push(proposal.into());
         }
 
         VotePlan::new(
-            self.vote_date,
-            self.tally_date,
-            self.end_tally_date,
+            dto.vote_date,
+            dto.tally_date,
+            dto.end_tally_date,
             proposals,
-            self.payload_type,
-            self.committee_keys,
+            dto.payload_type,
+            dto.committee_keys,
         )
     }
 }
@@ -170,12 +167,12 @@ impl ProposalDef {
     }
 }
 
-impl Into<Proposal> for ProposalDef {
-    fn into(self) -> Proposal {
+impl From<ProposalDef> for Proposal {
+    fn from(dto: ProposalDef) -> Self {
         Proposal::new(
-            self.id,
-            Options::new_length(self.options).unwrap(),
-            self.action_type,
+            dto.id,
+            Options::new_length(dto.options).unwrap(),
+            dto.action_type,
         )
     }
 }

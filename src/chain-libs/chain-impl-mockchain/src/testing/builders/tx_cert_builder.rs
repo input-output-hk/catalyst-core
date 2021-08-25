@@ -70,6 +70,8 @@ impl TestTxCertBuilder {
         builder.set_witnesses_unchecked(&witnesses)
     }
 
+    // A builder API would be better, but it's an internal function.
+    #[allow(clippy::too_many_arguments)]
     fn fragment(
         &self,
         valid_until: BlockDate,
@@ -85,14 +87,14 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(s),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
                 );
                 let signature =
                     AccountBindingSignature::new_single(&builder.get_auth_data(), |d| {
-                        keys[0].sign_slice(&d.0)
+                        keys[0].sign_slice(d.0)
                     });
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::StakeDelegation(tx)
@@ -101,7 +103,7 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(s),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
@@ -114,7 +116,7 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(s),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
@@ -127,7 +129,7 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(s),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
@@ -140,7 +142,7 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(s),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
@@ -152,7 +154,7 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(vp),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
@@ -165,7 +167,7 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(vp),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
@@ -177,7 +179,7 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(vt),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
@@ -190,7 +192,7 @@ impl TestTxCertBuilder {
                 let builder = self.set_initial_ios(
                     valid_until,
                     TxBuilder::new().set_payload(vote_tally),
-                    &funder,
+                    funder,
                     inputs,
                     outputs,
                     make_witness,
@@ -248,7 +250,7 @@ pub fn tally_sign(
     let id = key.to_public().into();
 
     let auth_data = builder.get_auth_data();
-    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
+    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(d.0));
 
     match payload_type {
         PayloadType::Public => TallyProof::Public { id, signature },
@@ -264,7 +266,7 @@ pub fn encrypted_tally_sign(
     let id = key.to_public().into();
 
     let auth_data = builder.get_auth_data();
-    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
+    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(d.0));
     EncryptedVoteTallyProof { id, signature }
 }
 
@@ -276,7 +278,7 @@ pub fn plan_sign(
     let id = key.to_public().into();
 
     let auth_data = builder.get_auth_data();
-    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
+    let signature = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(d.0));
 
     VotePlanProof { id, signature }
 }
@@ -296,7 +298,7 @@ pub fn pool_owner_signed<P: Payload>(
     let auth_data = builder.get_auth_data();
     let mut sigs = Vec::new();
     for (i, key) in keys.iter().enumerate() {
-        let sig = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(&d.0));
+        let sig = SingleAccountBindingSignature::new(&auth_data, |d| key.sign_slice(d.0));
         sigs.push((i as u8, sig))
     }
     PoolOwnersSigned { signatures: sigs }

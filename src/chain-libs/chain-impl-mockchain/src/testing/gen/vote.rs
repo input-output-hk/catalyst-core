@@ -136,7 +136,7 @@ impl VoteTestGen {
         let encrypting_key =
             ElectionPublicKey::from_participants(vote_plan.committee_public_keys());
 
-        let crs = Crs::from_hash(&vote_plan.to_id().as_ref());
+        let crs = Crs::from_hash(vote_plan.to_id().as_ref());
         let (encrypted_vote, proof) = encrypting_key.encrypt_and_prove_vote(
             rng,
             &crs,

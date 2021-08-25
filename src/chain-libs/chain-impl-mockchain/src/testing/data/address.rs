@@ -210,7 +210,7 @@ impl AddressData {
         block0_hash: &HeaderId,
         tad: TransactionAuthData<'a>,
     ) -> Witness {
-        let witness = make_witness(block0_hash, &self, &tad.hash());
+        let witness = make_witness(block0_hash, self, &tad.hash());
         self.confirm_transaction();
         witness
     }
@@ -220,9 +220,9 @@ impl AddressData {
     }
 }
 
-impl Into<Address> for AddressData {
-    fn into(self) -> Address {
-        self.address
+impl From<AddressData> for Address {
+    fn from(data: AddressData) -> Self {
+        data.address
     }
 }
 
@@ -334,8 +334,8 @@ impl AddressDataValue {
     }
 }
 
-impl Into<AddressData> for AddressDataValue {
-    fn into(self) -> AddressData {
-        self.address_data
+impl From<AddressDataValue> for AddressData {
+    fn from(value: AddressDataValue) -> Self {
+        value.address_data
     }
 }

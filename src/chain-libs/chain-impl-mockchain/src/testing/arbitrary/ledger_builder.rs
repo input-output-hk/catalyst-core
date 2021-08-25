@@ -57,7 +57,7 @@ impl Arbitrary for LedgerBuilder {
         let mut stake_pools_cycle = stake_pools.iter().cycle();
         for wallet in stake_pools_delegators {
             fragments.push(create_initial_stake_pool_delegation(
-                &stake_pools_cycle.next().unwrap(),
+                stake_pools_cycle.next().unwrap(),
                 wallet,
             ));
         }

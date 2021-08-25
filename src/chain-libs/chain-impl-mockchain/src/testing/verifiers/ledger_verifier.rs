@@ -173,12 +173,11 @@ impl LedgerStateVerifier {
             .find(|x| *x.output == address_data.make_output(value));
         if value == Value::zero() {
             assert!(utxo.is_none());
-            self
         } else {
             let utxo = utxo.unwrap();
             assert_eq!(utxo.output.value, value);
-            self
         }
+        self
     }
 
     pub fn pots(&self) -> PotsVerifier {

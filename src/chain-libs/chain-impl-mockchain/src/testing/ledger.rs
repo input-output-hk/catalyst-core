@@ -452,8 +452,7 @@ impl LedgerBuilder {
 
         let cfg = self.cfg_params.clone();
 
-        let mut fragments = Vec::new();
-        fragments.push(Fragment::Initial(self.cfg_params));
+        let mut fragments = vec![Fragment::Initial(self.cfg_params)];
         fragments.extend_from_slice(&self.fragments);
         fragments.extend_from_slice(&self.certs);
 

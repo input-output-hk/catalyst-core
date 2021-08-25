@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.7.0-pre1] 2021-08-25
+
 ### Changed
 
 - *breaking change*: `wallet_vote_cast` and `wallet_convert` now require the TTL argument.

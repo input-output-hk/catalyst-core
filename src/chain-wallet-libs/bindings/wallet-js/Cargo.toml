@@ -9,7 +9,7 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 name = "wallet-js"
 repository = "https://github.com/input-output-hk/chain-wallet-libs"
-version = "0.6.0-pre2"
+version = "0.7.0-pre1"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

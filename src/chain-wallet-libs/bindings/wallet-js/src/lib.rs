@@ -1,3 +1,5 @@
+//! JavaScript and TypeScript bindings for the Jormungandr wallet SDK.
+
 use js_sys::Array;
 use rand_chacha::rand_core::SeedableRng;
 use rand_chacha::ChaCha20Rng;
@@ -10,8 +12,6 @@ mod utils;
 
 const ELECTION_PUBLIC_KEY_HRP: &str = "votepk";
 
-// `set_panic_hook` function can be called at least once during initialization,
-// to get better error messages if the code ever panics.
 pub use utils::set_panic_hook;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -20,18 +20,24 @@ pub use utils::set_panic_hook;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+/// A Wallet gives the user control over an account address
+/// controlled by a private key. It can also be used to convert other funds
+/// minted as UTxOs in the genesis block.
 #[wasm_bindgen]
 pub struct Wallet(wallet_core::Wallet);
 
+/// Encapsulates blockchain settings needed for some operations.
 #[wasm_bindgen]
 pub struct Settings(wallet_core::Settings);
 
 #[wasm_bindgen]
 pub struct Conversion(wallet_core::Conversion);
 
+/// Information about a proposal in a vote plan deployed onto the blockchain.
 #[wasm_bindgen]
 pub struct Proposal(wallet_core::Proposal);
 
+/// Identifier for a vote plan deployed onto the blockchain.
 #[wasm_bindgen]
 pub struct VotePlanId([u8; wallet_core::VOTE_PLAN_ID_LENGTH]);
 
@@ -47,12 +53,15 @@ impl_secret_key!(Ed25519Private, chain_crypto::Ed25519, Ed25519Public);
 
 impl_public_key!(Ed25519Public, chain_crypto::Ed25519);
 
+/// Signature obtained with the Ed25519 algorithm.
 #[wasm_bindgen]
 pub struct Ed25519Signature(chain_crypto::Signature<Box<[u8]>, chain_crypto::Ed25519>);
 
+/// Identifier of a block fragment, such as a vote transaction posted on the blockchain.
 #[wasm_bindgen]
 pub struct FragmentId(wallet_core::FragmentId);
 
+/// A public key for the election protocol that is used to encrypt private ballots.
 #[wasm_bindgen]
 pub struct ElectionPublicKey(chain_vote::ElectionPublicKey);
 
@@ -68,21 +77,27 @@ pub struct BlockDate(chain_impl_mockchain::block::BlockDate);
 
 #[wasm_bindgen]
 impl Wallet {
-    /// retrieve a wallet from the given mnemonics and password
-    ///
-    /// this function will work for all yoroi, daedalus and other wallets
-    /// as it will try every kind of wallet anyway
+    /// Recovers a wallet from the given BIP39 mnemonics and password.
     ///
     /// You can also use this function to recover a wallet even after you have
-    /// transferred all the funds to the new format (see the _convert_ function)
+    /// transferred all the funds to the new format (see the `convert` method).
     ///
-    /// the mnemonics should be in english
+    /// The mnemonics should be in the normalized Unicode form NFKD.
+    /// A string of plain English words satisfies this requirement.
     pub fn recover(mnemonics: &str, password: &[u8]) -> Result<Wallet, JsValue> {
         wallet_core::Wallet::recover(mnemonics, password)
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Wallet)
     }
 
+    /// Imports private keys to create a wallet.
+    ///
+    /// The `account` parameter gives the Ed25519Extended private key
+    /// of the account.
+    ///
+    /// The `keys` parameter should be a concatenation of Ed25519Extended
+    /// private keys that will be used to retrieve the associated UTxOs.
+    /// Pass an empty buffer when this functionality is not needed.
     pub fn import_keys(account: &[u8], keys: &[u8]) -> Result<Wallet, JsValue> {
         if keys.len() % 64 != 0 {
             return Err(JsValue::from_str("invalid keys array length"));
@@ -109,16 +124,17 @@ impl Wallet {
         self.0.id().as_ref().to_vec()
     }
 
-    /// retrieve funds from daedalus or yoroi wallet in the given block0 (or
+    /// Retrieve funds belonging to the wallet in the given block0 (or
     /// any other blocks).
     ///
-    /// Execute this function then you can check who much funds you have
-    /// retrieved from the given block.
+    /// After this function is executed, the wallet user can check how much
+    /// funds have been retrieved from fragments of the given block.
     ///
-    /// this function may take sometimes so it is better to only call this
-    /// function if needed.
+    /// This function can take some time to run, so it is better to only
+    /// call it if needed.
     ///
-    /// also, this function should not be called twice with the same block.
+    /// This function should not be called twice with the same block.
+    /// In a future revision of this library, this limitation may be lifted.
     pub fn retrieve_funds(&mut self, block0: &[u8]) -> Result<Settings, JsValue> {
         self.0
             .retrieve_funds(block0)
@@ -126,24 +142,24 @@ impl Wallet {
             .map(Settings)
     }
 
-    /// get the total value in the wallet
+    /// Get the total value in the wallet.
     ///
-    /// make sure to call `retrieve_funds` prior to calling this function
-    /// otherwise you will always have `0`
+    /// Make sure to call `retrieve_funds` prior to calling this function,
+    /// otherwise the function will return `0`.
     pub fn total_value(&self) -> u64 {
         self.0.total_value().0
     }
 
-    /// update the wallet account state
+    /// Update the wallet account state.
     ///
-    /// this is the value retrieved from any jormungandr endpoint that allows to query
-    /// for the account state. It gives the value associated to the account as well as
-    /// the counter.
+    /// The values to update the account state with can be retrieved from a
+    /// node API endpoint. It sets the balance value on the account
+    /// as well as the current spending counter.
     ///
-    /// It is important to be sure to have an updated wallet state before doing any
-    /// transactions otherwise future transactions may fail to be accepted by any
-    /// nodes of the blockchain because of invalid signature state.
-    ///
+    /// It is important to be sure to have an up to date wallet state
+    /// before doing any transactions, otherwise future transactions may fail
+    /// to be accepted by the blockchain nodes because of an invalid witness
+    /// signature.
     pub fn set_state(&mut self, value: u64, counter: u32) {
         self.0.set_state(wallet_core::Value(value), counter);
     }
@@ -181,17 +197,19 @@ impl Wallet {
             .map_err(|e| JsValue::from(e.to_string()))
     }
 
-    /// use this function to confirm a transaction has been properly received
+    /// Confirms that a transaction has been confirmed on the blockchain.
     ///
-    /// This function will automatically update the state of the wallet
-    ///
+    /// This function will update the state of the wallet tracking pending
+    /// transactions on fund conversion.
     pub fn confirm_transaction(&mut self, fragment: &FragmentId) {
         self.0.confirm_transaction(fragment.0);
     }
 
-    /// get the list of pending transaction ids, which can be used to query
-    /// the status and then using `confirm_transaction` as needed.
+    /// Returns the list of pending transaction IDs.
     ///
+    /// This method can be used to query the fragment status with the node API
+    /// and then confirm the transactions for the
+    /// wallet state using `confirm_transaction`.
     pub fn pending_transactions(&self) -> FragmentIds {
         self.0
             .pending_transactions()
@@ -243,6 +261,12 @@ impl Conversion {
 
 #[wasm_bindgen]
 impl Proposal {
+    /// Constructs a description of a public vote proposal from its constituent data.
+    ///
+    /// Parameters:
+    /// * `vote_plan_id`: Identifier of the vote plan.
+    /// * `index`: 0-based index of the proposal in the vote plan.
+    /// * `options`: Descriptor of vote plan options, detailing the number of choices.
     pub fn new_public(vote_plan_id: VotePlanId, index: u8, options: Options) -> Self {
         Proposal(wallet_core::Proposal::new(
             vote_plan_id.0.into(),
@@ -252,29 +276,42 @@ impl Proposal {
         ))
     }
 
+    /// Constructs a description of a private vote proposalfrom its constituent data.
+    ///
+    /// Parameters:
+    /// * `vote_plan_id`: Identifier of the vote plan.
+    /// * `index`: 0-based index of the proposal in the vote plan.
+    /// * `options`: Descriptor of vote plan options, detailing the number of choices.
+    /// * `election_key`: The public key for the vote plan used to encrypt ballots.
     pub fn new_private(
         vote_plan_id: VotePlanId,
         index: u8,
         options: Options,
-        encrypting_vote_key: ElectionPublicKey,
+        election_key: ElectionPublicKey,
     ) -> Self {
         Proposal(wallet_core::Proposal::new_private(
             vote_plan_id.0.into(),
             index,
             options.0,
-            encrypting_vote_key.0,
+            election_key.0,
         ))
     }
 }
 
 #[wasm_bindgen]
 impl VotePlanId {
-    pub fn new_from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
+    /// Constructs a VotePlanId value from its byte array representation.
+    pub fn from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
         let array: [u8; wallet_core::VOTE_PLAN_ID_LENGTH] = bytes
             .try_into()
             .map_err(|_| JsValue::from_str("Invalid vote plan id length"))?;
 
         Ok(VotePlanId(array))
+    }
+
+    /// Deprecated; use `from_bytes`.
+    pub fn new_from_bytes(bytes: &[u8]) -> Result<VotePlanId, JsValue> {
+        Self::from_bytes(bytes)
     }
 }
 
@@ -289,12 +326,19 @@ impl Options {
 
 #[wasm_bindgen]
 impl Ed25519Signature {
-    pub fn from_binary(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
+    /// Constructs a signature object from its byte array representation.
+    pub fn from_bytes(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
         chain_crypto::Signature::from_binary(signature)
             .map(Self)
             .map_err(|e| JsValue::from_str(&format!("Invalid signature {}", e)))
     }
 
+    /// Deprecated; use `from_bytes`.
+    pub fn from_binary(signature: &[u8]) -> Result<Ed25519Signature, JsValue> {
+        Self::from_bytes(signature)
+    }
+
+    /// Returns a byte array representation of the signature.
     pub fn to_bytes(&self) -> Box<[u8]> {
         self.0.as_ref().into()
     }
@@ -308,15 +352,19 @@ macro_rules! impl_public_key {
 
         #[wasm_bindgen]
         impl $name {
+            /// Returns a byte array representation of the public key.
+            // TODO: rename to `to_bytes` for harmonization with the rest of the API?
             pub fn bytes(&self) -> Box<[u8]> {
                 self.0.as_ref().into()
             }
 
+            /// Returns the key formatted as a string in Bech32 format.
             pub fn bech32(&self) -> String {
                 use chain_crypto::bech32::Bech32 as _;
                 self.0.to_bech32_str()
             }
 
+            /// Uses the given signature to verify the given message.
             pub fn verify(&self, signature: &Ed25519Signature, msg: &[u8]) -> bool {
                 let verification = signature.0.verify_slice(&self.0, msg);
                 match verification {
@@ -340,15 +388,17 @@ macro_rules! impl_secret_key {
 
         #[wasm_bindgen]
         impl $name {
+            /// Generates the key using OS-provided entropy.
             pub fn generate() -> $name {
                 Self(chain_crypto::SecretKey::<$wrapped_type>::generate(
                     rand::rngs::OsRng,
                 ))
             }
 
-            /// optional seed to generate the key, for the same entropy the same key will be generated (32
-            /// bytes). This seed will be fed to ChaChaRNG and allow pseudo random key
-            /// generation. Do not use if you are not sure
+            /// Generates the key from a seed value.
+            /// For the same entropy value of 32 bytes, the same key will be generated.
+            /// This seed will be fed to ChaChaRNG and allow pseudo random key generation.
+            /// Do not use if you are not sure.
             pub fn from_seed(seed: &[u8]) -> Result<$name, JsValue> {
                 let seed: [u8; 32] = seed
                     .try_into()
@@ -361,16 +411,22 @@ macro_rules! impl_secret_key {
                 )))
             }
 
+            /// Returns the public key corresponding to this secret key.
             pub fn public(&self) -> $public {
                 $public(self.0.to_public())
             }
 
+            /// Returns the key represented by an array of bytes.
+            /// Use with care: the secret key should not be revealed to external
+            /// observers or exposed to untrusted code.
+            // TODO: rename to leak_bytes() to emphasize the security caveats?
             pub fn bytes(&self) -> Box<[u8]> {
                 self.0.clone().leak_secret().as_ref().into()
             }
 
+            /// Signs the provided message with this secret key.
             pub fn sign(&self, msg: &[u8]) -> Ed25519Signature {
-                Ed25519Signature::from_binary(self.0.sign(&msg).as_ref()).unwrap()
+                Ed25519Signature::from_bytes(self.0.sign(&msg).as_ref()).unwrap()
             }
         }
     };
@@ -378,7 +434,8 @@ macro_rules! impl_secret_key {
 
 #[wasm_bindgen]
 impl FragmentId {
-    pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
+    /// Constructs a fragment identifier from its byte array representation.
+    pub fn from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
         let array: [u8; std::mem::size_of::<wallet_core::FragmentId>()] = bytes
             .try_into()
             .map_err(|_| JsValue::from_str("Invalid fragment id"))?;
@@ -386,6 +443,12 @@ impl FragmentId {
         Ok(FragmentId(array.into()))
     }
 
+    /// Deprecated; use `from_bytes`.
+    pub fn new_from_bytes(bytes: &[u8]) -> Result<FragmentId, JsValue> {
+        Self::from_bytes(bytes)
+    }
+
+    /// Returns a byte array representation of the fragment identifier.
     pub fn to_bytes(&self) -> Vec<u8> {
         self.0.as_bytes().to_vec()
     }
@@ -393,12 +456,14 @@ impl FragmentId {
 
 #[wasm_bindgen]
 impl ElectionPublicKey {
+    /// Constructs a key from its byte array representation.
     pub fn from_bytes(bytes: &[u8]) -> Result<ElectionPublicKey, JsValue> {
         chain_vote::ElectionPublicKey::from_bytes(bytes)
             .ok_or_else(|| JsValue::from_str("invalid binary format"))
             .map(Self)
     }
 
+    /// Decodes the key from a string in Bech32 format.
     pub fn from_bech32(bech32_str: &str) -> Result<ElectionPublicKey, JsValue> {
         use bech32::FromBase32;
 

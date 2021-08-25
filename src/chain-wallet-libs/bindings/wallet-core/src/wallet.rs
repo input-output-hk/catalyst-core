@@ -23,6 +23,7 @@ pub struct Wallet {
 }
 
 impl Wallet {
+    /// Returns address of the account with the given chain discrimination.
     pub fn account(&self, discrimination: chain_addr::Discrimination) -> chain_addr::Address {
         self.account.account_id().address(discrimination)
     }
@@ -31,20 +32,19 @@ impl Wallet {
         self.account.account_id()
     }
 
-    /// retrieve a wallet from the given mnemonics, password and protocol magic
+    /// Retrieve a wallet from the given BIP39 mnemonics and password.
     ///
     /// You can also use this function to recover a wallet even after you have transferred all the
-    /// funds to the new format (see the _convert_ function)
+    /// funds to the account addressed by the public key (see the [convert] function).
     ///
-    /// The recovered wallet will be returned in `wallet_out`.
+    /// Returns the recovered wallet on success.
     ///
-    /// # parameters
+    /// Parameters
     ///
-    /// * mnemonics: a null terminated utf8 string (already normalized NFKD) in english; *
-    /// password: pointer to the password (in bytes, can be UTF8 string or a bytes of anything);
-    /// this value is optional and passing a null pointer will result in no password;
+    /// * `mnemonics`: a UTF-8 string (already normalized NFKD) with space-separated words in English;
+    /// * `password`: the password (any string of bytes).
     ///
-    /// # errors
+    /// # Errors
     ///
     /// The function may fail if:
     ///
@@ -58,7 +58,7 @@ impl Wallet {
             .map_err(|err| Error::invalid_input("mnemonics").with(err))?;
 
         let builder = if !password.is_empty() {
-            todo!()
+            builder.password(password.to_vec().into())
         } else {
             builder
         };
@@ -74,17 +74,17 @@ impl Wallet {
         Ok(Wallet { account, free_keys })
     }
 
-    /// retrieve a wallet from a list of free keys used as utxo's
+    /// Retrieve a wallet from a list of free keys used as utxo's
     ///
     /// You can also use this function to recover a wallet even after you have
-    /// transferred all the funds to the new format (see the _convert_ function)
+    /// transferred all the funds to the new format (see the [Self::convert] function).
     ///
-    /// # parameters
+    /// Parameters
     ///
-    /// * account_key: the private key used for voting
-    /// * keys: single keys used as utxo inputs
+    /// * `account_key`: the private key used for voting
+    /// * `keys`: single keys used to retrieve UTxO inputs
     ///
-    /// # errors
+    /// # Errors
     ///
     /// The function may fail if:
     ///
@@ -99,9 +99,9 @@ impl Wallet {
             builder.add_key(SecretKey::from_binary(key.as_ref()).unwrap())
         });
 
-        let free_keys = builder
-            .build_free_utxos()
-            .map_err(|err| Error::invalid_input("todo").with(err))?;
+        let free_keys = builder.build_free_utxos().map_err(|err| {
+            Error::invalid_input("invalid secret keys for UTxO retrieval").with(err)
+        })?;
 
         let account = builder
             .build_wallet()
@@ -112,10 +112,14 @@ impl Wallet {
 
     /// retrieve funds from bip44 hd sequential wallet in the given block0 (or any other blocks).
     ///
-    /// Execute this function then you can check who much funds you have retrieved from the given
-    /// block.
+    /// After this function is executed, the wallet user can check how much
+    /// funds have been retrieved from fragments of the given block.
     ///
-    /// this function may take sometimes so it is better to only call this function if needed.
+    /// This function can take some time to run, so it is better to only
+    /// call it if needed.
+    ///
+    /// This function should not be called twice with the same block.
+    /// In a future revision of this library, this limitation may be lifted.
     ///
     /// # Errors
     ///
@@ -188,10 +192,13 @@ impl Wallet {
         self.account.confirm(&id);
     }
 
-    /// get access to all the pending transaction
+    /// Get IDs of all pending transactions. Pending transactions
+    /// can be produced by `convert`, and remain in this list until confirmed
+    /// with the `confirm_transaction` method, or removed
+    /// with the `remove_pending_transaction` method.
     ///
-    /// TODO: this might need to be updated to have a more user friendly
-    ///       API. Currently do this for simplicity
+    // TODO: this might need to be updated to have a more user friendly
+    //       API. Currently do this for simplicity
     pub fn pending_transactions(&self) -> Vec<FragmentId> {
         let mut check = std::collections::HashSet::new();
         let mut result = vec![];
@@ -240,16 +247,16 @@ impl Wallet {
             .saturating_add(self.account.value())
     }
 
-    /// update the wallet account state
+    /// Update the wallet's account state.
     ///
-    /// this is the value retrieved from any jormungandr endpoint that allows to query
-    /// for the account state. It gives the value associated to the account as well as
-    /// the counter.
+    /// The values to update the account state with can be retrieved from a
+    /// Jormungandr API endpoint. It sets the balance value on the account
+    /// as well as the current spending counter.
     ///
-    /// It is important to be sure to have an updated wallet state before doing any
-    /// transactions otherwise future transactions may fail to be accepted by any
-    /// nodes of the blockchain because of invalid signature state.
-    ///
+    /// It is important to be sure to have an up to date wallet state
+    /// before doing any transactions, otherwise future transactions may fail
+    /// to be accepted by the blockchain nodes because of an invalid witness
+    /// signature.
     pub fn set_state(&mut self, value: Value, counter: u32) {
         self.account.update_state(value, counter.into())
     }

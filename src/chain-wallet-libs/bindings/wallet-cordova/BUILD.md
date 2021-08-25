@@ -29,10 +29,10 @@ Prerequisites:
 Run `./build_ios.py`. This will build the library and copy headers and the
 library file to the Cordova plugin directory.
 
-# Electron
+## Electron
 
-## Requirements
+Prerequisites:
 
-wasm-pack (TODO: Add some link)
+* [wasm-pack](https://github.com/rustwasm/wasm-pack)
 
 run `build_wasm.py` in the plugin's root directory.

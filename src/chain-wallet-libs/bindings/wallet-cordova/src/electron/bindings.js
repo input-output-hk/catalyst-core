@@ -104,7 +104,7 @@ async function proposalNew (successCallback, errorCallback, opts) {
     const numChoices = opts[3];
 
     try {
-        const id = (await wasm).VotePlanId.new_from_bytes(new Uint8Array(votePlanId));
+        const id = (await wasm).VotePlanId.from_bytes(new Uint8Array(votePlanId));
 
         if (cordovaPayloadType === 1) {
             const options = (await wasm).Options.new_length(numChoices);
@@ -124,7 +124,7 @@ async function proposalNewPublic (successCallback, errorCallback, opts) {
     const numChoices = opts[2];
 
     try {
-        const id = (await wasm).VotePlanId.new_from_bytes(new Uint8Array(votePlanId));
+        const id = (await wasm).VotePlanId.from_bytes(new Uint8Array(votePlanId));
 
         const options = (await wasm).Options.new_length(numChoices);
         const proposal = (await wasm).Proposal.new_public(id, index, options);
@@ -143,7 +143,7 @@ async function proposalNewPrivate (successCallback, errorCallback, opts) {
     const m = (await wasm);
 
     try {
-        const id = m.VotePlanId.new_from_bytes(new Uint8Array(votePlanId));
+        const id = m.VotePlanId.from_bytes(new Uint8Array(votePlanId));
 
         const options = m.Options.new_length(numChoices);
         const key = m.EncryptingVoteKey.from_bech32(encryptionKey);
@@ -324,7 +324,7 @@ async function walletConfirmTransaction (successCallback, errorCallback, opts) {
     const wallet = (await wasm).Wallet.__wrap(walletPtr);
 
     try {
-        const fragmentId = (await wasm).FragmentId.new_from_bytes(fragmentIdBytes);
+        const fragmentId = (await wasm).FragmentId.from_bytes(fragmentIdBytes);
         wallet.confirm_transaction(fragmentId);
         successCallback();
     } catch (err) {

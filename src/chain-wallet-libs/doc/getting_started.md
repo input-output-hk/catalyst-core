@@ -593,7 +593,7 @@ Response body:
 
 The interesting values are:
 
-- VotePlna related:
+- VotePlan related:
   - **voteplan_id**
   - **payload_type**
 - Proposal related:
@@ -613,7 +613,7 @@ The interesting values are:
   - `transaction` - single transaction data in bytes, containing the vote cast, that will be sent to the network
   - `error` - returned in case of failure (wrong choice value, ...)
 
-This function is used to cast the vote choice for the proposal and to retrieve the already builded transaction for that vote.
+This function is used to cast the vote choice for the proposal and to retrieve the already built transaction for that vote.
 The retrieved transactions can be sent to the network by using the Rest API. [How to send a transaction to the network](#How-to-send-a-transaction-to-the-network)
 
 > **Note**: Please make sure to have an updated wallet state, using [wallet_set_state](#wallet_set_state)

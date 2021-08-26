@@ -6,6 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.7.0-pre2] 2021-08-26
+
+### Changed
+
+- Improved documentation
+- Recover from mnemonics can now take a password
+
+#### Wallet-js
+
+- *deprecated*: VotePlanId::new_from_bytes
+- *deprecated*: Ed25519Signature::from_binary
+- *deprecated*: FragmentId::new_from_bytes
+
+### Added
+
+#### Wallet-js
+
+- VotePlanId::from_bytes
+- Ed25519Signature::from_bytes
+- FragmentId::from_bytes
+
 ## [0.7.0-pre1] 2021-08-25
 
 ### Changed

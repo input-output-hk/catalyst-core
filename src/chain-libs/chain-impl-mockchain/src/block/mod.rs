@@ -145,15 +145,16 @@ impl Readable for Block {
         let mut contents = ContentsBuilder::new();
 
         while remaining_content_size > 0 {
-            let message_size = buf.get_u16()?;
-            let mut message_buf = buf.split_to(message_size as usize)?;
+            let message_raw = FragmentRaw::read(buf)?;
+            let message_size = message_raw.size_bytes_plus_size();
 
             // return error here if message serialize sized is bigger than remaining size
 
-            let message = Fragment::read(&mut message_buf)?;
+            let message = Fragment::from_raw(&message_raw)
+                .map_err(|e| ReadError::StructureInvalid(e.to_string()))?;
             contents.push(message);
 
-            remaining_content_size -= 2 + message_size as u32;
+            remaining_content_size -= message_size as u32;
         }
 
         Ok(Block {

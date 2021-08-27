@@ -339,7 +339,7 @@ jobs:
           submodules: true
 
       - name: build universal lib 
-        working-directory: ./bindings/wallet-cordova
+        working-directory: ./bindings/wallet-cordova/scripts
         run: python3 ./build_ios.py 
 
       - uses: actions/upload-artifact@v1
@@ -388,7 +388,7 @@ jobs:
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: build wasm for electron 
-        working-directory: ./bindings/wallet-cordova
+        working-directory: ./bindings/wallet-cordova/scripts
         run: python3 ./build_wasm.py 
 
       - name: copy java definitions from jni

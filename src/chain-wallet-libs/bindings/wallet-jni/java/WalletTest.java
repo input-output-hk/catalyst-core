@@ -70,7 +70,7 @@ public class WalletTest {
         // test vectors genesis?
         assertEquals(Settings.Discrimination.PRODUCTION, discrimination);
 
-        assertArrayEquals(hexStringToByteArray("6335a93181f9eeadda2df5d1bc341391a7c3b9814cea62843d254701d13935df"),
+        assertArrayEquals(hexStringToByteArray("237f24d5fd29563cfa8ff58f43ae3f9108405d0d0fddc9f40fc5859b77df7c21"),
                 Settings.block0Hash(settingsPtr));
 
         Settings.delete(settingsPtr);
@@ -88,7 +88,8 @@ public class WalletTest {
 
         Settings.PerCertificateFee test = new Settings.PerCertificateFee(4, 5, 6);
 
-        final long settingsPtr = Settings.build(expectedFees, discrimination, blockId, 10, (short) 15, timeEra, (short) 2);
+        final long settingsPtr = Settings.build(expectedFees, discrimination, blockId, 10, (short) 15, timeEra,
+                (short) 2);
 
         final Settings.LinearFees fees = Settings.fees(settingsPtr);
 
@@ -160,7 +161,8 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr,
+                Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -181,7 +183,8 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr,
+                Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -215,7 +218,8 @@ public class WalletTest {
         assertEquals(Wallet.spendingCounter(walletPtr), 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1,
+                    Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
             assertEquals(Wallet.spendingCounter(walletPtr), 1);
         } catch (final Exception e) {
@@ -248,7 +252,8 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
+        final long conversionPtr = Wallet.convert(walletPtr, settingsPtr,
+                Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
         final int transactionsSize = Conversion.transactionsSize(conversionPtr);
 
@@ -289,7 +294,8 @@ public class WalletTest {
         Wallet.setState(walletPtr, 10000000, 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1,
+                    Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
             final long before = Wallet.pendingTransactions(walletPtr);
 
@@ -333,7 +339,8 @@ public class WalletTest {
         Wallet.setState(walletPtr, 10000000, 0);
 
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1,
+                    Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
             final long fragment = Fragment.fromBytes(transaction);
             final byte[] fragmentId = Fragment.id(fragment);
@@ -374,7 +381,8 @@ public class WalletTest {
 
         Wallet.setState(walletPtr, 10000000, 0);
         try {
-            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1, Time.maxExpirationDate(settingsPtr, block0Date() + 600));
+            final byte[] transaction = Wallet.voteCast(walletPtr, settingsPtr, proposalPtr, 1,
+                    Time.maxExpirationDate(settingsPtr, block0Date() + 600));
 
             final long before = Wallet.pendingTransactions(walletPtr);
 
@@ -459,7 +467,7 @@ public class WalletTest {
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 
-        final BlockDate date =  Time.blockDateFromSystemTime(settingsPtr, block0Date() + 20 * 180);
+        final BlockDate date = Time.blockDateFromSystemTime(settingsPtr, block0Date() + 20 * 180);
         assertEquals(date.epoch, 1);
         assertEquals(date.slot, 0);
     }

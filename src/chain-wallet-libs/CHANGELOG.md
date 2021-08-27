@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.7.0-pre3] 2021-08-27
+
+- Fix compilation issue in iOS for cordova
+
 ## [0.7.0-pre2] 2021-08-26
 
 ### Changed

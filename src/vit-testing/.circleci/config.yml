@@ -63,7 +63,7 @@ jobs:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout 9f328ec8f1595039cb728228233fca4d5b1059f0
+            git checkout catalyst-fund6
       - run:
           name: install jormungandr
           command: |
@@ -78,7 +78,7 @@ jobs:
 
             cd vit-servicing-station
 
-            git checkout 75f38f66eb02d4711c28b7ca702c5707d5d4994e
+            git checkout catalyst-fund6
       - run:
           name: install vit-station-service
           command: |
@@ -135,7 +135,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b
+            git checkout catalyst-fund6
       - run:
           name: install jormungandr
           command: |
@@ -150,7 +150,7 @@ commands:
 
             cd vit-servicing-station
 
-            git checkout 75f38f66eb02d4711c28b7ca702c5707d5d4994e
+            git checkout catalyst-fund6
       - run:
           name: install vit-station-service
           command: |

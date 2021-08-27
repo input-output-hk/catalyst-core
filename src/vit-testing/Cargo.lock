@@ -217,7 +217,7 @@ dependencies = [
 [[package]]
 name = "bip39"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#15e80b564926b492ee4e1979ed74c4c100ee7f22"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#7bba23f689fe2cd9038ebfa8ccc98573f27fb9f5"
 dependencies = [
  "cryptoxide",
  "thiserror",
@@ -355,7 +355,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "cbor_event",
  "chain-ser",
@@ -399,7 +399,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "bech32 0.7.3",
  "chain-core",
@@ -411,7 +411,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "chain-ser",
 ]
@@ -419,7 +419,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "bech32 0.7.3",
  "cryptoxide",
@@ -440,7 +440,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -469,7 +469,7 @@ dependencies = [
 [[package]]
 name = "chain-path-derivation"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#15e80b564926b492ee4e1979ed74c4c100ee7f22"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#7bba23f689fe2cd9038ebfa8ccc98573f27fb9f5"
 dependencies = [
  "thiserror",
 ]
@@ -477,12 +477,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "criterion",
  "data-pile",
@@ -495,7 +495,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -507,7 +507,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "cfg-if 0.1.10",
  "chain-core",
@@ -1545,7 +1545,7 @@ checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
 [[package]]
 name = "hdkeygen"
 version = "0.2.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#15e80b564926b492ee4e1979ed74c4c100ee7f22"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#7bba23f689fe2cd9038ebfa8ccc98573f27fb9f5"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -1877,7 +1877,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 dependencies = [
  "thiserror",
 ]
@@ -1898,7 +1898,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7baab56125e25686df467fe470785512329883aab42696d661247aca2a2896e4"
 dependencies = [
- "console 0.14.1",
+ "console 0.11.3",
  "lazy_static",
  "number_prefix",
  "regex 1.5.4",
@@ -1990,8 +1990,8 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 
 [[package]]
 name = "jormungandr-integration-tests"
-version = "0.12.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b#d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b"
+version = "0.13.0-dev"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#a38e09a5b015e20f3b0bf1a095c3da50414b83fb"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2037,8 +2037,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-lib"
-version = "0.12.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b#d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b"
+version = "0.13.0-dev"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#a38e09a5b015e20f3b0bf1a095c3da50414b83fb"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.7.3",
@@ -2066,8 +2066,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-scenario-tests"
-version = "0.12.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b#d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b"
+version = "0.13.0-dev"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#a38e09a5b015e20f3b0bf1a095c3da50414b83fb"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2107,8 +2107,8 @@ dependencies = [
 
 [[package]]
 name = "jormungandr-testing-utils"
-version = "0.12.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?rev=d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b#d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b"
+version = "0.13.0-dev"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#a38e09a5b015e20f3b0bf1a095c3da50414b83fb"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -4039,7 +4039,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 
 [[package]]
 name = "spin"
@@ -4125,7 +4125,7 @@ checksum = "8049cf85f0e715d6af38dde439cb0ccb91f67fb9f5f63c80f8b43e48356e1a3f"
 [[package]]
 name = "symmetric-cipher"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#15e80b564926b492ee4e1979ed74c4c100ee7f22"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#7bba23f689fe2cd9038ebfa8ccc98573f27fb9f5"
 dependencies = [
  "cryptoxide",
  "rand 0.8.4",
@@ -4721,7 +4721,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ecab5ca5cc1c786a2e855b3f2550c87853513b03"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#655ba685ebb0c1958330c65236a29fe8e4825baa"
 
 [[package]]
 name = "typenum"
@@ -4874,7 +4874,7 @@ checksum = "5fecdca9a5291cc2b8dcf7dc02453fee791a280f3743cb0905f8822ae463b3fe"
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.2"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=75f38f66eb02d4711c28b7ca702c5707d5d4994e#75f38f66eb02d4711c28b7ca702c5707d5d4994e"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=catalyst-fund6#75f38f66eb02d4711c28b7ca702c5707d5d4994e"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -4903,7 +4903,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.2"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?rev=75f38f66eb02d4711c28b7ca702c5707d5d4994e#75f38f66eb02d4711c28b7ca702c5707d5d4994e"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=catalyst-fund6#75f38f66eb02d4711c28b7ca702c5707d5d4994e"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -5020,7 +5020,7 @@ dependencies = [
 [[package]]
 name = "wallet"
 version = "0.6.0-pre.1"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#15e80b564926b492ee4e1979ed74c4c100ee7f22"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#7bba23f689fe2cd9038ebfa8ccc98573f27fb9f5"
 dependencies = [
  "bip39",
  "cardano-legacy-address",
@@ -5041,8 +5041,8 @@ dependencies = [
 
 [[package]]
 name = "wallet-core"
-version = "0.6.0-pre2"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#15e80b564926b492ee4e1979ed74c4c100ee7f22"
+version = "0.7.0-pre2"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#7bba23f689fe2cd9038ebfa8ccc98573f27fb9f5"
 dependencies = [
  "bech32 0.7.3",
  "bip39",

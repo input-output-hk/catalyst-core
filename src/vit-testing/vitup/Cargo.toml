@@ -19,12 +19,12 @@ chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.gi
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-time           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-vote           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b" } 
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "d03ee225e7b2e6eb47c78c4802313fd6e8ebe18b" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev = "c81e6d54fc2aa0d4cb31c50859a8b29328a10157" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "75f38f66eb02d4711c28b7ca702c5707d5d4994e" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "75f38f66eb02d4711c28b7ca702c5707d5d4994e" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund6" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund6" }
 iapyx = { path = "../iapyx" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"

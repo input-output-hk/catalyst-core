@@ -1,6 +1,4 @@
 #import "WalletPlugin.h"
-#include <bits/stdint-uintn.h>
-
 #import <Foundation/Foundation.h>
 
 #include <memory.h>

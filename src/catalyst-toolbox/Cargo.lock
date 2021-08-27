@@ -198,6 +198,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bip39"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?rev=61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab#61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab"
+dependencies = [
+ "cryptoxide",
+ "thiserror",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -324,6 +333,7 @@ dependencies = [
  "chain-ser",
  "chain-storage",
  "chain-time",
+ "chain-vote",
  "chrono",
  "csv",
  "fixed",
@@ -355,6 +365,7 @@ dependencies = [
  "tokio",
  "url",
  "versionisator",
+ "wallet",
 ]
 
 [[package]]
@@ -452,6 +463,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "chain-path-derivation"
+version = "0.1.0"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?rev=61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab#61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab"
+dependencies = [
+ "thiserror",
+]
+
+[[package]]
 name = "chain-ser"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#65f1f53e4ce0ff19fd3e52e47bc1ecf580577513"
@@ -486,7 +505,7 @@ name = "chain-vote"
 version = "0.1.0"
 source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#65f1f53e4ce0ff19fd3e52e47bc1ecf580577513"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "chain-core",
  "chain-crypto",
  "cryptoxide",
@@ -1362,6 +1381,23 @@ name = "hashbrown"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab5ef0d4909ef3724cc8cce6ccc8572c5c817592e9285f5464f8e86f8bd3726e"
+
+[[package]]
+name = "hdkeygen"
+version = "0.2.0"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?rev=61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab#61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab"
+dependencies = [
+ "bip39",
+ "cardano-legacy-address",
+ "cbor_event",
+ "chain-addr",
+ "chain-crypto",
+ "chain-path-derivation",
+ "cryptoxide",
+ "ed25519-bip32",
+ "hex",
+ "thiserror",
+]
 
 [[package]]
 name = "headers"
@@ -3231,7 +3267,7 @@ checksum = "8049cf85f0e715d6af38dde439cb0ccb91f67fb9f5f63c80f8b43e48356e1a3f"
 [[package]]
 name = "symmetric-cipher"
 version = "0.5.0"
-source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#74820529edc37fa5ff128d6e511872122e9a545b"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?branch=master#15e80b564926b492ee4e1979ed74c4c100ee7f22"
 dependencies = [
  "cryptoxide",
  "rand 0.8.4",
@@ -3881,6 +3917,28 @@ dependencies = [
  "same-file",
  "winapi",
  "winapi-util",
+]
+
+[[package]]
+name = "wallet"
+version = "0.6.0-pre.1"
+source = "git+https://github.com/input-output-hk/chain-wallet-libs.git?rev=61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab#61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab"
+dependencies = [
+ "bip39",
+ "cardano-legacy-address",
+ "cbor_event",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-path-derivation",
+ "chain-time",
+ "cryptoxide",
+ "ed25519-bip32",
+ "hdkeygen",
+ "hex",
+ "imhamt",
+ "itertools 0.9.0",
+ "thiserror",
 ]
 
 [[package]]

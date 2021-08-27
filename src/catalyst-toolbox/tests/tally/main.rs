@@ -6,7 +6,7 @@ use chain_addr::Discrimination;
 pub use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::{
     fragment::Fragment,
-    vote::{Choice, VotePlanStatus},
+    vote::{Choice, PayloadType, VotePlanStatus},
 };
 use generator::{TestStrategy, VoteRoundGenerator};
 use jormungandr_lib::{
@@ -25,11 +25,7 @@ fn jump_to_epoch(epoch: u64, block0_config: &Block0Configuration) -> SecondsSinc
         .blockchain_configuration
         .slots_per_epoch
         .into();
-    let slot_duration: u8 = block0_config
-        .blockchain_configuration
-        .slot_duration
-        .clone()
-        .into();
+    let slot_duration: u8 = block0_config.blockchain_configuration.slot_duration.into();
     SecondsSinceUnixEpoch::from_secs(
         SecondsSinceUnixEpoch::now().to_secs()
             + slot_duration as u64 * slots_per_epoch as u64 * epoch,
@@ -47,20 +43,21 @@ macro_rules! setup_run {
             ]
         ],
         votes = $votes:expr,
-        in_order = $in_order:expr
+        in_order = $in_order:expr,
+        payload = $payload:expr
     ) => {
         {
             let seed = $seed;
             let mut rng = ChaChaRng::from_seed(seed);
-            let blockchain = blockchain::BlockchainBuilder::new()
+            let blockchain = blockchain::TestBlockchainBuilder::new()
                 $(
-                    .with_public_voteplan($vote_start, $vote_end, $committe_eend, $proposals)
+                    .with_voteplan($vote_start, $vote_end, $committe_eend, $proposals, $payload)
                 )*
                 $(
                     .with_n_wallets($wallets)
                 )?
                 .build(&mut rng);
-            let mut generator = VoteRoundGenerator::new(blockchain, &mut rng);
+            let mut generator = VoteRoundGenerator::new(blockchain);
             let vote_end = jump_to_epoch($vote_end, generator.block0_config());
             let vote_fragments = generator
                 .generate_vote_fragments(TestStrategy::Random(seed), $votes, !$in_order, &mut rng)
@@ -71,7 +68,7 @@ macro_rules! setup_run {
                         fragment,
                     })
                 }).collect::<Vec<_>>();
-            let tally_fragments = generator.tally_transactions().into_iter().map(|fragment| {
+            let tally_fragments = generator.tally_transactions(&mut rng).into_iter().map(|fragment| {
                 Ok(PersistentFragmentLog {
                     time: vote_end,
                     fragment,
@@ -93,8 +90,9 @@ fn tally_ok() {
                 one with 255 proposals
             ]
         ],
-        votes = 1000,
-        in_order = true
+        votes = 1,
+        in_order = true,
+        payload = PayloadType::Public
     };
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
@@ -105,7 +103,7 @@ fn tally_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.tally());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
     assert!(failed_fragments.is_empty());
 }
 
@@ -121,7 +119,8 @@ fn shuffle_tally_ok() {
             ]
         ],
         votes = 1000,
-        in_order = false
+        in_order = false,
+        payload = PayloadType::Public
     };
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
@@ -132,7 +131,34 @@ fn shuffle_tally_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.tally());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert!(failed_fragments.is_empty());
+}
+
+#[test]
+fn shuffle_tally_ok_private() {
+    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+        seed = [0; 32],
+        voteplans = [
+            dates 0 => 1 => 2,
+            plans = [
+                one with 255 proposals
+            ]
+        ],
+        votes = 1000,
+        in_order = false,
+        payload = PayloadType::Private
+    };
+
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &generator.block0(),
+        vote_fragments
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
+
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
     assert!(failed_fragments.is_empty());
 }
 
@@ -148,7 +174,8 @@ fn wallet_not_in_block0() {
             ]
         ],
         votes = 0,
-        in_order = false
+        in_order = false,
+        payload = PayloadType::Public
     };
 
     let block0 = generator.block0();
@@ -173,7 +200,7 @@ fn wallet_not_in_block0() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.tally());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
     assert_eq!(failed_fragments.len(), 1);
 }
 
@@ -189,7 +216,8 @@ fn only_last_vote_is_counted() {
             ]
         ],
         votes = 0,
-        in_order = false
+        in_order = false,
+        payload = PayloadType::Public
     };
 
     let block0 = generator.block0();
@@ -241,7 +269,8 @@ fn replay_not_counted() {
             ]
         ],
         votes = 0,
-        in_order = false
+        in_order = false,
+        payload = PayloadType::Public
     };
 
     let block0 = generator.block0();
@@ -294,7 +323,8 @@ fn multi_voteplan_ok() {
             ]
         ],
         votes = 10000,
-        in_order = false
+        in_order = false,
+        payload = PayloadType::Public
     };
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
@@ -305,7 +335,38 @@ fn multi_voteplan_ok() {
     )
     .unwrap();
 
-    assert_tally_eq(ledger.active_vote_plans(), generator.tally());
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert!(failed_fragments.is_empty());
+}
+
+#[test]
+fn multi_voteplan_ok_private() {
+    let (mut generator, vote_fragments, tally_fragments) = setup_run! {
+        seed = [0; 32],
+        wallets = 1000,
+        voteplans = [
+            dates 0 => 1 => 2,
+            plans = [
+                one with 255 proposals,
+                one with 255 proposals,
+                one with 255 proposals,
+                one with 255 proposals
+            ]
+        ],
+        votes = 10000,
+        in_order = false,
+        payload = PayloadType::Private
+    };
+
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &generator.block0(),
+        vote_fragments
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
+
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
     assert!(failed_fragments.is_empty());
 }
 
@@ -320,7 +381,8 @@ fn votes_outside_voting_phase() {
             ]
         ],
         votes = 0,
-        in_order = false
+        in_order = false,
+        payload = PayloadType::Public
     };
 
     let block0 = generator.block0();
@@ -372,7 +434,8 @@ fn transaction_transfer() {
             ]
         ],
         votes = 0,
-        in_order = false
+        in_order = false,
+        payload = PayloadType::Public
     };
     let mut wallets = generator
         .wallets()
@@ -381,8 +444,8 @@ fn transaction_transfer() {
         .cloned()
         .collect::<Vec<_>>();
     assert_eq!(wallets.len(), 2);
-
-    let gen_wallets = generator.wallets().clone();
+    let wallet1_address = wallets[1].address();
+    let wallet0_address = wallets[0].address();
 
     let config = generator.block0_config();
     let wallets_stake = config
@@ -397,12 +460,10 @@ fn transaction_transfer() {
         })
         .flatten()
         .map(|utxo| (utxo.address.clone(), utxo.value))
-        .filter(|(addr, _)| gen_wallets.contains_key(addr.as_ref()))
+        .filter(|(addr, _)| [&wallet0_address, &wallet1_address].contains(&addr))
         .collect::<HashMap<_, _>>();
 
     // transfer all funds from the first wallet to the second
-    let wallet1_address = wallets[1].address();
-    let wallet0_address = wallets[0].address();
     let transaction = (&mut wallets[0])
         .transaction_to(
             &generator.block0().header.id().into(),
@@ -410,7 +471,7 @@ fn transaction_transfer() {
                 .block0_config()
                 .blockchain_configuration
                 .linear_fees,
-            wallet1_address.clone(),
+            wallet1_address,
             *wallets_stake.get(&wallet0_address).unwrap(),
         )
         .unwrap();
@@ -437,7 +498,6 @@ fn transaction_transfer() {
     )
     .unwrap();
 
-    dbg!(ledger.accounts());
     let tally = ledger.active_vote_plans()[0].proposals[0]
         .tally
         .clone()
@@ -481,12 +541,12 @@ fn cast_vote(
 ) -> Fragment {
     wallet
         .issue_vote_cast_cert(
-            &generator.block0().header.id().clone().into(),
+            &generator.block0().header.id().into(),
             &generator
                 .block0_config()
                 .blockchain_configuration
                 .linear_fees,
-            &generator.voteplans()[0],
+            generator.voteplans()[0],
             proposals_idx,
             &Choice::new(choice),
         )

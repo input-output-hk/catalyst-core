@@ -1,26 +1,24 @@
 use chain_impl_mockchain::block::Block;
 
-use chain_addr::{Address, Discrimination, Kind};
-use chain_impl_mockchain::certificate::{VotePlan, VotePlanId, VoteTallyPayload};
-use chain_impl_mockchain::fee::LinearFee;
-use chain_impl_mockchain::fragment::Fragment;
-use chain_impl_mockchain::ledger::Ledger;
-use chain_impl_mockchain::stake::StakeControl;
-use chain_impl_mockchain::testing::create_initial_vote_plan;
-use chain_impl_mockchain::transaction::{
-    InputEnum, TransactionSlice, UnspecifiedAccountIdentifier,
+use super::blockchain::TestBlockchain;
+use chain_addr::Address;
+use chain_impl_mockchain::{
+    certificate::{
+        DecryptedPrivateTally, DecryptedPrivateTallyProposal, VotePlan, VotePlanId,
+        VoteTallyPayload,
+    },
+    fee::LinearFee,
+    fragment::Fragment,
+    ledger::Ledger,
+    stake::StakeControl,
+    testing::data::CommitteeMembersManager,
+    transaction::{InputEnum, TransactionSlice, UnspecifiedAccountIdentifier},
+    utxo,
+    vote::{Choice, PayloadType, VotePlanManager, VotePlanStatus},
 };
-use chain_impl_mockchain::utxo;
-use chain_impl_mockchain::vote::{Choice, CommitteeId, VotePlanManager, VotePlanStatus};
-use jormungandr_lib::crypto::hash::Hash;
-use jormungandr_lib::interfaces::{
-    try_initials_vec_from_messages, Block0Configuration, CommitteeIdDef,
-};
-use jormungandr_testing_utils::testing::network_builder::{Blockchain, Random, Seed, Settings};
+use jormungandr_lib::{crypto::hash::Hash, interfaces::Block0Configuration};
 use jormungandr_testing_utils::wallet::Wallet;
 use rand::prelude::*;
-use rand::Rng;
-use rand::SeedableRng;
 use rand_chacha::ChaChaRng;
 use std::collections::HashMap;
 
@@ -30,12 +28,7 @@ pub struct VoteRoundGenerator {
     wallets: HashMap<Address, Wallet>,
     committee_wallets: HashMap<Address, Wallet>,
     voteplan_managers: HashMap<VotePlanId, VotePlanManager>,
-}
-
-fn committee_id_to_address(id: CommitteeIdDef) -> Address {
-    let id = CommitteeId::from(id);
-    let pk = id.public_key();
-    chain_addr::Address(Discrimination::Production, Kind::Account(pk))
+    committee_manager: CommitteeMembersManager,
 }
 
 fn account_from_slice<P>(
@@ -50,51 +43,22 @@ fn account_from_slice<P>(
 }
 
 impl VoteRoundGenerator {
-    pub fn new<R: Rng>(blockchain: Blockchain, rng: &mut R) -> Self {
-        let mut settings = Settings::new(
-            HashMap::new(),
-            blockchain.clone(),
-            &mut Random::new(Seed::generate(rng)),
-        );
+    pub fn new(blockchain: TestBlockchain) -> Self {
+        let TestBlockchain {
+            config,
+            wallets,
+            committee_wallets,
+            committee_manager,
+            vote_plans,
+        } = blockchain;
 
-        let mut wallets = settings
-            .wallets
-            .values()
-            .cloned()
-            .map(|w| {
-                let wallet = Wallet::from(w);
-                (wallet.address().into(), wallet)
-            })
-            .collect::<HashMap<_, _>>();
-
-        let committee_wallets = settings
-            .block0
-            .blockchain_configuration
-            .committees
-            .iter()
-            .cloned()
-            .map(committee_id_to_address)
-            // TODO: if committee members can vote we should not remove them
-            .map(|addr| (addr.clone(), wallets.remove(&addr).unwrap()))
-            .collect::<HashMap<_, _>>();
-
-        let committee_member: chain_impl_mockchain::testing::data::Wallet =
-            committee_wallets.values().next().cloned().unwrap().into();
-
-        let mut vote_plans_fragments = Vec::new();
         let mut voteplan_managers = HashMap::new();
-        for vote_plan_def in blockchain.vote_plans() {
-            let vote_plan = vote_plan_def.into();
-            vote_plans_fragments.push(create_initial_vote_plan(
-                &vote_plan,
-                &[committee_member.clone()],
-            ));
+        for vote_plan in vote_plans {
             voteplan_managers.insert(
                 vote_plan.to_id(),
                 VotePlanManager::new(
                     vote_plan,
-                    settings
-                        .block0
+                    config
                         .blockchain_configuration
                         .committees
                         .iter()
@@ -105,16 +69,12 @@ impl VoteRoundGenerator {
             );
         }
 
-        settings
-            .block0
-            .initial
-            .extend(try_initials_vec_from_messages(vote_plans_fragments.iter()).unwrap());
-
-        let block0_hash = settings.block0.to_block().header.id().into();
+        let block0_hash = config.to_block().header.id().into();
         Self {
-            block0: settings.block0,
+            block0: config,
             block0_hash,
             committee_wallets,
+            committee_manager,
             voteplan_managers,
             wallets,
         }
@@ -165,71 +125,182 @@ impl VoteRoundGenerator {
         }
 
         for fragment in &fragments {
-            if let Fragment::VoteCast(ref transaction) = fragment {
-                let vote_cast = transaction.as_slice().payload().into_payload();
-                let vote_plan_id = vote_cast.vote_plan().clone();
-
-                let address =
-                    account_from_slice(&transaction.as_slice()).expect("utxo votes not supported");
-                let update_voteplan = self.voteplan_managers.get(&vote_plan_id).unwrap().vote(
-                    self.voteplan_managers
-                        .get(&vote_plan_id)
-                        .expect("vote plan not found")
-                        .plan()
-                        .vote_start(),
-                    address,
-                    vote_cast,
-                );
-                if let Ok(update_voteplan) = update_voteplan {
-                    self.voteplan_managers.insert(vote_plan_id, update_voteplan);
-                }
-            } else {
-                panic!("a non vote fragment was generated");
-            };
+            self.feed_vote_cast(fragment);
         }
 
         fragments
     }
 
-    pub fn tally_transactions(&mut self) -> Vec<Fragment> {
+    pub fn feed_vote_cast(&mut self, fragment: &Fragment) {
+        if let Fragment::VoteCast(ref transaction) = fragment {
+            let vote_cast = transaction.as_slice().payload().into_payload();
+            let vote_plan_id = vote_cast.vote_plan().clone();
+
+            let address =
+                account_from_slice(&transaction.as_slice()).expect("utxo votes not supported");
+            let update_voteplan = self.voteplan_managers.get(&vote_plan_id).unwrap().vote(
+                self.voteplan_managers
+                    .get(&vote_plan_id)
+                    .expect("vote plan not found")
+                    .plan()
+                    .vote_start(),
+                address,
+                vote_cast,
+            );
+            if let Ok(update_voteplan) = update_voteplan {
+                self.voteplan_managers.insert(vote_plan_id, update_voteplan);
+            }
+        } else {
+            panic!("a non vote fragment was generated");
+        };
+    }
+
+    /// Tally voteplans and return the fragments to run the tally in a separate ledger
+    pub fn tally_transactions<R: Rng + CryptoRng>(&mut self, rng: &mut R) -> Vec<Fragment> {
         let mut fragments = Vec::new();
-        for voteplan in self.voteplan_managers.values() {
-            let committee_member = self.committee_wallets.values_mut().next().unwrap();
-            let tally_fragment = committee_member
-                .issue_vote_tally_cert(
+        let block0 = self.block0.to_block();
+        let member_keys = self
+            .committee_manager
+            .members()
+            .iter()
+            .map(|member| member.public_key())
+            .collect::<Vec<_>>();
+
+        let tmp_ledger = Ledger::new(block0.header.id(), block0.fragments()).unwrap();
+        let stake_control = StakeControl::new_with(tmp_ledger.accounts(), &utxo::Ledger::new());
+        let table = chain_vote::TallyOptimizationTable::generate(stake_control.assigned().into());
+
+        self.voteplan_managers = self
+            .voteplan_managers
+            .clone() // cloning is cheap and make the borrowck happy
+            .into_iter()
+            .map(|(id, manager)| {
+                let vote_end = manager.plan().vote_end();
+                match manager.plan().payload_type() {
+                    PayloadType::Private => {
+                        let mut manager = manager
+                            .start_private_tally(
+                                vote_end,
+                                &stake_control,
+                                self.block0.blockchain_configuration.committees[0].into(),
+                            )
+                            .unwrap();
+
+                        let mut results = Vec::new();
+                        let mut shares = Vec::new();
+                        for proposal in manager.statuses().proposals {
+                            let (encrypted_tally, total_stake) = proposal
+                                .tally
+                                .as_ref()
+                                .unwrap()
+                                .private_encrypted()
+                                .unwrap();
+
+                            let sh = self
+                                .committee_manager
+                                .members()
+                                .iter()
+                                .map(|member| {
+                                    encrypted_tally.partial_decrypt(rng, member.secret_key())
+                                })
+                                .collect::<Box<[_]>>();
+                            let partial_res = encrypted_tally
+                                .validate_partial_decryptions(&member_keys, &sh)
+                                .unwrap()
+                                .decrypt_tally((*total_stake).into(), &table)
+                                .unwrap();
+                            results.push(partial_res.votes.into_boxed_slice());
+                            shares.push(sh);
+                        }
+
+                        let decrypted_tally = DecryptedPrivateTally::new(
+                            results
+                                .into_iter()
+                                .zip(shares.into_iter())
+                                .map(|(tally_result, decrypt_shares)| {
+                                    DecryptedPrivateTallyProposal {
+                                        decrypt_shares,
+                                        tally_result,
+                                    }
+                                })
+                                .collect::<Vec<_>>(),
+                        );
+
+                        manager = manager
+                            .finalize_private_tally(&decrypted_tally, &Default::default(), |_| ())
+                            .unwrap();
+
+                        fragments.extend(self.prepare_tally_fragments(
+                            manager.plan(),
+                            VoteTallyPayload::Private {
+                                inner: decrypted_tally,
+                            },
+                        ));
+
+                        (id, manager)
+                    }
+                    PayloadType::Public => {
+                        let manager = manager
+                            .public_tally(
+                                vote_end,
+                                &stake_control.clone(),
+                                &Default::default(),
+                                self.block0.blockchain_configuration.committees[0].into(),
+                                |_| (),
+                            )
+                            .unwrap();
+
+                        fragments.extend(
+                            self.prepare_tally_fragments(manager.plan(), VoteTallyPayload::Public),
+                        );
+
+                        (id, manager)
+                    }
+                }
+            })
+            .collect::<HashMap<_, _>>();
+        fragments
+    }
+
+    fn prepare_tally_fragments(
+        &mut self,
+        voteplan: &VotePlan,
+        payload: VoteTallyPayload,
+    ) -> Vec<Fragment> {
+        let mut res = Vec::new();
+        let committee_member = self.committee_wallets.values_mut().next().unwrap();
+
+        if let VoteTallyPayload::Private { .. } = payload {
+            let encrypted_tally_fragment = committee_member
+                .issue_encrypted_tally_cert(
                     &self.block0_hash,
                     &self.block0.blockchain_configuration.linear_fees,
-                    voteplan.plan(),
-                    VoteTallyPayload::Public,
+                    voteplan,
                 )
                 .unwrap();
             committee_member.confirm_transaction();
-            fragments.push(tally_fragment);
+            res.push(encrypted_tally_fragment);
         }
-        fragments
-    }
 
-    pub fn tally(&mut self) -> Vec<VotePlanStatus> {
-        let block0 = self.block0.to_block();
-        let tmp_ledger = Ledger::new(block0.header.id(), block0.fragments()).unwrap();
-        let stake_control = StakeControl::new_with(tmp_ledger.accounts(), &utxo::Ledger::new());
-        let mut res = Vec::new();
-
-        for manager in self.voteplan_managers.values_mut() {
-            let vote_end = manager.plan().vote_end();
-            *manager = manager
-                .public_tally(
-                    vote_end,
-                    &stake_control.clone(),
-                    &Default::default(),
-                    self.block0.blockchain_configuration.committees[0].into(),
-                    |_| (),
-                )
-                .unwrap();
-            res.push(manager.statuses());
-        }
+        let tally_fragment = committee_member
+            .issue_vote_tally_cert(
+                &self.block0_hash,
+                &self.block0.blockchain_configuration.linear_fees,
+                voteplan,
+                payload,
+            )
+            .unwrap();
+        committee_member.confirm_transaction();
+        res.push(tally_fragment);
 
         res
+    }
+
+    pub fn statuses(&mut self) -> Vec<VotePlanStatus> {
+        self.voteplan_managers
+            .values()
+            .map(|manager| manager.statuses())
+            .collect::<Vec<_>>()
     }
 }
 

@@ -4,10 +4,11 @@ from pathlib import Path
 import subprocess
 import sys
 import shutil
+from directories import repository_directory
 
 
 def run():
-    wallet_js = Path("../wallet-js")
+    wallet_js = repository_directory / "bindings" / "wallet_js"
     relative_path_from_wallet_js = Path("../wallet-cordova/src/electron/pkg")
     out = subprocess.run(
         [

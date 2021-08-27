@@ -15,29 +15,114 @@ jobs:
       matrix:
         config:
           # Linux
-          - { os: ubuntu-latest, cross: false, toolchain: stable, target: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: aarch64-unknown-linux-gnu }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: arm-unknown-linux-gnueabi }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: armv7-unknown-linux-gnueabihf }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: mips64el-unknown-linux-gnuabi64 }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: powerpc64le-unknown-linux-gnu }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: x86_64-unknown-linux-musl }
+          - {
+              os: ubuntu-latest,
+              cross: false,
+              toolchain: stable,
+              target: x86_64-unknown-linux-gnu,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: aarch64-unknown-linux-gnu,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: arm-unknown-linux-gnueabi,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: armv7-unknown-linux-gnueabihf,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: mips64el-unknown-linux-gnuabi64,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: powerpc64le-unknown-linux-gnu,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: x86_64-unknown-linux-musl,
+            }
           # Android
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: aarch64-linux-android }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: arm-linux-androideabi }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: armv7-linux-androideabi }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: i686-linux-android }
-          - { os: ubuntu-latest, cross: true, toolchain: stable, target: x86_64-linux-android }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: aarch64-linux-android,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: arm-linux-androideabi,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: armv7-linux-androideabi,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: i686-linux-android,
+            }
+          - {
+              os: ubuntu-latest,
+              cross: true,
+              toolchain: stable,
+              target: x86_64-linux-android,
+            }
           # tumbv7neon not yet supported
           # - { os: ubuntu-latest, cross: true, toolchain: stable, target: thumbv7neon-linux-androideabi }
           # Macos
-          - { os: macos-latest, cross: false, toolchain: stable, target: x86_64-apple-darwin }
+          - {
+              os: macos-latest,
+              cross: false,
+              toolchain: stable,
+              target: x86_64-apple-darwin,
+            }
           # iOS
-          - { os: macos-latest, cross: false, toolchain: stable, target: aarch64-apple-ios }
-          - { os: macos-latest, cross: false, toolchain: stable, target: x86_64-apple-ios }
+          - {
+              os: macos-latest,
+              cross: false,
+              toolchain: stable,
+              target: aarch64-apple-ios,
+            }
+          - {
+              os: macos-latest,
+              cross: false,
+              toolchain: stable,
+              target: x86_64-apple-ios,
+            }
           # Windows
-          - { os: windows-latest, cross: false, toolchain: stable-x86_64-pc-windows-gnu, target: x86_64-pc-windows-gnu }
-          - { os: windows-latest, cross: false, toolchain: stable-x86_64-pc-windows-msvc, target: x86_64-pc-windows-msvc }
+          - {
+              os: windows-latest,
+              cross: false,
+              toolchain: stable-x86_64-pc-windows-gnu,
+              target: x86_64-pc-windows-gnu,
+            }
+          - {
+              os: windows-latest,
+              cross: false,
+              toolchain: stable-x86_64-pc-windows-msvc,
+              target: x86_64-pc-windows-msvc,
+            }
 
     steps:
       - uses: actions-rs/toolchain@v1
@@ -46,13 +131,6 @@ jobs:
           target: ${{ matrix.config.target }}
           override: true
           default: true
-
-      - name: Downgrade cross
-        uses: actions-rs/cargo@v1
-        if: ${{ matrix.config.cross }}
-        with:
-          command: install
-          args: --version 0.1.16 cross
 
       - name: Checkout code
         uses: actions/checkout@v1
@@ -65,3 +143,170 @@ jobs:
           use-cross: ${{ matrix.config.cross }}
           command: rustc
           args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto
+
+  build_jni:
+    name: Build jni libs with cross
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - { target: aarch64-linux-android }
+          - { target: armv7-linux-androideabi }
+          - { target: i686-linux-android }
+          - { target: x86_64-linux-android }
+
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.config.target }}
+          override: true
+          default: true
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Build library (release)
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: rustc
+          args: --target ${{ matrix.config.target }} -p wallet-jni -- -C link-args=-ldl
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: jni ${{ matrix.config.target }}
+          path: ./target/${{ matrix.config.target }}/debug/libwallet_jni.so
+          retention-days: 1
+
+  build_cordova_ios_app:
+    name: Build cordova test app on ios
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          default: true
+
+      - run: rustup target add x86_64-apple-ios
+      - run: rustup target add aarch64-apple-ios
+
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Setup cordova
+        run: sudo npm install -g cordova
+
+      - run: brew install ios-deploy
+
+      - name: build test app
+        run: |
+          python3 bindings/wallet-cordova/scripts/test.py \
+            --directory test_app \
+            --platform ios \
+            -- full
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-harness-ios-sim
+          path: ./test_app/hello/platforms/ios/build/emulator/HelloWorld.app
+
+  build_cordova_android_app:
+    name: Build cordova test app on android
+    runs-on: ubuntu-latest
+    needs: [build_jni]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          default: true
+
+      - run: mkdir -p target/debug
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jni aarch64-linux-android
+          path: target/aarch64-linux-android/debug
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jni armv7-linux-androideabi
+          path: target/armv7-linux-androideabi/debug
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jni i686-linux-android
+          path: target/i686-linux-android/debug
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jni x86_64-linux-android
+          path: target/x86_64-linux-android/debug
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r23
+
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup cordova
+        run: sudo npm install -g cordova
+
+      # build-tools workaround taken from here
+      # https://github.com/apache/cordova-android/issues/1288
+      - name: build test app
+        run: |
+          $ANDROID_SDK_ROOT/tools/bin/sdkmanager --uninstall "build-tools;31.0.0"
+          $ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "build-tools;30.0.3"
+          python3 bindings/wallet-cordova/scripts/test.py \
+            --directory test_app \
+            --platform android \
+            --no-cargo-build \
+            -- full
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: package plugin
+        run: npm pack ./bindings/wallet-cordova
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: plugin
+          path: wallet-cordova-plugin*.tgz
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-harness-apk
+          path: ./test_app/hello/platforms/android/app/build/outputs/apk/debug/app-debug.apk

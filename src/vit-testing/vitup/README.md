@@ -194,49 +194,44 @@ For example if we would like to start vote in 5 minutes, allow users to case vot
 Full Example:
 
 ```
-{
-   "initials":[
-      {
-         "above_threshold":30,
-         "pin":"1234"
-      },
-      {
-         "below_threshold":30,
-         "pin":"9807"
-      },
-      {
-         "zero_funds":30,
-         "pin":"0000"
-      },
-      {
-        "name":"darek",
-        "funds":8000,
-        "pin":"1111"         
-      },
-      {
-        "name":"german",
-        "funds":8000,
-        "pin":"9999"         
-      },
-      {
-        "name":"juan",
-        "funds":8000,
-        "pin":"2222"         
-      }
-   ],
-   "vote_start":3,
-   "vote_tally":100,
-   "tally_end":110,
-   "proposals":285,
-   "slot_duration":1,
-   "slots_per_epoch":60,
-   "voting_power":8000,
-   "challenges": 7,
-   "fund_name":"fund_3",
-   "fund_id": 1,
-   "private":true,
-   "protocol":"Http",
-   "version": "2.0"
+{  
+  "initials": [
+    {
+      "above_threshold": 10,
+      "pin": "1234"
+    },
+    {
+      "name": "alice",
+      "pin": "1234",
+      "funds": 10000
+    },
+    {
+      "name": "bob",
+      "pin": "1234",
+      "funds": 10000
+    }
+  ],
+  "vote_start": 0,
+  "vote_tally": 10,
+  "tally_end": ,
+  "refresh_time": "2021-09-30T09:00:00",
+  "next_vote_start_time": "2021-10-07T21:00:00",
+  "proposals": 267,
+  "challenges": 9,
+  "reviews": 5072,
+  "slot_duration": 5,
+  "slots_per_epoch": 1800,
+  "voting_power": 450,
+  "fund_name": "Fund6",
+  "block_content_max_size": 204800,
+  "private": true,
+  "fund_id":6,
+  "linear_fees": {
+    "constant": 0,
+    "coefficient": 0,
+    "certificate": 0
+  },
+  "version":"2.0"
 }
 ```
 
@@ -407,28 +402,59 @@ Resets environment data
 ```
 curl --location --request POST 'http://192.168.0.19:8080/api/control/command/reset' \
 --header 'Content-Type: application/json' \
---data-raw '{" \ 
-	initials":[ \
-	   { \
-	      "name":"beforeVotingStart", \
-	      "funds":500, \
-	      "pin":"1234" \
-	   } \
-	], \
-	"vote_start":0, \
-	"vote_tally":10, \
-	"tally_end":20, \
-	"next_vote_start_time":"2022-05-31T20:00:00", \
-	"proposals":257, \
-	"challenges":7, \
-	"slot_duration":1, \
-	"slots_per_epoch":60, \
-	"voting_power":450, \
-	"fund_name":"Fund4", \
-	"fund_id":4, \
-	"linear_fees":{"constant":0,"coefficient":0,"certificate":0}, \
-	"version":"2.0", \
-	"private":false \
+--data-raw '{ 
+  "initials": [ 
+    { 
+      "above_threshold": 10,
+      "pin": "1234"
+    },
+    {
+      "name": "dor",
+      "pin": "1234",
+      "funds": 10000
+    },
+    {
+      "name": "eric",
+      "pin": "1234",
+      "funds": 10000
+    },
+    {
+      "name": "kriss",
+      "pin": "1234",
+      "funds": 10000
+    },
+    {
+      "name": "marek",
+      "pin": "1234",
+      "funds": 10000
+    },
+    {
+      "name": "darek",
+      "pin": "1234",
+      "funds": 10000
+    }
+  ],
+  "vote_start": 0,
+  "vote_tally": 701,
+  "tally_end": 801,
+  "refresh_time": "2021-08-12T09:00:00",
+  "next_vote_start_time": "2021-10-07T21:00:00",
+  "proposals": 267,
+  "challenges": 9,
+  "reviews": 5072,
+  "slot_duration": 5,
+  "slots_per_epoch": 1800,
+  "voting_power": 450,
+  "fund_name": "Fund6",
+  "block_content_max_size": 204800,
+  "private": true,
+  "fund_id":6,
+  "linear_fees": {
+    "constant": 0,
+    "coefficient": 0,
+    "certificate": 0
+  },
+  "version":"2.0"
 }'
 ```
 ##### Health

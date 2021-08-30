@@ -178,4 +178,15 @@ mod tests {
             matches!(signature, Err(SignatureError::SizeInvalid { .. }))
         );
     }
+
+    /// `secret_from_binary`should fail if the provided byte array does not match the secret key size
+    #[proptest]
+    fn secret_from_binary_size_check(#[strategy(..SumEd25519_12::SECRET_KEY_SIZE * 10)] n: usize) {
+        let private_key = SumEd25519_12::secret_from_binary(&vec![0; n]);
+
+        assert_eq!(
+            n != SumEd25519_12::SECRET_KEY_SIZE,
+            private_key.err() == Some(SecretKeyError::SizeInvalid)
+        );
+    }
 }

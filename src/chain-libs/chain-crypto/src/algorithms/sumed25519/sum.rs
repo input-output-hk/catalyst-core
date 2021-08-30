@@ -137,7 +137,7 @@ impl<'a> ExactSizeIterator for Seeds<'a> {
     }
 }
 
-fn rs_from_period(depth: Depth, t: usize) -> u32 {
+const fn rs_from_period(depth: Depth, t: usize) -> u32 {
     let bits = (depth.total() - 1).count_ones();
     bits - t.count_ones()
 }
@@ -799,6 +799,7 @@ mod tests {
             Seed::from_bytes(b)
         }
     }
+
     impl Arbitrary for Depth {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             Depth(usize::arbitrary(g) % 8)
@@ -816,7 +817,7 @@ mod tests {
         for i in 0..depth.total() {
             let sig = sign(&sk, &m);
             let v = verify(&pk, &m, &sig);
-            assert_eq!(v, true, "key {} failed verification", i);
+            assert!(v, "key {} failed verification", i);
             if sk.is_updatable() {
                 update(&mut sk).unwrap();
             }
@@ -844,7 +845,7 @@ mod tests {
                 126, 176, 154, 229, 246, 71, 227, 121, 87,
             ],
         );
-        assert_eq!(update(&mut sk).is_ok(), true);
+        assert!(update(&mut sk).is_ok());
         secretkey_identical(
             &sk.sk().to_bytes(),
             &[
@@ -869,9 +870,9 @@ mod tests {
         let (mut sk, pk) = keygen(Depth(4), &Seed::zero());
 
         assert_eq!(sk.compute_public(), pk);
-        assert_eq!(update(&mut sk).is_ok(), true);
+        assert!(update(&mut sk).is_ok());
         assert_eq!(sk.compute_public(), pk);
-        assert_eq!(update(&mut sk).is_ok(), true);
+        assert!(update(&mut sk).is_ok());
         assert_eq!(sk.compute_public(), pk);
     }
 
@@ -910,5 +911,24 @@ mod tests {
 
         let (_, pkrec) = sumrec::keygen(depth, &seed);
         prop_assert_eq!(pk.as_bytes(), pkrec.as_bytes());
+    }
+
+    #[proptest]
+    fn secret_key_to_from_bytes(depth: Depth, seed: Seed) {
+        let (mut sk, _) = keygen(depth, &seed);
+
+        for _ in 0..depth.total() {
+            let bytes = sk.as_ref();
+            assert_eq!(&SecretKey::from_bytes(depth, bytes).unwrap().data, &sk.data);
+
+            if sk.is_updatable() {
+                update(&mut sk).unwrap();
+            }
+        }
+
+        prop_assert_eq!(
+            &SecretKey::from_bytes(depth, sk.as_ref()).unwrap().data,
+            &sk.data
+        )
     }
 }

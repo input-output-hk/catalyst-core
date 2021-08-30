@@ -56,13 +56,6 @@ impl Block {
         &self.contents
     }
 
-    pub fn is_consistent(&self) -> bool {
-        let (content_hash, content_size) = self.contents.compute_hash_size();
-
-        content_hash == self.header.block_content_hash()
-            && content_size == self.header.block_content_size()
-    }
-
     pub fn fragments(&self) -> impl Iterator<Item = &Fragment> {
         self.contents.iter()
     }
@@ -130,22 +123,41 @@ impl property::Deserialize for Block {
 
         while serialized_content_size > 0 {
             let message_raw = FragmentRaw::deserialize(&mut reader)?;
-            let message_size = message_raw.size_bytes_plus_size();
+            let message_size = message_raw.size_bytes_plus_size() as u32;
 
-            // return error here if message serialize sized is bigger than remaining size
+            if message_size > serialized_content_size {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    format!(
+                        "{} bytes remaining according to the header but got a fragment of size {}",
+                        message_size, serialized_content_size,
+                    ),
+                ));
+            }
 
             let message = Fragment::from_raw(&message_raw)
                 .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidInput, e))?;
             contents.push(message);
 
-            serialized_content_size -= message_size as u32;
+            serialized_content_size -= message_size;
         }
 
-        // TODO: check that the block is consistent
-        Ok(Block {
-            header,
-            contents: contents.into(),
-        })
+        let contents: Contents = contents.into();
+        // No need to check content size match if the hash is checked
+        let (content_hash, _content_size) = contents.compute_hash_size();
+
+        if content_hash != header.block_content_hash() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!(
+                    "Inconsistent block content hash in header: block {} header {}",
+                    content_hash,
+                    header.block_content_hash()
+                ),
+            ));
+        }
+
+        Ok(Block { header, contents })
     }
 }
 
@@ -155,27 +167,40 @@ impl Readable for Block {
         let mut header_buf = buf.split_to(header_size)?;
         let header = Header::read(&mut header_buf)?;
 
-        let mut remaining_content_size = header.block_content_size();
+        let mut remaining_content_size = header.block_content_size() as usize;
         let mut contents = ContentsBuilder::new();
 
         while remaining_content_size > 0 {
             let message_raw = FragmentRaw::read(buf)?;
             let message_size = message_raw.size_bytes_plus_size();
 
-            // return error here if message serialize sized is bigger than remaining size
+            if message_size > remaining_content_size {
+                return Err(ReadError::StructureInvalid(format!(
+                    "{} bytes remaining according to the header but got a fragment of size {}",
+                    message_size, remaining_content_size
+                )));
+            }
 
             let message = Fragment::from_raw(&message_raw)
                 .map_err(|e| ReadError::StructureInvalid(e.to_string()))?;
             contents.push(message);
 
-            remaining_content_size -= message_size as u32;
+            remaining_content_size -= message_size;
         }
 
-        // TODO: check that the block is consistent
-        Ok(Block {
-            header,
-            contents: contents.into(),
-        })
+        let contents: Contents = contents.into();
+        // No need to check content size match if the hash is checked
+        let (content_hash, _content_size) = contents.compute_hash_size();
+
+        if header.block_content_hash() != content_hash {
+            return Err(ReadError::InvalidData(format!(
+                "Inconsistent block content hash in header: block {} header {}",
+                content_hash,
+                header.block_content_hash()
+            )));
+        }
+
+        Ok(Block { header, contents })
     }
 }
 

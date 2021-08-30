@@ -43,6 +43,9 @@ pub enum ReadError {
     StructureInvalid(String),
     /// Unknown enumeration tag
     UnknownTag(u32),
+    /// Structure is correct but data is not valid,
+    /// for example because an invariant does not hold
+    InvalidData(String),
 }
 
 impl fmt::Display for ReadError {
@@ -61,6 +64,7 @@ impl fmt::Display for ReadError {
             ),
             ReadError::StructureInvalid(s) => write!(f, "Structure invalid: {}", s),
             ReadError::UnknownTag(t) => write!(f, "Unknown tag: {}", t),
+            ReadError::InvalidData(s) => write!(f, "Invalid data: {}", s),
         }
     }
 }

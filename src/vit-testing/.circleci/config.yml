@@ -95,7 +95,7 @@ jobs:
             RUST_BACKTRACE: 1
           command: |
             cd vitup
-            cargo test data::private::private_vote_multiple_vote_plans -- --test-threads=1
+            cargo test --jobs 1 -- --test-threads=1
   test_debug:
     executor: rust-stable
     environment:

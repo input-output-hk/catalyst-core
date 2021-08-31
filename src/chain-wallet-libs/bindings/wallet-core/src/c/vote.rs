@@ -1,12 +1,11 @@
 use super::ProposalPtr;
 use crate::{vote::PayloadTypeConfig, Error, Proposal, Result as AbiResult};
+use chain_crypto::bech32::Bech32;
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options as VoteOptions};
 use chain_vote::ElectionPublicKey;
 use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 pub use wallet::Settings;
-
-const ELECTION_PUBLIC_KEY_HRP: &str = "votepk";
 
 // using generics in this module is questionable, but it's used just for code
 // re-use, the idea is to have two functions, and then it's exposed that way in
@@ -29,25 +28,16 @@ impl<'a> TryInto<PayloadTypeConfig> for ProposalPrivate<'a> {
     type Error = Error;
 
     fn try_into(self) -> Result<PayloadTypeConfig, Error> {
-        use bech32::FromBase32;
-
         const INPUT_NAME: &str = "election_public_key";
 
         self.0
             .to_str()
             .map_err(|_| Error::invalid_input(INPUT_NAME))
-            .and_then(|s| bech32::decode(s).map_err(|_| Error::invalid_vote_encryption_key()))
-            .and_then(|(hrp, raw_key)| {
-                if hrp != ELECTION_PUBLIC_KEY_HRP {
-                    return Err(Error::invalid_vote_encryption_key());
-                }
-
-                let bytes = Vec::<u8>::from_base32(&raw_key).unwrap();
-
-                ElectionPublicKey::from_bytes(&bytes).ok_or_else(Error::invalid_vote_encryption_key)
+            .and_then(|s| {
+                ElectionPublicKey::try_from_bech32_str(s)
+                    .map_err(|_| Error::invalid_vote_encryption_key())
             })
             .map(PayloadTypeConfig::Private)
-            .map_err(|_| Error::invalid_vote_encryption_key())
     }
 }
 
@@ -104,7 +94,6 @@ mod tests {
 
     #[test]
     fn cast_private_vote() {
-        use bech32::ToBase32;
         use chain_vote::{
             committee::{MemberCommunicationKey, MemberState},
             tally::Crs,
@@ -126,8 +115,7 @@ mod tests {
 
         let pk = ElectionPublicKey::from_participants(&[m1.public_key()]);
 
-        let election_public_key =
-            bech32::encode(ELECTION_PUBLIC_KEY_HRP, pk.to_bytes().to_base32()).unwrap();
+        let election_public_key = pk.to_bech32_str();
         let election_public_key = std::ffi::CString::new(election_public_key).unwrap();
 
         let mut proposal: ProposalPtr = std::ptr::null_mut();

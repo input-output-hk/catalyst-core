@@ -85,7 +85,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
 
     // start voting
     david
-        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
+        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
         .unwrap();
 
     let mut edgar = vit_controller
@@ -93,7 +93,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
         .unwrap();
 
     edgar
-        .vote_for(fund2_vote_plan.id(), 0, Vote::Yes as u8)
+        .vote_for(fund2_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
         .unwrap();
 
     let mut filip = vit_controller
@@ -101,7 +101,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
         .unwrap();
 
     filip
-        .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8)
+        .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8, Default::default())
         .unwrap();
 
     let target_date = BlockDate {

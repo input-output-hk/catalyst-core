@@ -1,3 +1,4 @@
+use crate::utils::valid_until::ValidUntil;
 use crate::SimpleVoteStatus;
 use crate::Wallet;
 use crate::{data::Proposal as VitProposal, WalletBackend};
@@ -215,9 +216,10 @@ impl Controller {
         vote_plan_id: String,
         proposal_index: u32,
         choice: u8,
-        valid_until: &BlockDate,
+        valid_until: ValidUntil,
     ) -> Result<FragmentId, ControllerError> {
         let proposals = self.get_proposals()?;
+
         let proposal = proposals
             .iter()
             .find(|x| {
@@ -229,13 +231,9 @@ impl Controller {
                 proposal_index,
             })?;
 
-        let transaction = self.wallet.vote(
-            self.settings.clone(),
-            &proposal.clone().into(),
-            Choice::new(choice),
-            valid_until,
-        )?;
-        Ok(self.backend.send_fragment(transaction.to_vec())?)
+        let valid_until_block_date =
+            valid_until.into_expiry_date(Some(self.backend.settings()?))?;
+        self.vote(proposal, Choice::new(choice), &valid_until_block_date)
     }
 
     pub fn vote(
@@ -297,4 +295,6 @@ pub enum ControllerError {
     CannotReadQrCode(#[from] image::ImageError),
     #[error("bech32 error")]
     Bech32(#[from] bech32::Error),
+    #[error("time error")]
+    TimeError(#[from] wallet::time::Error),
 }

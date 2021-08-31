@@ -84,11 +84,11 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     let fund2_vote_plan = &controller.vote_plans()[1];
 
     alice
-        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
+        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
         .unwrap();
 
     alice
-        .vote_for(fund2_vote_plan.id(), 0, Vote::Yes as u8)
+        .vote_for(fund2_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
         .unwrap();
 
     let target_date = BlockDate {

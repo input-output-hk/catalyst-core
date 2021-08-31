@@ -372,7 +372,7 @@ public class WalletTest {
 
         final byte[] block0 = Files.readAllBytes(Paths.get("../../../test-vectors/block0"));
 
-        final String encryptingKey = "votepk1nc988wtjlrm5k0z43088p0rrvd5yhvc96k7zh99p6w74gupxggtqwym0vm";
+        final String encryptingKey = "ristretto255_votepk1nc988wtjlrm5k0z43088p0rrvd5yhvc96k7zh99p6w74gupxggtqyx4792";
 
         final long settingsPtr = Wallet.initialFunds(walletPtr, block0);
 

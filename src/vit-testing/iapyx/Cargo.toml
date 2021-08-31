@@ -17,6 +17,7 @@ chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 hex = "0.4"
 rand = "0.8"
 rand_core = "0.6"
@@ -35,6 +36,7 @@ regex = "*"
 dialoguer = "0.6.2"
 structopt = "0.3"
 console = "0.11"
+csv = "1.1"
 warp = { version = "0.3", features = ["tls"] }
 warp-reverse-proxy = "0.3.2"
 tokio = { version = "^1.4.0", features = ["macros", "signal", "rt", "fs", "sync"] }

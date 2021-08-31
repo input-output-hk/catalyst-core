@@ -16,14 +16,14 @@ hdkeygen = { path = "../hdkeygen" }
 hex = "0.4.2"
 itertools = "0.9"
 
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-cardano-legacy-address = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+cardano-legacy-address = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+imhamt = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
 
 [dev-dependencies]
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }

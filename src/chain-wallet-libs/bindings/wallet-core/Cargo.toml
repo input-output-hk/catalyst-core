@@ -12,14 +12,14 @@ crate-type = ["lib"]
 
 [dependencies]
 bip39 = {path = "../../bip39"}
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
 chain-path-derivation = {path = "../../chain-path-derivation"}
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
 hdkeygen = {path = "../../hdkeygen"}
 symmetric-cipher = {path = "../../symmetric-cipher"}
 thiserror = {version = "1.0.13", default-features = false}

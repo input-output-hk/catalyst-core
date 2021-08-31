@@ -12,6 +12,8 @@ use crate::{
 #[cfg(test)]
 use chain_core::property::{Block as _, Deserialize, Serialize};
 #[cfg(test)]
+use chain_ser::mempack::{ReadBuf, Readable};
+#[cfg(test)]
 use quickcheck::TestResult;
 use quickcheck::{Arbitrary, Gen};
 
@@ -37,7 +39,6 @@ quickcheck! {
         let vec = block.serialize_as_vec().unwrap();
         let new_block = Block::deserialize(&vec[..]).unwrap();
 
-        assert_eq!(block.is_consistent(),new_block.is_consistent());
         assert!(block.fragments().eq(new_block.fragments()));
         assert_eq!(block.header(),new_block.header());
         assert_eq!(block.id(),new_block.id());
@@ -66,6 +67,23 @@ quickcheck! {
         assert_eq!(header.size(),block.header.size());
 
         TestResult::from_bool(header.chain_length() == block.chain_length())
+    }
+
+    // TODO: add a separate test with headers with correct content size to stress hash
+    // checking when tests are migrated to proptest
+    fn inconsistent_block_deserialization(header: Header, contents: Contents) -> bool {
+        let (content_hash, content_size) = contents.compute_hash_size();
+
+        let maybe_block = Block { header: header.clone(), contents };
+        let block_de = Block::deserialize(maybe_block.serialize_as_vec().unwrap().as_ref());
+        let block_read = Block::read(&mut ReadBuf::from(maybe_block.serialize_as_vec().unwrap().as_ref()));
+
+        assert_eq!(
+            content_hash != header.block_content_hash() || content_size != header.block_content_size(),
+            block_de.is_err()
+        );
+
+        block_de.is_err() == block_read.is_err()
     }
 }
 

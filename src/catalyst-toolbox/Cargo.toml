@@ -14,6 +14,7 @@ test = false
 bench = false
 
 [dependencies]
+assert_fs = "1"
 csv = "1.1"
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", rev = "61a3b81ac1c5c97b8b1a1120106ed4ae6708c8ab" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
@@ -28,6 +29,7 @@ chrono = "0.4"
 jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 fixed = "1.7"
 futures = "0.3"
@@ -50,6 +52,8 @@ image = "0.23.12"
 qrcode = "0.12"
 quircs = "0.10.0"
 symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+graphql_client = "0.10"
+gag = "1"
 
 [dev-dependencies]
 rand_chacha = "0.3"

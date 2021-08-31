@@ -80,7 +80,8 @@ impl Bech32 for ElectionPublicKey {
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
-            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+            Self::from_bytes(&raw)
+                .ok_or_else(|| Error::DataInvalid("invalid election public key binary data".into()))
         })
     }
 
@@ -194,7 +195,8 @@ impl Bech32 for MemberSecretKey {
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
-            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+            Self::from_bytes(&raw)
+                .ok_or_else(|| Error::DataInvalid("invalid member secret key binary data".into()))
         })
     }
 
@@ -220,7 +222,8 @@ impl Bech32 for MemberPublicKey {
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
-            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+            Self::from_bytes(&raw)
+                .ok_or_else(|| Error::DataInvalid("invalid member public key binary data".into()))
         })
     }
 
@@ -261,7 +264,9 @@ impl Bech32 for MemberCommunicationKey {
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
-            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+            Self::from_bytes(&raw).ok_or_else(|| {
+                Error::DataInvalid("invalid member communication secret key binary data".into())
+            })
         })
     }
 
@@ -291,7 +296,9 @@ impl Bech32 for MemberCommunicationPublicKey {
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
-            Self::from_bytes(&raw).ok_or_else(|| Error::DataInvalid("invalid binary data".into()))
+            Self::from_bytes(&raw).ok_or_else(|| {
+                Error::DataInvalid("invalid member communication public key binary data".into())
+            })
         })
     }
 

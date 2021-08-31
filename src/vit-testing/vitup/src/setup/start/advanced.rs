@@ -91,6 +91,10 @@ pub struct AdvancedStartCommandArgs {
     )]
     pub challenges: PathBuf,
 
+    /// challenges import json
+    #[structopt(long = "reviews", default_value = "../resources/external/reviews.json")]
+    pub reviews: PathBuf,
+
     /// funds import json
     #[structopt(long = "funds", default_value = "../resources/external/funds.json")]
     pub funds: PathBuf,
@@ -142,16 +146,18 @@ impl AdvancedStartCommandArgs {
                 .extend(&Initials::new_from_external(initials));
         }
 
-        println!("{:?}", config.params);
-
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
         quick_setup.upload_parameters(config.params.clone());
         quick_setup.fees(config.linear_fees);
         quick_setup.set_external_committees(config.committees);
 
-        let mut template_generator =
-            ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)
-                .unwrap();
+        let mut template_generator = ExternalValidVotingTemplateGenerator::new(
+            self.proposals,
+            self.challenges,
+            self.funds,
+            self.reviews,
+        )
+        .unwrap();
 
         testing_directory.push(quick_setup.title());
         if testing_directory.exists() {

@@ -36,6 +36,10 @@ pub struct ExternalDataCommandArgs {
     #[structopt(long = "funds", default_value = "../resources/external/funds.json")]
     pub funds: PathBuf,
 
+    /// reviews import json
+    #[structopt(long = "reviews", default_value = "../resources/external/reviews.json")]
+    pub reviews: PathBuf,
+
     #[structopt(long = "snapshot")]
     pub snapshot: Option<PathBuf>,
 
@@ -75,9 +79,13 @@ impl ExternalDataCommandArgs {
         let (vit_controller, mut controller, vit_parameters, version) =
             quick_setup.build(context)?;
 
-        let mut template_generator =
-            ExternalValidVotingTemplateGenerator::new(self.proposals, self.challenges, self.funds)
-                .unwrap();
+        let mut template_generator = ExternalValidVotingTemplateGenerator::new(
+            self.proposals,
+            self.challenges,
+            self.funds,
+            self.reviews,
+        )
+        .unwrap();
 
         // generate vit station data
         let vit_station = vit_controller.spawn_vit_station(

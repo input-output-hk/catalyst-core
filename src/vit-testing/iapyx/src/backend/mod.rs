@@ -2,6 +2,7 @@ mod node;
 mod proxy;
 mod vit_station;
 
+use crate::data::AdvisorReview;
 use crate::data::Challenge;
 use crate::Fund;
 use crate::Proposal;
@@ -128,6 +129,10 @@ impl WalletBackend {
 
     pub fn funds(&self) -> Result<Fund, WalletBackendError> {
         Ok(self.vit_client.funds()?)
+    }
+
+    pub fn review(&self, proposal_id: &str) -> Result<Vec<AdvisorReview>, WalletBackendError> {
+        Ok(self.vit_client.review(proposal_id)?)
     }
 
     pub fn challenges(&self) -> Result<Vec<Challenge>, WalletBackendError> {

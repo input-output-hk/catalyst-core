@@ -19,12 +19,12 @@ chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.gi
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-time           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-vote           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "bd2da9cc7393af57ac9b95d52c99e4da44311552" } 
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "bd2da9cc7393af57ac9b95d52c99e4da44311552" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "bd2da9cc7393af57ac9b95d52c99e4da44311552" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "1ee31640b39c44b8005cd07ea6d5163019b32db5" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "1ee31640b39c44b8005cd07ea6d5163019b32db5" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "1ee31640b39c44b8005cd07ea6d5163019b32db5" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev = "c81e6d54fc2aa0d4cb31c50859a8b29328a10157" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "df9490ae33bb3abef8cb6877001091b179c5d38b" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "df9490ae33bb3abef8cb6877001091b179c5d38b" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "02d6274e878b3b6a411ae8cb68357c00320229c4" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", rev = "02d6274e878b3b6a411ae8cb68357c00320229c4" }
 iapyx = { path = "../iapyx" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"

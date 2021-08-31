@@ -78,7 +78,7 @@ jobs:
 
             cd vit-servicing-station
 
-            git checkout df9490ae33bb3abef8cb6877001091b179c5d38b
+            git checkout 02d6274e878b3b6a411ae8cb68357c00320229c4
       - run:
           name: install vit-station-service
           command: |
@@ -95,7 +95,7 @@ jobs:
             RUST_BACKTRACE: 1
           command: |
             cd vitup
-            cargo test --release -- --test-threads=1
+            cargo test --jobs 1 -- --test-threads=1
   test_debug:
     executor: rust-stable
     environment:
@@ -135,7 +135,7 @@ commands:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout bd2da9cc7393af57ac9b95d52c99e4da44311552
+            git checkout 1ee31640b39c44b8005cd07ea6d5163019b32db5
       - run:
           name: install jormungandr
           command: |
@@ -150,7 +150,7 @@ commands:
 
             cd vit-servicing-station
 
-            git checkout df9490ae33bb3abef8cb6877001091b179c5d38b
+            git checkout 02d6274e878b3b6a411ae8cb68357c00320229c4
       - run:
           name: install vit-station-service
           command: |

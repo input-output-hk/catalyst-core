@@ -15,7 +15,7 @@ pub use backend::{
     Protocol, ProxyClient, WalletBackend, WalletBackendError, WalletBackendSettings,
 };
 pub use controller::{Controller, ControllerError};
-pub use data::{Challenge, Fund, Proposal, SimpleVoteStatus, VitVersion, Voteplan};
+pub use data::{AdvisorReview, Challenge, Fund, Proposal, SimpleVoteStatus, VitVersion, Voteplan};
 pub use load::{
     MultiController, NodeLoad, NodeLoadConfig, NodeLoadError, VoteStatusProvider, WalletRequestGen,
 };

@@ -253,6 +253,7 @@ impl QuickVitBackendSettingsBuilder {
         let mut parameters = ValidVotePlanParameters::new(vote_plans, self.fund_name());
         parameters.set_voting_power_threshold((self.parameters.voting_power * 1_000_000) as i64);
         parameters.set_challenges_count(self.parameters.challenges);
+        parameters.set_reviews_count(self.parameters.reviews);
         parameters.set_voting_start(self.parameters.vote_start_timestamp.unwrap().timestamp());
         parameters
             .set_voting_tally_start(self.parameters.tally_start_timestamp.unwrap().timestamp());
@@ -268,9 +269,10 @@ impl QuickVitBackendSettingsBuilder {
         parameters.calculate_challenges_total_funds = false;
 
         if self.parameters.private {
-            let private_key_data = settings.private_vote_plans.get(&self.fund_name()).unwrap();
-            let key: ElectionPublicKey = private_key_data.election_public_key();
-            parameters.set_vote_encryption_key(key.to_base32().unwrap());
+            for (alias, private_key_data) in settings.private_vote_plans.iter() {
+                let key: ElectionPublicKey = private_key_data.election_public_key();
+                parameters.set_vote_encryption_key(key.to_base32().unwrap(), alias);
+            }
         }
         parameters
     }

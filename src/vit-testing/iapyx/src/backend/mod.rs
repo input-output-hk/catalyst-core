@@ -132,7 +132,10 @@ impl WalletBackend {
         Ok(self.vit_client.funds()?)
     }
 
-    pub fn review(&self, proposal_id: &str) -> Result<HashMap<String,Vec<AdvisorReview>>, WalletBackendError> {
+    pub fn review(
+        &self,
+        proposal_id: &str,
+    ) -> Result<HashMap<String, Vec<AdvisorReview>>, WalletBackendError> {
         Ok(self.vit_client.review(proposal_id)?)
     }
 

@@ -2,9 +2,9 @@
 
 use crate::data::ServiceVersion;
 use crate::data::{AdvisorReview, Challenge, Fund, Proposal};
-use std::collections::HashMap;
 use hyper::StatusCode;
 use reqwest::blocking::{Client, Response};
+use std::collections::HashMap;
 use thiserror::Error;
 pub const API_TOKEN_HEADER: &str = "API-Token";
 
@@ -115,7 +115,7 @@ impl VitStationRestClient {
         })
     }
 
-    pub fn review(&self, id: &str) -> Result<HashMap<String,Vec<AdvisorReview>>, RestError> {
+    pub fn review(&self, id: &str) -> Result<HashMap<String, Vec<AdvisorReview>>, RestError> {
         let response = self.review_raw(id)?;
         self.verify_status_code(&response)?;
         let content = response.text()?;

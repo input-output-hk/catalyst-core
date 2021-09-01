@@ -10,8 +10,6 @@ use wasm_bindgen::JsCast as _;
 
 mod utils;
 
-const ELECTION_PUBLIC_KEY_HRP: &str = "votepk";
-
 pub use utils::set_panic_hook;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -465,22 +463,10 @@ impl ElectionPublicKey {
 
     /// Decodes the key from a string in Bech32 format.
     pub fn from_bech32(bech32_str: &str) -> Result<ElectionPublicKey, JsValue> {
-        use bech32::FromBase32;
-
-        bech32::decode(bech32_str)
+        use chain_crypto::bech32::Bech32;
+        chain_vote::ElectionPublicKey::try_from_bech32_str(bech32_str)
             .map_err(|e| JsValue::from_str(&format!("invalid bech32 string {}", e)))
-            .and_then(|(hrp, raw_key)| {
-                if hrp != ELECTION_PUBLIC_KEY_HRP {
-                    return Err(JsValue::from_str(&format!(
-                        "expected hrp to be {} instead found {}",
-                        ELECTION_PUBLIC_KEY_HRP, hrp
-                    )));
-                }
-
-                let bytes = Vec::<u8>::from_base32(&raw_key).unwrap();
-
-                Self::from_bytes(&bytes)
-            })
+            .map(Self)
     }
 }
 

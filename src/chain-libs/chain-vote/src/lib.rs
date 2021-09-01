@@ -19,6 +19,11 @@ pub(crate) use chain_crypto::ec::p256k1::*;
 #[cfg(crypto_backend = "__internal_ex_backend_ristretto255")]
 pub(crate) use chain_crypto::ec::ristretto255::*;
 
+#[cfg(crypto_backend = "__internal_ex_backend_p256k1")]
+const CURVE_HRP: &str = "p256k1";
+#[cfg(crypto_backend = "__internal_ex_backend_ristretto255")]
+const CURVE_HRP: &str = "ristretto255";
+
 pub use math::babystep::BabyStepsTable as TallyOptimizationTable;
 
 pub use crate::{

@@ -7,14 +7,61 @@ on:
 name: C.I. Checks
 
 jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: cargo-deps
+        name: Cache cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+
+      - if: ${{ steps.cargo-deps.outputs.cache-hit != 'true' }}
+        id: ls-crates-io-index
+        name: Get head commit hash of crates.io registry index
+        shell: bash
+        run: |
+          commit=$(
+            git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master |
+            cut -f 1
+          )
+          echo "::set-output name=head::$commit"
+      - if: ${{ steps.cargo-deps.outputs.cache-hit != 'true' }}
+        name: Cache cargo registry index
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry/index
+          key: cargo-index-${{ steps.ls-crates-io-index.outputs.head }}
+          restore-keys: cargo-index-
+
+      - if: ${{ steps.cargo-deps.outputs.cache-hit != 'true' }}
+        name: Fetch dependencies and update registry index
+        run: cargo fetch --locked
+
   check:
     name: Check
+    needs: update-deps
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v1
         with:
           submodules: true
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -30,12 +77,22 @@ jobs:
 
   test:
     name: Test Suite
+    needs: update-deps
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v1
         with:
           submodules: true
+
+      - name: Restore cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -52,6 +109,7 @@ jobs:
 
   lints:
     name: Lints
+    needs: update-deps
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -74,21 +132,39 @@ jobs:
           command: fmt
           args: --all -- --check
 
+      - name: Restore cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
-        continue-on-error: true # WARNING: only for this example, remove it!
         with:
           command: clippy
           args: -- -D warnings
 
   test-wasm:
     name: Wasm-pack test
+    needs: update-deps
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
         with:
           submodules: true
+
+      - name: Restore cargo dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-deps-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install wasm pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
@@ -98,21 +174,6 @@ jobs:
 
       - name: Test in firefox
         run: wasm-pack test --headless --firefox ./bindings/wallet-js
-
-  test-key-gen-lib:
-    name: Wasm-pack test key gen and encryption lib
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-
-      - name: Install wasm pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      - name: Test in chrome
-        run: wasm-pack test --headless --chrome ./keygen
 
   eslint-cordova-plugin:
     name: check eslint for cordova plugin

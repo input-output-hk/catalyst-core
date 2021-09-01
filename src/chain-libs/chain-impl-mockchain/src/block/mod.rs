@@ -3,7 +3,7 @@ use crate::fragment::{Fragment, FragmentRaw};
 use chain_core::mempack::{read_from_raw, ReadBuf, ReadError, Readable};
 use chain_core::property;
 
-use std::slice;
+use std::{io, slice};
 
 mod builder;
 mod header;
@@ -126,8 +126,8 @@ impl property::Deserialize for Block {
             let message_size = message_raw.size_bytes_plus_size() as u32;
 
             if message_size > serialized_content_size {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
                     format!(
                         "{} bytes remaining according to the header but got a fragment of size {}",
                         message_size, serialized_content_size,
@@ -136,19 +136,18 @@ impl property::Deserialize for Block {
             }
 
             let message = Fragment::from_raw(&message_raw)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidInput, e))?;
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))?;
             contents.push(message);
 
             serialized_content_size -= message_size;
         }
 
         let contents: Contents = contents.into();
-        // No need to check content size match if the hash is checked
         let (content_hash, _content_size) = contents.compute_hash_size();
 
         if content_hash != header.block_content_hash() {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
                 format!(
                     "Inconsistent block content hash in header: block {} header {}",
                     content_hash,
@@ -189,7 +188,6 @@ impl Readable for Block {
         }
 
         let contents: Contents = contents.into();
-        // No need to check content size match if the hash is checked
         let (content_hash, _content_size) = contents.compute_hash_size();
 
         if header.block_content_hash() != content_hash {

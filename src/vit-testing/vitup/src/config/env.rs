@@ -28,6 +28,7 @@ pub struct VitStartParameters {
     pub fund_id: i32,
     pub private: bool,
     pub version: String,
+    pub tx_max_expiry_epochs: Option<u8>,
 }
 
 impl VitStartParameters {
@@ -64,6 +65,7 @@ impl Default for VitStartParameters {
             private: false,
             fund_id: 1,
             version: "2.0".to_string(),
+            tx_max_expiry_epochs: Some(2),
         }
     }
 }

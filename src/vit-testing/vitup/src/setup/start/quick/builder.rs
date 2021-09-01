@@ -448,6 +448,7 @@ impl QuickVitBackendSettingsBuilder {
         blockchain.add_leader(LEADER_3);
         blockchain.add_leader(LEADER_4);
         blockchain.set_linear_fee(self.fees);
+        blockchain.set_tx_max_expiry_epochs(self.parameters.tx_max_expiry_epochs);
         blockchain.set_discrimination(chain_addr::Discrimination::Production);
         blockchain.set_block_content_max_size(self.parameters.block_content_max_size.into());
 

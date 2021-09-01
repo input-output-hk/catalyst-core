@@ -1993,7 +1993,7 @@ checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#a38e09a5b015e20f3b0bf1a095c3da50414b83fb"
+source = "git+https://github.com/Zeegomo/jormungandr.git?branch=hrp-change-tmp#c7d5cd28aca0e0ac2b57654d137b086de941f3fa"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2040,7 +2040,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#a38e09a5b015e20f3b0bf1a095c3da50414b83fb"
+source = "git+https://github.com/Zeegomo/jormungandr.git?branch=hrp-change-tmp#c7d5cd28aca0e0ac2b57654d137b086de941f3fa"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.7.3",
@@ -2069,7 +2069,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.13.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#a38e09a5b015e20f3b0bf1a095c3da50414b83fb"
+source = "git+https://github.com/Zeegomo/jormungandr.git?branch=hrp-change-tmp#c7d5cd28aca0e0ac2b57654d137b086de941f3fa"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2110,7 +2110,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.13.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#a38e09a5b015e20f3b0bf1a095c3da50414b83fb"
+source = "git+https://github.com/Zeegomo/jormungandr.git?branch=hrp-change-tmp#c7d5cd28aca0e0ac2b57654d137b086de941f3fa"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",

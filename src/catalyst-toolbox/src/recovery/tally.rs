@@ -3,11 +3,11 @@ use std::time::{Duration, SystemTime};
 
 use chain_addr::{Discrimination, Kind};
 use chain_core::property::Fragment as _;
-use chain_crypto::{Ed25519Extended, PublicKey, SecretKey};
+use chain_crypto::{Ed25519Extended, SecretKey};
 use chain_impl_mockchain::{
     account::{self, LedgerError, SpendingCounter},
     block::{Block, BlockDate, HeaderId},
-    certificate::{self, VotePlan, VotePlanId},
+    certificate::{self, VoteCast, VotePlan, VotePlanId},
     chaineval::ConsensusEvalContext,
     fee::{FeeAlgorithm, LinearFee},
     fragment::{Fragment, FragmentId},
@@ -17,10 +17,9 @@ use chain_impl_mockchain::{
         WitnessAccountData,
     },
     value::ValueError,
-    vote::{CommitteeId, VoteError, VotePlanLedgerError},
+    vote::CommitteeId,
 };
 use chain_time::{Epoch, Slot, SlotDuration, TimeEra, TimeFrame, Timeline};
-use imhamt::UpdateError;
 use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::{
@@ -48,34 +47,11 @@ pub enum Error {
     #[error(transparent)]
     Block0ConfigurationError(#[from] jormungandr_lib::interfaces::Block0ConfigurationError),
 
-    #[error("Block0 do not contain any voteplan")]
-    MissingVoteplanError,
-
-    #[error("Could not verify transaction {id} signature with range {range:?}")]
-    InvalidTransactionSignature {
-        id: String,
-        range: std::ops::Range<u32>,
-    },
-
-    #[error("Invalid ballot, only 1 input (subsequently 1 witness) and no output is accepted")]
-    InvalidVoteCast,
-
-    #[error(
-        "Fragment with id {id} and spending counter value {spending_counter} was already processed"
-    )]
-    DuplicatedFragment { id: String, spending_counter: u32 },
-
-    #[error("Tried to vote with a non registered account: {0}")]
-    NonVotingAccount(String),
-
     #[error(transparent)]
     ValidationError(#[from] ValidationError),
 
-    #[error("Multiple outputs for a single transaction are not supported")]
-    UnsupportedMultipleOutputs,
-
-    #[error("Account {0} is not known")]
-    AccountNotFound(String),
+    #[error(transparent)]
+    ReplayError(#[from] ReplayError),
 }
 
 fn timestamp_to_system_time(ts: SecondsSinceUnixEpoch) -> SystemTime {
@@ -163,7 +139,7 @@ fn verify_original_tx(
     (false, 0.into())
 }
 
-fn increment_ledger_time_up_to(ledger: Ledger, blockdate: BlockDate) -> Ledger {
+fn increment_ledger_time_up_to(ledger: &Ledger, blockdate: BlockDate) -> Ledger {
     ledger
         .begin_block(
             ledger.get_ledger_parameters(),
@@ -230,13 +206,42 @@ pub enum ValidationError {
 
     #[error("Unbalanced transaction")]
     UnbalancedTransaction(#[from] chain_impl_mockchain::transaction::BalanceError),
+
+    #[error("Transaction arrived before block0 start time")]
+    TransactionBeforeStart,
+
+    #[error("Transaction expiry date is too far in the future")]
+    TransactionValidForTooLong,
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum ReplayError {
+    #[error("Account {0} is not known")]
+    AccountNotFound(String),
+
+    #[error("Multiple outputs for a single transaction are not supported")]
+    UnsupportedMultipleOutputs,
+
+    #[error("Tried to vote with a non registered account: {0}")]
+    NonVotingAccount(String),
+
+    #[error("Fragment with id {id} is not vote related")]
+    NotAVotingFragment { id: String },
+}
+
+pub struct ValidatedFragment {
+    pub fragment: Fragment,
+    pub recorded_date: BlockDate,
+    pub spending_counter: SpendingCounter,
+}
+
+pub struct ReplayedFragment {
+    original: ValidatedFragment,
+    replayed: Fragment,
 }
 
 pub struct VoteFragmentFilter<I: Iterator<Item = PersistentFragmentLog>> {
     block0: Hash,
-    vote_start: BlockDate,
-    vote_end: BlockDate,
-    committee_end: BlockDate,
     range_check: Range<u32>,
     timeframe: TimeFrame,
     fees: LinearFee,
@@ -248,13 +253,8 @@ pub struct VoteFragmentFilter<I: Iterator<Item = PersistentFragmentLog>> {
 
 impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
     pub fn new(block0: Block, range_check: Range<u32>, fragments: I) -> Result<Self, Error> {
-        let voteplans = voteplans_from_block0(&block0);
         let block0_configuration = Block0Configuration::from_block(&block0)?;
-        let (_, voteplan) = voteplans.iter().next().ok_or(Error::MissingVoteplanError)?;
-        let vote_start = voteplan.vote_start();
         let fees = block0_configuration.blockchain_configuration.linear_fees;
-        let vote_end = voteplan.vote_end();
-        let committee_end = voteplan.committee_end();
         let block0_start = block0_configuration.blockchain_configuration.block0_date;
         let slot_duration = block0_configuration.blockchain_configuration.slot_duration;
         let timeframe = timeframe_from_block0_start_and_slot_duration(block0_start, slot_duration);
@@ -268,16 +268,13 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
         );
         Ok(Self {
             block0: block0.header.hash().into(),
-            vote_start,
-            vote_end,
-            committee_end,
             range_check,
             timeframe,
             era,
             fragments,
             fees,
-            replay_protection: HashSet::new(),
             spending_counters: HashMap::new(),
+            replay_protection: HashSet::new(),
         })
     }
 
@@ -320,71 +317,40 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
         *self.spending_counters.get_mut(&identifier).unwrap() += 1;
         Ok(sc)
     }
-
-    fn validate_timestamp(
-        &self,
-        timestamp: SecondsSinceUnixEpoch,
-        start: &BlockDate,
-        end: &BlockDate,
-    ) -> bool {
-        fragment_log_timestamp_to_blockdate(timestamp, &self.timeframe, &self.era)
-            .map_or(false, |ref blockdate| {
-                !(blockdate < start || blockdate >= end)
-            })
-    }
 }
 
 impl<I: Iterator<Item = PersistentFragmentLog>> Iterator for VoteFragmentFilter<I> {
-    type Item = Result<(Fragment, SpendingCounter), (Fragment, ValidationError)>;
+    type Item = Result<ValidatedFragment, (Fragment, ValidationError)>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.fragments.next().map(|persistent_fragment_log| {
             let PersistentFragmentLog { fragment, time } = persistent_fragment_log;
-            match fragment {
-                Fragment::VoteCast(ref transaction) => {
-                    let transaction_slice = transaction.as_slice();
+            let spending_counter = match &fragment {
+                Fragment::VoteCast(tx) => {
+                    let transaction_slice = tx.as_slice();
                     let is_valid_vote_cast = valid_vote_cast(&transaction_slice);
                     if !is_valid_vote_cast {
                         return Err((fragment, ValidationError::InvalidVoteCast));
                     }
 
-                    if !self.validate_timestamp(time, &self.vote_start, &self.vote_end) {
-                        return Err((fragment, ValidationError::VotingPeriodError));
-                    }
-
-                    let sc = self
-                        .validate_tx(&transaction.as_slice(), fragment.id())
-                        .map_err(|e| (fragment.clone(), e))?;
-                    Ok((fragment, sc))
+                    self.validate_tx(&transaction_slice, fragment.id())
                 }
-                Fragment::VoteTally(ref transaction) => {
-                    if !self.validate_timestamp(time, &self.vote_end, &self.committee_end) {
-                        return Err((fragment, ValidationError::TallyPeriodError));
-                    }
-
-                    let sc = self
-                        .validate_tx(&transaction.as_slice(), fragment.id())
-                        .map_err(|e| (fragment.clone(), e))?;
-                    Ok((fragment, sc))
-                }
-                Fragment::EncryptedVoteTally(ref transaction) => {
-                    if !self.validate_timestamp(time, &self.vote_end, &self.committee_end) {
-                        return Err((fragment, ValidationError::TallyPeriodError));
-                    }
-
-                    let sc = self
-                        .validate_tx(&transaction.as_slice(), fragment.id())
-                        .map_err(|e| (fragment.clone(), e))?;
-                    Ok((fragment, sc))
-                }
-                Fragment::Transaction(ref transaction) => {
-                    let sc = self
-                        .validate_tx(&transaction.as_slice(), fragment.id())
-                        .map_err(|e| (fragment.clone(), e))?;
-                    Ok((fragment, sc))
-                }
-                other => Err((other, ValidationError::NotAVotingFragment)),
+                Fragment::VoteTally(tx) => self.validate_tx(&tx.as_slice(), fragment.id()),
+                Fragment::EncryptedVoteTally(tx) => self.validate_tx(&tx.as_slice(), fragment.id()),
+                Fragment::Transaction(tx) => self.validate_tx(&tx.as_slice(), fragment.id()),
+                _ => Err(ValidationError::NotAVotingFragment),
             }
+            .map_err(|e| (fragment.clone(), e))?;
+
+            let recorded_date =
+                fragment_log_timestamp_to_blockdate(time, &self.timeframe, &self.era)
+                    .ok_or((fragment.clone(), ValidationError::TransactionBeforeStart))?;
+
+            Ok(ValidatedFragment {
+                fragment,
+                recorded_date,
+                spending_counter,
+            })
         })
     }
 }
@@ -399,28 +365,6 @@ pub fn recover_ledger_from_logs(
     // This is used so we can run the VoteTally certificates with the original (issued) committee members ones.
     let mut ledger =
         Ledger::new(block0.header.id(), new_block0.fragments()).map_err(Error::LedgerError)?;
-
-    // we assume that voteplans use the same vote start/end BlockDates as well as committee and tally ones
-    // hence we only take data from one of them
-    let active_voteplans = ledger.active_vote_plans();
-    let voteplan = active_voteplans.last().ok_or(Error::MissingVoteplanError)?;
-    let vote_start = voteplan.vote_start;
-    let vote_end = voteplan.vote_end;
-
-    // do not update ledger epoch if we are already in expected Epoch(0)
-    if vote_start.epoch != 0 {
-        ledger = ledger
-            .begin_block(
-                ledger.get_ledger_parameters(),
-                ledger.chain_length().increase(),
-                vote_start,
-            )
-            .unwrap()
-            .finish(&ConsensusEvalContext::Bft);
-    }
-
-    // flag to check if we already incremented the time for tally (advance to vote_end)
-    let mut inc_tally = true;
 
     // deserialize fragments to get a clean iterator over them
     let deserialized_fragment_logs = fragment_logs.filter_map(|fragment_log| match fragment_log {
@@ -444,75 +388,45 @@ pub fn recover_ledger_from_logs(
         deserialized_fragment_logs,
     )?;
     let mut failed_fragments = Vec::new();
-    let mut block_date = vote_start;
+    let mut current_date = BlockDate::first();
     for filtered_fragment in fragment_filter {
-        let new_fragment = match filtered_fragment {
-            Ok((fragment, _)) => match fragment {
-                fragment @ Fragment::VoteCast(_) | fragment @ Fragment::Transaction(_) => {
-                    fragment_replayer
-                        .replay(fragment.clone())
-                        .map(|(frag, wlt)| (frag, Some(wlt)))
-                        .map_err(|e| {
-                            failed_fragments.push(fragment.clone());
-                            warn!(
-                                "Fragment {} couldn't be processed:\n\t {:?}",
-                                fragment.id(),
-                                e
-                            );
-                        })
-                        .ok()
+        let new_fragment = filtered_fragment
+            .map_err(|(fragment, err)| (Error::from(err), fragment))
+            .and_then(|fragment| fragment_replayer.replay(fragment))
+            .and_then(|fragment| {
+                // It may happen, though is unlikely, that fragment current slots are not monotonic, due to adjustments
+                // in the underlying clock of the node. We assume that such corrections are small and ignore any
+                // block date that is before our current one.
+                let ReplayedFragment { original, replayed } = fragment;
+                let date = original.recorded_date;
+                if date > current_date {
+                    ledger = increment_ledger_time_up_to(&ledger, date);
+                    current_date = date;
                 }
-                fragment @ Fragment::VoteTally(_) | fragment @ Fragment::EncryptedVoteTally(_) => {
-                    if inc_tally {
-                        block_date = vote_end;
-                        ledger = increment_ledger_time_up_to(ledger, vote_end);
-                        inc_tally = false;
-                    }
-                    Some((fragment.clone(), None))
-                }
-                fragment => {
-                    debug!(
-                        "Not votecast, transaction or votetally fragment: {:?}",
-                        fragment
-                    );
-                    None
-                }
-            },
-            Err((fragment, e)) => {
-                failed_fragments.push(fragment);
-                error!("Invalid fragment detected: {:?}", e);
-                None
+
+                ledger
+                    .apply_fragment(&ledger.get_ledger_parameters(), &replayed, current_date)
+                    .map(|ledger| (ledger, replayed))
+                    .map_err(|e| (Error::from(e), original.fragment))
+            });
+
+        match new_fragment {
+            Ok((new_ledger, fragment)) => {
+                ledger = new_ledger;
+                fragment_replayer.confirm_fragment(&fragment);
             }
-        };
-        if let Some((new_fragment, wallet)) = new_fragment {
-            let new_ledger =
-                ledger.apply_fragment(&ledger.get_ledger_parameters(), &new_fragment, block_date);
-            match new_ledger {
-                Ok(new_ledger) => {
-                    if let Some(wallet) = wallet {
-                        // FIX: this is a horrible temporary workaround because Wallet::check_fragment
-                        // is broken and the fix requires us to update to the new version
-                        // which also includes changes in the transaction expiry time 
-                        // We will update this tool to account for transaction ttl right after this change
-                        // but in a separate PR.
-                        let state = new_ledger.accounts().get_state(&<PublicKey<_>>::from(wallet
-                            .account_id())
-                            .into()).unwrap();
-                        wallet.update_state(state.value(), state.get_counter().into());
-                    }
-                    ledger = new_ledger;
-                }
-                // Checking the account balance when validating the fragment would require to keep
-                // track of movements as well (i.e. re-implement a ledger)
-                Err(ledger::Error::Account(LedgerError::ValueError(
+            Err((
+                err @ Error::LedgerError(ledger::Error::VotePlan(_) | ledger::Error::TransactionMalformed(_) | ledger::Error::Account(LedgerError::ValueError(
                     ValueError::NegativeAmount,
-                ))) => {
-                    warn!("Account balance not enough to process fragment")
-                }
-                // allows this as it has nothing to do with spending counters / signatures
-                Err(ledger::Error::VotePlan(VotePlanLedgerError::VoteError{reason: UpdateError::ValueCallbackError(VoteError::AlreadyVoted), ..})) => (),
-                Err(_) => unreachable!("Should be impossible to fail, since we should be using proper spending counters and signatures")
+                )))
+                | err @ Error::ValidationError(_)
+                | err @ Error::ReplayError(_),
+                fragment,
+            )) => {
+                warn!("Invalid fragment detected: {:?}", err);
+                failed_fragments.push(fragment);
             }
+            Err(e) => unreachable!("Should be impossible to fail, since we should be using proper spending counters and signatures {:?}", e)
         }
     }
 
@@ -522,6 +436,8 @@ pub fn recover_ledger_from_logs(
 struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
     non_voting_wallets: HashMap<Address, Wallet>,
+    pending_requests: HashMap<FragmentId, Address>,
+
     settings: Settings,
 }
 
@@ -574,102 +490,117 @@ impl FragmentReplayer {
                 wallets,
                 non_voting_wallets: HashMap::new(),
                 settings: Settings::new(block0).unwrap(),
+                pending_requests: HashMap::new(),
             },
             config.to_block(),
         ))
     }
 
+    fn replay_votecast(&mut self, tx: TransactionSlice<VoteCast>) -> Result<Fragment, Error> {
+        let (vote_cast, identifier, _) = deconstruct_account_transaction(&tx)?;
+        let address =
+            Identifier::from(identifier).to_address(chain_addr::Discrimination::Production);
+
+        let address: Address = address.into();
+        let wallet = self
+            .wallets
+            .get_mut(&address)
+            .ok_or_else(|| ReplayError::NonVotingAccount(address.to_string()))?;
+
+        // unwrap checked in the validation step
+        let builder_help = wallet.new_transaction(tx.total_input().unwrap()).unwrap();
+        let mut builder = TransactionBuilder::new(&self.settings, vote_cast, tx.valid_until());
+        builder.add_input(builder_help.input(), builder_help.witness_builder());
+        let res = Fragment::VoteCast(builder.finalize_tx(()).unwrap());
+
+        debug!("replaying vote cast transaction from {}", address);
+        self.pending_requests.insert(res.id(), address);
+        Ok(res)
+    }
+
+    fn replay_tx(&mut self, tx: TransactionSlice<NoExtra>) -> Result<Fragment, Error> {
+        let (_, identifier, _) = deconstruct_account_transaction(&tx)?;
+        let address =
+            Identifier::from(identifier.clone()).to_address(chain_addr::Discrimination::Production);
+
+        let address: Address = address.into();
+        if tx.nb_outputs() != 1 {
+            // The wallet lib we use does not corrently expose this functionality
+            return Err(ReplayError::UnsupportedMultipleOutputs.into());
+        }
+
+        let output = tx.outputs().iter().next().unwrap();
+        let output_address = if let Some(wlt) = self.wallets.get(&output.address.into()) {
+            wlt.account_id()
+        } else {
+            self.non_voting_wallets
+                .entry(address.clone())
+                .or_insert_with(|| {
+                    Wallet::new_from_key(<SecretKey<Ed25519Extended>>::generate(
+                        &mut rand::thread_rng(),
+                    ))
+                })
+                .account_id()
+        }
+        .address(Discrimination::Production);
+
+        // Double self borrows are not allowed in closures, so this is written as an
+        // if let instead of chaining methods on options
+        let wallet = if let Some(wlt) = self.wallets.get_mut(&address) {
+            wlt
+        } else {
+            self.non_voting_wallets
+                .get_mut(&address)
+                .ok_or_else(|| ReplayError::AccountNotFound(address.to_string()))?
+        };
+
+        warn!("replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this", identifier, output_address, output.value);
+        // unwrap checked in the validation step
+        let builder_help = wallet.new_transaction(tx.total_input().unwrap()).unwrap();
+        let mut builder = TransactionBuilder::new(&self.settings, NoExtra, tx.valid_until());
+        builder.add_input(builder_help.input(), builder_help.witness_builder());
+        builder.add_output(Output::from_address(output_address, output.value));
+        let res = Fragment::Transaction(builder.finalize_tx(()).unwrap());
+        self.pending_requests.insert(res.id(), address);
+        Ok(res)
+    }
+
     // rebuild a fragment to be used in the new ledger configuration with the account mirror account.
-    fn replay(&mut self, fragment: Fragment) -> Result<(Fragment, &mut Wallet), Error> {
-        match fragment {
-            Fragment::VoteCast(ref transaction) => {
-                let transaction_slice = transaction.as_slice();
-
-                let (vote_cast, identifier, _) =
-                    deconstruct_account_transaction(&transaction_slice)?;
-                let address =
-                    Identifier::from(identifier).to_address(chain_addr::Discrimination::Production);
-
-                let address: Address = address.into();
-                let wallet = self
-                    .wallets
-                    .get_mut(&address)
-                    .ok_or_else(|| Error::NonVotingAccount(address.to_string()))?;
-
-                let builder_help =
-                    // unwrap checked in the validation step
-                    wallet.new_transaction(transaction_slice.total_input().unwrap()).unwrap();
-                let mut builder = TransactionBuilder::new(&self.settings, vote_cast);
-                builder.add_input(builder_help.input(), builder_help.witness_builder());
-                let res = Fragment::VoteCast(builder.finalize_tx(()).unwrap());
-
-                debug!("replaying vote cast transaction from {}", address);
-                Ok((res, wallet))
+    fn replay(
+        &mut self,
+        original: ValidatedFragment,
+    ) -> Result<ReplayedFragment, (Error, Fragment)> {
+        let replayed = match &original.fragment {
+            Fragment::VoteCast(ref tx) => self.replay_votecast(tx.as_slice()),
+            Fragment::Transaction(ref tx) => self.replay_tx(tx.as_slice()),
+            fragment @ Fragment::VoteTally(_) | fragment @ Fragment::EncryptedVoteTally(_) => {
+                Ok(fragment.clone())
             }
-            Fragment::Transaction(ref transaction) => {
-                let transaction_slice = transaction.as_slice();
-                let (_, identifier, _) = deconstruct_account_transaction(&transaction_slice)?;
-                let address = Identifier::from(identifier.clone())
-                    .to_address(chain_addr::Discrimination::Production);
-
-                let address: Address = address.into();
-                if transaction.nb_outputs() != 1 {
-                    // The wallet lib we use does not corrently expose this functionality
-                    return Err(Error::UnsupportedMultipleOutputs);
-                }
-
-                let output = transaction_slice.outputs().iter().next().unwrap();
-                let output_address = if let Some(wlt) = self.wallets.get(&output.address.into()) {
-                    wlt.account_id()
-                } else {
-                    self.non_voting_wallets
-                        .entry(address.clone())
-                        .or_insert_with(|| {
-                            Wallet::new_from_key(<SecretKey<Ed25519Extended>>::generate(
-                                &mut rand::thread_rng(),
-                            ))
-                        })
-                        .account_id()
-                }
-                .address(Discrimination::Production);
-
-                // Double self borrows are not allowed in closures, so this is written as an
-                // if let instead of chaining methods on options
-                let wallet = if let Some(wlt) = self.wallets.get_mut(&address) {
-                    wlt
-                } else {
-                    self.non_voting_wallets
-                        .get_mut(&address)
-                        .ok_or_else(|| Error::AccountNotFound(address.to_string()))?
-                };
-
-                warn!("replaying a plain transaction from {} to {:?} with value {}, this is not coming from the app, might want to look into this", identifier, output_address, output.value);
-                let builder_help =
-                    // unwrap checked in the validation step
-                    wallet.new_transaction(transaction_slice.total_input().unwrap()).unwrap();
-                let mut builder = TransactionBuilder::new(&self.settings, NoExtra);
-                builder.add_input(builder_help.input(), builder_help.witness_builder());
-                builder.add_output(Output::from_address(output_address, output.value));
-                let res = Fragment::Transaction(builder.finalize_tx(()).unwrap());
-
-                Ok((res, wallet))
+            fragment => Err(ReplayError::NotAVotingFragment {
+                id: fragment.id().to_string(),
             }
-            _ => unimplemented!(),
+            .into()),
+        }
+        .map_err(|err| (err, original.fragment.clone()))?;
+        Ok(ReplayedFragment { replayed, original })
+    }
+
+    fn confirm_fragment(&mut self, fragment: &Fragment) {
+        if let Some(addr) = self.pending_requests.get(&fragment.id()) {
+            if let Some(wallet) = self.wallets.get_mut(addr) {
+                wallet.check_fragment(&fragment.id(), fragment);
+            }
         }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::{increment_ledger_time_up_to, recover_ledger_from_logs, voteplans_from_block0};
+    use super::recover_ledger_from_logs;
     use chain_impl_mockchain::block::Block;
-    use chain_impl_mockchain::certificate::VoteTallyPayload;
     use chain_impl_mockchain::vote::Weight;
     use chain_ser::deser::Deserialize;
-    use jormungandr_lib::interfaces::{
-        load_persistent_fragments_logs_from_folder_path, Block0Configuration,
-    };
-    use jormungandr_testing_utils::wallet::Wallet;
+    use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
     use std::io::BufReader;
     use std::path::PathBuf;
 
@@ -691,25 +622,7 @@ mod test {
         let fragments = load_persistent_fragments_logs_from_folder_path(&path)?;
         let block0_path: PathBuf = std::fs::canonicalize(r"./tests/block0.bin").unwrap();
         let block0 = read_block0(block0_path)?;
-        let block0_configuration = Block0Configuration::from_block(&block0).unwrap();
         let (ledger, failed) = recover_ledger_from_logs(&block0, fragments).unwrap();
-        let mut committee = Wallet::from_existing_account("ed25519e_sk1dpqkhtzyeaqvclvjf3hgdkw2rh5q06a2dqrp9qks32g96ta6k9alvhm7a0zp5j4gly90dmjj2w4ky3u86mpwxyctrc2k7s5qfq9dd8sefgey5", 0.into());
-        let voteplans = voteplans_from_block0(&block0);
-        let mut ledger =
-            increment_ledger_time_up_to(ledger, voteplans.values().last().unwrap().vote_end());
-        for (_, voteplan) in voteplans {
-            let tally_cert = committee
-                .issue_vote_tally_cert(
-                    &block0.header.id().into(),
-                    &block0_configuration.blockchain_configuration.linear_fees,
-                    &voteplan,
-                    VoteTallyPayload::Public,
-                )
-                .unwrap();
-            ledger = ledger.apply_fragment(&ledger.get_ledger_parameters(), &tally_cert, ledger.date())
-                .expect("Should be impossible to fail, since we should be using proper spending counters and signatures");
-            committee.confirm_transaction();
-        }
 
         println!("Failed: {}", failed.len());
         assert_eq!(failed.len(), 0);

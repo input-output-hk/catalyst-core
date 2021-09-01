@@ -135,8 +135,7 @@ impl TestBlockchainBuilder {
             blockchain_configuration: BlockchainConfiguration::new(
                 Discrimination::Production,
                 ConsensusVersion::Bft,
-                // it is much easier not to account for feers in the tests verification alg
-                LinearFee::new(0, 0, 0),
+                LinearFee::new(0, 0, 0), // it is much easier not to account for feers in the tests verification alg
             ),
             initial,
         };

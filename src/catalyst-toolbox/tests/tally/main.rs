@@ -5,6 +5,7 @@ mod generator;
 use chain_addr::Discrimination;
 pub use chain_impl_mockchain::chaintypes::ConsensusVersion;
 use chain_impl_mockchain::{
+    certificate::VoteTallyPayload,
     fragment::Fragment,
     vote::{Choice, PayloadType, VotePlanStatus},
 };
@@ -123,7 +124,7 @@ fn shuffle_tally_ok() {
         payload = PayloadType::Public
     };
 
-    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+    let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
         vote_fragments
             .into_iter()
@@ -132,7 +133,6 @@ fn shuffle_tally_ok() {
     .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
-    assert!(failed_fragments.is_empty());
 }
 
 #[test]
@@ -150,7 +150,7 @@ fn shuffle_tally_ok_private() {
         payload = PayloadType::Private
     };
 
-    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+    let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
         vote_fragments
             .into_iter()
@@ -159,7 +159,6 @@ fn shuffle_tally_ok_private() {
     .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
-    assert!(failed_fragments.is_empty());
 }
 
 //TV 003
@@ -254,7 +253,7 @@ fn only_last_vote_is_counted() {
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert_eq!(tally.result().unwrap().results()[2], 0.into());
     assert!(tally.result().unwrap().results()[1] > 0.into());
-    assert!(failed_fragments.is_empty());
+    assert_eq!(failed_fragments.len(), 2);
 }
 
 //TV 005
@@ -265,7 +264,7 @@ fn replay_not_counted() {
         voteplans = [
             dates 0 => 1 => 2,
             plans = [
-                one with 1 proposals
+                one with 2 proposals
             ]
         ],
         votes = 0,
@@ -304,7 +303,7 @@ fn replay_not_counted() {
     assert_eq!(tally.result().unwrap().results()[0], 0.into());
     assert!(tally.result().unwrap().results()[1] > 0.into());
     assert_eq!(tally.result().unwrap().results()[2], 0.into());
-    assert_eq!(failed_fragments.len(), 1);
+    assert_eq!(failed_fragments.len(), 2);
 }
 
 //TV 006
@@ -327,7 +326,7 @@ fn multi_voteplan_ok() {
         payload = PayloadType::Public
     };
 
-    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+    let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
         vote_fragments
             .into_iter()
@@ -336,7 +335,6 @@ fn multi_voteplan_ok() {
     .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
-    assert!(failed_fragments.is_empty());
 }
 
 #[test]
@@ -358,7 +356,7 @@ fn multi_voteplan_ok_private() {
         payload = PayloadType::Private
     };
 
-    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+    let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
         vote_fragments
             .into_iter()
@@ -367,7 +365,6 @@ fn multi_voteplan_ok_private() {
     .unwrap();
 
     assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
-    assert!(failed_fragments.is_empty());
 }
 
 #[test]
@@ -398,16 +395,36 @@ fn votes_outside_voting_phase() {
         time: jump_to_epoch(1, generator.block0_config()),
     });
 
+    let mut committee_wallet = generator
+        .committee_wallets()
+        .values()
+        .next()
+        .unwrap()
+        .clone();
+    committee_wallet.update_counter(0);
+    let early_tally_fragment = committee_wallet
+        .issue_vote_tally_cert(
+            &generator.block0().header.id().into(),
+            &generator
+                .block0_config()
+                .blockchain_configuration
+                .linear_fees,
+            generator.voteplans()[0].vote_end(),
+            generator.voteplans()[0],
+            VoteTallyPayload::Public,
+        )
+        .unwrap();
+
     let early_tally = Ok(PersistentFragmentLog {
-        fragment: tally_fragments[0].as_ref().unwrap().fragment.clone(),
+        fragment: early_tally_fragment,
         time: jump_to_epoch(0, generator.block0_config()),
     });
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &block0,
-        vec![early_tally, fragment_yes, fragment_no]
+        vec![fragment_yes, early_tally, fragment_no]
             .into_iter()
-            .chain(tally_fragments.into_iter()),
+            .chain(tally_fragments),
     )
     .unwrap();
 
@@ -471,6 +488,7 @@ fn transaction_transfer() {
                 .block0_config()
                 .blockchain_configuration
                 .linear_fees,
+            generator.voteplans()[0].vote_start(),
             wallet1_address,
             *wallets_stake.get(&wallet0_address).unwrap(),
         )
@@ -520,6 +538,40 @@ fn transaction_transfer() {
     assert!(failed_fragments.is_empty());
 }
 
+#[test]
+fn expired_transaction() {
+    let (mut generator, _, tally_fragments) = setup_run! {
+        seed = [0; 32],
+        wallets = 1000,
+        voteplans = [
+            dates 0 => 2 => 3,
+            plans = [
+                one with 255 proposals
+            ]
+        ],
+        votes = 0,
+        in_order = false,
+        payload = PayloadType::Private
+    };
+    let mut wallet = generator.wallets().values().next().unwrap().clone();
+
+    let fragment_yes = Ok(PersistentFragmentLog {
+        fragment: cast_vote(&mut wallet, &generator, 0, 1),
+        time: jump_to_epoch(2, generator.block0_config()),
+    });
+
+    let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
+        &generator.block0(),
+        vec![fragment_yes]
+            .into_iter()
+            .chain(tally_fragments.into_iter()),
+    )
+    .unwrap();
+
+    assert_tally_eq(ledger.active_vote_plans(), generator.statuses());
+    assert_eq!(failed_fragments.len(), 1);
+}
+
 fn assert_tally_eq(mut r1: Vec<VotePlanStatus>, mut r2: Vec<VotePlanStatus>) {
     r1.sort_by_key(|plan| plan.id.clone());
     r2.sort_by_key(|plan| plan.id.clone());
@@ -546,6 +598,7 @@ fn cast_vote(
                 .block0_config()
                 .blockchain_configuration
                 .linear_fees,
+            generator.voteplans()[0].vote_start().next_epoch(),
             generator.voteplans()[0],
             proposals_idx,
             &Choice::new(choice),

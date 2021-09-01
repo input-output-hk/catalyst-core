@@ -84,6 +84,13 @@ may be rejected by the recovery tool, but admitted by the blockchain.
 The likelihood of occurrence of such edge cases is considered to be low enough
 to ignore this potential discrepancy.
 
+* Similarly, the recovery tool assumes that every transaction is included in a
+block in the slot it is received by the node (i.e. blocks can be thought to be
+of infinite size, transaction handling time to be negligible and a block to be
+always produced for every slot). This creates a small possibility for ballots
+to be counted by the recovery tool, while being rejected by the blockchain
+consensus because they expired before being included in the chain.
+
 Potential replay attacks are prevented by keeping a record of all fragment
 hashes encountered and rejecting any duplicate fragments. It is assumed that
 the likelihood of a client submitting two legitimate ballots with the same
@@ -94,11 +101,12 @@ To simplify the logic, the recovery tool only processes fragments of
 these kinds:
 
 - Ballot (VoteCast) transactions with one account input and no outputs.
-  Private votes are not yet supported.
 - Plain value transfer transactions with one account input and one account
   output. The recovery tool updates the voting power with the results of
   the transfer and adds the output accounts.
 - VoteTally transactions, processed as a signal to reveal the tally results.
+- EncryptedVoteTally transactions, processed as a signal to add together
+  private votes.
 
 Other kinds of fragments are not expected to be submitted by voting users
 or committee members, so the recovery tool only reports such fragments

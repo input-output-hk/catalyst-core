@@ -92,6 +92,10 @@ impl VoteRoundGenerator {
         &mut self.wallets
     }
 
+    pub fn committee_wallets(&mut self) -> &mut HashMap<Address, Wallet> {
+        &mut self.committee_wallets
+    }
+
     pub fn voteplans(&self) -> Vec<&VotePlan> {
         self.voteplan_managers
             .values()
@@ -131,6 +135,8 @@ impl VoteRoundGenerator {
         fragments
     }
 
+    /// Since this has no internal ledger, it assumes all transactions are correctly signed and
+    /// within their validity window
     pub fn feed_vote_cast(&mut self, fragment: &Fragment) {
         if let Fragment::VoteCast(ref transaction) = fragment {
             let vote_cast = transaction.as_slice().payload().into_payload();
@@ -268,6 +274,7 @@ impl VoteRoundGenerator {
         payload: VoteTallyPayload,
     ) -> Vec<Fragment> {
         let mut res = Vec::new();
+        let committee_end = voteplan.committee_end();
         let committee_member = self.committee_wallets.values_mut().next().unwrap();
 
         if let VoteTallyPayload::Private { .. } = payload {
@@ -275,6 +282,7 @@ impl VoteRoundGenerator {
                 .issue_encrypted_tally_cert(
                     &self.block0_hash,
                     &self.block0.blockchain_configuration.linear_fees,
+                    committee_end,
                     voteplan,
                 )
                 .unwrap();
@@ -286,6 +294,7 @@ impl VoteRoundGenerator {
             .issue_vote_tally_cert(
                 &self.block0_hash,
                 &self.block0.blockchain_configuration.linear_fees,
+                committee_end,
                 voteplan,
                 payload,
             )
@@ -338,11 +347,12 @@ impl GenerationStrategy for TestStrategy {
                     let voteplan = voteplans.choose(&mut rng).expect("no voteplans");
                     let proposal_index = rng.gen_range(0..voteplan.proposals().len());
                     let choice = Choice::new(rng.gen_bool(0.5) as u8 + 1); // app votes ares 1-based
-
+                    let valid_until = voteplan.vote_start().next_epoch();
                     let fragment = wallet
                         .issue_vote_cast_cert(
                             block0_hash,
                             fees,
+                            valid_until,
                             voteplan,
                             proposal_index as u8,
                             &choice,

@@ -11,7 +11,6 @@ use chain_core::mempack::{ReadBuf, Readable};
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::block::Block;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
-
 use chain_ser::deser::Deserialize;
 use jormungandr_lib::interfaces::AccountIdentifier;
 use jormungandr_lib::interfaces::FragmentStatus;
@@ -133,7 +132,7 @@ impl WalletBackend {
         Ok(self.vit_client.funds()?)
     }
 
-    pub fn review(&self, proposal_id: &str) -> Result<Vec<AdvisorReview>, WalletBackendError> {
+    pub fn review(&self, proposal_id: &str) -> Result<HashMap<String,Vec<AdvisorReview>>, WalletBackendError> {
         Ok(self.vit_client.review(proposal_id)?)
     }
 

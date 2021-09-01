@@ -216,7 +216,7 @@ mod tests {
                     let mut gen = rand_chacha::ChaCha20Rng::from_seed(seed);
                     let mc = MemberCommunicationKey::new(&mut gen);
                     let threshold = 1;
-                    let h = Crs::from_hash(&mut seed);
+                    let h = Crs::from_hash(&seed);
                     let m = MemberState::new(&mut gen, threshold, &h, &[mc.to_public()], 0);
                     let participants = vec![m.public_key()];
                     let ek = ElectionPublicKey::from_participants(&participants);

@@ -128,8 +128,8 @@ impl TestTxBuilder {
         )];
         let tx_builder = TxBuilder::new()
             .set_payload(&NoExtra)
-            .set_expiry_date(validity.unwrap_or(BlockDate::first()))
-            .set_ios(&inputs, &destination);
+            .set_expiry_date(validity.unwrap_or_else(BlockDate::first))
+            .set_ios(&inputs, destination);
 
         let witness =
             faucet.make_witness(&self.block0_hash, tx_builder.get_auth_data_for_witness());
@@ -156,7 +156,7 @@ impl TestTxBuilder {
         let mut keys_db = KeysDb::empty();
         keys_db.add_key(source.private_key());
         keys_db.add_key(destination.private_key());
-        self.move_funds(test_ledger, &source, &destination, source.value)
+        self.move_funds(test_ledger, source, destination, source.value)
     }
 
     pub fn move_funds(

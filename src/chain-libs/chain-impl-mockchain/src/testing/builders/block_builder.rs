@@ -70,7 +70,7 @@ impl GenesisPraosBlockBuilder {
         if self.date.is_none() || self.chain_length.is_none() || self.parent_id.is_none() {
             panic!("date,chain_length or hash is not set");
         }
-        let vrf_proof = TestGen::vrf_proof(&stake_pool);
+        let vrf_proof = TestGen::vrf_proof(stake_pool);
         let contents: Contents = self.contents_builder.clone().into();
         let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents)
             .set_parent(

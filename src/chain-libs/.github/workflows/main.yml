@@ -14,7 +14,6 @@ jobs:
     outputs:
       crates-io-index-head: ${{ steps.ls-crates-io-index.outputs.head }}
     steps:
-
       - uses: actions/checkout@v2
 
       - name: Install Rust toolchain
@@ -70,23 +69,18 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         toolchain: [stable]
-        mode: ['', '--release']
+        mode: ["", "--release"]
         experimental: [false]
         include:
           - os: ubuntu-latest
             toolchain: nightly
             experimental: true
-          - os: ubuntu-latest
-            toolchain: stable
-            experimental: false
-            features: '--features chain-vote/p256k1'
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 30
     env:
       CARGO_INCREMENTAL: 0
     steps:
-
       - uses: actions/checkout@v2
 
       - name: Download Cargo.lock
@@ -158,13 +152,33 @@ jobs:
             ${{ matrix.mode }} --locked
             --manifest-path chain-network/Cargo.toml --no-default-features
 
+      - name: Test chain-vote with p256k1 backend
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        env:
+          RUSTFLAGS: -D warnings
+        with:
+          command: test
+          args: >-
+            ${{ matrix.mode }} --locked
+            --manifest-path chain-vote/Cargo.toml --features p256k1
+
+      - name: Test evm support in the ledger
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        env:
+          RUSTFLAGS: -D warnings
+        with:
+          command: test
+          args: >-
+            ${{ matrix.mode }} --locked
+            --manifest-path chain-impl-mockchain/Cargo.toml --features evm
 
   lints:
     name: Lints
     needs: update_deps
     runs-on: ubuntu-latest
     steps:
-
       - uses: actions/checkout@v2
 
       - name: Download Cargo.lock
@@ -207,6 +221,13 @@ jobs:
         with:
           command: clippy
           args: -- -D warnings
+
+      - name: Run cargo clippy (all features)
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: clippy
+          args: --all-features -- -D warnings
 
   test_coverage:
     name: Test Coverage

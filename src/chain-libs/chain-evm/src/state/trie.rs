@@ -5,8 +5,14 @@ use std::convert::Infallible;
 use std::hash::Hash;
 
 /// An immutable structure to represent any of EVM tries.
-#[derive(Clone, Default)]
-pub struct Trie<K: Clone + Hash + Eq, V: Clone>(Hamt<DefaultHasher, K, V>);
+#[derive(Clone, PartialEq, Eq)]
+pub struct Trie<K: Eq + Hash, V>(Hamt<DefaultHasher, K, V>);
+
+impl<K: Hash + Eq, V> Default for Trie<K, V> {
+    fn default() -> Self {
+        Trie(Default::default())
+    }
+}
 
 impl<K: Clone + Hash + Eq, V: Clone> Trie<K, V> {
     pub fn new() -> Self {
@@ -54,6 +60,16 @@ impl<K: Clone + Hash + Eq, V: Clone> Trie<K, V> {
 
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
+    }
+}
+
+impl<'a, K: Hash + Eq, V> IntoIterator for &'a Trie<K, V> {
+    type Item = (&'a K, &'a V);
+
+    type IntoIter = HamtIter<'a, K, V>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.iter()
     }
 }
 

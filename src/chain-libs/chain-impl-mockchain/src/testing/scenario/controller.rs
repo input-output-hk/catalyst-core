@@ -25,6 +25,7 @@ use chain_addr::Discrimination;
 use rand_core::{CryptoRng, RngCore};
 use thiserror::Error;
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error, Clone, PartialEq, Eq)]
 pub enum ControllerError {
     #[error("cannot find wallet with alias {alias}")]

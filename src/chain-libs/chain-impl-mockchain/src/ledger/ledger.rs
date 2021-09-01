@@ -2,10 +2,12 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxVerifyError};
+use super::evm;
 use super::governance::{Governance, ParametersGovernanceAction, TreasuryGovernanceAction};
 use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
+
 use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
@@ -29,6 +31,7 @@ use crate::{
 use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::Verification;
 use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
+
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::mem::swap;
@@ -91,6 +94,7 @@ pub struct Ledger {
     pub(crate) leaders_log: LeadersParticipationRecord,
     pub(crate) votes: VotePlanLedger,
     pub(crate) governance: Governance,
+    pub(crate) evm: evm::Ledger,
 }
 
 #[derive(Debug, Clone)]
@@ -338,6 +342,7 @@ impl Ledger {
             leaders_log: LeadersParticipationRecord::new(),
             votes: VotePlanLedger::new(),
             governance: Governance::default(),
+            evm: evm::Ledger::new(),
         }
     }
 

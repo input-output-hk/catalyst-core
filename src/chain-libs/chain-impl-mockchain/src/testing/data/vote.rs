@@ -30,7 +30,7 @@ impl CommitteeMembersManager {
             public_keys.push(public_key);
         }
 
-        let crs = Crs::from_hash(&crs_seed);
+        let crs = Crs::from_hash(crs_seed);
 
         let mut members = Vec::new();
         for i in 0..members_no {

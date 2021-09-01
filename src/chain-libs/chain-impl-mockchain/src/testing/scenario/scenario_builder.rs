@@ -193,7 +193,7 @@ impl ScenarioBuilder {
                     .unwrap();
                 let wallet_allias = wallet_template.alias();
                 let wallet = wallets.iter().find(|w| w.alias() == wallet_allias).unwrap();
-                create_initial_stake_pool_delegation(&stake_pool, &wallet)
+                create_initial_stake_pool_delegation(stake_pool, wallet)
             })
             .collect()
     }

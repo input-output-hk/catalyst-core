@@ -20,7 +20,7 @@ pub fn create_initial_stake_pool_update(
     stake_pool_update: &PoolUpdate,
     owners: &[Wallet],
 ) -> Fragment {
-    let cert = build_stake_pool_update_cert(&stake_pool_update);
+    let cert = build_stake_pool_update_cert(stake_pool_update);
     let keys: Vec<EitherEd25519SecretKey> = owners
         .iter()
         .cloned()
@@ -114,7 +114,7 @@ fn fragment(
         Certificate::StakeDelegation(s) => {
             let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
             let signature = AccountBindingSignature::new_single(&builder.get_auth_data(), |d| {
-                keys[0].sign_slice(&d.0)
+                keys[0].sign_slice(d.0)
             });
             let tx = builder.set_payload_auth(&signature);
             Fragment::StakeDelegation(tx)

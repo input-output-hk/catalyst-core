@@ -215,11 +215,6 @@ jobs:
             --platform ios \
             -- full
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: test-harness-ios-sim
-          path: ./test_app/hello/platforms/ios/build/emulator/HelloWorld.app
-
   build_cordova_android_app:
     name: Build cordova test app on android
     runs-on: ubuntu-latest
@@ -300,13 +295,3 @@ jobs:
 
       - name: package plugin
         run: npm pack ./bindings/wallet-cordova
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: plugin
-          path: wallet-cordova-plugin*.tgz
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: test-harness-apk
-          path: ./test_app/hello/platforms/android/app/build/outputs/apk/debug/app-debug.apk

@@ -96,7 +96,7 @@ checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 dependencies = [
  "cbor_event",
  "chain-ser",
@@ -137,7 +137,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 dependencies = [
  "bech32",
  "chain-core",
@@ -148,7 +148,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 dependencies = [
  "chain-ser",
 ]
@@ -156,7 +156,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 dependencies = [
  "bech32",
  "cryptoxide",
@@ -175,7 +175,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -209,12 +209,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -224,7 +224,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -526,7 +526,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 dependencies = [
  "thiserror",
 ]
@@ -926,7 +926,7 @@ checksum = "c19772be3c4dd2ceaacf03cb41d5885f2a02c4d8804884918e3a258480803335"
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 
 [[package]]
 name = "strum"
@@ -1029,13 +1029,13 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#988528564f6e11db28709b8995587cc499f7c1d2"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
 
 [[package]]
 name = "typenum"
-version = "1.13.0"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "879f6906492a7cd215bfa4cf595b600146ccfac0c79bcbd1f3000162af5e8b06"
+checksum = "b63708a265f51345575b27fe43f9500ad611579e764c79edbc2037b1121959ec"
 
 [[package]]
 name = "unicode-normalization"

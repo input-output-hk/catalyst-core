@@ -1,33 +1,33 @@
 use super::FragmentRecieveStrategy;
 use crate::config::VitStartParameters;
+use crate::manager::file_lister::dump_json;
 use crate::mock::context::{Context, ContextLock};
 use chain_core::property::Deserialize;
+use chain_core::property::Fragment as _;
 use chain_crypto::PublicKey;
 use chain_impl_mockchain::account::AccountAlg;
 use chain_impl_mockchain::account::Identifier;
+use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use jormungandr_lib::interfaces::FragmentsBatch;
-use jormungandr_lib::interfaces::FragmentsProcessingSummary;
 use jormungandr_lib::interfaces::VotePlanStatus;
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
 use serde::{Deserialize as SerdeDeserialize, Serialize as SerdeSerialize};
-use std::convert::Infallible;
 use std::fs::File;
+use std::str::FromStr;
 use std::sync::Arc;
 use thiserror::Error;
 use tracing_subscriber::fmt::format::FmtSpan;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
+use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
-use warp::{http::StatusCode, reject::Reject, Filter, Rejection, Reply};
-impl Reject for crate::mock::context::Error {}
-use crate::manager::file_lister::dump_json;
-use crate::mock::context::Error::AccountDoesNotExist;
-use chain_core::property::Fragment as _;
-use chain_impl_mockchain::fragment::{Fragment, FragmentId};
-use std::str::FromStr;
-use vit_servicing_station_lib::db::models::funds::Fund;
+use warp::{reject::Reject, Filter, Rejection, Reply};
+
+mod reject;
+
+use reject::{report_invalid, ForcedErrorCode, GeneralException, InvalidBatch};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error)]
@@ -779,10 +779,10 @@ pub async fn get_settings(context: ContextLock) -> Result<impl Reply, Rejection>
     Ok(HandlerResult(Ok(settings)))
 }
 
-fn parse_account_id(id_hex: &str) -> Identifier {
+fn parse_account_id(id_hex: &str) -> Result<Identifier, Rejection> {
     PublicKey::<AccountAlg>::from_str(id_hex)
         .map(Into::into)
-        .unwrap()
+        .map_err(|_| warp::reject::custom(GeneralException::hex_encoding_malformed()))
 }
 
 pub async fn get_account(
@@ -802,54 +802,21 @@ pub async fn get_account(
         ));
         return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
-    let account_state: Result<jormungandr_lib::interfaces::AccountState, _> = context
+    let account_state: jormungandr_lib::interfaces::AccountState = context
         .lock()
         .unwrap()
         .state()
         .ledger()
         .accounts()
-        .get_state(&parse_account_id(&account_bech32))
+        .get_state(&parse_account_id(&account_bech32)?)
         .map(Into::into)
-        .map_err(|_| AccountDoesNotExist);
+        .map_err(|_| warp::reject::custom(GeneralException::account_does_not_exist()))?;
 
-    Ok(HandlerResult(Ok(account_state?)))
+    Ok(HandlerResult(Ok(account_state)))
 }
 
 pub async fn health_handler() -> Result<impl Reply, Rejection> {
     Ok(warp::reply())
-}
-
-#[derive(Debug)]
-struct ForcedErrorCode {
-    pub code: u16,
-}
-
-#[derive(Debug)]
-struct InvalidBatch {
-    pub summary: FragmentsProcessingSummary,
-    pub code: u16,
-}
-
-impl warp::reject::Reject for ForcedErrorCode {}
-impl warp::reject::Reject for InvalidBatch {}
-
-async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
-    if let Some(forced_error_code) = r.find::<ForcedErrorCode>() {
-        return Ok(warp::reply::with_status(
-            "forced rejections".to_string(),
-            StatusCode::from_u16(forced_error_code.code).unwrap(),
-        ));
-    }
-    if let Some(invalid_batch) = r.find::<InvalidBatch>() {
-        return Ok(warp::reply::with_status(
-            serde_json::to_string(&invalid_batch.summary).unwrap(),
-            StatusCode::from_u16(invalid_batch.code).unwrap(),
-        ));
-    }
-    Ok(warp::reply::with_status(
-        format!("internal error: {:?}", r),
-        StatusCode::INTERNAL_SERVER_ERROR,
-    ))
 }
 
 pub async fn authorize_token(

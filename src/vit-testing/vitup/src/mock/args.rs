@@ -59,8 +59,6 @@ pub enum Error {
     CannotReadConfiguration(#[from] crate::mock::config::Error),
     #[error("cannot read parameters")]
     CannotReadParameters(#[from] serde_yaml::Error),
-    #[error("context error")]
-    Context(#[from] crate::mock::context::Error),
     #[error("join error")]
     Join(#[from] tokio::task::JoinError),
 }

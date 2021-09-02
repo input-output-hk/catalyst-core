@@ -4,12 +4,10 @@ use crate::mock::config::Configuration;
 use crate::mock::mock_state::MockState;
 use crate::mock::Logger;
 use iapyx::VitVersion;
-use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
-use thiserror::Error;
 
 pub struct Context {
     config: Configuration,
@@ -80,10 +78,4 @@ impl Context {
     pub fn set_api_token(&mut self, api_token: String) {
         self.config.token = Some(api_token);
     }
-}
-
-#[derive(Debug, Error, Deserialize, Serialize)]
-pub enum Error {
-    #[error("account does not exists")]
-    AccountDoesNotExist,
 }

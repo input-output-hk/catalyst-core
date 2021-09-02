@@ -170,13 +170,11 @@ pub(super) fn valid_transaction_ios_number<P>(
     Ok(())
 }
 
-pub(super) fn valid_transaction_date<P>(
+pub fn valid_transaction_date(
     settings: &setting::Settings,
-    tx: &TransactionSlice<P>,
+    valid_until: BlockDate,
     date: BlockDate,
 ) -> Result<(), TxVerifyError> {
-    let valid_until = tx.valid_until();
-
     // if current date epoch is less than until.epoch - setting, then
     // the transaction has a validity range that is too big to be accepted
     if_cond_fail_with!(

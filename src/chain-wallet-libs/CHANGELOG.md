@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+- Remove the keygen crate due to lack of need for it.
+
 ## [0.7.0-pre3] 2021-08-27
 
 - Fix compilation issue in iOS for cordova

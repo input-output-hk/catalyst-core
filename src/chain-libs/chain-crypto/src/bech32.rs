@@ -16,12 +16,13 @@ pub trait Bech32 {
 }
 
 pub fn to_bech32_from_bytes<B: Bech32>(bytes: &[u8]) -> String {
-    bech32::encode(B::BECH32_HRP, bytes.to_base32())
+    // FIXME: should switch to Bech32m?
+    bech32::encode(B::BECH32_HRP, bytes.to_base32(), bech32::Variant::Bech32)
         .unwrap_or_else(|e| panic!("Failed to build bech32: {}", e))
 }
 
 pub fn try_from_bech32_to_bytes<B: Bech32>(bech32_str: &str) -> Result<Vec<u8>> {
-    let (hrp, data) = bech32::decode(bech32_str)?;
+    let (hrp, data, _variant) = bech32::decode(bech32_str)?;
     if hrp != B::BECH32_HRP {
         return Err(Error::HrpInvalid {
             expected: B::BECH32_HRP,

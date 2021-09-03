@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove the keygen crate due to lack of need for it.
 
+## [0.7.0-pre4] 2021-09-02
+
+- Bech32 HRP for encryption key now is set by chain-libs
+
 ## [0.7.0-pre3] 2021-08-27
 
 - Fix compilation issue in iOS for cordova

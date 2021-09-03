@@ -6,7 +6,8 @@ use std::time::Duration;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct VitStartParameters {
-    pub initials: Option<Initials>,
+    #[serde(default)]
+    pub initials: Initials,
     #[serde(default = "Protocol::http")]
     pub protocol: Protocol,
     pub vote_start: u64,

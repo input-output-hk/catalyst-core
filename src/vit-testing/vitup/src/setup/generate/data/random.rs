@@ -2,6 +2,7 @@ use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
 
 use super::{encode, read_config, read_genesis_yaml, write_genesis_yaml};
+use crate::setup::generate::read_initials;
 use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
 use jormungandr_scenario_tests::{Context, Seed};
 use std::path::PathBuf;
@@ -17,6 +18,9 @@ pub struct RandomDataCommandArgs {
     /// how many qr to generate
     #[structopt(long = "config")]
     pub config: PathBuf,
+
+    #[structopt(long = "snapshot")]
+    pub snapshot: Option<PathBuf>,
 }
 
 impl RandomDataCommandArgs {
@@ -34,7 +38,14 @@ impl RandomDataCommandArgs {
         );
 
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
-        let config = read_config(&self.config)?;
+        let mut config = read_config(&self.config)?;
+
+        if let Some(snapshot) = self.snapshot {
+            config
+                .params
+                .initials
+                .extend_from_external(read_initials(snapshot)?);
+        }
 
         quick_setup.upload_parameters(config.params.clone());
         quick_setup.fees(config.linear_fees);
@@ -75,10 +86,19 @@ impl RandomDataCommandArgs {
                 .blockchain_configuration
                 .consensus_leader_ids = config.consensus_leader_ids;
         }
-
-        println!("{:?}", block0_configuration);
-
         write_genesis_yaml(block0_configuration, &genesis)?;
-        encode(&genesis, &block0)
+        encode(&genesis, &block0)?;
+
+        println!(
+            "voteplan ids: {:?}",
+            controller
+                .vote_plans()
+                .iter()
+                .map(|x| x.id())
+                .collect::<Vec<String>>()
+        );
+
+        quick_setup.print_report();
+        Ok(())
     }
 }

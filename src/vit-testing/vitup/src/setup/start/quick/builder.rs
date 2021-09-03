@@ -97,7 +97,7 @@ impl QuickVitBackendSettingsBuilder {
     }
 
     pub fn initials(&mut self, initials: Initials) -> &mut Self {
-        self.parameters.initials = Some(initials);
+        self.parameters.initials = initials;
         self
     }
 
@@ -399,24 +399,23 @@ impl QuickVitBackendSettingsBuilder {
             wallet.save_qr_code_hash(hash.path(), &pin_to_bytes(pin))?;
         }
 
-        if let Some(initials) = &self.parameters.initials {
-            let zero_funds_initial_counts = initials.zero_funds_count();
+        let zero_funds_initial_counts = self.parameters.initials.zero_funds_count();
 
-            if zero_funds_initial_counts > 0 {
-                let zero_funds_pin = initials.zero_funds_pin().unwrap();
+        if zero_funds_initial_counts > 0 {
+            let zero_funds_pin = self.parameters.initials.zero_funds_pin().unwrap();
 
-                for i in 1..zero_funds_initial_counts + 1 {
-                    let sk = SecretKey::generate(rand::thread_rng());
-                    let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
-                    let img = qr.to_img();
-                    let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
-                    img.save(png.path())?;
+            for i in 1..zero_funds_initial_counts + 1 {
+                let sk = SecretKey::generate(rand::thread_rng());
+                let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
+                let img = qr.to_img();
+                let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
+                img.save(png.path())?;
 
-                    let hash = folder.child(format!("zero_funds_{}.txt", i));
-                    append(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
-                }
+                let hash = folder.child(format!("zero_funds_{}.txt", i));
+                append(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
             }
         }
+
         Ok(())
     }
 
@@ -469,10 +468,12 @@ impl QuickVitBackendSettingsBuilder {
         println!("building initials..");
 
         let mut templates = HashMap::new();
-        if let Some(initials) = &self.parameters.initials {
-            blockchain.set_external_wallets(initials.external_templates());
-            templates =
-                initials.templates(self.parameters.voting_power, blockchain.discrimination());
+        if self.parameters.initials.any() {
+            blockchain.set_external_wallets(self.parameters.initials.external_templates());
+            templates = self
+                .parameters
+                .initials
+                .templates(self.parameters.voting_power, blockchain.discrimination());
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
                 blockchain.add_wallet(wallet.clone());
             }
@@ -515,6 +516,30 @@ impl QuickVitBackendSettingsBuilder {
             parameters,
             self.parameters.version.clone(),
         ))
+    }
+
+    pub fn print_report(&self) {
+        println!("Fund id: {}", self.parameters().fund_id);
+        println!(
+            "vote start timestamp: {:?}",
+            self.parameters().vote_start_timestamp
+        );
+        println!(
+            "tally start timestamp: {:?}",
+            self.parameters().tally_start_timestamp
+        );
+        println!(
+            "tally end timestamp: {:?}",
+            self.parameters().tally_end_timestamp
+        );
+        println!(
+            "next vote start time: {:?}",
+            self.parameters().next_vote_start_time
+        );
+        println!(
+            "refresh timestamp: {:?}",
+            self.parameters().refresh_time
+        );
     }
 }
 

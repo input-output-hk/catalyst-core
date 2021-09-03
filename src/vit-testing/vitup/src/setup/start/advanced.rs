@@ -1,4 +1,3 @@
-use crate::config::Initials;
 use crate::manager::ControlContext;
 use crate::manager::ManagerService;
 use crate::scenario::network::single_run;
@@ -137,13 +136,10 @@ impl AdvancedStartCommandArgs {
         let mut config = read_config(&self.config)?;
 
         if let Some(snapshot) = self.snapshot {
-            let initials = read_initials(snapshot)?;
             config
                 .params
                 .initials
-                .as_mut()
-                .unwrap()
-                .extend(&Initials::new_from_external(initials));
+                .extend_from_external(read_initials(snapshot)?);
         }
 
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();

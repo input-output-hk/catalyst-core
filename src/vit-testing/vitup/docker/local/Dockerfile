@@ -44,12 +44,12 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/jormungandr && \
 	cd jormungandr && \
-	git checkout 48e23d9ab8a8dbba215f77377dbbbb547a5f5e6f
+	git checkout catalyst-fund6
 
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-servicing-station && \
 	cd vit-servicing-station && \
-	git checkout e1b79843eed04463a30cbe6022d9e9b8444e3d92
+	git checkout catalyst-fund6
 	
  RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-testing && \

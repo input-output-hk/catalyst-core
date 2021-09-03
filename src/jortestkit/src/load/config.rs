@@ -19,6 +19,7 @@ pub struct Configuration {
     thread_no: usize,
     strategy: Strategy,
     step_delay: u64,
+    fetch_limit: Option<usize>,
     monitor: Monitor,
     shutdown_grace_period: u32,
     status_pace: u64,
@@ -29,6 +30,7 @@ impl Configuration {
         thread_no: usize,
         duration: std::time::Duration,
         step_delay: u64,
+        fetch_limit: Option<usize>,
         monitor: Monitor,
         shutdown_grace_period: u32,
         status_pace: u64,
@@ -37,6 +39,7 @@ impl Configuration {
             thread_no,
             strategy: Strategy::Duration(duration),
             step_delay,
+            fetch_limit,
             monitor,
             shutdown_grace_period,
             status_pace,
@@ -47,6 +50,7 @@ impl Configuration {
         thread_no: usize,
         requests_count: u32,
         step_delay: u64,
+        fetch_limit: Option<usize>,
         monitor: Monitor,
         shutdown_grace_period: u32,
         status_pace: u64,
@@ -55,6 +59,7 @@ impl Configuration {
             thread_no,
             strategy: Strategy::PerThread(requests_count),
             step_delay,
+            fetch_limit,
             monitor,
             shutdown_grace_period,
             status_pace,
@@ -65,6 +70,7 @@ impl Configuration {
         thread_no: usize,
         requests_count: u32,
         step_delay: u64,
+        fetch_limit: Option<usize>,
         monitor: Monitor,
         shutdown_grace_period: u32,
         status_pace: u64,
@@ -73,6 +79,7 @@ impl Configuration {
             thread_no,
             strategy: Strategy::Overall(requests_count),
             step_delay,
+            fetch_limit,
             monitor,
             shutdown_grace_period,
             status_pace,
@@ -93,6 +100,10 @@ impl Configuration {
 
     pub fn status_pace(&self) -> u64 {
         self.status_pace
+    }
+
+    pub fn fetch_limit(&self) -> Option<usize> {
+        self.fetch_limit
     }
 
     pub fn monitor(&self) -> &Monitor {

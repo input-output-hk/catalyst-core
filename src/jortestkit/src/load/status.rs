@@ -92,16 +92,34 @@ pub trait RequestStatusProvider {
     fn get_statuses(&self, ids: &[Id]) -> Vec<Status>;
 }
 
+/// Returns a person with the name given them
+///
+/// # Arguments
+///
+/// * `responses_clone` - input response collection
+/// * `limit` - Optional parameter which defined limit of statuses in single fetch. This can solve some issues
+///             for example: uri is too long etc.
+/// * `request_status_provider` - trait implementation which is capable to provide information about statuses
+///
 fn update_statuses(
     responses_clone: &Arc<RwLock<Vec<Response>>>,
+    fetch_limit: Option<usize>,
     request_status_provider: &(impl RequestStatusProvider + Send),
 ) -> Vec<Status> {
     let mut responses = responses_clone.write().unwrap();
-    let ids: Vec<Id> = responses
-        .iter()
-        .filter(|x| x.is_pending())
-        .map(|resp| resp.id().as_ref().unwrap().clone())
-        .collect();
+    let ids: Vec<Id> = {
+        let iter = responses
+            .iter()
+            .filter(|x| x.is_pending())
+            .map(|resp| resp.id().as_ref().unwrap().clone());
+
+        if let Some(fetch_limit) = fetch_limit {
+            iter.take(fetch_limit).collect()
+        } else {
+            iter.collect()
+        }
+    };
+
     let statuses = request_status_provider.get_statuses(&ids);
     for status in statuses.iter() {
         for response in responses.iter_mut() {
@@ -118,6 +136,7 @@ impl StatusUpdaterThread {
         responses: &Arc<RwLock<Vec<Response>>>,
         request_status_provider: S,
         monitor: Monitor,
+        fetch_limit: Option<usize>,
         title: &str,
         shutdown_grace_period: u32,
         pace: u64,
@@ -126,7 +145,7 @@ impl StatusUpdaterThread {
         S: RequestStatusProvider + Send + 'static,
     {
         let (tx, rx) = mpsc::channel();
-        let responses_clone = Arc::clone(&responses);
+        let responses_clone = Arc::clone(responses);
         let progress_bar = StatusProgressBar::new(
             ProgressBar::new(1),
             format!("[Load Scenario: {}]", title),
@@ -138,7 +157,11 @@ impl StatusUpdaterThread {
                     progress_bar.set_message("Waiting for all messages to be accepted or rejected");
 
                     for _ in 0..shutdown_grace_period {
-                        let statuses = update_statuses(&responses_clone, &request_status_provider);
+                        let statuses = update_statuses(
+                            &responses_clone,
+                            fetch_limit,
+                            &request_status_provider,
+                        );
                         let pending_statuses: Vec<&Status> =
                             statuses.iter().filter(|x| x.is_pending()).collect();
 
@@ -157,7 +180,7 @@ impl StatusUpdaterThread {
                 }
                 Err(TryRecvError::Empty) => {}
             }
-            update_statuses(&responses_clone, &request_status_provider);
+            update_statuses(&responses_clone, fetch_limit, &request_status_provider);
             std::thread::sleep(std::time::Duration::from_secs(pace));
         });
         Self {

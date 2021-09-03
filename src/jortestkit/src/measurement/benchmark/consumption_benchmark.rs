@@ -187,7 +187,7 @@ impl ConsumptionBenchmarkFinish {
                 "Measurement: {}_{}. Result: {}. Actual: {} Thresholds: {}",
                 self.definition.name(),
                 named_process.name(),
-                consumption.against(&thresholds),
+                consumption.against(thresholds),
                 consumption,
                 thresholds
             ),

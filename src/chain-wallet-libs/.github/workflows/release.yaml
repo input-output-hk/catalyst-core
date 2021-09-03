@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - 'v[0-9]+.*' # push events to matching releases
+      - "v[0-9]+.*" # push events to matching releases
 
 name: Release
 
@@ -271,51 +271,6 @@ jobs:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
           asset_path: chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz
           asset_name: chain-wallet-libs-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}
-          asset_content_type: application/gzip
-
-  release_keygen:
-    name: Release catalyst keygen/pincode wasm assets
-    needs: initial_release
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [bundler]
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-
-      - name: Install wasm pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-
-      - name: build
-        run: |
-          wasm-pack build \
-            --scope iohk-jormungandr \
-            --out-name keygen \
-            --release --target ${{ matrix.target }} \
-           keygen
-
-      - name: pack
-        run: wasm-pack pack keygen
-
-      - name: rename-tarball
-        run: |
-          find ./keygen/pkg \
-            -name iohk-jormungandr-keygen*.tgz \
-            -exec mv {} \
-            iohk-jormungandr-keygen-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz \;
-
-      - name: Upload binaries to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: ./iohk-jormungandr-keygen-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}.tgz
-          asset_name: iohk-jormungandr-keygen-${{ needs.initial_release.outputs.version }}-${{ matrix.target }}
           asset_content_type: application/gzip
 
   build_jni_assets:

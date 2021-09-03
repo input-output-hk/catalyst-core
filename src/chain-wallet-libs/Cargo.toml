@@ -8,7 +8,6 @@ members = [
     "bindings/wallet-c",
     "bindings/wallet-jni",
     "bindings/wallet-js",
-    "keygen",
 ]
 
 [profile.release]

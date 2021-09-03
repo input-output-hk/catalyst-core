@@ -1,12 +1,13 @@
 use crate::load::{MultiController, MultiControllerError};
+use crate::utils::valid_until::ValidUntil;
 use crate::Proposal;
 use crate::Wallet;
-use chain_impl_mockchain::block::BlockDate;
 use jormungandr_testing_utils::testing::VoteCastCounter;
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
 use std::time::Instant;
+use wallet::Settings;
 use wallet_core::Choice;
 
 pub struct BatchWalletRequestGen {
@@ -19,6 +20,7 @@ pub struct BatchWalletRequestGen {
     wallet_index: usize,
     update_account_before_vote: bool,
     vote_cast_counter: VoteCastCounter,
+    settings: Settings,
 }
 
 impl BatchWalletRequestGen {
@@ -27,9 +29,11 @@ impl BatchWalletRequestGen {
         batch_size: usize,
         use_v1: bool,
         update_account_before_vote: bool,
-    ) -> Self {
-        let proposals = multi_controller.proposals().unwrap();
-        let vote_plans = multi_controller.backend().vote_plan_statuses().unwrap();
+    ) -> Result<Self, MultiControllerError> {
+        let proposals = multi_controller.proposals()?;
+        let vote_plans = multi_controller.backend().vote_plan_statuses()?;
+        let settings = multi_controller.backend().settings()?;
+
         let options = proposals[0]
             .chain_vote_options
             .0
@@ -45,7 +49,7 @@ impl BatchWalletRequestGen {
                 .collect(),
         );
 
-        Self {
+        Ok(Self {
             batch_size,
             use_v1,
             multi_controller,
@@ -55,7 +59,8 @@ impl BatchWalletRequestGen {
             wallet_index: 0,
             update_account_before_vote,
             vote_cast_counter,
-        }
+            settings,
+        })
     }
 
     pub fn next_usize(&mut self) -> usize {
@@ -80,6 +85,8 @@ impl BatchWalletRequestGen {
                 });
         }
 
+        let valid_until = ValidUntil::BySlotShift(10);
+
         let batch_size = self.batch_size;
         let options = self.options.clone();
 
@@ -97,7 +104,7 @@ impl BatchWalletRequestGen {
                         .iter()
                         .find(|x| {
                             x.chain_voteplan_id == item.id().to_string()
-                                && (x.internal_id % u8::MAX as i64) == i as i64
+                                && (x.chain_proposal_index % u8::MAX as i64) == i as i64
                         })
                         .unwrap()
                         .clone(),
@@ -116,7 +123,7 @@ impl BatchWalletRequestGen {
                 wallet_index,
                 self.use_v1,
                 proposals.iter().zip(choices).collect(),
-                &BlockDate::first().next_epoch(), // TODO: this will produce valid transactions only up to the first epoch
+                &valid_until.into_expiry_date(Some(self.settings.clone()))?,
             )
             .map(|x| {
                 x.into_iter()
@@ -147,6 +154,7 @@ impl RequestGenerator for BatchWalletRequestGen {
             wallet_index: 0,
             update_account_before_vote: self.update_account_before_vote,
             vote_cast_counter: self.vote_cast_counter.clone(),
+            settings: self.settings.clone(),
         };
 
         (self, Some(new_gen))

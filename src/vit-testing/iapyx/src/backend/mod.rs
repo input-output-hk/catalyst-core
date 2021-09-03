@@ -7,10 +7,10 @@ use crate::data::Challenge;
 use crate::Fund;
 use crate::Proposal;
 use crate::SimpleVoteStatus;
-use chain_core::mempack::{ReadBuf, Readable};
 use chain_core::property::Fragment as _;
-use chain_impl_mockchain::block::Block;
+use chain_impl_mockchain::config::Block0Date;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
+use chain_impl_mockchain::key::Hash;
 use chain_ser::deser::Deserialize;
 use jormungandr_lib::interfaces::AccountIdentifier;
 use jormungandr_lib::interfaces::FragmentStatus;
@@ -181,8 +181,30 @@ impl WalletBackend {
     }
 
     pub fn settings(&self) -> Result<Settings, WalletBackendError> {
-        let block0 = Block::read(&mut ReadBuf::from(&self.block0()?))?;
-        Ok(Settings::new(&block0).unwrap())
+        use chain_time::SlotDuration;
+        use chain_time::TimeFrame;
+        use chain_time::Timeline;
+        use chain_time::{Epoch, TimeEra};
+
+        let settings = self.node_client.settings()?;
+        let duration_since_epoch = settings.block0_time.duration_since_epoch();
+        let timeline = Timeline::new(std::time::SystemTime::now());
+        let tf = TimeFrame::new(
+            timeline,
+            SlotDuration::from_secs(settings.slot_duration as u32),
+        );
+        let slot0 = tf.slot0();
+        let era = TimeEra::new(slot0, Epoch(0), settings.slots_per_epoch);
+
+        Ok(Settings {
+            fees: settings.fees,
+            discrimination: settings.discrimination,
+            block0_initial_hash: Hash::from_str(&settings.block0_hash)?,
+            block0_date: Block0Date(duration_since_epoch.as_secs()),
+            slot_duration: settings.slot_duration as u8,
+            time_era: era,
+            transaction_max_expiry_epochs: settings.tx_max_expiry_epochs,
+        })
     }
 
     pub fn account_exists(&self, id: AccountId) -> Result<bool, WalletBackendError> {
@@ -193,7 +215,7 @@ impl WalletBackend {
 #[derive(Debug, Error)]
 pub enum WalletBackendError {
     #[error("vit station error")]
-    VitStationConnectionError(#[from] VitRestError),
+    VitStationConnectionErzr(#[from] VitRestError),
     #[error("node rest error")]
     NodeConnectionError(#[from] NodeRestError),
     #[error("node rest error")]
@@ -204,4 +226,6 @@ pub enum WalletBackendError {
     Block0ReadError(#[from] chain_core::mempack::ReadError),
     #[error("block0 retrieve error")]
     SettingsReadError(#[from] Box<chain_impl_mockchain::ledger::Error>),
+    #[error("cannot convert hash")]
+    HashConversion(#[from] chain_crypto::hash::Error),
 }

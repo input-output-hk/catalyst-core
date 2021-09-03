@@ -148,14 +148,14 @@ impl MultiController {
         wallet_index: usize,
         proposal: &Proposal,
         choice: Choice,
-        valid_until: &BlockDate,
+        valid_until: BlockDate,
     ) -> Result<FragmentId, MultiControllerError> {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let tx = wallet.vote(
             self.settings.clone(),
             &proposal.clone().into(),
             choice,
-            valid_until,
+            &valid_until,
         )?;
         self.backend()
             .send_fragment(tx.to_vec())
@@ -240,4 +240,6 @@ pub enum MultiControllerError {
     Controller(#[from] crate::ControllerError),
     #[error("pin read error")]
     PinRead(#[from] crate::qr::PinReadError),
+    #[error("wallet time error")]
+    WalletTime(#[from] wallet::time::Error),
 }

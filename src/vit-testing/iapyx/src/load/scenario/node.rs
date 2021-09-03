@@ -1,4 +1,5 @@
 use crate::load::multi_controller::MultiControllerError;
+use crate::load::request_generators::RequestGenError;
 use crate::load::request_generators::{BatchWalletRequestGen, WalletRequestGen};
 use crate::load::status_provider::VoteStatusProvider;
 use crate::load::NodeLoadConfig;
@@ -33,14 +34,14 @@ impl NodeLoad {
                     self.config.batch_size,
                     self.config.use_v1,
                     self.config.reuse_accounts_lazy,
-                ),
+                )?,
                 VoteStatusProvider::new(backend, self.config.debug),
                 self.config.config,
                 measurement_name,
             )
         } else {
             jortestkit::load::start_sync(
-                WalletRequestGen::new(multicontroller, self.config.reuse_accounts_lazy),
+                WalletRequestGen::new(multicontroller, self.config.reuse_accounts_lazy)?,
                 self.config.config,
                 measurement_name,
             )
@@ -61,4 +62,6 @@ pub enum Error {
     ConfigError(#[from] crate::load::config::NodeLoadConfigError),
     #[error("internal error")]
     MultiControllerError(#[from] MultiControllerError),
+    #[error("request gen error")]
+    RequestGen(#[from] RequestGenError),
 }

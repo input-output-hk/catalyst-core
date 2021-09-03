@@ -1,12 +1,14 @@
 use crate::load::{MultiController, MultiControllerError};
+use crate::utils::valid_until::ValidUntil;
 use crate::Proposal;
 use crate::Wallet;
-use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
+use chain_impl_mockchain::fragment::FragmentId;
 use jormungandr_testing_utils::testing::VoteCastCounter;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
 use rand::seq::SliceRandom;
 use rand_core::OsRng;
 use std::time::Instant;
+use wallet::Settings;
 use wallet_core::Choice;
 
 pub struct WalletRequestGen {
@@ -17,13 +19,17 @@ pub struct WalletRequestGen {
     wallet_index: usize,
     update_account_before_vote: bool,
     vote_cast_counter: VoteCastCounter,
+    settings: Settings,
 }
 
 impl WalletRequestGen {
-    pub fn new(multi_controller: MultiController, update_account_before_vote: bool) -> Self {
-        let proposals = multi_controller.proposals().unwrap();
-        let vote_plans = multi_controller.backend().vote_plan_statuses().unwrap();
-
+    pub fn new(
+        multi_controller: MultiController,
+        update_account_before_vote: bool,
+    ) -> Result<Self, super::RequestGenError> {
+        let proposals = multi_controller.proposals()?;
+        let vote_plans = multi_controller.backend().vote_plan_statuses()?;
+        let settings = multi_controller.backend().settings()?;
         let options = proposals[0]
             .chain_vote_options
             .0
@@ -39,7 +45,7 @@ impl WalletRequestGen {
                 .collect(),
         );
 
-        Self {
+        Ok(Self {
             multi_controller,
             proposals,
             options,
@@ -47,7 +53,8 @@ impl WalletRequestGen {
             update_account_before_vote,
             vote_cast_counter,
             rand: OsRng,
-        }
+            settings,
+        })
     }
 
     pub fn random_vote(&mut self) -> Result<FragmentId, MultiControllerError> {
@@ -58,6 +65,8 @@ impl WalletRequestGen {
             }
             self.wallet_index
         };
+
+        let valid_until = ValidUntil::BySlotShift(10);
 
         // update state of wallet only before first vote.
         // Then relay on mechanism of spending counter auto-update
@@ -73,8 +82,12 @@ impl WalletRequestGen {
             .get(counter.first().unwrap().first() as usize)
             .unwrap();
         let choice = Choice::new(*self.options.choose(&mut self.rand).unwrap());
-        self.multi_controller
-            .vote(index, proposal, choice, &BlockDate::first().next_epoch()) // TODO: this will produce valid transactions only up to the first epoch
+        self.multi_controller.vote(
+            index,
+            proposal,
+            choice,
+            valid_until.into_expiry_date(Some(self.settings.clone()))?,
+        ) // TODO: this will produce valid transactions only up to the first epoch
     }
 }
 
@@ -97,6 +110,7 @@ impl RequestGenerator for WalletRequestGen {
             wallet_index: 0,
             update_account_before_vote: self.update_account_before_vote,
             vote_cast_counter: self.vote_cast_counter.clone(),
+            settings: self.settings.clone(),
         };
 
         (self, Some(new_gen))

@@ -96,6 +96,7 @@ impl BurstCountIapyxLoadCommand {
             self.threads,
             self.count,
             self.pace,
+            Some(250),
             build_monitor(&self.progress_bar_mode),
             0,
             self.status_pace,

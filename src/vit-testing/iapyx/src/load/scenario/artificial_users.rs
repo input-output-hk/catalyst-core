@@ -35,7 +35,7 @@ impl ArtificialUserLoad {
             self.config.vote.batch_size,
             self.config.vote.use_https,
             self.config.vote.reuse_accounts_lazy,
-        );
+        )?;
         let account = AccountRequestGen::new(
             self.config.vote.build_multi_controller()?.into(),
             node_client.clone(),
@@ -109,4 +109,6 @@ pub enum Error {
     ServicingConfig(#[from] crate::load::config::ServicingStationConfigError),
     #[error("rest error")]
     Rest(#[from] VitRestError),
+    #[error("controller error")]
+    MultiController(#[from] crate::load::MultiControllerError),
 }

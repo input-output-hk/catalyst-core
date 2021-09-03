@@ -1,7 +1,7 @@
 //! Mockchain ledger. Ledger exists in order to update the
 //! current state and verify transactions.
 
-use super::check::{self, TxVerifyError};
+use super::check::{self, TxValidityError, TxVerifyError};
 use super::evm;
 use super::governance::{Governance, ParametersGovernanceAction, TreasuryGovernanceAction};
 use super::leaderlog::LeadersParticipationRecord;
@@ -212,6 +212,8 @@ pub enum Error {
     },
     #[error("Transaction malformed")]
     TransactionMalformed(#[from] TxVerifyError),
+    #[error("Invalid transaction expiry date")]
+    InvalidTransactionValidity(#[from] TxValidityError),
     #[error("Error while computing the fees")]
     FeeCalculationError(#[from] ValueError),
     #[error("Praos active slot coefficient invalid: {error}")]

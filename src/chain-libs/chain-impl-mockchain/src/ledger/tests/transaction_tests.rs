@@ -5,8 +5,8 @@ use crate::{
     date::BlockDate,
     ledger::{
         self,
-        check::TxVerifyError,
-        Error::{Account, TransactionMalformed},
+        check::{TxValidityError, TxVerifyError},
+        Error::{Account, InvalidTransactionValidity, TransactionMalformed},
     },
     testing::{
         data::{AddressData, AddressDataValue},
@@ -69,7 +69,7 @@ pub fn transaction_fail_when_validity_out_of_range() {
         .get_fragment();
 
     assert_err!(
-        TransactionMalformed(TxVerifyError::TransactionExpired),
+        InvalidTransactionValidity(TxValidityError::TransactionExpired),
         test_ledger.apply_transaction(
             fragment,
             BlockDate {
@@ -107,7 +107,7 @@ pub fn transaction_fail_when_validity_too_far() {
         .get_fragment();
 
     assert_err!(
-        TransactionMalformed(TxVerifyError::TransactionValidForTooLong),
+        InvalidTransactionValidity(TxValidityError::TransactionValidForTooLong),
         test_ledger.apply_transaction(fragment, BlockDate::first())
     );
 }

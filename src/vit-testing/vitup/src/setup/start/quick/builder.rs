@@ -3,6 +3,7 @@ use crate::scenario::controller::VitController;
 use crate::scenario::controller::VitControllerBuilder;
 use crate::{config::Initials, Result};
 use assert_fs::fixture::{ChildPath, PathChild};
+use chain_crypto::bech32::Bech32;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::vote::PayloadType;
@@ -10,7 +11,7 @@ use chain_impl_mockchain::{
     testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder},
     value::Value,
 };
-use chain_vote::committee::ElectionPublicKey;
+use chain_vote::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
 use iapyx::Protocol;
 use jormungandr_lib::interfaces::CommitteeIdDef;
@@ -20,12 +21,9 @@ use jormungandr_scenario_tests::scenario::{
     ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KesUpdateSpeed, Milli,
     NumberOfSlotsPerEpoch, SlotDuration, Topology, TopologyBuilder,
 };
+use jormungandr_testing_utils::qr_code::{generate, KeyQrCode};
 use jormungandr_testing_utils::testing::network_builder::{Blockchain, Node, WalletTemplate};
 use jormungandr_testing_utils::wallet::LinearFee;
-use jormungandr_testing_utils::{
-    qr_code::{generate, KeyQrCode},
-    wallet::ElectionPublicKeyExtension,
-};
 use jortestkit::prelude::append;
 use std::{collections::HashMap, iter};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
@@ -271,7 +269,7 @@ impl QuickVitBackendSettingsBuilder {
         if self.parameters.private {
             for (alias, private_key_data) in settings.private_vote_plans.iter() {
                 let key: ElectionPublicKey = private_key_data.election_public_key();
-                parameters.set_vote_encryption_key(key.to_base32().unwrap(), alias);
+                parameters.set_vote_encryption_key(key.to_bech32_str(), alias);
             }
         }
         parameters
@@ -536,10 +534,7 @@ impl QuickVitBackendSettingsBuilder {
             "next vote start time: {:?}",
             self.parameters().next_vote_start_time
         );
-        println!(
-            "refresh timestamp: {:?}",
-            self.parameters().refresh_time
-        );
+        println!("refresh timestamp: {:?}", self.parameters().refresh_time);
     }
 }
 

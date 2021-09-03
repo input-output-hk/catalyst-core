@@ -122,7 +122,7 @@ impl fmt::Display for EfficiencyBenchmarkFinish {
                 f,
                 "Measurement: {}. Result: {}. Actual: {} Thresholds: {}",
                 self.definition.name(),
-                self.efficiency.against(&thresholds),
+                self.efficiency.against(thresholds),
                 self.efficiency,
                 thresholds,
             ),

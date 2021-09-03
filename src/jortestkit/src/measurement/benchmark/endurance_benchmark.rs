@@ -97,7 +97,7 @@ impl fmt::Display for EnduranceBenchmarkFinish {
                 f,
                 "Measurement: {}. Result: {}. Actual: {} Thresholds: {}",
                 self.definition.name(),
-                self.endurance.against(&thresholds),
+                self.endurance.against(thresholds),
                 self.endurance,
                 thresholds,
             ),

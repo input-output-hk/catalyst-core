@@ -36,7 +36,7 @@ impl fmt::Display for Endurance {
 
 impl Endurance {
     pub fn new(start_time: &Timestamp, end_time: &Timestamp) -> Self {
-        Self(end_time.duration_since(&start_time))
+        Self(end_time.duration_since(start_time))
     }
 
     pub fn as_secs(&self) -> u64 {

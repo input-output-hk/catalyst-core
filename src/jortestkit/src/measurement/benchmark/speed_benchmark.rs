@@ -98,7 +98,7 @@ impl fmt::Display for SpeedBenchmarkFinish {
                 f,
                 "Measurement: {}. Result: {}. Actual: {} Thresholds: {}",
                 self.definition.name(),
-                self.speed.against(&thresholds),
+                self.speed.against(thresholds),
                 self.speed,
                 thresholds,
             ),

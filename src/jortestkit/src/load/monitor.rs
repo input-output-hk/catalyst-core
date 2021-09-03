@@ -24,7 +24,7 @@ impl MonitorThread {
         title: &str,
     ) -> Self {
         let (tx, rx) = mpsc::channel();
-        let request_clone = Arc::clone(&requests);
+        let request_clone = Arc::clone(requests);
         use_as_monitor_progress_bar(&monitor, title, &mut progress_bar);
 
         let monitor = thread::Builder::new()

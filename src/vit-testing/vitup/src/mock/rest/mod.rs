@@ -8,11 +8,13 @@ use chain_crypto::PublicKey;
 use chain_impl_mockchain::account::AccountAlg;
 use chain_impl_mockchain::account::Identifier;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
+use itertools::Itertools;
 use jormungandr_lib::interfaces::FragmentsBatch;
 use jormungandr_lib::interfaces::VotePlanStatus;
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
 use serde::{Deserialize as SerdeDeserialize, Serialize as SerdeSerialize};
+use std::collections::HashMap;
 use std::fs::File;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -208,6 +210,17 @@ pub async fn start_rest_server(context: ContextLock) {
             root.and(challenge_by_id.or(challenges))
         };
 
+        let reviews = {
+            let root = warp::path!("reviews" / ..);
+
+            let review_by_id = warp::path!(i32)
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_review_by_id);
+
+            root.and(review_by_id)
+        };
+
         let funds = {
             let root = warp::path!("fund" / ..);
 
@@ -281,6 +294,7 @@ pub async fn start_rest_server(context: ContextLock) {
             proposals
                 .or(challenges)
                 .or(funds)
+                .or(reviews)
                 .or(block0)
                 .or(settings)
                 .or(account)
@@ -669,6 +683,38 @@ pub async fn get_challenge_by_id(id: i32, context: ContextLock) -> Result<impl R
         challenge,
         proposals,
     })))
+}
+
+pub async fn get_review_by_id(id: i32, context: ContextLock) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .log(format!("get_review_by_id {} ...", id));
+
+    if !context.lock().unwrap().available() {
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
+    }
+
+    let reviews: HashMap<String, _> = context
+        .lock()
+        .unwrap()
+        .state()
+        .vit()
+        .advisor_reviews()
+        .iter()
+        .cloned()
+        .filter(|review| review.proposal_id == id)
+        .group_by(|review| review.assessor.to_string())
+        .into_iter()
+        .map(|(key, group)| (key, group.collect::<Vec<_>>()))
+        .collect();
+
+    Ok(HandlerResult(Ok(reviews)))
 }
 
 pub async fn get_all_proposals(context: ContextLock) -> Result<impl Reply, Rejection> {

@@ -54,6 +54,8 @@ impl MockState {
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
         let snapshot = generator.build(&mut template_generator);
 
+        println!("{:#?}", &snapshot);
+
         Ok(Self {
             available: true,
             error_code: 400,

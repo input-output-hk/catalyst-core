@@ -215,17 +215,19 @@ impl WalletBackend {
 #[derive(Debug, Error)]
 pub enum WalletBackendError {
     #[error("vit station error")]
-    VitStationConnectionErzr(#[from] VitRestError),
+    VitStationConnection(#[from] VitRestError),
     #[error("node rest error")]
-    NodeConnectionError(#[from] NodeRestError),
+    NodeConnection(#[from] NodeRestError),
     #[error("node rest error")]
-    ProxyConnectionError(#[from] ProxyClientError),
+    ProxyConnection(#[from] ProxyClientError),
     #[error("io error")]
     IoError(#[from] std::io::Error),
     #[error("block0 retrieve error")]
-    Block0ReadError(#[from] chain_core::mempack::ReadError),
+    Block0Read(#[from] chain_core::mempack::ReadError),
     #[error("block0 retrieve error")]
-    SettingsReadError(#[from] Box<chain_impl_mockchain::ledger::Error>),
+    SettingsRead(#[from] Box<chain_impl_mockchain::ledger::Error>),
     #[error("cannot convert hash")]
     HashConversion(#[from] chain_crypto::hash::Error),
+    #[error("general error: {0}")]
+    General(String),
 }

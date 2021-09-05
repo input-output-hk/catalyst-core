@@ -165,16 +165,30 @@ fn pack_spending_strategy<W: std::io::Write>(
     spending_strategy: &SpendingCounterIncreasing,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    let counter = spending_strategy.get_current_counter();
-    codec.put_u32(counter.into())?;
+    let counters = spending_strategy.get_valid_counters();
+    for counter in counters {
+        codec.put_u32(counter.into())?;
+    }
     Ok(())
 }
 
 fn unpack_spending_strategy<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<SpendingCounterIncreasing, std::io::Error> {
-    let counter = SpendingCounter(codec.get_u32()?);
-    Ok(SpendingCounterIncreasing::new_from_counter(counter))
+    let mut counters = Vec::new();
+    for _ in 0..SpendingCounterIncreasing::LANES {
+        let counter = SpendingCounter(codec.get_u32()?);
+        counters.push(counter);
+    }
+    let got_length = counters.len();
+    SpendingCounterIncreasing::new_from_counters(counters).ok_or(std::io::Error::new(
+        std::io::ErrorKind::InvalidData,
+        format!(
+            "wrong numbers of lanes, expecting {} but got {}",
+            SpendingCounterIncreasing::LANES,
+            got_length,
+        ),
+    ))
 }
 
 fn pack_account_state<W: std::io::Write>(

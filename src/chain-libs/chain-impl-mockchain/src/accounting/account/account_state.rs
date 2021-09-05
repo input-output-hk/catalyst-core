@@ -148,7 +148,7 @@ impl<Extra: Clone> AccountState<Extra> {
     pub fn sub(&self, spending: SpendingCounter, v: Value) -> Result<Option<Self>, LedgerError> {
         let new_value = (self.value - v)?;
         let mut r = self.clone();
-        r.spending = self.spending.next_verify(spending)?;
+        r.spending.next_verify(spending)?;
         r.value = new_value;
         Ok(Some(r))
     }
@@ -252,31 +252,25 @@ mod tests {
             &self,
             initial_account_state: AccountState<()>,
             counter: usize,
-            subs: u32,
         ) -> AccountState<()> {
             let n_ops: Vec<ArbitraryAccountStateOp> =
                 self.0.iter().cloned().take(counter).collect();
-            self.calculate_account_state(initial_account_state, n_ops.iter(), subs)
+            self.calculate_account_state(initial_account_state, n_ops.iter())
         }
 
         pub fn get_account_state(
             &self,
             initial_account_state: AccountState<()>,
-            subs: u32,
         ) -> AccountState<()> {
-            self.calculate_account_state(initial_account_state, self.0.iter(), subs)
+            self.calculate_account_state(initial_account_state, self.0.iter())
         }
 
         fn calculate_account_state(
             &self,
             initial_account_state: AccountState<()>,
             operations: std::slice::Iter<ArbitraryAccountStateOp>,
-            subs: u32,
         ) -> AccountState<()> {
-            let result_spending_counter = initial_account_state
-                .spending
-                .get_current_counter()
-                .increment_nth(subs);
+            let mut spending_strat = initial_account_state.spending.clone();
             let mut delegation = initial_account_state.delegation().clone();
             let mut result_value = initial_account_state.value();
 
@@ -290,7 +284,12 @@ mod tests {
                     }
                     ArbitraryAccountStateOp::Sub(value) => {
                         result_value = match result_value - *value {
-                            Ok(new_value) => new_value,
+                            Ok(new_value) => {
+                                spending_strat
+                                    .next_verify(spending_strat.get_valid_counter())
+                                    .expect("success");
+                                new_value
+                            }
                             Err(_) => result_value,
                         }
                     }
@@ -303,7 +302,7 @@ mod tests {
                 }
             }
             AccountState {
-                spending: SpendingCounterIncreasing::new_from_counter(result_spending_counter),
+                spending: spending_strat,
                 delegation,
                 value: result_value,
                 last_rewards: LastRewards::default(),
@@ -326,11 +325,9 @@ mod tests {
         mut account_state: AccountState<()>,
         operations: ArbitraryOperationChain,
     ) -> TestResult {
-        // to count spending counter
-        let mut successful_subs = 0;
-
         let initial_account_state = account_state.clone();
-        let mut counter = initial_account_state.spending.get_current_counter();
+        let mut strategy = initial_account_state.spending.clone();
+        let mut counter = strategy.get_valid_counter();
         for (op_counter, operation) in operations.clone().into_iter().enumerate() {
             account_state = match operation {
                 ArbitraryAccountStateOp::Add(value) => {
@@ -346,12 +343,12 @@ mod tests {
                     let should_fail = should_sub_fail(account_state.clone(), value);
                     match (should_fail, account_state.sub(counter, value)) {
                         (false, Ok(account_state)) => {
+                            strategy.next_verify(counter).expect("success");
                             counter = counter.increment();
-                            successful_subs += 1;
                             // check if account has any funds left
                             match account_state {
                                 Some(account_state) => account_state,
-                                None => return verify_account_lost_all_funds(initial_account_state,operations,op_counter,successful_subs,account_state.unwrap())
+                                None => return verify_account_lost_all_funds(initial_account_state,operations,op_counter,account_state.unwrap())
                             }
                         }
                         (true, Err(_)) => account_state,
@@ -367,8 +364,7 @@ mod tests {
                 }
             };
         }
-        let expected_account_state =
-            operations.get_account_state(initial_account_state, successful_subs);
+        let expected_account_state = operations.get_account_state(initial_account_state);
         if expected_account_state == account_state {
             TestResult::passed()
         } else {
@@ -383,11 +379,10 @@ mod tests {
         initial_account_state: AccountState<()>,
         operations: ArbitraryOperationChain,
         counter: usize,
-        subs: u32,
         actual_account_state: AccountState<()>,
     ) -> TestResult {
         let expected_account =
-            operations.get_account_state_after_n_ops(initial_account_state, counter, subs);
+            operations.get_account_state_after_n_ops(initial_account_state, counter);
         if expected_account.value == Value::zero() {
             TestResult::passed()
         } else {

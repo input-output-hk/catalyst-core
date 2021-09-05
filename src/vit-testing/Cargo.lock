@@ -4965,6 +4965,8 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "structopt",
+ "strum",
+ "strum_macros",
  "tempdir",
  "thiserror",
  "tokio 1.11.0",

@@ -82,7 +82,6 @@ impl Check {
 
 impl DeploymentValidateCommand {
     pub fn exec(self) -> Result<()> {
-        std::env::set_var("RUST_BACKTRACE", "full");
         let started = Instant::now();
         let spinner_style = ProgressStyle::default_spinner()
             .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")

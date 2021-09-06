@@ -13,7 +13,7 @@ use std::slice;
 ///
 /// The bitmap is indexed by a HashSubgroup
 /// and give an entry
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Node<K, V> {
     pub bitmap: SmallBitmap,
     pub children: Box<[SharedRef<Entry<K, V>>]>,
@@ -21,6 +21,7 @@ pub struct Node<K, V> {
 
 pub type NodeIter<'a, K, V> = slice::Iter<'a, SharedRef<Entry<K, V>>>;
 
+#[derive(Debug)]
 pub struct Collision<K, V>(Box<[(K, V)]>);
 
 impl<K, V> Collision<K, V> {
@@ -153,6 +154,7 @@ impl<K: Clone + PartialEq, V: Clone> Collision<K, V> {
     }
 }
 
+#[derive(Debug)]
 pub enum Entry<K, V> {
     Leaf(HashedKey, K, V),
     LeafMany(HashedKey, Collision<K, V>),

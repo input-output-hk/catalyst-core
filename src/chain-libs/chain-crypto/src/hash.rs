@@ -118,6 +118,7 @@ macro_rules! define_hash_object {
         }
         impl Bech32 for $hash_ty {
             const BECH32_HRP: &'static str = $bech32_hrp;
+            const BYTES_LEN: usize = $hash_size;
 
             fn try_from_bech32_str(bech32_str: &str) -> bech32::Result<Self> {
                 let bytes = bech32::try_from_bech32_to_bytes::<Self>(bech32_str)?;

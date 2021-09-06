@@ -367,7 +367,9 @@ impl AddressReadable {
     /// Create a new AddressReadable from an encoded address
     pub fn from_address(prefix: &str, addr: &Address) -> Self {
         let v = ToBase32::to_base32(&addr.to_bytes());
-        // FIXME: switch to Bech32m?
+        // Use the original Bech32 format from BIP-0173.
+        // As long as the binary length of addresses is fixed, there is
+        // no ambiguity in encoding.
         let r = bech32::encode(prefix, v, bech32::Variant::Bech32).unwrap();
         AddressReadable(r)
     }

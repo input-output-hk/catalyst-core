@@ -172,6 +172,7 @@ macro_rules! define_from_instances {
         }
         impl Bech32 for Digest<$hash_ty> {
             const BECH32_HRP: &'static str = $bech32_hrp;
+            const BYTES_LEN: usize = $hash_size;
 
             fn try_from_bech32_str(bech32_str: &str) -> bech32::Result<Self> {
                 let bytes = bech32::try_from_bech32_to_bytes::<Self>(bech32_str)?;
@@ -421,6 +422,7 @@ macro_rules! typed_define_from_instances {
         }
         impl<T> Bech32 for DigestOf<$hash_ty, T> {
             const BECH32_HRP: &'static str = $bech32_hrp;
+            const BYTES_LEN: usize = $hash_size;
 
             fn try_from_bech32_str(bech32_str: &str) -> bech32::Result<Self> {
                 let bytes = bech32::try_from_bech32_to_bytes::<Self>(bech32_str)?;

@@ -430,6 +430,7 @@ dependencies = [
  "cryptoxide",
  "curve25519-dalek-ng",
  "digest",
+ "eccoxide",
  "ed25519-bip32 0.4.0",
  "ed25519-dalek",
  "generic-array",

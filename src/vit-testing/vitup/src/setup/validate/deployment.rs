@@ -31,13 +31,13 @@ enum Check {
 impl fmt::Display for Check {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Check::Fund => write!(f, "[vit-ss] fund endpoint"),
-            Check::Proposals => write!(f, "[vit-ss] proposals endpoint"),
-            Check::Settings => write!(f, "[jormungandr] settings endpoint"),
-            Check::VotePlan => write!(f, "[jormungandr] vote plan endpoint"),
-            Check::Reviews => write!(f, "[vit-ss] reviews endpoint"),
-            Check::Challenges => write!(f, "[vit-ss] challenges endpoint"),
-            Check::BadGateway => write!(f, "[proxy] bad gateway check"),
+            Check::Fund => write!(f, "[vit-ss] Fund endpoint check"),
+            Check::Proposals => write!(f, "[vit-ss] Proposals endpoint check"),
+            Check::Settings => write!(f, "[jormungandr] Settings endpoint check"),
+            Check::VotePlan => write!(f, "[jormungandr] Vote plan endpoint"),
+            Check::Reviews => write!(f, "[vit-ss] Reviews endpoint"),
+            Check::Challenges => write!(f, "[vit-ss] Challenges endpoint"),
+            Check::BadGateway => write!(f, "[proxy] Bad gateway check"),
         }
     }
 }
@@ -46,30 +46,24 @@ impl Check {
     pub fn execute(
         &self,
         wallet_backend: &WalletBackend,
-    ) -> std::result::Result<HumanDuration, WalletBackendError> {
-        let started = Instant::now();
+    ) -> std::result::Result<std::time::Duration, WalletBackendError> {
+        let mut started = Instant::now();
+
         match self {
-            Self::Fund => wallet_backend
-                .funds()
-                .map(|_| HumanDuration(started.elapsed())),
-            Self::Proposals => wallet_backend
-                .proposals()
-                .map(|_| HumanDuration(started.elapsed())),
-            Self::Settings => wallet_backend
-                .settings()
-                .map(|_| HumanDuration(started.elapsed())),
+            Self::Fund => wallet_backend.funds().map(|_| started.elapsed()),
+            Self::Proposals => wallet_backend.proposals().map(|_| started.elapsed()),
+            Self::Settings => wallet_backend.settings().map(|_| started.elapsed()),
             Self::VotePlan => wallet_backend
                 .vote_plan_statuses()
-                .map(|_| HumanDuration(started.elapsed())),
+                .map(|_| started.elapsed()),
             Self::Reviews => {
                 let proposals = wallet_backend.proposals()?;
+                started = Instant::now();
                 wallet_backend
                     .review(&proposals[0].proposal_id)
-                    .map(|_| HumanDuration(started.elapsed()))
+                    .map(|_| started.elapsed())
             }
-            Self::Challenges => wallet_backend
-                .challenges()
-                .map(|_| HumanDuration(started.elapsed())),
+            Self::Challenges => wallet_backend.challenges().map(|_| started.elapsed()),
             Self::BadGateway => {
                 let left = wallet_backend.funds()?;
                 let right = wallet_backend.funds()?;
@@ -79,7 +73,7 @@ impl Check {
                         "two calls to funds return different response".to_string(),
                     ))
                 } else {
-                    Ok(HumanDuration(started.elapsed()))
+                    Ok(started.elapsed())
                 }
             }
         }
@@ -121,15 +115,19 @@ impl DeploymentValidateCommand {
 
                     match result {
                         Ok(elapsed) => pb.finish_with_message(&format!(
-                            "{} Passed in {}",
+                            "[Passed] {}. Duration: {} ms",
                             command.to_string(),
-                            elapsed
+                            elapsed.as_millis()
                         )),
-                        Err(error) => pb.finish_with_message(&format!(
-                            "{} Failed due to {}",
-                            command.to_string(),
-                            error
-                        )),
+                        Err(error) => {
+                            let error_desc = format!("{:?}", error);
+
+                            pb.finish_with_message(&format!(
+                                "[Failed] {}. Error: {}...",
+                                command.to_string(),
+                                &error_desc[0..60]
+                            ))
+                        }
                     };
                 })
             })

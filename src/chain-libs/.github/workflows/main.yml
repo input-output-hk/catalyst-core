@@ -77,7 +77,7 @@ jobs:
             experimental: true
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       CARGO_INCREMENTAL: 0
     steps:

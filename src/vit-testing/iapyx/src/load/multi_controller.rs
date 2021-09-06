@@ -5,7 +5,7 @@ use crate::WalletBackend;
 use crate::{Proposal, Wallet};
 use bech32::FromBase32;
 use bip39::Type;
-use chain_impl_mockchain::fragment::FragmentId;
+use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
 use jormungandr_testing_utils::testing::node::RestSettings;
 use std::iter;
 use std::path::Path;
@@ -148,9 +148,15 @@ impl MultiController {
         wallet_index: usize,
         proposal: &Proposal,
         choice: Choice,
+        valid_until: &BlockDate,
     ) -> Result<FragmentId, MultiControllerError> {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
-        let tx = wallet.vote(self.settings.clone(), &proposal.clone().into(), choice)?;
+        let tx = wallet.vote(
+            self.settings.clone(),
+            &proposal.clone().into(),
+            choice,
+            valid_until,
+        )?;
         self.backend()
             .send_fragment(tx.to_vec())
             .map_err(Into::into)
@@ -161,6 +167,7 @@ impl MultiController {
         wallet_index: usize,
         use_v1: bool,
         votes_data: Vec<(&Proposal, Choice)>,
+        valid_until: &BlockDate,
     ) -> Result<Vec<FragmentId>, MultiControllerError> {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let account_state = self.backend.account_state(wallet.id())?;
@@ -172,7 +179,7 @@ impl MultiController {
             .map(|(p, c)| {
                 wallet.set_state((*account_state.value()).into(), counter);
                 let tx = wallet
-                    .vote(settings.clone(), &p.clone().into(), c)
+                    .vote(settings.clone(), &p.clone().into(), c, valid_until)
                     .unwrap()
                     .to_vec();
                 counter += 1;

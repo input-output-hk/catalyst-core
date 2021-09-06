@@ -1,7 +1,12 @@
+mod archive;
 mod block0;
 mod live;
 
+use crate::stats::archive::ArchiveCalculatorError;
+use crate::stats::archive::ArchiveReaderError;
+use archive::ArchiveCommand;
 use block0::Block0StatsCommand;
+use csv;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
 use jormungandr_testing_utils::testing::block0::GetBlock0Error;
 use live::LiveStatsCommand;
@@ -12,6 +17,7 @@ use thiserror::Error;
 pub enum IapyxStatsCommand {
     Block0(Block0StatsCommand),
     Live(LiveStatsCommand),
+    Archive(ArchiveCommand),
 }
 
 impl IapyxStatsCommand {
@@ -19,6 +25,7 @@ impl IapyxStatsCommand {
         match self {
             Self::Block0(block0) => block0.exec(),
             Self::Live(live) => live.exec(),
+            Self::Archive(archive) => archive.exec(),
         }
     }
 }
@@ -26,19 +33,25 @@ impl IapyxStatsCommand {
 #[derive(Error, Debug)]
 pub enum IapyxStatsCommandError {
     #[error("proxy error")]
-    ProxyError(#[from] crate::backend::ProxyServerError),
+    Proxy(#[from] crate::backend::ProxyServerError),
     #[error("get block0 ")]
-    GetBlock0Error(#[from] GetBlock0Error),
+    GetBlock0(#[from] GetBlock0Error),
     #[error("pin error")]
-    PinError(#[from] crate::qr::PinReadError),
+    Pin(#[from] crate::qr::PinReadError),
     #[error("reqwest error")]
-    IapyxStatsCommandError(#[from] reqwest::Error),
+    Reqwest(#[from] reqwest::Error),
     #[error("block0 parse error")]
-    Block0ParseError(#[from] Block0ConfigurationError),
+    Block0Parse(#[from] Block0ConfigurationError),
     #[error("io error")]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
     #[error("read error")]
-    ReadError(#[from] chain_core::mempack::ReadError),
+    Read(#[from] chain_core::mempack::ReadError),
     #[error("bech32 error")]
-    Bech32Error(#[from] bech32::Error),
+    Bech32(#[from] bech32::Error),
+    #[error("csv error")]
+    Csv(#[from] csv::Error),
+    #[error("archive reader error")]
+    ArchiveReader(#[from] ArchiveReaderError),
+    #[error("archive calculator error")]
+    ArchiveCalculator(#[from] ArchiveCalculatorError),
 }

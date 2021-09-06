@@ -17,14 +17,15 @@ chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 hex = "0.4"
 rand = "0.8"
 rand_core = "0.6"
 itertools = "0.9.0"
 cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
-jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", rev = "1ee31640b39c44b8005cd07ea6d5163019b32db5" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", rev = "1ee31640b39c44b8005cd07ea6d5163019b32db5" }
+jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", rev="c81e6d54fc2aa0d4cb31c50859a8b29328a10157" }
 hyper = "0.13.6"
 thiserror = "1.0"
@@ -35,6 +36,7 @@ regex = "*"
 dialoguer = "0.6.2"
 structopt = "0.3"
 console = "0.11"
+csv = "1.1"
 warp = { version = "0.3", features = ["tls"] }
 warp-reverse-proxy = "0.3.2"
 tokio = { version = "^1.4.0", features = ["macros", "signal", "rt", "fs", "sync"] }

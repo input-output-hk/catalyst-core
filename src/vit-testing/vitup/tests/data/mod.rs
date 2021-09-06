@@ -67,16 +67,22 @@ pub fn challenges_eq(expected_list: LinkedList<ChallengeTemplate>, actual_list: 
 
 pub fn reviews_eq(expected_list: LinkedList<ReviewTemplate>, backend_client: WalletBackend) {
     for expected in expected_list.iter() {
-        for actual in backend_client.review(&expected.proposal_id).unwrap() {
-            assert_eq!(
-                expected.proposal_id.to_string(),
-                actual.proposal_id.to_string(),
-                "proposal id"
-            );
-            assert_eq!(expected.rating_given, actual.rating_given, "rating given");
-            assert_eq!(expected.assessor, actual.assessor, "rating_given");
-            assert_eq!(expected.note, actual.note.to_string(), "note");
-            assert_eq!(expected.tag.to_string(), actual.tag.to_string(), "tag");
+        for actuals in backend_client
+            .review(&expected.proposal_id)
+            .unwrap()
+            .values()
+        {
+            for actual in actuals {
+                assert_eq!(
+                    expected.proposal_id.to_string(),
+                    actual.proposal_id.to_string(),
+                    "proposal id"
+                );
+                assert_eq!(expected.rating_given, actual.rating_given, "rating given");
+                assert_eq!(expected.assessor, actual.assessor, "rating_given");
+                assert_eq!(expected.note, actual.note.to_string(), "note");
+                assert_eq!(expected.tag.to_string(), actual.tag.to_string(), "tag");
+            }
         }
     }
 }

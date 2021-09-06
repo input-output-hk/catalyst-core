@@ -1,6 +1,7 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::Proposal;
 use crate::Wallet;
+use chain_impl_mockchain::block::BlockDate;
 use jormungandr_testing_utils::testing::VoteCastCounter;
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
@@ -115,6 +116,7 @@ impl BatchWalletRequestGen {
                 wallet_index,
                 self.use_v1,
                 proposals.iter().zip(choices).collect(),
+                &BlockDate::first().next_epoch(), // TODO: this will produce valid transactions only up to the first epoch
             )
             .map(|x| {
                 x.into_iter()

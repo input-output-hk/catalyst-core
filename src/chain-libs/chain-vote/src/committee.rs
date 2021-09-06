@@ -77,6 +77,7 @@ impl ElectionPublicKey {
 
 impl Bech32 for ElectionPublicKey {
     const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_votepk");
+    const BYTES_LEN: usize = PublicKey::BYTES_LEN;
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
@@ -192,6 +193,7 @@ impl MemberSecretKey {
 
 impl Bech32 for MemberSecretKey {
     const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_membersk");
+    const BYTES_LEN: usize = SecretKey::BYTES_LEN;
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
@@ -219,6 +221,7 @@ impl MemberPublicKey {
 
 impl Bech32 for MemberPublicKey {
     const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_memberpk");
+    const BYTES_LEN: usize = PublicKey::BYTES_LEN;
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
@@ -261,6 +264,7 @@ impl MemberCommunicationKey {
 
 impl Bech32 for MemberCommunicationKey {
     const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_vcommsk");
+    const BYTES_LEN: usize = SecretKey::BYTES_LEN;
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {
@@ -293,6 +297,7 @@ impl MemberCommunicationPublicKey {
 
 impl Bech32 for MemberCommunicationPublicKey {
     const BECH32_HRP: &'static str = concatcp!(CURVE_HRP, "_vcommpk");
+    const BYTES_LEN: usize = PublicKey::BYTES_LEN;
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, Error> {
         try_from_bech32_to_bytes::<Self>(bech32_str).and_then(|raw| {

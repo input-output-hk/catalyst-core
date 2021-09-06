@@ -7,7 +7,7 @@ edition = "2018"
 keywords = [ "Crypto", "VRF", "Ed25519", "MMM" ]
 
 [dependencies]
-bech32 = "0.7"
+bech32 = "0.8"
 cryptoxide = "0.3"
 curve25519-dalek-ng = { version = "4.0" }
 # TODO replace with the crates.io version once it has faster scalar multiplication

@@ -143,6 +143,8 @@ impl PublicKey {
 }
 
 impl SecretKey {
+    pub const BYTES_LEN: usize = Scalar::BYTES_LEN;
+
     pub fn generate<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         let sk = Scalar::random(rng);
         Self { sk }

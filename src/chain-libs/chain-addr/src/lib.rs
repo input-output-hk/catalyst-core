@@ -332,10 +332,15 @@ impl AddressReadable {
 
     /// Validate from a String to create a valid AddressReadable
     pub fn from_string(expected_prefix: &str, s: &str) -> Result<Self, Error> {
-        let (hrp, data) = bech32::decode(s)?;
+        let (hrp, data, variant) = bech32::decode(s)?;
         if hrp != expected_prefix {
             return Err(Error::InvalidPrefix);
         };
+        // We have to fix the address format to the original Bech32 encoding
+        // for compatibility with tools and whatnot.
+        if variant != bech32::Variant::Bech32 {
+            return Err(Error::InvalidInternalEncoding);
+        }
         let dat = Vec::from_base32(&data)?;
         let _ = is_valid_data(&dat[..])?;
 
@@ -343,7 +348,12 @@ impl AddressReadable {
     }
 
     pub fn from_str_anyprefix(s: &str) -> Result<Self, Error> {
-        let (_, data) = bech32::decode(s)?;
+        let (_, data, variant) = bech32::decode(s)?;
+        // We have to fix the address format to the original Bech32 encoding
+        // for compatibility with tools and whatnot.
+        if variant != bech32::Variant::Bech32 {
+            return Err(Error::InvalidInternalEncoding);
+        }
         let dat = Vec::from_base32(&data)?;
         let _ = is_valid_data(&dat[..])?;
 
@@ -357,14 +367,17 @@ impl AddressReadable {
     /// Create a new AddressReadable from an encoded address
     pub fn from_address(prefix: &str, addr: &Address) -> Self {
         let v = ToBase32::to_base32(&addr.to_bytes());
-        let r = bech32::encode(prefix, v).unwrap();
+        // Use the original Bech32 format from BIP-0173.
+        // As long as the binary length of addresses is fixed, there is
+        // no ambiguity in encoding.
+        let r = bech32::encode(prefix, v, bech32::Variant::Bech32).unwrap();
         AddressReadable(r)
     }
 
     /// Convert a valid AddressReadable to an decoded address
     pub fn to_address(&self) -> Address {
         // the data has been verified ahead of time, so all unwrap are safe
-        let (_, data) = bech32::decode(&self.0).unwrap();
+        let (_, data, _variant) = bech32::decode(&self.0).unwrap();
         let dat = Vec::from_base32(&data).unwrap();
         Address::from_bytes(&dat[..]).unwrap()
     }

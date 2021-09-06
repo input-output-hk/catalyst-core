@@ -197,6 +197,7 @@ impl<T: ?Sized, A: VerificationAlgorithm> AsRef<[u8]> for Signature<T, A> {
 
 impl<T, A: VerificationAlgorithm> Bech32 for Signature<T, A> {
     const BECH32_HRP: &'static str = A::SIGNATURE_BECH32_HRP;
+    const BYTES_LEN: usize = A::SIGNATURE_SIZE;
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, bech32::Error> {
         let bytes = bech32::try_from_bech32_to_bytes::<Self>(bech32_str)?;

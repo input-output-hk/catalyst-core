@@ -234,6 +234,7 @@ impl<A: AsymmetricPublicKey> Hash for PublicKey<A> {
 
 impl<A: AsymmetricPublicKey> Bech32 for PublicKey<A> {
     const BECH32_HRP: &'static str = A::PUBLIC_BECH32_HRP;
+    const BYTES_LEN: usize = A::PUBLIC_KEY_SIZE;
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, bech32::Error> {
         let bytes = bech32::try_from_bech32_to_bytes::<Self>(bech32_str)?;
@@ -245,8 +246,9 @@ impl<A: AsymmetricPublicKey> Bech32 for PublicKey<A> {
     }
 }
 
-impl<A: AsymmetricKey> Bech32 for SecretKey<A> {
+impl<A: SecretKeySizeStatic> Bech32 for SecretKey<A> {
     const BECH32_HRP: &'static str = A::SECRET_BECH32_HRP;
+    const BYTES_LEN: usize = A::SECRET_KEY_SIZE;
 
     fn try_from_bech32_str(bech32_str: &str) -> Result<Self, bech32::Error> {
         let bytes = bech32::try_from_bech32_to_bytes::<Self>(bech32_str)?;

@@ -1,4 +1,6 @@
 use crate::Result;
+use chrono::DateTime;
+use chrono::ParseError;
 use iapyx::WalletBackend;
 use iapyx::WalletBackendError;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
@@ -8,6 +10,8 @@ use std::time::Instant;
 use structopt::StructOpt;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
+use thiserror::Error;
+use vit_servicing_station_lib::utils::datetime::unix_timestamp_to_datetime;
 
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
@@ -26,6 +30,7 @@ enum Check {
     Reviews,
     Challenges,
     BadGateway,
+    Times,
 }
 
 impl fmt::Display for Check {
@@ -38,6 +43,7 @@ impl fmt::Display for Check {
             Check::Reviews => write!(f, "[vit-ss] Reviews endpoint"),
             Check::Challenges => write!(f, "[vit-ss] Challenges endpoint"),
             Check::BadGateway => write!(f, "[proxy] Bad gateway check"),
+            Check::Times => write!(f, "[vit-ss] Fund dates check"),
         }
     }
 }
@@ -46,35 +52,77 @@ impl Check {
     pub fn execute(
         &self,
         wallet_backend: &WalletBackend,
-    ) -> std::result::Result<std::time::Duration, WalletBackendError> {
+    ) -> std::result::Result<std::time::Duration, CheckError> {
         let mut started = Instant::now();
 
         match self {
-            Self::Fund => wallet_backend.funds().map(|_| started.elapsed()),
-            Self::Proposals => wallet_backend.proposals().map(|_| started.elapsed()),
-            Self::Settings => wallet_backend.settings().map(|_| started.elapsed()),
+            Self::Fund => wallet_backend
+                .funds()
+                .map(|_| started.elapsed())
+                .map_err(Into::into),
+            Self::Proposals => wallet_backend
+                .proposals()
+                .map(|_| started.elapsed())
+                .map_err(Into::into),
+            Self::Settings => wallet_backend
+                .settings()
+                .map(|_| started.elapsed())
+                .map_err(Into::into),
             Self::VotePlan => wallet_backend
                 .vote_plan_statuses()
-                .map(|_| started.elapsed()),
+                .map(|_| started.elapsed())
+                .map_err(Into::into),
             Self::Reviews => {
                 let proposals = wallet_backend.proposals()?;
                 started = Instant::now();
                 wallet_backend
                     .review(&proposals[0].proposal_id)
                     .map(|_| started.elapsed())
+                    .map_err(Into::into)
             }
-            Self::Challenges => wallet_backend.challenges().map(|_| started.elapsed()),
+            Self::Challenges => wallet_backend
+                .challenges()
+                .map(|_| started.elapsed())
+                .map_err(Into::into),
             Self::BadGateway => {
                 let left = wallet_backend.funds()?;
                 let right = wallet_backend.funds()?;
 
                 if left != right {
-                    Err(WalletBackendError::General(
+                    Err(CheckError::Assert(
                         "two calls to funds return different response".to_string(),
                     ))
                 } else {
                     Ok(started.elapsed())
                 }
+            }
+            Self::Times => {
+                let fund = wallet_backend.funds()?;
+
+                let registration_date =
+                    DateTime::parse_from_rfc3339(&fund.registration_snapshot_time)?;
+                let fund_start_date = unix_timestamp_to_datetime(fund.fund_start_time);
+                let fund_end_date = unix_timestamp_to_datetime(fund.fund_end_time);
+                let next_fund_date = unix_timestamp_to_datetime(fund.next_fund_start_time);
+
+                if registration_date > fund_start_date {
+                    return Err(CheckError::Assert(
+                        "registration_date is further in the future than fund_start_date"
+                            .to_string(),
+                    ));
+                }
+                if fund_start_date > fund_end_date {
+                    return Err(CheckError::Assert(
+                        "fund_start_date is further in the future than fund_end_date".to_string(),
+                    ));
+                }
+
+                if fund_end_date > next_fund_date {
+                    return Err(CheckError::Assert(
+                        "fund_end_date is further in the future than next_fund_date".to_string(),
+                    ));
+                }
+                Ok(started.elapsed())
             }
         }
     }
@@ -118,15 +166,11 @@ impl DeploymentValidateCommand {
                             command.to_string(),
                             elapsed.as_millis()
                         )),
-                        Err(error) => {
-                            let error_desc = format!("{:?}", error);
-
-                            pb.finish_with_message(&format!(
-                                "[Failed] {}. Error: {}...",
-                                command.to_string(),
-                                &error_desc[0..60]
-                            ))
-                        }
+                        Err(error) => pb.finish_with_message(&format!(
+                            "[Failed] {}. Error: {}",
+                            command.to_string(),
+                            error.to_string()
+                        )),
                     };
                 })
             })
@@ -139,4 +183,14 @@ impl DeploymentValidateCommand {
 
         Ok(())
     }
+}
+
+#[derive(Debug, Error)]
+pub enum CheckError {
+    #[error(transparent)]
+    WalletBackend(#[from] WalletBackendError),
+    #[error(transparent)]
+    Parser(#[from] ParseError),
+    #[error("{0}")]
+    Assert(String),
 }

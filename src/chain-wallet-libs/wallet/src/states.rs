@@ -91,23 +91,16 @@ where
     }
 
     fn pop_old_confirmed_states(&mut self) {
-        loop {
-            let (key, state) = self.states.pop_front().unwrap();
-
-            let finished = self
-                .states
-                .front()
-                .map(|(_, state)| state.is_pending())
-                .unwrap_or(true);
-
-            if finished {
-                // unfortunately, I don't see an api to insert directly at the beginning, so I
-                // don't know how to avoid cloning the key. Calling back() and then to_front()
-                // won't satisfy the borrow checker, of course.
-                self.states.insert(key.clone(), state);
-                self.states.to_front(&key);
-                break;
-            }
+        // the first state in the list is always confirmed, so it is fine to skip it in the first
+        // iteration.
+        while self
+            .states
+            .iter()
+            .nth(1)
+            .map(|(_, state)| state.is_confirmed())
+            .unwrap_or(false)
+        {
+            self.states.pop_front();
         }
 
         debug_assert!(self.states.front().unwrap().1.is_confirmed());

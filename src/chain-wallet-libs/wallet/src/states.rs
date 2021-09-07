@@ -9,14 +9,13 @@ pub enum Status {
 }
 
 #[derive(Debug)]
-pub struct StateRef<K, S> {
-    key: K,
+pub struct StateRef<S> {
     state: S,
     status: Status,
 }
 
 pub struct States<K, S> {
-    states: LinkedHashMap<K, StateRef<K, S>>,
+    states: LinkedHashMap<K, StateRef<S>>,
 }
 
 impl<K: std::fmt::Debug, S: std::fmt::Debug> std::fmt::Debug for States<K, S> {
@@ -25,9 +24,9 @@ impl<K: std::fmt::Debug, S: std::fmt::Debug> std::fmt::Debug for States<K, S> {
     }
 }
 
-impl<K, S> StateRef<K, S> {
-    fn new(key: K, state: S, status: Status) -> Self {
-        Self { key, state, status }
+impl<S> StateRef<S> {
+    fn new(state: S, status: Status) -> Self {
+        Self { state, status }
     }
 
     pub fn is_confirmed(&self) -> bool {
@@ -42,10 +41,6 @@ impl<K, S> StateRef<K, S> {
         &self.state
     }
 
-    pub fn key(&self) -> &K {
-        &self.key
-    }
-
     fn confirm(&mut self) {
         self.status = Status::Confirmed
     }
@@ -53,13 +48,13 @@ impl<K, S> StateRef<K, S> {
 
 impl<K, S> States<K, S>
 where
-    K: Hash + Eq + Clone,
+    K: Hash + Eq,
 {
     /// create a new States with the given initial state
     ///
     /// by default this state is always assumed confirmed
     pub fn new(key: K, state: S) -> Self {
-        let state = StateRef::new(key.clone(), state, Status::Confirmed);
+        let state = StateRef::new(state, Status::Confirmed);
         let mut states = LinkedHashMap::new();
         states.insert(key, state);
 
@@ -78,7 +73,7 @@ where
 
     /// push a new **unconfirmed** state in the States
     pub fn push(&mut self, key: K, state: S) {
-        let state = StateRef::new(key.clone(), state, Status::Pending);
+        let state = StateRef::new(state, Status::Pending);
 
         assert!(self.states.insert(key, state).is_none());
     }
@@ -124,21 +119,21 @@ impl<K, S> States<K, S> {
     /// recent one.
     ///
     /// there is always at least one element in the iterator (the confirmed one).
-    pub fn iter(&self) -> impl Iterator<Item = (&K, &StateRef<K, S>)> {
+    pub fn iter(&self) -> impl Iterator<Item = (&K, &StateRef<S>)> {
         self.states.iter()
     }
 
-    pub fn unconfirmed_states(&self) -> impl Iterator<Item = &StateRef<K, S>> {
-        self.states.values().filter(|s| s.is_pending())
+    pub fn unconfirmed_states(&self) -> impl Iterator<Item = (&K, &StateRef<S>)> {
+        self.states.iter().filter(|(_, s)| s.is_pending())
     }
 
     /// access the confirmed state of the store verse
-    pub fn confirmed_state(&self) -> &StateRef<K, S> {
+    pub fn confirmed_state(&self) -> &StateRef<S> {
         self.states.front().map(|(_, v)| v).unwrap()
     }
 
     /// get the last state of the store
-    pub fn last_state(&self) -> &StateRef<K, S> {
+    pub fn last_state(&self) -> &StateRef<S> {
         self.states.back().unwrap().1
     }
 }
@@ -147,22 +142,21 @@ impl<K, S> States<K, S> {
 mod tests {
     use super::*;
 
-    impl PartialEq for StateRef<u8, ()> {
+    impl PartialEq for StateRef<()> {
         fn eq(&self, other: &Self) -> bool {
-            (self.key, self.status).eq(&(other.key, other.status))
+            self.status.eq(&(other.status))
         }
     }
 
-    impl PartialOrd for StateRef<u8, ()> {
+    impl PartialOrd for StateRef<()> {
         fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-            (self.key, self.status).partial_cmp(&(other.key, other.status))
+            self.status.partial_cmp(&(other.status))
         }
     }
 
-    impl StateRef<u8, ()> {
+    impl StateRef<()> {
         fn new_confirmed(key: u8) -> Self {
             Self {
-                key,
                 state: (),
                 status: Status::Confirmed,
             }
@@ -170,7 +164,6 @@ mod tests {
 
         fn new_pending(key: u8) -> Self {
             Self {
-                key,
                 state: (),
                 status: Status::Pending,
             }

@@ -138,7 +138,7 @@ impl<A> Wallet<A> {
     /// If empty it means there's no pending transactions waiting confirmation
     ///
     pub fn pending_transactions(&self) -> impl Iterator<Item = &FragmentId> {
-        self.state.unconfirmed_states().map(|s| s.key())
+        self.state.unconfirmed_states().map(|(k, _)| k)
     }
 
     /// get the utxos of this given wallet

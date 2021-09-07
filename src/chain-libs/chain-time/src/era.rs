@@ -6,6 +6,10 @@ use std::fmt;
 
 /// Epoch number
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct Epoch(pub u32);
 
 /// Slot Offset *in* a given epoch
@@ -28,6 +32,10 @@ impl fmt::Display for EpochPosition {
 /// Describe a new era, which start at epoch_start and is associated
 /// to a specific slot. Each epoch have a constant number of slots on a given time era.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct TimeEra {
     epoch_start: Epoch,
     slot_start: Slot,
@@ -107,29 +115,24 @@ mod test {
     use crate::timeframe::*;
     use crate::timeline::Timeline;
 
-    use chain_ser::packer::Codec;
-    use quickcheck::{quickcheck, TestResult};
     use std::io::Cursor;
     use std::time::{Duration, SystemTime};
 
-    quickcheck! {
-        fn time_era_pack_unpack_bijection(time_era: TimeEra) -> TestResult {
-            let mut c : Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            let mut codec = Codec::new(c);
-            match pack_time_era(&time_era, &mut codec) {
-                Ok(_) => (),
-                Err(e) => return TestResult::error(format!("{}", e)),
-            }
-            c = codec.into_inner();
-            c.set_position(0);
-            codec = Codec::new(c);
-            match unpack_time_era(&mut codec) {
-                Ok(other_time_era) => {
-                    TestResult::from_bool(time_era == other_time_era)
-                },
-                Err(e) => TestResult::error(format!("{}", e)),
-            }
-        }
+    use chain_ser::packer::Codec;
+    use proptest::prelude::*;
+    use test_strategy::proptest;
+
+    #[proptest]
+    fn time_era_pack_unpack_bijection(time_era: TimeEra) {
+        let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        let mut codec = Codec::new(c);
+
+        pack_time_era(&time_era, &mut codec).unwrap();
+        c = codec.into_inner();
+        c.set_position(0);
+        codec = Codec::new(c);
+        let other_time_era = unpack_time_era(&mut codec).unwrap();
+        prop_assert_eq!(time_era, other_time_era);
     }
 
     #[test]

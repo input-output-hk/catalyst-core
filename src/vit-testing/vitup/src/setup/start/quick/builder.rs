@@ -15,6 +15,7 @@ use chain_vote::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
 use iapyx::Protocol;
 use jormungandr_lib::interfaces::CommitteeIdDef;
+pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
@@ -104,6 +105,11 @@ impl QuickVitBackendSettingsBuilder {
             initials_count,
             &pin.to_string(),
         ));
+        self
+    }
+
+    pub fn extend_initials(&mut self, initials: Vec<Initial>) -> &mut Self {
+        self.parameters.initials.extend_from_external(initials);
         self
     }
 

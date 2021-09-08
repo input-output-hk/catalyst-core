@@ -17,21 +17,6 @@ message SyncMultiverseRequest {
 
 message BlockId { bytes content = 1; }
 
-message MempoolEvent {
-  bytes fragment_id = 1;
-  oneof event {
-    MempoolFragmentInserted inserted = 2;
-    MempoolFragmentRejected rejected = 3;
-    MempoolFragmentInABlock in_a_block = 4;
-  };
-}
-
-message MempoolFragmentInserted {}
-
-message MempoolFragmentRejected { string reason = 1; }
-
-message MempoolFragmentInABlock { BlockId block = 1; }
-
 service Watch {
   // get a stream of blocks succesfully processed by the node, this means they
   // are already validated.
@@ -40,9 +25,6 @@ service Watch {
 
   // get tip updates
   rpc TipSubscription(TipSubscriptionRequest) returns (stream BlockId);
-
-  rpc MempoolSubscription(MempoolSubscriptionRequest)
-      returns (stream MempoolEvent);
 
   // fetch all blocks from the given initial chainlength to the tip, from all
   // possible branches and in increasing order

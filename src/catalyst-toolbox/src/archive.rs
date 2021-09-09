@@ -83,7 +83,9 @@ pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) ->
                 let choice = match certificate.payload() {
                     chain_impl_mockchain::vote::Payload::Public { choice } => choice.as_byte(),
                     chain_impl_mockchain::vote::Payload::Private { .. } => {
-                        unimplemented!("private votes are not supported yet")
+                        // zeroing data to enable private voting support
+                        // (at least everying exception choice, since it is disabled by desing in private vote)
+                        0u8
                     }
                 };
 

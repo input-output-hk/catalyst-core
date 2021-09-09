@@ -1,10 +1,13 @@
 use super::WalletState;
 use crate::cli::args::interactive::UserInteractionContoller;
+use crate::utils::valid_until::ValidUntil;
 use crate::Controller;
+use crate::Proposal;
 use bip39::Type;
 use chain_addr::{AddressReadable, Discrimination};
 use chain_impl_mockchain::block::BlockDate;
 use jormungandr_testing_utils::testing::node::RestSettings;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use structopt::{clap::AppSettings, StructOpt};
 use thiserror::Error;
@@ -31,7 +34,7 @@ pub enum IapyxCommand {
     Logs,
     /// Exit interactive mode
     Exit,
-    Proposals,
+    Proposals(Proposals),
     Vote(Vote),
     Votes,
     PendingTransactions,
@@ -71,18 +74,22 @@ impl IapyxCommand {
                     "wallet not recovered or generated".to_string(),
                 ))
             }
-            IapyxCommand::Proposals => {
+            IapyxCommand::Proposals(proposals) => {
                 if let Some(controller) = model.controller.as_mut() {
                     println!("===================");
                     for (id, proposal) in controller.get_proposals()?.iter().enumerate() {
-                        println!(
-                            "{}. #{} [{}] {}",
-                            (id + 1),
-                            proposal.chain_proposal_id_as_str(),
-                            proposal.proposal_title,
-                            proposal.proposal_summary
-                        );
-                        println!("{:#?}", proposal.chain_vote_options.0);
+                        if proposals.only_ids {
+                            println!("{}", proposal.chain_proposal_id_as_str());
+                        } else {
+                            println!(
+                                "{}. #{} [{}] {}",
+                                (id + 1),
+                                proposal.chain_proposal_id_as_str(),
+                                proposal.proposal_title,
+                                proposal.proposal_summary
+                            );
+                            println!("{:#?}", proposal.chain_vote_options.0);
+                        }
                     }
                     println!("===================");
                     return Ok(());
@@ -181,22 +188,53 @@ impl Address {
 }
 
 #[derive(StructOpt, Debug)]
-pub struct Vote {
+pub enum Vote {
+    Single(SingleVote),
+    Batch(BatchOfVotes),
+}
+
+impl Vote {
+    pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
+        match self {
+            Self::Single(single) => single.exec(model),
+            Self::Batch(batch) => batch.exec(model),
+        }
+    }
+}
+
+#[derive(StructOpt, Debug)]
+pub struct Proposals {
+    /// choice
+    #[structopt(short = "i")]
+    pub only_ids: bool,
+}
+
+#[derive(StructOpt, Debug)]
+pub struct SingleVote {
     /// choice
     #[structopt(short = "c", long = "choice")]
     pub choice: String,
     /// chain proposal id
     #[structopt(short = "p", long = "id")]
     pub proposal_id: String,
+
     // transaction expiry time
-    #[structopt(short, long)]
-    pub valid_until: BlockDate,
+    #[structopt(long)]
+    pub valid_until_fixed: Option<BlockDate>,
+
+    // transaction expiry time
+    #[structopt(long, conflicts_with = "valid-until-fixed")]
+    pub valid_until_shift: Option<u32>,
 }
 
-impl Vote {
+impl SingleVote {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         if let Some(controller) = model.controller.as_mut() {
             let proposals = controller.get_proposals()?;
+            let valid_until =
+                &ValidUntil::from_block_or_shift(self.valid_until_fixed, self.valid_until_shift)
+                    .ok_or(IapyxCommandError::NoValidUntilDefined)?;
+
             let proposal = proposals
                 .iter()
                 .find(|x| x.chain_proposal_id_as_str() == self.proposal_id)
@@ -208,12 +246,75 @@ impl Vote {
                 .0
                 .get(&self.choice)
                 .ok_or_else(|| IapyxCommandError::GeneralError("wrong choice".to_string()))?;
-            controller.vote(proposal, Choice::new(*choice), &self.valid_until)?;
+            controller.vote(proposal, Choice::new(*choice), valid_until)?;
             return Ok(());
         }
         Err(IapyxCommandError::GeneralError(
             "wallet not recovered or generated".to_string(),
         ))
+    }
+}
+
+#[derive(StructOpt, Debug)]
+pub struct BatchOfVotes {
+    /// choice
+    #[structopt(short = "c", long = "choices")]
+    pub choices: String,
+
+    // transaction expiry time
+    #[structopt(long)]
+    pub valid_until_fixed: Option<BlockDate>,
+
+    // transaction expiry time
+    #[structopt(long, conflicts_with = "valid-until-fixed")]
+    pub valid_until_shift: Option<u32>,
+}
+
+impl BatchOfVotes {
+    pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
+        if let Some(controller) = model.controller.as_mut() {
+            let valid_until =
+                &ValidUntil::from_block_or_shift(self.valid_until_fixed, self.valid_until_shift)
+                    .ok_or(IapyxCommandError::NoValidUntilDefined)?;
+
+            let choices = self.zip_into_batch_input_data(
+                serde_json::from_str(&self.choices)?,
+                controller.get_proposals()?,
+            )?;
+            controller.votes_batch(choices.iter().map(|(p, c)| (p, *c)).collect(), valid_until)?;
+            return Ok(());
+        }
+
+        Err(IapyxCommandError::GeneralError(
+            "wallet not recovered or generated".to_string(),
+        ))
+    }
+
+    fn zip_into_batch_input_data(
+        &self,
+        choices: HashMap<String, String>,
+        proposals: Vec<Proposal>,
+    ) -> Result<Vec<(Proposal, Choice)>, IapyxCommandError> {
+        let mut result = Vec::new();
+
+        for (proposal_id, choice) in choices {
+            println!("{}->{}", proposal_id, choice);
+            let proposal = proposals
+                .iter()
+                .find(|x| x.chain_proposal_id_as_str() == *proposal_id)
+                .ok_or_else(|| {
+                    IapyxCommandError::GeneralError(format!("Cannot find proposal {}", proposal_id))
+                })?;
+
+            let choice = proposal
+                .chain_vote_options
+                .0
+                .get(&choice)
+                .ok_or_else(|| IapyxCommandError::GeneralError("wrong choice".to_string()))?;
+
+            result.push((proposal.clone(), Choice::new(*choice)));
+        }
+        Ok(result)
     }
 }
 
@@ -353,8 +454,12 @@ impl Generate {
 pub enum IapyxCommandError {
     #[error("{0}")]
     GeneralError(String),
-    #[error("{0}")]
+    #[error(transparent)]
     ControllerError(#[from] crate::controller::ControllerError),
     #[error("wrong word count for generating wallet")]
     GenerateWalletError(#[from] bip39::Error),
+    #[error(transparent)]
+    CannotParseChoicesString(#[from] serde_json::Error),
+    #[error("no valid until defined")]
+    NoValidUntilDefined,
 }

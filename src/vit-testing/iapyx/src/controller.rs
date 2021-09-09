@@ -101,14 +101,12 @@ impl Controller {
     }
 
     pub fn recover_from_sk<P: AsRef<Path>>(
-        proxy_address: String,
+        backend: WalletBackend,
         private_key: P,
-        backend_settings: RestSettings,
     ) -> Result<Self, ControllerError> {
         let (_, data) = read_bech32(private_key)?;
         let key_bytes = Vec::<u8>::from_base32(&data)?;
         let data: [u8; 64] = key_bytes.try_into().unwrap();
-        let backend = WalletBackend::new(proxy_address, backend_settings);
         let settings = backend.settings()?;
         Ok(Self {
             backend,
@@ -212,6 +210,14 @@ impl Controller {
         self.backend.account_state(self.id()).map_err(Into::into)
     }
 
+    pub fn proposals(&self) -> Result<Vec<Proposal>, ControllerError> {
+        self.backend.proposals().map_err(Into::into)
+    }
+
+    pub fn settings(&self) -> Result<Settings, ControllerError> {
+        self.backend.settings().map_err(Into::into)
+    }
+
     pub fn vote_for(
         &mut self,
         vote_plan_id: String,
@@ -267,7 +273,6 @@ impl Controller {
         let txs = votes_data
             .into_iter()
             .map(|(p, c)| {
-                println!("{}", counter);
                 self.wallet
                     .set_state((*account_state.value()).into(), counter);
                 let tx = self

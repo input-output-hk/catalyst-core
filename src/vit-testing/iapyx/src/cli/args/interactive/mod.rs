@@ -28,7 +28,6 @@ impl InteractiveCommandExec for IapyxInteractiveCommandExec {
         match IapyxCommand::from_iter_safe(&mut tokens.iter().map(|x| OsStr::new(x))) {
             Ok(interactive) => {
                 if let Err(err) = interactive.exec(&mut self.controller) {
-                    println!("{:?}", err);
                     console.format_error(InteractiveCommandError::UserError(err.to_string()));
                 }
             }

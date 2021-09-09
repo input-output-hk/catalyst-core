@@ -3,6 +3,7 @@ use crate::cli::args::interactive::UserInteractionContoller;
 use crate::utils::valid_until::ValidUntil;
 use crate::Controller;
 use crate::Proposal;
+use crate::WalletBackend;
 use bip39::Type;
 use chain_addr::{AddressReadable, Discrimination};
 use chain_impl_mockchain::block::BlockDate;
@@ -40,6 +41,12 @@ pub enum IapyxCommand {
     PendingTransactions,
 }
 
+const DELIMITER: &str = "===================";
+
+fn print_delim() {
+    println!("{}", DELIMITER);
+}
+
 impl IapyxCommand {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         match self {
@@ -50,33 +57,29 @@ impl IapyxCommand {
                         .iter()
                         .map(|x| x.to_string())
                         .collect::<Vec<String>>();
-                    println!("===================");
+                    print_delim();
                     for (id, fragment_ids) in fragment_ids.iter().enumerate() {
                         println!("{}. {}", (id + 1), fragment_ids);
                     }
-                    println!("===================");
+                    print_delim();
                     return Ok(());
                 }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
+                Err(IapyxCommandError::WalletNotRecovered)
             }
             IapyxCommand::Votes => {
                 if let Some(controller) = model.controller.as_mut() {
-                    println!("===================");
+                    print_delim();
                     for (id, vote) in controller.active_votes()?.iter().enumerate() {
                         println!("{}. {}", (id + 1), vote);
                     }
-                    println!("===================");
+                    print_delim();
                     return Ok(());
                 }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
+                Err(IapyxCommandError::WalletNotRecovered)
             }
             IapyxCommand::Proposals(proposals) => {
                 if let Some(controller) = model.controller.as_mut() {
-                    println!("===================");
+                    print_delim();
                     for (id, proposal) in controller.get_proposals()?.iter().enumerate() {
                         if proposals.only_ids {
                             println!("{}", proposal.chain_proposal_id_as_str());
@@ -91,12 +94,10 @@ impl IapyxCommand {
                             println!("{:#?}", proposal.chain_vote_options.0);
                         }
                     }
-                    println!("===================");
+                    print_delim();
                     return Ok(());
                 }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
+                Err(IapyxCommandError::WalletNotRecovered)
             }
             IapyxCommand::Vote(vote) => vote.exec(model),
             IapyxCommand::ConfirmTx => {
@@ -104,9 +105,7 @@ impl IapyxCommand {
                     controller.confirm_all_transactions();
                     return Ok(());
                 }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
+                Err(IapyxCommandError::WalletNotRecovered)
             }
             IapyxCommand::Recover(recover) => recover.exec(model),
             IapyxCommand::Exit => Ok(()),
@@ -117,33 +116,27 @@ impl IapyxCommand {
                     println!("Total Value: {}", controller.total_value());
                     return Ok(());
                 }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
+                Err(IapyxCommandError::WalletNotRecovered)
             }
             IapyxCommand::Status => {
                 if let Some(controller) = model.controller.as_ref() {
                     let account_state = controller.get_account_state()?;
-                    println!("-------------------------");
+                    print_delim();
                     println!("- Delegation: {:?}", account_state.delegation());
                     println!("- Value: {}", account_state.value());
                     println!("- Spending counter: {}", account_state.counter());
                     println!("- Rewards: {:?}", account_state.last_rewards());
-                    println!("--------------------------");
+                    print_delim();
                     return Ok(());
                 }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
+                Err(IapyxCommandError::WalletNotRecovered)
             }
             IapyxCommand::Refresh => {
                 if let Some(controller) = model.controller.as_mut() {
                     controller.refresh_state()?;
                     return Ok(());
                 }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
+                Err(IapyxCommandError::WalletNotRecovered)
             }
             IapyxCommand::Address(address) => address.exec(model),
             IapyxCommand::Logs => {
@@ -151,9 +144,7 @@ impl IapyxCommand {
                     println!("{:#?}", controller.fragment_logs());
                     return Ok(());
                 }
-                Err(IapyxCommandError::GeneralError(
-                    "wallet not recovered or generated".to_string(),
-                ))
+                Err(IapyxCommandError::WalletNotRecovered)
             }
         }
     }
@@ -171,19 +162,17 @@ impl Address {
         if let Some(controller) = model.controller.as_mut() {
             let (prefix, discrimination) = {
                 if self.testing {
-                    ("ca", Discrimination::Test)
+                    ("ta", Discrimination::Test)
                 } else {
-                    ("ta", Discrimination::Production)
+                    ("ca", Discrimination::Production)
                 }
             };
             let address =
                 AddressReadable::from_address(prefix, &controller.account(discrimination));
-            println!("Address: {}", address.to_string());
+            println!("{}", address.to_string());
             return Ok(());
         }
-        Err(IapyxCommandError::GeneralError(
-            "wallet not recovered or generated".to_string(),
-        ))
+        Err(IapyxCommandError::WalletNotRecovered)
     }
 }
 
@@ -238,20 +227,16 @@ impl SingleVote {
             let proposal = proposals
                 .iter()
                 .find(|x| x.chain_proposal_id_as_str() == self.proposal_id)
-                .ok_or_else(|| {
-                    IapyxCommandError::GeneralError("Cannot find proposal".to_string())
-                })?;
+                .ok_or_else(|| IapyxCommandError::CannotFindProposal(self.proposal_id.clone()))?;
             let choice = proposal
                 .chain_vote_options
                 .0
                 .get(&self.choice)
-                .ok_or_else(|| IapyxCommandError::GeneralError("wrong choice".to_string()))?;
+                .ok_or_else(|| IapyxCommandError::WrongChoice(self.choice.clone()))?;
             controller.vote(proposal, Choice::new(*choice), valid_until)?;
             return Ok(());
         }
-        Err(IapyxCommandError::GeneralError(
-            "wallet not recovered or generated".to_string(),
-        ))
+        Err(IapyxCommandError::WalletNotRecovered)
     }
 }
 
@@ -284,10 +269,7 @@ impl BatchOfVotes {
             controller.votes_batch(choices.iter().map(|(p, c)| (p, *c)).collect(), valid_until)?;
             return Ok(());
         }
-
-        Err(IapyxCommandError::GeneralError(
-            "wallet not recovered or generated".to_string(),
-        ))
+        Err(IapyxCommandError::WalletNotRecovered)
     }
 
     fn zip_into_batch_input_data(
@@ -298,19 +280,16 @@ impl BatchOfVotes {
         let mut result = Vec::new();
 
         for (proposal_id, choice) in choices {
-            println!("{}->{}", proposal_id, choice);
             let proposal = proposals
                 .iter()
                 .find(|x| x.chain_proposal_id_as_str() == *proposal_id)
-                .ok_or_else(|| {
-                    IapyxCommandError::GeneralError(format!("Cannot find proposal {}", proposal_id))
-                })?;
+                .ok_or_else(|| IapyxCommandError::CannotFindProposal(proposal_id.clone()))?;
 
             let choice = proposal
                 .chain_vote_options
                 .0
                 .get(&choice)
-                .ok_or_else(|| IapyxCommandError::GeneralError("wrong choice".to_string()))?;
+                .ok_or_else(|| IapyxCommandError::WrongChoice(choice.clone()))?;
 
             result.push((proposal.clone(), Choice::new(*choice)));
         }
@@ -320,7 +299,7 @@ impl BatchOfVotes {
 
 #[derive(StructOpt, Debug)]
 pub struct Connect {
-    #[structopt(short = "a", long = "address")]
+    #[structopt(name = "ADDRESS")]
     pub address: String,
 
     /// uses https for sending fragments
@@ -373,17 +352,16 @@ impl Recover {
 
 #[derive(StructOpt, Debug)]
 pub struct RecoverFromSecretKey {
-    #[structopt(short = "s", long = "secret")]
+    #[structopt(name = "INPUT")]
     pub input: PathBuf,
 }
 
 impl RecoverFromSecretKey {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
-        model.controller = Some(Controller::recover_from_sk(
-            model.backend_address.clone(),
-            &self.input,
-            model.settings.clone(),
-        )?);
+        let wallet_backend =
+            WalletBackend::new(model.backend_address.clone(), model.settings.clone());
+
+        model.controller = Some(Controller::recover_from_sk(wallet_backend, &self.input)?);
         model.state = WalletState::Recovered;
         Ok(())
     }
@@ -462,4 +440,10 @@ pub enum IapyxCommandError {
     CannotParseChoicesString(#[from] serde_json::Error),
     #[error("no valid until defined")]
     NoValidUntilDefined,
+    #[error("wallet not recovered or generated")]
+    WalletNotRecovered,
+    #[error("wrong choice: {0}")]
+    WrongChoice(String),
+    #[error("cannot find proposal: {0}")]
+    CannotFindProposal(String),
 }

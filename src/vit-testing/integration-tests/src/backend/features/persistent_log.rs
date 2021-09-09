@@ -15,6 +15,7 @@ use chain_ser::deser::Deserialize;
 use catalyst_toolbox::recovery::tally::recover_ledger_from_logs;
 use chain_core::property::Fragment;
 use assert_fs::fixture::PathChild;
+
 #[test]
 pub fn persistent_log_contains_all_sent_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
@@ -87,6 +88,8 @@ pub fn persistent_log_contains_all_sent_votes() {
     let offline_voteplan_status: Vec<VotePlanStatus> =
         serde_json::from_str(jortestkit::file::read_file(offline_tally.path())).unwrap();
   
+    let live_voteplan_status = wallet_proxy.vote_plan_status().unwrap();
+
     vit_station.shutdown();
     wallet_proxy.shutdown();
     

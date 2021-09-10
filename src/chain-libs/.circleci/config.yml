@@ -84,7 +84,7 @@ commands:
     parameters:
       mode:
         type: string
-        default: ''
+        default: ""
       cargo_behavior:
         type: string
         default: --locked --offline --verbose

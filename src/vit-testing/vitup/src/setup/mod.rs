@@ -22,9 +22,9 @@ pub enum VitCliCommand {
     Start(StartCommand),
     /// generate fund data
     Generate(GenerateCommand),
-    // get diff between new deployment and target env
+    /// print differences between new deployment and target env
     Diff(DiffCommand),
-    // validate data
+    /// validate static data
     Validate(ValidateCommand),
     // convert data
     Convert(ConvertCommand),

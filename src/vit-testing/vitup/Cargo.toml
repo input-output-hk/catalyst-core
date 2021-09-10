@@ -29,6 +29,8 @@ vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-serv
 iapyx = { path = "../iapyx" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"
+strum = "0.21.0"
+strum_macros = "0.21.0"
 rand_core = "0.6"
 rand_chacha = "0.3"
 tempdir = "0.3.7"

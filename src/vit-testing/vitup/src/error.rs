@@ -35,6 +35,7 @@ error_chain! {
         ChainAddressError(chain_addr::Error);
         ChainBech32Error(chain_crypto::bech32::Error);
         GlobError(glob::GlobError);
+        ControllerError(iapyx::ControllerError);
     }
 
     errors {

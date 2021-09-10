@@ -3,6 +3,7 @@ use super::QuickVitBackendSettingsBuilder;
 use crate::config::Initials;
 use crate::scenario::network::service_mode;
 use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
+use crate::setup::generate::read_initials;
 use crate::Result;
 use iapyx::Protocol;
 use jormungandr_scenario_tests::programs::prepare_command;
@@ -140,6 +141,9 @@ pub struct QuickStartCommandArgs {
     /// token, only applicable if service mode is used
     #[structopt(long = "token")]
     pub token: Option<String>,
+
+    #[structopt(long = "snapshot")]
+    pub snapshot: Option<PathBuf>,
 }
 
 impl QuickStartCommandArgs {
@@ -182,6 +186,10 @@ impl QuickStartCommandArgs {
             quick_setup.initials(initials);
         } else if let Some(initials_count) = self.initials {
             quick_setup.initials_count(initials_count, "1234");
+        }
+
+        if let Some(snapshot) = self.snapshot {
+            quick_setup.extend_initials(read_initials(snapshot)?);
         }
 
         if self.https {

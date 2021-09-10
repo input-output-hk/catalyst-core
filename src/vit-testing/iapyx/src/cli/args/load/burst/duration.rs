@@ -96,6 +96,7 @@ impl BurstDurationIapyxLoadCommand {
             self.threads,
             std::time::Duration::from_secs(self.duration),
             self.pace,
+            Some(250),
             build_monitor(&self.progress_bar_mode),
             0,
             self.status_pace,

@@ -26,7 +26,7 @@ pub fn private_vote_test_scenario(
 ) {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let parameters = quick_setup.parameters().clone();
-    let wallet_count = parameters.initials.as_ref().unwrap().count();
+    let wallet_count = parameters.initials.count();
     let vote_tally = parameters.vote_tally;
     let slots_per_epoch = parameters.slots_per_epoch;
     let tally_end = parameters.tally_end;
@@ -152,6 +152,7 @@ pub fn build_load_config(
         threads_no,
         parameters.calculate_vote_duration(),
         100,
+        Some(250),
         Monitor::Progress(100),
         60,
         1,

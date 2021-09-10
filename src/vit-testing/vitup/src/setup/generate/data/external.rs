@@ -62,7 +62,14 @@ impl ExternalDataCommandArgs {
         );
 
         let mut quick_setup = QuickVitBackendSettingsBuilder::new();
-        let config = read_config(&self.config)?;
+        let mut config = read_config(&self.config)?;
+
+        if let Some(snapshot) = self.snapshot {
+            config
+                .params
+                .initials
+                .extend_from_external(read_initials(snapshot)?);
+        }
 
         if self.skip_qr_generation {
             quick_setup.skip_qr_generation();
@@ -113,17 +120,11 @@ impl ExternalDataCommandArgs {
                 .consensus_leader_ids = config.consensus_leader_ids;
         }
 
-        if let Some(snapshot_file) = self.snapshot {
-            let snapshot = read_initials(&snapshot_file)?;
-            block0_configuration.initial.extend(snapshot);
-        }
-
         write_genesis_yaml(block0_configuration, &genesis)?;
         println!("genesis.yaml: {:?}", std::fs::canonicalize(&genesis)?);
         encode(&genesis, &block0)?;
         println!("block0: {:?}", std::fs::canonicalize(&block0)?);
 
-        println!("Fund id: {}", quick_setup.parameters().fund_id);
         println!(
             "voteplan ids: {:?}",
             controller
@@ -132,26 +133,8 @@ impl ExternalDataCommandArgs {
                 .map(|x| x.id())
                 .collect::<Vec<String>>()
         );
-        println!(
-            "vote start timestamp: {:?}",
-            quick_setup.parameters().vote_start_timestamp
-        );
-        println!(
-            "tally start timestamp: {:?}",
-            quick_setup.parameters().tally_start_timestamp
-        );
-        println!(
-            "tally end timestamp: {:?}",
-            quick_setup.parameters().tally_end_timestamp
-        );
-        println!(
-            "next vote start time: {:?}",
-            quick_setup.parameters().next_vote_start_time
-        );
-        println!(
-            "refresh timestamp: {:?}",
-            quick_setup.parameters().refresh_time
-        );
+
+        quick_setup.print_report();
         Ok(())
     }
 }

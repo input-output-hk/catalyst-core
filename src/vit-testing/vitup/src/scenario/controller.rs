@@ -63,7 +63,7 @@ impl VitController {
     /// iapyx wallet is a mock mobile wallet
     /// it uses some production code while handling wallet operation
     // therefore controller has separate method to build such wallet
-    pub fn iapyx_wallet(
+    pub fn iapyx_wallet_from_mnemonics(
         &self,
         mnemonics: &str,
         wallet_proxy: &WalletProxyController,
@@ -81,7 +81,35 @@ impl VitController {
             settings,
         );
 
-        Ok(iapyx::Controller::recover_with_backend(backend, mnemonics, &[]).unwrap())
+        Ok(iapyx::Controller::recover_with_backend(
+            backend,
+            mnemonics,
+            &[],
+        )?)
+    }
+
+    /// iapyx wallet is a mock mobile wallet
+    /// it uses some production code while handling wallet operation
+    // therefore controller has separate method to build such wallet
+    pub fn iapyx_wallet_from_secret<P: AsRef<Path>>(
+        &self,
+        secret: P,
+        wallet_proxy: &WalletProxyController,
+    ) -> Result<iapyx::Controller> {
+        let settings = iapyx::WalletBackendSettings {
+            use_https: false,
+            enable_debug: true,
+            certificate: None,
+        };
+
+        let backend = WalletBackend::new_from_addresses(
+            wallet_proxy.settings().base_address().to_string(),
+            wallet_proxy.settings().base_address().to_string(),
+            wallet_proxy.settings().base_address().to_string(),
+            settings,
+        );
+
+        Ok(iapyx::Controller::recover_from_sk(backend, secret)?)
     }
 
     /// iapyx wallet is a mock mobile wallet

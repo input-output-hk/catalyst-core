@@ -14,6 +14,7 @@ use crate::data::{challenges_eq, funds_eq, proposals_eq, reviews_eq, vitup_setup
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::QuickVitBackendSettingsBuilder;
 
+#[ignore]
 #[test]
 pub fn public_vote_multiple_vote_plans() {
     let proposals_path = PathBuf::from_str("../resources/tests/example/proposals.json").unwrap();

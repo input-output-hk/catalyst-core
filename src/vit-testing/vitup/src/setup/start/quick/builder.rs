@@ -3,6 +3,7 @@ use crate::scenario::controller::VitController;
 use crate::scenario::controller::VitControllerBuilder;
 use crate::{config::Initials, Result};
 use assert_fs::fixture::{ChildPath, PathChild};
+use chain_crypto::bech32::Bech32;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::vote::PayloadType;
@@ -10,22 +11,20 @@ use chain_impl_mockchain::{
     testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder},
     value::Value,
 };
-use chain_vote::committee::ElectionPublicKey;
+use chain_vote::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
 use iapyx::Protocol;
 use jormungandr_lib::interfaces::CommitteeIdDef;
+pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
     ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KesUpdateSpeed, Milli,
     NumberOfSlotsPerEpoch, SlotDuration, Topology, TopologyBuilder,
 };
+use jormungandr_testing_utils::qr_code::{generate, KeyQrCode};
 use jormungandr_testing_utils::testing::network_builder::{Blockchain, Node, WalletTemplate};
 use jormungandr_testing_utils::wallet::LinearFee;
-use jormungandr_testing_utils::{
-    qr_code::{generate, KeyQrCode},
-    wallet::ElectionPublicKeyExtension,
-};
 use jortestkit::prelude::append;
 use std::{collections::HashMap, iter};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
@@ -97,7 +96,7 @@ impl QuickVitBackendSettingsBuilder {
     }
 
     pub fn initials(&mut self, initials: Initials) -> &mut Self {
-        self.parameters.initials = Some(initials);
+        self.parameters.initials = initials;
         self
     }
 
@@ -106,6 +105,11 @@ impl QuickVitBackendSettingsBuilder {
             initials_count,
             &pin.to_string(),
         ));
+        self
+    }
+
+    pub fn extend_initials(&mut self, initials: Vec<Initial>) -> &mut Self {
+        self.parameters.initials.extend_from_external(initials);
         self
     }
 
@@ -271,7 +275,7 @@ impl QuickVitBackendSettingsBuilder {
         if self.parameters.private {
             for (alias, private_key_data) in settings.private_vote_plans.iter() {
                 let key: ElectionPublicKey = private_key_data.election_public_key();
-                parameters.set_vote_encryption_key(key.to_base32().unwrap(), alias);
+                parameters.set_vote_encryption_key(key.to_bech32_str(), alias);
             }
         }
         parameters
@@ -399,24 +403,23 @@ impl QuickVitBackendSettingsBuilder {
             wallet.save_qr_code_hash(hash.path(), &pin_to_bytes(pin))?;
         }
 
-        if let Some(initials) = &self.parameters.initials {
-            let zero_funds_initial_counts = initials.zero_funds_count();
+        let zero_funds_initial_counts = self.parameters.initials.zero_funds_count();
 
-            if zero_funds_initial_counts > 0 {
-                let zero_funds_pin = initials.zero_funds_pin().unwrap();
+        if zero_funds_initial_counts > 0 {
+            let zero_funds_pin = self.parameters.initials.zero_funds_pin().unwrap();
 
-                for i in 1..zero_funds_initial_counts + 1 {
-                    let sk = SecretKey::generate(rand::thread_rng());
-                    let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
-                    let img = qr.to_img();
-                    let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
-                    img.save(png.path())?;
+            for i in 1..zero_funds_initial_counts + 1 {
+                let sk = SecretKey::generate(rand::thread_rng());
+                let qr = KeyQrCode::generate(sk.clone(), &pin_to_bytes(&zero_funds_pin));
+                let img = qr.to_img();
+                let png = folder.child(format!("zero_funds_{}_{}.png", i, zero_funds_pin));
+                img.save(png.path())?;
 
-                    let hash = folder.child(format!("zero_funds_{}.txt", i));
-                    append(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
-                }
+                let hash = folder.child(format!("zero_funds_{}.txt", i));
+                append(hash, generate(sk, &pin_to_bytes(&zero_funds_pin)))?;
             }
         }
+
         Ok(())
     }
 
@@ -448,6 +451,7 @@ impl QuickVitBackendSettingsBuilder {
         blockchain.add_leader(LEADER_3);
         blockchain.add_leader(LEADER_4);
         blockchain.set_linear_fee(self.fees);
+        blockchain.set_tx_max_expiry_epochs(self.parameters.tx_max_expiry_epochs);
         blockchain.set_discrimination(chain_addr::Discrimination::Production);
         blockchain.set_block_content_max_size(self.parameters.block_content_max_size.into());
 
@@ -468,10 +472,12 @@ impl QuickVitBackendSettingsBuilder {
         println!("building initials..");
 
         let mut templates = HashMap::new();
-        if let Some(initials) = &self.parameters.initials {
-            blockchain.set_external_wallets(initials.external_templates());
-            templates =
-                initials.templates(self.parameters.voting_power, blockchain.discrimination());
+        if self.parameters.initials.any() {
+            blockchain.set_external_wallets(self.parameters.initials.external_templates());
+            templates = self
+                .parameters
+                .initials
+                .templates(self.parameters.voting_power, blockchain.discrimination());
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
                 blockchain.add_wallet(wallet.clone());
             }
@@ -514,6 +520,27 @@ impl QuickVitBackendSettingsBuilder {
             parameters,
             self.parameters.version.clone(),
         ))
+    }
+
+    pub fn print_report(&self) {
+        println!("Fund id: {}", self.parameters().fund_id);
+        println!(
+            "vote start timestamp: {:?}",
+            self.parameters().vote_start_timestamp
+        );
+        println!(
+            "tally start timestamp: {:?}",
+            self.parameters().tally_start_timestamp
+        );
+        println!(
+            "tally end timestamp: {:?}",
+            self.parameters().tally_end_timestamp
+        );
+        println!(
+            "next vote start time: {:?}",
+            self.parameters().next_vote_start_time
+        );
+        println!("refresh timestamp: {:?}", self.parameters().refresh_time);
     }
 }
 

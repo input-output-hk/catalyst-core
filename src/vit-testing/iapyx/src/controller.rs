@@ -1,10 +1,11 @@
 use crate::utils::valid_until::ValidUntil;
+use crate::Proposal;
 use crate::SimpleVoteStatus;
 use crate::Wallet;
 use crate::{data::Proposal as VitProposal, WalletBackend};
 use bech32::FromBase32;
 use bip39::Type;
-use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId, transaction::Input};
+use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
 use jormungandr_testing_utils::qr_code::KeyQrCode;
 use jormungandr_testing_utils::testing::node::RestSettings;
@@ -100,14 +101,12 @@ impl Controller {
     }
 
     pub fn recover_from_sk<P: AsRef<Path>>(
-        proxy_address: String,
+        backend: WalletBackend,
         private_key: P,
-        backend_settings: RestSettings,
     ) -> Result<Self, ControllerError> {
         let (_, data) = read_bech32(private_key)?;
         let key_bytes = Vec::<u8>::from_base32(&data)?;
         let data: [u8; 64] = key_bytes.try_into().unwrap();
-        let backend = WalletBackend::new(proxy_address, backend_settings);
         let settings = backend.settings()?;
         Ok(Self {
             backend,
@@ -211,6 +210,14 @@ impl Controller {
         self.backend.account_state(self.id()).map_err(Into::into)
     }
 
+    pub fn proposals(&self) -> Result<Vec<Proposal>, ControllerError> {
+        self.backend.proposals().map_err(Into::into)
+    }
+
+    pub fn settings(&self) -> Result<Settings, ControllerError> {
+        self.backend.settings().map_err(Into::into)
+    }
+
     pub fn vote_for(
         &mut self,
         vote_plan_id: String,
@@ -231,24 +238,62 @@ impl Controller {
                 proposal_index,
             })?;
 
-        let valid_until_block_date =
-            valid_until.into_expiry_date(Some(self.backend.settings()?))?;
-        self.vote(proposal, Choice::new(choice), &valid_until_block_date)
+        self.vote(proposal, Choice::new(choice), &valid_until)
     }
 
     pub fn vote(
         &mut self,
         proposal: &VitProposal,
         choice: Choice,
-        valid_until: &BlockDate,
+        valid_until: &ValidUntil,
     ) -> Result<FragmentId, ControllerError> {
+        let valid_until_block_date =
+            valid_until.into_expiry_date(Some(self.backend.settings()?))?;
+
         let transaction = self.wallet.vote(
             self.settings.clone(),
             &proposal.clone().into(),
             choice,
-            valid_until,
+            &valid_until_block_date,
         )?;
         Ok(self.backend.send_fragment(transaction.to_vec())?)
+    }
+
+    pub fn votes_batch(
+        &mut self,
+        votes_data: Vec<(&Proposal, Choice)>,
+        valid_until: &ValidUntil,
+    ) -> Result<Vec<FragmentId>, ControllerError> {
+        let account_state = self.backend.account_state(self.wallet.id())?;
+        let valid_until_block_date =
+            valid_until.into_expiry_date(Some(self.backend.settings()?))?;
+
+        let mut counter = account_state.counter();
+        let settings = self.settings.clone();
+        let txs = votes_data
+            .into_iter()
+            .map(|(p, c)| {
+                self.wallet
+                    .set_state((*account_state.value()).into(), counter);
+                let tx = self
+                    .wallet
+                    .vote(
+                        settings.clone(),
+                        &p.clone().into(),
+                        c,
+                        &valid_until_block_date,
+                    )
+                    .unwrap()
+                    .to_vec();
+                counter += 1;
+                tx
+            })
+            .rev()
+            .collect();
+
+        self.backend
+            .send_fragments_at_once(txs, true)
+            .map_err(Into::into)
     }
 
     pub fn get_proposals(&mut self) -> Result<Vec<VitProposal>, ControllerError> {

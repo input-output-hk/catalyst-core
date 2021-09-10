@@ -42,19 +42,25 @@ pub const GRACE_VALUE: u64 = 1;
 
 impl Default for Initials {
     fn default() -> Self {
-        let initials: Vec<Initial> = std::iter::from_fn(|| {
-            Some(Initial::AboveThreshold {
-                above_threshold: 10,
-                pin: "1234".to_string(),
-            })
-        })
-        .take(1)
-        .collect();
-        Self(initials)
+        Self(Vec::new())
     }
 }
 
 impl Initials {
+    pub fn extend(&mut self, extend: Self) {
+        for element in extend.0.into_iter() {
+            self.0.push(element);
+        }
+    }
+
+    pub fn any(&self) -> bool {
+        !self.0.is_empty()
+    }
+
+    pub fn extend_from_external(&mut self, initials: Vec<jormungandr_lib::interfaces::Initial>) {
+        self.extend(Self::new_from_external(initials))
+    }
+
     pub fn zero_funds_count(&self) -> usize {
         for initial in self.0.iter() {
             if let Initial::ZeroFunds { zero_funds, pin: _ } = initial {
@@ -214,11 +220,5 @@ impl Initials {
             }
         }
         templates
-    }
-
-    pub fn extend(&mut self, initials: &Initials) {
-        for element in initials.0.iter() {
-            self.0.push(element.clone());
-        }
     }
 }

@@ -6,7 +6,8 @@ use std::time::Duration;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct VitStartParameters {
-    pub initials: Option<Initials>,
+    #[serde(default)]
+    pub initials: Initials,
     #[serde(default = "Protocol::http")]
     pub protocol: Protocol,
     pub vote_start: u64,
@@ -28,6 +29,7 @@ pub struct VitStartParameters {
     pub fund_id: i32,
     pub private: bool,
     pub version: String,
+    pub tx_max_expiry_epochs: Option<u8>,
 }
 
 impl VitStartParameters {
@@ -64,6 +66,7 @@ impl Default for VitStartParameters {
             private: false,
             fund_id: 1,
             version: "2.0".to_string(),
+            tx_max_expiry_epochs: Some(2),
         }
     }
 }

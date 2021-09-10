@@ -1,6 +1,7 @@
+use chain_crypto::bech32::Bech32;
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options};
+use chain_vote::ElectionPublicKey;
 use itertools::Itertools;
-use jormungandr_testing_utils::wallet::committee::election_key_from_base32;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, convert::TryFrom, fmt, str};
 pub use wallet_core::{Choice, Value};
@@ -220,7 +221,7 @@ impl Into<wallet_core::Proposal> for Proposal {
             VotePlanId::try_from(vote_plan_id).unwrap(),
             chain_proposal_index,
             Options::new_length(self.chain_vote_options.0.len() as u8).unwrap(),
-            election_key_from_base32(&self.chain_vote_encryption_key).unwrap(),
+            ElectionPublicKey::try_from_bech32_str(&self.chain_vote_encryption_key).unwrap(),
         )
     }
 }

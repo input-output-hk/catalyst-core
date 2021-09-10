@@ -28,7 +28,7 @@ pub struct Settings {
     pub epoch_stability_depth: u32,
     pub active_slots_coeff: ActiveSlotsCoeff,
     pub block_content_max_size: BlockContentSize,
-    pub bft_leaders: Arc<Box<[BftLeaderId]>>,
+    pub bft_leaders: Arc<[BftLeaderId]>,
     pub linear_fees: LinearFee,
     /// The number of epochs that a proposal remains valid. To be
     /// precise, if a proposal is made at date (epoch_p, slot), then
@@ -40,7 +40,7 @@ pub struct Settings {
     pub fees_goes_to: FeesGoesTo,
     pub rewards_limit: rewards::Limit,
     pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
-    pub committees: Arc<Box<[CommitteeId]>>,
+    pub committees: Arc<[CommitteeId]>,
     pub transaction_max_expiry_epochs: u8,
 }
 
@@ -119,7 +119,7 @@ impl Settings {
             epoch_stability_depth: 10, // num of block
             active_slots_coeff: ActiveSlotsCoeff::try_from(Milli::HALF).unwrap(),
             block_content_max_size: 102_400,
-            bft_leaders: Arc::new(Box::new([])),
+            bft_leaders: Arc::new([]),
             linear_fees: LinearFee::new(0, 0, 0),
             proposal_expiration: 100,
             reward_params: None,
@@ -127,7 +127,7 @@ impl Settings {
             fees_goes_to: FeesGoesTo::Rewards,
             rewards_limit: rewards::Limit::None,
             pool_participation_capping: None,
-            committees: Arc::new(Box::new([])),
+            committees: Arc::new([]),
             transaction_max_expiry_epochs: 1,
         }
     }
@@ -172,23 +172,22 @@ impl Settings {
                     // FIXME: O(n)
                     let mut v = new_state.bft_leaders.to_vec();
                     v.push(d.clone());
-                    new_state.bft_leaders = Arc::new(v.into());
+                    new_state.bft_leaders = v.into();
 
                     // BFT Leader are automatically promoted committee too
                     // FIXME: O(n)
                     let mut v = new_state.committees.to_vec();
                     v.push(d.as_public_key().clone().into());
-                    new_state.committees = Arc::new(v.into());
+                    new_state.committees = v.into();
                 }
                 ConfigParam::RemoveBftLeader(d) => {
-                    new_state.bft_leaders = Arc::new(
-                        new_state
-                            .bft_leaders
-                            .iter()
-                            .filter(|leader| *leader != d)
-                            .cloned()
-                            .collect(),
-                    );
+                    new_state.bft_leaders = new_state
+                        .bft_leaders
+                        .iter()
+                        .filter(|leader| *leader != d)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .into();
                 }
                 ConfigParam::LinearFee(d) => {
                     new_state.linear_fees = *d;
@@ -226,18 +225,16 @@ impl Settings {
                     // FIXME: O(n)
                     let mut v = new_state.committees.to_vec();
                     v.push(*committee_id);
-                    new_state.committees = Arc::new(v.into());
+                    new_state.committees = v.into();
                 }
                 ConfigParam::RemoveCommitteeId(committee_id) => {
-                    new_state.committees = Arc::new(
-                        new_state
-                            .committees
-                            .iter()
-                            .filter(|cid| *cid != committee_id)
-                            .cloned()
-                            .collect::<Vec<_>>()
-                            .into(),
-                    );
+                    new_state.committees = new_state
+                        .committees
+                        .iter()
+                        .filter(|cid| *cid != committee_id)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .into();
                 }
                 ConfigParam::TransactionMaxExpiryEpochs(max_expiry_epochs) => {
                     new_state.transaction_max_expiry_epochs = *max_expiry_epochs;

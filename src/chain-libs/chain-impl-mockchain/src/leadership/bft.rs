@@ -12,7 +12,7 @@ pub struct BftRoundRobinIndex(u64);
 /// The BFT Leader selection is based on a round robin of the expected leaders
 #[derive(Debug)]
 pub struct LeadershipData {
-    pub(crate) leaders: Arc<Box<[BftLeaderId]>>,
+    pub(crate) leaders: Arc<[BftLeaderId]>,
 }
 
 impl LeadershipData {

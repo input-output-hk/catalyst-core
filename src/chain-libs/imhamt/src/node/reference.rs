@@ -21,16 +21,16 @@ pub struct Node<K, V> {
 
 pub type NodeIter<'a, K, V> = slice::Iter<'a, SharedRef<Entry<K, V>>>;
 
-pub struct Collision<K, V>(Box<Box<[(K, V)]>>);
+pub struct Collision<K, V>(Box<[(K, V)]>);
 
 impl<K, V> Collision<K, V> {
     pub fn from_vec(vec: Vec<(K, V)>) -> Self {
         assert!(vec.len() >= 2);
-        Collision(Box::new(vec.into()))
+        Collision(vec.into())
     }
     pub fn from_box(b: Box<[(K, V)]>) -> Self {
         assert!(b.len() >= 2);
-        Collision(Box::new(b))
+        Collision(b)
     }
     pub fn len(&self) -> usize {
         self.0.len()

@@ -165,7 +165,7 @@ impl HdKey {
         let mut out: Vec<u8> = vec![0; len];
         let mut tag = [0; TAG_LEN];
 
-        ctx.encrypt(&input, &mut out[0..len], &mut tag);
+        ctx.encrypt(input, &mut out[0..len], &mut tag);
         out.extend_from_slice(&tag[..]);
         out
     }

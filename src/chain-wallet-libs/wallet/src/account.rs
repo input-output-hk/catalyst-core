@@ -1,6 +1,6 @@
 use super::transaction::AccountWitnessBuilder;
 use crate::scheme::{on_tx_input_and_witnesses, on_tx_output};
-use crate::states::{States, Status};
+use crate::states::States;
 use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
 use chain_impl_mockchain::{
     account::SpendingCounter,
@@ -90,11 +90,11 @@ impl Wallet {
     }
 
     pub fn spending_counter(&self) -> SpendingCounter {
-        self.state.last_state().1.counter
+        self.state.last_state().state().counter
     }
 
     pub fn value(&self) -> Value {
-        self.state.last_state().1.value
+        self.state.last_state().state().value
     }
 
     /// confirm a pending transaction
@@ -112,18 +112,12 @@ impl Wallet {
     /// If empty it means there's no pending transactions waiting confirmation
     ///
     pub fn pending_transactions(&self) -> impl Iterator<Item = &FragmentId> {
-        self.state.iter().filter_map(|(k, _, status)| {
-            if status == Status::Pending {
-                Some(k)
-            } else {
-                None
-            }
-        })
+        self.state.unconfirmed_states().map(|(k, _)| k)
     }
 
     /// get the confirmed value of the wallet
     pub fn confirmed_value(&self) -> Value {
-        self.state.confirmed_state().1.value
+        self.state.confirmed_state().state().value
     }
 
     /// get the unconfirmed value of the wallet
@@ -134,18 +128,17 @@ impl Wallet {
     /// The returned value is the value we expect to see at some point on
     /// chain once all transactions are on chain confirmed.
     pub fn unconfirmed_value(&self) -> Option<Value> {
-        let (k, s, _) = self.state.last_state();
-        let (kk, _) = self.state.confirmed_state();
+        let s = self.state.last_state();
 
-        if k == kk {
+        if s.is_confirmed() {
             None
         } else {
-            Some(s.value)
+            Some(s.state().value)
         }
     }
 
     pub fn new_transaction(&mut self, needed_input: Value) -> Result<WalletBuildTx, Error> {
-        let (_, state, _) = self.state.last_state();
+        let state = self.state.last_state().state();
         let current_counter = state.counter;
         let next_value =
             state
@@ -169,7 +162,7 @@ impl Wallet {
             return true;
         }
 
-        let (_, state, _) = self.state.last_state();
+        let state = self.state.last_state().state();
 
         let mut new_value = state.value;
 

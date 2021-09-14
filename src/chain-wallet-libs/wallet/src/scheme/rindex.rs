@@ -1,8 +1,4 @@
-use crate::{
-    scheme::on_tx_input,
-    states::{States, Status},
-    store::UtxoStore,
-};
+use crate::{scheme::on_tx_input, states::States, store::UtxoStore};
 use cardano_legacy_address::{AddressMatchXPub, ExtendedAddr};
 use chain_impl_mockchain::{
     fragment::{Fragment, FragmentId},
@@ -38,7 +34,7 @@ impl Wallet {
 
     /// get the utxos of this given wallet
     pub fn utxos(&self) -> &UtxoStore<Key<XPrv, Rindex<rindex::Address>>> {
-        self.state.last_state().1
+        self.state.last_state().state()
     }
 
     /// confirm a pending transaction
@@ -53,7 +49,7 @@ impl Wallet {
 
     /// get the confirmed value of the wallet
     pub fn confirmed_value(&self) -> Value {
-        self.state.confirmed_state().1.total_value()
+        self.state.confirmed_state().state().total_value()
     }
 
     /// get the unconfirmed value of the wallet
@@ -64,14 +60,11 @@ impl Wallet {
     /// The returned value is the value we expect to see at some point on
     /// chain once all transactions are on chain confirmed.
     pub fn unconfirmed_value(&self) -> Option<Value> {
-        let (k, s, _) = self.state.last_state();
-        let (kk, _) = self.state.confirmed_state();
+        let s = self.state.last_state();
 
-        if k == kk {
-            None
-        } else {
-            Some(s.total_value())
-        }
+        Some(s)
+            .filter(|s| !s.is_confirmed())
+            .map(|s| s.state().total_value())
     }
 
     /// get all the pending transactions of the wallet
@@ -79,13 +72,9 @@ impl Wallet {
     /// If empty it means there's no pending transactions waiting confirmation
     ///
     pub fn pending_transactions(&self) -> impl Iterator<Item = &FragmentId> {
-        self.state.iter().filter_map(|(k, _, status)| {
-            if status == Status::Pending {
-                Some(k)
-            } else {
-                None
-            }
-        })
+        self.state
+            .iter()
+            .filter_map(|(k, s)| Some(k).filter(|_| s.is_pending()))
     }
 
     pub fn check_fragments<'a, I>(&mut self, fragments: I) -> bool
@@ -108,8 +97,8 @@ impl Wallet {
         }
 
         let mut at_least_one_match = false;
-        let (_, legacy, _) = self.state.last_state();
-        let mut store = legacy.clone();
+        let legacy = self.state.last_state();
+        let mut store = legacy.state().clone();
 
         match fragment {
             Fragment::Initial(_config_params) => {}

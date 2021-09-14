@@ -1,6 +1,6 @@
 use crate::{
     scheme::{on_tx_input, on_tx_output},
-    states::{States, Status},
+    states::States,
     store::UtxoStore,
 };
 use chain_crypto::{Ed25519, Ed25519Extended, PublicKey, SecretKey};
@@ -35,7 +35,7 @@ impl Wallet {
 
     /// get the confirmed value of the wallet
     pub fn confirmed_value(&self) -> Value {
-        self.state.confirmed_state().1.total_value()
+        self.state.confirmed_state().state().total_value()
     }
 
     /// get the unconfirmed value of the wallet
@@ -46,14 +46,11 @@ impl Wallet {
     /// The returned value is the value we expect to see at some point on
     /// chain once all transactions are on chain confirmed.
     pub fn unconfirmed_value(&self) -> Option<Value> {
-        let (k, s, _) = self.state.last_state();
-        let (kk, _) = self.state.confirmed_state();
+        let s = self.state.last_state();
 
-        if k == kk {
-            None
-        } else {
-            Some(s.total_value())
-        }
+        Some(s)
+            .filter(|s| !s.is_confirmed())
+            .map(|s| s.state().total_value())
     }
 
     /// get all the pending transactions of the wallet
@@ -61,18 +58,14 @@ impl Wallet {
     /// If empty it means there's no pending transactions waiting confirmation
     ///
     pub fn pending_transactions(&self) -> impl Iterator<Item = &FragmentId> {
-        self.state.iter().filter_map(|(k, _, status)| {
-            if status == Status::Pending {
-                Some(k)
-            } else {
-                None
-            }
-        })
+        self.state
+            .iter()
+            .filter_map(|(k, s)| Some(k).filter(|_| s.is_pending()))
     }
 
     /// get the utxos of this given wallet
     pub fn utxos(&self) -> &UtxoStore<SecretKey<Ed25519Extended>> {
-        self.state.last_state().1
+        self.state.last_state().state()
     }
 
     fn check(&self, pk: &PublicKey<Ed25519>) -> Option<SecretKey<Ed25519Extended>> {
@@ -87,9 +80,9 @@ impl Wallet {
 
         let mut at_least_one_match = false;
 
-        let (_, store, _) = self.state.last_state();
+        let state_ref = self.state.last_state();
 
-        let mut store = store.clone();
+        let mut store = state_ref.state().clone();
 
         match fragment {
             Fragment::Initial(_config_params) => {}

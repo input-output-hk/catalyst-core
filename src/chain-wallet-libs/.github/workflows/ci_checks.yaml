@@ -215,7 +215,10 @@ jobs:
           components: rustfmt, clippy
 
       - name: Install cbindgen
-        run: cargo install cbindgen --force
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cbindgen
+          use-tool-cache: true
 
       - name: run check script
         run: bash bindings/wallet-c/check_header.sh

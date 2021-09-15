@@ -1,13 +1,13 @@
+use crate::common::iapyx_from_qr;
 use crate::common::{
     asserts::VotePlanStatusAssert, vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote,
     VoteTiming,
 };
-
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
-use iapyx::Protocol;
 use jormungandr_testing_utils::testing::node::time;
 use std::path::Path;
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::{InitialEntry, Initials};
 use vitup::scenario::network::setup_network;
@@ -76,9 +76,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     let filip_qr_code = Path::new(&qr_codes_folder).join("wallet_filip_1234.png");
 
     // start mainnet wallets
-    let mut david = vit_controller
-        .iapyx_wallet_from_qr(&david_qr_code, PIN, &wallet_proxy)
-        .unwrap();
+    let mut david = iapyx_from_qr(&david_qr_code, PIN, &wallet_proxy).unwrap();
 
     let fund1_vote_plan = &controller.vote_plans()[0];
     let fund2_vote_plan = &controller.vote_plans()[1];
@@ -88,17 +86,13 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
         .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
         .unwrap();
 
-    let mut edgar = vit_controller
-        .iapyx_wallet_from_qr(&edgar_qr_code, PIN, &wallet_proxy)
-        .unwrap();
+    let mut edgar = iapyx_from_qr(&edgar_qr_code, PIN, &wallet_proxy).unwrap();
 
     edgar
         .vote_for(fund2_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
         .unwrap();
 
-    let mut filip = vit_controller
-        .iapyx_wallet_from_qr(&filip_qr_code, PIN, &wallet_proxy)
-        .unwrap();
+    let mut filip = iapyx_from_qr(&filip_qr_code, PIN, &wallet_proxy).unwrap();
 
     filip
         .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8, Default::default())

@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use chain_core::property::Deserialize;
 use chain_crypto::{bech32::Bech32, Ed25519, PublicKey};
 use chain_impl_mockchain::fragment::Fragment;

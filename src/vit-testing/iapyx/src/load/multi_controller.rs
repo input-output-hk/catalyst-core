@@ -1,8 +1,7 @@
-use crate::controller::read_bech32;
 use crate::qr::PinReadMode;
 use crate::qr::QrReader;
-use crate::WalletBackend;
-use crate::{Proposal, Wallet};
+use crate::utils::bech32::read_bech32;
+use crate::Wallet;
 use bech32::FromBase32;
 use bip39::Type;
 use chain_impl_mockchain::{block::BlockDate, fragment::FragmentId};
@@ -10,6 +9,8 @@ use jormungandr_testing_utils::testing::node::RestSettings;
 use std::iter;
 use std::path::Path;
 use thiserror::Error;
+use valgrind::Proposal;
+use valgrind::ValgrindClient;
 use wallet::Settings;
 use wallet_core::{Choice, Value};
 
@@ -17,7 +18,7 @@ unsafe impl Send for Wallet {}
 use std::convert::TryInto;
 
 pub struct MultiController {
-    pub(super) backend: WalletBackend,
+    pub(super) backend: ValgrindClient,
     pub(super) wallets: Vec<Wallet>,
     pub(super) settings: Settings,
 }
@@ -29,7 +30,7 @@ impl MultiController {
         count: usize,
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let backend = WalletBackend::new(wallet_backend_address, backend_settings);
+        let backend = ValgrindClient::new(wallet_backend_address, backend_settings);
         let settings = backend.settings()?;
         let wallets = iter::from_fn(|| Some(Wallet::generate(words_length).unwrap()))
             .take(count)
@@ -47,7 +48,7 @@ impl MultiController {
         password: &[u8],
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let backend = WalletBackend::new(wallet_backend_address.to_string(), backend_settings);
+        let backend = ValgrindClient::new(wallet_backend_address.to_string(), backend_settings);
         let settings = backend.settings()?;
         let wallets = mnemonics
             .iter()
@@ -66,7 +67,7 @@ impl MultiController {
         pin_mode: PinReadMode,
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let mut backend = WalletBackend::new(wallet_backend_address.to_string(), backend_settings);
+        let mut backend = ValgrindClient::new(wallet_backend_address.to_string(), backend_settings);
         let settings = backend.settings()?;
 
         backend.enable_logs();
@@ -89,7 +90,7 @@ impl MultiController {
         private_keys: &[P],
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
-        let backend = WalletBackend::new(proxy_address.to_string(), backend_settings);
+        let backend = ValgrindClient::new(proxy_address.to_string(), backend_settings);
         let settings = backend.settings()?;
         let wallets = private_keys
             .iter()
@@ -112,7 +113,7 @@ impl MultiController {
         self.backend.proposals().map_err(Into::into)
     }
 
-    pub(crate) fn backend(&self) -> &WalletBackend {
+    pub(crate) fn backend(&self) -> &ValgrindClient {
         &self.backend
     }
 
@@ -235,7 +236,7 @@ pub enum MultiControllerError {
     #[error("wallet error")]
     Wallet(#[from] crate::wallet::Error),
     #[error("wallet error")]
-    Backend(#[from] crate::backend::WalletBackendError),
+    Backend(#[from] valgrind::Error),
     #[error("controller error")]
     Controller(#[from] crate::ControllerError),
     #[error("pin read error")]

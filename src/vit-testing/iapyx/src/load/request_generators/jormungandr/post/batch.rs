@@ -1,12 +1,12 @@
 use crate::load::{MultiController, MultiControllerError};
 use crate::utils::valid_until::ValidUntil;
-use crate::Proposal;
 use crate::Wallet;
 use jormungandr_testing_utils::testing::VoteCastCounter;
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
 use std::time::Instant;
+use valgrind::Proposal;
 use wallet::Settings;
 use wallet_core::Choice;
 

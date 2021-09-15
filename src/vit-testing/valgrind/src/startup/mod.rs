@@ -1,12 +1,15 @@
-use crate::backend::ProxyServerStub;
+mod server;
+
+use serde::{Deserialize, Serialize};
+use server::{Error as ProxyServerError, ProxyServerStub};
 use std::path::PathBuf;
 use structopt::StructOpt;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum IapyxProxyCommandError {
+pub enum Error {
     #[error("proxy error")]
-    ProxyError(#[from] crate::backend::ProxyServerError),
+    ProxyError(#[from] ProxyServerError),
     #[error("both --cert and --key parametrs need to be defined in order to use https")]
     UnsufficientHttpConfiguration,
     #[error("cert file does not exists")]
@@ -16,7 +19,7 @@ pub enum IapyxProxyCommandError {
 }
 
 #[derive(StructOpt, Debug)]
-pub struct IapyxProxyCommand {
+pub struct ValigrindStartupCommand {
     #[structopt(short = "a", long = "address", default_value = "127.0.0.1:8000")]
     pub address: String,
 
@@ -36,8 +39,8 @@ pub struct IapyxProxyCommand {
     pub key_path: Option<PathBuf>,
 }
 
-impl IapyxProxyCommand {
-    pub fn build(&self) -> Result<ProxyServerStub, IapyxProxyCommandError> {
+impl ValigrindStartupCommand {
+    pub fn build(&self) -> Result<ProxyServerStub, Error> {
         let proxy_address = self.address.clone();
         let vit_address = self.vit_address.clone();
         let node_address = self.node_address.clone();
@@ -47,14 +50,14 @@ impl IapyxProxyCommand {
             let key_path = self
                 .key_path
                 .clone()
-                .ok_or(IapyxProxyCommandError::UnsufficientHttpConfiguration)?;
+                .ok_or(Error::UnsufficientHttpConfiguration)?;
 
             if !key_path.exists() {
-                return Err(IapyxProxyCommandError::KeyFileDoesNotExist);
+                return Err(Error::KeyFileDoesNotExist);
             }
 
             if !cert_path.exists() {
-                return Err(IapyxProxyCommandError::CertFileDoesNotExist);
+                return Err(Error::CertFileDoesNotExist);
             }
 
             return Ok(ProxyServerStub::new_https(
@@ -73,5 +76,20 @@ impl IapyxProxyCommand {
             node_address,
             jortestkit::file::get_file_as_byte_vec(&block0_path),
         ))
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum Protocol {
+    Http,
+    Https {
+        key_path: PathBuf,
+        cert_path: PathBuf,
+    },
+}
+
+impl Protocol {
+    pub fn http() -> Self {
+        Self::Http
     }
 }

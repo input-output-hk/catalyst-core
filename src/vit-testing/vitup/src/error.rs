@@ -28,14 +28,13 @@ error_chain! {
         ImageReadError(image::error::ImageError);
         MockError(crate::mock::Error);
         ClientRestError(crate::client::rest::Error);
-        WalletBackendError(iapyx::WalletBackendError);
         Block0ConfigurationError(Block0ConfigurationError);
         VitServerBootstrapperError(ServerBootstrapperError);
         VitRestError(vit_servicing_station_tests::common::clients::RestError);
         ChainAddressError(chain_addr::Error);
         ChainBech32Error(chain_crypto::bech32::Error);
         GlobError(glob::GlobError);
-        ControllerError(iapyx::ControllerError);
+        ValgrindError(valgrind::Error);
     }
 
     errors {

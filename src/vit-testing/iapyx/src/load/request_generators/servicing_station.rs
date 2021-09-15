@@ -1,10 +1,9 @@
-use crate::backend::VitStationRestClient;
 use crate::load::config::ServicingStationRequestType as RequestType;
 use crate::rand::RngCore;
-use crate::{Challenge, Proposal};
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::rngs::OsRng;
 use std::time::Instant;
+use valgrind::{Challenge, Proposal, VitStationRestClient};
 
 const DEFAULT_MAX_SPLITS: usize = 20;
 

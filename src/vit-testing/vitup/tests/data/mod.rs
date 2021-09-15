@@ -1,8 +1,6 @@
 mod private;
 mod public;
 
-use iapyx::WalletBackend;
-use iapyx::{Challenge, Fund, Proposal};
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::scenario::Controller;
 use jormungandr_scenario_tests::Seed;
@@ -10,6 +8,7 @@ use jormungandr_scenario_tests::{Context, ProgressBarMode};
 use std::collections::LinkedList;
 use std::path::PathBuf;
 use std::str::FromStr;
+use valgrind::{Challenge, Fund, Proposal, ValgrindClient};
 
 use vit_servicing_station_tests::common::data::ChallengeTemplate;
 use vit_servicing_station_tests::common::data::FundTemplate;
@@ -65,7 +64,7 @@ pub fn challenges_eq(expected_list: LinkedList<ChallengeTemplate>, actual_list: 
     }
 }
 
-pub fn reviews_eq(expected_list: LinkedList<ReviewTemplate>, backend_client: WalletBackend) {
+pub fn reviews_eq(expected_list: LinkedList<ReviewTemplate>, backend_client: ValgrindClient) {
     for expected in expected_list.iter() {
         for actuals in backend_client
             .review(&expected.proposal_id)

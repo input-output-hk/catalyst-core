@@ -1846,6 +1846,7 @@ dependencies = [
  "thiserror",
  "tokio 1.11.0",
  "url",
+ "valgrind",
  "wallet",
  "wallet-core",
  "warp",
@@ -1977,6 +1978,7 @@ dependencies = [
  "snapshot-trigger-service",
  "thiserror",
  "tokio 1.11.0",
+ "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "vitup",
@@ -4842,6 +4844,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "valgrind"
+version = "0.1.0"
+dependencies = [
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-time",
+ "chain-vote",
+ "hex",
+ "hyper 0.13.10",
+ "itertools 0.9.0",
+ "jormungandr-lib",
+ "jormungandr-testing-utils",
+ "jortestkit",
+ "regex 0.2.11",
+ "reqwest 0.10.10",
+ "serde",
+ "serde_json",
+ "structopt",
+ "thiserror",
+ "tokio 1.11.0",
+ "vit-servicing-station-lib",
+ "wallet",
+ "wallet-core",
+ "warp",
+ "warp-reverse-proxy",
+]
+
+[[package]]
 name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4946,7 +4978,6 @@ dependencies = [
  "futures",
  "glob",
  "hex",
- "iapyx",
  "image",
  "indicatif",
  "itertools 0.9.0",
@@ -4975,6 +5006,7 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "uuid",
+ "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "walkdir",

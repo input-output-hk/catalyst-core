@@ -1,10 +1,10 @@
-use crate::common::{vitup_setup, VoteTiming};
+use crate::common::{iapyx_from_secret_key, vitup_setup, VoteTiming};
 use assert_fs::TempDir;
 use chain_impl_mockchain::vote::Choice;
 use iapyx::utils::valid_until::ValidUntil;
-use iapyx::Protocol;
 use jormungandr_lib::interfaces::FragmentStatus;
 use jormungandr_testing_utils::testing::node::time;
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::{InitialEntry, Initials};
 use vitup::scenario::network::setup_network;
@@ -52,9 +52,7 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
     .unwrap();
 
     let secret = testing_directory.path().join("vit_backend/wallet_alice");
-    let mut alice = vit_controller
-        .iapyx_wallet_from_secret(secret, &wallet_proxy)
-        .unwrap();
+    let mut alice = iapyx_from_secret_key(secret, &wallet_proxy).unwrap();
 
     let proposals = alice.proposals().unwrap();
     let votes_data = proposals

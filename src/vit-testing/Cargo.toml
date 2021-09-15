@@ -2,6 +2,7 @@
 members = [
   "iapyx",
   "vitup",
+  "valgrind",
   "integration-tests",
   "registration-service",
   "registration-verify-service",

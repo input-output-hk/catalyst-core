@@ -11,7 +11,7 @@ pub enum RequestGenError {
     #[error("wallet error")]
     Wallet(#[from] crate::wallet::Error),
     #[error("wallet error")]
-    Backend(#[from] crate::backend::WalletBackendError),
+    Backend(#[from] valgrind::Error),
     #[error("pin read error")]
     MultiController(#[from] crate::load::MultiControllerError),
 }

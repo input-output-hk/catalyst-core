@@ -1,4 +1,3 @@
-use crate::data::{Choice, Value};
 use bip39::{dictionary, Entropy, Type};
 use chain_addr::{AddressReadable, Discrimination};
 use chain_core::property::Deserialize;
@@ -16,6 +15,7 @@ use wallet::Settings;
 use wallet_core::Conversion;
 use wallet_core::Proposal;
 use wallet_core::Wallet as Inner;
+use wallet_core::{Choice, Value};
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Error)]
@@ -25,7 +25,7 @@ pub enum Error {
     #[error("cannot retrieve funds: {0}")]
     CannotRetrieveFunds(String),
     #[error("backend error")]
-    BackendError(#[from] crate::backend::WalletBackendError),
+    BackendError(#[from] valgrind::Error),
     #[error("cannot send vote")]
     CannotSendVote(String),
 }

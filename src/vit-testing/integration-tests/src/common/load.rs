@@ -3,7 +3,7 @@ use crate::common::{
 };
 use assert_fs::TempDir;
 use chain_impl_mockchain::key::Hash;
-use iapyx::{NodeLoad, NodeLoadConfig, Protocol};
+use iapyx::{NodeLoad, NodeLoadConfig};
 use jormungandr_lib::interfaces::BlockDate;
 use jormungandr_testing_utils::testing::node::time;
 use jortestkit::{
@@ -12,6 +12,7 @@ use jortestkit::{
 };
 use std::path::PathBuf;
 use std::str::FromStr;
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VitStartParameters;
 use vitup::scenario::network::setup_network;

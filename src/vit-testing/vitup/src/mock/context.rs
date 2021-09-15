@@ -3,11 +3,11 @@ use crate::config::VitStartParameters;
 use crate::mock::config::Configuration;
 use crate::mock::mock_state::MockState;
 use crate::mock::Logger;
-use iapyx::VitVersion;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
+use valgrind::VitVersion;
 
 pub struct Context {
     config: Configuration,

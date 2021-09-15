@@ -28,8 +28,6 @@ impl IapyxQrCommand {
 
 #[derive(Error, Debug)]
 pub enum IapyxQrCommandError {
-    #[error("proxy error")]
-    ProxyError(#[from] crate::backend::ProxyServerError),
     #[error("pin error")]
     PinError(#[from] crate::qr::PinReadError),
     #[error("reqwest error")]

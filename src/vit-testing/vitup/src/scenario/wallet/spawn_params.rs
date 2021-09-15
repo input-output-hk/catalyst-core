@@ -1,7 +1,6 @@
 use crate::wallet::WalletProxySettings;
-use iapyx::Protocol;
-use iapyx::VitVersion;
 use std::net::SocketAddr;
+use valgrind::{Protocol, VitVersion};
 
 pub struct WalletProxySpawnParams {
     pub alias: String,

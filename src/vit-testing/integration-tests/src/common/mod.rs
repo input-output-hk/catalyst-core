@@ -3,11 +3,13 @@ mod backend;
 pub mod load;
 pub mod registration;
 pub mod snapshot;
+mod wallet;
 pub use backend::*;
 
 use jormungandr_testing_utils::testing::node::time;
 use jormungandr_testing_utils::testing::node::JormungandrRest;
 use thiserror::Error;
+pub use wallet::{iapyx_from_qr, iapyx_from_secret_key};
 
 #[derive(Debug, Error)]
 pub enum Error {

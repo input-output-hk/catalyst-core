@@ -1,8 +1,6 @@
-#![allow(dead_code)]
-
-use jormungandr_scenario_tests::node::{ProgressBarController, Status};
-
 use crate::scenario::wallet::WalletProxySettings;
+use jormungandr_scenario_tests::node::{ProgressBarController, Status};
+use valgrind::{ProxyClient, ValgrindClient, ValgrindSettings};
 
 pub use jormungandr_testing_utils::testing::{
     network_builder::{
@@ -16,7 +14,6 @@ pub use jormungandr_testing_utils::testing::{
 };
 
 pub type VitStationSettings = vit_servicing_station_lib::server::settings::ServiceSettings;
-use iapyx::ProxyClient;
 use std::process::Child;
 use std::sync::{Arc, Mutex};
 /// send query to a running node
@@ -46,6 +43,23 @@ impl WalletProxyController {
             process,
             client: ProxyClient::new(address),
         }
+    }
+
+    pub fn client(&self) -> ValgrindClient {
+        let settings = ValgrindSettings {
+            use_https: false,
+            enable_debug: true,
+            certificate: None,
+        };
+
+        let base_address = self.settings().base_address();
+
+        ValgrindClient::new_from_addresses(
+            base_address.to_string(),
+            base_address.to_string(),
+            base_address.to_string(),
+            settings,
+        )
     }
 
     pub fn alias(&self) -> &NodeAlias {

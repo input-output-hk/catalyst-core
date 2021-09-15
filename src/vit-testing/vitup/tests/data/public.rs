@@ -1,6 +1,5 @@
 use assert_fs::TempDir;
-use iapyx::Protocol;
-use iapyx::WalletBackend;
+use valgrind::{Protocol, ValgrindClient};
 
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -71,7 +70,7 @@ pub fn public_vote_multiple_vote_plans() {
 
     std::thread::sleep(std::time::Duration::from_secs(10));
 
-    let backend_client = WalletBackend::new(endpoint.to_string(), Default::default());
+    let backend_client = ValgrindClient::new(endpoint.to_string(), Default::default());
 
     let actual_fund = backend_client.funds().unwrap();
     let actual_challenges = backend_client.challenges().unwrap();

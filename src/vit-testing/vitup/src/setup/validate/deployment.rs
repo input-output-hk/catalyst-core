@@ -1,8 +1,6 @@
 use crate::Result;
 use chrono::DateTime;
 use chrono::ParseError;
-use iapyx::WalletBackend;
-use iapyx::WalletBackendError;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use std::fmt;
 use std::thread;
@@ -11,6 +9,7 @@ use structopt::StructOpt;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use thiserror::Error;
+use valgrind::{Error as ValgrindError, ValgrindClient};
 use vit_servicing_station_lib::utils::datetime::unix_timestamp_to_datetime;
 
 #[derive(StructOpt, Debug)]
@@ -51,7 +50,7 @@ impl fmt::Display for Check {
 impl Check {
     pub fn execute(
         &self,
-        wallet_backend: &WalletBackend,
+        wallet_backend: &ValgrindClient,
     ) -> std::result::Result<std::time::Duration, CheckError> {
         let mut started = Instant::now();
 
@@ -151,7 +150,7 @@ impl DeploymentValidateCommand {
 
                 let address = self.address.clone();
                 thread::spawn(move || {
-                    let wallet_backend = WalletBackend::new(address.clone(), Default::default());
+                    let wallet_backend = ValgrindClient::new(address.clone(), Default::default());
 
                     let finish_style =
                         ProgressStyle::default_spinner().template("{prefix:.bold.dim} {wide_msg}");
@@ -188,7 +187,7 @@ impl DeploymentValidateCommand {
 #[derive(Debug, Error)]
 pub enum CheckError {
     #[error(transparent)]
-    WalletBackend(#[from] WalletBackendError),
+    WalletBackend(#[from] ValgrindError),
     #[error(transparent)]
     Parser(#[from] ParseError),
     #[error("{0}")]

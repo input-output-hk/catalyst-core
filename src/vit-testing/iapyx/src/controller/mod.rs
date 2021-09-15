@@ -1,122 +1,27 @@
+mod builder;
+
+pub use builder::{ControllerBuilder, Error as ControllerBuilderError};
+
 use crate::utils::valid_until::ValidUntil;
-use crate::Proposal;
-use crate::SimpleVoteStatus;
 use crate::Wallet;
-use crate::{data::Proposal as VitProposal, WalletBackend};
-use bech32::FromBase32;
-use bip39::Type;
 use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
-use jormungandr_testing_utils::qr_code::KeyQrCode;
 use jormungandr_testing_utils::testing::node::RestSettings;
 use std::collections::HashMap;
-use std::convert::TryInto;
-use std::path::Path;
 use thiserror::Error;
+use valgrind::{Proposal as ValgrindProposal, SimpleVoteStatus, ValgrindClient};
 use wallet::{AccountId, Settings};
 use wallet_core::{Choice, Value};
 
 pub struct Controller {
-    backend: WalletBackend,
-    wallet: Wallet,
-    settings: Settings,
+    pub(self) backend: ValgrindClient,
+    pub(self) wallet: Wallet,
+    pub(self) settings: Settings,
 }
 
 impl Controller {
-    pub fn generate(
-        proxy_address: String,
-        words_length: Type,
-        backend_settings: RestSettings,
-    ) -> Result<Self, ControllerError> {
-        let backend = WalletBackend::new(proxy_address, backend_settings);
-        let settings = backend.settings()?;
-        Ok(Self {
-            backend,
-            wallet: Wallet::generate(words_length)?,
-            settings,
-        })
-    }
-
-    pub fn recover_with_backend(
-        backend: WalletBackend,
-        mnemonics: &str,
-        password: &[u8],
-    ) -> Result<Self, ControllerError> {
-        let settings = backend.settings()?;
-        Ok(Self {
-            backend,
-            wallet: Wallet::recover(mnemonics, password)?,
-            settings,
-        })
-    }
-
-    pub fn recover(
-        proxy_address: String,
-        mnemonics: &str,
-        password: &[u8],
-        backend_settings: RestSettings,
-    ) -> Result<Self, ControllerError> {
-        let backend = WalletBackend::new(proxy_address, backend_settings);
-        Self::recover_with_backend(backend, mnemonics, password)
-    }
-
-    pub fn recover_account(
-        proxy_address: String,
-        account: &[u8],
-        backend_settings: RestSettings,
-    ) -> Result<Self, ControllerError> {
-        let backend = WalletBackend::new(proxy_address, backend_settings);
-        let settings = backend.settings()?;
-        Ok(Self {
-            backend,
-            wallet: Wallet::recover_from_account(account)?,
-            settings,
-        })
-    }
-
-    pub fn recover_from_qr<P: AsRef<Path>>(
-        proxy_address: String,
-        qr: P,
-        password: &str,
-        backend_settings: RestSettings,
-    ) -> Result<Self, ControllerError> {
-        let img = image::open(qr.as_ref())?;
-        let bytes: Vec<u8> = password
-            .chars()
-            .map(|x| x.to_digit(10).unwrap() as u8)
-            .collect();
-        let secret = KeyQrCode::decode(img, &bytes)
-            .unwrap()
-            .get(0)
-            .unwrap()
-            .clone()
-            .leak_secret();
-        let backend = WalletBackend::new(proxy_address, backend_settings);
-        let settings = backend.settings()?;
-        Ok(Self {
-            backend,
-            wallet: Wallet::recover_from_utxo(secret.as_ref().try_into().unwrap())?,
-            settings,
-        })
-    }
-
-    pub fn recover_from_sk<P: AsRef<Path>>(
-        backend: WalletBackend,
-        private_key: P,
-    ) -> Result<Self, ControllerError> {
-        let (_, data) = read_bech32(private_key)?;
-        let key_bytes = Vec::<u8>::from_base32(&data)?;
-        let data: [u8; 64] = key_bytes.try_into().unwrap();
-        let settings = backend.settings()?;
-        Ok(Self {
-            backend,
-            wallet: Wallet::recover_from_utxo(&data)?,
-            settings,
-        })
-    }
-
     pub fn switch_backend(&mut self, proxy_address: String, backend_settings: RestSettings) {
-        self.backend = WalletBackend::new(proxy_address, backend_settings);
+        self.backend = ValgrindClient::new(proxy_address, backend_settings);
     }
 
     pub fn account(&self, discrimination: chain_addr::Discrimination) -> chain_addr::Address {
@@ -210,7 +115,7 @@ impl Controller {
         self.backend.account_state(self.id()).map_err(Into::into)
     }
 
-    pub fn proposals(&self) -> Result<Vec<Proposal>, ControllerError> {
+    pub fn proposals(&self) -> Result<Vec<ValgrindProposal>, ControllerError> {
         self.backend.proposals().map_err(Into::into)
     }
 
@@ -243,7 +148,7 @@ impl Controller {
 
     pub fn vote(
         &mut self,
-        proposal: &VitProposal,
+        proposal: &ValgrindProposal,
         choice: Choice,
         valid_until: &ValidUntil,
     ) -> Result<FragmentId, ControllerError> {
@@ -261,7 +166,7 @@ impl Controller {
 
     pub fn votes_batch(
         &mut self,
-        votes_data: Vec<(&Proposal, Choice)>,
+        votes_data: Vec<(&ValgrindProposal, Choice)>,
         valid_until: &ValidUntil,
     ) -> Result<Vec<FragmentId>, ControllerError> {
         let account_state = self.backend.account_state(self.wallet.id())?;
@@ -296,7 +201,7 @@ impl Controller {
             .map_err(Into::into)
     }
 
-    pub fn get_proposals(&mut self) -> Result<Vec<VitProposal>, ControllerError> {
+    pub fn get_proposals(&mut self) -> Result<Vec<ValgrindProposal>, ControllerError> {
         Ok(self
             .backend
             .proposals()?
@@ -317,18 +222,8 @@ impl Controller {
     }
 }
 
-pub fn read_bech32(path: impl AsRef<Path>) -> Result<(String, Vec<bech32::u5>), ControllerError> {
-    let line = jortestkit::file::read_file(path);
-    let line_without_special_characters = line.replace(&['\n', '\r'][..], "");
-    bech32::decode(&line_without_special_characters).map_err(Into::into)
-}
-
 #[derive(Debug, Error)]
 pub enum ControllerError {
-    #[error("wallet error")]
-    WalletError(#[from] crate::wallet::Error),
-    #[error("backend error")]
-    BackendError(#[from] crate::backend::WalletBackendError),
     #[error("cannot find proposal: voteplan({vote_plan_name}) index({proposal_index})")]
     CannotFindProposal {
         vote_plan_name: String,
@@ -336,10 +231,10 @@ pub enum ControllerError {
     },
     #[error("transactions with ids [{fragments:?}] were pending for too long")]
     TransactionsWerePendingForTooLong { fragments: Vec<FragmentId> },
-    #[error("cannot read QR code from '{0}' path")]
-    CannotReadQrCode(#[from] image::ImageError),
-    #[error("bech32 error")]
-    Bech32(#[from] bech32::Error),
-    #[error("time error")]
-    TimeError(#[from] wallet::time::Error),
+    #[error(transparent)]
+    Valgrind(#[from] valgrind::Error),
+    #[error(transparent)]
+    WalletTime(#[from] wallet::time::Error),
+    #[error(transparent)]
+    Wallet(#[from] crate::wallet::Error),
 }

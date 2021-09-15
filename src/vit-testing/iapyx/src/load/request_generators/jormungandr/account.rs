@@ -1,9 +1,9 @@
-use crate::backend::WalletNodeRestClient;
 use crate::Wallet;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
 use rand::Rng;
 use rand_core::OsRng;
 use std::time::Instant;
+use valgrind::WalletNodeRestClient;
 
 pub struct AccountRequestGen {
     rand: OsRng,

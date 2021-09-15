@@ -4,13 +4,13 @@ use chain_core::property::Deserialize;
 use chain_impl_mockchain::block::Block;
 use diffy::create_patch;
 use diffy::PatchFormatter;
-use iapyx::WalletBackend;
 use jormungandr_lib::interfaces::Block0Configuration;
 use jortestkit::prelude::read_file;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
+use valgrind::ValgrindClient;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
 
 #[derive(StructOpt, Debug)]
@@ -40,7 +40,7 @@ impl DiffCommand {
 
         let local_genesis_yaml = Path::new(&self.local).join("genesis.yaml");
         let local_vit_db = Path::new(&self.local).join("vit_station/storage.db");
-        let remote_client = WalletBackend::new(self.target.clone(), Default::default());
+        let remote_client = ValgrindClient::new(self.target.clone(), Default::default());
 
         let remote_genesis_yaml = remote.path().join("genesis_remote.yaml");
 

@@ -1,6 +1,6 @@
-use crate::backend::WalletNodeRestClient;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
 use std::time::Instant;
+use valgrind::WalletNodeRestClient;
 
 const DEFAULT_MAX_SPLITS: usize = 20;
 

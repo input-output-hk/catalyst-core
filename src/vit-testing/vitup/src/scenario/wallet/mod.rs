@@ -31,9 +31,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub use controller::WalletProxyController;
-use iapyx::Protocol;
 pub use jormungandr_testing_utils::testing::network_builder::WalletProxySettings;
 pub use spawn_params::WalletProxySpawnParams;
+use valgrind::Protocol;
 pub type WalletProxyError = Error;
 
 pub type Result<T> = std::result::Result<T, Error>;

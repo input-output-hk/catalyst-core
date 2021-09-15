@@ -13,7 +13,6 @@ use chain_impl_mockchain::{
 };
 use chain_vote::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
-use iapyx::Protocol;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
@@ -27,6 +26,7 @@ use jormungandr_testing_utils::testing::network_builder::{Blockchain, Node, Wall
 use jormungandr_testing_utils::wallet::LinearFee;
 use jortestkit::prelude::append;
 use std::{collections::HashMap, iter};
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub const LEADER_1: &str = "Leader1";

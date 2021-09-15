@@ -23,7 +23,7 @@ pub fn vote_cast_action_transfer_to_rewards() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -79,7 +79,7 @@ pub fn vote_cast_action_action_parameters_no_op() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -137,7 +137,7 @@ pub fn vote_cast_tally_50_percent() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -207,7 +207,7 @@ pub fn vote_cast_tally_50_percent_unsuccesful() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -274,7 +274,7 @@ pub fn vote_cast_tally_50_percent_unsuccesful() {
 pub fn vote_plan_creates_by_non_committee_member() {
     let _ = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -298,7 +298,7 @@ pub fn vote_cast_by_non_committe_member() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -341,7 +341,7 @@ pub fn vote_on_same_proposal() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -384,7 +384,7 @@ pub fn vote_on_different_proposal() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -459,7 +459,7 @@ pub fn votes_with_fees() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(fees)
                 .with_rewards(Value(initial_rewards)),
         )

@@ -167,7 +167,7 @@ pub fn apply_block_incorrect_fragment() {
 pub fn apply_block_above_max_content_size() {
     let block_content_max_size = 152;
     let (mut ledger, controller) = prepare_scenario()
-        .with_config(ConfigBuilder::new(0).with_block_content_max_size(block_content_max_size))
+        .with_config(ConfigBuilder::new().with_block_content_max_size(block_content_max_size))
         .with_initials(vec![
             wallet("Alice").with(1_000).owns("stake_pool"),
             wallet("Bob").with(1_000),

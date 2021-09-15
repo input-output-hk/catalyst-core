@@ -24,7 +24,7 @@ pub fn vote_plan_in_block0() {
     let vote_plan_certificate = create_initial_vote_plan(&vote_plan, &[alice.clone()]);
 
     let leader = BftLeaderId::from(alice.public_key());
-    let config_builder = ConfigBuilder::new(0).with_leaders(&[leader]);
+    let config_builder = ConfigBuilder::new().with_leaders(&[leader]);
 
     LedgerBuilder::from_config(config_builder)
         .faucets_wallets(vec![&alice])
@@ -41,7 +41,7 @@ pub fn vote_plan_in_block0_with_input() {
         InitialFaultTolerantTxCertBuilder::new(vote_plan.into(), alice.clone())
             .transaction_with_input_only();
 
-    let result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[vote_plan_certificate])
         .build();
@@ -57,7 +57,7 @@ pub fn vote_plan_in_block0_with_output() {
         InitialFaultTolerantTxCertBuilder::new(vote_plan.into(), alice.clone())
             .transaction_with_output_only();
 
-    let ledger_build_result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let ledger_build_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[vote_plan_certificate])
         .build();
@@ -76,7 +76,7 @@ pub fn vote_cast_in_block0() {
     let vote_plan_certificate = create_initial_vote_plan(&vote_plan, &[alice.clone()]);
     let vote_cast_certificate = create_initial_vote_cast(&vote_cast, &[alice.clone()]);
 
-    let ledger_build_result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let ledger_build_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[vote_plan_certificate, vote_cast_certificate])
         .build();
@@ -93,7 +93,7 @@ pub fn vote_cast_is_not_allowed_in_block0() {
     let vote_cast = VoteTestGen::vote_cast();
     let vote_cast_cert = create_initial_vote_cast(&vote_cast, &[alice.clone()]);
 
-    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[vote_cast_cert])
         .build();
@@ -111,7 +111,7 @@ pub fn vote_tally_is_not_allowed_in_block0() {
 
     let vote_tally_cert = create_initial_vote_tally(&vote_tally, &[alice.clone()]);
 
-    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[vote_tally_cert])
         .build();
@@ -142,7 +142,7 @@ pub fn update_vote_is_not_allowed_in_block0() {
 
     let fragment = Fragment::UpdateVote(signed_update_vote);
 
-    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .fragment(fragment)
         .build();
@@ -167,7 +167,7 @@ pub fn update_proposal_is_not_allowed_in_block0() {
 
     let fragment = Fragment::UpdateProposal(signed_update_proposal);
 
-    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .fragment(fragment)
         .build();

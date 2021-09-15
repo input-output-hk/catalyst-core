@@ -99,7 +99,7 @@ fn tally_benchmark(
     // Initialize ledger
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(0, 0, 0))
                 .with_rewards(Value(1000)),
         )

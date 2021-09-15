@@ -20,7 +20,7 @@ pub fn ledger_verifies_faucet_discrimination(
     arbitrary_faucet_address_kind: KindTypeWithoutMultisig,
     arbitrary_ledger_disc: Discrimination,
 ) {
-    let config = ConfigBuilder::new(0).with_discrimination(arbitrary_ledger_disc);
+    let config = ConfigBuilder::new().with_discrimination(arbitrary_ledger_disc);
 
     let faucet = AddressDataValue::from_discrimination_and_kind_type(
         arbitrary_faucet_disc,
@@ -63,7 +63,7 @@ pub fn ledger_verifies_transaction_discrimination(
         Value(100),
     );
 
-    let config = ConfigBuilder::new(0).with_discrimination(arbitrary_input_disc);
+    let config = ConfigBuilder::new().with_discrimination(arbitrary_input_disc);
 
     let mut ledger = LedgerBuilder::from_config(config)
         .initial_fund(&faucet)

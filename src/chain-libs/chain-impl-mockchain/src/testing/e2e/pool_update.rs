@@ -12,7 +12,7 @@ use crate::{
 #[test]
 pub fn delegations_are_preserved_after_pool_update() {
     let (mut ledger, controller) = prepare_scenario()
-        .with_config(ConfigBuilder::new(0).with_fee(LinearFee::new(1, 1, 1)))
+        .with_config(ConfigBuilder::new().with_fee(LinearFee::new(1, 1, 1)))
         .with_initials(vec![
             wallet("Alice").with(1_000).owns("stake_pool"),
             wallet("Bob").with(1_000).delegates_to("stake_pool"),
@@ -55,7 +55,7 @@ pub fn delegations_are_preserved_after_pool_update() {
 #[test]
 pub fn pool_update_after_pool_retirement() {
     let (mut ledger, controller) = prepare_scenario()
-        .with_config(ConfigBuilder::new(0).with_fee(LinearFee::new(1, 1, 1)))
+        .with_config(ConfigBuilder::new().with_fee(LinearFee::new(1, 1, 1)))
         .with_initials(vec![wallet("Alice")
             .with(1_000)
             .owns_and_delegates_to("stake_pool")])
@@ -80,7 +80,7 @@ pub fn pool_update_after_pool_retirement() {
 #[test]
 pub fn pool_update_wrong_signature_too_few() {
     let (mut ledger, controller) = prepare_scenario()
-        .with_config(ConfigBuilder::new(0).with_fee(LinearFee::new(1, 1, 1)))
+        .with_config(ConfigBuilder::new().with_fee(LinearFee::new(1, 1, 1)))
         .with_initials(vec![
             wallet("Alice")
                 .with(1_000)
@@ -137,7 +137,7 @@ pub fn pool_update_wrong_signature_too_few() {
 #[test]
 pub fn pool_update_wrong_signature_incorrect_owner() {
     let (mut ledger, controller) = prepare_scenario()
-        .with_config(ConfigBuilder::new(0).with_fee(LinearFee::new(1, 1, 1)))
+        .with_config(ConfigBuilder::new().with_fee(LinearFee::new(1, 1, 1)))
         .with_initials(vec![
             wallet("Alice")
                 .with(1_000)
@@ -161,7 +161,7 @@ pub fn pool_update_wrong_signature_incorrect_owner() {
 #[test]
 pub fn pool_update_changes_owner() {
     let (mut ledger, controller) = prepare_scenario()
-        .with_config(ConfigBuilder::new(0).with_fee(LinearFee::new(1, 1, 1)))
+        .with_config(ConfigBuilder::new().with_fee(LinearFee::new(1, 1, 1)))
         .with_initials(vec![
             wallet("Alice")
                 .with(1_000)
@@ -205,7 +205,7 @@ pub fn pool_update_changes_owner() {
 #[test]
 pub fn pool_update_revert_changes() {
     let (mut ledger, controller) = prepare_scenario()
-        .with_config(ConfigBuilder::new(0).with_fee(LinearFee::new(1, 1, 1)))
+        .with_config(ConfigBuilder::new().with_fee(LinearFee::new(1, 1, 1)))
         .with_initials(vec![
             wallet("Alice")
                 .with(1_000)

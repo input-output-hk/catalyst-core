@@ -24,7 +24,7 @@ use quickcheck_macros::quickcheck;
 pub fn ledger_verifies_value_of_initial_funds(
     arbitrary_faucets: ArbitraryAddressDataValueVec,
 ) -> TestResult {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     TestResult::from_bool(
         LedgerBuilder::from_config(config)
@@ -36,7 +36,7 @@ pub fn ledger_verifies_value_of_initial_funds(
 
 #[test]
 pub fn ledger_fails_to_start_when_there_is_zero_output() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     let address = AddressDataValue::account(Discrimination::Test, Value::zero());
 
@@ -51,7 +51,7 @@ pub fn ledger_fails_to_start_when_there_is_zero_output() {
 
 #[test]
 pub fn ledger_fails_to_start_when_utxo_ammount_is_too_big() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     let address_1 = AddressDataValue::account(Discrimination::Test, Value(u64::MAX));
     let address_2 = AddressDataValue::account(Discrimination::Test, Value(u64::MAX));
@@ -69,7 +69,7 @@ pub fn ledger_fails_to_start_when_utxo_ammount_is_too_big() {
 #[test]
 #[should_panic]
 pub fn ledger_fails_to_start_on_wrong_old_utxo_declaration_length() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
     LedgerBuilder::from_config(config)
         .fragments(&[Fragment::OldUtxoDeclaration(
             OldAddressBuilder::build_utxo_declaration(Some(256)),
@@ -80,7 +80,7 @@ pub fn ledger_fails_to_start_on_wrong_old_utxo_declaration_length() {
 
 #[test]
 pub fn ledger_starts_with_old_utxo_declaration() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     let old_address = OldAddressBuilder::build_utxo_declaration(Some(254));
     let fragment = Fragment::OldUtxoDeclaration(old_address.clone());
@@ -103,7 +103,7 @@ pub fn ledger_starts_with_old_utxo_declaration() {
 
 #[test]
 pub fn ledger_fails_to_starts_with_tx_with_input() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     let faucet = Wallet::new("faucet", Value(10));
     let receiver = Wallet::new("receiver", Value(10));
@@ -124,7 +124,7 @@ pub fn ledger_fails_to_starts_with_tx_with_input() {
 
 #[test]
 pub fn ledger_fails_to_starts_with_cert_with_input() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     let faucet = Wallet::new("faucet", Value(10));
     let faucet_fragment = create_initial_transaction(&faucet);
@@ -144,7 +144,7 @@ pub fn ledger_fails_to_starts_with_cert_with_input() {
 
 #[test]
 pub fn ledger_fails_to_starts_with_owner_stake_delegation() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
     let owner_delegation_cert =
         create_initial_stake_pool_owner_delegation(DelegationType::NonDelegated);
 
@@ -160,7 +160,7 @@ pub fn ledger_fails_to_starts_with_owner_stake_delegation() {
 
 #[test]
 pub fn ledger_fails_to_starts_with_cert_with_output() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     let faucet = Wallet::new("faucet", Value(10));
     let faucet_fragment = create_initial_transaction(&faucet);
@@ -180,7 +180,7 @@ pub fn ledger_fails_to_starts_with_cert_with_output() {
 
 #[test]
 pub fn ledger_fails_to_starts_with_cert_with_witness_only() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     let faucet = Wallet::new("faucet", Value(10));
     let receiver = Wallet::new("receiver", Value(10));
@@ -196,7 +196,7 @@ pub fn ledger_fails_to_starts_with_cert_with_witness_only() {
 
 #[test]
 pub fn ledger_fails_to_start_with_old_utxo_declaration() {
-    let config = ConfigBuilder::new(0).with_discrimination(Discrimination::Test);
+    let config = ConfigBuilder::new().with_discrimination(Discrimination::Test);
 
     let old_address = OldAddressBuilder::build_utxo_declaration(Some(254));
     let fragment = Fragment::OldUtxoDeclaration(old_address.clone());

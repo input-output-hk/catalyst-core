@@ -20,7 +20,7 @@ pub mod tax;
 pub fn rewards_no_block() {
     let (mut ledger, _) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(100))
                 .with_treasury(Value(100)),
         )
@@ -46,7 +46,7 @@ pub fn rewards_no_block() {
 pub fn rewards_empty_pots() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(0))
                 .with_treasury(Value(0)),
         )
@@ -83,7 +83,7 @@ pub fn rewards_empty_pots() {
 pub fn rewards_owners_split() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(100))
                 .with_treasury(Value(0))
                 .with_rewards_params(RewardParams::Linear {
@@ -140,7 +140,7 @@ pub fn rewards_owners_split() {
 pub fn rewards_owners_uneven_split() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(100))
                 .with_treasury(Value(0))
                 .with_rewards_params(RewardParams::Linear {
@@ -196,7 +196,7 @@ pub fn rewards_owners_uneven_split() {
 pub fn rewards_single_owner() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(100))
                 .with_treasury(Value(0))
                 .with_rewards_params(RewardParams::Linear {
@@ -239,7 +239,7 @@ pub fn rewards_single_owner() {
 pub fn rewards_reward_account() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(1000))
                 .with_treasury(Value(0))
                 .with_rewards_params(RewardParams::Linear {
@@ -287,7 +287,7 @@ pub fn rewards_reward_account() {
 pub fn rewards_goes_to_treasury_if_stake_pool_is_retired() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(1000))
                 .with_treasury(Value(0))
                 .with_rewards_params(RewardParams::Linear {
@@ -339,7 +339,7 @@ pub fn rewards_goes_to_treasury_if_stake_pool_is_retired() {
 pub fn rewards_from_fees() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000))
                 .with_treasury(Value(0))
@@ -407,7 +407,7 @@ pub fn rewards_from_fees() {
 pub fn rewards_stake_pool_with_delegation() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(1000))
                 .with_treasury(Value(0))
                 .with_rewards_params(RewardParams::Linear {
@@ -459,7 +459,7 @@ pub fn rewards_stake_pool_with_delegation() {
 pub fn rewards_total_amount_is_constant_after_reward_distribution() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(1000))
                 .with_treasury(Value(100))
                 .with_rewards_params(RewardParams::Linear {
@@ -509,7 +509,7 @@ pub fn rewards_are_propotional_to_stake_pool_effectivness_in_building_blocks() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_slots_per_epoch(slots_per_epoch)
                 .with_rewards(Value(1_000_000))
                 .with_treasury(Value(0))
@@ -605,7 +605,7 @@ fn calculate_reward(expected_total_reward: Value, pool_id: &PoolId, ledger: &Tes
 pub fn rewards_owner_of_many_stake_pool() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000))
                 .with_treasury(Value(0))
@@ -682,7 +682,7 @@ pub fn rewards_owner_of_many_stake_pool() {
 pub fn rewards_delegators_of_many_stake_pool() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000))
                 .with_treasury(Value(0))

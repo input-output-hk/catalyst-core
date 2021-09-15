@@ -45,7 +45,6 @@ pub struct ConfigBuilder {
     per_certificate_fee: Option<PerCertificateFee>,
     per_vote_certificate_fee: Option<PerVoteCertificateFee>,
     leaders: Vec<BftLeaderId>,
-    seed: u64,
     committees_ids: Vec<CommitteeId>,
     rewards: Value,
     treasury: Value,
@@ -61,7 +60,7 @@ pub struct ConfigBuilder {
 }
 
 impl ConfigBuilder {
-    pub fn new(seed: u64) -> Self {
+    pub fn new() -> Self {
         ConfigBuilder {
             slot_duration: 20,
             slots_per_epoch: 21600,
@@ -77,7 +76,6 @@ impl ConfigBuilder {
                 denominator: NonZeroU64::new(1).unwrap(),
             },
             fees_in_treasury: false,
-            seed,
             rewards: Value(1_000_000),
             reward_params: RewardParams::Linear {
                 constant: 100,

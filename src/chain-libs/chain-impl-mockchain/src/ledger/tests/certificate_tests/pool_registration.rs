@@ -23,7 +23,7 @@ pub fn pool_registration_is_accepted() {
     let bob = Wallet::from_value(Value(100));
     let clarice = Wallet::from_value(Value(100));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice, &bob, &clarice])
         .build()
         .expect("cannot build test ledger");
@@ -51,7 +51,7 @@ pub fn pool_registration_zero_management_threshold() {
     let bob = Wallet::from_value(Value(100));
     let clarice = Wallet::from_value(Value(100));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice, &bob, &clarice])
         .build()
         .expect("cannot build test ledger");
@@ -80,7 +80,7 @@ pub fn pool_registration_management_threshold_above() {
     let bob = Wallet::from_value(Value(100));
     let clarice = Wallet::from_value(Value(100));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice, &bob, &clarice])
         .build()
         .expect("cannot build test ledger");
@@ -107,7 +107,7 @@ pub fn pool_registration_management_threshold_above() {
 pub fn pool_registration_too_many_owners() {
     let alice = Wallet::from_value(Value(100));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .build()
         .expect("cannot build test ledger");
@@ -134,7 +134,7 @@ pub fn pool_registration_too_many_owners() {
 pub fn pool_registration_too_many_operators() {
     let alice = Wallet::from_value(Value(100));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .build()
         .expect("cannot build test ledger");
@@ -163,7 +163,7 @@ pub fn pool_registration_too_many_operators() {
 pub fn pool_registration_zero_signatures() {
     let alice = Wallet::from_value(Value(100));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .build()
         .expect("cannot build test ledger");
@@ -185,7 +185,7 @@ pub fn pool_registration_zero_signatures() {
 pub fn pool_registration_too_many_signatures() {
     let alice = Wallet::from_value(Value(100));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .build()
         .expect("cannot build test ledger");

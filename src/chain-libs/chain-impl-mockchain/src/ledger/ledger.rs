@@ -2022,7 +2022,7 @@ mod tests {
         witness: Witness,
     ) -> TestResult {
         let faucet = AddressDataValue::utxo(Discrimination::Test, Value(1000));
-        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2043,7 +2043,7 @@ mod tests {
     #[test]
     pub fn test_input_utxo_verify_correct_utxo() {
         let faucet = AddressDataValue::utxo(Discrimination::Test, Value(1000));
-        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2068,7 +2068,7 @@ mod tests {
     #[test]
     pub fn test_input_utxo_verify_incorrect_value() {
         let faucet = AddressDataValue::utxo(Discrimination::Test, Value(1000));
-        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2389,7 +2389,7 @@ mod tests {
                 .collect();
         let reciever = AddressData::utxo(Discrimination::Test);
 
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucets(&faucets)
             .build()
             .unwrap();
@@ -2427,7 +2427,7 @@ mod tests {
             Discrimination::Test,
             Value(check::CHECK_TX_MAXIMUM_INPUTS.into()),
         );
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2460,7 +2460,7 @@ mod tests {
             Discrimination::Test,
             Value((check::CHECK_TX_MAXIMUM_INPUTS as u64) + 1),
         );
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucets(&faucets)
             .build()
             .unwrap();
@@ -2482,7 +2482,7 @@ mod tests {
             AddressDataValue::account(Discrimination::Test, Value(1)),
         ];
         let reciever = AddressData::utxo(Discrimination::Test);
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucets(&faucets)
             .build()
             .unwrap();
@@ -2515,7 +2515,7 @@ mod tests {
         let reciever = AddressDataValue::account(Discrimination::Test, Value(1));
 
         let mut test_ledger =
-            LedgerBuilder::from_config(ConfigBuilder::new(0).with_fee(LinearFee::new(10, 1, 1)))
+            LedgerBuilder::from_config(ConfigBuilder::new().with_fee(LinearFee::new(10, 1, 1)))
                 .faucet(&faucet)
                 .build()
                 .unwrap();
@@ -2544,7 +2544,7 @@ mod tests {
         }
 
         let mut test_ledger =
-            LedgerBuilder::from_config(ConfigBuilder::new(0).with_fee(LinearFee::new(fee.0, 0, 0)))
+            LedgerBuilder::from_config(ConfigBuilder::new().with_fee(LinearFee::new(fee.0, 0, 0)))
                 .faucets(&input_addresses.values())
                 .build()
                 .unwrap();
@@ -2595,7 +2595,7 @@ mod tests {
             AddressDataValue::account(Discrimination::Test, Value(1)),
         ];
         let reciever = AddressData::utxo(Discrimination::Test);
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucets(&faucets)
             .build()
             .unwrap();
@@ -2622,7 +2622,7 @@ mod tests {
     #[test]
     pub fn test_internal_apply_transaction_no_inputs_outputs() {
         let faucet = AddressDataValue::account(Discrimination::Test, Value(1));
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2643,7 +2643,7 @@ mod tests {
         sender_address: AddressData,
         reciever_address: AddressData,
     ) {
-        let config_builder = ConfigBuilder::new(0)
+        let config_builder = ConfigBuilder::new()
             .with_rewards(Value(0))
             .with_treasury(Value(0));
 
@@ -2673,7 +2673,7 @@ mod tests {
     pub fn test_internal_apply_transaction_wrong_witness_type() {
         let faucet = AddressDataValue::utxo(Discrimination::Test, Value(1));
         let reciever = AddressDataValue::account(Discrimination::Test, Value(1));
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2704,7 +2704,7 @@ mod tests {
     pub fn test_internal_apply_transaction_wrong_transaction_hash() {
         let faucet = AddressDataValue::account(Discrimination::Test, Value(1));
         let reciever = AddressDataValue::account(Discrimination::Test, Value(1));
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2732,7 +2732,7 @@ mod tests {
         let faucet = AddressDataValue::account(Discrimination::Test, Value(1));
         let reciever = AddressDataValue::account(Discrimination::Test, Value(1));
 
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2762,7 +2762,7 @@ mod tests {
             AddressDataValue::account_with_spending_counter(Discrimination::Test, 1, Value(1));
         let reciever = AddressDataValue::account(Discrimination::Test, Value(1));
 
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();
@@ -2791,7 +2791,7 @@ mod tests {
         let faucet = AddressDataValue::account(Discrimination::Test, Value(1));
         let reciever = AddressDataValue::account(Discrimination::Test, Value(1));
 
-        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet(&faucet)
             .build()
             .unwrap();

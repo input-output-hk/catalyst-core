@@ -38,7 +38,7 @@ pub fn per_certificate_fees() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_discrimination(Discrimination::Test)
                 .with_fee(LinearFee::new(
                     input_constant,
@@ -157,7 +157,7 @@ pub fn owner_delegates_fee() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(reward_value))
                 .with_treasury(Value(treasury_value))
                 .with_discrimination(Discrimination::Test)
@@ -208,7 +208,7 @@ fn verify_total_funds_after_transaction_with_fee(fee: u64) {
     let alice_funds = transfer + 13; // Alice should have enough funds to cover the transfer
 
     let (mut ledger, controller) = prepare_scenario()
-        .with_config(ConfigBuilder::new(0).with_fee(LinearFee::new(fee, 0, 0)))
+        .with_config(ConfigBuilder::new().with_fee(LinearFee::new(fee, 0, 0)))
         .with_initials(vec![
             wallet(ALICE).with(alice_funds),
             wallet(BOB).with(BOB_FUNDS),

@@ -101,7 +101,6 @@ pub struct Ledger {
 pub struct ApplyBlockLedger {
     ledger: Ledger,
     ledger_params: LedgerParameters,
-    chain_length: ChainLength,
     block_date: BlockDate,
 }
 
@@ -783,7 +782,6 @@ impl Ledger {
         Ok(ApplyBlockLedger {
             ledger: new_ledger,
             ledger_params,
-            chain_length,
             block_date,
         })
     }

@@ -7,7 +7,6 @@ pub(crate) struct PermanentStore {
     chain_length_index: data_pile::Database,
     block_id_index: sled::Tree,
     root_id: Value,
-    id_length: usize,
 }
 
 impl PermanentStore {
@@ -25,14 +24,12 @@ impl PermanentStore {
         let chain_length_index = data_pile::Database::file(chain_length_index_path)?;
 
         let root_id = root_id.into();
-        let id_length = root_id.as_ref().len();
 
         Ok(Self {
             blocks,
             chain_length_index,
             block_id_index,
             root_id,
-            id_length,
         })
     }
 
@@ -44,14 +41,12 @@ impl PermanentStore {
         let chain_length_index = data_pile::Database::memory()?;
 
         let root_id = root_id.into();
-        let id_length = root_id.as_ref().len();
 
         Ok(Self {
             blocks,
             chain_length_index,
             block_id_index,
             root_id,
-            id_length,
         })
     }
 

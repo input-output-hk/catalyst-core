@@ -524,23 +524,23 @@ impl QuickVitBackendSettingsBuilder {
 
     pub fn print_report(&self) {
         println!("Fund id: {}", self.parameters().fund_id);
+        println!("refresh timestamp\t(registration_snapshot_time):\t\t\t{:?}", self.parameters().refresh_time);
         println!(
-            "vote start timestamp: {:?}",
+            "vote start timestamp\t(fund_start_time, chain_vote_start_time):\t{:?}",
             self.parameters().vote_start_timestamp
         );
         println!(
-            "tally start timestamp: {:?}",
+            "tally start timestamp\t(fund_end_time, chain_vote_end_time):\t\t{:?}",
             self.parameters().tally_start_timestamp
         );
         println!(
-            "tally end timestamp: {:?}",
+            "tally end timestamp:\t(chain_committee_end_time)\t\t\t{:?}",
             self.parameters().tally_end_timestamp
         );
         println!(
-            "next vote start time: {:?}",
+            "next vote start time\t(next_fund_start_time):\t\t\t\t{:?}",
             self.parameters().next_vote_start_time
         );
-        println!("refresh timestamp: {:?}", self.parameters().refresh_time);
     }
 }
 

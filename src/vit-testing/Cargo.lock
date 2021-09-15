@@ -4941,6 +4941,7 @@ dependencies = [
  "dialoguer 0.8.0",
  "diffy",
  "error-chain",
+ "fake",
  "function_name",
  "futures",
  "glob",

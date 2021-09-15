@@ -67,5 +67,10 @@ error_chain! {
             description("wrong format for snapshot data"),
             display("wrong format for snapshot data"),
         }
+
+        NoChallengeIdFound(proposal_id: String) {
+            description("no challenge id found"),
+            display("no challenge id found for proposal {}", proposal_id),
+        }
     }
 }

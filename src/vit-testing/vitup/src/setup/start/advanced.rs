@@ -79,23 +79,29 @@ pub struct AdvancedStartCommandArgs {
     /// proposals import json
     #[structopt(
         long = "proposals",
-        default_value = "../resources/external/proposals.json"
+        default_value = "../../catalyst-resources/ideascale/fund6/proposals.json"
     )]
     pub proposals: PathBuf,
 
     /// challenges import json
     #[structopt(
         long = "challenges",
-        default_value = "../resources/external/challenges.json"
+        default_value = "../../catalyst-resources/ideascale/fund6/challenges.json"
     )]
     pub challenges: PathBuf,
 
     /// challenges import json
-    #[structopt(long = "reviews", default_value = "../resources/external/reviews.json")]
+    #[structopt(
+        long = "reviews",
+        default_value = "../../catalyst-resources/ideascale/fund6/reviews.json"
+    )]
     pub reviews: PathBuf,
 
     /// funds import json
-    #[structopt(long = "funds", default_value = "../resources/external/funds.json")]
+    #[structopt(
+        long = "funds",
+        default_value = "../../catalyst-resources/ideascale/fund6/funds.json"
+    )]
     pub funds: PathBuf,
 
     #[structopt(long = "snapshot")]

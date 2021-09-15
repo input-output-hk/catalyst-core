@@ -33,8 +33,8 @@ impl Wallet {
         }
     }
 
-    pub fn alias(&self) -> String {
-        self.alias.clone()
+    pub fn alias(&self) -> &str {
+        &self.alias
     }
 
     pub fn value(&self) -> Value {

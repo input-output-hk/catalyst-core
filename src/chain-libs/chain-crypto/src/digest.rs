@@ -251,7 +251,10 @@ impl<H: DigestAlg> fmt::Debug for Digest<H> {
 }
 
 impl<H: DigestAlg> Digest<H> {
-    /// Get the digest of a slice of data
+    /// Get the digest of a slice of data.
+    // We name the constructor this way to highlight that a potentially
+    // costly digest computation takes place.
+    #[allow(clippy::self_named_constructors)]
     pub fn digest(slice: &[u8]) -> Self {
         let mut ctx = Context::new();
         ctx.append_data(slice);

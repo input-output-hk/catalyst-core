@@ -67,7 +67,7 @@ pub struct LedgerParameters {
     /// Where the fees get transfered to during the rewards
     pub fees_goes_to: setting::FeesGoesTo,
     /// List of committee members
-    pub committees: Arc<Box<[CommitteeId]>>,
+    pub committees: Arc<[CommitteeId]>,
 }
 
 /// Overall ledger structure.
@@ -1744,7 +1744,7 @@ mod tests {
                 block_content_max_size: Arbitrary::arbitrary(g),
                 epoch_stability_depth: Arbitrary::arbitrary(g),
                 fees_goes_to: Arbitrary::arbitrary(g),
-                committees: Arc::new(committees.into()),
+                committees: committees.into(),
             }
         }
     }
@@ -2190,7 +2190,7 @@ mod tests {
                 block_content_max_size: 10_240,
                 epoch_stability_depth: 1000,
                 fees_goes_to: FeesGoesTo::Rewards,
-                committees: Arc::new(Box::new([])),
+                committees: Arc::new([]),
             };
             InternalApplyTransactionTestParams {
                 dyn_params,

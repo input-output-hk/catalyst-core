@@ -3,7 +3,7 @@ version: 2.1
 executors:
   rust-stable:
     docker:
-      - image: cimg/rust:1.51.0
+      - image: cimg/rust:1.54.0
     working_directory: /home/circleci/build
   rust-nightly:
     docker:
@@ -16,7 +16,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Get top commit hash of cargo registry index
+          name: Get head hash of cargo registry index
           command: |
             git ls-remote --heads https://github.com/rust-lang/crates.io-index.git master |
               cut -f 1 | tee .circleci/crates.io-index.head
@@ -26,12 +26,15 @@ jobs:
             - cargo-index-v2-{{ checksum ".circleci/crates.io-index.head" }}
             - cargo-index-v2-
       - run:
-          name: Generate Cargo.lock and update cargo registry index
+          name: Generate Cargo.lock
           command: |
             cargo generate-lockfile
-            git -C /home/circleci/.cargo/registry/index/github.com-1ecc6299db9ec823 \
-                show-ref -s refs/remotes/origin/master |
-              tee .circleci/crates.io-index.head
+      - run:
+          name: Update head hash of cargo registry index
+          command: |
+            cat /home/circleci/.cargo/registry/index/*/.git/FETCH_HEAD |
+              grep -F 'github.com/rust-lang/crates.io-index' |
+              cut -f 1 > .circleci/crates.io-index.head
       - save_cache:
           name: Save cargo registry index into cache
           key: cargo-index-v2-{{ checksum ".circleci/crates.io-index.head" }}
@@ -81,7 +84,7 @@ commands:
     parameters:
       mode:
         type: string
-        default: ''
+        default: ""
       cargo_behavior:
         type: string
         default: --locked --offline --verbose

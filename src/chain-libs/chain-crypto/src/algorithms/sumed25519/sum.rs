@@ -681,10 +681,14 @@ pub fn update(secret: &mut SecretKey) -> Result<(), Error> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::sumrec;
     use super::*;
 
-    use super::super::sumrec;
+    use proptest::prelude::*;
+    use test_strategy::proptest;
+
     use quickcheck::{Arbitrary, Gen};
+
     impl Arbitrary for Seed {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let mut b = [0u8; 32];
@@ -782,28 +786,28 @@ mod tests {
         }
     }
 
-    #[quickcheck]
-    fn check_public(depth: Depth, seed: Seed) -> bool {
+    #[proptest]
+    fn check_public(depth: Depth, seed: Seed) {
         let (_, pk) = keygen(depth, &seed);
         let pk_pub = pkeygen(depth, &seed);
-        pk == pk_pub
+        prop_assert_eq!(pk, pk_pub);
     }
 
-    #[quickcheck]
-    fn check_sig(depth: Depth, seed: Seed) -> bool {
+    #[proptest]
+    fn check_sig(depth: Depth, seed: Seed) {
         let (sk, pk) = keygen(depth, &seed);
 
         let m = b"Arbitrary message";
 
         let sig = sign(&sk, m);
-        verify(&pk, m, &sig)
+        prop_assert!(verify(&pk, m, &sig));
     }
 
-    #[quickcheck]
-    fn check_recver_equivalent(depth: Depth, seed: Seed) -> bool {
+    #[proptest]
+    fn check_recver_equivalent(depth: Depth, seed: Seed) {
         let (_, pk) = keygen(depth, &seed);
 
         let (_, pkrec) = sumrec::keygen(depth, &seed);
-        pk.as_bytes() == pkrec.as_bytes()
+        prop_assert_eq!(pk.as_bytes(), pkrec.as_bytes());
     }
 }

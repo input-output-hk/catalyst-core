@@ -1,7 +1,3 @@
-#[cfg(test)]
-#[macro_use(quickcheck)]
-extern crate quickcheck_macros;
-
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod testing;
 

@@ -120,23 +120,27 @@ impl KeyEvolvingSignatureAlgorithm for SumEd25519_12 {
 mod tests {
     use super::*;
 
-    #[quickcheck]
-    /// `public_from_binary`should fail if the provided byte array does not match the public key size
-    fn public_from_binary_size_check(n: usize) {
+    use proptest::prelude::*;
+    use test_strategy::proptest;
+    // `public_from_binary`should fail if the provided byte array does not match the public key size
+    // the size is limited to 1 MiB to avoid segfaults during testing
+    #[proptest]
+    fn public_from_binary_size_check(#[strategy(..1_048_576usize)] n: usize) {
         let public_key = SumEd25519_12::public_from_binary(&vec![0; n]);
 
-        assert_eq!(
+        prop_assert_eq!(
             n != SumEd25519_12::PUBLIC_KEY_SIZE,
             public_key == Err(PublicKeyError::SizeInvalid)
         );
     }
 
-    #[quickcheck]
-    /// `signature_from_bytes` should fail if the provided byte array does not match the public key size
-    fn signature_from_bytes_size_check(n: usize) {
+    // `signature_from_bytes` should fail if the provided byte array does not match the public key size
+    // the size is limited to 1 MiB to avoid segfaults during testing
+    #[proptest]
+    fn signature_from_bytes_size_check(#[strategy(..1_048_576usize)] n: usize) {
         let verification_algorithm = SumEd25519_12::signature_from_bytes(&vec![0; n]);
 
-        assert_eq!(
+        prop_assert_eq!(
             n != SumEd25519_12::SIGNATURE_SIZE,
             matches!(
                 verification_algorithm,

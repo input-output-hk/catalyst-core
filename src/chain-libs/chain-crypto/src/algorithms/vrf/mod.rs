@@ -89,12 +89,16 @@ impl VerifiableRandomFunction for RistrettoGroup2HashDh {
 mod tests {
     use super::*;
 
-    #[quickcheck]
-    /// `secret_from_binary` should fail if the provided byte array does not match the public key size
-    fn secret_from_binary_size_check(n: usize) {
+    use proptest::prelude::*;
+    use test_strategy::proptest;
+
+    // `secret_from_binary` should fail if the provided byte array does not match the public key size
+    // the size is limited to 1 MiB to avoid segfaults during testing
+    #[proptest]
+    fn secret_from_binary_size_check(#[strategy(..1_048_576usize)] n: usize) {
         let secret_key = RistrettoGroup2HashDh::secret_from_binary(&vec![0; n]);
 
-        assert_eq!(
+        prop_assert_eq!(
             n != vrf::SecretKey::BYTES_LEN,
             secret_key == Err(SecretKeyError::SizeInvalid)
         );

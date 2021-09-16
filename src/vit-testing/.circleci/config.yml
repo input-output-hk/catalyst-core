@@ -85,9 +85,13 @@ jobs:
             cd vit-servicing-station
             cargo install --path vit-servicing-station-server --locked
       - run:
-          name: install iapyx utils
+          name: install iapyx
           command: |
-            cargo install --path iapyx --locked                  
+            cargo install --path iapyx --locked
+      - run:
+          name: install valgrind
+          command: |
+            cargo install --path valgrind --locked                  
       - run:
           name: Run tests
           no_output_timeout: 60m

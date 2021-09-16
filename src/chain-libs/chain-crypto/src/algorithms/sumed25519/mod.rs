@@ -122,30 +122,54 @@ mod tests {
 
     use proptest::prelude::*;
     use test_strategy::proptest;
-    // `public_from_binary`should fail if the provided byte array does not match the public key size
-    // the size is limited to 1 MiB to avoid segfaults during testing
+
+    #[test]
+    fn public_from_binary_correct_size() {
+        SumEd25519_12::public_from_binary(&vec![0; SumEd25519_12::PUBLIC_KEY_SIZE]).unwrap();
+    }
+
+    #[test]
+    fn public_from_binary_empty_slice() {
+        assert!(matches!(
+            SumEd25519_12::public_from_binary(&[]),
+            Err(PublicKeyError::SizeInvalid)
+        ))
+    }
+
+    // `secret_from_binary` should fail if the provided byte array does not match the public key size
     #[proptest]
-    fn public_from_binary_size_check(#[strategy(..1_048_576usize)] n: usize) {
+    fn public_from_binary_size_check(#[strategy(..SumEd25519_12::PUBLIC_KEY_SIZE * 10)] n: usize) {
         let public_key = SumEd25519_12::public_from_binary(&vec![0; n]);
 
         prop_assert_eq!(
             n != SumEd25519_12::PUBLIC_KEY_SIZE,
-            public_key == Err(PublicKeyError::SizeInvalid)
+            matches!(public_key, Err(PublicKeyError::SizeInvalid))
         );
     }
 
-    // `signature_from_bytes` should fail if the provided byte array does not match the public key size
-    // the size is limited to 1 MiB to avoid segfaults during testing
+    #[test]
+    fn signature_from_binary_correct_size() {
+        SumEd25519_12::signature_from_bytes(&vec![0; SumEd25519_12::SIGNATURE_SIZE]).unwrap();
+    }
+
+    #[test]
+    fn signature_from_binary_empty_slice() {
+        assert!(matches!(
+            SumEd25519_12::signature_from_bytes(&[]),
+            Err(SignatureError::SizeInvalid { .. })
+        ))
+    }
+
+    // `secret_from_binary` should fail if the provided byte array does not match the public key size
     #[proptest]
-    fn signature_from_bytes_size_check(#[strategy(..1_048_576usize)] n: usize) {
-        let verification_algorithm = SumEd25519_12::signature_from_bytes(&vec![0; n]);
+    fn signature_from_binary_size_check(
+        #[strategy(..SumEd25519_12::SIGNATURE_SIZE * 10)] n: usize,
+    ) {
+        let signature = SumEd25519_12::signature_from_bytes(&vec![0; n]);
 
         prop_assert_eq!(
             n != SumEd25519_12::SIGNATURE_SIZE,
-            matches!(
-                verification_algorithm,
-                Err(SignatureError::SizeInvalid { .. })
-            )
+            matches!(signature, Err(SignatureError::SizeInvalid { .. }))
         );
     }
 }

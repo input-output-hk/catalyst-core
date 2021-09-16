@@ -88,15 +88,27 @@ mod test {
         prop_assert!(keypair_signing_ko(input))
     }
 
+    #[test]
+    fn secret_from_binary_correct_size() {
+        Ed25519Extended::secret_from_binary(&vec![0; EXTENDED_KEY_SIZE]).unwrap();
+    }
+
+    #[test]
+    fn secret_from_binary_empty_slice() {
+        assert!(matches!(
+            Ed25519Extended::secret_from_binary(&[]),
+            Err(SecretKeyError::SizeInvalid)
+        ))
+    }
+
     // `secret_from_binary` should fail if the provided byte array does not match the public key size
-    // the size is limited to 1 MiB to avoid segfaults during testing
     #[proptest]
-    fn secret_from_binary_size_check(#[strategy(..1_048_576usize)] n: usize) {
+    fn secret_from_binary_size_check(#[strategy(..EXTENDED_KEY_SIZE * 10)] n: usize) {
         let secret_key = Ed25519Extended::secret_from_binary(&vec![0; n]);
 
         prop_assert_eq!(
             n != EXTENDED_KEY_SIZE,
-            matches!(secret_key, Err(SecretKeyError::SizeInvalid { .. }))
+            matches!(secret_key, Err(SecretKeyError::SizeInvalid))
         );
     }
 }

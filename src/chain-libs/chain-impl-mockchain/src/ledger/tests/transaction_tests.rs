@@ -85,7 +85,7 @@ pub fn transaction_fail_when_validity_too_far() {
     const MAX_EXPIRY_EPOCHS: u8 = 5;
 
     let mut test_ledger = LedgerBuilder::from_config(
-        ConfigBuilder::new().with_transcation_max_expiry_epochs(MAX_EXPIRY_EPOCHS),
+        ConfigBuilder::new().with_transaction_max_expiry_epochs(MAX_EXPIRY_EPOCHS),
     )
     .faucet_value(Value(1000))
     .build()

@@ -56,7 +56,7 @@ pub struct ConfigBuilder {
     block0_date: Block0Date,
     consensus_version: ConsensusVersion,
     pool_capping_ratio: Ratio,
-    transcation_max_expiry_epochs: Option<u8>,
+    transaction_max_expiry_epochs: Option<u8>,
 }
 
 impl Default for ConfigBuilder {
@@ -98,7 +98,7 @@ impl ConfigBuilder {
             kes_update_speed: 3600 * 12,
             block0_date: Block0Date(0),
             consensus_version: ConsensusVersion::Bft,
-            transcation_max_expiry_epochs: None,
+            transaction_max_expiry_epochs: None,
         }
     }
 
@@ -207,8 +207,8 @@ impl ConfigBuilder {
         self
     }
 
-    pub fn with_transcation_max_expiry_epochs(mut self, n_epochs: u8) -> Self {
-        self.transcation_max_expiry_epochs = Some(n_epochs);
+    pub fn with_transaction_max_expiry_epochs(mut self, n_epochs: u8) -> Self {
+        self.transaction_max_expiry_epochs = Some(n_epochs);
         self
     }
 
@@ -265,9 +265,9 @@ impl ConfigBuilder {
             ));
         }
 
-        if let Some(transcation_max_expiry_epochs) = self.transcation_max_expiry_epochs {
+        if let Some(transaction_max_expiry_epochs) = self.transaction_max_expiry_epochs {
             ie.push(ConfigParam::TransactionMaxExpiryEpochs(
-                transcation_max_expiry_epochs,
+                transaction_max_expiry_epochs,
             ));
         }
 

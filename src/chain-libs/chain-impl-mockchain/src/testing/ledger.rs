@@ -59,6 +59,12 @@ pub struct ConfigBuilder {
     transcation_max_expiry_epochs: Option<u8>,
 }
 
+impl Default for ConfigBuilder {
+    fn default() -> Self {
+        ConfigBuilder::new()
+    }
+}
+
 impl ConfigBuilder {
     pub fn new() -> Self {
         ConfigBuilder {

@@ -7,17 +7,21 @@ use crate::ideascale::models::de::{clean_str, Challenge, Fund, Funnel, Proposal,
 use std::collections::HashMap;
 
 pub use crate::ideascale::models::custom_fields::CustomFieldTags;
+use regex::Regex;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    FetchError(#[from] fetch::Error),
+    Fetch(#[from] fetch::Error),
 
     #[error(transparent)]
-    JoinError(#[from] tokio::task::JoinError),
+    Join(#[from] tokio::task::JoinError),
 
     #[error(transparent)]
-    SerdeError(#[from] serde_json::Error),
+    Serde(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    Regex(#[from] regex::Error),
 }
 
 #[derive(Debug)]
@@ -32,6 +36,7 @@ pub struct IdeaScaleData {
 pub async fn fetch_all(
     fund: usize,
     stage_label: &str,
+    stages_filters: &[&str],
     api_token: String,
 ) -> Result<IdeaScaleData, Error> {
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
@@ -54,6 +59,7 @@ pub async fn fetch_all(
         .map(|c| tokio::spawn(fetch::get_proposals_data(c.id, api_token.clone())))
         .collect();
 
+    let matches = regex::Regex::new(&stages_filters.join("|"))?;
     let proposals = futures::future::try_join_all(proposals_tasks)
         .await?
         .into_iter()
@@ -62,7 +68,7 @@ pub async fn fetch_all(
         .map(Result::unwrap)
         .flatten()
         // filter out non approved or staged proposals
-        .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type));
+        .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type, &matches));
 
     let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
     stages.retain(|stage| filter_stages(stage, stage_label, &funnels));
@@ -210,8 +216,8 @@ pub fn build_proposals(
         .collect()
 }
 
-fn filter_proposal_by_stage_type(stage: &str) -> bool {
-    matches!(stage, "Governance phase" | "Assess QA")
+fn filter_proposal_by_stage_type(stage: &str, re: &Regex) -> bool {
+    re.is_match(stage)
 }
 
 fn filter_stages(stage: &Stage, stage_label: &str, funnel_ids: &HashMap<u32, Funnel>) -> bool {

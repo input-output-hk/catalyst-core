@@ -61,6 +61,10 @@ pub struct Import {
     /// Path to json or yaml like file containing tag configuration for ideascale custom fields
     #[structopt(long)]
     tags: Option<PathBuf>,
+
+    /// Ideascale stages list,
+    #[structopt(long, default_value = "'Governance phase' 'Assess QA'")]
+    stages_filters: Vec<String>,
 }
 
 impl Ideascale {
@@ -82,6 +86,7 @@ impl Import {
             chain_vote_type,
             output_dir: save_folder,
             tags,
+            stages_filters,
         } = self;
 
         let tags: CustomFieldTags = if let Some(tags_path) = tags {
@@ -98,6 +103,7 @@ impl Import {
         let idescale_data = runtime.block_on(fetch_all(
             *fund,
             &stage_label.to_lowercase(),
+            &stages_filters.iter().map(AsRef::as_ref).collect::<Vec<_>>(),
             api_token.clone(),
         ))?;
 

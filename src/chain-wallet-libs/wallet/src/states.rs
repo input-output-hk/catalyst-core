@@ -1,6 +1,5 @@
-use std::{borrow::Borrow, hash::Hash};
-
 use hashlink::LinkedHashMap;
+use std::{borrow::Borrow, hash::Hash};
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 pub enum Status {
@@ -148,14 +147,14 @@ mod tests {
     }
 
     impl StateRef<()> {
-        fn new_confirmed(key: u8) -> Self {
+        fn new_confirmed() -> Self {
             Self {
                 state: (),
                 status: Status::Confirmed,
             }
         }
 
-        fn new_pending(key: u8) -> Self {
+        fn new_pending() -> Self {
             Self {
                 state: (),
                 status: Status::Pending,
@@ -166,33 +165,33 @@ mod tests {
     #[test]
     fn confirmed_state() {
         let mut multiverse = States::new(0u8, ());
-        assert_eq!(&StateRef::new_confirmed(0), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.confirmed_state());
 
-        assert_eq!(&StateRef::new_confirmed(0), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.last_state());
 
         multiverse.push(1, ());
-        assert_eq!(&StateRef::new_confirmed(0), multiverse.confirmed_state());
-        assert_eq!(&StateRef::new_pending(1), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_pending(), multiverse.last_state());
 
         multiverse.push(2, ());
         multiverse.push(3, ());
         multiverse.push(4, ());
-        assert_eq!(&StateRef::new_confirmed(0), multiverse.confirmed_state());
-        assert_eq!(&StateRef::new_pending(4), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_pending(), multiverse.last_state());
 
         multiverse.confirm(&1);
-        assert_eq!(&StateRef::new_confirmed(1), multiverse.confirmed_state());
-        assert_eq!(&StateRef::new_pending(4), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_pending(), multiverse.last_state());
 
         multiverse.confirm(&4);
-        assert_eq!(&StateRef::new_confirmed(1), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.confirmed_state());
 
-        assert_eq!(&StateRef::new_confirmed(4), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.last_state());
 
         multiverse.confirm(&3);
         multiverse.confirm(&2);
-        assert_eq!(&StateRef::new_confirmed(4), multiverse.confirmed_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.confirmed_state());
 
-        assert_eq!(&StateRef::new_confirmed(4), multiverse.last_state());
+        assert_eq!(&StateRef::new_confirmed(), multiverse.last_state());
     }
 }

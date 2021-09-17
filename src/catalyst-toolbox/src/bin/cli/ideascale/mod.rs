@@ -27,6 +27,10 @@ pub enum Ideascale {
     Import(Import),
 }
 
+// We need this type because structopt uses Vec<String> as a special type, so it is not compatible
+// with custom parsers feature.
+type Filters = Vec<String>;
+
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab")]
 pub struct Import {
@@ -63,8 +67,8 @@ pub struct Import {
     tags: Option<PathBuf>,
 
     /// Ideascale stages list,
-    #[structopt(long, default_value = "'Governance phase' 'Assess QA'")]
-    stages_filters: Vec<String>,
+    #[structopt(long, parse(from_str=parse_from_csv), default_value = "Governance phase;Assess QA")]
+    stages_filters: Filters,
 }
 
 impl Ideascale {
@@ -88,6 +92,8 @@ impl Import {
             tags,
             stages_filters,
         } = self;
+
+        println!("{:?}", stages_filters);
 
         let tags: CustomFieldTags = if let Some(tags_path) = tags {
             read_tags_from_file(tags_path)?
@@ -153,4 +159,8 @@ fn dump_content_to_file(content: impl Serialize, file_path: &Path) -> Result<(),
 fn read_tags_from_file(file_path: &Path) -> Result<CustomFieldTags, Error> {
     let reader = io_utils::open_file_read(&Some(file_path))?;
     serde_json::from_reader(reader).map_err(Error::Serde)
+}
+
+fn parse_from_csv(s: &str) -> Filters {
+    s.split(";").map(|x| x.to_string()).collect()
 }

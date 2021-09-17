@@ -162,5 +162,5 @@ fn read_tags_from_file(file_path: &Path) -> Result<CustomFieldTags, Error> {
 }
 
 fn parse_from_csv(s: &str) -> Filters {
-    s.split(";").map(|x| x.to_string()).collect()
+    s.split(';').map(|x| x.to_string()).collect()
 }

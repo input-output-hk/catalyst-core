@@ -67,7 +67,7 @@ impl LeadershipData {
                     }
                 }
             }
-            _ => Verification::Failure(Error::new(ErrorKind::InvalidLeaderSignature)),
+            _ => Verification::Failure(Error::new(ErrorKind::IncompatibleLeadershipMode)),
         }
     }
 

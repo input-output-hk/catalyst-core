@@ -1,5 +1,5 @@
-use crate::Result;
 use crate::error::ErrorKind;
+use crate::Result;
 use fake::faker::name::en::Name;
 use fake::Fake;
 use rand::rngs::OsRng;
@@ -23,13 +23,9 @@ pub struct RandomReviewsDataCommandArgs {
         default_value = "../resources/external/proposals.json"
     )]
     pub proposals: PathBuf,
-    
-    #[structopt(
-        long = "assessors-per-proposal-count",
-        default_value = "3"
-    )]
-    pub assessors_per_proposal_count: u32,
 
+    #[structopt(long = "assessors-per-proposal-count", default_value = "3")]
+    pub assessors_per_proposal_count: u32,
 }
 
 impl RandomReviewsDataCommandArgs {
@@ -49,7 +45,7 @@ impl RandomReviewsDataCommandArgs {
 struct ReviewGenerator {
     generator: OsRng,
     current_id: u32,
-    assessors_per_proposal_count: u32
+    assessors_per_proposal_count: u32,
 }
 
 impl ReviewGenerator {
@@ -57,7 +53,7 @@ impl ReviewGenerator {
         ReviewGenerator {
             generator: OsRng,
             current_id: 1,
-            assessors_per_proposal_count
+            assessors_per_proposal_count,
         }
     }
 

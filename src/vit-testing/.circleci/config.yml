@@ -149,11 +149,8 @@ commands:
       - run:
           name: checkout vit-station-service
           command: >
-            git clone
-            https://github.com/input-output-hk/vit-servicing-station.git
-
+            git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-
             git checkout catalyst-fund6
       - run:
           name: install vit-station-service
@@ -164,6 +161,10 @@ commands:
           name: install iapyx utils
           command: |
             cargo install --path iapyx --locked
+      - run:
+          name: install iapyx utils
+          command: |
+            cargo install --path valgrind --locked
       - run:
           name: Run tests
           no_output_timeout: 60m

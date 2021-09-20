@@ -58,7 +58,7 @@ impl LeadershipData {
                     // verify block signature
                     match signature
                         .0
-                        .verify_slice(leader.as_public_key(), block_header.as_slice())
+                        .verify_slice(leader.as_public_key(), block_header.as_auth_slice())
                     {
                         chain_crypto::Verification::Failed => {
                             Verification::Failure(Error::new(ErrorKind::InvalidLeaderSignature))

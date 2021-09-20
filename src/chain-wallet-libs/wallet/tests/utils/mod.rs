@@ -53,6 +53,7 @@ impl State {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn get_account_state(
         &self,
         account_id: wallet::AccountId,

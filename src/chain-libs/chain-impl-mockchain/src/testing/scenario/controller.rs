@@ -352,7 +352,7 @@ mod tests {
     pub fn build_scenario_example() {
         let (mut ledger, controller) = prepare_scenario()
             .with_config(
-                ConfigBuilder::new(0)
+                ConfigBuilder::new()
                     .with_discrimination(Discrimination::Test)
                     .with_fee(LinearFee::new(1, 1, 1)),
             )

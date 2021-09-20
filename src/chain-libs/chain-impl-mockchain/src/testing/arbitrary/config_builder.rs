@@ -12,7 +12,7 @@ use chain_addr::Discrimination;
 
 impl Arbitrary for ConfigBuilder {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        ConfigBuilder::new(0)
+        ConfigBuilder::new()
             .with_rewards(NonZeroValue::arbitrary(g).0)
             .with_treasury(NonZeroValue::arbitrary(g).0)
             .with_treasury_params(TaxType::arbitrary(g))

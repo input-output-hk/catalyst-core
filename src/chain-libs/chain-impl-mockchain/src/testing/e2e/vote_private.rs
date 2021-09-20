@@ -32,7 +32,7 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -114,7 +114,7 @@ pub fn private_vote_plan_without_keys() {
 
     let (_ledger, _controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -145,7 +145,7 @@ pub fn vote_on_same_proposal() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )
@@ -214,7 +214,7 @@ pub fn vote_on_different_proposal() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_fee(LinearFee::new(1, 1, 1))
                 .with_rewards(Value(1000)),
         )

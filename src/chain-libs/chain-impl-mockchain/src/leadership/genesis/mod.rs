@@ -299,7 +299,7 @@ mod tests {
     pub fn test_leader_election_is_consistent_with_stake_distribution() {
         let leader_election_parameters = LeaderElectionParameters::new();
 
-        let cb = ConfigBuilder::new(0)
+        let cb = ConfigBuilder::new()
             .with_slots_per_epoch(leader_election_parameters.slots_per_epoch)
             .with_active_slots_coeff(leader_election_parameters.active_slots_coeff_as_milli());
 
@@ -380,7 +380,7 @@ mod tests {
         let slots_per_epoch = 200_000;
         let active_slots_coeff = 0.1;
         let active_slots_coeff_as_milli = Milli::from_millis((active_slots_coeff * 1000.0) as u64);
-        let cb = ConfigBuilder::new(0)
+        let cb = ConfigBuilder::new()
             .with_slots_per_epoch(slots_per_epoch)
             .with_active_slots_coeff(active_slots_coeff_as_milli);
 
@@ -470,7 +470,7 @@ mod tests {
             epoch: 1u32,
             slot_id: 0u32,
         };
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
@@ -495,7 +495,7 @@ mod tests {
     #[test]
     pub fn leadership_leader_no_stake() {
         let date = BlockDate::first();
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
@@ -518,7 +518,7 @@ mod tests {
     #[test]
     pub fn leadership_leader_zero_stake() {
         let date = BlockDate::first();
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
@@ -545,7 +545,7 @@ mod tests {
             epoch: 1,
             slot_id: 0,
         };
-        let testledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let testledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger");
         let ledger = testledger.ledger;
@@ -572,7 +572,7 @@ mod tests {
             epoch: 1,
             slot_id: 0,
         };
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
@@ -599,7 +599,7 @@ mod tests {
     #[test]
     pub fn leadership_verify_no_stake() {
         let date = BlockDate::first();
-        let testledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let testledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger");
         let ledger = testledger.ledger;
@@ -622,7 +622,7 @@ mod tests {
     #[test]
     pub fn leadership_verify_zero_stake() {
         let date = BlockDate::first();
-        let testledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let testledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger");
         let ledger = testledger.ledger;
@@ -647,7 +647,7 @@ mod tests {
     #[test]
     pub fn leadership_verify_non_existing_pool() {
         let date = BlockDate::first();
-        let testledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let testledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger");
         let ledger = testledger.ledger;
@@ -670,7 +670,7 @@ mod tests {
             epoch: 2,
             slot_id: 0,
         };
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;

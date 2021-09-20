@@ -481,7 +481,7 @@ mod tests {
 
     #[test]
     pub fn iterate() {
-        let testledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let testledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet_value(Value(42000))
             .build()
             .expect("cannot build test ledger");

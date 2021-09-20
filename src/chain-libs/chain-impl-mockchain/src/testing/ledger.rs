@@ -45,7 +45,6 @@ pub struct ConfigBuilder {
     per_certificate_fee: Option<PerCertificateFee>,
     per_vote_certificate_fee: Option<PerVoteCertificateFee>,
     leaders: Vec<BftLeaderId>,
-    seed: u64,
     committees_ids: Vec<CommitteeId>,
     rewards: Value,
     treasury: Value,
@@ -57,11 +56,17 @@ pub struct ConfigBuilder {
     block0_date: Block0Date,
     consensus_version: ConsensusVersion,
     pool_capping_ratio: Ratio,
-    transcation_max_expiry_epochs: Option<u8>,
+    transaction_max_expiry_epochs: Option<u8>,
+}
+
+impl Default for ConfigBuilder {
+    fn default() -> Self {
+        ConfigBuilder::new()
+    }
 }
 
 impl ConfigBuilder {
-    pub fn new(seed: u64) -> Self {
+    pub fn new() -> Self {
         ConfigBuilder {
             slot_duration: 20,
             slots_per_epoch: 21600,
@@ -77,7 +82,6 @@ impl ConfigBuilder {
                 denominator: NonZeroU64::new(1).unwrap(),
             },
             fees_in_treasury: false,
-            seed,
             rewards: Value(1_000_000),
             reward_params: RewardParams::Linear {
                 constant: 100,
@@ -94,7 +98,7 @@ impl ConfigBuilder {
             kes_update_speed: 3600 * 12,
             block0_date: Block0Date(0),
             consensus_version: ConsensusVersion::Bft,
-            transcation_max_expiry_epochs: None,
+            transaction_max_expiry_epochs: None,
         }
     }
 
@@ -203,8 +207,8 @@ impl ConfigBuilder {
         self
     }
 
-    pub fn with_transcation_max_expiry_epochs(mut self, n_epochs: u8) -> Self {
-        self.transcation_max_expiry_epochs = Some(n_epochs);
+    pub fn with_transaction_max_expiry_epochs(mut self, n_epochs: u8) -> Self {
+        self.transaction_max_expiry_epochs = Some(n_epochs);
         self
     }
 
@@ -261,9 +265,9 @@ impl ConfigBuilder {
             ));
         }
 
-        if let Some(transcation_max_expiry_epochs) = self.transcation_max_expiry_epochs {
+        if let Some(transaction_max_expiry_epochs) = self.transaction_max_expiry_epochs {
             ie.push(ConfigParam::TransactionMaxExpiryEpochs(
-                transcation_max_expiry_epochs,
+                transaction_max_expiry_epochs,
             ));
         }
 

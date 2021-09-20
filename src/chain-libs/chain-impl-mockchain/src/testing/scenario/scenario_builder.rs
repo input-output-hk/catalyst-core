@@ -46,7 +46,7 @@ pub struct ScenarioBuilder {
 }
 
 pub fn prepare_scenario() -> ScenarioBuilder {
-    let default_config_builder = ConfigBuilder::new(0)
+    let default_config_builder = ConfigBuilder::new()
         .with_discrimination(Discrimination::Test)
         .with_fee(LinearFee::new(1, 1, 1));
 

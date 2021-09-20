@@ -19,7 +19,7 @@ use chain_addr::Discrimination;
 
 #[test]
 pub fn transaction_fail_when_255_outputs() {
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucet_value(Value(1000))
         .build()
         .expect("cannot build test ledger");
@@ -47,7 +47,7 @@ pub fn transaction_fail_when_255_outputs() {
 
 #[test]
 pub fn transaction_fail_when_validity_out_of_range() {
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucet_value(Value(1000))
         .build()
         .expect("cannot build test ledger");
@@ -85,7 +85,7 @@ pub fn transaction_fail_when_validity_too_far() {
     const MAX_EXPIRY_EPOCHS: u8 = 5;
 
     let mut test_ledger = LedgerBuilder::from_config(
-        ConfigBuilder::new(0).with_transcation_max_expiry_epochs(MAX_EXPIRY_EPOCHS),
+        ConfigBuilder::new().with_transaction_max_expiry_epochs(MAX_EXPIRY_EPOCHS),
     )
     .faucet_value(Value(1000))
     .build()
@@ -114,7 +114,7 @@ pub fn transaction_fail_when_validity_too_far() {
 
 #[test]
 pub fn duplicated_account_transaction() {
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucet_value(Value(1000))
         .build()
         .expect("cannot build test ledger");
@@ -143,7 +143,7 @@ pub fn transaction_nonexisting_account_input() {
     let receiver = AddressDataValue::utxo(Discrimination::Test, Value(0));
     let unregistered_account = AddressDataValue::account(Discrimination::Test, Value(100));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucet_value(Value(1000))
         .build()
         .expect("cannot build test ledger");
@@ -164,7 +164,7 @@ pub fn transaction_with_incorrect_account_spending_counter() {
         AddressDataValue::account_with_spending_counter(Discrimination::Test, 1, Value(1000));
     let receiver = AddressData::account(Discrimination::Test);
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucet(&faucet)
         .build()
         .expect("cannot build test ledger");
@@ -185,7 +185,7 @@ pub fn repeated_account_transaction() {
     let mut faucet = AddressDataValue::account(Discrimination::Test, Value(200));
     let receiver = AddressDataValue::account(Discrimination::Test, Value(0));
 
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucet(&faucet)
         .build()
         .expect("cannot build test ledger");

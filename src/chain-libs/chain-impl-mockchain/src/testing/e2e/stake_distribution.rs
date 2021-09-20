@@ -17,7 +17,7 @@ use std::num::{NonZeroU32, NonZeroU64};
 pub fn stake_distribution_to_many_stake_pools() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_discrimination(Discrimination::Test)
                 .with_fee(LinearFee::new(1, 1, 1)),
         )
@@ -62,7 +62,7 @@ pub fn stake_distribution_to_many_stake_pools() {
 pub fn stake_distribution_changes_after_rewards_are_collected() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(100))
                 .with_treasury(Value(0))
                 .with_rewards_params(RewardParams::Linear {

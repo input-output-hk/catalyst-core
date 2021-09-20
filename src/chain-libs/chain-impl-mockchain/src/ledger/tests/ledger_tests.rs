@@ -31,7 +31,7 @@ pub fn ledger_accepts_correct_transaction(
     faucet: AddressDataValue,
     receiver: AddressDataValue,
 ) -> TestResult {
-    let mut ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .initial_fund(&faucet)
         .build()
         .unwrap();
@@ -59,7 +59,7 @@ pub fn ledger_accepts_correct_transaction(
 pub fn total_funds_are_const_in_ledger(
     transaction_data: ArbitraryValidTransactionData,
 ) -> TestResult {
-    let config = ConfigBuilder::new(0)
+    let config = ConfigBuilder::new()
         .with_discrimination(Discrimination::Test)
         .with_fee(transaction_data.fee);
 

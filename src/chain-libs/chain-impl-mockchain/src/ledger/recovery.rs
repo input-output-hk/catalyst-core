@@ -1458,7 +1458,7 @@ pub mod test {
 
     #[test]
     pub fn ledger_serialize_deserialize_bijection() -> Result<(), std::io::Error> {
-        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+        let test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .faucet_value(Value(42000))
             .build()
             .expect("cannot build test ledger");

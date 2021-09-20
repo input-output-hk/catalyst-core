@@ -12,7 +12,6 @@ use chain_crypto::{Ed25519, PublicKey};
 pub struct Wallet {
     alias: String,
     account: AddressDataValue,
-    related_utxos: Option<Vec<AddressDataValue>>,
 }
 
 impl Wallet {
@@ -20,7 +19,6 @@ impl Wallet {
         Wallet {
             alias: "".to_owned(),
             account,
-            related_utxos: None,
         }
     }
 
@@ -32,12 +30,11 @@ impl Wallet {
         Wallet {
             alias: alias.to_owned(),
             account: AddressDataValue::account(Discrimination::Test, initial_value),
-            related_utxos: None,
         }
     }
 
-    pub fn alias(&self) -> String {
-        self.alias.clone()
+    pub fn alias(&self) -> &str {
+        &self.alias
     }
 
     pub fn value(&self) -> Value {

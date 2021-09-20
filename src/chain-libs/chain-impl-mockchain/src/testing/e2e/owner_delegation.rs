@@ -15,7 +15,7 @@ use chain_addr::Discrimination;
 pub fn owner_delegation() {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_discrimination(Discrimination::Test)
                 .with_fee(LinearFee::new(1, 1, 1)),
         )

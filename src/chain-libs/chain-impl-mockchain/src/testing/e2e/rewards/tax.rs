@@ -95,7 +95,7 @@ fn verify_distribute_rewards(
 ) {
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(total_reward + 1))
                 .with_treasury(Value::zero())
                 .with_rewards_params(RewardParams::Linear {
@@ -141,7 +141,7 @@ pub fn fees_go_to_with_capping_about_threshold() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(total_reward + 1))
                 .with_treasury(Value::zero())
                 .with_fees_in_treasury()
@@ -190,7 +190,7 @@ pub fn fees_go_to_with_capping_below_threshold() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(total_reward + 1))
                 .with_treasury(Value::zero())
                 .with_fees_in_treasury()
@@ -238,7 +238,7 @@ pub fn fees_go_to_without_any_stake_pool() {
 
     let (mut ledger, controller) = prepare_scenario()
         .with_config(
-            ConfigBuilder::new(0)
+            ConfigBuilder::new()
                 .with_rewards(Value(total_reward + 1))
                 .with_treasury(Value::zero())
                 .with_fees_in_treasury()

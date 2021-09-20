@@ -16,7 +16,7 @@ use quickcheck_macros::quickcheck;
 pub fn ledger_adopt_settings_from_update_proposal(
     update_proposal_data: UpdateProposalData,
 ) -> TestResult {
-    let cb = ConfigBuilder::new(0).with_leaders(&update_proposal_data.leaders_ids());
+    let cb = ConfigBuilder::new().with_leaders(&update_proposal_data.leaders_ids());
 
     let testledger = LedgerBuilder::from_config(cb)
         .build()

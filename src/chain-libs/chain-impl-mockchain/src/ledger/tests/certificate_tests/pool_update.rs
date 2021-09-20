@@ -33,7 +33,7 @@ pub fn pool_update_is_not_allowed_in_block0() {
     let pool_update = make_minor_pool_update(&stake_pool.info());
     let update_certificate = create_initial_stake_pool_update(&pool_update, &[alice.clone()]);
 
-    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[registration_certificate, update_certificate])
         .build();
@@ -65,7 +65,7 @@ pub fn pool_update_wrong_last_hash() {
 
     let registration_certificate =
         create_initial_stake_pool_registration(&stake_pool, &[alice.clone()]);
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[registration_certificate])
         .build()
@@ -103,7 +103,7 @@ pub fn pool_update_not_enough_fee() {
     let registration_certificate =
         create_initial_stake_pool_registration(&stake_pool, &[alice.clone()]);
     let mut test_ledger =
-        LedgerBuilder::from_config(ConfigBuilder::new(0).with_fee(LinearFee::new(1, 2, 3)))
+        LedgerBuilder::from_config(ConfigBuilder::new().with_fee(LinearFee::new(1, 2, 3)))
             .faucets_wallets(vec![&alice])
             .certs(&[registration_certificate])
             .build()
@@ -143,7 +143,7 @@ pub fn pool_update_wrong_pool_id() {
 
     let registration_certificate =
         create_initial_stake_pool_registration(&stake_pool, &[alice.clone()]);
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[registration_certificate])
         .build()
@@ -182,7 +182,7 @@ pub fn pool_update_use_old_hash() {
 
     let registration_certificate =
         create_initial_stake_pool_registration(&stake_pool, &[alice.clone()]);
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[registration_certificate])
         .build()
@@ -259,7 +259,7 @@ pub fn pool_update_update_fee_is_not_allowed() {
 
     let registration_certificate =
         create_initial_stake_pool_registration(&stake_pool, &[alice.clone()]);
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[registration_certificate])
         .build()
@@ -297,7 +297,7 @@ pub fn pool_update_without_any_change() {
 
     let registration_certificate =
         create_initial_stake_pool_registration(&stake_pool, &[alice.clone()]);
-    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new(0))
+    let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
         .certs(&[registration_certificate])
         .build()

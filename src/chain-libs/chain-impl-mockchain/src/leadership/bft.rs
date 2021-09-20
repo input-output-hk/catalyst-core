@@ -1,4 +1,4 @@
-use crate::block::{BlockDate, Header, Proof};
+use crate::block::{BftProof, BlockDate, Header, Proof};
 use crate::{
     key::BftLeaderId,
     leadership::{Error, ErrorKind, Verification},
@@ -45,10 +45,26 @@ impl LeadershipData {
     pub(crate) fn verify(&self, block_header: &Header) -> Verification {
         match &block_header.proof() {
             Proof::Bft(bft_proof) => {
-                if bft_proof.leader_id != self.get_leader_at(block_header.block_date()) {
+                let BftProof {
+                    leader_id,
+                    signature,
+                } = bft_proof;
+
+                let leader = self.get_leader_at(block_header.block_date());
+
+                if leader_id != &leader {
                     Verification::Failure(Error::new(ErrorKind::InvalidLeader))
                 } else {
-                    Verification::Success
+                    // verify block signature
+                    match signature
+                        .0
+                        .verify_slice(leader.as_public_key(), block_header.as_slice())
+                    {
+                        chain_crypto::Verification::Failed => {
+                            Verification::Failure(Error::new(ErrorKind::InvalidLeaderProof))
+                        }
+                        chain_crypto::Verification::Success => Verification::Success,
+                    }
                 }
             }
             _ => Verification::Failure(Error::new(ErrorKind::InvalidLeaderSignature)),

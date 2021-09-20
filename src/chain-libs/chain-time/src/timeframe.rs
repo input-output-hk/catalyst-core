@@ -6,6 +6,10 @@ use std::time::{Duration, SystemTime};
 /// The slots are not comparable to others slots made on a
 /// different time frame
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct Slot(pub(crate) u64);
 
 impl From<u64> for Slot {

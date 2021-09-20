@@ -252,11 +252,7 @@ mod tests {
         let key = HdKey::new(&pk);
         match key.decrypt(&bytes).unwrap_err() {
             Error::NotEnoughEncryptedData => {}
-            err => assert!(
-                false,
-                "expecting Error::NotEnoughEncryptedData but got {:#?}",
-                err
-            ),
+            err => unreachable!("expecting Error::NotEnoughEncryptedData but got {:#?}", err),
         }
     }
     #[test]
@@ -271,8 +267,7 @@ mod tests {
             Error::PayloadIsTooLarge(len, _too_large) => {
                 assert_eq!(len, TOO_LARGE_PAYLOAD - TAG_LEN)
             }
-            err => assert!(
-                false,
+            err => unreachable!(
                 "expecting Error::PayloadIsTooLarge({}) but got {:#?}",
                 TOO_LARGE_PAYLOAD - TAG_LEN,
                 err

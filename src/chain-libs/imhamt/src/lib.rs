@@ -1,9 +1,4 @@
 #![allow(dead_code)]
-#[cfg(test)]
-extern crate quickcheck;
-#[cfg(test)]
-#[macro_use(quickcheck)]
-extern crate quickcheck_macros;
 
 mod bitmap;
 mod hamt;
@@ -19,50 +14,24 @@ pub use hamt::*;
 mod tests {
     use super::*;
 
-    use quickcheck::{Arbitrary, Gen};
-
-    use std::cmp;
     use std::collections::hash_map::DefaultHasher;
     use std::collections::BTreeMap;
     use std::convert::Infallible;
     use std::hash::Hash;
 
-    #[derive(Debug, Clone)]
-    enum PlanOperation<K, V> {
-        Insert(K, V),
+    use proptest::collection::size_range;
+    use proptest::prelude::*;
+    use test_strategy::proptest;
+
+    #[derive(Debug, Clone, test_strategy::Arbitrary)]
+    enum PlanOperation {
+        Insert(Vec<u8>, u32),
         DeleteOneMatching(usize),
         DeleteOne(usize),
         Update(usize),
         UpdateRemoval(usize),
-        Replace(usize, V),
+        Replace(usize, u32),
         ReplaceWith(usize),
-    }
-
-    #[derive(Debug, Clone)]
-    struct Plan<K, V>(Vec<PlanOperation<K, V>>);
-
-    const SIZE_LIMIT: usize = 5120;
-
-    impl<K: Arbitrary + Clone + Send, V: Arbitrary + Clone + Send> Arbitrary for Plan<K, V> {
-        fn arbitrary<G: Gen>(g: &mut G) -> Plan<K, V> {
-            let nb_ops = 1000 + cmp::min(SIZE_LIMIT, Arbitrary::arbitrary(g));
-            let mut v = Vec::new();
-            for _ in 0..nb_ops {
-                let op_nb: u32 = Arbitrary::arbitrary(g);
-                let op = match op_nb % 7u32 {
-                    0 => PlanOperation::Insert(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g)),
-                    1 => PlanOperation::DeleteOne(Arbitrary::arbitrary(g)),
-                    2 => PlanOperation::DeleteOneMatching(Arbitrary::arbitrary(g)),
-                    3 => PlanOperation::Update(Arbitrary::arbitrary(g)),
-                    4 => PlanOperation::UpdateRemoval(Arbitrary::arbitrary(g)),
-                    5 => PlanOperation::Replace(Arbitrary::arbitrary(g), Arbitrary::arbitrary(g)),
-                    6 => PlanOperation::ReplaceWith(Arbitrary::arbitrary(g)),
-                    _ => panic!("test internal error: quickcheck tag code is invalid"),
-                };
-                v.push(op)
-            }
-            Plan(v)
-        }
     }
 
     #[test]
@@ -281,10 +250,10 @@ mod tests {
         true
     }
 
-    #[quickcheck]
-    fn insert_equivalent(xs: Vec<(String, u32)>) -> bool {
+    #[proptest]
+    fn insert_equivalent(#[any(size_range(..2000).lift())] xs: Vec<(Vec<u8>, u32)>) {
         let mut reference = BTreeMap::new();
-        let mut h: Hamt<DefaultHasher, String, u32> = Hamt::new();
+        let mut h: Hamt<DefaultHasher, Vec<u8>, u32> = Hamt::new();
         for (k, v) in xs.iter() {
             if reference.get(k).is_some() {
                 continue;
@@ -293,40 +262,7 @@ mod tests {
             h = h.insert(k.clone(), *v).unwrap();
         }
 
-        property_btreemap_eq(&reference, &h)
-    }
-
-    #[derive(Clone, Debug, PartialEq, Eq)]
-    pub struct LargeVec<A>(Vec<A>);
-
-    const LARGE_MIN: usize = 1000;
-    const LARGE_DIFF: usize = 1000;
-
-    impl<A: Arbitrary + Clone + PartialEq + Send + 'static> Arbitrary for LargeVec<A> {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let nb = LARGE_MIN + (usize::arbitrary(g) % LARGE_DIFF);
-            let mut v = Vec::with_capacity(nb);
-            for _ in 0..nb {
-                v.push(Arbitrary::arbitrary(g))
-            }
-            LargeVec(v)
-        }
-    }
-
-    #[quickcheck]
-    fn large_insert_equivalent(xs: LargeVec<(String, u32)>) -> bool {
-        let xs = xs.0;
-        let mut reference = BTreeMap::new();
-        let mut h: Hamt<DefaultHasher, String, u32> = Hamt::new();
-        for (k, v) in xs.iter() {
-            if reference.get(k).is_some() {
-                continue;
-            }
-            reference.insert(k.clone(), *v);
-            h = h.insert(k.clone(), *v).unwrap();
-        }
-
-        property_btreemap_eq(&reference, &h)
+        prop_assert!(property_btreemap_eq(&reference, &h));
     }
 
     fn get_key_nth<K: Clone, V>(b: &BTreeMap<K, V>, n: usize) -> Option<K> {
@@ -338,21 +274,13 @@ mod tests {
         Some(keys.nth(n % keys_nb).unwrap().clone())
     }
 
-    fn arbitrary_hamt_and_btree<K, V, F, G>(
-        xs: Plan<K, V>,
-        update_f: F,
-        replace_with_f: G,
-    ) -> (Hamt<DefaultHasher, K, V>, BTreeMap<K, V>)
-    where
-        K: Hash + Clone + Eq + Ord + Sync,
-        V: Clone + PartialEq + Sync,
-        F: Fn(&V) -> Result<Option<V>, Infallible> + Copy,
-        G: Fn(&V) -> V + Copy,
-    {
+    fn plan_to_hamt_and_btree(
+        xs: Vec<PlanOperation>,
+    ) -> (Hamt<DefaultHasher, Vec<u8>, u32>, BTreeMap<Vec<u8>, u32>) {
         let mut reference = BTreeMap::new();
-        let mut h: Hamt<DefaultHasher, K, V> = Hamt::new();
+        let mut h: Hamt<DefaultHasher, Vec<u8>, u32> = Hamt::new();
         //println!("plan {} operations", xs.0.len());
-        for op in xs.0.iter() {
+        for op in xs.iter() {
             match op {
                 PlanOperation::Insert(k, v) => {
                     if reference.get(k).is_some() {
@@ -389,23 +317,23 @@ mod tests {
                     None => continue,
                     Some(k) => {
                         let v = reference.get_mut(&k).unwrap();
-                        *v = replace_with_f(v);
+                        *v = v.wrapping_mul(2);
 
-                        h = h.replace_with(&k, replace_with_f).unwrap();
+                        h = h.replace_with(&k, |v| v.wrapping_mul(2)).unwrap();
                     }
                 },
                 PlanOperation::Update(r) => match get_key_nth(&reference, *r) {
                     None => continue,
                     Some(k) => {
                         let v = reference.get_mut(&k).unwrap();
-                        match update_f(v).unwrap() {
+                        match next_u32(v).unwrap() {
                             None => {
                                 reference.remove(&k);
                             }
                             Some(newv) => *v = newv,
                         }
 
-                        h = h.update(&k, update_f).unwrap();
+                        h = h.update(&k, next_u32).unwrap();
                     }
                 },
                 PlanOperation::UpdateRemoval(r) => match get_key_nth(&reference, *r) {
@@ -420,17 +348,34 @@ mod tests {
         (h, reference)
     }
 
-    #[quickcheck]
-    fn plan_equivalent(xs: Plan<String, u32>) -> bool {
-        let (h, reference) = arbitrary_hamt_and_btree(xs, next_u32, |v| v.wrapping_mul(2));
-        property_btreemap_eq(&reference, &h)
+    fn arbitrary_hamt_and_btree(
+    ) -> impl Strategy<Value = (Hamt<DefaultHasher, Vec<u8>, u32>, BTreeMap<Vec<u8>, u32>)> {
+        any_with::<Vec<PlanOperation>>(size_range(0..4096).lift()).prop_map(plan_to_hamt_and_btree)
     }
 
-    #[quickcheck]
-    fn iter_equivalent(xs: Plan<String, u32>) -> bool {
+    // TODO use pattern matching in args after supporting it in test-strategy
+
+    #[proptest]
+    fn plan_equivalent(
+        #[strategy(arbitrary_hamt_and_btree())] data: (
+            Hamt<DefaultHasher, Vec<u8>, u32>,
+            BTreeMap<Vec<u8>, u32>,
+        ),
+    ) {
+        let (h, reference) = data;
+        prop_assert!(property_btreemap_eq(&reference, &h));
+    }
+
+    #[proptest]
+    fn iter_equivalent(
+        #[strategy(arbitrary_hamt_and_btree())] data: (
+            Hamt<DefaultHasher, Vec<u8>, u32>,
+            BTreeMap<Vec<u8>, u32>,
+        ),
+    ) {
         use std::iter::FromIterator;
-        let (h, reference) = arbitrary_hamt_and_btree(xs, next_u32, |v| v.wrapping_mul(2));
+        let (h, reference) = data;
         let after_iter = BTreeMap::from_iter(h.iter().map(|(k, v)| (k.clone(), *v)));
-        reference == after_iter
+        prop_assert_eq!(reference, after_iter);
     }
 }

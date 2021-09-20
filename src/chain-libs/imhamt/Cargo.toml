@@ -9,9 +9,9 @@ license = "MIT OR Apache-2.0"
 thiserror = "1.0"
 
 [dev-dependencies]
-quickcheck = "0.9"
-quickcheck_macros = "0.9"
 criterion = "0.3.0"
+proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+test-strategy = "0.1"
 
 [target.'cfg(unix)'.dev-dependencies]
 jemalloc-ctl = "0.3"

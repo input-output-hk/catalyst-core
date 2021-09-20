@@ -12,7 +12,7 @@ use std::marker::PhantomData;
 use std::mem::swap;
 use std::slice;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Hamt<H: Hasher + Default, K: PartialEq + Eq + Hash, V> {
     root: Node<K, V>,
     hasher: PhantomData<H>,

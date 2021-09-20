@@ -181,14 +181,16 @@ fn unpack_spending_strategy<R: std::io::BufRead>(
         counters.push(counter);
     }
     let got_length = counters.len();
-    SpendingCounterIncreasing::new_from_counters(counters).ok_or_else(|| std::io::Error::new(
-        std::io::ErrorKind::InvalidData,
-        format!(
-            "wrong numbers of lanes, expecting {} but got {}",
-            SpendingCounterIncreasing::LANES,
-            got_length,
-        ),
-    ))
+    SpendingCounterIncreasing::new_from_counters(counters).ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!(
+                "wrong numbers of lanes, expecting {} but got {}",
+                SpendingCounterIncreasing::LANES,
+                got_length,
+            ),
+        )
+    })
 }
 
 fn pack_account_state<W: std::io::Write>(

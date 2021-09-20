@@ -4,6 +4,10 @@ use ed25519_dalek as ed25519;
 pub struct Hash([u8; 32]);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct Seed([u8; 32]);
 
 impl AsRef<[u8]> for Seed {
@@ -36,7 +40,19 @@ impl Seed {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Depth(pub usize);
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
+pub struct Depth(
+    // a bigger range here would result into unreasobable testing times and
+    // possible segfaults due to excessive allocations
+    #[cfg_attr(
+        any(test, feature = "property-test-api"),
+        strategy(..10usize)
+    )]
+    pub usize,
+);
 
 impl Depth {
     pub fn total(self) -> usize {

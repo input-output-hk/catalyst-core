@@ -12,7 +12,7 @@ use rand_core::{CryptoRng, Error as RngError, RngCore, SeedableRng};
 /// deterministic, and thus can be replay
 ///
 /// For obvious reasons, do *not* use anywhere except for testing
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, test_strategy::Arbitrary)]
 pub struct TestCryptoGen(pub u64);
 
 /// A faster non-cryptographic RNG to be used in tests. NOTE: this RNG does

@@ -75,24 +75,40 @@ mod test {
     use crate::key::KeyPair;
     use crate::sign::test::{keypair_signing_ko, keypair_signing_ok};
 
-    #[quickcheck]
-    fn sign_ok(input: (KeyPair<Ed25519Extended>, Vec<u8>)) -> bool {
-        keypair_signing_ok(input)
+    use proptest::prelude::*;
+    use test_strategy::proptest;
+
+    #[proptest]
+    fn sign_ok(input: (KeyPair<Ed25519Extended>, Vec<u8>)) {
+        prop_assert!(keypair_signing_ok(input))
     }
 
-    #[quickcheck]
-    fn sign_ko(input: (KeyPair<Ed25519Extended>, KeyPair<Ed25519Extended>, Vec<u8>)) -> bool {
-        keypair_signing_ko(input)
+    #[proptest]
+    fn sign_ko(input: (KeyPair<Ed25519Extended>, KeyPair<Ed25519Extended>, Vec<u8>)) {
+        prop_assert!(keypair_signing_ko(input))
     }
 
-    #[quickcheck]
-    /// `secret_from_binary` should fail if the provided byte array does not match the public key size
-    fn secret_from_binary_size_check(n: usize) {
+    #[test]
+    fn secret_from_binary_correct_size() {
+        Ed25519Extended::secret_from_binary(&vec![0; EXTENDED_KEY_SIZE]).unwrap();
+    }
+
+    #[test]
+    fn secret_from_binary_empty_slice() {
+        assert!(matches!(
+            Ed25519Extended::secret_from_binary(&[]),
+            Err(SecretKeyError::SizeInvalid)
+        ))
+    }
+
+    // `secret_from_binary` should fail if the provided byte array does not match the public key size
+    #[proptest]
+    fn secret_from_binary_size_check(#[strategy(..EXTENDED_KEY_SIZE * 10)] n: usize) {
         let secret_key = Ed25519Extended::secret_from_binary(&vec![0; n]);
 
-        assert_eq!(
+        prop_assert_eq!(
             n != EXTENDED_KEY_SIZE,
-            matches!(secret_key, Err(SecretKeyError::SizeInvalid { .. }))
+            matches!(secret_key, Err(SecretKeyError::SizeInvalid))
         );
     }
 }

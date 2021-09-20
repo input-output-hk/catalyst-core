@@ -5,5 +5,5 @@ authors = ["Yevhenii Babichenko <eugene.babichenko@iohk.io>"]
 edition = "2018"
 
 [dev-dependencies]
-proptest = "1.0.0"
+proptest = { git = "https://github.com/input-output-hk/proptest.git" }
 test-strategy = "0.1"

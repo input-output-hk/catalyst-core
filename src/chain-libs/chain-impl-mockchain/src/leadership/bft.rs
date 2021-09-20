@@ -61,7 +61,7 @@ impl LeadershipData {
                         .verify_slice(leader.as_public_key(), block_header.as_slice())
                     {
                         chain_crypto::Verification::Failed => {
-                            Verification::Failure(Error::new(ErrorKind::InvalidLeaderProof))
+                            Verification::Failure(Error::new(ErrorKind::InvalidLeaderSignature))
                         }
                         chain_crypto::Verification::Success => Verification::Success,
                     }

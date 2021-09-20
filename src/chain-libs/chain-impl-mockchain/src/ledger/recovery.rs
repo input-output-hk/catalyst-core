@@ -181,7 +181,7 @@ fn unpack_spending_strategy<R: std::io::BufRead>(
         counters.push(counter);
     }
     let got_length = counters.len();
-    SpendingCounterIncreasing::new_from_counters(counters).ok_or(std::io::Error::new(
+    SpendingCounterIncreasing::new_from_counters(counters).ok_or_else(|| std::io::Error::new(
         std::io::ErrorKind::InvalidData,
         format!(
             "wrong numbers of lanes, expecting {} but got {}",

@@ -24,12 +24,12 @@ impl SpendingCounterIncreasing {
 
     pub fn new_from_counters(set: Vec<SpendingCounter>) -> Option<Self> {
         if set.len() == Self::LANES {
-            for i in 0..set.len() {
-                if set[i].lane() != i {
+            for (i, i_set_value) in set.iter().enumerate() {
+                if i_set_value.lane() != i {
                     return None;
                 }
             }
-            Some(SpendingCounterIncreasing { nexts: set.into() })
+            Some(SpendingCounterIncreasing { nexts: set })
         } else {
             None
         }

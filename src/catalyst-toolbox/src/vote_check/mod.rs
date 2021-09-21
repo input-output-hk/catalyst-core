@@ -74,7 +74,7 @@ impl CheckNode {
             temp_dir.child(JORMUNGANDR_CONFIG_FILE).path(),
             String::new(),
             genesis_block_hash,
-            std::iter::empty::<String>(), // passive node with no secrets
+            PathBuf::new(), // passive node with no secrets
             Block0ConfigurationBuilder::new().build(),
             false,
             temp_dir.child(JORMUNGANDR_LOG_FILE).path(),

@@ -36,6 +36,7 @@ where
         &self,
         request: tonic::Request<proto::watch::SyncMultiverseRequest>,
     ) -> Result<tonic::Response<Self::SyncMultiverseStream>, tonic::Status> {
+        let proto::watch::SyncMultiverseRequest { from } = request.into_inner();
         todo!()
     }
 }

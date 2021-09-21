@@ -1,7 +1,7 @@
 use bech32::ToBase32;
+use catalyst_toolbox::kedqr::{KeyQrCode, KeyQrCodeError};
 use chain_crypto::AsymmetricKey;
 use chain_crypto::Ed25519Extended;
-use jormungandr_testing_utils::qr_code::{KeyQrCode, KeyQrCodeError};
 use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;

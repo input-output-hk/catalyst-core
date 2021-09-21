@@ -1,16 +1,12 @@
-use catalyst_toolbox::recovery::tally::recover_ledger_from_logs;
-use chain_core::property::{Deserialize, Fragment};
+use catalyst_toolbox::recovery::{Replay, ReplayError};
+use chain_core::property::Deserialize;
 use chain_impl_mockchain::block::Block;
 use jcli_lib::utils::{
     output_file::{Error as OutputFileError, OutputFile},
     output_format::{Error as OutputFormatError, OutputFormat},
 };
-use jormungandr_lib::interfaces::{
-    load_persistent_fragments_logs_from_folder_path, VotePlanStatus,
-};
 
-use log::warn;
-use std::io::{BufReader, Write};
+use std::io::BufReader;
 use std::path::PathBuf;
 
 use reqwest::Url;
@@ -20,13 +16,16 @@ use structopt::StructOpt;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
+    Replay(#[from] ReplayError),
+
+    #[error(transparent)]
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
-    Serialization(#[from] serde_json::Error),
+    Request(#[from] reqwest::Error),
 
     #[error(transparent)]
-    Recovery(#[from] catalyst_toolbox::recovery::tally::Error),
+    Serialization(#[from] serde_json::Error),
 
     #[error(transparent)]
     OutputFile(#[from] OutputFileError),
@@ -34,14 +33,8 @@ pub enum Error {
     #[error(transparent)]
     OutputFormat(#[from] OutputFormatError),
 
-    #[error(transparent)]
-    Request(#[from] reqwest::Error),
-
     #[error("Block0 should be provided either from a path (block0-path) or an url (block0-url)")]
     Block0Unavailable,
-
-    #[error("Could not load persistent logs from path")]
-    PersistenLogsLoading(#[source] std::io::Error),
 
     #[error("Could not load block0")]
     Block0Loading(#[source] std::io::Error),
@@ -50,7 +43,7 @@ pub enum Error {
 /// Recover the tally from fragment log files and the initial preloaded block0 binary file.
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab")]
-pub struct Replay {
+pub struct ReplayCli {
     /// Path to the block0 binary file
     #[structopt(long, conflicts_with = "block0-url")]
     block0_path: Option<PathBuf>,
@@ -84,9 +77,9 @@ fn load_block0_from_url(url: Url) -> Result<Block, Error> {
     Block::deserialize(BufReader::new(&block0_body[..])).map_err(Error::Block0Loading)
 }
 
-impl Replay {
+impl ReplayCli {
     pub fn exec(self) -> Result<(), Error> {
-        let Replay {
+        let Self {
             block0_path,
             block0_url,
             logs_path,
@@ -104,22 +97,7 @@ impl Replay {
             return Err(Error::Block0Unavailable);
         };
 
-        let fragments = load_persistent_fragments_logs_from_folder_path(&logs_path)
-            .map_err(Error::PersistenLogsLoading)?;
-
-        let (ledger, failed) = recover_ledger_from_logs(&block0, fragments)?;
-        if !failed.is_empty() {
-            warn!("{} fragments couldn't be properly processed", failed.len());
-            for failed_fragment in failed {
-                warn!("{}", failed_fragment.id());
-            }
-        }
-        let voteplans = ledger.active_vote_plans();
-        let voteplan_status: Vec<VotePlanStatus> =
-            voteplans.into_iter().map(VotePlanStatus::from).collect();
-        let mut out_writer = output.open()?;
-        let content = output_format.format_json(serde_json::to_value(&voteplan_status)?)?;
-        out_writer.write_all(content.as_bytes())?;
-        Ok(())
+        let replay = Replay::new(block0, logs_path, output, output_format);
+        replay.exec().map_err(Into::into)
     }
 }

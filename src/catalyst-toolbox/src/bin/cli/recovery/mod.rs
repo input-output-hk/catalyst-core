@@ -6,7 +6,7 @@ use structopt::StructOpt;
 #[derive(StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub enum Recover {
-    Tally(tally::Replay),
+    Tally(tally::ReplayCli),
     VotesPrintout(votes::VotesPrintout),
 }
 

@@ -238,7 +238,11 @@ An example would look like:
   "proposal_brief": "challenge_brief",
   "proposal_importance": "importance",
   "proposal_goal": "describe_your_solution_to_the_problem",
-  "proposal_metrics": "key_metrics_to_measure"
+  "proposal_metrics": "key_metrics_to_measure",
+  "proposal_public_key": "ada_payment_address",
+  "proposal_funds": "requested_funds",
+  "proposal_relevant_experience": "relevant_experience",
+  "proposal_why": "importance"
 }
 ```
 

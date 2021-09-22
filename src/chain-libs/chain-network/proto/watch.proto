@@ -22,9 +22,10 @@ message SyncMultiverseRequest {
   // as well as any blocks that are ancestors of other blocks identified in
   // the list. The server responds with a stream sending any
   // valid blocks on the (possibly forked) chain that are descendants of
-  // the remaining blocks in the list. The stream should uphold the
-  // parent-to-child order of the blocks, i.e. no block gets sent
-  // before its parent.
+  // the remaining blocks in the list, unless the list is empty, in which case
+  // the server sends all blocks starting from genesis.
+  // The stream should uphold the parent-to-child order of the blocks,
+  // i.e. no block gets sent before its parent.
   repeated bytes from = 1;
 }
 

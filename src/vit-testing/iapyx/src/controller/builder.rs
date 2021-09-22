@@ -3,7 +3,7 @@ use crate::Controller;
 use crate::Wallet;
 use bech32::FromBase32;
 use bip39::Type;
-use jormungandr_testing_utils::qr_code::KeyQrCode;
+use catalyst_toolbox::kedqr::KeyQrCode;
 use std::convert::TryInto;
 use std::path::Path;
 use thiserror::Error;

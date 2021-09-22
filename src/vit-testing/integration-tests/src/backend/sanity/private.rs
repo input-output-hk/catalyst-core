@@ -6,6 +6,7 @@ use crate::common::{
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
+use jormungandr_testing_utils::testing::FragmentSender;
 use jormungandr_testing_utils::testing::{node::time, FragmentSenderSetup};
 use std::path::Path;
 use std::str::FromStr;
@@ -102,9 +103,18 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
         slot_id: 5,
     };
     time::wait_for_date(target_date.into(), leader_1.rest());
+    let settings = wallet_node.rest().settings().unwrap();
 
-    let fragment_sender =
-        controller.fragment_sender_with_setup(FragmentSenderSetup::resend_3_times());
+    //This should be migrated and utilize BlockDateGenerator after we merge catalyst-fund6 branch
+    let fragment_sender = FragmentSender::new(
+        Hash::from_str(&settings.block0_hash).unwrap().into(),
+        settings.fees,
+        BlockDate {
+            epoch: 2,
+            slot_id: 0,
+        },
+        FragmentSenderSetup::resend_3_times(),
+    );
 
     fragment_sender
         .send_encrypted_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)

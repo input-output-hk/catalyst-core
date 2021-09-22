@@ -5,8 +5,12 @@ use crate::common::{
 };
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
+use chain_impl_mockchain::key::Hash;
 use jormungandr_testing_utils::testing::node::time;
+use jormungandr_testing_utils::testing::FragmentSender;
+use jormungandr_testing_utils::testing::FragmentSenderSetup;
 use std::path::Path;
+use std::str::FromStr;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::{InitialEntry, Initials};
@@ -104,13 +108,23 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     };
     time::wait_for_date(target_date.into(), leader_1.rest());
 
-    controller
-        .fragment_sender()
+    let settings = wallet_node.rest().settings().unwrap();
+    //This should be migrated and utilize BlockDateGenerator after we merge catalyst-fund6 branch
+    let fragment_sender = FragmentSender::new(
+        Hash::from_str(&settings.block0_hash).unwrap().into(),
+        settings.fees,
+        BlockDate {
+            epoch: 2,
+            slot_id: 0,
+        },
+        FragmentSenderSetup::resend_3_times(),
+    );
+
+    fragment_sender
         .send_public_vote_tally(&mut committee, &fund1_vote_plan.clone().into(), wallet_node)
         .unwrap();
 
-    controller
-        .fragment_sender()
+    fragment_sender
         .send_public_vote_tally(&mut committee, &fund2_vote_plan.clone().into(), wallet_node)
         .unwrap();
 

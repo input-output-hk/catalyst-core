@@ -72,8 +72,6 @@ jobs:
 
   test_no_default_features:
     executor: rust-stable
-    environment:
-      RUSTFLAGS: -D warnings
     steps:
       - test:
           mode: --manifest-path chain-network/Cargo.toml --no-default-features
@@ -105,12 +103,16 @@ commands:
           command: rustc --version; cargo --version
       - run:
           name: Build with << parameters.mode >>
+          environment:
+            RUSTFLAGS: -D warnings
+            CARGO_INCREMENTAL: 0
           command: |
             cargo build << parameters.mode >> << parameters.cargo_behavior >>
       - run:
           name: Test with << parameters.mode >>
           environment:
             RUST_BACKTRACE: 1
+            CARGO_INCREMENTAL: 0
           command: |
             cargo test << parameters.mode >> << parameters.cargo_behavior >>
 

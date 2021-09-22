@@ -72,12 +72,9 @@ jobs:
             cargo install --path jcli --locked
       - run:
           name: checkout vit-station-service
-          command: >
-            git clone
-            https://github.com/input-output-hk/vit-servicing-station.git
-
+          command: |
+            git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-
             git checkout catalyst-fund6
       - run:
           name: install vit-station-service
@@ -148,7 +145,7 @@ commands:
             cargo install --path jcli --locked
       - run:
           name: checkout vit-station-service
-          command: >
+          command: |
             git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
             git checkout catalyst-fund6
@@ -162,7 +159,7 @@ commands:
           command: |
             cargo install --path iapyx --locked
       - run:
-          name: install iapyx utils
+          name: install proxy
           command: |
             cargo install --path valgrind --locked
       - run:

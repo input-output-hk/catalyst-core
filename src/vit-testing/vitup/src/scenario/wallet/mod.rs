@@ -161,7 +161,7 @@ impl WalletProxy {
 
         settings.node_backend_address = Some(node_setting.config().rest.listen);
 
-        let mut command = Command::new("iapyx-proxy");
+        let mut command = Command::new("valgrind");
         command
             .arg("--address")
             .arg(settings.base_address().to_string())

@@ -1,9 +1,8 @@
-use crate::backend::VitRestError;
-use crate::backend::VitStationRestClient;
 use crate::load::config::{ServicingStationLoadConfig, ServicingStationRequestType as RequestType};
 use crate::load::ServicingStationRequestGen;
 use jortestkit::measurement::EfficiencyBenchmarkFinish;
 use thiserror::Error;
+use valgrind::VitStationRestClient;
 
 pub struct ServicingStationLoad {
     config: ServicingStationLoadConfig,
@@ -64,5 +63,5 @@ pub enum Error {
     #[error("configuration error")]
     ConfigurationError(#[from] crate::load::config::ServicingStationConfigError),
     #[error("rest error")]
-    RestError(#[from] VitRestError),
+    RestError(#[from] valgrind::VitStationRestError),
 }

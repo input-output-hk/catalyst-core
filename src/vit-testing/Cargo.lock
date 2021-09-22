@@ -360,7 +360,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "cbor_event",
  "chain-ser",
@@ -404,7 +404,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "bech32 0.7.3",
  "chain-core",
@@ -416,7 +416,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "chain-ser",
 ]
@@ -424,7 +424,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "bech32 0.7.3",
  "cryptoxide",
@@ -445,7 +445,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -482,12 +482,12 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 
 [[package]]
 name = "chain-storage"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "criterion",
  "data-pile",
@@ -500,7 +500,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -512,7 +512,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -1846,6 +1846,7 @@ dependencies = [
  "thiserror",
  "tokio 1.11.0",
  "url",
+ "valgrind",
  "wallet",
  "wallet-core",
  "warp",
@@ -1909,7 +1910,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 dependencies = [
  "thiserror",
 ]
@@ -1977,6 +1978,7 @@ dependencies = [
  "snapshot-trigger-service",
  "thiserror",
  "tokio 1.11.0",
+ "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "vitup",
@@ -2024,7 +2026,7 @@ checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#4de5d6f1ce89ba5050fee9774b409246e8b8b6ac"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#f724264c16f813007de600e12fc827709e759798"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2071,7 +2073,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#4de5d6f1ce89ba5050fee9774b409246e8b8b6ac"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#f724264c16f813007de600e12fc827709e759798"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.7.3",
@@ -2100,7 +2102,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.13.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#4de5d6f1ce89ba5050fee9774b409246e8b8b6ac"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#f724264c16f813007de600e12fc827709e759798"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2141,7 +2143,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.13.0-dev"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#4de5d6f1ce89ba5050fee9774b409246e8b8b6ac"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund6#f724264c16f813007de600e12fc827709e759798"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -4030,7 +4032,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 
 [[package]]
 name = "spin"
@@ -4712,7 +4714,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#f0dc74f9bd9423ceda02871534481d6218e37153"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=catalyst-fund6#6413657edffc65e71bc4e6b35c30977678bc80fa"
 
 [[package]]
 name = "typenum"
@@ -4842,6 +4844,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "valgrind"
+version = "0.1.0"
+dependencies = [
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-time",
+ "chain-vote",
+ "hex",
+ "hyper 0.13.10",
+ "itertools 0.9.0",
+ "jormungandr-lib",
+ "jormungandr-testing-utils",
+ "jortestkit",
+ "regex 0.2.11",
+ "reqwest 0.10.10",
+ "serde",
+ "serde_json",
+ "structopt",
+ "thiserror",
+ "tokio 1.11.0",
+ "vit-servicing-station-lib",
+ "wallet",
+ "wallet-core",
+ "warp",
+ "warp-reverse-proxy",
+]
+
+[[package]]
 name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4941,11 +4973,11 @@ dependencies = [
  "dialoguer 0.8.0",
  "diffy",
  "error-chain",
+ "fake",
  "function_name",
  "futures",
  "glob",
  "hex",
- "iapyx",
  "image",
  "indicatif",
  "itertools 0.9.0",
@@ -4974,6 +5006,7 @@ dependencies = [
  "tracing-appender",
  "tracing-subscriber",
  "uuid",
+ "valgrind",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
  "walkdir",

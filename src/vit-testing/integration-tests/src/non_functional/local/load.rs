@@ -2,8 +2,9 @@ use crate::common::{
     load::build_load_config, load::private_vote_test_scenario, vitup_setup, VoteTiming,
 };
 use assert_fs::TempDir;
-use iapyx::{NodeLoad, Protocol};
+use iapyx::NodeLoad;
 use jortestkit::measurement::Status;
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;

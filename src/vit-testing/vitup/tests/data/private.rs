@@ -1,8 +1,8 @@
 use assert_fs::TempDir;
-use iapyx::Protocol;
-use iapyx::WalletBackend;
 use std::path::PathBuf;
 use std::str::FromStr;
+use valgrind::Protocol;
+use valgrind::ValgrindClient;
 
 use crate::data::vitup_setup;
 use jortestkit::prelude::read_file;
@@ -58,7 +58,7 @@ pub fn private_vote_multiple_vote_plans() {
     )
     .unwrap();
 
-    let backend_client = WalletBackend::new(endpoint.to_string(), Default::default());
+    let backend_client = ValgrindClient::new(endpoint.to_string(), Default::default());
     let fund = backend_client.funds().unwrap();
 
     for status in backend_client.vote_plan_statuses().unwrap() {

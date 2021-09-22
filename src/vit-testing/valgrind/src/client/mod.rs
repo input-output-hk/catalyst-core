@@ -16,29 +16,30 @@ use jormungandr_lib::interfaces::AccountIdentifier;
 use jormungandr_lib::interfaces::FragmentStatus;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use jormungandr_testing_utils::testing::node::Explorer;
-pub use jormungandr_testing_utils::testing::node::RestSettings as WalletBackendSettings;
-pub use node::{RestError as NodeRestError, WalletNodeRestClient};
-pub use proxy::{Protocol, ProxyClient, ProxyClientError, ProxyServerError, ProxyServerStub};
 use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
-pub use vit_station::{RestError as VitRestError, VitStationRestClient};
 use wallet::{AccountId, Settings};
 
+pub use jormungandr_testing_utils::testing::node::RestSettings as ValgrindSettings;
+pub use node::{RestError as NodeRestError, WalletNodeRestClient};
+pub use proxy::{Error as ProxyClientError, ProxyClient};
+pub use vit_station::{RestError as VitStationRestError, VitStationRestClient};
+
 #[derive(Clone)]
-pub struct WalletBackend {
+pub struct ValgrindClient {
     node_client: WalletNodeRestClient,
     vit_client: VitStationRestClient,
     proxy_client: ProxyClient,
     explorer_client: Explorer,
 }
 
-impl WalletBackend {
+impl ValgrindClient {
     pub fn new_from_addresses(
         proxy_address: String,
         node_address: String,
         vit_address: String,
-        node_rest_settings: WalletBackendSettings,
+        node_rest_settings: ValgrindSettings,
     ) -> Self {
         let mut backend = Self {
             node_client: WalletNodeRestClient::new(
@@ -56,29 +57,21 @@ impl WalletBackend {
         backend
     }
 
-    pub fn new(address: String, node_rest_settings: WalletBackendSettings) -> Self {
-        Self::new_from_addresses(
-            address.clone(),
-            address.clone(),
-            address,
-            node_rest_settings,
-        )
+    pub fn new(address: String, settings: ValgrindSettings) -> Self {
+        Self::new_from_addresses(address.clone(), address.clone(), address, settings)
     }
 
     pub fn node_client(&self) -> WalletNodeRestClient {
         self.node_client.clone()
     }
 
-    pub fn send_fragment(&self, transaction: Vec<u8>) -> Result<FragmentId, WalletBackendError> {
+    pub fn send_fragment(&self, transaction: Vec<u8>) -> Result<FragmentId, Error> {
         self.node_client.send_fragment(transaction.clone())?;
         let fragment = Fragment::deserialize(transaction.as_slice())?;
         Ok(fragment.id())
     }
 
-    pub fn send_fragments(
-        &self,
-        transactions: Vec<Vec<u8>>,
-    ) -> Result<Vec<FragmentId>, WalletBackendError> {
+    pub fn send_fragments(&self, transactions: Vec<Vec<u8>>) -> Result<Vec<FragmentId>, Error> {
         for tx in transactions.iter() {
             self.node_client.send_fragment(tx.clone())?;
         }
@@ -92,7 +85,7 @@ impl WalletBackend {
         &self,
         transactions: Vec<Vec<u8>>,
         use_v1: bool,
-    ) -> Result<Vec<FragmentId>, WalletBackendError> {
+    ) -> Result<Vec<FragmentId>, Error> {
         self.node_client
             .send_fragments(transactions.clone(), use_v1)?;
         Ok(transactions
@@ -101,24 +94,24 @@ impl WalletBackend {
             .collect())
     }
 
-    pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, WalletBackendError> {
+    pub fn fragment_logs(&self) -> Result<HashMap<FragmentId, FragmentLog>, Error> {
         self.node_client.fragment_logs().map_err(Into::into)
     }
 
     pub fn fragments_statuses(
         &self,
         ids: Vec<String>,
-    ) -> Result<HashMap<FragmentId, FragmentStatus>, WalletBackendError> {
+    ) -> Result<HashMap<FragmentId, FragmentStatus>, Error> {
         self.node_client.fragment_statuses(ids).map_err(Into::into)
     }
 
-    pub fn account_state(&self, account_id: AccountId) -> Result<AccountState, WalletBackendError> {
+    pub fn account_state(&self, account_id: AccountId) -> Result<AccountState, Error> {
         self.node_client
             .account_state(account_id)
             .map_err(Into::into)
     }
 
-    pub fn proposals(&self) -> Result<Vec<Proposal>, WalletBackendError> {
+    pub fn proposals(&self) -> Result<Vec<Proposal>, Error> {
         Ok(self
             .vit_client
             .proposals()?
@@ -128,26 +121,23 @@ impl WalletBackend {
             .collect())
     }
 
-    pub fn funds(&self) -> Result<Fund, WalletBackendError> {
+    pub fn funds(&self) -> Result<Fund, Error> {
         Ok(self.vit_client.funds()?)
     }
 
-    pub fn review(
-        &self,
-        proposal_id: &str,
-    ) -> Result<HashMap<String, Vec<AdvisorReview>>, WalletBackendError> {
+    pub fn review(&self, proposal_id: &str) -> Result<HashMap<String, Vec<AdvisorReview>>, Error> {
         Ok(self.vit_client.review(proposal_id)?)
     }
 
-    pub fn challenges(&self) -> Result<Vec<Challenge>, WalletBackendError> {
+    pub fn challenges(&self) -> Result<Vec<Challenge>, Error> {
         Ok(self.vit_client.challenges()?)
     }
 
-    pub fn block0(&self) -> Result<Vec<u8>, WalletBackendError> {
+    pub fn block0(&self) -> Result<Vec<u8>, Error> {
         Ok(self.proxy_client.block0().map(Into::into)?)
     }
 
-    pub fn vote_plan_statuses(&self) -> Result<Vec<VotePlanStatus>, WalletBackendError> {
+    pub fn vote_plan_statuses(&self) -> Result<Vec<VotePlanStatus>, Error> {
         self.node_client.vote_plan_statuses().map_err(Into::into)
     }
 
@@ -166,7 +156,7 @@ impl WalletBackend {
     pub fn are_fragments_in_blockchain(
         &self,
         fragment_ids: Vec<FragmentId>,
-    ) -> Result<bool, WalletBackendError> {
+    ) -> Result<bool, Error> {
         Ok(fragment_ids.iter().all(|x| {
             let hash = jormungandr_lib::crypto::hash::Hash::from_str(&x.to_string()).unwrap();
             self.explorer_client.transaction(hash).is_ok()
@@ -176,11 +166,11 @@ impl WalletBackend {
     pub fn vote_statuses(
         &self,
         _identifier: AccountIdentifier,
-    ) -> Result<Vec<SimpleVoteStatus>, WalletBackendError> {
+    ) -> Result<Vec<SimpleVoteStatus>, Error> {
         unimplemented!()
     }
 
-    pub fn settings(&self) -> Result<Settings, WalletBackendError> {
+    pub fn settings(&self) -> Result<Settings, Error> {
         use chain_time::SlotDuration;
         use chain_time::TimeFrame;
         use chain_time::Timeline;
@@ -207,15 +197,15 @@ impl WalletBackend {
         })
     }
 
-    pub fn account_exists(&self, id: AccountId) -> Result<bool, WalletBackendError> {
+    pub fn account_exists(&self, id: AccountId) -> Result<bool, Error> {
         self.node_client.account_exists(id).map_err(Into::into)
     }
 }
 
 #[derive(Debug, Error)]
-pub enum WalletBackendError {
+pub enum Error {
     #[error("vit station error")]
-    VitStationConnection(#[from] VitRestError),
+    VitStationConnection(#[from] VitStationRestError),
     #[error(transparent)]
     NodeConnection(#[from] NodeRestError),
     #[error(transparent)]

@@ -1,5 +1,3 @@
-use crate::backend::VitRestError;
-use crate::backend::VitStationRestClient;
 use crate::load::config::{ArtificialUserLoadConfig, ArtificialUserRequestType as RequestType};
 use crate::load::request_generators::AccountRequestGen;
 use crate::load::request_generators::ArtificialUserRequestGen;
@@ -8,6 +6,7 @@ use crate::load::request_generators::SettingsRequestGen;
 use crate::load::ServicingStationRequestGen;
 use jortestkit::measurement::EfficiencyBenchmarkFinish;
 use thiserror::Error;
+use valgrind::{VitStationRestClient, VitStationRestError};
 
 pub struct ArtificialUserLoad {
     config: ArtificialUserLoadConfig,
@@ -108,7 +107,7 @@ pub enum Error {
     #[error("configuration error")]
     ServicingConfig(#[from] crate::load::config::ServicingStationConfigError),
     #[error("rest error")]
-    Rest(#[from] VitRestError),
+    Rest(#[from] VitStationRestError),
     #[error("controller error")]
     MultiController(#[from] crate::load::MultiControllerError),
 }

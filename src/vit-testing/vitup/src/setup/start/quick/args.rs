@@ -5,7 +5,6 @@ use crate::scenario::network::service_mode;
 use crate::scenario::network::{endless_mode, interactive_mode, setup_network};
 use crate::setup::generate::read_initials;
 use crate::Result;
-use iapyx::Protocol;
 use jormungandr_scenario_tests::programs::prepare_command;
 use jormungandr_scenario_tests::{
     parse_progress_bar_mode_from_str, Context, ProgressBarMode, Seed,
@@ -14,6 +13,7 @@ use jortestkit::prelude::read_file;
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 
 #[derive(StructOpt, Debug)]

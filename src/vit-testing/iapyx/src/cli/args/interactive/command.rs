@@ -1,9 +1,7 @@
 use super::WalletState;
 use crate::cli::args::interactive::UserInteractionContoller;
 use crate::utils::valid_until::ValidUntil;
-use crate::Controller;
-use crate::Proposal;
-use crate::WalletBackend;
+use crate::ControllerBuilder;
 use bip39::Type;
 use chain_addr::{AddressReadable, Discrimination};
 use chain_impl_mockchain::block::BlockDate;
@@ -12,6 +10,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use structopt::{clap::AppSettings, StructOpt};
 use thiserror::Error;
+use valgrind::{Proposal, ValgrindClient};
 use wallet_core::Choice;
 
 #[derive(StructOpt, Debug)]
@@ -359,9 +358,14 @@ pub struct RecoverFromSecretKey {
 impl RecoverFromSecretKey {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         let wallet_backend =
-            WalletBackend::new(model.backend_address.clone(), model.settings.clone());
+            ValgrindClient::new(model.backend_address.clone(), model.settings.clone());
 
-        model.controller = Some(Controller::recover_from_sk(wallet_backend, &self.input)?);
+        model.controller = Some(
+            ControllerBuilder::default()
+                .from_client(wallet_backend)?
+                .from_secret_file(&self.input)?
+                .build()?,
+        );
         model.state = WalletState::Recovered;
         Ok(())
     }
@@ -378,12 +382,12 @@ pub struct RecoverFromQr {
 
 impl RecoverFromQr {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
-        model.controller = Some(Controller::recover_from_qr(
-            model.backend_address.clone(),
-            &self.qr_code,
-            &self.password,
-            model.settings.clone(),
-        )?);
+        model.controller = Some(
+            ControllerBuilder::default()
+                .from_qr(&self.qr_code, &self.password)?
+                .from_address(model.backend_address.clone(), model.settings.clone())?
+                .build()?,
+        );
         model.state = WalletState::Recovered;
         Ok(())
     }
@@ -397,12 +401,12 @@ pub struct RecoverFromMnemonics {
 
 impl RecoverFromMnemonics {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
-        model.controller = Some(Controller::recover(
-            model.backend_address.clone(),
-            &self.mnemonics.join(" "),
-            &[],
-            model.settings.clone(),
-        )?);
+        model.controller = Some(
+            ControllerBuilder::default()
+                .from_address(model.backend_address.clone(), model.settings.clone())?
+                .from_mnemonics(&self.mnemonics.join(" "), &[])?
+                .build()?,
+        );
         model.state = WalletState::Recovered;
         Ok(())
     }
@@ -417,11 +421,12 @@ pub struct Generate {
 
 impl Generate {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
-        model.controller = Some(Controller::generate(
-            model.backend_address.clone(),
-            Type::from_word_count(self.count)?,
-            model.settings.clone(),
-        )?);
+        model.controller = Some(
+            ControllerBuilder::default()
+                .generate(Type::from_word_count(self.count)?)?
+                .from_address(model.backend_address.clone(), model.settings.clone())?
+                .build()?,
+        );
         model.state = WalletState::Generated;
         Ok(())
     }
@@ -446,4 +451,6 @@ pub enum IapyxCommandError {
     WrongChoice(String),
     #[error("cannot find proposal: {0}")]
     CannotFindProposal(String),
+    #[error(transparent)]
+    ControllerBuilder(#[from] crate::controller::ControllerBuilderError),
 }

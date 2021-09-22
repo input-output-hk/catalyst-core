@@ -1,9 +1,7 @@
 extern crate rand;
 
-mod backend;
 pub mod cli;
 mod controller;
-mod data;
 mod load;
 mod qr;
 pub mod stats;
@@ -11,11 +9,7 @@ pub mod utils;
 mod wallet;
 
 pub use crate::wallet::{Error as WalletError, Wallet};
-pub use backend::{
-    Protocol, ProxyClient, WalletBackend, WalletBackendError, WalletBackendSettings,
-};
-pub use controller::{Controller, ControllerError};
-pub use data::{AdvisorReview, Challenge, Fund, Proposal, SimpleVoteStatus, VitVersion, Voteplan};
+pub use controller::{Controller, ControllerBuilder, ControllerBuilderError, ControllerError};
 pub use load::{
     MultiController, NodeLoad, NodeLoadConfig, NodeLoadError, VoteStatusProvider, WalletRequestGen,
 };

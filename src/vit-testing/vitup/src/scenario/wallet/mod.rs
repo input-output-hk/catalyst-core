@@ -31,9 +31,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub use controller::WalletProxyController;
-use iapyx::Protocol;
 pub use jormungandr_testing_utils::testing::network_builder::WalletProxySettings;
 pub use spawn_params::WalletProxySpawnParams;
+use valgrind::Protocol;
 pub type WalletProxyError = Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -161,7 +161,7 @@ impl WalletProxy {
 
         settings.node_backend_address = Some(node_setting.config().rest.listen);
 
-        let mut command = Command::new("iapyx-proxy");
+        let mut command = Command::new("valgrind");
         command
             .arg("--address")
             .arg(settings.base_address().to_string())

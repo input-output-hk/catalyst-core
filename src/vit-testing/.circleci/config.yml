@@ -72,12 +72,9 @@ jobs:
             cargo install --path jcli --locked
       - run:
           name: checkout vit-station-service
-          command: >
-            git clone
-            https://github.com/input-output-hk/vit-servicing-station.git
-
+          command: |
+            git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-
             git checkout catalyst-fund6
       - run:
           name: install vit-station-service
@@ -85,9 +82,13 @@ jobs:
             cd vit-servicing-station
             cargo install --path vit-servicing-station-server --locked
       - run:
-          name: install iapyx utils
+          name: install iapyx
           command: |
-            cargo install --path iapyx --locked                  
+            cargo install --path iapyx --locked
+      - run:
+          name: install valgrind
+          command: |
+            cargo install --path valgrind --locked                  
       - run:
           name: Run tests
           no_output_timeout: 60m
@@ -144,12 +145,9 @@ commands:
             cargo install --path jcli --locked
       - run:
           name: checkout vit-station-service
-          command: >
-            git clone
-            https://github.com/input-output-hk/vit-servicing-station.git
-
+          command: |
+            git clone https://github.com/input-output-hk/vit-servicing-station.git
             cd vit-servicing-station
-
             git checkout catalyst-fund6
       - run:
           name: install vit-station-service
@@ -160,6 +158,10 @@ commands:
           name: install iapyx utils
           command: |
             cargo install --path iapyx --locked
+      - run:
+          name: install proxy
+          command: |
+            cargo install --path valgrind --locked
       - run:
           name: Run tests
           no_output_timeout: 60m

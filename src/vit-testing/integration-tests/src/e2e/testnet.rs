@@ -1,12 +1,13 @@
+use crate::common::iapyx_from_qr;
 use crate::common::registration::do_registration;
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
 use crate::common::{asserts::VotePlanStatusAssert, vitup_setup, Vote, VoteTiming};
 use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
-use iapyx::Protocol;
 use jormungandr_testing_utils::testing::node::time;
 use snapshot_trigger_service::config::JobParameters;
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::Initials;
 use vitup::scenario::network::setup_network;
@@ -76,9 +77,7 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
     let mut committee = controller.wallet("committee_1").unwrap();
 
     // start wallets
-    let mut alice = vit_controller
-        .iapyx_wallet_from_qr(&result.qr_code(), &result.pin(), &wallet_proxy)
-        .unwrap();
+    let mut alice = iapyx_from_qr(&result.qr_code(), &result.pin(), &wallet_proxy).unwrap();
 
     let fund1_vote_plan = &controller.vote_plans()[0];
     let fund2_vote_plan = &controller.vote_plans()[1];

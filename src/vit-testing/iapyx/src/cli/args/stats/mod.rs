@@ -32,8 +32,6 @@ impl IapyxStatsCommand {
 
 #[derive(Error, Debug)]
 pub enum IapyxStatsCommandError {
-    #[error("proxy error")]
-    Proxy(#[from] crate::backend::ProxyServerError),
     #[error("get block0 ")]
     GetBlock0(#[from] GetBlock0Error),
     #[error("pin error")]

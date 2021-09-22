@@ -13,7 +13,6 @@ use chain_impl_mockchain::{
 };
 use chain_vote::ElectionPublicKey;
 use chrono::naive::NaiveDateTime;
-use iapyx::Protocol;
 use jormungandr_lib::interfaces::CommitteeIdDef;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
@@ -27,6 +26,7 @@ use jormungandr_testing_utils::testing::network_builder::{Blockchain, Node, Wall
 use jormungandr_testing_utils::wallet::LinearFee;
 use jortestkit::prelude::append;
 use std::{collections::HashMap, iter};
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub const LEADER_1: &str = "Leader1";
@@ -525,22 +525,25 @@ impl QuickVitBackendSettingsBuilder {
     pub fn print_report(&self) {
         println!("Fund id: {}", self.parameters().fund_id);
         println!(
-            "vote start timestamp: {:?}",
+            "refresh timestamp\t(registration_snapshot_time):\t\t\t{:?}",
+            self.parameters().refresh_time
+        );
+        println!(
+            "vote start timestamp\t(fund_start_time, chain_vote_start_time):\t{:?}",
             self.parameters().vote_start_timestamp
         );
         println!(
-            "tally start timestamp: {:?}",
+            "tally start timestamp\t(fund_end_time, chain_vote_end_time):\t\t{:?}",
             self.parameters().tally_start_timestamp
         );
         println!(
-            "tally end timestamp: {:?}",
+            "tally end timestamp:\t(chain_committee_end_time)\t\t\t{:?}",
             self.parameters().tally_end_timestamp
         );
         println!(
-            "next vote start time: {:?}",
+            "next vote start time\t(next_fund_start_time):\t\t\t\t{:?}",
             self.parameters().next_vote_start_time
         );
-        println!("refresh timestamp: {:?}", self.parameters().refresh_time);
     }
 }
 

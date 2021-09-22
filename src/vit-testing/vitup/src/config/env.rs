@@ -1,8 +1,8 @@
 use super::initials::Initials;
 use chrono::NaiveDateTime;
-use iapyx::Protocol;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use valgrind::Protocol;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct VitStartParameters {

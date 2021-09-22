@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use crate::startup::Protocol;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use thiserror::Error;
@@ -11,21 +11,6 @@ pub enum Error {
     VitStation(String),
     #[error("Malformed node rest address: {0}")]
     NodeRest(String),
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Protocol {
-    Http,
-    Https {
-        key_path: PathBuf,
-        cert_path: PathBuf,
-    },
-}
-
-impl Protocol {
-    pub fn http() -> Self {
-        Self::Http
-    }
 }
 
 pub struct ProxyServerStub {

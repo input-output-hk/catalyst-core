@@ -18,6 +18,7 @@ chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
+valgrind = { path = "../valgrind"} 
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 registration-service = { path = "../registration-service" }
 rand_chacha = "0.2"

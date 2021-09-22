@@ -1,16 +1,16 @@
-use crate::WalletBackend;
 use chain_impl_mockchain::fragment::FragmentId;
 use jormungandr_lib::interfaces::FragmentStatus;
 use jortestkit::load::RequestStatusProvider;
 use jortestkit::load::{Id, Status};
+use valgrind::ValgrindClient;
 
 pub struct VoteStatusProvider {
-    backend: WalletBackend,
+    backend: ValgrindClient,
 }
 
 impl VoteStatusProvider {
     pub fn new(backend_address: String, debug: bool) -> Self {
-        let mut backend = WalletBackend::new(backend_address, Default::default());
+        let mut backend = ValgrindClient::new(backend_address, Default::default());
         if debug {
             backend.enable_logs();
         } else {

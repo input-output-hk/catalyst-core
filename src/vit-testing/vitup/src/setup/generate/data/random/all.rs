@@ -1,7 +1,7 @@
 use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
 
-use super::{encode, read_config, read_genesis_yaml, write_genesis_yaml};
+use crate::setup::generate::data::{encode, read_config, read_genesis_yaml, write_genesis_yaml};
 use crate::setup::generate::read_initials;
 use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
 use jormungandr_scenario_tests::{Context, Seed};
@@ -10,7 +10,7 @@ use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
-pub struct RandomDataCommandArgs {
+pub struct AllRandomDataCommandArgs {
     /// Careful! directory would be removed before export
     #[structopt(long = "output", default_value = "./data")]
     pub output_directory: PathBuf,
@@ -23,7 +23,7 @@ pub struct RandomDataCommandArgs {
     pub snapshot: Option<PathBuf>,
 }
 
-impl RandomDataCommandArgs {
+impl AllRandomDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 

@@ -210,7 +210,7 @@ impl LeadershipData {
                     (_, _) => Verification::Failure(Error::new(ErrorKind::InvalidBlockMessage)),
                 }
             }
-            _ => Verification::Failure(Error::new(ErrorKind::InvalidLeaderSignature)),
+            _ => Verification::Failure(Error::new(ErrorKind::IncompatibleLeadershipMode)),
         }
     }
 }

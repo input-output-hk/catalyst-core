@@ -1,6 +1,7 @@
 use super::*;
 use crate::digest;
 
+use proptest::prelude::*;
 use quickcheck::{Arbitrary, Gen};
 use rand::rngs::SmallRng;
 use rand_core::{CryptoRng, Error as RngError, RngCore, SeedableRng};
@@ -156,4 +157,9 @@ impl<H: digest::DigestAlg + 'static, T: 'static> Arbitrary for digest::DigestOf<
             .collect();
         digest::DigestOf::<H, Vec<u8>>::digest(&bytes).coerce()
     }
+}
+
+pub fn public_key_strategy<A: AsymmetricKey>() -> impl Strategy<Value = PublicKey<A::PubAlg>> {
+    any::<(TestCryptoGen, u32)>()
+        .prop_map(|(gen, idx)| SecretKey::<A>::generate(gen.get_rng(idx)).to_public())
 }

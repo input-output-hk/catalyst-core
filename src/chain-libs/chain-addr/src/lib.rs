@@ -29,11 +29,6 @@
 //!     DISCRIMINATION_BIT || SCRIPT_KIND_TYPE (7 bits) || SCRIPT_IDENTIFIER
 //!
 //! Address human format is bech32 encoded
-//!
-
-#[cfg(test)]
-#[macro_use]
-extern crate quickcheck;
 
 use bech32::{self, FromBase32, ToBase32};
 use std::string::ToString;
@@ -45,11 +40,17 @@ use chain_core::property::{self, Serialize as PropertySerialize};
 
 #[cfg(any(test, feature = "property-test-api"))]
 mod testing;
+#[cfg(any(test, feature = "property-test-api"))]
+use chain_crypto::testing::public_key_strategy;
 
 // Allow to differentiate between address in
 // production and testing setting, so that
 // one type of address is not used in another setting.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub enum Discrimination {
     Production,
     Test,
@@ -62,10 +63,25 @@ pub enum Discrimination {
 /// * Account address : an ed25519 stake public key
 /// * Multisig address : a multisig public key
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub enum Kind {
-    Single(PublicKey<Ed25519>),
-    Group(PublicKey<Ed25519>, PublicKey<Ed25519>),
-    Account(PublicKey<Ed25519>),
+    Single(
+        #[cfg_attr(any(test, feature = "property-test-api"), strategy(public_key_strategy::<Ed25519>()))]
+         PublicKey<Ed25519>,
+    ),
+    Group(
+        #[cfg_attr(any(test, feature = "property-test-api"), strategy(public_key_strategy::<Ed25519>()))]
+         PublicKey<Ed25519>,
+        #[cfg_attr(any(test, feature = "property-test-api"), strategy(public_key_strategy::<Ed25519>()))]
+         PublicKey<Ed25519>,
+    ),
+    Account(
+        #[cfg_attr(any(test, feature = "property-test-api"), strategy(public_key_strategy::<Ed25519>()))]
+         PublicKey<Ed25519>,
+    ),
     Multisig([u8; 32]),
     Script([u8; 32]),
 }
@@ -118,6 +134,10 @@ impl KindType {
 /// An unstructured address including the
 /// discrimination and the kind of address
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    any(test, feature = "property-test-api"),
+    derive(test_strategy::Arbitrary)
+)]
 pub struct Address(pub Discrimination, pub Kind);
 
 impl Address {
@@ -567,6 +587,9 @@ impl std::str::FromStr for Discrimination {
 mod test {
     use super::*;
 
+    use proptest::prelude::*;
+    use test_strategy::proptest;
+
     const TEST_PREFIX: &str = "ca";
 
     fn property_serialize_deserialize(addr: &Address) {
@@ -595,20 +618,20 @@ mod test {
         assert_eq!(ar, ar2);
     }
 
-    quickcheck! {
-        fn from_address_to_address(address: Address) -> bool {
-            let readable = AddressReadable::from_address(TEST_PREFIX, &address);
-            let decoded  = readable.to_address();
+    #[proptest]
+    fn from_address_to_address(address: Address) {
+        let readable = AddressReadable::from_address(TEST_PREFIX, &address);
+        let decoded = readable.to_address();
 
-             address == decoded
-        }
+        prop_assert_eq!(address, decoded);
+    }
 
-         fn to_bytes_from_bytes(address: Address) -> bool {
-            let readable = address.to_bytes();
-            let decoded  = Address::from_bytes(&readable).unwrap();
+    #[proptest]
+    fn to_bytes_from_bytes(address: Address) {
+        let readable = address.to_bytes();
+        let decoded = Address::from_bytes(&readable).unwrap();
 
-             address == decoded
-        }
+        prop_assert_eq!(address, decoded);
     }
 
     #[test]

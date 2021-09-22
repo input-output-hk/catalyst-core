@@ -262,17 +262,11 @@ impl<A: SecretKeySizeStatic> Bech32 for SecretKey<A> {
 
 #[cfg(any(test, feature = "property-test-api"))]
 mod test {
-    use std::marker::PhantomData;
-
     use super::*;
 
     use crate::testing::TestCryptoGen;
 
-    use proptest::{
-        prelude::*,
-        strategy::{NewTree, ValueTree},
-        test_runner::TestRunner,
-    };
+    use proptest::prelude::*;
 
     // ONLY ALLOWED WHEN TESTING
     impl<A> std::fmt::Debug for SecretKey<A>
@@ -284,53 +278,14 @@ mod test {
         }
     }
 
-    pub struct KeyPairValueTree<A: AsymmetricKey>(KeyPair<A>);
-
-    pub struct KeyPairStrategy<A: AsymmetricKey>(std::marker::PhantomData<KeyPair<A>>);
-
-    impl<A: AsymmetricKey> ValueTree for KeyPairValueTree<A> {
-        type Value = KeyPair<A>;
-
-        fn current(&self) -> Self::Value {
-            self.0.clone()
-        }
-
-        fn simplify(&mut self) -> bool {
-            false
-        }
-
-        fn complicate(&mut self) -> bool {
-            false
-        }
-    }
-
-    impl<A: AsymmetricKey> Strategy for KeyPairStrategy<A> {
-        type Tree = KeyPairValueTree<A>;
-        type Value = KeyPair<A>;
-
-        fn new_tree(&self, runner: &mut TestRunner) -> NewTree<Self> {
-            let gen = TestCryptoGen::arbitrary().new_tree(runner)?.current();
-            let idx = u32::arbitrary().new_tree(runner)?.current();
-            let rng = gen.get_rng(idx);
-            Ok(KeyPairValueTree(KeyPair::generate(rng)))
-        }
-    }
-
-    impl<A> std::fmt::Debug for KeyPairStrategy<A>
-    where
-        A: AsymmetricKey,
-    {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-            write!(f, "KeyPairStrategy")
-        }
-    }
-
     impl<A: AsymmetricKey> Arbitrary for KeyPair<A> {
         type Parameters = ();
-        type Strategy = KeyPairStrategy<A>;
+        type Strategy = BoxedStrategy<KeyPair<A>>;
 
         fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
-            KeyPairStrategy(PhantomData)
+            any::<(TestCryptoGen, u32)>()
+                .prop_map(|(gen, idx)| KeyPair::generate(gen.get_rng(idx)))
+                .boxed()
         }
     }
 }

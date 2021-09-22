@@ -7,15 +7,20 @@ edition = "2018"
 keywords = [ "Cardano", "Wallet", "Crypto", "Address" ]
 
 [features]
-property-test-api = ["chain-crypto/property-test-api", "quickcheck"]
+property-test-api = ["chain-crypto/property-test-api", "quickcheck", "proptest", "test-strategy"]
 
 [dependencies]
 bech32 = "0.8"
 chain-core = { path = "../chain-core" }
 chain-crypto = { path = "../chain-crypto" }
 cryptoxide = "0.3"
+
 quickcheck = { version = "0.9", optional = true }
+proptest = { git = "https://github.com/input-output-hk/proptest.git", optional = true }
+test-strategy = { version = "0.1", optional = true }
 
 [dev-dependencies]
 quickcheck = "0.9"
 chain-crypto = { path = "../chain-crypto", features = [ "property-test-api" ] }
+proptest = { git = "https://github.com/input-output-hk/proptest.git" }
+test-strategy = "0.1"

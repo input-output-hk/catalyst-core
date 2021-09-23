@@ -25,10 +25,10 @@ chain-storage = { git = "https://github.com/input-output-hk/chain-libs.git", bra
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
 chrono = "0.4"
-jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
-jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
+jcli = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "test-enhancmen-for-catalyst-toolbox" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "test-enhancmen-for-catalyst-toolbox" }
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "test-enhancmen-for-catalyst-toolbox" }
+jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "test-enhancmen-for-catalyst-toolbox" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 fixed = "1.7"
 futures = "0.3"

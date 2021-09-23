@@ -13,7 +13,9 @@ pub mod sum;
 
 use crate::evolving::{EvolvingStatus, KeyEvolvingAlgorithm};
 use crate::kes::KeyEvolvingSignatureAlgorithm;
-use crate::key::{AsymmetricKey, AsymmetricPublicKey, PublicKeyError, SecretKeyError};
+use crate::key::{
+    AsymmetricKey, AsymmetricPublicKey, PublicKeyError, SecretKeyError, SecretKeySizeStatic,
+};
 use crate::sign::{SignatureError, SigningAlgorithm, Verification, VerificationAlgorithm};
 use rand_core::{CryptoRng, RngCore};
 
@@ -60,6 +62,10 @@ impl AsymmetricKey for SumEd25519_12 {
             _ => SecretKeyError::StructureInvalid,
         })
     }
+}
+
+impl SecretKeySizeStatic for SumEd25519_12 {
+    const SECRET_KEY_SIZE: usize = sum::maximum_secretkey_size(DEPTH);
 }
 
 impl VerificationAlgorithm for SumEd25519_12 {

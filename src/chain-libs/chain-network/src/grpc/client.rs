@@ -56,7 +56,6 @@ impl Builder {
     where
         T: GrpcService<BoxBody>,
         T::ResponseBody: Send + Sync + 'static,
-        T::Error: Into<StdError>,
         <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     {
         Client {
@@ -112,7 +111,6 @@ impl<T> Client<T>
 where
     T: GrpcService<BoxBody>,
     T::ResponseBody: Send + Sync + 'static,
-    T::Error: Into<StdError>,
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
 {
     pub fn new(service: T) -> Self {
@@ -130,16 +128,7 @@ where
         }
         req
     }
-}
 
-impl<T> Client<T>
-where
-    T: GrpcService<BoxBody> + Send,
-    T::Future: Send,
-    T::ResponseBody: Send + Sync + 'static,
-    T::Error: Into<StdError>,
-    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
-{
     /// Requests the identifier of the genesis block from the service node.
     ///
     /// The implementation can also perform version information checks to

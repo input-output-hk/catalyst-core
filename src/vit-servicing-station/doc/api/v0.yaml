@@ -3,7 +3,7 @@ openapi: 3.0.3
 info:
   title: VIT as a Service Rest API
   description: Voting Implementation Testnet Rest API v0
-  version: 0.2.1
+  version: 0.2.2
   contact:
     url: "http://github.com/input-output-hk/vit-servicing-station"
 
@@ -511,6 +511,6 @@ components:
             "rating_given": 0,
             "assessor": "za_assessor_432",
             "note": "foo bar",
-            "tag": "Alignment"
-          }
+            "tag": "Alignment",
+          },
         ]

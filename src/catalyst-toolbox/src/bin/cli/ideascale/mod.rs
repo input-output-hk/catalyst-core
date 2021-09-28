@@ -4,9 +4,11 @@ use catalyst_toolbox::ideascale::{
 };
 use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
+use std::collections::HashSet;
 
 use structopt::StructOpt;
 
+use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
@@ -62,9 +64,13 @@ pub struct Import {
     #[structopt(long)]
     output_dir: PathBuf,
 
-    /// Path to json or yaml like file containing tag configuration for ideascale custom fields
+    /// Path to json or json like file containing tag configuration for ideascale custom fields
     #[structopt(long)]
     tags: Option<PathBuf>,
+
+    /// Path to json or json like file containing list of excluded proposal ids
+    #[structopt(long)]
+    excluded_proposals: Option<PathBuf>,
 
     /// Ideascale stages list,
     #[structopt(long, parse(from_str=parse_from_csv), default_value = "Governance phase;Assess QA")]
@@ -90,13 +96,20 @@ impl Import {
             chain_vote_type,
             output_dir: save_folder,
             tags,
+            excluded_proposals,
             stages_filters,
         } = self;
 
         println!("{:?}", stages_filters);
 
         let tags: CustomFieldTags = if let Some(tags_path) = tags {
-            read_tags_from_file(tags_path)?
+            read_json_from_file(tags_path)?
+        } else {
+            Default::default()
+        };
+
+        let excluded_proposals: HashSet<u32> = if let Some(excluded_path) = excluded_proposals {
+            read_json_from_file(excluded_path)?
         } else {
             Default::default()
         };
@@ -110,6 +123,7 @@ impl Import {
             *fund,
             &stage_label.to_lowercase(),
             &stages_filters.iter().map(AsRef::as_ref).collect::<Vec<_>>(),
+            &excluded_proposals,
             api_token.clone(),
         ))?;
 
@@ -156,7 +170,7 @@ fn dump_content_to_file(content: impl Serialize, file_path: &Path) -> Result<(),
     serde_json::to_writer_pretty(writer, &content).map_err(Error::Serde)
 }
 
-fn read_tags_from_file(file_path: &Path) -> Result<CustomFieldTags, Error> {
+fn read_json_from_file<T: DeserializeOwned>(file_path: &Path) -> Result<T, Error> {
     let reader = io_utils::open_file_read(&Some(file_path))?;
     serde_json::from_reader(reader).map_err(Error::Serde)
 }

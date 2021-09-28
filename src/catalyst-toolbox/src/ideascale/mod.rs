@@ -4,7 +4,7 @@ mod models;
 use crate::ideascale::fetch::Scores;
 use crate::ideascale::models::de::{clean_str, Challenge, Fund, Funnel, Proposal, Stage};
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub use crate::ideascale::models::custom_fields::CustomFieldTags;
 use regex::Regex;
@@ -37,6 +37,7 @@ pub async fn fetch_all(
     fund: usize,
     stage_label: &str,
     stages_filters: &[&str],
+    excluded_proposals: &HashSet<u32>,
     api_token: String,
 ) -> Result<IdeaScaleData, Error> {
     let funnels_task = tokio::spawn(fetch::get_funnels_data_for_fund(api_token.clone()));
@@ -68,7 +69,8 @@ pub async fn fetch_all(
         .map(Result::unwrap)
         .flatten()
         // filter out non approved or staged proposals
-        .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type, &matches));
+        .filter(|p| p.approved && filter_proposal_by_stage_type(&p.stage_type, &matches))
+        .filter(|p| !excluded_proposals.contains(&p.proposal_id));
 
     let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
     stages.retain(|stage| filter_stages(stage, stage_label, &funnels));

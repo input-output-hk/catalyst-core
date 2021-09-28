@@ -209,7 +209,7 @@ Import ideascale data needed to initialize vit-servicing-station database
 catalyst-toolbox-ideascale-import 0.2.0
 
 USAGE:
-    catalyst-toolbox.exe ideascale import [OPTIONS] --api-token <api-token> --chain-vote-type <chain-vote-type> --fund <fund> --fund-goal <fund-goal> --output-dir <output-dir> --threshold <threshold>
+    catalyst-toolbox  ideascale import [OPTIONS] --api-token <api-token> --chain-vote-type <chain-vote-type> --fund <fund> --fund-goal <fund-goal> --output-dir <output-dir> --threshold <threshold>
 
 FLAGS:
     -h, --help       Prints help information
@@ -277,7 +277,7 @@ related to Catalyst funds.
 Dump information related to catalyst fund
 
 USAGE:
-    catalyst-toolbox.exe archive <jormungandr-database> <output-dir>
+    catalyst-toolbox archive <jormungandr-database> <output-dir>
 
 FLAGS:
     -h, --help       Prints help information

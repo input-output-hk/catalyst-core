@@ -136,6 +136,8 @@ impl Import {
         );
 
         let mut challenges: Vec<_> = challenges.values().collect();
+        // even if final id type is string, they are just sequentially added, so it should be safe
+        // to parse and unwrap here
         challenges.sort_by_key(|c| c.id.parse::<i32>().unwrap());
 
         dump_content_to_file(

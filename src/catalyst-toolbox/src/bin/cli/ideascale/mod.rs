@@ -100,8 +100,6 @@ impl Import {
             stages_filters,
         } = self;
 
-        println!("{:?}", stages_filters);
-
         let tags: CustomFieldTags = if let Some(tags_path) = tags {
             read_json_from_file(tags_path)?
         } else {

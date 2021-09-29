@@ -31,8 +31,8 @@ pub use crate::date::{BlockDate, BlockDateParseError, Epoch, SlotId};
 /// with the position of that block in the chain.
 #[derive(Debug, Clone)]
 pub struct Block {
-    pub header: Header,
-    pub contents: Contents,
+    header: Header,
+    contents: Contents,
 }
 
 impl PartialEq for Block {
@@ -43,6 +43,19 @@ impl PartialEq for Block {
 impl Eq for Block {}
 
 impl Block {
+    /// Does not validate that the block is consistent
+    pub(super) fn new_unchecked(header: Header, contents: Contents) -> Self {
+        Self { header, contents }
+    }
+
+    pub fn header(&self) -> &Header {
+        &self.header
+    }
+
+    pub fn contents(&self) -> &Contents {
+        &self.contents
+    }
+
     pub fn is_consistent(&self) -> bool {
         let (content_hash, content_size) = self.contents.compute_hash_size();
 
@@ -128,6 +141,7 @@ impl property::Deserialize for Block {
             serialized_content_size -= message_size as u32;
         }
 
+        // TODO: check that the block is consistent
         Ok(Block {
             header,
             contents: contents.into(),
@@ -157,6 +171,7 @@ impl Readable for Block {
             remaining_content_size -= message_size as u32;
         }
 
+        // TODO: check that the block is consistent
         Ok(Block {
             header,
             contents: contents.into(),

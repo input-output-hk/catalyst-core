@@ -192,7 +192,7 @@ pub fn apply_block_above_max_content_size() {
         .with_parent_id(ledger.block0_hash)
         .build(&stake_pool, ledger.era());
 
-    let (_, content_size) = block.contents.compute_hash_size();
+    let (_, content_size) = block.contents().compute_hash_size();
 
     assert_err!(
         LedgerError::InvalidContentSize {

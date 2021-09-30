@@ -17,8 +17,6 @@ pub enum Error {
     CouldntParseTag(String),
 }
 
-type AdvisorReviewExtras = serde_json::Value;
-
 #[derive(Clone, Deserialize)]
 struct AdvisorReviewRow {
     id: u32,
@@ -46,9 +44,6 @@ struct AdvisorReviewRow {
 
     #[serde(alias = "Assessment Note")]
     note: String,
-
-    #[serde(flatten)]
-    extras: AdvisorReviewExtras,
 }
 
 impl AdvisorReviewRow {
@@ -71,7 +66,7 @@ pub fn read_vca_reviews_aggregated_file(
     tags_map: &TagsMap,
 ) -> Result<Vec<AdvisorReview>, Error> {
     let mut csv_reader = csv::ReaderBuilder::new()
-        .delimiter(b';')
+        .delimiter(b',')
         .has_headers(true)
         .from_path(filepath)?;
 

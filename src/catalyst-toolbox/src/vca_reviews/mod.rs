@@ -73,7 +73,10 @@ pub fn read_vca_reviews_aggregated_file(
     filepath: &Path,
     tags_map: &TagsMap,
 ) -> Result<Vec<AdvisorReview>, Error> {
-    let mut csv_reader = csv::Reader::from_path(filepath)?;
+    let mut csv_reader = csv::ReaderBuilder::new()
+        .delimiter(b';')
+        .has_headers(true)
+        .from_path(filepath)?;
 
     let mut res: Vec<AdvisorReview> = Vec::new();
     for entry in csv_reader.deserialize() {

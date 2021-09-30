@@ -1,7 +1,14 @@
 mod vote;
 
+use crate::fragment::Contents;
 use crate::fragment::Fragment;
+use crate::header::BlockDate;
+use crate::header::ChainLength;
+use crate::header::Header;
+use crate::header::HeaderBuilderNew;
+use crate::header::{BlockVersion, HeaderId};
 use crate::key::Hash;
+use crate::ledger::LedgerStaticParameters;
 use crate::{
     account::Identifier,
     certificate::PoolPermissions,
@@ -20,10 +27,14 @@ use crate::{
     value::Value,
 };
 use chain_addr::Discrimination;
+use chain_crypto::SecretKey;
 use chain_crypto::{vrf_evaluate_and_prove, Ed25519, KeyPair, PublicKey};
+use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rand_core::RngCore;
+use std::time::Duration;
+use std::time::SystemTime;
 use std::{iter, num::NonZeroU64};
 pub use vote::VoteTestGen;
 
@@ -63,6 +74,10 @@ impl TestGen {
             .clone()
     }
 
+    pub fn parent_id() -> HeaderId {
+        Self::hash()
+    }
+
     pub fn leader_pair() -> LeaderPair {
         let leader_key = AddressData::generate_key_pair::<Ed25519>()
             .private_key()
@@ -73,6 +88,16 @@ impl TestGen {
                 .clone(),
         );
         LeaderPair::new(leader_id, leader_key)
+    }
+
+    pub fn secret_keys() -> impl Iterator<Item = SecretKey<Ed25519>> {
+        iter::from_fn(|| {
+            Some(
+                AddressData::generate_key_pair::<Ed25519>()
+                    .private_key()
+                    .clone(),
+            )
+        })
     }
 
     pub fn leaders_pairs() -> impl Iterator<Item = LeaderPair> {
@@ -110,6 +135,42 @@ impl TestGen {
             .build()
     }
 
+    pub fn chain_length() -> ChainLength {
+        ChainLength(Self::rand().next_u32())
+    }
+
+    pub fn genesis_praos_header() -> Header {
+        let stake_pool = TestGen::stake_pool();
+
+        HeaderBuilderNew::new(BlockVersion::KesVrfproof, &Contents::empty())
+            .set_parent(&TestGen::hash(), TestGen::chain_length())
+            .set_date(BlockDate {
+                epoch: 0,
+                slot_id: 1,
+            })
+            .into_genesis_praos_builder()
+            .unwrap()
+            .set_consensus_data(&stake_pool.id(), &TestGen::vrf_proof(&stake_pool))
+            .sign_using(stake_pool.kes().private_key())
+            .generalize()
+    }
+
+    pub fn bft_header() -> Header {
+        let stake_pool = TestGen::stake_pool();
+
+        HeaderBuilderNew::new(BlockVersion::KesVrfproof, &Contents::empty())
+            .set_parent(&TestGen::hash(), TestGen::chain_length())
+            .set_date(BlockDate {
+                epoch: 0,
+                slot_id: 1,
+            })
+            .into_genesis_praos_builder()
+            .unwrap()
+            .set_consensus_data(&stake_pool.id(), &TestGen::vrf_proof(&stake_pool))
+            .sign_using(stake_pool.kes().private_key())
+            .generalize()
+    }
+
     pub fn ledger() -> Ledger {
         // TODO: Randomize some of the config paramaters below
         let leader_pair = TestGen::leader_pair();
@@ -123,5 +184,24 @@ impl TestGen {
         ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
 
         Ledger::new(header_id, vec![&Fragment::Initial(ie)]).unwrap()
+    }
+
+    pub fn static_parameters() -> LedgerStaticParameters {
+        LedgerStaticParameters {
+            block0_initial_hash: Self::hash(),
+            block0_start_time: crate::config::Block0Date(0),
+            discrimination: Discrimination::Test,
+            kes_update_speed: 0,
+        }
+    }
+
+    pub fn time_era() -> TimeEra {
+        let now = SystemTime::now();
+        let t0 = Timeline::new(now);
+        let f0 = SlotDuration::from_secs(5);
+        let tf0 = TimeFrame::new(t0, f0);
+        let t1 = now + Duration::from_secs(10);
+        let slot1 = tf0.slot_at(&t1).unwrap();
+        TimeEra::new(slot1, TimeEpoch(2), 4)
     }
 }

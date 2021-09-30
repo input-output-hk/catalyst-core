@@ -12,7 +12,7 @@ use crate::{
     key::BftLeaderId,
 };
 
-use chain_crypto::{Ed25519, SecretKey, SumEd25519_12};
+use chain_crypto::{Ed25519, PublicKey, SecretKey, SumEd25519_12};
 use std::marker::PhantomData;
 
 /// Finalized BFT Header
@@ -153,6 +153,14 @@ impl HeaderBftBuilder<HeaderSetConsensusData> {
         sret.set_signature(BftSignature(sig))
     }
 
+    /// Method introduced for negative testing. It does not derive public key from secret, but allow
+    /// not linked public keys
+    pub fn sign_using_unsafe(self, sk: &SecretKey<Ed25519>, pk: PublicKey<Ed25519>) -> HeaderBft {
+        let sret = self.set_consensus_data(&BftLeaderId(pk));
+        let sig = sk.sign_slice(sret.get_authenticated_data());
+        sret.set_signature(BftSignature(sig))
+    }
+
     pub fn set_consensus_data(
         self,
         bft_leaderid: &BftLeaderId,
@@ -215,13 +223,7 @@ impl HeaderGenesisPraosBuilder<HeaderSetConsensusSignature> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        chaintypes::HeaderId,
-        testing::{
-            data::{LeaderPair, StakePool},
-            TestGen,
-        },
-    };
+    use crate::{chaintypes::HeaderId, testing::TestGen};
 
     fn block_date() -> BlockDate {
         BlockDate {
@@ -230,36 +232,22 @@ mod tests {
         }
     }
 
-    fn contents() -> Contents {
-        Contents::empty()
-    }
-
     fn chain_length() -> ChainLength {
         ChainLength(1)
     }
 
-    fn stake_pool() -> StakePool {
-        TestGen::stake_pool()
-    }
-
-    fn parent_id() -> HeaderId {
-        TestGen::hash()
-    }
-
-    fn leader() -> LeaderPair {
-        TestGen::leader_pair()
-    }
-
     #[test]
     pub fn correct_header() {
-        let parent_id = parent_id();
-        let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
-            .set_parent(&parent_id, chain_length())
+        let parent_id = TestGen::parent_id();
+        let stake_pool = TestGen::stake_pool();
+        let chain_length = TestGen::chain_length();
+        let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &Contents::empty())
+            .set_parent(&parent_id, chain_length)
             .set_date(block_date())
             .into_genesis_praos_builder()
             .unwrap()
-            .set_consensus_data(&stake_pool().id(), &TestGen::vrf_proof(&stake_pool()))
-            .sign_using(stake_pool().kes().private_key())
+            .set_consensus_data(&stake_pool.id(), &TestGen::vrf_proof(&stake_pool))
+            .sign_using(stake_pool.kes().private_key())
             .generalize();
 
         assert_ne!(header.id(), parent_id, "same id as parent");
@@ -273,18 +261,19 @@ mod tests {
             parent_id,
             "wrong block parent hash"
         );
-        assert_eq!(header.chain_length(), chain_length(), "wrong chain length");
+        assert_eq!(header.chain_length(), chain_length, "wrong chain length");
     }
 
     #[test]
     pub fn correct_genesis_header() {
-        let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
+        let stake_pool = TestGen::stake_pool();
+        let header = HeaderBuilderNew::new(BlockVersion::KesVrfproof, &Contents::empty())
             .set_genesis()
             .set_date(block_date())
             .into_genesis_praos_builder()
             .unwrap()
-            .set_consensus_data(&stake_pool().id(), &TestGen::vrf_proof(&stake_pool()))
-            .sign_using(stake_pool().kes().private_key())
+            .set_consensus_data(&stake_pool.id(), &TestGen::vrf_proof(&stake_pool))
+            .sign_using(stake_pool.kes().private_key())
             .generalize();
 
         assert_ne!(header.id(), HeaderId::zero_hash(), "same id as parent");
@@ -303,13 +292,14 @@ mod tests {
 
     #[test]
     pub fn correct_bft_header() {
-        let parent_id = parent_id();
-        let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
-            .set_parent(&parent_id, chain_length())
+        let parent_id = TestGen::parent_id();
+        let chain_length = TestGen::chain_length();
+        let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
+            .set_parent(&parent_id, chain_length)
             .set_date(block_date())
             .into_bft_builder()
             .unwrap()
-            .sign_using(&leader().key())
+            .sign_using(&TestGen::leader_pair().key())
             .generalize();
 
         assert_ne!(header.id(), parent_id, "same id as parent");
@@ -323,14 +313,14 @@ mod tests {
             parent_id,
             "wrong block parent hash"
         );
-        assert_eq!(header.chain_length(), chain_length(), "wrong chain length");
+        assert_eq!(header.chain_length(), chain_length, "wrong chain length");
         assert_eq!(header.block_date(), block_date(), "")
     }
 
     #[test]
     pub fn correct_unsigned_header() {
-        let parent_id = parent_id();
-        let header = HeaderBuilderNew::new(BlockVersion::Genesis, &contents())
+        let parent_id = TestGen::parent_id();
+        let header = HeaderBuilderNew::new(BlockVersion::Genesis, &Contents::empty())
             .set_parent(&parent_id, chain_length())
             .set_date(block_date())
             .into_unsigned_header()
@@ -354,8 +344,8 @@ mod tests {
     #[test]
     #[should_panic]
     pub fn wrong_version_bft() {
-        HeaderBuilderNew::new(BlockVersion::KesVrfproof, &contents())
-            .set_parent(&parent_id(), chain_length())
+        HeaderBuilderNew::new(BlockVersion::KesVrfproof, &Contents::empty())
+            .set_parent(&TestGen::parent_id(), chain_length())
             .set_date(block_date())
             .into_bft_builder()
             .unwrap();
@@ -364,7 +354,7 @@ mod tests {
     #[test]
     #[should_panic]
     pub fn wrong_version_unsigned() {
-        HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
+        HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
             .set_genesis()
             .set_date(block_date())
             .into_unsigned_header()
@@ -374,8 +364,8 @@ mod tests {
     #[test]
     #[should_panic]
     pub fn wrong_version_genesis_praos() {
-        HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &contents())
-            .set_parent(&parent_id(), chain_length())
+        HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
+            .set_parent(&TestGen::parent_id(), chain_length())
             .set_date(block_date())
             .into_genesis_praos_builder()
             .unwrap();

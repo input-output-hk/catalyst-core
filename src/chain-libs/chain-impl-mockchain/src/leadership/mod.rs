@@ -292,10 +292,49 @@ impl std::error::Error for Error {
 mod tests {
 
     use super::*;
+    use crate::fragment::Contents;
+    use crate::header::ChainLength;
+    use crate::header::HeaderBuilderNew;
+    use crate::testing::data::AddressData;
+    use crate::testing::ConfigBuilder;
+    use crate::testing::LedgerBuilder;
     use crate::testing::TestGen;
+    use chain_crypto::PublicKey;
+
+    pub fn generate_ledger_with_bft_leaders_count(count: usize) -> (Vec<BftLeaderId>, Ledger) {
+        let leaders: Vec<PublicKey<Ed25519>> = TestGen::leaders_pairs()
+            .take(count)
+            .map(|x| x.leader_key.to_public())
+            .collect();
+        generate_ledger_with_bft_leaders(leaders)
+    }
+
+    pub fn generate_ledger_with_bft_leaders(
+        leaders: Vec<PublicKey<Ed25519>>,
+    ) -> (Vec<BftLeaderId>, Ledger) {
+        let leaders: Vec<BftLeaderId> = leaders.into_iter().map(|x| BftLeaderId(x)).collect();
+        let config = ConfigBuilder::new().with_leaders(&leaders);
+        let test_ledger = LedgerBuilder::from_config(config)
+            .build()
+            .expect("cannot build ledger");
+        (leaders, test_ledger.ledger)
+    }
+
+    pub fn generate_header_for_leader(leader_key: SecretKey<Ed25519>) -> Header {
+        HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
+            .set_parent(&TestGen::hash(), ChainLength(1))
+            .set_date(BlockDate {
+                epoch: 0,
+                slot_id: 1,
+            })
+            .into_bft_builder()
+            .unwrap()
+            .sign_using(&leader_key)
+            .generalize()
+    }
 
     #[test]
-    fn convensus_verify_version() {
+    fn consensus_verify_version_for_bft() {
         let ledger = TestGen::ledger();
 
         let data = bft::LeadershipData::new(&ledger).expect("Couldn't build leadership data");
@@ -311,7 +350,108 @@ mod tests {
         assert!(bft_leadership_consensus
             .verify_version(BlockVersion::Genesis)
             .failure());
+    }
 
+    #[test]
+    fn consensus_leader_for_bft() {
+        let leader_key = AddressData::generate_key_pair::<Ed25519>()
+            .private_key()
+            .clone();
+        let (_, ledger) = generate_ledger_with_bft_leaders(vec![leader_key.to_public()]);
+        let leadership_data =
+            bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
+        let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
+        let header = generate_header_for_leader(leader_key.clone());
+        assert!(bft_leadership_consensus.verify_leader(&header).success());
+    }
+
+    #[test]
+    fn is_leader_for_bft_correct() {
+        let leaders_count = 5;
+        let leaders_keys: Vec<SecretKey<Ed25519>> =
+            TestGen::secret_keys().take(leaders_count).collect();
+        let (leaders, ledger) =
+            generate_ledger_with_bft_leaders(leaders_keys.iter().map(|x| x.to_public()).collect());
+        let leadership_data =
+            bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
+        let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
+
+        for leader_index in 0..leaders_count {
+            let leader = Leader {
+                bft_leader: Some(BftLeader {
+                    sig_key: leaders_keys[leader_index].clone(),
+                }),
+                genesis_leader: None,
+            };
+            let leader_output = bft_leadership_consensus.is_leader(
+                &leader,
+                BlockDate {
+                    epoch: 0,
+                    slot_id: leader_index as u32,
+                },
+            );
+            if let LeaderOutput::Bft(actual_leader) = leader_output {
+                assert_eq!(leaders[leader_index].clone(), actual_leader);
+            } else {
+                panic!("wrong leader at index: {}", leader_index);
+            }
+        }
+    }
+
+    #[test]
+    fn is_leader_for_bft_negative() {
+        let leaders_count = 5;
+        let leaders_keys: Vec<SecretKey<Ed25519>> =
+            TestGen::secret_keys().take(leaders_count).collect();
+        let (_, ledger) =
+            generate_ledger_with_bft_leaders(leaders_keys.iter().map(|x| x.to_public()).collect());
+
+        let leadership_data =
+            bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
+        let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
+
+        for leader_index in 0..leaders_count - 1 {
+            let leader = Leader {
+                bft_leader: Some(BftLeader {
+                    sig_key: leaders_keys[leader_index].clone(),
+                }),
+                genesis_leader: None,
+            };
+            let _leader_output = bft_leadership_consensus.is_leader(
+                &leader,
+                BlockDate {
+                    epoch: 0,
+                    slot_id: leaders_count as u32,
+                },
+            );
+            assert!(matches!(LeaderOutput::None, _leader_output));
+        }
+    }
+
+    #[test]
+    fn is_leader_empty() {
+        let ledger = TestGen::ledger();
+
+        let leadership_data =
+            bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
+        let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
+
+        let leader = Leader {
+            bft_leader: None,
+            genesis_leader: None,
+        };
+        let _leader_output = bft_leadership_consensus.is_leader(
+            &leader,
+            BlockDate {
+                epoch: 0,
+                slot_id: 0,
+            },
+        );
+        assert!(matches!(LeaderOutput::None, _leader_output));
+    }
+
+    #[test]
+    fn consensus_verify_version_for_praos() {
         let ledger = TestGen::ledger();
 
         let data = genesis::LeadershipData::new(0, &ledger);
@@ -327,5 +467,122 @@ mod tests {
         assert!(gen_leadership_consensus
             .verify_version(BlockVersion::Genesis)
             .failure());
+    }
+
+    #[test]
+    #[should_panic]
+    fn ledership_getters_bft_slot_no_negative() {
+        let test_ledger = LedgerBuilder::from_config(
+            ConfigBuilder::new()
+                .with_consensus_version(ConsensusType::Bft)
+                .with_slots_per_epoch(60),
+        )
+        .build()
+        .unwrap();
+
+        let leadership = Leadership::new(0, &test_ledger.ledger);
+        leadership.date_at_slot(61);
+    }
+
+    #[test]
+    fn ledership_getters_bft() {
+        let epoch = 0;
+        let slot_id = 1;
+
+        let test_ledger = LedgerBuilder::from_config(
+            ConfigBuilder::new()
+                .with_consensus_version(ConsensusType::Bft)
+                .with_slots_per_epoch(60),
+        )
+        .build()
+        .unwrap();
+
+        let leadership = Leadership::new(epoch, &test_ledger.ledger);
+
+        assert_eq!(leadership.epoch(), epoch);
+        assert_eq!(
+            leadership.date_at_slot(slot_id),
+            BlockDate {
+                epoch: 0,
+                slot_id: slot_id
+            }
+        );
+        assert_eq!(leadership.stake_distribution(), None);
+    }
+
+    #[test]
+    fn leadership_is_leader_for_date() {
+        let leaders_count = 5;
+        let leaders_keys: Vec<SecretKey<Ed25519>> =
+            TestGen::secret_keys().take(leaders_count).collect();
+        let leaders: Vec<BftLeaderId> = leaders_keys
+            .iter()
+            .map(|x| BftLeaderId(x.to_public()))
+            .collect();
+        let config = ConfigBuilder::new()
+            .with_leaders(&leaders)
+            .with_consensus_version(ConsensusType::Bft)
+            .with_slots_per_epoch(60);
+        let test_ledger = LedgerBuilder::from_config(config)
+            .build()
+            .expect("cannot build ledger");
+
+        let leadership = Leadership::new(0, &test_ledger.ledger);
+
+        for leader_index in 0..5 {
+            let leader = Leader {
+                bft_leader: Some(BftLeader {
+                    sig_key: leaders_keys[leader_index].clone(),
+                }),
+                genesis_leader: None,
+            };
+            let leader_output = leadership.is_leader_for_date(
+                &leader,
+                BlockDate {
+                    epoch: 0,
+                    slot_id: leader_index as u32,
+                },
+            );
+            if let LeaderOutput::Bft(actual_leader) = leader_output {
+                assert_eq!(leaders[leader_index].clone(), actual_leader);
+            } else {
+                panic!("wrong leader at index: {}", leader_index);
+            }
+        }
+    }
+
+    #[test]
+    fn leadership_verify() {
+        let leaders_count = 5;
+        let leaders_keys: Vec<SecretKey<Ed25519>> =
+            TestGen::secret_keys().take(leaders_count).collect();
+        let leaders: Vec<BftLeaderId> = leaders_keys
+            .iter()
+            .map(|x| BftLeaderId(x.to_public()))
+            .collect();
+        let config = ConfigBuilder::new()
+            .with_leaders(&leaders)
+            .with_consensus_version(ConsensusType::Bft)
+            .with_slots_per_epoch(60);
+        let test_ledger = LedgerBuilder::from_config(config)
+            .build()
+            .expect("cannot build ledger");
+
+        let leadership = Leadership::new(0, &test_ledger.ledger);
+
+        for i in 0..5 {
+            let header = HeaderBuilderNew::new(BlockVersion::Ed25519Signed, &Contents::empty())
+                .set_parent(&TestGen::hash(), ChainLength(i))
+                .set_date(BlockDate {
+                    epoch: 0,
+                    slot_id: i,
+                })
+                .into_bft_builder()
+                .unwrap()
+                .sign_using(&leaders_keys[i as usize])
+                .generalize();
+
+            assert!(leadership.verify(&header).success());
+        }
     }
 }

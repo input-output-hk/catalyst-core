@@ -4,7 +4,6 @@ pub use tags::TagsMap;
 
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 
-use calamine::{open_workbook, Reader, Xlsx};
 use serde::Deserialize;
 
 use std::path::Path;
@@ -12,13 +11,7 @@ use std::path::Path;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    CouldNotReadExcel(#[from] calamine::Error),
-
-    #[error(transparent)]
-    Xls(#[from] calamine::XlsxError),
-
-    #[error(transparent)]
-    CouldNotDeserialize(#[from] calamine::DeError),
+    CouldNotReadExcel(#[from] csv::Error),
 
     #[error("Couldn't find workbook {0}")]
     CouldNotFindWorkbook(String),
@@ -78,15 +71,12 @@ impl AdvisorReviewRow {
 
 pub fn read_vca_reviews_aggregated_file(
     filepath: &Path,
-    worksheet: &str,
     tags_map: &TagsMap,
 ) -> Result<Vec<AdvisorReview>, Error> {
-    let mut workbook: Xlsx<_> = open_workbook(filepath)?;
-    let range = workbook
-        .worksheet_range(worksheet)
-        .ok_or_else(|| Error::CouldNotFindWorkbook(worksheet.to_string()))??;
+    let mut csv_reader = csv::Reader::from_path(filepath)?;
+
     let mut res: Vec<AdvisorReview> = Vec::new();
-    for entry in range.deserialize()? {
+    for entry in csv_reader.deserialize() {
         let value: AdvisorReviewRow = entry?;
         res.push(value.as_advisor_review(tags_map)?);
     }

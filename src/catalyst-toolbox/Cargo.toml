@@ -15,7 +15,6 @@ bench = false
 
 [dependencies]
 assert_fs = "1"
-calamine = "0.18"
 csv = "1.1"
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }

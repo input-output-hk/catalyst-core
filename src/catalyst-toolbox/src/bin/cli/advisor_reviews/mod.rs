@@ -46,9 +46,6 @@ pub struct Export {
     /// Output format either csv or json
     #[structopt(long, default_value = "csv")]
     format: OutputFormat,
-    /// Worksheet name
-    #[structopt(long)]
-    worksheet: String,
     /// Tags json file
     #[structopt(long)]
     tags: Option<PathBuf>,
@@ -81,7 +78,6 @@ impl Export {
             from,
             to,
             format,
-            worksheet,
             tags,
         } = self;
         let tags_map: TagsMap = if let Some(tags) = tags {
@@ -90,7 +86,7 @@ impl Export {
             TagsMap::default()
         };
 
-        let reviews = read_vca_reviews_aggregated_file(&from, &worksheet, &tags_map)?;
+        let reviews = read_vca_reviews_aggregated_file(&from, &tags_map)?;
         match format {
             OutputFormat::Csv => {
                 write_csv(&reviews, &to)?;

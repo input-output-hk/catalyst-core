@@ -11,10 +11,7 @@ use std::path::Path;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    CouldNotReadExcel(#[from] csv::Error),
-
-    #[error("Couldn't find workbook {0}")]
-    CouldNotFindWorkbook(String),
+    CouldNotReadCsv(#[from] csv::Error),
 
     #[error("Couldn't parse advisor review tag for question: {0}")]
     CouldntParseTag(String),

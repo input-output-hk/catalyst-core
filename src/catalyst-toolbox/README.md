@@ -242,7 +242,44 @@ An example would look like:
 }
 ```
 
-Where **all the keys are needed** and values are ideascale custom fields. 
+#### vCA Reviews export tool
+
+Export data from the vCA aggregated file into a csv file ready for VitSS db import
+```shell
+catalyst-toolbox-reviews-export 0.2.0
+
+USAGE:
+    catalyst-toolbox reviews export [OPTIONS] --from <from> --to <to> --worksheet <worksheet>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --format <format>          Output format either csv or json [default: csv]
+        --from <from>              Path to vca aggreagted file
+        --tags <tags>              Tags json file
+        --to <to>                  Output file
+```
+
+##### Review tags file
+
+Tags are variable markers in the review files that we need to take into account. We need to match tags with their 
+corresponding tag phrase. It already has some defaults, but if this changes a new configuration file of the forward style
+needs to be provided:
+
+```json
+{
+  "setting_alignment": "...",
+  "setting_verifiability": "...",
+  "setting_feasibility": "...",
+  "standard_impact": "...",
+  "standard_feasibility": "...",
+  "standard_auditability": "..."
+}
+```
+
+Where **all the keys are needed** and values are matching reviews phrases markers. 
 
 #### QR code generation
 

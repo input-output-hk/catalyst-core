@@ -51,6 +51,7 @@ image = "0.23.12"
 qrcode = "0.12"
 quircs = "0.10.0"
 symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/danielsanchezq/vit-servicing-station.git", branch = "advisors-reviews" }
 graphql_client = "0.10"
 gag = "1"
 

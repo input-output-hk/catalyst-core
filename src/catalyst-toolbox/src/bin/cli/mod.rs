@@ -1,3 +1,4 @@
+mod advisor_reviews;
 mod archive;
 mod ideascale;
 mod kedqr;
@@ -40,8 +41,10 @@ pub enum CatalystCommand {
     Logs(logs::Logs),
     /// Generate qr codes
     QrCode(kedqr::QrCodeCmd),
-    /// Interact with the Idescale API
+    /// Interact with the Ideascale API
     Ideascale(ideascale::Ideascale),
+    /// Advisor reviews related operations
+    Reviews(advisor_reviews::Reviews),
     /// Dump information related to catalyst fund
     Archive(archive::Archive),
     /// Validate catalyst elections
@@ -74,6 +77,7 @@ impl CatalystCommand {
             Logs(logs) => logs.exec()?,
             QrCode(kedqr) => kedqr.exec()?,
             Ideascale(ideascale) => ideascale.exec()?,
+            Reviews(reviews) => reviews.exec()?,
             Archive(archive) => archive.exec()?,
             VoteCheck(vote_check) => vote_check.exec()?,
         };

@@ -260,7 +260,6 @@ OPTIONS:
         --from <from>              Path to vca aggreagted file
         --tags <tags>              Tags json file
         --to <to>                  Output file
-        --worksheet <worksheet>    Worksheet name
 ```
 
 ##### Review tags file

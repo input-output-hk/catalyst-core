@@ -154,12 +154,8 @@ mod tests {
 
     #[test]
     fn verify_incorrect_leader() {
-        let wrong_leader = AddressData::generate_key_pair::<Ed25519>()
-            .private_key()
-            .clone();
-        let leader_key = AddressData::generate_key_pair::<Ed25519>()
-            .private_key()
-            .clone();
+        let wrong_leader_key = TestGen::secret_key();
+        let leader_key = TestGen::secret_key();
         let (_, ledger) = generate_ledger_with_bft_leaders(vec![leader_key.to_public()]);
         let leadership_data =
             LeadershipData::new(&ledger).expect("leaders ids collection is empty");
@@ -169,7 +165,7 @@ mod tests {
             .set_date(block_date())
             .into_bft_builder()
             .unwrap()
-            .sign_using_unsafe(&leader_key, wrong_leader.to_public())
+            .sign_using_unsafe(&leader_key, wrong_leader_key.to_public())
             .generalize();
 
         assert!(leadership_data.verify(&header).failure());
@@ -177,12 +173,8 @@ mod tests {
 
     #[test]
     fn verify_incorrect_signature() {
-        let wrong_leader_key = AddressData::generate_key_pair::<Ed25519>()
-            .private_key()
-            .clone();
-        let leader_key = AddressData::generate_key_pair::<Ed25519>()
-            .private_key()
-            .clone();
+        let wrong_leader_key = TestGen::secret_key();
+        let leader_key = TestGen::secret_key();
         let (_, ledger) = generate_ledger_with_bft_leaders(vec![leader_key.to_public()]);
         let leadership_data =
             LeadershipData::new(&ledger).expect("leaders ids collection is empty");
@@ -200,9 +192,7 @@ mod tests {
 
     #[test]
     fn verify_correct_verification() {
-        let leader_key = AddressData::generate_key_pair::<Ed25519>()
-            .private_key()
-            .clone();
+        let leader_key = TestGen::secret_key();
         let (_, ledger) = generate_ledger_with_bft_leaders(vec![leader_key.to_public()]);
         let leadership_data =
             LeadershipData::new(&ledger).expect("leaders ids collection is empty");

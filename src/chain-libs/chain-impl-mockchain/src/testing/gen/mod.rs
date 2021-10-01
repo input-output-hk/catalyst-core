@@ -90,6 +90,12 @@ impl TestGen {
         LeaderPair::new(leader_id, leader_key)
     }
 
+    pub fn secret_key() -> SecretKey<Ed25519> {
+        AddressData::generate_key_pair::<Ed25519>()
+            .private_key()
+            .clone()
+    }
+
     pub fn secret_keys() -> impl Iterator<Item = SecretKey<Ed25519>> {
         iter::from_fn(|| {
             Some(

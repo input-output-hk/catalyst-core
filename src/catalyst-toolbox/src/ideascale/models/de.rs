@@ -2,7 +2,7 @@ use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct AdaRewards(#[serde(deserialize_with = "deserialize_rewards")] u64);
 
 #[derive(Debug, Deserialize, Clone)]
@@ -99,7 +99,13 @@ pub struct CleanString(#[serde(deserialize_with = "deserialize_clean_string")] S
 
 impl Funnel {
     pub fn is_community(&self) -> bool {
-        self.title.as_ref().contains("Challenge Setting")
+        self.title.as_ref().contains("Community Setting")
+    }
+}
+
+impl From<u64> for AdaRewards {
+    fn from(v: u64) -> Self {
+        Self(v)
     }
 }
 

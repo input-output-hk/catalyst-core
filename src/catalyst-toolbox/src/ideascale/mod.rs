@@ -9,6 +9,10 @@ use std::collections::{HashMap, HashSet};
 pub use crate::ideascale::models::custom_fields::CustomFieldTags;
 use regex::Regex;
 
+// Id of funnel that do have rewards and should not count when importing funnels. It is static and
+// should not change
+const PROCESS_IMPROVEMENTS_ID: u64 = 7666;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
@@ -52,7 +56,9 @@ pub async fn fetch_all(
 
     let challenges: Vec<Challenge> = funds
         .iter()
+        .filter(|f| f.id != PROCESS_IMPROVEMENTS_ID)
         .flat_map(|f| f.challenges.iter().cloned())
+        .filter(|c| c.rewards > 0.into())
         .collect();
 
     let proposals_tasks: Vec<_> = challenges

@@ -7,11 +7,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" } 
-jormungandr-integration-tests = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" } 
-jormungandr-testing-utils = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
-jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
-jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" } 
+jormungandr-integration-tests = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" } 
+jormungandr-testing-utils = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
+jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
+jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
 vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund6" }
 vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund6" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
@@ -26,7 +26,7 @@ registration-service = { path = "../registration-service" }
 rand_chacha = "0.2"
 tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6", features = [ "property-test-api" ] }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "update-kedqr" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "catalyst-fund6" }
 thiserror = "1.0"
 rand = "0.8"
 libmath = "0.2.1"

@@ -6,8 +6,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "move_qr_code_module" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "catalyst-fund6" }
 wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "catalyst-fund6" }
 hex = "0.4"

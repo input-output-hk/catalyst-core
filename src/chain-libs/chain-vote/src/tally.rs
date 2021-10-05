@@ -199,6 +199,10 @@ impl EncryptedTally {
 
         Some(Self { r, fingerprint })
     }
+
+    pub fn options_amount(&self) -> usize {
+        self.r.len()
+    }
 }
 
 impl ValidatedTally {
@@ -278,6 +282,11 @@ impl TallyDecryptShare {
     /// Given the member's public key `MemberPublicKey`, and the `EncryptedTally`, verifies the
     /// correctness of the `TallyDecryptShare`.
     pub fn verify(&self, encrypted_tally: &EncryptedTally, pk: &MemberPublicKey) -> bool {
+        // elements amount of the tally share should be equal to the number of the existing options of the tally
+        if self.elements.len() != encrypted_tally.options_amount() {
+            return false;
+        }
+
         for (element, r) in self.elements.iter().zip(encrypted_tally.r.iter()) {
             if !element.pi.verify(r, &element.r1, &pk.0) {
                 return false;

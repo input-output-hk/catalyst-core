@@ -146,19 +146,20 @@ impl HeaderBuilder<HeaderCommonDone> {
 
 impl HeaderBftBuilder<HeaderSetConsensusData> {
     pub fn sign_using(self, sk: &SecretKey<Ed25519>) -> HeaderBft {
-        let pk = sk.to_public();
-        let sret = self.set_consensus_data(&BftLeaderId(pk));
-        let sig = sk.sign_slice(sret.get_authenticated_data());
-
-        sret.set_signature(BftSignature(sig))
+        self.sign_using_keys(sk, sk.to_public())
     }
 
     /// Method introduced for negative testing. It does not derive public key from secret, but allow
     /// not linked public keys
-    pub fn sign_using_unsafe(self, sk: &SecretKey<Ed25519>, pk: PublicKey<Ed25519>) -> HeaderBft {
+    fn sign_using_keys(self, sk: &SecretKey<Ed25519>, pk: PublicKey<Ed25519>) -> HeaderBft {
         let sret = self.set_consensus_data(&BftLeaderId(pk));
         let sig = sk.sign_slice(sret.get_authenticated_data());
         sret.set_signature(BftSignature(sig))
+    }
+
+    #[cfg(test)]
+    pub fn sign_using_unsafe(self, sk: &SecretKey<Ed25519>, pk: PublicKey<Ed25519>) -> HeaderBft {
+        self.sign_using_keys(sk, pk)
     }
 
     pub fn set_consensus_data(

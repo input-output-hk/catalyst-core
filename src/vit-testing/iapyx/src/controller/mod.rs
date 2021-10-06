@@ -4,7 +4,6 @@ pub use builder::{ControllerBuilder, Error as ControllerBuilderError};
 
 use crate::utils::valid_until::ValidUntil;
 use crate::Wallet;
-use catalyst_toolbox::kedqr::KeyQrCode;
 use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
 use jormungandr_testing_utils::testing::node::RestSettings;

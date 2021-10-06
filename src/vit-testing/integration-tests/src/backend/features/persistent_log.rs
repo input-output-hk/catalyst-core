@@ -2,13 +2,14 @@ use crate::common::{load::build_load_config, vitup_setup, VoteTiming};
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use catalyst_toolbox::recovery::Replay;
-use iapyx::{NodeLoad, Protocol};
+use iapyx::NodeLoad;
 use jcli_lib::utils::output_file::OutputFile;
 use jcli_lib::utils::output_format::{FormatVariant, OutputFormat};
 use jormungandr_lib::interfaces::VotePlanStatus;
 use jormungandr_testing_utils::testing::block0::get_block;
 use jortestkit::measurement::Status;
 use serde_json;
+use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::VitBackendSettingsBuilder;
@@ -21,7 +22,7 @@ pub fn persistent_log_contains_all_sent_votes() {
     let version = "2.0";
     let no_of_threads = 2;
     let batch_size = 100;
-    let no_of_wallets = 40_000;
+    let no_of_wallets = 40;
 
     let vote_timing = VoteBlockchainTime{
         vote_start: 0,

@@ -65,7 +65,7 @@ impl AsymmetricKey for SumEd25519_12 {
 }
 
 impl SecretKeySizeStatic for SumEd25519_12 {
-    const SECRET_KEY_SIZE: usize = sum::maximum_secretkey_size(DEPTH);
+    const SECRET_KEY_SIZE: usize = sum::maximum_secret_key_size(DEPTH);
 }
 
 impl VerificationAlgorithm for SumEd25519_12 {

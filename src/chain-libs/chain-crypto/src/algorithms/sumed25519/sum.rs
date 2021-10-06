@@ -52,13 +52,13 @@ impl AsRef<[u8]> for SecretKey {
 }
 
 // doesn't contains the seeds
-pub const fn minimum_secretkey_size(depth: Depth) -> usize {
+pub const fn minimum_secret_key_size(depth: Depth) -> usize {
     PERIOD_SERIALIZE_SIZE
         + INDIVIDUAL_SECRET_SIZE + INDIVIDUAL_PUBLIC_SIZE // keypair
         + depth.0 * 2 * PUBLIC_KEY_SIZE
 }
 
-pub const fn maximum_secretkey_size(depth: Depth) -> usize {
+pub const fn maximum_secret_key_size(depth: Depth) -> usize {
     PERIOD_SERIALIZE_SIZE
         + INDIVIDUAL_SECRET_SIZE + INDIVIDUAL_PUBLIC_SIZE // keypair
         + depth.0 * 2 * PUBLIC_KEY_SIZE
@@ -247,7 +247,7 @@ impl SecretKey {
         rs: &[Seed],
     ) -> Self {
         let depth = Depth(pks.len());
-        let mut out = Vec::with_capacity(minimum_secretkey_size(depth) + rs.len() * Seed::SIZE);
+        let mut out = Vec::with_capacity(minimum_secret_key_size(depth) + rs.len() * Seed::SIZE);
 
         let t_bytes = PeriodSerialized::to_le_bytes(t as PeriodSerialized);
         out.extend_from_slice(&t_bytes);
@@ -263,7 +263,7 @@ impl SecretKey {
             out.extend_from_slice(r.as_ref());
         }
 
-        assert_eq!(out.len(), maximum_secretkey_size(depth));
+        assert_eq!(out.len(), maximum_secret_key_size(depth));
 
         SecretKey { depth, data: out }
     }
@@ -360,7 +360,7 @@ impl SecretKey {
             out.extend_from_slice(bytes);
             Ok(SecretKey { depth, data: out })
         } else {
-            if bytes.len() != maximum_secretkey_size(depth) {
+            if bytes.len() != maximum_secret_key_size(depth) {
                 return Err(Error::InvalidSecretKeySize(bytes.len()));
             }
 
@@ -827,7 +827,7 @@ mod tests {
         }
     }
 
-    fn secretkey_identical(sk: &[u8], expected: &[u8]) {
+    fn secret_key_identical(sk: &[u8], expected: &[u8]) {
         assert_eq!(sk, expected)
     }
 
@@ -836,7 +836,7 @@ mod tests {
         let s = Seed::zero();
         let (mut sk, pk) = keygen(Depth(1), &s);
 
-        secretkey_identical(
+        secret_key_identical(
             &sk.sk().to_bytes(),
             &[
                 26, 125, 253, 234, 255, 238, 218, 196, 137, 40, 126, 133, 190, 94, 156, 4, 154, 47,
@@ -846,7 +846,7 @@ mod tests {
             ],
         );
         assert!(update(&mut sk).is_ok());
-        secretkey_identical(
+        secret_key_identical(
             &sk.sk().to_bytes(),
             &[
                 82, 59, 165, 167, 236, 147, 98, 219, 176, 128, 57, 163, 135, 146, 37, 146, 204,

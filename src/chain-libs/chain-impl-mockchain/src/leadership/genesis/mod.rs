@@ -470,13 +470,13 @@ mod tests {
             epoch: 1u32,
             slot_id: 0u32,
         };
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
+        let mut ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        ledger
+        *ledger.delegation_mut() = ledger
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
@@ -495,36 +495,33 @@ mod tests {
     #[test]
     pub fn leadership_leader_no_stake() {
         let date = BlockDate::first();
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
+        let mut ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        ledger
+        *ledger.delegation_mut() = ledger
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
         let selection = LeadershipData::new(date.epoch, &ledger);
 
-        assert_eq!(
-            selection
-                .leader(&stake_pool.id(), &stake_pool.vrf().private_key(), date)
-                .unwrap(),
-            None
-        );
+        assert!(selection
+            .leader(&stake_pool.id(), &stake_pool.vrf().private_key(), date)
+            .is_err());
     }
 
     #[test]
     pub fn leadership_leader_zero_stake() {
         let date = BlockDate::first();
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
+        let mut ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        ledger
+        *ledger.delegation_mut() = ledger
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
@@ -548,10 +545,10 @@ mod tests {
         let testledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger");
-        let ledger = testledger.ledger;
+        let mut ledger = testledger.ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        ledger
+        *ledger.delegation_mut() = ledger
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
@@ -572,13 +569,13 @@ mod tests {
             epoch: 1,
             slot_id: 0,
         };
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
+        let mut ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        ledger
+        *ledger.delegation_mut() = ledger
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
@@ -602,10 +599,10 @@ mod tests {
         let testledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger");
-        let ledger = testledger.ledger;
+        let mut ledger = testledger.ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        ledger
+        *ledger.delegation_mut() = ledger
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
@@ -625,10 +622,10 @@ mod tests {
         let testledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger");
-        let ledger = testledger.ledger;
+        let mut ledger = testledger.ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        ledger
+        *ledger.delegation_mut() = ledger
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");
@@ -670,13 +667,13 @@ mod tests {
             epoch: 2,
             slot_id: 0,
         };
-        let ledger = LedgerBuilder::from_config(ConfigBuilder::new())
+        let mut ledger = LedgerBuilder::from_config(ConfigBuilder::new())
             .build()
             .expect("cannot build test ledger")
             .ledger;
 
         let stake_pool = StakePoolBuilder::new().build();
-        ledger
+        *ledger.delegation_mut() = ledger
             .delegation()
             .register_stake_pool(stake_pool.info())
             .expect("cannot register stake pool");

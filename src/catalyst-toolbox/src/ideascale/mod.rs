@@ -1,17 +1,18 @@
 mod fetch;
 mod models;
 
-use crate::ideascale::fetch::Scores;
 use crate::ideascale::models::de::{clean_str, Challenge, Fund, Funnel, Proposal, Stage};
 
 use std::collections::{HashMap, HashSet};
 
-pub use crate::ideascale::models::custom_fields::CustomFieldTags;
 use regex::Regex;
+
+pub use crate::ideascale::fetch::Scores;
+pub use crate::ideascale::models::custom_fields::CustomFieldTags;
 
 // Id of funnel that do have rewards and should not count when importing funnels. It is static and
 // should not change
-const PROCESS_IMPROVEMENTS_ID: u64 = 7666;
+const PROCESS_IMPROVEMENTS_ID: u32 = 7666;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -34,7 +35,6 @@ pub struct IdeaScaleData {
     pub fund: Fund,
     pub challenges: HashMap<u32, Challenge>,
     pub proposals: HashMap<u32, Proposal>,
-    pub scores: Scores,
 }
 
 pub async fn fetch_all(
@@ -81,23 +81,6 @@ pub async fn fetch_all(
     let mut stages: Vec<_> = fetch::get_stages(api_token.clone()).await?;
     stages.retain(|stage| filter_stages(stage, stage_label, &funnels));
 
-    let scores_tasks: Vec<_> = stages
-        .iter()
-        .map(|stage| {
-            tokio::spawn(fetch::get_assessments_score(
-                stage.assessment_id,
-                api_token.clone(),
-            ))
-        })
-        .collect();
-
-    let scores: Scores = futures::future::try_join_all(scores_tasks)
-        .await?
-        .into_iter()
-        .flatten()
-        .flatten()
-        .collect();
-
     Ok(IdeaScaleData {
         funnels,
         fund: funds
@@ -106,7 +89,6 @@ pub async fn fetch_all(
             .unwrap_or_else(|| panic!("Selected fund {}, wasn't among the available funds", fund)),
         challenges: challenges.into_iter().map(|c| (c.id, c)).collect(),
         proposals: proposals.map(|p| (p.proposal_id, p)).collect(),
-        scores,
     })
 }
 
@@ -151,11 +133,11 @@ pub fn build_challenges(
 pub fn build_proposals(
     ideascale_data: &IdeaScaleData,
     built_challenges: &HashMap<u32, models::se::Challenge>,
+    scores: &Scores,
     chain_vote_type: &str,
     fund: usize,
     tags: &CustomFieldTags,
 ) -> Vec<models::se::Proposal> {
-    let scores = &ideascale_data.scores;
     ideascale_data
         .proposals
         .values()

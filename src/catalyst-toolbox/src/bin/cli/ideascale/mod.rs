@@ -1,6 +1,6 @@
 use catalyst_toolbox::ideascale::{
     build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags,
-    Error as IdeascaleError,
+    Error as IdeascaleError, Scores,
 };
 use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
@@ -19,6 +19,9 @@ pub enum Error {
 
     #[error(transparent)]
     Io(#[from] std::io::Error),
+
+    #[error(transparent)]
+    Csv(#[from] csv::Error),
 
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
@@ -64,6 +67,10 @@ pub struct Import {
     #[structopt(long)]
     output_dir: PathBuf,
 
+    /// Path to proposal scores csv file
+    #[structopt(long)]
+    scores: PathBuf,
+
     /// Path to json or json like file containing tag configuration for ideascale custom fields
     #[structopt(long)]
     tags: Option<PathBuf>,
@@ -95,6 +102,7 @@ impl Import {
             threshold,
             chain_vote_type,
             output_dir: save_folder,
+            scores,
             tags,
             excluded_proposals,
             stages_filters,
@@ -117,6 +125,7 @@ impl Import {
             .enable_time()
             .build()?;
 
+        let scores = read_scores_file(scores)?;
         let idescale_data = runtime.block_on(fetch_all(
             *fund,
             &stage_label.to_lowercase(),
@@ -130,6 +139,7 @@ impl Import {
         let proposals = build_proposals(
             &idescale_data,
             &challenges,
+            &scores,
             &chain_vote_type.to_string(),
             *fund,
             &tags,
@@ -177,4 +187,24 @@ fn read_json_from_file<T: DeserializeOwned>(file_path: &Path) -> Result<T, Error
 
 fn parse_from_csv(s: &str) -> Filters {
     s.split(';').map(|x| x.to_string()).collect()
+}
+
+fn read_scores_file(path: &Path) -> Result<Scores, Error> {
+    let mut reader = csv::Reader::from_path(path)?;
+    let mut scores = Scores::new();
+    for record in reader.records() {
+        let record = record?;
+        let proposal_id: u32 = record
+            .get(1)
+            .expect("Proposal ids should be present in scores file second column")
+            .parse()
+            .expect("Proposal ids should be integers");
+        let rating_given: f32 = record
+            .get(2)
+            .expect("Ratings should be present in scores file third column")
+            .parse()
+            .expect("Ratings should be floats [0, 5]");
+        scores.insert(proposal_id, rating_given);
+    }
+    Ok(scores)
 }

@@ -321,7 +321,7 @@ impl LedgerParameters {
 }
 
 impl Ledger {
-    fn empty(
+    pub(crate) fn empty(
         settings: setting::Settings,
         static_params: LedgerStaticParameters,
         era: TimeEra,
@@ -2128,7 +2128,7 @@ mod tests {
         let mut ledger = Ledger::empty(
             Settings::new(),
             static_params,
-            build_time_era(),
+            TestGen::time_era(),
             Pots::zero(),
         );
 
@@ -2136,16 +2136,6 @@ mod tests {
         ledger.accounts = accounts;
         ledger.multisig = multisig_ledger;
         ledger
-    }
-
-    fn build_time_era() -> TimeEra {
-        let now = SystemTime::now();
-        let t0 = Timeline::new(now);
-        let f0 = SlotDuration::from_secs(5);
-        let tf0 = TimeFrame::new(t0, f0);
-        let t1 = now + Duration::from_secs(10);
-        let slot1 = tf0.slot_at(&t1).unwrap();
-        TimeEra::new(slot1, TimeEpoch(2), 4)
     }
 
     fn should_expect_success(

@@ -1,5 +1,7 @@
 use crate::{
-    certificate::{DecryptedPrivateTally, DecryptedPrivateTallyProposal},
+    certificate::{
+        DecryptedPrivateTally, DecryptedPrivateTallyError, DecryptedPrivateTallyProposal,
+    },
     testing::data::CommitteeMembersManager,
     vote::VotePlanStatus,
 };
@@ -9,7 +11,7 @@ use rand::thread_rng;
 pub fn decrypt_tally(
     vote_plan_status: &VotePlanStatus,
     members: &CommitteeMembersManager,
-) -> DecryptedPrivateTally {
+) -> Result<DecryptedPrivateTally, DecryptedPrivateTallyError> {
     let encrypted_tally = vote_plan_status
         .proposals
         .iter()

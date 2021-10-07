@@ -88,7 +88,7 @@ pub fn private_vote_cast_action_transfer_to_rewards_all_shares() {
         })
         .unwrap();
 
-    let shares = decrypt_tally(vote_plan_status, &members);
+    let shares = decrypt_tally(vote_plan_status, &members).unwrap();
 
     controller
         .tally_vote_private(&alice, &vote_plan, shares, &mut ledger)

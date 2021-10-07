@@ -13,7 +13,9 @@ pub mod sum;
 
 use crate::evolving::{EvolvingStatus, KeyEvolvingAlgorithm};
 use crate::kes::KeyEvolvingSignatureAlgorithm;
-use crate::key::{AsymmetricKey, AsymmetricPublicKey, PublicKeyError, SecretKeyError};
+use crate::key::{
+    AsymmetricKey, AsymmetricPublicKey, PublicKeyError, SecretKeyError, SecretKeySizeStatic,
+};
 use crate::sign::{SignatureError, SigningAlgorithm, Verification, VerificationAlgorithm};
 use rand_core::{CryptoRng, RngCore};
 
@@ -60,6 +62,10 @@ impl AsymmetricKey for SumEd25519_12 {
             _ => SecretKeyError::StructureInvalid,
         })
     }
+}
+
+impl SecretKeySizeStatic for SumEd25519_12 {
+    const SECRET_KEY_SIZE: usize = sum::maximum_secret_key_size(DEPTH);
 }
 
 impl VerificationAlgorithm for SumEd25519_12 {
@@ -170,6 +176,17 @@ mod tests {
         prop_assert_eq!(
             n != SumEd25519_12::SIGNATURE_SIZE,
             matches!(signature, Err(SignatureError::SizeInvalid { .. }))
+        );
+    }
+
+    /// `secret_from_binary`should fail if the provided byte array does not match the secret key size
+    #[proptest]
+    fn secret_from_binary_size_check(#[strategy(..SumEd25519_12::SECRET_KEY_SIZE * 10)] n: usize) {
+        let private_key = SumEd25519_12::secret_from_binary(&vec![0; n]);
+
+        assert_eq!(
+            n != SumEd25519_12::SECRET_KEY_SIZE,
+            private_key.err() == Some(SecretKeyError::SizeInvalid)
         );
     }
 }

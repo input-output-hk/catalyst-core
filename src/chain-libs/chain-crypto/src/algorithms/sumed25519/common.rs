@@ -55,7 +55,7 @@ pub struct Depth(
 );
 
 impl Depth {
-    pub fn total(self) -> usize {
+    pub const fn total(self) -> usize {
         usize::pow(2, self.0 as u32)
     }
 

@@ -11,6 +11,7 @@ pub enum Error {
     InvalidPublicKeySize(usize),
     InvalidSignatureSize(usize),
     InvalidSignatureCount(usize, Depth),
+    DataInZeroArea,
     KeyCannotBeUpdatedMore,
 }
 
@@ -19,6 +20,8 @@ impl From<ed25519::SignatureError> for Error {
         Error::Ed25519Signature(sig)
     }
 }
+
+const USE_TRUNCATE: bool = false;
 
 type PeriodSerialized = u32;
 const PERIOD_SERIALIZE_SIZE: usize = 4;
@@ -49,10 +52,17 @@ impl AsRef<[u8]> for SecretKey {
 }
 
 // doesn't contains the seeds
-pub const fn minimum_secretkey_size(depth: Depth) -> usize {
+pub const fn minimum_secret_key_size(depth: Depth) -> usize {
     PERIOD_SERIALIZE_SIZE
         + INDIVIDUAL_SECRET_SIZE + INDIVIDUAL_PUBLIC_SIZE // keypair
         + depth.0 * 2 * PUBLIC_KEY_SIZE
+}
+
+pub const fn maximum_secret_key_size(depth: Depth) -> usize {
+    PERIOD_SERIALIZE_SIZE
+        + INDIVIDUAL_SECRET_SIZE + INDIVIDUAL_PUBLIC_SIZE // keypair
+        + depth.0 * 2 * PUBLIC_KEY_SIZE
+        + depth.0 * Seed::SIZE
 }
 
 pub struct MerklePublicKeys<'a>(&'a [u8]);
@@ -121,6 +131,17 @@ impl<'a> Iterator for Seeds<'a> {
     }
 }
 
+impl<'a> ExactSizeIterator for Seeds<'a> {
+    fn len(&self) -> usize {
+        self.0.len() / Seed::SIZE
+    }
+}
+
+const fn rs_from_period(depth: Depth, t: usize) -> u32 {
+    let bits = (depth.total() - 1).count_ones();
+    bits - t.count_ones()
+}
+
 impl SecretKey {
     const T_OFFSET: usize = 0;
     const KEYPAIR_OFFSET: usize = Self::T_OFFSET + PERIOD_SERIALIZE_SIZE;
@@ -128,6 +149,10 @@ impl SecretKey {
         Self::KEYPAIR_OFFSET + INDIVIDUAL_SECRET_SIZE + INDIVIDUAL_PUBLIC_SIZE;
     const fn seed_offset(depth: Depth) -> usize {
         Self::MERKLE_PKS_OFFSET + depth.0 * PUBLIC_KEY_SIZE * 2
+    }
+
+    const fn seed_offset_index(depth: Depth, i: usize) -> usize {
+        Self::seed_offset(depth) + i * Seed::SIZE
     }
 
     // --------------------------------------
@@ -143,14 +168,27 @@ impl SecretKey {
         ed25519::Keypair::from_bytes(bytes).expect("internal error: keypair invalid")
     }
 
-    fn merkle_pks(&self) -> MerklePublicKeys {
+    #[doc(hidden)]
+    pub fn merkle_pks(&self) -> MerklePublicKeys {
         let bytes = &self.data[Self::MERKLE_PKS_OFFSET..Self::seed_offset(self.depth)];
         MerklePublicKeys::new(bytes)
     }
 
-    fn rs(&self) -> Seeds {
-        let bytes = &self.data[Self::seed_offset(self.depth)..];
+    #[doc(hidden)]
+    pub fn rs(&self) -> Seeds {
+        let start = Self::seed_offset(self.depth);
+        let end = start + (self.rs_len() as usize * Seed::SIZE);
+        let bytes = &self.data[start..end];
+        if USE_TRUNCATE {
+            let checked_bytes = &self.data[Self::seed_offset(self.depth)..];
+            assert_eq!(checked_bytes.len(), self.rs_len() as usize * Seed::SIZE);
+        }
         Seeds(bytes)
+    }
+
+    #[doc(hidden)]
+    pub fn rs_len(&self) -> u32 {
+        rs_from_period(self.depth(), self.t())
     }
 
     fn set_t(&mut self, t: usize) {
@@ -209,7 +247,7 @@ impl SecretKey {
         rs: &[Seed],
     ) -> Self {
         let depth = Depth(pks.len());
-        let mut out = Vec::with_capacity(minimum_secretkey_size(depth) + rs.len() * Seed::SIZE);
+        let mut out = Vec::with_capacity(minimum_secret_key_size(depth) + rs.len() * Seed::SIZE);
 
         let t_bytes = PeriodSerialized::to_le_bytes(t as PeriodSerialized);
         out.extend_from_slice(&t_bytes);
@@ -225,31 +263,62 @@ impl SecretKey {
             out.extend_from_slice(r.as_ref());
         }
 
+        assert_eq!(out.len(), maximum_secret_key_size(depth));
+
         SecretKey { depth, data: out }
     }
 
     // Get the latest seed and drop it from the buffer
     pub fn rs_pop(&mut self) -> Option<Seed> {
-        let seed_offset = Self::seed_offset(self.depth);
-        if self.data.len() - seed_offset > 0 {
-            // grab the last seed
-            let last = self.data.len() - Seed::SIZE;
-            let seed = Seed::from_slice(&self.data[last..]);
-            // clear the seed memory in the secret key, then truncate
-            self.data[last..].copy_from_slice(&[0u8; Seed::SIZE]);
-            self.data.truncate(last);
-            Some(seed)
+        if USE_TRUNCATE {
+            let seed_offset = Self::seed_offset(self.depth);
+            let rs_x = self.rs_len();
+            let seed_data_len = self.data.len() - seed_offset;
+            assert_eq!(rs_x as usize * Seed::SIZE, seed_data_len);
+
+            if self.data.len() - seed_offset > 0 {
+                // grab the last seed
+                let last = self.data.len() - Seed::SIZE;
+                let seed = Seed::from_slice(&self.data[last..]);
+                // clear the seed memory in the secret key, then truncate
+                self.data[last..].copy_from_slice(&[0u8; Seed::SIZE]);
+                self.data.truncate(last);
+                Some(seed)
+            } else {
+                None
+            }
         } else {
-            None
+            let rs_len = self.rs_len();
+            if rs_len == 0 {
+                None
+            } else {
+                let start = Self::seed_offset_index(self.depth, rs_len as usize - 1);
+                let slice = &mut self.data[start..start + Seed::SIZE];
+                let seed = Seed::from_slice(slice);
+                slice.copy_from_slice(&[0u8; Seed::SIZE]);
+                Some(seed)
+            }
         }
     }
 
-    pub fn rs_extend<I>(&mut self, rs: I)
-    where
-        I: Iterator<Item = Seed>,
-    {
-        for r in rs {
-            self.data.extend_from_slice(r.as_ref())
+    pub fn rs_extend(&mut self, seed_offset: usize, rs: Seeds) {
+        if USE_TRUNCATE {
+            let seed_start = Self::seed_offset(self.depth);
+            let extend_start = seed_offset * Seed::SIZE;
+
+            let expected = self.data.len() - seed_start;
+            assert_eq!(extend_start, expected);
+
+            for r in rs {
+                self.data.extend_from_slice(r.as_ref())
+            }
+        } else {
+            let current = seed_offset as u32;
+            let expect = rs_from_period(self.depth(), self.t() + 1);
+            let diff = expect - current;
+            let start = Self::seed_offset_index(self.depth, seed_offset);
+            let end = start + diff as usize * Seed::SIZE;
+            self.data[start..end].copy_from_slice(rs.0)
         }
     }
 
@@ -270,26 +339,54 @@ impl SecretKey {
         // check if the remaining length is valid
         let rem = (bytes.len() - minimum_size) % 32;
         if rem > 0 {
-            return Err(Error::InvalidSignatureSize(bytes.len()));
+            return Err(Error::InvalidSecretKeySize(bytes.len()));
         }
 
-        // get T and make sure it's under the total
-        let mut t_bytes = [0u8; PERIOD_SERIALIZE_SIZE];
-        t_bytes.copy_from_slice(&bytes[0..PERIOD_SERIALIZE_SIZE]);
-        let t = PeriodSerialized::from_le_bytes(t_bytes) as usize;
-        if t >= depth.total() {
-            return Err(Error::InvalidSignatureCount(t, depth));
+        if USE_TRUNCATE {
+            // get T and make sure it's under the total
+            let mut t_bytes = [0u8; PERIOD_SERIALIZE_SIZE];
+            t_bytes.copy_from_slice(&bytes[0..PERIOD_SERIALIZE_SIZE]);
+            let t = PeriodSerialized::from_le_bytes(t_bytes) as usize;
+            if t >= depth.total() {
+                return Err(Error::InvalidSignatureCount(t, depth));
+            }
+
+            let keypair_slice = &bytes[Self::KEYPAIR_OFFSET..Self::MERKLE_PKS_OFFSET];
+
+            // verify sigma and pk format, no need to verify pks nor rs
+            let _ = ed25519::Keypair::from_bytes(keypair_slice)?;
+
+            let mut out = Vec::with_capacity(bytes.len());
+            out.extend_from_slice(bytes);
+            Ok(SecretKey { depth, data: out })
+        } else {
+            if bytes.len() != maximum_secret_key_size(depth) {
+                return Err(Error::InvalidSecretKeySize(bytes.len()));
+            }
+
+            let keypair_slice = &bytes[Self::KEYPAIR_OFFSET..Self::MERKLE_PKS_OFFSET];
+            // verify sigma and pk format
+            let _ = ed25519::Keypair::from_bytes(keypair_slice)?;
+
+            let mut tbuf = [0u8; PERIOD_SERIALIZE_SIZE];
+            tbuf.copy_from_slice(&bytes[0..PERIOD_SERIALIZE_SIZE]);
+            let t = PeriodSerialized::from_le_bytes(tbuf) as usize;
+
+            if t >= depth.total() {
+                return Err(Error::InvalidSignatureCount(t, depth));
+            }
+
+            let expected_rs = rs_from_period(depth, t);
+            let start_of_zeroes = Self::seed_offset_index(depth, expected_rs as usize);
+            let all_zeroes = bytes[start_of_zeroes..].iter().all(|b| *b == 0);
+            if !all_zeroes {
+                return Err(Error::DataInZeroArea);
+            }
+
+            let out = bytes.to_owned();
+
+            Ok(SecretKey { depth, data: out })
         }
-
-        let keypair_slice = &bytes[Self::KEYPAIR_OFFSET..Self::MERKLE_PKS_OFFSET];
-
-        // verify sigma and pk format, no need to verify pks nor rs
-        let _ = ed25519::Keypair::from_bytes(keypair_slice)?;
-
-        let mut out = Vec::with_capacity(bytes.len());
-        out.extend_from_slice(bytes);
-
-        Ok(SecretKey { depth, data: out })
     }
 }
 
@@ -431,11 +528,14 @@ impl Signature {
         let mut out = Vec::with_capacity(96 + PERIOD_SERIALIZE_SIZE + PUBLIC_KEY_SIZE * pks.len());
         let t_bytes = PeriodSerialized::to_le_bytes(t as PeriodSerialized);
         out.extend_from_slice(&t_bytes);
-        assert_eq!(out.len(), 4);
+        assert_eq!(out.len(), PERIOD_SERIALIZE_SIZE);
         out.extend_from_slice(&sigma.to_bytes());
-        assert_eq!(out.len(), 68);
+        assert_eq!(out.len(), PERIOD_SERIALIZE_SIZE + SIGMA_SIZE);
         out.extend_from_slice(pk.as_bytes());
-        assert_eq!(out.len(), 100);
+        assert_eq!(
+            out.len(),
+            PERIOD_SERIALIZE_SIZE + SIGMA_SIZE + INDIVIDUAL_PUBLIC_SIZE
+        );
         for p in pks {
             out.extend_from_slice(&p.0);
         }
@@ -665,8 +765,9 @@ pub fn update(secret: &mut SecretKey) -> Result<(), Error> {
                     secret.get_merkle_pks(secret.depth().0 - diff as usize).1,
                     pub_child
                 );
+                let rs_x = secret.rs_len() as usize - 1;
 
-                secret.rs_extend(sec_child.rs());
+                secret.rs_extend(rs_x, sec_child.rs());
                 let offset = secret.merkle_pks().len() - sec_child.merkle_pks().len();
                 for (i, c) in sec_child.merkle_pks().enumerate() {
                     secret.set_merkle_pks(offset + i, &c)
@@ -698,6 +799,7 @@ mod tests {
             Seed::from_bytes(b)
         }
     }
+
     impl Arbitrary for Depth {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             Depth(usize::arbitrary(g) % 8)
@@ -715,7 +817,7 @@ mod tests {
         for i in 0..depth.total() {
             let sig = sign(&sk, &m);
             let v = verify(&pk, &m, &sig);
-            assert_eq!(v, true, "key {} failed verification", i);
+            assert!(v, "key {} failed verification", i);
             if sk.is_updatable() {
                 update(&mut sk).unwrap();
             }
@@ -725,7 +827,7 @@ mod tests {
         }
     }
 
-    fn secretkey_identical(sk: &[u8], expected: &[u8]) {
+    fn secret_key_identical(sk: &[u8], expected: &[u8]) {
         assert_eq!(sk, expected)
     }
 
@@ -734,7 +836,7 @@ mod tests {
         let s = Seed::zero();
         let (mut sk, pk) = keygen(Depth(1), &s);
 
-        secretkey_identical(
+        secret_key_identical(
             &sk.sk().to_bytes(),
             &[
                 26, 125, 253, 234, 255, 238, 218, 196, 137, 40, 126, 133, 190, 94, 156, 4, 154, 47,
@@ -743,8 +845,8 @@ mod tests {
                 126, 176, 154, 229, 246, 71, 227, 121, 87,
             ],
         );
-        assert_eq!(update(&mut sk).is_ok(), true);
-        secretkey_identical(
+        assert!(update(&mut sk).is_ok());
+        secret_key_identical(
             &sk.sk().to_bytes(),
             &[
                 82, 59, 165, 167, 236, 147, 98, 219, 176, 128, 57, 163, 135, 146, 37, 146, 204,
@@ -768,9 +870,9 @@ mod tests {
         let (mut sk, pk) = keygen(Depth(4), &Seed::zero());
 
         assert_eq!(sk.compute_public(), pk);
-        assert_eq!(update(&mut sk).is_ok(), true);
+        assert!(update(&mut sk).is_ok());
         assert_eq!(sk.compute_public(), pk);
-        assert_eq!(update(&mut sk).is_ok(), true);
+        assert!(update(&mut sk).is_ok());
         assert_eq!(sk.compute_public(), pk);
     }
 
@@ -809,5 +911,24 @@ mod tests {
 
         let (_, pkrec) = sumrec::keygen(depth, &seed);
         prop_assert_eq!(pk.as_bytes(), pkrec.as_bytes());
+    }
+
+    #[proptest]
+    fn secret_key_to_from_bytes(depth: Depth, seed: Seed) {
+        let (mut sk, _) = keygen(depth, &seed);
+
+        for _ in 0..depth.total() {
+            let bytes = sk.as_ref();
+            assert_eq!(&SecretKey::from_bytes(depth, bytes).unwrap().data, &sk.data);
+
+            if sk.is_updatable() {
+                update(&mut sk).unwrap();
+            }
+        }
+
+        prop_assert_eq!(
+            &SecretKey::from_bytes(depth, sk.as_ref()).unwrap().data,
+            &sk.data
+        )
     }
 }

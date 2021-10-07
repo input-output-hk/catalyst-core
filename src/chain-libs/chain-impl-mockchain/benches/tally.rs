@@ -265,8 +265,10 @@ fn tally_benchmark(
         })
         .collect();
 
-    let decrypted_tally =
-        VoteTally::new_private(vote_plan.to_id(), DecryptedPrivateTally::new(shares));
+    let decrypted_tally = VoteTally::new_private(
+        vote_plan.to_id(),
+        DecryptedPrivateTally::new(shares).unwrap(),
+    );
     let fragment =
         controller
             .fragment_factory()

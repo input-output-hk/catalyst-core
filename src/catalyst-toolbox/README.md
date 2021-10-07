@@ -209,21 +209,23 @@ Import ideascale data needed to initialize vit-servicing-station database
 catalyst-toolbox-ideascale-import 0.2.0
 
 USAGE:
-    catalyst-toolbox ideascale import [OPTIONS] --api-token <api-token> --chain-vote-type <chain-vote-type> --fund <fund> --fund-goal <fund-goal> --output-dir <output-dir> --tags <tags> --threshold <threshold>
+    catalyst-toolbox  ideascale import [OPTIONS] --api-token <api-token> --chain-vote-type <chain-vote-type> --fund <fund> --fund-goal <fund-goal> --output-dir <output-dir> --threshold <threshold>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-        --api-token <api-token>                ideascale API token [env: IDEASCALE_API_TOKEN=]
-        --chain-vote-type <chain-vote-type>    either "public" or "private"
-        --fund <fund>                          Fund number id
-        --fund-goal <fund-goal>                Fund goal explanation
-        --output-dir <output-dir>              Path to folder where fund, challenges and proposals json files will be dumped
-        --stage-label <stage-label>            Stage label: stage identifiers that links to assessments scores in ideascale [default: Assess]
-        --tags <tags>                          Path to json or yaml like file containing tag configuration for ideascale custom fields
-        --threshold <threshold>
+        --api-token <api-token>                      ideascale API token [env: IDEASCALE_API_TOKEN=]
+        --chain-vote-type <chain-vote-type>          either "public" or "private"
+        --excluded-proposals <excluded-proposals>    Path to json or json like file containing list of excluded proposal ids
+        --fund <fund>                                Fund number id
+        --fund-goal <fund-goal>                      Fund goal explanation
+        --output-dir <output-dir>                    Path to folder where fund, challenges and proposals json files will be dumped
+        --stage-label <stage-label>                  Stage label: stage identifiers that links to assessments scores in ideascale [default: Assess]
+        --stages-filters <stages-filters>            Ideascale stages list, [default: Governance phase;Assess QA]
+        --tags <tags>                                Path to json or json like file containing tag configuration for ideascale custom fields
+        --threshold <threshold>                      Fund approval threshold setting
 ```
 
 ##### Tags file
@@ -238,7 +240,11 @@ An example would look like:
   "proposal_brief": "challenge_brief",
   "proposal_importance": "importance",
   "proposal_goal": "describe_your_solution_to_the_problem",
-  "proposal_metrics": "key_metrics_to_measure"
+  "proposal_metrics": "key_metrics_to_measure",
+  "proposal_public_key": "ada_payment_address",
+  "proposal_funds": "requested_funds",
+  "proposal_relevant_experience": "relevant_experience",
+  "proposal_why": "importance"
 }
 ```
 
@@ -308,7 +314,7 @@ related to Catalyst funds.
 Dump information related to catalyst fund
 
 USAGE:
-    catalyst-toolbox.exe archive <jormungandr-database> <output-dir>
+    catalyst-toolbox archive <jormungandr-database> <output-dir>
 
 FLAGS:
     -h, --help       Prints help information

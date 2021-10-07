@@ -1,12 +1,14 @@
 use catalyst_toolbox::ideascale::{
     build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags,
-    Error as IdeascaleError,
+    Error as IdeascaleError, Scores,
 };
 use jcli_lib::utils::io as io_utils;
 use jormungandr_lib::interfaces::VotePrivacy;
+use std::collections::HashSet;
 
 use structopt::StructOpt;
 
+use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
@@ -19,6 +21,9 @@ pub enum Error {
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
+    Csv(#[from] csv::Error),
+
+    #[error(transparent)]
     Serde(#[from] serde_json::Error),
 }
 
@@ -26,6 +31,10 @@ pub enum Error {
 pub enum Ideascale {
     Import(Import),
 }
+
+// We need this type because structopt uses Vec<String> as a special type, so it is not compatible
+// with custom parsers feature.
+type Filters = Vec<String>;
 
 #[derive(Debug, StructOpt)]
 #[structopt(rename_all = "kebab")]
@@ -58,9 +67,21 @@ pub struct Import {
     #[structopt(long)]
     output_dir: PathBuf,
 
-    /// Path to json or yaml like file containing tag configuration for ideascale custom fields
+    /// Path to proposal scores csv file
     #[structopt(long)]
-    tags: PathBuf,
+    scores: PathBuf,
+
+    /// Path to json or json like file containing tag configuration for ideascale custom fields
+    #[structopt(long)]
+    tags: Option<PathBuf>,
+
+    /// Path to json or json like file containing list of excluded proposal ids
+    #[structopt(long)]
+    excluded_proposals: Option<PathBuf>,
+
+    /// Ideascale stages list,
+    #[structopt(long, parse(from_str=parse_from_csv), default_value = "Governance phase;Assess QA")]
+    stages_filters: Filters,
 }
 
 impl Ideascale {
@@ -81,19 +102,35 @@ impl Import {
             threshold,
             chain_vote_type,
             output_dir: save_folder,
+            scores,
             tags,
+            excluded_proposals,
+            stages_filters,
         } = self;
 
-        let tags: CustomFieldTags = read_tags_from_file(tags)?;
+        let tags: CustomFieldTags = if let Some(tags_path) = tags {
+            read_json_from_file(tags_path)?
+        } else {
+            Default::default()
+        };
+
+        let excluded_proposals: HashSet<u32> = if let Some(excluded_path) = excluded_proposals {
+            read_json_from_file(excluded_path)?
+        } else {
+            Default::default()
+        };
 
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_io()
             .enable_time()
             .build()?;
 
+        let scores = read_scores_file(scores)?;
         let idescale_data = runtime.block_on(fetch_all(
             *fund,
             &stage_label.to_lowercase(),
+            &stages_filters.iter().map(AsRef::as_ref).collect::<Vec<_>>(),
+            &excluded_proposals,
             api_token.clone(),
         ))?;
 
@@ -102,12 +139,16 @@ impl Import {
         let proposals = build_proposals(
             &idescale_data,
             &challenges,
+            &scores,
             &chain_vote_type.to_string(),
             *fund,
             &tags,
         );
 
-        let challenges: Vec<_> = challenges.values().collect();
+        let mut challenges: Vec<_> = challenges.values().collect();
+        // even if final id type is string, they are just sequentially added, so it should be safe
+        // to parse and unwrap here
+        challenges.sort_by_key(|c| c.id.parse::<i32>().unwrap());
 
         dump_content_to_file(
             funds,
@@ -139,7 +180,31 @@ fn dump_content_to_file(content: impl Serialize, file_path: &Path) -> Result<(),
     serde_json::to_writer_pretty(writer, &content).map_err(Error::Serde)
 }
 
-fn read_tags_from_file(file_path: &Path) -> Result<CustomFieldTags, Error> {
+fn read_json_from_file<T: DeserializeOwned>(file_path: &Path) -> Result<T, Error> {
     let reader = io_utils::open_file_read(&Some(file_path))?;
     serde_json::from_reader(reader).map_err(Error::Serde)
+}
+
+fn parse_from_csv(s: &str) -> Filters {
+    s.split(';').map(|x| x.to_string()).collect()
+}
+
+fn read_scores_file(path: &Path) -> Result<Scores, Error> {
+    let mut reader = csv::Reader::from_path(path)?;
+    let mut scores = Scores::new();
+    for record in reader.records() {
+        let record = record?;
+        let proposal_id: u32 = record
+            .get(1)
+            .expect("Proposal ids should be present in scores file second column")
+            .parse()
+            .expect("Proposal ids should be integers");
+        let rating_given: f32 = record
+            .get(2)
+            .expect("Ratings should be present in scores file third column")
+            .parse()
+            .expect("Ratings should be floats [0, 5]");
+        scores.insert(proposal_id, rating_given);
+    }
+    Ok(scores)
 }

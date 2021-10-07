@@ -58,17 +58,6 @@ pub async fn get_stages(api_token: String) -> Result<Vec<Stage>, Error> {
     request_data(api_token, BASE_IDEASCALE_URL.join("stages").unwrap()).await
 }
 
-pub async fn get_assessments_score(assessment_id: u32, api_token: String) -> Result<Scores, Error> {
-    let scores: Vec<Score> = request_data(
-        api_token,
-        BASE_IDEASCALE_URL
-            .join(&format!("assessment/{}/results", assessment_id))
-            .unwrap(),
-    )
-    .await?;
-    Ok(scores.into_iter().map(|s| (s.id, s.score)).collect())
-}
-
 pub async fn get_proposals_data(
     challenge_id: u32,
     api_token: String,
@@ -76,7 +65,10 @@ pub async fn get_proposals_data(
     request_data(
         api_token,
         BASE_IDEASCALE_URL
-            .join(&format!("campaigns/{}/ideas", challenge_id))
+            // ideascale API have some pager system which is not easy to find in the documentation
+            // https://a.ideascale.com/api-docs/index.html#/rest-api-controller-v-1/ideasByCampaignUsingGET_2
+            // in this case we want all of them, easiest way is to max out the page size.
+            .join(&format!("campaigns/{}/ideas/0/100000", challenge_id))
             .unwrap(),
     )
     .await

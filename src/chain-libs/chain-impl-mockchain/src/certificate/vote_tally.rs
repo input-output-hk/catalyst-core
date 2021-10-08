@@ -175,21 +175,20 @@ impl DecryptedPrivateTally {
     pub fn new(
         proposals: Vec<DecryptedPrivateTallyProposal>,
     ) -> Result<Self, DecryptedPrivateTallyError> {
-        let is_valid = proposals
-            .iter()
-            .all(|proposal| match proposal.decrypt_shares.first() {
-                Some(share) => proposal
-                    .decrypt_shares
-                    .iter()
-                    .all(|el| el.options() == share.options()),
+        if proposals.iter().all(|proposal| {
+            let mut shares = proposal.decrypt_shares.iter();
+            match shares.next() {
+                Some(first_share) => shares.all(|share| share.options() == first_share.options()),
                 None => true,
-            });
-
-        is_valid
-            .then(|| Self {
+            }
+        }) {
+            Ok(Self {
                 inner: proposals.into_boxed_slice(),
             })
-            .ok_or(DecryptedPrivateTallyError {})
+        }
+        else {
+            Err(DecryptedPrivateTallyError {})
+        }
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &DecryptedPrivateTallyProposal> {

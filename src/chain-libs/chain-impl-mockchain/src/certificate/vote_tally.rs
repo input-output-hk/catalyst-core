@@ -185,8 +185,7 @@ impl DecryptedPrivateTally {
             Ok(Self {
                 inner: proposals.into_boxed_slice(),
             })
-        }
-        else {
+        } else {
             Err(DecryptedPrivateTallyError {})
         }
     }

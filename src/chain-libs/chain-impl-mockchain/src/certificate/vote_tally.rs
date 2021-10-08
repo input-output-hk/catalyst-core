@@ -12,6 +12,7 @@ use chain_core::{
 };
 use chain_crypto::Verification;
 use chain_vote::TallyDecryptShare;
+use thiserror::Error;
 use typed_bytes::{ByteArray, ByteBuilder};
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
@@ -38,6 +39,10 @@ pub enum TallyProof {
         signature: SingleAccountBindingSignature,
     },
 }
+
+#[derive(Debug, Error)]
+#[error("decrypt_shares in the proposal should have the same options amount")]
+pub struct DecryptedPrivateTallyError {}
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 pub struct DecryptedPrivateTally {
@@ -167,9 +172,21 @@ impl TallyProof {
 }
 
 impl DecryptedPrivateTally {
-    pub fn new(proposals: Vec<DecryptedPrivateTallyProposal>) -> Self {
-        Self {
-            inner: proposals.into_boxed_slice(),
+    pub fn new(
+        proposals: Vec<DecryptedPrivateTallyProposal>,
+    ) -> Result<Self, DecryptedPrivateTallyError> {
+        if proposals.iter().all(|proposal| {
+            let mut shares = proposal.decrypt_shares.iter();
+            match shares.next() {
+                Some(first_share) => shares.all(|share| share.options() == first_share.options()),
+                None => true,
+            }
+        }) {
+            Ok(Self {
+                inner: proposals.into_boxed_slice(),
+            })
+        } else {
+            Err(DecryptedPrivateTallyError {})
         }
     }
 
@@ -280,7 +297,8 @@ impl Readable for VoteTally {
                 }
 
                 VoteTallyPayload::Private {
-                    inner: DecryptedPrivateTally::new(proposals),
+                    inner: DecryptedPrivateTally::new(proposals)
+                        .map_err(|err| ReadError::InvalidData(err.to_string()))?,
                 }
             }
         };

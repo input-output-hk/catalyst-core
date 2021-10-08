@@ -278,6 +278,11 @@ impl TallyDecryptShare {
     /// Given the member's public key `MemberPublicKey`, and the `EncryptedTally`, verifies the
     /// correctness of the `TallyDecryptShare`.
     pub fn verify(&self, encrypted_tally: &EncryptedTally, pk: &MemberPublicKey) -> bool {
+        // elements amount of the tally share should be equal to the number of the existing options of the tally
+        if self.options() != encrypted_tally.r.len() {
+            return false;
+        }
+
         for (element, r) in self.elements.iter().zip(encrypted_tally.r.iter()) {
             if !element.pi.verify(r, &element.r1, &pk.0) {
                 return false;
@@ -645,6 +650,43 @@ mod tests {
             "unexpected successful tally: {:?}",
             res.ok().unwrap()
         );
+    }
+
+    #[test]
+    fn tally_wrong_elements_size() {
+        let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+
+        let shared_string =
+            b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
+        let h = Crs::from_hash(&shared_string);
+
+        let mc = MemberCommunicationKey::new(&mut rng);
+        let mc = [mc.to_public()];
+
+        let threshold = 1;
+
+        let m = MemberState::new(&mut rng, threshold, &h, &mc, 0);
+
+        let participants = vec![m.public_key()];
+        let ek = ElectionPublicKey::from_participants(&participants);
+
+        println!("encrypting vote");
+
+        let vote_options = 2;
+        let e = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0));
+
+        println!("tallying");
+
+        let mut encrypted_tally = EncryptedTally::new(vote_options, ek, h);
+        encrypted_tally.add(&e, 1);
+
+        let mut tds = encrypted_tally.partial_decrypt(&mut rng, m.secret_key());
+
+        println!("corrupt tally share, add extra element");
+
+        tds.elements.push(tds.elements.last().unwrap().clone());
+
+        assert!(!tds.verify(&encrypted_tally, &m.public_key()))
     }
 
     #[test]

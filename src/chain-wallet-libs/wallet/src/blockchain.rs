@@ -23,8 +23,8 @@ pub struct Settings {
 
 impl Settings {
     pub fn new(block: &Block) -> Result<Self, Error> {
-        let header_id = block.header.id();
-        let ledger = Ledger::new(header_id, block.contents.iter())?;
+        let header_id = block.header().id();
+        let ledger = Ledger::new(header_id, block.contents().iter())?;
 
         let static_parameters = ledger.get_static_parameters().clone();
         let parameters = ledger.get_ledger_parameters();
@@ -37,7 +37,7 @@ impl Settings {
         // fixed in Ledger::new (or at least checked).
         let mut slot_duration = None;
 
-        for fragment in block.contents.iter() {
+        for fragment in block.contents().iter() {
             if let Fragment::Initial(initials) = fragment {
                 for initial in initials.iter() {
                     match initial {

@@ -19,7 +19,7 @@ impl State {
     {
         let mut block0_bytes = ReadBuf::from(block0_bytes.as_ref());
         let block0 = Block::read(&mut block0_bytes).expect("valid block0");
-        let hh = block0.header.id();
+        let hh = block0.header().id();
         let ledger = Ledger::new(hh, block0.fragments()).unwrap();
 
         Self { block0, ledger }
@@ -27,7 +27,7 @@ impl State {
 
     #[allow(dead_code)]
     pub fn initial_contents(&self) -> impl Iterator<Item = &'_ Fragment> {
-        self.block0.contents.iter()
+        self.block0.contents().iter()
     }
 
     pub fn settings(&self) -> Result<Settings, LedgerError> {

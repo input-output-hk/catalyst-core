@@ -1,8 +1,10 @@
 use crate::config::VitStartParameters;
 use crate::scenario::controller::VitController;
 use crate::scenario::controller::VitControllerBuilder;
+use crate::setup::start::quick::wallet::WalletExtension;
 use crate::{config::Initials, Result};
 use assert_fs::fixture::{ChildPath, PathChild};
+use catalyst_toolbox::kedqr::{generate, KeyQrCode};
 use chain_crypto::bech32::Bech32;
 use chain_crypto::SecretKey;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
@@ -21,7 +23,6 @@ use jormungandr_scenario_tests::scenario::{
     ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KesUpdateSpeed, Milli,
     NumberOfSlotsPerEpoch, SlotDuration, Topology, TopologyBuilder,
 };
-use jormungandr_testing_utils::qr_code::{generate, KeyQrCode};
 use jormungandr_testing_utils::testing::network_builder::{Blockchain, Node, WalletTemplate};
 use jormungandr_testing_utils::wallet::LinearFee;
 use jortestkit::prelude::append;
@@ -400,7 +401,7 @@ impl QuickVitBackendSettingsBuilder {
                 total,
                 hash.path()
             );
-            wallet.save_qr_code_hash(hash.path(), &pin_to_bytes(pin))?;
+            wallet.save_qr_code_hash(hash.path(), &pin_to_bytes(pin));
         }
 
         let zero_funds_initial_counts = self.parameters.initials.zero_funds_count();

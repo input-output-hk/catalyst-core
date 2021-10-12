@@ -596,7 +596,7 @@ checksum = "8eaf4bc02d17cbdd7ff4c7438cafcdf7fb9a4613313ad11b4f8fefe7d3fa0130"
 
 [[package]]
 name = "jormungandrwallet"
-version = "0.7.0-pre3"
+version = "0.7.0-pre4"
 dependencies = [
  "bip39",
  "chain-addr",
@@ -1139,7 +1139,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-core"
-version = "0.7.0-pre3"
+version = "0.7.0-pre4"
 dependencies = [
  "bech32 0.7.3",
  "bip39",
@@ -1161,7 +1161,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-jni"
-version = "0.7.0-pre3"
+version = "0.7.0-pre4"
 dependencies = [
  "chain-impl-mockchain",
  "jni",
@@ -1170,7 +1170,7 @@ dependencies = [
 
 [[package]]
 name = "wallet-js"
-version = "0.7.0-pre3"
+version = "0.7.0-pre4"
 dependencies = [
  "bech32 0.7.3",
  "chain-crypto",

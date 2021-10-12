@@ -131,7 +131,7 @@ impl Wallet {
             Block::read(&mut block0_bytes).map_err(|e| Error::invalid_input("block0").with(e))?;
 
         let settings = wallet::Settings::new(&block0).unwrap();
-        for fragment in block0.contents.iter() {
+        for fragment in block0.contents().iter() {
             self.free_keys.check_fragment(&fragment.hash(), fragment);
             self.account.check_fragment(&fragment.hash(), fragment);
 

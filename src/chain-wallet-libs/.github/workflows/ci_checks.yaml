@@ -145,7 +145,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings
+          args: --all-features --all-targets -- -D warnings
 
   test-wasm:
     name: Wasm-pack test

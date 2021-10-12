@@ -73,7 +73,7 @@ pub fn persistent_log_contains_all_sent_votes() {
 
     vote_timing.wait_for_tally_start(nodes.get(0).unwrap().rest());
 
-    let mut committee = controller.wallet("committee").unwrap();
+    let mut committee = controller.wallet("committee_1").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
 
     controller

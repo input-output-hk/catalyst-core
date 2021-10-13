@@ -93,7 +93,7 @@ pub fn generate_archive_files(jormungandr_database: &Path, output_dir: &Path) ->
                     fragment_id: fragment_id.to_string(),
                     caster,
                     proposal: certificate.proposal_index(),
-                    time: block.header.block_date().to_string(),
+                    time: block.header().block_date().to_string(),
                     raw_fragment: hex::encode(tx.as_ref()),
                     choice,
                 })?;

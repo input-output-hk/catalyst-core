@@ -267,7 +267,7 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
                 .into(),
         );
         Ok(Self {
-            block0: block0.header.hash().into(),
+            block0: block0.header().hash().into(),
             range_check,
             timeframe,
             era,
@@ -364,7 +364,7 @@ pub fn recover_ledger_from_logs(
     // we use block0 header id instead of the new one, to keep validation on old tx that uses the original block0 id.
     // This is used so we can run the VoteTally certificates with the original (issued) committee members ones.
     let mut ledger =
-        Ledger::new(block0.header.id(), new_block0.fragments()).map_err(Error::LedgerError)?;
+        Ledger::new(block0.header().id(), new_block0.fragments()).map_err(Error::LedgerError)?;
 
     // deserialize fragments to get a clean iterator over them
     let deserialized_fragment_logs = fragment_logs.filter_map(|fragment_log| match fragment_log {

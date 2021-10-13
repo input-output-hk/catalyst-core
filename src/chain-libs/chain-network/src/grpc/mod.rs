@@ -1,13 +1,12 @@
-// Generated protobuf/gRPC code.
-mod proto {
-    tonic::include_proto!("iohk.chain.node");
-}
+mod proto;
 
 pub mod client;
 pub mod server;
 
 #[cfg(feature = "legacy")]
 pub mod legacy;
+
+pub mod watch;
 
 mod convert;
 mod streaming;

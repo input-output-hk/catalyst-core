@@ -56,11 +56,10 @@ impl Builder {
     where
         T: GrpcService<BoxBody>,
         T::ResponseBody: Send + Sync + 'static,
-        T::Error: Into<StdError>,
         <T::ResponseBody as Body>::Error: Into<StdError> + Send,
     {
         Client {
-            inner: proto::node_client::NodeClient::new(service),
+            inner: proto::node::node_client::NodeClient::new(service),
             #[cfg(feature = "legacy")]
             legacy_node_id: self.legacy_node_id,
         }
@@ -72,7 +71,7 @@ impl Builder {
         D: TryInto<transport::Endpoint>,
         D::Error: Into<StdError>,
     {
-        let inner = proto::node_client::NodeClient::connect(dst).await?;
+        let inner = proto::node::node_client::NodeClient::connect(dst).await?;
         Ok(Client {
             inner,
             #[cfg(feature = "legacy")]
@@ -83,19 +82,19 @@ impl Builder {
 
 #[derive(Clone)]
 pub struct Client<T> {
-    inner: proto::node_client::NodeClient<T>,
+    inner: proto::node::node_client::NodeClient<T>,
     #[cfg(feature = "legacy")]
     legacy_node_id: Option<legacy::NodeId>,
 }
 
 /// The inbound subscription stream of block events.
-pub type BlockSubscription = InboundStream<proto::BlockEvent, BlockEvent>;
+pub type BlockSubscription = InboundStream<proto::node::BlockEvent, BlockEvent>;
 
 /// The inbound subscription stream of fragments.
-pub type FragmentSubscription = InboundStream<proto::Fragment, Fragment>;
+pub type FragmentSubscription = InboundStream<proto::types::Fragment, Fragment>;
 
 /// The inbound subscription stream of P2P gossip.
-pub type GossipSubscription = InboundStream<proto::Gossip, Gossip>;
+pub type GossipSubscription = InboundStream<proto::node::Gossip, Gossip>;
 
 #[cfg(feature = "transport")]
 impl Client<transport::Channel> {
@@ -112,7 +111,6 @@ impl<T> Client<T>
 where
     T: GrpcService<BoxBody>,
     T::ResponseBody: Send + Sync + 'static,
-    T::Error: Into<StdError>,
     <T::ResponseBody as Body>::Error: Into<StdError> + Send,
 {
     pub fn new(service: T) -> Self {
@@ -130,16 +128,7 @@ where
         }
         req
     }
-}
 
-impl<T> Client<T>
-where
-    T: GrpcService<BoxBody> + Send,
-    T::Future: Send,
-    T::ResponseBody: Send + Sync + 'static,
-    T::Error: Into<StdError>,
-    <T::ResponseBody as Body>::Error: Into<StdError> + Send,
-{
     /// Requests the identifier of the genesis block from the service node.
     ///
     /// The implementation can also perform version information checks to
@@ -148,7 +137,7 @@ where
     /// This method should be called first after establishing the client
     /// connection.
     pub async fn handshake(&mut self, nonce: &[u8]) -> Result<HandshakeResponse, HandshakeError> {
-        let req = proto::HandshakeRequest {
+        let req = proto::node::HandshakeRequest {
             nonce: nonce.into(),
         };
         let res = self
@@ -177,7 +166,7 @@ where
     }
 
     pub async fn client_auth(&mut self, auth: AuthenticatedNodeId) -> Result<(), Error> {
-        let req = proto::ClientAuthRequest {
+        let req = proto::node::ClientAuthRequest {
             node_id: auth.id().as_bytes().into(),
             signature: auth.signature().into(),
         };
@@ -192,7 +181,7 @@ where
     /// a trusted peer.
     pub async fn peers(&mut self, limit: u32) -> Result<Gossip, Error> {
         use crate::grpc::convert::FromProtobuf;
-        let req = proto::PeersRequest { limit };
+        let req = proto::node::PeersRequest { limit };
         let res = self.inner.peers(req).await?.into_inner();
         let peers = Gossip::from_message(res)?;
         Ok(peers)
@@ -200,7 +189,7 @@ where
 
     /// Requests the header of the tip block in the node's chain.
     pub async fn tip(&mut self) -> Result<Header, Error> {
-        let req = proto::TipRequest {};
+        let req = proto::node::TipRequest {};
         let res = self.inner.tip(req).await?.into_inner();
         let header = Header::from_bytes(res.block_header);
         Ok(header)
@@ -210,8 +199,8 @@ where
     pub async fn get_blocks(
         &mut self,
         ids: BlockIds,
-    ) -> Result<InboundStream<proto::Block, Block>, Error> {
-        let ids = proto::BlockIds {
+    ) -> Result<InboundStream<proto::types::Block, Block>, Error> {
+        let ids = proto::types::BlockIds {
             ids: convert::ids_into_repeated_bytes(ids.iter()),
         };
         let stream = self.inner.get_blocks(ids).await?.into_inner();
@@ -222,8 +211,8 @@ where
     pub async fn get_headers(
         &mut self,
         ids: BlockIds,
-    ) -> Result<InboundStream<proto::Header, Header>, Error> {
-        let ids = proto::BlockIds {
+    ) -> Result<InboundStream<proto::types::Header, Header>, Error> {
+        let ids = proto::types::BlockIds {
             ids: convert::ids_into_repeated_bytes(ids.iter()),
         };
         let stream = self.inner.get_headers(ids).await?.into_inner();
@@ -234,8 +223,8 @@ where
     pub async fn get_fragments(
         &mut self,
         ids: FragmentIds,
-    ) -> Result<InboundStream<proto::Fragment, Fragment>, Error> {
-        let ids = proto::FragmentIds {
+    ) -> Result<InboundStream<proto::types::Fragment, Fragment>, Error> {
+        let ids = proto::types::FragmentIds {
             ids: convert::ids_into_repeated_bytes(ids.into_vec()),
         };
         let stream = self.inner.get_fragments(ids).await?.into_inner();
@@ -247,8 +236,8 @@ where
         &mut self,
         from: BlockIds,
         to: BlockId,
-    ) -> Result<InboundStream<proto::Block, Block>, Error> {
-        let req = proto::PullBlocksRequest {
+    ) -> Result<InboundStream<proto::types::Block, Block>, Error> {
+        let req = proto::node::PullBlocksRequest {
             from: convert::ids_into_repeated_bytes(from.into_vec()),
             to: to.as_ref().to_vec(),
         };
@@ -261,8 +250,8 @@ where
     pub async fn pull_blocks_to_tip(
         &mut self,
         from: BlockIds,
-    ) -> Result<InboundStream<proto::Block, Block>, Error> {
-        let req = proto::PullBlocksToTipRequest {
+    ) -> Result<InboundStream<proto::types::Block, Block>, Error> {
+        let req = proto::node::PullBlocksToTipRequest {
             from: convert::ids_into_repeated_bytes(from.into_vec()),
         };
         let stream = self.inner.pull_blocks_to_tip(req).await?.into_inner();
@@ -278,8 +267,8 @@ where
         &mut self,
         from: BlockIds,
         to: BlockId,
-    ) -> Result<InboundStream<proto::Header, Header>, Error> {
-        let req = proto::PullHeadersRequest {
+    ) -> Result<InboundStream<proto::types::Header, Header>, Error> {
+        let req = proto::node::PullHeadersRequest {
             from: convert::ids_into_repeated_bytes(from.into_vec()),
             to: to.as_bytes().into(),
         };
@@ -296,7 +285,8 @@ where
         S: Stream<Item = Header> + Send + Sync + 'static,
     {
         let outbound = OutboundStream::new(headers);
-        let proto::PushHeadersResponse {} = self.inner.push_headers(outbound).await?.into_inner();
+        let proto::node::PushHeadersResponse {} =
+            self.inner.push_headers(outbound).await?.into_inner();
         Ok(())
     }
 
@@ -308,7 +298,8 @@ where
         S: Stream<Item = Block> + Send + Sync + 'static,
     {
         let outbound = OutboundStream::new(blocks);
-        let proto::UploadBlocksResponse {} = self.inner.upload_blocks(outbound).await?.into_inner();
+        let proto::node::UploadBlocksResponse {} =
+            self.inner.upload_blocks(outbound).await?.into_inner();
         Ok(())
     }
 

@@ -10,6 +10,12 @@ pub struct WatchService<T> {
     inner: T,
 }
 
+impl<T> WatchService<T> {
+    pub fn new(inner: T) -> Self {
+        WatchService { inner }
+    }
+}
+
 #[tonic::async_trait]
 impl<T> proto::watch::watch_server::Watch for WatchService<T>
 where

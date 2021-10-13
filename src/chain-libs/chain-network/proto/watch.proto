@@ -13,9 +13,10 @@ message MempoolSubscriptionRequest {}
 message SyncMultiverseRequest {
   // Block IDs to start synchronization from.
   //
-  // The client should include the ID of the latest block at or below the
-  // stability depth, as well as tips of any branches known to it from
-  // previously synchronized node state.
+  // The client should examine previously synchronized blockchain storage,
+  // and include the ID of the latest block at or earlier than
+  // the stability depth in that saved state, as well as tips of all valid
+  // branches existing in that state.
   //
   // The server should prune the block IDs in the list, discarding any block IDs
   // not found in the blockchain storage (which might be on discarded branches),

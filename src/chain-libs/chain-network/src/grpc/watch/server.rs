@@ -3,6 +3,8 @@ use crate::data::block;
 use crate::grpc::proto;
 use crate::grpc::streaming::OutboundTryStream;
 
+pub type Server<T> = proto::watch::watch_server::WatchServer<WatchService<T>>;
+
 #[derive(Debug)]
 pub struct WatchService<T> {
     inner: T,

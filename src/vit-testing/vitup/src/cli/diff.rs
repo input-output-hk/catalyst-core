@@ -1,10 +1,8 @@
+use crate::builders::utils::io::decode_block0;
 use crate::Result;
 use assert_fs::TempDir;
-use chain_core::property::Deserialize;
-use chain_impl_mockchain::block::Block;
 use diffy::create_patch;
 use diffy::PatchFormatter;
-use jormungandr_lib::interfaces::Block0Configuration;
 use jortestkit::prelude::read_file;
 use std::fs::File;
 use std::io::Write;
@@ -121,17 +119,4 @@ fn get_formatter(color: bool) -> PatchFormatter {
         f = f.with_color();
     }
     f
-}
-
-fn decode_block0<Q: AsRef<Path>>(block0: Vec<u8>, genesis_yaml: Q) -> Result<()> {
-    let writer: std::fs::File = std::fs::OpenOptions::new()
-        .create(true)
-        .write(true)
-        .read(false)
-        .append(false)
-        .truncate(true)
-        .open(&genesis_yaml)?;
-
-    let yaml = Block0Configuration::from_block(&Block::deserialize(&*block0)?)?;
-    Ok(serde_yaml::to_writer(writer, &yaml)?)
 }

@@ -6,7 +6,7 @@ use jormungandr_scenario_tests::scenario::Controller;
 use jormungandr_scenario_tests::Seed;
 use jormungandr_scenario_tests::{Context, ProgressBarMode};
 use std::collections::LinkedList;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use valgrind::{Challenge, Fund, Proposal, ValgrindClient};
 
@@ -15,8 +15,8 @@ use vit_servicing_station_tests::common::data::FundTemplate;
 use vit_servicing_station_tests::common::data::ProposalTemplate;
 use vit_servicing_station_tests::common::data::ReviewTemplate;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
+use vitup::builders::VitBackendSettingsBuilder;
 use vitup::scenario::controller::VitController;
-use vitup::setup::start::QuickVitBackendSettingsBuilder;
 
 pub fn funds_eq(expected: FundTemplate, actual: Fund) {
     assert_eq!(expected.id, actual.id, "fund id");
@@ -149,7 +149,7 @@ pub fn proposals_eq(expected_list: LinkedList<ProposalTemplate>, actual_list: Ve
     }
 }
 
-pub fn context(testing_directory: &PathBuf) -> Context {
+pub fn context(testing_directory: &Path) -> Context {
     let jormungandr = prepare_command(PathBuf::from_str("jormungandr").unwrap());
     let jcli = prepare_command(PathBuf::from_str("jcli").unwrap());
     let seed = Seed::generate(rand::rngs::OsRng);
@@ -160,7 +160,7 @@ pub fn context(testing_directory: &PathBuf) -> Context {
         seed,
         jormungandr,
         jcli,
-        Some(testing_directory.clone()),
+        Some(testing_directory.to_path_buf()),
         generate_documentation,
         ProgressBarMode::None,
         log_level,
@@ -168,7 +168,7 @@ pub fn context(testing_directory: &PathBuf) -> Context {
 }
 
 pub fn vitup_setup(
-    mut quick_setup: QuickVitBackendSettingsBuilder,
+    mut quick_setup: VitBackendSettingsBuilder,
     mut testing_directory: PathBuf,
 ) -> (VitController, Controller, ValidVotePlanParameters, String) {
     let context = context(&testing_directory);

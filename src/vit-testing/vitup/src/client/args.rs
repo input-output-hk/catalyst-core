@@ -13,7 +13,7 @@ pub struct VitupClientCommand {
     token: Option<String>,
 
     #[structopt(short, long, env = "VIT_ENDPOINT")]
-    endpoint: Option<String>,
+    endpoint: String,
 
     #[structopt(subcommand)]
     command: Command,
@@ -24,7 +24,7 @@ impl VitupClientCommand {
         if let Command::Utils(command) = self.command {
             return command.exec();
         }
-        let endpoint = self.endpoint.expect("no 'endpoint' arg defined");
+        let endpoint = self.endpoint;
         let rest = match self.token {
             Some(token) => VitupRest::new_with_token(token, endpoint),
             None => VitupRest::new(endpoint),

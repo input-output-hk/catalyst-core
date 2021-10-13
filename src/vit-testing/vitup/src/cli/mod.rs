@@ -4,11 +4,10 @@ pub mod generate;
 pub mod start;
 pub mod validate;
 
+use crate::cli::generate::{CommitteeIdCommandArgs, QrCommandArgs, SnapshotCommandArgs};
+use crate::cli::start::AdvancedStartCommandArgs;
+use crate::cli::start::MockStartCommandArgs;
 use crate::error::Result;
-use crate::mock::MockStartCommandArgs;
-use crate::setup::generate::CommitteeIdCommandArgs;
-use crate::setup::generate::{QrCommandArgs, SnapshotCommandArgs};
-use crate::setup::start::AdvancedStartCommandArgs;
 use convert::ConvertCommand;
 use diff::DiffCommand;
 use generate::DataCommandArgs;

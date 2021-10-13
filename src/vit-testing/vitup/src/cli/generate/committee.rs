@@ -12,12 +12,10 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct CommitteeIdCommandArgs {
-    /// Careful! directory would be removed before export
     #[structopt(short = "a", long = "address")]
     pub address: Option<String>,
 
-    /// how many addresses to generate
-    #[structopt(short = "p", long = "public_key")]
+    #[structopt(short = "p", long = "public_key", conflicts_with = "address")]
     pub public_key: Option<String>,
 
     #[structopt(short = "t", long = "testing")]
@@ -39,12 +37,10 @@ impl CommitteeIdCommandArgs {
                 };
                 let address = AddressReadable::from_string(prefix, &address_str)?.to_address();
                 CommitteeIdDef::from(CommitteeId::from(address.public_key().unwrap().clone()))
-            } else if let Some(public_key) = self.public_key {
-                let pkey: PublicKey<Ed25519> = Bech32::try_from_bech32_str(&public_key)?;
-                CommitteeIdDef::from(CommitteeId::from(pkey))
             } else {
-                println!("no public-key or address provided");
-                std::process::exit(-1);
+                let pkey: PublicKey<Ed25519> =
+                    Bech32::try_from_bech32_str(self.public_key.as_ref().unwrap())?;
+                CommitteeIdDef::from(CommitteeId::from(pkey))
             }
         };
 

@@ -1,10 +1,5 @@
-use crate::config::VitStartParameters;
-use crate::mock::rest::start_rest_server;
-use crate::mock::{
-    config::{read_config, Configuration},
-    context::Context,
-};
-use std::path::Path;
+use crate::config::read_params;
+use crate::mock::{read_config, start_rest_server, Configuration, Context};
 use std::sync::Mutex;
 use std::{path::PathBuf, sync::Arc};
 use structopt::StructOpt;
@@ -46,19 +41,14 @@ impl MockStartCommandArgs {
     }
 }
 
-pub fn read_params<P: AsRef<Path>>(params: P) -> Result<VitStartParameters, Error> {
-    let contents = std::fs::read_to_string(&params)?;
-    serde_yaml::from_str(&contents).map_err(Into::into)
-}
-
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("cannot spawn configuration")]
+    #[error(transparent)]
     CannotSpawnCommand(#[from] std::io::Error),
-    #[error("cannot read configuration")]
-    CannotReadConfiguration(#[from] crate::mock::config::Error),
-    #[error("cannot read parameters")]
+    #[error(transparent)]
+    CannotReadConfiguration(#[from] crate::mock::MockConfigError),
+    #[error(transparent)]
     CannotReadParameters(#[from] serde_yaml::Error),
-    #[error("join error")]
+    #[error(transparent)]
     Join(#[from] tokio::task::JoinError),
 }

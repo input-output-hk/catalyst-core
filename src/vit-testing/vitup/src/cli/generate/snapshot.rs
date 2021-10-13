@@ -1,17 +1,15 @@
+use crate::builders::post_deployment::DeploymentTree;
+use crate::builders::utils::{io::read_genesis_yaml, ContextExtension};
+use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Initials;
-use crate::setup::generate::data::read_genesis_yaml;
-use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
-use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
-use jormungandr_scenario_tests::{Context, Seed};
+use jormungandr_lib::interfaces::Initial;
+use jormungandr_scenario_tests::Context;
 use jortestkit::prelude::read_file;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
-
-use jormungandr_lib::interfaces::Initial;
 
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
@@ -24,7 +22,7 @@ pub struct SnapshotCommandArgs {
     #[structopt(long = "count")]
     pub initials: Option<usize>,
 
-    #[structopt(long = "initials")]
+    #[structopt(long = "initials", conflicts_with = "count")]
     pub initials_mapping: Option<PathBuf>,
 
     #[structopt(long = "global-pin", default_value = "1234")]
@@ -38,25 +36,17 @@ impl SnapshotCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let context = Context::new(
-            Seed::generate(rand::rngs::OsRng),
-            PathBuf::new(),
-            PathBuf::new(),
-            Some(self.output_directory.clone()),
-            true,
-            ScenarioProgressBarMode::None,
-            "info".to_string(),
-        );
+        let context = Context::empty_from_dir(&self.output_directory);
 
-        let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+        let mut quick_setup = VitBackendSettingsBuilder::new();
 
         if let Some(mapping) = self.initials_mapping {
             let content = read_file(mapping);
             let initials: Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
             quick_setup.initials(initials);
-        } else if let Some(initials_count) = self.initials {
-            quick_setup.initials_count(initials_count, &self.global_pin);
+        } else {
+            quick_setup.initials_count(self.initials.unwrap(), &self.global_pin);
         }
 
         if self.skip_qr_generation {
@@ -69,13 +59,14 @@ impl SnapshotCommandArgs {
             std::fs::remove_dir_all(&self.output_directory)?;
         }
 
+        let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
+
         let (_, controller, _, _) = quick_setup.build(context)?;
 
-        let result_dir = std::path::Path::new(&self.output_directory).join(quick_setup.title());
-        let genesis_yaml = std::path::Path::new(&result_dir).join("genesis.yaml");
+        let genesis_yaml = deployment_tree.genesis_path();
 
         //remove all files except qr codes and genesis
-        for entry in std::fs::read_dir(result_dir.clone())? {
+        for entry in std::fs::read_dir(&deployment_tree.root_path())? {
             let entry = entry?;
             let md = std::fs::metadata(entry.path()).unwrap();
             if md.is_dir() {
@@ -96,7 +87,7 @@ impl SnapshotCommandArgs {
 
         if !self.skip_qr_generation {
             //rename qr codes to {address}_{pin}.png syntax
-            let qr_codes = Path::new(&result_dir).join("qr-codes");
+            let qr_codes = deployment_tree.qr_codes_path();
             let mut i = 1;
             for entry in std::fs::read_dir(&qr_codes)? {
                 let entry = entry?;
@@ -121,7 +112,7 @@ impl SnapshotCommandArgs {
         }
 
         // write snapshot.json
-        let config = read_genesis_yaml(genesis_yaml.clone())?;
+        let config = read_genesis_yaml(&genesis_yaml)?;
 
         let initials: Vec<Initial> = config
             .initial
@@ -133,9 +124,8 @@ impl SnapshotCommandArgs {
         let snapshot = Snapshot { initial: initials };
         let snapshot_ser = serde_json::to_string_pretty(&snapshot)?;
 
-        let mut file = std::fs::File::create(Path::new(&result_dir).join("snapshot.json"))?;
+        let mut file = std::fs::File::create(deployment_tree.root_path().join("snapshot.json"))?;
         file.write_all(snapshot_ser.as_bytes())?;
-
         std::fs::remove_file(genesis_yaml)?;
 
         println!("Snapshot dumped into {:?}", file);

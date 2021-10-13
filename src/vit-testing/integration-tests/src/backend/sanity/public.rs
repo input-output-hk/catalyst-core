@@ -1,11 +1,9 @@
 use crate::common::iapyx_from_qr;
-use crate::common::{
-    asserts::VotePlanStatusAssert, vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote,
-    VoteTiming,
-};
+use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote};
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
+use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
 use jormungandr_testing_utils::testing::node::time;
 use jormungandr_testing_utils::testing::FragmentSender;
 use jormungandr_testing_utils::testing::FragmentSenderSetup;
@@ -13,18 +11,24 @@ use std::path::Path;
 use std::str::FromStr;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
 use vitup::scenario::network::setup_network;
-use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 const PIN: &str = "1234";
 
 #[test]
 pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     let endpoint = "127.0.0.1:8080";
-    let vote_timing = VoteTiming::new(0, 1, 2);
+    let vote_timing = VoteBlockchainTime {
+        vote_start: 0,
+        tally_start: 1,
+        tally_end: 2,
+        slots_per_epoch: 30,
+    };
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    let mut quick_setup = VitBackendSettingsBuilder::new();
     quick_setup
         .initials(Initials(vec![
             InitialEntry::Wallet {
@@ -43,11 +47,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
                 pin: PIN.to_string(),
             },
         ]))
-        .vote_start_epoch(vote_timing.vote_start)
-        .tally_start_epoch(vote_timing.tally_start)
-        .tally_end_epoch(vote_timing.tally_end)
         .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(30)
         .proposals_count(300)
         .voting_power(8_000)
         .private(false);

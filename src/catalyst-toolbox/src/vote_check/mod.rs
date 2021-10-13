@@ -3,10 +3,10 @@ mod explorer;
 use assert_fs::{fixture::PathChild, TempDir};
 use explorer::{transaction_by_id, TransactionById};
 use graphql_client::{GraphQLQuery, Response};
+use jormungandr_lib::interfaces::{Log, LogEntry, LogOutput, VotePlanStatus};
 use jormungandr_testing_utils::testing::jormungandr::{
     JormungandrError, JormungandrProcess, Starter, StartupError, StartupVerificationMode,
 };
-use jormungandr_lib::interfaces::{Log, LogEntry, LogOutput, VotePlanStatus};
 use jormungandr_testing_utils::testing::{
     node::{ExplorerError, RestError},
     Block0ConfigurationBuilder, JormungandrParams, NodeConfigBuilder,

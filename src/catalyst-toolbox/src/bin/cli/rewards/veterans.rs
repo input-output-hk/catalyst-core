@@ -14,7 +14,7 @@ pub struct VeteransRewards {
     /// Results file output path
     output: PathBuf,
 
-    /// Reward (in LOVELACE) to be distributed
+    /// Reward to be distributed
     #[structopt(long = "total-rewards")]
     total_rewards: VeteranAdvisorReward,
 }

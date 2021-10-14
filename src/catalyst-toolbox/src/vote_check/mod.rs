@@ -3,10 +3,10 @@ mod explorer;
 use assert_fs::{fixture::PathChild, TempDir};
 use explorer::{transaction_by_id, TransactionById};
 use graphql_client::{GraphQLQuery, Response};
-use jormungandr_integration_tests::common::jormungandr::{
+use jormungandr_lib::interfaces::{Log, LogEntry, LogOutput, VotePlanStatus};
+use jormungandr_testing_utils::testing::jormungandr::{
     JormungandrError, JormungandrProcess, Starter, StartupError, StartupVerificationMode,
 };
-use jormungandr_lib::interfaces::{Log, LogEntry, LogOutput, VotePlanStatus};
 use jormungandr_testing_utils::testing::{
     node::{ExplorerError, RestError},
     Block0ConfigurationBuilder, JormungandrParams, NodeConfigBuilder,
@@ -74,7 +74,7 @@ impl CheckNode {
             temp_dir.child(JORMUNGANDR_CONFIG_FILE).path(),
             String::new(),
             genesis_block_hash,
-            std::iter::empty::<String>(), // passive node with no secrets
+            PathBuf::new(), // passive node with no secrets
             Block0ConfigurationBuilder::new().build(),
             false,
             temp_dir.child(JORMUNGANDR_LOG_FILE).path(),

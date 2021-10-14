@@ -1,6 +1,3 @@
-use std::ops::{Add, Range};
-use std::time::{Duration, SystemTime};
-
 use chain_addr::{Discrimination, Kind};
 use chain_core::property::Fragment as _;
 use chain_crypto::{Ed25519Extended, SecretKey};
@@ -30,6 +27,8 @@ use jormungandr_lib::{
 };
 use log::{debug, error, trace, warn};
 use std::collections::{HashMap, HashSet};
+use std::ops::{Add, Range};
+use std::time::{Duration, SystemTime};
 use wallet::{Settings, TransactionBuilder, Wallet};
 
 #[allow(clippy::large_enum_variant)]
@@ -267,7 +266,7 @@ impl<I: Iterator<Item = PersistentFragmentLog>> VoteFragmentFilter<I> {
                 .into(),
         );
         Ok(Self {
-            block0: block0.header.hash().into(),
+            block0: block0.header().hash().into(),
             range_check,
             timeframe,
             era,
@@ -364,7 +363,7 @@ pub fn recover_ledger_from_logs(
     // we use block0 header id instead of the new one, to keep validation on old tx that uses the original block0 id.
     // This is used so we can run the VoteTally certificates with the original (issued) committee members ones.
     let mut ledger =
-        Ledger::new(block0.header.id(), new_block0.fragments()).map_err(Error::LedgerError)?;
+        Ledger::new(block0.header().id(), new_block0.fragments()).map_err(Error::LedgerError)?;
 
     // deserialize fragments to get a clean iterator over them
     let deserialized_fragment_logs = fragment_logs.filter_map(|fragment_log| match fragment_log {
@@ -416,7 +415,7 @@ pub fn recover_ledger_from_logs(
                 fragment_replayer.confirm_fragment(&fragment);
             }
             Err((
-                err @ Error::LedgerError(ledger::Error::VotePlan(_) | ledger::Error::TransactionMalformed(_) | ledger::Error::Account(LedgerError::ValueError(
+                err @ Error::LedgerError(ledger::Error::VotePlan(_) | ledger::Error::InvalidTransactionValidity(_) | ledger::Error::Account(LedgerError::ValueError(
                     ValueError::NegativeAmount,
                 )))
                 | err @ Error::ValidationError(_)
@@ -597,46 +596,170 @@ impl FragmentReplayer {
 #[cfg(test)]
 mod test {
     use super::recover_ledger_from_logs;
-    use chain_impl_mockchain::block::Block;
-    use chain_impl_mockchain::vote::Weight;
-    use chain_ser::deser::Deserialize;
+    use assert_fs::fixture::PathChild;
+    use assert_fs::TempDir;
+    use chain_addr::Discrimination;
+    use chain_core::property::Block as _;
+    use chain_impl_mockchain::certificate::VoteTallyPayload;
+    use chain_impl_mockchain::chaintypes::ConsensusType;
+    use chain_impl_mockchain::vote::Choice;
+    use chain_impl_mockchain::vote::Tally;
     use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
-    use std::io::BufReader;
-    use std::path::PathBuf;
-
-    fn read_block0(path: PathBuf) -> std::io::Result<Block> {
-        let reader = std::fs::File::open(path)?;
-        Ok(Block::deserialize(BufReader::new(reader)).unwrap())
-    }
+    use jormungandr_lib::interfaces::KesUpdateSpeed;
+    use jormungandr_lib::interfaces::PersistentFragmentLog;
+    use jormungandr_lib::time::SecondsSinceUnixEpoch;
+    use jormungandr_testing_utils::testing::fragments::write_into_persistent_log;
+    use jormungandr_testing_utils::testing::jormungandr::ConfigurationBuilder;
+    use jormungandr_testing_utils::testing::vote_plan_cert;
+    use jormungandr_testing_utils::testing::VotePlanBuilder;
+    use jormungandr_testing_utils::wallet::Wallet as TestWallet;
+    use rand::rngs::OsRng;
 
     #[test]
-    fn test_vote_flow() -> std::io::Result<()> {
-        println!("{}", std::env::current_dir().unwrap().to_string_lossy());
-        let path = std::fs::canonicalize(r"./tests/logs").unwrap();
-        println!(
-            "{}",
-            std::fs::canonicalize(path.clone())
-                .unwrap()
-                .to_string_lossy()
-        );
-        let fragments = load_persistent_fragments_logs_from_folder_path(&path)?;
-        let block0_path: PathBuf = std::fs::canonicalize(r"./tests/block0.bin").unwrap();
-        let block0 = read_block0(block0_path)?;
+    fn test_vote_flow() {
+        let temp_dir = TempDir::new().unwrap();
+        let funds = 1_000_000;
+        let slot_duration = 4;
+        let slots_per_epoch = 10;
+
+        let mut rng = OsRng;
+        let mut alice =
+            TestWallet::new_account_with_discrimination(&mut rng, Discrimination::Production);
+        let mut bob =
+            TestWallet::new_account_with_discrimination(&mut rng, Discrimination::Production);
+        let mut clarice =
+            TestWallet::new_account_with_discrimination(&mut rng, Discrimination::Production);
+
+        let vote_plan = VotePlanBuilder::new().proposals_count(3).public().build();
+
+        let vote_plan_cert = vote_plan_cert(
+            &alice,
+            chain_impl_mockchain::block::BlockDate {
+                epoch: 1,
+                slot_id: 0,
+            },
+            &vote_plan,
+        )
+        .into();
+
+        let block0_configuration = ConfigurationBuilder::new()
+            .with_explorer()
+            .with_funds(vec![
+                alice.to_initial_fund(funds),
+                bob.to_initial_fund(funds),
+                clarice.to_initial_fund(funds),
+            ])
+            .with_certs(vec![vote_plan_cert])
+            .with_block0_consensus(ConsensusType::Bft)
+            .with_kes_update_speed(KesUpdateSpeed::new(43200).unwrap())
+            .with_discrimination(Discrimination::Production)
+            .with_committees(&[&alice])
+            .with_slot_duration(slot_duration)
+            .with_slots_per_epoch(slots_per_epoch)
+            .build_block0();
+
+        let valid_until = chain_impl_mockchain::block::BlockDate {
+            epoch: 1,
+            slot_id: 0,
+        };
+        let block0 = block0_configuration.to_block();
+        //vote fragments
+        let mut fragments: Vec<PersistentFragmentLog> = vec![
+            alice
+                .issue_vote_cast_cert(
+                    &block0.id().into(),
+                    &block0_configuration.blockchain_configuration.linear_fees,
+                    valid_until,
+                    &vote_plan,
+                    0,
+                    &Choice::new(1),
+                )
+                .unwrap(),
+            bob.issue_vote_cast_cert(
+                &block0.id().into(),
+                &block0_configuration.blockchain_configuration.linear_fees,
+                valid_until,
+                &vote_plan,
+                1,
+                &Choice::new(1),
+            )
+            .unwrap(),
+            clarice
+                .issue_vote_cast_cert(
+                    &block0.id().into(),
+                    &block0_configuration.blockchain_configuration.linear_fees,
+                    valid_until,
+                    &vote_plan,
+                    2,
+                    &Choice::new(1),
+                )
+                .unwrap(),
+        ]
+        .into_iter()
+        .map(|fragment| PersistentFragmentLog {
+            time: block0_configuration
+                .blockchain_configuration
+                .block0_date
+                .clone(),
+            fragment,
+        })
+        .collect();
+
+        let valid_until = chain_impl_mockchain::block::BlockDate {
+            epoch: 2,
+            slot_id: 0,
+        };
+
+        //calculate tally period
+        let new_secs = block0_configuration
+            .blockchain_configuration
+            .block0_date
+            .to_secs()
+            + (slots_per_epoch * slot_duration as u32 + 1) as u64;
+
+        //push tally fragment
+        fragments.push(PersistentFragmentLog {
+            time: SecondsSinceUnixEpoch::from_secs(new_secs),
+            fragment: alice
+                .issue_vote_tally_cert(
+                    &block0.id().into(),
+                    &block0_configuration.blockchain_configuration.linear_fees,
+                    valid_until,
+                    &vote_plan,
+                    VoteTallyPayload::Public,
+                )
+                .unwrap(),
+        });
+
+        let persistent_fragment_log_output = temp_dir.child("fragments");
+        std::fs::create_dir_all(persistent_fragment_log_output.path()).unwrap();
+
+        let fragment_log = persistent_fragment_log_output.child("log.log");
+        // below loop of writing/reading is done not to loose original test
+        write_into_persistent_log(fragment_log.path(), fragments).unwrap();
+        let fragments =
+            load_persistent_fragments_logs_from_folder_path(&persistent_fragment_log_output.path())
+                .unwrap();
+
+        let block0 = block0_configuration.to_block();
         let (ledger, failed) = recover_ledger_from_logs(&block0, fragments).unwrap();
 
-        println!("Failed: {}", failed.len());
-        assert_eq!(failed.len(), 0);
+        assert_eq!(failed.len(), 0, "Failed: {}", failed.len());
         for voteplan in ledger.active_vote_plans() {
             println!("Voteplan: {}", voteplan.id);
             for proposal in voteplan.proposals {
-                let result = proposal.tally.unwrap().result().cloned().unwrap();
-                if result.results().iter().any(|w| w != &Weight::from(0)) {
-                    println!("\tProposal: {}", proposal.proposal_id);
-                    println!("\t\t{:?}", result.results());
+                match proposal.tally.as_ref().unwrap() {
+                    Tally::Public { result } => {
+                        let results = result.results();
+                        assert_eq!(*results.get(0).unwrap(), 0.into());
+                        assert_eq!(*results.get(1).unwrap(), funds.into());
+                        assert_eq!(*results.get(2).unwrap(), 0.into());
+                    }
+                    Tally::Private { .. } => {
+                        unimplemented!("Private tally testing is not implemented")
+                    }
                 }
             }
         }
-
-        Ok(())
     }
 }

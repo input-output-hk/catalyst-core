@@ -1,121 +1,12 @@
-use chain_crypto::{Ed25519Extended, SecretKey, SecretKeyError};
-use image::{DynamicImage, ImageBuffer, Luma};
-use qrcode::{
-    render::{svg, unicode},
-    EcLevel, QrCode,
-};
-use std::fmt;
-use std::fs::File;
-use std::io::{self, prelude::*};
-use std::path::Path;
+mod hash;
+mod img;
+
+pub use hash::{decode, generate};
+pub use img::{KeyQrCode, KeyQrCodeError};
 use std::str::FromStr;
-use symmetric_cipher::{decrypt, encrypt, Error as SymmetricCipherError};
 use thiserror::Error;
 
 pub const PIN_LENGTH: usize = 4;
-
-pub struct KeyQrCode {
-    inner: QrCode,
-}
-
-#[derive(Error, Debug)]
-pub enum KeyQrCodeError {
-    #[error("encryption-decryption protocol error")]
-    SymmetricCipher(#[from] SymmetricCipherError),
-    #[error("io error")]
-    Io(#[from] io::Error),
-    #[error("invalid secret key")]
-    SecretKey(#[from] SecretKeyError),
-    #[error("couldn't decode QR code")]
-    QrDecodeError(#[from] QrDecodeError),
-    #[error("failed to decode hex")]
-    HexDecodeError(#[from] hex::FromHexError),
-}
-
-#[derive(Error, Debug)]
-pub enum QrDecodeError {
-    #[error("couldn't decode QR code")]
-    DecodeError(#[from] quircs::DecodeError),
-    #[error("couldn't extract QR code")]
-    ExtractError(#[from] quircs::ExtractError),
-    #[error("QR code payload is not valid uf8")]
-    NonUtf8Payload,
-}
-
-impl KeyQrCode {
-    pub fn generate(key: SecretKey<Ed25519Extended>, password: &[u8]) -> Self {
-        let secret = key.leak_secret();
-        let rng = rand::thread_rng();
-        // this won't fail because we already know it's an ed25519extended key,
-        // so it is safe to unwrap
-        let enc = encrypt(password, secret.as_ref(), rng).unwrap();
-        // Using binary would make the QR codes more compact and probably less
-        // prone to scanning errors.
-        let enc_hex = hex::encode(enc);
-        let inner = QrCode::with_error_correction_level(&enc_hex, EcLevel::H).unwrap();
-
-        KeyQrCode { inner }
-    }
-
-    pub fn write_svg(&self, path: impl AsRef<Path>) -> Result<(), KeyQrCodeError> {
-        let mut out = File::create(path)?;
-        let svg_file = self
-            .inner
-            .render()
-            .quiet_zone(true)
-            .dark_color(svg::Color("#000000"))
-            .light_color(svg::Color("#ffffff"))
-            .build();
-        out.write_all(svg_file.as_bytes())?;
-        out.flush()?;
-        Ok(())
-    }
-
-    pub fn to_img(&self) -> ImageBuffer<Luma<u8>, Vec<u8>> {
-        let qr = &self.inner;
-        let img = qr.render::<Luma<u8>>().build();
-        img
-    }
-
-    pub fn decode(
-        img: DynamicImage,
-        password: &[u8],
-    ) -> Result<Vec<SecretKey<Ed25519Extended>>, KeyQrCodeError> {
-        let mut decoder = quircs::Quirc::default();
-
-        let img = img.into_luma8();
-
-        let codes = decoder.identify(img.width() as usize, img.height() as usize, &img);
-
-        codes
-            .map(|code| -> Result<_, KeyQrCodeError> {
-                let decoded = code
-                    .map_err(QrDecodeError::ExtractError)
-                    .and_then(|c| c.decode().map_err(QrDecodeError::DecodeError))?;
-
-                // TODO: I actually don't know if this can fail
-                let h = std::str::from_utf8(&decoded.payload)
-                    .map_err(|_| QrDecodeError::NonUtf8Payload)?;
-                let encrypted_bytes = hex::decode(h)?;
-                let key = decrypt(password, &encrypted_bytes)?;
-                Ok(SecretKey::from_binary(&key)?)
-            })
-            .collect()
-    }
-}
-
-impl fmt::Display for KeyQrCode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let qr_img = self
-            .inner
-            .render::<unicode::Dense1x2>()
-            .quiet_zone(true)
-            .dark_color(unicode::Dense1x2::Light)
-            .light_color(unicode::Dense1x2::Dark)
-            .build();
-        write!(f, "{}", qr_img)
-    }
-}
 
 #[derive(Debug, PartialEq)]
 pub struct QrPin {
@@ -150,6 +41,8 @@ impl FromStr for QrPin {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chain_crypto::SecretKey;
+    use image::DynamicImage;
 
     #[test]
     fn parse_pin_successfully() {

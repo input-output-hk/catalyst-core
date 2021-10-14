@@ -31,6 +31,7 @@ jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormunga
 jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
 fixed = "1.7"
+rust_decimal = "1.16"
 futures = "0.3"
 log = "0.4"
 once_cell = "1.8"

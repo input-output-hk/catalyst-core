@@ -69,7 +69,7 @@ impl VoteRoundGenerator {
             );
         }
 
-        let block0_hash = config.to_block().header.id().into();
+        let block0_hash = config.to_block().header().id().into();
         Self {
             block0: config,
             block0_hash,
@@ -172,7 +172,7 @@ impl VoteRoundGenerator {
             .map(|member| member.public_key())
             .collect::<Vec<_>>();
 
-        let tmp_ledger = Ledger::new(block0.header.id(), block0.fragments()).unwrap();
+        let tmp_ledger = Ledger::new(block0.header().id(), block0.fragments()).unwrap();
         let stake_control = StakeControl::new_with(tmp_ledger.accounts(), &utxo::Ledger::new());
         let table = chain_vote::TallyOptimizationTable::generate(stake_control.assigned().into());
 
@@ -230,7 +230,8 @@ impl VoteRoundGenerator {
                                     }
                                 })
                                 .collect::<Vec<_>>(),
-                        );
+                        )
+                        .unwrap();
 
                         manager = manager
                             .finalize_private_tally(&decrypted_tally, &Default::default(), |_| ())

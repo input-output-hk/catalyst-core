@@ -404,7 +404,7 @@ fn votes_outside_voting_phase() {
     committee_wallet.update_counter(0);
     let early_tally_fragment = committee_wallet
         .issue_vote_tally_cert(
-            &generator.block0().header.id().into(),
+            &generator.block0().header().id().into(),
             &generator
                 .block0_config()
                 .blockchain_configuration
@@ -483,7 +483,7 @@ fn transaction_transfer() {
     // transfer all funds from the first wallet to the second
     let transaction = (&mut wallets[0])
         .transaction_to(
-            &generator.block0().header.id().into(),
+            &generator.block0().header().id().into(),
             &generator
                 .block0_config()
                 .blockchain_configuration
@@ -593,7 +593,7 @@ fn cast_vote(
 ) -> Fragment {
     wallet
         .issue_vote_cast_cert(
-            &generator.block0().header.id().into(),
+            &generator.block0().header().id().into(),
             &generator
                 .block0_config()
                 .blockchain_configuration

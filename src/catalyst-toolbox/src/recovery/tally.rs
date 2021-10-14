@@ -604,12 +604,12 @@ mod test {
     use chain_impl_mockchain::chaintypes::ConsensusType;
     use chain_impl_mockchain::vote::Choice;
     use chain_impl_mockchain::vote::Tally;
-    use jormungandr_integration_tests::common::jormungandr::ConfigurationBuilder;
     use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
     use jormungandr_lib::interfaces::KesUpdateSpeed;
     use jormungandr_lib::interfaces::PersistentFragmentLog;
     use jormungandr_lib::time::SecondsSinceUnixEpoch;
     use jormungandr_testing_utils::testing::fragments::write_into_persistent_log;
+    use jormungandr_testing_utils::testing::jormungandr::ConfigurationBuilder;
     use jormungandr_testing_utils::testing::vote_plan_cert;
     use jormungandr_testing_utils::testing::VotePlanBuilder;
     use jormungandr_testing_utils::wallet::Wallet as TestWallet;

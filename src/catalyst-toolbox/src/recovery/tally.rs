@@ -415,7 +415,7 @@ pub fn recover_ledger_from_logs(
                 fragment_replayer.confirm_fragment(&fragment);
             }
             Err((
-                err @ Error::LedgerError(ledger::Error::VotePlan(_) | ledger::Error::TransactionMalformed(_) | ledger::Error::Account(LedgerError::ValueError(
+                err @ Error::LedgerError(ledger::Error::VotePlan(_) | ledger::Error::InvalidTransactionValidity(_) | ledger::Error::Account(LedgerError::ValueError(
                     ValueError::NegativeAmount,
                 )))
                 | err @ Error::ValidationError(_)

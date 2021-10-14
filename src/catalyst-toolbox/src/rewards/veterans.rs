@@ -6,14 +6,14 @@ pub type VeteranAdvisorReward = rust_decimal::Decimal;
 pub type VeteranAdvisorRewards = Vec<(VeteranAdvisorId, VeteranAdvisorReward)>;
 
 #[derive(Deserialize)]
-pub struct VeteranReview {
+pub struct VeteranReviewsCount {
     name: VeteranAdvisorId,
     #[serde(alias = "No. of Reviews")]
     number_of_reviews: usize,
 }
 
 pub fn calculate_veteran_advisors_rewards(
-    veteran_reviews: &[VeteranReview],
+    veteran_reviews: &[VeteranReviewsCount],
     base_rewards: VeteranAdvisorReward,
 ) -> VeteranAdvisorRewards {
     let total_reviews: VeteranAdvisorReward = VeteranAdvisorReward::from(

@@ -16,19 +16,16 @@ pub fn calculate_veteran_advisors_rewards(
     veteran_reviews: &[VeteranReviewsCount],
     base_rewards: VeteranAdvisorReward,
 ) -> VeteranAdvisorRewards {
-    let total_reviews: VeteranAdvisorReward = VeteranAdvisorReward::from(
-        veteran_reviews
-            .iter()
-            .map(|vr| vr.number_of_reviews)
-            .sum::<usize>(),
-    );
+    let total_reviews: usize = veteran_reviews.iter().map(|vr| vr.number_of_reviews).sum();
 
     veteran_reviews
         .iter()
         .map(|vr| {
             (
                 vr.name.clone(),
-                (VeteranAdvisorReward::from(vr.number_of_reviews) / total_reviews) * base_rewards,
+                (VeteranAdvisorReward::from(vr.number_of_reviews)
+                    / VeteranAdvisorReward::from(total_reviews))
+                    * base_rewards,
             )
         })
         .collect()

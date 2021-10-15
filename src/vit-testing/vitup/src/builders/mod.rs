@@ -26,9 +26,9 @@ use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
     ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KesUpdateSpeed, Milli,
-    NumberOfSlotsPerEpoch, SlotDuration, Topology, TopologyBuilder,
+    NumberOfSlotsPerEpoch, SlotDuration, Topology,
 };
-use jormungandr_testing_utils::testing::network_builder::{Blockchain, Node, WalletTemplate};
+use jormungandr_testing_utils::testing::network::{Blockchain, Node, WalletTemplate};
 use jormungandr_testing_utils::wallet::LinearFee;
 pub use reviews::ReviewGenerator;
 use std::collections::HashMap;
@@ -192,32 +192,31 @@ impl VitBackendSettingsBuilder {
     }
 
     pub fn build_topology(&mut self) -> Topology {
-        let mut topology_builder = TopologyBuilder::new();
+        let topology = Topology::default();
 
         // Leader 1
         let leader_1 = Node::new(LEADER_1);
-        topology_builder.register_node(leader_1);
-
+       
         // leader 2
-        let mut leader_2 = Node::new(LEADER_2);
-        leader_2.add_trusted_peer(LEADER_1);
-        topology_builder.register_node(leader_2);
-
+        let leader_2 = Node::new(LEADER_2)
+        .with_trusted_peer(LEADER_1);
+       
         // leader 3
-        let mut leader_3 = Node::new(LEADER_3);
-        leader_3.add_trusted_peer(LEADER_1);
-        leader_3.add_trusted_peer(LEADER_2);
-        topology_builder.register_node(leader_3);
-
+        let leader_3 = Node::new(LEADER_3)
+        .with_trusted_peer(LEADER_1)
+        .with_trusted_peer(LEADER_2);
+       
         // passive
-        let mut passive = Node::new(WALLET_NODE);
-        passive.add_trusted_peer(LEADER_1);
-        passive.add_trusted_peer(LEADER_2);
-        passive.add_trusted_peer(LEADER_3);
+        let passive = Node::new(WALLET_NODE)
+        .with_trusted_peer(LEADER_1)
+        .with_trusted_peer(LEADER_2)
+        .with_trusted_peer(LEADER_3);
 
-        topology_builder.register_node(passive);
-
-        topology_builder.build()
+        topology
+            .with_node(leader_1)
+            .with_node(leader_2)
+            .with_node(leader_3)
+            .with_node(passive)
     }
 
     pub fn blockchain_timing(&self) -> VoteBlockchainTime {
@@ -327,7 +326,7 @@ impl VitBackendSettingsBuilder {
             .with_parameters(self.config.params.clone())
             .build()
             .into_iter()
-            .for_each(|vote_plan_def| blockchain.add_vote_plan(vote_plan_def));
+            .for_each(|vote_plan_def| blockchain.add_vote_plan(vote_plan_def.alias(),vote_plan_def.owner(),chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into()));
         builder.set_blockchain(blockchain);
         builder.build_settings(&mut context);
 

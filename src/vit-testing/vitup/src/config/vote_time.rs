@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 pub const FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(untagged)]
 pub enum VoteTime {
     Blockchain(VoteBlockchainTime),
     Real {

@@ -15,7 +15,7 @@ use jormungandr_scenario_tests::{
     node::{LeadershipMode, PersistenceMode},
     scenario::Context,
 };
-use jormungandr_testing_utils::testing::network_builder::SpawnParams;
+use jormungandr_testing_utils::testing::network::SpawnParams;
 use jortestkit::prelude::UserInteraction;
 use rand_chacha::ChaChaRng;
 use std::path::Path;

@@ -3,7 +3,7 @@ use jormungandr_scenario_tests::node::{ProgressBarController, Status};
 use valgrind::{ProxyClient, ValgrindClient, ValgrindSettings};
 
 pub use jormungandr_testing_utils::testing::{
-    network_builder::{
+    network::{
         LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
     },
     node::{
@@ -50,6 +50,7 @@ impl WalletProxyController {
             use_https: false,
             enable_debug: true,
             certificate: None,
+            ..Default::default()
         };
 
         let base_address = self.settings().base_address();

@@ -1,7 +1,7 @@
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::scenario::Controller;
 use jormungandr_scenario_tests::{Context, ProgressBarMode};
-use jormungandr_testing_utils::testing::network_builder::Seed;
+use jormungandr_testing_utils::testing::network::Seed;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;

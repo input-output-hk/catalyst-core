@@ -1,6 +1,6 @@
 use chain_addr::Discrimination;
 use chain_impl_mockchain::value::Value;
-use jormungandr_testing_utils::testing::network_builder::{ExternalWalletTemplate, WalletTemplate};
+use jormungandr_testing_utils::testing::network::{ExternalWalletTemplate, WalletTemplate};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

@@ -7,7 +7,7 @@ mod spawn_params;
 use chain_impl_mockchain::fragment::FragmentId;
 
 pub use jormungandr_testing_utils::testing::{
-    network_builder::{
+    network::{
         LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
     },
     node::{
@@ -31,7 +31,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 pub use controller::WalletProxyController;
-pub use jormungandr_testing_utils::testing::network_builder::WalletProxySettings;
+pub use jormungandr_testing_utils::testing::network::WalletProxySettings;
 pub use spawn_params::WalletProxySpawnParams;
 use valgrind::Protocol;
 pub type WalletProxyError = Error;
@@ -159,7 +159,7 @@ impl WalletProxy {
             context.progress_bar_mode(),
         );
 
-        settings.node_backend_address = Some(node_setting.config().rest.listen);
+        settings.node_backend_address = Some(node_setting.config.rest.listen);
 
         let mut command = Command::new("valgrind");
         command

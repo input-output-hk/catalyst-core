@@ -4,7 +4,7 @@ use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_impl_mockchain::testing::scenario::template::{ProposalDefBuilder, VotePlanDefBuilder};
 use chain_impl_mockchain::vote::PayloadType;
 pub use jormungandr_lib::interfaces::Initial;
-use jormungandr_testing_utils::testing::network_builder::WalletAlias;
+use jormungandr_testing_utils::testing::network::WalletAlias;
 use std::iter;
 
 pub struct VitVotePlanDefBuilder {

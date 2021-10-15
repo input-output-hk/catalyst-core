@@ -7,17 +7,17 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "extend_blockchain_settings" } 
-jormungandr-integration-tests = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "extend_blockchain_settings" } 
-jormungandr-testing-utils = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "extend_blockchain_settings" }
-jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "extend_blockchain_settings" }
-jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "extend_blockchain_settings" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund6" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund6" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" } 
+jormungandr-integration-tests = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" } 
+jormungandr-testing-utils = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
-chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
 valgrind = { path = "../valgrind"} 
@@ -25,8 +25,8 @@ snapshot-trigger-service = { path = "../snapshot-trigger-service" }
 registration-service = { path = "../registration-service" }
 rand_chacha = "0.2"
 tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6", features = [ "property-test-api" ] }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "catalyst-fund6" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git" }
 thiserror = "1.0"
 rand = "0.8"
 libmath = "0.2.1"

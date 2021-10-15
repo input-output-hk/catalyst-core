@@ -8,27 +8,27 @@ edition = "2018"
 
 [dependencies]
 bech32 = "0.7"
-wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "catalyst-fund6" }
-wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "catalyst-fund6" }
-hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "catalyst-fund6" }
-bip39 = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "catalyst-fund6" }
-chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
-chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6"  }
-chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
-chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6"  }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6"  }
-chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
-chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
+wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+hdkeygen = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+bip39 = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 hex = "0.4"
 rand = "0.8"
 rand_core = "0.6"
 itertools = "0.9.0"
 cryptoxide = "0.3.2"
 ed25519-bip32 = "^0.3.1"
-jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", branch = "extend_blockchain_settings" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "extend_blockchain_settings" }
+jormungandr-testing-utils ={ git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "catalyst-fund6" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git"}
 valgrind = { path = "../valgrind"}
 hyper = "0.13.6"
 thiserror = "1.0"

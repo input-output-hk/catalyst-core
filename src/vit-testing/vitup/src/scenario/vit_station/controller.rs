@@ -6,7 +6,7 @@ use jormungandr_scenario_tests::{
     style, Context,
 };
 pub use jormungandr_testing_utils::testing::{
-    network_builder::{
+    network::{
         LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
     },
     node::{

@@ -5,8 +5,8 @@ use assert_fs::fixture::ChildPath;
 use assert_fs::fixture::PathChild;
 use catalyst_toolbox::kedqr::{generate, KeyQrCode};
 use chain_crypto::SecretKey;
-use jormungandr_testing_utils::testing::network_builder::WalletAlias;
-use jormungandr_testing_utils::testing::network_builder::WalletTemplate;
+use jormungandr_testing_utils::testing::network::WalletAlias;
+use jormungandr_testing_utils::testing::network::WalletTemplate;
 use jormungandr_testing_utils::wallet::Wallet;
 
 use jortestkit::prelude::append;

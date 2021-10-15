@@ -1,3 +1,4 @@
+mod veterans;
 mod voters;
 
 use structopt::StructOpt;
@@ -17,12 +18,16 @@ pub enum Error {
 pub enum Rewards {
     /// Calculate rewards for voters base on their stake
     Voters(voters::VotersRewards),
+
+    /// Calculate rewards for veteran community advisors
+    Veterans(veterans::VeteransRewards),
 }
 
 impl Rewards {
     pub fn exec(self) -> Result<(), Error> {
         match self {
             Rewards::Voters(cmd) => cmd.exec(),
+            Rewards::Veterans(cmd) => cmd.exec(),
         }
     }
 }

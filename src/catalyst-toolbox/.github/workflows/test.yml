@@ -99,7 +99,7 @@ jobs:
         continue-on-error: false
         with:
           command: test
-          args: --locked
+          args: --locked --all-targets
 
   lints:
     name: Rust lints

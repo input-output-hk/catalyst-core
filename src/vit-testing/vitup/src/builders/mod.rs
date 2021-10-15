@@ -196,21 +196,20 @@ impl VitBackendSettingsBuilder {
 
         // Leader 1
         let leader_1 = Node::new(LEADER_1);
-       
+
         // leader 2
-        let leader_2 = Node::new(LEADER_2)
-        .with_trusted_peer(LEADER_1);
-       
+        let leader_2 = Node::new(LEADER_2).with_trusted_peer(LEADER_1);
+
         // leader 3
         let leader_3 = Node::new(LEADER_3)
-        .with_trusted_peer(LEADER_1)
-        .with_trusted_peer(LEADER_2);
-       
+            .with_trusted_peer(LEADER_1)
+            .with_trusted_peer(LEADER_2);
+
         // passive
         let passive = Node::new(WALLET_NODE)
-        .with_trusted_peer(LEADER_1)
-        .with_trusted_peer(LEADER_2)
-        .with_trusted_peer(LEADER_3);
+            .with_trusted_peer(LEADER_1)
+            .with_trusted_peer(LEADER_2)
+            .with_trusted_peer(LEADER_3);
 
         topology
             .with_node(leader_1)
@@ -326,7 +325,13 @@ impl VitBackendSettingsBuilder {
             .with_parameters(self.config.params.clone())
             .build()
             .into_iter()
-            .for_each(|vote_plan_def| blockchain.add_vote_plan(vote_plan_def.alias(),vote_plan_def.owner(),chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into()));
+            .for_each(|vote_plan_def| {
+                blockchain.add_vote_plan(
+                    vote_plan_def.alias(),
+                    vote_plan_def.owner(),
+                    chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into(),
+                )
+            });
         builder.set_blockchain(blockchain);
         builder.build_settings(&mut context);
 

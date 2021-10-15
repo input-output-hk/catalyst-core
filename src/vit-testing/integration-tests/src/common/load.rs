@@ -105,7 +105,8 @@ pub fn private_vote_test_scenario(
         .private_vote_plans
         .get(&fund_name)
         .unwrap()
-        .decrypt_tally(&vote_plan_status.clone().into());
+        .decrypt_tally(&vote_plan_status.clone().into())
+        .unwrap();
 
     match controller.fragment_sender().send_private_vote_tally(
         &mut committee,

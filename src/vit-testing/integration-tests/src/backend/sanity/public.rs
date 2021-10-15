@@ -5,6 +5,7 @@ use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
 use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
 use jormungandr_testing_utils::testing::node::time;
+use jormungandr_testing_utils::testing::BlockDateGenerator;
 use jormungandr_testing_utils::testing::FragmentSender;
 use jormungandr_testing_utils::testing::FragmentSenderSetup;
 use std::path::Path;
@@ -109,14 +110,20 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     time::wait_for_date(target_date.into(), leader_1.rest());
 
     let settings = wallet_node.rest().settings().unwrap();
-    //This should be migrated and utilize BlockDateGenerator after we merge catalyst-fund6 branch
+
+    let block_date_generator = BlockDateGenerator::rolling(
+        &settings,
+        BlockDate {
+            epoch: 1,
+            slot_id: 0,
+        },
+        false,
+    );
+
     let fragment_sender = FragmentSender::new(
         Hash::from_str(&settings.block0_hash).unwrap().into(),
         settings.fees,
-        BlockDate {
-            epoch: 2,
-            slot_id: 0,
-        },
+        block_date_generator,
         FragmentSenderSetup::resend_3_times(),
     );
 

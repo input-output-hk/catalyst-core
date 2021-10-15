@@ -1,8 +1,6 @@
 use super::mode::{parse_mode_from_str, Mode};
 use crate::builders::utils::io::read_initials;
-pub use crate::builders::{
-    VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE,
-};
+pub use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
 use crate::config::Initials;
 use crate::config::VoteTime;
 use crate::scenario::network::service_mode;

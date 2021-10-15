@@ -7,9 +7,7 @@ mod spawn_params;
 use chain_impl_mockchain::fragment::FragmentId;
 
 pub use jormungandr_testing_utils::testing::{
-    network::{
-        LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
-    },
+    network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
     node::{
         grpc::{client::MockClientError, JormungandrClient},
         uri_from_socket_addr, JormungandrLogger, JormungandrRest, RestError,

@@ -3719,6 +3719,7 @@ dependencies = [
  "chrono",
  "futures",
  "jormungandr-integration-tests",
+ "jormungandr-testing-utils",
  "jortestkit",
  "regex 1.5.4",
  "reqwest 0.10.10",

@@ -3,9 +3,7 @@ use jormungandr_scenario_tests::node::{ProgressBarController, Status};
 use valgrind::{ProxyClient, ValgrindClient, ValgrindSettings};
 
 pub use jormungandr_testing_utils::testing::{
-    network::{
-        LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
-    },
+    network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
     node::{
         grpc::{client::MockClientError, JormungandrClient},
         uri_from_socket_addr, JormungandrLogger, JormungandrRest, RestError,

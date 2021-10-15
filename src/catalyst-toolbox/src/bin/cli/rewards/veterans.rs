@@ -55,12 +55,12 @@ mod tests {
 
         export.exec().unwrap();
         let reader = io::open_file_read(&Some(tmp_file.path())).unwrap();
-        let expected_reward = VeteranAdvisorReward::from(200);
-        for line in reader.lines() {
+        let expected_reward = [50u32, 100, 200, 300, 350].map(VeteranAdvisorReward::from);
+        for (line, expected) in reader.lines().zip(expected_reward.iter()) {
             let line = line.unwrap();
             let res: Vec<&str> = line.split(',').collect();
             let reward = VeteranAdvisorReward::from_str(res[1]).unwrap();
-            assert_eq!(reward, expected_reward);
+            assert_eq!(&reward, expected);
         }
     }
 }

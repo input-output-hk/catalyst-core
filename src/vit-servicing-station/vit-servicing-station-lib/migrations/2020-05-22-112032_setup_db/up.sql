@@ -85,10 +85,13 @@ create table challenges
 create table community_advisors_reviews (
   id INTEGER NOT NULL primary key autoincrement,
   proposal_id INTEGER NOT NULL,
-  rating_given INTEGER NOT NULL,
   assessor VARCHAR NOT NULL,
-  note VARCHAR NOT NULL,
-  tag VARCHAR NOT NULL
+  impact_alignment_rating_given INTEGER NOT NULL,
+  impact_alignment_note VARCHAR NOT NULL,
+  feasibility_rating_given INTEGER NOT NULL,
+  feasibility_note VARCHAR NOT NULL,
+  auditability_rating_given INTEGER NOT NULL,
+  auditability_note VARCHAR NOT NULL
 );
 
 CREATE VIEW full_proposals_info

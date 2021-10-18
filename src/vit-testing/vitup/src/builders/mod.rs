@@ -4,8 +4,8 @@ mod reviews;
 pub mod utils;
 
 pub use helpers::{
-    convert_to_blockchain_date, convert_to_human_date, generate_qr_and_hashes,
-    VitVotePlanDefBuilder, WalletExtension,
+    convert_to_blockchain_date, convert_to_human_date, default_next_vote_date,
+    default_refresh_date, generate_qr_and_hashes, VitVotePlanDefBuilder, WalletExtension,
 };
 
 use crate::builders::helpers::build_servicing_station_parameters;
@@ -157,19 +157,49 @@ impl VitBackendSettingsBuilder {
         self
     }
 
-    pub fn next_vote_timestamp(&mut self, next_vote_timestamp: Option<String>) -> &mut Self {
-        if let Some(timestamp) = next_vote_timestamp {
-            self.config.params.next_vote_start_time =
-                Some(NaiveDateTime::parse_from_str(&timestamp, FORMAT).unwrap());
-        }
+    pub fn next_vote_timestamp(&mut self, next_vote_start_time: NaiveDateTime) -> &mut Self {
+        self.config.params.next_vote_start_time = next_vote_start_time;
         self
     }
 
-    pub fn refresh_timestamp(&mut self, refresh_timestamp: Option<String>) -> &mut Self {
-        if let Some(timestamp) = refresh_timestamp {
-            self.config.params.refresh_time =
-                Some(NaiveDateTime::parse_from_str(&timestamp, FORMAT).unwrap());
+    pub fn next_vote_timestamp_from_string_or_default(
+        &mut self,
+        next_vote_timestamp: Option<String>,
+        default: NaiveDateTime,
+    ) -> &mut Self {
+        if let Some(next_vote_timestamp) = next_vote_timestamp {
+            self.next_vote_timestamp_from_string(next_vote_timestamp)
+        } else {
+            self.next_vote_timestamp(default)
         }
+    }
+
+    pub fn next_vote_timestamp_from_string(&mut self, next_vote_timestamp: String) -> &mut Self {
+        self.next_vote_timestamp(
+            NaiveDateTime::parse_from_str(&next_vote_timestamp, FORMAT).unwrap(),
+        );
+        self
+    }
+
+    pub fn refresh_timestamp_from_string_or_default(
+        &mut self,
+        refresh_timestamp: Option<String>,
+        default: NaiveDateTime,
+    ) -> &mut Self {
+        if let Some(refresh_timestamp) = refresh_timestamp {
+            self.refresh_timestamp_from_string(refresh_timestamp)
+        } else {
+            self.refresh_timestamp(default)
+        }
+    }
+
+    pub fn refresh_timestamp(&mut self, refresh_time: NaiveDateTime) -> &mut Self {
+        self.config.params.refresh_time = refresh_time;
+        self
+    }
+
+    pub fn refresh_timestamp_from_string(&mut self, refresh_timestamp: String) -> &mut Self {
+        self.refresh_timestamp(NaiveDateTime::parse_from_str(&refresh_timestamp, FORMAT).unwrap());
         self
     }
 

@@ -11,6 +11,8 @@ use jortestkit::measurement::Status;
 use serde_json;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::VoteBlockchainTime;
 use vitup::scenario::network::setup_network;
 use vitup::setup::start::quick::VitBackendSettingsBuilder;
 
@@ -21,21 +23,21 @@ pub fn persistent_log_contains_all_sent_votes() {
 
     let version = "2.0";
     let no_of_threads = 2;
-    let batch_size = 100;
-    let no_of_wallets = 40;
+    let batch_size = 10;
+    let no_of_wallets = 1;
 
-    let vote_timing = VoteBlockchainTime{
+    let vote_timing = VoteBlockchainTime {
         vote_start: 0,
         tally_start: 1,
         tally_end: 2,
-        slots_in_epoch: 60
-    }
-
+        slots_per_epoch: 60,
+    };
 
     let mut quick_setup = VitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
         .slot_duration_in_seconds(2)
+        .vote_timing(vote_timing.into())
         .proposals_count(300)
         .voting_power(31_000)
         .private(false);
@@ -101,7 +103,7 @@ pub fn persistent_log_contains_all_sent_votes() {
     let offline_voteplan_status: Vec<VotePlanStatus> =
         serde_json::from_str(&jortestkit::file::read_file(offline_tally.path())).unwrap();
 
-    let live_voteplan_status = wallet_proxy.rest().vote_plan_statuses().unwrap();
+    let live_voteplan_status = wallet_proxy.client().vote_plan_statuses().unwrap();
 
     vit_station.shutdown();
     wallet_proxy.shutdown();

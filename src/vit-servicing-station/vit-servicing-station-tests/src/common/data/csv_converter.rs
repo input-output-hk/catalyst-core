@@ -244,9 +244,12 @@ fn convert_advisor_review(review: &AdvisorReview) -> Vec<String> {
     vec![
         review.id.to_string(),
         review.proposal_id.to_string(),
-        review.rating_given.to_string(),
         review.assessor.to_string(),
-        review.note.to_string(),
-        review.tag.to_string(),
+        review.impact_alignment_rating_given.to_string(),
+        review.impact_alignment_note.to_string(),
+        review.feasibility_rating_given.to_string(),
+        review.feasibility_note.to_string(),
+        review.auditability_rating_given.to_string(),
+        review.auditability_note.to_string(),
     ]
 }

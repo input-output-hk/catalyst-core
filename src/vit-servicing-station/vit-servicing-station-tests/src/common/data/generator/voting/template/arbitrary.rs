@@ -13,7 +13,6 @@ use fake::{
     },
     Fake,
 };
-use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewTag;
 use vit_servicing_station_lib::db::models::proposals::community_choice::ChallengeInfo as CommunityChoiceChallengeInfo;
 use vit_servicing_station_lib::db::models::proposals::simple::ChallengeInfo as SimpleChallengeInfo;
 use vit_servicing_station_lib::db::models::proposals::Category;
@@ -206,10 +205,13 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
         let review = ReviewTemplate {
             id: None,
             proposal_id,
-            rating_given: (self.generator.next_u32() % 500) as i32,
             assessor: Name().fake::<String>(),
-            note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
-            tag: ReviewTag::Alignment,
+            impact_alignment_rating_given: (self.generator.next_u32() % 500) as i32,
+            impact_alignment_note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
+            feasibility_rating_given: (self.generator.next_u32() % 500) as i32,
+            feasibility_note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
+            auditability_rating_given: (self.generator.next_u32() % 500) as i32,
+            auditability_note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
         };
         self.reviews.push(review.clone());
         review

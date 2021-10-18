@@ -245,10 +245,13 @@ impl ArbitrarySnapshotGenerator {
         AdvisorReview {
             id,
             proposal_id,
-            rating_given: review.rating_given,
             assessor: review.assessor,
-            note: review.note,
-            tag: review.tag,
+            impact_alignment_rating_given: review.impact_alignment_rating_given,
+            impact_alignment_note: review.impact_alignment_note,
+            feasibility_rating_given: review.feasibility_rating_given,
+            feasibility_note: review.feasibility_note,
+            auditability_rating_given: review.auditability_rating_given,
+            auditability_note: review.auditability_note,
         }
     }
 

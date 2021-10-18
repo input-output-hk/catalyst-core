@@ -303,10 +303,13 @@ impl ValidVotePlanGenerator {
                     .parse()
                     .unwrap(),
                 proposal_id: review_data.proposal_id.parse().unwrap(),
-                rating_given: review_data.rating_given,
                 assessor: review_data.assessor,
-                note: review_data.note,
-                tag: review_data.tag,
+                impact_alignment_rating_given: review_data.impact_alignment_rating_given,
+                impact_alignment_note: review_data.impact_alignment_note,
+                feasibility_rating_given: review_data.feasibility_rating_given,
+                feasibility_note: review_data.feasibility_note,
+                auditability_rating_given: review_data.auditability_rating_given,
+                auditability_note: review_data.auditability_note,
             })
         })
         .take(self.parameters.reviews_count)

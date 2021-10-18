@@ -1,4 +1,4 @@
-use crate::common::{load::build_load_config, vitup_setup, VoteTiming};
+use crate::common::{load::build_load_config, vitup_setup};
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use catalyst_toolbox::recovery::Replay;
@@ -14,7 +14,6 @@ use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGener
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
 use vitup::scenario::network::setup_network;
-use vitup::setup::start::quick::VitBackendSettingsBuilder;
 
 #[test]
 pub fn persistent_log_contains_all_sent_votes() {

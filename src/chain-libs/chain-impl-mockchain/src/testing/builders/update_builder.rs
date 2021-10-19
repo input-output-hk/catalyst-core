@@ -1,7 +1,9 @@
+use chain_crypto::{Ed25519, SecretKey};
+
 use crate::{
     config::ConfigParam,
     fragment::config::ConfigParams,
-    key::BftLeaderId,
+    key::{signed_new, BftLeaderId},
     update::{
         SignedUpdateProposal, SignedUpdateVote, UpdateProposal, UpdateProposalId,
         UpdateProposalWithProposer, UpdateVote,
@@ -37,30 +39,29 @@ impl ProposalBuilder {
     }
 
     pub fn build(&self) -> UpdateProposal {
-        let mut update_proposal = UpdateProposal::new();
-        for config_param in self.config_params.iter().cloned() {
-            update_proposal.changes.push(config_param);
-        }
-        update_proposal
+        UpdateProposal::new(self.config_params.clone())
     }
 }
 
 #[derive(Default)]
 pub struct SignedProposalBuilder {
     update_proposal: Option<UpdateProposal>,
-    proposer_id: Option<BftLeaderId>,
+    proposer_secret_key: Option<SecretKey<Ed25519>>,
 }
 
 impl SignedProposalBuilder {
     pub fn new() -> Self {
         SignedProposalBuilder {
             update_proposal: None,
-            proposer_id: None,
+            proposer_secret_key: None,
         }
     }
 
-    pub fn with_proposer_id(&mut self, proposer_id: BftLeaderId) -> &mut Self {
-        self.proposer_id = Some(proposer_id);
+    pub fn with_proposer_secret_key(
+        &mut self,
+        proposer_secret_key: SecretKey<Ed25519>,
+    ) -> &mut Self {
+        self.proposer_secret_key = Some(proposer_secret_key);
         self
     }
 
@@ -70,26 +71,30 @@ impl SignedProposalBuilder {
     }
 
     pub fn build(&self) -> SignedUpdateProposal {
-        SignedUpdateProposal {
-            proposal: UpdateProposalWithProposer {
-                proposal: self.update_proposal.clone().unwrap(),
-                proposer_id: self.proposer_id.clone().unwrap(),
-            },
-        }
+        SignedUpdateProposal::new(
+            signed_new(
+                &self.proposer_secret_key.clone().unwrap(),
+                self.update_proposal.clone().unwrap(),
+            ),
+            UpdateProposalWithProposer::new(
+                self.update_proposal.clone().unwrap(),
+                BftLeaderId(self.proposer_secret_key.clone().unwrap().to_public()),
+            ),
+        )
     }
 }
 
 #[derive(Default)]
 pub struct UpdateVoteBuilder {
     proposal_id: Option<UpdateProposalId>,
-    voter_id: Option<BftLeaderId>,
+    voter_secret_key: Option<SecretKey<Ed25519>>,
 }
 
 impl UpdateVoteBuilder {
     pub fn new() -> Self {
         UpdateVoteBuilder {
             proposal_id: None,
-            voter_id: None,
+            voter_secret_key: None,
         }
     }
 
@@ -98,16 +103,22 @@ impl UpdateVoteBuilder {
         self
     }
 
-    pub fn with_voter_id(&mut self, voter_id: BftLeaderId) -> &mut Self {
-        self.voter_id = Some(voter_id);
+    pub fn with_voter_secret_key(&mut self, voter_secret_key: SecretKey<Ed25519>) -> &mut Self {
+        self.voter_secret_key = Some(voter_secret_key);
         self
     }
 
     pub fn build(&self) -> SignedUpdateVote {
-        let update_vote = UpdateVote {
-            proposal_id: self.proposal_id.unwrap(),
-            voter_id: self.voter_id.clone().unwrap(),
-        };
-        SignedUpdateVote { vote: update_vote }
+        let update_vote = UpdateVote::new(
+            self.proposal_id.clone().unwrap(),
+            BftLeaderId(self.voter_secret_key.clone().unwrap().to_public()),
+        );
+        SignedUpdateVote::new(
+            signed_new(
+                &self.voter_secret_key.clone().unwrap(),
+                self.proposal_id.clone().unwrap(),
+            ),
+            update_vote,
+        )
     }
 }

@@ -247,15 +247,15 @@ pub struct UpdateProposal {
 
 impl Default for UpdateProposal {
     fn default() -> Self {
-        Self::new()
+        Self {
+            changes: ConfigParams::new(),
+        }
     }
 }
 
 impl UpdateProposal {
-    pub fn new() -> Self {
-        UpdateProposal {
-            changes: ConfigParams::new(),
-        }
+    pub fn new(changes: ConfigParams) -> Self {
+        Self { changes }
     }
 
     pub fn changes(&self) -> &ConfigParams {
@@ -294,6 +294,19 @@ pub struct UpdateProposalWithProposer {
     proposer_id: UpdateVoterId,
 }
 
+impl UpdateProposalWithProposer {
+    pub fn new(proposal: UpdateProposal, proposer_id: UpdateVoterId) -> Self {
+        Self {
+            proposal,
+            proposer_id,
+        }
+    }
+
+    pub fn proposal(&self) -> &UpdateProposal {
+        &self.proposal
+    }
+}
+
 impl property::Serialize for UpdateProposalWithProposer {
     type Error = std::io::Error;
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
@@ -321,12 +334,23 @@ pub struct SignedUpdateProposal {
 }
 
 impl SignedUpdateProposal {
+    pub fn new(
+        sign: Signed<UpdateProposal, Ed25519>,
+        proposal: UpdateProposalWithProposer,
+    ) -> Self {
+        Self { sign, proposal }
+    }
+
     pub fn verify(&self) -> Verification {
         verify_signature(
             &self.sign.sig,
             self.proposal.proposer_id.as_public_key(),
             &self.proposal.proposal,
         )
+    }
+
+    pub fn proposal(&self) -> &UpdateProposalWithProposer {
+        &self.proposal
     }
 }
 
@@ -354,6 +378,15 @@ impl Readable for SignedUpdateProposal {
 pub struct UpdateVote {
     proposal_id: UpdateProposalId,
     voter_id: UpdateVoterId,
+}
+
+impl UpdateVote {
+    pub fn new(proposal_id: UpdateProposalId, voter_id: UpdateVoterId) -> Self {
+        Self {
+            proposal_id,
+            voter_id,
+        }
+    }
 }
 
 impl property::Serialize for UpdateVote {
@@ -385,6 +418,10 @@ pub struct SignedUpdateVote {
 }
 
 impl SignedUpdateVote {
+    pub fn new(sign: Signed<UpdateProposalId, Ed25519>, vote: UpdateVote) -> Self {
+        Self { sign, vote }
+    }
+
     pub fn verify(&self) -> Verification {
         verify_signature(
             &self.sign.sig,
@@ -416,6 +453,7 @@ impl Readable for SignedUpdateVote {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
+    use crate::key::signed_new;
     #[cfg(test)]
     use crate::testing::serialization::serialization_bijection;
     #[cfg(test)]
@@ -436,6 +474,7 @@ mod tests {
     };
     #[cfg(test)]
     use chain_addr::Discrimination;
+    use chain_crypto::SecretKey;
     #[cfg(test)]
     use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
@@ -463,10 +502,10 @@ mod tests {
 
     impl Arbitrary for SignedUpdateProposal {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            Self {
-                sign: Arbitrary::arbitrary(g),
-                proposal: Arbitrary::arbitrary(g),
-            }
+            let sk: SecretKey<Ed25519> = Arbitrary::arbitrary(g);
+            let proposal: UpdateProposalWithProposer = Arbitrary::arbitrary(g);
+            let sign = signed_new(&sk, proposal.proposal.clone());
+            Self { sign, proposal }
         }
     }
 
@@ -481,10 +520,10 @@ mod tests {
 
     impl Arbitrary for SignedUpdateVote {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            Self {
-                sign: Arbitrary::arbitrary(g),
-                vote: Arbitrary::arbitrary(g),
-            }
+            let sk: SecretKey<Ed25519> = Arbitrary::arbitrary(g);
+            let vote: UpdateVote = Arbitrary::arbitrary(g);
+            let sign = signed_new(&sk, vote.proposal_id);
+            Self { sign, vote }
         }
     }
 
@@ -516,7 +555,7 @@ mod tests {
 
         let signed_update_proposal = SignedProposalBuilder::new()
             .with_proposal_update(update_proposal)
-            .with_proposer_id(proposer.id())
+            .with_proposer_secret_key(proposer.key())
             .build();
 
         update_state.apply_proposal(proposal_id, &signed_update_proposal, &settings, block_date)
@@ -531,7 +570,7 @@ mod tests {
     ) -> Result<UpdateState, Error> {
         let signed_update_vote = UpdateVoteBuilder::new()
             .with_proposal_id(proposal_id)
-            .with_voter_id(proposer.id())
+            .with_voter_secret_key(proposer.key())
             .build();
 
         update_state.apply_vote(&signed_update_vote, &settings)

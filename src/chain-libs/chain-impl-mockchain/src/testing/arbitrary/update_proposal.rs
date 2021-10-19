@@ -1,4 +1,4 @@
-use crate::key::Hash;
+use crate::key::{signed_new, Hash};
 use crate::{
     config::ConfigParam,
     fee::LinearFee,
@@ -8,14 +8,14 @@ use crate::{
     testing::{arbitrary::utils as arbitrary_utils, builders::update_builder::ProposalBuilder},
     update::{SignedUpdateProposal, SignedUpdateVote, UpdateVote},
 };
-use chain_crypto::{Ed25519, Ed25519Extended, SecretKey};
+use chain_crypto::{Ed25519, SecretKey};
 use quickcheck::{Arbitrary, Gen};
 use std::fmt::{self, Debug};
 use std::{collections::HashMap, iter};
 
 #[derive(Clone)]
 pub struct UpdateProposalData {
-    pub leaders: HashMap<BftLeaderId, SecretKey<Ed25519Extended>>,
+    pub leaders: HashMap<BftLeaderId, SecretKey<Ed25519>>,
     pub proposal: SignedUpdateProposal,
     pub proposal_id: Hash,
     pub votes: Vec<SignedUpdateVote>,
@@ -41,25 +41,26 @@ impl UpdateProposalData {
     }
 
     pub fn proposal_settings(&self) -> ConfigParams {
-        self.proposal.proposal.proposal.changes.clone()
+        self.proposal.proposal().proposal().changes().clone()
     }
 }
 
 impl Arbitrary for UpdateProposalData {
     fn arbitrary<G: Gen>(gen: &mut G) -> Self {
         let leader_size = 1; //usize::arbitrary(gen) % 20 + 1;
-        let leaders: HashMap<BftLeaderId, SecretKey<Ed25519Extended>> = iter::from_fn(|| {
-            let sk: SecretKey<Ed25519Extended> = Arbitrary::arbitrary(gen);
+        let leaders: HashMap<BftLeaderId, SecretKey<Ed25519>> = iter::from_fn(|| {
+            let sk: SecretKey<Ed25519> = Arbitrary::arbitrary(gen);
             let leader_id = BftLeaderId(sk.to_public());
             Some((leader_id, sk))
         })
         .take(leader_size)
         .collect();
 
-        let voters: HashMap<BftLeaderId, SecretKey<Ed25519Extended>> =
+        let voters: HashMap<BftLeaderId, SecretKey<Ed25519>> =
             arbitrary_utils::choose_random_map_subset(&leaders, gen);
         let leaders_ids: Vec<BftLeaderId> = leaders.keys().cloned().collect();
         let proposer_id = arbitrary_utils::choose_random_item(&leaders_ids, gen);
+        let proposer_secret_key = leaders.get(&proposer_id).unwrap();
 
         //create proposal
         let unique_arbitrary_settings: Vec<ConfigParam> = vec![
@@ -80,7 +81,7 @@ impl Arbitrary for UpdateProposalData {
 
         let signed_update_proposal = SignedProposalBuilder::new()
             .with_proposal_update(update_proposal)
-            .with_proposer_id(proposer_id)
+            .with_proposer_secret_key(proposer_secret_key.clone())
             .build();
 
         //generate proposal header
@@ -90,11 +91,8 @@ impl Arbitrary for UpdateProposalData {
         let signed_votes: Vec<SignedUpdateVote> = voters
             .iter()
             .map(|(id, _)| {
-                let update_vote = UpdateVote {
-                    proposal_id,
-                    voter_id: id.clone(),
-                };
-                SignedUpdateVote { vote: update_vote }
+                let update_vote = UpdateVote::new(proposal_id, id.clone());
+                SignedUpdateVote::new(signed_new(proposer_secret_key, proposal_id), update_vote)
             })
             .collect();
 

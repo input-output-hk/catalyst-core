@@ -110,13 +110,13 @@ impl UpdateVoteBuilder {
 
     pub fn build(&self) -> SignedUpdateVote {
         let update_vote = UpdateVote::new(
-            self.proposal_id.clone().unwrap(),
+            self.proposal_id.unwrap(),
             BftLeaderId(self.voter_secret_key.clone().unwrap().to_public()),
         );
         SignedUpdateVote::new(
             signed_new(
                 &self.voter_secret_key.clone().unwrap(),
-                self.proposal_id.clone().unwrap(),
+                self.proposal_id.unwrap(),
             ),
             update_vote,
         )

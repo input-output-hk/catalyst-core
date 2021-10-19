@@ -1018,7 +1018,7 @@ impl Ledger {
     }
 
     pub fn apply_update(mut self, update: &update::UpdateProposal) -> Result<Self, Error> {
-        self.settings = self.settings.apply(&update.changes)?;
+        self.settings = self.settings.apply(update.changes())?;
         Ok(self)
     }
 

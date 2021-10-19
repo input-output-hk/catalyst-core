@@ -1,11 +1,11 @@
 //use crate::certificate::{verify_certificate, HasPublicKeys, SignatureRaw};
 use crate::date::BlockDate;
 use crate::fragment::config::ConfigParams;
-use crate::key::BftLeaderId;
+use crate::key::{verify_signature, BftLeaderId, Signed};
 use crate::setting::{ActiveSlotsCoeffError, Settings};
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
-use chain_crypto::Verification;
+use chain_crypto::{Ed25519, Verification};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -242,7 +242,7 @@ pub type UpdateVoterId = BftLeaderId;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateProposal {
-    pub changes: ConfigParams,
+    changes: ConfigParams,
 }
 
 impl Default for UpdateProposal {
@@ -256,6 +256,10 @@ impl UpdateProposal {
         UpdateProposal {
             changes: ConfigParams::new(),
         }
+    }
+
+    pub fn changes(&self) -> &ConfigParams {
+        &self.changes
     }
 }
 
@@ -286,8 +290,8 @@ impl Readable for UpdateProposal {
 
 #[derive(Clone, Debug)]
 pub struct UpdateProposalWithProposer {
-    pub proposal: UpdateProposal,
-    pub proposer_id: UpdateVoterId,
+    proposal: UpdateProposal,
+    proposer_id: UpdateVoterId,
 }
 
 impl property::Serialize for UpdateProposalWithProposer {
@@ -312,12 +316,17 @@ impl Readable for UpdateProposalWithProposer {
 
 #[derive(Clone, Debug)]
 pub struct SignedUpdateProposal {
-    pub proposal: UpdateProposalWithProposer,
+    sign: Signed<UpdateProposal, Ed25519>,
+    proposal: UpdateProposalWithProposer,
 }
 
 impl SignedUpdateProposal {
     pub fn verify(&self) -> Verification {
-        Verification::Success
+        verify_signature(
+            &self.sign.sig,
+            self.proposal.proposer_id.as_public_key(),
+            &self.proposal.proposal,
+        )
     }
 }
 
@@ -334,6 +343,7 @@ impl property::Serialize for SignedUpdateProposal {
 impl Readable for SignedUpdateProposal {
     fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         Ok(Self {
+            sign: Readable::read(buf)?,
             proposal: Readable::read(buf)?,
         })
     }
@@ -342,8 +352,8 @@ impl Readable for SignedUpdateProposal {
 // A positive vote for a proposal.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateVote {
-    pub proposal_id: UpdateProposalId,
-    pub voter_id: UpdateVoterId,
+    proposal_id: UpdateProposalId,
+    voter_id: UpdateVoterId,
 }
 
 impl property::Serialize for UpdateVote {
@@ -370,12 +380,17 @@ impl Readable for UpdateVote {
 
 #[derive(Clone, Debug)]
 pub struct SignedUpdateVote {
-    pub vote: UpdateVote,
+    sign: Signed<UpdateProposalId, Ed25519>,
+    vote: UpdateVote,
 }
 
 impl SignedUpdateVote {
     pub fn verify(&self) -> Verification {
-        Verification::Success
+        verify_signature(
+            &self.sign.sig,
+            self.vote.voter_id.as_public_key(),
+            &self.vote.proposal_id,
+        )
     }
 }
 
@@ -392,6 +407,7 @@ impl property::Serialize for SignedUpdateVote {
 impl Readable for SignedUpdateVote {
     fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
         Ok(SignedUpdateVote {
+            sign: Readable::read(buf)?,
             vote: Readable::read(buf)?,
         })
     }
@@ -448,6 +464,7 @@ mod tests {
     impl Arbitrary for SignedUpdateProposal {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             Self {
+                sign: Arbitrary::arbitrary(g),
                 proposal: Arbitrary::arbitrary(g),
             }
         }
@@ -465,6 +482,7 @@ mod tests {
     impl Arbitrary for SignedUpdateVote {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             Self {
+                sign: Arbitrary::arbitrary(g),
                 vote: Arbitrary::arbitrary(g),
             }
         }

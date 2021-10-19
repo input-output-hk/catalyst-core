@@ -469,15 +469,6 @@ components:
               items:
                 $ref: "#/components/schemas/Proposal"
 
-    ReviewTag:
-      type: string
-      enum:
-        - Alignment
-        - Verifiability
-        - Feasibility
-        - Impact
-        - Auditability
-
     AdvisorReview:
       properties:
         id:
@@ -486,18 +477,32 @@ components:
         proposal_id:
           type: integer
           format: i32
-        rating_given:
+        assessor:
+          type: string
+        impact_alignment_rating_given:
           type: integer
           format: i32
           minimum: 0
           maximum: 500
           description: Rating in range [0, 500] (0 stars to 5 stars)
-        assessor:
+        impact_alignment_note:
           type: string
-        note:
+        feasibility_rating_given:
+          type: integer
+          format: i32
+          minimum: 0
+          maximum: 500
+          description: Rating in range [0, 500] (0 stars to 5 stars)
+        feasibility_note:
           type: string
-        tag:
-          type: ReviewTag
+        auditability_rating_given:
+          type: integer
+          format: i32
+          minimum: 0
+          maximum: 500
+          description: Rating in range [0, 500] (0 stars to 5 stars)
+        auditability_note:
+          type: string
 
     AdvisorReviews:
       type: array

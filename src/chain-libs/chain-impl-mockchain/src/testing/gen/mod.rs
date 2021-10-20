@@ -15,7 +15,6 @@ use crate::{
     config::ConfigParam,
     fragment::config::ConfigParams,
     header::VrfProof,
-    key::BftLeaderId,
     ledger::Ledger,
     rewards::{Ratio, TaxType},
     setting::Settings,
@@ -82,12 +81,7 @@ impl TestGen {
         let leader_key = AddressData::generate_key_pair::<Ed25519>()
             .private_key()
             .clone();
-        let leader_id = BftLeaderId(
-            AddressData::generate_key_pair::<Ed25519>()
-                .public_key()
-                .clone(),
-        );
-        LeaderPair::new(leader_id, leader_key)
+        LeaderPair::new(leader_key)
     }
 
     pub fn secret_key() -> SecretKey<Ed25519> {
@@ -183,7 +177,7 @@ impl TestGen {
         let header_id = TestGen::hash();
         let mut ie = ConfigParams::new();
         ie.push(ConfigParam::Discrimination(Discrimination::Test));
-        ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+        ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
         ie.push(ConfigParam::SlotDuration(10u8));
         ie.push(ConfigParam::SlotsPerEpoch(10u32));
         ie.push(ConfigParam::KesUpdateSpeed(3600));

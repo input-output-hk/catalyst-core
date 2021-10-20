@@ -315,7 +315,7 @@ mod tests {
     pub fn generate_ledger_with_bft_leaders_count(count: usize) -> (Vec<BftLeaderId>, Ledger) {
         let leaders: Vec<PublicKey<Ed25519>> = TestGen::leaders_pairs()
             .take(count)
-            .map(|x| x.leader_key.to_public())
+            .map(|x| x.key().to_public())
             .collect();
         generate_ledger_with_bft_leaders(leaders)
     }

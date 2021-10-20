@@ -24,7 +24,7 @@ pub fn build_proposal(
 
     //sign proposal
     SignedUpdateProposal::new(
-        signed_new(&proposer_secret_key, update_proposal),
+        signed_new(&proposer_secret_key, update_proposal).sig,
         update_proposal_with_proposer,
     )
 }
@@ -34,5 +34,5 @@ pub fn build_vote(
     leader_secret_key: SecretKey<Ed25519>,
 ) -> SignedUpdateVote {
     let update_vote = UpdateVote::new(proposal_id, BftLeaderId(leader_secret_key.to_public()));
-    SignedUpdateVote::new(signed_new(&leader_secret_key, proposal_id), update_vote)
+    SignedUpdateVote::new(signed_new(&leader_secret_key, proposal_id).sig, update_vote)
 }

@@ -75,7 +75,8 @@ impl SignedProposalBuilder {
             signed_new(
                 &self.proposer_secret_key.clone().unwrap(),
                 self.update_proposal.clone().unwrap(),
-            ),
+            )
+            .sig,
             UpdateProposalWithProposer::new(
                 self.update_proposal.clone().unwrap(),
                 BftLeaderId(self.proposer_secret_key.clone().unwrap().to_public()),
@@ -117,7 +118,8 @@ impl UpdateVoteBuilder {
             signed_new(
                 &self.voter_secret_key.clone().unwrap(),
                 self.proposal_id.unwrap(),
-            ),
+            )
+            .sig,
             update_vote,
         )
     }

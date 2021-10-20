@@ -131,7 +131,7 @@ pub fn ledger_new_no_block_start_time() {
     let header_id = TestGen::hash();
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
     ie.push(ConfigParam::KesUpdateSpeed(3600));
@@ -150,7 +150,7 @@ pub fn ledger_new_dupicated_initial_fragments() {
     let header_id = TestGen::hash();
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
     ie.push(ConfigParam::KesUpdateSpeed(3600));
@@ -173,7 +173,7 @@ pub fn ledger_new_duplicated_block0() {
     let header_id = TestGen::hash();
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
     ie.push(ConfigParam::KesUpdateSpeed(3600));
@@ -190,7 +190,7 @@ pub fn ledger_new_duplicated_discrimination() {
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
     ie.push(ConfigParam::KesUpdateSpeed(3600));
@@ -207,7 +207,7 @@ pub fn ledger_new_duplicated_consensus_version() {
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
     ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
     ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
     ie.push(ConfigParam::KesUpdateSpeed(3600));
@@ -222,7 +222,7 @@ pub fn ledger_new_duplicated_slot_duration() {
     let header_id = TestGen::hash();
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotDuration(11u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
@@ -239,7 +239,7 @@ pub fn ledger_new_duplicated_epoch_stability_depth() {
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
     ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::EpochStabilityDepth(10u32));
     ie.push(ConfigParam::EpochStabilityDepth(11u32));
@@ -257,7 +257,7 @@ pub fn ledger_new_duplicated_active_slots_coeff() {
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
     ie.push(ConfigParam::ConsensusVersion(ConsensusType::Bft));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(
         Milli::from_millis(500),
@@ -277,7 +277,7 @@ pub fn ledger_new_no_discrimination() {
     let leader_pair = TestGen::leader_pair();
     let header_id = TestGen::hash();
     let mut ie = ConfigParams::new();
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
@@ -297,7 +297,7 @@ pub fn ledger_new_no_slot_duration() {
     let header_id = TestGen::hash();
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
     ie.push(ConfigParam::KesUpdateSpeed(3600));
@@ -316,7 +316,7 @@ pub fn ledger_new_no_slots_per_epoch() {
     let header_id = TestGen::hash();
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::KesUpdateSpeed(3600));
@@ -335,7 +335,7 @@ pub fn ledger_new_no_kes_update_speed() {
     let header_id = TestGen::hash();
     let mut ie = ConfigParams::new();
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
@@ -382,7 +382,7 @@ pub fn wrong_fragment_at_block0(fragment: Fragment) -> TestResult {
     let leader_pair = TestGen::leader_pair();
     ie.push(ConfigParam::Block0Date(crate::config::Block0Date(0)));
     ie.push(ConfigParam::Discrimination(Discrimination::Test));
-    ie.push(ConfigParam::AddBftLeader(leader_pair.leader_id));
+    ie.push(ConfigParam::AddBftLeader(leader_pair.id()));
     ie.push(ConfigParam::SlotDuration(10u8));
     ie.push(ConfigParam::SlotsPerEpoch(10u32));
     ie.push(ConfigParam::KesUpdateSpeed(3600));

@@ -493,7 +493,7 @@ mod tests {
 
         let signed_update_proposal = SignedProposalBuilder::new()
             .with_proposal_update(update_proposal)
-            .with_proposer_id(proposer.leader_id.clone())
+            .with_proposer_id(proposer.id())
             .build();
 
         update_state.apply_proposal(proposal_id, &signed_update_proposal, &settings, block_date)

@@ -5,9 +5,12 @@ use crate::{
     ledger::{ledger::Ledger, Pots},
     stake::PoolsState,
     stake::{Stake, StakeDistribution},
-    testing::data::{AddressData, StakePool},
+    testing::data::{AddressData, StakePool, Wallet},
+    testing::scenario::template::VotePlanDef,
+    transaction::UnspecifiedAccountIdentifier,
     utxo,
     value::Value,
+    vote::VotePlanStatus,
 };
 use chain_addr::Address;
 use chain_crypto::{Ed25519, PublicKey};
@@ -182,6 +185,53 @@ impl LedgerStateVerifier {
 
     pub fn pots(&self) -> PotsVerifier {
         PotsVerifier::new(self.ledger.pots.clone(), self.info.clone())
+    }
+
+    pub fn votes(&self) -> VotesVerifier {
+        VotesVerifier::new(self.ledger.active_vote_plans())
+    }
+}
+
+pub struct VotesVerifier {
+    vote_plans: Vec<VotePlanStatus>,
+    vote_plan_id: Option<String>,
+    identifier: Option<UnspecifiedAccountIdentifier>,
+}
+
+impl VotesVerifier {
+    pub fn new(vote_plans: Vec<VotePlanStatus>) -> Self {
+        Self {
+            vote_plans,
+            vote_plan_id: None,
+            identifier: None,
+        }
+    }
+
+    pub fn gvien_wallet(mut self, wallet: &Wallet) -> Self {
+        self.identifier = Some(UnspecifiedAccountIdentifier::from_single_account(
+            wallet.public_key().into(),
+        ));
+        self
+    }
+
+    pub fn for_vote_plan(mut self, vote_plan: &VotePlanDef) -> Self {
+        self.vote_plan_id = Some(vote_plan.id());
+        self
+    }
+
+    pub fn votes_were_casted_on_proposals(&self, expected_votes_history: Vec<u8>) {
+        let actual_votes_history: Vec<u8> = self
+            .vote_plans
+            .iter()
+            .find(|x| x.id.to_string() == *self.vote_plan_id.as_ref().unwrap())
+            .unwrap()
+            .proposals
+            .iter()
+            .enumerate()
+            .filter(|(_, x)| x.votes.contains_key(self.identifier.as_ref().unwrap()))
+            .map(|(i, _)| i as u8)
+            .collect();
+        assert_eq!(expected_votes_history, actual_votes_history);
     }
 }
 

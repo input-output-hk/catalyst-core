@@ -14,19 +14,19 @@ assert_fs = "1.0"
 glob = "0.3.0"
 walkdir = "2.3.1"
 itertools = "0.9.0"
-chain-core           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
-chain-crypto         = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6", features = [ "property-test-api" ] }
-chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6", features = [ "property-test-api" ] }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6", features = [ "property-test-api" ] }
-chain-time           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
-chain-vote           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund6" }
-jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" } 
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund6" }
+chain-core           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto         = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-addr           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
+chain-time           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-vote           = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+jormungandr-scenario-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" } 
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund6" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund6" }
-catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git", branch = "catalyst-fund6" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
+catalyst-toolbox = { git = "https://github.com/input-output-hk/catalyst-toolbox.git" }
 valgrind = { path = "../valgrind" }
 poldercast = { git = "https://github.com/primetype/poldercast.git", rev = "8305f1560392a9d26673ca996e7646c8834533ef" }
 rand = "0.8"

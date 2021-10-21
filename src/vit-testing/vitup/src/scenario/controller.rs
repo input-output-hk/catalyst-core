@@ -8,7 +8,7 @@ use crate::scenario::{
 use crate::{error::ErrorKind, Result};
 use indicatif::ProgressBar;
 use jormungandr_scenario_tests::scenario::{ContextChaCha, Controller, ControllerBuilder};
-use jormungandr_testing_utils::testing::network_builder::{Blockchain, Topology};
+use jormungandr_testing_utils::testing::network::{Blockchain, Topology};
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 

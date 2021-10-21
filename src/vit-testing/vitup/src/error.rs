@@ -26,7 +26,8 @@ error_chain! {
         ScenarioError(jormungandr_scenario_tests::scenario::Error);
         GeneralError(jormungandr_scenario_tests::test::Error);
         ImageReadError(image::error::ImageError);
-        MockError(crate::mock::Error);
+        MockError(crate::cli::start::MockError);
+        ParseError(chrono::ParseError);
         ClientRestError(crate::client::rest::Error);
         Block0ConfigurationError(Block0ConfigurationError);
         VitServerBootstrapperError(ServerBootstrapperError);

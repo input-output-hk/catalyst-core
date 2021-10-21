@@ -1,10 +1,8 @@
+use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
 use crate::interactive::VitInteractiveCommandExec;
 use crate::interactive::VitUserInteractionController;
 use crate::manager::{ControlContext, ControlContextLock, ManagerService, State};
 use crate::scenario::controller::VitController;
-use crate::setup::start::quick::{
-    QuickVitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, LEADER_4, WALLET_NODE,
-};
 use crate::vit_station::VitStationController;
 use crate::wallet::WalletProxyController;
 use crate::wallet::WalletProxySpawnParams;
@@ -17,7 +15,7 @@ use jormungandr_scenario_tests::{
     node::{LeadershipMode, PersistenceMode},
     scenario::Context,
 };
-use jormungandr_testing_utils::testing::network_builder::SpawnParams;
+use jormungandr_testing_utils::testing::network::SpawnParams;
 use jortestkit::prelude::UserInteraction;
 use rand_chacha::ChaChaRng;
 use std::path::Path;
@@ -73,16 +71,6 @@ pub fn setup_network(
     )?;
     leader_3.wait_for_bootstrap()?;
 
-    println!("Spawning leader 4..");
-
-    //start bft node 4
-    let leader_4 = controller.spawn_node(
-        LEADER_4,
-        LeadershipMode::Leader,
-        PersistenceMode::Persistent,
-    )?;
-    leader_4.wait_for_bootstrap()?;
-
     println!("Spawning wallet node..");
 
     // start passive node
@@ -114,7 +102,7 @@ pub fn setup_network(
     println!("Backend network is up");
 
     Ok((
-        vec![leader_1, leader_2, leader_3, leader_4, wallet_node],
+        vec![leader_1, leader_2, leader_3, wallet_node],
         vit_station,
         wallet_proxy,
     ))
@@ -174,7 +162,7 @@ pub fn endless_mode() -> Result<()> {
 pub fn service_mode<P: AsRef<Path> + Clone>(
     context: Context<ChaChaRng>,
     working_dir: P,
-    mut quick_setup: QuickVitBackendSettingsBuilder,
+    mut quick_setup: VitBackendSettingsBuilder,
     endpoint: String,
     token: Option<String>,
 ) -> Result<()> {
@@ -219,7 +207,7 @@ pub fn service_mode<P: AsRef<Path> + Clone>(
 pub fn single_run(
     control_context: ControlContextLock,
     context: Context<ChaChaRng>,
-    mut quick_setup: QuickVitBackendSettingsBuilder,
+    mut quick_setup: VitBackendSettingsBuilder,
     endpoint: String,
     protocol: &Protocol,
     template_generator: &mut dyn ValidVotingTemplateGenerator,

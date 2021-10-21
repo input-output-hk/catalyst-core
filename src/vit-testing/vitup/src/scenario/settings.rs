@@ -1,8 +1,8 @@
 use crate::vit_station::VitStationSettings;
 use jormungandr_scenario_tests::scenario::Context;
 
-use jormungandr_testing_utils::testing::network_builder::WalletProxySettings;
-use jormungandr_testing_utils::testing::network_builder::{
+use jormungandr_testing_utils::testing::network::WalletProxySettings;
+use jormungandr_testing_utils::testing::network::{
     Blockchain as BlockchainTemplate, NodeAlias, Topology as TopologyTemplate,
 };
 use rand_core::{CryptoRng, RngCore};

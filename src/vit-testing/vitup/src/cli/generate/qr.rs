@@ -1,12 +1,12 @@
+use crate::builders::post_deployment::DeploymentTree;
+use crate::builders::utils::ContextExtension;
+use crate::builders::VitBackendSettingsBuilder;
 use crate::config::Initials;
-use crate::setup::start::QuickVitBackendSettingsBuilder;
 use crate::Result;
-use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
-use jormungandr_scenario_tests::{Context, Seed};
+use jormungandr_scenario_tests::Context;
 use jortestkit::prelude::read_file;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use structopt::StructOpt;
-
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct QrCommandArgs {
@@ -18,7 +18,7 @@ pub struct QrCommandArgs {
     #[structopt(long = "count")]
     pub initials: Option<usize>,
 
-    #[structopt(long = "initials")]
+    #[structopt(long = "initials", conflicts_with = "count")]
     pub initials_mapping: Option<PathBuf>,
 
     #[structopt(long = "global-pin", default_value = "1234")]
@@ -29,25 +29,17 @@ impl QrCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let context = Context::new(
-            Seed::generate(rand::rngs::OsRng),
-            PathBuf::new(),
-            PathBuf::new(),
-            Some(self.output_directory.clone()),
-            false,
-            ScenarioProgressBarMode::None,
-            "info".to_string(),
-        );
+        let context = Context::empty_from_dir(&self.output_directory);
 
-        let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+        let mut quick_setup = VitBackendSettingsBuilder::new();
 
         if let Some(mapping) = self.initials_mapping {
             let content = read_file(mapping);
             let initials: Initials =
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
             quick_setup.initials(initials);
-        } else if let Some(initials_count) = self.initials {
-            quick_setup.initials_count(initials_count, &self.global_pin);
+        } else {
+            quick_setup.initials_count(self.initials.unwrap(), &self.global_pin);
         }
 
         if !self.output_directory.exists() {
@@ -56,14 +48,13 @@ impl QrCommandArgs {
             std::fs::remove_dir_all(&self.output_directory)?;
         }
 
+        let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
+
         println!("{:?}", quick_setup.parameters().initials);
         quick_setup.build(context)?;
 
         //remove block0.bin
-        let block0 = Path::new(&self.output_directory)
-            .join(quick_setup.title())
-            .join("block0.bin");
-        std::fs::remove_file(block0)?;
+        std::fs::remove_file(deployment_tree.block0_path())?;
 
         println!("Qrs dumped into {:?}", self.output_directory);
         Ok(())

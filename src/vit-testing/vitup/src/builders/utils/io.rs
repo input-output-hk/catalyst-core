@@ -1,58 +1,13 @@
-mod external;
-mod perf;
-mod random;
-
-pub use external::ExternalDataCommandArgs;
-pub use jormungandr_lib::interfaces::Initial;
-pub use perf::PerfDataCommandArgs;
-pub use random::{AllRandomDataCommandArgs, RandomReviewsDataCommandArgs};
-
 use crate::config::DataGenerationConfig;
 use crate::Result;
-use chain_core::property::Block;
+use chain_core::property::Block as _;
+use chain_core::property::Deserialize;
 use chain_core::property::Serialize;
+use chain_impl_mockchain::block::Block;
 use chain_impl_mockchain::ledger::Ledger;
 use jormungandr_lib::interfaces::Block0Configuration;
+use jormungandr_lib::interfaces::Initial;
 use std::path::Path;
-
-use structopt::StructOpt;
-
-#[derive(StructOpt, Debug)]
-pub enum DataCommandArgs {
-    /// generate data from external data
-    Import(ExternalDataCommandArgs),
-    /// generate random data
-    Random(RandomDataCommandArgs),
-    /// generate data for performance tests
-    Perf(PerfDataCommandArgs),
-}
-
-impl DataCommandArgs {
-    pub fn exec(self) -> Result<()> {
-        match self {
-            Self::Import(import_command) => import_command.exec(),
-            Self::Random(random_command) => random_command.exec(),
-            Self::Perf(perf_command) => perf_command.exec(),
-        }
-    }
-}
-
-#[derive(StructOpt, Debug)]
-pub enum RandomDataCommandArgs {
-    /// generate all random data
-    All(AllRandomDataCommandArgs),
-    /// generate reviews random data
-    Reviews(RandomReviewsDataCommandArgs),
-}
-
-impl RandomDataCommandArgs {
-    pub fn exec(self) -> Result<()> {
-        match self {
-            Self::All(all_data_command) => all_data_command.exec(),
-            Self::Reviews(reviews_random_command) => reviews_random_command.exec(),
-        }
-    }
-}
 
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<DataGenerationConfig> {
     let contents = std::fs::read_to_string(&config)?;
@@ -79,7 +34,7 @@ pub fn write_genesis_yaml<P: AsRef<Path>>(genesis: Block0Configuration, path: P)
     Ok(())
 }
 
-pub fn encode<P: AsRef<Path>, Q: AsRef<Path>>(genesis: P, block0: Q) -> Result<()> {
+pub fn encode_block0<P: AsRef<Path>, Q: AsRef<Path>>(genesis: P, block0: Q) -> Result<()> {
     let input: std::fs::File = std::fs::OpenOptions::new()
         .create(false)
         .write(false)
@@ -100,4 +55,17 @@ pub fn encode<P: AsRef<Path>, Q: AsRef<Path>>(genesis: P, block0: Q) -> Result<(
     let block = genesis.to_block();
     Ledger::new(block.id(), block.fragments())?;
     block.serialize(&output).map_err(Into::into)
+}
+
+pub fn decode_block0<Q: AsRef<Path>>(block0: Vec<u8>, genesis_yaml: Q) -> Result<()> {
+    let writer: std::fs::File = std::fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .read(false)
+        .append(false)
+        .truncate(true)
+        .open(&genesis_yaml)?;
+
+    let yaml = Block0Configuration::from_block(&Block::deserialize(&*block0)?)?;
+    Ok(serde_yaml::to_writer(writer, &yaml)?)
 }

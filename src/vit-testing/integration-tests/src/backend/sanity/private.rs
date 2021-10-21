@@ -1,28 +1,33 @@
 use crate::common::iapyx_from_qr;
-use crate::common::{
-    asserts::VotePlanStatusAssert, vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote,
-    VoteTiming,
-};
+use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs, Error, Vote};
 use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
+use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
+use jormungandr_testing_utils::testing::BlockDateGenerator;
 use jormungandr_testing_utils::testing::FragmentSender;
 use jormungandr_testing_utils::testing::{node::time, FragmentSenderSetup};
 use std::path::Path;
 use std::str::FromStr;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::VoteBlockchainTime;
 use vitup::config::{InitialEntry, Initials};
 use vitup::scenario::network::setup_network;
-use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 #[test]
 pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     let endpoint = "127.0.0.1:8080";
-    let vote_timing = VoteTiming::new(0, 1, 2);
+    let vote_timing = VoteBlockchainTime {
+        vote_start: 0,
+        tally_start: 1,
+        tally_end: 2,
+        slots_per_epoch: 60,
+    };
 
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    let mut quick_setup = VitBackendSettingsBuilder::new();
     quick_setup
         .initials(Initials(vec![
             InitialEntry::Wallet {
@@ -41,11 +46,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
                 pin: "1234".to_string(),
             },
         ]))
-        .vote_start_epoch(vote_timing.vote_start)
-        .tally_start_epoch(vote_timing.tally_start)
-        .tally_end_epoch(vote_timing.tally_end)
         .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(60)
         .proposals_count(1)
         .voting_power(8_000)
         .private(true);
@@ -104,15 +105,19 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     };
     time::wait_for_date(target_date.into(), leader_1.rest());
     let settings = wallet_node.rest().settings().unwrap();
+    let block_date_generator = BlockDateGenerator::rolling(
+        &settings,
+        BlockDate {
+            epoch: 1,
+            slot_id: 0,
+        },
+        false,
+    );
 
-    //This should be migrated and utilize BlockDateGenerator after we merge catalyst-fund6 branch
     let fragment_sender = FragmentSender::new(
         Hash::from_str(&settings.block0_hash).unwrap().into(),
         settings.fees,
-        BlockDate {
-            epoch: 2,
-            slot_id: 0,
-        },
+        block_date_generator,
         FragmentSenderSetup::resend_3_times(),
     );
 
@@ -137,7 +142,8 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
         .private_vote_plans
         .get(&fund_name)
         .unwrap()
-        .decrypt_tally(&vote_plan_status.clone().into());
+        .decrypt_tally(&vote_plan_status.clone().into())
+        .unwrap();
 
     fragment_sender
         .send_private_vote_tally(

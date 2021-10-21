@@ -180,8 +180,8 @@ impl VitupAdminRestClient {
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("internal rest error")]
-    ReqwestError(#[from] reqwest::Error),
-    #[error("response serialization error")]
-    SerdeError(#[from] serde_json::Error),
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+    #[error(transparent)]
+    Serde(#[from] serde_json::Error),
 }

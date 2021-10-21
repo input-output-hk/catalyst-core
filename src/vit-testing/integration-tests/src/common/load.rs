@@ -1,10 +1,9 @@
-use crate::common::{
-    asserts::VotePlanStatusAssert, vitup_setup, wait_until_folder_contains_all_qrs,
-};
+use crate::common::{vitup_setup, wait_until_folder_contains_all_qrs};
 use assert_fs::TempDir;
 use chain_impl_mockchain::key::Hash;
 use iapyx::{NodeLoad, NodeLoadConfig};
 use jormungandr_lib::interfaces::BlockDate;
+use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
 use jormungandr_testing_utils::testing::node::time;
 use jortestkit::{
     load::{Configuration, Monitor},
@@ -14,13 +13,13 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VitStartParameters;
 use vitup::scenario::network::setup_network;
-use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 #[allow(dead_code)]
 pub fn private_vote_test_scenario(
-    quick_setup: QuickVitBackendSettingsBuilder,
+    quick_setup: VitBackendSettingsBuilder,
     endpoint: &str,
     no_of_threads: usize,
     batch_size: usize,
@@ -28,9 +27,7 @@ pub fn private_vote_test_scenario(
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let parameters = quick_setup.parameters().clone();
     let wallet_count = parameters.initials.count();
-    let vote_tally = parameters.vote_tally;
-    let slots_per_epoch = parameters.slots_per_epoch;
-    let tally_end = parameters.tally_end;
+    let vote_timing = quick_setup.blockchain_timing();
 
     let (mut vit_controller, mut controller, vit_parameters, fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
@@ -77,7 +74,7 @@ pub fn private_vote_test_scenario(
 
     let leader_1 = nodes.get(0).unwrap();
     let wallet_node = nodes.get(4).unwrap();
-    time::wait_for_epoch(vote_tally as u32, leader_1.rest());
+    time::wait_for_epoch(vote_timing.tally_start, leader_1.rest());
 
     let mut committee = controller.wallet("committee_1").unwrap();
     let vote_plan = controller.vote_plan(&fund_name).unwrap();
@@ -94,8 +91,8 @@ pub fn private_vote_test_scenario(
         }
     };
 
-    let target_date = BlockDate::new(vote_tally as u32, slots_per_epoch / 2);
-    time::wait_for_date(target_date.into(), leader_1.rest());
+    let target_date = BlockDate::new(vote_timing.tally_end, vote_timing.slots_per_epoch / 2);
+    time::wait_for_date(target_date, leader_1.rest());
 
     let active_vote_plans = leader_1.vote_plans().unwrap();
     let vote_plan_status = active_vote_plans
@@ -108,7 +105,8 @@ pub fn private_vote_test_scenario(
         .private_vote_plans
         .get(&fund_name)
         .unwrap()
-        .decrypt_tally(&vote_plan_status.clone().into());
+        .decrypt_tally(&vote_plan_status.clone().into())
+        .unwrap();
 
     match controller.fragment_sender().send_private_vote_tally(
         &mut committee,
@@ -123,7 +121,7 @@ pub fn private_vote_test_scenario(
         }
     };
 
-    time::wait_for_epoch((tally_end + 10) as u32, leader_1.rest());
+    time::wait_for_epoch((vote_timing.tally_end + 10) as u32, leader_1.rest());
 
     leader_1
         .vote_plans()

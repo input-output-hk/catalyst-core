@@ -10,8 +10,9 @@ use vit_servicing_station_tests::common::data::parse_reviews;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 
 use crate::data::{challenges_eq, funds_eq, proposals_eq, reviews_eq, vitup_setup};
+use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::VoteBlockchainTime;
 use vitup::scenario::network::setup_network;
-use vitup::setup::start::QuickVitBackendSettingsBuilder;
 
 #[ignore]
 #[test]
@@ -42,14 +43,21 @@ pub fn public_vote_multiple_vote_plans() {
 
     let endpoint = "127.0.0.1:8080";
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+
+    let vote_timing = VoteBlockchainTime {
+        vote_start: 0,
+        tally_start: 1,
+        tally_end: 2,
+        slots_per_epoch: 30,
+    };
+
+    let mut quick_setup = VitBackendSettingsBuilder::new();
     quick_setup
-        .vote_start_epoch(0)
-        .tally_start_epoch(1)
-        .tally_end_epoch(2)
+        .vote_timing(vote_timing.into())
         .fund_id(expected_fund.id)
+        .next_vote_timestamp(Some("2022-01-01 10:00:00".to_owned()))
+        .refresh_timestamp(Some("2021-01-01 10:00:00".to_owned()))
         .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(30)
         .proposals_count(expected_proposals.len() as u32)
         .challenges_count(expected_challenges.len())
         .voting_power(expected_fund.threshold.unwrap() as u64)

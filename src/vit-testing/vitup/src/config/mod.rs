@@ -1,12 +1,17 @@
 mod env;
 mod initials;
+mod vote_time;
 
 pub use env::VitStartParameters;
 pub use initials::{Initial as InitialEntry, Initials};
+pub use vote_time::{VoteBlockchainTime, VoteTime, FORMAT as VOTE_TIME_FORMAT};
 
+use crate::builders::utils::io::read_initials;
+use crate::Result;
 use chain_impl_mockchain::fee::LinearFee;
 use jormungandr_lib::interfaces::{CommitteeIdDef, ConsensusLeaderId, LinearFeeDef};
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct DataGenerationConfig {
@@ -29,4 +34,18 @@ impl Default for DataGenerationConfig {
             params: Default::default(),
         }
     }
+}
+
+impl DataGenerationConfig {
+    pub fn extend_from_initials_file<P: AsRef<Path>>(&mut self, snapshot: P) -> Result<()> {
+        self.params
+            .initials
+            .extend_from_external(read_initials(snapshot)?);
+        Ok(())
+    }
+}
+
+pub fn read_params<P: AsRef<Path>>(params: P) -> Result<VitStartParameters> {
+    let contents = std::fs::read_to_string(&params)?;
+    serde_yaml::from_str(&contents).map_err(Into::into)
 }

@@ -1,13 +1,12 @@
-use crate::common::{
-    load::build_load_config, load::private_vote_test_scenario, vitup_setup, VoteTiming,
-};
+use crate::common::{load::build_load_config, load::private_vote_test_scenario, vitup_setup};
 use assert_fs::TempDir;
 use iapyx::NodeLoad;
 use jortestkit::measurement::Status;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::VoteBlockchainTime;
 use vitup::scenario::network::setup_network;
-use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 #[test]
 pub fn load_test_public_100_000_votes() {
@@ -17,16 +16,18 @@ pub fn load_test_public_100_000_votes() {
     let version = "2.0";
     let no_of_threads = 10;
     let no_of_wallets = 40_000;
-    let vote_timing = VoteTiming::new(0, 100, 102);
+    let vote_timing = VoteBlockchainTime {
+        vote_start: 0,
+        tally_start: 100,
+        tally_end: 102,
+        slots_per_epoch: 60,
+    };
 
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    let mut quick_setup = VitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(vote_timing.vote_start)
-        .tally_start_epoch(vote_timing.tally_start)
-        .tally_end_epoch(vote_timing.tally_end)
+        .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(60)
         .proposals_count(300)
         .voting_power(31_000)
         .private(false);
@@ -89,16 +90,18 @@ pub fn load_test_private_pesimistic() {
     let no_of_threads = 10;
     let endpoint = "127.0.0.1:8080";
     let no_of_wallets = 8_000;
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
-    let vote_timing = VoteTiming::new(0, 11, 12);
+    let mut quick_setup = VitBackendSettingsBuilder::new();
+    let vote_timing = VoteBlockchainTime {
+        vote_start: 0,
+        tally_start: 11,
+        tally_end: 12,
+        slots_per_epoch: 3,
+    };
 
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(vote_timing.vote_start)
-        .tally_start_epoch(vote_timing.tally_start)
-        .tally_end_epoch(vote_timing.tally_end)
+        .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(20)
-        .slots_in_epoch_count(3)
         .proposals_count(250)
         .voting_power(31_000)
         .private(true);
@@ -111,16 +114,18 @@ pub fn load_test_private_optimistic() {
     let no_of_threads = 10;
     let no_of_wallets = 20_000;
     let endpoint = "127.0.0.1:8080";
-    let vote_timing = VoteTiming::new(6, 10, 11);
+    let vote_timing = VoteBlockchainTime {
+        vote_start: 6,
+        tally_start: 11,
+        tally_end: 12,
+        slots_per_epoch: 180,
+    };
 
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    let mut quick_setup = VitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(vote_timing.vote_start)
-        .tally_start_epoch(vote_timing.tally_start)
-        .tally_end_epoch(vote_timing.tally_end)
+        .vote_timing(vote_timing.into())
         .slot_duration_in_seconds(20)
-        .slots_in_epoch_count(180)
         .proposals_count(500)
         .voting_power(31_000)
         .private(true);

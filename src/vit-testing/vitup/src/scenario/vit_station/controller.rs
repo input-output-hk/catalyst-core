@@ -6,9 +6,7 @@ use jormungandr_scenario_tests::{
     style, Context,
 };
 pub use jormungandr_testing_utils::testing::{
-    network_builder::{
-        LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings,
-    },
+    network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
     node::{
         grpc::{client::MockClientError, JormungandrClient},
         uri_from_socket_addr, JormungandrLogger, JormungandrRest, RestError,

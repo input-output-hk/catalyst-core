@@ -2,16 +2,18 @@ use crate::common::iapyx_from_qr;
 use crate::common::registration::do_registration;
 use crate::common::snapshot::do_snapshot;
 use crate::common::snapshot::wait_for_db_sync;
-use crate::common::{asserts::VotePlanStatusAssert, vitup_setup, Vote, VoteTiming};
+use crate::common::{vitup_setup, Vote};
 use assert_fs::TempDir;
 use chain_impl_mockchain::header::BlockDate;
+use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
 use jormungandr_testing_utils::testing::node::time;
 use snapshot_trigger_service::config::JobParameters;
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
+use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::Initials;
+use vitup::config::VoteBlockchainTime;
 use vitup::scenario::network::setup_network;
-use vitup::setup::start::QuickVitBackendSettingsBuilder;
 const GRACE_PERIOD_FOR_SNAPSHOT: u64 = 300;
 
 #[test]
@@ -40,15 +42,18 @@ pub fn e2e_flow_using_voter_registration_local_vitup_and_iapyx() {
         .unwrap();
 
     let endpoint = "127.0.0.1:8080";
-    let vote_timing = VoteTiming::new(0, 1, 2);
+    let vote_timing = VoteBlockchainTime {
+        vote_start: 0,
+        tally_start: 1,
+        tally_end: 2,
+        slots_per_epoch: 30,
+    };
+
     let testing_directory = TempDir::new().unwrap().into_persistent();
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    let mut quick_setup = VitBackendSettingsBuilder::new();
     quick_setup
-        .vote_start_epoch(vote_timing.vote_start)
-        .tally_start_epoch(vote_timing.tally_start)
-        .tally_end_epoch(vote_timing.tally_end)
         .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(30)
+        .vote_timing(vote_timing.into())
         .proposals_count(300)
         .voting_power(1)
         .initials(Initials::new_from_external(

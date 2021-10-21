@@ -1,13 +1,14 @@
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::scenario::Controller;
 use jormungandr_scenario_tests::{Context, ProgressBarMode};
-use jormungandr_testing_utils::testing::network_builder::Seed;
+use jormungandr_testing_utils::testing::network::Seed;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
+use vitup::builders::VitBackendSettingsBuilder;
+use vitup::config::VoteBlockchainTime;
 use vitup::scenario::controller::VitController;
-use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
 
 pub fn wait_until_folder_contains_all_qrs<P: AsRef<Path>>(qrs_count: usize, folder: P) {
     println!("waiting for qr code in: {:?}", folder.as_ref());
@@ -23,7 +24,7 @@ pub fn wait_until_folder_contains_all_qrs<P: AsRef<Path>>(qrs_count: usize, fold
     }
 }
 
-pub fn context(testing_directory: &PathBuf) -> Context {
+pub fn context(testing_directory: &Path) -> Context {
     let jormungandr = prepare_command(PathBuf::from_str("jormungandr").unwrap());
     let jcli = prepare_command(PathBuf::from_str("jcli").unwrap());
     let seed = Seed::generate(rand::rngs::OsRng);
@@ -34,7 +35,7 @@ pub fn context(testing_directory: &PathBuf) -> Context {
         seed,
         jormungandr,
         jcli,
-        Some(testing_directory.clone()),
+        Some(testing_directory.to_path_buf()),
         generate_documentation,
         ProgressBarMode::None,
         log_level,
@@ -46,15 +47,19 @@ pub fn vitup_setup_default(
     no_of_wallets: usize,
     testing_directory: PathBuf,
 ) -> (VitController, Controller, ValidVotePlanParameters, String) {
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    let mut quick_setup = VitBackendSettingsBuilder::new();
+
+    let vote_timing = VoteBlockchainTime {
+        vote_start: 0,
+        tally_start: 20,
+        tally_end: 21,
+        slots_per_epoch: 10,
+    };
 
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(0)
-        .tally_start_epoch(20)
-        .tally_end_epoch(21)
         .slot_duration_in_seconds(5)
-        .slots_in_epoch_count(10)
+        .vote_timing(vote_timing.into())
         .proposals_count(100)
         .voting_power(8_000)
         .private(private);
@@ -63,7 +68,7 @@ pub fn vitup_setup_default(
 }
 
 pub fn vitup_setup(
-    mut quick_setup: QuickVitBackendSettingsBuilder,
+    mut quick_setup: VitBackendSettingsBuilder,
     mut testing_directory: PathBuf,
 ) -> (VitController, Controller, ValidVotePlanParameters, String) {
     let context = context(&testing_directory);

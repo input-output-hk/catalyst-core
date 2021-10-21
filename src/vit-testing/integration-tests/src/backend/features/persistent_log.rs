@@ -6,7 +6,7 @@ use iapyx::{IapyxLoad, Protocol};
 use jortestkit::measurement::Status;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::scenario::network::setup_network;
-use vitup::setup::start::quick::QuickVitBackendSettingsBuilder;
+use vitup::setup::start::quick::VitBackendSettingsBuilder;
 use jormungandr_lib::interfaces::VotePlanStatus;
 use jormungandr_lib::interfaces::load_persistent_fragments_logs_from_folder_path;
 use std::io::BufReader;
@@ -25,16 +25,19 @@ pub fn persistent_log_contains_all_sent_votes() {
     let no_of_threads = 2;
     let batch_size = 100;
     let no_of_wallets = 40_000;
-    let vote_timing = VoteTiming::new(0, 1, 2);
 
-    let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+    let vote_timing = VoteBlockchainTime{
+        vote_start: 0,
+        tally_start: 1,
+        tally_end: 2,
+        slots_in_epoch: 60
+    }
+
+
+    let mut quick_setup = VitBackendSettingsBuilder::new();
     quick_setup
         .initials_count(no_of_wallets, "1234")
-        .vote_start_epoch(vote_timing.vote_start)
-        .tally_start_epoch(vote_timing.tally_start)
-        .tally_end_epoch(vote_timing.tally_end)
         .slot_duration_in_seconds(2)
-        .slots_in_epoch_count(60)
         .proposals_count(300)
         .voting_power(31_000)
         .private(false);

@@ -2,9 +2,9 @@ use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use chain_addr::Discrimination;
 use iapyx::{PinReadMode, QrReader};
-use jormungandr_integration_tests::common::jcli::JCli;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::InitialUTxO;
+use jormungandr_testing_utils::testing::jcli::JCli;
 use jortestkit::prelude::WaitBuilder;
 use math::round;
 use registration_service::{
@@ -28,16 +28,14 @@ pub fn do_registration(temp_dir: &TempDir) -> RegistrationResult {
     let stake_vkey =
         std::env::var("STAKE_VKEY").unwrap_or_else(|_| "STAKE_VKEY not defined".to_owned());
 
-    let registration_client = RegistrationRestClient::new_with_token(
-        registration_token.to_string(),
-        registration_address.to_string(),
-    );
+    let registration_client =
+        RegistrationRestClient::new_with_token(registration_token, registration_address);
 
     let registration_request = Request {
-        payment_skey: payment_skey.to_string(),
-        payment_vkey: payment_vkey.to_string(),
-        stake_skey: stake_skey.to_string(),
-        stake_vkey: stake_vkey.to_string(),
+        payment_skey,
+        payment_vkey,
+        stake_skey,
+        stake_vkey,
     };
 
     let registration_job_id = registration_client.job_new(registration_request).unwrap();
@@ -56,7 +54,7 @@ pub fn do_registration(temp_dir: &TempDir) -> RegistrationResult {
         .download_qr(registration_job_id.clone(), qr_code_path.path())
         .unwrap();
     let voting_key_sk = registration_client
-        .get_catalyst_sk(registration_job_id.clone())
+        .get_catalyst_sk(registration_job_id)
         .unwrap();
 
     RegistrationResult {

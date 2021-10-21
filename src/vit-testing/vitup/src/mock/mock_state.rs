@@ -1,10 +1,10 @@
 use super::config::Configuration;
+use crate::builders::VitBackendSettingsBuilder;
 use crate::config::VitStartParameters;
 use crate::mock::ledger_state::LedgerState;
-use crate::setup::start::quick::QuickVitBackendSettingsBuilder;
 use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::{Context, ProgressBarMode};
-use jormungandr_testing_utils::testing::network_builder::Seed;
+use jormungandr_testing_utils::testing::network::Seed;
 use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -44,7 +44,7 @@ impl MockState {
     pub fn new(params: VitStartParameters, config: Configuration) -> Result<Self, Error> {
         std::fs::remove_dir_all(&config.working_dir)?;
 
-        let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+        let mut quick_setup = VitBackendSettingsBuilder::new();
         let context = context(&config.working_dir);
         quick_setup.upload_parameters(params);
 

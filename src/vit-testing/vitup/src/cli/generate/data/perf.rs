@@ -1,14 +1,15 @@
-use super::{encode, read_config, read_genesis_yaml, read_initials, write_genesis_yaml};
-use crate::setup::start::QuickVitBackendSettingsBuilder;
+use crate::builders::post_deployment::generate_database;
+use crate::builders::post_deployment::DeploymentTree;
+use crate::builders::utils::io::read_config;
+use crate::builders::utils::ContextExtension;
+use crate::builders::VitBackendSettingsBuilder;
 use crate::Result;
 use glob::glob;
-use jormungandr_scenario_tests::ProgressBarMode as ScenarioProgressBarMode;
-use jormungandr_scenario_tests::{Context, Seed};
+use jormungandr_scenario_tests::Context;
 use std::path::Path;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
-
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct PerfDataCommandArgs {
@@ -62,39 +63,30 @@ impl PerfDataCommandArgs {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
 
-        let context = Context::new(
-            Seed::generate(rand::rngs::OsRng),
-            PathBuf::new(),
-            PathBuf::new(),
-            Some(self.output_directory.clone()),
-            true,
-            ScenarioProgressBarMode::None,
-            "info".to_string(),
-        );
+        let context = Context::empty_from_dir(&self.output_directory);
 
-        let mut quick_setup = QuickVitBackendSettingsBuilder::new();
+        let mut quick_setup = VitBackendSettingsBuilder::new();
         let mut config = read_config(&self.config)?;
+
+        if let Some(ref snapshot) = self.snapshot {
+            config.extend_from_initials_file(snapshot)?;
+        }
+
         quick_setup.skip_qr_generation();
         quick_setup.upload_parameters(config.params.clone());
         quick_setup.fees(config.linear_fees);
         quick_setup.set_external_committees(config.committees);
-
-        if let Some(snapshot) = &self.snapshot {
-            config
-                .params
-                .initials
-                .extend_from_external(read_initials(snapshot)?);
-        }
+        quick_setup.consensus_leaders_ids(config.consensus_leader_ids);
 
         if !self.output_directory.exists() {
             std::fs::create_dir_all(&self.output_directory)?;
         }
 
-        let title = quick_setup.title();
-        let (vit_controller, mut controller, vit_parameters, version) =
-            quick_setup.build(context)?;
+        let deployment_tree = DeploymentTree::new(&self.output_directory, quick_setup.title());
 
-        let mut template_generator = ExternalValidVotingTemplateGenerator::new(
+        let (_, controller, vit_parameters, _) = quick_setup.build(context)?;
+
+        let template_generator = ExternalValidVotingTemplateGenerator::new(
             self.proposals.clone(),
             self.challenges.clone(),
             self.funds.clone(),
@@ -102,41 +94,13 @@ impl PerfDataCommandArgs {
         )
         .unwrap();
 
-        // generate vit station data
-        let vit_station = vit_controller.spawn_vit_station(
-            &mut controller,
-            vit_parameters,
-            &mut template_generator,
-            version,
+        generate_database(&deployment_tree, vit_parameters, template_generator);
+
+        self.move_single_user_secrets(
+            &deployment_tree,
+            deployment_tree.root_path().join("single"),
         )?;
-        vit_station.shutdown();
-
-        let mut root_directory = self.output_directory.clone();
-        root_directory.push(title);
-
-        let mut genesis = root_directory.clone();
-        genesis.push("genesis.yaml");
-
-        let mut block0 = root_directory.clone();
-        block0.push("block0.bin");
-
-        let mut block0_configuration = read_genesis_yaml(&genesis)?;
-
-        if !config.consensus_leader_ids.is_empty() {
-            block0_configuration
-                .blockchain_configuration
-                .consensus_leader_ids = config.consensus_leader_ids;
-        }
-
-        let mut single_directory = root_directory.clone();
-        single_directory.push("single");
-        self.move_single_user_secrets(&root_directory, &single_directory)?;
-        self.split_secrets(root_directory)?;
-
-        write_genesis_yaml(block0_configuration, &genesis)?;
-        println!("genesis.yaml: {:?}", std::fs::canonicalize(&genesis)?);
-        encode(&genesis, &block0)?;
-        println!("block0: {:?}", std::fs::canonicalize(&block0)?);
+        self.split_secrets(&deployment_tree)?;
 
         println!(
             "voteplan ids: {:?}",
@@ -151,8 +115,12 @@ impl PerfDataCommandArgs {
         Ok(())
     }
 
-    fn move_single_user_secrets<P: AsRef<Path>>(&self, root: P, output_folder: P) -> Result<()> {
-        let pattern = format!("{}/wallet_*_*", root.as_ref().display());
+    fn move_single_user_secrets<P: AsRef<Path>>(
+        &self,
+        tree: &DeploymentTree,
+        output_folder: P,
+    ) -> Result<()> {
+        let pattern = tree.wallet_search_pattern();
         std::fs::create_dir_all(&output_folder).unwrap();
         for file in glob(&pattern)
             .expect("Failed to read glob pattern")
@@ -165,13 +133,14 @@ impl PerfDataCommandArgs {
         Ok(())
     }
 
-    fn split_secrets<P: AsRef<Path>>(&self, root: P) -> Result<()> {
-        let pattern = format!("{}/wallet_*_*", root.as_ref().display());
-
+    fn split_secrets(&self, tree: &DeploymentTree) -> Result<()> {
+        let pattern = tree.wallet_search_pattern();
         let secrets: Vec<PathBuf> = (0..self.parts)
             .into_iter()
             .map(|id| {
-                let folder = root.as_ref().join("secrets".to_owned() + &id.to_string());
+                let folder = tree
+                    .root_path()
+                    .join("secrets".to_owned() + &id.to_string());
                 std::fs::create_dir_all(&folder).unwrap();
                 folder
             })

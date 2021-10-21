@@ -2,7 +2,7 @@ use crate::scenario::{
     settings::PrepareWalletProxySettings, vit_station::VitStationSettings, wallet::NodeAlias,
 };
 use jormungandr_scenario_tests::Context;
-pub use jormungandr_testing_utils::testing::network_builder::WalletProxySettings;
+pub use jormungandr_testing_utils::testing::network::WalletProxySettings;
 use rand::CryptoRng;
 use rand::RngCore;
 use std::collections::HashMap;

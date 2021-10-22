@@ -150,6 +150,11 @@ impl Fragment {
     pub fn hash(&self) -> FragmentId {
         self.to_raw().id()
     }
+
+    /// How many bytes it will take up once serialized in a block
+    pub fn serialized_size(&self) -> usize {
+        self.to_raw().size_bytes_plus_size()
+    }
 }
 
 impl Readable for Fragment {

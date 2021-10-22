@@ -6,19 +6,17 @@ use crate::setting::{ActiveSlotsCoeffError, Settings};
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
 use chain_crypto::Verification;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateState {
-    // Note: we use a BTreeMap to ensure that proposals are processed
-    // in a well-defined (sorted) order.
-    pub proposals: BTreeMap<UpdateProposalId, UpdateProposalState>,
+    pub proposals: HashMap<UpdateProposalId, UpdateProposalState>,
 }
 
 impl UpdateState {
     pub fn new() -> Self {
         UpdateState {
-            proposals: BTreeMap::new(),
+            proposals: HashMap::new(),
         }
     }
 
@@ -104,16 +102,23 @@ impl UpdateState {
 
         assert!(prev_date < new_date);
 
+        let mut proposals: Vec<(&UpdateProposalId, &UpdateProposalState)> =
+            self.proposals.iter().collect();
+
+        // sort proposals by the date
+        proposals.sort_by(|(a_id, a_state), (b_id, b_state)| {
+            match a_state.proposal_date.cmp(&b_state.proposal_date) {
+                std::cmp::Ordering::Equal => a_id.cmp(b_id),
+                res => res,
+            }
+        });
+
         // If we entered a new epoch, then delete expired update
         // proposals and apply accepted update proposals.
         if prev_date.epoch < new_date.epoch {
-            for (proposal_id, proposal_state) in &self.proposals {
+            for (proposal_id, proposal_state) in proposals {
                 // If a majority of BFT leaders voted for the
-                // proposal, then apply it. FIXME: multiple proposals
-                // might become accepted at the same time, in which
-                // case they're currently applied in order of proposal
-                // ID. FIXME: delay the effectuation of the proposal
-                // for some number of epochs.
+                // proposal, then apply it.
                 if proposal_state.votes.len() > settings.bft_leaders.len() / 2 {
                     settings = settings.apply(&proposal_state.proposal.changes)?;
                     expired_ids.push(*proposal_id);
@@ -713,7 +718,7 @@ mod tests {
     }
 
     #[test]
-    pub fn process_proposal_is_ordered() {
+    pub fn process_proposal_is_by_id_ordered() {
         let mut update_state = UpdateState::new();
         let first_proposal_id = TestGen::hash();
         let second_proposal_id = TestGen::hash();
@@ -771,17 +776,91 @@ mod tests {
         )
         .expect("failed while applying vote");
 
-        let last_proposal_id = update_state.proposals.keys().cloned().last().unwrap();
-
         let (update_state, settings) = update_state
             .process_proposals(settings, block_date, block_date.next_epoch())
             .expect("error while processing proposal");
 
-        if first_proposal_id == last_proposal_id {
-            assert_eq!(settings.slots_per_epoch, 100);
-        } else {
-            assert_eq!(settings.slots_per_epoch, 200);
+        match first_proposal_id.cmp(&second_proposal_id) {
+            std::cmp::Ordering::Less => assert_eq!(settings.slots_per_epoch, 200),
+            std::cmp::Ordering::Greater => assert_eq!(settings.slots_per_epoch, 100),
+            _ => {}
         }
+
+        assert_eq!(update_state.proposals.len(), 0);
+    }
+
+    #[test]
+    pub fn process_proposal_is_by_time_ordered() {
+        let mut update_state = UpdateState::new();
+        let first_proposal_id = TestGen::hash();
+        let second_proposal_id = TestGen::hash();
+        let first_proposer = TestGen::leader_pair();
+        let second_proposer = TestGen::leader_pair();
+        let first_proposal_block_date = BlockDate::first();
+        let second_proposal_block_date = BlockDate {
+            slot_id: first_proposal_block_date.slot_id + 1,
+            ..first_proposal_block_date
+        };
+        let first_update = ConfigParam::SlotsPerEpoch(100);
+        let second_update = ConfigParam::SlotsPerEpoch(200);
+
+        let settings = TestGen::settings(vec![first_proposer.clone(), second_proposer.clone()]);
+
+        // Apply proposal
+        update_state = apply_update_proposal(
+            update_state,
+            first_proposal_id,
+            &first_update,
+            &first_proposer,
+            &settings,
+            first_proposal_block_date,
+        )
+        .expect("failed while applying proposal");
+
+        // Apply vote
+        update_state =
+            apply_update_vote(update_state, first_proposal_id, &first_proposer, &settings)
+                .expect("failed while applying vote");
+
+        // Apply vote
+        update_state =
+            apply_update_vote(update_state, first_proposal_id, &second_proposer, &settings)
+                .expect("failed while applying vote");
+
+        // Apply proposal
+        update_state = apply_update_proposal(
+            update_state,
+            second_proposal_id,
+            &second_update,
+            &second_proposer,
+            &settings,
+            second_proposal_block_date,
+        )
+        .expect("failed while applying proposal");
+
+        // Apply vote
+        update_state =
+            apply_update_vote(update_state, second_proposal_id, &first_proposer, &settings)
+                .expect("failed while applying vote");
+
+        // Apply vote
+        update_state = apply_update_vote(
+            update_state,
+            second_proposal_id,
+            &second_proposer,
+            &settings,
+        )
+        .expect("failed while applying vote");
+
+        let (update_state, settings) = update_state
+            .process_proposals(
+                settings,
+                first_proposal_block_date,
+                first_proposal_block_date.next_epoch(),
+            )
+            .expect("error while processing proposal");
+
+        assert_eq!(settings.slots_per_epoch, 200);
 
         assert_eq!(update_state.proposals.len(), 0);
     }

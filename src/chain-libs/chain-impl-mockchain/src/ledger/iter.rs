@@ -143,7 +143,7 @@ enum IterState<'a> {
     Accounts(crate::accounting::account::Iter<'a, account::Identifier, ()>),
     ConfigParams(Vec<ConfigParam>),
     UpdateProposals(
-        std::collections::btree_map::Iter<
+        std::collections::hash_map::Iter<
             'a,
             crate::update::UpdateProposalId,
             crate::update::UpdateProposalState,

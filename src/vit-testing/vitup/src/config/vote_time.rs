@@ -94,6 +94,10 @@ pub struct VoteBlockchainTime {
 }
 
 impl VoteBlockchainTime {
+    pub fn wait_for_vote_start(self, rest: JormungandrRest) {
+        time::wait_for_epoch(self.vote_start, rest);
+    }
+
     pub fn wait_for_tally_start(self, rest: JormungandrRest) {
         time::wait_for_epoch(self.tally_start, rest);
     }

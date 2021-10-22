@@ -2,12 +2,14 @@ mod builder;
 
 pub use builder::{ControllerBuilder, Error as ControllerBuilderError};
 
-use crate::utils::valid_until::ValidUntil;
 use crate::Wallet;
 use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
+use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
+use jormungandr_testing_utils::testing::node::RestError;
 use jormungandr_testing_utils::testing::node::RestSettings;
+use jormungandr_testing_utils::testing::BlockDateGenerator;
 use jormungandr_testing_utils::wallet::discrimination::DiscriminationExtension;
 use std::collections::HashMap;
 use thiserror::Error;
@@ -19,6 +21,7 @@ pub struct Controller {
     pub(self) backend: ValgrindClient,
     pub(self) wallet: Wallet,
     pub(self) settings: Settings,
+    pub(self) block_date_generator: BlockDateGenerator,
 }
 
 impl Controller {
@@ -37,6 +40,10 @@ impl Controller {
     pub fn send_fragment(&self, transaction: &[u8]) -> Result<FragmentId, ControllerError> {
         self.send_fragments(vec![transaction.to_vec()])
             .map(|v| *v.first().unwrap())
+    }
+
+    pub fn set_block_date_generator(&mut self, block_date_generator: BlockDateGenerator) {
+        self.block_date_generator = block_date_generator;
     }
 
     pub fn send_fragments(
@@ -134,7 +141,6 @@ impl Controller {
         vote_plan_id: String,
         proposal_index: u32,
         choice: u8,
-        valid_until: ValidUntil,
     ) -> Result<FragmentId, ControllerError> {
         let proposals = self.get_proposals()?;
 
@@ -149,23 +155,19 @@ impl Controller {
                 proposal_index,
             })?;
 
-        self.vote(proposal, Choice::new(choice), &valid_until)
+        self.vote(proposal, Choice::new(choice))
     }
 
     pub fn vote(
         &mut self,
         proposal: &ValgrindProposal,
         choice: Choice,
-        valid_until: &ValidUntil,
     ) -> Result<FragmentId, ControllerError> {
-        let valid_until_block_date =
-            valid_until.into_expiry_date(Some(self.backend.settings()?))?;
-
         let transaction = self.wallet.vote(
             self.settings.clone(),
             &proposal.clone().into(),
             choice,
-            &valid_until_block_date,
+            &self.block_date_generator.block_date(),
         )?;
         Ok(self.backend.send_fragment(transaction.to_vec())?)
     }
@@ -173,11 +175,8 @@ impl Controller {
     pub fn votes_batch(
         &mut self,
         votes_data: Vec<(&ValgrindProposal, Choice)>,
-        valid_until: &ValidUntil,
     ) -> Result<Vec<FragmentId>, ControllerError> {
         let account_state = self.backend.account_state(self.wallet.id())?;
-        let valid_until_block_date =
-            valid_until.into_expiry_date(Some(self.backend.settings()?))?;
 
         let mut counter = account_state.counter();
         let settings = self.settings.clone();
@@ -192,7 +191,7 @@ impl Controller {
                         settings.clone(),
                         &p.clone().into(),
                         c,
-                        &valid_until_block_date,
+                        &self.block_date_generator.block_date(),
                     )
                     .unwrap()
                     .to_vec();
@@ -258,4 +257,6 @@ pub enum ControllerError {
     WalletTime(#[from] wallet::time::Error),
     #[error(transparent)]
     Wallet(#[from] crate::wallet::Error),
+    #[error(transparent)]
+    Rest(#[from] RestError),
 }

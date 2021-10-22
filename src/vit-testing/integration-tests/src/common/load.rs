@@ -59,6 +59,7 @@ pub fn private_vote_test_scenario(
         endpoint,
         qr_codes_folder,
         no_of_threads,
+        1000,
         batch_size,
         parameters,
     );
@@ -144,13 +145,51 @@ pub fn build_load_config(
     address: &str,
     qr_codes_folder: PathBuf,
     threads_no: usize,
+    delay: u64,
     batch_size: usize,
     parameters: VitStartParameters,
 ) -> NodeLoadConfig {
     let config = Configuration::duration(
         threads_no,
         parameters.calculate_vote_duration(),
-        100,
+        delay,
+        Some(250),
+        Monitor::Progress(100),
+        60,
+        1,
+    );
+
+    NodeLoadConfig {
+        batch_size,
+        use_v1: false,
+        config,
+        criterion: Some(100),
+        address: address.to_string(),
+        wallet_mnemonics_file: None,
+        qr_codes_folder: Some(qr_codes_folder),
+        secrets_folder: None,
+        global_pin: "".to_string(),
+        reuse_accounts_lazy: false,
+        reuse_accounts_early: false,
+        read_pin_from_filename: true,
+        use_https: false,
+        debug: false,
+    }
+}
+
+#[allow(dead_code)]
+pub fn build_load_config_count(
+    address: &str,
+    qr_codes_folder: PathBuf,
+    threads_no: usize,
+    requests_per_thread: u32,
+    delay: u64,
+    batch_size: usize,
+) -> NodeLoadConfig {
+    let config = Configuration::requests_per_thread(
+        threads_no,
+        requests_per_thread,
+        delay,
         Some(250),
         Monitor::Progress(100),
         60,

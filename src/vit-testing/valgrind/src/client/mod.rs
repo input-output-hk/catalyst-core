@@ -1,5 +1,6 @@
 mod node;
 mod proxy;
+pub mod utils;
 mod vit_station;
 
 use crate::data::AdvisorReview;
@@ -7,19 +8,18 @@ use crate::data::Challenge;
 use crate::Fund;
 use crate::Proposal;
 use chain_core::property::Fragment as _;
-use chain_impl_mockchain::config::Block0Date;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
-use chain_impl_mockchain::key::Hash;
 use chain_ser::deser::Deserialize;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::FragmentStatus;
+use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use jormungandr_testing_utils::testing::node::Explorer;
 use std::collections::HashMap;
 use std::str::FromStr;
 use thiserror::Error;
-use wallet::{AccountId, Settings};
+use wallet::AccountId;
 
 pub use jormungandr_testing_utils::testing::node::RestSettings as ValgrindSettings;
 pub use node::{RestError as NodeRestError, WalletNodeRestClient};
@@ -177,31 +177,8 @@ impl ValgrindClient {
             .map_err(Into::into)
     }
 
-    pub fn settings(&self) -> Result<Settings, Error> {
-        use chain_time::SlotDuration;
-        use chain_time::TimeFrame;
-        use chain_time::Timeline;
-        use chain_time::{Epoch, TimeEra};
-
-        let settings = self.node_client.settings()?;
-        let duration_since_epoch = settings.block0_time.duration_since_epoch();
-        let timeline = Timeline::new(std::time::SystemTime::now());
-        let tf = TimeFrame::new(
-            timeline,
-            SlotDuration::from_secs(settings.slot_duration as u32),
-        );
-        let slot0 = tf.slot0();
-        let era = TimeEra::new(slot0, Epoch(0), settings.slots_per_epoch);
-
-        Ok(Settings {
-            fees: settings.fees,
-            discrimination: settings.discrimination,
-            block0_initial_hash: Hash::from_str(&settings.block0_hash)?,
-            block0_date: Block0Date(duration_since_epoch.as_secs()),
-            slot_duration: settings.slot_duration as u8,
-            time_era: era,
-            transaction_max_expiry_epochs: settings.tx_max_expiry_epochs,
-        })
+    pub fn settings(&self) -> Result<SettingsDto, Error> {
+        self.node_client.settings().map_err(Into::into)
     }
 
     pub fn account_exists(&self, id: AccountId) -> Result<bool, Error> {

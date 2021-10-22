@@ -10,6 +10,7 @@ use std::iter;
 use std::path::Path;
 use thiserror::Error;
 use valgrind::Proposal;
+use valgrind::SettingsExtensions;
 use valgrind::ValgrindClient;
 use wallet::Settings;
 use wallet_core::{Choice, Value};
@@ -31,7 +32,7 @@ impl MultiController {
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
         let backend = ValgrindClient::new(wallet_backend_address, backend_settings);
-        let settings = backend.settings()?;
+        let settings = backend.settings()?.into_wallet_settings();
         let wallets = iter::from_fn(|| Some(Wallet::generate(words_length).unwrap()))
             .take(count)
             .collect();
@@ -49,7 +50,7 @@ impl MultiController {
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
         let backend = ValgrindClient::new(wallet_backend_address.to_string(), backend_settings);
-        let settings = backend.settings()?;
+        let settings = backend.settings()?.into_wallet_settings();
         let wallets = mnemonics
             .iter()
             .map(|x| Wallet::recover(x, password).unwrap())
@@ -68,7 +69,7 @@ impl MultiController {
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
         let mut backend = ValgrindClient::new(wallet_backend_address.to_string(), backend_settings);
-        let settings = backend.settings()?;
+        let settings = backend.settings()?.into_wallet_settings();
 
         backend.enable_logs();
         let pin_reader = QrReader::new(pin_mode);
@@ -91,7 +92,7 @@ impl MultiController {
         backend_settings: RestSettings,
     ) -> Result<Self, MultiControllerError> {
         let backend = ValgrindClient::new(proxy_address.to_string(), backend_settings);
-        let settings = backend.settings()?;
+        let settings = backend.settings()?.into_wallet_settings();
         let wallets = private_keys
             .iter()
             .map(|x| {

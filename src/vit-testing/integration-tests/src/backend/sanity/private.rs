@@ -48,6 +48,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
         ]))
         .slot_duration_in_seconds(2)
         .proposals_count(1)
+        .vote_timing(vote_timing.into())
         .voting_power(8_000)
         .private(true);
 
@@ -68,7 +69,7 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     let mut committee = controller.wallet("committee_1").unwrap();
 
     let leader_1 = &nodes[0];
-    let wallet_node = &nodes[4];
+    let wallet_node = &nodes[3];
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
     qr_codes_folder.push("vit_backend/qr-codes");
@@ -84,19 +85,19 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
 
     // start voting
     david
-        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
+        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
         .unwrap();
 
     let mut edgar = iapyx_from_qr(&edgar_qr_code, "1234", &wallet_proxy).unwrap();
 
     edgar
-        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
+        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
         .unwrap();
 
     let mut filip = iapyx_from_qr(&filip_qr_code, "1234", &wallet_proxy).unwrap();
 
     filip
-        .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8, Default::default())
+        .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8)
         .unwrap();
 
     let target_date = BlockDate {

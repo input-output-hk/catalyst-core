@@ -55,6 +55,7 @@ pub fn load_test_public_100_000_votes() {
         endpoint,
         qr_codes_folder,
         no_of_threads,
+        100,
         1,
         setup_parameters,
     );

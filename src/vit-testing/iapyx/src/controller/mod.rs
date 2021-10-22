@@ -5,11 +5,13 @@ pub use builder::{ControllerBuilder, Error as ControllerBuilderError};
 use crate::utils::valid_until::ValidUntil;
 use crate::Wallet;
 use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
+use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
 use jormungandr_testing_utils::testing::node::RestSettings;
+use jormungandr_testing_utils::wallet::discrimination::DiscriminationExtension;
 use std::collections::HashMap;
 use thiserror::Error;
-use valgrind::{Proposal as ValgrindProposal, SimpleVoteStatus, ValgrindClient};
+use valgrind::{Proposal as ValgrindProposal, ValgrindClient};
 use wallet::{AccountId, Settings};
 use wallet_core::{Choice, Value};
 
@@ -119,6 +121,10 @@ impl Controller {
         self.backend.proposals().map_err(Into::into)
     }
 
+    pub fn funds(&self) -> Result<valgrind::Fund, ControllerError> {
+        self.backend.funds().map_err(Into::into)
+    }
+
     pub fn settings(&self) -> Result<Settings, ControllerError> {
         self.backend.settings().map_err(Into::into)
     }
@@ -215,10 +221,25 @@ impl Controller {
         Ok(self.backend.fragment_logs()?)
     }
 
-    pub fn active_votes(&self) -> Result<Vec<SimpleVoteStatus>, ControllerError> {
-        Ok(self
-            .backend
-            .vote_statuses(self.wallet.identifier(self.settings.discrimination))?)
+    pub fn votes_history(
+        &self,
+        vote_plan_id: VotePlanId,
+    ) -> Result<Option<Vec<u8>>, ControllerError> {
+        Ok(self.backend.votes_history(
+            self.wallet
+                .identifier(self.settings.discrimination)
+                .into_address(
+                    self.settings.discrimination,
+                    &self.settings.discrimination.into_prefix(),
+                ),
+            vote_plan_id,
+        )?)
+    }
+
+    pub fn active_vote_plan(
+        &self,
+    ) -> Result<Vec<jormungandr_lib::interfaces::VotePlanStatus>, ControllerError> {
+        Ok(self.backend.active_vote_plan()?)
     }
 }
 

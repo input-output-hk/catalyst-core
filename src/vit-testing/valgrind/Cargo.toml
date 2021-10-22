@@ -6,8 +6,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
-jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
+jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "accounts_votes_automation" }
+jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "accounts_votes_automation" }
 wallet = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 wallet-core = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
 hex = "0.4"
@@ -29,7 +29,7 @@ chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.gi
 chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master"  }
 chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
-
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
 
 [dependencies.reqwest]
 version = "0.10.10"

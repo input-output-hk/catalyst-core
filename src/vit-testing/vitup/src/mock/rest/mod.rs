@@ -11,6 +11,7 @@ use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use itertools::Itertools;
 use jormungandr_lib::interfaces::FragmentsBatch;
 use jormungandr_lib::interfaces::VotePlanStatus;
+use jormungandr_lib::interfaces::{Address, VotePlanId};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
 use serde::{Deserialize as SerdeDeserialize, Serialize as SerdeSerialize};
@@ -26,7 +27,6 @@ use vit_servicing_station_lib::db::models::proposals::Proposal;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{reject::Reject, Filter, Rejection, Reply};
-
 mod reject;
 
 use reject::{report_invalid, ForcedErrorCode, GeneralException, InvalidBatch};
@@ -334,7 +334,12 @@ pub async fn start_rest_server(context: ContextLock) {
             root.and(post.or(status).or(logs)).boxed()
         };
 
-        root.and(fragments)
+        let votes = warp::path!("votes" / "plan" / VotePlanId / "account-votes" / Address)
+            .and(warp::get())
+            .and(with_context.clone())
+            .and_then(get_account_votes);
+
+        root.and(fragments.or(votes))
     };
 
     let version = warp::path!("version")
@@ -350,6 +355,70 @@ pub async fn start_rest_server(context: ContextLock) {
 
     let server_fut = server.bind(address);
     server_fut.await;
+}
+
+pub async fn get_account_votes(
+    vote_plan_id: VotePlanId,
+    address: Address,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    context_lock.log(format!(
+        "get_account_votes: vote plan id {:?}. address: {:?}",
+        vote_plan_id, address
+    ));
+
+    let address: chain_addr::Address = address.into();
+    let identifier = match address.kind() {
+        chain_addr::Kind::Account(pubkey) => {
+            let account_id = chain_impl_mockchain::account::Identifier::from(pubkey.clone());
+            chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier::from_single_account(
+                account_id,
+            )
+        }
+        _ => {
+            return Err(warp::reject::custom(GeneralException {
+                summary: "Unexpected address type".to_string(),
+                code: 400,
+            }))
+        }
+    };
+
+    let vote_plan_id: chain_crypto::digest::DigestOf<_, _> = vote_plan_id.into_digest().into();
+
+    if !context_lock.available() {
+        let code = context_lock.state().error_code;
+        context_lock.log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
+    }
+
+    let maybe_vote_plan = context_lock
+        .state()
+        .ledger()
+        .active_vote_plans()
+        .into_iter()
+        .find(|x| x.id == vote_plan_id);
+    let vote_plan = match maybe_vote_plan {
+        Some(vote_plan) => vote_plan,
+        None => {
+            return Err(warp::reject::custom(GeneralException {
+                summary: "Not found".to_string(),
+                code: 404,
+            }))
+        }
+    };
+    let result: Vec<u8> = vote_plan
+        .proposals
+        .into_iter()
+        .enumerate()
+        .filter(|(_, x)| x.votes.contains_key(&identifier))
+        .map(|(i, _)| i as u8)
+        .collect();
+
+    Ok(HandlerResult(Ok(Some(result))))
 }
 
 pub async fn logs_get(context: ContextLock) -> Result<impl Reply, Rejection> {
@@ -381,9 +450,7 @@ pub async fn get_active_vote_plans(context: ContextLock) -> Result<impl Reply, R
         return Err(warp::reject::custom(ForcedErrorCode { code }));
     }
 
-    let vp: Vec<VotePlanStatus> = context
-        .lock()
-        .unwrap()
+    let vp: Vec<VotePlanStatus> = context_lock
         .state()
         .ledger()
         .active_vote_plans()

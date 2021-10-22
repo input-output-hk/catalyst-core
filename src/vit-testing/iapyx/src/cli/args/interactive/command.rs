@@ -5,9 +5,12 @@ use crate::ControllerBuilder;
 use bip39::Type;
 use chain_addr::{AddressReadable, Discrimination};
 use chain_impl_mockchain::block::BlockDate;
+use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_testing_utils::testing::node::RestSettings;
+use jormungandr_testing_utils::wallet::discrimination::DiscriminationExtension;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::str::FromStr;
 use structopt::{clap::AppSettings, StructOpt};
 use thiserror::Error;
 use valgrind::{Proposal, ValgrindClient};
@@ -36,7 +39,7 @@ pub enum IapyxCommand {
     Exit,
     Proposals(Proposals),
     Vote(Vote),
-    Votes,
+    Votes(Votes),
     PendingTransactions,
 }
 
@@ -65,12 +68,22 @@ impl IapyxCommand {
                 }
                 Err(IapyxCommandError::WalletNotRecovered)
             }
-            IapyxCommand::Votes => {
+            IapyxCommand::Votes(votes) => {
                 if let Some(controller) = model.controller.as_mut() {
+                    let vote_plan_id: String = {
+                        if let Some(index) = votes.vote_plan_index {
+                            let funds = controller.funds()?;
+                            funds.chain_vote_plans[index].chain_voteplan_id.to_string()
+                        } else {
+                            votes.vote_plan_id.as_ref().unwrap().to_string()
+                        }
+                    };
+
                     print_delim();
-                    for (id, vote) in controller.active_votes()?.iter().enumerate() {
-                        println!("{}. {}", (id + 1), vote);
-                    }
+                    println!(
+                        "{:?}",
+                        controller.votes_history(Hash::from_str(&vote_plan_id)?)?
+                    );
                     print_delim();
                     return Ok(());
                 }
@@ -150,6 +163,14 @@ impl IapyxCommand {
 }
 
 #[derive(StructOpt, Debug)]
+pub struct Votes {
+    #[structopt(long = "vote-plan-id")]
+    pub vote_plan_id: Option<String>,
+    #[structopt(long = "vote-plan-index", conflicts_with = "vote-plan-id")]
+    pub vote_plan_index: Option<usize>,
+}
+
+#[derive(StructOpt, Debug)]
 pub struct Address {
     /// blocks execution until fragment is in block
     #[structopt(short = "t", long = "testing")]
@@ -159,15 +180,17 @@ pub struct Address {
 impl Address {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         if let Some(controller) = model.controller.as_mut() {
-            let (prefix, discrimination) = {
+            let discrimination = {
                 if self.testing {
-                    ("ta", Discrimination::Test)
+                    Discrimination::Test
                 } else {
-                    ("ca", Discrimination::Production)
+                    Discrimination::Production
                 }
             };
-            let address =
-                AddressReadable::from_address(prefix, &controller.account(discrimination));
+            let address = AddressReadable::from_address(
+                &discrimination.into_prefix(),
+                &controller.account(discrimination),
+            );
             println!("{}", address.to_string());
             return Ok(());
         }
@@ -453,4 +476,6 @@ pub enum IapyxCommandError {
     CannotFindProposal(String),
     #[error(transparent)]
     ControllerBuilder(#[from] crate::controller::ControllerBuilderError),
+    #[error(transparent)]
+    Hash(#[from] chain_crypto::hash::Error),
 }

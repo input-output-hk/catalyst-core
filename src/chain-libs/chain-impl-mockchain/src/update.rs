@@ -105,12 +105,12 @@ impl UpdateState {
         assert!(prev_date < new_date);
 
         let mut proposals: Vec<(&UpdateProposalId, &UpdateProposalState)> =
-            self.proposals.iter().map(|el| el).collect();
+            self.proposals.iter().collect();
 
         // sort proposals by the date
         proposals.sort_by(|(a_id, a_state), (b_id, b_state)| {
             match a_state.proposal_date.cmp(&b_state.proposal_date) {
-                std::cmp::Ordering::Equal => a_id.cmp(&b_id),
+                std::cmp::Ordering::Equal => a_id.cmp(b_id),
                 res => res,
             }
         });
@@ -426,7 +426,6 @@ mod tests {
     use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
     use quickcheck_macros::quickcheck;
-    use std::cmp::Ordering;
     use std::iter;
 
     impl Arbitrary for UpdateProposal {
@@ -784,8 +783,8 @@ mod tests {
             .expect("error while processing proposal");
 
         match first_proposal_id.cmp(&second_proposal_id) {
-            Ordering::Less => assert_eq!(settings.slots_per_epoch, 200),
-            Ordering::Greater => assert_eq!(settings.slots_per_epoch, 100),
+            std::cmp::Ordering::Less => assert_eq!(settings.slots_per_epoch, 200),
+            std::cmp::Ordering::Greater => assert_eq!(settings.slots_per_epoch, 100),
             _ => {}
         }
 

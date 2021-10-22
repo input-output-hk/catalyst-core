@@ -34,5 +34,8 @@ pub fn build_vote(
     leader_secret_key: SecretKey<Ed25519>,
 ) -> SignedUpdateVote {
     let update_vote = UpdateVote::new(proposal_id, BftLeaderId(leader_secret_key.to_public()));
-    SignedUpdateVote::new(signed_new(&leader_secret_key, proposal_id).sig, update_vote)
+    SignedUpdateVote::new(
+        signed_new(&leader_secret_key, update_vote.clone()).sig,
+        update_vote,
+    )
 }

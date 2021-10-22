@@ -414,21 +414,17 @@ impl Readable for UpdateVote {
 
 #[derive(Clone, Debug)]
 pub struct SignedUpdateVote {
-    sign: Signature<UpdateProposalId, Ed25519>,
+    sign: Signature<UpdateVote, Ed25519>,
     vote: UpdateVote,
 }
 
 impl SignedUpdateVote {
-    pub fn new(sign: Signature<UpdateProposalId, Ed25519>, vote: UpdateVote) -> Self {
+    pub fn new(sign: Signature<UpdateVote, Ed25519>, vote: UpdateVote) -> Self {
         Self { sign, vote }
     }
 
     pub fn verify(&self) -> Verification {
-        verify_signature(
-            &self.sign,
-            self.vote.voter_id.as_public_key(),
-            &self.vote.proposal_id,
-        )
+        verify_signature(&self.sign, self.vote.voter_id.as_public_key(), &self.vote)
     }
 }
 
@@ -524,7 +520,7 @@ mod tests {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             let sk: SecretKey<Ed25519> = Arbitrary::arbitrary(g);
             let vote: UpdateVote = Arbitrary::arbitrary(g);
-            let sign = signed_new(&sk, vote.proposal_id).sig;
+            let sign = signed_new(&sk, vote.clone()).sig;
             Self { sign, vote }
         }
     }

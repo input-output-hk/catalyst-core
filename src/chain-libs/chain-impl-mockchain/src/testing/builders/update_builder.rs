@@ -115,11 +115,7 @@ impl UpdateVoteBuilder {
             BftLeaderId(self.voter_secret_key.clone().unwrap().to_public()),
         );
         SignedUpdateVote::new(
-            signed_new(
-                &self.voter_secret_key.clone().unwrap(),
-                self.proposal_id.unwrap(),
-            )
-            .sig,
+            signed_new(&self.voter_secret_key.clone().unwrap(), update_vote.clone()).sig,
             update_vote,
         )
     }

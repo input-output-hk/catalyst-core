@@ -93,7 +93,7 @@ impl Arbitrary for UpdateProposalData {
             .map(|(id, _)| {
                 let update_vote = UpdateVote::new(proposal_id, id.clone());
                 SignedUpdateVote::new(
-                    signed_new(proposer_secret_key, proposal_id).sig,
+                    signed_new(proposer_secret_key, update_vote.clone()).sig,
                     update_vote,
                 )
             })

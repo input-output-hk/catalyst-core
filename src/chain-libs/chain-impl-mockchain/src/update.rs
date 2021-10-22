@@ -10,8 +10,6 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateState {
-    // Note: we use a BTreeMap to ensure that proposals are processed
-    // in a well-defined (sorted) order.
     pub proposals: HashMap<UpdateProposalId, UpdateProposalState>,
 }
 

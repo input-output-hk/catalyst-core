@@ -30,12 +30,8 @@ pub fn build_servicing_station_parameters(
     parameters.set_voting_start(vote_start_timestamp.timestamp());
     parameters.set_voting_tally_start(tally_start_timestamp.timestamp());
     parameters.set_voting_tally_end(tally_end_timestamp.timestamp());
-    parameters.set_next_fund_start_time(input_parameters.next_vote_start_time.unwrap().timestamp());
-
-    if let Some(registration_snapshot_time) = input_parameters.refresh_time {
-        parameters.set_registration_snapshot_time(registration_snapshot_time.timestamp());
-    }
-
+    parameters.set_next_fund_start_time(input_parameters.next_vote_start_time.timestamp());
+    parameters.set_registration_snapshot_time(input_parameters.refresh_time.timestamp());
     parameters.set_fund_id(input_parameters.fund_id);
     parameters.calculate_challenges_total_funds = false;
 

@@ -1,2 +1,2 @@
-//mod persistent_log;
 mod batch;
+mod persistent_log;

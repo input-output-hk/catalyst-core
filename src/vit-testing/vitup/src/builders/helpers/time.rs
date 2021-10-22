@@ -2,6 +2,7 @@ use crate::config::VitStartParameters;
 use crate::config::VoteBlockchainTime;
 use crate::config::VoteTime;
 use chrono::NaiveDateTime;
+use chrono::Utc;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 
 pub fn convert_to_blockchain_date(
@@ -65,5 +66,43 @@ pub fn convert_to_human_date(
             tally_start_timestamp,
             tally_end_timestamp,
         ),
+    }
+}
+
+pub fn default_refresh_date() -> NaiveDateTime {
+    let dt = Utc::now();
+    NaiveDateTime::from_timestamp((dt - chrono::Duration::hours(3)).timestamp(), 0)
+}
+
+pub fn default_next_vote_date() -> NaiveDateTime {
+    let dt = Utc::now();
+    NaiveDateTime::from_timestamp((dt + chrono::Duration::days(30)).timestamp(), 0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn time_test() {
+        let block0_date = SecondsSinceUnixEpoch::now();
+        let mut parameters = VitStartParameters::default();
+
+        let vote_time = VoteTime::real_from_str(
+            "2021-10-06 11:00:00",
+            "2021-10-06 18:00:00",
+            "2021-10-07 09:00:00",
+        )
+        .unwrap();
+
+        parameters.slot_duration = 10;
+        parameters.vote_time = vote_time.clone();
+        println!("Before {:#?}", vote_time);
+        let blockchain_time = convert_to_blockchain_date(&parameters, block0_date);
+        parameters.vote_time = VoteTime::Blockchain(blockchain_time);
+        println!(
+            "After {:#?}",
+            convert_to_human_date(&parameters, block0_date)
+        );
     }
 }

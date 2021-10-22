@@ -1,5 +1,6 @@
 use super::mode::{parse_mode_from_str, Mode};
 use crate::builders::utils::io::read_initials;
+use crate::builders::{default_next_vote_date, default_refresh_date};
 pub use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
 use crate::config::Initials;
 use crate::config::VoteTime;
@@ -230,8 +231,14 @@ impl QuickStartCommandArgs {
 
         quick_setup
             .vote_timing(vote_timing)
-            .next_vote_timestamp(self.next_vote_timestamp)
-            .refresh_timestamp(self.snapshot_timestamp)
+            .next_vote_timestamp_from_string_or_default(
+                self.next_vote_timestamp,
+                default_refresh_date(),
+            )
+            .refresh_timestamp_from_string_or_default(
+                self.snapshot_timestamp,
+                default_next_vote_date(),
+            )
             .slot_duration_in_seconds(self.slot_duration)
             .proposals_count(self.proposals)
             .voting_power(self.voting_power)

@@ -1,6 +1,7 @@
 use assert_fs::TempDir;
 use valgrind::{Protocol, ValgrindClient};
 
+use crate::data::{challenges_eq, funds_eq, proposals_eq, reviews_eq, vitup_setup};
 use std::path::PathBuf;
 use std::str::FromStr;
 use vit_servicing_station_tests::common::data::parse_challenges;
@@ -8,9 +9,8 @@ use vit_servicing_station_tests::common::data::parse_funds;
 use vit_servicing_station_tests::common::data::parse_proposals;
 use vit_servicing_station_tests::common::data::parse_reviews;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
-
-use crate::data::{challenges_eq, funds_eq, proposals_eq, reviews_eq, vitup_setup};
 use vitup::builders::VitBackendSettingsBuilder;
+use vitup::builders::{default_next_vote_date, default_refresh_date};
 use vitup::config::VoteBlockchainTime;
 use vitup::scenario::network::setup_network;
 
@@ -55,8 +55,8 @@ pub fn public_vote_multiple_vote_plans() {
     quick_setup
         .vote_timing(vote_timing.into())
         .fund_id(expected_fund.id)
-        .next_vote_timestamp(Some("2022-01-01 10:00:00".to_owned()))
-        .refresh_timestamp(Some("2021-01-01 10:00:00".to_owned()))
+        .next_vote_timestamp(default_next_vote_date())
+        .refresh_timestamp(default_refresh_date())
         .slot_duration_in_seconds(2)
         .proposals_count(expected_proposals.len() as u32)
         .challenges_count(expected_challenges.len())

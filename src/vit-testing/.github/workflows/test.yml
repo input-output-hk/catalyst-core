@@ -83,6 +83,10 @@ jobs:
           submodules: true
 
       - name: Fetch dependencies and update cargo registry
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
         run: cargo fetch --locked
 
   build_disruption_mock:
@@ -114,10 +118,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          profile: minimal
           override: true
-          default: true
-          components: rustfmt, clippy
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -134,10 +135,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          profile: minimal
           override: true
-          default: true
-          components: rustfmt, clippy
 
       - name: Checkout code
         uses: actions/checkout@v2

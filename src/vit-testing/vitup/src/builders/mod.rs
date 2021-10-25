@@ -25,8 +25,7 @@ pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
 use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
-    ActiveSlotCoefficient, ConsensusVersion, ContextChaCha, Controller, KesUpdateSpeed, Milli,
-    NumberOfSlotsPerEpoch, SlotDuration, Topology,
+    ConsensusVersion, ContextChaCha, Controller, NumberOfSlotsPerEpoch, SlotDuration, Topology,
 };
 use jormungandr_testing_utils::testing::network::{Blockchain, Node, WalletTemplate};
 use jormungandr_testing_utils::wallet::LinearFee;
@@ -286,16 +285,12 @@ impl VitBackendSettingsBuilder {
         let vote_blockchain_time =
             convert_to_blockchain_date(&self.config.params, self.block0_date);
 
-        let mut blockchain = Blockchain::new(
-            ConsensusVersion::Bft,
-            NumberOfSlotsPerEpoch::new(vote_blockchain_time.slots_per_epoch)
-                .expect("valid number of slots per epoch"),
-            SlotDuration::new(self.config.params.slot_duration)
-                .expect("valid slot duration in seconds"),
-            KesUpdateSpeed::new(46800).expect("valid kes update speed in seconds"),
-            ActiveSlotCoefficient::new(Milli::from_millis(700))
-                .expect("active slot coefficient in millis"),
+        let mut blockchain = Blockchain::default();
+        blockchain.set_consensus(ConsensusVersion::Bft);
+        blockchain.set_slots_per_epoch(
+            NumberOfSlotsPerEpoch::new(vote_blockchain_time.slots_per_epoch).unwrap(),
         );
+        blockchain.set_slot_duration(SlotDuration::new(self.config.params.slot_duration).unwrap());
 
         println!("building topology..");
 

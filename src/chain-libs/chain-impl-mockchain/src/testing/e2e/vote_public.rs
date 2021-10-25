@@ -516,3 +516,77 @@ pub fn votes_with_fees() {
         .info("total value is the same")
         .total_value_is(&expected_ada_after);
 }
+
+#[test]
+pub fn voting_consistency() {
+    let favorable = Choice::new(1);
+
+    let (mut ledger, controller) = prepare_scenario()
+        .with_config(ConfigBuilder::new())
+        .with_initials(vec![wallet(ALICE).with(1_000).committee_member()])
+        .with_vote_plans(vec![vote_plan(VOTE_PLAN)
+            .owner(ALICE)
+            .consecutive_epoch_dates()
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_off_chain(),
+            )
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_off_chain(),
+            )
+            .with_proposal(
+                proposal(VoteTestGen::external_proposal_id())
+                    .options(3)
+                    .action_off_chain(),
+            )])
+        .build()
+        .unwrap();
+
+    let mut alice = controller.wallet(ALICE).unwrap();
+    let vote_plan = controller.vote_plan(VOTE_PLAN).unwrap();
+
+    controller
+        .cast_vote_public(
+            &alice,
+            &vote_plan,
+            &vote_plan.proposal(0).id(),
+            favorable,
+            &mut ledger,
+        )
+        .unwrap();
+    alice.confirm_transaction();
+    controller
+        .cast_vote_public(
+            &alice,
+            &vote_plan,
+            &vote_plan.proposal(1).id(),
+            favorable,
+            &mut ledger,
+        )
+        .unwrap();
+    alice.confirm_transaction();
+    controller
+        .cast_vote_public(
+            &alice,
+            &vote_plan,
+            &vote_plan.proposal(2).id(),
+            favorable,
+            &mut ledger,
+        )
+        .unwrap();
+    alice.confirm_transaction();
+    ledger.fast_forward_to(BlockDate {
+        epoch: 1,
+        slot_id: 1,
+    });
+
+    LedgerStateVerifier::new(ledger.into())
+        .info("votes history")
+        .votes()
+        .gvien_wallet(&alice)
+        .for_vote_plan(&vote_plan)
+        .votes_were_casted_on_proposals(vec![0u8, 1u8, 2u8]);
+}

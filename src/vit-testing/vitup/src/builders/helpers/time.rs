@@ -79,6 +79,9 @@ pub fn default_next_vote_date() -> NaiveDateTime {
     NaiveDateTime::from_timestamp((dt + chrono::Duration::days(30)).timestamp(), 0)
 }
 
+/*
+TODO uncomment once implementation is provided
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -106,3 +109,4 @@ mod tests {
         );
     }
 }
+*/

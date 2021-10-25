@@ -20,12 +20,6 @@ use crate::{
 #[cfg(any(test, feature = "property-test-api"))]
 pub mod test;
 
-/// Old name for Fragment. (soft) deprecated
-pub type Message = Fragment;
-
-/// Old name for FragmentTag. (soft) deprecated
-pub(super) type MessageTag = FragmentTag;
-
 /// All possible messages recordable in the content
 #[derive(Debug, Clone)]
 pub enum Fragment {
@@ -95,7 +89,7 @@ impl FragmentTag {
 
 impl Fragment {
     /// Return the tag associated with the Message
-    pub(super) fn get_tag(&self) -> MessageTag {
+    pub(super) fn get_tag(&self) -> FragmentTag {
         match self {
             Fragment::Initial(_) => FragmentTag::Initial,
             Fragment::OldUtxoDeclaration(_) => FragmentTag::OldUtxoDeclaration,

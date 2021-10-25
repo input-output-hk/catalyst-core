@@ -133,12 +133,12 @@ pub fn update_vote_is_not_allowed_in_block0() {
 
     let signed_update_proposal = SignedProposalBuilder::new()
         .with_proposal_update(update_proposal)
-        .with_proposer_id(leader_pair.id())
+        .with_proposer_secret_key(leader_pair.key())
         .build();
 
     let fragment = Fragment::UpdateProposal(signed_update_proposal);
 
-    let signed_update_vote = build_vote(fragment.id(), leader_pair.id());
+    let signed_update_vote = build_vote(fragment.id(), leader_pair.key());
 
     let fragment = Fragment::UpdateVote(signed_update_vote);
 
@@ -162,7 +162,7 @@ pub fn update_proposal_is_not_allowed_in_block0() {
         .build();
     let signed_update_proposal = SignedProposalBuilder::new()
         .with_proposal_update(update_proposal)
-        .with_proposer_id(leader_pair.id())
+        .with_proposer_secret_key(leader_pair.key())
         .build();
 
     let fragment = Fragment::UpdateProposal(signed_update_proposal);

@@ -6,14 +6,14 @@ use crate::data::AdvisorReview;
 use crate::data::Challenge;
 use crate::Fund;
 use crate::Proposal;
-use crate::SimpleVoteStatus;
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::config::Block0Date;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use chain_impl_mockchain::key::Hash;
 use chain_ser::deser::Deserialize;
-use jormungandr_lib::interfaces::AccountIdentifier;
+use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::FragmentStatus;
+use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, VotePlanStatus};
 use jormungandr_testing_utils::testing::node::Explorer;
 use std::collections::HashMap;
@@ -163,11 +163,18 @@ impl ValgrindClient {
         }))
     }
 
-    pub fn vote_statuses(
+    pub fn active_vote_plan(&self) -> Result<Vec<VotePlanStatus>, Error> {
+        self.node_client.vote_plan_statuses().map_err(Into::into)
+    }
+
+    pub fn votes_history(
         &self,
-        _identifier: AccountIdentifier,
-    ) -> Result<Vec<SimpleVoteStatus>, Error> {
-        unimplemented!()
+        address: Address,
+        vote_plan_id: VotePlanId,
+    ) -> Result<Option<Vec<u8>>, Error> {
+        self.node_client
+            .account_votes(vote_plan_id, address)
+            .map_err(Into::into)
     }
 
     pub fn settings(&self) -> Result<Settings, Error> {

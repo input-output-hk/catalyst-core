@@ -89,7 +89,11 @@ async fn main() {
             server_stub.http_node_address(),
         ));
 
-        root.and(fragments)
+        let votes = warp::path!("votes" / "plan" / ..).and(reverse_proxy_filter(
+            "".to_string(),
+            server_stub.http_node_address(),
+        ));
+        root.and(fragments.or(votes))
     };
 
     let vit_version = warp::path!("vit-version").and(reverse_proxy_filter(

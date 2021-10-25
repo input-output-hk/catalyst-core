@@ -132,7 +132,7 @@ impl Controller {
         self.backend.funds().map_err(Into::into)
     }
 
-    pub fn settings(&self) -> Result<Settings, ControllerError> {
+    pub fn settings(&self) -> Result<SettingsDto, ControllerError> {
         self.backend.settings().map_err(Into::into)
     }
 

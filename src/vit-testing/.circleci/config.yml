@@ -2,14 +2,14 @@ version: 2.1
 executors:
   rust-stable:
     docker:
-      - image: 'cimg/rust:1.55.0-node'
+      - image: 'cimg/rust:1.56.0-node'
     working_directory: /home/circleci/build
     resource_class: xlarge
 jobs:
   build_all_targets:
     description: Builds all test features
     docker:
-      - image: 'cimg/rust:1.55.0-node'
+      - image: 'cimg/rust:1.56.0-node'
     parameters:
       mode:
         type: string
@@ -34,11 +34,11 @@ jobs:
           no_output_timeout: 60m
           environment:
             RUST_BACKTRACE: 1
-          command: cargo test --all-features --no-run --jobs 1
+          command: cargo test --all-features --no-run --jobs 1 -- --test-threads 1
   vitup_test:
     description: Steps for the vitup unit test jobs
     docker:
-      - image: 'cimg/rust:1.55.0-node'
+      - image: 'cimg/rust:1.56.0-node'
     parameters:
       mode:
         type: string

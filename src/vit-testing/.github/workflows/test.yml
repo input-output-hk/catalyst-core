@@ -118,10 +118,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          profile: minimal
           override: true
-          default: true
-          components: rustfmt, clippy
 
       - name: Checkout code
         uses: actions/checkout@v2
@@ -138,10 +135,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          profile: minimal
           override: true
-          default: true
-          components: rustfmt, clippy
 
       - name: Checkout code
         uses: actions/checkout@v2

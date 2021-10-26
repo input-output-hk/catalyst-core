@@ -1,4 +1,4 @@
-use crate::common::{load::build_load_config, vitup_setup};
+use crate::common::{load::build_load_config_count, vitup_setup};
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
 use catalyst_toolbox::recovery::Replay;
@@ -21,14 +21,15 @@ pub fn persistent_log_contains_all_sent_votes() {
     let endpoint = "127.0.0.1:8080";
 
     let version = "2.0";
-    let no_of_threads = 2;
-    let batch_size = 10;
-    let no_of_wallets = 1;
+    let no_of_threads = 1;
+    let number_requests_to_per_threads = 50;
+    let batch_size = 20;
+    let no_of_wallets = 100;
 
     let vote_timing = VoteBlockchainTime {
-        vote_start: 0,
-        tally_start: 1,
-        tally_end: 2,
+        vote_start: 1,
+        tally_start: 2,
+        tally_end: 3,
         slots_per_epoch: 60,
     };
 
@@ -41,7 +42,6 @@ pub fn persistent_log_contains_all_sent_votes() {
         .voting_power(31_000)
         .private(false);
 
-    let setup_parameters = quick_setup.parameters().clone();
     let mut template_generator = ArbitraryValidVotingTemplateGenerator::new();
     let (mut vit_controller, mut controller, vit_parameters, fund_name) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
@@ -60,14 +60,18 @@ pub fn persistent_log_contains_all_sent_votes() {
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
     qr_codes_folder.push("vit_backend/qr-codes");
 
-    let config = build_load_config(
+    let config = build_load_config_count(
         endpoint,
         qr_codes_folder,
         no_of_threads,
+        number_requests_to_per_threads,
+        1000,
         batch_size,
-        setup_parameters,
     );
     let iapyx_load = NodeLoad::new(config);
+
+    vote_timing.wait_for_vote_start(nodes.get(0).unwrap().rest());
+
     if let Some(benchmark) = iapyx_load.start().unwrap() {
         assert!(benchmark.status() == Status::Green, "too low efficiency");
     }

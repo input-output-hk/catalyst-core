@@ -1,7 +1,6 @@
 use crate::common::{iapyx_from_secret_key, vitup_setup};
 use assert_fs::TempDir;
 use chain_impl_mockchain::vote::Choice;
-use iapyx::utils::valid_until::ValidUntil;
 use jormungandr_lib::interfaces::FragmentStatus;
 use jormungandr_testing_utils::testing::node::time;
 use valgrind::Protocol;
@@ -64,18 +63,14 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
         .map(|proposal| (proposal, Choice::new(0)))
         .collect();
 
-    let valid_until = ValidUntil::BySlotShift(5);
-    let expiry_date = valid_until
-        .into_expiry_date(Some(alice.settings().unwrap()))
-        .unwrap();
     let fragment_ids = alice
-        .votes_batch(votes_data, &ValidUntil::BySlotShift(5))
+        .votes_batch(votes_data)
         .unwrap()
         .iter()
         .map(|item| item.to_string())
         .collect();
 
-    time::wait_for_date(expiry_date.into(), nodes[0].rest());
+    time::wait_for_epoch(1, nodes[0].rest());
 
     let statuses = nodes[0].rest().fragments_statuses(fragment_ids).unwrap();
 

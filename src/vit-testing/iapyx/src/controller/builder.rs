@@ -1,12 +1,15 @@
 use crate::utils::bech32::read_bech32;
+use crate::utils::expiry;
 use crate::Controller;
 use crate::Wallet;
 use bech32::FromBase32;
 use bip39::Type;
 use catalyst_toolbox::kedqr::KeyQrCode;
+use jormungandr_testing_utils::testing::node::RestError;
 use std::convert::TryInto;
 use std::path::Path;
 use thiserror::Error;
+use valgrind::SettingsExtensions;
 use valgrind::ValgrindClient;
 use valgrind::ValgrindSettings;
 use wallet::Settings;
@@ -34,13 +37,13 @@ impl ControllerBuilder {
         backend_settings: ValgrindSettings,
     ) -> Result<Self, Error> {
         let backend = ValgrindClient::new(proxy_address.into(), backend_settings);
-        self.settings = Some(backend.settings()?);
+        self.settings = Some(backend.settings()?.into_wallet_settings());
         self.backend = Some(backend);
         Ok(self)
     }
 
     pub fn from_client(mut self, backend: ValgrindClient) -> Result<Self, Error> {
-        self.settings = Some(backend.settings()?);
+        self.settings = Some(backend.settings()?.into_wallet_settings());
         self.backend = Some(backend);
         Ok(self)
     }
@@ -87,10 +90,15 @@ impl ControllerBuilder {
     }
 
     pub fn build(self) -> Result<Controller, Error> {
+        let backend = self.backend.ok_or(Error::WalletNotDefined)?;
+
         Ok(Controller {
-            backend: self.backend.ok_or(Error::WalletNotDefined)?,
+            backend: backend.clone(),
             wallet: self.wallet.ok_or(Error::BackendNotDefined)?,
             settings: self.settings.ok_or(Error::SettingsNotDefined)?,
+            block_date_generator: expiry::default_block_date_generator(
+                &backend.node_client().settings()?,
+            ),
         })
     }
 }
@@ -112,4 +120,6 @@ pub enum Error {
     Bech32(#[from] bech32::Error),
     #[error("time error")]
     TimeError(#[from] wallet::time::Error),
+    #[error(transparent)]
+    Rest(#[from] RestError),
 }

@@ -38,3 +38,5 @@ serde_json = "1.0.53"
 [features]
 load-tests = []
 soak-tests = []
+# tests which requires external components deployed on testnet network
+testnet-tests = []

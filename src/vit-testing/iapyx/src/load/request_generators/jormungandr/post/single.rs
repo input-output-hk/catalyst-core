@@ -1,13 +1,15 @@
 use crate::load::{MultiController, MultiControllerError};
-use crate::utils::valid_until::ValidUntil;
+use crate::utils::expiry;
 use crate::Wallet;
 use chain_impl_mockchain::fragment::FragmentId;
+use jormungandr_testing_utils::testing::BlockDateGenerator;
 use jormungandr_testing_utils::testing::VoteCastCounter;
 use jortestkit::load::{Request, RequestFailure, RequestGenerator};
 use rand::seq::SliceRandom;
 use rand_core::OsRng;
 use std::time::Instant;
 use valgrind::Proposal;
+use valgrind::SettingsExtensions;
 use wallet::Settings;
 use wallet_core::Choice;
 
@@ -19,6 +21,7 @@ pub struct WalletRequestGen {
     wallet_index: usize,
     update_account_before_vote: bool,
     vote_cast_counter: VoteCastCounter,
+    block_date_generator: BlockDateGenerator,
     settings: Settings,
 }
 
@@ -53,7 +56,8 @@ impl WalletRequestGen {
             update_account_before_vote,
             vote_cast_counter,
             rand: OsRng,
-            settings,
+            settings: settings.clone().into_wallet_settings(),
+            block_date_generator: expiry::default_block_date_generator(&settings),
         })
     }
 
@@ -65,8 +69,6 @@ impl WalletRequestGen {
             }
             self.wallet_index
         };
-
-        let valid_until = ValidUntil::BySlotShift(10);
 
         // update state of wallet only before first vote.
         // Then relay on mechanism of spending counter auto-update
@@ -86,8 +88,8 @@ impl WalletRequestGen {
             index,
             proposal,
             choice,
-            valid_until.into_expiry_date(Some(self.settings.clone()))?,
-        ) // TODO: this will produce valid transactions only up to the first epoch
+            self.block_date_generator.block_date(),
+        )
     }
 }
 
@@ -111,6 +113,7 @@ impl RequestGenerator for WalletRequestGen {
             update_account_before_vote: self.update_account_before_vote,
             vote_cast_counter: self.vote_cast_counter.clone(),
             settings: self.settings.clone(),
+            block_date_generator: self.block_date_generator.clone(),
         };
 
         (self, Some(new_gen))

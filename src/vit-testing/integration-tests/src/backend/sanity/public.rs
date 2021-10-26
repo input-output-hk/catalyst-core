@@ -49,6 +49,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
             },
         ]))
         .slot_duration_in_seconds(2)
+        .vote_timing(vote_timing.into())
         .proposals_count(300)
         .voting_power(8_000)
         .private(false);
@@ -69,7 +70,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     .unwrap();
 
     let leader_1 = &nodes[0];
-    let wallet_node = &nodes[4];
+    let wallet_node = &nodes[3];
     let mut committee = controller.wallet("committee_1").unwrap();
 
     let mut qr_codes_folder = testing_directory.path().to_path_buf();
@@ -86,31 +87,7 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     let fund1_vote_plan = &controller.vote_plans()[0];
     let fund2_vote_plan = &controller.vote_plans()[1];
 
-    // start voting
-    david
-        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
-        .unwrap();
-
-    let mut edgar = iapyx_from_qr(&edgar_qr_code, PIN, &wallet_proxy).unwrap();
-
-    edgar
-        .vote_for(fund2_vote_plan.id(), 0, Vote::Yes as u8, Default::default())
-        .unwrap();
-
-    let mut filip = iapyx_from_qr(&filip_qr_code, PIN, &wallet_proxy).unwrap();
-
-    filip
-        .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8, Default::default())
-        .unwrap();
-
-    let target_date = BlockDate {
-        epoch: 1,
-        slot_id: 5,
-    };
-    time::wait_for_date(target_date.into(), leader_1.rest());
-
     let settings = wallet_node.rest().settings().unwrap();
-
     let block_date_generator = BlockDateGenerator::rolling(
         &settings,
         BlockDate {
@@ -119,6 +96,29 @@ pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
         },
         false,
     );
+
+    // start voting
+    david
+        .vote_for(fund1_vote_plan.id(), 0, Vote::Yes as u8)
+        .unwrap();
+
+    let mut edgar = iapyx_from_qr(&edgar_qr_code, PIN, &wallet_proxy).unwrap();
+
+    edgar
+        .vote_for(fund2_vote_plan.id(), 0, Vote::Yes as u8)
+        .unwrap();
+
+    let mut filip = iapyx_from_qr(&filip_qr_code, PIN, &wallet_proxy).unwrap();
+
+    filip
+        .vote_for(fund1_vote_plan.id(), 0, Vote::No as u8)
+        .unwrap();
+
+    let target_date = BlockDate {
+        epoch: 1,
+        slot_id: 5,
+    };
+    time::wait_for_date(target_date.into(), leader_1.rest());
 
     let fragment_sender = FragmentSender::new(
         Hash::from_str(&settings.block0_hash).unwrap().into(),

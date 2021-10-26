@@ -1,12 +1,14 @@
 use crate::load::{MultiController, MultiControllerError};
-use crate::utils::valid_until::ValidUntil;
+use crate::utils::expiry;
 use crate::Wallet;
+use jormungandr_testing_utils::testing::BlockDateGenerator;
 use jormungandr_testing_utils::testing::VoteCastCounter;
 use jortestkit::load::{Id, Request, RequestFailure, RequestGenerator};
 use rand::RngCore;
 use rand_core::OsRng;
 use std::time::Instant;
 use valgrind::Proposal;
+use valgrind::SettingsExtensions;
 use wallet::Settings;
 use wallet_core::Choice;
 
@@ -20,6 +22,7 @@ pub struct BatchWalletRequestGen {
     wallet_index: usize,
     update_account_before_vote: bool,
     vote_cast_counter: VoteCastCounter,
+    block_date_generator: BlockDateGenerator,
     settings: Settings,
 }
 
@@ -59,7 +62,8 @@ impl BatchWalletRequestGen {
             wallet_index: 0,
             update_account_before_vote,
             vote_cast_counter,
-            settings,
+            settings: settings.clone().into_wallet_settings(),
+            block_date_generator: expiry::default_block_date_generator(&settings),
         })
     }
 
@@ -84,8 +88,6 @@ impl BatchWalletRequestGen {
                     wallet.spending_counter() == 0
                 });
         }
-
-        let valid_until = ValidUntil::BySlotShift(10);
 
         let batch_size = self.batch_size;
         let options = self.options.clone();
@@ -123,7 +125,7 @@ impl BatchWalletRequestGen {
                 wallet_index,
                 self.use_v1,
                 proposals.iter().zip(choices).collect(),
-                &valid_until.into_expiry_date(Some(self.settings.clone()))?,
+                &self.block_date_generator.block_date(),
             )
             .map(|x| {
                 x.into_iter()
@@ -155,6 +157,7 @@ impl RequestGenerator for BatchWalletRequestGen {
             update_account_before_vote: self.update_account_before_vote,
             vote_cast_counter: self.vote_cast_counter.clone(),
             settings: self.settings.clone(),
+            block_date_generator: self.block_date_generator.clone(),
         };
 
         (self, Some(new_gen))

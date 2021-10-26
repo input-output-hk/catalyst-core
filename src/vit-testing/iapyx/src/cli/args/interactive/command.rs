@@ -1,6 +1,6 @@
 use super::WalletState;
 use crate::cli::args::interactive::UserInteractionContoller;
-use crate::utils::valid_until::ValidUntil;
+use crate::utils::expiry;
 use crate::ControllerBuilder;
 use bip39::Type;
 use chain_addr::{AddressReadable, Discrimination};
@@ -229,22 +229,25 @@ pub struct SingleVote {
     #[structopt(short = "p", long = "id")]
     pub proposal_id: String,
 
-    // transaction expiry time
+    // transaction expiry fixed  time
     #[structopt(long)]
     pub valid_until_fixed: Option<BlockDate>,
 
-    // transaction expiry time
+    // transaction expiry shifted time
     #[structopt(long, conflicts_with = "valid-until-fixed")]
-    pub valid_until_shift: Option<u32>,
+    pub valid_until_shift: Option<BlockDate>,
 }
 
 impl SingleVote {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         if let Some(controller) = model.controller.as_mut() {
             let proposals = controller.get_proposals()?;
-            let valid_until =
-                &ValidUntil::from_block_or_shift(self.valid_until_fixed, self.valid_until_shift)
-                    .ok_or(IapyxCommandError::NoValidUntilDefined)?;
+            let block_date_generator = expiry::from_block_or_shift(
+                self.valid_until_fixed,
+                self.valid_until_shift,
+                &controller.settings()?,
+            );
+            controller.set_block_date_generator(block_date_generator);
 
             let proposal = proposals
                 .iter()
@@ -255,7 +258,7 @@ impl SingleVote {
                 .0
                 .get(&self.choice)
                 .ok_or_else(|| IapyxCommandError::WrongChoice(self.choice.clone()))?;
-            controller.vote(proposal, Choice::new(*choice), valid_until)?;
+            controller.vote(proposal, Choice::new(*choice))?;
             return Ok(());
         }
         Err(IapyxCommandError::WalletNotRecovered)
@@ -274,21 +277,24 @@ pub struct BatchOfVotes {
 
     // transaction expiry time
     #[structopt(long, conflicts_with = "valid-until-fixed")]
-    pub valid_until_shift: Option<u32>,
+    pub valid_until_shift: Option<BlockDate>,
 }
 
 impl BatchOfVotes {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         if let Some(controller) = model.controller.as_mut() {
-            let valid_until =
-                &ValidUntil::from_block_or_shift(self.valid_until_fixed, self.valid_until_shift)
-                    .ok_or(IapyxCommandError::NoValidUntilDefined)?;
+            let block_date_generator = expiry::from_block_or_shift(
+                self.valid_until_fixed,
+                self.valid_until_shift,
+                &controller.settings()?,
+            );
+            controller.set_block_date_generator(block_date_generator);
 
             let choices = self.zip_into_batch_input_data(
                 serde_json::from_str(&self.choices)?,
                 controller.get_proposals()?,
             )?;
-            controller.votes_batch(choices.iter().map(|(p, c)| (p, *c)).collect(), valid_until)?;
+            controller.votes_batch(choices.iter().map(|(p, c)| (p, *c)).collect())?;
             return Ok(());
         }
         Err(IapyxCommandError::WalletNotRecovered)

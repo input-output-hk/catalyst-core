@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Tuple, Generator, TextIO, Union
+from typing import Dict, Optional, List, Tuple, Generator, TextIO, Union, Any, Set
 
 import sys
 import asyncio
@@ -11,6 +11,7 @@ from collections import namedtuple
 import pydantic
 import httpx
 import typer
+import yaml
 
 # VIT servicing station models
 
@@ -57,7 +58,7 @@ class TallyResult(pydantic.BaseModel):
 
 
 class DecryptedTally(pydantic.BaseModel):
-    decrypted: TallyResult
+    Decrypted: TallyResult
 
 
 class PrivateTallyState(pydantic.BaseModel):
@@ -70,7 +71,7 @@ class PrivateTally(pydantic.BaseModel):
     @property
     def results(self):
         try:
-            return self.Private.state.decrypted.result.results
+            return self.Private.state.Decrypted.result.results
         except AttributeError:
             return None
 
@@ -162,6 +163,11 @@ def get_proposals_voteplans_and_challenges_from_files(
     return proposals, voteplan_proposals, challeges
 
 
+def get_excluded_proposals_from_file(excluded_proposals_path: str) -> List[str]:
+    with open(excluded_proposals_path, encoding="utf-8") as f:
+        return json.load(f)
+
+
 # API loaders
 
 
@@ -194,7 +200,7 @@ async def get_challenges_from_api(vit_servicing_station_url: str) -> List[Challe
 
 async def get_proposals_voteplans_and_challenges_from_api(
     vit_servicing_station_url: str,
-) -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus]]:
+) -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus], Dict[str, Challenge]]:
     proposals_task = asyncio.create_task(
         get_proposals_from_api(vit_servicing_station_url)
     )
@@ -205,7 +211,9 @@ async def get_proposals_voteplans_and_challenges_from_api(
         get_challenges_from_api(vit_servicing_station_url)
     )
 
-    proposals = {proposal.proposal_id: proposal for proposal in await proposals_task}
+    proposals = {
+        proposal.chain_proposal_id: proposal for proposal in await proposals_task
+    }
     voteplans_proposals = {
         proposal.proposal_id: proposal
         for proposal in itertools.chain.from_iterable(
@@ -215,6 +223,11 @@ async def get_proposals_voteplans_and_challenges_from_api(
     challenges = {challenge.id: challenge for challenge in await challenges_task}
 
     return proposals, voteplans_proposals, challenges
+
+
+def load_block0_data(block0_path: str) -> Dict[str, Any]:
+    with open(block0_path, encoding="utf8") as f:
+        return yaml.load(f, Loader=yaml.FullLoader)
 
 
 # Checkers
@@ -242,20 +255,30 @@ def sanity_check_data(
 
 
 def extract_yes_no_votes(proposal: Proposal, voteplan_proposal: ProposalStatus):
+    blank_index = proposal.chain_vote_options["blank"]
     yes_index = proposal.chain_vote_options["yes"]
     no_index = proposal.chain_vote_options["no"]
     # we check before if tally is available, so it should be safe to direct access the data
+    blank_result = voteplan_proposal.tally.results[blank_index]  # type: ignore
     yes_result = voteplan_proposal.tally.results[yes_index]  # type: ignore
     no_result = voteplan_proposal.tally.results[no_index]  # type: ignore
-    return yes_result, no_result
+    return blank_result, yes_result, no_result
 
 
 def calc_approval_threshold(
-    proposal: Proposal, voteplan_proposal: ProposalStatus, threshold: float
+    proposal: Proposal,
+    voteplan_proposal: ProposalStatus,
+    threshold: float,
+    total_stake_threshold: float,
 ) -> Tuple[int, bool]:
-    yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
+    blank_result, yes_result, no_result = extract_yes_no_votes(
+        proposal, voteplan_proposal
+    )
+    total_stake = blank_result + yes_result + no_result
+    pass_total_threshold = total_stake >= total_stake_threshold
     diff = yes_result - no_result
-    success = diff >= (no_result * threshold)
+    pass_relative_threshold = (yes_result / no_result) >= threshold
+    success = pass_total_threshold and pass_relative_threshold
     return diff, success
 
 
@@ -263,11 +286,15 @@ def calc_vote_difference_and_threshold_success(
     proposals: Dict[str, Proposal],
     voteplan_proposals: Dict[str, ProposalStatus],
     threshold: float,
+    total_stake_threshold: float,
 ) -> Dict[str, Tuple[int, bool]]:
     full_ids = set(proposals.keys())
     result = {
         proposal_id: calc_approval_threshold(
-            proposals[proposal_id], voteplan_proposals[proposal_id], threshold
+            proposals[proposal_id],
+            voteplan_proposals[proposal_id],
+            threshold,
+            total_stake_threshold,
         )
         for proposal_id in full_ids
     }
@@ -288,8 +315,6 @@ Result = namedtuple(
         "status",
         "fund_depletion",
         "not_funded_reason",
-        "ada_to_be_payed",
-        "lovelace_to_be_payed",
         "link_to_ideascale",
     ),
 )
@@ -299,11 +324,11 @@ def calc_results(
     proposals: Dict[str, Proposal],
     voteplan_proposals: Dict[str, ProposalStatus],
     fund: float,
-    conversion_factor: float,
     threshold: float,
+    total_stake_threshold: float,
 ) -> List[Result]:
     success_results = calc_vote_difference_and_threshold_success(
-        proposals, voteplan_proposals, threshold
+        proposals, voteplan_proposals, threshold, total_stake_threshold
     )
     sorted_ids = sorted(
         success_results.keys(), key=lambda x: success_results[x][0], reverse=True
@@ -314,7 +339,7 @@ def calc_results(
         proposal = proposals[proposal_id]
         voteplan_proposal = voteplan_proposals[proposal_id]
         total_result, threshold_success = success_results[proposal_id]
-        yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
+        blank, yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
         funded = all(
             (threshold_success, depletion > 0, depletion >= proposal.proposal_funds)
         )
@@ -331,8 +356,6 @@ def calc_results(
         if funded:
             depletion -= proposal.proposal_funds
 
-        ada_to_be_payed = proposal.proposal_funds / conversion_factor if funded else 0
-
         result = Result(
             proposal_id=proposal_id,
             proposal=proposal.proposal_title,
@@ -345,8 +368,6 @@ def calc_results(
             status=FUNDED if funded else NOT_FUNDED,
             fund_depletion=depletion,
             not_funded_reason=not_funded_reason,
-            ada_to_be_payed=ada_to_be_payed,
-            lovelace_to_be_payed=ada_to_be_payed * LOVELACE_FACTOR,
             link_to_ideascale=proposal.proposal_url,
         )
 
@@ -361,7 +382,7 @@ def filter_data_by_challenge(
     voteplan_proposals: Dict[str, ProposalStatus],
 ) -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus]]:
     proposals = {
-        proposal.proposal_id: proposal
+        proposal.chain_proposal_id: proposal
         for proposal in proposals.values()
         if proposal.challenge_id == challenge_id
     }
@@ -371,6 +392,23 @@ def filter_data_by_challenge(
         if voteplan.proposal_id in proposals
     }
     return proposals, voteplans
+
+
+def filter_excluded_proposals(
+    proposals: Dict[str, Proposal], excluded: Set[str]
+) -> Dict[str, Proposal]:
+    return {
+        k: v
+        for k, v in proposals.items()
+        if all(_id not in excluded for _id in (v.proposal_id, v.chain_proposal_id))
+    }
+
+
+def calculate_total_stake_from_block0_configuration(block0_config: Dict[str, Dict]):
+    funds = (
+        initial["fund"] for initial in block0_config["initial"] if "fund" in initial
+    )
+    return sum(fund["value"] for fund in itertools.chain.from_iterable(funds))
 
 
 # Output results
@@ -407,11 +445,13 @@ class OutputFormat(enum.Enum):
 
 
 def calculate_rewards(
-    conversion_factor: float = typer.Option(...),
     output_file: str = typer.Option(...),
-    approval_threshold: float = typer.Option(0.15),
+    block0_path: str = typer.Option(...),
+    total_stake_threshold: float = typer.Option(0.01),
+    approval_threshold: float = typer.Option(1.15),
     output_format: OutputFormat = typer.Option("csv"),
     proposals_path: Optional[str] = typer.Option(None),
+    excluded_proposals_path: Optional[str] = typer.Option(None),
     active_voteplan_path: Optional[str] = typer.Option(None),
     challenges_path: Optional[str] = typer.Option(None),
     vit_station_url: str = typer.Option("https://servicing-station.vit.iohk.io"),
@@ -446,6 +486,19 @@ def calculate_rewards(
         print(f"{e}")
         sys.exit(1)
 
+    excluded_proposals: Set[str] = (
+        set(get_excluded_proposals_from_file(excluded_proposals_path))
+        if excluded_proposals_path
+        else set()
+    )
+
+    proposals = filter_excluded_proposals(proposals, excluded_proposals)
+
+    block0_config = load_block0_data(block0_path)
+    total_stake = calculate_total_stake_from_block0_configuration(block0_config)
+    # minimum amount of stake needed for a proposal to be accepted
+    total_stake_approval_threshold = total_stake_threshold * total_stake
+
     for challenge in challenges.values():
         challenge_proposals, challenge_voteplan_proposals = filter_data_by_challenge(
             challenge.id, proposals, voteplan_proposals
@@ -454,8 +507,8 @@ def calculate_rewards(
             challenge_proposals,
             challenge_voteplan_proposals,
             challenge.rewards_total,
-            conversion_factor,
             approval_threshold,
+            total_stake_approval_threshold,
         )
         out_stream = (
             output_json(results)
@@ -463,7 +516,7 @@ def calculate_rewards(
             else output_csv(results)
         )
         chalenge_ouput_file_path = build_path_for_challenge(
-            output_file, challenge.title.replace(" ", "_")
+            output_file, challenge.title.replace(" ", "_").replace(":", "_")
         )
         with open(chalenge_ouput_file_path, "w", encoding="utf-8") as out_file:
             dump_to_file(out_stream, out_file)

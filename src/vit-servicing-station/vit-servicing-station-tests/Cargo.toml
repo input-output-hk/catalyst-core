@@ -26,7 +26,7 @@ vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
 lazy_static = "1.4"
 rand = "0.7"
 predicates = { version = "1.0", default-features = false, features = ["difference"] }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "config-builder" }
 chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }
 chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master", features = [ "property-test-api" ] }

@@ -925,16 +925,10 @@ impl Ledger {
                 )?;
             }
             Fragment::UpdateProposal(update_proposal) => {
-                if true {
-                    return Err(Error::UpdateNotAllowedYet);
-                }
                 new_ledger =
                     new_ledger.apply_update_proposal(fragment_id, update_proposal, block_date)?;
             }
             Fragment::UpdateVote(vote) => {
-                if true {
-                    return Err(Error::UpdateNotAllowedYet);
-                }
                 new_ledger = new_ledger.apply_update_vote(vote)?;
             }
             Fragment::VotePlan(tx) => {

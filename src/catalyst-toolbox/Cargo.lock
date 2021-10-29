@@ -1131,6 +1131,7 @@ dependencies = [
  "az",
  "bytemuck",
  "half",
+ "serde",
  "typenum",
 ]
 
@@ -4405,8 +4406,8 @@ dependencies = [
 
 [[package]]
 name = "vit-servicing-station-lib"
-version = "0.3.2"
-source = "git+https://github.com/danielsanchezq/vit-servicing-station.git?branch=advisors-reviews#d9662d5b7b7ef15d45f591e1b719edcca7ef56ef"
+version = "0.3.4-dev"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#d2c59716413264f5680742bdb343cd56f01739c5"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -4422,6 +4423,8 @@ dependencies = [
  "serde_json",
  "simplelog",
  "structopt",
+ "strum 0.21.0",
+ "strum_macros 0.21.1",
  "thiserror",
  "tokio",
  "tracing",

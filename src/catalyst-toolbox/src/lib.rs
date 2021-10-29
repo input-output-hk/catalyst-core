@@ -1,4 +1,5 @@
 pub mod archive;
+pub mod community_advisors;
 pub mod ideascale;
 pub mod kedqr;
 pub mod logs;

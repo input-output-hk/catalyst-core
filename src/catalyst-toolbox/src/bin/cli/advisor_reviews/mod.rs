@@ -1,6 +1,8 @@
-use catalyst_toolbox::vca_reviews::{
-    read_vca_reviews_aggregated_file, Error as ReviewsError, TagsMap,
+use catalyst_toolbox::{
+    community_advisors::models::TagsMap,
+    vca_reviews::{read_vca_reviews_aggregated_file, Error as ReviewsError},
 };
+
 use jcli_lib::utils::io::{open_file_read, open_file_write};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;

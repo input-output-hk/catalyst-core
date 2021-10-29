@@ -1,6 +1,4 @@
-mod tags;
-
-pub use tags::TagsMap;
+use crate::community_advisors::models::TagsMap;
 
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 

@@ -1,0 +1,8 @@
+id,Idea Title,proposal_id,Idea URL,Assessor,Impact / Alignment Note,Impact / Alignment Rating,Feasibility Note,Feasibility Rating,Auditability Note,Auditability Rating,Excellent,Good
+1,Design & Sim of Voting Influence,ideasale id,http://app.ideascale.com/t/UM5UZBmp2,z_assessor_101,"This proposal addresses the optimization of our CATALYST Voting and funding system. Major part of this is research-based work as well as designing and simulating such improved voting systems. 
+
+This touches the very core of our journey towards VOLTAIRE and is therefore for sure a proposal of high impact. I would have liked to see a more detailed explanation, if and how the proposer team plans to work together with IOHK experts for avoiding overlapping efforts. ",4,"The team behind this proposal is undoubtfully highly qualified. There is  good background material added for outlining their field of expertise and their impressive experience.
+
+In order to make this substantial investment a success, I would have liked to see a better explanation of the aligned with the work done at IOHK/IOG. A lack iof alignment could jeopardize the likelihood of success, even though great expertise is at work here. ",4,"The proposer team has outlined, how they want to approach this rather big topic step-by-step. 
+
+As a CA I did not really find a comprehensive way of how to audit the progress of this proposal, other than kind of trusting that experts from the proposal team will get together with experts from IOHK/IOG (somehow) and implement this all together. Again, i would have liked to find more description about how this implementation is planned (otherwise this project might easily just add new research - which is good - but lack practical deployment).",0,x,

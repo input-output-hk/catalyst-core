@@ -30,13 +30,15 @@ jormungandr-lib = { git = "https://github.com/input-output-hk/jormungandr.git", 
 jormungandr-testing-utils = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jormungandr-integration-tests = { git = "https://github.com/input-output-hk/jormungandr.git", branch = "master" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-fixed = "1.7"
+# TODO: Remove fixed and migrate to rust_decimal
+fixed = { version = "1.7", features = ["serde"] }
 rust_decimal = "1.16"
 futures = "0.3"
 log = "0.4"
 once_cell = "1.8"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 rand = "0.8.3"
+rand_chacha = "0.3"
 regex = "1.5"
 serde = "1.0"
 serde_json = "1.0"
@@ -52,9 +54,9 @@ image = "0.23.12"
 qrcode = "0.12"
 quircs = "0.10.0"
 symmetric-cipher = { git = "https://github.com/input-output-hk/chain-wallet-libs.git", branch = "master" }
-vit-servicing-station-lib = { git = "https://github.com/danielsanchezq/vit-servicing-station.git", branch = "advisors-reviews" }
 graphql_client = "0.10"
 gag = "1"
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "master" }
 
 [dev-dependencies]
 rand_chacha = "0.3"

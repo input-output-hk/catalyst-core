@@ -480,29 +480,24 @@ components:
         assessor:
           type: string
         impact_alignment_rating_given:
-          type: integer
-          format: i32
-          minimum: 0
-          maximum: 500
-          description: Rating in range [0, 500] (0 stars to 5 stars)
+          $ref: "#/components/schemas/Rating"
         impact_alignment_note:
           type: string
         feasibility_rating_given:
-          type: integer
-          format: i32
-          minimum: 0
-          maximum: 500
-          description: Rating in range [0, 500] (0 stars to 5 stars)
+          $ref: "#/components/schemas/Rating"
         feasibility_note:
           type: string
         auditability_rating_given:
-          type: integer
-          format: i32
-          minimum: 0
-          maximum: 500
-          description: Rating in range [0, 500] (0 stars to 5 stars)
+          $ref: "#/components/schemas/Rating"
         auditability_note:
           type: string
+
+    Rating:
+      type: integer
+      format: i32
+      minimum: 0
+      maximum: 500
+      description: Rating in range [0, 500] (0 stars to 5 stars)
 
     AdvisorReviews:
       type: array

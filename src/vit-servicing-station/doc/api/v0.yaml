@@ -502,7 +502,7 @@ components:
     AdvisorReviews:
       type: array
       items:
-        $ref: "#/components/schemas/Review"
+        $ref: "#/components/schemas/AdvisorReview"
       example:
         [
           {

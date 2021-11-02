@@ -152,32 +152,13 @@ pub struct Proposal {
 pub struct AdvisorReview {
     pub id: i32,
     pub proposal_id: i32,
-    pub rating_given: i32,
     pub assessor: String,
-    pub note: String,
-    pub tag: ReviewTag,
-}
-
-#[derive(Serialize, Deserialize, Copy, Clone, Debug, Eq, PartialEq)]
-pub enum ReviewTag {
-    Alignment,
-    Verifiability,
-    Feasibility,
-    Impact,
-    Auditability,
-}
-
-impl ToString for ReviewTag {
-    fn to_string(&self) -> String {
-        match self {
-            ReviewTag::Alignment => "Alignment",
-            ReviewTag::Verifiability => "Verifiability",
-            ReviewTag::Feasibility => "Feasibility",
-            ReviewTag::Impact => "Impact",
-            ReviewTag::Auditability => "Auditability",
-        }
-        .to_string()
-    }
+    pub impact_alignment_rating_given: i32,
+    pub impact_alignment_note: String,
+    pub feasibility_rating_given: i32,
+    pub feasibility_note: String,
+    pub auditability_rating_given: i32,
+    pub auditability_note: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]

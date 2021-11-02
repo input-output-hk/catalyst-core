@@ -381,7 +381,7 @@ dependencies = [
 [[package]]
 name = "cardano-legacy-address"
 version = "0.1.1"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 dependencies = [
  "cbor_event",
  "chain-ser",
@@ -474,7 +474,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "chain-addr"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 dependencies = [
  "bech32 0.8.1",
  "chain-core",
@@ -488,7 +488,7 @@ dependencies = [
 [[package]]
 name = "chain-core"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 dependencies = [
  "chain-ser",
 ]
@@ -496,7 +496,7 @@ dependencies = [
 [[package]]
 name = "chain-crypto"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 dependencies = [
  "bech32 0.8.1",
  "cryptoxide",
@@ -519,7 +519,7 @@ dependencies = [
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 dependencies = [
  "cardano-legacy-address",
  "chain-addr",
@@ -556,7 +556,7 @@ dependencies = [
 [[package]]
 name = "chain-ser"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 
 [[package]]
 name = "chain-storage"
@@ -574,7 +574,7 @@ dependencies = [
 [[package]]
 name = "chain-time"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 dependencies = [
  "chain-core",
  "chain-ser",
@@ -586,7 +586,7 @@ dependencies = [
 [[package]]
 name = "chain-vote"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 dependencies = [
  "cfg-if 1.0.0",
  "chain-core",
@@ -1019,6 +1019,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9dd058f8b65922819fabb4a41e7d1964e56344042c26efbccd465202c23fa0c"
 dependencies = [
  "console 0.14.1",
+ "lazy_static",
+ "tempfile",
+ "zeroize",
+]
+
+[[package]]
+name = "dialoguer"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61579ada4ec0c6031cfac3f86fdba0d195a7ebeb5e36693bd53cb5999a25beeb"
+dependencies = [
+ "console 0.15.0",
  "lazy_static",
  "tempfile",
  "zeroize",
@@ -2067,7 +2079,7 @@ dependencies = [
 [[package]]
 name = "imhamt"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 dependencies = [
  "thiserror",
 ]
@@ -2088,7 +2100,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7baab56125e25686df467fe470785512329883aab42696d661247aca2a2896e4"
 dependencies = [
- "console 0.15.0",
+ "console 0.13.0",
  "lazy_static",
  "number_prefix",
  "regex 1.5.4",
@@ -2407,7 +2419,7 @@ dependencies = [
 [[package]]
 name = "jortestkit"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jortestkit.git?branch=master#7520177dfacb46cafeca56ea39dc544e54230e29"
+source = "git+https://github.com/input-output-hk/jortestkit.git?branch=master#e1794f919a979947ac010fed7c048910ce255a39"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -2417,7 +2429,7 @@ dependencies = [
  "console 0.14.1",
  "csv",
  "custom_debug",
- "dialoguer 0.8.0",
+ "dialoguer 0.9.0",
  "flate2",
  "fs_extra",
  "hex",
@@ -4328,7 +4340,7 @@ dependencies = [
 [[package]]
 name = "sparse-array"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 
 [[package]]
 name = "spin"
@@ -5111,7 +5123,7 @@ dependencies = [
 [[package]]
 name = "typed-bytes"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#0e50963390f328023c7cf30e6cd340eb0713265f"
+source = "git+https://github.com/input-output-hk/chain-libs.git?branch=master#ff7b7653392f4c2e30e77b47f53dce33ee3e7543"
 
 [[package]]
 name = "typenum"
@@ -5328,7 +5340,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#d2c59716413264f5680742bdb343cd56f01739c5"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#f1cfa1a27806b766dc6d740cbfcdca33736d7338"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -5357,7 +5369,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#d2c59716413264f5680742bdb343cd56f01739c5"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#f1cfa1a27806b766dc6d740cbfcdca33736d7338"
 dependencies = [
  "assert_cmd",
  "assert_fs",

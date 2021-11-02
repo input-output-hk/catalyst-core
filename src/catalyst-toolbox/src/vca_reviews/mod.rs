@@ -1,8 +1,6 @@
-use crate::community_advisors::models::TagsMap;
-
+use crate::community_advisors::models::AdvisorReviewRow;
+use crate::utils;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
-
-use serde::Deserialize;
 
 use std::path::Path;
 
@@ -15,63 +13,27 @@ pub enum Error {
     CouldntParseTag(String),
 }
 
-#[derive(Clone, Deserialize)]
-struct AdvisorReviewRow {
-    id: u32,
-
-    triplet_id: String,
-
-    #[serde(alias = "Idea Title")]
-    title: String,
-
-    #[serde(alias = "Idea URL")]
-    url: String,
-
-    proposal_id: u32,
-
-    #[serde(alias = "Question")]
-    question: String,
-
-    question_id: u32,
-
-    #[serde(alias = "Rating Given")]
-    rating: u32,
-
-    #[serde(alias = "Assessor")]
-    assessor: String,
-
-    #[serde(alias = "Assessment Note")]
-    note: String,
-}
-
 impl AdvisorReviewRow {
-    fn as_advisor_review(&self, tags_map: &TagsMap) -> Result<AdvisorReview, Error> {
-        Ok(AdvisorReview {
-            id: self.id as i32,
-            proposal_id: self.proposal_id as i32,
-            rating_given: self.rating as i32,
+    fn as_advisor_review(&self) -> AdvisorReview {
+        AdvisorReview {
+            id: 0,
+            proposal_id: self.proposal_id.parse().unwrap(),
             assessor: self.assessor.clone(),
-            note: self.note.clone(),
-            tag: tags_map
-                .str_to_tag(&self.question)
-                .ok_or_else(|| Error::CouldntParseTag(self.question.clone()))?,
-        })
+            impact_alignment_rating_given: self.impact_alignment_rating as i32,
+            impact_alignment_note: self.impact_alignment_note.clone(),
+            feasibility_rating_given: self.feasibility_rating as i32,
+            feasibility_note: self.feasibility_note.clone(),
+            auditability_rating_given: self.auditability_rating as i32,
+            auditability_note: self.auditability_note.clone(),
+        }
     }
 }
 
-pub fn read_vca_reviews_aggregated_file(
-    filepath: &Path,
-    tags_map: &TagsMap,
-) -> Result<Vec<AdvisorReview>, Error> {
-    let mut csv_reader = csv::ReaderBuilder::new()
-        .delimiter(b',')
-        .has_headers(true)
-        .from_path(filepath)?;
-
-    let mut res: Vec<AdvisorReview> = Vec::new();
-    for entry in csv_reader.deserialize() {
-        let value: AdvisorReviewRow = entry?;
-        res.push(value.as_advisor_review(tags_map)?);
-    }
-    Ok(res)
+pub fn read_vca_reviews_aggregated_file(filepath: &Path) -> Result<Vec<AdvisorReview>, Error> {
+    Ok(
+        utils::csv::load_data_from_csv::<AdvisorReviewRow>(filepath)?
+            .into_iter()
+            .map(|review| review.as_advisor_review())
+            .collect(),
+    )
 }

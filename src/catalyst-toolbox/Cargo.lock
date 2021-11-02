@@ -4407,7 +4407,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#d2c59716413264f5680742bdb343cd56f01739c5"
+source = "git+https://github.com/danielsanchezq/vit-servicing-station.git?branch=reviews-grouped#bde36b746dd93dc8512ddea907ce0810e656950b"
 dependencies = [
  "async-trait",
  "base64 0.12.3",

@@ -1,10 +1,8 @@
 mod de;
-mod tags;
 
 use serde::{Deserialize, Deserializer};
 
 pub use de::{AdvisorReviewRow, ReviewScore};
-pub use tags::TagsMap;
 
 pub enum ProposalStatus {
     Approved,

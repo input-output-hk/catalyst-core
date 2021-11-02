@@ -1,13 +1,10 @@
-use catalyst_toolbox::{
-    community_advisors::models::TagsMap,
-    vca_reviews::{read_vca_reviews_aggregated_file, Error as ReviewsError},
-};
+use catalyst_toolbox::utils;
+use catalyst_toolbox::vca_reviews::{read_vca_reviews_aggregated_file, Error as ReviewsError};
 
-use jcli_lib::utils::io::{open_file_read, open_file_write};
-use std::path::{Path, PathBuf};
+use jcli_lib::utils::io::open_file_write;
+use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -48,9 +45,6 @@ pub struct Export {
     /// Output format either csv or json
     #[structopt(long, default_value = "csv")]
     format: OutputFormat,
-    /// Tags json file
-    #[structopt(long)]
-    tags: Option<PathBuf>,
 }
 
 impl FromStr for OutputFormat {
@@ -76,22 +70,12 @@ impl Reviews {
 
 impl Export {
     pub fn exec(self) -> Result<(), Error> {
-        let Self {
-            from,
-            to,
-            format,
-            tags,
-        } = self;
-        let tags_map: TagsMap = if let Some(tags) = tags {
-            serde_json::from_reader(open_file_read(&Some(tags))?)?
-        } else {
-            TagsMap::default()
-        };
+        let Self { from, to, format } = self;
 
-        let reviews = read_vca_reviews_aggregated_file(&from, &tags_map)?;
+        let reviews = read_vca_reviews_aggregated_file(&from)?;
         match format {
             OutputFormat::Csv => {
-                write_csv(&reviews, &to)?;
+                utils::csv::dump_data_to_csv(&reviews, &to)?;
             }
             OutputFormat::Json => {
                 serde_json::to_writer(open_file_write(&Some(to))?, &reviews)?;
@@ -101,38 +85,25 @@ impl Export {
     }
 }
 
-pub fn write_csv(reviews: &[AdvisorReview], filepath: &Path) -> Result<(), Error> {
-    let mut writer = csv::WriterBuilder::new()
-        .delimiter(b',')
-        .double_quote(true)
-        .has_headers(true)
-        .from_path(filepath)?;
-    for review in reviews {
-        writer.serialize(review)?;
-    }
-    Ok(())
-}
-
 #[cfg(test)]
 mod test {
     use super::{Export, OutputFormat};
-    use jcli_lib::utils::io;
-    use std::io::BufRead;
+    use catalyst_toolbox::utils::csv;
+    use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 
     #[test]
     fn test_output_csv() {
-        let resource_input = "./resources/testing/reviews.csv";
+        let resource_input = "./resources/testing/valid_assessments.csv";
         let tmp_file = assert_fs::NamedTempFile::new("outfile.csv").unwrap();
 
         let export = Export {
             from: resource_input.into(),
             to: tmp_file.path().into(),
             format: OutputFormat::Csv,
-            tags: None,
         };
 
         export.exec().unwrap();
-        let reader = io::open_file_read(&Some(tmp_file.path())).unwrap();
-        assert_eq!(reader.lines().count(), 10);
+        let reviews: Vec<AdvisorReview> = csv::load_data_from_csv(&tmp_file).unwrap();
+        assert_eq!(reviews.len(), 1);
     }
 }

@@ -4,7 +4,7 @@ use crate::common::{
 };
 use assert_fs::TempDir;
 use reqwest::StatusCode;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::{AdvisorReview, ReviewTag};
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 
 #[test]
 pub fn get_advisor_reviews() -> Result<(), Box<dyn std::error::Error>> {
@@ -14,10 +14,13 @@ pub fn get_advisor_reviews() -> Result<(), Box<dyn std::error::Error>> {
     let expected_review = AdvisorReview {
         id: 1,
         proposal_id,
-        rating_given: 0,
         assessor: "za_foo_bar".to_string(),
-        note: "foo bar".to_string(),
-        tag: ReviewTag::Alignment,
+        impact_alignment_rating_given: 0,
+        impact_alignment_note: "impact note".to_string(),
+        feasibility_rating_given: 0,
+        feasibility_note: "feasibility note".to_string(),
+        auditability_rating_given: 0,
+        auditability_note: "auditability note".to_string(),
     };
     let (hash, token) = data::token();
 

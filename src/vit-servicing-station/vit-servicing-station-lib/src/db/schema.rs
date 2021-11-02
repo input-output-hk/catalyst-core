@@ -23,10 +23,13 @@ table! {
     community_advisors_reviews (id) {
         id -> Integer,
         proposal_id -> Integer,
-        rating_given -> Integer,
         assessor -> Text,
-        note -> Text,
-        tag -> Text,
+        impact_alignment_rating_given -> Integer,
+        impact_alignment_note -> Text,
+        feasibility_rating_given -> Integer,
+        feasibility_note -> Text,
+        auditability_rating_given -> Integer,
+        auditability_note -> Text,
     }
 }
 

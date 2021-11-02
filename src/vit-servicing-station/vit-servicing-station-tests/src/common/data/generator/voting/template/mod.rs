@@ -7,7 +7,6 @@ pub use external::{
     ExternalValidVotingTemplateGenerator, TemplateLoad,
 };
 use serde::{Deserialize, Serialize};
-use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewTag;
 use vit_servicing_station_lib::db::models::proposals::{ChallengeType, ProposalChallengeInfo};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
@@ -63,10 +62,13 @@ pub struct ChallengeTemplate {
 pub struct ReviewTemplate {
     pub id: Option<String>,
     pub proposal_id: String,
-    pub rating_given: i32,
     pub assessor: String,
-    pub note: String,
-    pub tag: ReviewTag,
+    pub impact_alignment_rating_given: i32,
+    pub impact_alignment_note: String,
+    pub feasibility_rating_given: i32,
+    pub feasibility_note: String,
+    pub auditability_rating_given: i32,
+    pub auditability_note: String,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

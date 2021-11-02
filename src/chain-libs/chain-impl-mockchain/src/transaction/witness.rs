@@ -19,21 +19,23 @@ use chain_crypto::{Ed25519, PublicKey, Signature};
 #[derive(Debug, Clone)]
 pub enum Witness {
     Utxo(SpendingSignature<WitnessUtxoData>),
-    Account(account::Witness),
+    Account(account::SpendingCounter, account::Witness),
     OldUtxo(
         PublicKey<Ed25519>,
         [u8; 32],
         Signature<WitnessUtxoData, Ed25519>,
     ),
-    Multisig(multisig::Witness),
+    Multisig(account::SpendingCounter, multisig::Witness),
 }
 
 impl PartialEq for Witness {
     fn eq(&self, rhs: &Self) -> bool {
         match (self, rhs) {
             (Witness::Utxo(s1), Witness::Utxo(s2)) => s1.as_ref() == s2.as_ref(),
-            (Witness::Account(s1), Witness::Account(s2)) => s1.as_ref() == s2.as_ref(),
-            (Witness::Multisig(s1), Witness::Multisig(s2)) => s1 == s2,
+            (Witness::Account(n1, s1), Witness::Account(n2, s2)) => {
+                n1 == n2 && s1.as_ref() == s2.as_ref()
+            }
+            (Witness::Multisig(n1, s1), Witness::Multisig(n2, s2)) => n1 == n2 && s1 == s2,
             (Witness::OldUtxo(p1, c1, s1), Witness::OldUtxo(p2, c2, s2)) => {
                 s1.as_ref() == s2.as_ref() && c1 == c2 && p1 == p2
             }
@@ -47,9 +49,9 @@ impl std::fmt::Display for Witness {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Witness::Utxo(_) => write!(f, "UTxO Witness"),
-            Witness::Account(_) => write!(f, "Account Witness"),
+            Witness::Account(_, _) => write!(f, "Account Witness"),
             Witness::OldUtxo(..) => write!(f, "Old UTxO Witness"),
-            Witness::Multisig(_) => write!(f, "Multisig Witness"),
+            Witness::Multisig(_, _) => write!(f, "Multisig Witness"),
         }
     }
 }
@@ -172,7 +174,7 @@ impl Witness {
     {
         let wud = WitnessAccountData::new(block0, sign_data_hash, spending_counter);
         let sig = sign(&wud);
-        Witness::Account(sig)
+        Witness::Account(spending_counter, sig)
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {
@@ -206,12 +208,14 @@ impl property::Serialize for Witness {
                 codec.put_u8(WITNESS_TAG_UTXO)?;
                 serialize_signature(sig, codec.into_inner())
             }
-            Witness::Account(sig) => {
+            Witness::Account(nonce, sig) => {
                 codec.put_u8(WITNESS_TAG_ACCOUNT)?;
+                codec.put_u32((*nonce).into())?;
                 serialize_signature(sig, codec.into_inner())
             }
-            Witness::Multisig(msig) => {
+            Witness::Multisig(nonce, msig) => {
                 codec.put_u8(WITNESS_TAG_MULTISIG)?;
+                codec.put_u32((*nonce).into())?;
                 msig.serialize(codec.into_inner())
             }
         }
@@ -228,10 +232,15 @@ impl Readable for Witness {
                 Ok(Witness::OldUtxo(pk, some_bytes, sig))
             }
             WITNESS_TAG_UTXO => deserialize_signature(buf).map(Witness::Utxo),
-            WITNESS_TAG_ACCOUNT => deserialize_signature(buf).map(Witness::Account),
+            WITNESS_TAG_ACCOUNT => {
+                let nonce = buf.get_u32()?.into();
+                let sig = deserialize_signature(buf)?;
+                Ok(Witness::Account(nonce, sig))
+            }
             WITNESS_TAG_MULTISIG => {
+                let nonce = buf.get_u32()?.into();
                 let msig = multisig::Witness::read(buf)?;
-                Ok(Witness::Multisig(msig))
+                Ok(Witness::Multisig(nonce, msig))
             }
             i => Err(ReadError::UnknownTag(i as u32)),
         }

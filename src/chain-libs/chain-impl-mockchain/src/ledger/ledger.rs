@@ -1254,10 +1254,10 @@ impl Ledger {
     ) -> Result<Self, Error> {
         let delegation_type = delegation.get_delegation_type();
         match match_identifier_witness(account_id, witness)? {
-            MatchingIdentifierWitness::Single(account_id, _witness) => {
+            MatchingIdentifierWitness::Single(account_id, _witness, _nonce) => {
                 self.accounts = self.accounts.set_delegation(&account_id, delegation_type)?;
             }
-            MatchingIdentifierWitness::Multi(account_id, _witness) => {
+            MatchingIdentifierWitness::Multi(account_id, _witness, _nonce) => {
                 self.multisig = self.multisig.set_delegation(&account_id, delegation_type)?;
             }
         };
@@ -1371,23 +1371,29 @@ impl Ledger {
                 }
                 InputEnum::AccountInput(account_id, value) => {
                     match match_identifier_witness(&account_id, &witness)? {
-                        MatchingIdentifierWitness::Single(account_id, witness) => {
+                        MatchingIdentifierWitness::Single(
+                            account_id,
+                            witness,
+                            spending_counter,
+                        ) => {
                             self.accounts = input_single_account_verify(
                                 self.accounts,
                                 &self.static_params.block0_initial_hash,
                                 &sign_data_hash,
                                 &account_id,
                                 witness,
+                                spending_counter,
                                 value,
                             )?
                         }
-                        MatchingIdentifierWitness::Multi(account_id, witness) => {
+                        MatchingIdentifierWitness::Multi(account_id, witness, spending_counter) => {
                             self.multisig = input_multi_account_verify(
                                 self.multisig,
                                 &self.static_params.block0_initial_hash,
                                 &sign_data_hash,
                                 &account_id,
                                 witness,
+                                spending_counter,
                                 value,
                             )?
                         }
@@ -1471,8 +1477,8 @@ impl Ledger {
         witness: &Witness,
     ) -> Result<Self, Error> {
         match witness {
-            Witness::Account(_) => Err(Error::ExpectingUtxoWitness),
-            Witness::Multisig(_) => Err(Error::ExpectingUtxoWitness),
+            Witness::Account(_, _) => Err(Error::ExpectingUtxoWitness),
+            Witness::Multisig(_, _) => Err(Error::ExpectingUtxoWitness),
             Witness::OldUtxo(pk, cc, signature) => {
                 let (old_utxos, associated_output) = self
                     .oldutxos
@@ -1614,8 +1620,16 @@ fn calculate_fee<'a, Extra: Payload>(
 }
 
 pub enum MatchingIdentifierWitness<'a> {
-    Single(account::Identifier, &'a account::Witness),
-    Multi(multisig::Identifier, &'a multisig::Witness),
+    Single(
+        account::Identifier,
+        &'a account::Witness,
+        account::SpendingCounter,
+    ),
+    Multi(
+        multisig::Identifier,
+        &'a multisig::Witness,
+        account::SpendingCounter,
+    ),
 }
 
 fn match_identifier_witness<'a>(
@@ -1625,17 +1639,19 @@ fn match_identifier_witness<'a>(
     match witness {
         Witness::OldUtxo(..) => Err(Error::ExpectingAccountWitness),
         Witness::Utxo(_) => Err(Error::ExpectingAccountWitness),
-        Witness::Account(sig) => {
+        Witness::Account(nonce, sig) => {
             // refine account to a single account identifier
             let account = account
                 .to_single_account()
                 .ok_or(Error::AccountIdentifierInvalid)?;
-            Ok(MatchingIdentifierWitness::Single(account, sig))
+            Ok(MatchingIdentifierWitness::Single(account, sig, *nonce))
         }
-        Witness::Multisig(msignature) => {
+        Witness::Multisig(nonce, msignature) => {
             // refine account to a multisig account identifier
             let account = account.to_multi_account();
-            Ok(MatchingIdentifierWitness::Multi(account, msignature))
+            Ok(MatchingIdentifierWitness::Multi(
+                account, msignature, *nonce,
+            ))
         }
     }
 }
@@ -1646,10 +1662,11 @@ fn input_single_account_verify<'a>(
     sign_data_hash: &TransactionSignDataHash,
     account: &account::Identifier,
     witness: &'a account::Witness,
+    spending_counter: account::SpendingCounter,
     value: Value,
 ) -> Result<account::Ledger, Error> {
     // .remove_value() check if there's enough value and if not, returns a Err.
-    let (new_ledger, spending_counter) = ledger.remove_value(account, value)?;
+    let new_ledger = ledger.remove_value(account, spending_counter, value)?;
     ledger = new_ledger;
 
     let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
@@ -1657,7 +1674,7 @@ fn input_single_account_verify<'a>(
     if verified == chain_crypto::Verification::Failed {
         return Err(Error::AccountInvalidSignature {
             account: account.clone(),
-            witness: Witness::Account(witness.clone()),
+            witness: Witness::Account(spending_counter, witness.clone()),
         });
     };
     Ok(ledger)
@@ -1669,16 +1686,17 @@ fn input_multi_account_verify<'a>(
     sign_data_hash: &TransactionSignDataHash,
     account: &multisig::Identifier,
     witness: &'a multisig::Witness,
+    spending_counter: account::SpendingCounter,
     value: Value,
 ) -> Result<multisig::Ledger, Error> {
     // .remove_value() check if there's enough value and if not, returns a Err.
-    let (new_ledger, declaration, spending_counter) = ledger.remove_value(account, value)?;
+    let (new_ledger, declaration) = ledger.remove_value(account, spending_counter, value)?;
 
     let data_to_verify = WitnessMultisigData::new(block0_hash, sign_data_hash, spending_counter);
     if !witness.verify(declaration, &data_to_verify) {
         return Err(Error::MultisigInvalidSignature {
             multisig: account.clone(),
-            witness: Witness::Multisig(witness.clone()),
+            witness: Witness::Multisig(spending_counter, witness.clone()),
         });
     }
     ledger = new_ledger;
@@ -1851,9 +1869,9 @@ mod tests {
             (Witness::OldUtxo(..), Err(_)) => TestResult::passed(),
             (Witness::Utxo(_), Ok(_)) => TestResult::error("expecting error, but got success"),
             (Witness::Utxo(_), Err(_)) => TestResult::passed(),
-            (Witness::Account(_), Ok(_)) => TestResult::passed(),
-            (Witness::Account(_), Err(_)) => TestResult::error("unexpected error"),
-            (Witness::Multisig(_), _) => TestResult::discard(),
+            (Witness::Account(_, _), Ok(_)) => TestResult::passed(),
+            (Witness::Account(_, _), Err(_)) => TestResult::error("unexpected error"),
+            (Witness::Multisig(_, _), _) => TestResult::discard(),
         }
     }
 
@@ -1868,7 +1886,7 @@ mod tests {
     ) -> TestResult {
         let mut account_ledger = account::Ledger::new();
         account_ledger = account_ledger
-            .add_account(&id, account_state.get_value(), ())
+            .add_account(&id, account_state.value(), ())
             .unwrap();
         let result = super::input_single_account_verify(
             account_ledger,
@@ -1876,6 +1894,7 @@ mod tests {
             &sign_data_hash,
             &id,
             &witness,
+            SpendingCounter::zero(),
             value_to_sub,
         );
 
@@ -1904,6 +1923,7 @@ mod tests {
             &sign_data_hash,
             &id,
             &to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
+            SpendingCounter::zero(),
             value_to_sub,
         );
         assert!(result.is_ok())
@@ -1940,6 +1960,7 @@ mod tests {
             &sign_data_hash,
             &id,
             &to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
+            SpendingCounter::zero(),
             value_to_sub,
         );
         assert!(result.is_err())
@@ -1947,7 +1968,7 @@ mod tests {
 
     fn to_account_witness(witness: &Witness) -> &account::Witness {
         match witness {
-            Witness::Account(account_witness) => account_witness,
+            Witness::Account(_, account_witness) => account_witness,
             _ => panic!("wrong type of witness"),
         }
     }
@@ -1975,6 +1996,7 @@ mod tests {
             &sign_data_hash,
             &id,
             &to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
+            SpendingCounter::zero(),
             value_to_sub,
         );
         assert!(result.is_err())
@@ -2004,6 +2026,7 @@ mod tests {
             &sign_data_hash,
             &non_existing_account.public_key().into(),
             &to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
+            SpendingCounter::zero(),
             value_to_sub,
         );
         assert!(result.is_err())
@@ -2028,9 +2051,11 @@ mod tests {
             (Witness::OldUtxo(..), Err(_)) => TestResult::passed(),
             (Witness::Utxo(_), Ok(_)) => TestResult::error("expecting error, but got success"),
             (Witness::Utxo(_), Err(_)) => TestResult::passed(),
-            (Witness::Account(_), Ok(_)) => TestResult::error("expecting error, but got success"),
-            (Witness::Account(_), Err(_)) => TestResult::passed(),
-            (Witness::Multisig(_), _) => TestResult::discard(),
+            (Witness::Account(_, _), Ok(_)) => {
+                TestResult::error("expecting error, but got success")
+            }
+            (Witness::Account(_, _), Err(_)) => TestResult::passed(),
+            (Witness::Multisig(_, _), _) => TestResult::discard(),
         }
     }
 

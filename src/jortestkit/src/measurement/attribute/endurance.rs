@@ -9,10 +9,9 @@ impl From<Duration> for Endurance {
         Endurance(duration)
     }
 }
-#[allow(clippy::from_over_into)]
-impl Into<Duration> for Endurance {
-    fn into(self) -> Duration {
-        self.0
+impl From<Endurance> for Duration {
+    fn from(src: Endurance) -> Self {
+        src.0
     }
 }
 

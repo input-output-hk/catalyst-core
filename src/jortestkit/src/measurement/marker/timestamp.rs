@@ -1,9 +1,12 @@
-use chrono::DateTime;
+use time::format_description::well_known::Rfc3339;
+use time::OffsetDateTime;
+
 use std::{
     fmt,
     str::FromStr,
     time::{Duration, SystemTime},
 };
+
 #[derive(Clone, Copy)]
 pub struct Timestamp(SystemTime);
 
@@ -40,17 +43,11 @@ impl Into<SystemTime> for Timestamp {
     }
 }
 impl FromStr for Timestamp {
-    type Err = chrono::ParseError;
+    type Err = time::error::Parse;
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let dt: DateTime<chrono::FixedOffset> = DateTime::parse_from_rfc3339(s)?;
-        let seconds = dt.timestamp() as u64;
-        let nsecs = dt.timestamp_subsec_nanos();
-
-        let elapsed = Duration::new(seconds, nsecs);
-
-        let time = SystemTime::UNIX_EPOCH.checked_add(elapsed).unwrap();
-
-        Ok(time.into())
+        let dt = OffsetDateTime::parse(s, &Rfc3339)?;
+        Ok(Timestamp(dt.into()))
     }
 }
 

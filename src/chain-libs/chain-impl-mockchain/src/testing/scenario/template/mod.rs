@@ -1,5 +1,6 @@
 mod builders;
 
+use crate::ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAction};
 use crate::{
     certificate::{ExternalProposalId, PoolPermissions, Proposal, Proposals, VoteAction, VotePlan},
     header::BlockDate,
@@ -133,6 +134,65 @@ impl VotePlanDef {
 
     pub fn committee_keys_mut(&mut self) -> &mut Vec<MemberPublicKey> {
         &mut self.committee_keys
+    }
+
+    pub fn from_vote_plan<S: Into<String>>(
+        alias: S,
+        owner_alias: Option<S>,
+        vote_plan: &VotePlan,
+    ) -> VotePlanDef {
+        let mut builder = VotePlanDefBuilder::new(&alias.into());
+
+        if let Some(owner_alias) = owner_alias {
+            builder.owner(&owner_alias.into());
+        }
+
+        builder
+            .payload_type(vote_plan.payload_type())
+            .committee_keys(vote_plan.committee_public_keys().to_vec())
+            .vote_phases(
+                vote_plan.vote_start().epoch,
+                vote_plan.committee_start().epoch,
+                vote_plan.committee_end().epoch,
+            );
+
+        for proposal in vote_plan.proposals().iter() {
+            let mut proposal_builder = ProposalDefBuilder::new(proposal.external_id().clone());
+
+            let length = proposal
+                .options()
+                .choice_range()
+                .end
+                .checked_sub(proposal.options().choice_range().start)
+                .unwrap();
+
+            proposal_builder.options(length);
+
+            match proposal.action() {
+                VoteAction::OffChain => {
+                    proposal_builder.action_off_chain();
+                }
+                VoteAction::Treasury { action } => match action {
+                    TreasuryGovernanceAction::TransferToRewards { value } => {
+                        proposal_builder.action_rewards_add(value.0);
+                    }
+                    TreasuryGovernanceAction::NoOp => {
+                        unimplemented!();
+                    }
+                },
+                VoteAction::Parameters { action } => match action {
+                    ParametersGovernanceAction::RewardAdd { value } => {
+                        proposal_builder.action_transfer_to_rewards(value.0);
+                    }
+                    ParametersGovernanceAction::NoOp => {
+                        proposal_builder.action_parameters_no_op();
+                    }
+                },
+            };
+
+            builder.with_proposal(&mut proposal_builder);
+        }
+        builder.build()
     }
 }
 

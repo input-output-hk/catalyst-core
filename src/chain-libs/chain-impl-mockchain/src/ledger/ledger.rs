@@ -742,7 +742,6 @@ impl Ledger {
 
     pub fn begin_block(
         &self,
-        ledger_params: LedgerParameters,
         chain_length: ChainLength,
         block_date: BlockDate,
     ) -> Result<ApplyBlockLedger, Error> {
@@ -780,8 +779,8 @@ impl Ledger {
         new_ledger.settings = settings;
 
         Ok(ApplyBlockLedger {
+            ledger_params: new_ledger.get_ledger_parameters(),
             ledger: new_ledger,
-            ledger_params,
             block_date,
         })
     }
@@ -809,8 +808,7 @@ impl Ledger {
             });
         }
 
-        let new_block_ledger =
-            self.begin_block(ledger_params, metadata.chain_length, metadata.block_date)?;
+        let new_block_ledger = self.begin_block(metadata.chain_length, metadata.block_date)?;
         let new_block_ledger = contents
             .iter()
             .try_fold(new_block_ledger, |new_block_ledger, fragment| {

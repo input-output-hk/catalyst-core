@@ -14,7 +14,6 @@ use vitup::builders::{default_next_vote_date, default_refresh_date};
 use vitup::config::VoteBlockchainTime;
 use vitup::scenario::network::setup_network;
 
-#[ignore]
 #[test]
 pub fn public_vote_multiple_vote_plans() {
     let proposals_path = PathBuf::from_str("../resources/tests/example/proposals.json").unwrap();

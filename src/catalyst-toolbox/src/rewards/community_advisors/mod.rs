@@ -6,7 +6,7 @@ use lottery::TicketsDistribution;
 use rand::{Rng, SeedableRng};
 use rand_chacha::{ChaCha8Rng, ChaChaRng};
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet};
 
 pub use crate::rewards::community_advisors::funding::ProposalRewardSlots;
 pub use funding::{FundSetting, Funds};
@@ -17,9 +17,9 @@ pub type ProposalId = String;
 // Lets match to the same type as the funds, but naming it funds would be confusing
 pub type Rewards = Funds;
 
-pub type CaRewards = HashMap<CommunityAdvisor, Rewards>;
-pub type ProposalsReviews = HashMap<ProposalId, Vec<AdvisorReviewRow>>;
-pub type ApprovedProposals = HashMap<ProposalId, Funds>;
+pub type CaRewards = BTreeMap<CommunityAdvisor, Rewards>;
+pub type ProposalsReviews = BTreeMap<ProposalId, Vec<AdvisorReviewRow>>;
+pub type ApprovedProposals = BTreeMap<ProposalId, Funds>;
 
 const LEGACY_MAX_WINNING_TICKETS: u64 = 3;
 
@@ -32,7 +32,7 @@ struct ProposalRewards {
 #[derive(Debug)]
 enum ProposalTickets {
     Legacy {
-        eligible_assessors: HashSet<CommunityAdvisor>,
+        eligible_assessors: BTreeSet<CommunityAdvisor>,
         winning_tkts: u64,
     },
     Fund6 {
@@ -44,7 +44,7 @@ enum ProposalTickets {
 fn get_tickets_per_proposal(
     proposal_reviews: ProposalsReviews,
     rewards_slots: &ProposalRewardSlots,
-) -> (u64, HashMap<ProposalId, ProposalTickets>) {
+) -> (u64, BTreeMap<ProposalId, ProposalTickets>) {
     let (winning_tickets, proposals_tickets): (Vec<_>, _) = proposal_reviews
         .into_iter()
         .map(|(id, reviews)| {
@@ -57,6 +57,7 @@ fn get_tickets_per_proposal(
                 ProposalTickets::Legacy { winning_tkts, .. } => {
                     // it would be a bit harder to track it otherwise, and we don't need this additional
                     // complexity now
+                    println!("{}", id);
                     assert_eq!(
                         0,
                         rewards_slots.max_winning_tickets() % LEGACY_MAX_WINNING_TICKETS
@@ -87,6 +88,7 @@ fn calculate_rewards_per_proposal(
         get_tickets_per_proposal(proposal_reviews, rewards_slots);
 
     let base_ticket_reward = funding.proposal_funds() / Rewards::from(total_tickets);
+    println!("total tickets {} {}", total_tickets, base_ticket_reward);
 
     proposals_tickets
         .into_iter()
@@ -182,10 +184,13 @@ fn calculate_ca_rewards_for_proposal<R: Rng>(
         ProposalTickets::Legacy {
             eligible_assessors,
             winning_tkts,
-        } => (
-            eligible_assessors.into_iter().map(|ca| (ca, 1)).collect(),
-            winning_tkts,
-        ),
+        } => {
+            println!("{}", per_ticket_reward);
+            (
+                eligible_assessors.into_iter().map(|ca| (ca, 1)).collect(),
+                winning_tkts,
+            )
+        }
     };
 
     lottery::lottery_distribution(tickets_distribution, tickets_to_distribute, rng)
@@ -272,7 +277,7 @@ mod tests {
 
     #[test]
     fn test_underbudget_redistribution() {
-        let mut proposals = HashMap::new();
+        let mut proposals = BTreeMap::new();
         proposals.insert("1".into(), gen_dummy_reviews(1, 5, 0)); // winning tickets: 24
         proposals.insert("2".into(), gen_dummy_reviews(2, 3, 0)); // winning tickets: 32
         let res = calculate_ca_rewards(
@@ -291,7 +296,7 @@ mod tests {
 
     #[test]
     fn test_bonus_distribution() {
-        let mut proposals = HashMap::new();
+        let mut proposals = BTreeMap::new();
         proposals.insert("1".into(), gen_dummy_reviews(1, 5, 0)); // winning tickets: 24
         proposals.insert("2".into(), gen_dummy_reviews(1, 1, 0)); // winning tickets: 16
         proposals.insert("3".into(), gen_dummy_reviews(2, 3, 0)); // winning tickets: 32
@@ -315,7 +320,7 @@ mod tests {
     fn test_all() {
         use rand::RngCore;
 
-        let mut proposals = HashMap::new();
+        let mut proposals = BTreeMap::new();
         let mut approved_proposals = ApprovedProposals::new();
         let mut rng = ChaChaRng::from_seed([0; 32]);
         for i in 0..100 {

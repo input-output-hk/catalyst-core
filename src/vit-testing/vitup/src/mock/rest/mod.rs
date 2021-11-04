@@ -441,7 +441,7 @@ pub async fn get_active_vote_plans(context: ContextLock) -> Result<impl Reply, R
     let mut context_lock = context.lock().unwrap();
     context_lock.log("get_active_vote_plans");
 
-    if !context.lock().unwrap().available() {
+    if !context_lock.available() {
         let code = context.lock().unwrap().state().error_code;
         context.lock().unwrap().log(&format!(
             "unavailability mode is on. Rejecting with error code: {}",

@@ -12,7 +12,7 @@ pub struct VitVotePlanDefBuilder {
     fund_name: Option<String>,
     vote_phases: VoteBlockchainTime,
     committee_wallet: Option<WalletAlias>,
-    proposal_builder: ProposalDefBuilder,
+    options: u8,
     parameters: Option<VitStartParameters>,
 }
 
@@ -21,22 +21,15 @@ impl VitVotePlanDefBuilder {
         Self {
             vote_phases,
             split_by: 255,
-            proposal_builder: ProposalDefBuilder::new(
-                chain_impl_mockchain::testing::VoteTestGen::external_proposal_id(),
-            ),
             fund_name: None,
             committee_wallet: None,
             parameters: None,
+            options: 0,
         }
     }
 
     pub fn options(mut self, options: u8) -> Self {
-        self.proposal_builder.options(options);
-        self
-    }
-
-    pub fn off_chain_action(mut self) -> Self {
-        self.proposal_builder.action_off_chain();
+        self.options = options;
         self
     }
 
@@ -67,42 +60,50 @@ impl VitVotePlanDefBuilder {
             .as_ref()
             .expect("parameters are not defined");
 
-        iter::from_fn(|| Some(self.proposal_builder.clone()))
-            .take(parameters.proposals as usize)
-            .collect::<Vec<ProposalDefBuilder>>()
-            .chunks(self.split_by)
-            .into_iter()
-            .enumerate()
-            .map(|(index, x)| {
-                let vote_plan_name = {
-                    if index == 0 {
-                        fund_name.to_string()
-                    } else {
-                        format!("{}_{}", fund_name, index)
-                    }
-                };
-
-                let mut vote_plan_builder = VotePlanDefBuilder::new(&vote_plan_name);
-                vote_plan_builder.owner(
-                    self.committee_wallet
-                        .as_ref()
-                        .expect("committee wallet not defined"),
-                );
-
-                if parameters.private {
-                    vote_plan_builder.payload_type(PayloadType::Private);
+        iter::from_fn(|| {
+            Some(
+                ProposalDefBuilder::new(
+                    chain_impl_mockchain::testing::VoteTestGen::external_proposal_id(),
+                )
+                .options(self.options)
+                .clone(),
+            )
+        })
+        .take(parameters.proposals as usize)
+        .collect::<Vec<ProposalDefBuilder>>()
+        .chunks(self.split_by)
+        .into_iter()
+        .enumerate()
+        .map(|(index, x)| {
+            let vote_plan_name = {
+                if index == 0 {
+                    fund_name.to_string()
+                } else {
+                    format!("{}_{}", fund_name, index)
                 }
+            };
 
-                vote_plan_builder.vote_phases(
-                    self.vote_phases.vote_start,
-                    self.vote_phases.tally_start,
-                    self.vote_phases.tally_end,
-                );
-                x.to_vec().iter_mut().for_each(|proposal| {
-                    vote_plan_builder.with_proposal(proposal);
-                });
-                vote_plan_builder.build()
-            })
-            .collect()
+            let mut vote_plan_builder = VotePlanDefBuilder::new(&vote_plan_name);
+            vote_plan_builder.owner(
+                self.committee_wallet
+                    .as_ref()
+                    .expect("committee wallet not defined"),
+            );
+
+            if parameters.private {
+                vote_plan_builder.payload_type(PayloadType::Private);
+            }
+
+            vote_plan_builder.vote_phases(
+                self.vote_phases.vote_start,
+                self.vote_phases.tally_start,
+                self.vote_phases.tally_end,
+            );
+            x.to_vec().iter_mut().for_each(|proposal| {
+                vote_plan_builder.with_proposal(proposal);
+            });
+            vote_plan_builder.build()
+        })
+        .collect()
     }
 }

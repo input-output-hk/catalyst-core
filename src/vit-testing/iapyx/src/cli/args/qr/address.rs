@@ -29,10 +29,6 @@ pub struct GetAddressFromQrCommand {
     pub read_pin_from_filename: bool,
 
     // if true then testing discrimination would be used
-    #[structopt(long = "testing")]
-    pub testing: bool,
-
-    // if true then testing discrimination would be used
     #[structopt(long = "prefix", default_value = "ca")]
     pub prefix: String,
 

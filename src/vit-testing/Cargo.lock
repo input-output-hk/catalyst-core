@@ -5340,7 +5340,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#f1cfa1a27806b766dc6d740cbfcdca33736d7338"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=adjust_review_template#f5ef69db97659a5056f5d0fab94014c7c3a6c666"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -5369,7 +5369,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=master#f1cfa1a27806b766dc6d740cbfcdca33736d7338"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=adjust_review_template#f5ef69db97659a5056f5d0fab94014c7c3a6c666"
 dependencies = [
  "assert_cmd",
  "assert_fs",

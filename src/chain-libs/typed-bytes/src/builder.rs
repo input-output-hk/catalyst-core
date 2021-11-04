@@ -153,6 +153,46 @@ impl<T> ByteBuilder<T> {
         self.bytes(&v.to_be_bytes())
     }
 
+    /// Call 'f' on bytebuilder and the value if the value is present, then return
+    /// the bytebuilder, otherwise just return the bytebuilder
+    pub fn option<F, V>(self, value: Option<V>, f: F) -> Self
+    where
+        F: FnOnce(Self, V) -> Self,
+    {
+        self.option_or_else(value, |bb| bb, f)
+    }
+
+    /// Run the first closure if the value is not present, or the second closure with
+    /// the present parameter.
+    ///
+    /// this is loosely based on Option::map_or_else
+    ///
+    /// The following call:
+    ///
+    /// ```ignore
+    /// byte_builder.option_or_else(value, none_call, some_call);
+    /// ```
+    ///
+    /// equivalent to the construction:
+    ///
+    /// ```ignore
+    /// if let Some(value) = value {
+    ///    some_call(byte_builder, value)
+    /// } else {
+    ///    none_call(byte_builder)
+    /// }
+    /// ```
+    pub fn option_or_else<F, G, V>(self, value: Option<V>, default: G, f: F) -> Self
+    where
+        F: FnOnce(Self, V) -> Self,
+        G: FnOnce(Self) -> Self,
+    {
+        match value {
+            None => default(self),
+            Some(v) => f(self, v),
+        }
+    }
+
     /// Finalize the buffer and return a fixed ByteArray of T
     pub fn finalize(self) -> ByteArray<T> {
         match self.expected {

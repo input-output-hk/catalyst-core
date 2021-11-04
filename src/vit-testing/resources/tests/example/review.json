@@ -1,26 +1,35 @@
 [
     {
-        "id": "2244",
+        "id": "1",
         "proposal_id": "339979",
-        "rating_given":  3,
-        "assessor": "z_assessor_52",
-        "note": "While this is a potentially useful project, it is not as innovative as other proposals in this challenge and the effects are not as far-reaching. Those funds would be better spent on other projects within this challenge.",
-        "tag": "Impact"
+        "assessor": "tiffany_koss_65",
+        "impact_alignment_rating_given": 4,
+        "impact_alignment_note": "possimus delectus at eveniet.",
+        "feasibility_rating_given": 4,
+        "feasibility_note": "maiores.",
+        "auditability_rating_given": 3,
+        "auditability_note": "blanditiis eos deleniti est assumenda."
     },
     {
-        "id": "2546",
+        "id": "2",
         "proposal_id": "339986",
-        "rating_given":  3,
-        "assessor": "z_assessor_22",
-        "note": "The proposal claims that Cardano projects essentially will look the same. If that was the case, then maybe instead of JavaScript, this should be a Haskell project. This proposal, if implemented in presented manner, would do nothing for the Cardano ecosystem.",
-        "tag": "Auditability"
+        "assessor": "andrew_buckridge_6",
+        "impact_alignment_rating_given": 4,
+        "impact_alignment_note": "et harum velit assumenda.",
+        "feasibility_rating_given": 4,
+        "feasibility_note": "recusandae aut ut minima neque.",
+        "auditability_rating_given": 4,
+        "auditability_note": "unde."
     },
     {
-        "id": "2866",
+        "id": "3",
         "proposal_id": "339990",
-        "rating_given":  3,
-        "assessor": "z_assessor_46",
-        "note": "The proposal is simple and aims to provide a transparent government-approved exchange service, This has minimal risks, so the proposers will be able to implement the proposal.",
-        "tag": "Feasibility"
+        "assessor": "german_bode_78",
+        "impact_alignment_rating_given": 1,
+        "impact_alignment_note": "in aut.",
+        "feasibility_rating_given": 1,
+        "feasibility_note": ".",
+        "auditability_rating_given": 1,
+        "auditability_note": "nihil reprehenderit et voluptatem vero consequatur sit dolores dolor."
     }
 ]

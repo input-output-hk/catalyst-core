@@ -30,7 +30,7 @@ impl MockStartCommandArgs {
         let control_context = Arc::new(Mutex::new(Context::new(
             configuration.clone(),
             start_params,
-        )));
+        )?));
 
         tokio::spawn(async move {
             start_rest_server(control_context.clone()).await;
@@ -42,6 +42,7 @@ impl MockStartCommandArgs {
 }
 
 #[derive(Debug, Error)]
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     #[error(transparent)]
     CannotSpawnCommand(#[from] std::io::Error),
@@ -51,4 +52,6 @@ pub enum Error {
     CannotReadParameters(#[from] serde_yaml::Error),
     #[error(transparent)]
     Join(#[from] tokio::task::JoinError),
+    #[error(transparent)]
+    Mock(#[from] crate::mock::ContextError),
 }

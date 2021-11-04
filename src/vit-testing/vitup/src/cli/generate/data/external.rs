@@ -8,6 +8,7 @@ use jormungandr_scenario_tests::Context;
 use std::path::PathBuf;
 use structopt::StructOpt;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
+
 #[derive(StructOpt, Debug)]
 #[structopt(setting = structopt::clap::AppSettings::ColoredHelp)]
 pub struct ExternalDataCommandArgs {

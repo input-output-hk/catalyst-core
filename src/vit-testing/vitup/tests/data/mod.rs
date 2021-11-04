@@ -77,10 +77,35 @@ pub fn reviews_eq(expected_list: LinkedList<ReviewTemplate>, backend_client: Val
                     actual.proposal_id.to_string(),
                     "proposal id"
                 );
-                assert_eq!(expected.rating_given, actual.rating_given, "rating given");
-                assert_eq!(expected.assessor, actual.assessor, "rating_given");
-                assert_eq!(expected.note, actual.note.to_string(), "note");
-                assert_eq!(expected.tag.to_string(), actual.tag.to_string(), "tag");
+                assert_eq!(
+                    expected.impact_alignment_rating_given, actual.impact_alignment_rating_given,
+                    "impact alignment rating given"
+                );
+                assert_eq!(
+                    expected.impact_alignment_note, actual.impact_alignment_note,
+                    "impact alignment note"
+                );
+                assert_eq!(
+                    expected.feasibility_rating_given, actual.feasibility_rating_given,
+                    "feasibility rating given"
+                );
+                assert_eq!(
+                    expected.feasibility_note, actual.feasibility_note,
+                    "feasibility note"
+                );
+                assert_eq!(
+                    expected.impact_alignment_rating_given, actual.impact_alignment_rating_given,
+                    "impact alignment rating given"
+                );
+                assert_eq!(
+                    expected.auditability_rating_given, actual.auditability_rating_given,
+                    "auditability rating given"
+                );
+                assert_eq!(
+                    expected.auditability_note, actual.auditability_note,
+                    "auditability note"
+                );
+                assert_eq!(expected.assessor, actual.assessor, "assessor");
             }
         }
     }

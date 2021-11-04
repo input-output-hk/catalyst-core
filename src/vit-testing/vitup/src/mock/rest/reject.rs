@@ -33,11 +33,19 @@ impl GeneralException {
             code: 400,
         }
     }
+    pub fn proposal_not_found(proposal_id: i32) -> Self {
+        let format = r#"{"code":404,"message":"The data requested data for `proposal with id {}` is not available"}"#;
+        Self {
+            summary: format.replace("{}", &proposal_id.to_string()),
+            code: 404,
+        }
+    }
 }
 
 impl warp::reject::Reject for ForcedErrorCode {}
 impl warp::reject::Reject for InvalidBatch {}
 impl warp::reject::Reject for GeneralException {}
+impl warp::reject::Reject for crate::mock::ContextError {}
 
 pub async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
     if let Some(forced_error_code) = r.find::<ForcedErrorCode>() {

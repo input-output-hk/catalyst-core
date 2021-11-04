@@ -63,7 +63,7 @@ jobs:
           command: |
             git clone https://github.com/input-output-hk/jormungandr.git
             cd jormungandr
-            git checkout master
+            git checkout a31e1329bda7c41595c8ac1d28dcfd9dfd42ef6e
       - run:
           name: install jormungandr
           command: |

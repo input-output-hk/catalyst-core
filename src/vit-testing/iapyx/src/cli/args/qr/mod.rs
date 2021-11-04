@@ -1,8 +1,6 @@
 mod address;
-mod secret;
 mod verify;
 
-use crate::cli::args::qr::secret::GetSecretFromQrCommand;
 use address::GetAddressFromQrCommand;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
 use structopt::StructOpt;
@@ -13,7 +11,6 @@ use verify::VerifyQrCommand;
 pub enum IapyxQrCommand {
     Verify(VerifyQrCommand),
     CheckAddress(GetAddressFromQrCommand),
-    Secret(GetSecretFromQrCommand),
 }
 
 impl IapyxQrCommand {
@@ -21,7 +18,6 @@ impl IapyxQrCommand {
         match self {
             Self::Verify(verify) => verify.exec(),
             Self::CheckAddress(check_address) => check_address.exec(),
-            Self::Secret(secret) => secret.exec(),
         }
     }
 }

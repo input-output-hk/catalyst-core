@@ -343,7 +343,6 @@ impl VitBackendSettingsBuilder {
 
         VitVotePlanDefBuilder::new(vote_blockchain_time)
             .options(3)
-            .off_chain_action()
             .split_by(255)
             .fund_name(self.fund_name())
             .with_committee(self.committee_wallet.clone())
@@ -351,12 +350,15 @@ impl VitBackendSettingsBuilder {
             .build()
             .into_iter()
             .for_each(|vote_plan_def| {
+                println!("{:?}", vote_plan_def);
+
                 blockchain.add_vote_plan(
                     vote_plan_def.alias(),
                     vote_plan_def.owner(),
                     chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into(),
                 )
             });
+
         builder.set_blockchain(blockchain);
         builder.build_settings(&mut context);
 

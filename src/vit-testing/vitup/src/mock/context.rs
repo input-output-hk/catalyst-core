@@ -7,6 +7,7 @@ use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex;
+use thiserror::Error;
 use valgrind::VitVersion;
 
 pub struct Context {
@@ -17,13 +18,13 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(config: Configuration, params: Option<VitStartParameters>) -> Self {
-        Self {
+    pub fn new(config: Configuration, params: Option<VitStartParameters>) -> Result<Self, Error> {
+        Ok(Self {
             address: ([0, 0, 0, 0], config.port).into(),
-            state: MockState::new(params.unwrap_or_default(), config.clone()).unwrap(),
+            state: MockState::new(params.unwrap_or_default(), config.clone())?,
             config,
             logger: Logger::new(),
-        }
+        })
     }
 
     pub fn log<S: Into<String>>(&mut self, message: S) {
@@ -42,8 +43,9 @@ impl Context {
         self.state.version()
     }
 
-    pub fn reset(&mut self, params: VitStartParameters) {
-        self.state = MockState::new(params, self.config.clone()).unwrap();
+    pub fn reset(&mut self, params: VitStartParameters) -> Result<(), Error> {
+        self.state = MockState::new(params, self.config.clone())?;
+        Ok(())
     }
 
     pub fn block0_bin(&self) -> Vec<u8> {
@@ -78,4 +80,14 @@ impl Context {
     pub fn set_api_token(&mut self, api_token: String) {
         self.config.token = Some(api_token);
     }
+}
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    Ledger(#[from] super::ledger_state::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[error(transparent)]
+    Mock(#[from] super::mock_state::Error),
 }

@@ -483,7 +483,7 @@ pub async fn command_reset_mock(
     context: ContextLock,
     parameters: VitStartParameters,
 ) -> Result<impl Reply, Rejection> {
-    context.lock().unwrap().reset(parameters);
+    context.lock().unwrap().reset(parameters)?;
     Ok(warp::reply())
 }
 
@@ -831,7 +831,7 @@ pub async fn get_proposal(id: i32, context: ContextLock) -> Result<impl Reply, R
         .iter()
         .find(|x| x.proposal.internal_id.to_string() == id.to_string())
         .map(|x| x.proposal.clone())
-        .unwrap();
+        .ok_or_else(|| warp::reject::custom(GeneralException::proposal_not_found(id)))?;
 
     Ok(HandlerResult(Ok(proposal)))
 }

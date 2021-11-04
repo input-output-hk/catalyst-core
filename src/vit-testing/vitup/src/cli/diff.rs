@@ -1,3 +1,4 @@
+use crate::builders::post_deployment::DeploymentTree;
 use crate::builders::utils::io::decode_block0;
 use crate::Result;
 use assert_fs::TempDir;
@@ -6,7 +7,7 @@ use diffy::PatchFormatter;
 use jortestkit::prelude::read_file;
 use std::fs::File;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use structopt::StructOpt;
 use valgrind::ValgrindClient;
 use vit_servicing_station_tests::common::startup::server::ServerBootstrapper;
@@ -35,9 +36,9 @@ impl DiffCommand {
     pub fn exec(self) -> Result<()> {
         std::env::set_var("RUST_BACKTRACE", "full");
         let remote = TempDir::new().unwrap();
-
-        let local_genesis_yaml = Path::new(&self.local).join("genesis.yaml");
-        let local_vit_db = Path::new(&self.local).join("vit_station/storage.db");
+        let deployment_tree = DeploymentTree::new(&self.local, "");
+        let local_genesis_yaml = deployment_tree.genesis_path();
+        let local_vit_db = deployment_tree.database_path();
         let remote_client = ValgrindClient::new(self.target.clone(), Default::default());
 
         let remote_genesis_yaml = remote.path().join("genesis_remote.yaml");

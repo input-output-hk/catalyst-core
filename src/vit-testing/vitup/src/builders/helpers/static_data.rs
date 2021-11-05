@@ -4,6 +4,7 @@ use crate::config::VitStartParameters;
 use chain_crypto::bech32::Bech32;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_vote::ElectionPublicKey;
+use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
 pub fn build_servicing_station_parameters(
@@ -30,6 +31,7 @@ pub fn build_servicing_station_parameters(
     parameters.set_voting_start(vote_start_timestamp.timestamp());
     parameters.set_voting_tally_start(tally_start_timestamp.timestamp());
     parameters.set_voting_tally_end(tally_end_timestamp.timestamp());
+    parameters.set_vote_options(VoteOptions::parse_coma_separated_value("yes,no"));
     parameters.set_next_fund_start_time(input_parameters.next_vote_start_time.timestamp());
     parameters.set_registration_snapshot_time(input_parameters.refresh_time.timestamp());
     parameters.set_fund_id(input_parameters.fund_id);

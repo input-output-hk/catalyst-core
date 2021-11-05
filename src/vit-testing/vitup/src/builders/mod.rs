@@ -342,7 +342,7 @@ impl VitBackendSettingsBuilder {
         println!("building voteplan..");
 
         VitVotePlanDefBuilder::new(vote_blockchain_time)
-            .options(3)
+            .options(2)
             .split_by(255)
             .fund_name(self.fund_name())
             .with_committee(self.committee_wallet.clone())
@@ -350,8 +350,6 @@ impl VitBackendSettingsBuilder {
             .build()
             .into_iter()
             .for_each(|vote_plan_def| {
-                println!("{:?}", vote_plan_def);
-
                 blockchain.add_vote_plan(
                     vote_plan_def.alias(),
                     vote_plan_def.owner(),

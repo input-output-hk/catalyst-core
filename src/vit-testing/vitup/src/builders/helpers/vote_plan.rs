@@ -66,6 +66,7 @@ impl VitVotePlanDefBuilder {
                     chain_impl_mockchain::testing::VoteTestGen::external_proposal_id(),
                 )
                 .options(self.options)
+                .action_off_chain()
                 .clone(),
             )
         })

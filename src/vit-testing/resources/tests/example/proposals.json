@@ -1,7 +1,7 @@
 [
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -20,7 +20,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -40,7 +40,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -59,7 +59,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -78,7 +78,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -97,7 +97,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -116,7 +116,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -135,7 +135,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -154,7 +154,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -173,7 +173,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -192,7 +192,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -211,7 +211,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -230,7 +230,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -249,7 +249,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -269,7 +269,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -288,7 +288,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -307,7 +307,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -326,7 +326,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -345,7 +345,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -365,7 +365,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -384,7 +384,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -403,7 +403,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -422,7 +422,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -441,7 +441,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -460,7 +460,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -479,7 +479,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -498,7 +498,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -517,7 +517,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -536,7 +536,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -555,7 +555,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -574,7 +574,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -594,7 +594,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -614,7 +614,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -633,7 +633,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -652,7 +652,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -671,7 +671,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -690,7 +690,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -709,7 +709,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -728,7 +728,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -747,7 +747,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -766,7 +766,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -785,7 +785,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -804,7 +804,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -823,7 +823,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -842,7 +842,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -861,7 +861,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -881,7 +881,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -900,7 +900,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -919,7 +919,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -939,7 +939,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -959,7 +959,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -978,7 +978,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -997,7 +997,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1016,7 +1016,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -1036,7 +1036,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1055,7 +1055,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -1075,7 +1075,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -1094,7 +1094,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1113,7 +1113,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1132,7 +1132,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1151,7 +1151,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -1170,7 +1170,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -1189,7 +1189,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -1208,7 +1208,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -1227,7 +1227,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1246,7 +1246,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1265,7 +1265,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1284,7 +1284,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -1304,7 +1304,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1323,7 +1323,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1342,7 +1342,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -1361,7 +1361,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -1381,7 +1381,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1400,7 +1400,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1419,7 +1419,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1438,7 +1438,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -1457,7 +1457,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1476,7 +1476,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -1495,7 +1495,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1514,7 +1514,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1533,7 +1533,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -1552,7 +1552,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1571,7 +1571,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1590,7 +1590,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1609,7 +1609,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1628,7 +1628,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1647,7 +1647,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1666,7 +1666,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -1685,7 +1685,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -1705,7 +1705,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -1724,7 +1724,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -1743,7 +1743,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1762,7 +1762,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -1782,7 +1782,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1801,7 +1801,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -1820,7 +1820,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -1840,7 +1840,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1859,7 +1859,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1878,7 +1878,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -1897,7 +1897,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1916,7 +1916,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1935,7 +1935,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1954,7 +1954,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -1973,7 +1973,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -1992,7 +1992,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -2012,7 +2012,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2031,7 +2031,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2050,7 +2050,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -2069,7 +2069,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2088,7 +2088,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2107,7 +2107,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2126,7 +2126,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2145,7 +2145,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2164,7 +2164,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2183,7 +2183,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2202,7 +2202,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2221,7 +2221,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2240,7 +2240,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2259,7 +2259,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2278,7 +2278,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2297,7 +2297,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2316,7 +2316,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2335,7 +2335,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2354,7 +2354,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2373,7 +2373,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2392,7 +2392,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2411,7 +2411,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -2430,7 +2430,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -2449,7 +2449,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -2468,7 +2468,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2487,7 +2487,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -2507,7 +2507,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -2526,7 +2526,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2545,7 +2545,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2564,7 +2564,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2583,7 +2583,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2602,7 +2602,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2621,7 +2621,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2640,7 +2640,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2659,7 +2659,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2678,7 +2678,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2697,7 +2697,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2716,7 +2716,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2735,7 +2735,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2754,7 +2754,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2773,7 +2773,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2792,7 +2792,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2811,7 +2811,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2830,7 +2830,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -2849,7 +2849,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2868,7 +2868,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2887,7 +2887,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2906,7 +2906,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2925,7 +2925,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2944,7 +2944,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -2963,7 +2963,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -2982,7 +2982,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3001,7 +3001,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3020,7 +3020,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3039,7 +3039,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3058,7 +3058,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3077,7 +3077,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -3096,7 +3096,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3115,7 +3115,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3134,7 +3134,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -3153,7 +3153,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3172,7 +3172,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3191,7 +3191,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -3210,7 +3210,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -3229,7 +3229,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -3248,7 +3248,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3267,7 +3267,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3286,7 +3286,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3305,7 +3305,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -3324,7 +3324,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3343,7 +3343,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -3362,7 +3362,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3381,7 +3381,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3400,7 +3400,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3419,7 +3419,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -3438,7 +3438,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3457,7 +3457,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -3476,7 +3476,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -3495,7 +3495,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3514,7 +3514,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -3534,7 +3534,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3553,7 +3553,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -3573,7 +3573,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3592,7 +3592,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3611,7 +3611,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3630,7 +3630,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3649,7 +3649,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3668,7 +3668,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -3687,7 +3687,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -3706,7 +3706,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -3726,7 +3726,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -3745,7 +3745,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -3764,7 +3764,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3783,7 +3783,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3802,7 +3802,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3821,7 +3821,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3840,7 +3840,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3859,7 +3859,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3878,7 +3878,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -3897,7 +3897,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -3916,7 +3916,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3935,7 +3935,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -3954,7 +3954,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3973,7 +3973,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -3992,7 +3992,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -4011,7 +4011,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4030,7 +4030,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4049,7 +4049,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4068,7 +4068,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4087,7 +4087,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -4106,7 +4106,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4125,7 +4125,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4144,7 +4144,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -4163,7 +4163,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4182,7 +4182,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -4202,7 +4202,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -4222,7 +4222,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4241,7 +4241,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4260,7 +4260,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -4280,7 +4280,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -4300,7 +4300,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4319,7 +4319,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -4339,7 +4339,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -4358,7 +4358,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4377,7 +4377,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -4397,7 +4397,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4416,7 +4416,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -4435,7 +4435,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4454,7 +4454,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -4473,7 +4473,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4492,7 +4492,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -4511,7 +4511,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4530,7 +4530,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4549,7 +4549,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4568,7 +4568,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4587,7 +4587,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4606,7 +4606,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4625,7 +4625,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4644,7 +4644,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -4664,7 +4664,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4683,7 +4683,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4702,7 +4702,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -4721,7 +4721,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4740,7 +4740,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -4759,7 +4759,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4778,7 +4778,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4797,7 +4797,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -4816,7 +4816,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4835,7 +4835,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4854,7 +4854,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4873,7 +4873,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4892,7 +4892,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4911,7 +4911,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4930,7 +4930,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -4949,7 +4949,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -4968,7 +4968,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -4987,7 +4987,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -5006,7 +5006,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -5025,7 +5025,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -5044,7 +5044,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -5063,7 +5063,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "7",
     "challenge_type": "simple",
@@ -5082,7 +5082,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -5101,7 +5101,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -5120,7 +5120,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -5139,7 +5139,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -5158,7 +5158,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -5177,7 +5177,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "6",
     "challenge_type": "simple",
@@ -5196,7 +5196,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "3",
     "challenge_type": "simple",
@@ -5215,7 +5215,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",
@@ -5235,7 +5235,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -5254,7 +5254,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -5273,7 +5273,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "2",
     "challenge_type": "simple",
@@ -5292,7 +5292,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "5",
     "challenge_type": "simple",
@@ -5311,7 +5311,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "4",
     "challenge_type": "simple",
@@ -5330,7 +5330,7 @@
   },
   {
     "category_name": "Fund4",
-    "chain_vote_options": "blank,yes,no",
+    "chain_vote_options": "yes,no",
     "chain_vote_type": "public",
     "challenge_id": "1",
     "challenge_type": "community-choice",

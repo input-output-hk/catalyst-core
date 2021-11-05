@@ -1,3 +1,4 @@
+use jortestkit::load::ConfigurationBuilder;
 pub use jortestkit::load::{
     self, Configuration, Id, Monitor, Request, RequestFailure, RequestGenerator, RequestStatus,
     RequestStatusProvider, Response,
@@ -21,35 +22,27 @@ impl RequestGenerator for SampleRequestGenerator {
     }
 
     fn split(self) -> (Self, Option<Self>) {
-        (self.clone(), None)
+        (self, None)
     }
 }
 
 #[test]
 pub fn load_sanity_sync() {
-    let config = Configuration::duration(
-        1,
-        std::time::Duration::from_secs(3),
-        50,
-        None,
-        Monitor::Progress(10),
-        0,
-        1,
-    );
+    let config = ConfigurationBuilder::duration(Duration::from_secs(3))
+        .step_delay(Duration::from_millis(50))
+        .monitor(Monitor::Progress(10))
+        .build();
+
     load::start_sync(SampleRequestGenerator { counter: 1 }, config, "Mock load");
 }
 
 #[test]
 pub fn load_sanity_multi_sync() {
-    let config = Configuration::duration(
-        5,
-        std::time::Duration::from_secs(5),
-        10,
-        None,
-        Monitor::Progress(100),
-        0,
-        1,
-    );
+    let config = ConfigurationBuilder::duration(Duration::from_secs(5))
+        .thread_no(5)
+        .step_delay(Duration::from_millis(10))
+        .monitor(Monitor::Progress(100))
+        .build();
 
     load::start_multi_sync(vec![
         (
@@ -64,7 +57,7 @@ pub fn load_sanity_multi_sync() {
         ),
         (
             SampleRequestGenerator { counter: 1 },
-            config.clone(),
+            config,
             "Mock multi load #3".to_string(),
         ),
     ]);
@@ -87,7 +80,7 @@ impl RequestGenerator for AsyncSampleRequestGenerator {
     }
 
     fn split(self) -> (Self, Option<Self>) {
-        (self.clone(), None)
+        (self, None)
     }
 }
 
@@ -104,15 +97,10 @@ impl RequestStatusProvider for SampleRequestStatusProvider {
 
 #[test]
 pub fn load_sanity_async() {
-    let config = Configuration::duration(
-        1,
-        std::time::Duration::from_secs(3),
-        50,
-        None,
-        Monitor::Progress(10),
-        0,
-        1,
-    );
+    let config = ConfigurationBuilder::duration(Duration::from_secs(3))
+        .step_delay(Duration::from_millis(50))
+        .monitor(Monitor::Progress(10))
+        .build();
     load::start_async(
         AsyncSampleRequestGenerator { counter: 1 },
         SampleRequestStatusProvider,

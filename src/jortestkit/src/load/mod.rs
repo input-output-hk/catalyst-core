@@ -1,7 +1,4 @@
-use std::{
-    sync::Arc,
-    time::{Duration, Instant},
-};
+use std::{sync::Arc, time::Instant};
 
 mod config;
 mod monitor;
@@ -14,7 +11,7 @@ mod status;
 
 use crate::load::rayon::{DurationRequestConsumer, Executor, FixedCountRequestConsumer};
 use ::rayon::iter::plumbing::bridge_unindexed;
-pub use config::{Configuration, Monitor, Strategy};
+pub use config::{Configuration, ConfigurationBuilder, Monitor, Strategy};
 pub use indicatif::{MultiProgress, ProgressBar};
 pub use monitor::MonitorThread;
 pub use progress::{use_as_monitor_progress_bar, use_as_status_progress_bar};
@@ -221,7 +218,7 @@ where
     let request_generator = RayonWrapper::from(request_generator);
     println!("Running load using {:?}", config.strategy());
     let mut executor = Executor::new(config.thread_no());
-    let delay = Duration::from_millis(config.step_delay());
+    let delay = config.step_delay();
     let strategy = config.strategy().clone();
     let thread_no = config.thread_no();
     executor.spawn(move || match strategy {

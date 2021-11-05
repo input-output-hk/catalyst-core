@@ -13,6 +13,8 @@ use std::{
     thread::{self, JoinHandle},
 };
 
+const SHUTDOWN_PERIOD_INTERVAL: Duration = Duration::from_secs(1);
+
 #[derive(Debug)]
 pub struct StatusUpdaterThread {
     stop_signal: Sender<()>,
@@ -138,8 +140,8 @@ impl StatusUpdaterThread {
         monitor: Monitor,
         fetch_limit: Option<usize>,
         title: &str,
-        shutdown_grace_period: u32,
-        pace: u64,
+        mut shutdown_grace_period: Duration,
+        pace: Duration,
     ) -> Self
     where
         S: RequestStatusProvider + Send + 'static,
@@ -156,7 +158,7 @@ impl StatusUpdaterThread {
                 Ok(_) | Err(TryRecvError::Disconnected) => {
                     progress_bar.set_message("Waiting for all messages to be accepted or rejected");
 
-                    for _ in 0..shutdown_grace_period {
+                    while !shutdown_grace_period.is_zero() {
                         let statuses = update_statuses(
                             &responses_clone,
                             fetch_limit,
@@ -174,14 +176,16 @@ impl StatusUpdaterThread {
                                 pending_statuses.len()
                             ));
                         }
-                        std::thread::sleep(std::time::Duration::from_secs(1));
+                        std::thread::sleep(SHUTDOWN_PERIOD_INTERVAL);
+                        shutdown_grace_period =
+                            shutdown_grace_period.saturating_sub(SHUTDOWN_PERIOD_INTERVAL);
                     }
                     break;
                 }
                 Err(TryRecvError::Empty) => {}
             }
             update_statuses(&responses_clone, fetch_limit, &request_status_provider);
-            std::thread::sleep(std::time::Duration::from_secs(pace));
+            std::thread::sleep(pace);
         });
         Self {
             stop_signal: tx,

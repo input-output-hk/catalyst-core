@@ -2007,7 +2007,7 @@ dependencies = [
  "rand 0.8.4",
  "rand_core 0.6.3",
  "rayon",
- "regex 1.5.4",
+ "regex 0.2.11",
  "reqwest 0.10.10",
  "serde",
  "serde_json",
@@ -2100,7 +2100,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7baab56125e25686df467fe470785512329883aab42696d661247aca2a2896e4"
 dependencies = [
- "console 0.13.0",
+ "console 0.11.3",
  "lazy_static",
  "number_prefix",
  "regex 1.5.4",
@@ -2419,7 +2419,7 @@ dependencies = [
 [[package]]
 name = "jortestkit"
 version = "0.1.0"
-source = "git+https://github.com/input-output-hk/jortestkit.git?branch=master#e1794f919a979947ac010fed7c048910ce255a39"
+source = "git+https://github.com/input-output-hk/jortestkit.git?branch=master#fc57b9117aa530eaeb26937437dfa0a05fe55470"
 dependencies = [
  "assert_fs",
  "base64 0.13.0",
@@ -5269,7 +5269,7 @@ dependencies = [
  "jormungandr-lib",
  "jormungandr-testing-utils",
  "jortestkit",
- "regex 1.5.4",
+ "regex 0.2.11",
  "reqwest 0.10.10",
  "serde",
  "serde_json",

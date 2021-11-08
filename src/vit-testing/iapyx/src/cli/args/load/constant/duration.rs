@@ -3,8 +3,9 @@ use crate::cli::args::load::IapyxLoadCommandError;
 use crate::load::NodeLoad;
 use crate::load::NodeLoadConfig;
 pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
-use jortestkit::load::Configuration;
+use jortestkit::load::ConfigurationBuilder;
 use std::path::PathBuf;
+use std::time::Duration;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -18,8 +19,8 @@ pub struct ConstDurationIapyxLoadCommand {
     pub address: String,
 
     /// amount of delay [miliseconds] between requests
-    #[structopt(short = "p", long = "pace", default_value = "10")]
-    pub pace: u64,
+    #[structopt(short = "d", long = "delay", default_value = "10000")]
+    pub delay: u64,
 
     // duration of scenario
     #[structopt(long = "duration")]
@@ -85,15 +86,13 @@ impl ConstDurationIapyxLoadCommand {
     }
 
     fn build_config(&self) -> NodeLoadConfig {
-        let config = Configuration::duration(
-            self.threads,
-            std::time::Duration::from_secs(self.duration),
-            self.pace,
-            Some(250),
-            build_monitor(&self.progress_bar_mode),
-            0,
-            self.status_pace,
-        );
+        let config = ConfigurationBuilder::duration(Duration::from_secs(self.duration))
+            .thread_no(self.threads)
+            .step_delay(Duration::from_millis(self.delay))
+            .fetch_limit(250)
+            .monitor(build_monitor(&self.progress_bar_mode))
+            .status_pace(Duration::from_secs(self.status_pace))
+            .build();
 
         NodeLoadConfig {
             config,

@@ -6,11 +6,11 @@ use jormungandr_lib::interfaces::BlockDate;
 use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
 use jormungandr_testing_utils::testing::node::time;
 use jortestkit::{
-    load::{Configuration, Monitor},
+    load::{ConfigurationBuilder, Monitor},
     measurement::Status,
 };
-use std::path::PathBuf;
 use std::str::FromStr;
+use std::{path::PathBuf, time::Duration};
 use valgrind::Protocol;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
@@ -149,15 +149,13 @@ pub fn build_load_config(
     batch_size: usize,
     parameters: VitStartParameters,
 ) -> NodeLoadConfig {
-    let config = Configuration::duration(
-        threads_no,
-        parameters.calculate_vote_duration(),
-        delay,
-        Some(250),
-        Monitor::Progress(100),
-        60,
-        1,
-    );
+    let config = ConfigurationBuilder::duration(parameters.calculate_vote_duration())
+        .thread_no(threads_no)
+        .step_delay(Duration::from_millis(delay))
+        .fetch_limit(250)
+        .monitor(Monitor::Progress(100))
+        .shutdown_grace_period(Duration::from_secs(60))
+        .build();
 
     NodeLoadConfig {
         batch_size,
@@ -186,15 +184,13 @@ pub fn build_load_config_count(
     delay: u64,
     batch_size: usize,
 ) -> NodeLoadConfig {
-    let config = Configuration::requests_per_thread(
-        threads_no,
-        requests_per_thread,
-        delay,
-        Some(250),
-        Monitor::Progress(100),
-        60,
-        1,
-    );
+    let config = ConfigurationBuilder::requests_per_thread(requests_per_thread)
+        .thread_no(threads_no)
+        .step_delay(Duration::from_millis(delay))
+        .fetch_limit(250)
+        .monitor(Monitor::Progress(100))
+        .shutdown_grace_period(Duration::from_secs(60))
+        .build();
 
     NodeLoadConfig {
         batch_size,

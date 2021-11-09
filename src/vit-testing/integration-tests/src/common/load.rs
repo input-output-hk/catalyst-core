@@ -5,6 +5,7 @@ use iapyx::{NodeLoad, NodeLoadConfig};
 use jormungandr_lib::interfaces::BlockDate;
 use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
 use jormungandr_testing_utils::testing::node::time;
+use jormungandr_testing_utils::testing::FragmentNode;
 use jortestkit::{
     load::{ConfigurationBuilder, Monitor},
     measurement::Status,
@@ -95,7 +96,7 @@ pub fn private_vote_test_scenario(
     let target_date = BlockDate::new(vote_timing.tally_end, vote_timing.slots_per_epoch / 2);
     time::wait_for_date(target_date, leader_1.rest());
 
-    let active_vote_plans = leader_1.vote_plans().unwrap();
+    let active_vote_plans = leader_1.rest().vote_plan_statuses().unwrap();
     let vote_plan_status = active_vote_plans
         .iter()
         .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&vote_plan.id()).unwrap().into())
@@ -125,13 +126,14 @@ pub fn private_vote_test_scenario(
     time::wait_for_epoch((vote_timing.tally_end + 10) as u32, leader_1.rest());
 
     leader_1
-        .vote_plans()
+        .rest()
+        .vote_plan_statuses()
         .unwrap()
         .assert_all_proposals_are_tallied();
 
     vit_station.shutdown();
     wallet_proxy.shutdown();
-    for node in nodes {
+    for mut node in nodes {
         node.logger()
             .assert_no_errors(&format!("Errors in logs for node: {}", node.alias()));
         node.shutdown().unwrap();

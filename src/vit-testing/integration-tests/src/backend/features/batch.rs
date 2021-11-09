@@ -76,7 +76,7 @@ pub fn transactions_are_send_between_nodes_with_correct_order() {
 
     vit_station.shutdown();
     wallet_proxy.shutdown();
-    for node in nodes {
+    for mut node in nodes {
         node.shutdown().unwrap();
     }
     controller.finalize();

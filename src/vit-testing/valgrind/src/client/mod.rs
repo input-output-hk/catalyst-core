@@ -10,6 +10,7 @@ use crate::Proposal;
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use chain_ser::deser::Deserialize;
+use jormungandr_lib::interfaces::AccountVotes;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::FragmentStatus;
 use jormungandr_lib::interfaces::SettingsDto;
@@ -167,14 +168,18 @@ impl ValgrindClient {
         self.node_client.vote_plan_statuses().map_err(Into::into)
     }
 
-    pub fn votes_history(
+    pub fn vote_plan_history(
         &self,
         address: Address,
         vote_plan_id: VotePlanId,
     ) -> Result<Option<Vec<u8>>, Error> {
         self.node_client
-            .account_votes(vote_plan_id, address)
+            .account_votes_for_plan(vote_plan_id, address)
             .map_err(Into::into)
+    }
+
+    pub fn votes_history(&self, address: Address) -> Result<Option<Vec<AccountVotes>>, Error> {
+        self.node_client.account_votes(address).map_err(Into::into)
     }
 
     pub fn settings(&self) -> Result<SettingsDto, Error> {

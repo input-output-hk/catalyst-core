@@ -70,20 +70,27 @@ impl IapyxCommand {
             }
             IapyxCommand::Votes(votes) => {
                 if let Some(controller) = model.controller.as_mut() {
-                    let vote_plan_id: String = {
+                    let vote_plan_id: Option<String> = {
                         if let Some(index) = votes.vote_plan_index {
                             let funds = controller.funds()?;
-                            funds.chain_vote_plans[index].chain_voteplan_id.to_string()
+                            Some(funds.chain_vote_plans[index].chain_voteplan_id.to_string())
                         } else {
-                            votes.vote_plan_id.as_ref().unwrap().to_string()
+                            votes
+                                .vote_plan_id
+                                .as_ref()
+                                .map(|vote_plan_id| vote_plan_id.to_string())
                         }
                     };
 
                     print_delim();
-                    println!(
-                        "{:?}",
-                        controller.votes_history(Hash::from_str(&vote_plan_id)?)?
-                    );
+                    match vote_plan_id {
+                        Some(vote_plan_id) => {
+                            let vote_plan_id = Hash::from_str(&vote_plan_id)?;
+                            println!("{:?}", controller.vote_plan_history(vote_plan_id)?)
+                        }
+                        None => println!("{:?}", controller.votes_history()?),
+                    };
+
                     print_delim();
                     return Ok(());
                 }

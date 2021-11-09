@@ -206,11 +206,11 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             id: None,
             proposal_id,
             assessor: Name().fake::<String>(),
-            impact_alignment_rating_given: (self.generator.next_u32() % 500) as i32,
+            impact_alignment_rating_given: (self.generator.next_u32() % 5) as i32,
             impact_alignment_note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
-            feasibility_rating_given: (self.generator.next_u32() % 500) as i32,
+            feasibility_rating_given: (self.generator.next_u32() % 5) as i32,
             feasibility_note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
-            auditability_rating_given: (self.generator.next_u32() % 500) as i32,
+            auditability_rating_given: (self.generator.next_u32() % 5) as i32,
             auditability_note: fake::faker::lorem::en::Sentence(0..100).fake::<String>(),
         };
         self.reviews.push(review.clone());

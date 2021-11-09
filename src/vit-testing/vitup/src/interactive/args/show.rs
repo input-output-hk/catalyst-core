@@ -88,9 +88,8 @@ impl VoteTimeStatus {
             .network_settings
             .block0
             .blockchain_configuration;
-        let node = controller.nodes().first().unwrap();
-        //let current_time = node.explorer().current_time();
-        let vote_plans = node.vote_plans().unwrap();
+        let node = controller.nodes().iter().next().unwrap();
+        let vote_plans = node.rest().vote_plan_statuses().unwrap();
         let vote_plan = vote_plans.first().unwrap();
 
         let mut dates = vec![

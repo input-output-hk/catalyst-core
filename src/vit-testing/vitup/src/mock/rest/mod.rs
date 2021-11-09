@@ -2,16 +2,16 @@ use super::FragmentRecieveStrategy;
 use crate::config::VitStartParameters;
 use crate::manager::file_lister::dump_json;
 use crate::mock::context::{Context, ContextLock};
-use chain_core::property::Deserialize;
+use chain_core::property::Deserialize as _;
 use chain_core::property::Fragment as _;
 use chain_crypto::PublicKey;
 use chain_impl_mockchain::account::AccountAlg;
 use chain_impl_mockchain::account::Identifier;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use itertools::Itertools;
-use jormungandr_lib::interfaces::FragmentsBatch;
-use jormungandr_lib::interfaces::VotePlanStatus;
-use jormungandr_lib::interfaces::{Address, VotePlanId};
+use jormungandr_lib::crypto::hash::Hash;
+use jormungandr_lib::interfaces::AccountVotes;
+use jormungandr_lib::interfaces::{Address, FragmentsBatch, VotePlanId, VotePlanStatus};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
 use serde::{Deserialize as SerdeDeserialize, Serialize as SerdeSerialize};
@@ -27,6 +27,7 @@ use vit_servicing_station_lib::db::models::proposals::Proposal;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{reject::Reject, Filter, Rejection, Reply};
+
 mod reject;
 
 use reject::{report_invalid, ForcedErrorCode, GeneralException, InvalidBatch};
@@ -334,10 +335,21 @@ pub async fn start_rest_server(context: ContextLock) {
             root.and(post.or(status).or(logs)).boxed()
         };
 
-        let votes = warp::path!("votes" / "plan" / VotePlanId / "account-votes" / Address)
-            .and(warp::get())
-            .and(with_context.clone())
-            .and_then(get_account_votes);
+        let votes = {
+            let root = warp::path!("votes" / "plan" / ..);
+
+            let votes_with_plan = warp::path!(VotePlanId / "account-votes" / Address)
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_account_votes_with_plan);
+
+            let votes = warp::path!("account-votes" / Address)
+                .and(warp::get())
+                .and(with_context.clone())
+                .and_then(get_account_votes);
+
+            root.and(votes_with_plan.or(votes)).boxed()
+        };
 
         root.and(fragments.or(votes))
     };
@@ -357,7 +369,7 @@ pub async fn start_rest_server(context: ContextLock) {
     server_fut.await;
 }
 
-pub async fn get_account_votes(
+pub async fn get_account_votes_with_plan(
     vote_plan_id: VotePlanId,
     address: Address,
     context: ContextLock,
@@ -368,21 +380,7 @@ pub async fn get_account_votes(
         vote_plan_id, address
     ));
 
-    let address: chain_addr::Address = address.into();
-    let identifier = match address.kind() {
-        chain_addr::Kind::Account(pubkey) => {
-            let account_id = chain_impl_mockchain::account::Identifier::from(pubkey.clone());
-            chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier::from_single_account(
-                account_id,
-            )
-        }
-        _ => {
-            return Err(warp::reject::custom(GeneralException {
-                summary: "Unexpected address type".to_string(),
-                code: 400,
-            }))
-        }
-    };
+    let identifier = into_identifier(address)?;
 
     let vote_plan_id: chain_crypto::digest::DigestOf<_, _> = vote_plan_id.into_digest().into();
 
@@ -419,6 +417,66 @@ pub async fn get_account_votes(
         .collect();
 
     Ok(HandlerResult(Ok(Some(result))))
+}
+
+pub async fn get_account_votes(
+    address: Address,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    context_lock.log(format!("get_account_votes: address: {:?}", address));
+
+    let identifier = into_identifier(address)?;
+
+    if !context_lock.available() {
+        let code = context_lock.state().error_code;
+        context_lock.log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
+    }
+
+    let result: Vec<AccountVotes> = context_lock
+        .state()
+        .ledger()
+        .active_vote_plans()
+        .iter()
+        .map(|vote_plan| {
+            let votes: Vec<u8> = vote_plan
+                .proposals
+                .iter()
+                .enumerate()
+                .filter(|(_, x)| x.votes.contains_key(&identifier))
+                .map(|(i, _)| i as u8)
+                .collect();
+
+            AccountVotes {
+                vote_plan_id: Hash::from_str(&vote_plan.id.to_string()).unwrap(),
+                votes,
+            }
+        })
+        .collect();
+
+    Ok(HandlerResult(Ok(Some(result))))
+}
+
+pub fn into_identifier(
+    address: Address,
+) -> Result<chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier, Rejection> {
+    let address: chain_addr::Address = address.into();
+    match address.kind() {
+        chain_addr::Kind::Account(pubkey) => {
+            let account_id = chain_impl_mockchain::account::Identifier::from(pubkey.clone());
+            Ok(chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier::from_single_account(
+                account_id,
+            ))
+        }
+        _ => Err(warp::reject::custom(GeneralException {
+            summary: "Unexpected address type".to_string(),
+            code: 400,
+        })),
+    }
 }
 
 pub async fn logs_get(context: ContextLock) -> Result<impl Reply, Rejection> {

@@ -12,4 +12,4 @@ crate-type = [ "cdylib" ]
 [dependencies]
 jni = "0.16.0"
 wallet-core = { path = "../wallet-core" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund7"}

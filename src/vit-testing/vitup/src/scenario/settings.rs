@@ -5,11 +5,11 @@ use jormungandr_testing_utils::testing::network::WalletProxySettings;
 use jormungandr_testing_utils::testing::network::{
     Blockchain as BlockchainTemplate, NodeAlias, Topology as TopologyTemplate,
 };
+use jormungandr_testing_utils::testing::node::configuration::get_available_port;
 use rand_core::{CryptoRng, RngCore};
 use std::collections::HashMap;
 use vit_servicing_station_lib::server::settings::ServiceSettings;
 use vit_servicing_station_tests::common::startup::server::ServerSettingsBuilder;
-
 pub trait PrepareVitServerSettings: Clone + Send {
     fn prepare<RNG>(context: &mut Context<RNG>) -> Self
     where
@@ -62,13 +62,13 @@ impl VitSettings {
 }
 
 impl PrepareVitServerSettings for VitStationSettings {
-    fn prepare<RNG>(context: &mut Context<RNG>) -> Self
+    fn prepare<RNG>(_context: &mut Context<RNG>) -> Self
     where
         RNG: RngCore + CryptoRng,
     {
         let mut settings_builder: ServerSettingsBuilder = Default::default();
         settings_builder
-            .with_localhost_address(context.generate_new_unique_port() as u32)
+            .with_localhost_address(get_available_port() as u32)
             .build()
     }
 }

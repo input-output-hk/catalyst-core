@@ -14,7 +14,6 @@ use vit_servicing_station_tests::common::data::ValidVotingTemplateGenerator;
 
 pub struct VitControllerBuilder {
     controller_builder: ControllerBuilder,
-    vit_settings: Option<VitSettings>,
 }
 
 pub struct VitController {
@@ -25,26 +24,22 @@ impl VitControllerBuilder {
     pub fn new(title: &str) -> Self {
         Self {
             controller_builder: ControllerBuilder::new(title),
-            vit_settings: None,
         }
     }
 
-    pub fn set_topology(&mut self, topology: Topology) {
-        self.controller_builder.set_topology(topology);
+    pub fn topology(mut self, topology: Topology) -> Self {
+        self.controller_builder = self.controller_builder.topology(topology);
+        self
     }
 
-    pub fn set_blockchain(&mut self, blockchain: Blockchain) {
-        self.controller_builder.set_blockchain(blockchain);
+    pub fn blockchain(mut self, blockchain: Blockchain) -> Self {
+        self.controller_builder = self.controller_builder.blockchain(blockchain);
+        self
     }
 
-    pub fn build_settings(&mut self, context: &mut ContextChaCha) {
-        self.controller_builder.build_settings(context);
-        self.vit_settings = Some(VitSettings::new(context));
-    }
-
-    pub fn build_controllers(self, context: ContextChaCha) -> Result<(VitController, Controller)> {
+    pub fn build(self, mut context: ContextChaCha) -> Result<(VitController, Controller)> {
+        let vit_controller = VitController::new(VitSettings::new(&mut context));
         let controller = self.controller_builder.build(context)?;
-        let vit_controller = VitController::new(self.vit_settings.unwrap());
         Ok((vit_controller, controller))
     }
 }
@@ -106,11 +101,7 @@ impl VitController {
             .iter()
             .next()
             .ok_or(WalletProxyError::NoWalletProxiesDefinedInSettings)?;
-        let node_setting = if let Some(node_setting) = controller
-            .settings()
-            .network_settings
-            .nodes
-            .get(&node_alias)
+        let node_setting = if let Some(node_setting) = controller.settings().nodes.get(&node_alias)
         {
             node_setting.clone()
         } else {

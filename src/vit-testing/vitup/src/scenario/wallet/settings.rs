@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 impl PrepareWalletProxySettings for WalletProxySettings {
     fn prepare<RNG>(
-        context: &mut Context<RNG>,
+        _context: &mut Context<RNG>,
         vit_stations: &HashMap<NodeAlias, VitStationSettings>,
     ) -> Self
     where
@@ -21,7 +21,7 @@ impl PrepareWalletProxySettings for WalletProxySettings {
             .expect("no vit stations defined");
 
         WalletProxySettings {
-            proxy_address: context.generate_new_rest_listen_address(),
+            proxy_address: "127.0.0.1:8080".parse().unwrap(),
             vit_station_address: vit_station_settings.address,
             node_backend_address: None,
         }

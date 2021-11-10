@@ -85,7 +85,6 @@ impl VoteTimeStatus {
         let blockchain_configuration = &controller
             .controller()
             .settings()
-            .network_settings
             .block0
             .blockchain_configuration;
         let node = controller.nodes().iter().next().unwrap();

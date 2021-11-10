@@ -23,7 +23,6 @@ use jormungandr_lib::interfaces::CommitteeIdDef;
 use jormungandr_lib::interfaces::ConsensusLeaderId;
 pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::time::SecondsSinceUnixEpoch;
-use jormungandr_scenario_tests::scenario::settings::Settings;
 use jormungandr_scenario_tests::scenario::{
     ConsensusVersion, ContextChaCha, Controller, NumberOfSlotsPerEpoch, SlotDuration, Topology,
 };
@@ -278,7 +277,7 @@ impl VitBackendSettingsBuilder {
 
     pub fn build(
         &mut self,
-        mut context: ContextChaCha,
+        context: ContextChaCha,
     ) -> Result<(VitController, Controller, ValidVotePlanParameters, String)> {
         let mut builder = VitControllerBuilder::new(&self.title);
 
@@ -294,7 +293,7 @@ impl VitBackendSettingsBuilder {
 
         println!("building topology..");
 
-        builder.set_topology(self.build_topology());
+        builder = builder.topology(self.build_topology());
         blockchain.add_leader(LEADER_1);
         blockchain.add_leader(LEADER_2);
         blockchain.add_leader(LEADER_3);
@@ -357,12 +356,11 @@ impl VitBackendSettingsBuilder {
                 )
             });
 
-        builder.set_blockchain(blockchain);
-        builder.build_settings(&mut context);
+        builder = builder.blockchain(blockchain);
 
         println!("building controllers..");
 
-        let (vit_controller, controller) = builder.build_controllers(context)?;
+        let (vit_controller, controller) = builder.build(context)?;
 
         if !self.skip_qr_generation {
             self.dump_qrs(&controller, &templates, &child)?;

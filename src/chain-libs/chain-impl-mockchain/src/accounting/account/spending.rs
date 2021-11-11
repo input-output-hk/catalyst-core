@@ -106,7 +106,7 @@ impl SpendingCounter {
         self.0 & Self::UNLANED_MASK
     }
 
-    pub(crate) fn new(lane: usize, counter: u32) -> Self {
+    pub fn new(lane: usize, counter: u32) -> Self {
         assert!(lane < (1 << LANES_BITS));
         assert!(counter < (1 << UNLANES_BITS));
         SpendingCounter((lane << UNLANES_BITS) as u32 | (counter & Self::UNLANED_MASK))

@@ -14,7 +14,6 @@ pub use content::{BlockContentHash, BlockContentSize, Contents, ContentsBuilder}
 use crate::{
     certificate,
     transaction::{NoExtra, Transaction},
-    update::{SignedUpdateProposal, SignedUpdateVote},
 };
 
 #[cfg(any(test, feature = "property-test-api"))]
@@ -31,8 +30,8 @@ pub enum Fragment {
     PoolRegistration(Transaction<certificate::PoolRegistration>),
     PoolRetirement(Transaction<certificate::PoolRetirement>),
     PoolUpdate(Transaction<certificate::PoolUpdate>),
-    UpdateProposal(SignedUpdateProposal),
-    UpdateVote(SignedUpdateVote),
+    UpdateProposal(Transaction<certificate::UpdateProposal>),
+    UpdateVote(Transaction<certificate::UpdateVote>),
     VotePlan(Transaction<certificate::VotePlan>),
     VoteCast(Transaction<certificate::VoteCast>),
     VoteTally(Transaction<certificate::VoteTally>),
@@ -182,9 +181,9 @@ impl Readable for Fragment {
             }
             Some(FragmentTag::PoolUpdate) => Transaction::read(buf).map(Fragment::PoolUpdate),
             Some(FragmentTag::UpdateProposal) => {
-                SignedUpdateProposal::read(buf).map(Fragment::UpdateProposal)
+                Transaction::read(buf).map(Fragment::UpdateProposal)
             }
-            Some(FragmentTag::UpdateVote) => SignedUpdateVote::read(buf).map(Fragment::UpdateVote),
+            Some(FragmentTag::UpdateVote) => Transaction::read(buf).map(Fragment::UpdateVote),
             Some(FragmentTag::VotePlan) => Transaction::read(buf).map(Fragment::VotePlan),
             Some(FragmentTag::VoteCast) => Transaction::read(buf).map(Fragment::VoteCast),
             Some(FragmentTag::VoteTally) => Transaction::read(buf).map(Fragment::VoteTally),

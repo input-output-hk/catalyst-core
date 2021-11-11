@@ -1,13 +1,22 @@
 use crate::{
+    account::SpendingCounter,
     block::{self, Block},
     chaintypes::HeaderId,
     date::BlockDate,
     fragment::Contents,
     header::BlockVersion,
+    key::EitherEd25519SecretKey,
     ledger::ledger::Ledger,
     testing::arbitrary::update_proposal::UpdateProposalData,
-    testing::{ConfigBuilder, LedgerBuilder},
+    testing::{
+        builders::TestTxCertBuilder,
+        data::{AddressData, AddressDataValue, Wallet},
+        ConfigBuilder, LedgerBuilder,
+    },
+    value::*,
 };
+use chain_addr::{Address, Discrimination, Kind};
+use chain_core::property::Fragment;
 use chain_crypto::{Ed25519, SecretKey};
 use quickcheck::TestResult;
 use quickcheck_macros::quickcheck;
@@ -16,46 +25,59 @@ use quickcheck_macros::quickcheck;
 pub fn ledger_adopt_settings_from_update_proposal(
     update_proposal_data: UpdateProposalData,
 ) -> TestResult {
-    let cb = ConfigBuilder::new().with_leaders(&update_proposal_data.leaders_ids());
+    let leader_pair = update_proposal_data.leaders.iter().next().unwrap();
+    let mut leader = Wallet::from_address_data_value(AddressDataValue::new(
+        AddressData::new(
+            EitherEd25519SecretKey::Normal(leader_pair.1.clone()),
+            Some(SpendingCounter(0)),
+            Address(
+                Discrimination::Test,
+                Kind::Account(leader_pair.0.as_public_key().clone()),
+            ),
+        ),
+        Value(100),
+    ));
 
-    let testledger = LedgerBuilder::from_config(cb)
+    let cb = ConfigBuilder::new().with_leaders(&update_proposal_data.leaders_ids());
+    let mut testledger = LedgerBuilder::from_config(cb)
+        .faucets_wallets(vec![&leader])
         .build()
         .expect("cannot build test ledger");
-    let mut ledger = testledger.ledger;
 
+    let fragment = TestTxCertBuilder::new(testledger.block0_hash, testledger.fee())
+        .make_transaction(
+            testledger.date().next_epoch(),
+            &[leader.clone()],
+            &update_proposal_data.proposal.clone().into(),
+        );
+
+    leader.confirm_transaction();
     // apply proposal
-    let date = ledger.date();
-    ledger = ledger
-        .apply_update_proposal(
-            update_proposal_data.proposal_id,
-            &update_proposal_data.proposal,
-            date,
-        )
+    testledger
+        .apply_fragment(&fragment, BlockDate::first().next_epoch())
         .unwrap();
 
     // apply votes
-    for vote in update_proposal_data.votes.iter() {
-        ledger = ledger.apply_update_vote(&vote).unwrap();
+    for vote in update_proposal_data.gen_votes(fragment.id()) {
+        let fragment = TestTxCertBuilder::new(testledger.block0_hash, testledger.fee())
+            .make_transaction(testledger.date().next_epoch(), vec![&leader], &vote.into());
+        testledger
+            .apply_fragment(&fragment, BlockDate::first().next_epoch())
+            .unwrap();
+        leader.confirm_transaction();
     }
 
     // trigger proposal process (build block)
     let block = build_block(
-        &ledger,
+        &testledger.ledger,
         testledger.block0_hash,
-        date.next_epoch(),
+        testledger.ledger.date().next_epoch(),
         &update_proposal_data.block_signing_key,
     );
-    let header_meta = block.header().get_content_eval_context();
-    ledger = ledger
-        .apply_block(
-            ledger.get_ledger_parameters(),
-            block.contents(),
-            &header_meta,
-        )
-        .unwrap();
+    testledger.apply_block(block).unwrap();
 
     // assert
-    let actual_params = ledger.settings.to_config_params();
+    let actual_params = testledger.ledger.settings.to_config_params();
     let expected_params = update_proposal_data.proposal_settings();
 
     let mut all_settings_equal = true;
@@ -66,10 +88,10 @@ pub fn ledger_adopt_settings_from_update_proposal(
         }
     }
 
-    if !ledger.updates.proposals.is_empty() {
+    if !testledger.ledger.updates.proposals.is_empty() {
         return TestResult::error(format!(
             "Error: proposal collection should be empty but contains:{:?}",
-            ledger.updates.proposals
+            testledger.ledger.updates.proposals
         ));
     }
 

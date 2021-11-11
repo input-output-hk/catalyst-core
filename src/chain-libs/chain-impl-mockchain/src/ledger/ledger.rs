@@ -25,7 +25,10 @@ use crate::value::*;
 use crate::vote::{CommitteeId, VotePlanLedger, VotePlanLedgerError, VotePlanStatus};
 use crate::{account, certificate, legacy, multisig, setting, stake, update, utxo};
 use crate::{
-    certificate::{OwnerStakeDelegation, PoolId, VoteAction, VoteCast, VotePlan},
+    certificate::{
+        BftLeaderBindingSignature, OwnerStakeDelegation, PoolId, UpdateProposal, UpdateProposalId,
+        UpdateVote, VoteAction, VoteCast, VotePlan,
+    },
     chaineval::ConsensusEvalContext,
 };
 use chain_addr::{Address, Discrimination, Kind};
@@ -312,6 +315,10 @@ pub enum Error {
     VotePlan(#[from] VotePlanLedgerError),
     #[error("Scripts addresses are not yet supported by the system")]
     ScriptsAddressNotAllowedYet,
+    #[error("Protocol update proposal payload signature failed")]
+    UpdateProposalSignatureFailed,
+    #[error("Protocol update vote payload signature failed")]
+    UpdateVoteSignatureFailed,
 }
 
 impl LedgerParameters {
@@ -922,12 +929,27 @@ impl Ledger {
                     tx.payload_auth().into_payload_auth(),
                 )?;
             }
-            Fragment::UpdateProposal(update_proposal) => {
-                new_ledger =
-                    new_ledger.apply_update_proposal(fragment_id, update_proposal, block_date)?;
+            Fragment::UpdateProposal(tx) => {
+                let tx = tx.as_slice();
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                new_ledger = new_ledger_.apply_update_proposal(
+                    fragment_id,
+                    tx.payload().into_payload(),
+                    &tx.transaction_binding_auth_data(),
+                    tx.payload_auth().into_payload_auth(),
+                    block_date,
+                )?;
             }
-            Fragment::UpdateVote(vote) => {
-                new_ledger = new_ledger.apply_update_vote(vote)?;
+            Fragment::UpdateVote(tx) => {
+                let tx = tx.as_slice();
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+                new_ledger = new_ledger_.apply_update_vote(
+                    &tx.payload().into_payload(),
+                    &tx.transaction_binding_auth_data(),
+                    tx.payload_auth().into_payload_auth(),
+                )?;
             }
             Fragment::VotePlan(tx) => {
                 let tx = tx.as_slice();
@@ -1009,24 +1031,40 @@ impl Ledger {
         Ok((self, fee))
     }
 
-    pub fn apply_update(mut self, update: &update::UpdateProposal) -> Result<Self, Error> {
+    pub fn apply_update(mut self, update: &UpdateProposal) -> Result<Self, Error> {
         self.settings = self.settings.apply(update.changes())?;
         Ok(self)
     }
 
     pub fn apply_update_proposal(
         mut self,
-        proposal_id: update::UpdateProposalId,
-        proposal: &update::SignedUpdateProposal,
+        proposal_id: UpdateProposalId,
+        proposal: UpdateProposal,
+        auth_data: &TransactionBindingAuthData,
+        sig: BftLeaderBindingSignature,
         cur_date: BlockDate,
     ) -> Result<Self, Error> {
+        if sig.verify_slice(proposal.proposer_id().as_public_key(), auth_data)
+            != Verification::Success
+        {
+            return Err(Error::UpdateProposalSignatureFailed);
+        }
+
         self.updates =
             self.updates
                 .apply_proposal(proposal_id, proposal, &self.settings, cur_date)?;
         Ok(self)
     }
 
-    pub fn apply_update_vote(mut self, vote: &update::SignedUpdateVote) -> Result<Self, Error> {
+    pub fn apply_update_vote<'a>(
+        mut self,
+        vote: &UpdateVote,
+        auth_data: &TransactionBindingAuthData<'a>,
+        sig: BftLeaderBindingSignature,
+    ) -> Result<Self, Error> {
+        if sig.verify_slice(vote.voter_id().as_public_key(), auth_data) != Verification::Success {
+            return Err(Error::UpdateVoteSignatureFailed);
+        }
         self.updates = self.updates.apply_vote(vote, &self.settings)?;
         Ok(self)
     }

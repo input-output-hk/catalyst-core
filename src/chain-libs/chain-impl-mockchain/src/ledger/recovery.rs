@@ -42,7 +42,10 @@ use crate::accounting::account::{
     AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
     SpendingCounterIncreasing,
 };
-use crate::certificate::{PoolId, PoolRegistration, Proposal, Proposals, VoteAction, VotePlan};
+use crate::certificate::{
+    PoolId, PoolRegistration, Proposal, Proposals, UpdateProposal, UpdateProposalId, UpdateVoterId,
+    VoteAction, VotePlan,
+};
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::fragment::FragmentId;
@@ -53,7 +56,7 @@ use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
 use crate::stake::{PoolLastRewards, PoolState};
 use crate::transaction::Output;
-use crate::update::{UpdateProposal, UpdateProposalId, UpdateProposalState, UpdateVoterId};
+use crate::update::UpdateProposalState;
 use crate::value::Value;
 use crate::vote;
 use crate::{config, key, multisig, utxo};
@@ -64,9 +67,9 @@ use chain_crypto::AsymmetricPublicKey;
 use chain_ser::deser::{Deserialize, Serialize};
 use chain_ser::packer::Codec;
 use chain_time::era::{pack_time_era, unpack_time_era};
-use std::collections::HashSet;
+use imhamt::Hamt;
 use std::convert::TryFrom;
-use std::io::{self, BufRead, Read, Write};
+use std::io::{self, BufRead, ErrorKind, Read, Write};
 use std::sync::Arc;
 
 #[cfg(test)]
@@ -750,11 +753,11 @@ fn pack_update_proposal_state<W: std::io::Write>(
 ) -> Result<(), std::io::Error> {
     pack_update_proposal(&update_proposal_state.proposal, codec)?;
     pack_block_date(update_proposal_state.proposal_date, codec)?;
-    codec.put_u64(update_proposal_state.votes.len() as u64)?;
+    codec.put_u64(update_proposal_state.votes.size() as u64)?;
     {
         let mut codec = Codec::new(codec);
-        for e in &update_proposal_state.votes {
-            e.serialize(&mut codec)?;
+        for (voter, _) in &update_proposal_state.votes {
+            voter.serialize(&mut codec)?;
         }
     }
     Ok(())
@@ -766,12 +769,14 @@ fn unpack_update_proposal_state<R: std::io::BufRead>(
     let proposal = unpack_update_proposal(codec)?;
     let proposal_date = unpack_block_date(codec)?;
     let total_votes = codec.get_u64()?;
-    let mut votes: HashSet<UpdateVoterId> = HashSet::new();
+    let mut votes = Hamt::new();
     {
         let mut codec = Codec::new(codec);
         for _ in 0..total_votes {
             let id = UpdateVoterId::deserialize(&mut codec)?;
-            votes.insert(id);
+            votes = votes
+                .insert(id, ())
+                .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e))?;
         }
     }
     Ok(UpdateProposalState {
@@ -785,7 +790,7 @@ fn pack_update_proposal<W: std::io::Write>(
     update_proposal: &UpdateProposal,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    update_proposal.serialize(codec)
+    Serialize::serialize(update_proposal, codec)
 }
 
 fn unpack_update_proposal<R: std::io::BufRead>(

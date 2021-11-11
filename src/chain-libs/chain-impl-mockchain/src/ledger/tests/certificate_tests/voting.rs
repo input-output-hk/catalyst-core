@@ -2,21 +2,19 @@
 
 use crate::{
     config::ConfigParam,
-    fragment::Fragment,
     key::BftLeaderId,
     ledger::ledger::{Block0Error, Error},
     testing::{
-        build_vote,
         builders::{
-            create_initial_vote_cast, create_initial_vote_plan, create_initial_vote_tally,
-            InitialFaultTolerantTxCertBuilder,
+            create_initial_update_proposal, create_initial_update_vote, create_initial_vote_cast,
+            create_initial_vote_plan, create_initial_vote_tally, InitialFaultTolerantTxCertBuilder,
         },
         data::Wallet,
-        ConfigBuilder, LedgerBuilder, ProposalBuilder, SignedProposalBuilder, TestGen, VoteTestGen,
+        ConfigBuilder, LedgerBuilder, TestGen, VoteTestGen,
     },
     value::*,
 };
-use chain_core::property::Fragment as _;
+
 #[test]
 pub fn vote_plan_in_block0() {
     let alice = Wallet::from_value(Value(100));
@@ -127,20 +125,7 @@ pub fn update_vote_is_not_allowed_in_block0() {
     let alice = Wallet::from_value(Value(100));
     let leader_pair = TestGen::leader_pair();
 
-    let update_proposal = ProposalBuilder::new()
-        .with_proposal_change(ConfigParam::SlotDuration(11u8))
-        .build();
-
-    let signed_update_proposal = SignedProposalBuilder::new()
-        .with_proposal_update(update_proposal)
-        .with_proposer_secret_key(leader_pair.key())
-        .build();
-
-    let fragment = Fragment::UpdateProposal(signed_update_proposal);
-
-    let signed_update_vote = build_vote(fragment.id(), leader_pair.key());
-
-    let fragment = Fragment::UpdateVote(signed_update_vote);
+    let fragment = create_initial_update_vote(leader_pair, TestGen::hash());
 
     let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])
@@ -157,15 +142,9 @@ pub fn update_vote_is_not_allowed_in_block0() {
 pub fn update_proposal_is_not_allowed_in_block0() {
     let alice = Wallet::from_value(Value(100));
     let leader_pair = TestGen::leader_pair();
-    let update_proposal = ProposalBuilder::new()
-        .with_proposal_change(ConfigParam::SlotDuration(11u8))
-        .build();
-    let signed_update_proposal = SignedProposalBuilder::new()
-        .with_proposal_update(update_proposal)
-        .with_proposer_secret_key(leader_pair.key())
-        .build();
 
-    let fragment = Fragment::UpdateProposal(signed_update_proposal);
+    let fragment =
+        create_initial_update_proposal(leader_pair, vec![ConfigParam::SlotDuration(11u8)]);
 
     let ledger_builder_result = LedgerBuilder::from_config(ConfigBuilder::new())
         .faucets_wallets(vec![&alice])

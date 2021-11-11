@@ -1,94 +1,75 @@
 //use crate::certificate::{verify_certificate, HasPublicKeys, SignatureRaw};
+use crate::certificate::{UpdateProposal, UpdateProposalId, UpdateVote, UpdateVoterId};
 use crate::date::BlockDate;
-use crate::fragment::config::ConfigParams;
-use crate::key::{deserialize_signature, serialize_signature, verify_signature, BftLeaderId};
 use crate::setting::{ActiveSlotsCoeffError, Settings};
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
-use chain_core::property;
-use chain_crypto::{Ed25519, Signature, Verification};
-use std::collections::{HashMap, HashSet};
+use imhamt::Hamt;
+use std::collections::hash_map::DefaultHasher;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UpdateState {
-    pub proposals: HashMap<UpdateProposalId, UpdateProposalState>,
+    pub proposals: Hamt<DefaultHasher, UpdateProposalId, UpdateProposalState>,
 }
 
 impl UpdateState {
     pub fn new() -> Self {
         UpdateState {
-            proposals: HashMap::new(),
+            proposals: Hamt::new(),
         }
     }
 
     pub fn apply_proposal(
         mut self,
         proposal_id: UpdateProposalId,
-        proposal: &SignedUpdateProposal,
+        proposal: UpdateProposal,
         settings: &Settings,
         cur_date: BlockDate,
     ) -> Result<Self, Error> {
-        let proposer_id = &proposal.proposal.proposer_id;
-
-        if proposal.verify() == Verification::Failed {
-            return Err(Error::BadProposalSignature(
-                proposal_id,
-                proposer_id.clone(),
-            ));
-        }
+        let proposer_id = proposal.proposer_id();
 
         if !settings.bft_leaders.contains(proposer_id) {
             return Err(Error::BadProposer(proposal_id, proposer_id.clone()));
         }
 
-        let proposal = &proposal.proposal.proposal;
-
-        if self
+        self.proposals = self
             .proposals
             .insert(
                 proposal_id,
                 UpdateProposalState {
                     proposal: proposal.clone(),
                     proposal_date: cur_date,
-                    votes: HashSet::new(),
+                    votes: Hamt::new(),
                 },
             )
-            .is_some()
-        {
-            Err(Error::DuplicateProposal(proposal_id))
-        } else {
-            Ok(self)
-        }
+            .map_err(|_| Error::DuplicateProposal(proposal_id))?;
+        Ok(self)
     }
 
-    pub fn apply_vote(
-        mut self,
-        vote: &SignedUpdateVote,
-        settings: &Settings,
-    ) -> Result<Self, Error> {
-        if vote.verify() == Verification::Failed {
-            return Err(Error::BadVoteSignature(
-                vote.vote.proposal_id,
-                vote.vote.voter_id.clone(),
+    pub fn apply_vote(mut self, vote: &UpdateVote, settings: &Settings) -> Result<Self, Error> {
+        if !settings.bft_leaders.contains(vote.voter_id()) {
+            return Err(Error::BadVoter(
+                *vote.proposal_id(),
+                vote.voter_id().clone(),
             ));
         }
 
-        let vote = &vote.vote;
+        let new = self.proposals.update(vote.proposal_id(), |proposal| {
+            let mut proposal_new = proposal.clone();
+            proposal_new.votes = proposal.votes.insert(vote.voter_id().clone(), ())?;
+            Ok::<_, imhamt::InsertError>(Some(proposal_new))
+        });
 
-        if !settings.bft_leaders.contains(&vote.voter_id) {
-            return Err(Error::BadVoter(vote.proposal_id, vote.voter_id.clone()));
-        }
-
-        if let Some(proposal) = self.proposals.get_mut(&vote.proposal_id) {
-            if !proposal.votes.insert(vote.voter_id.clone()) {
-                return Err(Error::DuplicateVote(
-                    vote.proposal_id,
-                    vote.voter_id.clone(),
-                ));
+        match new {
+            Err(imhamt::UpdateError::KeyNotFound) => {
+                Err(Error::VoteForMissingProposal(*vote.proposal_id()))
             }
-
-            Ok(self)
-        } else {
-            Err(Error::VoteForMissingProposal(vote.proposal_id))
+            Err(imhamt::UpdateError::ValueCallbackError(_)) => Err(Error::DuplicateVote(
+                *vote.proposal_id(),
+                vote.voter_id().clone(),
+            )),
+            Ok(new) => {
+                self.proposals = new;
+                Ok(self)
+            }
         }
     }
 
@@ -119,8 +100,8 @@ impl UpdateState {
             for (proposal_id, proposal_state) in proposals {
                 // If a majority of BFT leaders voted for the
                 // proposal, then apply it.
-                if proposal_state.votes.len() > settings.bft_leaders.len() / 2 {
-                    settings = settings.apply(&proposal_state.proposal.changes)?;
+                if proposal_state.votes.size() > settings.bft_leaders.len() / 2 {
+                    settings = settings.apply(proposal_state.proposal.changes())?;
                     expired_ids.push(*proposal_id);
                 } else if proposal_state.proposal_date.epoch + settings.proposal_expiration
                     < new_date.epoch
@@ -130,7 +111,10 @@ impl UpdateState {
             }
 
             for proposal_id in expired_ids {
-                self.proposals.remove(&proposal_id);
+                self.proposals = self
+                    .proposals
+                    .remove(&proposal_id)
+                    .expect("proposal does not exist");
             }
         }
 
@@ -148,7 +132,7 @@ impl Default for UpdateState {
 pub struct UpdateProposalState {
     pub proposal: UpdateProposal,
     pub proposal_date: BlockDate,
-    pub votes: HashSet<UpdateVoterId>,
+    pub votes: Hamt<DefaultHasher, UpdateVoterId, ()>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -237,293 +221,25 @@ impl From<ActiveSlotsCoeffError> for Error {
     }
 }
 
-pub type UpdateProposalId = crate::fragment::FragmentId;
-pub type UpdateVoterId = BftLeaderId;
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct UpdateProposal {
-    changes: ConfigParams,
-}
-
-impl Default for UpdateProposal {
-    fn default() -> Self {
-        Self {
-            changes: ConfigParams::new(),
-        }
-    }
-}
-
-impl UpdateProposal {
-    pub fn new(changes: ConfigParams) -> Self {
-        Self { changes }
-    }
-
-    pub fn changes(&self) -> &ConfigParams {
-        &self.changes
-    }
-}
-
-impl property::Serialize for UpdateProposal {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        self.changes.serialize(writer)?;
-        Ok(())
-    }
-}
-
-impl property::Deserialize for UpdateProposal {
-    type Error = std::io::Error;
-
-    fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
-        let changes = ConfigParams::deserialize(reader)?;
-        Ok(UpdateProposal { changes })
-    }
-}
-
-impl Readable for UpdateProposal {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        Ok(Self {
-            changes: ConfigParams::read(buf)?,
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct UpdateProposalWithProposer {
-    proposal: UpdateProposal,
-    proposer_id: UpdateVoterId,
-}
-
-impl UpdateProposalWithProposer {
-    pub fn new(proposal: UpdateProposal, proposer_id: UpdateVoterId) -> Self {
-        Self {
-            proposal,
-            proposer_id,
-        }
-    }
-
-    pub fn proposal(&self) -> &UpdateProposal {
-        &self.proposal
-    }
-}
-
-impl property::Serialize for UpdateProposalWithProposer {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(writer);
-        self.proposal.serialize(&mut codec)?;
-        self.proposer_id.serialize(&mut codec)?;
-        Ok(())
-    }
-}
-
-impl Readable for UpdateProposalWithProposer {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        Ok(Self {
-            proposal: Readable::read(buf)?,
-            proposer_id: Readable::read(buf)?,
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct SignedUpdateProposal {
-    sign: Signature<UpdateProposal, Ed25519>,
-    proposal: UpdateProposalWithProposer,
-}
-
-impl SignedUpdateProposal {
-    pub fn new(
-        sign: Signature<UpdateProposal, Ed25519>,
-        proposal: UpdateProposalWithProposer,
-    ) -> Self {
-        Self { sign, proposal }
-    }
-
-    pub fn verify(&self) -> Verification {
-        verify_signature(
-            &self.sign,
-            self.proposal.proposer_id.as_public_key(),
-            &self.proposal.proposal,
-        )
-    }
-
-    pub fn proposal(&self) -> &UpdateProposalWithProposer {
-        &self.proposal
-    }
-}
-
-impl property::Serialize for SignedUpdateProposal {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(writer);
-        serialize_signature(&self.sign, &mut codec)?;
-        self.proposal.serialize(&mut codec)?;
-        Ok(())
-    }
-}
-
-impl Readable for SignedUpdateProposal {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        Ok(Self {
-            sign: deserialize_signature(buf)?,
-            proposal: Readable::read(buf)?,
-        })
-    }
-}
-
-// A positive vote for a proposal.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct UpdateVote {
-    proposal_id: UpdateProposalId,
-    voter_id: UpdateVoterId,
-}
-
-impl UpdateVote {
-    pub fn new(proposal_id: UpdateProposalId, voter_id: UpdateVoterId) -> Self {
-        Self {
-            proposal_id,
-            voter_id,
-        }
-    }
-}
-
-impl property::Serialize for UpdateVote {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(writer);
-        self.proposal_id.serialize(&mut codec)?;
-        self.voter_id.serialize(&mut codec)?;
-        Ok(())
-    }
-}
-
-impl Readable for UpdateVote {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        let proposal_id = Readable::read(buf)?;
-        let voter_id = Readable::read(buf)?;
-        Ok(UpdateVote {
-            proposal_id,
-            voter_id,
-        })
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct SignedUpdateVote {
-    sign: Signature<UpdateVote, Ed25519>,
-    vote: UpdateVote,
-}
-
-impl SignedUpdateVote {
-    pub fn new(sign: Signature<UpdateVote, Ed25519>, vote: UpdateVote) -> Self {
-        Self { sign, vote }
-    }
-
-    pub fn verify(&self) -> Verification {
-        verify_signature(&self.sign, self.vote.voter_id.as_public_key(), &self.vote)
-    }
-}
-
-impl property::Serialize for SignedUpdateVote {
-    type Error = std::io::Error;
-    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
-        use chain_core::packer::*;
-        let mut codec = Codec::new(writer);
-        serialize_signature(&self.sign, &mut codec)?;
-        self.vote.serialize(&mut codec)?;
-        Ok(())
-    }
-}
-
-impl Readable for SignedUpdateVote {
-    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        Ok(SignedUpdateVote {
-            sign: deserialize_signature(buf)?,
-            vote: Readable::read(buf)?,
-        })
-    }
-}
-
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-    use crate::key::signed_new;
+    use crate::certificate::UpdateProposal;
     #[cfg(test)]
     use crate::testing::serialization::serialization_bijection;
     #[cfg(test)]
     use crate::{
         config::ConfigParam,
-        testing::{
-            builders::update_builder::{ProposalBuilder, SignedProposalBuilder, UpdateVoteBuilder},
-            data::LeaderPair,
-            TestGen,
-        },
-    };
-    use crate::{
         fragment::config::ConfigParams,
-        update::{
-            SignedUpdateProposal, SignedUpdateVote, UpdateProposal, UpdateProposalWithProposer,
-            UpdateVote,
-        },
+        testing::{data::LeaderPair, TestGen},
     };
     #[cfg(test)]
     use chain_addr::Discrimination;
-    use chain_crypto::SecretKey;
     #[cfg(test)]
     use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
     use quickcheck_macros::quickcheck;
     use std::iter;
-
-    impl Arbitrary for UpdateProposal {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let mut changes = ConfigParams::new();
-            for _ in 0..u8::arbitrary(g) % 10 {
-                changes.push(Arbitrary::arbitrary(g));
-            }
-            Self { changes }
-        }
-    }
-
-    impl Arbitrary for UpdateProposalWithProposer {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            Self {
-                proposal: Arbitrary::arbitrary(g),
-                proposer_id: Arbitrary::arbitrary(g),
-            }
-        }
-    }
-
-    impl Arbitrary for SignedUpdateProposal {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let sk: SecretKey<Ed25519> = Arbitrary::arbitrary(g);
-            let proposal: UpdateProposalWithProposer = Arbitrary::arbitrary(g);
-            let sign = signed_new(&sk, proposal.proposal.clone()).sig;
-            Self { sign, proposal }
-        }
-    }
-
-    impl Arbitrary for UpdateVote {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            Self {
-                proposal_id: Arbitrary::arbitrary(g),
-                voter_id: Arbitrary::arbitrary(g),
-            }
-        }
-    }
-
-    impl Arbitrary for SignedUpdateVote {
-        fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let sk: SecretKey<Ed25519> = Arbitrary::arbitrary(g);
-            let vote: UpdateVote = Arbitrary::arbitrary(g);
-            let sign = signed_new(&sk, vote.clone()).sig;
-            Self { sign, vote }
-        }
-    }
 
     impl Arbitrary for UpdateProposalState {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -531,7 +247,7 @@ mod tests {
             Self {
                 proposal: UpdateProposal::arbitrary(g),
                 proposal_date: BlockDate::arbitrary(g),
-                votes: iter::from_fn(|| Some(UpdateVoterId::arbitrary(g)))
+                votes: iter::from_fn(|| Some((UpdateVoterId::arbitrary(g), ())))
                     .take(size)
                     .collect(),
             }
@@ -542,21 +258,13 @@ mod tests {
     fn apply_update_proposal(
         update_state: UpdateState,
         proposal_id: UpdateProposalId,
-        config_param: &ConfigParam,
+        config_param: ConfigParam,
         proposer: &LeaderPair,
         settings: &Settings,
         block_date: BlockDate,
     ) -> Result<UpdateState, Error> {
-        let update_proposal = ProposalBuilder::new()
-            .with_proposal_change(config_param.clone())
-            .build();
-
-        let signed_update_proposal = SignedProposalBuilder::new()
-            .with_proposal_update(update_proposal)
-            .with_proposer_secret_key(proposer.key())
-            .build();
-
-        update_state.apply_proposal(proposal_id, &signed_update_proposal, &settings, block_date)
+        let update_proposal = UpdateProposal::new(ConfigParams(vec![config_param]), proposer.id());
+        update_state.apply_proposal(proposal_id, update_proposal, &settings, block_date)
     }
 
     #[cfg(test)]
@@ -566,11 +274,7 @@ mod tests {
         proposer: &LeaderPair,
         settings: &Settings,
     ) -> Result<UpdateState, Error> {
-        let signed_update_vote = UpdateVoteBuilder::new()
-            .with_proposal_id(proposal_id)
-            .with_voter_secret_key(proposer.key())
-            .build();
-
+        let signed_update_vote = UpdateVote::new(proposal_id, proposer.id());
         update_state.apply_vote(&signed_update_vote, &settings)
     }
 
@@ -595,51 +299,12 @@ mod tests {
             apply_update_proposal(
                 update_state,
                 proposal_id,
-                &config_param,
+                config_param,
                 &unknown_leader,
                 &settings,
                 block_date,
             ),
             Err(Error::BadProposer(proposal_id, unknown_leader.id()))
-        );
-    }
-
-    #[test]
-    fn apply_invalid_signed_proposal_should_return_error() {
-        // data
-        let proposal_id = TestGen::hash();
-        let block_date = BlockDate::first();
-        let config_param = ConfigParam::SlotsPerEpoch(100);
-        //setup
-        let update_state = UpdateState::new();
-
-        let leaders = TestGen::leaders_pairs()
-            .take(5)
-            .collect::<Vec<LeaderPair>>();
-        let proposer1 = &leaders[0];
-        let proposer2 = &leaders[1];
-        let settings = TestGen::settings(leaders.clone());
-
-        let update_proposal = ProposalBuilder::new()
-            .with_proposal_change(config_param.clone())
-            .build();
-
-        let mut signed_update_proposal = SignedProposalBuilder::new()
-            .with_proposal_update(update_proposal)
-            .with_proposer_secret_key(proposer1.key())
-            .build();
-
-        // corrupt signed proposal
-        signed_update_proposal.proposal.proposer_id = proposer2.id();
-
-        assert_eq!(
-            update_state.apply_proposal(
-                proposal_id,
-                &signed_update_proposal,
-                &settings,
-                block_date,
-            ),
-            Err(Error::BadProposalSignature(proposal_id, proposer2.id()))
         );
     }
 
@@ -661,7 +326,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             proposal_id,
-            &config_param,
+            config_param.clone(),
             proposer,
             &settings,
             block_date,
@@ -672,50 +337,12 @@ mod tests {
             apply_update_proposal(
                 update_state,
                 proposal_id,
-                &config_param,
+                config_param,
                 proposer,
                 &settings,
                 block_date
             ),
             Err(Error::DuplicateProposal(proposal_id))
-        );
-    }
-
-    #[test]
-    fn test_add_invalid_signed_vote_should_return_error() {
-        let mut update_state = UpdateState::new();
-        let proposal_id = TestGen::hash();
-        let block_date = BlockDate::first();
-        let config_param = ConfigParam::SlotsPerEpoch(100);
-
-        let leaders = TestGen::leaders_pairs()
-            .take(5)
-            .collect::<Vec<LeaderPair>>();
-        let proposer1 = &leaders[0];
-        let proposer2 = &leaders[1];
-        let settings = TestGen::settings(leaders.clone());
-
-        update_state = apply_update_proposal(
-            update_state,
-            proposal_id,
-            &config_param,
-            proposer1,
-            &settings,
-            block_date,
-        )
-        .expect("failed while applying proposal");
-
-        let mut signed_update_vote = UpdateVoteBuilder::new()
-            .with_proposal_id(proposal_id)
-            .with_voter_secret_key(proposer1.key())
-            .build();
-
-        // corrupt signed vote
-        signed_update_vote.vote.voter_id = proposer2.id();
-
-        assert_eq!(
-            update_state.apply_vote(&signed_update_vote, &settings),
-            Err(Error::BadVoteSignature(proposal_id, proposer2.id()))
         );
     }
 
@@ -736,7 +363,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             proposal_id,
-            &config_param,
+            config_param,
             proposer,
             &settings,
             block_date,
@@ -766,7 +393,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             proposal_id,
-            &config_param,
+            config_param,
             proposer,
             &settings,
             block_date,
@@ -801,7 +428,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             proposal_id,
-            &config_param,
+            config_param,
             proposer,
             &settings,
             block_date,
@@ -828,7 +455,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             proposal_id,
-            &readonly_setting,
+            readonly_setting,
             &proposer,
             &settings,
             block_date,
@@ -862,7 +489,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             first_proposal_id,
-            &first_update,
+            first_update,
             &first_proposer,
             &settings,
             block_date,
@@ -883,7 +510,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             second_proposal_id,
-            &second_update,
+            second_update,
             &second_proposer,
             &settings,
             block_date,
@@ -914,7 +541,7 @@ mod tests {
             _ => {}
         }
 
-        assert_eq!(update_state.proposals.len(), 0);
+        assert_eq!(update_state.proposals.size(), 0);
     }
 
     #[test]
@@ -938,7 +565,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             first_proposal_id,
-            &first_update,
+            first_update,
             &first_proposer,
             &settings,
             first_proposal_block_date,
@@ -959,7 +586,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             second_proposal_id,
-            &second_update,
+            second_update,
             &second_proposer,
             &settings,
             second_proposal_block_date,
@@ -990,7 +617,7 @@ mod tests {
 
         assert_eq!(settings.slots_per_epoch, 200);
 
-        assert_eq!(update_state.proposals.len(), 0);
+        assert_eq!(update_state.proposals.size(), 0);
     }
 
     #[derive(Debug, Copy, Clone)]
@@ -1045,7 +672,7 @@ mod tests {
         update_state = apply_update_proposal(
             update_state,
             proposal_id,
-            &update,
+            update,
             &proposer,
             &settings,
             proposal_date,
@@ -1068,9 +695,9 @@ mod tests {
                 .expect("error while processing proposal");
 
             if proposal_date.epoch + proposal_expiration <= current_block_date.epoch {
-                assert_eq!(update_state.proposals.len(), 0);
+                assert_eq!(update_state.proposals.size(), 0);
             } else {
-                assert_eq!(update_state.proposals.len(), 1);
+                assert_eq!(update_state.proposals.size(), 1);
             }
             current_block_date = current_block_date.next_epoch()
         }

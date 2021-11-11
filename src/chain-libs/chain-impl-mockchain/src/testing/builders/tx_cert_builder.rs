@@ -1,8 +1,9 @@
 use crate::certificate::EncryptedVoteTally;
 use crate::{
     certificate::{
-        Certificate, CertificatePayload, EncryptedVoteTallyProof, PoolOwnersSigned, PoolSignature,
-        TallyProof, VotePlan, VotePlanProof, VoteTally,
+        BftLeaderBindingSignature, Certificate, CertificatePayload, EncryptedVoteTallyProof,
+        PoolOwnersSigned, PoolSignature, TallyProof, UpdateProposal, UpdateVote, VotePlan,
+        VotePlanProof, VoteTally,
     },
     chaintypes::HeaderId,
     date::BlockDate,
@@ -201,6 +202,32 @@ impl TestTxCertBuilder {
                 let tx = builder.set_payload_auth(&committee_signature);
                 Fragment::EncryptedVoteTally(tx)
             }
+            Certificate::UpdateProposal(update_proposal) => {
+                let builder = self.set_initial_ios(
+                    valid_until,
+                    TxBuilder::new().set_payload(update_proposal),
+                    funder,
+                    inputs,
+                    outputs,
+                    make_witness,
+                );
+                let signature = update_proposal_sign(&keys, &builder);
+                let tx = builder.set_payload_auth(&signature);
+                Fragment::UpdateProposal(tx)
+            }
+            Certificate::UpdateVote(update_vote) => {
+                let builder = self.set_initial_ios(
+                    valid_until,
+                    TxBuilder::new().set_payload(update_vote),
+                    funder,
+                    inputs,
+                    outputs,
+                    make_witness,
+                );
+                let signature = update_vote_sign(&keys, &builder);
+                let tx = builder.set_payload_auth(&signature);
+                Fragment::UpdateVote(tx)
+            }
         }
     }
 
@@ -302,6 +329,26 @@ pub fn pool_owner_signed<P: Payload>(
         sigs.push((i as u8, sig))
     }
     PoolOwnersSigned { signatures: sigs }
+}
+
+pub fn update_proposal_sign(
+    keys: &[EitherEd25519SecretKey],
+    builder: &TxBuilderState<SetAuthData<UpdateProposal>>,
+) -> BftLeaderBindingSignature {
+    let key: EitherEd25519SecretKey = keys[0].clone();
+
+    let auth_data = builder.get_auth_data();
+    BftLeaderBindingSignature::new(&auth_data, |d| key.sign_slice(d.0))
+}
+
+pub fn update_vote_sign(
+    keys: &[EitherEd25519SecretKey],
+    builder: &TxBuilderState<SetAuthData<UpdateVote>>,
+) -> BftLeaderBindingSignature {
+    let key: EitherEd25519SecretKey = keys[0].clone();
+
+    let auth_data = builder.get_auth_data();
+    BftLeaderBindingSignature::new(&auth_data, |d| key.sign_slice(d.0))
 }
 
 /// this struct can create any transaction including not valid one

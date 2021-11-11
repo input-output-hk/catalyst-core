@@ -33,7 +33,7 @@ CONTENT          = *FRAGMENT
 
 FRAGMENT-ID      = 32OCTET
 FRAGMENT         = FRAGMENT-SIZE %x00 FRAGMENT-SPEC
-FRAGMENT-SIZE    = SIZE-BYTES-16BIT
+FRAGMENT-SIZE    = SIZE-BYTES-32BIT
 FRAGMENT-SPEC    = %x00 INITIAL
                  / %x01 OLD-UTXO-DECL
                  / %x02 SIMPLE-TRANSACTION
@@ -125,8 +125,19 @@ OWNER-SIG         = U8 ; owner index in registration
 ; FRAGMENT Update proposal and vote
 ; ####################
 
-UPDATE-PROPOSAL   = TODO
-UPDATE-VOTE       = TODO
+UPDATE-PROPOSAL   = PROPOSAL-CERT IOW BFT-SIGNATURE
+UPDATE-VOTE       = VOTE-CERT IOW BFT-SIGNATURE
+
+PROPOSAL-CERT     = BFT-LEADER-ID ; proposer id
+                    CHANGES
+
+VOTE-CERT         = PROPOSAL-ID
+                    BFT-LEADER-ID; voter id
+
+CHANGES           = SIZE-ELEMENT-16BIT ; number of changes
+                    *CONFIG-ELEMENT    ; as many as indicated in the number of changes
+
+PROPOSAL-ID       = FRAGMENT-ID
 
 ; ####################
 ; TRANSACTION CONSTRUCTION
@@ -199,7 +210,7 @@ TIME-SINCE-EPOCH0 = U64 ; in seconds since genesis block
 SIZE-ELEMENT-8BIT = U8  ; size in elements (8 bits)
 SIZE-ELEMENT-1-31 = %x01-1f ; size of 1 to 31, in elements
 SIZE-ELEMENT-0-3  = %x00-03 ; size of 0 to 3, in elements
-SIZE-ELEMENT-16BIT = U8  ; size in elements (8 bits)
+SIZE-ELEMENT-16BIT = U16  ; size in elements (16 bits)
 SIZE-ELEMENT-OO   = U8  ; size of operators & owners : 5 bits for owners, 3 high bits for operators
 SIZE-BYTES-16BIT  = U16 ; size in bytes (16 bits)
 SIZE-BYTES-32BIT  = U32 ; size in bytes (32 bits)

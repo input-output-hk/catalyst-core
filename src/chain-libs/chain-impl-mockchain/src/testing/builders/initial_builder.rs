@@ -1,13 +1,14 @@
 use crate::{
     account::DelegationType,
-    certificate::{Certificate, PoolUpdate, VoteCast, VotePlan, VoteTally},
+    certificate::{Certificate, PoolUpdate, UpdateProposalId, VoteCast, VotePlan, VoteTally},
+    config::ConfigParam,
     date::BlockDate,
     fragment::Fragment,
     key::EitherEd25519SecretKey,
     ledger::ledger::OutputAddress,
     testing::{
         builders::*,
-        data::{StakePool, Wallet},
+        data::{LeaderPair, StakePool, Wallet},
         TestGen,
     },
     transaction::*,
@@ -93,6 +94,29 @@ pub fn create_initial_stake_pool_owner_delegation(delegation_type: DelegationTyp
     fragment(cert, Vec::new(), &[], &[])
 }
 
+pub fn create_initial_update_proposal(
+    proposer: LeaderPair,
+    config_params: Vec<ConfigParam>,
+) -> Fragment {
+    let cert = build_update_proposal_cert(proposer.id(), config_params);
+    fragment(
+        cert,
+        vec![EitherEd25519SecretKey::Normal(proposer.key())],
+        &[],
+        &[],
+    )
+}
+
+pub fn create_initial_update_vote(proposer: LeaderPair, proposal_id: UpdateProposalId) -> Fragment {
+    let cert = build_update_vote_cert(proposal_id, proposer.id());
+    fragment(
+        cert,
+        vec![EitherEd25519SecretKey::Normal(proposer.key())],
+        &[],
+        &[],
+    )
+}
+
 fn set_initial_ios<P: Payload>(
     builder: TxBuilderState<SetTtl<P>>,
     inputs: &[Input],
@@ -152,6 +176,18 @@ fn fragment(
             let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
             let tx = builder.set_payload_auth(&());
             Fragment::OwnerStakeDelegation(tx)
+        }
+        Certificate::UpdateProposal(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
+            let signature = update_proposal_sign(&keys, &builder);
+            let tx = builder.set_payload_auth(&signature);
+            Fragment::UpdateProposal(tx)
+        }
+        Certificate::UpdateVote(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
+            let signature = update_vote_sign(&keys, &builder);
+            let tx = builder.set_payload_auth(&signature);
+            Fragment::UpdateVote(tx)
         }
         _ => unreachable!(),
     }

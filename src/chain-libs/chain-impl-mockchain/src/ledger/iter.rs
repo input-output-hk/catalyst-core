@@ -29,7 +29,7 @@ pub enum Entry<'a> {
     ConfigParam(ConfigParam),
     UpdateProposal(
         (
-            &'a crate::update::UpdateProposalId,
+            &'a crate::certificate::UpdateProposalId,
             &'a crate::update::UpdateProposalState,
         ),
     ),
@@ -65,7 +65,7 @@ pub enum EntryOwned {
     ConfigParam(ConfigParam),
     UpdateProposal(
         (
-            crate::update::UpdateProposalId,
+            crate::certificate::UpdateProposalId,
             crate::update::UpdateProposalState,
         ),
     ),
@@ -143,9 +143,9 @@ enum IterState<'a> {
     Accounts(crate::accounting::account::Iter<'a, account::Identifier, ()>),
     ConfigParams(Vec<ConfigParam>),
     UpdateProposals(
-        std::collections::hash_map::Iter<
+        imhamt::HamtIter<
             'a,
-            crate::update::UpdateProposalId,
+            crate::certificate::UpdateProposalId,
             crate::update::UpdateProposalState,
         >,
     ),
@@ -316,9 +316,10 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
                     config_params.push(param.clone());
                 }
                 Entry::UpdateProposal((proposal_id, proposal_state)) => {
-                    updates
+                    updates.proposals = updates
                         .proposals
-                        .insert(*proposal_id, proposal_state.clone());
+                        .insert(*proposal_id, proposal_state.clone())
+                        .unwrap();
                 }
                 Entry::MultisigAccount((account_id, account_state)) => {
                     multisig_accounts.push((account_id.clone(), account_state.clone()));

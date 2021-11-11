@@ -1,6 +1,7 @@
 use super::*;
 use crate::accounting::account::DelegationType;
 use crate::block::BlockDate;
+use crate::fragment::ConfigParams;
 use crate::ledger::governance::TreasuryGovernanceAction;
 use crate::rewards::TaxType;
 use crate::vote;
@@ -89,6 +90,25 @@ impl Arbitrary for OwnerStakeDelegation {
         Self {
             delegation: Arbitrary::arbitrary(g),
         }
+    }
+}
+
+impl Arbitrary for UpdateProposal {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let mut changes = ConfigParams::new();
+        for _ in 0..u8::arbitrary(g) % 10 {
+            changes.push(Arbitrary::arbitrary(g));
+        }
+        let proposer_id = UpdateProposerId::arbitrary(g);
+        Self::new(changes, proposer_id)
+    }
+}
+
+impl Arbitrary for UpdateVote {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let proposal_id = UpdateProposalId::arbitrary(g);
+        let voter_id = UpdateVoterId::arbitrary(g);
+        Self::new(proposal_id, voter_id)
     }
 }
 
@@ -257,7 +277,7 @@ impl Arbitrary for EncryptedVoteTallyProof {
 
 impl Arbitrary for Certificate {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let option = u8::arbitrary(g) % 9;
+        let option = u8::arbitrary(g) % 11;
         match option {
             0 => Certificate::StakeDelegation(Arbitrary::arbitrary(g)),
             1 => Certificate::OwnerStakeDelegation(Arbitrary::arbitrary(g)),
@@ -268,6 +288,8 @@ impl Arbitrary for Certificate {
             6 => Certificate::VoteCast(Arbitrary::arbitrary(g)),
             7 => Certificate::VoteTally(Arbitrary::arbitrary(g)),
             8 => Certificate::EncryptedVoteTally(Arbitrary::arbitrary(g)),
+            9 => Certificate::UpdateProposal(Arbitrary::arbitrary(g)),
+            10 => Certificate::UpdateVote(Arbitrary::arbitrary(g)),
             _ => panic!("unimplemented"),
         }
     }

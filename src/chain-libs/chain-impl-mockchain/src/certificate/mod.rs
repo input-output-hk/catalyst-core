@@ -1,6 +1,8 @@
 mod delegation;
 mod encrypted_vote_tally;
 mod pool;
+mod update_proposal;
+mod update_vote;
 mod vote_cast;
 mod vote_plan;
 mod vote_tally;
@@ -26,6 +28,8 @@ pub use pool::{
     PoolPermissions, PoolRegistration, PoolRegistrationHash, PoolRetirement, PoolSignature,
     PoolUpdate,
 };
+pub use update_proposal::{BftLeaderBindingSignature, UpdateProposal, UpdateProposerId};
+pub use update_vote::{UpdateProposalId, UpdateVote, UpdateVoterId};
 
 pub enum CertificateSlice<'a> {
     StakeDelegation(PayloadSlice<'a, StakeDelegation>),
@@ -37,6 +41,8 @@ pub enum CertificateSlice<'a> {
     VoteCast(PayloadSlice<'a, VoteCast>),
     VoteTally(PayloadSlice<'a, VoteTally>),
     EncryptedVoteTally(PayloadSlice<'a, EncryptedVoteTally>),
+    UpdateProposal(PayloadSlice<'a, UpdateProposal>),
+    UpdateVote(PayloadSlice<'a, UpdateVote>),
 }
 
 impl<'a> From<PayloadSlice<'a, StakeDelegation>> for CertificateSlice<'a> {
@@ -92,6 +98,18 @@ impl<'a> From<PayloadSlice<'a, EncryptedVoteTally>> for CertificateSlice<'a> {
     }
 }
 
+impl<'a> From<PayloadSlice<'a, UpdateProposal>> for CertificateSlice<'a> {
+    fn from(payload: PayloadSlice<'a, UpdateProposal>) -> CertificateSlice<'a> {
+        CertificateSlice::UpdateProposal(payload)
+    }
+}
+
+impl<'a> From<PayloadSlice<'a, UpdateVote>> for CertificateSlice<'a> {
+    fn from(payload: PayloadSlice<'a, UpdateVote>) -> CertificateSlice<'a> {
+        CertificateSlice::UpdateVote(payload)
+    }
+}
+
 impl<'a> CertificateSlice<'a> {
     pub fn into_owned(self) -> Certificate {
         match self {
@@ -110,6 +128,8 @@ impl<'a> CertificateSlice<'a> {
             CertificateSlice::EncryptedVoteTally(c) => {
                 Certificate::EncryptedVoteTally(c.into_payload())
             }
+            CertificateSlice::UpdateProposal(c) => Certificate::UpdateProposal(c.into_payload()),
+            CertificateSlice::UpdateVote(c) => Certificate::UpdateVote(c.into_payload()),
         }
     }
 }
@@ -125,6 +145,8 @@ pub enum CertificatePayload {
     VoteCast(PayloadData<VoteCast>),
     VoteTally(PayloadData<VoteTally>),
     EncryptedVoteTally(PayloadData<EncryptedVoteTally>),
+    UpdateProposal(PayloadData<UpdateProposal>),
+    UpdateVote(PayloadData<UpdateVote>),
 }
 
 impl CertificatePayload {
@@ -139,6 +161,8 @@ impl CertificatePayload {
             CertificatePayload::VoteCast(payload) => payload.borrow().into(),
             CertificatePayload::VoteTally(payload) => payload.borrow().into(),
             CertificatePayload::EncryptedVoteTally(payload) => payload.borrow().into(),
+            CertificatePayload::UpdateProposal(payload) => payload.borrow().into(),
+            CertificatePayload::UpdateVote(payload) => payload.borrow().into(),
         }
     }
 }
@@ -169,6 +193,12 @@ impl<'a> From<&'a Certificate> for CertificatePayload {
             Certificate::EncryptedVoteTally(payload) => {
                 CertificatePayload::EncryptedVoteTally(payload.payload_data())
             }
+            Certificate::UpdateProposal(payload) => {
+                CertificatePayload::UpdateProposal(payload.payload_data())
+            }
+            Certificate::UpdateVote(payload) => {
+                CertificatePayload::UpdateVote(payload.payload_data())
+            }
         }
     }
 }
@@ -185,6 +215,8 @@ pub enum Certificate {
     VoteCast(VoteCast),
     VoteTally(VoteTally),
     EncryptedVoteTally(EncryptedVoteTally),
+    UpdateProposal(UpdateProposal),
+    UpdateVote(UpdateVote),
 }
 
 impl From<StakeDelegation> for Certificate {
@@ -235,6 +267,18 @@ impl From<VoteTally> for Certificate {
     }
 }
 
+impl From<UpdateProposal> for Certificate {
+    fn from(update_proposal: UpdateProposal) -> Self {
+        Self::UpdateProposal(update_proposal)
+    }
+}
+
+impl From<UpdateVote> for Certificate {
+    fn from(update_vote: UpdateVote) -> Self {
+        Self::UpdateVote(update_vote)
+    }
+}
+
 impl From<EncryptedVoteTally> for Certificate {
     fn from(vote_tally: EncryptedVoteTally) -> Self {
         Self::EncryptedVoteTally(vote_tally)
@@ -253,6 +297,8 @@ impl Certificate {
             Certificate::VoteCast(_) => <VoteCast as Payload>::HAS_AUTH,
             Certificate::VoteTally(_) => <VoteTally as Payload>::HAS_AUTH,
             Certificate::EncryptedVoteTally(_) => <EncryptedVoteTally as Payload>::HAS_AUTH,
+            Certificate::UpdateProposal(_) => <UpdateProposal as Payload>::HAS_AUTH,
+            Certificate::UpdateVote(_) => <UpdateVote as Payload>::HAS_AUTH,
         }
     }
 }
@@ -271,6 +317,8 @@ pub enum SignedCertificate {
     VotePlan(VotePlan, <VotePlan as Payload>::Auth),
     VoteTally(VoteTally, <VoteTally as Payload>::Auth),
     EncryptedVoteTally(EncryptedVoteTally, <EncryptedVoteTally as Payload>::Auth),
+    UpdateProposal(UpdateProposal, <UpdateProposal as Payload>::Auth),
+    UpdateVote(UpdateVote, <UpdateVote as Payload>::Auth),
 }
 
 #[cfg(test)]
@@ -291,6 +339,8 @@ mod tests {
             Certificate::VoteCast(_) => false,
             Certificate::VoteTally(_) => true,
             Certificate::EncryptedVoteTally(_) => true,
+            Certificate::UpdateProposal(_) => true,
+            Certificate::UpdateVote(_) => true,
         };
         TestResult::from_bool(certificate.need_auth() == expected_result)
     }

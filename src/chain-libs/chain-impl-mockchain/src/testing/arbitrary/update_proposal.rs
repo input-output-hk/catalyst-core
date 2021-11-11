@@ -1,38 +1,22 @@
-use crate::key::{signed_new, Hash};
 use crate::{
+    certificate::{UpdateProposal, UpdateProposalId, UpdateVote},
     config::ConfigParam,
     fee::LinearFee,
     fragment::config::ConfigParams,
     key::BftLeaderId,
-    testing::builders::SignedProposalBuilder,
-    testing::{arbitrary::utils as arbitrary_utils, builders::update_builder::ProposalBuilder},
-    update::{SignedUpdateProposal, SignedUpdateVote, UpdateVote},
+    testing::arbitrary::utils as arbitrary_utils,
 };
 use chain_crypto::{Ed25519, SecretKey};
 use quickcheck::{Arbitrary, Gen};
-use std::fmt::{self, Debug};
+use std::fmt::Debug;
 use std::{collections::HashMap, iter};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct UpdateProposalData {
     pub leaders: HashMap<BftLeaderId, SecretKey<Ed25519>>,
-    pub proposal: SignedUpdateProposal,
-    pub proposal_id: Hash,
-    pub votes: Vec<SignedUpdateVote>,
+    pub voters: HashMap<BftLeaderId, SecretKey<Ed25519>>,
+    pub proposal: UpdateProposal,
     pub block_signing_key: SecretKey<Ed25519>,
-    pub update_successful: bool,
-}
-
-impl Debug for UpdateProposalData {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let leaders: Vec<BftLeaderId> = self.leaders.keys().cloned().collect();
-        f.debug_struct("UpdateProposalData")
-            .field("leaders", &leaders)
-            .field("proposal", &self.proposal)
-            .field("proposal_id", &self.proposal_id)
-            .field("votes", &self.votes)
-            .finish()
-    }
 }
 
 impl UpdateProposalData {
@@ -41,7 +25,14 @@ impl UpdateProposalData {
     }
 
     pub fn proposal_settings(&self) -> ConfigParams {
-        self.proposal.proposal().proposal().changes().clone()
+        self.proposal.changes().clone()
+    }
+
+    pub fn gen_votes(&self, proposal_id: UpdateProposalId) -> Vec<UpdateVote> {
+        self.voters
+            .iter()
+            .map(|(id, _)| UpdateVote::new(proposal_id, id.clone()))
+            .collect()
     }
 }
 
@@ -58,9 +49,6 @@ impl Arbitrary for UpdateProposalData {
 
         let voters: HashMap<BftLeaderId, SecretKey<Ed25519>> =
             arbitrary_utils::choose_random_map_subset(&leaders, gen);
-        let leaders_ids: Vec<BftLeaderId> = leaders.keys().cloned().collect();
-        let proposer_id = arbitrary_utils::choose_random_item(&leaders_ids, gen);
-        let proposer_secret_key = leaders.get(&proposer_id).unwrap();
 
         //create proposal
         let unique_arbitrary_settings: Vec<ConfigParam> = vec![
@@ -72,43 +60,21 @@ impl Arbitrary for UpdateProposalData {
             ConfigParam::ProposalExpiration(u32::arbitrary(gen)),
         ];
 
-        let update_proposal = ProposalBuilder::new()
-            .with_proposal_changes(arbitrary_utils::choose_random_vec_subset(
+        let proposal = UpdateProposal::new(
+            ConfigParams(arbitrary_utils::choose_random_vec_subset(
                 &unique_arbitrary_settings,
                 gen,
-            ))
-            .build();
-
-        let signed_update_proposal = SignedProposalBuilder::new()
-            .with_proposal_update(update_proposal)
-            .with_proposer_secret_key(proposer_secret_key.clone())
-            .build();
-
-        //generate proposal header
-        let proposal_id = Hash::arbitrary(gen);
-
-        // create signed votes
-        let signed_votes: Vec<SignedUpdateVote> = voters
-            .iter()
-            .map(|(id, _)| {
-                let update_vote = UpdateVote::new(proposal_id, id.clone());
-                SignedUpdateVote::new(
-                    signed_new(proposer_secret_key, update_vote.clone()).sig,
-                    update_vote,
-                )
-            })
-            .collect();
+            )),
+            leaders.iter().next().unwrap().0.clone(),
+        );
 
         let sk: chain_crypto::SecretKey<Ed25519> = Arbitrary::arbitrary(gen);
-        let update_successful = signed_votes.len() > (leaders.len() / 2);
 
         UpdateProposalData {
-            leaders,
-            proposal: signed_update_proposal,
-            proposal_id,
-            votes: signed_votes,
+            leaders: leaders.into_iter().collect(),
+            voters: voters.into_iter().collect(),
+            proposal,
             block_signing_key: sk,
-            update_successful,
         }
     }
 }

@@ -51,6 +51,10 @@ impl SingleAccountBindingSignature {
         let sig = sign(data);
         SingleAccountBindingSignature(sig) // sk.sign_slice(data.0))
     }
+
+    pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
+        bb.bytes(self.as_ref())
+    }
 }
 
 impl AsRef<[u8]> for SingleAccountBindingSignature {
@@ -83,7 +87,7 @@ impl AccountBindingSignature {
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         match self {
-            AccountBindingSignature::Single(sig) => bb.u8(1).bytes(sig.as_ref()),
+            AccountBindingSignature::Single(sig) => bb.u8(1).sub(|bb| sig.serialize_in(bb)),
             AccountBindingSignature::Multi(_) => {
                 bb.u8(2);
                 unimplemented!()

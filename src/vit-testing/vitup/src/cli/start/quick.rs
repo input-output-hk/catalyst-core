@@ -133,7 +133,7 @@ pub struct QuickStartCommandArgs {
     pub private: bool,
 
     /// switch to private voting type
-    #[structopt(long = "version")]
+    #[structopt(long = "version", default_value = "2.0")]
     pub version: String,
 
     /// use tls
@@ -187,7 +187,7 @@ impl QuickStartCommandArgs {
                 serde_json::from_str(&content).expect("JSON was not well-formatted");
             quick_setup.initials(initials);
         } else {
-            quick_setup.initials_count(self.initials.unwrap(), "1234");
+            quick_setup.initials_count(self.initials.unwrap_or(10), "1234");
         }
 
         if let Some(snapshot) = self.snapshot {

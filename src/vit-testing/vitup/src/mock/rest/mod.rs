@@ -11,7 +11,7 @@ use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use itertools::Itertools;
 use jormungandr_lib::crypto::hash::Hash;
 use jormungandr_lib::interfaces::AccountVotes;
-use jormungandr_lib::interfaces::{Address, FragmentsBatch, VotePlanId, VotePlanStatus};
+use jormungandr_lib::interfaces::{FragmentsBatch, VotePlanId, VotePlanStatus};
 use jortestkit::web::api_token::TokenError;
 use jortestkit::web::api_token::{APIToken, APITokenManager, API_TOKEN_HEADER};
 use serde::{Deserialize as SerdeDeserialize, Serialize as SerdeSerialize};
@@ -335,23 +335,17 @@ pub async fn start_rest_server(context: ContextLock) {
             root.and(post.or(status).or(logs)).boxed()
         };
 
-        let votes = {
-            let root = warp::path!("votes" / "plan" / ..);
+        let votes_with_plan = warp::path!("votes" / "plan" / VotePlanId / "account-votes" / String)
+            .and(warp::get())
+            .and(with_context.clone())
+            .and_then(get_account_votes_with_plan);
 
-            let votes_with_plan = warp::path!(VotePlanId / "account-votes" / Address)
-                .and(warp::get())
-                .and(with_context.clone())
-                .and_then(get_account_votes_with_plan);
+        let votes = warp::path!("votes" / "plan" / "account-votes" / String)
+            .and(warp::get())
+            .and(with_context.clone())
+            .and_then(get_account_votes);
 
-            let votes = warp::path!("account-votes" / Address)
-                .and(warp::get())
-                .and(with_context.clone())
-                .and_then(get_account_votes);
-
-            root.and(votes_with_plan.or(votes)).boxed()
-        };
-
-        root.and(fragments.or(votes))
+        root.and(fragments.or(votes).or(votes_with_plan))
     };
 
     let version = warp::path!("version")
@@ -371,16 +365,16 @@ pub async fn start_rest_server(context: ContextLock) {
 
 pub async fn get_account_votes_with_plan(
     vote_plan_id: VotePlanId,
-    address: Address,
+    acccount_id_hex: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
     context_lock.log(format!(
-        "get_account_votes: vote plan id {:?}. address: {:?}",
-        vote_plan_id, address
+        "get_account_votes: vote plan id {:?}. acccount id hex: {:?}",
+        vote_plan_id, acccount_id_hex
     ));
 
-    let identifier = into_identifier(address)?;
+    let identifier = into_identifier(acccount_id_hex)?;
 
     let vote_plan_id: chain_crypto::digest::DigestOf<_, _> = vote_plan_id.into_digest().into();
 
@@ -403,7 +397,7 @@ pub async fn get_account_votes_with_plan(
         Some(vote_plan) => vote_plan,
         None => {
             return Err(warp::reject::custom(GeneralException {
-                summary: "Not found".to_string(),
+                summary: "".to_string(),
                 code: 404,
             }))
         }
@@ -420,13 +414,16 @@ pub async fn get_account_votes_with_plan(
 }
 
 pub async fn get_account_votes(
-    address: Address,
+    account_id_hex: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
-    context_lock.log(format!("get_account_votes: address: {:?}", address));
+    context_lock.log(format!(
+        "get_account_votes: account id hex: {:?}",
+        account_id_hex
+    ));
 
-    let identifier = into_identifier(address)?;
+    let identifier = into_identifier(account_id_hex)?;
 
     if !context_lock.available() {
         let code = context_lock.state().error_code;
@@ -461,22 +458,18 @@ pub async fn get_account_votes(
     Ok(HandlerResult(Ok(Some(result))))
 }
 
-pub fn into_identifier(
-    address: Address,
-) -> Result<chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier, Rejection> {
-    let address: chain_addr::Address = address.into();
-    match address.kind() {
-        chain_addr::Kind::Account(pubkey) => {
-            let account_id = chain_impl_mockchain::account::Identifier::from(pubkey.clone());
-            Ok(chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier::from_single_account(
-                account_id,
-            ))
-        }
-        _ => Err(warp::reject::custom(GeneralException {
-            summary: "Unexpected address type".to_string(),
-            code: 400,
-        })),
-    }
+use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
+
+pub fn into_identifier(account_id_hex: String) -> Result<UnspecifiedAccountIdentifier, Rejection> {
+    Ok(UnspecifiedAccountIdentifier::from_single_account(
+        parse_account_id(&account_id_hex).map_err(|err| {
+            println!("{:?}", err);
+            warp::reject::custom(GeneralException {
+                summary: "Cannot parse account id".to_string(),
+                code: 400,
+            })
+        })?,
+    ))
 }
 
 pub async fn logs_get(context: ContextLock) -> Result<impl Reply, Rejection> {

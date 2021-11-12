@@ -10,7 +10,14 @@ pub fn from_block_or_shift(
     if let Some(fixed) = valid_until_fixed {
         return BlockDateGenerator::shifted(block0_settings, fixed, false);
     }
-    BlockDateGenerator::rolling(block0_settings, valid_until_shift.unwrap(), false)
+    BlockDateGenerator::rolling(
+        block0_settings,
+        valid_until_shift.unwrap_or(BlockDate {
+            epoch: 1,
+            slot_id: 0,
+        }),
+        false,
+    )
 }
 
 pub fn default_block_date_generator(block0_settings: &SettingsDto) -> BlockDateGenerator {

@@ -104,7 +104,7 @@ impl IapyxCommand {
                             println!("{}", proposal.chain_proposal_id_as_str());
                         } else {
                             println!(
-                                "{}. #{} [{}] {}",
+                                "{}. {} [{}] {}",
                                 (id + 1),
                                 proposal.chain_proposal_id_as_str(),
                                 proposal.proposal_title,
@@ -198,7 +198,8 @@ impl Address {
                 &discrimination.into_prefix(),
                 &controller.account(discrimination),
             );
-            println!("{}", address.to_string());
+            println!("Address: {}", address.to_string());
+            println!("Account id: {}", controller.id());
             return Ok(());
         }
         Err(IapyxCommandError::WalletNotRecovered)
@@ -237,11 +238,11 @@ pub struct SingleVote {
     pub proposal_id: String,
 
     // transaction expiry fixed  time
-    #[structopt(long)]
+    #[structopt(long = "valid-until-fixed")]
     pub valid_until_fixed: Option<BlockDate>,
 
     // transaction expiry shifted time
-    #[structopt(long, conflicts_with = "valid-until-fixed")]
+    #[structopt(long = "valid-until-shift", conflicts_with = "valid-until-fixed")]
     pub valid_until_shift: Option<BlockDate>,
 }
 

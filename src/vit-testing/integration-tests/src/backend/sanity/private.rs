@@ -4,6 +4,7 @@ use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
 use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
+use jormungandr_testing_utils::testing::network::VotePlanSettings;
 use jormungandr_testing_utils::testing::BlockDateGenerator;
 use jormungandr_testing_utils::testing::FragmentSender;
 use jormungandr_testing_utils::testing::{node::time, FragmentSenderSetup};
@@ -143,12 +144,12 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
             .settings()
             .vote_plans
             .iter()
-            .find(|(key, vote_plan)| key.alias == fund_name)
-            .map(|(key, vote_plan)| vote_plan)
+            .find(|(key, _)| key.alias == fund_name)
+            .map(|(_, vote_plan)| vote_plan)
             .unwrap()
         {
             VotePlanSettings::Public(_) => panic!("unexpected public voteplan"),
-            VotePlanSettings::Private { keys, vote_plan } => keys
+            VotePlanSettings::Private { keys, vote_plan: _ } => keys
                 .decrypt_tally(&vote_plan_status.clone().into())
                 .unwrap(),
         }

@@ -108,12 +108,12 @@ pub fn private_vote_test_scenario(
             .settings()
             .vote_plans
             .iter()
-            .find(|(key, vote_plan)| key.alias == fund_name)
-            .map(|(key, vote_plan)| vote_plan)
+            .find(|(key, _)| key.alias == fund_name)
+            .map(|(_, vote_plan)| vote_plan)
             .unwrap()
         {
             VotePlanSettings::Public(_) => panic!("unexpected public voteplan"),
-            VotePlanSettings::Private { keys, vote_plan } => keys
+            VotePlanSettings::Private { keys, vote_plan: _ } => keys
                 .decrypt_tally(&vote_plan_status.clone().into())
                 .unwrap(),
         }

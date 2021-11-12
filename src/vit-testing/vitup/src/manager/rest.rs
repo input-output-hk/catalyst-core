@@ -36,8 +36,10 @@ pub async fn start_rest_server(context: ControlContextLock) {
 
     let with_context = warp::any().map(move || context.clone());
 
+    let root = warp::path!("api" / ..);
+
     let files = {
-        let root = warp::path!("files" / ..).boxed();
+        let root = warp::path!("control" / "files" / ..).boxed();
 
         let get = warp::path("get").and(warp::fs::dir(working_dir));
         let list = warp::path!("list")
@@ -48,7 +50,7 @@ pub async fn start_rest_server(context: ControlContextLock) {
         root.and(get.or(list)).boxed()
     };
     let control = {
-        let root = warp::path!("control" / ..).boxed();
+        let root = warp::path!("control" / "command" / ..).boxed();
 
         let start_default = warp::path!("default")
             .and(with_context.clone())
@@ -89,7 +91,10 @@ pub async fn start_rest_server(context: ControlContextLock) {
         .and_then(status_handler)
         .boxed();
 
-    let api = files.or(control).or(status).recover(report_invalid).boxed();
+    let api = root
+        .and(files.or(control).or(status))
+        .recover(report_invalid)
+        .boxed();
 
     let server = warp::serve(api);
     let (_, server_fut) = server.bind_with_graceful_shutdown(([0, 0, 0, 0], 3030), stopper_rx);

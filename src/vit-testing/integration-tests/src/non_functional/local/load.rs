@@ -77,7 +77,7 @@ pub fn load_test_public_100_000_votes() {
     vit_station.shutdown();
     wallet_proxy.shutdown();
 
-    for node in nodes {
+    for mut node in nodes {
         node.logger()
             .assert_no_errors(&format!("Errors in logs for node: {}", node.alias()));
         node.shutdown().unwrap();

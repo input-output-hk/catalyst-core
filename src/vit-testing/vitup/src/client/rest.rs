@@ -155,7 +155,7 @@ impl VitupAdminRestClient {
     }
 
     pub fn start_custom(&self, params: VitStartParameters) -> Result<String, Error> {
-        let path = self.inner.path("control/start/custom");
+        let path = self.inner.path("control/command/start/custom");
         let client = reqwest::blocking::Client::new();
         let response = client.post(&path).json(&params).send()?;
         Ok(response.text()?)
@@ -163,13 +163,16 @@ impl VitupAdminRestClient {
 
     pub fn start_default(&self) -> Result<String, Error> {
         self.inner
-            .post("control/start/default")?
+            .post("control/command/start/default")?
             .text()
             .map_err(Into::into)
     }
 
     pub fn stop(&self) -> Result<String, Error> {
-        self.inner.post("control/stop")?.text().map_err(Into::into)
+        self.inner
+            .post("control/command/stop")?
+            .text()
+            .map_err(Into::into)
     }
 
     pub fn status(&self) -> Result<State, Error> {

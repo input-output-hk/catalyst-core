@@ -1,11 +1,9 @@
 #![allow(dead_code)]
 
 use super::DbGenerator;
-use jormungandr_scenario_tests::{
-    node::{ProgressBarController, Status},
-    style, Context,
-};
+use jormungandr_scenario_tests::{node::ProgressBarController, style, Context};
 pub use jormungandr_testing_utils::testing::{
+    jormungandr::Status,
     network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
     node::{
         grpc::{client::MockClientError, JormungandrClient},
@@ -94,10 +92,6 @@ const VIT_STATION_LOG: &str = "vit_station.log";
 impl VitStationController {
     pub fn alias(&self) -> &NodeAlias {
         &self.alias
-    }
-
-    pub fn status(&self) -> Status {
-        *self.status.lock().unwrap()
     }
 
     pub fn check_running(&self) -> bool {
@@ -233,7 +227,6 @@ impl VitStation {
             Err(err) => {
                 self.progress_bar.log_err(&err);
                 self.progress_bar_failure();
-                self.set_status(Status::Failure);
             }
             Ok(status) => {
                 if status.success() {
@@ -242,7 +235,7 @@ impl VitStation {
                     self.progress_bar.log_err(&status);
                     self.progress_bar_failure()
                 }
-                self.set_status(Status::Exit(status));
+                self.set_status(Status::Exited(status));
             }
         }
     }

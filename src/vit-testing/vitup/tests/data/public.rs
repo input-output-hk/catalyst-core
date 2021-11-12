@@ -64,7 +64,7 @@ pub fn public_vote_multiple_vote_plans() {
 
     let (mut vit_controller, mut controller, vit_parameters, _) =
         vitup_setup(quick_setup, testing_directory.path().to_path_buf());
-    let (nodes, vit_station, wallet_proxy) = setup_network(
+    let (mut nodes, vit_station, wallet_proxy) = setup_network(
         &mut controller,
         &mut vit_controller,
         vit_parameters,
@@ -90,7 +90,7 @@ pub fn public_vote_multiple_vote_plans() {
 
     vit_station.shutdown();
     wallet_proxy.shutdown();
-    for node in nodes {
+    for node in nodes.iter_mut() {
         node.shutdown().unwrap();
     }
     controller.finalize();

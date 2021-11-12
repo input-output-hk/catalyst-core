@@ -1,16 +1,12 @@
-use chain_addr::AddressReadable;
 use chain_core::property::Deserialize;
 use chain_crypto::{bech32::Bech32, Ed25519, PublicKey};
-use chain_impl_mockchain::fragment::Fragment;
-use chain_impl_mockchain::fragment::FragmentId;
-use jormungandr_lib::interfaces::Address;
-use jormungandr_lib::interfaces::FragmentStatus;
-use jormungandr_lib::interfaces::SettingsDto;
-use jormungandr_lib::interfaces::VotePlanId;
-use jormungandr_lib::interfaces::{AccountState, FragmentLog, NodeStatsDto, VotePlanStatus};
+use chain_impl_mockchain::fragment::{Fragment, FragmentId};
+use jormungandr_lib::interfaces::{
+    AccountState, AccountVotes, Address, FragmentLog, FragmentStatus, NodeStatsDto, SettingsDto,
+    VotePlanId, VotePlanStatus,
+};
 pub use jormungandr_testing_utils::testing::node::RestError;
 use jormungandr_testing_utils::testing::node::{JormungandrRest, RestSettings};
-use jormungandr_testing_utils::wallet::discrimination::DiscriminationExtension;
 use regex::Regex;
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -109,18 +105,16 @@ impl WalletNodeRestClient {
         self.rest_client.vote_plan_statuses()
     }
 
-    pub fn account_votes(
+    pub fn account_votes_for_plan(
         &self,
         vote_plan_id: VotePlanId,
         address: Address,
     ) -> Result<Option<Vec<u8>>, RestError> {
-        self.rest_client.account_votes_by_bech32(
-            vote_plan_id,
-            AddressReadable::from_address(
-                &self.settings()?.discrimination.into_prefix(),
-                &address.into(),
-            )
-            .to_string(),
-        )
+        self.rest_client
+            .account_votes_with_plan_id(vote_plan_id, address)
+    }
+
+    pub fn account_votes(&self, address: Address) -> Result<Option<Vec<AccountVotes>>, RestError> {
+        self.rest_client.account_votes(address)
     }
 }

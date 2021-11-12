@@ -1,8 +1,9 @@
 use crate::scenario::wallet::WalletProxySettings;
-use jormungandr_scenario_tests::node::{ProgressBarController, Status};
+use jormungandr_scenario_tests::node::ProgressBarController;
 use valgrind::{ProxyClient, ValgrindClient, ValgrindSettings};
 
 pub use jormungandr_testing_utils::testing::{
+    jormungandr::Status,
     network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
     node::{
         grpc::{client::MockClientError, JormungandrClient},
@@ -66,7 +67,7 @@ impl WalletProxyController {
     }
 
     pub fn status(&self) -> Status {
-        *self.status.lock().unwrap()
+        (*self.status.lock().unwrap()).clone()
     }
 
     pub fn check_running(&self) -> bool {

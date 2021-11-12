@@ -1,16 +1,16 @@
 use crate::builders::{VitBackendSettingsBuilder, LEADER_1, LEADER_2, LEADER_3, WALLET_NODE};
 use crate::interactive::VitInteractiveCommandExec;
 use crate::interactive::VitUserInteractionController;
-use crate::manager::{ControlContext, ControlContextLock, ManagerService, State};
+use crate::manager::State;
+use crate::manager::{ControlContext, ControlContextLock, ManagerService};
 use crate::scenario::controller::VitController;
 use crate::vit_station::VitStationController;
 use crate::wallet::WalletProxyController;
 use crate::wallet::WalletProxySpawnParams;
 use crate::Result;
-use jormungandr_lib::interfaces::Explorer;
 use jormungandr_scenario_tests::interactive::UserInteractionController;
+use jormungandr_scenario_tests::node::Node as NodeController;
 use jormungandr_scenario_tests::scenario::Controller;
-use jormungandr_scenario_tests::NodeController;
 use jormungandr_scenario_tests::{
     node::{LeadershipMode, PersistenceMode},
     scenario::Context,
@@ -45,8 +45,7 @@ pub fn setup_network(
     let leader_1 = controller.spawn_node_custom(
         SpawnParams::new(LEADER_1)
             .leader()
-            .persistence_mode(PersistenceMode::Persistent)
-            .explorer(Explorer { enabled: true }),
+            .persistence_mode(PersistenceMode::Persistent),
     )?;
     leader_1.wait_for_bootstrap()?;
     controller.monitor_nodes();
@@ -78,7 +77,6 @@ pub fn setup_network(
         SpawnParams::new(WALLET_NODE)
             .passive()
             .persistence_mode(PersistenceMode::Persistent)
-            .explorer(Explorer { enabled: true })
             .persistent_fragment_log(controller.working_directory().path().join("persistent_log")),
     )?;
     wallet_node.wait_for_bootstrap()?;
@@ -220,7 +218,7 @@ pub fn single_run(
 
     let (mut vit_controller, mut controller, vit_parameters, version) =
         quick_setup.build(context)?;
-    let (nodes_list, vit_station, wallet_proxy) = setup_network(
+    let (mut nodes_list, vit_station, wallet_proxy) = setup_network(
         &mut controller,
         &mut vit_controller,
         vit_parameters,
@@ -246,7 +244,7 @@ pub fn single_run(
 
             vit_station.shutdown();
             wallet_proxy.shutdown();
-            for node in nodes_list {
+            for node in nodes_list.iter_mut() {
                 node.shutdown()?;
             }
 

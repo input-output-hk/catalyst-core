@@ -1,9 +1,9 @@
 use super::time;
-use crate::builders::Settings;
 use crate::config::VitStartParameters;
 use chain_crypto::bech32::Bech32;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
 use chain_vote::ElectionPublicKey;
+use jormungandr_testing_utils::testing::network::{Settings, VotePlanSettings};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 use vit_servicing_station_tests::common::data::ValidVotePlanParameters;
 
@@ -21,11 +21,7 @@ pub fn build_servicing_station_parameters(
     let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
         time::convert_to_human_date(
             input_parameters,
-            settings
-                .network_settings
-                .block0
-                .blockchain_configuration
-                .block0_date,
+            settings.block0.blockchain_configuration.block0_date,
         );
 
     parameters.set_voting_start(vote_start_timestamp.timestamp());
@@ -38,9 +34,15 @@ pub fn build_servicing_station_parameters(
     parameters.calculate_challenges_total_funds = false;
 
     if input_parameters.private {
-        for (alias, private_key_data) in settings.private_vote_plans.iter() {
-            let key: ElectionPublicKey = private_key_data.election_public_key();
-            parameters.set_vote_encryption_key(key.to_bech32_str(), alias);
+        for (alias, data) in settings.vote_plans.iter() {
+            if let VotePlanSettings::Private {
+                keys,
+                vote_plan: _vote_plan,
+            } = data
+            {
+                let key: ElectionPublicKey = keys.election_public_key();
+                parameters.set_vote_encryption_key(key.to_bech32_str(), &alias.alias);
+            }
         }
     }
     parameters

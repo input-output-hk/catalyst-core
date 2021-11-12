@@ -58,7 +58,7 @@ impl MockState {
             available: true,
             error_code: 400,
             ledger_state: LedgerState::new(
-                controller.settings().network_settings.block0.clone(),
+                controller.settings().block0.clone(),
                 controller.block0_file(),
             )?,
             vit_state: snapshot,

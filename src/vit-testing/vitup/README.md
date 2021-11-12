@@ -79,7 +79,7 @@ Running
 Default parameters:
 
 - Request Type: POST
-- Endpoint : http://{env_endpoint}:3030/status
+- Endpoint : http://{env_endpoint}:3030/api/status
 - Response Example:
 ```
 start event received
@@ -88,7 +88,7 @@ start event received
 Custom parameters:
 
 - Request Type: POST
-- Endpoint : http://{env_endpoint}:3030/control/start/default
+- Endpoint : http://{env_endpoint}:3030/api/control/command/start/default
 - BODY: json
 - Response Example:
 ```
@@ -99,7 +99,7 @@ This requests need to pass environment configuration file in Body.
 
 ###### Configuration file
 
-This section describe configuration file which can be passed to `/control/start/custom` endpoint
+This section describe configuration file which can be passed to `api/control/command/start/custom` endpoint
 
 - Initials:
 
@@ -211,16 +211,18 @@ Full Example:
       "funds": 10000
     }
   ],
-  "vote_start": 0,
-  "vote_tally": 10,
-  "tally_end": ,
+  "vote_time": {
+    "vote_start": 5,
+    "tally_start": 100,
+    "tally_end": 200,
+    "slots_per_epoch": 900
+  },
   "refresh_time": "2021-09-30T09:00:00",
   "next_vote_start_time": "2021-10-07T21:00:00",
   "proposals": 267,
   "challenges": 9,
   "reviews": 5072,
   "slot_duration": 5,
-  "slots_per_epoch": 1800,
   "voting_power": 450,
   "fund_name": "Fund6",
   "block_content_max_size": 204800,
@@ -238,7 +240,7 @@ Full Example:
 ###### stop environment
 
 - Request Type: POST
-- Endpoint : `http://{env_endpoint}:3030/control/stop`
+- Endpoint : `http://{env_endpoint}:3030/api/control/command/stop`
 - Response Example:
 ```
 stop event received
@@ -246,7 +248,7 @@ stop event received
 
 ###### list files
 - Request Type: GET
-- Endpoint : `http://{env_endpoint}:3030/files/list`
+- Endpoint : `http://{env_endpoint}:3030/api/control/files/list`
 - Response Example:
 ```
 {
@@ -303,8 +305,8 @@ stop event received
 
 ###### list files
 
-User can list or view files available for current voting. to list all available files `/files/list` endpoint can be utilized. Then relative path can be provided in `/files/get/..` endpoint. For example:
-`http://{env_endpoint}:3030/files/get/qr-codes/zero_funds_12_0000.png`
+User can list or view files available for current voting. to list all available files `/api/controlfiles/list` endpoint can be utilized. Then relative path can be provided in `/api/control/files/get/..` endpoint. For example:
+`http://{env_endpoint}:3030/api/control/files/get/qr-codes/zero_funds_12_0000.png`
 
 
 - Request Type: GET
@@ -434,16 +436,18 @@ curl --location --request POST 'http://192.168.0.19:8080/api/control/command/res
       "funds": 10000
     }
   ],
-  "vote_start": 0,
-  "vote_tally": 701,
-  "tally_end": 801,
+  "vote_time": {
+    "vote_start": 5,
+    "tally_start": 100,
+    "tally_end": 200,
+    "slots_per_epoch": 900
+  },
   "refresh_time": "2021-08-12T09:00:00",
   "next_vote_start_time": "2021-10-07T21:00:00",
   "proposals": 267,
   "challenges": 9,
   "reviews": 5072,
   "slot_duration": 5,
-  "slots_per_epoch": 1800,
   "voting_power": 450,
   "fund_name": "Fund6",
   "block_content_max_size": 204800,

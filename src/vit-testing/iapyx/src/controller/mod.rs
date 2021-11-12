@@ -4,6 +4,8 @@ pub use builder::{ControllerBuilder, Error as ControllerBuilderError};
 
 use crate::Wallet;
 use chain_impl_mockchain::{fragment::FragmentId, transaction::Input};
+use jormungandr_lib::interfaces::AccountVotes;
+use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::SettingsDto;
 use jormungandr_lib::interfaces::VotePlanId;
 use jormungandr_lib::interfaces::{AccountState, FragmentLog, FragmentStatus};
@@ -220,19 +222,28 @@ impl Controller {
         Ok(self.backend.fragment_logs()?)
     }
 
-    pub fn votes_history(
+    pub fn vote_plan_history(
         &self,
         vote_plan_id: VotePlanId,
     ) -> Result<Option<Vec<u8>>, ControllerError> {
-        Ok(self.backend.votes_history(
-            self.wallet
-                .identifier(self.settings.discrimination)
-                .into_address(
-                    self.settings.discrimination,
-                    &self.settings.discrimination.into_prefix(),
-                ),
-            vote_plan_id,
-        )?)
+        self.backend
+            .vote_plan_history(self.wallet_address(), vote_plan_id)
+            .map_err(Into::into)
+    }
+
+    pub fn votes_history(&self) -> Result<Option<Vec<AccountVotes>>, ControllerError> {
+        self.backend
+            .votes_history(self.wallet_address())
+            .map_err(Into::into)
+    }
+
+    fn wallet_address(&self) -> Address {
+        self.wallet
+            .identifier(self.settings.discrimination)
+            .into_address(
+                self.settings.discrimination,
+                &self.settings.discrimination.into_prefix(),
+            )
     }
 
     pub fn active_vote_plan(

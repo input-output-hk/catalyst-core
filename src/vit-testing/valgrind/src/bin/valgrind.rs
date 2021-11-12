@@ -89,7 +89,7 @@ async fn main() {
             server_stub.http_node_address(),
         ));
 
-        let votes = warp::path!("votes" / "plan" / ..).and(reverse_proxy_filter(
+        let votes = warp::path!("votes" / ..).and(reverse_proxy_filter(
             "".to_string(),
             server_stub.http_node_address(),
         ));

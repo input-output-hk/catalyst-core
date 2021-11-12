@@ -4,6 +4,7 @@ use assert_fs::TempDir;
 use chain_impl_mockchain::block::BlockDate;
 use chain_impl_mockchain::key::Hash;
 use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
+use jormungandr_testing_utils::testing::network::VotePlanSettings;
 use jormungandr_testing_utils::testing::BlockDateGenerator;
 use jormungandr_testing_utils::testing::FragmentSender;
 use jormungandr_testing_utils::testing::{node::time, FragmentSenderSetup};
@@ -132,19 +133,27 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     };
     time::wait_for_date(target_date.into(), leader_1.rest());
 
-    let active_vote_plans = leader_1.vote_plans().unwrap();
+    let active_vote_plans = leader_1.rest().vote_plan_statuses().unwrap();
     let vote_plan_status = active_vote_plans
         .iter()
         .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&fund1_vote_plan.id()).unwrap().into())
         .unwrap();
 
-    let shares = controller
-        .settings()
-        .private_vote_plans
-        .get(&fund_name)
-        .unwrap()
-        .decrypt_tally(&vote_plan_status.clone().into())
-        .unwrap();
+    let shares = {
+        match controller
+            .settings()
+            .vote_plans
+            .iter()
+            .find(|(key, _)| key.alias == fund_name)
+            .map(|(_, vote_plan)| vote_plan)
+            .unwrap()
+        {
+            VotePlanSettings::Public(_) => panic!("unexpected public voteplan"),
+            VotePlanSettings::Private { keys, vote_plan: _ } => keys
+                .decrypt_tally(&vote_plan_status.clone().into())
+                .unwrap(),
+        }
+    };
 
     fragment_sender
         .send_private_vote_tally(
@@ -158,13 +167,14 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     vote_timing.wait_for_tally_end(leader_1.rest());
 
     leader_1
-        .vote_plans()
+        .rest()
+        .vote_plan_statuses()
         .unwrap()
         .assert_all_proposals_are_tallied();
 
     vit_station.shutdown();
     wallet_proxy.shutdown();
-    for node in nodes {
+    for mut node in nodes {
         node.shutdown()?;
     }
     controller.finalize();

@@ -7,6 +7,7 @@ mod spawn_params;
 use chain_impl_mockchain::fragment::FragmentId;
 
 pub use jormungandr_testing_utils::testing::{
+    jormungandr::Status,
     network::{LeadershipMode, NodeAlias, NodeBlock0, NodeSetting, PersistenceMode, Settings},
     node::{
         grpc::{client::MockClientError, JormungandrClient},
@@ -16,10 +17,7 @@ pub use jormungandr_testing_utils::testing::{
 };
 
 use indicatif::ProgressBar;
-use jormungandr_scenario_tests::{
-    node::{ProgressBarController, Status},
-    style, Context,
-};
+use jormungandr_scenario_tests::{node::ProgressBarController, style, Context};
 use rand_core::RngCore;
 
 use std::io::{self, BufRead, BufReader};
@@ -211,7 +209,6 @@ impl WalletProxy {
             Err(err) => {
                 self.progress_bar.log_err(&err);
                 self.progress_bar_failure();
-                self.set_status(Status::Failure);
             }
             Ok(status) => {
                 if status.success() {
@@ -220,7 +217,7 @@ impl WalletProxy {
                     self.progress_bar.log_err(&status);
                     self.progress_bar_failure()
                 }
-                self.set_status(Status::Exit(status));
+                self.set_status(Status::Exited(status));
             }
         }
     }

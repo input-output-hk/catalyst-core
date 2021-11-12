@@ -138,13 +138,21 @@ pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
         .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&fund1_vote_plan.id()).unwrap().into())
         .unwrap();
 
-    let shares = controller
-        .settings()
-        .private_vote_plans
-        .get(&fund_name)
-        .unwrap()
-        .decrypt_tally(&vote_plan_status.clone().into())
-        .unwrap();
+    let shares = {
+        match controller
+            .settings()
+            .vote_plans
+            .iter()
+            .find(|(key, vote_plan)| key.alias == fund_name)
+            .map(|(key, vote_plan)| vote_plan)
+            .unwrap()
+        {
+            VotePlanSettings::Public(_) => panic!("unexpected public voteplan"),
+            VotePlanSettings::Private { keys, vote_plan } => keys
+                .decrypt_tally(&vote_plan_status.clone().into())
+                .unwrap(),
+        }
+    };
 
     fragment_sender
         .send_private_vote_tally(

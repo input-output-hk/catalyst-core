@@ -4,6 +4,7 @@ use chain_impl_mockchain::key::Hash;
 use iapyx::{NodeLoad, NodeLoadConfig};
 use jormungandr_lib::interfaces::BlockDate;
 use jormungandr_testing_utils::testing::asserts::VotePlanStatusAssert;
+use jormungandr_testing_utils::testing::network::VotePlanSettings;
 use jormungandr_testing_utils::testing::node::time;
 use jormungandr_testing_utils::testing::FragmentNode;
 use jortestkit::{
@@ -102,13 +103,21 @@ pub fn private_vote_test_scenario(
         .find(|c_vote_plan| c_vote_plan.id == Hash::from_str(&vote_plan.id()).unwrap().into())
         .unwrap();
 
-    let shares = controller
-        .settings()
-        .private_vote_plans
-        .get(&fund_name)
-        .unwrap()
-        .decrypt_tally(&vote_plan_status.clone().into())
-        .unwrap();
+    let shares = {
+        match controller
+            .settings()
+            .vote_plans
+            .iter()
+            .find(|(key, vote_plan)| key.alias == fund_name)
+            .map(|(key, vote_plan)| vote_plan)
+            .unwrap()
+        {
+            VotePlanSettings::Public(_) => panic!("unexpected public voteplan"),
+            VotePlanSettings::Private { keys, vote_plan } => keys
+                .decrypt_tally(&vote_plan_status.clone().into())
+                .unwrap(),
+        }
+    };
 
     match controller.fragment_sender().send_private_vote_tally(
         &mut committee,

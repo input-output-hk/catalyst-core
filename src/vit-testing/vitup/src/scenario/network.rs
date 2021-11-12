@@ -8,7 +8,6 @@ use crate::vit_station::VitStationController;
 use crate::wallet::WalletProxyController;
 use crate::wallet::WalletProxySpawnParams;
 use crate::Result;
-use jormungandr_lib::interfaces::Explorer;
 use jormungandr_scenario_tests::interactive::UserInteractionController;
 use jormungandr_scenario_tests::node::Node as NodeController;
 use jormungandr_scenario_tests::scenario::Controller;
@@ -46,8 +45,7 @@ pub fn setup_network(
     let leader_1 = controller.spawn_node_custom(
         SpawnParams::new(LEADER_1)
             .leader()
-            .persistence_mode(PersistenceMode::Persistent)
-            .explorer(Explorer { enabled: true }),
+            .persistence_mode(PersistenceMode::Persistent),
     )?;
     leader_1.wait_for_bootstrap()?;
     controller.monitor_nodes();
@@ -79,7 +77,6 @@ pub fn setup_network(
         SpawnParams::new(WALLET_NODE)
             .passive()
             .persistence_mode(PersistenceMode::Persistent)
-            .explorer(Explorer { enabled: true })
             .persistent_fragment_log(controller.working_directory().path().join("persistent_log")),
     )?;
     wallet_node.wait_for_bootstrap()?;

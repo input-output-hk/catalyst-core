@@ -33,7 +33,7 @@ impl MockStartCommandArgs {
         )?));
 
         tokio::spawn(async move {
-            start_rest_server(control_context.clone()).await;
+            start_rest_server(control_context.clone(), configuration).await;
         })
         .await
         .map(|_| ())

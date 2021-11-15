@@ -3,13 +3,17 @@ use std::path::Path;
 use std::path::PathBuf;
 use thiserror::Error;
 
-#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize)]
+use valgrind::Protocol;
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Configuration {
     pub port: u16,
     pub token: Option<String>,
     pub ideascale: bool,
     #[serde(alias = "working-dir")]
     pub working_dir: PathBuf,
+    #[serde(default = "Protocol::http")]
+    pub protocol: valgrind::Protocol,
 }
 
 pub fn read_config<P: AsRef<Path>>(config: P) -> Result<Configuration, Error> {

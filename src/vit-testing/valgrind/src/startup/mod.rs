@@ -80,6 +80,7 @@ impl ValigrindStartupCommand {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum Protocol {
     Http,
     Https {

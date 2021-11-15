@@ -52,7 +52,17 @@ impl MockState {
         let (_, controller, vit_parameters, version) = quick_setup.build(context).unwrap();
 
         let mut generator = ValidVotePlanGenerator::new(vit_parameters);
-        let snapshot = generator.build(&mut template_generator);
+        let mut snapshot = generator.build(&mut template_generator);
+
+        let reviews = snapshot.advisor_reviews();
+
+        //perform db view operations
+        for proposal in snapshot.proposals_mut().iter_mut() {
+            proposal.proposal.reviews_count = reviews
+                .iter()
+                .filter(|review| review.proposal_id.to_string() == proposal.proposal.proposal_id)
+                .count() as i32;
+        }
 
         Ok(Self {
             available: true,

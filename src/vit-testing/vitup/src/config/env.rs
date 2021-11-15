@@ -1,4 +1,4 @@
-use super::initials::Initials;
+use super::initials::{Initial, Initials};
 use crate::builders::{default_next_vote_date, default_refresh_date};
 use crate::config::VoteTime;
 use chrono::NaiveDateTime;
@@ -54,11 +54,14 @@ impl Default for VitStartParameters {
     fn default() -> Self {
         Self {
             protocol: Protocol::Http,
-            initials: Default::default(),
+            initials: Initials(vec![Initial::AboveThreshold {
+                above_threshold: 10,
+                pin: "1234".to_string(),
+            }]),
             vote_time: Default::default(),
             proposals: 100,
-            challenges: 4,
-            reviews: 1,
+            challenges: 9,
+            reviews: 3,
             slot_duration: 20,
             voting_power: 8000,
             refresh_time: default_refresh_date(),

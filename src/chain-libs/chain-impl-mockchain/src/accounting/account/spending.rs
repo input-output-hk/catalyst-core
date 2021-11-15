@@ -98,11 +98,11 @@ impl SpendingCounter {
     // LANES_BITS on the MSB, on 32 bits: 0xe000_0000
     const LANED_MASK: u32 = !Self::UNLANED_MASK;
 
-    fn lane(self) -> usize {
+    pub fn lane(self) -> usize {
         (self.0 >> UNLANES_BITS) as usize
     }
 
-    fn unlaned_counter(self) -> u32 {
+    pub fn unlaned_counter(self) -> u32 {
         self.0 & Self::UNLANED_MASK
     }
 

@@ -1,5 +1,5 @@
 use crate::error::{Code, Error};
-use chain_crypto::{Ed25519, KeyPair, PublicKey, Signature, Verification};
+use chain_crypto::{Ed25519, KeyPair, PublicKey, SecretKey, Signature, Verification};
 use rand_core::{CryptoRng, RngCore};
 
 use std::convert::TryFrom;
@@ -50,6 +50,12 @@ impl NodeKeyPair {
             id: NodeId(self.0.public_key().clone()),
             signature,
         }
+    }
+}
+
+impl From<SecretKey<Ed25519>> for NodeKeyPair {
+    fn from(key: SecretKey<Ed25519>) -> Self {
+        Self(key.into())
     }
 }
 

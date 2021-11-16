@@ -27,6 +27,7 @@ impl CsvConverter {
             "fund_end_time",
             "next_fund_start_time",
             "registration_snapshot_time",
+            "next_registration_snapshot_time",
         ];
         let content: Vec<Vec<String>> = funds.iter().map(convert_fund).collect();
         self.build_file(headers, content, path)

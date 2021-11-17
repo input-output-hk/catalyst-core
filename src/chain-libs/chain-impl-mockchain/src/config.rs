@@ -872,7 +872,13 @@ mod test {
                 1 => ConfigParam::Discrimination(Arbitrary::arbitrary(g)),
                 2 => ConfigParam::ConsensusVersion(Arbitrary::arbitrary(g)),
                 3 => ConfigParam::SlotsPerEpoch(Arbitrary::arbitrary(g)),
-                4 => ConfigParam::SlotDuration(Arbitrary::arbitrary(g)),
+                4 => {
+                    let mut slot_duration = u8::arbitrary(g);
+                    if slot_duration == 0 {
+                        slot_duration += 1;
+                    }
+                    ConfigParam::SlotDuration(slot_duration)
+                }
                 5 => ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(Arbitrary::arbitrary(g)),
                 6 => ConfigParam::BlockContentMaxSize(Arbitrary::arbitrary(g)),
                 7 => ConfigParam::AddBftLeader(Arbitrary::arbitrary(g)),

@@ -23,6 +23,7 @@ struct FundDateTimes {
     end: UtcDateTime,
     next: UtcDateTime,
     snapshot: UtcDateTime,
+    next_snapshot: UtcDateTime,
 }
 
 struct VoteplanDateTimes {
@@ -68,6 +69,7 @@ impl ArbitrarySnapshotGenerator {
             fund_end_time: dates.end.timestamp(),
             next_fund_start_time: dates.next.timestamp(),
             registration_snapshot_time: dates.snapshot.timestamp(),
+            next_registration_snapshot_time: dates.next_snapshot.timestamp(),
             chain_vote_plans: vec![self.voteplan_with_fund_id(id.abs())],
             challenges: self.challenges_with_fund_id(id.abs()),
         }
@@ -128,11 +130,14 @@ impl ArbitrarySnapshotGenerator {
         let end = DateTimeBetween(Utc::now(), range_end_time).fake::<UtcDateTime>();
         let next = DateTimeBetween(range_end_time, range_next_start_time).fake::<UtcDateTime>();
         let snapshot = DateTimeBetween(start, end).fake::<UtcDateTime>();
+        let next_snapshot = DateTimeBetween(end, end + Duration::days(30)).fake::<UtcDateTime>();
+
         FundDateTimes {
             start,
             end,
             next,
             snapshot,
+            next_snapshot,
         }
     }
 

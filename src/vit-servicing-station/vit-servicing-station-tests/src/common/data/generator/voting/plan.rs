@@ -45,6 +45,7 @@ pub struct ValidVotePlanParameters {
     pub voting_tally_end: Option<i64>,
     pub next_fund_start_time: Option<i64>,
     pub registration_snapshot_time: Option<i64>,
+    pub next_registration_snapshot_time: Option<i64>,
     pub vote_options: Option<VoteOptions>,
     pub challenges_count: usize,
     pub reviews_count: usize,
@@ -68,6 +69,7 @@ impl ValidVotePlanParameters {
             voting_tally_end: None,
             next_fund_start_time: None,
             registration_snapshot_time: None,
+            next_registration_snapshot_time: None,
             vote_options: Some(VoteOptions::parse_coma_separated_value("blank,yes,no")),
             challenges_count: 4,
             reviews_count: 1,
@@ -107,6 +109,10 @@ impl ValidVotePlanParameters {
 
     pub fn set_registration_snapshot_time(&mut self, registration_snapshot_time: i64) {
         self.registration_snapshot_time = Some(registration_snapshot_time);
+    }
+
+    pub fn set_next_registration_snapshot_time(&mut self, next_registration_snapshot_time: i64) {
+        self.next_registration_snapshot_time = Some(next_registration_snapshot_time);
     }
 
     pub fn set_challenges_count(&mut self, challenges_count: usize) {
@@ -155,6 +161,10 @@ impl ValidVotePlanGenerator {
             .parameters
             .registration_snapshot_time
             .unwrap_or(voting_start);
+        let next_registration_snapshot_time = self
+            .parameters
+            .next_registration_snapshot_time
+            .unwrap_or(voting_tally_end);
 
         let fund_template = template_generator.next_fund();
         let fund_id = self.parameters.fund_id.unwrap_or(fund_template.id);
@@ -213,6 +223,7 @@ impl ValidVotePlanGenerator {
             fund_end_time: voting_tally_start,
             next_fund_start_time,
             registration_snapshot_time,
+            next_registration_snapshot_time,
             chain_vote_plans: vote_plans.clone(),
             challenges,
         };

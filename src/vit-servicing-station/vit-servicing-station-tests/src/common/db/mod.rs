@@ -148,6 +148,7 @@ impl<'a> DbInserter<'a> {
                 funds::fund_end_time.eq(fund.fund_end_time),
                 funds::next_fund_start_time.eq(fund.next_fund_start_time),
                 funds::registration_snapshot_time.eq(fund.registration_snapshot_time),
+                funds::next_registration_snapshot_time.eq(fund.next_registration_snapshot_time),
             );
 
             diesel::insert_into(funds::table)

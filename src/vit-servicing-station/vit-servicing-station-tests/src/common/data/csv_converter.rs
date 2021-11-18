@@ -27,6 +27,7 @@ impl CsvConverter {
             "fund_end_time",
             "next_fund_start_time",
             "registration_snapshot_time",
+            "next_registration_snapshot_time",
         ];
         let content: Vec<Vec<String>> = funds.iter().map(convert_fund).collect();
         self.build_file(headers, content, path)
@@ -214,6 +215,7 @@ fn convert_fund(fund: &Fund) -> Vec<String> {
         unix_timestamp_to_datetime(fund.fund_end_time).to_rfc3339(),
         unix_timestamp_to_datetime(fund.next_fund_start_time).to_rfc3339(),
         unix_timestamp_to_datetime(fund.registration_snapshot_time).to_rfc3339(),
+        unix_timestamp_to_datetime(fund.next_registration_snapshot_time).to_rfc3339(),
     ]
 }
 

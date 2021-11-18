@@ -13,6 +13,7 @@ use vit_servicing_station_lib::db::models::{
 };
 
 use chrono::DateTime;
+use vit_servicing_station_lib::db::models::challenges::ChallengeHighlights;
 use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
@@ -209,6 +210,7 @@ impl ArbitrarySnapshotGenerator {
                 proposers_rewards: first_challenge.proposers_rewards.parse().unwrap(),
                 fund_id,
                 challenge_url: self.template_generator.gen_http_address(),
+                highlights: None,
             },
             Challenge {
                 id: community_choice_id.abs(),
@@ -219,6 +221,9 @@ impl ArbitrarySnapshotGenerator {
                 proposers_rewards: second_challenge.proposers_rewards.parse().unwrap(),
                 fund_id,
                 challenge_url: self.template_generator.gen_http_address(),
+                highlights: Some(ChallengeHighlights {
+                    sponsor: "Foobar".to_string(),
+                }),
             },
         ]
     }
@@ -236,6 +241,7 @@ impl ArbitrarySnapshotGenerator {
             proposers_rewards: challenge.proposers_rewards.parse().unwrap(),
             fund_id,
             challenge_url: self.template_generator.gen_http_address(),
+            highlights: None,
         }
     }
 

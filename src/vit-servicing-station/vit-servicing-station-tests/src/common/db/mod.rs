@@ -194,18 +194,8 @@ impl<'a> DbInserter<'a> {
 
     pub fn insert_challenges(&self, challenges: &[Challenge]) -> Result<(), DbInserterError> {
         for challenge in challenges {
-            let values = (
-                challenges::id.eq(challenge.id),
-                challenges::challenge_type.eq(challenge.challenge_type.to_string()),
-                challenges::title.eq(challenge.title.clone()),
-                challenges::description.eq(challenge.description.clone()),
-                challenges::rewards_total.eq(challenge.rewards_total),
-                challenges::proposers_rewards.eq(challenge.proposers_rewards),
-                challenges::fund_id.eq(challenge.fund_id),
-                challenges::challenge_url.eq(challenge.challenge_url.clone()),
-            );
             diesel::insert_or_ignore_into(challenges::table)
-                .values(values)
+                .values(challenge.clone().values())
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
         }

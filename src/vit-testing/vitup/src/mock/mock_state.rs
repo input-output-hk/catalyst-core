@@ -2,7 +2,6 @@ use super::config::Configuration;
 use crate::builders::VitBackendSettingsBuilder;
 use crate::config::VitStartParameters;
 use crate::mock::ledger_state::LedgerState;
-use jormungandr_scenario_tests::prepare_command;
 use jormungandr_scenario_tests::{Context, ProgressBarMode};
 use jormungandr_testing_utils::testing::network::Seed;
 use std::path::Path;
@@ -23,8 +22,8 @@ pub struct MockState {
 }
 
 pub fn context<P: AsRef<Path>>(testing_directory: P) -> Context {
-    let jormungandr = prepare_command(PathBuf::from_str("jormungandr").unwrap());
-    let jcli = prepare_command(PathBuf::from_str("jcli").unwrap());
+    let jormungandr = PathBuf::from_str("jormungandr").unwrap();
+    let jcli = PathBuf::from_str("jcli").unwrap();
     let seed = Seed::generate(rand::rngs::OsRng);
     let generate_documentation = true;
     let log_level = "info".to_string();
@@ -42,8 +41,9 @@ pub fn context<P: AsRef<Path>>(testing_directory: P) -> Context {
 
 impl MockState {
     pub fn new(params: VitStartParameters, config: Configuration) -> Result<Self, Error> {
-        std::fs::remove_dir_all(&config.working_dir)?;
-
+        if config.working_dir.exists() {
+            std::fs::remove_dir_all(&config.working_dir)?;
+        }
         let mut quick_setup = VitBackendSettingsBuilder::new();
         let context = context(&config.working_dir);
         quick_setup.upload_parameters(params);

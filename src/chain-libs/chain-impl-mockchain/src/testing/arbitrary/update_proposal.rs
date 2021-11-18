@@ -5,6 +5,7 @@ use crate::{
     fragment::config::ConfigParams,
     key::BftLeaderId,
     testing::arbitrary::utils as arbitrary_utils,
+    testing::data::LeaderPair,
 };
 use chain_crypto::{Ed25519, SecretKey};
 use quickcheck::{Arbitrary, Gen};
@@ -22,6 +23,14 @@ pub struct UpdateProposalData {
 impl UpdateProposalData {
     pub fn leaders_ids(&self) -> Vec<BftLeaderId> {
         self.leaders.keys().cloned().collect()
+    }
+
+    pub fn leaders_pairs(&self) -> Vec<LeaderPair> {
+        self.leaders
+            .values()
+            .cloned()
+            .map(LeaderPair::new)
+            .collect()
     }
 
     pub fn proposal_settings(&self) -> ConfigParams {

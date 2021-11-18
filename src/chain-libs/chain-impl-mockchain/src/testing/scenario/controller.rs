@@ -1,7 +1,7 @@
 use crate::{
     certificate::{
-        DecryptedPrivateTally, EncryptedVoteTally, ExternalProposalId, Proposal, VoteCast,
-        VotePlan, VoteTally,
+        DecryptedPrivateTally, EncryptedVoteTally, ExternalProposalId, Proposal, UpdateProposal,
+        UpdateVote, VoteCast, VotePlan, VoteTally,
     },
     date::BlockDate,
     fee::LinearFee,
@@ -19,8 +19,10 @@ use crate::{
 #[cfg(test)]
 use super::scenario_builder::{prepare_scenario, stake_pool, wallet};
 use super::FragmentFactory;
+use crate::fragment::FragmentId;
 #[cfg(test)]
 use chain_addr::Discrimination;
+use chain_core::property::Fragment as _;
 
 use rand_core::{CryptoRng, RngCore};
 use thiserror::Error;
@@ -333,6 +335,31 @@ impl Controller {
         let fragment = self
             .fragment_factory
             .vote_tally(test_ledger.date(), owner, vote_tally);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())
+    }
+
+    pub fn update_proposal(
+        &self,
+        owner: &Wallet,
+        update_proposal: UpdateProposal,
+        test_ledger: &mut TestLedger,
+    ) -> Result<FragmentId, LedgerError> {
+        let fragment =
+            self.fragment_factory
+                .update_proposal(test_ledger.date(), owner, update_proposal);
+        test_ledger.apply_fragment(&fragment, test_ledger.date())?;
+        Ok(fragment.id())
+    }
+
+    pub fn update_vote(
+        &self,
+        owner: &Wallet,
+        update_vote: UpdateVote,
+        test_ledger: &mut TestLedger,
+    ) -> Result<(), LedgerError> {
+        let fragment = self
+            .fragment_factory
+            .update_vote(test_ledger.date(), owner, update_vote);
         test_ledger.apply_fragment(&fragment, test_ledger.date())
     }
 }

@@ -115,7 +115,7 @@ fn verify_distribute_rewards(
 
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
     let alice = controller.wallet("Alice").unwrap();
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
@@ -164,7 +164,7 @@ pub fn fees_go_to_with_capping_about_threshold() {
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
     let alice = controller.wallet("Alice").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
@@ -213,7 +213,7 @@ pub fn fees_go_to_with_capping_below_threshold() {
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
     let alice = controller.wallet("Alice").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());

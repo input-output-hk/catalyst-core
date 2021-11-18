@@ -1,5 +1,6 @@
 use super::{StakePoolTemplate, WalletTemplate};
 use crate::certificate::VoteAction;
+use crate::key::EitherEd25519SecretKey;
 use crate::ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAction};
 use crate::testing::scenario::template::ExternalProposalId;
 use crate::testing::scenario::template::ProposalDef;
@@ -18,9 +19,10 @@ use std::{
     num::NonZeroU64,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct WalletTemplateBuilder {
     alias: String,
+    secret_key: Option<EitherEd25519SecretKey>,
     delagate_alias: Option<String>,
     ownership_alias: Option<String>,
     initial_value: Option<Value>,
@@ -35,11 +37,17 @@ impl WalletTemplateBuilder {
             ownership_alias: None,
             initial_value: None,
             committee_member: false,
+            secret_key: None,
         }
     }
 
     pub fn with(&mut self, value: u64) -> &mut Self {
         self.initial_value = Some(Value(value));
+        self
+    }
+
+    pub fn key(&mut self, secret_key: EitherEd25519SecretKey) -> &mut Self {
+        self.secret_key = Some(secret_key);
         self
     }
 
@@ -63,7 +71,7 @@ impl WalletTemplateBuilder {
         self
     }
 
-    pub fn build(&self) -> Result<WalletTemplate, ScenarioBuilderError> {
+    pub fn build(self) -> Result<WalletTemplate, ScenarioBuilderError> {
         let value = self
             .initial_value
             .ok_or(ScenarioBuilderError::UndefinedValueForWallet {
@@ -76,6 +84,7 @@ impl WalletTemplateBuilder {
             stake_pool_owner_alias: self.ownership_alias.clone(),
             initial_value: value,
             committee_member: self.committee_member,
+            secret_key: self.secret_key,
         })
     }
 }

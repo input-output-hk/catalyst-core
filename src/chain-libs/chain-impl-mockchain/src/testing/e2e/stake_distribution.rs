@@ -97,7 +97,7 @@ pub fn stake_distribution_changes_after_rewards_are_collected() {
         .unassigned_is(Stake::from_value(Value(2000)))
         .pools_distribution_is(vec![(alice_stake_pool.id(), Value(1000))]);
 
-    assert!(ledger.produce_empty_block(&alice_stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&alice_stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
     LedgerStateVerifier::new(ledger.into())

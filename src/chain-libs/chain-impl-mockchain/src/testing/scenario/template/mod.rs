@@ -1,23 +1,29 @@
 mod builders;
 
+use crate::key::EitherEd25519SecretKey;
 use crate::ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAction};
+use crate::testing::data::AddressData;
+use crate::testing::data::AddressDataValue;
 use crate::{
     certificate::{ExternalProposalId, PoolPermissions, Proposal, Proposals, VoteAction, VotePlan},
     header::BlockDate,
     rewards::TaxType,
+    testing::data::Wallet,
     value::Value,
     vote::{Options, PayloadType},
 };
 pub use builders::*;
+use chain_addr::{Address, Discrimination, Kind};
 use chain_crypto::{Ed25519, PublicKey};
 use chain_vote::MemberPublicKey;
 use std::hash::{Hash, Hasher};
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct WalletTemplate {
     pub alias: String,
     pub stake_pool_delegate_alias: Option<String>,
     pub stake_pool_owner_alias: Option<String>,
+    pub secret_key: Option<EitherEd25519SecretKey>,
     pub initial_value: Value,
     pub committee_member: bool,
 }
@@ -44,6 +50,7 @@ impl WalletTemplate {
             stake_pool_owner_alias: None,
             initial_value,
             committee_member: false,
+            secret_key: None,
         }
     }
 
@@ -55,12 +62,30 @@ impl WalletTemplate {
         self.stake_pool_owner_alias.clone()
     }
 
+    pub fn secret_key(&self) -> Option<EitherEd25519SecretKey> {
+        self.secret_key.clone()
+    }
     pub fn is_committee_member(&self) -> bool {
         self.committee_member
     }
 
     pub fn alias(&self) -> String {
         self.alias.clone()
+    }
+}
+
+impl From<WalletTemplate> for Wallet {
+    fn from(template: WalletTemplate) -> Self {
+        if let Some(secret_key) = template.secret_key() {
+            let user_address = Address(Discrimination::Test, Kind::Account(secret_key.to_public()));
+            let account = AddressDataValue::new(
+                AddressData::new(secret_key, Some(0.into()), user_address),
+                template.initial_value,
+            );
+            Self::from_address_data_value_and_alias(template.alias(), account)
+        } else {
+            Self::new(&template.alias(), template.initial_value)
+        }
     }
 }
 

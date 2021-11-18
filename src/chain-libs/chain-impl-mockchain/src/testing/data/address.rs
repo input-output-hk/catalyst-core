@@ -3,6 +3,7 @@ use crate::{
     chaintypes::HeaderId,
     key::EitherEd25519SecretKey,
     testing::builders::make_witness,
+    testing::data::LeaderPair,
     transaction::{Input, Output, TransactionAuthData, Witness},
     utxo::Entry,
     value::Value,
@@ -65,6 +66,14 @@ impl AddressData {
             KindType::Group => AddressData::delegation(discrimination),
             _ => panic!("not implemented yet"),
         }
+    }
+
+    pub fn from_leader_pair(leader_pair: LeaderPair, discrimination: Discrimination) -> Self {
+        Self::new(
+            EitherEd25519SecretKey::Normal(leader_pair.key()),
+            Some(SpendingCounter(0)),
+            Address(discrimination, Kind::Account(leader_pair.key().to_public())),
+        )
     }
 
     pub fn utxo(discrimination: Discrimination) -> Self {

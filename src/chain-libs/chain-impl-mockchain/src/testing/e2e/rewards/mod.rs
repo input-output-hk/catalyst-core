@@ -58,7 +58,7 @@ pub fn rewards_empty_pots() {
         .unwrap();
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
@@ -110,7 +110,7 @@ pub fn rewards_owners_split() {
     let bob = controller.wallet("Bob").unwrap();
     let clarice = controller.wallet("Clarice").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
     assert!(ledger.can_distribute_reward());
     ledger.distribute_rewards().unwrap();
 
@@ -167,7 +167,7 @@ pub fn rewards_owners_uneven_split() {
     let bob = controller.wallet("Bob").unwrap();
     let clarice = controller.wallet("Clarice").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
@@ -216,7 +216,7 @@ pub fn rewards_single_owner() {
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
     let alice = controller.wallet("Alice").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
@@ -260,7 +260,7 @@ pub fn rewards_reward_account() {
         .unwrap();
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
     ledger.distribute_rewards().unwrap();
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.into());
@@ -310,7 +310,7 @@ pub fn rewards_goes_to_treasury_if_stake_pool_is_retired() {
     let stake_pool = controller.stake_pool("stake_pool").unwrap();
     let alice = controller.wallet("Alice").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
 
     controller
         .retire(Some(&alice), &stake_pool, &mut ledger)
@@ -370,7 +370,9 @@ pub fn rewards_from_fees() {
 
     let fragment_factory = controller.fragment_factory();
     let fragment = fragment_factory.transaction(&bob, &clarice, &mut ledger, 100);
-    assert!(ledger.produce_block(&stake_pool, vec![fragment]).is_ok());
+    assert!(ledger
+        .apply_praos_block(&stake_pool, vec![fragment])
+        .is_ok());
 
     let mut ledger_verifier = LedgerStateVerifier::new(ledger.clone().into());
     ledger_verifier.info("before rewards distribution with single transaction");
@@ -432,7 +434,7 @@ pub fn rewards_stake_pool_with_delegation() {
     let alice = controller.wallet("Alice").unwrap();
     let bob = controller.wallet("Bob").unwrap();
 
-    assert!(ledger.produce_empty_block(&stake_pool).is_ok());
+    assert!(ledger.apply_empty_praos_block(&stake_pool).is_ok());
 
     ledger.distribute_rewards().unwrap();
 
@@ -487,7 +489,9 @@ pub fn rewards_total_amount_is_constant_after_reward_distribution() {
 
     let fragment_factory = controller.fragment_factory();
     let fragment = fragment_factory.transaction(&bob, &clarice, &mut ledger, 100);
-    assert!(ledger.produce_block(&stake_pool, vec![fragment]).is_ok());
+    assert!(ledger
+        .apply_praos_block(&stake_pool, vec![fragment])
+        .is_ok());
 
     LedgerStateVerifier::new(ledger.clone().into())
         .info("before rewards distribution")
@@ -649,12 +653,12 @@ pub fn rewards_owner_of_many_stake_pool() {
 
     let fragment = fragment_factory.transaction(&bob, &clarice, &mut ledger, 100);
     assert!(ledger
-        .produce_block(&first_alice_stake_pool, vec![fragment])
+        .apply_praos_block(&first_alice_stake_pool, vec![fragment])
         .is_ok());
 
     let fragment = fragment_factory.transaction(&clarice, &bob, &mut ledger, 100);
     assert!(ledger
-        .produce_block(&second_alice_stake_pool, vec![fragment])
+        .apply_praos_block(&second_alice_stake_pool, vec![fragment])
         .is_ok());
 
     ledger.distribute_rewards().unwrap();
@@ -732,12 +736,12 @@ pub fn rewards_delegators_of_many_stake_pool() {
 
     let fragment = fragment_factory.transaction(&david, &clarice, &mut ledger, 100);
     assert!(ledger
-        .produce_block(&alice_stake_pool, vec![fragment])
+        .apply_praos_block(&alice_stake_pool, vec![fragment])
         .is_ok());
 
     let fragment = fragment_factory.transaction(&clarice, &david, &mut ledger, 100);
     assert!(ledger
-        .produce_block(&bob_stake_pool, vec![fragment])
+        .apply_praos_block(&bob_stake_pool, vec![fragment])
         .is_ok());
 
     ledger.distribute_rewards().unwrap();

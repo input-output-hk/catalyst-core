@@ -15,6 +15,16 @@ pub struct Wallet {
 }
 
 impl Wallet {
+    pub fn from_address_data_value_and_alias<S: Into<String>>(
+        alias: S,
+        account: AddressDataValue,
+    ) -> Self {
+        Wallet {
+            alias: alias.into(),
+            account,
+        }
+    }
+
     pub fn from_address_data_value(account: AddressDataValue) -> Self {
         Wallet {
             alias: "".to_owned(),

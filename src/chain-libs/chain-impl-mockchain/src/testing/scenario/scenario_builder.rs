@@ -93,11 +93,7 @@ impl ScenarioBuilder {
             .map(|x| x.build())
             .collect();
         let initials: Vec<WalletTemplate> = initials?;
-        let wallets: Vec<Wallet> = initials
-            .iter()
-            .cloned()
-            .map(|x| self.build_wallet(x))
-            .collect();
+        let wallets: Vec<Wallet> = initials.iter().cloned().map(|x| x.into()).collect();
         let stake_pools_wallet_map = StakePoolTemplateBuilder::new(&initials);
         let stake_pool_templates: Vec<StakePoolTemplate> =
             stake_pools_wallet_map.build_stake_pool_templates(wallets.clone())?;
@@ -196,10 +192,6 @@ impl ScenarioBuilder {
                 create_initial_stake_pool_delegation(stake_pool, wallet)
             })
             .collect()
-    }
-
-    fn build_wallet(&self, template: WalletTemplate) -> Wallet {
-        Wallet::new(&template.alias(), template.initial_value)
     }
 
     fn build_stake_pools(&self, stake_pool_templates: Vec<StakePoolTemplate>) -> Vec<StakePool> {

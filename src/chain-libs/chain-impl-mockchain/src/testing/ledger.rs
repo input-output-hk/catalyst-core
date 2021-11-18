@@ -17,10 +17,11 @@ use crate::{
     },
     milli::Milli,
     rewards::{Ratio, TaxType},
+    setting::Settings,
     stake::PoolsState,
     testing::{
-        builders::GenesisPraosBlockBuilder,
-        data::{AddressData, AddressDataValue, StakePool, Wallet},
+        builders::{BftBlockBuilder, GenesisPraosBlockBuilder},
+        data::{AddressData, AddressDataValue, LeaderPair, StakePool, Wallet},
     },
     transaction::{Output, TxBuilder},
     utxo::{Entry, Iter},
@@ -618,23 +619,27 @@ impl TestLedger {
     }
 
     pub fn forge_empty_block(&self, stake_pool: &StakePool) -> Block {
-        self.forge_block_with_fragments(stake_pool, Vec::new())
+        self.forge_praos_block_with_fragments(stake_pool, Vec::new())
     }
 
-    pub fn produce_empty_block(&mut self, stake_pool: &StakePool) -> Result<(), Error> {
-        self.produce_block(stake_pool, vec![])
+    pub fn apply_empty_praos_block(&mut self, stake_pool: &StakePool) -> Result<(), Error> {
+        self.apply_praos_block(stake_pool, vec![])
     }
 
-    pub fn produce_block(
+    pub fn settings(&self) -> &Settings {
+        self.ledger.settings()
+    }
+
+    pub fn apply_praos_block(
         &mut self,
         stake_pool: &StakePool,
         fragments: Vec<Fragment>,
     ) -> Result<(), Error> {
-        let block = self.forge_block_with_fragments(stake_pool, fragments);
+        let block = self.forge_praos_block_with_fragments(stake_pool, fragments);
         self.apply_block(block)
     }
 
-    pub fn forge_block_with_fragments(
+    pub fn forge_praos_block_with_fragments(
         &self,
         stake_pool: &StakePool,
         fragments: Vec<Fragment>,
@@ -645,6 +650,34 @@ impl TestLedger {
             .with_chain_length(self.ledger.chain_length())
             .with_parent_id(self.block0_hash)
             .build(stake_pool, self.ledger.era())
+    }
+
+    pub fn apply_empty_bft_block(&mut self, leader_pair: &LeaderPair) -> Result<(), Error> {
+        let block = self.forge_bft_block_with_fragments(leader_pair, self.date(), Vec::new());
+        self.apply_block(block)
+    }
+
+    pub fn apply_empty_bft_block_with_date(
+        &mut self,
+        leader_pair: &LeaderPair,
+        block_date: BlockDate,
+    ) -> Result<(), Error> {
+        let block = self.forge_bft_block_with_fragments(leader_pair, block_date, Vec::new());
+        self.apply_block(block)
+    }
+
+    pub fn forge_bft_block_with_fragments(
+        &self,
+        bft_leader: &LeaderPair,
+        block_date: BlockDate,
+        fragments: Vec<Fragment>,
+    ) -> Block {
+        BftBlockBuilder::new()
+            .with_date(block_date)
+            .with_fragments(fragments)
+            .with_chain_length(self.ledger.chain_length().increase())
+            .with_parent_id(self.block0_hash)
+            .build(bft_leader, self.ledger.era())
     }
 
     pub fn forward_date(&mut self) {
@@ -675,7 +708,7 @@ impl TestLedger {
                 .expect("cannot calculate leader")
                 .is_some()
             {
-                self.produce_block(&stake_pool, fragments)?;
+                self.apply_praos_block(&stake_pool, fragments)?;
                 return Ok(true);
             }
         }

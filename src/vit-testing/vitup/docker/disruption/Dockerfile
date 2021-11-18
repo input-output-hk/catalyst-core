@@ -1,8 +1,8 @@
-# Simple dockerfile example to build a jormungandr voting backend 
+# Simple dockerfile example to build a catalyst voting backend 
 
 FROM ubuntu:18.04
 LABEL MAINTAINER IOHK
-LABEL description="Jormungandr Disruption backend"
+LABEL description="Catalyst Disruption backend"
 
 ARG PREFIX=/app
 ENV ENV_PREFIX=${PREFIX}
@@ -17,35 +17,14 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
     bash -c "curl https://sh.rustup.rs -sSf | bash -s -- -y" && \
      ~/.cargo/bin/rustup install stable && \
     ~/.cargo/bin/rustup default stable
-
-RUN cd ${ENV_PREFIX} && \
-    git clone https://github.com/input-output-hk/jormungandr && \
-	cd jormungandr && \
-	git checkout a31e1329bda7c41595c8ac1d28dcfd9dfd42ef6e
-
-# install the node and jcli from source
-RUN cd ${ENV_PREFIX}/jormungandr && \
-    ~/.cargo/bin/cargo install --locked --path jormungandr && \
-    ~/.cargo/bin/cargo install --locked --path jcli
-
-RUN cd ${ENV_PREFIX} && \
-    git clone https://github.com/input-output-hk/vit-servicing-station && \
-	cd vit-servicing-station && \
-	git checkout master
-
-# install the node and jcli from source
-RUN cd ${ENV_PREFIX}/vit-servicing-station && \
-    ~/.cargo/bin/cargo install --locked --force --path vit-servicing-station-server
 	
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-testing && \
 	cd vit-testing && \
-	git checkout fc11ceac6adc961fad93b5e04181ef6bdd4f8b3e
-
-# install the node and jcli from source
-RUN cd ${ENV_PREFIX}/vit-testing && \
-    ~/.cargo/bin/cargo install --locked --path vitup && \
-    ~/.cargo/bin/cargo install --locked --path iapyx
+	git checkout 3c6974feeb285c18cc8835155ae1c5c1dec0d3e3
+    
+RUN cd ${ENV_PREFIX}/vit-testing/vitup && \
+    ~/.cargo/bin/cargo install --locked --path . 
 
 ENV PATH="/root/.cargo/bin/:${PATH}"
 

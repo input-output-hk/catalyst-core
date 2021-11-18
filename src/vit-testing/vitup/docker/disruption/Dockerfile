@@ -23,25 +23,24 @@ RUN cd ${ENV_PREFIX} && \
 	cd jormungandr && \
 	git checkout a31e1329bda7c41595c8ac1d28dcfd9dfd42ef6e
 
-RUN cd ${ENV_PREFIX} && \
-    git clone https://github.com/input-output-hk/vit-servicing-station && \
-	cd vit-servicing-station && \
-	git checkout master
-	
- RUN cd ${ENV_PREFIX} && \
-    git clone https://github.com/input-output-hk/vit-testing && \
-	cd vit-testing && \
-	git checkout mock-disruption
-    
-
-# install the node and jcli from source
-RUN cd ${ENV_PREFIX}/vit-servicing-station && \
-    ~/.cargo/bin/cargo install --locked --force --path vit-servicing-station-server
-    
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/jormungandr && \
     ~/.cargo/bin/cargo install --locked --path jormungandr && \
     ~/.cargo/bin/cargo install --locked --path jcli
+
+RUN cd ${ENV_PREFIX} && \
+    git clone https://github.com/input-output-hk/vit-servicing-station && \
+	cd vit-servicing-station && \
+	git checkout master
+
+# install the node and jcli from source
+RUN cd ${ENV_PREFIX}/vit-servicing-station && \
+    ~/.cargo/bin/cargo install --locked --force --path vit-servicing-station-server
+	
+RUN cd ${ENV_PREFIX} && \
+    git clone https://github.com/input-output-hk/vit-testing && \
+	cd vit-testing && \
+	git checkout fc11ceac6adc961fad93b5e04181ef6bdd4f8b3e
 
 # install the node and jcli from source
 RUN cd ${ENV_PREFIX}/vit-testing && \

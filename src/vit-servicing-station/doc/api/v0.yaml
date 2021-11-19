@@ -201,6 +201,10 @@ components:
           type: string
           format: date-time
           description: Date and time for blockchain state snapshot capturing voter registrations.
+        next_registration_snapshot_time:
+          type: string
+          format: date-time
+          description: Date and time for next blockchain state snapshot capturing voter registrations.
         chain_vote_plans:
           type: array
           items:
@@ -458,6 +462,8 @@ components:
           format: int32
         challenge_url:
           type: string
+        highlights:
+          $ref: "#/components/schemas/ChallengeHighlights"
 
     ChallengeWithProposals:
       allOf:
@@ -514,3 +520,8 @@ components:
             "tag": "Alignment",
           },
         ]
+
+    ChallengeHighlights:
+      properties:
+        sponsor:
+          type: string

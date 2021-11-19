@@ -31,7 +31,7 @@ impl AdvisorReviewRow {
 
 pub fn read_vca_reviews_aggregated_file(filepath: &Path) -> Result<Vec<AdvisorReview>, Error> {
     Ok(
-        utils::csv::load_data_from_csv::<AdvisorReviewRow>(filepath)?
+        utils::csv::load_data_from_csv::<AdvisorReviewRow, b','>(filepath)?
             .into_iter()
             .map(|review| review.as_advisor_review())
             .collect(),

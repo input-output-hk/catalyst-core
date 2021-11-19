@@ -11,9 +11,11 @@ pub enum ProposalStatus {
 
 #[derive(Deserialize)]
 pub struct ApprovedProposalRow {
+    #[serde(rename(deserialize = "internal_id"))]
     pub proposal_id: String,
+    #[serde(rename(deserialize = "meets_approval_threshold"))]
     pub status: ProposalStatus,
-    pub requested_funds: String,
+    pub requested_dollars: String,
 }
 
 impl<'de> Deserialize<'de> for ProposalStatus {
@@ -23,7 +25,7 @@ impl<'de> Deserialize<'de> for ProposalStatus {
     {
         let status: String = String::deserialize(deserializer)?;
         Ok(match status.to_lowercase().as_ref() {
-            "approved" => ProposalStatus::Approved,
+            "yes" => ProposalStatus::Approved,
             _ => ProposalStatus::NotApproved,
         })
     }

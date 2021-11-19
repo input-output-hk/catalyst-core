@@ -1,5 +1,6 @@
 use chain_crypto::digest::DigestOf;
 use serde::Serialize;
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
@@ -87,6 +88,20 @@ impl CommunityAdvisors {
         let proposal_reviews = read_proposal_reviews(&assessments_path)?;
         let approved_proposals = read_approved_proposals(&approved_proposals_path)?;
 
+        let approved_set = approved_proposals.keys().cloned().collect::<BTreeSet<_>>();
+        let proposal_reviews_set = proposal_reviews.keys().cloned().collect::<BTreeSet<_>>();
+        let diff = approved_set
+            .difference(&proposal_reviews_set)
+            .collect::<BTreeSet<_>>();
+
+        if !diff.is_empty() {
+            println!(
+                "WARNING!, {} proposals without reviews: {:?}",
+                diff.len(),
+                diff,
+            );
+        }
+
         let rewards = calculate_ca_rewards(
             proposal_reviews,
             &approved_proposals,
@@ -102,7 +117,7 @@ impl CommunityAdvisors {
 }
 
 fn read_proposal_reviews(path: &Path) -> Result<ProposalsReviews, Error> {
-    let reviews: Vec<AdvisorReviewRow> = utils::csv::load_data_from_csv(path)?;
+    let reviews: Vec<AdvisorReviewRow> = utils::csv::load_data_from_csv::<_, b','>(path)?;
     let mut proposal_reviews = ProposalsReviews::new();
 
     for review in reviews.into_iter() {
@@ -116,12 +131,13 @@ fn read_proposal_reviews(path: &Path) -> Result<ProposalsReviews, Error> {
 }
 
 fn read_approved_proposals(path: &Path) -> Result<ApprovedProposals, Error> {
-    let approved_proposals: Vec<ApprovedProposalRow> = utils::csv::load_data_from_csv(path)?;
+    let approved_proposals: Vec<ApprovedProposalRow> =
+        utils::csv::load_data_from_csv::<_, b','>(path)?;
     approved_proposals
         .into_iter()
         .filter_map(|proposal| match proposal.status {
             ProposalStatus::Approved => Some(
-                Funds::from_str(&proposal.requested_funds)
+                Funds::from_str(&proposal.requested_dollars)
                     .map(|funds| (proposal.proposal_id, funds)),
             ),
             ProposalStatus::NotApproved => None,

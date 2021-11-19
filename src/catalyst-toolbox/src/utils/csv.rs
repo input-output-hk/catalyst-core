@@ -3,9 +3,12 @@ use serde::Serialize;
 
 use std::path::Path;
 
-pub fn load_data_from_csv<T: DeserializeOwned>(file_path: &Path) -> Result<Vec<T>, csv::Error> {
+pub fn load_data_from_csv<T: DeserializeOwned, const DELIMITER: u8>(
+    file_path: &Path,
+) -> Result<Vec<T>, csv::Error> {
     let mut csv_reader = csv::ReaderBuilder::new()
         .has_headers(true)
+        .delimiter(DELIMITER)
         .from_path(file_path)?;
     csv_reader.deserialize().collect::<Result<Vec<T>, _>>()
 }

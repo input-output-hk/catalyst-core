@@ -103,7 +103,7 @@ mod test {
         };
 
         export.exec().unwrap();
-        let reviews: Vec<AdvisorReview> = csv::load_data_from_csv(&tmp_file).unwrap();
+        let reviews: Vec<AdvisorReview> = csv::load_data_from_csv::<_, b','>(&tmp_file).unwrap();
         assert_eq!(reviews.len(), 1);
     }
 }

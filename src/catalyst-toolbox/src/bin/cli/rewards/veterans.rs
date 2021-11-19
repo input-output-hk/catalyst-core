@@ -26,7 +26,8 @@ impl VeteransRewards {
             to,
             total_rewards,
         } = self;
-        let reviews: Vec<veterans::VeteranReviewsCount> = csv::load_data_from_csv(&from)?;
+        let reviews: Vec<veterans::VeteranReviewsCount> =
+            csv::load_data_from_csv::<_, b','>(&from)?;
         let results = veterans::calculate_veteran_advisors_rewards(&reviews, total_rewards);
         csv::dump_data_to_csv(&results, &to)?;
 

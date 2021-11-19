@@ -57,7 +57,6 @@ fn get_tickets_per_proposal(
                 ProposalTickets::Legacy { winning_tkts, .. } => {
                     // it would be a bit harder to track it otherwise, and we don't need this additional
                     // complexity now
-                    println!("{}", id);
                     assert_eq!(
                         0,
                         rewards_slots.max_winning_tickets() % LEGACY_MAX_WINNING_TICKETS
@@ -88,7 +87,6 @@ fn calculate_rewards_per_proposal(
         get_tickets_per_proposal(proposal_reviews, rewards_slots);
 
     let base_ticket_reward = funding.proposal_funds() / Rewards::from(total_tickets);
-    println!("total tickets {} {}", total_tickets, base_ticket_reward);
 
     proposals_tickets
         .into_iter()

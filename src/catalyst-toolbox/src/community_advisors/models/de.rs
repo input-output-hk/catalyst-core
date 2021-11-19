@@ -63,7 +63,8 @@ mod tests {
     #[test]
     fn test_deserialize() {
         let file_path = PathBuf::from("./resources/testing/valid_assessments.csv");
-        let data: Vec<AdvisorReviewRow> = csv_utils::load_data_from_csv(&file_path).unwrap();
+        let data: Vec<AdvisorReviewRow> =
+            csv_utils::load_data_from_csv::<_, b','>(&file_path).unwrap();
         assert_eq!(data.len(), 1);
     }
 

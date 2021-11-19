@@ -2,6 +2,7 @@ use super::FragmentRecieveStrategy;
 use crate::config::VitStartParameters;
 use crate::manager::file_lister::dump_json;
 use crate::mock::context::{Context, ContextLock};
+use crate::mock::Configuration;
 use chain_core::property::Deserialize as _;
 use chain_core::property::Fragment as _;
 use chain_crypto::PublicKey;
@@ -21,6 +22,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use thiserror::Error;
 use tracing_subscriber::fmt::format::FmtSpan;
+use valgrind::Protocol;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
@@ -41,7 +43,7 @@ pub enum Error {
 
 impl Reject for Error {}
 
-pub async fn start_rest_server(context: ContextLock) {
+pub async fn start_rest_server(context: ContextLock, config: Configuration) {
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();
     let working_dir = context.lock().unwrap().working_dir();
@@ -357,10 +359,22 @@ pub async fn start_rest_server(context: ContextLock) {
         .recover(report_invalid)
         .boxed();
 
-    let server = warp::serve(api);
-
-    let server_fut = server.bind(address);
-    server_fut.await;
+    match &config.protocol {
+        Protocol::Https {
+            key_path,
+            cert_path,
+        } => {
+            warp::serve(api)
+                .tls()
+                .cert_path(cert_path)
+                .key_path(key_path)
+                .bind(address)
+                .await;
+        }
+        Protocol::Http => {
+            warp::serve(api).bind(address).await;
+        }
+    }
 }
 
 pub async fn get_account_votes_with_plan(

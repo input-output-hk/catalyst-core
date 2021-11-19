@@ -7,6 +7,7 @@ pub use external::{
     ExternalValidVotingTemplateGenerator, TemplateLoad,
 };
 use serde::{Deserialize, Serialize};
+use vit_servicing_station_lib::db::models::challenges::ChallengeHighlights;
 use vit_servicing_station_lib::db::models::proposals::{ChallengeType, ProposalChallengeInfo};
 use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
 
@@ -56,6 +57,7 @@ pub struct ChallengeTemplate {
     pub proposers_rewards: String,
     pub challenge_url: String,
     pub fund_id: Option<String>,
+    pub highlight: Option<ChallengeHighlights>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

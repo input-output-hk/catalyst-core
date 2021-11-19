@@ -16,6 +16,7 @@ table! {
         proposers_rewards -> BigInt,
         fund_id -> Integer,
         challenge_url -> Text,
+        highlights -> Nullable<Text>,
     }
 }
 

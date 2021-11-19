@@ -209,7 +209,7 @@ impl ValidVotePlanGenerator {
                 proposers_rewards: challenge_data.proposers_rewards.parse().unwrap(),
                 fund_id,
                 challenge_url: challenge_data.challenge_url,
-                highlights: None,
+                highlights: challenge_data.highlight,
             })
         })
         .take(count)

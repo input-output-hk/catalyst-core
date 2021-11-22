@@ -13,7 +13,6 @@ use fake::{
     },
     Fake,
 };
-use std::ops::Div;
 use vit_servicing_station_lib::db::models::challenges::ChallengeHighlights;
 use vit_servicing_station_lib::db::models::proposals::community_choice::ChallengeInfo as CommunityChoiceChallengeInfo;
 use vit_servicing_station_lib::db::models::proposals::simple::ChallengeInfo as SimpleChallengeInfo;
@@ -82,6 +81,15 @@ impl ArbitraryValidVotingTemplateGenerator {
                 .replace(" ", "-"),
             DomainSuffix().fake::<String>()
         )
+    }
+
+    pub fn gen_highlights(&mut self) -> Option<ChallengeHighlights> {
+        match self.generator.next_u32() % 2 {
+            0 => None,
+            _ => Some(ChallengeHighlights {
+                sponsor: CompanyName().fake::<String>(),
+            }),
+        }
     }
 
     pub fn proposer(&mut self) -> Proposer {
@@ -181,14 +189,7 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             proposers_rewards: (self.generator.next_u32() % 10000).to_string(),
             challenge_url: self.gen_http_address(),
             fund_id: None,
-            highlight: self
-                .generator
-                .next_u32()
-                .div(2)
-                .eq(&0)
-                .then(|| ChallengeHighlights {
-                    sponsor: Buzzword().fake::<String>(),
-                }),
+            highlight: self.gen_highlights(),
         };
         self.challenges.push(challenge.clone());
         challenge

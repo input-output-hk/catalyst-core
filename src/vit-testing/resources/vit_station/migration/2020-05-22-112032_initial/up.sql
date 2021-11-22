@@ -79,7 +79,8 @@ create table challenges
     rewards_total BIGINT NOT NULL,
     proposers_rewards BIGINT NOT NULL,
     fund_id INTEGER NOT NULL,
-    challenge_url VARCHAR NOT NULL
+    challenge_url VARCHAR NOT NULL,
+    highlights VARCHAR
 );
 
 create table community_advisors_reviews (

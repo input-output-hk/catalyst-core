@@ -2518,9 +2518,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "libc"
-version = "0.2.107"
+version = "0.2.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbe5e23404da5b4f555ef85ebed98fb4083e55a00c317800bc2a50ede9f3d219"
+checksum = "8521a1b57e76b1ec69af7599e75e38e7b7fad6610f037db8c79b127201b5d119"
 
 [[package]]
 name = "libmath"
@@ -5308,7 +5308,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=catalyst-fund7#b8a99cfd9e8eec9b3c4d694f423a72e555143e93"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=catalyst-fund7#01e801afc8291c27ff7baf7c553ac28333cc3996"
 dependencies = [
  "async-trait",
  "base64 0.12.3",
@@ -5366,7 +5366,7 @@ dependencies = [
 [[package]]
 name = "vit-servicing-station-tests"
 version = "0.3.4-dev"
-source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=catalyst-fund7#b8a99cfd9e8eec9b3c4d694f423a72e555143e93"
+source = "git+https://github.com/input-output-hk/vit-servicing-station.git?branch=catalyst-fund7#01e801afc8291c27ff7baf7c553ac28333cc3996"
 dependencies = [
  "assert_cmd",
  "assert_fs",

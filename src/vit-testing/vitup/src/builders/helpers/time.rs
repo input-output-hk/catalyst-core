@@ -69,7 +69,7 @@ pub fn convert_to_human_date(
     }
 }
 
-pub fn default_refresh_date() -> NaiveDateTime {
+pub fn default_snapshot_date() -> NaiveDateTime {
     let dt = Utc::now();
     NaiveDateTime::from_timestamp((dt - chrono::Duration::hours(3)).timestamp(), 0)
 }
@@ -77,6 +77,11 @@ pub fn default_refresh_date() -> NaiveDateTime {
 pub fn default_next_vote_date() -> NaiveDateTime {
     let dt = Utc::now();
     NaiveDateTime::from_timestamp((dt + chrono::Duration::days(30)).timestamp(), 0)
+}
+
+pub fn default_next_snapshot_date() ->  NaiveDateTime {
+    let dt = Utc::now();
+    NaiveDateTime::from_timestamp((dt + chrono::Duration::days(29)).timestamp(), 0)
 }
 
 /*

@@ -5,7 +5,7 @@ pub mod utils;
 
 pub use helpers::{
     convert_to_blockchain_date, convert_to_human_date, default_next_vote_date,
-    default_refresh_date, generate_qr_and_hashes, VitVotePlanDefBuilder, WalletExtension,
+    default_snapshot_date, default_next_snapshot_date, generate_qr_and_hashes, VitVotePlanDefBuilder, WalletExtension,
 };
 
 use crate::builders::helpers::build_servicing_station_parameters;
@@ -179,25 +179,25 @@ impl VitBackendSettingsBuilder {
         self
     }
 
-    pub fn refresh_timestamp_from_string_or_default(
+    pub fn snapshot_timestamp_from_string_or_default(
         &mut self,
-        refresh_timestamp: Option<String>,
+        snapshot_timestamp: Option<String>,
         default: NaiveDateTime,
     ) -> &mut Self {
-        if let Some(refresh_timestamp) = refresh_timestamp {
-            self.refresh_timestamp_from_string(refresh_timestamp)
+        if let Some(snapshot_timestamp) = snapshot_timestamp {
+            self.snapshot_timestamp_from_string(snapshot_timestamp)
         } else {
-            self.refresh_timestamp(default)
+            self.snapshot_timestamp(default)
         }
     }
 
-    pub fn refresh_timestamp(&mut self, refresh_time: NaiveDateTime) -> &mut Self {
-        self.config.params.refresh_time = refresh_time;
+    pub fn snapshot_timestamp(&mut self, snapshot_time: NaiveDateTime) -> &mut Self {
+        self.config.params.snapshot_time = snapshot_time;
         self
     }
 
-    pub fn refresh_timestamp_from_string(&mut self, refresh_timestamp: String) -> &mut Self {
-        self.refresh_timestamp(NaiveDateTime::parse_from_str(&refresh_timestamp, FORMAT).unwrap());
+    pub fn snapshot_timestamp_from_string(&mut self, snapshot_timestamp: String) -> &mut Self {
+        self.snapshot_timestamp(NaiveDateTime::parse_from_str(&snapshot_timestamp, FORMAT).unwrap());
         self
     }
 
@@ -392,7 +392,7 @@ impl VitBackendSettingsBuilder {
         println!("Fund id: {}", parameters.fund_id);
         println!(
             "refresh timestamp\t(registration_snapshot_time):\t\t\t{:?}",
-            parameters.refresh_time
+            parameters.snapshot_time
         );
 
         let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =

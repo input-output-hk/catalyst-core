@@ -55,7 +55,7 @@ pub fn public_vote_multiple_vote_plans() {
         .vote_timing(vote_timing.into())
         .fund_id(expected_fund.id)
         .next_vote_timestamp(default_next_vote_date())
-        .refresh_timestamp(default_refresh_date())
+        .snapshot_timestamp(default_refresh_date())
         .slot_duration_in_seconds(2)
         .proposals_count(expected_proposals.len() as u32)
         .challenges_count(expected_challenges.len())

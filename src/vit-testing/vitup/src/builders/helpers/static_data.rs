@@ -29,7 +29,8 @@ pub fn build_servicing_station_parameters(
     parameters.set_voting_tally_end(tally_end_timestamp.timestamp());
     parameters.set_vote_options(VoteOptions::parse_coma_separated_value("yes,no"));
     parameters.set_next_fund_start_time(input_parameters.next_vote_start_time.timestamp());
-    parameters.set_registration_snapshot_time(input_parameters.refresh_time.timestamp());
+    parameters.set_registration_snapshot_time(input_parameters.snapshot_time.timestamp());
+    parameters.set_next_registration_snapshot_time(input_parameters.next_snapshot_time.timestamp());
     parameters.set_fund_id(input_parameters.fund_id);
     parameters.calculate_challenges_total_funds = false;
 

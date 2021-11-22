@@ -1,5 +1,5 @@
 use super::initials::{Initial, Initials};
-use crate::builders::{default_next_vote_date, default_refresh_date};
+use crate::builders::{default_next_vote_date,  default_snapshot_date, default_next_snapshot_date};
 use crate::config::VoteTime;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
@@ -14,7 +14,8 @@ pub struct VitStartParameters {
     pub protocol: Protocol,
     pub vote_time: VoteTime,
     pub next_vote_start_time: NaiveDateTime,
-    pub refresh_time: NaiveDateTime,
+    pub snapshot_time: NaiveDateTime,
+    pub next_snapshot_time: NaiveDateTime,
     pub proposals: u32,
     pub challenges: usize,
     pub reviews: usize,
@@ -64,7 +65,8 @@ impl Default for VitStartParameters {
             reviews: 3,
             slot_duration: 20,
             voting_power: 8000,
-            refresh_time: default_refresh_date(),
+            snapshot_time: default_snapshot_date(),
+            next_snapshot_time: default_next_snapshot_date(),
             next_vote_start_time: default_next_vote_date(),
             block_content_max_size: 102400,
             fund_name: "fund_3".to_owned(),

@@ -46,7 +46,7 @@ pub fn private_vote_multiple_vote_plans() {
         .vote_timing(vote_timing.into())
         .fund_id(expected_fund.id)
         .next_vote_timestamp(default_next_vote_date())
-        .refresh_timestamp(default_refresh_date())
+        .snapshot_timestamp(default_refresh_date())
         .slot_duration_in_seconds(2)
         .proposals_count(template_generator.proposals_count() as u32)
         .challenges_count(template_generator.challenges_count() as usize)

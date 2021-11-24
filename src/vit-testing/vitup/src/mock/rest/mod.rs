@@ -188,13 +188,20 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .and_then(get_proposal)
                 .boxed();
 
+            let from_idx = warp::path::end()
+                .and(warp::post())
+                .and(warp::body::json())
+                .and(with_context.clone())
+                .and_then(get_proposal_by_idx)
+                .boxed();
+
             let proposals = warp::path::end()
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_all_proposals)
                 .boxed();
 
-            root.and(from_id.or(proposals)).boxed()
+            root.and(from_id.or(from_idx).or(proposals)).boxed()
         };
 
         let challenges = {
@@ -870,6 +877,43 @@ pub async fn get_all_proposals(context: ContextLock) -> Result<impl Reply, Rejec
         .iter()
         .map(|x| x.proposal.clone())
         .collect::<Vec<Proposal>>())))
+}
+
+pub async fn get_proposal_by_idx(
+    request: AccountVotes,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    context.lock().unwrap().log(format!(
+        "get_proposal_by_idx ({},{:?}) ...",
+        request.vote_plan_id, request.votes
+    ));
+
+    if !context.lock().unwrap().available() {
+        let code = context.lock().unwrap().state().error_code;
+        context.lock().unwrap().log(&format!(
+            "unavailability mode is on. Rejecting with error code: {}",
+            code
+        ));
+        return Err(warp::reject::custom(ForcedErrorCode { code }));
+    }
+
+    let proposals: Vec<Proposal> = context
+        .lock()
+        .unwrap()
+        .state()
+        .vit()
+        .proposals()
+        .iter()
+        .filter(|x| {
+            x.proposal.chain_voteplan_id == request.vote_plan_id.to_string()
+                && request
+                    .votes
+                    .contains(&(x.proposal.chain_proposal_index as u8))
+        })
+        .map(|x| x.proposal.clone())
+        .collect();
+
+    Ok(HandlerResult(Ok(proposals)))
 }
 
 pub async fn get_proposal(id: i32, context: ContextLock) -> Result<impl Reply, Rejection> {

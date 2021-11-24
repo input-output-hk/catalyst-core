@@ -4,8 +4,9 @@ mod reviews;
 pub mod utils;
 
 pub use helpers::{
-    convert_to_blockchain_date, convert_to_human_date, default_next_vote_date,
-    default_snapshot_date, default_next_snapshot_date, generate_qr_and_hashes, VitVotePlanDefBuilder, WalletExtension,
+    convert_to_blockchain_date, convert_to_human_date, default_next_snapshot_date,
+    default_next_vote_date, default_snapshot_date, generate_qr_and_hashes, VitVotePlanDefBuilder,
+    WalletExtension,
 };
 
 use crate::builders::helpers::build_servicing_station_parameters;
@@ -197,7 +198,9 @@ impl VitBackendSettingsBuilder {
     }
 
     pub fn snapshot_timestamp_from_string(&mut self, snapshot_timestamp: String) -> &mut Self {
-        self.snapshot_timestamp(NaiveDateTime::parse_from_str(&snapshot_timestamp, FORMAT).unwrap());
+        self.snapshot_timestamp(
+            NaiveDateTime::parse_from_str(&snapshot_timestamp, FORMAT).unwrap(),
+        );
         self
     }
 

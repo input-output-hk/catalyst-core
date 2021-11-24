@@ -1,5 +1,5 @@
 use super::initials::{Initial, Initials};
-use crate::builders::{default_next_vote_date,  default_snapshot_date, default_next_snapshot_date};
+use crate::builders::{default_next_snapshot_date, default_next_vote_date, default_snapshot_date};
 use crate::config::VoteTime;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};

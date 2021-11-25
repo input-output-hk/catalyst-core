@@ -5,6 +5,7 @@ create table funds
     fund_name VARCHAR NOT NULL,
     fund_goal VARCHAR NOT NULL,
     registration_snapshot_time BIGINT NOT NULL,
+    next_registration_snapshot_time BIGINT NOT NULL,
     voting_power_threshold BIGINT NOT NULL,
     fund_start_time BIGINT NOT NULL,
     fund_end_time BIGINT NOT NULL,
@@ -79,7 +80,8 @@ create table challenges
     rewards_total BIGINT NOT NULL,
     proposers_rewards BIGINT NOT NULL,
     fund_id INTEGER NOT NULL,
-    challenge_url VARCHAR NOT NULL
+    challenge_url VARCHAR NOT NULL,
+    highlights VARCHAR
 );
 
 create table community_advisors_reviews (

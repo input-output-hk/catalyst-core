@@ -9,7 +9,7 @@ use jortestkit::prelude::read_file;
 use vit_servicing_station_tests::common::data::parse_funds;
 use vit_servicing_station_tests::common::data::ExternalValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
-use vitup::builders::{default_next_vote_date, default_refresh_date};
+use vitup::builders::{default_next_vote_date, default_snapshot_date};
 use vitup::config::VoteBlockchainTime;
 use vitup::scenario::network::setup_network;
 
@@ -46,7 +46,7 @@ pub fn private_vote_multiple_vote_plans() {
         .vote_timing(vote_timing.into())
         .fund_id(expected_fund.id)
         .next_vote_timestamp(default_next_vote_date())
-        .refresh_timestamp(default_refresh_date())
+        .snapshot_timestamp(default_snapshot_date())
         .slot_duration_in_seconds(2)
         .proposals_count(template_generator.proposals_count() as u32)
         .challenges_count(template_generator.challenges_count() as usize)

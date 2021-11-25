@@ -217,7 +217,7 @@ Full Example:
     "tally_end": 200,
     "slots_per_epoch": 900
   },
-  "refresh_time": "2021-09-30T09:00:00",
+  "snapshot_time": "2021-09-30T09:00:00",
   "next_vote_start_time": "2021-10-07T21:00:00",
   "proposals": 267,
   "challenges": 9,
@@ -442,7 +442,7 @@ curl --location --request POST 'http://192.168.0.19:8080/api/control/command/res
     "tally_end": 200,
     "slots_per_epoch": 900
   },
-  "refresh_time": "2021-08-12T09:00:00",
+  "snapshot_time": "2021-08-12T09:00:00",
   "next_vote_start_time": "2021-10-07T21:00:00",
   "proposals": 267,
   "challenges": 9,

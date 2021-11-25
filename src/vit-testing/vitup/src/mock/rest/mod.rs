@@ -29,7 +29,7 @@ use vit_servicing_station_lib::db::models::proposals::Proposal;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::{reject::Reject, Filter, Rejection, Reply};
-
+use warp::http::header::{HeaderMap, HeaderValue};
 mod reject;
 
 use reject::{report_invalid, ForcedErrorCode, GeneralException, InvalidBatch};
@@ -50,6 +50,18 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
     let with_context = warp::any().map(move || context.clone());
 
     let (non_block, _guard) = tracing_appender::non_blocking(File::create("vole.trace").unwrap());
+
+    //TODO elevate it to config settings
+    let allowed_methods = vec!["GET","POST","OPTIONS","PUT","PATCH"];
+    let mut option_headers = HeaderMap::new();
+    option_headers.insert("access-control-allow-methods", HeaderValue::from_str(&allowed_methods.join(",")).unwrap());
+    option_headers.insert("access-control-allow-origin",  HeaderValue::from_static("*"));
+    option_headers.insert("access-control-max-age",  HeaderValue::from_static("100"));
+    option_headers.insert("access-control-allow-headers",  HeaderValue::from_static("*"));
+            
+    let mut default_headers = HeaderMap::new();
+    default_headers.insert("access-control-allow-origin", HeaderValue::from_static("*"));
+    default_headers.insert("vary", HeaderValue::from_static("Origin"));
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
     tracing_subscriber::fmt()
@@ -193,15 +205,23 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .and(warp::body::json())
                 .and(with_context.clone())
                 .and_then(get_proposal_by_idx)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             let proposals = warp::path::end()
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_all_proposals)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
-            root.and(from_id.or(from_idx).or(proposals)).boxed()
+
+            let options = warp::path::end()
+                .and(warp::options())
+                .map(warp::reply)
+                .with(warp::reply::with::headers(option_headers.clone()));
+
+            root.and(from_id.or(from_idx).or(proposals).or(options)).boxed()
         };
 
         let challenges = {
@@ -210,14 +230,22 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             let challenges = warp::path::end()
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(get_challenges);
+                .and_then(get_challenges)                
+                .with(warp::reply::with::headers(default_headers.clone()));
 
             let challenge_by_id = warp::path!(i32)
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(get_challenge_by_id);
+                .and_then(get_challenge_by_id)                
+                .with(warp::reply::with::headers(default_headers.clone()));
 
-            root.and(challenge_by_id.or(challenges))
+            
+            let options = warp::path::end()
+                .and(warp::options())
+                .map(warp::reply)
+                .with(warp::reply::with::headers(option_headers.clone()));
+
+            root.and(challenge_by_id.or(challenges).or(options))
         };
 
         let reviews = {
@@ -226,9 +254,16 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             let review_by_id = warp::path!(i32)
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(get_review_by_id);
+                .and_then(get_review_by_id)                
+                .with(warp::reply::with::headers(default_headers.clone()));
 
-            root.and(review_by_id)
+            
+                let options = warp::path::end()
+                .and(warp::options())
+                .map(warp::reply)
+                .with(warp::reply::with::headers(option_headers.clone()));
+
+            root.and(review_by_id.or(options))
         };
 
         let funds = {
@@ -237,29 +272,51 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             let fund = warp::path::end()
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(get_fund)
+                .and_then(get_fund)                
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             let fund_by_id = warp::path!(i32)
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(get_fund_by_id)
+                .and_then(get_fund_by_id)                                
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
-            root.and(fund_by_id.or(fund)).boxed()
+                
+            let options = warp::path::end()
+            .and(warp::options())
+            .map(warp::reply)
+            .with(warp::reply::with::headers(option_headers.clone()));
+
+
+            root.and(fund_by_id.or(fund).or(options)).boxed()
         };
 
         let settings = warp::path!("settings")
             .and(warp::get())
             .and(with_context.clone())
-            .and_then(get_settings)
+            .and_then(get_settings)                            
+            .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
+
+        
+        let settings_options =  warp::path!("settings")
+                .and(warp::options())
+                .map(warp::reply)
+                .with(warp::reply::with::headers(option_headers.clone()));
 
         let account = warp::path!("account" / String)
             .and(warp::get())
             .and(with_context.clone())
-            .and_then(get_account)
+            .and_then(get_account)                            
+            .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
+        
+        let account_options =  warp::path!("account")
+            .and(warp::options())
+            .map(warp::reply)
+            .with(warp::reply::with::headers(option_headers.clone()));
 
         let fragment = {
             let root = warp::path!("fragment" / ..);
@@ -268,15 +325,23 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_fragment_logs)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
+
+            let logs_options =  warp::path!("logs")
+                .and(warp::options())
+                .map(warp::reply)
+                .with(warp::reply::with::headers(option_headers.clone()));
+    
 
             let debug = warp::path!("debug" / String)
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(debug_message)
+                .and_then(debug_message)                                
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
-            root.and(logs.or(debug)).boxed()
+            root.and(logs.or(debug).or(logs_options)).boxed()
         };
 
         let message = warp::path!("message")
@@ -284,13 +349,27 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             .and(warp::body::bytes())
             .and(with_context.clone())
             .and_then(post_message)
+            .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
+
+         let message_options =  warp::path!("message")
+            .and(warp::options())
+            .map(warp::reply)
+            .with(warp::reply::with::headers(option_headers.clone()));
+
 
         let votes = warp::path!("vote" / "active" / "plans")
             .and(warp::get())
             .and(with_context.clone())
             .and_then(get_active_vote_plans)
+            .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
+
+        let votes_options = warp::path!("vote" / "active" / "plans")
+            .and(warp::options())
+            .map(warp::reply)
+            .with(warp::reply::with::headers(option_headers.clone()));
+
 
         let block0 =
             warp::path!("block0")
@@ -298,7 +377,8 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .map(move |context: ContextLock| {
                     context.lock().unwrap().log("get_block0");
                     Ok(context.lock().unwrap().block0_bin())
-                });
+                })                
+                .with(warp::reply::with::headers(default_headers.clone()));
 
         root.and(
             proposals
@@ -307,10 +387,14 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .or(reviews)
                 .or(block0)
                 .or(settings)
+                .or(settings_options)
                 .or(account)
+                .or(account_options)
                 .or(fragment)
                 .or(votes)
-                .or(message),
+                .or(message)
+                .or(votes_options)
+                .or(message_options),
         )
         .boxed()
     };
@@ -326,43 +410,87 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .and(warp::body::json())
                 .and(with_context.clone())
                 .and_then(post_fragments)
+                .with(warp::reply::with::headers(option_headers.clone()))
                 .boxed();
+
+            let post_options = warp::path!("fragments" / ..)
+                .and(warp::options())
+                .map(warp::reply)
+                .with(warp::reply::with::headers(option_headers.clone()));
+    
 
             let status = warp::path!("statuses")
                 .and(warp::get())
                 .and(warp::query())
                 .and(with_context.clone())
-                .and_then(get_fragment_statuses)
+                .and_then(get_fragment_statuses)                
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
+
+            let status_options = warp::path!("statuses")
+                .and(warp::options())
+                .map(warp::reply)
+                .with(warp::reply::with::headers(option_headers.clone()));
+    
 
             let logs = warp::path!("logs")
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_fragment_logs)
+                .with(warp::reply::with::headers(default_headers.clone()))                                
                 .boxed();
 
-            root.and(post.or(status).or(logs)).boxed()
+            let logs_options = warp::path!("logs")
+                .and(warp::options())
+                .map(warp::reply)
+                .with(warp::reply::with::headers(option_headers.clone()));
+    
+
+            root.and(post.or(status).or(logs).or(post_options).or(status_options).or(logs_options)).boxed()
         };
 
         let votes_with_plan = warp::path!("votes" / "plan" / VotePlanId / "account-votes" / String)
             .and(warp::get())
             .and(with_context.clone())
-            .and_then(get_account_votes_with_plan);
+            .and_then(get_account_votes_with_plan)
+            .with(warp::reply::with::headers(default_headers.clone()));
+
+        
+        let votes_with_plan_options = warp::path!("votes" / "plan" / .. )
+            .and(warp::options())
+            .map(warp::reply)
+            .with(warp::reply::with::headers(option_headers.clone()));
+    
 
         let votes = warp::path!("votes" / "plan" / "account-votes" / String)
             .and(warp::get())
             .and(with_context.clone())
-            .and_then(get_account_votes);
+            .and_then(get_account_votes)
+            .with(warp::reply::with::headers(default_headers.clone()));
 
-        root.and(fragments.or(votes).or(votes_with_plan))
+        
+        let votes_options = warp::path!("votes" / "plan" / "account-votes" / .. )
+            .and(warp::options())
+            .map(warp::reply)
+            .with(warp::reply::with::headers(option_headers.clone()));
+    
+
+        root.and(fragments.or(votes).or(votes_with_plan).or(votes_with_plan_options).or(votes_options))
     };
 
     let version = warp::path!("version")
         .and(with_context.clone())
-        .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()));
+        .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()))
+        .with(warp::reply::with::headers(default_headers.clone()));
+
+    let version_options = warp::path!("version")
+        .and(warp::options())
+        .map(warp::reply)
+        .with(warp::reply::with::headers(option_headers.clone()));
 
     let api = root
-        .and(health.or(control).or(v0).or(v1).or(version))
+        .and(health.or(control).or(v0).or(v1).or(version).or(version_options))
+        .with(warp::cors().allow_any_origin().allow_methods(allowed_methods.clone()))
         .recover(report_invalid)
         .boxed();
 

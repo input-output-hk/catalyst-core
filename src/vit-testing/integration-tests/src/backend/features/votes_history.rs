@@ -77,12 +77,11 @@ pub fn votes_history_reflects_casted_votes() {
     time::wait_for_epoch(1, nodes[0].rest());
 
     let fragment_statuses = nodes[0].rest().fragments_statuses(fragment_ids).unwrap();
-    println!("{:?}", fragment_statuses);
     assert!(fragment_statuses
         .iter()
         .all(|(_, status)| matches!(status, FragmentStatus::InABlock { .. })));
 
-    let account_votes: Vec<AccountVotes> = {
+    let mut account_votes: Vec<AccountVotes> = {
         let mut votes_registry: HashMap<Hash, Vec<i64>> = nodes[0]
             .rest()
             .vote_plan_statuses()
@@ -107,12 +106,15 @@ pub fn votes_history_reflects_casted_votes() {
             .collect()
     };
 
-    let votes_history = alice
+    let mut votes_history = alice
         .votes_history()
         .unwrap()
         .expect("vote history is empty");
 
+    votes_history.sort_by(|x, y| x.vote_plan_id.cmp(&y.vote_plan_id));
+    account_votes.sort_by(|x, y| x.vote_plan_id.cmp(&y.vote_plan_id));
     assert_eq!(votes_history, account_votes);
+
     for account_vote in account_votes {
         let actual_ids = alice
             .vote_plan_history(account_vote.vote_plan_id)

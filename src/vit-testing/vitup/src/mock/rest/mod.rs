@@ -478,12 +478,13 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
         root.and(fragments.or(votes).or(votes_with_plan).or(votes_with_plan_options).or(votes_options))
     };
 
-    let version = warp::path!("version")
+    let version = warp::path!("vit-version")
+        .and(warp::get())
         .and(with_context.clone())
         .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()))
         .with(warp::reply::with::headers(default_headers.clone()));
 
-    let version_options = warp::path!("version")
+    let version_options = warp::path!("vit-version")
         .and(warp::options())
         .map(warp::reply)
         .with(warp::reply::with::headers(option_headers.clone()));

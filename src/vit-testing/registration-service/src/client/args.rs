@@ -107,15 +107,19 @@ pub struct NewJobCommand {
 
     #[structopt(long = "stake-vkey")]
     stake_vkey: String,
+
+    #[structopt(long = "stake-vkey")]
+    vote_skey: Option<String>,
 }
 
 impl NewJobCommand {
     pub fn exec(self, rest: RegistrationRestClient) -> Result<String, Error> {
         let request = Request {
-            payment_skey: self.payment_skey.clone(),
-            payment_vkey: self.payment_vkey.clone(),
-            stake_skey: self.stake_skey.clone(),
+            payment_skey: self.payment_skey,
+            payment_vkey: self.payment_vkey,
+            stake_skey: self.stake_skey,
             stake_vkey: self.stake_vkey,
+            vote_skey: self.vote_skey,
         };
         rest.job_new(request).map_err(Into::into)
     }

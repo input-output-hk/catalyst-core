@@ -106,6 +106,11 @@ impl VitBackendSettingsBuilder {
         self
     }
 
+    pub fn block_content_max_size(&mut self, block_content_max_size: u32) -> &mut Self {
+        self.config.params.block_content_max_size = block_content_max_size;
+        self
+    }
+
     pub fn initials_count(&mut self, initials_count: usize, pin: &str) -> &mut Self {
         self.initials(Initials::new_above_threshold(
             initials_count,
@@ -287,34 +292,37 @@ impl VitBackendSettingsBuilder {
         let vote_blockchain_time =
             convert_to_blockchain_date(&self.config.params, self.block0_date);
 
-        let mut blockchain = Blockchain::default();
-        blockchain.set_consensus(ConsensusVersion::Bft);
-        blockchain.set_slots_per_epoch(
-            NumberOfSlotsPerEpoch::new(vote_blockchain_time.slots_per_epoch).unwrap(),
-        );
-        blockchain.set_slot_duration(SlotDuration::new(self.config.params.slot_duration).unwrap());
+        let mut blockchain = Blockchain::default()
+            .with_consensus(ConsensusVersion::Bft)
+            .with_slots_per_epoch(
+                NumberOfSlotsPerEpoch::new(vote_blockchain_time.slots_per_epoch).unwrap(),
+            )
+            .with_slot_duration(SlotDuration::new(self.config.params.slot_duration).unwrap());
 
         println!("building topology..");
 
         builder = builder.topology(self.build_topology());
-        blockchain.add_leader(LEADER_1);
-        blockchain.add_leader(LEADER_2);
-        blockchain.add_leader(LEADER_3);
+        blockchain = blockchain
+            .with_leader(LEADER_1)
+            .with_leader(LEADER_2)
+            .with_leader(LEADER_3);
 
         println!("building blockchain parameters..");
 
-        blockchain.set_linear_fee(self.config.linear_fees);
-        blockchain.set_tx_max_expiry_epochs(self.config.params.tx_max_expiry_epochs);
-        blockchain.set_discrimination(chain_addr::Discrimination::Production);
-        blockchain.set_block_content_max_size(self.config.params.block_content_max_size.into());
-        blockchain.set_block0_date(self.block0_date);
+        blockchain = blockchain
+            .with_linear_fee(self.config.linear_fees)
+            .with_tx_max_expiry_epochs(self.config.params.tx_max_expiry_epochs)
+            .with_discrimination(chain_addr::Discrimination::Production)
+            .with_block_content_max_size(self.config.params.block_content_max_size.into())
+            .with_block0_date(self.block0_date);
 
         if !self.config.consensus_leader_ids.is_empty() {
-            blockchain.set_external_consensus_leader_ids(self.config.consensus_leader_ids.clone());
+            blockchain = blockchain
+                .with_external_consensus_leader_ids(self.config.consensus_leader_ids.clone());
         }
 
         if !self.config.committees.is_empty() {
-            blockchain.set_external_committees(self.config.committees.clone());
+            blockchain = blockchain.with_external_committees(self.config.committees.clone());
         }
 
         let committee_wallet = WalletTemplate::new_account(
@@ -322,8 +330,9 @@ impl VitBackendSettingsBuilder {
             Value(1_000_000_000),
             blockchain.discrimination(),
         );
-        blockchain.add_wallet(committee_wallet);
-        blockchain.add_committee(self.committee_wallet.clone());
+        blockchain = blockchain
+            .with_wallet(committee_wallet)
+            .with_committee(self.committee_wallet.clone());
 
         let child = context.child_directory(self.title());
 
@@ -331,19 +340,20 @@ impl VitBackendSettingsBuilder {
 
         let mut templates = HashMap::new();
         if self.config.params.initials.any() {
-            blockchain.set_external_wallets(self.config.params.initials.external_templates());
+            blockchain =
+                blockchain.with_external_wallets(self.config.params.initials.external_templates());
             templates = self
                 .config
                 .params
                 .initials
                 .templates(self.config.params.voting_power, blockchain.discrimination());
             for (wallet, _) in templates.iter().filter(|(x, _)| *x.value() > Value::zero()) {
-                blockchain.add_wallet(wallet.clone());
+                blockchain = blockchain.with_wallet(wallet.clone());
             }
         }
         println!("building voteplan..");
 
-        VitVotePlanDefBuilder::new(vote_blockchain_time)
+        for vote_plan_def in VitVotePlanDefBuilder::new(vote_blockchain_time)
             .options(2)
             .split_by(255)
             .fund_name(self.fund_name())
@@ -351,13 +361,13 @@ impl VitBackendSettingsBuilder {
             .with_parameters(self.config.params.clone())
             .build()
             .into_iter()
-            .for_each(|vote_plan_def| {
-                blockchain.add_vote_plan(
-                    vote_plan_def.alias(),
-                    vote_plan_def.owner(),
-                    chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into(),
-                )
-            });
+        {
+            blockchain = blockchain.with_vote_plan(
+                vote_plan_def.alias(),
+                vote_plan_def.owner(),
+                chain_impl_mockchain::certificate::VotePlan::from(vote_plan_def).into(),
+            )
+        }
 
         builder = builder.blockchain(blockchain);
 

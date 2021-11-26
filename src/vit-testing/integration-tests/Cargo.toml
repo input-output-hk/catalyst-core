@@ -18,6 +18,7 @@ jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund7" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund7" }
 chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund7" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund7" }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
 valgrind = { path = "../valgrind"} 

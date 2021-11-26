@@ -1,6 +1,7 @@
 mod archive;
 mod block0;
 mod live;
+mod snapshot;
 
 use crate::stats::archive::ArchiveCalculatorError;
 use crate::stats::archive::ArchiveReaderError;
@@ -10,6 +11,7 @@ use csv;
 use jormungandr_lib::interfaces::Block0ConfigurationError;
 use jormungandr_testing_utils::testing::block0::GetBlock0Error;
 use live::LiveStatsCommand;
+use snapshot::SnapshotCommand;
 use structopt::StructOpt;
 use thiserror::Error;
 
@@ -18,6 +20,7 @@ pub enum IapyxStatsCommand {
     Block0(Block0StatsCommand),
     Live(LiveStatsCommand),
     Archive(ArchiveCommand),
+    Snapshot(SnapshotCommand),
 }
 
 impl IapyxStatsCommand {
@@ -26,6 +29,7 @@ impl IapyxStatsCommand {
             Self::Block0(block0) => block0.exec(),
             Self::Live(live) => live.exec(),
             Self::Archive(archive) => archive.exec(),
+            Self::Snapshot(snapshot) => snapshot.exec(),
         }
     }
 }
@@ -52,4 +56,6 @@ pub enum IapyxStatsCommandError {
     ArchiveReader(#[from] ArchiveReaderError),
     #[error("archive calculator error")]
     ArchiveCalculator(#[from] ArchiveCalculatorError),
+    #[error("serde error")]
+    Serde(#[from] serde_json::Error),
 }

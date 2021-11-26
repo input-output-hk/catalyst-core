@@ -8,6 +8,7 @@ use super::leaderlog::LeadersParticipationRecord;
 use super::pots::Pots;
 use super::reward_info::{EpochRewardsInfo, RewardsInfoParameters};
 
+use crate::certificate::MintToken;
 use crate::chaineval::HeaderContentEvalContext;
 use crate::chaintypes::{ChainLength, ConsensusType, HeaderId};
 use crate::config::{self, ConfigParam};
@@ -19,6 +20,8 @@ use crate::setting::ActiveSlotsCoeffError;
 use crate::stake::{
     PercentStake, PoolError, PoolStakeInformation, PoolsState, StakeControl, StakeDistribution,
 };
+use crate::tokens::identifier::TokenIdentifier;
+use crate::tokens::minting_policy::MintingPolicyViolation;
 use crate::transaction::*;
 use crate::treasury::Treasury;
 use crate::value::*;
@@ -319,6 +322,8 @@ pub enum Error {
     UpdateProposalSignatureFailed,
     #[error("Protocol update vote payload signature failed")]
     UpdateVoteSignatureFailed,
+    #[error("minting policy violation")]
+    MintingPolicyViolation(#[from] MintingPolicyViolation),
 }
 
 impl LedgerParameters {
@@ -502,6 +507,11 @@ impl Ledger {
                 }
                 Fragment::EncryptedVoteTally(_) => {
                     return Err(Error::Block0(Block0Error::HasVoteTally));
+                }
+                Fragment::MintToken(tx) => {
+                    let tx = tx.as_slice();
+                    check::valid_block0_cert_transaction(&tx)?;
+                    ledger = ledger.mint_token_unchecked(tx.payload().into_payload())?;
                 }
             }
         }
@@ -1005,6 +1015,14 @@ impl Ledger {
                     tx.payload_auth().into_payload_auth(),
                 )?;
             }
+            Fragment::MintToken(tx) => {
+                let tx = tx.as_slice();
+
+                let (new_ledger_, _fee) =
+                    new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
+
+                new_ledger = new_ledger_.mint_token(tx.payload().into_payload())?;
+            }
         }
 
         Ok(new_ledger)
@@ -1298,6 +1316,37 @@ impl Ledger {
             }
         };
 
+        Ok(self)
+    }
+
+    pub fn mint_token(mut self, mt: MintToken) -> Result<Self, Error> {
+        let MintToken {
+            name,
+            policy,
+            to,
+            value,
+        } = mt;
+        policy.check_minting_tx()?;
+        let token = TokenIdentifier {
+            policy_hash: policy.hash(),
+            token_name: name,
+        };
+        self.accounts = self.accounts.token_add(&to, token, value)?;
+        Ok(self)
+    }
+
+    pub fn mint_token_unchecked(mut self, mt: MintToken) -> Result<Self, Error> {
+        let MintToken {
+            name,
+            policy,
+            to,
+            value,
+        } = mt;
+        let token = TokenIdentifier {
+            policy_hash: policy.hash(),
+            token_name: name,
+        };
+        self.accounts = self.accounts.token_add(&to, token, value)?;
         Ok(self)
     }
 

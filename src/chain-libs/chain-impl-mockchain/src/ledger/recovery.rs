@@ -218,6 +218,7 @@ fn unpack_account_state<R: std::io::BufRead>(
         spending,
         delegation,
         value: Value(value),
+        tokens: Hamt::new(),
         last_rewards,
         extra: (),
     })

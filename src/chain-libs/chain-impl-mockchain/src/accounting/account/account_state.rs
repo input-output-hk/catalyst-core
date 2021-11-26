@@ -1,7 +1,8 @@
-use crate::certificate::PoolId;
 use crate::date::Epoch;
 use crate::value::*;
-use imhamt::HamtIter;
+use crate::{certificate::PoolId, tokens::identifier::TokenIdentifier};
+use imhamt::{Hamt, HamtIter};
+use std::collections::hash_map::DefaultHasher;
 
 use super::spending::{SpendingCounter, SpendingCounterIncreasing};
 use super::{LastRewards, LedgerError};
@@ -81,6 +82,7 @@ pub struct AccountState<Extra> {
     pub spending: SpendingCounterIncreasing,
     pub delegation: DelegationType,
     pub value: Value,
+    pub tokens: Hamt<DefaultHasher, TokenIdentifier, Value>,
     pub last_rewards: LastRewards,
     pub extra: Extra,
 }
@@ -92,6 +94,7 @@ impl<Extra> AccountState<Extra> {
             spending: SpendingCounterIncreasing::default(),
             delegation: DelegationType::NonDelegated,
             value: v,
+            tokens: Hamt::new(),
             last_rewards: LastRewards::default(),
             extra: e,
         }
@@ -153,6 +156,19 @@ impl<Extra: Clone> AccountState<Extra> {
         Ok(Some(r))
     }
 
+    /// Add a value to a token in an account state
+    ///
+    /// Only error if value is overflowing
+    pub fn token_add(&self, token: TokenIdentifier, v: Value) -> Result<Self, LedgerError> {
+        let tokens = self
+            .tokens
+            .insert_or_update(token, v, |current_value| (*current_value + v).map(Some))?;
+        Ok(Self {
+            tokens,
+            ..self.clone()
+        })
+    }
+
     /// Set delegation
     pub fn set_delegation(&self, delegation: DelegationType) -> Self {
         let mut st = self.clone();
@@ -178,6 +194,7 @@ mod tests {
         SpendingCounterIncreasing, DELEGATION_RATIO_MAX_DECLS,
     };
     use crate::{certificate::PoolId, testing::builders::StakePoolBuilder, value::Value};
+    use imhamt::Hamt;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
     use std::iter;
@@ -305,6 +322,7 @@ mod tests {
                 spending: spending_strat,
                 delegation,
                 value: result_value,
+                tokens: Hamt::new(),
                 last_rewards: LastRewards::default(),
                 extra: (),
             }

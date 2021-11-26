@@ -7,6 +7,8 @@
 pub mod account_state;
 pub mod last_rewards;
 pub mod spending;
+
+use crate::tokens::identifier::TokenIdentifier;
 use crate::{date::Epoch, value::*};
 use imhamt::{Hamt, InsertError, UpdateError};
 use std::collections::hash_map::DefaultHasher;
@@ -192,6 +194,18 @@ impl<ID: Clone + Eq + Hash, Extra: Clone> Ledger<ID, Extra> {
             .iter()
             .map(|(_, account_state)| account_state.value());
         Value::sum(values)
+    }
+
+    pub fn token_add(
+        &self,
+        identifier: &ID,
+        token: TokenIdentifier,
+        value: Value,
+    ) -> Result<Self, LedgerError> {
+        self.0
+            .update(identifier, |st| st.token_add(token, value).map(Some))
+            .map(Ledger)
+            .map_err(|e| e.into())
     }
 
     pub fn iter(&self) -> Iter<'_, ID, Extra> {
@@ -399,6 +413,7 @@ mod tests {
                     },
                     delegation: DelegationType::Full(stake_pool_id),
                     value: value_after_reward,
+                    tokens: Hamt::new(),
                     extra: (),
                 };
 

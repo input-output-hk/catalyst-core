@@ -36,6 +36,7 @@ pub enum Fragment {
     VoteCast(Transaction<certificate::VoteCast>),
     VoteTally(Transaction<certificate::VoteTally>),
     EncryptedVoteTally(Transaction<certificate::EncryptedVoteTally>),
+    MintToken(Transaction<certificate::MintToken>),
 }
 
 impl PartialEq for Fragment {
@@ -62,6 +63,7 @@ pub(super) enum FragmentTag {
     VoteCast = 11,
     VoteTally = 12,
     EncryptedVoteTally = 13,
+    MintToken = 14,
 }
 
 impl FragmentTag {
@@ -81,6 +83,7 @@ impl FragmentTag {
             11 => Some(FragmentTag::VoteCast),
             12 => Some(FragmentTag::VoteTally),
             13 => Some(FragmentTag::EncryptedVoteTally),
+            14 => Some(FragmentTag::MintToken),
             _ => None,
         }
     }
@@ -104,6 +107,7 @@ impl Fragment {
             Fragment::VoteCast(_) => FragmentTag::VoteCast,
             Fragment::VoteTally(_) => FragmentTag::VoteTally,
             Fragment::EncryptedVoteTally(_) => FragmentTag::EncryptedVoteTally,
+            Fragment::MintToken(_) => FragmentTag::MintToken,
         }
     }
 
@@ -130,6 +134,7 @@ impl Fragment {
             Fragment::VoteCast(vote_plan) => vote_plan.serialize(&mut codec).unwrap(),
             Fragment::VoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
             Fragment::EncryptedVoteTally(vote_tally) => vote_tally.serialize(&mut codec).unwrap(),
+            Fragment::MintToken(mint_token) => mint_token.serialize(&mut codec).unwrap(),
         }
         FragmentRaw(codec.into_inner())
     }
@@ -190,6 +195,7 @@ impl Readable for Fragment {
             Some(FragmentTag::EncryptedVoteTally) => {
                 Transaction::read(buf).map(Fragment::EncryptedVoteTally)
             }
+            Some(FragmentTag::MintToken) => Transaction::read(buf).map(Fragment::MintToken),
             None => Err(ReadError::UnknownTag(tag as u32)),
         }
     }

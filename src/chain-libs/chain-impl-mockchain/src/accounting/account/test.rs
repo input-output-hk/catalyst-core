@@ -2,6 +2,7 @@
 use super::{
     AccountState, DelegationType, LastRewards, SpendingCounter, SpendingCounterIncreasing,
 };
+use imhamt::Hamt;
 use quickcheck::{Arbitrary, Gen};
 
 impl Arbitrary for SpendingCounter {
@@ -22,6 +23,7 @@ impl Arbitrary for AccountState<()> {
             spending: Arbitrary::arbitrary(gen),
             delegation: DelegationType::Full(Arbitrary::arbitrary(gen)),
             value: Arbitrary::arbitrary(gen),
+            tokens: Hamt::new(),
             last_rewards: LastRewards::default(),
             extra: (),
         }

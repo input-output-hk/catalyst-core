@@ -277,7 +277,7 @@ impl Arbitrary for EncryptedVoteTallyProof {
 
 impl Arbitrary for Certificate {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        let option = u8::arbitrary(g) % 11;
+        let option = u8::arbitrary(g) % 12;
         match option {
             0 => Certificate::StakeDelegation(Arbitrary::arbitrary(g)),
             1 => Certificate::OwnerStakeDelegation(Arbitrary::arbitrary(g)),
@@ -290,6 +290,7 @@ impl Arbitrary for Certificate {
             8 => Certificate::EncryptedVoteTally(Arbitrary::arbitrary(g)),
             9 => Certificate::UpdateProposal(Arbitrary::arbitrary(g)),
             10 => Certificate::UpdateVote(Arbitrary::arbitrary(g)),
+            11 => Certificate::MintToken(Arbitrary::arbitrary(g)),
             _ => panic!("unimplemented"),
         }
     }

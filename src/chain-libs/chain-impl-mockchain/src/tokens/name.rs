@@ -1,0 +1,66 @@
+use std::convert::TryFrom;
+
+use chain_core::mempack::{ReadBuf, ReadError, Readable};
+use thiserror::Error;
+
+pub const TOKEN_NAME_MAX_SIZE: usize = 32;
+
+/// A sequence of bytes serving as a token name. Tokens that share the same name but have different
+/// voting policies hashes are different tokens. A name can be empty. The maximum length of a token
+/// name is 32 bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TokenName(Vec<u8>);
+
+#[derive(Debug, Error)]
+#[error("Token name can be no more that {} bytes long; got {} bytes", TOKEN_NAME_MAX_SIZE, .actual)]
+pub struct TokenNameTooLong {
+    actual: usize,
+}
+
+impl AsRef<[u8]> for TokenName {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_ref()
+    }
+}
+
+impl TryFrom<Vec<u8>> for TokenName {
+    type Error = TokenNameTooLong;
+
+    fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
+        if value.len() > TOKEN_NAME_MAX_SIZE {
+            return Err(TokenNameTooLong {
+                actual: value.len(),
+            });
+        }
+        Ok(Self(value))
+    }
+}
+
+impl Readable for TokenName {
+    fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
+        let name_length = buf.get_u8()? as usize;
+        if name_length > TOKEN_NAME_MAX_SIZE {
+            return Err(ReadError::SizeTooBig(TOKEN_NAME_MAX_SIZE, name_length));
+        }
+        let bytes = buf.get_slice(name_length)?.into();
+        Ok(Self(bytes))
+    }
+}
+
+#[cfg(any(test, feature = "property-test-api"))]
+mod tests {
+    use super::*;
+
+    use quickcheck::{Arbitrary, Gen};
+
+    impl Arbitrary for TokenName {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            let len = usize::arbitrary(g) % (TOKEN_NAME_MAX_SIZE + 1);
+            let mut bytes = Vec::with_capacity(len);
+            for _ in 0..len {
+                bytes.push(Arbitrary::arbitrary(g));
+            }
+            Self(bytes)
+        }
+    }
+}

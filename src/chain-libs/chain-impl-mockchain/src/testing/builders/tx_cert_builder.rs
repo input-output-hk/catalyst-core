@@ -1,9 +1,8 @@
-use crate::certificate::EncryptedVoteTally;
 use crate::{
     certificate::{
-        BftLeaderBindingSignature, Certificate, CertificatePayload, EncryptedVoteTallyProof,
-        PoolOwnersSigned, PoolSignature, TallyProof, UpdateProposal, UpdateVote, VotePlan,
-        VotePlanProof, VoteTally,
+        BftLeaderBindingSignature, Certificate, CertificatePayload, EncryptedVoteTally,
+        EncryptedVoteTallyProof, PoolOwnersSigned, PoolSignature, TallyProof, UpdateProposal,
+        UpdateVote, VotePlan, VotePlanProof, VoteTally,
     },
     chaintypes::HeaderId,
     date::BlockDate,
@@ -227,6 +226,18 @@ impl TestTxCertBuilder {
                 let signature = update_vote_sign(&keys, &builder);
                 let tx = builder.set_payload_auth(&signature);
                 Fragment::UpdateVote(tx)
+            }
+            Certificate::MintToken(mint_token) => {
+                let builder = self.set_initial_ios(
+                    valid_until,
+                    TxBuilder::new().set_payload(mint_token),
+                    funder,
+                    inputs,
+                    outputs,
+                    make_witness,
+                );
+                let tx = builder.set_payload_auth(&());
+                Fragment::MintToken(tx)
             }
         }
     }

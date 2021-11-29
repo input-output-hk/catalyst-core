@@ -54,13 +54,13 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
     //TODO elevate it to config settings
     let allowed_methods = vec!["GET","POST","OPTIONS","PUT","PATCH"];
     let mut option_headers = HeaderMap::new();
-    option_headers.insert("access-control-allow-methods", HeaderValue::from_str(&allowed_methods.join(",")).unwrap());
-    option_headers.insert("access-control-allow-origin",  HeaderValue::from_static("*"));
-    option_headers.insert("access-control-max-age",  HeaderValue::from_static("100"));
-    option_headers.insert("access-control-allow-headers",  HeaderValue::from_static("*"));
+    option_headers.insert("Access-Control-Allow-Methods", HeaderValue::from_str(&allowed_methods.join(",")).unwrap());
+    option_headers.insert("Access-Control-Allow-Origin",  HeaderValue::from_static("*"));
+    option_headers.insert("Access-Control-Max-Age",  HeaderValue::from_static("100"));
+    option_headers.insert("Access-Control-Allow-Headers",  HeaderValue::from_static("*"));
             
     let mut default_headers = HeaderMap::new();
-    default_headers.insert("access-control-allow-origin", HeaderValue::from_static("*"));
+    default_headers.insert("Access-Control-Allow-Origin", HeaderValue::from_static("*"));
     default_headers.insert("vary", HeaderValue::from_static("Origin"));
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());

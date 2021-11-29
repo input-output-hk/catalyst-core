@@ -72,9 +72,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.48"
+version = "1.0.50"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62e1f47f7dc0422027a4e370dd4548d4d66b26782e513e98dca1e689e058a80e"
+checksum = "ecc78c299ae753905840c5d3ba036c51f61ce5a98a83f98d9c9d29dffd427f71"
 
 [[package]]
 name = "arrayref"
@@ -2121,6 +2121,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "chain-addr",
  "chain-core",
+ "chain-crypto",
  "chain-impl-mockchain",
  "chain-ser",
  "chrono",
@@ -2187,7 +2188,7 @@ checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 [[package]]
 name = "jcli"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#eabf9ecf3df2be77d4b4a16c20854fb099228d33"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#73fe8614eaa0f3438b182bd296aa250370b0821b"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2221,7 +2222,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-integration-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#eabf9ecf3df2be77d4b4a16c20854fb099228d33"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#73fe8614eaa0f3438b182bd296aa250370b0821b"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -2268,7 +2269,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-lib"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#eabf9ecf3df2be77d4b4a16c20854fb099228d33"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#73fe8614eaa0f3438b182bd296aa250370b0821b"
 dependencies = [
  "base64 0.13.0",
  "bech32 0.8.1",
@@ -2297,7 +2298,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-scenario-tests"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#eabf9ecf3df2be77d4b4a16c20854fb099228d33"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#73fe8614eaa0f3438b182bd296aa250370b0821b"
 dependencies = [
  "assert_fs",
  "chain-addr",
@@ -2338,7 +2339,7 @@ dependencies = [
 [[package]]
 name = "jormungandr-testing-utils"
 version = "0.13.0"
-source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#eabf9ecf3df2be77d4b4a16c20854fb099228d33"
+source = "git+https://github.com/input-output-hk/jormungandr.git?branch=catalyst-fund7#73fe8614eaa0f3438b182bd296aa250370b0821b"
 dependencies = [
  "assert_cmd",
  "assert_fs",
@@ -3958,9 +3959,9 @@ dependencies = [
 
 [[package]]
 name = "ryu"
-version = "1.0.5"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e"
+checksum = "3c9613b5a66ab9ba26415184cfc41156594925a9cf3a2057e57f31ff145f6568"
 
 [[package]]
 name = "safemem"

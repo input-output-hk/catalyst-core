@@ -79,14 +79,16 @@ pub fn increase_max_block_content_size_during_voting() {
     .unwrap();
 
     let mut alice = iapyx_from_secret_key(
-        testing_directory.path().join("vit_backend/wallet_alice"),
+        testing_directory
+            .path()
+            .join(format!("vit_backend/wallet_{}", ALICE)),
         &wallet_proxy,
     )
     .unwrap();
     let mut committee = Wallet::import_account(
         testing_directory
             .path()
-            .join("vit_backend/wallet_committee"),
+            .join(format!("vit_backend/wallet_{}", COMMITTEE)),
         Some(0u32),
     );
     let bft_leader_secrets: Vec<&SigningKey<Ed25519>> = controller

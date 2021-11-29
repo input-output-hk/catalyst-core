@@ -157,9 +157,14 @@ impl VoteRegistrationJob {
         stake_vkey.write_to_file(&stake_vkey_path)?;
         println!("stake.vkey saved");
 
-        println!("saving catalyst-vote.skey...");
         let jcli = JCli::new(self.jcli.clone());
-        let private_key = jcli.key().generate_default();
+        let private_key = if let Some(key) = request.vote_skey {
+            key
+        } else {
+            jcli.key().generate_default()
+        };
+
+        println!("saving catalyst-vote.skey...");
         let private_key_path = Path::new(&self.working_dir).join("catalyst-vote.skey");
         write_content(&private_key, &private_key_path)?;
         println!("catalyst-vote.skey saved");

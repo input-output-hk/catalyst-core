@@ -27,6 +27,7 @@ pub fn do_registration(temp_dir: &TempDir) -> RegistrationResult {
         std::env::var("STAKE_SKEY").unwrap_or_else(|_| "STAKE_SKEY not defined".to_owned());
     let stake_vkey =
         std::env::var("STAKE_VKEY").unwrap_or_else(|_| "STAKE_VKEY not defined".to_owned());
+    let vote_skey = std::env::var("VOTE_SKEY").ok();
 
     let registration_client =
         RegistrationRestClient::new_with_token(registration_token, registration_address);
@@ -36,6 +37,7 @@ pub fn do_registration(temp_dir: &TempDir) -> RegistrationResult {
         payment_vkey,
         stake_skey,
         stake_vkey,
+        vote_skey,
     };
 
     let registration_job_id = registration_client.job_new(registration_request).unwrap();

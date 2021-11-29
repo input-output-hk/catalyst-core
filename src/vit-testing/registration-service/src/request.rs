@@ -6,4 +6,5 @@ pub struct Request {
     pub payment_vkey: String,
     pub stake_skey: String,
     pub stake_vkey: String,
+    pub vote_skey: Option<String>,
 }

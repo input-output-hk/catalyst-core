@@ -47,7 +47,7 @@ impl warp::reject::Reject for InvalidBatch {}
 impl warp::reject::Reject for GeneralException {}
 impl warp::reject::Reject for crate::mock::ContextError {}
 
-pub async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
+pub async fn report_invalid(r: Rejection) -> Result<impl Reply, Rejection> {
     if let Some(forced_error_code) = r.find::<ForcedErrorCode>() {
         return Ok(warp::reply::with_status(
             "forced rejections".to_string(),
@@ -66,9 +66,9 @@ pub async fn report_invalid(r: Rejection) -> Result<impl Reply, Infallible> {
             StatusCode::from_u16(exception.code).unwrap(),
         ));
     }
-
-    Ok(warp::reply::with_status(
+    Err(r)
+    /*Ok(warp::reply::with_status(
         format!("internal error: {:?}", r),
         StatusCode::INTERNAL_SERVER_ERROR,
-    ))
+    ))*/
 }

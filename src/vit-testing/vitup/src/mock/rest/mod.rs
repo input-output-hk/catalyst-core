@@ -413,9 +413,10 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .with(warp::reply::with::headers(option_headers.clone()))
                 .boxed();
 
-            let post_options = warp::path!("fragments" / ..)
+            let post_options = warp::path::end()
                 .and(warp::options())
-                .map(warp::reply)
+                .and(with_context.clone())
+                .and_then(reject)
                 .with(warp::reply::with::headers(option_headers.clone()));
     
 
@@ -511,6 +512,18 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             warp::serve(api).bind(address).await;
         }
     }
+}
+
+
+async fn reject(context: ContextLock) -> Result<impl Reply, warp::Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    context_lock.log(format!("options POST:"));
+    return Err(warp::reject::custom(GeneralException {
+        summary: "HTTP method not allowed".to_string(),
+        code: 405,
+    }));
+
+    Ok(HandlerResult(Ok(())))
 }
 
 pub async fn get_account_votes_with_plan(

@@ -1,6 +1,10 @@
 use crate::tokens::policy_hash::{PolicyHash, POLICY_HASH_SIZE};
 
-use chain_core::mempack::{ReadBuf, ReadError, Readable};
+use chain_core::{
+    mempack::{ReadBuf, ReadError, Readable},
+    packer::Codec,
+    property::Serialize,
+};
 use cryptoxide::{blake2b::Blake2b, digest::Digest};
 use thiserror::Error;
 use typed_bytes::ByteBuilder;
@@ -65,6 +69,14 @@ impl MintingPolicy {
 impl Default for MintingPolicy {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Serialize for MintingPolicy {
+    type Error = std::io::Error;
+    fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
+        let mut codec = Codec::new(writer);
+        codec.put_u8(0_u8)
     }
 }
 

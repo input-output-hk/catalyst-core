@@ -384,29 +384,16 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
         .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()))
         .with(warp::reply::with::headers(default_headers.clone()));
 
-    let allowed_methods = vec!["GET", "POST", "OPTIONS", "PUT", "PATCH"];
-    let mut option_headers = HeaderMap::new();
-    option_headers.insert(
-        "Access-Control-Allow-Methods",
-        HeaderValue::from_str(&allowed_methods.join(",")).unwrap(),
-    );
-    option_headers.insert("Access-Control-Allow-Origin", HeaderValue::from_static("*"));
-    option_headers.insert("Access-Control-Max-Age", HeaderValue::from_static("100"));
-    option_headers.insert(
-        "Access-Control-Allow-Headers",
-        HeaderValue::from_static("*"),
-    );
-
-    let options_fallback = warp::any()
-        .and(warp::options().map(warp::reply))
-        .map(|reply| warp::reply::with_status(reply, warp::http::StatusCode::NO_CONTENT))
-        .with(warp::reply::with::headers(option_headers.clone()));
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_methods((vec!["GET", "POST", "OPTIONS", "PUT", "PATCH"]).clone())
+        .allow_headers(vec!["content-type"])
+        .build();
 
     let api = root
         .and(health.or(control).or(v0).or(v1).or(version))
-        // catch options on any routes
-        .or(options_fallback)
         .recover(report_invalid)
+        .with(cors)
         .boxed();
 
     match &config.protocol {

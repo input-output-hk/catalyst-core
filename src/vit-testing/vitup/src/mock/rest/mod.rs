@@ -407,11 +407,6 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
         // catch options on any routes
         .or(options_fallback)
         .recover(report_invalid)
-        .with(
-            warp::cors()
-                .allow_any_origin()
-                .allow_methods(allowed_methods.clone()),
-        )
         .boxed();
 
     match &config.protocol {

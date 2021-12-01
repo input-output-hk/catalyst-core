@@ -35,21 +35,41 @@ impl ArchiveCommand {
             }
         };
 
-        let result = match &self.command {
-            Command::VotesByCaster => archiver.number_of_votes_per_caster()?,
-            Command::VotesBySlot => archiver.number_of_tx_per_slot()?,
+        match &self.command {
+            Command::VotesByCaster => {
+                let result = archiver.number_of_votes_per_caster()?;
+                if self.calculate_distribution {
+                    self.write_to_file_or_print(ArchiveStats::calculate_distribution(&result)?)?;
+                } else {
+                    self.write_to_file_or_print(result)?;
+                }
+            }
+            Command::VotesBySlot => {
+                let result = archiver.number_of_tx_per_slot()?;
+                if self.calculate_distribution {
+                    self.write_to_file_or_print(ArchiveStats::calculate_distribution(&result)?)?;
+                } else {
+                    self.write_to_file_or_print(result)?;
+                }
+            }
             Command::BatchSizeByCaster(batch_size_by_caster) => {
-                batch_size_by_caster.exec(archiver)?
+                let result = batch_size_by_caster.exec(archiver)?;
+                if self.calculate_distribution {
+                    self.write_to_file_or_print(ArchiveStats::calculate_distribution(&result)?)?;
+                } else {
+                    self.write_to_file_or_print(result)?;
+                }
+            }
+            Command::ActiveVoters => {
+                let voters = archiver.number_of_votes_per_caster()?;
+                println!("{}", voters.len());
             }
         };
 
-        if self.calculate_distribution {
-            self.write_to_file_or_print(ArchiveStats::calculate_distribution(&result)?)?;
-        } else {
-            self.write_to_file_or_print(result)?;
-        }
         Ok(())
     }
+
+    pub fn calculate_distribution() {}
 
     fn write_to_file_or_print<K: serde::Serialize + Ord + Debug, V: serde::Serialize + Debug>(
         &self,
@@ -85,6 +105,7 @@ pub enum Command {
     VotesByCaster,
     VotesBySlot,
     BatchSizeByCaster(BatchSizeByCaster),
+    ActiveVoters,
 }
 
 #[derive(StructOpt, Debug)]

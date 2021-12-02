@@ -45,19 +45,6 @@ pub async fn start_rest_server(context: ContextLock) {
         .unwrap()
         .set_server_stopper(ServerStopper(stopper_tx));
 
-    //TODO elevate it to config settings
-    let allowed_methods = vec!["GET","POST","OPTIONS","PUT","PATCH"];
-
-    let mut option_headers = HeaderMap::new();
-    headers.insert("access-control-allow-methods", allowed_methods.join(","));
-    headers.insert("access-control-allow-origin", "*");
-    headers.insert("access-control-max-age", 100);
-        
-    let mut default_headers = HeaderMap::new();
-    headers.insert("access-control-allow-origin", "*");
-    headers.insert("vary", "Origin");
-
-
     let is_token_enabled = context.lock().unwrap().api_token().is_some();
     let address = *context.lock().unwrap().address();
     let working_dir = context.lock().unwrap().working_directory().clone();
@@ -128,7 +115,6 @@ pub async fn start_rest_server(context: ContextLock) {
             .and(warp::body::content_length_limit(1024 * 16).and(warp::body::bytes()))
             .and(with_context.clone())
             .and_then(submit_transaction_handler)
-            .with(warp::reply::with::headers(headers))
             .boxed();
 
         let utxo = warp::path!("utxo" / String)
@@ -142,7 +128,6 @@ pub async fn start_rest_server(context: ContextLock) {
 
     let api = root
         .and(health.or(job).or(cardano))
-        .with_cors(warp::cors().allow_any_origin().allow_methods(allowed_methods.clone()))
         .recover(report_invalid)
         .boxed();
 

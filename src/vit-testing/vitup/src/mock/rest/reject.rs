@@ -1,5 +1,4 @@
 use jormungandr_lib::interfaces::FragmentsProcessingSummary;
-use std::convert::Infallible;
 use warp::{http::StatusCode, Rejection, Reply};
 
 #[derive(Debug)]

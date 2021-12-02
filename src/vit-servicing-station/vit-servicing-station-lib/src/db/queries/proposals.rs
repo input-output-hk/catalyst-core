@@ -41,6 +41,28 @@ pub async fn query_proposal_by_id(
     .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
 }
 
+pub async fn query_proposals_by_voteplan_id_and_indexes(
+    voteplan_id: String,
+    indexes: Vec<i64>,
+    pool: DbConnectionPool,
+) -> Result<Vec<FullProposalInfo>, HandleError> {
+    let db_conn = pool.get().map_err(HandleError::DatabaseError)?;
+    tokio::task::spawn_blocking(move || {
+        full_proposals_info
+            .filter(full_proposal_dsl::chain_voteplan_id.eq(voteplan_id.clone()))
+            .filter(full_proposal_dsl::chain_proposal_index.eq_any(&indexes))
+            .load::<FullProposalInfo>(&db_conn)
+            .map_err(|_e| {
+                HandleError::NotFound(format!(
+                    "proposal with voteplan id {} and indexes {:?}",
+                    voteplan_id, indexes
+                ))
+            })
+    })
+    .await
+    .map_err(|_e| HandleError::InternalError("Error executing request".to_string()))?
+}
+
 pub fn insert_proposal(proposal: Proposal, db_conn: &DbConnection) -> QueryResult<usize> {
     diesel::insert_into(proposals::table)
         .values(proposal.values())

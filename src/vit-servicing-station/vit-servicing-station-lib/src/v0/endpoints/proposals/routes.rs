@@ -17,9 +17,16 @@ pub async fn filter(
 
     let proposals = warp::path::end()
         .and(warp::get())
-        .and(with_context)
+        .and(with_context.clone())
         .and_then(get_all_proposals)
         .boxed();
 
-    root.and(from_id.or(proposals)).boxed()
+    let from_voteplan_id_and_indexes = warp::path::end()
+        .and(warp::post())
+        .and(warp::body::json())
+        .and(with_context)
+        .and_then(get_proposals_by_voteplan_id_and_index);
+
+    root.and(from_id.or(proposals).or(from_voteplan_id_and_indexes))
+        .boxed()
 }

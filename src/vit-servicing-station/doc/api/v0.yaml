@@ -58,6 +58,26 @@ paths:
           description: The requested fund was not found
 
   /api/v0/proposals:
+    post:
+      summary: Get proposal by id
+      tags: [ proposal ]
+      description: |
+        Retrieves queried proposals.
+      requestBody:
+        description: List of voteplan id and indexes query
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/ProposalsByVoteplanIdAndIndexQuery'
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProposalWithChallengeInfo"
+
     get:
       operationId: getAllProposals
       summary: Get all available proposals
@@ -525,3 +545,17 @@ components:
       properties:
         sponsor:
           type: string
+
+    ProposalsByVoteplanIdAndIndexQuery:
+      type: array
+      items:
+        $ref: "#/components/schemas/ProposalVoteplanIdAndIndex"
+
+    ProposalVoteplanIdAndIndex:
+      properties:
+        voteplan_id: String
+        indexes:
+          type: array
+          items:
+              type: integer
+              format: i64

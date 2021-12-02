@@ -43,7 +43,7 @@ impl ArchiveStats {
     }
 
     pub fn number_of_tx_per_slot(&self) -> Result<BTreeMap<String, usize>, ArchiveCalculatorError> {
-        println!("calculating number of tx per slot");
+        println!("calculating number of tx per slot..");
         Ok(self
             .records
             .iter()
@@ -56,7 +56,7 @@ impl ArchiveStats {
     pub fn number_of_votes_per_caster(
         &self,
     ) -> Result<BTreeMap<String, usize>, ArchiveCalculatorError> {
-        println!("calculating number of votes per caster");
+        println!("calculating number of votes per caster..");
         Ok(self
             .records
             .iter()
@@ -70,7 +70,7 @@ impl ArchiveStats {
         &self,
         slots_in_epoch: u32,
     ) -> Result<BTreeMap<String, usize>, ArchiveCalculatorError> {
-        println!("calculating batch size per caster");
+        println!("calculating batch size per caster..");
 
         let time_era = self.records[0].block_date()?.time_era(slots_in_epoch);
 

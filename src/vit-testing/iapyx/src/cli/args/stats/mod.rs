@@ -56,6 +56,6 @@ pub enum IapyxStatsCommandError {
     ArchiveReader(#[from] ArchiveReaderError),
     #[error("archive calculator error")]
     ArchiveCalculator(#[from] ArchiveCalculatorError),
-    #[error("serde error")]
+    #[error(transparent)]
     Serde(#[from] serde_json::Error),
 }

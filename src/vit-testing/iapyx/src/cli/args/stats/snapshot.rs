@@ -1,5 +1,6 @@
 use crate::cli::args::stats::IapyxStatsCommandError;
 use crate::stats::block0::wallets::calculate_wallet_distribution_from_initials;
+use crate::stats::snapshot::read_initials;
 use jormungandr_lib::interfaces::Initial;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -44,11 +45,4 @@ impl SnapshotCommand {
 
         Ok(())
     }
-}
-
-pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<Initial>, IapyxStatsCommandError> {
-    let snapshot = snapshot.into();
-    let value: serde_json::Value = serde_json::from_str(&snapshot)?;
-    let initial = serde_json::to_string(&value["initial"])?;
-    serde_json::from_str(&initial).map_err(Into::into)
 }

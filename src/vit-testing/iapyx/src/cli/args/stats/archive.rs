@@ -1,5 +1,9 @@
+use crate::cli::args::stats::snapshot::Command as SnapshotCommand;
 use crate::cli::args::stats::IapyxStatsCommandError;
 use crate::stats::archive::{load_from_csv, load_from_folder, ArchiveStats};
+use crate::stats::block0::wallets::calculate_wallet_distribution_from_initials_utxo;
+use crate::stats::snapshot::read_initials_from_file;
+use jormungandr_lib::interfaces::Initial;
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
@@ -60,9 +64,8 @@ impl ArchiveCommand {
                     self.write_to_file_or_print(result)?;
                 }
             }
-            Command::ActiveVoters => {
-                let voters = archiver.number_of_votes_per_caster()?;
-                println!("{}", voters.len());
+            Command::ActiveVoters(active_voters) => {
+                active_voters.exec(archiver)?;
             }
         };
 
@@ -105,7 +108,7 @@ pub enum Command {
     VotesByCaster,
     VotesBySlot,
     BatchSizeByCaster(BatchSizeByCaster),
-    ActiveVoters,
+    ActiveVoters(ActiveVoters),
 }
 
 #[derive(StructOpt, Debug)]
@@ -120,5 +123,57 @@ impl BatchSizeByCaster {
         archiver: ArchiveStats,
     ) -> Result<BTreeMap<String, usize>, IapyxStatsCommandError> {
         Ok(archiver.batch_size_per_caster(self.slots_in_epoch)?)
+    }
+}
+
+#[derive(StructOpt, Debug)]
+pub struct ActiveVoters {
+    #[structopt(short = "s", long = "snapshot")]
+    pub snapshot: PathBuf,
+
+    #[structopt(long = "support-lovelace")]
+    pub support_lovelace: bool,
+
+    #[structopt(long = "threshold")]
+    pub threshold: u64,
+
+    #[structopt(subcommand)]
+    pub command: SnapshotCommand,
+}
+
+impl ActiveVoters {
+    pub fn exec(&self, archiver: ArchiveStats) -> Result<(), IapyxStatsCommandError> {
+        println!("calculating active voters..");
+        let voters = archiver.distinct_casters()?;
+
+        let mut initials = vec![];
+        for entry in read_initials_from_file(&self.snapshot)? {
+            if let Initial::Fund(snapshot_initials) = entry {
+                for initial_utxo in snapshot_initials {
+                    if voters.contains(&initial_utxo.address.to_string()) {
+                        initials.push(initial_utxo);
+                    }
+                }
+            }
+        }
+
+        match self.command {
+            SnapshotCommand::Count => calculate_wallet_distribution_from_initials_utxo(
+                initials,
+                vec![],
+                self.threshold,
+                self.support_lovelace,
+            )?
+            .print_count_per_level(),
+            SnapshotCommand::Ada => calculate_wallet_distribution_from_initials_utxo(
+                initials,
+                vec![],
+                self.threshold,
+                self.support_lovelace,
+            )?
+            .print_ada_per_level(),
+        };
+
+        Ok(())
     }
 }

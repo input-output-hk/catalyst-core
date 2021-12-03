@@ -5,6 +5,7 @@ use chain_crypto::Ed25519;
 use chain_impl_mockchain::vote::CommitteeId;
 use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::Initial;
+use jormungandr_lib::interfaces::InitialUTxO;
 use jormungandr_testing_utils::testing::block0::get_block;
 
 pub fn calculate_wallet_distribution<S: Into<String>>(
@@ -48,19 +49,35 @@ pub fn calculate_wallet_distribution_from_initials(
     threshold: u64,
     support_lovelace: bool,
 ) -> Result<Stats, IapyxStatsCommandError> {
-    let mut stats = Stats::new(threshold);
-    for initial in initials.iter() {
+    let mut utxos = vec![];
+    for initial in initials.into_iter() {
         if let Initial::Fund(initial_utxos) = initial {
-            for x in initial_utxos {
-                if !blacklist.contains(&x.address) {
-                    let mut value: u64 = x.value.into();
-                    if support_lovelace {
-                        value /= 1_000_000;
-                    }
-                    stats.add(value);
-                }
+            for x in initial_utxos.into_iter() {
+                utxos.push(x)
             }
         }
     }
+
+    calculate_wallet_distribution_from_initials_utxo(utxos, blacklist, threshold, support_lovelace)
+}
+
+pub fn calculate_wallet_distribution_from_initials_utxo(
+    initials: Vec<InitialUTxO>,
+    blacklist: Vec<Address>,
+    threshold: u64,
+    support_lovelace: bool,
+) -> Result<Stats, IapyxStatsCommandError> {
+    let mut stats = Stats::new(threshold);
+
+    for x in initials {
+        if !blacklist.contains(&x.address) {
+            let mut value: u64 = x.value.into();
+            if support_lovelace {
+                value /= 1_000_000;
+            }
+            stats.add(value);
+        }
+    }
+
     Ok(stats)
 }

@@ -4,6 +4,7 @@ use chain_time::TimeEra;
 use itertools::Itertools;
 use jormungandr_lib::interfaces::BlockDate;
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use thiserror::Error;
 
 pub struct ArchiveStats {
@@ -50,6 +51,17 @@ impl ArchiveStats {
             .group_by(|item| item.time.to_string())
             .into_iter()
             .map(|(key, group)| (key, group.count()))
+            .collect())
+    }
+
+    pub fn distinct_casters(&self) -> Result<BTreeSet<String>, ArchiveCalculatorError> {
+        println!("calculating distinct caster..");
+        Ok(self
+            .records
+            .iter()
+            .group_by(|item| item.caster.to_string())
+            .into_iter()
+            .map(|(key, _group)| key)
             .collect())
     }
 

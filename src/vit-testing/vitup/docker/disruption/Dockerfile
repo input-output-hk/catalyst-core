@@ -21,7 +21,7 @@ RUN  apt-get install -y build-essential pkg-config libssl-dev && \
 RUN cd ${ENV_PREFIX} && \
     git clone https://github.com/input-output-hk/vit-testing && \
 	cd vit-testing && \
-	git checkout 2445308f948d4b041106100d85aa32ab881fe55b
+	git checkout main
     
 RUN cd ${ENV_PREFIX}/vit-testing/vitup && \
     ~/.cargo/bin/cargo install --locked --path . 

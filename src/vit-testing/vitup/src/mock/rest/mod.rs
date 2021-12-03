@@ -28,8 +28,8 @@ use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
+use warp::http::header::{HeaderMap, HeaderValue};
 use warp::{reject::Reject, Filter, Rejection, Reply};
-
 mod reject;
 
 use reject::{report_invalid, ForcedErrorCode, GeneralException, InvalidBatch};
@@ -50,6 +50,10 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
     let with_context = warp::any().map(move || context.clone());
 
     let (non_block, _guard) = tracing_appender::non_blocking(File::create("vole.trace").unwrap());
+
+    let mut default_headers = HeaderMap::new();
+    default_headers.insert("Access-Control-Allow-Origin", HeaderValue::from_static("*"));
+    default_headers.insert("vary", HeaderValue::from_static("Origin"));
 
     let filter = std::env::var("RUST_LOG").unwrap_or_else(|_| "tracing=info,warp=debug".to_owned());
     tracing_subscriber::fmt()
@@ -193,12 +197,14 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .and(warp::body::json())
                 .and(with_context.clone())
                 .and_then(get_proposal_by_idx)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             let proposals = warp::path::end()
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_all_proposals)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             root.and(from_id.or(from_idx).or(proposals)).boxed()
@@ -210,12 +216,14 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             let challenges = warp::path::end()
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(get_challenges);
+                .and_then(get_challenges)
+                .with(warp::reply::with::headers(default_headers.clone()));
 
             let challenge_by_id = warp::path!(i32)
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(get_challenge_by_id);
+                .and_then(get_challenge_by_id)
+                .with(warp::reply::with::headers(default_headers.clone()));
 
             root.and(challenge_by_id.or(challenges))
         };
@@ -226,7 +234,8 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             let review_by_id = warp::path!(i32)
                 .and(warp::get())
                 .and(with_context.clone())
-                .and_then(get_review_by_id);
+                .and_then(get_review_by_id)
+                .with(warp::reply::with::headers(default_headers.clone()));
 
             root.and(review_by_id)
         };
@@ -238,12 +247,14 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_fund)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             let fund_by_id = warp::path!(i32)
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_fund_by_id)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             root.and(fund_by_id.or(fund)).boxed()
@@ -253,12 +264,14 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             .and(warp::get())
             .and(with_context.clone())
             .and_then(get_settings)
+            .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
 
         let account = warp::path!("account" / String)
             .and(warp::get())
             .and(with_context.clone())
             .and_then(get_account)
+            .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
 
         let fragment = {
@@ -268,12 +281,14 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_fragment_logs)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             let debug = warp::path!("debug" / String)
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(debug_message)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             root.and(logs.or(debug)).boxed()
@@ -284,21 +299,23 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
             .and(warp::body::bytes())
             .and(with_context.clone())
             .and_then(post_message)
+            .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
 
         let votes = warp::path!("vote" / "active" / "plans")
             .and(warp::get())
             .and(with_context.clone())
             .and_then(get_active_vote_plans)
+            .with(warp::reply::with::headers(default_headers.clone()))
             .boxed();
 
-        let block0 =
-            warp::path!("block0")
-                .and(with_context.clone())
-                .map(move |context: ContextLock| {
-                    context.lock().unwrap().log("get_block0");
-                    Ok(context.lock().unwrap().block0_bin())
-                });
+        let block0 = warp::path!("block0")
+            .and(with_context.clone())
+            .map(move |context: ContextLock| {
+                context.lock().unwrap().log("get_block0");
+                Ok(context.lock().unwrap().block0_bin())
+            })
+            .with(warp::reply::with::headers(default_headers.clone()));
 
         root.and(
             proposals
@@ -333,12 +350,14 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                 .and(warp::query())
                 .and(with_context.clone())
                 .and_then(get_fragment_statuses)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             let logs = warp::path!("logs")
                 .and(warp::get())
                 .and(with_context.clone())
                 .and_then(get_fragment_logs)
+                .with(warp::reply::with::headers(default_headers.clone()))
                 .boxed();
 
             root.and(post.or(status).or(logs)).boxed()
@@ -347,23 +366,34 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
         let votes_with_plan = warp::path!("votes" / "plan" / VotePlanId / "account-votes" / String)
             .and(warp::get())
             .and(with_context.clone())
-            .and_then(get_account_votes_with_plan);
+            .and_then(get_account_votes_with_plan)
+            .with(warp::reply::with::headers(default_headers.clone()));
 
         let votes = warp::path!("votes" / "plan" / "account-votes" / String)
             .and(warp::get())
             .and(with_context.clone())
-            .and_then(get_account_votes);
+            .and_then(get_account_votes)
+            .with(warp::reply::with::headers(default_headers.clone()));
 
         root.and(fragments.or(votes).or(votes_with_plan))
     };
 
-    let version = warp::path!("version")
+    let version = warp::path!("vit-version")
+        .and(warp::get())
         .and(with_context.clone())
-        .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()));
+        .map(move |context: ContextLock| warp::reply::json(&context.lock().unwrap().version()))
+        .with(warp::reply::with::headers(default_headers.clone()));
+
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_methods((vec!["GET", "POST", "OPTIONS", "PUT", "PATCH"]).clone())
+        .allow_headers(vec!["content-type"])
+        .build();
 
     let api = root
         .and(health.or(control).or(v0).or(v1).or(version))
         .recover(report_invalid)
+        .with(cors)
         .boxed();
 
     match &config.protocol {
@@ -1011,6 +1041,7 @@ pub async fn get_account(
     account_bech32: String,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
+    dbg!(&account_bech32);
     context
         .lock()
         .unwrap()

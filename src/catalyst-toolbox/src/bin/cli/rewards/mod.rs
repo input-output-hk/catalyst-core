@@ -19,6 +19,12 @@ pub enum Error {
 
     #[error("{0}")]
     InvalidInput(String),
+
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
 }
 
 #[derive(StructOpt)]

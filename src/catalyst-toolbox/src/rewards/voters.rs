@@ -1,8 +1,13 @@
 use fixed::types::U64F64;
-use jormungandr_lib::interfaces::{Address, Block0Configuration, Initial};
+
+use chain_addr::{Discrimination, Kind};
+use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
 use std::collections::{HashMap, HashSet};
 
+use jormungandr_lib::interfaces::{Address, Block0Configuration, Initial};
+
 pub const ADA_TO_LOVELACE_FACTOR: u64 = 1_000_000;
+pub type Rewards = U64F64;
 
 pub fn calculate_stake<'address>(
     committee_keys: &HashSet<Address>,
@@ -33,14 +38,62 @@ pub fn calculate_stake<'address>(
 pub fn calculate_reward_share<'address>(
     total_stake: u64,
     stake_per_voter: &HashMap<&'address Address, u64>,
-) -> HashMap<&'address Address, U64F64> {
+    threshold_addresses: &AddressesVoteCount,
+    threshold: u64,
+) -> HashMap<&'address Address, Rewards> {
     stake_per_voter
         .iter()
-        .map(|(k, v)| (*k, fixed::types::U64F64::from_num(*v) / total_stake as u128))
+        .map(|(k, v)| {
+            // if it doesnt appear in the votes count, it means it did not vote
+            let reward = if *threshold_addresses.get(k).unwrap_or(&0u64) >= threshold {
+                Rewards::from_num(*v) / total_stake as u128
+            } else {
+                Rewards::ZERO
+            };
+            (*k, reward)
+        })
         .collect()
 }
 
 /// get the proportional reward from a share and total rewards amount
-pub fn reward_from_share(share: U64F64, total_reward: u64) -> fixed::types::U64F64 {
-    fixed::types::U64F64::from_num(total_reward) * share
+pub fn reward_from_share(share: Rewards, total_reward: u64) -> Rewards {
+    Rewards::from_num(total_reward) * share
+}
+
+pub type VoteCount = HashMap<String, u64>;
+pub type AddressesVoteCount = HashMap<Address, u64>;
+
+pub fn vote_count_with_addresses(
+    vote_count: VoteCount,
+    block0: &Block0Configuration,
+) -> AddressesVoteCount {
+    let discrimination = block0.blockchain_configuration.discrimination;
+    vote_count
+        .into_iter()
+        .map(|(account_hex, count)| {
+            (
+                account_hex_to_address(account_hex, discrimination)
+                    .expect("Valid hex encoded UnspecifiedAccountIdentifier"),
+                count,
+            )
+        })
+        .collect()
+}
+
+fn account_hex_to_address(
+    account_hex: String,
+    discrimination: Discrimination,
+) -> Result<Address, hex::FromHexError> {
+    let mut buffer = [0u8; 32];
+    hex::decode_to_slice(account_hex, &mut buffer)?;
+    let identifier: UnspecifiedAccountIdentifier = UnspecifiedAccountIdentifier::from(buffer);
+    Ok(Address::from(chain_addr::Address(
+        discrimination,
+        Kind::Account(
+            identifier
+                .to_single_account()
+                .expect("Only single accounts are supported")
+                .into(),
+        ),
+    )))
 }

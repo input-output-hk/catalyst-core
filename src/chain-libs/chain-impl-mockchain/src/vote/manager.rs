@@ -451,11 +451,7 @@ impl ProposalManager {
 
 impl ProposalManagers {
     fn new(plan: &VotePlan) -> Self {
-        let managers = plan
-            .proposals()
-            .iter()
-            .map(|proposal| ProposalManager::new(proposal))
-            .collect();
+        let managers = plan.proposals().iter().map(ProposalManager::new).collect();
         match plan.payload_type() {
             PayloadType::Public => Self::Public { managers },
             PayloadType::Private => {

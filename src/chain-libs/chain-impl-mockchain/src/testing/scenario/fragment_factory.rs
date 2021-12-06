@@ -40,12 +40,12 @@ impl FragmentFactory {
         &self,
         from: &Wallet,
         to: &Wallet,
-        mut test_ledger: &mut TestLedger,
+        test_ledger: &mut TestLedger,
         funds: u64,
     ) -> Fragment {
         TestTxBuilder::new(test_ledger.block0_hash)
             .move_funds(
-                &mut test_ledger,
+                test_ledger,
                 &from.as_account(),
                 &to.as_account(),
                 Value(funds),

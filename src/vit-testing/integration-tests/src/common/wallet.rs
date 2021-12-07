@@ -6,8 +6,8 @@ pub fn iapyx_from_secret_key<P: AsRef<Path>>(
     proxy: &WalletProxyController,
 ) -> Result<iapyx::Controller, iapyx::ControllerBuilderError> {
     iapyx::ControllerBuilder::default()
-        .from_client(proxy.client())?
-        .from_secret_file(secret.as_ref())?
+        .with_backend_from_client(proxy.client())?
+        .with_wallet_from_secret_file(secret.as_ref())?
         .build()
 }
 
@@ -17,7 +17,7 @@ pub fn iapyx_from_qr<P: AsRef<Path>>(
     proxy: &WalletProxyController,
 ) -> Result<iapyx::Controller, iapyx::ControllerBuilderError> {
     iapyx::ControllerBuilder::default()
-        .from_client(proxy.client())?
-        .from_qr(qr.as_ref(), pin)?
+        .with_backend_from_client(proxy.client())?
+        .with_wallet_from_qr_file(qr.as_ref(), pin)?
         .build()
 }

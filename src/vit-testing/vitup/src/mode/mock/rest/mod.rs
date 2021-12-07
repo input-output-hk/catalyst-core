@@ -1,6 +1,7 @@
 use super::FragmentRecieveStrategy;
 use super::{Configuration, Context, ContextLock};
 use crate::config::VitStartParameters;
+use crate::mode::mock::LedgerState;
 use crate::mode::mock::NetworkCongestionMode;
 use crate::mode::service::manager::file_lister::dump_json;
 use chain_core::property::Deserialize as _;
@@ -159,7 +160,46 @@ pub async fn start_rest_server(context: ContextLock, config: Configuration) {
                     .and(with_context.clone())
                     .and_then(command_reset);
 
-                root.and(reject.or(accept).or(pending).or(reset)).boxed()
+                let forget = warp::path!("forget")
+                    .and(warp::post())
+                    .and(with_context.clone())
+                    .and_then(command_forget);
+
+                let update = {
+                    let root = warp::path!("update" / ..);
+
+                    let reject = warp::path!(String / "reject")
+                        .and(warp::post())
+                        .and(with_context.clone())
+                        .and_then(command_update_reject);
+
+                    let accept = warp::path!(String / "accept")
+                        .and(warp::post())
+                        .and(with_context.clone())
+                        .and_then(command_update_accept);
+
+                    let pending = warp::path!(String / "pending")
+                        .and(warp::post())
+                        .and(with_context.clone())
+                        .and_then(command_update_pending);
+
+                    let forget = warp::path!(String / "forget")
+                        .and(warp::post())
+                        .and(with_context.clone())
+                        .and_then(command_update_forget);
+
+                    root.and(reject.or(accept).or(pending).or(forget)).boxed()
+                };
+
+                root.and(
+                    reject
+                        .or(accept)
+                        .or(pending)
+                        .or(reset)
+                        .or(update)
+                        .or(forget),
+                )
+                .boxed()
             };
 
             let network_strategy = {
@@ -631,6 +671,60 @@ pub async fn command_available(
     Ok(warp::reply())
 }
 
+fn update_fragment_id(
+    fragment_id: String,
+    ledger_state: &mut LedgerState,
+    fragment_strategy: FragmentRecieveStrategy,
+) -> Result<impl Reply, Rejection> {
+    if fragment_id.to_uppercase() == *"LAST".to_string() {
+        ledger_state.set_status_for_recent_fragment(fragment_strategy);
+    } else {
+        ledger_state
+            .set_status_for_fragment_id(fragment_id, fragment_strategy)
+            .map_err(|err| GeneralException {
+                summary: err.to_string(),
+                code: 404,
+            })?;
+    }
+    Ok(warp::reply())
+}
+
+pub async fn command_update_forget(
+    fragment_id: String,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    let mut ledger = context_lock.state_mut().ledger_mut();
+    update_fragment_id(fragment_id, &mut ledger, FragmentRecieveStrategy::Forget)
+}
+
+pub async fn command_update_reject(
+    fragment_id: String,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    let mut ledger = context_lock.state_mut().ledger_mut();
+    update_fragment_id(fragment_id, &mut ledger, FragmentRecieveStrategy::Reject)
+}
+
+pub async fn command_update_accept(
+    fragment_id: String,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    let mut ledger = context_lock.state_mut().ledger_mut();
+    update_fragment_id(fragment_id, &mut ledger, FragmentRecieveStrategy::Accept)
+}
+
+pub async fn command_update_pending(
+    fragment_id: String,
+    context: ContextLock,
+) -> Result<impl Reply, Rejection> {
+    let mut context_lock = context.lock().unwrap();
+    let mut ledger = context_lock.state_mut().ledger_mut();
+    update_fragment_id(fragment_id, &mut ledger, FragmentRecieveStrategy::Pending)
+}
+
 pub async fn command_error_code(
     error_code: u16,
     context: ContextLock,
@@ -727,6 +821,16 @@ pub async fn command_reset(context: ContextLock) -> Result<impl Reply, Rejection
         .state_mut()
         .ledger_mut()
         .set_fragment_strategy(FragmentRecieveStrategy::None);
+    Ok(warp::reply())
+}
+
+pub async fn command_forget(context: ContextLock) -> Result<impl Reply, Rejection> {
+    context
+        .lock()
+        .unwrap()
+        .state_mut()
+        .ledger_mut()
+        .set_fragment_strategy(FragmentRecieveStrategy::Forget);
     Ok(warp::reply())
 }
 

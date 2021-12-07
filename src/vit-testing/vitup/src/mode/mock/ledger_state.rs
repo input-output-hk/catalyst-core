@@ -1,6 +1,7 @@
 use chain_addr::Discrimination;
 use chain_core::property::Block;
 use chain_core::property::Fragment as _;
+use chain_impl_mockchain::fee::LinearFee;
 use chain_impl_mockchain::fragment::Fragment;
 use chain_impl_mockchain::fragment::FragmentId;
 use chain_impl_mockchain::ledger::{Error as LedgerError, Ledger};
@@ -15,7 +16,6 @@ use jormungandr_lib::interfaces::{FragmentRejectionReason, FragmentsProcessingSu
 use jormungandr_lib::time::SystemTime;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::path::PathBuf;
 use thiserror::Error;
 use thor::BlockDateGenerator;
 
@@ -25,6 +25,8 @@ pub enum FragmentRecieveStrategy {
     Accept,
     Pending,
     None,
+    //For cases when we want to implement mempool cleaning
+    Forget,
 }
 
 pub struct LedgerState {
@@ -33,14 +35,10 @@ pub struct LedgerState {
     received_fragments: Vec<Fragment>,
     ledger: Ledger,
     block0_configuration: Block0Configuration,
-    block0_bin: Vec<u8>,
 }
 
 impl LedgerState {
-    pub fn new(
-        block0_configuration: Block0Configuration,
-        block0_path: PathBuf,
-    ) -> Result<Self, Error> {
+    pub fn new(block0_configuration: Block0Configuration) -> Result<Self, Error> {
         let block = block0_configuration.to_block();
 
         Ok(Self {
@@ -48,7 +46,6 @@ impl LedgerState {
             fragment_logs: Vec::new(),
             received_fragments: Vec::new(),
             block0_configuration,
-            block0_bin: jortestkit::file::get_file_as_byte_vec(&block0_path),
             ledger: Ledger::new(block.id(), block.fragments())?,
         })
     }
@@ -63,7 +60,9 @@ impl LedgerState {
             .apply_fragment(&parameters, &fragment, date.into());
         let mut fragment_log = FragmentLog::new(fragment.id(), FragmentOrigin::Rest);
         self.set_fragment_status(&mut fragment_log, self.fragment_strategy, result);
-        self.fragment_logs.push(fragment_log);
+        if !(matches!(self.fragment_strategy, FragmentRecieveStrategy::Forget)) {
+            self.fragment_logs.push(fragment_log);
+        }
         fragment_id
     }
 
@@ -147,20 +146,25 @@ impl LedgerState {
         self.ledger.active_vote_plans()
     }
 
-    #[allow(dead_code)]
-    pub fn accept_last_fragment(&mut self) {
-        self.set_status_for_recent_fragment(FragmentRecieveStrategy::Accept);
-    }
-
-    #[allow(dead_code)]
-    pub fn reject_last_fragment(&mut self) {
-        self.set_status_for_recent_fragment(FragmentRecieveStrategy::Reject);
-    }
-
     pub fn set_status_for_recent_fragment(&mut self, fragment_strategy: FragmentRecieveStrategy) {
         let block_date = self.current_blockchain_age();
         let fragment_log = self.fragment_logs.last_mut().unwrap();
         override_fragment_status(block_date, fragment_log, fragment_strategy);
+    }
+
+    pub fn set_status_for_fragment_id(
+        &mut self,
+        fragment_id: String,
+        fragment_strategy: FragmentRecieveStrategy,
+    ) -> Result<(), Error> {
+        let block_date = self.current_blockchain_age();
+        let fragment_log = self
+            .fragment_logs
+            .iter_mut()
+            .find(|x| x.fragment_id().to_string() == fragment_id)
+            .ok_or(Error::CannotFindFragment(fragment_id))?;
+        override_fragment_status(block_date, fragment_log, fragment_strategy);
+        Ok(())
     }
 
     pub fn set_fragment_status(
@@ -243,7 +247,7 @@ impl LedgerState {
             .into();
 
         SettingsDto {
-            block0_hash: self.block0_configuration.to_block().id().to_string(),
+            block0_hash: self.block0_hash().to_string(),
             block0_time: SystemTime::from_secs_since_epoch(
                 self.block0_configuration
                     .blockchain_configuration
@@ -257,10 +261,7 @@ impl LedgerState {
                 .blockchain_configuration
                 .block0_consensus
                 .to_string(),
-            fees: self
-                .block0_configuration
-                .blockchain_configuration
-                .linear_fees,
+            fees: self.fees(),
             block_content_max_size: self
                 .block0_configuration
                 .blockchain_configuration
@@ -283,8 +284,26 @@ impl LedgerState {
         }
     }
 
-    pub fn block0_bin(&self) -> Vec<u8> {
-        self.block0_bin.clone()
+    #[allow(dead_code)]
+    pub fn expiry_date(&self) -> BlockDateGenerator {
+        BlockDateGenerator::rolling_from_blockchain_config(
+            &self.block0_configuration.blockchain_configuration,
+            chain_impl_mockchain::block::BlockDate {
+                epoch: 1,
+                slot_id: 0,
+            },
+            false,
+        )
+    }
+
+    pub fn block0_hash(&self) -> chain_impl_mockchain::key::Hash {
+        self.block0_configuration.to_block().id()
+    }
+
+    pub fn fees(&self) -> LinearFee {
+        self.block0_configuration
+            .blockchain_configuration
+            .linear_fees
     }
 }
 
@@ -308,7 +327,7 @@ pub fn override_fragment_status(
                 reason: "Force reject by mock".to_string(),
             });
         }
-        FragmentRecieveStrategy::None => {}
+        _ => {}
     }
 }
 
@@ -327,8 +346,8 @@ fn is_fragment_valid(fragment: &Fragment) -> bool {
         Fragment::PoolRetirement(ref tx) => is_transaction_valid(tx),
         Fragment::PoolUpdate(ref tx) => is_transaction_valid(tx),
         // vote stuff
-        Fragment::UpdateProposal(_) => false, // TODO: enable when ready
-        Fragment::UpdateVote(_) => false,     // TODO: enable when ready
+        Fragment::UpdateProposal(ref tx) => is_transaction_valid(tx),
+        Fragment::UpdateVote(ref tx) => is_transaction_valid(tx),
         Fragment::VotePlan(ref tx) => is_transaction_valid(tx),
         Fragment::VoteCast(ref tx) => is_transaction_valid(tx),
         Fragment::VoteTally(ref tx) => is_transaction_valid(tx),
@@ -342,6 +361,47 @@ fn is_transaction_valid<E>(tx: &Transaction<E>) -> bool {
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("ledger error")]
+    #[error(transparent)]
     Ledger(#[from] chain_impl_mockchain::ledger::Error),
+    #[error("cannot find fragment: {0}")]
+    CannotFindFragment(String),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use jormungandr_lib::interfaces::Initial;
+    use jormungandr_lib::interfaces::InitialUTxO;
+    use jormungandr_testing_utils::testing::startup;
+    use jormungandr_testing_utils::testing::Block0ConfigurationBuilder;
+
+    pub fn block0_configuration(initials: Vec<InitialUTxO>) -> Block0Configuration {
+        Block0ConfigurationBuilder::new()
+            .with_funds(vec![Initial::Fund(initials)])
+            .build()
+    }
+
+    #[test]
+    pub fn message_fragment_id() {
+        let mut alice = startup::create_new_account_address();
+        let bob = startup::create_new_account_address();
+
+        let mut ledger_state = LedgerState::new(block0_configuration(vec![
+            alice.to_initial_fund(1_000),
+            bob.to_initial_fund(1_000),
+        ]))
+        .unwrap();
+
+        let fragment = alice
+            .transaction_to(
+                &ledger_state.block0_hash().into(),
+                &ledger_state.fees(),
+                ledger_state.expiry_date().block_date(),
+                bob.address(),
+                1u64.into(),
+            )
+            .unwrap();
+
+        assert_eq!(fragment.id(), ledger_state.message(fragment));
+    }
 }

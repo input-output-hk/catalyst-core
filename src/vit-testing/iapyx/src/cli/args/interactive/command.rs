@@ -399,8 +399,8 @@ impl RecoverFromSecretKey {
 
         model.controller = Some(
             ControllerBuilder::default()
-                .from_client(wallet_backend)?
-                .from_secret_file(&self.input)?
+                .with_backend_from_client(wallet_backend)?
+                .with_wallet_from_secret_file(&self.input)?
                 .build()?,
         );
         model.state = WalletState::Recovered;
@@ -421,8 +421,8 @@ impl RecoverFromQr {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         model.controller = Some(
             ControllerBuilder::default()
-                .from_qr(&self.qr_code, &self.password)?
-                .from_address(model.backend_address.clone(), model.settings.clone())?
+                .with_wallet_from_qr_file(&self.qr_code, &self.password)?
+                .with_backend_from_address(model.backend_address.clone(), model.settings.clone())?
                 .build()?,
         );
         model.state = WalletState::Recovered;
@@ -440,8 +440,8 @@ impl RecoverFromMnemonics {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         model.controller = Some(
             ControllerBuilder::default()
-                .from_address(model.backend_address.clone(), model.settings.clone())?
-                .from_mnemonics(&self.mnemonics.join(" "), &[])?
+                .with_backend_from_address(model.backend_address.clone(), model.settings.clone())?
+                .with_wallet_from_mnemonics(&self.mnemonics.join(" "), &[])?
                 .build()?,
         );
         model.state = WalletState::Recovered;
@@ -460,8 +460,8 @@ impl Generate {
     pub fn exec(&self, model: &mut UserInteractionContoller) -> Result<(), IapyxCommandError> {
         model.controller = Some(
             ControllerBuilder::default()
-                .generate(Type::from_word_count(self.count)?)?
-                .from_address(model.backend_address.clone(), model.settings.clone())?
+                .with_new_wallet(Type::from_word_count(self.count)?)?
+                .with_backend_from_address(model.backend_address.clone(), model.settings.clone())?
                 .build()?,
         );
         model.state = WalletState::Generated;

@@ -1,5 +1,5 @@
 use bech32::ToBase32;
-use catalyst_toolbox::kedqr::{KeyQrCode, KeyQrCodeError};
+use catalyst_toolbox::kedqr::{decode as decode_hash, KeyQrCode, KeyQrCodeError};
 use chain_crypto::AsymmetricKey;
 use chain_crypto::Ed25519Extended;
 use std::path::Path;
@@ -23,6 +23,8 @@ impl PinReadMode {
 
 #[derive(Debug, Error)]
 pub enum PinReadError {
+    #[error("when reading qr from bytes Global pin read mode should be used")]
+    GlobalModeOnly,
     #[error("cannot read pin from filename {0:?}, expected_format: xxxxxx_1234.xxx")]
     CannotReadPinFromFile(PathBuf),
     #[error("cannot detect file name from path {0:?}")]
@@ -39,6 +41,8 @@ pub enum PinReadError {
     UnableToDecodeQr(#[from] KeyQrCodeError),
     #[error("cannot open image")]
     UnableToOpenImage(#[from] image::ImageError),
+    #[error("cannot decode hash")]
+    CannotDecodeHash(String),
 }
 
 #[derive(Debug)]
@@ -68,7 +72,7 @@ impl QrReader {
     ) -> Result<chain_crypto::SecretKey<chain_crypto::Ed25519Extended>, PinReadError> {
         let pin = match self.pin_read_mode {
             PinReadMode::Global(ref global) => global,
-            _ => panic!("when reading qr from bytes Global pin read mode should be used"),
+            _ => return Err(PinReadError::GlobalModeOnly),
         };
         let pin = pin_to_bytes(pin);
         let img = image::load_from_memory(&bytes)?;
@@ -80,6 +84,19 @@ impl QrReader {
         let sk = self.read_qr(qr)?;
         let hrp = Ed25519Extended::SECRET_BECH32_HRP;
         Ok(bech32::encode(hrp, sk.leak_secret().to_base32())?)
+    }
+
+    pub fn read_qr_from_hash_file<P: AsRef<Path>>(
+        &self,
+        hash_file: P,
+    ) -> Result<chain_crypto::SecretKey<chain_crypto::Ed25519Extended>, PinReadError> {
+        let pin = match self.pin_read_mode {
+            PinReadMode::Global(ref global) => global,
+            _ => return Err(PinReadError::GlobalModeOnly),
+        };
+        let pin = pin_to_bytes(pin);
+        let contents = std::fs::read_to_string(hash_file.as_ref())?;
+        decode_hash(contents.clone(), &pin).map_err(|_| PinReadError::CannotDecodeHash(contents))
     }
 
     pub fn read_qrs<P: AsRef<Path>>(

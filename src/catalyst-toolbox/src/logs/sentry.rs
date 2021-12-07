@@ -116,10 +116,12 @@ pub trait Stat {
     }
 }
 
+#[derive(Default)]
 pub struct SuccessfulScan {
     pub total: usize,
 }
 
+#[derive(Default)]
 pub struct MalformedQr {
     pub total: usize,
 }
@@ -222,18 +224,6 @@ impl RegexMatch {
             total_checked: 0,
             matches: 0,
         }
-    }
-}
-
-impl Default for SuccessfulScan {
-    fn default() -> Self {
-        Self { total: 0 }
-    }
-}
-
-impl Default for MalformedQr {
-    fn default() -> Self {
-        Self { total: 0 }
     }
 }
 

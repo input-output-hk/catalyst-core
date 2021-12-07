@@ -141,22 +141,13 @@ impl ContentSettingsBuilder {
     }
 }
 
+#[derive(Default)]
 pub struct CreateMessageBuilder {
     auth: Option<String>,
 
     application: Option<String>,
 
     notifications: Vec<ContentSettings>,
-}
-
-impl Default for CreateMessageBuilder {
-    fn default() -> Self {
-        Self {
-            auth: None,
-            application: None,
-            notifications: Vec::new(),
-        }
-    }
 }
 
 impl CreateMessageBuilder {

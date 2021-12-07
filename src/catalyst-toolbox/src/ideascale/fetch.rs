@@ -2,7 +2,6 @@ use crate::ideascale::models::de::{Fund, Funnel, Proposal, Stage};
 
 use once_cell::sync::Lazy;
 use serde::de::DeserializeOwned;
-use serde::Deserialize;
 use url::Url;
 
 use std::collections::HashMap;
@@ -15,14 +14,6 @@ pub enum Error {
 
     #[error("Could not get value from json, missing attribute {attribute_name}")]
     MissingAttribute { attribute_name: &'static str },
-}
-
-#[derive(Debug, Deserialize)]
-struct Score {
-    #[serde(alias = "ideaId")]
-    id: u32,
-    #[serde(alias = "avgScoreOfIdea")]
-    score: f32,
 }
 
 pub type Scores = HashMap<u32, f32>;

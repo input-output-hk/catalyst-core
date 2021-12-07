@@ -697,10 +697,7 @@ mod test {
         ]
         .into_iter()
         .map(|fragment| PersistentFragmentLog {
-            time: block0_configuration
-                .blockchain_configuration
-                .block0_date
-                .clone(),
+            time: block0_configuration.blockchain_configuration.block0_date,
             fragment,
         })
         .collect();
@@ -738,7 +735,7 @@ mod test {
         // below loop of writing/reading is done not to loose original test
         write_into_persistent_log(fragment_log.path(), fragments).unwrap();
         let fragments =
-            load_persistent_fragments_logs_from_folder_path(&persistent_fragment_log_output.path())
+            load_persistent_fragments_logs_from_folder_path(persistent_fragment_log_output.path())
                 .unwrap();
 
         let block0 = block0_configuration.to_block();

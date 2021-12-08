@@ -193,7 +193,9 @@ mod tests {
         AccountState, DelegationRatio, DelegationType, LastRewards, SpendingCounter,
         SpendingCounterIncreasing, DELEGATION_RATIO_MAX_DECLS,
     };
-    use crate::{certificate::PoolId, testing::builders::StakePoolBuilder, value::Value};
+    use crate::{
+        certificate::PoolId, testing::builders::StakePoolBuilder, testing::TestGen, value::Value,
+    };
     use imhamt::Hamt;
     use quickcheck::{Arbitrary, Gen, TestResult};
     use quickcheck_macros::quickcheck;
@@ -527,5 +529,57 @@ mod tests {
             ));
         }
         TestResult::passed()
+    }
+
+    use crate::tokens::identifier::TokenIdentifier;
+
+    #[quickcheck]
+    pub fn add_token(value: Value, token: TokenIdentifier) -> TestResult {
+        let mut account_state = AccountState::new(Value::zero(), ());
+        account_state = account_state.token_add(token.clone(), value).unwrap();
+        TestResult::from_bool(account_state.tokens.lookup(&token).unwrap() == &value)
+    }
+
+    #[test]
+    pub fn add_token_adds_up_tokens() {
+        let token = TestGen::token_id();
+
+        let mut account_state = AccountState::new(Value::zero(), ());
+        account_state = account_state.token_add(token.clone(), Value(1)).unwrap();
+        account_state = account_state.token_add(token.clone(), Value(1)).unwrap();
+        assert_eq!(account_state.tokens.lookup(&token).unwrap(), &Value(2));
+    }
+
+    #[test]
+    pub fn add_two_tokens_with_different_ids() {
+        let first_token = TestGen::token_id();
+
+        let second_token = TestGen::token_id();
+
+        let mut account_state = AccountState::new(Value(0), ());
+        account_state = account_state
+            .token_add(first_token.clone(), Value(1))
+            .unwrap();
+        account_state = account_state
+            .token_add(second_token.clone(), Value(1))
+            .unwrap();
+        assert_eq!(
+            account_state.tokens.lookup(&first_token).unwrap(),
+            &Value(1)
+        );
+        assert_eq!(
+            account_state.tokens.lookup(&second_token).unwrap(),
+            &Value(1)
+        );
+    }
+
+    #[test]
+    pub fn add_token_overflow() {
+        let token = TestGen::token_id();
+        let mut account_state = AccountState::new(Value::zero(), ());
+        account_state = account_state
+            .token_add(token.clone(), Value(u64::MAX))
+            .unwrap();
+        assert!(account_state.token_add(token, Value(1)).is_err());
     }
 }

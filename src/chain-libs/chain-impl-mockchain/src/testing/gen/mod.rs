@@ -11,7 +11,7 @@ use crate::key::Hash;
 use crate::ledger::LedgerStaticParameters;
 use crate::{
     account::Identifier,
-    certificate::PoolPermissions,
+    certificate::{MintToken, PoolPermissions},
     config::ConfigParam,
     fragment::config::ConfigParams,
     header::VrfProof,
@@ -21,6 +21,11 @@ use crate::{
     testing::{
         builders::StakePoolBuilder,
         data::{AddressData, LeaderPair, StakePool},
+    },
+    tokens::{
+        identifier::TokenIdentifier,
+        name::{TokenName, TOKEN_NAME_MAX_SIZE},
+        policy_hash::POLICY_HASH_SIZE,
     },
     transaction::UnspecifiedAccountIdentifier,
     value::Value,
@@ -32,6 +37,7 @@ use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline}
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rand_core::RngCore;
+use std::convert::TryFrom;
 use std::time::Duration;
 use std::time::SystemTime;
 use std::{iter, num::NonZeroU64};
@@ -203,5 +209,33 @@ impl TestGen {
         let t1 = now + Duration::from_secs(10);
         let slot1 = tf0.slot_at(&t1).unwrap();
         TimeEra::new(slot1, TimeEpoch(2), 4)
+    }
+
+    pub fn token_id() -> TokenIdentifier {
+        let mut rng = rand_core::OsRng;
+
+        let mut policy_hash: [u8; POLICY_HASH_SIZE] = [0; POLICY_HASH_SIZE];
+        rng.fill_bytes(&mut policy_hash);
+
+        TokenIdentifier {
+            policy_hash: TryFrom::try_from(policy_hash).unwrap(),
+            token_name: Self::token_name(),
+        }
+    }
+
+    pub fn token_name() -> TokenName {
+        let mut rng = rand_core::OsRng;
+        let mut token_name: [u8; TOKEN_NAME_MAX_SIZE] = [0; TOKEN_NAME_MAX_SIZE];
+        rng.fill_bytes(&mut token_name);
+        TryFrom::try_from(token_name.to_vec()).unwrap()
+    }
+
+    pub fn mint_token_for_wallet(id: Identifier) -> MintToken {
+        MintToken {
+            name: TestGen::token_name(),
+            policy: Default::default(),
+            to: id,
+            value: Value(1),
+        }
     }
 }

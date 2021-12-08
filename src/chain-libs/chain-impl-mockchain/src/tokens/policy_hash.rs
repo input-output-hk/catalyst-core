@@ -41,6 +41,8 @@ impl Readable for PolicyHash {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
+    #[allow(unused_imports)]
+    use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
 
     impl Arbitrary for PolicyHash {
@@ -51,5 +53,16 @@ mod tests {
             }
             Self(bytes)
         }
+    }
+
+    #[quickcheck_macros::quickcheck]
+    fn policy_hash_serialization_bijection(ph: PolicyHash) -> TestResult {
+        let ph_got = ph.as_ref();
+        let mut buf = ReadBuf::from(ph_got.as_ref());
+        let result = PolicyHash::read(&mut buf);
+        let left = Ok(ph.clone());
+        assert_eq!(left, result);
+        assert_eq!(buf.get_slice_end(), &[]);
+        TestResult::from_bool(left == result)
     }
 }

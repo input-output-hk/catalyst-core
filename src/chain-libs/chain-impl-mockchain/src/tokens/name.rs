@@ -6,6 +6,7 @@ use chain_core::{
     property::Serialize,
 };
 use thiserror::Error;
+use typed_bytes::ByteBuilder;
 
 pub const TOKEN_NAME_MAX_SIZE: usize = 32;
 
@@ -24,6 +25,15 @@ pub struct TokenNameTooLong {
 impl AsRef<[u8]> for TokenName {
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()
+    }
+}
+
+impl TokenName {
+    pub fn bytes(&self) -> Vec<u8> {
+        let bb: ByteBuilder<Self> = ByteBuilder::new();
+        bb.u8(self.0.len() as u8)
+            .bytes(self.0.as_ref())
+            .finalize_as_vec()
     }
 }
 
@@ -63,7 +73,8 @@ impl Readable for TokenName {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
-
+    #[allow(unused_imports)]
+    use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
 
     impl Arbitrary for TokenName {
@@ -75,5 +86,16 @@ mod tests {
             }
             Self(bytes)
         }
+    }
+
+    #[quickcheck_macros::quickcheck]
+    fn token_name_serialization_bijection(token_name: TokenName) -> TestResult {
+        let token_name_got = token_name.bytes();
+        let mut buf = ReadBuf::from(token_name_got.as_ref());
+        let result = TokenName::read(&mut buf);
+        let left = Ok(token_name.clone());
+        assert_eq!(left, result);
+        assert_eq!(buf.get_slice_end(), &[]);
+        TestResult::from_bool(left == result)
     }
 }

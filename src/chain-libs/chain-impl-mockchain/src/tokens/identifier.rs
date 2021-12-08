@@ -109,6 +109,8 @@ impl FromStr for TokenIdentifier {
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;
+    #[allow(unused_imports)]
+    use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
 
     impl Arbitrary for TokenIdentifier {
@@ -127,5 +129,16 @@ mod tests {
         let s = id.to_string();
         let id_: TokenIdentifier = s.parse().unwrap();
         assert_eq!(id, id_);
+    }
+
+    #[quickcheck_macros::quickcheck]
+    fn token_identifier_serialization_bijection(id: TokenIdentifier) -> TestResult {
+        let id_got = id.bytes();
+        let mut buf = ReadBuf::from(id_got.as_ref());
+        let result = TokenIdentifier::read(&mut buf);
+        let left = Ok(id);
+        assert_eq!(left, result);
+        assert_eq!(buf.get_slice_end(), &[]);
+        TestResult::from_bool(left == result)
     }
 }

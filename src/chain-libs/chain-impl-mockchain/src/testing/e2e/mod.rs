@@ -1,5 +1,6 @@
 pub mod fees;
 pub mod management_threshold;
+pub mod mint_token;
 pub mod owner_delegation;
 pub mod pool_update;
 pub mod rewards;

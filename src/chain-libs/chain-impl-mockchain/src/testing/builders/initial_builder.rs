@@ -1,6 +1,8 @@
 use crate::{
     account::DelegationType,
-    certificate::{Certificate, PoolUpdate, UpdateProposalId, VoteCast, VotePlan, VoteTally},
+    certificate::{
+        Certificate, MintToken, PoolUpdate, UpdateProposalId, VoteCast, VotePlan, VoteTally,
+    },
     config::ConfigParam,
     date::BlockDate,
     fragment::Fragment,
@@ -117,6 +119,10 @@ pub fn create_initial_update_vote(proposer: LeaderPair, proposal_id: UpdatePropo
     )
 }
 
+pub fn create_initial_mint_token(mint_token: MintToken) -> Fragment {
+    fragment(mint_token.into(), vec![], &[], &[])
+}
+
 fn set_initial_ios<P: Payload>(
     builder: TxBuilderState<SetTtl<P>>,
     inputs: &[Input],
@@ -188,6 +194,11 @@ fn fragment(
             let signature = update_vote_sign(&keys, &builder);
             let tx = builder.set_payload_auth(&signature);
             Fragment::UpdateVote(tx)
+        }
+        Certificate::MintToken(s) => {
+            let builder = set_initial_ios(TxBuilder::new().set_payload(&s), inputs, outputs);
+            let tx = builder.set_payload_auth(&());
+            Fragment::MintToken(tx)
         }
         _ => unreachable!(),
     }

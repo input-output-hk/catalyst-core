@@ -5,7 +5,7 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 pub const POLICY_HASH_SIZE: usize = 28;
 
 /// blake2b_224 hash of a serialized minting policy
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct PolicyHash([u8; POLICY_HASH_SIZE]);
 
 impl AsRef<[u8]> for PolicyHash {

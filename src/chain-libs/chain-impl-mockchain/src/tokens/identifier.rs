@@ -13,7 +13,7 @@ use typed_bytes::ByteBuilder;
 ///
 /// It is represented either as two hex strings separated by a dot or just a hex string when the
 /// name is empty.
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TokenIdentifier {
     pub policy_hash: PolicyHash,
     pub token_name: TokenName,

@@ -13,7 +13,7 @@ pub const TOKEN_NAME_MAX_SIZE: usize = 32;
 /// A sequence of bytes serving as a token name. Tokens that share the same name but have different
 /// voting policies hashes are different tokens. A name can be empty. The maximum length of a token
 /// name is 32 bytes.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TokenName(Vec<u8>);
 
 #[derive(Debug, Error)]

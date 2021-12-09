@@ -87,7 +87,7 @@ impl<'a> Iterator for DumpFreeKeys<'a> {
             self.settings,
             self.address,
             self.wallet.utxos(),
-            &|key| UtxoWitnessBuilder(key),
+            &UtxoWitnessBuilder,
             self.valid_until,
         )
         .map(|(tx, ignored)| (Fragment::Transaction(tx), ignored));

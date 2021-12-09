@@ -17,6 +17,7 @@ pub enum RecoveryError {
     DuplicatedUtxo,
 }
 
+#[derive(Default)]
 pub struct RecoveryBuilder {
     entropy: Option<bip39::Entropy>,
     password: Option<Password>,
@@ -115,16 +116,5 @@ impl RecoveryBuilder {
 
     pub fn build_free_utxos(&self) -> Result<wallet::freeutxo::Wallet, RecoveryError> {
         Ok(wallet::freeutxo::Wallet::from_keys(self.free_keys.clone()))
-    }
-}
-
-impl Default for RecoveryBuilder {
-    fn default() -> RecoveryBuilder {
-        RecoveryBuilder {
-            entropy: Default::default(),
-            password: Default::default(),
-            free_keys: Vec::<SecretKey<Ed25519Extended>>::new(),
-            account: Default::default(),
-        }
     }
 }

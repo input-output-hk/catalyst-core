@@ -227,6 +227,6 @@ impl Drop for Mnemonics {
 
 impl Drop for MnemonicString {
     fn drop(&mut self) {
-        unsafe { cryptoxide::util::secure_memset(&mut self.0.as_mut_vec(), 0) }
+        unsafe { cryptoxide::util::secure_memset(self.0.as_mut_vec(), 0) }
     }
 }

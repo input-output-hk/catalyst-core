@@ -13,7 +13,7 @@ curve25519-dalek-ng = { version = "4.0" }
 # TODO replace with the crates.io version once it has faster scalar multiplication
 eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch = "fast-u64-scalar-mul", features = ["fast-u64-scalar-mul"], optional = true }
 ed25519-dalek = "1.0"
-sha2 = "0.9"
+sha2 = "0.10"
 digest = "^0.9"
 generic-array = "^0.14"
 rand_core = "0.6"

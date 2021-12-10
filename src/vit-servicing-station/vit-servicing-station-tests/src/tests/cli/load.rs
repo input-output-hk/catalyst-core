@@ -1,11 +1,13 @@
-use crate::common::data::valid_fund_snapshot;
 use crate::common::{
     cli::VitCliCommand,
-    data::{ArbitrarySnapshotGenerator, CsvConverter},
+    data::{ArbitrarySnapshotGenerator, CsvConverter, Snapshot},
     startup::{db::DbBuilder, server::ServerBootstrapper},
 };
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
+use quickcheck::Arbitrary;
+use quickcheck::Gen;
+use quickcheck::QuickCheck;
 
 #[test]
 pub fn load_data_test() {
@@ -85,9 +87,14 @@ pub fn load_data_test() {
 
 #[test]
 pub fn voting_snapshot_build() {
-    let temp_dir = TempDir::new().unwrap().into_persistent();
-    let snapshot = valid_fund_snapshot();
-    let mut db_builder = DbBuilder::new();
-    db_builder.with_snapshot(&snapshot);
-    println!("{:?}", db_builder.build(&temp_dir).unwrap());
+    fn build(snapshot: Snapshot) {
+        let temp_dir = TempDir::new().unwrap().into_persistent();
+        let mut db_builder = DbBuilder::new();
+        db_builder.with_snapshot(&snapshot);
+        db_builder.build(&temp_dir).unwrap();
+    }
+    QuickCheck::new()
+        .max_tests(1)
+        .quicktest(build as fn(Snapshot))
+        .unwrap();
 }

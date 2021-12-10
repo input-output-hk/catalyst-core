@@ -147,7 +147,7 @@ impl RestClient {
 
     pub fn proposals_by_voteplan_id_and_index(
         &self,
-        request: ProposalsByVoteplanIdAndIndex,
+        request: &ProposalsByVoteplanIdAndIndex,
     ) -> Result<Vec<FullProposalInfo>, RestError> {
         let request_as_string = serde_json::to_string(&request)?;
         serde_json::from_str(&self.post(&self.path_builder().proposals(), request_as_string)?)
@@ -260,9 +260,10 @@ impl RestClient {
 
     fn post(&self, path: &str, data: String) -> Result<String, RestError> {
         let client = reqwest::blocking::Client::new();
-        let mut res = client.post(path).body(String::into_bytes(data.clone()));
-
         self.logger.log_post_body(&data);
+
+        let mut res = client.post(path).body(String::into_bytes(data));
+
         if let Some(api_token) = &self.api_token {
             res = res.header(API_TOKEN_HEADER, api_token.to_string());
         }

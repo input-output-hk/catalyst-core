@@ -8,18 +8,10 @@ use vit_servicing_station_lib::server::settings::{
     dump_settings_to_file, load_settings_from_file, Cors, LogLevel, ServiceSettings,
 };
 
+#[derive(Default)]
 pub struct ServerSettingsBuilder {
     settings: ServiceSettings,
     cors: Option<Cors>,
-}
-
-impl Default for ServerSettingsBuilder {
-    fn default() -> Self {
-        Self {
-            settings: Default::default(),
-            cors: None,
-        }
-    }
 }
 
 impl ServerSettingsBuilder {

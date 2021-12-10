@@ -26,6 +26,7 @@ use valgrind::Protocol;
 use vit_servicing_station_lib::db::models::challenges::Challenge;
 use vit_servicing_station_lib::db::models::funds::Fund;
 use vit_servicing_station_lib::db::models::proposals::Proposal;
+use vit_servicing_station_lib::v0::endpoints::proposals::ProposalsByVoteplanIdAndIndex;
 use vit_servicing_station_lib::v0::errors::HandleError;
 use vit_servicing_station_lib::v0::result::HandlerResult;
 use warp::http::header::{HeaderMap, HeaderValue};
@@ -910,13 +911,13 @@ pub async fn get_all_proposals(context: ContextLock) -> Result<impl Reply, Rejec
 }
 
 pub async fn get_proposal_by_idx(
-    request: AccountVotes,
+    request: ProposalsByVoteplanIdAndIndex,
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
-    context.lock().unwrap().log(format!(
-        "get_proposal_by_idx ({},{:?}) ...",
-        request.vote_plan_id, request.votes
-    ));
+    context
+        .lock()
+        .unwrap()
+        .log(format!("get_proposal_by_idx ({:?}) ...", request));
 
     if !context.lock().unwrap().available() {
         let code = context.lock().unwrap().state().error_code;
@@ -935,10 +936,10 @@ pub async fn get_proposal_by_idx(
         .proposals()
         .iter()
         .filter(|x| {
-            x.proposal.chain_voteplan_id == request.vote_plan_id.to_string()
-                && request
-                    .votes
-                    .contains(&(x.proposal.chain_proposal_index as u8))
+            request.iter().any(|item| {
+                x.proposal.chain_voteplan_id == item.vote_plan_id
+                    && item.indexes.contains(&x.proposal.chain_proposal_index)
+            })
         })
         .map(|x| x.proposal.clone())
         .collect();

@@ -12,8 +12,8 @@ jormungandr-integration-tests = { git ="https://github.com/input-output-hk/jormu
 jormungandr-testing-utils = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund7" }
 jormungandr-lib = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund7" }
 jcli = { git ="https://github.com/input-output-hk/jormungandr.git", branch = "catalyst-fund7" }
-vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund7" }
-vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "catalyst-fund7" }
+vit-servicing-station-tests = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "test_voteplan_id_and_index" }
+vit-servicing-station-lib = { git = "https://github.com/input-output-hk/vit-servicing-station.git", branch = "test_voteplan_id_and_index" }
 jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch="master" }
 chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund7" }
 chain-core = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund7" }

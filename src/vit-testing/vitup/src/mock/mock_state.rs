@@ -72,16 +72,22 @@ impl MockState {
                 controller.block0_file(),
             )?,
             vit_state: snapshot,
-            version: VitVersion::new(version),
+            version: VitVersion {
+                service_version: version,
+            },
         })
     }
 
     pub fn version(&self) -> VitVersion {
-        self.version.clone()
+        VitVersion {
+            service_version: self.version.service_version.clone(),
+        }
     }
 
     pub fn set_version(&mut self, version: String) {
-        self.version = VitVersion::new(version);
+        self.version = VitVersion {
+            service_version: version,
+        }
     }
 
     pub fn vit(&self) -> &Snapshot {

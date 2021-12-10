@@ -15,7 +15,8 @@ use jormungandr_testing_utils::testing::BlockDateGenerator;
 use jormungandr_testing_utils::wallet::discrimination::DiscriminationExtension;
 use std::collections::HashMap;
 use thiserror::Error;
-use valgrind::{Proposal as ValgrindProposal, ValgrindClient};
+use valgrind::ProposalExtension;
+use valgrind::{Fund, Proposal, ValgrindClient};
 use wallet::{AccountId, Settings};
 use wallet_core::{Choice, Value};
 
@@ -126,11 +127,11 @@ impl Controller {
         self.backend.account_state(self.id()).map_err(Into::into)
     }
 
-    pub fn proposals(&self) -> Result<Vec<ValgrindProposal>, ControllerError> {
+    pub fn proposals(&self) -> Result<Vec<Proposal>, ControllerError> {
         self.backend.proposals().map_err(Into::into)
     }
 
-    pub fn funds(&self) -> Result<valgrind::Fund, ControllerError> {
+    pub fn funds(&self) -> Result<Fund, ControllerError> {
         self.backend.funds().map_err(Into::into)
     }
 
@@ -162,12 +163,12 @@ impl Controller {
 
     pub fn vote(
         &mut self,
-        proposal: &ValgrindProposal,
+        proposal: &Proposal,
         choice: Choice,
     ) -> Result<FragmentId, ControllerError> {
         let transaction = self.wallet.vote(
             self.settings.clone(),
-            &proposal.clone().into(),
+            &proposal.clone().into_wallet_proposal(),
             choice,
             &self.block_date_generator.block_date(),
         )?;
@@ -176,7 +177,7 @@ impl Controller {
 
     pub fn votes_batch(
         &mut self,
-        votes_data: Vec<(&ValgrindProposal, Choice)>,
+        votes_data: Vec<(&Proposal, Choice)>,
     ) -> Result<Vec<FragmentId>, ControllerError> {
         let account_state = self.backend.account_state(self.wallet.id())?;
 
@@ -191,7 +192,7 @@ impl Controller {
                     .wallet
                     .vote(
                         settings.clone(),
-                        &p.clone().into(),
+                        &p.clone().into_wallet_proposal(),
                         c,
                         &self.block_date_generator.block_date(),
                     )
@@ -208,7 +209,7 @@ impl Controller {
             .map_err(Into::into)
     }
 
-    pub fn get_proposals(&mut self) -> Result<Vec<ValgrindProposal>, ControllerError> {
+    pub fn get_proposals(&mut self) -> Result<Vec<Proposal>, ControllerError> {
         Ok(self
             .backend
             .proposals()?

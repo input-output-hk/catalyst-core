@@ -3,10 +3,11 @@ mod proxy;
 pub mod utils;
 mod vit_station;
 
-use crate::data::AdvisorReview;
-use crate::data::Challenge;
-use crate::Fund;
-use crate::Proposal;
+use vit_servicing_station_lib::db::models::challenges::Challenge;
+use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib::db::models::funds::Fund;
+use vit_servicing_station_lib::db::models::proposals::Proposal;
+
 use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use chain_ser::deser::Deserialize;
@@ -25,12 +26,13 @@ use wallet::AccountId;
 pub use jormungandr_testing_utils::testing::node::RestSettings as ValgrindSettings;
 pub use node::{RestError as NodeRestError, WalletNodeRestClient};
 pub use proxy::{Error as ProxyClientError, ProxyClient};
+use vit_servicing_station_tests::common::clients::RestClient as VitRestClient;
 pub use vit_station::{RestError as VitStationRestError, VitStationRestClient};
 
 #[derive(Clone)]
 pub struct ValgrindClient {
     node_client: WalletNodeRestClient,
-    vit_client: VitStationRestClient,
+    vit_client: VitRestClient,
     proxy_client: ProxyClient,
     explorer_client: Explorer,
 }
@@ -47,7 +49,7 @@ impl ValgrindClient {
                 format!("http://{}/api", node_address),
                 node_rest_settings.clone(),
             ),
-            vit_client: VitStationRestClient::new(vit_address),
+            vit_client: VitRestClient::new(vit_address),
             proxy_client: ProxyClient::new(format!("http://{}", proxy_address)),
             explorer_client: Explorer::new(node_address),
         };
@@ -127,11 +129,15 @@ impl ValgrindClient {
     }
 
     pub fn review(&self, proposal_id: &str) -> Result<HashMap<String, Vec<AdvisorReview>>, Error> {
-        Ok(self.vit_client.review(proposal_id)?)
+        Ok(self.vit_client.advisor_reviews(proposal_id)?)
     }
 
     pub fn challenges(&self) -> Result<Vec<Challenge>, Error> {
         Ok(self.vit_client.challenges()?)
+    }
+
+    pub fn vit(&self) -> VitRestClient {
+        self.vit_client.clone()
     }
 
     pub fn block0(&self) -> Result<Vec<u8>, Error> {
@@ -144,13 +150,13 @@ impl ValgrindClient {
 
     pub fn disable_logs(&mut self) {
         self.node_client.disable_logs();
-        self.vit_client.disable_logs();
+        self.vit_client.disable_log();
         self.proxy_client.disable_debug();
     }
 
     pub fn enable_logs(&mut self) {
         self.node_client.enable_logs();
-        self.vit_client.enable_logs();
+        self.vit_client.enable_log();
         self.proxy_client.enable_debug();
     }
 
@@ -207,4 +213,6 @@ pub enum Error {
     SettingsRead(#[from] Box<chain_impl_mockchain::ledger::Error>),
     #[error("cannot convert hash")]
     HashConversion(#[from] chain_crypto::hash::Error),
+    #[error(transparent)]
+    VitRest(#[from] vit_servicing_station_tests::common::clients::RestError),
 }

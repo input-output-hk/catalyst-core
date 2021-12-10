@@ -298,7 +298,7 @@ impl RestPathBuilder {
     }
 
     pub fn challenges(&self) -> String {
-        self.path("challenge")
+        self.path("challenges")
     }
 
     pub fn proposal(&self, id: &str) -> String {

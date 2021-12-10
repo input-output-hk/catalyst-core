@@ -4,7 +4,8 @@ use crate::{
     fee::FeeAlgorithm,
     fragment::{Fragment, FragmentId},
     testing::{
-        builders::witness_builder::make_witness, data::AddressDataValue, ledger::TestLedger, KeysDb,
+        builders::witness_builder::make_witness, data::AddressDataValue, ledger::TestLedger,
+        make_witness_with_lane, KeysDb, WitnessMode,
     },
     transaction::{
         Input, NoExtra, Output, OutputsSlice, Transaction, TransactionSignDataHash,
@@ -16,6 +17,7 @@ use chain_addr::Address;
 
 pub struct TestTxBuilder {
     block0_hash: HeaderId,
+    witness_mode: WitnessMode,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -59,7 +61,15 @@ impl TestTx {
 
 impl TestTxBuilder {
     pub fn new(block0_hash: HeaderId) -> Self {
-        Self { block0_hash }
+        Self {
+            block0_hash,
+            witness_mode: Default::default(),
+        }
+    }
+
+    pub fn witness_mode(mut self, witness_mode: WitnessMode) -> Self {
+        self.witness_mode = witness_mode;
+        self
     }
 
     pub fn move_from_faucet(
@@ -201,13 +211,33 @@ impl TestTxBuilder {
             .set_expiry_date(BlockDate::first().next_epoch())
             .set_ios(&inputs, &destinations);
 
-        let witnesses: Vec<Witness> = sources
-            .iter()
-            .map(|source| {
-                let auth_data_hash = tx_builder.get_auth_data_for_witness().hash();
-                make_witness(&self.block0_hash, &source.address_data(), &auth_data_hash)
-            })
-            .collect();
+        let witnesses: Vec<Witness> = {
+            if matches!(self.witness_mode, WitnessMode::None) {
+                vec![]
+            } else {
+                sources
+                    .iter()
+                    .map(|source| {
+                        let auth_data_hash = tx_builder.get_auth_data_for_witness().hash();
+
+                        match self.witness_mode {
+                            WitnessMode::None => unreachable!(),
+                            WitnessMode::Default => make_witness(
+                                &self.block0_hash,
+                                &source.address_data(),
+                                &auth_data_hash,
+                            ),
+                            WitnessMode::Lane(lane) => make_witness_with_lane(
+                                &self.block0_hash,
+                                &source.address_data(),
+                                lane,
+                                &auth_data_hash,
+                            ),
+                        }
+                    })
+                    .collect()
+            }
+        };
 
         let tx = tx_builder.set_witnesses(&witnesses).set_payload_auth(&());
         TestTx { tx }

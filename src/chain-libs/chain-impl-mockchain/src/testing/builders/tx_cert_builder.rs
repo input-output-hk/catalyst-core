@@ -11,7 +11,7 @@ use crate::{
     fragment::Fragment,
     key::EitherEd25519SecretKey,
     ledger::ledger::OutputAddress,
-    testing::{data::Wallet, make_witness},
+    testing::{data::Wallet, make_witness, make_witness_with_lane},
     transaction::{
         AccountBindingSignature, Input, Payload, SetAuthData, SetTtl,
         SingleAccountBindingSignature, TxBuilder, TxBuilderState, Witness,
@@ -21,6 +21,19 @@ use crate::{
 };
 
 use std::iter;
+
+#[derive(Debug, Copy, Clone)]
+pub enum WitnessMode {
+    None,
+    Default,
+    Lane(usize),
+}
+
+impl Default for WitnessMode {
+    fn default() -> Self {
+        Self::Default
+    }
+}
 
 pub struct TestTxCertBuilder {
     block0_hash: HeaderId,
@@ -48,7 +61,7 @@ impl TestTxCertBuilder {
         funder: &Wallet,
         inputs: &[Input],
         outputs: &[OutputAddress],
-        should_make_witness: bool,
+        witness_mode: WitnessMode,
     ) -> TxBuilderState<SetAuthData<P>> {
         //utxo not supported yet
         let builder = builder
@@ -56,15 +69,19 @@ impl TestTxCertBuilder {
             .set_ios(inputs, outputs);
 
         let witnesses: Vec<Witness> = {
-            if should_make_witness {
-                let witness = make_witness(
+            match witness_mode {
+                WitnessMode::None => vec![],
+                WitnessMode::Default => vec![make_witness(
                     self.block0_hash(),
                     &funder.as_account_data(),
                     &builder.get_auth_data_for_witness().hash(),
-                );
-                vec![witness]
-            } else {
-                vec![]
+                )],
+                WitnessMode::Lane(lane) => vec![make_witness_with_lane(
+                    self.block0_hash(),
+                    &funder.as_account_data(),
+                    lane,
+                    &builder.get_auth_data_for_witness().hash(),
+                )],
             }
         };
         builder.set_witnesses_unchecked(&witnesses)
@@ -79,7 +96,7 @@ impl TestTxCertBuilder {
         keys: Vec<EitherEd25519SecretKey>,
         inputs: &[Input],
         outputs: &[OutputAddress],
-        make_witness: bool,
+        make_witness: WitnessMode,
         funder: &Wallet,
     ) -> Fragment {
         match cert {
@@ -247,6 +264,7 @@ impl TestTxCertBuilder {
         valid_until: BlockDate,
         signers: T,
         certificate: &Certificate,
+        witness_mode: WitnessMode,
     ) -> Fragment
     where
         T: IntoIterator<Item = &'a Wallet>,
@@ -258,6 +276,7 @@ impl TestTxCertBuilder {
             funder,
             iter::once(funder).chain(remainder),
             certificate,
+            witness_mode,
         )
     }
 
@@ -267,13 +286,22 @@ impl TestTxCertBuilder {
         funder: &'a Wallet,
         signers: T,
         certificate: &Certificate,
+        witness_mode: WitnessMode,
     ) -> Fragment
     where
         T: IntoIterator<Item = &'a Wallet>,
     {
         let keys = signers.into_iter().map(|x| x.private_key()).collect();
         let input = funder.make_input_with_value(self.fee(certificate));
-        self.fragment(valid_until, certificate, keys, &[input], &[], true, funder)
+        self.fragment(
+            valid_until,
+            certificate,
+            keys,
+            &[input],
+            &[],
+            witness_mode,
+            funder,
+        )
     }
 }
 
@@ -398,7 +426,7 @@ impl FaultTolerantTxCertBuilder {
             keys,
             &[input],
             &[],
-            false,
+            Default::default(),
             &self.funder,
         )
     }
@@ -414,7 +442,7 @@ impl FaultTolerantTxCertBuilder {
             keys,
             &[input],
             &[output],
-            false,
+            Default::default(),
             &self.funder,
         )
     }
@@ -430,7 +458,7 @@ impl FaultTolerantTxCertBuilder {
             keys,
             &[input],
             &[output],
-            false,
+            Default::default(),
             &self.funder,
         )
     }
@@ -446,7 +474,7 @@ impl FaultTolerantTxCertBuilder {
             keys,
             &[],
             &[output],
-            false,
+            Default::default(),
             &self.funder,
         )
     }
@@ -462,7 +490,7 @@ impl FaultTolerantTxCertBuilder {
             keys,
             &[input],
             &[],
-            false,
+            Default::default(),
             &self.funder,
         )
     }
@@ -478,7 +506,7 @@ impl FaultTolerantTxCertBuilder {
             keys,
             &[input],
             &[],
-            false,
+            Default::default(),
             &self.funder,
         )
     }

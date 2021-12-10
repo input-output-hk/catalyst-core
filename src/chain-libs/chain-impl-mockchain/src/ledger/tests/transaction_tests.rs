@@ -196,7 +196,7 @@ pub fn repeated_account_transaction() {
     assert!(test_ledger
         .apply_transaction(fragment, BlockDate::first())
         .is_ok());
-    faucet.confirm_transaction();
+    faucet.confirm_transaction().unwrap();
     let fragment = TestTxBuilder::new(test_ledger.block0_hash)
         .move_all_funds(&mut test_ledger, &faucet, &receiver)
         .get_fragment();

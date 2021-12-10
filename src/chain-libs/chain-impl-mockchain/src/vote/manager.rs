@@ -1279,7 +1279,7 @@ mod tests {
     fn get_tally_proof(valid_until: BlockDate, wallet: &Wallet, id: VotePlanId) -> TallyProof {
         let certificate = build_vote_tally_cert(id);
         let fragment = TestTxCertBuilder::new(TestGen::hash(), LinearFee::new(0, 0, 0))
-            .make_transaction(valid_until, Some(wallet), &certificate);
+            .make_transaction(valid_until, Some(wallet), &certificate, Default::default());
 
         match fragment {
             Fragment::VoteTally(tx) => {

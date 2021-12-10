@@ -84,7 +84,11 @@ impl Wallet {
     }
 
     pub fn confirm_transaction(&mut self) {
-        self.account.increment_spending_counter();
+        self.confirm_transaction_at_lane(0);
+    }
+
+    pub fn confirm_transaction_at_lane(&mut self, lane: usize) {
+        self.account.confirm_transaction_at_lane(lane).unwrap();
     }
 
     pub fn make_witness<'a>(
@@ -92,6 +96,16 @@ impl Wallet {
         block0_hash: &HeaderId,
         tad: TransactionAuthData<'a>,
     ) -> Witness {
-        self.as_account().make_witness(block0_hash, tad)
+        self.make_witness_at_lane(block0_hash, 0, tad)
+    }
+
+    pub fn make_witness_at_lane<'a>(
+        &mut self,
+        block0_hash: &HeaderId,
+        lane: usize,
+        tad: TransactionAuthData<'a>,
+    ) -> Witness {
+        self.as_account()
+            .make_witness_with_lane(block0_hash, lane, tad)
     }
 }

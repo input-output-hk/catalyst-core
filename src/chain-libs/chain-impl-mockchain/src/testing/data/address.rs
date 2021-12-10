@@ -1,8 +1,10 @@
 use crate::{
-    account::{Identifier, SpendingCounter},
+    account::Identifier,
+    account::SpendingCounter,
+    accounting::account::SpendingCounterIncreasing,
     chaintypes::HeaderId,
     key::EitherEd25519SecretKey,
-    testing::builders::make_witness,
+    testing::builders::make_witness_with_lane,
     testing::data::LeaderPair,
     transaction::{Input, Output, TransactionAuthData, Witness},
     utxo::Entry,
@@ -13,8 +15,8 @@ use chain_crypto::{
     testing::TestCryptoGen, AsymmetricKey, Ed25519, Ed25519Extended, KeyPair, PublicKey,
 };
 use rand_core::RngCore;
-
 use std::fmt::{self, Debug};
+use thiserror::Error;
 
 ///
 /// Struct is responsible for adding some code which makes converting into transaction input/output easily.
@@ -23,7 +25,7 @@ use std::fmt::{self, Debug};
 #[derive(Clone)]
 pub struct AddressData {
     pub private_key: EitherEd25519SecretKey,
-    pub spending_counter: Option<SpendingCounter>,
+    pub spending_counter: SpendingCounterIncreasing,
     pub address: Address,
 }
 
@@ -46,7 +48,7 @@ impl PartialEq for AddressData {
 impl AddressData {
     pub fn new(
         private_key: EitherEd25519SecretKey,
-        spending_counter: Option<SpendingCounter>,
+        spending_counter: SpendingCounterIncreasing,
         address: Address,
     ) -> Self {
         AddressData {
@@ -71,7 +73,7 @@ impl AddressData {
     pub fn from_leader_pair(leader_pair: LeaderPair, discrimination: Discrimination) -> Self {
         Self::new(
             EitherEd25519SecretKey::Normal(leader_pair.key()),
-            Some(SpendingCounter(0)),
+            Default::default(),
             Address(discrimination, Kind::Account(leader_pair.key().to_public())),
         )
     }
@@ -80,11 +82,14 @@ impl AddressData {
         let (sk, pk) = AddressData::generate_key_pair::<Ed25519Extended>().into_keys();
         let sk = EitherEd25519SecretKey::Extended(sk);
         let user_address = Address(discrimination, Kind::Single(pk));
-        AddressData::new(sk, None, user_address)
+        AddressData::new(sk, Default::default(), user_address)
     }
 
     pub fn account(discrimination: Discrimination) -> Self {
-        AddressData::account_with_spending_counter(discrimination, 0u32)
+        let (sk, pk) = AddressData::generate_key_pair::<Ed25519Extended>().into_keys();
+        let sk = EitherEd25519SecretKey::Extended(sk);
+        let user_address = Address(discrimination, Kind::Account(pk));
+        AddressData::new(sk, Default::default(), user_address)
     }
 
     pub fn account_with_spending_counter(
@@ -94,7 +99,11 @@ impl AddressData {
         let (sk, pk) = AddressData::generate_key_pair::<Ed25519Extended>().into_keys();
         let sk = EitherEd25519SecretKey::Extended(sk);
         let user_address = Address(discrimination, Kind::Account(pk));
-        AddressData::new(sk, Some(spending_counter.into()), user_address)
+        AddressData::new(
+            sk,
+            SpendingCounterIncreasing::new_from_counter(spending_counter.into()),
+            user_address,
+        )
     }
 
     pub fn delegation(discrimination: Discrimination) -> Self {
@@ -105,7 +114,7 @@ impl AddressData {
 
         let user_address = Address(discrimination, Kind::Group(single_pk, delegation_pk));
         let single_sk = EitherEd25519SecretKey::Extended(single_sk);
-        AddressData::new(single_sk, None, user_address)
+        AddressData::new(single_sk, Default::default(), user_address)
     }
 
     pub fn delegation_from(
@@ -118,7 +127,7 @@ impl AddressData {
             primary_address.discrimination(),
             Kind::Group(single_pk, delegation_address.public_key()),
         );
-        AddressData::new(single_sk, None, user_address)
+        AddressData::new(single_sk, Default::default(), user_address)
     }
 
     pub fn delegation_for(address: &AddressData) -> Self {
@@ -171,12 +180,32 @@ impl AddressData {
         }
     }
 
-    pub fn confirm_transaction(&self) {
-        self.spending_counter.map(|sp| sp.increment());
+    pub fn confirm_transaction(&mut self) -> Result<(), Error> {
+        self.confirm_transaction_at_lane(0)
     }
 
-    pub fn spending_counter(&self) -> Option<SpendingCounter> {
+    pub fn confirm_transaction_at_lane(&mut self, lane: usize) -> Result<(), Error> {
+        let sc = self.spending_counter_at_lane(lane)?;
+        self.spending_counter.next_verify(sc).map_err(Into::into)
+    }
+
+    pub fn spending_counter_at_lane(&self, lane: usize) -> Result<SpendingCounter, Error> {
+        if lane >= SpendingCounterIncreasing::LANES {
+            return Err(Error::WrongLaneForSpendingCounter(lane));
+        }
         self.spending_counter
+            .get_valid_counters()
+            .into_iter()
+            .find(|x| x.lane() == lane)
+            .ok_or(Error::CannotFindSpendingCounter(lane))
+    }
+
+    pub fn spending_counter(&self) -> &SpendingCounterIncreasing {
+        &self.spending_counter
+    }
+
+    pub fn spending_counter_mut(&mut self) -> &mut SpendingCounterIncreasing {
+        &mut self.spending_counter
     }
 
     pub fn private_key(&self) -> EitherEd25519SecretKey {
@@ -219,8 +248,17 @@ impl AddressData {
         block0_hash: &HeaderId,
         tad: TransactionAuthData<'a>,
     ) -> Witness {
-        let witness = make_witness(block0_hash, self, &tad.hash());
-        self.confirm_transaction();
+        self.make_witness_with_lane(block0_hash, 0, tad)
+    }
+
+    pub fn make_witness_with_lane<'a>(
+        &mut self,
+        block0_hash: &HeaderId,
+        lane: usize,
+        tad: TransactionAuthData<'a>,
+    ) -> Witness {
+        let witness = make_witness_with_lane(block0_hash, self, lane, &tad.hash());
+        self.confirm_transaction_at_lane(lane).unwrap();
         witness
     }
 
@@ -310,20 +348,30 @@ impl AddressDataValue {
         self.address_data.make_output(value)
     }
 
-    pub fn increment_spending_counter(&mut self) {
-        let counter: u32 = self.address_data.spending_counter.unwrap().into();
-        self.address_data.spending_counter = Some((counter + 1u32).into());
+    pub fn confirm_transaction(&mut self) -> Result<(), Error> {
+        self.address_data.confirm_transaction()
     }
+
+    pub fn confirm_transaction_at_lane(&mut self, lane: usize) -> Result<(), Error> {
+        self.address_data.confirm_transaction_at_lane(lane)
+    }
+
     pub fn make_witness<'a>(
         &mut self,
         block0_hash: &HeaderId,
         tad: TransactionAuthData<'a>,
     ) -> Witness {
-        self.address_data.make_witness(block0_hash, tad)
+        self.make_witness_with_lane(block0_hash, 0, tad)
     }
 
-    pub fn confirm_transaction(&mut self) {
-        self.address_data.confirm_transaction();
+    pub fn make_witness_with_lane<'a>(
+        &mut self,
+        block0_hash: &HeaderId,
+        lane: usize,
+        tad: TransactionAuthData<'a>,
+    ) -> Witness {
+        self.address_data
+            .make_witness_with_lane(block0_hash, lane, tad)
     }
 
     pub fn kind(&self) -> Kind {
@@ -347,4 +395,14 @@ impl From<AddressDataValue> for AddressData {
     fn from(value: AddressDataValue) -> Self {
         value.address_data
     }
+}
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("wrong lane for spending counter: {0}")]
+    WrongLaneForSpendingCounter(usize),
+    #[error("cannot find spending counter for lane: {0}")]
+    CannotFindSpendingCounter(usize),
+    #[error(transparent)]
+    AccountLedger(#[from] crate::accounting::account::LedgerError),
 }

@@ -79,7 +79,7 @@ impl From<WalletTemplate> for Wallet {
         if let Some(secret_key) = template.secret_key() {
             let user_address = Address(Discrimination::Test, Kind::Account(secret_key.to_public()));
             let account = AddressDataValue::new(
-                AddressData::new(secret_key, Some(0.into()), user_address),
+                AddressData::new(secret_key, Default::default(), user_address),
                 template.initial_value,
             );
             Self::from_address_data_value_and_alias(template.alias(), account)

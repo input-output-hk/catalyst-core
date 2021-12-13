@@ -177,6 +177,7 @@ public class WalletPlugin extends CordovaPlugin {
             public void run() {
                 try {
                     final long walletPtr = Wallet.importKeys(accountKey, utxoKeys);
+
                     callbackContext.success(Long.toString(walletPtr));
                 } catch (final Exception e) {
                     callbackContext.error(e.getMessage());
@@ -244,7 +245,7 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void settingsGet(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final long settingsPtr = args.getLong(0);
+        final Long settingsPtr = Long.parseLong(args.getString(0));
 
         try {
             final Settings.LinearFees fees = Settings.fees(settingsPtr);
@@ -275,7 +276,7 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void walletRetrieveFunds(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
-        final Long walletPtr = args.getLong(0);
+        final Long walletPtr = Long.parseLong(args.getString(0));
         final byte[] block0 = args.getArrayBuffer(1);
 
         cordova.getThreadPool().execute(new Runnable() {
@@ -291,7 +292,7 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void walletTotalFunds(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long walletPtr = args.getLong(0);
+        final Long walletPtr = Long.parseLong(args.getString(0));
 
         try {
             final int value = Wallet.totalValue(walletPtr);
@@ -303,10 +304,11 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void walletSpendingCounter(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
-        final Long walletPtr = args.getLong(0);
+        final Long walletPtr = Long.parseLong(args.getString(0));
 
         try {
             final long value = Wallet.spendingCounter(walletPtr);
+
             callbackContext.success(Long.toString(value));
         } catch (final Exception e) {
             callbackContext.error(e.getMessage());
@@ -314,9 +316,9 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void walletSetState(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long walletPtr = args.getLong(0);
-        final Long value = args.getLong(1);
-        final Long counter = args.getLong(2);
+        final Long walletPtr = Long.parseLong(args.getString(0));
+        final Long value = Long.parseLong(args.getString(1));
+        final Long counter = Long.parseLong(args.getString(2));
 
         try {
             Wallet.setState(walletPtr, value, counter);
@@ -327,9 +329,9 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void walletVote(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long wallet = args.getLong(0);
-        final Long settings = args.getLong(1);
-        final Long proposal = args.getLong(2);
+        final Long wallet = Long.parseLong(args.getString(0));
+        final Long settings = Long.parseLong(args.getString(1));
+        final Long proposal = Long.parseLong(args.getString(2));
         final Integer choice = args.getInt(3);
         final JSONObject expirationDate = (JSONObject) args.get(4);
 
@@ -346,7 +348,7 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void walletPendingTransactions(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
-        final Long wallet = args.getLong(0);
+        final Long wallet = Long.parseLong(args.getString(0));
 
         try {
             Long pendingTransactions = Wallet.pendingTransactions(wallet);
@@ -358,7 +360,7 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void pendingTransactionsSize(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
-        final Long pendingTransactionsPtr = args.getLong(0);
+        final Long pendingTransactionsPtr = Long.parseLong(args.getString(0));
 
         try {
             final int size = PendingTransactions.len(pendingTransactionsPtr);
@@ -370,7 +372,7 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void pendingTransactionsGet(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
-        final Long pendingTransactionsPtr = args.getLong(0);
+        final Long pendingTransactionsPtr = Long.parseLong(args.getString(0));
         final int index = args.getInt(1);
 
         try {
@@ -383,7 +385,7 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void walletConfirmTransaction(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
-        final Long wallet = args.getLong(0);
+        final Long wallet = Long.parseLong(args.getString(0));
         final byte[] fragmentId = args.getArrayBuffer(1);
 
         try {
@@ -395,8 +397,8 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void walletConvert(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long walletPtr = args.getLong(0);
-        final Long settingsPtr = args.getLong(1);
+        final Long walletPtr = Long.parseLong(args.getString(0));
+        final Long settingsPtr = Long.parseLong(args.getString(1));
         final JSONObject expirationDate = (JSONObject) args.get(2);
 
         final long epoch = Long.parseUnsignedLong(expirationDate.getString("epoch"));
@@ -416,7 +418,7 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void conversionTransactionsSize(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
-        final Long conversionsPtr = args.getLong(0);
+        final Long conversionsPtr = Long.parseLong(args.getString(0));
 
         try {
             final int size = Conversion.transactionsSize(conversionsPtr);
@@ -428,7 +430,7 @@ public class WalletPlugin extends CordovaPlugin {
 
     private void conversionTransactionsGet(final CordovaArgs args, final CallbackContext callbackContext)
             throws JSONException {
-        final Long conversionsPtr = args.getLong(0);
+        final Long conversionsPtr = Long.parseLong(args.getString(0));
         final int index = args.getInt(1);
 
         try {
@@ -440,7 +442,7 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void conversionIgnored(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long conversionPtr = args.getLong(0);
+        final Long conversionPtr = Long.parseLong(args.getString(0));
 
         try {
             Conversion.ignored(conversionPtr, new Conversion.IgnoredCallback() {
@@ -488,7 +490,7 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void walletId(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long walletPtr = args.getLong(0);
+        final Long walletPtr = Long.parseLong(args.getString(0));
 
         try {
             final byte[] id = Wallet.id(walletPtr);
@@ -512,8 +514,8 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void blockDateFromSystemTime(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long settingsPtr = args.getLong(0);
-        final Long unixEpoch = args.getLong(1);
+        final Long settingsPtr = Long.parseLong(args.getString(0));
+        final Long unixEpoch = Long.parseLong(args.getString(1));
 
         try {
             final Time.BlockDate date = Time.blockDateFromSystemTime(settingsPtr, unixEpoch);
@@ -527,8 +529,8 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void maxExpirationDate(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long settingsPtr = args.getLong(0);
-        final Long unixEpoch = args.getLong(1);
+        final Long settingsPtr = Long.parseLong(args.getString(0));
+        final Long unixEpoch = Long.parseLong(args.getString(1));
 
         try {
             final Time.BlockDate date = Time.maxExpirationDate(settingsPtr, unixEpoch);
@@ -542,35 +544,35 @@ public class WalletPlugin extends CordovaPlugin {
     }
 
     private void walletDelete(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long walletPtr = args.getLong(0);
+        final Long walletPtr = Long.parseLong(args.getString(0));
 
         Wallet.delete(walletPtr);
         callbackContext.success();
     }
 
     private void settingsDelete(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long settingsPtr = args.getLong(0);
+        final Long settingsPtr = Long.parseLong(args.getString(0));
 
         Settings.delete(settingsPtr);
         callbackContext.success();
     }
 
     private void conversionDelete(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long conversionPtr = args.getLong(0);
+        final Long conversionPtr = Long.parseLong(args.getString(0));
 
         Conversion.delete(conversionPtr);
         callbackContext.success();
     }
 
     private void proposalDelete(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long proposalPtr = args.getLong(0);
+        final Long proposalPtr = Long.parseLong(args.getString(0));
 
         Proposal.delete(proposalPtr);
         callbackContext.success();
     }
 
     private void pendingDelete(final CordovaArgs args, final CallbackContext callbackContext) throws JSONException {
-        final Long pendingPtr = args.getLong(0);
+        final Long pendingPtr = Long.parseLong(args.getString(0));
 
         PendingTransactions.delete(pendingPtr);
         callbackContext.success();

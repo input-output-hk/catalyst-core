@@ -5,9 +5,6 @@ use crate::common::{
 };
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
-use quickcheck::Arbitrary;
-use quickcheck::Gen;
-use quickcheck::QuickCheck;
 
 #[test]
 pub fn load_data_test() {
@@ -93,7 +90,7 @@ pub fn voting_snapshot_build() {
         db_builder.with_snapshot(&snapshot);
         db_builder.build(&temp_dir).unwrap();
     }
-    QuickCheck::new()
+    quickcheck::QuickCheck::new()
         .max_tests(1)
         .quicktest(build as fn(Snapshot))
         .unwrap();

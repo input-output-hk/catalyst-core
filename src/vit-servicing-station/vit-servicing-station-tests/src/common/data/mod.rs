@@ -72,9 +72,9 @@ impl Arbitrary for ArbitraryVotePlanDef {
     }
 }
 
-impl Into<VotePlanDef> for ArbitraryVotePlanDef {
-    fn into(self) -> VotePlanDef {
-        self.0
+impl From<ArbitraryVotePlanDef> for VotePlanDef {
+    fn from(arbitrary_vote_plan_def: ArbitraryVotePlanDef) -> Self {
+        arbitrary_vote_plan_def.0
     }
 }
 
@@ -93,9 +93,13 @@ impl Arbitrary for ArbitraryVotePlanDefVec {
     }
 }
 
-impl Into<Vec<VotePlanDef>> for ArbitraryVotePlanDefVec {
-    fn into(self) -> Vec<VotePlanDef> {
-        self.0.into_iter().map(Into::into).collect()
+impl From<ArbitraryVotePlanDefVec> for Vec<VotePlanDef> {
+    fn from(arbitrary_vote_plan_def_vec: ArbitraryVotePlanDefVec) -> Self {
+        arbitrary_vote_plan_def_vec
+            .0
+            .into_iter()
+            .map(Into::into)
+            .collect()
     }
 }
 

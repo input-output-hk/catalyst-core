@@ -8,7 +8,7 @@ use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 use vit_servicing_station_lib::{
     db::models::{funds::Fund, proposals::Proposal},
     v0::api_token::API_TOKEN_HEADER,
-    v0::endpoints::{proposals::ProposalsByVoteplanIdAndIndex, service_version::ServiceVersion},
+    v0::endpoints::{proposals::ProposalVoteplanIdAndIndexes, service_version::ServiceVersion},
 };
 
 #[derive(Debug, Clone)]
@@ -147,7 +147,7 @@ impl RestClient {
 
     pub fn proposals_by_voteplan_id_and_index(
         &self,
-        request: &ProposalsByVoteplanIdAndIndex,
+        request: &[ProposalVoteplanIdAndIndexes],
     ) -> Result<Vec<FullProposalInfo>, RestError> {
         let request_as_string = serde_json::to_string(&request)?;
         serde_json::from_str(&self.post(&self.path_builder().proposals(), request_as_string)?)

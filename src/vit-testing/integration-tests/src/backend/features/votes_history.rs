@@ -128,18 +128,18 @@ pub fn votes_history_reflects_casted_votes() {
         assert_eq!(actual_ids, Some(account_vote.votes.clone()));
     }
 
+    let proposals_by_voteplan_id_and_index_query: Vec<ProposalVoteplanIdAndIndexes> = account_votes
+        .iter()
+        .map(|x| ProposalVoteplanIdAndIndexes {
+            vote_plan_id: x.vote_plan_id.to_string(),
+            indexes: x.votes.iter().map(|x| *x as i64).collect(),
+        })
+        .collect();
+
     let proposals_used_in_voting: Vec<i32> = wallet_proxy
         .client()
         .vit()
-        .proposals_by_voteplan_id_and_index(
-            account_votes
-                .iter()
-                .map(|x| ProposalVoteplanIdAndIndexes {
-                    vote_plan_id: x.vote_plan_id.to_string(),
-                    indexes: x.votes.iter().map(|x| *x as i64).collect(),
-                })
-                .collect(),
-        )
+        .proposals_by_voteplan_id_and_index(&proposals_by_voteplan_id_and_index_query)
         .unwrap()
         .iter()
         .map(|x| x.proposal.internal_id)

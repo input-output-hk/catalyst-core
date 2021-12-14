@@ -57,7 +57,7 @@ mod tests {
     use super::ReviewScore;
     use crate::community_advisors::models::AdvisorReviewRow;
     use crate::utils::csv as csv_utils;
-    use rand::RngCore;
+    use rand::{distributions::Alphanumeric, Rng};
     use std::path::PathBuf;
 
     #[test]
@@ -80,7 +80,9 @@ mod tests {
             AdvisorReviewRow {
                 proposal_id: String::new(),
                 idea_url: String::new(),
-                assessor: rand::thread_rng().next_u64().to_string(),
+                assessor: (0..10)
+                    .map(|_| rand::thread_rng().sample(Alphanumeric) as char)
+                    .collect(),
                 impact_alignment_note: String::new(),
                 impact_alignment_rating: 0,
                 feasibility_note: String::new(),

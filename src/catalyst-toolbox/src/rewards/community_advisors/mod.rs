@@ -2,7 +2,7 @@ mod funding;
 mod lottery;
 
 use crate::community_advisors::models::{AdvisorReviewRow, ReviewScore};
-use lottery::TicketsDistribution;
+use lottery::{CasWinnings, TicketsDistribution};
 use rand::{Rng, SeedableRng};
 use rand_chacha::{ChaCha8Rng, ChaChaRng};
 
@@ -35,9 +35,11 @@ enum ProposalTickets {
         eligible_assessors: BTreeSet<CommunityAdvisor>,
         winning_tkts: u64,
     },
-    Fund6 {
-        ticket_distribution: TicketsDistribution,
-        winning_tkts: u64,
+    Fund7 {
+        excellent_tkts: TicketsDistribution,
+        good_tkts: TicketsDistribution,
+        excellent_winning_tkts: u64,
+        good_winning_tkts: u64,
     },
 }
 
@@ -64,7 +66,11 @@ fn get_tickets_per_proposal(
                     winning_tkts
                         * (rewards_slots.max_winning_tickets() / LEGACY_MAX_WINNING_TICKETS)
                 }
-                ProposalTickets::Fund6 { winning_tkts, .. } => winning_tkts,
+                ProposalTickets::Fund7 {
+                    excellent_winning_tkts,
+                    good_winning_tkts,
+                    ..
+                } => excellent_winning_tkts + good_winning_tkts,
             };
 
             (winning_tickets, (id, tickets))
@@ -101,8 +107,13 @@ fn calculate_rewards_per_proposal(
                         / Rewards::from(LEGACY_MAX_WINNING_TICKETS)
                         + bonus_reward / Rewards::from(winning_tkts)
                 }
-                ProposalTickets::Fund6 { winning_tkts, .. } => {
-                    base_ticket_reward + bonus_reward / Rewards::from(winning_tkts)
+                ProposalTickets::Fund7 {
+                    excellent_winning_tkts,
+                    good_winning_tkts,
+                    ..
+                } => {
+                    base_ticket_reward
+                        + bonus_reward / Rewards::from(excellent_winning_tkts + good_winning_tkts)
                 }
             };
             ProposalRewards {
@@ -131,38 +142,54 @@ fn load_tickets_from_reviews(
         };
     }
 
-    let excellent_reviews = proposal_reviews
-        .iter()
-        .filter(|rev| matches!(rev.score(), ReviewScore::Excellent))
-        .count() as u64;
-    let good_reviews = proposal_reviews
-        .iter()
-        .filter(|rev| matches!(rev.score(), ReviewScore::Good))
-        .count() as u64;
+    // assuming only one review per assessor in a single proposal
+    let (excellent_tkts, good_tkts): (TicketsDistribution, TicketsDistribution) =
+        // a full match is used so that we don't forget to consider new review types which may be added in the future
+        proposal_reviews.iter().map(|rev| match rev.score() {
+            ReviewScore::Excellent => (rev.assessor.clone(), rewards_slots.excellent_slots),
+            ReviewScore::Good => (rev.assessor.clone(), rewards_slots.good_slots),
+            _ => unreachable!("we've already filtered out other review scores"),
+        }).partition(|(_ca, tkts)| *tkts == rewards_slots.excellent_slots);
 
-    // assumes only one review per assessor in a single proposal
-    let ticket_distribution = proposal_reviews
-        .iter()
-        .map(|rev| {
-            let tickets = match rev.score() {
-                ReviewScore::Excellent => rewards_slots.excellent_slots,
-                ReviewScore::Good => rewards_slots.good_slots,
-                _ => unreachable!("we've already filtered out other review scores"),
-            };
+    let excellent_winning_tkts = std::cmp::min(
+        excellent_tkts.len() as u64,
+        rewards_slots.max_excellent_reviews,
+    ) * rewards_slots.excellent_slots;
+    let good_winning_tkts = std::cmp::min(good_tkts.len() as u64, rewards_slots.max_good_reviews)
+        * rewards_slots.good_slots;
 
-            (rev.assessor.clone(), tickets)
-        })
-        .collect();
-
-    let excellent_winning_tkts =
-        excellent_reviews.min(rewards_slots.max_excellent_reviews) * rewards_slots.excellent_slots;
-    let good_winning_tkts =
-        good_reviews.min(rewards_slots.max_good_reviews) * rewards_slots.good_slots;
-
-    ProposalTickets::Fund6 {
-        ticket_distribution,
-        winning_tkts: excellent_winning_tkts + good_winning_tkts,
+    ProposalTickets::Fund7 {
+        excellent_winning_tkts,
+        good_winning_tkts,
+        excellent_tkts,
+        good_tkts,
     }
+}
+
+// Run a two stage lottery to reward community advisors
+//
+// In the first round, only excellent reviews will be taken into consideration
+// In the second, losing tickets from the first round will compete with good review
+fn double_lottery<R: Rng>(
+    stage1: TicketsDistribution,
+    mut stage2: TicketsDistribution,
+    distribute_first_round: u64,
+    distribute_second_round: u64,
+    rng: &mut R,
+) -> CasWinnings {
+    let (mut stage1_winners, stage1_losers) =
+        lottery::lottery_distribution(stage1, distribute_first_round, rng);
+    stage2.extend(stage1_losers);
+    let (stage2_winners, _stage2_losers) =
+        lottery::lottery_distribution(stage2, distribute_second_round, rng);
+    for (ca, winnings) in stage2_winners {
+        *stage1_winners.entry(ca).or_default() += winnings;
+    }
+    assert_eq!(
+        stage1_winners.values().sum::<u64>(),
+        distribute_second_round + distribute_first_round
+    );
+    stage1_winners
 }
 
 fn calculate_ca_rewards_for_proposal<R: Rng>(
@@ -174,24 +201,33 @@ fn calculate_ca_rewards_for_proposal<R: Rng>(
         per_ticket_reward,
     } = proposal_reward;
 
-    let (tickets_distribution, tickets_to_distribute) = match tickets {
-        ProposalTickets::Fund6 {
-            ticket_distribution,
-            winning_tkts,
-        } => (ticket_distribution, winning_tkts),
+    let rewards = match tickets {
+        ProposalTickets::Fund7 {
+            excellent_winning_tkts,
+            good_winning_tkts,
+            excellent_tkts,
+            good_tkts,
+        } => double_lottery(
+            excellent_tkts,
+            good_tkts,
+            excellent_winning_tkts,
+            good_winning_tkts,
+            rng,
+        ),
         ProposalTickets::Legacy {
             eligible_assessors,
             winning_tkts,
         } => {
-            println!("{}", per_ticket_reward);
-            (
+            lottery::lottery_distribution(
                 eligible_assessors.into_iter().map(|ca| (ca, 1)).collect(),
                 winning_tkts,
+                rng,
             )
+            .0
         }
     };
 
-    lottery::lottery_distribution(tickets_distribution, tickets_to_distribute, rng)
+    rewards
         .into_iter()
         .map(|(ca, tickets_won)| (ca, Rewards::from(tickets_won) * per_ticket_reward))
         .collect()
@@ -252,7 +288,11 @@ mod tests {
         ($excellent:expr, $good:expr, $expected:expr) => {
             let p = gen_dummy_reviews($excellent, $good, 0);
             match load_tickets_from_reviews(&p, &Default::default()) {
-                ProposalTickets::Fund6 { winning_tkts, .. } => assert_eq!(winning_tkts, $expected),
+                ProposalTickets::Fund7 {
+                    excellent_winning_tkts,
+                    good_winning_tkts,
+                    ..
+                } => assert_eq!(excellent_winning_tkts + good_winning_tkts, $expected),
                 _ => panic!("invalid lottery setup"),
             }
         };
@@ -342,5 +382,29 @@ mod tests {
             [0; 32],
         );
         assert!(are_close(res.values().sum::<Funds>(), Funds::from(100)));
+    }
+
+    #[test]
+    fn test_double_stage_lottery() {
+        let mut proposals = BTreeMap::new();
+        let reviews = gen_dummy_reviews(1, 500, 0); // winning tickets: 24
+        let excellent_assessor = reviews[0].assessor.clone();
+        proposals.insert("1".into(), reviews);
+        let res = calculate_ca_rewards(
+            proposals,
+            &vec![("1".into(), Funds::from(2))].into_iter().collect(),
+            &FundSetting {
+                proposal_ratio: 80,
+                bonus_ratio: 20,
+                total: Funds::from(240),
+            },
+            &Default::default(),
+            [0; 32],
+        );
+        assert!(are_close(res.values().sum::<Funds>(), Funds::from(240)));
+        assert!(are_close(
+            *res.get(&excellent_assessor).unwrap(),
+            Funds::from(120)
+        ));
     }
 }

@@ -19,7 +19,7 @@
               (builtins.readFile (./. + "/${member}/Cargo.toml"))).package)
               name version;
             src = ./.;
-            cargoSha256 = "sha256-hyvsr0r9yyK4whZV6ugB8Mr8d/VnnBI6X0C2nwB/zoU=";
+            cargoSha256 = "sha256-+wcjcoF4CJNXxuepNCcPCwH62y3yvrJA5pZcBgdvBNI=";
             nativeBuildInputs = with final; [ pkg-config protobuf rustfmt ];
             buildInputs = with final; [ openssl ];
             PROTOC = "${final.protobuf}/bin/protoc";

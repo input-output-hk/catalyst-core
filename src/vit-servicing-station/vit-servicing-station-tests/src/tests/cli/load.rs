@@ -1,6 +1,7 @@
+use crate::common::data::{multivoteplan_snapshot, ArbitrarySnapshotGenerator};
 use crate::common::{
     cli::VitCliCommand,
-    data::{ArbitrarySnapshotGenerator, CsvConverter, Snapshot},
+    data::CsvConverter,
     startup::{db::DbBuilder, server::ServerBootstrapper},
 };
 use assert_cmd::assert::OutputAssertExt;
@@ -11,6 +12,7 @@ pub fn load_data_test() {
     let temp_dir = TempDir::new().unwrap();
     let db_file = temp_dir.child("db.sqlite");
     let snapshot = ArbitrarySnapshotGenerator::default().snapshot();
+
     let csv_converter = CsvConverter;
 
     let funds = temp_dir.child("funds.csv");
@@ -84,14 +86,8 @@ pub fn load_data_test() {
 
 #[test]
 pub fn voting_snapshot_build() {
-    fn build(snapshot: Snapshot) {
-        let temp_dir = TempDir::new().unwrap().into_persistent();
-        let mut db_builder = DbBuilder::new();
-        db_builder.with_snapshot(&snapshot);
-        db_builder.build(&temp_dir).unwrap();
-    }
-    quickcheck::QuickCheck::new()
-        .max_tests(1)
-        .quicktest(build as fn(Snapshot))
-        .unwrap();
+    let temp_dir = TempDir::new().unwrap().into_persistent();
+    let mut db_builder = DbBuilder::new();
+    db_builder.with_snapshot(&multivoteplan_snapshot());
+    db_builder.build(&temp_dir).unwrap();
 }

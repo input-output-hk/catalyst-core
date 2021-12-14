@@ -22,7 +22,7 @@ pub fn funds_eq(expected: FundTemplate, actual: Fund) {
     assert_eq!(expected.id, actual.id, "fund id");
     assert_eq!(expected.goal, actual.fund_goal, "fund goal");
     assert_eq!(
-        expected.threshold.unwrap() as u64 * 1_000_000,
+        expected.threshold.unwrap() as i64 * 1_000_000,
         actual.voting_power_threshold,
         "threshold"
     );

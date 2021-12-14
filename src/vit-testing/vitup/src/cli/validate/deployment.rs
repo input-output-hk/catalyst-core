@@ -1,5 +1,4 @@
 use crate::Result;
-use chrono::DateTime;
 use chrono::ParseError;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar, ProgressStyle};
 use std::fmt;
@@ -98,8 +97,7 @@ impl Check {
             Self::Times => {
                 let fund = wallet_backend.funds()?;
 
-                let registration_date =
-                    DateTime::parse_from_rfc3339(&fund.registration_snapshot_time)?;
+                let registration_date = unix_timestamp_to_datetime(fund.registration_snapshot_time);
                 let fund_start_date = unix_timestamp_to_datetime(fund.fund_start_time);
                 let fund_end_date = unix_timestamp_to_datetime(fund.fund_end_time);
                 let next_fund_date = unix_timestamp_to_datetime(fund.next_fund_start_time);

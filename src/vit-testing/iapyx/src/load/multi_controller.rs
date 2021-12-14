@@ -10,6 +10,7 @@ use std::iter;
 use std::path::Path;
 use thiserror::Error;
 use valgrind::Proposal;
+use valgrind::ProposalExtension;
 use valgrind::SettingsExtensions;
 use valgrind::ValgrindClient;
 use wallet::Settings;
@@ -155,7 +156,7 @@ impl MultiController {
         let wallet = self.wallets.get_mut(wallet_index).unwrap();
         let tx = wallet.vote(
             self.settings.clone(),
-            &proposal.clone().into(),
+            &proposal.clone().into_wallet_proposal(),
             choice,
             &valid_until,
         )?;
@@ -181,7 +182,12 @@ impl MultiController {
             .map(|(p, c)| {
                 wallet.set_state((*account_state.value()).into(), counter);
                 let tx = wallet
-                    .vote(settings.clone(), &p.clone().into(), c, valid_until)
+                    .vote(
+                        settings.clone(),
+                        &p.clone().into_wallet_proposal(),
+                        c,
+                        valid_until,
+                    )
                     .unwrap()
                     .to_vec();
                 counter += 1;

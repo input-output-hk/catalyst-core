@@ -13,7 +13,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::{clap::AppSettings, StructOpt};
 use thiserror::Error;
-use valgrind::{Proposal, ValgrindClient};
+use valgrind::{Proposal, ProposalExtension, ValgrindClient};
 use wallet_core::Choice;
 
 #[derive(StructOpt, Debug)]

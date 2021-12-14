@@ -8,6 +8,7 @@ use jormungandr_testing_utils::testing::node::time;
 use std::collections::HashMap;
 use std::str::FromStr;
 use valgrind::{Proposal, Protocol};
+use vit_servicing_station_lib::v0::endpoints::proposals::ProposalVoteplanIdAndIndexes;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::builders::VitBackendSettingsBuilder;
 use vitup::config::VoteBlockchainTime;
@@ -90,7 +91,7 @@ pub fn votes_history_reflects_casted_votes() {
             .map(|vote_plan| (vote_plan.id, Vec::new()))
             .collect();
 
-        for (proposal, _choice) in votes_data {
+        for (proposal, _choice) in votes_data.iter() {
             let hash = Hash::from_str(&proposal.chain_voteplan_id).unwrap();
             if let Some(registry) = votes_registry.get_mut(&hash) {
                 registry.push(proposal.chain_proposal_index)
@@ -115,7 +116,7 @@ pub fn votes_history_reflects_casted_votes() {
     account_votes.sort_by(|x, y| x.vote_plan_id.cmp(&y.vote_plan_id));
     assert_eq!(votes_history, account_votes);
 
-    for account_vote in account_votes {
+    for account_vote in &account_votes {
         let actual_ids = alice
             .vote_plan_history(account_vote.vote_plan_id)
             .unwrap_or_else(|_| {
@@ -126,6 +127,31 @@ pub fn votes_history_reflects_casted_votes() {
             });
         assert_eq!(actual_ids, Some(account_vote.votes.clone()));
     }
+
+    let proposals_by_voteplan_id_and_index_query: Vec<ProposalVoteplanIdAndIndexes> = account_votes
+        .iter()
+        .map(|x| ProposalVoteplanIdAndIndexes {
+            vote_plan_id: x.vote_plan_id.to_string(),
+            indexes: x.votes.iter().map(|x| *x as i64).collect(),
+        })
+        .collect();
+
+    let proposals_used_in_voting: Vec<i32> = wallet_proxy
+        .client()
+        .vit()
+        .proposals_by_voteplan_id_and_index(&proposals_by_voteplan_id_and_index_query)
+        .unwrap()
+        .iter()
+        .map(|x| x.proposal.internal_id)
+        .collect();
+
+    assert_eq!(
+        proposals_used_in_voting,
+        votes_data
+            .iter()
+            .map(|(x, _)| x.internal_id)
+            .collect::<Vec<i32>>()
+    );
 
     vit_station.shutdown();
     wallet_proxy.shutdown();

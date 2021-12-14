@@ -1,7 +1,5 @@
 #![allow(dead_code)]
-
-use crate::data::ServiceVersion;
-use crate::data::{AdvisorReview, Challenge, Fund, Proposal};
+use crate::data::{AdvisorReview, Challenge, Fund, Proposal, VitVersion};
 use hyper::StatusCode;
 use reqwest::blocking::{Client, Response};
 use std::collections::HashMap;
@@ -186,7 +184,7 @@ impl VitStationRestClient {
         Ok(self.genesis_raw()?.bytes()?.to_vec())
     }
 
-    pub fn version(&self) -> Result<ServiceVersion, RestError> {
+    pub fn version(&self) -> Result<VitVersion, RestError> {
         let content = self.version_raw()?.text()?;
         serde_json::from_str(&content).map_err(RestError::CannotDeserialize)
     }

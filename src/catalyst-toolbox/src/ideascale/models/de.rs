@@ -172,7 +172,7 @@ fn deserialize_rewards<'de, D: Deserializer<'de>>(deserializer: D) -> Result<u64
     if rewards_str.starts_with("0 ada") {
         return Ok(0);
     }
-    sscanf::scanf!(rewards_str.trim_end(), "${} in ada", String)
+    sscanf::scanf!(rewards_str.trim_end(), "${} in", String)
         // trim all . or , in between numbers
         .map(|mut s: String| {
             s.retain(|c: char| c.is_numeric() || matches!(c, '.'));

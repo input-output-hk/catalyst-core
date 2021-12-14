@@ -26,7 +26,7 @@ use std::iter;
 pub enum WitnessMode {
     None,
     Default,
-    Lane(usize),
+    Account { lane: usize },
 }
 
 impl Default for WitnessMode {
@@ -76,7 +76,7 @@ impl TestTxCertBuilder {
                     &funder.as_account_data(),
                     &builder.get_auth_data_for_witness().hash(),
                 )],
-                WitnessMode::Lane(lane) => vec![make_witness_with_lane(
+                WitnessMode::Account { lane } => vec![make_witness_with_lane(
                     self.block0_hash(),
                     &funder.as_account_data(),
                     lane,

@@ -227,7 +227,7 @@ impl TestTxBuilder {
                                 &source.address_data(),
                                 &auth_data_hash,
                             ),
-                            WitnessMode::Lane(lane) => make_witness_with_lane(
+                            WitnessMode::Account { lane } => make_witness_with_lane(
                                 &self.block0_hash,
                                 &source.address_data(),
                                 lane,

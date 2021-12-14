@@ -21,7 +21,7 @@ pub fn ledger_accepts_signature_from_all_lanes() {
 
     let fragment = controller
         .fragment_factory()
-        .witness_mode(WitnessMode::Lane(0))
+        .witness_mode(WitnessMode::Account { lane: 0 })
         .transaction(&alice, &bob, &mut ledger, 10);
     assert!(ledger
         .apply_transaction(fragment, BlockDate::first())
@@ -30,7 +30,7 @@ pub fn ledger_accepts_signature_from_all_lanes() {
 
     let fragment = controller
         .fragment_factory()
-        .witness_mode(WitnessMode::Lane(1))
+        .witness_mode(WitnessMode::Account { lane: 1 })
         .transaction(&alice, &bob, &mut ledger, 10);
     assert!(ledger
         .apply_transaction(fragment, BlockDate::first())
@@ -39,7 +39,7 @@ pub fn ledger_accepts_signature_from_all_lanes() {
 
     let fragment = controller
         .fragment_factory()
-        .witness_mode(WitnessMode::Lane(2))
+        .witness_mode(WitnessMode::Account { lane: 2 })
         .transaction(&alice, &bob, &mut ledger, 10);
     ledger
         .apply_transaction(fragment, BlockDate::first())
@@ -48,7 +48,7 @@ pub fn ledger_accepts_signature_from_all_lanes() {
 
     let fragment = controller
         .fragment_factory()
-        .witness_mode(WitnessMode::Lane(0))
+        .witness_mode(WitnessMode::Account { lane: 0 })
         .transaction(&alice, &bob, &mut ledger, 10);
     assert!(ledger
         .apply_transaction(fragment, BlockDate::first())
@@ -57,7 +57,7 @@ pub fn ledger_accepts_signature_from_all_lanes() {
 
     let fragment = controller
         .fragment_factory()
-        .witness_mode(WitnessMode::Lane(1))
+        .witness_mode(WitnessMode::Account { lane: 1 })
         .transaction(&alice, &bob, &mut ledger, 10);
     assert!(ledger
         .apply_transaction(fragment, BlockDate::first())
@@ -66,7 +66,7 @@ pub fn ledger_accepts_signature_from_all_lanes() {
 
     let fragment = controller
         .fragment_factory()
-        .witness_mode(WitnessMode::Lane(2))
+        .witness_mode(WitnessMode::Account { lane: 2 })
         .transaction(&alice, &bob, &mut ledger, 10);
     assert!(ledger
         .apply_transaction(fragment, BlockDate::first())
@@ -75,7 +75,7 @@ pub fn ledger_accepts_signature_from_all_lanes() {
 
     let fragment = controller
         .fragment_factory()
-        .witness_mode(WitnessMode::Lane(2))
+        .witness_mode(WitnessMode::Account { lane: 2 })
         .transaction(&alice, &bob, &mut ledger, 10);
     assert!(ledger
         .apply_transaction(fragment, BlockDate::first())
@@ -83,7 +83,7 @@ pub fn ledger_accepts_signature_from_all_lanes() {
 
     let fragment = controller
         .fragment_factory()
-        .witness_mode(WitnessMode::Lane(2))
+        .witness_mode(WitnessMode::Account { lane: 2 })
         .transaction(&alice, &bob, &mut ledger, 10);
     assert!(ledger
         .apply_transaction(fragment, BlockDate::first())

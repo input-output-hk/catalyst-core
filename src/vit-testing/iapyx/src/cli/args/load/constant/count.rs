@@ -47,7 +47,7 @@ pub struct ConstantCountIapyxLoadCommand {
     pub use_https: bool,
 
     /// use https for sending fragments
-    #[structopt(short = "d", long = "debug")]
+    #[structopt(long = "debug")]
     pub debug: bool,
 
     /// update all accounts state before sending any vote

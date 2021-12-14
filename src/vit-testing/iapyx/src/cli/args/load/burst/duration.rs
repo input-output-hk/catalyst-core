@@ -55,7 +55,7 @@ pub struct BurstDurationIapyxLoadCommand {
     pub use_https: bool,
 
     /// use https for sending fragments
-    #[structopt(short = "d", long = "debug")]
+    #[structopt(long = "debug")]
     pub debug: bool,
 
     /// update all accounts state before sending any vote
@@ -70,7 +70,7 @@ pub struct BurstDurationIapyxLoadCommand {
     pub status_pace: u64,
 
     // measure
-    #[structopt(short = "c", long = "criterion")]
+    #[structopt(long = "criterion")]
     pub criterion: Option<u8>,
 
     // show progress

@@ -1,6 +1,8 @@
 //! define the Blockchain settings
 //!
 
+#[cfg(feature = "evm")]
+use crate::config::EvmConfigParams;
 use crate::fragment::{config::ConfigParams, BlockContentSize};
 use crate::milli::Milli;
 use crate::update;
@@ -41,6 +43,8 @@ pub struct Settings {
     pub pool_participation_capping: Option<(NonZeroU32, NonZeroU32)>,
     pub committees: Arc<[CommitteeId]>,
     pub transaction_max_expiry_epochs: u8,
+    #[cfg(feature = "evm")]
+    pub evm_params: EvmConfigParams,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -128,6 +132,8 @@ impl Settings {
             pool_participation_capping: None,
             committees: Arc::new([]),
             transaction_max_expiry_epochs: 1,
+            #[cfg(feature = "evm")]
+            evm_params: EvmConfigParams::default(),
         }
     }
 
@@ -238,6 +244,10 @@ impl Settings {
                 ConfigParam::TransactionMaxExpiryEpochs(max_expiry_epochs) => {
                     new_state.transaction_max_expiry_epochs = *max_expiry_epochs;
                 }
+                #[cfg(feature = "evm")]
+                ConfigParam::EvmParams(evm_config_params) => {
+                    new_state.evm_params = *evm_config_params.clone();
+                }
             }
         }
 
@@ -282,6 +292,8 @@ impl Settings {
             Some(p) => params.push(ConfigParam::TreasuryParams(*p)),
             None => (),
         };
+        #[cfg(feature = "evm")]
+        params.push(ConfigParam::EvmParams(Box::new(self.evm_params.clone())));
 
         debug_assert_eq!(self, &Settings::new().apply(&params).unwrap());
 

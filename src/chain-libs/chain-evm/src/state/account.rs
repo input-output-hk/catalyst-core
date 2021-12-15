@@ -1,9 +1,13 @@
 use crate::state::{storage::Storage, trie::Trie};
+use crate::Address;
 
-use primitive_types::{H160, U256};
+use primitive_types::U256;
 
 pub type Nonce = U256;
 pub type Balance = U256;
+
+/// Smart-contract bytecode, such as the one compiled from Solidity code, for example.
+pub type ByteCode = Box<[u8]>;
 
 /// A represantation of an EVM account.
 #[derive(Clone, Default, PartialEq, Eq)]
@@ -15,7 +19,7 @@ pub struct Account {
     /// Account data storage.
     pub storage: Storage,
     /// EVM bytecode of this account.
-    pub code: Box<[u8]>,
+    pub code: ByteCode,
 }
 
 impl Account {
@@ -24,16 +28,13 @@ impl Account {
     }
 }
 
-/// An address of an EVM account.
-pub type AccountAddress = H160;
-
 /// In-memory representation of all accounts.
-pub type AccountTrie = Trie<AccountAddress, Account>;
+pub type AccountTrie = Trie<Address, Account>;
 
 impl AccountTrie {
     pub fn modify_account(
         &self,
-        address: &AccountAddress,
+        address: &Address,
         nonce: Nonce,
         balance: Balance,
         code: Option<Vec<u8>>,

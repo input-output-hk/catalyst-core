@@ -1,5 +1,7 @@
 use quickcheck::{Arbitrary, Gen};
 
+#[cfg(feature = "evm")]
+use crate::config::{EvmConfig, EvmConfigParams};
 use crate::{
     account::Ledger as AccountLedger,
     block::Block,
@@ -30,6 +32,11 @@ use crate::{
 };
 use chain_addr::{Address, Discrimination};
 use chain_crypto::*;
+#[cfg(feature = "evm")]
+use chain_evm::machine::{
+    BlockCoinBase, BlockDifficulty, BlockHashes, BlockNumber, BlockTimestamp, ChainId, Environment,
+    GasLimit, GasPrice, Origin,
+};
 use chain_time::TimeEra;
 use std::{
     collections::HashMap,
@@ -58,6 +65,8 @@ pub struct ConfigBuilder {
     consensus_version: ConsensusVersion,
     pool_capping_ratio: Ratio,
     transaction_max_expiry_epochs: Option<u8>,
+    #[cfg(feature = "evm")]
+    evm_params: EvmConfigParams,
 }
 
 impl Default for ConfigBuilder {
@@ -100,6 +109,26 @@ impl ConfigBuilder {
             block0_date: Block0Date(0),
             consensus_version: ConsensusVersion::Bft,
             transaction_max_expiry_epochs: None,
+            #[cfg(feature = "evm")]
+            evm_params: EvmConfigParams {
+                config: EvmConfig::Istanbul,
+                environment: Environment {
+                    // FIXME: need to set a real price
+                    gas_price: GasPrice::default(),
+                    // Define the origin address with a random H160 address
+                    origin: Origin::random(),
+                    chain_id: ChainId::zero(),
+                    block_hashes: BlockHashes::new(),
+                    block_number: BlockNumber::zero(),
+                    block_coinbase: BlockCoinBase::zero(),
+                    block_timestamp: BlockTimestamp::zero() + 1,
+                    block_difficulty: BlockDifficulty::from(131_072),
+                    // FIXME: need to set a real limit
+                    block_gas_limit: GasLimit::max_value(),
+                    // FIXME: adequate base fee
+                    block_base_fee_per_gas: 1u32.into(),
+                },
+            },
         }
     }
 
@@ -210,6 +239,12 @@ impl ConfigBuilder {
 
     pub fn with_transaction_max_expiry_epochs(mut self, n_epochs: u8) -> Self {
         self.transaction_max_expiry_epochs = Some(n_epochs);
+        self
+    }
+
+    #[cfg(feature = "evm")]
+    pub fn with_evm_params(mut self, params: EvmConfigParams) -> Self {
+        self.evm_params = params;
         self
     }
 

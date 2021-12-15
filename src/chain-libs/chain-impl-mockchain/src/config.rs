@@ -13,9 +13,15 @@ use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::packer::Codec;
 use chain_core::property;
 use chain_crypto::PublicKey;
-use std::fmt::{self, Display, Formatter};
-use std::io::{self, Cursor, Write};
-use std::num::{NonZeroU32, NonZeroU64};
+#[cfg(feature = "evm")]
+use chain_evm::machine::{BlockCoinBase, BlockHash, Config, Environment, Origin};
+#[cfg(feature = "evm")]
+use std::convert::TryInto;
+use std::{
+    fmt::{self, Display, Formatter},
+    io::{self, Cursor, Write},
+    num::{NonZeroU32, NonZeroU64},
+};
 use strum_macros::{AsRefStr, EnumIter, EnumString};
 use typed_bytes::ByteBuilder;
 
@@ -83,6 +89,8 @@ pub enum ConfigParam {
     RemoveCommitteeId(CommitteeId),
     PerVoteCertificateFees(PerVoteCertificateFee),
     TransactionMaxExpiryEpochs(u8),
+    #[cfg(feature = "evm")]
+    EvmParams(Box<EvmConfigParams>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -100,6 +108,61 @@ pub enum RewardParams {
         epoch_rate: NonZeroU32,
     },
 }
+
+#[cfg(feature = "evm")]
+#[derive(Clone, Debug, PartialEq)]
+/// EVM Configuration parameters needed for execution.
+pub struct EvmConfigParams {
+    /// EVM Block Configuration. It is boxed to reduce
+    /// size difference when used in enum variants
+    pub config: EvmConfig,
+    /// EVM Block Environment.
+    pub environment: Environment,
+}
+
+#[cfg(feature = "evm")]
+#[derive(Clone, Copy, Debug, PartialEq)]
+/// EVM Configuration parameters needed for execution.
+pub enum EvmConfig {
+    /// Configuration for the `Istanbul` fork.
+    Istanbul = 0,
+    /// Configuration for the `Berlin` fork.
+    Berlin = 1,
+}
+
+#[cfg(feature = "evm")]
+impl From<EvmConfig> for Config {
+    fn from(other: EvmConfig) -> Config {
+        match other {
+            EvmConfig::Istanbul => Config::istanbul(),
+            EvmConfig::Berlin => Config::berlin(),
+        }
+    }
+}
+
+#[cfg(feature = "evm")]
+impl Default for EvmConfigParams {
+    fn default() -> Self {
+        EvmConfigParams {
+            config: EvmConfig::Berlin,
+            environment: Environment {
+                gas_price: Default::default(),
+                origin: Default::default(),
+                chain_id: Default::default(),
+                block_hashes: Default::default(),
+                block_number: Default::default(),
+                block_coinbase: Default::default(),
+                block_timestamp: Default::default(),
+                block_difficulty: Default::default(),
+                block_gas_limit: Default::default(),
+                block_base_fee_per_gas: Default::default(),
+            },
+        }
+    }
+}
+
+#[cfg(feature = "evm")]
+impl Eq for EvmConfigParams {}
 
 // Discriminants can NEVER be 1024 or higher
 #[derive(AsRefStr, Clone, Copy, Debug, EnumIter, EnumString, PartialEq)]
@@ -156,6 +219,9 @@ pub enum Tag {
     PerVoteCertificateFees = 28,
     #[strum(to_string = "transaction-maximum-expiry-epochs")]
     TransactionMaxExpiryEpochs = 29,
+    #[cfg(feature = "evm")]
+    #[strum(to_string = "evm-config-params")]
+    EvmParams = 30,
 }
 
 impl Tag {
@@ -187,6 +253,8 @@ impl Tag {
             27 => Some(Tag::RemoveCommitteeId),
             28 => Some(Tag::PerVoteCertificateFees),
             29 => Some(Tag::TransactionMaxExpiryEpochs),
+            #[cfg(feature = "evm")]
+            30 => Some(Tag::EvmParams),
             _ => None,
         }
     }
@@ -223,6 +291,8 @@ impl<'a> From<&'a ConfigParam> for Tag {
             ConfigParam::RemoveCommitteeId(..) => Tag::RemoveCommitteeId,
             ConfigParam::PerVoteCertificateFees(..) => Tag::PerVoteCertificateFees,
             ConfigParam::TransactionMaxExpiryEpochs(..) => Tag::TransactionMaxExpiryEpochs,
+            #[cfg(feature = "evm")]
+            ConfigParam::EvmParams(_) => Tag::EvmParams,
         }
     }
 }
@@ -306,6 +376,8 @@ impl Readable for ConfigParam {
             Tag::TransactionMaxExpiryEpochs => {
                 ConfigParamVariant::from_payload(bytes).map(ConfigParam::TransactionMaxExpiryEpochs)
             }
+            #[cfg(feature = "evm")]
+            Tag::EvmParams => ConfigParamVariant::from_payload(bytes).map(ConfigParam::EvmParams),
         }
         .map_err(Into::into)
     }
@@ -343,6 +415,8 @@ impl property::Serialize for ConfigParam {
             ConfigParam::RemoveCommitteeId(data) => data.to_payload(),
             ConfigParam::PerVoteCertificateFees(data) => data.to_payload(),
             ConfigParam::TransactionMaxExpiryEpochs(data) => data.to_payload(),
+            #[cfg(feature = "evm")]
+            ConfigParam::EvmParams(data) => data.to_payload(),
         };
         let taglen = TagLen::new(tag, bytes.len()).ok_or_else(|| {
             io::Error::new(
@@ -747,26 +821,102 @@ impl ConfigParamVariant for CommitteeId {
     }
 }
 
+#[cfg(feature = "evm")]
+impl ConfigParamVariant for Box<EvmConfigParams> {
+    fn to_payload(&self) -> Vec<u8> {
+        let bb: ByteBuilder<EvmConfigParams> = ByteBuilder::new().u8(self.config as u8);
+        let env = &self.environment;
+        let bb = bb
+            .bytes(&<[u8; 32]>::from(env.gas_price))
+            .bytes(env.origin.as_fixed_bytes())
+            .bytes(&<[u8; 32]>::from(env.chain_id));
+        let bb = if env.block_hashes.is_empty() {
+            bb.u64(0)
+        } else {
+            let bb = bb.u64(env.block_hashes.len().try_into().unwrap());
+            env.block_hashes
+                .iter()
+                .fold(bb, |b, h| b.bytes(h.as_fixed_bytes()))
+        };
+        let bb = bb
+            .bytes(&<[u8; 32]>::from(env.block_number))
+            .bytes(env.block_coinbase.as_fixed_bytes())
+            .bytes(&<[u8; 32]>::from(env.block_timestamp))
+            .bytes(&<[u8; 32]>::from(env.block_difficulty))
+            .bytes(&<[u8; 32]>::from(env.block_gas_limit))
+            .bytes(&<[u8; 32]>::from(env.block_base_fee_per_gas));
+        bb.finalize_as_vec()
+    }
+
+    fn from_payload(payload: &[u8]) -> Result<Self, Error> {
+        let mut rb = ReadBuf::from(payload);
+
+        // Read EvmConfig and match hard fork variant
+        use EvmConfig::*;
+        let config = match rb.get_u8()? {
+            n if n == Istanbul as u8 => Istanbul,
+            n if n == Berlin as u8 => Berlin,
+            _ => return Err(Error::InvalidTag),
+        };
+
+        // Read Environment
+        let gas_price = rb.get_slice(32)?.into();
+        let origin = Origin::from_slice(rb.get_slice(20)?);
+        let chain_id = rb.get_slice(32)?.into();
+
+        let block_hashes = match rb.get_u64()? {
+            0 => Vec::new(),
+            n => (0..n)
+                .map(|_| BlockHash::from_slice(rb.get_slice(32).unwrap()))
+                .collect(),
+        };
+        let block_number = rb.get_slice(32)?.into();
+        let block_coinbase = BlockCoinBase::from_slice(rb.get_slice(20)?);
+        let block_timestamp = rb.get_slice(32)?.into();
+        let block_difficulty = rb.get_slice(32)?.into();
+        let block_gas_limit = rb.get_slice(32)?.into();
+        let block_base_fee_per_gas = rb.get_slice(32)?.into();
+
+        let environment = Environment {
+            gas_price,
+            origin,
+            chain_id,
+            block_hashes,
+            block_number,
+            block_coinbase,
+            block_timestamp,
+            block_difficulty,
+            block_gas_limit,
+            block_base_fee_per_gas,
+        };
+
+        Ok(Box::new(EvmConfigParams {
+            config,
+            environment,
+        }))
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 struct TagLen(u16);
 
-const MAXIMUM_LEN: usize = 64;
+const MAXIMUM_LEN: usize = 512;
 
 impl TagLen {
     pub fn new(tag: Tag, len: usize) -> Option<Self> {
         if len < MAXIMUM_LEN {
-            Some(TagLen((tag as u16) << 6 | len as u16))
+            Some(TagLen((tag as u16) << 9 | len as u16))
         } else {
             None
         }
     }
 
     pub fn get_len(self) -> usize {
-        (self.0 & 0b11_1111) as usize
+        (self.0 & 0b1_1111_1111) as usize
     }
 
     pub fn get_tag(self) -> Result<Tag, Error> {
-        Tag::from_u16(self.0 >> 6).ok_or(Error::InvalidTag)
+        Tag::from_u16(self.0 >> 9).ok_or(Error::InvalidTag)
     }
 }
 
@@ -777,6 +927,15 @@ mod test {
     use quickcheck::TestResult;
     use quickcheck::{Arbitrary, Gen};
     use strum::IntoEnumIterator;
+
+    #[cfg(feature = "evm")]
+    #[test]
+    fn to_and_from_payload_evm_config_params() {
+        let evm_params = EvmConfigParams::default();
+        let payload = Box::new(evm_params.clone()).to_payload();
+        let other_evm = Box::<EvmConfigParams>::from_payload(&payload).unwrap();
+        assert_eq!(evm_params, *other_evm);
+    }
 
     quickcheck! {
         fn tag_len_computation_correct(tag: Tag, len: usize) -> TestResult {
@@ -864,6 +1023,27 @@ mod test {
         }
     }
 
+    #[cfg(feature = "evm")]
+    impl Arbitrary for EvmConfigParams {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            Self {
+                config: EvmConfig::Berlin,
+                environment: Environment {
+                    gas_price: u64::arbitrary(g).into(),
+                    origin: Origin::random(),
+                    chain_id: u64::arbitrary(g).into(),
+                    block_hashes: Vec::new(),
+                    block_number: u64::arbitrary(g).into(),
+                    block_coinbase: BlockCoinBase::random(),
+                    block_timestamp: u64::arbitrary(g).into(),
+                    block_difficulty: u64::arbitrary(g).into(),
+                    block_gas_limit: u64::arbitrary(g).into(),
+                    block_base_fee_per_gas: u64::arbitrary(g).into(),
+                },
+            }
+        }
+    }
+
     impl Arbitrary for ConfigParam {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
             match u8::arbitrary(g) % 30 {
@@ -903,6 +1083,8 @@ mod test {
                 27 => ConfigParam::RemoveCommitteeId(Arbitrary::arbitrary(g)),
                 28 => ConfigParam::PerCertificateFees(Arbitrary::arbitrary(g)),
                 29 => ConfigParam::TransactionMaxExpiryEpochs(Arbitrary::arbitrary(g)),
+                #[cfg(feature = "evm")]
+                30 => ConfigParam::EvmParams(Arbitrary::arbitrary(g)),
                 _ => unreachable!(),
             }
         }

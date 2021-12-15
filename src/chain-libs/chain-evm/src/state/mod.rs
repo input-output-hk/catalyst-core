@@ -8,6 +8,6 @@ mod account;
 mod storage;
 mod trie;
 
-pub use account::{Account, AccountAddress, AccountTrie, Balance, Nonce};
+pub use account::{Account, AccountTrie, Balance, ByteCode, Nonce};
 pub use storage::{Key, Storage, Value};
 pub use trie::Trie;

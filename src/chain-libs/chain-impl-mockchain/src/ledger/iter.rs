@@ -1,3 +1,4 @@
+#[cfg(feature = "evm")]
 use super::evm;
 use super::governance::Governance;
 use super::ledger::{Error, Ledger, LedgerStaticParameters};
@@ -289,6 +290,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
         // TODO: votes don't have their entry
         let mut votes = VotePlanLedger::new();
         let governance = Governance::default();
+        #[cfg(feature = "evm")]
         let evm = evm::Ledger::new();
 
         for entry in iter {
@@ -368,6 +370,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             leaders_log,
             votes,
             governance,
+            #[cfg(feature = "evm")]
             evm,
         })
     }

@@ -13,6 +13,7 @@ pub mod chaintypes;
 pub mod config;
 mod date;
 pub mod error;
+pub mod evm;
 pub mod fee;
 pub mod fragment;
 pub mod header;

@@ -12,64 +12,254 @@
 use std::rc::Rc;
 
 use evm::{
-    backend::{Apply, ApplyBackend, Backend, Basic, Log, MemoryVicinity},
-    executor::{MemoryStackState, StackExecutor, StackSubstateMetadata},
-    Config, Context, Runtime,
+    backend::{Apply, ApplyBackend, Backend, Basic},
+    executor::stack::{MemoryStackState, StackExecutor, StackSubstateMetadata},
+    Context, Runtime,
 };
 use primitive_types::{H160, H256, U256};
 
-use crate::state::AccountTrie;
+use crate::{
+    precompiles::Precompiles,
+    state::{AccountTrie, ByteCode, Key},
+};
 
-/// Environment values for the machine backend.
-pub type Environment = MemoryVicinity;
+/// Export EVM types
+pub use evm::{
+    backend::{Log, MemoryVicinity as Environment},
+    Config, ExitReason,
+};
+
+/// An address of an EVM account.
+pub type Address = H160;
+
+/// A block's chain ID.
+pub type ChainId = U256;
+
+/// A block hash.
+pub type BlockHash = H256;
+
+/// A block hash.
+pub type BlockHashes = Vec<BlockHash>;
+
+/// A block's number.
+pub type BlockNumber = U256;
+
+/// A block's timestamp.
+pub type BlockTimestamp = U256;
+
+/// A block's difficulty.
+pub type BlockDifficulty = U256;
+
+/// A block's gas limit.
+pub type BlockGasLimit = U256;
+
+/// A block's origin
+pub type Origin = H160;
+
+/// A block's coinbase
+pub type BlockCoinBase = H160;
+
+/// Gas quantity integer for EVM operations.
+pub type Gas = U256;
+
+/// Gas price integer for EVM operations.
+pub type GasPrice = U256;
+
+/// Gas limit for EVM operations.
+pub type GasLimit = U256;
+
+/// Integer of the value sent with an EVM transaction.
+pub type Value = U256;
 
 /// The context of the EVM runtime
 pub type RuntimeContext = Context;
 
 /// Top-level abstraction for the EVM with the
 /// necessary types used to get the runtime going.
-pub struct VirtualMachine {
-    environment: Environment,
+pub struct VirtualMachine<'runtime> {
+    /// EVM Block Configuration.
+    config: &'runtime Config,
+    environment: &'runtime Environment,
+    precompiles: Precompiles,
     state: AccountTrie,
     logs: Vec<Log>,
 }
 
-impl VirtualMachine {
-    /// Creates a new `VirtualMachine` given environment values and account storage.
-    pub fn new(environment: Environment, state: AccountTrie) -> Self {
+/// Ethereum Hard-Fork variants
+pub enum HardFork {
+    Istanbul,
+    Berlin,
+}
+
+fn precompiles(fork: HardFork) -> Precompiles {
+    match fork {
+        HardFork::Istanbul => Precompiles::new_istanbul(),
+        HardFork::Berlin => Precompiles::new_berlin(),
+    }
+}
+
+impl<'runtime> VirtualMachine<'runtime> {
+    /// Creates a new `VirtualMachine` given configuration parameters.
+    pub fn new(config: &'runtime Config, environment: &'runtime Environment) -> Self {
+        Self::new_with_state(config, environment, Default::default())
+    }
+
+    /// Creates a new `VirtualMachine` given configuration params and a given account storage.
+    pub fn new_with_state(
+        config: &'runtime Config,
+        environment: &'runtime Environment,
+        state: AccountTrie,
+    ) -> Self {
         Self {
+            config,
             environment,
+            precompiles: precompiles(HardFork::Berlin),
             state,
             logs: Default::default(),
         }
     }
 
-    #[allow(dead_code)]
-    /// Returns an initialized instance of `evm::executor::StackExecutor`.
-    fn executor<'backend, 'config>(
-        &'backend self,
-        gas_limit: u64,
-        config: &'config Config,
-    ) -> StackExecutor<'config, MemoryStackState<'backend, 'config, VirtualMachine>> {
-        let metadata = StackSubstateMetadata::new(gas_limit, config);
-        let memory_stack_state = MemoryStackState::new(metadata, self);
-        StackExecutor::new(memory_stack_state, config)
-    }
-
-    #[allow(dead_code)]
     /// Returns an initialized instance of `evm::Runtime`.
-    fn runtime<'config>(
+    pub fn runtime(
         &self,
         code: Rc<Vec<u8>>,
         data: Rc<Vec<u8>>,
         context: RuntimeContext,
-        config: &'config Config,
-    ) -> Runtime<'config> {
-        Runtime::new(code, data, context, config)
+    ) -> Runtime<'_> {
+        Runtime::new(code, data, context, self.config)
+    }
+
+    /// Execute a CREATE transaction
+    #[allow(clippy::boxed_local)]
+    pub fn transact_create(
+        &mut self,
+        caller: Address,
+        value: Value,
+        init_code: ByteCode,
+        gas_limit: u64,
+        access_list: Vec<(Address, Vec<Key>)>,
+        delete_empty: bool,
+    ) -> Option<(&AccountTrie, &[Log])> {
+        {
+            let metadata = StackSubstateMetadata::new(gas_limit, self.config);
+            let memory_stack_state = MemoryStackState::new(metadata, self);
+            let mut executor = StackExecutor::new_with_precompiles(
+                memory_stack_state,
+                self.config,
+                &self.precompiles,
+            );
+
+            let exit_reason =
+                executor.transact_create(caller, value, init_code.to_vec(), gas_limit, access_list);
+            match exit_reason {
+                ExitReason::Succeed(_succeded) => {
+                    // apply and return state
+                    // apply changes to the state, this consumes the executor
+                    let state = executor.into_state();
+                    // Next, we consume the stack state and extract the values and logs
+                    // used to modify the accounts trie in the VirtualMachine.
+                    let (values, logs) = state.deconstruct();
+
+                    self.apply(values, logs, delete_empty);
+                    //_exit_reason
+                    Some((&self.state, &self.logs))
+                }
+                _ => None,
+            }
+        }
+    }
+
+    /// Execute a CREATE2 transaction
+    #[allow(clippy::boxed_local)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn transact_create2(
+        &mut self,
+        caller: Address,
+        value: Value,
+        init_code: ByteCode,
+        salt: H256,
+        gas_limit: u64,
+        access_list: Vec<(Address, Vec<Key>)>,
+        delete_empty: bool,
+    ) -> Option<(&AccountTrie, &[Log])> {
+        {
+            let metadata = StackSubstateMetadata::new(gas_limit, self.config);
+            let memory_stack_state = MemoryStackState::new(metadata, self);
+            let mut executor = StackExecutor::new_with_precompiles(
+                memory_stack_state,
+                self.config,
+                &self.precompiles,
+            );
+            let exit_reason = executor.transact_create2(
+                caller,
+                value,
+                init_code.to_vec(),
+                salt,
+                gas_limit,
+                access_list,
+            );
+            match exit_reason {
+                ExitReason::Succeed(_succeded) => {
+                    // apply and return state
+                    // apply changes to the state, this consumes the executor
+                    let state = executor.into_state();
+                    // Next, we consume the stack state and extract the values and logs
+                    // used to modify the accounts trie in the VirtualMachine.
+                    let (values, logs) = state.deconstruct();
+
+                    self.apply(values, logs, delete_empty);
+                    //_exit_reason
+                    Some((&self.state, &self.logs))
+                }
+                _ => None,
+            }
+        }
+    }
+
+    /// Execute a CALL transaction
+    #[allow(clippy::boxed_local)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn transact_call(
+        &mut self,
+        caller: Address,
+        address: Address,
+        value: Value,
+        data: ByteCode,
+        gas_limit: u64,
+        access_list: Vec<(Address, Vec<Key>)>,
+        delete_empty: bool,
+    ) -> Option<(&AccountTrie, &[Log], ByteCode)> {
+        let metadata = StackSubstateMetadata::new(gas_limit, self.config);
+        let memory_stack_state = MemoryStackState::new(metadata, self);
+        let mut executor =
+            StackExecutor::new_with_precompiles(memory_stack_state, self.config, &self.precompiles);
+        let (exit_reason, byte_output) = executor.transact_call(
+            caller,
+            address,
+            value,
+            data.to_vec(),
+            gas_limit,
+            access_list,
+        );
+        match exit_reason {
+            ExitReason::Succeed(_succeded) => {
+                // apply and return state
+                // apply changes to the state, this consumes the executor
+                let state = executor.into_state();
+                // Next, we consume the stack state and extract the values and logs
+                // used to modify the accounts trie in the VirtualMachine.
+                let (values, logs) = state.deconstruct();
+
+                self.apply(values, logs, delete_empty);
+                //_exit_reason
+                Some((&self.state, &self.logs, byte_output.into_boxed_slice()))
+            }
+            _ => None,
+        }
     }
 }
 
-impl Backend for VirtualMachine {
+impl<'runtime> Backend for VirtualMachine<'runtime> {
     fn gas_price(&self) -> U256 {
         self.environment.gas_price
     }
@@ -101,6 +291,9 @@ impl Backend for VirtualMachine {
     }
     fn block_gas_limit(&self) -> U256 {
         self.environment.block_gas_limit
+    }
+    fn block_base_fee_per_gas(&self) -> U256 {
+        self.environment.block_base_fee_per_gas
     }
     fn chain_id(&self) -> U256 {
         self.environment.chain_id
@@ -134,7 +327,7 @@ impl Backend for VirtualMachine {
     }
 }
 
-impl ApplyBackend for VirtualMachine {
+impl<'runtime> ApplyBackend for VirtualMachine<'runtime> {
     fn apply<A, I, L>(&mut self, values: A, logs: L, delete_empty: bool)
     where
         A: IntoIterator<Item = Apply<I>>,
@@ -198,6 +391,7 @@ mod tests {
 
     #[test]
     fn code_to_execute_evm_runtime_with_defaults_and_no_code_no_data() {
+        let config = Config::istanbul();
         let environment = Environment {
             gas_price: Default::default(),
             origin: Default::default(),
@@ -208,14 +402,18 @@ mod tests {
             block_timestamp: Default::default(),
             block_difficulty: Default::default(),
             block_gas_limit: Default::default(),
+            block_base_fee_per_gas: Default::default(),
         };
-        let state = AccountTrie::default();
 
-        let vm = VirtualMachine::new(environment, state);
+        let vm = VirtualMachine::new(&config, &environment);
 
         let gas_limit = u64::max_value();
-        let config = Config::istanbul();
-        let mut executor = vm.executor(gas_limit, &config);
+
+        let metadata = StackSubstateMetadata::new(gas_limit, &config);
+        let memory_stack_state = MemoryStackState::new(metadata, &vm);
+        let precompiles = precompiles(HardFork::Berlin);
+        let mut executor =
+            StackExecutor::new_with_precompiles(memory_stack_state, &config, &precompiles);
 
         // Byte-encoded smart contract code
         let code = Rc::new(Vec::new());
@@ -228,7 +426,7 @@ mod tests {
             apparent_value: Default::default(),
         };
         // Handle for the EVM runtime
-        let mut runtime = vm.runtime(code, data, context, &config);
+        let mut runtime = vm.runtime(code, data, context);
 
         let exit_reason = runtime.run(&mut executor);
 

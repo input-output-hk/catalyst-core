@@ -2,6 +2,7 @@
 //! current state and verify transactions.
 
 use super::check::{self, TxValidityError, TxVerifyError};
+#[cfg(feature = "evm")]
 use super::evm;
 use super::governance::{Governance, ParametersGovernanceAction, TreasuryGovernanceAction};
 use super::leaderlog::LeadersParticipationRecord;
@@ -99,6 +100,7 @@ pub struct Ledger {
     pub(crate) leaders_log: LeadersParticipationRecord,
     pub(crate) votes: VotePlanLedger,
     pub(crate) governance: Governance,
+    #[cfg(feature = "evm")]
     pub(crate) evm: evm::Ledger,
 }
 
@@ -354,6 +356,7 @@ impl Ledger {
             leaders_log: LeadersParticipationRecord::new(),
             votes: VotePlanLedger::new(),
             governance: Governance::default(),
+            #[cfg(feature = "evm")]
             evm: evm::Ledger::new(),
         }
     }
@@ -511,6 +514,17 @@ impl Ledger {
                     let tx = tx.as_slice();
                     check::valid_block0_cert_transaction(&tx)?;
                     ledger = ledger.mint_token_unchecked(tx.payload().into_payload())?;
+                }
+                Fragment::Evm(_tx) => {
+                    #[cfg(feature = "evm")]
+                    {
+                        let tx = _tx.as_slice().payload().into_payload();
+                        let config = &ledger.settings.evm_params.config.into();
+                        let environment = &ledger.settings.evm_params.environment;
+                        ledger.evm.run_transaction(tx, config, environment)?;
+                    }
+                    #[cfg(not(feature = "evm"))]
+                    {}
                 }
             }
         }
@@ -1021,6 +1035,17 @@ impl Ledger {
                     new_ledger.apply_transaction(&fragment_id, &tx, block_date, ledger_params)?;
 
                 new_ledger = new_ledger_.mint_token(tx.payload().into_payload())?;
+            }
+            Fragment::Evm(_tx) => {
+                #[cfg(feature = "evm")]
+                {
+                    let tx = _tx.as_slice().payload().into_payload();
+                    let config = &new_ledger.settings.evm_params.config.into();
+                    let environment = &new_ledger.settings.evm_params.environment;
+                    new_ledger.evm.run_transaction(tx, config, environment)?;
+                }
+                #[cfg(not(feature = "evm"))]
+                {}
             }
         }
 

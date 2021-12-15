@@ -1,4 +1,5 @@
 pub mod check;
+#[cfg(feature = "evm")]
 mod evm;
 pub mod governance;
 mod info;

@@ -4,6 +4,7 @@ use crate::key::EitherEd25519SecretKey;
 use crate::ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAction};
 use crate::testing::data::AddressData;
 use crate::testing::data::AddressDataValue;
+use crate::tokens::identifier::TokenIdentifier;
 use crate::{
     certificate::{ExternalProposalId, PoolPermissions, Proposal, Proposals, VoteAction, VotePlan},
     header::BlockDate,
@@ -129,6 +130,7 @@ pub struct VotePlanDef {
     end_tally_date: BlockDate,
     committee_keys: Vec<MemberPublicKey>,
     proposals: Vec<ProposalDef>,
+    voting_token: TokenIdentifier,
 }
 
 impl VotePlanDef {
@@ -217,6 +219,8 @@ impl VotePlanDef {
 
             builder.with_proposal(&mut proposal_builder);
         }
+
+        builder.voting_token(vote_plan.voting_token().clone());
         builder.build()
     }
 }
@@ -235,6 +239,7 @@ impl From<VotePlanDef> for VotePlan {
             proposals,
             dto.payload_type,
             dto.committee_keys,
+            dto.voting_token,
         )
     }
 }

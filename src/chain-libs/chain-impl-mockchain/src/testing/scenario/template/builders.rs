@@ -5,6 +5,9 @@ use crate::ledger::governance::{ParametersGovernanceAction, TreasuryGovernanceAc
 use crate::testing::scenario::template::ExternalProposalId;
 use crate::testing::scenario::template::ProposalDef;
 use crate::testing::scenario::template::VotePlanDef;
+use crate::tokens::identifier::TokenIdentifier;
+use crate::tokens::name::{TokenName, TOKEN_NAME_MAX_SIZE};
+use crate::tokens::policy_hash::{PolicyHash, POLICY_HASH_SIZE};
 use crate::{
     date::BlockDate,
     rewards::{Ratio, TaxType},
@@ -16,6 +19,7 @@ use crate::{
 use chain_vote::MemberPublicKey;
 use std::{
     collections::{HashMap, HashSet},
+    convert::TryFrom,
     num::NonZeroU64,
 };
 
@@ -252,6 +256,7 @@ pub struct VotePlanDefBuilder {
     end_tally_date: Option<BlockDate>,
     committee_keys: Vec<MemberPublicKey>,
     proposals: Vec<ProposalDef>,
+    voting_token: TokenIdentifier,
 }
 
 impl VotePlanDefBuilder {
@@ -265,6 +270,10 @@ impl VotePlanDefBuilder {
             end_tally_date: Option::None,
             committee_keys: Vec::new(),
             proposals: Vec::new(),
+            voting_token: TokenIdentifier {
+                policy_hash: PolicyHash::from([0u8; POLICY_HASH_SIZE]),
+                token_name: TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap(),
+            },
         }
     }
 
@@ -320,6 +329,11 @@ impl VotePlanDefBuilder {
         self
     }
 
+    pub fn voting_token(&mut self, token: TokenIdentifier) -> &mut Self {
+        self.voting_token = token;
+        self
+    }
+
     pub fn build(self) -> VotePlanDef {
         VotePlanDef {
             alias: self.alias.clone(),
@@ -330,6 +344,7 @@ impl VotePlanDefBuilder {
             end_tally_date: self.end_tally_date.unwrap(),
             proposals: self.proposals,
             committee_keys: self.committee_keys,
+            voting_token: self.voting_token,
         }
     }
 }

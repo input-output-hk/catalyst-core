@@ -55,6 +55,9 @@ use crate::ledger::{Globals, Ledger, LedgerStaticParameters};
 use crate::legacy;
 use crate::multisig::{DeclElement, Declaration};
 use crate::stake::{PoolLastRewards, PoolState};
+use crate::tokens::identifier::TokenIdentifier;
+use crate::tokens::name::TokenName;
+use crate::tokens::policy_hash::{PolicyHash, POLICY_HASH_SIZE};
 use crate::transaction::Output;
 use crate::update::UpdateProposalState;
 use crate::value::Value;
@@ -1002,6 +1005,33 @@ fn unpack_committee_public_keys<R: BufRead>(
     Ok(result)
 }
 
+fn pack_voting_token<W: std::io::Write>(
+    token_identifier: &TokenIdentifier,
+    codec: &mut Codec<W>,
+) -> Result<(), std::io::Error> {
+    codec.put_bytes(&token_identifier.bytes())?;
+
+    Ok(())
+}
+
+fn unpack_voting_token<R: BufRead>(codec: &mut Codec<R>) -> Result<TokenIdentifier, io::Error> {
+    let policy_hash_bytes = codec.get_bytes(POLICY_HASH_SIZE)?;
+
+    let policy_hash = PolicyHash::try_from(policy_hash_bytes.as_ref())
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+    let token_name_len = codec.get_u8()? as usize;
+    let token_name = codec.get_bytes(token_name_len)?;
+
+    let token_name = TokenName::try_from(token_name)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+
+    Ok(TokenIdentifier {
+        policy_hash,
+        token_name,
+    })
+}
+
 fn pack_vote_plan<W: std::io::Write>(
     vote_plan: &VotePlan,
     codec: &mut Codec<W>,
@@ -1012,6 +1042,7 @@ fn pack_vote_plan<W: std::io::Write>(
     pack_payload_type(vote_plan.payload_type(), codec)?;
     pack_vote_proposals(vote_plan.proposals(), codec)?;
     pack_committee_public_keys(vote_plan.committee_public_keys(), codec)?;
+    pack_voting_token(vote_plan.voting_token(), codec)?;
     Ok(())
 }
 
@@ -1022,6 +1053,7 @@ fn unpack_vote_plan<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<VotePla
     let payload_type = unpack_payload_type(codec)?;
     let proposals = unpack_proposals(codec)?;
     let keys = unpack_committee_public_keys(codec)?;
+    let voting_token = unpack_voting_token(codec)?;
     Ok(VotePlan::new(
         vote_start,
         vote_end,
@@ -1029,6 +1061,7 @@ fn unpack_vote_plan<R: std::io::BufRead>(codec: &mut Codec<R>) -> Result<VotePla
         proposals,
         payload_type,
         keys,
+        voting_token,
     ))
 }
 

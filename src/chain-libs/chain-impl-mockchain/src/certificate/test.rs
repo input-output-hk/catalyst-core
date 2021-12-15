@@ -1,10 +1,10 @@
 use super::*;
-use crate::accounting::account::DelegationType;
 use crate::block::BlockDate;
 use crate::fragment::ConfigParams;
 use crate::ledger::governance::TreasuryGovernanceAction;
 use crate::rewards::TaxType;
 use crate::vote;
+use crate::{accounting::account::DelegationType, tokens::identifier::TokenIdentifier};
 #[cfg(test)]
 use chain_core::mempack::{ReadBuf, Readable};
 use chain_crypto::{testing, Ed25519};
@@ -213,6 +213,8 @@ impl Arbitrary for VotePlan {
             keys.push(m1.public_key());
         }
 
+        let voting_token = TokenIdentifier::arbitrary(g);
+
         Self::new(
             vote_start,
             vote_end,
@@ -220,6 +222,7 @@ impl Arbitrary for VotePlan {
             proposals,
             payload_type,
             keys,
+            voting_token,
         )
     }
 }

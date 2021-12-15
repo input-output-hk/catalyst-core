@@ -7,6 +7,11 @@ use crate::{
     },
     ledger::governance::{ParametersGovernance, TreasuryGovernance},
     testing::data::CommitteeMembersManager,
+    tokens::{
+        identifier::TokenIdentifier,
+        name::{TokenName, TOKEN_NAME_MAX_SIZE},
+        policy_hash::{PolicyHash, POLICY_HASH_SIZE},
+    },
     vote::{self, Choice, EncryptedVote, Payload, ProofOfCorrectVote},
 };
 use chain_core::property::BlockDate as BlockDateProp;
@@ -15,6 +20,7 @@ use chain_vote::{Crs, ElectionPublicKey, Vote};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rand_core::{CryptoRng, RngCore};
+use std::convert::TryFrom;
 use typed_bytes::ByteBuilder;
 
 pub struct VoteTestGen;
@@ -83,6 +89,10 @@ impl VoteTestGen {
             VoteTestGen::proposals(3),
             vote::PayloadType::Public,
             Vec::new(),
+            TokenIdentifier {
+                policy_hash: PolicyHash::from([0u8; POLICY_HASH_SIZE]),
+                token_name: TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap(),
+            },
         )
     }
 
@@ -109,6 +119,10 @@ impl VoteTestGen {
             VoteTestGen::proposals(3),
             vote::PayloadType::Private,
             manager.members().iter().map(|x| x.public_key()).collect(),
+            TokenIdentifier {
+                policy_hash: PolicyHash::from([0u8; POLICY_HASH_SIZE]),
+                token_name: TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap(),
+            },
         )
     }
 
@@ -120,6 +134,10 @@ impl VoteTestGen {
             VoteTestGen::proposals(count),
             vote::PayloadType::Public,
             Vec::new(),
+            TokenIdentifier {
+                policy_hash: PolicyHash::from([0u8; POLICY_HASH_SIZE]),
+                token_name: TokenName::try_from(vec![0u8; TOKEN_NAME_MAX_SIZE]).unwrap(),
+            },
         )
     }
 

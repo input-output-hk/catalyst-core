@@ -435,7 +435,7 @@ impl Ledger {
 
             let era = TimeEra::new(slot0, TimeEpoch(0), slots_per_epoch);
 
-            let settings = setting::Settings::new().apply(&regular_ents)?;
+            let settings = setting::Settings::new().try_apply(&regular_ents)?;
 
             if settings.bft_leaders.is_empty() {
                 return Err(Error::Block0(
@@ -800,11 +800,10 @@ impl Ledger {
         }
 
         // Process Update proposals if needed
-        let (updates, settings) = new_ledger.updates.process_proposals(
-            new_ledger.settings,
-            new_ledger.date,
-            block_date,
-        )?;
+        let (updates, settings) =
+            new_ledger
+                .updates
+                .process_proposals(new_ledger.settings, new_ledger.date, block_date);
         new_ledger.updates = updates;
         new_ledger.settings = settings;
 
@@ -1074,7 +1073,7 @@ impl Ledger {
     }
 
     pub fn apply_update(mut self, update: &UpdateProposal) -> Result<Self, Error> {
-        self.settings = self.settings.apply(update.changes())?;
+        self.settings = self.settings.try_apply(update.changes())?;
         Ok(self)
     }
 

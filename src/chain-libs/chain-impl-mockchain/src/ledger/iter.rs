@@ -358,7 +358,7 @@ impl<'a> std::iter::FromIterator<Entry<'a>> for Result<Ledger, Error> {
             utxos: utxos.into_iter().collect(),
             oldutxos: oldutxos.into_iter().collect(),
             accounts: accounts.into_iter().collect(),
-            settings: setting::Settings::new().apply(&config_params)?,
+            settings: setting::Settings::new().try_apply(&config_params)?,
             updates,
             multisig: multisig::Ledger::restore(multisig_accounts, multisig_declarations),
             delegation,

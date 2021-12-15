@@ -26,6 +26,9 @@ impl UpdateState {
     ) -> Result<Self, Error> {
         let proposer_id = proposal.proposer_id();
 
+        // Only proposal.changes() validation without mutating of the 'settings' variable
+        settings.try_apply(proposal.changes())?;
+
         if !settings.bft_leaders.contains(proposer_id) {
             return Err(Error::BadProposer(proposal_id, proposer_id.clone()));
         }
@@ -78,7 +81,7 @@ impl UpdateState {
         mut settings: Settings,
         prev_date: BlockDate,
         new_date: BlockDate,
-    ) -> Result<(Self, Settings), Error> {
+    ) -> (Self, Settings) {
         let mut expired_ids = vec![];
 
         assert!(prev_date < new_date);
@@ -101,7 +104,11 @@ impl UpdateState {
                 // If a majority of BFT leaders voted for the
                 // proposal, then apply it.
                 if proposal_state.votes.size() > settings.bft_leaders.len() / 2 {
-                    settings = settings.apply(proposal_state.proposal.changes())?;
+                    // WARNING: be careful, if settings update with the new proposals will depend on the order proposal application,
+                    // assumption that all proposals should be valid at this point can be violated
+                    settings = settings
+                        .try_apply(proposal_state.proposal.changes())
+                        .expect("proposal should be valid");
                     expired_ids.push(*proposal_id);
                 } else if proposal_state.proposal_date.epoch + settings.proposal_expiration
                     < new_date.epoch
@@ -118,7 +125,7 @@ impl UpdateState {
             }
         }
 
-        Ok((self, settings))
+        (self, settings)
     }
 }
 
@@ -225,6 +232,8 @@ impl From<ActiveSlotsCoeffError> for Error {
 mod tests {
     use super::*;
     use crate::certificate::UpdateProposal;
+    #[cfg(test)]
+    use crate::milli::Milli;
     #[cfg(test)]
     use crate::testing::serialization::serialization_bijection;
     #[cfg(test)]
@@ -443,8 +452,8 @@ mod tests {
     }
 
     #[test]
-    fn process_proposals_for_readonly_setting_should_return_error() {
-        let mut update_state = UpdateState::new();
+    fn apply_for_readonly_setting_should_return_error() {
+        let update_state = UpdateState::new();
         let proposal_id = TestGen::hash();
         let proposer = TestGen::leader_pair();
         let block_date = BlockDate::first();
@@ -452,23 +461,43 @@ mod tests {
 
         let settings = TestGen::settings(vec![proposer.clone()]);
 
-        update_state = apply_update_proposal(
-            update_state,
-            proposal_id,
-            readonly_setting,
-            &proposer,
-            &settings,
-            block_date,
-        )
-        .expect("failed while applying proposal");
+        assert_eq!(
+            apply_update_proposal(
+                update_state,
+                proposal_id,
+                readonly_setting,
+                &proposer,
+                &settings,
+                block_date,
+            ),
+            Err(Error::ReadOnlySetting)
+        );
+    }
 
-        // Apply vote
-        update_state = apply_update_vote(update_state, proposal_id, &proposer, &settings)
-            .expect("failed while applying vote");
+    #[test]
+    fn apply_for_invalid_active_slot_coeff_should_return_error() {
+        let update_state = UpdateState::new();
+        let proposal_id = TestGen::hash();
+        let proposer = TestGen::leader_pair();
+        let block_date = BlockDate::first();
+        let overflow_milli = Milli::from_millis(Milli::ONE.to_millis() + 1);
+        let invalid_active_slot_coeff =
+            ConfigParam::ConsensusGenesisPraosActiveSlotsCoeff(overflow_milli);
+
+        let settings = TestGen::settings(vec![proposer.clone()]);
 
         assert_eq!(
-            update_state.process_proposals(settings, block_date, block_date.next_epoch()),
-            Err(Error::ReadOnlySetting)
+            apply_update_proposal(
+                update_state,
+                proposal_id,
+                invalid_active_slot_coeff,
+                &proposer,
+                &settings,
+                block_date,
+            ),
+            Err(Error::BadConsensusGenesisPraosActiveSlotsCoeff(
+                ActiveSlotsCoeffError::InvalidValue(overflow_milli)
+            ))
         );
     }
 
@@ -531,9 +560,8 @@ mod tests {
         )
         .expect("failed while applying vote");
 
-        let (update_state, settings) = update_state
-            .process_proposals(settings, block_date, block_date.next_epoch())
-            .expect("error while processing proposal");
+        let (update_state, settings) =
+            update_state.process_proposals(settings, block_date, block_date.next_epoch());
 
         match first_proposal_id.cmp(&second_proposal_id) {
             std::cmp::Ordering::Less => assert_eq!(settings.slots_per_epoch, 200),
@@ -607,13 +635,11 @@ mod tests {
         )
         .expect("failed while applying vote");
 
-        let (update_state, settings) = update_state
-            .process_proposals(
-                settings,
-                first_proposal_block_date,
-                first_proposal_block_date.next_epoch(),
-            )
-            .expect("error while processing proposal");
+        let (update_state, settings) = update_state.process_proposals(
+            settings,
+            first_proposal_block_date,
+            first_proposal_block_date.next_epoch(),
+        );
 
         assert_eq!(settings.slots_per_epoch, 200);
 
@@ -687,14 +713,11 @@ mod tests {
         // if proposal expiration period is not exceeded after that
         // proposal should be removed from proposal collection
         for _i in 0..expiry_block_data.get_last_epoch() {
-            let (update_state, _settings) = update_state
-                .clone()
-                .process_proposals(
-                    settings.clone(),
-                    current_block_date,
-                    current_block_date.next_epoch(),
-                )
-                .expect("error while processing proposal");
+            let (update_state, _settings) = update_state.clone().process_proposals(
+                settings.clone(),
+                current_block_date,
+                current_block_date.next_epoch(),
+            );
 
             if proposal_date.epoch + proposal_expiration <= current_block_date.epoch {
                 assert_eq!(update_state.proposals.size(), 0);

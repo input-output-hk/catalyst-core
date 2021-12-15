@@ -6,7 +6,9 @@ use crate::Result;
 pub use external::ExternalDataCommandArgs;
 pub use jormungandr_lib::interfaces::Initial;
 pub use perf::PerfDataCommandArgs;
-pub use random::{AllRandomDataCommandArgs, RandomReviewsDataCommandArgs};
+pub use random::{
+    AllRandomDataCommandArgs, RandomReviewsDataCommandArgs, RandomScoresDataCommandArgs,
+};
 
 use structopt::StructOpt;
 
@@ -36,6 +38,8 @@ pub enum RandomDataCommandArgs {
     All(AllRandomDataCommandArgs),
     /// generate reviews random data
     Reviews(RandomReviewsDataCommandArgs),
+    /// generate reviews random data
+    Scores(RandomScoresDataCommandArgs),
 }
 
 impl RandomDataCommandArgs {
@@ -43,6 +47,7 @@ impl RandomDataCommandArgs {
         match self {
             Self::All(all_data_command) => all_data_command.exec(),
             Self::Reviews(reviews_random_command) => reviews_random_command.exec(),
+            Self::Scores(scores_random_command) => scores_random_command.exec(),
         }
     }
 }

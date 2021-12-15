@@ -1,8 +1,6 @@
 use super::common::{self, Depth, Seed};
 use ed25519_dalek as ed25519;
 use ed25519_dalek::{Signer as _, Verifier as _};
-use std::convert::TryFrom as _;
-//use std::hash::Hash;
 
 #[derive(Debug)]
 pub enum Error {

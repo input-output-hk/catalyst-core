@@ -1,6 +1,5 @@
 use crate::error::{Code, Error};
 
-use std::convert::TryFrom;
 use std::fmt;
 
 const BLOCK_ID_LEN: usize = 32;

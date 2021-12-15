@@ -23,11 +23,6 @@ use tonic::metadata::MetadataValue;
 #[cfg(feature = "transport")]
 use tonic::transport;
 
-use std::convert::TryFrom;
-
-#[cfg(feature = "transport")]
-use std::convert::TryInto;
-
 /// Builder to customize the gRPC client.
 #[derive(Default)]
 pub struct Builder {

@@ -12,9 +12,6 @@ use tonic::codegen::StdError;
 #[cfg(feature = "transport")]
 use tonic::transport;
 
-#[cfg(feature = "transport")]
-use std::convert::TryInto;
-
 pub struct Client<T> {
     inner: proto::watch::watch_client::WatchClient<T>,
 }

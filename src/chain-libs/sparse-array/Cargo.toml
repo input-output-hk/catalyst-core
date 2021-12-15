@@ -2,7 +2,7 @@
 name = "sparse-array"
 version = "0.1.0"
 authors = ["Yevhenii Babichenko <eugene.babichenko@iohk.io>"]
-edition = "2018"
+edition = "2021"
 
 [dev-dependencies]
 proptest = { git = "https://github.com/input-output-hk/proptest.git" }

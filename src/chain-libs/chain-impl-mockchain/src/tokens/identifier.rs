@@ -3,7 +3,7 @@ use crate::tokens::{
     policy_hash::PolicyHash,
 };
 
-use std::{convert::TryFrom, fmt, str::FromStr};
+use std::{fmt, str::FromStr};
 
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use thiserror::Error;

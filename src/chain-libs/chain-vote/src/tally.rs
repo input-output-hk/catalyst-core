@@ -10,7 +10,6 @@ use crate::GroupElement;
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};
-use std::convert::TryInto;
 
 /// Secret key for opening vote
 pub type OpeningVoteKey = MemberSecretKey;

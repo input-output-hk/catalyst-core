@@ -1,7 +1,6 @@
 //! module to provide some handy interfaces atop the hashes so we have
 //! the common interfaces for the project to work with.
 
-use std::convert::TryFrom;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 use std::{error, fmt, result};

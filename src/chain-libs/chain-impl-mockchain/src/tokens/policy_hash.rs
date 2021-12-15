@@ -1,5 +1,3 @@
-use std::convert::{TryFrom, TryInto};
-
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 
 pub const POLICY_HASH_SIZE: usize = 28;

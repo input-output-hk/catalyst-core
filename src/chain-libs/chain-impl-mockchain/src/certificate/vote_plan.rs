@@ -400,8 +400,6 @@ impl Readable for VoteAction {
 
 impl Readable for VotePlan {
     fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        use std::convert::TryInto as _;
-
         let vote_start = BlockDate {
             epoch: buf.get_u32()?,
             slot_id: buf.get_u32()?,

@@ -4,7 +4,6 @@ use chain_core::{
 };
 use chain_crypto::{Ed25519, PublicKey};
 use std::{
-    convert::TryFrom,
     fmt::{self, Debug, Display},
     str::FromStr,
 };

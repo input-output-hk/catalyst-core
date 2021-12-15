@@ -3,7 +3,7 @@ name = "chain-crypto"
 version = "0.1.0"
 authors = ["Vincent Hanquez <vincent.hanquez@iohk.io>"]
 license = "MIT OR Apache-2.0"
-edition = "2018"
+edition = "2021"
 keywords = [ "Crypto", "VRF", "Ed25519", "MMM" ]
 
 [dependencies]

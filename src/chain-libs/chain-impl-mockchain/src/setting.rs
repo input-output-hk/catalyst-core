@@ -13,7 +13,6 @@ use crate::{
     rewards,
     vote::CommitteeId,
 };
-use std::convert::TryFrom;
 use std::error::Error;
 use std::fmt;
 use std::num::NonZeroU32;

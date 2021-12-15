@@ -14,7 +14,6 @@ use std::ops::{Add, Mul, Sub};
 
 use curve25519_dalek_ng::traits::{MultiscalarMul, VartimeMultiscalarMul};
 use std::array::TryFromSliceError;
-use std::convert::TryInto;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Scalar(IScalar);

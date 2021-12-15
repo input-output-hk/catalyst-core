@@ -87,7 +87,6 @@ pub enum InputEnum {
 
 impl From<[u8; INPUT_SIZE]> for Input {
     fn from(data: [u8; INPUT_SIZE]) -> Input {
-        use std::convert::TryFrom;
         let index_or_account = data[0];
         let value = Value::try_from(&data[1..9]).unwrap();
         let mut input_ptr = [0u8; INPUT_PTR_SIZE];

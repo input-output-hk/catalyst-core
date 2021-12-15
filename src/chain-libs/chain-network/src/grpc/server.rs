@@ -13,7 +13,6 @@ use tonic::{Code, Status};
 #[cfg(feature = "legacy")]
 use tonic::metadata::MetadataValue;
 
-use std::convert::TryFrom;
 use std::net::SocketAddr;
 
 pub type Server<T> = proto::node::node_server::NodeServer<NodeService<T>>;

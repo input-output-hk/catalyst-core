@@ -37,7 +37,6 @@ use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline}
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 use rand_core::RngCore;
-use std::convert::TryFrom;
 use std::time::Duration;
 use std::time::SystemTime;
 use std::{iter, num::NonZeroU64};

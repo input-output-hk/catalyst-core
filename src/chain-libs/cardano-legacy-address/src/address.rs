@@ -19,7 +19,6 @@ use cryptoxide::sha3::Sha3_256;
 use ed25519_bip32::XPub;
 
 use std::{
-    convert::{TryFrom, TryInto},
     fmt,
     io::{BufRead, Write},
 };

@@ -2,7 +2,6 @@
 
 use rand_core::RngCore;
 use std::array::TryFromSliceError;
-use std::convert::{TryFrom, TryInto};
 use std::fmt;
 
 const NODE_ID_LEN: usize = 24;

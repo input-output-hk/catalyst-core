@@ -1,7 +1,6 @@
 use crate::stake::Stake;
 use chain_core::mempack::{ReadBuf, ReadError, Readable};
 use chain_core::property;
-use std::convert::TryFrom;
 use std::{iter::Sum, ops};
 use thiserror::Error;
 

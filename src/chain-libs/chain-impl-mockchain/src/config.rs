@@ -743,7 +743,6 @@ impl ConfigParamVariant for CommitteeId {
     }
 
     fn from_payload(payload: &[u8]) -> Result<Self, Error> {
-        use std::convert::TryFrom as _;
         Self::try_from(payload).map_err(|err| Error::UnknownString(err.to_string()))
     }
 }

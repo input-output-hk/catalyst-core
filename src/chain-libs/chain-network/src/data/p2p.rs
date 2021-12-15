@@ -2,7 +2,6 @@ use crate::error::{Code, Error};
 use chain_crypto::{Ed25519, KeyPair, PublicKey, SecretKey, Signature, Verification};
 use rand_core::{CryptoRng, RngCore};
 
-use std::convert::TryFrom;
 use std::fmt;
 use std::net::SocketAddr;
 

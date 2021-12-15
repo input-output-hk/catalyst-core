@@ -101,8 +101,6 @@ impl VoteTally {
     }
 
     pub fn serialize_in(&self, bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
-        use std::convert::TryInto;
-
         let bb = bb.bytes(self.id().as_ref()).u8(self.tally_type() as u8);
 
         match &self.payload {
@@ -257,8 +255,6 @@ impl Readable for TallyProof {
 
 impl Readable for VoteTally {
     fn read(buf: &mut ReadBuf) -> Result<Self, ReadError> {
-        use std::convert::TryInto as _;
-
         let id = <[u8; 32]>::read(buf)?.into();
         let payload_type = buf
             .get_u8()?

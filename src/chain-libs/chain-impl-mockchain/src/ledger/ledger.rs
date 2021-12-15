@@ -39,7 +39,6 @@ use chain_crypto::Verification;
 use chain_time::{Epoch as TimeEpoch, SlotDuration, TimeEra, TimeFrame, Timeline};
 
 use std::collections::HashSet;
-use std::convert::TryInto;
 use std::mem::swap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};

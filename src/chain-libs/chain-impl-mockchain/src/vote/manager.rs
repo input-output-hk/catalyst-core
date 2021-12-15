@@ -16,7 +16,6 @@ use imhamt::Hamt;
 use thiserror::Error;
 
 use std::collections::{hash_map::DefaultHasher, HashSet};
-use std::convert::TryFrom;
 use std::num::NonZeroU64;
 use std::sync::Arc;
 

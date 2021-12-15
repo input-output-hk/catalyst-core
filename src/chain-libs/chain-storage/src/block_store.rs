@@ -554,8 +554,6 @@ impl BlockStore {
         to_block: &[u8],
         min_number: usize,
     ) -> Result<usize, Error> {
-        use std::convert::TryInto;
-
         assert!(min_number > 0);
 
         // We get the first block and check if we can go deep enough into the

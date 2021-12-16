@@ -6,6 +6,8 @@ into proper formats that is later fed into the vit-servicing-station.
 
 ## Knows and how's
 
+### Ideascale API endpoints
+
 There are 4 main endpoints that are pinged for getting the data we need:
 
 1. `campaigns/groups`

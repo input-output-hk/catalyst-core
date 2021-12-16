@@ -19,11 +19,11 @@ for each endpoint.
 
 The query logic work as follows:
 
-1. Query the challenges (`funnels`).
-2. Query the funds data (`campaigns/groups`).
+1. Queries the challenges (`funnels`).
+2. Queries the funds data (`campaigns/groups`).
 3. Filter challenges based on fund id (excluding process improvements one {7666})
-4. Query proposals for each challenge (`campaigns/{challenge_id}/ideas/0/100000`)
-5. Query stages (`stages`)
+4. Queries proposals for each challenge (`campaigns/{challenge_id}/ideas/0/100000`)
+5. Queries stages (`stages`)
 
 With these ideascale data (challenges, fund, proposals, and stages) we can build the intermediary data.
 It is a process of picking, mixing and filtering on that we query before. Actual building code can be

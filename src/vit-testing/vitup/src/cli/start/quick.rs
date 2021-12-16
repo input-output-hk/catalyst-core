@@ -260,7 +260,7 @@ impl QuickStartCommandArgs {
             Mode::Endless => {
                 let (mut vit_controller, mut controller, vit_parameters, version) =
                     quick_setup.build(context)?;
-                let (_nodes_list, _vit_station, _wallet_proxy) = setup_network(
+                let (nodes_list, vit_station, wallet_proxy) = setup_network(
                     &mut controller,
                     &mut vit_controller,
                     vit_parameters,
@@ -269,7 +269,7 @@ impl QuickStartCommandArgs {
                     quick_setup.protocol(),
                     version,
                 )?;
-                endless_mode()?;
+                endless_mode(controller, nodes_list, vit_station, wallet_proxy)?;
             }
             Mode::Interactive => {
                 let (mut vit_controller, mut controller, vit_parameters, version) =

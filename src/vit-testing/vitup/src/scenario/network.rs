@@ -19,6 +19,7 @@ use jormungandr_testing_utils::testing::network::SpawnParams;
 use jortestkit::prelude::UserInteraction;
 use rand_chacha::ChaChaRng;
 use std::path::Path;
+use std::sync::mpsc::channel;
 use std::sync::Arc;
 use std::sync::Mutex;
 use valgrind::Protocol;
@@ -149,10 +150,26 @@ fn vit_interaction() -> UserInteraction {
     )
 }
 
-#[allow(clippy::empty_loop)]
-#[allow(unreachable_code)]
-pub fn endless_mode() -> Result<()> {
-    loop {}
+pub fn endless_mode(
+    controller: Controller,
+    mut nodes_list: Vec<NodeController>,
+    vit_station: VitStationController,
+    wallet_proxy: WalletProxyController,
+) -> Result<()> {
+    let (tx, rx): (std::sync::mpsc::Sender<()>, std::sync::mpsc::Receiver<()>) = channel();
+
+    println!("Waiting for Ctrl-C to exit..");
+    ctrlc::set_handler(move || tx.send(()).expect("Could not send signal on channel."))
+        .expect("Error setting Ctrl-C handler");
+
+    rx.recv().expect("Could not receive from channel.");
+    for node in nodes_list.iter_mut() {
+        node.shutdown().unwrap();
+    }
+    vit_station.shutdown();
+    wallet_proxy.shutdown();
+    controller.finalize();
+
     Ok(())
 }
 

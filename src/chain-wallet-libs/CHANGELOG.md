@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [0.8.0-alpha1]
+
 - Remove the keygen crate due to lack of need for it.
+- Remove wallet-jni and use wallet-uniffi instead.
 
 ## [0.7.0-pre4] 2021-09-02
 

@@ -267,6 +267,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           out-type: Html
+          timeout: 600
 
       - name: Set branch name
         if: ${{ github.event_name == 'pull_request' }}

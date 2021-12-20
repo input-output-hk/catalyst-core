@@ -105,7 +105,7 @@ impl Wallet {
             std::slice::from_raw_parts(keys.as_ptr().cast::<[u8; 64]>(), keys.len() / 64)
         };
 
-        wallet_core::Wallet::recover_free_keys(account, keys)
+        wallet_core::Wallet::recover_free_keys(account, keys.iter())
             .map_err(|e| JsValue::from(e.to_string()))
             .map(Wallet)
     }

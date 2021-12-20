@@ -1,0 +1,28 @@
+[package]
+name = "wallet-uniffi"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+crate-type = [ "cdylib" ]
+name = "uniffi_jormungandr_wallet"
+
+[dependencies]
+uniffi = "0.14.1"
+uniffi_macros = "0.14.1"
+wallet-core = { path = "../wallet-core" }
+wallet = {path = "../../wallet"}
+symmetric-cipher = {path = "../../symmetric-cipher"}
+chain-vote = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-addr = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-crypto = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-time = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+chain-ser = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "master" }
+thiserror = {version = "1.0", default-features = false}
+
+[build-dependencies]
+uniffi_build = "0.14.1"
+
+[features]
+builtin-bindgen = ["uniffi_build/builtin-bindgen"]

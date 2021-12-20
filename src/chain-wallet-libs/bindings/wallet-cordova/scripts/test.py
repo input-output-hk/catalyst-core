@@ -37,6 +37,27 @@ def create_hello_world(build_dir: Path):
     )
 
 
+def enable_kotlin(app_dir: Path):
+    file = app_dir / "config.xml"
+
+    with open(file, "r") as config:
+        lines = config.readlines()
+
+    with open(file, "w") as config:
+        for line in lines[:-1]:
+            config.write(line)
+
+        config.write('    <preference name="GradlePluginKotlinEnabled" value="true" />')
+        config.write(
+            '    <preference name="GradlePluginKotlinCodeStyle" value="official" />'
+        )
+        config.write(
+            '    <preference name="GradlePluginKotlinVersion" value="1.3.50" />'
+        )
+
+        config.write(lines[-1])
+
+
 def install_test_framework(app_dir: Path):
     subprocess.check_call(
         ["cordova", "plugin", "add", "cordova-plugin-test-framework"], cwd=app_dir
@@ -51,7 +72,9 @@ def install_test_framework(app_dir: Path):
 
 def install_platforms(app_dir: Path, android=True, ios=True):
     if android:
-        subprocess.check_call(["cordova", "platform", "add", "android"], cwd=app_dir)
+        subprocess.check_call(
+            ["cordova", "platform", "add", "android@10.1.1"], cwd=app_dir
+        )
         subprocess.check_call(["cordova", "requirements", "android"], cwd=app_dir)
 
     if ios:
@@ -105,7 +128,7 @@ if __name__ == "__main__":
         "--platform", required=True, nargs="+", choices=platform_choices
     )
     parser.add_argument("command", choices=["full", "reload-plugin", "reload-tests"])
-    parser.add_argument("-d", "--directory", type=Path)
+    parser.add_argument("-d", "--directory", type=Path, required=True)
     parser.add_argument("-r", "--run", choices=platform_choices)
 
     parser.add_argument("--cargo-build", dest="cargo_build", action="store_true")
@@ -123,6 +146,7 @@ if __name__ == "__main__":
 
     if args.command == "full":
         create_hello_world(build_dir)
+        enable_kotlin(app_dir)
         install_platforms(app_dir, android=android, ios=ios)
         install_test_framework(app_dir)
         install_main_plugin(

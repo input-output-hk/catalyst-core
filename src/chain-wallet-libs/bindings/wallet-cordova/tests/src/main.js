@@ -14,7 +14,7 @@ PASSWORD[0] = keys.password[0];
 PASSWORD[1] = keys.password[1];
 PASSWORD[2] = keys.password[2];
 PASSWORD[3] = keys.password[3];
-const VOTE_ENCRYPTION_KEY = 'votepk1nc988wtjlrm5k0z43088p0rrvd5yhvc96k7zh99p6w74gupxggtqwym0vm';
+const VOTE_ENCRYPTION_KEY = 'ristretto255_votepk1nc988wtjlrm5k0z43088p0rrvd5yhvc96k7zh99p6w74gupxggtqyx4792';
 
 // TODO: write settings getter for this
 const BLOCK0_DATE = 1586637936;
@@ -24,6 +24,7 @@ const restoreWallet = promisifyP(primitives.walletRestore);
 const importKeys = promisifyP(primitives.walletImportKeys);
 const retrieveFunds = promisifyP(primitives.walletRetrieveFunds);
 const spendingCounter = promisifyP(primitives.walletSpendingCounter);
+const walletId = promisifyP(primitives.walletId);
 const totalFunds = promisifyP(primitives.walletTotalFunds);
 const convertWallet = promisifyP(primitives.walletConvert);
 const setState = promisifyP(primitives.walletSetState);
@@ -63,6 +64,10 @@ const tests = [
         expect(settingsPtr !== 0).toBe(true);
         const funds = await totalFunds(walletPtr);
         expect(parseInt(funds)).toBe(21000);
+
+        const accountId = await walletId(walletPtr);
+
+        uint8ArrayEquals(accountId, hexStringToBytes(keys.account.account_id));
 
         await deleteSettings(settingsPtr);
         await deleteWallet(walletPtr);
@@ -106,7 +111,7 @@ const tests = [
         expect(transactions.length).toBe(1);
 
         const ignoredValue = await conversionGetIgnored(conversion);
-        expect(ignoredValue.ignored).toBe(0);
+        expect(ignoredValue.ignored).toBe('0');
 
         const pendingBefore = await getPendingTransactions(wallet);
         expect(pendingBefore.length).toBe(1);

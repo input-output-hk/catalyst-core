@@ -16,24 +16,21 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="WalletPlugin">
-                <param name="android-package" value="com.iohk.jormungandrwallet.WalletPlugin" />
+                <param name="android-package" value="com.iohk.jormungandr_wallet.WalletPlugin" />
             </feature>
         </config-file>
 
-        <source-file src="src/android/WalletPlugin.java" target-dir="src/com/iohk/jormungandrwallet" />
-        <source-file src="src/android/jormungandrwallet/Settings.java" target-dir="src/com/iohk/jormungandrwallet" />
-        <source-file src="src/android/jormungandrwallet/Wallet.java" target-dir="src/com/iohk/jormungandrwallet" />
-        <source-file src="src/android/jormungandrwallet/Conversion.java" target-dir="src/com/iohk/jormungandrwallet" />
-        <source-file src="src/android/jormungandrwallet/Proposal.java" target-dir="src/com/iohk/jormungandrwallet" />
-        <source-file src="src/android/jormungandrwallet/PendingTransactions.java" target-dir="src/com/iohk/jormungandrwallet" />
-        <source-file src="src/android/jormungandrwallet/SymmetricCipher.java" target-dir="src/com/iohk/jormungandrwallet" />
-        <source-file src="src/android/jormungandrwallet/Fragment.java" target-dir="src/com/iohk/jormungandrwallet" />
-        <source-file src="src/android/jormungandrwallet/Time.java" target-dir="src/com/iohk/jormungandrwallet" />
+        <source-file src="src/android/WalletPlugin.kt" target-dir="src/main/kotlin/com/iohk/jormungandr_wallet" />
+        <source-file src="src/android/jormungandr_wallet.kt" target-dir="src/main/kotlin/com/iohk/jormungandr_wallet" />
 
-        <source-file src="src/android/libs/x86/libwallet_jni.so" target-dir="libs/x86" />
-        <source-file src="src/android/libs/x86_64/libwallet_jni.so" target-dir="libs/x86_64" />
-        <source-file src="src/android/libs/arm64-v8a/libwallet_jni.so" target-dir="libs/arm64-v8a" />
-        <source-file src="src/android/libs/armeabi-v7a/libwallet_jni.so" target-dir="libs/armeabi-v7a" />
+<!--         <framework src="net.java.dev.jna:jna:5.9.0" /> -->
+        <framework src="src/android/jna-compile.gradle" custom="true" type="gradleReference" />
+
+
+        <source-file src="src/android/libs/x86/libuniffi_jormungandr_wallet.so" target-dir="libs/x86" />
+        <source-file src="src/android/libs/x86_64/libuniffi_jormungandr_wallet.so" target-dir="libs/x86_64" />
+        <source-file src="src/android/libs/arm64-v8a/libuniffi_jormungandr_wallet.so" target-dir="libs/arm64-v8a" />
+        <source-file src="src/android/libs/armeabi-v7a/libuniffi_jormungandr_wallet.so" target-dir="libs/armeabi-v7a" />
     </platform>
 
     <platform name="electron">

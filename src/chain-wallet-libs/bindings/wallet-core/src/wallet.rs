@@ -90,12 +90,15 @@ impl Wallet {
     ///
     /// TODO
     ///
-    pub fn recover_free_keys(account_key: &[u8], keys: &[[u8; 64]]) -> Result<Self, Error> {
+    pub fn recover_free_keys<'a, U: Iterator<Item = &'a [u8; 64]>>(
+        account_key: &[u8],
+        keys: U,
+    ) -> Result<Self, Error> {
         let builder = wallet::RecoveryBuilder::new();
 
         let builder = builder.account_secret_key(SecretKey::from_binary(account_key).unwrap());
 
-        let builder = keys.iter().fold(builder, |builder, key| {
+        let builder = keys.fold(builder, |builder, key| {
             builder.add_key(SecretKey::from_binary(key.as_ref()).unwrap())
         });
 

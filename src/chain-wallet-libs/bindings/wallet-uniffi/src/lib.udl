@@ -1,0 +1,126 @@
+namespace jormungandr_wallet {
+    [Throws=WalletError]
+    BlockDate block_date_from_system_time(Settings settings, u64 unix_epoch);
+    [Throws=WalletError]
+    BlockDate max_expiration_date(Settings settings, u64 current_time);
+
+    [Throws=WalletError]
+    sequence<u8> symmetric_cipher_decrypt(sequence<u8> password, sequence<u8> ciphertext);
+};
+
+[Error]
+enum WalletError {
+    "InvalidEncryptionKey", 
+    "MalformedVotePlanId",
+    "CoreError",
+    "MalformedBlock0Hash",
+    "MalformedSecretKey",
+    "TimeError",
+    "CipherError",
+    "InvalidFragment",
+};
+
+interface Wallet {
+    [Throws=WalletError]
+    constructor(
+        SecretKeyEd25519Extended account_key,
+        sequence<SecretKeyEd25519Extended> utxo_keys
+    );
+
+    [Name=from_mnemonics, Throws=WalletError]
+    constructor(string mnemonics, sequence<u8> password);
+
+    Conversion convert(Settings settings, BlockDate valid_until);
+    void set_state(u64 value, u32 counter);
+    [Throws=WalletError]
+    sequence<u8> vote(Settings settings, Proposal proposal, u8 choice, BlockDate valid_until);
+    void confirm_transaction(sequence<u8> fragment_id);
+    sequence<sequence<u8>> pending_transactions();
+    sequence<u8> account_id();
+    u32 spending_counter();
+    u64 total_value();
+    [Throws=WalletError]
+    Settings retrieve_funds(sequence<u8> block0);
+};
+
+interface SecretKeyEd25519Extended {
+    [Throws=WalletError]
+    constructor(sequence<u8> raw);
+};
+
+interface Fragment {
+    [Throws=WalletError]
+    constructor(sequence<u8> raw);
+    sequence<u8> id();
+    sequence<u8> serialize();
+};
+
+dictionary LinearFee {
+    u64 constant;
+    u64 coefficient;
+    u64 certificate;
+    PerCertificateFee per_certificate_fees;
+    PerVoteCertificateFee per_vote_certificate_fees;
+};
+
+dictionary PerCertificateFee {
+    u64 certificate_pool_registration;
+    u64 certificate_stake_delegation;
+    u64 certificate_owner_stake_delegation;
+};
+
+dictionary PerVoteCertificateFee {
+    u64 certificate_vote_plan;
+    u64 certificate_vote_cast;
+};
+
+enum Discrimination {
+    "Production",
+    "Test",
+};
+
+dictionary TimeEra {
+    u32 epoch_start;
+    u64 slot_start;
+    u32 slots_per_epoch;
+};
+
+dictionary SettingsRaw {
+    LinearFee fees;
+    Discrimination discrimination;
+    sequence<u8> block0_hash;
+    u64 block0_date;
+    u8 slot_duration;
+    TimeEra time_era;
+    u8 transaction_max_expiry_epochs;
+};
+
+interface Settings {
+    [Throws=WalletError]
+    constructor(SettingsRaw settings);
+    SettingsRaw settings_raw();
+};
+
+dictionary Proposal {
+    sequence<u8> vote_plan_id;
+    u8 index;
+    u8 options;
+    PayloadTypeConfig payload_type;
+};
+
+dictionary BlockDate {
+    u32 epoch;
+    u32 slot;
+};
+
+dictionary Conversion {
+    u64 ignored_value;
+    u32 ignored_count;
+    sequence<Fragment> fragments;
+};
+
+[Enum]
+interface PayloadTypeConfig {
+  Public();
+  Private(string encryption_key);
+};

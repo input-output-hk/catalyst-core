@@ -144,8 +144,8 @@ jobs:
           command: rustc
           args: --release --target ${{ matrix.config.target }} -p jormungandrwallet -- -C lto
 
-  build_jni:
-    name: Build jni libs with cross
+  build_uniffi:
+    name: Build uniffi jni shared libs for android with cross
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -156,13 +156,6 @@ jobs:
           - { target: x86_64-linux-android }
 
     steps:
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.config.target }}
-          override: true
-          default: true
-
       - name: Checkout code
         uses: actions/checkout@v1
         with:
@@ -173,12 +166,12 @@ jobs:
         with:
           use-cross: true
           command: rustc
-          args: --target ${{ matrix.config.target }} -p wallet-jni -- -C link-args=-ldl
+          args: --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C link-args=-ldl
 
       - uses: actions/upload-artifact@v2
         with:
           name: jni ${{ matrix.config.target }}
-          path: ./target/${{ matrix.config.target }}/debug/libwallet_jni.so
+          path: ./target/${{ matrix.config.target }}/debug/libuniffi_jormungandr_wallet.so
           retention-days: 1
 
   build_cordova_ios_app:
@@ -218,7 +211,7 @@ jobs:
   build_cordova_android_app:
     name: Build cordova test app on android
     runs-on: ubuntu-latest
-    needs: [build_jni]
+    needs: [build_uniffi]
 
     steps:
       - name: Checkout code
@@ -279,12 +272,8 @@ jobs:
       - name: Setup cordova
         run: sudo npm install -g cordova
 
-      # build-tools workaround taken from here
-      # https://github.com/apache/cordova-android/issues/1288
       - name: build test app
         run: |
-          $ANDROID_SDK_ROOT/tools/bin/sdkmanager --uninstall "build-tools;31.0.0"
-          $ANDROID_SDK_ROOT/tools/bin/sdkmanager --install "build-tools;30.0.3"
           python3 bindings/wallet-cordova/scripts/test.py \
             --directory test_app \
             --platform android \

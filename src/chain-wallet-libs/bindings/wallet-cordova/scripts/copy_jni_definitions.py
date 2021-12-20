@@ -8,24 +8,21 @@ from directories import repository_directory, plugin_directory
 
 
 def run():
-    # copy java definitions from jni directory
-
-    package_path = Path("com/iohk/jormungandrwallet")
-
     src_files = (
         repository_directory
         / "bindings"
-        / "wallet-jni"
-        / "java"
+        / "wallet-uniffi"
+        / "codegen"
+        / "kotlin"
         / "com"
         / "iohk"
-        / "jormungandrwallet"
-    ).glob("*java")
+        / "jormungandr_wallet"
+    ).glob("*kt")
 
-    dst = plugin_directory / Path("src/android/jormungandrwallet")
+    dst = plugin_directory / Path("src/android/")
     dst.mkdir(parents=True, exist_ok=True)
 
-    print("Copy java definitions from jni directory")
+    print("Copy kotlin definitions from uniffi")
     print(f"destination: {dst}")
 
     for file in src_files:

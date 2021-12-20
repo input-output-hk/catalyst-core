@@ -9,7 +9,8 @@
     "account": {
         "address": "ca1qkn28szy0t4ee32v7epzhget9989u8p77mtc9u4vla98q62vf5txx4am2rc",
         "private_key": "c86596c2d1208885db1fe3658406aa0f7cc7b8e13c362fe46a6db277fc5064583e487588c98a6c36e2e7445c0add36f83f171cb5ccfd815509d19cd38ecb0af3",
-        "public_key": "ed25519_pk1563uq3r6awwv2n8kgg46x2effe0pc0hk67p09t8lffcxjnzdze3s9pc5aa"
+        "public_key": "ed25519_pk1563uq3r6awwv2n8kgg46x2effe0pc0hk67p09t8lffcxjnzdze3s9pc5aa",
+        "account_id": "a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663"
     },
     "utxo_keys": [
         {

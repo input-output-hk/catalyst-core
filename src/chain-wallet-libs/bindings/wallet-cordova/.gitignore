@@ -2,5 +2,6 @@
 /src/electron/pkg
 /src/android/libs
 /src/android/jormungandrwallet
+/src/android/jormungandr_wallet.kt
 /docs
 /node_modules

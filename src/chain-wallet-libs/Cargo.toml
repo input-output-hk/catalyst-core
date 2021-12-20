@@ -6,8 +6,8 @@ members = [
     "wallet",
     "symmetric-cipher",
     "bindings/wallet-c",
-    "bindings/wallet-jni",
     "bindings/wallet-js",
+    "bindings/wallet-uniffi",
 ]
 
 [profile.release]

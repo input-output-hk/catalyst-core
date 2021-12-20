@@ -7,7 +7,7 @@ import shutil
 from copy_jni_definitions import run as copy_definitions
 from directories import rust_build_directory, plugin_directory
 
-libname = "libwallet_jni.so"
+libname = "libuniffi_jormungandr_wallet.so"
 android_libs_directory = Path("src/android/libs")
 
 targets = {
@@ -37,7 +37,9 @@ def run(release=True):
             "--target",
             rust_target,
             "-p",
-            "wallet-jni",
+            "wallet-uniffi",
+            "--features",
+            "builtin-bindgen",
         ]
 
         if release:

@@ -10,8 +10,7 @@ keywords = [ "Crypto", "VRF", "Ed25519", "MMM" ]
 bech32 = "0.8"
 cryptoxide = "0.3"
 curve25519-dalek-ng = { version = "4.0" }
-# TODO replace with the crates.io version once it has faster scalar multiplication
-eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch = "fast-u64-scalar-mul", features = ["fast-u64-scalar-mul"], optional = true }
+eccoxide = { version = "0.3", optional = true }
 ed25519-dalek = "1.0"
 sha2 = "0.10"
 generic-array = "^0.14"

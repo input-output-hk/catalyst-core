@@ -1,4 +1,4 @@
-use crate::evm::Transaction;
+use crate::evm::EvmTransaction;
 use crate::ledger::Error;
 use chain_evm::{
     machine::{Config, Environment, Log, VirtualMachine},
@@ -20,13 +20,13 @@ impl Ledger {
     }
     pub fn run_transaction<'runtime>(
         &mut self,
-        contract: Transaction,
+        contract: EvmTransaction,
         config: &'runtime Config,
         environment: &'runtime Environment,
     ) -> Result<(), Error> {
         let mut vm = self.virtual_machine(config, environment);
         match contract {
-            Transaction::Create {
+            EvmTransaction::Create {
                 caller,
                 value,
                 init_code,
@@ -43,7 +43,7 @@ impl Ledger {
                 }
                 Ok(())
             }
-            Transaction::Create2 {
+            EvmTransaction::Create2 {
                 caller,
                 value,
                 init_code,
@@ -66,7 +66,7 @@ impl Ledger {
                 }
                 Ok(())
             }
-            Transaction::Call {
+            EvmTransaction::Call {
                 caller,
                 address,
                 value,

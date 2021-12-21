@@ -19,7 +19,7 @@ use crate::{
 
 /// Variants of supported EVM transactions
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum Transaction {
+pub enum EvmTransaction {
     #[cfg(feature = "evm")]
     Create {
         caller: Address,
@@ -48,12 +48,12 @@ pub enum Transaction {
     },
 }
 
-impl Transaction {
+impl EvmTransaction {
     /// Serialize the contract into a `ByteBuilder`.
     pub fn serialize_in(&self, _bb: ByteBuilder<Self>) -> ByteBuilder<Self> {
         match self {
             #[cfg(feature = "evm")]
-            Transaction::Create {
+            EvmTransaction::Create {
                 caller,
                 value,
                 init_code,
@@ -69,9 +69,9 @@ impl Transaction {
                 serialize_access_list(bb, access_list)
             }
             #[cfg(feature = "evm")]
-            Transaction::Create2 { .. } => todo!(),
+            EvmTransaction::Create2 { .. } => todo!(),
             #[cfg(feature = "evm")]
-            Transaction::Call { .. } => todo!(),
+            EvmTransaction::Call { .. } => todo!(),
             #[cfg(not(feature = "evm"))]
             _ => unreachable!(),
         }
@@ -79,15 +79,18 @@ impl Transaction {
 }
 
 #[cfg(feature = "evm")]
-fn serialize_address(bb: ByteBuilder<Transaction>, caller: &Address) -> ByteBuilder<Transaction> {
+fn serialize_address(
+    bb: ByteBuilder<EvmTransaction>,
+    caller: &Address,
+) -> ByteBuilder<EvmTransaction> {
     bb.u8(0).bytes(caller.as_fixed_bytes())
 }
 
 #[cfg(feature = "evm")]
 fn serialize_u256(
-    bb: ByteBuilder<Transaction>,
+    bb: ByteBuilder<EvmTransaction>,
     value: &primitive_types::U256,
-) -> ByteBuilder<Transaction> {
+) -> ByteBuilder<EvmTransaction> {
     let mut value_bytes = [0u8; 32];
     value.to_big_endian(&mut value_bytes);
     bb.bytes(&value_bytes)
@@ -95,27 +98,33 @@ fn serialize_u256(
 
 #[cfg(feature = "evm")]
 fn serialize_h256(
-    bb: ByteBuilder<Transaction>,
+    bb: ByteBuilder<EvmTransaction>,
     value: &primitive_types::H256,
-) -> ByteBuilder<Transaction> {
+) -> ByteBuilder<EvmTransaction> {
     bb.bytes(value.as_fixed_bytes())
 }
 
 #[cfg(feature = "evm")]
-fn serialize_bytecode(bb: ByteBuilder<Transaction>, code: &ByteCode) -> ByteBuilder<Transaction> {
+fn serialize_bytecode(
+    bb: ByteBuilder<EvmTransaction>,
+    code: &ByteCode,
+) -> ByteBuilder<EvmTransaction> {
     bb.u64(code.len().try_into().unwrap()).bytes(code.as_ref())
 }
 
 #[cfg(feature = "evm")]
-fn serialize_gas_limit(bb: ByteBuilder<Transaction>, gas_limit: &u64) -> ByteBuilder<Transaction> {
+fn serialize_gas_limit(
+    bb: ByteBuilder<EvmTransaction>,
+    gas_limit: &u64,
+) -> ByteBuilder<EvmTransaction> {
     bb.u64(*gas_limit)
 }
 
 #[cfg(feature = "evm")]
 fn serialize_access_list(
-    bb: ByteBuilder<Transaction>,
+    bb: ByteBuilder<EvmTransaction>,
     access_list: &[(Address, Vec<Key>)],
-) -> ByteBuilder<Transaction> {
+) -> ByteBuilder<EvmTransaction> {
     bb.u64(access_list.len().try_into().unwrap())
         .fold(access_list.iter(), |bb, (address, keys)| {
             serialize_address(bb, address)
@@ -185,7 +194,7 @@ fn read_access_list(
     Ok(access_list)
 }
 
-impl Readable for Transaction {
+impl Readable for EvmTransaction {
     fn read(
         buf: &mut chain_core::mempack::ReadBuf,
     ) -> Result<Self, chain_core::mempack::ReadError> {
@@ -202,7 +211,7 @@ impl Readable for Transaction {
 
                 buf.expect_end()?;
 
-                Ok(Transaction::Create {
+                Ok(EvmTransaction::Create {
                     caller,
                     value,
                     init_code,
@@ -215,7 +224,7 @@ impl Readable for Transaction {
     }
 }
 
-impl Payload for Transaction {
+impl Payload for EvmTransaction {
     const HAS_DATA: bool = true;
     const HAS_AUTH: bool = false;
     type Auth = ();

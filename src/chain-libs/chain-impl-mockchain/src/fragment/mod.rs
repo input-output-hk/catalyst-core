@@ -12,7 +12,8 @@ pub use raw::{FragmentId, FragmentRaw};
 pub use content::{BlockContentHash, BlockContentSize, Contents, ContentsBuilder};
 
 use crate::{
-    certificate, evm,
+    certificate,
+    evm::EvmTransaction,
     transaction::{NoExtra, Transaction},
 };
 
@@ -37,7 +38,7 @@ pub enum Fragment {
     VoteTally(Transaction<certificate::VoteTally>),
     EncryptedVoteTally(Transaction<certificate::EncryptedVoteTally>),
     MintToken(Transaction<certificate::MintToken>),
-    Evm(Transaction<evm::Transaction>),
+    Evm(Transaction<EvmTransaction>),
 }
 
 impl PartialEq for Fragment {

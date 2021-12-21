@@ -1,5 +1,3 @@
-#[cfg(feature = "evm")]
-use super::evm;
 use super::governance::Governance;
 use super::ledger::{Error, Ledger, LedgerStaticParameters};
 use super::pots::{self, Pots};
@@ -9,6 +7,8 @@ use crate::chaintypes::ChainLength;
 use crate::config::ConfigParam;
 use crate::date::BlockDate;
 use crate::key::Hash;
+#[cfg(feature = "evm")]
+use crate::ledger::evm;
 use crate::stake::PoolsState;
 use crate::vote::{VotePlanLedger, VotePlanManager};
 use crate::{account, legacy, multisig, setting, update, utxo};

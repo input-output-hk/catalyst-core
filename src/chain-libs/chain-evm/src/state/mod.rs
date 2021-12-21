@@ -5,9 +5,11 @@ implementation from `chain-impl-mockchain` in Jormungandr multiverse of ledgers.
 */
 
 mod account;
+mod logs;
 mod storage;
 mod trie;
 
 pub use account::{Account, AccountTrie, Balance, ByteCode, Nonce};
+pub use logs::LogsState;
 pub use storage::{Key, Storage, Value};
 pub use trie::Trie;

@@ -43,6 +43,19 @@ impl<K: Clone + Hash + Eq, V: Clone> Trie<K, V> {
         Self(new_state)
     }
 
+    /// Update or put the element at the key K
+    ///
+    /// If the element is not present, then V is added, otherwise the closure F is applied
+    /// to the found element. If the closure returns None, then the key is deleted
+    pub fn put_or_update<F>(self, key: K, value: V, f: F) -> Self
+    where
+        F: FnOnce(&V) -> Option<V>,
+    {
+        let f = |val: &V| -> Result<Option<V>, std::fmt::Error> { Ok(f(val)) };
+        let new_state = self.0.insert_or_update(key, value, f).expect("");
+        Self(new_state)
+    }
+
     /// Remove a value from a trie.
     pub fn remove(self, key: &K) -> Self {
         match self.0.remove(key) {
@@ -81,7 +94,7 @@ mod tests {
     use test_strategy::proptest;
 
     #[proptest]
-    fn put_get_remove(key: u8, value1: u8, value2: u8) {
+    fn put_get_remove_test(key: u8, value1: u8, value2: u8) {
         let storage = Trie::new();
 
         // first write
@@ -98,5 +111,34 @@ mod tests {
 
         // removing non-existent value should not error
         storage_new3.remove(&key);
+    }
+
+    #[proptest]
+    fn put_or_update_test(key: u8, value1: u8, value2: u8) {
+        let storage = Trie::new();
+
+        let vec1 = vec![value1.clone()];
+        let vec2 = vec![value1.clone(), value2.clone()];
+
+        // first write
+        let storage_new1 = storage.put_or_update(
+            key.clone(),
+            vec1.clone(),
+            |val: &Vec<u8>| -> Option<Vec<u8>> {
+                let mut val = val.clone();
+                val.push(value1);
+                Some(val)
+            },
+        );
+        prop_assert_eq!(Some(&vec1), storage_new1.get(&key));
+
+        // update value
+        let storage_new2 =
+            storage_new1.put_or_update(key, vec2.clone(), |val: &Vec<u8>| -> Option<Vec<u8>> {
+                let mut val = val.clone();
+                val.push(value2);
+                Some(val)
+            });
+        prop_assert_eq!(Some(&vec2), storage_new2.get(&key));
     }
 }

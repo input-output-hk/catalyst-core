@@ -20,7 +20,7 @@ use primitive_types::{H160, H256, U256};
 
 use crate::{
     precompiles::Precompiles,
-    state::{AccountTrie, ByteCode, Key},
+    state::{AccountTrie, ByteCode, Key, LogsState},
 };
 
 /// Export EVM types
@@ -82,7 +82,7 @@ pub struct VirtualMachine<'runtime> {
     environment: &'runtime Environment,
     precompiles: Precompiles,
     state: AccountTrie,
-    logs: Vec<Log>,
+    logs: LogsState,
 }
 
 /// Ethereum Hard-Fork variants
@@ -139,7 +139,7 @@ impl<'runtime> VirtualMachine<'runtime> {
         gas_limit: u64,
         access_list: Vec<(Address, Vec<Key>)>,
         delete_empty: bool,
-    ) -> Option<(&AccountTrie, &[Log])> {
+    ) -> Option<(&AccountTrie, &LogsState)> {
         {
             let metadata = StackSubstateMetadata::new(gas_limit, self.config);
             let memory_stack_state = MemoryStackState::new(metadata, self);
@@ -181,7 +181,7 @@ impl<'runtime> VirtualMachine<'runtime> {
         gas_limit: u64,
         access_list: Vec<(Address, Vec<Key>)>,
         delete_empty: bool,
-    ) -> Option<(&AccountTrie, &[Log])> {
+    ) -> Option<(&AccountTrie, &LogsState)> {
         {
             let metadata = StackSubstateMetadata::new(gas_limit, self.config);
             let memory_stack_state = MemoryStackState::new(metadata, self);
@@ -228,7 +228,7 @@ impl<'runtime> VirtualMachine<'runtime> {
         gas_limit: u64,
         access_list: Vec<(Address, Vec<Key>)>,
         delete_empty: bool,
-    ) -> Option<(&AccountTrie, &[Log], ByteCode)> {
+    ) -> Option<(&AccountTrie, &LogsState, ByteCode)> {
         let metadata = StackSubstateMetadata::new(gas_limit, self.config);
         let memory_stack_state = MemoryStackState::new(metadata, self);
         let mut executor =
@@ -375,9 +375,8 @@ impl<'runtime> ApplyBackend for VirtualMachine<'runtime> {
         }
 
         // save the logs
-        for log in logs {
-            self.logs.push(log);
-        }
+        let block_hash = self.block_hash(self.block_number());
+        self.logs.put(block_hash, logs.into_iter().collect());
     }
 }
 

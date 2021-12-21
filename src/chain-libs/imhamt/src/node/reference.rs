@@ -269,7 +269,7 @@ pub fn insert_rec<K: Clone + PartialEq, V: Clone>(
         let e = SharedRef::new(Entry::Leaf(hash, key, value));
         Ok(node.set_at(level_hash, e))
     } else {
-        match &(node.get_child(idx)).as_ref() {
+        match node.get_child(idx).as_ref() {
             Entry::Leaf(lh, lk, lv) => {
                 // in case of same hash, then we append to the collision type
                 // otherwise we create a new subnode
@@ -335,7 +335,7 @@ pub fn lookup_one<'a, Q: PartialEq, K: PartialEq + Borrow<Q>, V>(
     if idx.is_not_found() {
         LookupRet::NotFound
     } else {
-        match &(node.get_child(idx)).as_ref() {
+        match node.get_child(idx).as_ref() {
             Entry::Leaf(lh, lk, lv) => {
                 if lh == h && lk.borrow() == k {
                     LookupRet::Found(lv)
@@ -376,7 +376,7 @@ where
     if idx.is_not_found() {
         Err(RemoveError::KeyNotFound)
     } else {
-        match &(node.get_child(idx)).as_ref() {
+        match node.get_child(idx).as_ref() {
             Entry::Leaf(lh, lk, lv) => {
                 if *lh == h && lk.borrow() == k {
                     if lv == v {
@@ -421,7 +421,7 @@ where
     if idx.is_not_found() {
         Err(RemoveError::KeyNotFound)
     } else {
-        match &(node.get_child(idx)).as_ref() {
+        match node.get_child(idx).as_ref() {
             Entry::Leaf(lh, lk, _) => {
                 if *lh == h && lk.borrow() == k {
                     Ok(node.clear_at(level_hash))
@@ -466,7 +466,7 @@ where
     if idx.is_not_found() {
         Err(UpdateError::KeyNotFound)
     } else {
-        match &(node.get_child(idx)).as_ref() {
+        match node.get_child(idx).as_ref() {
             Entry::Leaf(lh, lk, lv) => {
                 if *lh == h && lk == k {
                     let newv = f(lv).map_err(UpdateError::ValueCallbackError)?;
@@ -507,7 +507,7 @@ pub fn replace_rec<K: PartialEq + Clone, V: Clone>(
     if idx.is_not_found() {
         Err(ReplaceError::KeyNotFound)
     } else {
-        match &(node.get_child(idx)).as_ref() {
+        match node.get_child(idx).as_ref() {
             Entry::Leaf(lh, lk, lv) => {
                 if *lh == h && lk == k {
                     let new_ent = SharedRef::new(Entry::Leaf(*lh, lk.clone(), v));
@@ -549,7 +549,7 @@ where
     if idx.is_not_found() {
         Err(ReplaceError::KeyNotFound)
     } else {
-        match &(node.get_child(idx)).as_ref() {
+        match node.get_child(idx).as_ref() {
             Entry::Leaf(lh, lk, lv) => {
                 if *lh == h && lk == k {
                     let new_ent = SharedRef::new(Entry::Leaf(*lh, lk.clone(), f(lv)));

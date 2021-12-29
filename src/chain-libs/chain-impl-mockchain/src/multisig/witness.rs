@@ -74,7 +74,7 @@ impl property::Serialize for Witness {
         let mut codec = Codec::new(writer);
         codec.put_u8(self.0.len() as u8)?;
         for (ti, pk, sig) in self.0.iter() {
-            codec.put_u16(ti.pack())?;
+            codec.put_be_u16(ti.pack())?;
             serialize_public_key(pk, &mut codec)?;
             serialize_signature(sig, &mut codec)?;
         }

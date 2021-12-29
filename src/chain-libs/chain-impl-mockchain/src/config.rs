@@ -425,7 +425,7 @@ impl property::Serialize for ConfigParam {
             )
         })?;
         let mut codec = Codec::new(writer);
-        codec.put_u16(taglen.0)?;
+        codec.put_be_u16(taglen.0)?;
         codec.write_all(&bytes)
     }
 }
@@ -435,14 +435,14 @@ impl property::Deserialize for ConfigParam {
 
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         let mut codec = Codec::new(reader);
-        let tag_len = TagLen(codec.get_u16()?);
+        let tag_len = TagLen(codec.get_be_u16()?);
         let len = tag_len.get_len();
         let bytes = codec.get_bytes(len)?;
         // we will replicate the buffer so we can reuse the reader method
         let mut cursor = Cursor::new(Vec::with_capacity(2 + len));
         {
             let mut writer = Codec::new(&mut cursor);
-            writer.put_u16(tag_len.0)?;
+            writer.put_be_u16(tag_len.0)?;
             writer.put_bytes(&bytes)?;
         }
         cursor.set_position(0);

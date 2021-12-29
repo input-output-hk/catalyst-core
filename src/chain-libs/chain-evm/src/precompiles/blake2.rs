@@ -1,6 +1,7 @@
+use chain_ser::packer::Codec;
 use evm::{Context, ExitError};
 
-use super::prelude::{mem, Address, Borrowed, TryInto};
+use super::prelude::{mem, Address, TryInto};
 use super::{EvmPrecompileResult, Precompile, PrecompileOutput};
 
 /// Blake2 costs.
@@ -45,7 +46,7 @@ impl Precompile for Blake2F {
         _is_static: bool,
     ) -> EvmPrecompileResult {
         if input.len() != consts::INPUT_LENGTH {
-            return Err(ExitError::Other(Borrowed("ERR_BLAKE2F_INVALID_LEN")));
+            return Err(ExitError::Other("ERR_BLAKE2F_INVALID_LEN".into()));
         }
 
         let cost = Self::required_gas(input)?;
@@ -55,38 +56,40 @@ impl Precompile for Blake2F {
             }
         }
 
-        let mut rounds_bytes = [0u8; 4];
-        rounds_bytes.copy_from_slice(&input[0..4]);
-        let rounds = u32::from_be_bytes(rounds_bytes);
+        let mut codec = Codec::new(input);
+        let rounds = codec
+            .get_be_u32()
+            .map_err(|e| ExitError::Other(e.to_string().into()))?;
 
         let mut h = [0u64; 8];
-        for (mut x, value) in h.iter_mut().enumerate() {
-            let mut word: [u8; 8] = [0u8; 8];
-            x = x * 8 + 4;
-            word.copy_from_slice(&input[x..(x + 8)]);
-            *value = u64::from_le_bytes(word);
+        for value in h.iter_mut() {
+            *value = codec
+                .get_le_u64()
+                .map_err(|e| ExitError::Other(e.to_string().into()))?;
         }
 
         let mut m = [0u64; 16];
-        for (mut x, value) in m.iter_mut().enumerate() {
-            let mut word: [u8; 8] = [0u8; 8];
-            x = x * 8 + 68;
-            word.copy_from_slice(&input[x..(x + 8)]);
-            *value = u64::from_le_bytes(word);
+        for value in m.iter_mut() {
+            *value = codec
+                .get_le_u64()
+                .map_err(|e| ExitError::Other(e.to_string().into()))?;
         }
 
         let mut t: [u64; 2] = [0u64; 2];
-        for (mut x, value) in t.iter_mut().enumerate() {
-            let mut word: [u8; 8] = [0u8; 8];
-            x = x * 8 + 196;
-            word.copy_from_slice(&input[x..(x + 8)]);
-            *value = u64::from_le_bytes(word);
+        for value in t.iter_mut() {
+            *value = codec
+                .get_le_u64()
+                .map_err(|e| ExitError::Other(e.to_string().into()))?;
         }
 
-        if input[212] != 0 && input[212] != 1 {
-            return Err(ExitError::Other(Borrowed("ERR_BLAKE2F_FINAL_FLAG")));
+        let flag = codec
+            .get_u8()
+            .map_err(|e| ExitError::Other(e.to_string().into()))?;
+
+        if flag != 0 && flag != 1 {
+            return Err(ExitError::Other("ERR_BLAKE2F_FINAL_FLAG".into()));
         }
-        let finished = input[212] != 0;
+        let finished = flag != 0;
 
         let output = blake2::blake2b_f(rounds, h, m, t, finished).to_vec();
         Ok(PrecompileOutput::without_logs(cost, output).into())
@@ -231,30 +234,27 @@ mod tests {
 
     #[test]
     fn test_blake2f() {
-        assert!(matches!(
-            test_blake2f_out_of_gas(),
-            Err(ExitError::OutOfGas)
-        ));
+        assert_eq!(test_blake2f_out_of_gas(), Err(ExitError::OutOfGas));
 
-        assert!(matches!(
+        assert_eq!(
             test_blake2f_empty(),
-            Err(ExitError::Other(Borrowed("ERR_BLAKE2F_INVALID_LEN")))
-        ));
+            Err(ExitError::Other("ERR_BLAKE2F_INVALID_LEN".into()))
+        );
 
-        assert!(matches!(
+        assert_eq!(
             test_blake2f_invalid_len_1(),
-            Err(ExitError::Other(Borrowed("ERR_BLAKE2F_INVALID_LEN")))
-        ));
+            Err(ExitError::Other("ERR_BLAKE2F_INVALID_LEN".into()))
+        );
 
-        assert!(matches!(
+        assert_eq!(
             test_blake2f_invalid_len_2(),
-            Err(ExitError::Other(Borrowed("ERR_BLAKE2F_INVALID_LEN")))
-        ));
+            Err(ExitError::Other("ERR_BLAKE2F_INVALID_LEN".into()))
+        );
 
-        assert!(matches!(
+        assert_eq!(
             test_blake2f_invalid_flag(),
-            Err(ExitError::Other(Borrowed("ERR_BLAKE2F_FINAL_FLAG",)))
-        ));
+            Err(ExitError::Other("ERR_BLAKE2F_FINAL_FLAG".into()))
+        );
 
         let expected = hex::decode(
             "08c9bcf367e6096a3ba7ca8485ae67bb2bf894fe72f36e3cf1361d5f3af54fa5d\

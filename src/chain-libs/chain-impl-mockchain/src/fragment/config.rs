@@ -25,7 +25,7 @@ impl property::Serialize for ConfigParams {
     fn serialize<W: std::io::Write>(&self, mut writer: W) -> Result<(), Self::Error> {
         // FIXME: put params in canonical order (e.g. sorted by tag)?
         use chain_core::packer::*;
-        Codec::new(&mut writer).put_u16(self.0.len() as u16)?;
+        Codec::new(&mut writer).put_be_u16(self.0.len() as u16)?;
         for config in &self.0 {
             config.serialize(&mut writer)?
         }
@@ -39,7 +39,7 @@ impl property::Deserialize for ConfigParams {
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         use chain_core::packer::Codec;
         let mut codec = Codec::new(reader);
-        let size = codec.get_u16()? as usize;
+        let size = codec.get_be_u16()? as usize;
         let mut config_params: Vec<ConfigParam> = Vec::with_capacity(size);
         for _ in 0..size {
             config_params.push(ConfigParam::deserialize(&mut codec)?);

@@ -1,4 +1,4 @@
-use super::prelude::{vec, Borrowed, H256};
+use super::prelude::{vec, H256};
 use super::{EvmPrecompileResult, Precompile, PrecompileOutput};
 use ethabi::Address;
 use evm::{Context, ExitError};
@@ -9,6 +9,8 @@ mod costs {
 
 mod consts {
     pub(super) const INPUT_LEN: usize = 128;
+    pub(super) const ECRECOVER_BASE: u64 = 3_000;
+    pub(super) const SIGNATURE_LEN: usize = 65;
 }
 
 /// See: https://ethereum.github.io/yellowpaper/paper.pdf
@@ -16,13 +18,17 @@ mod consts {
 /// See: https://etherscan.io/address/0000000000000000000000000000000000000001
 // Quite a few library methods rely on this and that should be changed. This
 // should only be for precompiles.
-pub fn ecrecover(hash: H256, signature: &[u8]) -> Result<Address, ExitError> {
-    assert_eq!(signature.len(), 65);
-
+pub fn ecrecover(
+    hash: H256,
+    signature: &[u8; consts::SIGNATURE_LEN],
+) -> Result<Address, ExitError> {
     internal_impl(hash, signature)
 }
 
-fn internal_impl(hash: H256, signature: &[u8]) -> Result<Address, ExitError> {
+fn internal_impl(
+    hash: H256,
+    signature: &[u8; consts::SIGNATURE_LEN],
+) -> Result<Address, ExitError> {
     use sha3::Digest;
 
     let hash = secp256k1::Message::parse_slice(hash.as_bytes()).unwrap();
@@ -41,7 +47,7 @@ fn internal_impl(hash: H256, signature: &[u8]) -> Result<Address, ExitError> {
         }
     }
 
-    Err(ExitError::Other(Borrowed("ERR_ECRECOVER")))
+    Err(ExitError::Other("ERR_ECRECOVER".into()))
 }
 
 pub(super) struct ECRecover;
@@ -110,7 +116,7 @@ mod tests {
     use super::*;
     use crate::precompiles::utils::new_context;
 
-    fn ecverify(hash: H256, signature: &[u8], signer: Address) -> bool {
+    fn ecverify(hash: H256, signature: &[u8; consts::SIGNATURE_LEN], signer: Address) -> bool {
         matches!(ecrecover(hash, signature), Ok(s) if s == signer)
     }
 
@@ -121,8 +127,8 @@ mod tests {
                 .unwrap(),
         );
         let signature =
-            &hex::decode("b9f0bb08640d3c1c00761cdd0121209268f6fd3816bc98b9e6f3cc77bf82b69812ac7a61788a0fdc0e19180f14c945a8e1088a27d92a74dce81c0981fb6447441b")
-                .unwrap();
+            hex::decode("b9f0bb08640d3c1c00761cdd0121209268f6fd3816bc98b9e6f3cc77bf82b69812ac7a61788a0fdc0e19180f14c945a8e1088a27d92a74dce81c0981fb6447441b")
+                .unwrap().try_into().unwrap();
         let signer =
             Address::from_slice(&hex::decode("1563915e194D8CfBA1943570603F7606A3115508").unwrap());
         assert!(ecverify(hash, &signature, signer));

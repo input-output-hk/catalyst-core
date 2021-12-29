@@ -210,12 +210,12 @@ impl property::Serialize for Witness {
             }
             Witness::Account(nonce, sig) => {
                 codec.put_u8(WITNESS_TAG_ACCOUNT)?;
-                codec.put_u32((*nonce).into())?;
+                codec.put_be_u32((*nonce).into())?;
                 serialize_signature(sig, codec.into_inner())
             }
             Witness::Multisig(nonce, msig) => {
                 codec.put_u8(WITNESS_TAG_MULTISIG)?;
-                codec.put_u32((*nonce).into())?;
+                codec.put_be_u32((*nonce).into())?;
                 msig.serialize(codec.into_inner())
             }
         }

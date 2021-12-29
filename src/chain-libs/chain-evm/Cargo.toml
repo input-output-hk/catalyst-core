@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 evm = "0.33.0"
 imhamt = { path = "../imhamt" }
+chain-ser = { path = "../chain-ser" }
 primitive-types = "0.10.1"
 base64 = { version = "0.13.0", default-features = false, features = ["alloc"] }
 blake2 = { version = "0.9.1", git = "https://github.com/near/near-blake2.git", rev = "736ff607cc8160af87ffa697c14ebef85050138f", default-features = false }

@@ -130,7 +130,6 @@ impl<'runtime> VirtualMachine<'runtime> {
     }
 
     /// Execute a CREATE transaction
-    #[allow(clippy::boxed_local)]
     pub fn transact_create(
         &mut self,
         caller: Address,
@@ -150,7 +149,7 @@ impl<'runtime> VirtualMachine<'runtime> {
             );
 
             let exit_reason =
-                executor.transact_create(caller, value, init_code.to_vec(), gas_limit, access_list);
+                executor.transact_create(caller, value, init_code, gas_limit, access_list);
             match exit_reason {
                 ExitReason::Succeed(_succeded) => {
                     // apply and return state
@@ -170,7 +169,6 @@ impl<'runtime> VirtualMachine<'runtime> {
     }
 
     /// Execute a CREATE2 transaction
-    #[allow(clippy::boxed_local)]
     #[allow(clippy::too_many_arguments)]
     pub fn transact_create2(
         &mut self,
@@ -190,14 +188,8 @@ impl<'runtime> VirtualMachine<'runtime> {
                 self.config,
                 &self.precompiles,
             );
-            let exit_reason = executor.transact_create2(
-                caller,
-                value,
-                init_code.to_vec(),
-                salt,
-                gas_limit,
-                access_list,
-            );
+            let exit_reason =
+                executor.transact_create2(caller, value, init_code, salt, gas_limit, access_list);
             match exit_reason {
                 ExitReason::Succeed(_succeded) => {
                     // apply and return state
@@ -217,7 +209,6 @@ impl<'runtime> VirtualMachine<'runtime> {
     }
 
     /// Execute a CALL transaction
-    #[allow(clippy::boxed_local)]
     #[allow(clippy::too_many_arguments)]
     pub fn transact_call(
         &mut self,
@@ -233,14 +224,8 @@ impl<'runtime> VirtualMachine<'runtime> {
         let memory_stack_state = MemoryStackState::new(metadata, self);
         let mut executor =
             StackExecutor::new_with_precompiles(memory_stack_state, self.config, &self.precompiles);
-        let (exit_reason, byte_output) = executor.transact_call(
-            caller,
-            address,
-            value,
-            data.to_vec(),
-            gas_limit,
-            access_list,
-        );
+        let (exit_reason, byte_output) =
+            executor.transact_call(caller, address, value, data, gas_limit, access_list);
         match exit_reason {
             ExitReason::Succeed(_succeded) => {
                 // apply and return state
@@ -252,7 +237,7 @@ impl<'runtime> VirtualMachine<'runtime> {
 
                 self.apply(values, logs, delete_empty);
                 //_exit_reason
-                Some((&self.state, &self.logs, byte_output.into_boxed_slice()))
+                Some((&self.state, &self.logs, byte_output))
             }
             _ => None,
         }

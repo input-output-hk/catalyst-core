@@ -105,10 +105,7 @@ fn serialize_h256(
 }
 
 #[cfg(feature = "evm")]
-fn serialize_bytecode(
-    bb: ByteBuilder<EvmTransaction>,
-    code: &ByteCode,
-) -> ByteBuilder<EvmTransaction> {
+fn serialize_bytecode(bb: ByteBuilder<EvmTransaction>, code: &[u8]) -> ByteBuilder<EvmTransaction> {
     bb.u64(code.len().try_into().unwrap()).bytes(code.as_ref())
 }
 

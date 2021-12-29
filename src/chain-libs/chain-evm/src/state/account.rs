@@ -7,7 +7,7 @@ pub type Nonce = U256;
 pub type Balance = U256;
 
 /// Smart-contract bytecode, such as the one compiled from Solidity code, for example.
-pub type ByteCode = Box<[u8]>;
+pub type ByteCode = Vec<u8>;
 
 /// A represantation of an EVM account.
 #[derive(Clone, Default, PartialEq, Eq)]
@@ -51,7 +51,7 @@ impl AccountTrie {
             account.storage
         };
         let code = if let Some(code) = code {
-            code.into_boxed_slice()
+            code
         } else {
             account.code
         };

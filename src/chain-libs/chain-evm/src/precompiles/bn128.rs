@@ -1,4 +1,4 @@
-use super::prelude::{Address, Borrowed, PhantomData, Vec};
+use super::prelude::{Address, PhantomData, Vec};
 use super::{Byzantium, EvmPrecompileResult, HardFork, Istanbul, Precompile, PrecompileOutput};
 use evm::{Context, ExitError};
 
@@ -47,19 +47,17 @@ fn read_point(input: &[u8], pos: usize) -> Result<bn::G1, ExitError> {
 
     let mut px_buf = [0u8; 32];
     px_buf.copy_from_slice(&input[pos..(pos + 32)]);
-    let px =
-        Fq::interpret(&px_buf).map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_X")))?;
+    let px = Fq::interpret(&px_buf).map_err(|_e| ExitError::Other("ERR_BN128_INVALID_X".into()))?;
 
     let mut py_buf = [0u8; 32];
     py_buf.copy_from_slice(&input[(pos + 32)..(pos + 64)]);
-    let py =
-        Fq::interpret(&py_buf).map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_Y")))?;
+    let py = Fq::interpret(&py_buf).map_err(|_e| ExitError::Other("ERR_BN128_INVALID_Y".into()))?;
 
     Ok(if px == Fq::zero() && py == bn::Fq::zero() {
         G1::zero()
     } else {
         AffineG1::new(px, py)
-            .map_err(|_| ExitError::Other(Borrowed("ERR_BN128_INVALID_POINT")))?
+            .map_err(|_| ExitError::Other("ERR_BN128_INVALID_POINT".into()))?
             .into()
     })
 }
@@ -164,7 +162,7 @@ impl<HF: HardFork> Bn128Mul<HF> {
         let mut fr_buf = [0u8; 32];
         fr_buf.copy_from_slice(&input[64..96]);
         let fr = bn::Fr::interpret(&fr_buf)
-            .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_FE")))?;
+            .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_FE".into()))?;
 
         let mut output = [0u8; 64];
         if let Some(mul) = AffineG1::from_jacobian(p * fr) {
@@ -243,7 +241,7 @@ impl<HF: HardFork> Bn128Pair<HF> {
         use bn::{arith::U256, AffineG1, AffineG2, Fq, Fq2, Group, Gt, G1, G2};
 
         if input.len() % consts::PAIR_ELEMENT_LEN != 0 {
-            return Err(ExitError::Other(Borrowed("ERR_BN128_INVALID_LEN")));
+            return Err(ExitError::Other("ERR_BN128_INVALID_LEN".into()));
         }
 
         let output = if input.is_empty() {
@@ -259,37 +257,37 @@ impl<HF: HardFork> Bn128Pair<HF> {
                     &input[(idx * consts::PAIR_ELEMENT_LEN)..(idx * consts::PAIR_ELEMENT_LEN + 32)],
                 );
                 let ax = Fq::interpret(&buf)
-                    .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_AX")))?;
+                    .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_AX".into()))?;
                 buf.copy_from_slice(
                     &input[(idx * consts::PAIR_ELEMENT_LEN + 32)
                         ..(idx * consts::PAIR_ELEMENT_LEN + 64)],
                 );
                 let ay = Fq::interpret(&buf)
-                    .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_AY")))?;
+                    .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_AY".into()))?;
                 buf.copy_from_slice(
                     &input[(idx * consts::PAIR_ELEMENT_LEN + 64)
                         ..(idx * consts::PAIR_ELEMENT_LEN + 96)],
                 );
                 let bay = Fq::interpret(&buf)
-                    .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_B_AY")))?;
+                    .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_B_AY".into()))?;
                 buf.copy_from_slice(
                     &input[(idx * consts::PAIR_ELEMENT_LEN + 96)
                         ..(idx * consts::PAIR_ELEMENT_LEN + 128)],
                 );
                 let bax = Fq::interpret(&buf)
-                    .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_B_AX")))?;
+                    .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_B_AX".into()))?;
                 buf.copy_from_slice(
                     &input[(idx * consts::PAIR_ELEMENT_LEN + 128)
                         ..(idx * consts::PAIR_ELEMENT_LEN + 160)],
                 );
                 let bby = Fq::interpret(&buf)
-                    .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_B_BY")))?;
+                    .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_B_BY".into()))?;
                 buf.copy_from_slice(
                     &input[(idx * consts::PAIR_ELEMENT_LEN + 160)
                         ..(idx * consts::PAIR_ELEMENT_LEN + 192)],
                 );
                 let bbx = Fq::interpret(&buf)
-                    .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_B_BX")))?;
+                    .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_B_BX".into()))?;
 
                 let a = {
                     if ax.is_zero() && ay.is_zero() {
@@ -297,7 +295,7 @@ impl<HF: HardFork> Bn128Pair<HF> {
                     } else {
                         G1::from(
                             AffineG1::new(ax, ay)
-                                .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_A")))?,
+                                .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_A".into()))?,
                         )
                     }
                 };
@@ -310,7 +308,7 @@ impl<HF: HardFork> Bn128Pair<HF> {
                     } else {
                         G2::from(
                             AffineG2::new(ba, bb)
-                                .map_err(|_e| ExitError::Other(Borrowed("ERR_BN128_INVALID_B")))?,
+                                .map_err(|_e| ExitError::Other("ERR_BN128_INVALID_B".into()))?,
                         )
                     }
                 };
@@ -451,7 +449,7 @@ mod tests {
         )
         .unwrap();
         let res = Bn128Add::<Byzantium>::run(&input, Some(499), &new_context(), false);
-        assert!(matches!(res, Err(ExitError::OutOfGas)));
+        assert_eq!(res, Err(ExitError::OutOfGas));
 
         // no input test
         let input = [0u8; 0];
@@ -478,10 +476,7 @@ mod tests {
         .unwrap();
 
         let res = Bn128Add::<Byzantium>::run(&input, Some(500), &new_context(), false);
-        assert!(matches!(
-            res,
-            Err(ExitError::Other(Borrowed("ERR_BN128_INVALID_POINT")))
-        ));
+        assert_eq!(res, Err(ExitError::Other("ERR_BN128_INVALID_POINT".into())));
     }
 
     #[test]
@@ -514,7 +509,7 @@ mod tests {
         )
         .unwrap();
         let res = Bn128Mul::<Byzantium>::run(&input, Some(39_999), &new_context(), false);
-        assert!(matches!(res, Err(ExitError::OutOfGas)));
+        assert_eq!(res, Err(ExitError::OutOfGas));
 
         // zero multiplication test
         let input = hex::decode(
@@ -560,10 +555,7 @@ mod tests {
         .unwrap();
 
         let res = Bn128Mul::<Byzantium>::run(&input, Some(40_000), &new_context(), false);
-        assert!(matches!(
-            res,
-            Err(ExitError::Other(Borrowed("ERR_BN128_INVALID_POINT")))
-        ));
+        assert_eq!(res, Err(ExitError::Other("ERR_BN128_INVALID_POINT".into())));
     }
 
     #[test]
@@ -611,7 +603,7 @@ mod tests {
         )
         .unwrap();
         let res = Bn128Pair::<Byzantium>::run(&input, Some(259_999), &new_context(), false);
-        assert!(matches!(res, Err(ExitError::OutOfGas)));
+        assert_eq!(res, Err(ExitError::OutOfGas));
 
         // no input test
         let input = [0u8; 0];
@@ -637,10 +629,7 @@ mod tests {
         .unwrap();
 
         let res = Bn128Pair::<Byzantium>::run(&input, Some(260_000), &new_context(), false);
-        assert!(matches!(
-            res,
-            Err(ExitError::Other(Borrowed("ERR_BN128_INVALID_A")))
-        ));
+        assert_eq!(res, Err(ExitError::Other("ERR_BN128_INVALID_A".into())));
 
         // invalid input length
         let input = hex::decode(
@@ -653,9 +642,6 @@ mod tests {
         .unwrap();
 
         let res = Bn128Pair::<Byzantium>::run(&input, Some(260_000), &new_context(), false);
-        assert!(matches!(
-            res,
-            Err(ExitError::Other(Borrowed("ERR_BN128_INVALID_LEN",)))
-        ));
+        assert_eq!(res, Err(ExitError::Other("ERR_BN128_INVALID_LEN".into())));
     }
 }

@@ -46,18 +46,18 @@ pub fn pack_time_era<W: std::io::Write>(
     time_era: &TimeEra,
     codec: &mut Codec<W>,
 ) -> Result<(), std::io::Error> {
-    codec.put_u32(time_era.epoch_start.0)?;
-    codec.put_u64(time_era.slot_start.0)?;
-    codec.put_u32(time_era.slots_per_epoch)?;
+    codec.put_be_u32(time_era.epoch_start.0)?;
+    codec.put_be_u64(time_era.slot_start.0)?;
+    codec.put_be_u32(time_era.slots_per_epoch)?;
     Ok(())
 }
 
 pub fn unpack_time_era<R: std::io::BufRead>(
     codec: &mut Codec<R>,
 ) -> Result<TimeEra, std::io::Error> {
-    let epoch_start = Epoch(codec.get_u32()?);
-    let slot_start = Slot(codec.get_u64()?);
-    let slots_per_epoch = codec.get_u32()?;
+    let epoch_start = Epoch(codec.get_be_u32()?);
+    let slot_start = Slot(codec.get_be_u64()?);
+    let slots_per_epoch = codec.get_be_u32()?;
 
     Ok(TimeEra {
         epoch_start,

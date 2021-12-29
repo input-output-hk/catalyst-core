@@ -55,7 +55,7 @@ impl property::Serialize for UtxoDeclaration {
         for (b, v) in &self.addrs {
             v.serialize(&mut codec)?;
             let bs = b.as_ref();
-            codec.put_u16(bs.len() as u16)?;
+            codec.put_be_u16(bs.len() as u16)?;
             codec.write_all(bs)?;
         }
         Ok(())

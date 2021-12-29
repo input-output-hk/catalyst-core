@@ -18,7 +18,7 @@ impl property::Serialize for HeaderRaw {
         use std::io::Write;
 
         let mut codec = Codec::new(writer);
-        codec.put_u16(self.0.len() as u16)?;
+        codec.put_be_u16(self.0.len() as u16)?;
         codec.write_all(&self.0)?;
         Ok(())
     }
@@ -33,7 +33,7 @@ impl property::Deserialize for HeaderRaw {
 
         let mut codec = Codec::new(reader);
 
-        let header_size = codec.get_u16()? as usize;
+        let header_size = codec.get_be_u16()? as usize;
         let mut v = vec![0u8; header_size];
         codec.read_exact(&mut v[..])?;
         Ok(HeaderRaw(v))

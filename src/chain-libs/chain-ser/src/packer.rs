@@ -32,28 +32,52 @@ impl<R: std::io::BufRead> Codec<R> {
         Ok(buf[0])
     }
     #[inline]
-    pub fn get_u16(&mut self) -> std::io::Result<u16> {
+    pub fn get_be_u16(&mut self) -> std::io::Result<u16> {
         let mut buf = [0u8; 2];
         self.0.read_exact(&mut buf)?;
         Ok(u16::from_be_bytes(buf))
     }
     #[inline]
-    pub fn get_u32(&mut self) -> std::io::Result<u32> {
+    pub fn get_le_u16(&mut self) -> std::io::Result<u16> {
+        let mut buf = [0u8; 2];
+        self.0.read_exact(&mut buf)?;
+        Ok(u16::from_le_bytes(buf))
+    }
+    #[inline]
+    pub fn get_be_u32(&mut self) -> std::io::Result<u32> {
         let mut buf = [0u8; 4];
         self.0.read_exact(&mut buf)?;
         Ok(u32::from_be_bytes(buf))
     }
     #[inline]
-    pub fn get_u64(&mut self) -> std::io::Result<u64> {
+    pub fn get_le_u32(&mut self) -> std::io::Result<u32> {
+        let mut buf = [0u8; 4];
+        self.0.read_exact(&mut buf)?;
+        Ok(u32::from_le_bytes(buf))
+    }
+    #[inline]
+    pub fn get_be_u64(&mut self) -> std::io::Result<u64> {
         let mut buf = [0u8; 8];
         self.0.read_exact(&mut buf)?;
         Ok(u64::from_be_bytes(buf))
     }
     #[inline]
-    pub fn get_u128(&mut self) -> std::io::Result<u128> {
+    pub fn get_le_u64(&mut self) -> std::io::Result<u64> {
+        let mut buf = [0u8; 8];
+        self.0.read_exact(&mut buf)?;
+        Ok(u64::from_le_bytes(buf))
+    }
+    #[inline]
+    pub fn get_be_u128(&mut self) -> std::io::Result<u128> {
         let mut buf = [0u8; 16];
         self.0.read_exact(&mut buf)?;
         Ok(u128::from_be_bytes(buf))
+    }
+    #[inline]
+    pub fn get_le_u128(&mut self) -> std::io::Result<u128> {
+        let mut buf = [0u8; 16];
+        self.0.read_exact(&mut buf)?;
+        Ok(u128::from_le_bytes(buf))
     }
     #[inline]
     pub fn get_bytes(&mut self, n: usize) -> std::io::Result<Vec<u8>> {
@@ -74,20 +98,36 @@ impl<W: std::io::Write> Codec<W> {
         self.0.write_all(&[v])
     }
     #[inline]
-    pub fn put_u16(&mut self, v: u16) -> std::io::Result<()> {
+    pub fn put_be_u16(&mut self, v: u16) -> std::io::Result<()> {
         self.0.write_all(&v.to_be_bytes())
     }
     #[inline]
-    pub fn put_u32(&mut self, v: u32) -> std::io::Result<()> {
+    pub fn put_le_u16(&mut self, v: u16) -> std::io::Result<()> {
+        self.0.write_all(&v.to_le_bytes())
+    }
+    #[inline]
+    pub fn put_be_u32(&mut self, v: u32) -> std::io::Result<()> {
         self.0.write_all(&v.to_be_bytes())
     }
     #[inline]
-    pub fn put_u64(&mut self, v: u64) -> std::io::Result<()> {
+    pub fn put_le_u32(&mut self, v: u32) -> std::io::Result<()> {
+        self.0.write_all(&v.to_le_bytes())
+    }
+    #[inline]
+    pub fn put_be_u64(&mut self, v: u64) -> std::io::Result<()> {
         self.0.write_all(&v.to_be_bytes())
     }
     #[inline]
-    pub fn put_u128(&mut self, v: u128) -> std::io::Result<()> {
+    pub fn put_le_u64(&mut self, v: u64) -> std::io::Result<()> {
+        self.0.write_all(&v.to_le_bytes())
+    }
+    #[inline]
+    pub fn put_be_u128(&mut self, v: u128) -> std::io::Result<()> {
         self.0.write_all(&v.to_be_bytes())
+    }
+    #[inline]
+    pub fn put_le_u128(&mut self, v: u128) -> std::io::Result<()> {
+        self.0.write_all(&v.to_le_bytes())
     }
     #[inline]
     pub fn put_bytes(&mut self, v: &[u8]) -> std::io::Result<()> {

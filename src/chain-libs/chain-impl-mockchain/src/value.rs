@@ -119,7 +119,7 @@ impl property::Deserialize for Value {
     fn deserialize<R: std::io::BufRead>(reader: R) -> Result<Self, Self::Error> {
         use chain_core::packer::*;
         let mut codec = Codec::new(reader);
-        codec.get_u64().map(Value)
+        codec.get_be_u64().map(Value)
     }
 }
 impl Readable for Value {
@@ -133,7 +133,7 @@ impl property::Serialize for Value {
     fn serialize<W: std::io::Write>(&self, writer: W) -> Result<(), Self::Error> {
         use chain_core::packer::*;
         let mut codec = Codec::new(writer);
-        codec.put_u64(self.0)
+        codec.put_be_u64(self.0)
     }
 }
 

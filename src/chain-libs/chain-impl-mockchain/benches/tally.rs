@@ -206,7 +206,7 @@ fn tally_benchmark(
         .unwrap();
     c.bench_function(&format!("tally_decrypt_share_{}", benchmark_name), |b| {
         b.iter(|| {
-            members.members()[0].produce_decrypt_shares(&vote_plan_status);
+            members.members()[0].produce_decrypt_shares(vote_plan_status);
         })
     });
 
@@ -215,7 +215,7 @@ fn tally_benchmark(
     let mut decrypt_shares_iter: Vec<_> = members
         .members()
         .iter()
-        .map(|member| member.produce_decrypt_shares(&vote_plan_status).into_iter())
+        .map(|member| member.produce_decrypt_shares(vote_plan_status).into_iter())
         .collect();
     let decrypt_shares: Vec<Vec<_>> = (0..n_proposals)
         .map(|_| {
@@ -242,7 +242,7 @@ fn tally_benchmark(
                     .unwrap()
                     .0
                     .validate_partial_decryptions(
-                        &vote_plan.committee_public_keys(),
+                        vote_plan.committee_public_keys(),
                         &decrypt_shares[i],
                     )
                     .unwrap()

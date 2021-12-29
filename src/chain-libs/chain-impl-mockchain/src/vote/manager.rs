@@ -871,7 +871,7 @@ mod tests {
         let vote_plan = VoteTestGen::vote_plan();
         let vote_choice = vote::Choice::new(1);
         let vote_cast_payload = vote::Payload::public(vote_choice);
-        let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload.clone());
+        let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload);
 
         let mut proposal_manager = ProposalManager::new(vote_plan.proposals().get(0).unwrap());
 
@@ -906,7 +906,7 @@ mod tests {
             vote_choice,
             &mut rng,
         );
-        let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload.clone());
+        let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload);
 
         let identifier = TestGen::unspecified_account_identifier();
 
@@ -930,7 +930,7 @@ mod tests {
         let vote_plan = VoteTestGen::private_vote_plan_with_committees_manager(&committee_manager);
         let vote_choice = vote::Choice::new(1);
         let vote_cast_payload = vote::Payload::public(vote_choice);
-        let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload.clone());
+        let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload);
 
         let identifier = TestGen::unspecified_account_identifier();
 
@@ -1424,7 +1424,7 @@ mod tests {
     ) {
         let mut vote_action_hit = false;
         proposal_managers
-            .public_tally(&stake_controlled, &governance, |_vote_action| {
+            .public_tally(stake_controlled, governance, |_vote_action| {
                 vote_action_hit = true;
             })
             .unwrap();
@@ -1437,7 +1437,7 @@ mod tests {
     ) {
         let mut vote_action_hit = false;
         proposal_manager
-            .public_tally(&stake_controlled, &governance, |_vote_action| {
+            .public_tally(stake_controlled, governance, |_vote_action| {
                 vote_action_hit = true;
             })
             .unwrap();
@@ -1452,9 +1452,8 @@ mod tests {
         let first_vote_cast_payload = VoteTestGen::vote_cast_payload_for(&choice);
         let second_vote_cast_payload = VoteTestGen::vote_cast_payload_for(&choice);
 
-        let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload.clone());
-        let second_vote_cast =
-            VoteCast::new(vote_plan.to_id(), 1, second_vote_cast_payload.clone());
+        let first_vote_cast = VoteCast::new(vote_plan.to_id(), 0, first_vote_cast_payload);
+        let second_vote_cast = VoteCast::new(vote_plan.to_id(), 1, second_vote_cast_payload);
 
         let mut proposal_managers = ProposalManagers::new(&vote_plan);
 
@@ -1464,7 +1463,7 @@ mod tests {
             .validate_vote(&identifier, first_vote_cast)
             .unwrap();
         let second_vote_cast_validated = proposal_managers
-            .validate_vote(&identifier, second_vote_cast.clone())
+            .validate_vote(&identifier, second_vote_cast)
             .unwrap();
 
         proposal_managers = proposal_managers
@@ -1482,10 +1481,7 @@ mod tests {
             .iter()
             .find(|(x, _y)| **x == identifier)
             .unwrap();
-        assert_eq!(
-            *actual_vote_cast_payload,
-            ValidatedPayload::Public(choice.clone())
-        );
+        assert_eq!(*actual_vote_cast_payload, ValidatedPayload::Public(choice));
 
         let (_, actual_vote_cast_payload) = proposal_managers
             .managers()
@@ -1495,10 +1491,7 @@ mod tests {
             .iter()
             .find(|(x, _y)| **x == identifier)
             .unwrap();
-        assert_eq!(
-            *actual_vote_cast_payload,
-            ValidatedPayload::Public(choice.clone())
-        );
+        assert_eq!(*actual_vote_cast_payload, ValidatedPayload::Public(choice));
     }
 
     #[test]
@@ -1535,7 +1528,7 @@ mod tests {
         let second_vote_cast = proposal_managers
             .validate_vote(
                 &identifier,
-                VoteCast::new(vote_plan.to_id(), 0, second_vote_cast_payload.clone()),
+                VoteCast::new(vote_plan.to_id(), 0, second_vote_cast_payload),
             )
             .unwrap();
 

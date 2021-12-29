@@ -604,7 +604,7 @@ mod test {
 
     fn expected_bech32(addr: &Address, expected: &'static str) {
         assert_eq!(
-            AddressReadable::from_address(TEST_PREFIX, &addr),
+            AddressReadable::from_address(TEST_PREFIX, addr),
             AddressReadable(expected.to_string())
         );
     }

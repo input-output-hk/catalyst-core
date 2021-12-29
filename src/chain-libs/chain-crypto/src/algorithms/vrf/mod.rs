@@ -94,7 +94,7 @@ mod tests {
 
     #[test]
     fn secret_from_binary_correct_size() {
-        RistrettoGroup2HashDh::secret_from_binary(&vec![0; vrf::SecretKey::BYTES_LEN]).unwrap();
+        RistrettoGroup2HashDh::secret_from_binary(&[0; vrf::SecretKey::BYTES_LEN]).unwrap();
     }
 
     #[test]

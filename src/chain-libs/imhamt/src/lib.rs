@@ -237,13 +237,13 @@ mod tests {
     ) -> bool {
         // using the btreemap reference as starting point
         for (k, v) in reference.iter() {
-            if h.lookup(&k) != Some(v) {
+            if h.lookup(k) != Some(v) {
                 return false;
             }
         }
         // then asking the hamt for any spurious values
         for (k, v) in h.iter() {
-            if reference.get(&k) != Some(v) {
+            if reference.get(k) != Some(v) {
                 return false;
             }
         }
@@ -274,6 +274,7 @@ mod tests {
         Some(keys.nth(n % keys_nb).unwrap().clone())
     }
 
+    #[allow(clippy::type_complexity)]
     fn plan_to_hamt_and_btree(
         xs: Vec<PlanOperation>,
     ) -> (Hamt<DefaultHasher, Vec<u8>, u32>, BTreeMap<Vec<u8>, u32>) {
@@ -286,8 +287,8 @@ mod tests {
                     if reference.get(k).is_some() {
                         continue;
                     }
-                    reference.insert(k.clone(), v.clone());
-                    h = h.insert(k.clone(), v.clone()).unwrap();
+                    reference.insert(k.clone(), *v);
+                    h = h.insert(k.clone(), *v).unwrap();
                 }
                 PlanOperation::DeleteOne(r) => match get_key_nth(&reference, *r) {
                     None => continue,
@@ -299,7 +300,7 @@ mod tests {
                 PlanOperation::DeleteOneMatching(r) => match get_key_nth(&reference, *r) {
                     None => continue,
                     Some(k) => {
-                        let v = reference.get(&k).unwrap().clone();
+                        let v = *reference.get(&k).unwrap();
                         reference.remove(&k);
                         h = h.remove_match(&k, &v).unwrap();
                     }
@@ -308,9 +309,9 @@ mod tests {
                     None => continue,
                     Some(k) => {
                         let v = reference.get_mut(&k).unwrap();
-                        *v = newv.clone();
+                        *v = *newv;
 
-                        h = h.replace(&k, newv.clone()).unwrap().0;
+                        h = h.replace(&k, *newv).unwrap().0;
                     }
                 },
                 PlanOperation::ReplaceWith(r) => match get_key_nth(&reference, *r) {
@@ -357,21 +358,20 @@ mod tests {
 
     #[proptest]
     fn plan_equivalent(
-        #[strategy(arbitrary_hamt_and_btree())] data: (
-            Hamt<DefaultHasher, Vec<u8>, u32>,
-            BTreeMap<Vec<u8>, u32>,
-        ),
+        #[allow(clippy::type_complexity)]
+        #[strategy(arbitrary_hamt_and_btree())]
+        data: (Hamt<DefaultHasher, Vec<u8>, u32>, BTreeMap<Vec<u8>, u32>),
     ) {
         let (h, reference) = data;
         prop_assert!(property_btreemap_eq(&reference, &h));
     }
 
     #[proptest]
+    #[allow(clippy::type_complexity)]
     fn iter_equivalent(
-        #[strategy(arbitrary_hamt_and_btree())] data: (
-            Hamt<DefaultHasher, Vec<u8>, u32>,
-            BTreeMap<Vec<u8>, u32>,
-        ),
+        #[allow(clippy::type_complexity)]
+        #[strategy(arbitrary_hamt_and_btree())]
+        data: (Hamt<DefaultHasher, Vec<u8>, u32>, BTreeMap<Vec<u8>, u32>),
     ) {
         use std::iter::FromIterator;
         let (h, reference) = data;

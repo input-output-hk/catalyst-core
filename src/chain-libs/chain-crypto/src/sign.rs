@@ -242,6 +242,6 @@ pub(crate) mod test {
         }
 
         let signature = sk.sign(&data);
-        signature.verify(&pk_random, &data) == Verification::Failed
+        signature.verify(pk_random, &data) == Verification::Failed
     }
 }

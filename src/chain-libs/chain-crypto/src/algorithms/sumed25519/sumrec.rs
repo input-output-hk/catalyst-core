@@ -118,7 +118,7 @@ pub fn update(sk: &mut SecretKey) {
             if *t + 1 < t0 {
                 update(skbox)
             } else if *t + 1 == t0 {
-                let (newsk, _) = keygen(depth.decr(), &r1);
+                let (newsk, _) = keygen(depth.decr(), r1);
                 *skbox = Box::new(newsk);
                 *r1 = Seed::zero()
             } else {

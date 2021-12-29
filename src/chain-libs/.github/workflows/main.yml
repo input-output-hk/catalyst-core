@@ -223,7 +223,7 @@ jobs:
         continue-on-error: false
         with:
           command: clippy
-          args: -- -D warnings
+          args: --all-targets --all-features -- -D warnings
 
       - name: Run cargo clippy (all features)
         uses: actions-rs/cargo@v1

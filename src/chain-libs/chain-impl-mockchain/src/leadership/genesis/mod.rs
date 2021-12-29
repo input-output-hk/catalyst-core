@@ -273,7 +273,7 @@ mod tests {
     type Pools = HashMap<PoolId, (SecretKey<RistrettoGroup2HashDh>, u64, Stake)>;
 
     fn make_leadership_with_pools(ledger: &Ledger, pools: &Pools) -> LeadershipData {
-        let mut selection = LeadershipData::new(0, &ledger);
+        let mut selection = LeadershipData::new(0, ledger);
 
         for (pool_id, (_, _, value)) in pools {
             update_stake_pool_total_value(&mut selection, pool_id, *value);
@@ -326,7 +326,7 @@ mod tests {
             let mut any_found = false;
             for (pool_id, (pool_vrf_private_key, times_selected, _)) in pools.iter_mut() {
                 match selection
-                    .leader(&pool_id, &pool_vrf_private_key, date)
+                    .leader(pool_id, pool_vrf_private_key, date)
                     .unwrap()
                 {
                     None => {}
@@ -339,7 +339,7 @@ mod tests {
             if !any_found {
                 empty_slots += 1;
             }
-            date = date.next(&ledger.era());
+            date = date.next(ledger.era());
         }
 
         println!("Calculating percentage of election per pool....");
@@ -420,7 +420,7 @@ mod tests {
             let mut any_small = false;
             for (pool_id, (pool_vrf_private_key, times_selected, value)) in pools.iter_mut() {
                 match selection
-                    .leader(&pool_id, &pool_vrf_private_key, date)
+                    .leader(pool_id, pool_vrf_private_key, date)
                     .unwrap()
                 {
                     None => {}
@@ -439,7 +439,7 @@ mod tests {
             if any_small {
                 times_selected_small += 1;
             }
-            date = date.next(&ledger.era());
+            date = date.next(ledger.era());
         }
 
         for (pool_id, (_pool_vrf_private_key, times_selected, stake)) in pools.iter_mut() {
@@ -488,7 +488,7 @@ mod tests {
         );
 
         assert!(selection
-            .leader(&stake_pool.id(), &stake_pool.vrf().private_key(), date)
+            .leader(&stake_pool.id(), stake_pool.vrf().private_key(), date)
             .is_err());
     }
 
@@ -508,7 +508,7 @@ mod tests {
         let selection = LeadershipData::new(date.epoch, &ledger);
 
         assert!(selection
-            .leader(&stake_pool.id(), &stake_pool.vrf().private_key(), date)
+            .leader(&stake_pool.id(), stake_pool.vrf().private_key(), date)
             .is_err());
     }
 
@@ -529,7 +529,7 @@ mod tests {
         update_stake_pool_total_value(&mut selection, &stake_pool.id(), Stake::zero());
 
         assert!(selection
-            .leader(&stake_pool.id(), &stake_pool.vrf().private_key(), date)
+            .leader(&stake_pool.id(), stake_pool.vrf().private_key(), date)
             .is_err());
     }
 

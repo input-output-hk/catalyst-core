@@ -98,11 +98,11 @@ mod tests {
         let storage = Trie::new();
 
         // first write
-        let storage_new1 = storage.put(key.clone(), value1.clone());
+        let storage_new1 = storage.put(key, value1);
         prop_assert_eq!(Some(&value1), storage_new1.get(&key));
 
         // overwriting value
-        let storage_new2 = storage_new1.put(key.clone(), value2.clone());
+        let storage_new2 = storage_new1.put(key, value2);
         prop_assert_eq!(Some(&value2), storage_new2.get(&key));
 
         // removing value
@@ -117,19 +117,16 @@ mod tests {
     fn put_or_update_test(key: u8, value1: u8, value2: u8) {
         let storage = Trie::new();
 
-        let vec1 = vec![value1.clone()];
-        let vec2 = vec![value1.clone(), value2.clone()];
+        let vec1 = vec![value1];
+        let vec2 = vec![value1, value2];
 
         // first write
-        let storage_new1 = storage.put_or_update(
-            key.clone(),
-            vec1.clone(),
-            |val: &Vec<u8>| -> Option<Vec<u8>> {
+        let storage_new1 =
+            storage.put_or_update(key, vec1.clone(), |val: &Vec<u8>| -> Option<Vec<u8>> {
                 let mut val = val.clone();
                 val.push(value1);
                 Some(val)
-            },
-        );
+            });
         prop_assert_eq!(Some(&vec1), storage_new1.get(&key));
 
         // update value

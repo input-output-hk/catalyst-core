@@ -48,7 +48,7 @@ fn verify(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new("Verify with", parameter_string),
             &number_candidates,
-            |b, _| b.iter(|| proof.verify(&crs, &ek.as_raw(), &vote)),
+            |b, _| b.iter(|| proof.verify(&crs, ek.as_raw(), &vote)),
         );
     }
 

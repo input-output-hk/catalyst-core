@@ -121,7 +121,7 @@ fn seq_read_benchmark(c: &mut Criterion) {
     c.bench_function("seq_volatile_get_block", |b| {
         b.iter(|| {
             for block_id in block_ids.iter() {
-                store.get_block(&block_id).unwrap();
+                store.get_block(block_id).unwrap();
             }
         })
     });
@@ -144,7 +144,7 @@ fn seq_read_benchmark(c: &mut Criterion) {
     c.bench_function("seq_mixed_get_block", |b| {
         b.iter(|| {
             for block_id in block_ids.iter() {
-                store.get_block(&block_id).unwrap();
+                store.get_block(block_id).unwrap();
             }
         })
     });
@@ -167,7 +167,7 @@ fn seq_read_benchmark(c: &mut Criterion) {
     c.bench_function("seq_permanent_get_block", |b| {
         b.iter(|| {
             for block_id in block_ids.iter() {
-                store.get_block(&block_id).unwrap();
+                store.get_block(block_id).unwrap();
             }
         })
     });

@@ -45,7 +45,7 @@ macro_rules! gen_group_tests {
                     .map(|a| {
                         let mut hash = Blake2b::new(64);
                         hash.input(&a);
-                        Scalar::hash_to_scalar(&mut hash)
+                        Scalar::hash_to_scalar(&hash)
                     })
                     .into_boxed()
             }

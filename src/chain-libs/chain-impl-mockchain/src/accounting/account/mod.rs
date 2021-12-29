@@ -561,7 +561,7 @@ mod tests {
     }
 
     fn verify_account_exists(ledger: &Ledger, id: &Identifier) -> TestResult {
-        if ledger.exists(&id) {
+        if ledger.exists(id) {
             TestResult::passed()
         } else {
             TestResult::error(format!(
@@ -572,7 +572,7 @@ mod tests {
     }
 
     fn verify_account_does_not_exist(ledger: &Ledger, id: &Identifier) -> TestResult {
-        if ledger.exists(&id) {
+        if ledger.exists(id) {
             TestResult::error(format!("Account ({:?}) exists, while it should not", &id))
         } else {
             TestResult::passed()

@@ -90,7 +90,7 @@ mod test {
 
     #[test]
     fn secret_from_binary_correct_size() {
-        Ed25519Extended::secret_from_binary(&vec![0; EXTENDED_KEY_SIZE]).unwrap();
+        Ed25519Extended::secret_from_binary(&[0; EXTENDED_KEY_SIZE]).unwrap();
     }
 
     #[test]

@@ -151,7 +151,7 @@ mod tests {
 
     #[quickcheck]
     pub fn conversion_u16(block_version: AnyBlockVersion) -> TestResult {
-        let bytes: u16 = block_version.clone().into();
+        let bytes: u16 = block_version.into();
         let new_block_version: AnyBlockVersion = AnyBlockVersion::from(bytes);
         TestResult::from_bool(block_version == new_block_version)
     }

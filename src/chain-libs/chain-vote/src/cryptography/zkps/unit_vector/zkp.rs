@@ -383,9 +383,9 @@ mod tests {
             .map(|(i, r)| public_key.encrypt_with_r(&Scalar::from(i), r))
             .collect();
 
-        let mut shared_string =
+        let shared_string =
             b"Example of a shared string. This could be the latest block hash".to_owned();
-        let crs = Crs::from_hash(&mut shared_string);
+        let crs = Crs::from_hash(&shared_string);
 
         let proof = Zkp::generate(
             &mut r,
@@ -412,9 +412,9 @@ mod tests {
             .map(|(i, r)| public_key.encrypt_with_r(&Scalar::from(i), r))
             .collect();
 
-        let mut shared_string =
+        let shared_string =
             b"Example of a shared string. This could be the latest block hash".to_owned();
-        let crs = Crs::from_hash(&mut shared_string);
+        let crs = Crs::from_hash(&shared_string);
 
         let proof = Zkp::generate(
             &mut r,
@@ -441,9 +441,9 @@ mod tests {
             .map(|(i, r)| public_key.encrypt_with_r(&Scalar::from(i), r))
             .collect();
 
-        let mut shared_string =
+        let shared_string =
             b"Example of a shared string. This could be the latest block hash".to_owned();
-        let crs = Crs::from_hash(&mut shared_string);
+        let crs = Crs::from_hash(&shared_string);
 
         let proof = Zkp::generate(
             &mut r,
@@ -504,7 +504,7 @@ mod tests {
 
         // if we set up a new challenge with incorrect initialisation, results should differ
         let crs_diff = GroupElement::from_hash(&[1u8]);
-        let ck_diff = CommitmentKey::from(crs_diff.clone());
+        let ck_diff = CommitmentKey::from(crs_diff);
         let mut cc3 = ChallengeContext::new(&ck_diff, &public_key, &ciphertexts);
         let cy3 = cc3.first_challenge(&proof.ibas);
         let cx3 = cc3.second_challenge(&proof.ds);

@@ -93,7 +93,7 @@ mod tests {
         let token_name_got = token_name.bytes();
         let mut buf = ReadBuf::from(token_name_got.as_ref());
         let result = TokenName::read(&mut buf);
-        let left = Ok(token_name.clone());
+        let left = Ok(token_name);
         assert_eq!(left, result);
         assert_eq!(buf.get_slice_end(), &[]);
         TestResult::from_bool(left == result)

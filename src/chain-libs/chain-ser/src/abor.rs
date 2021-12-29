@@ -292,7 +292,7 @@ mod tests {
         let e = Encoder::new().u32(v).finalize();
         let mut d = Decoder::new(&e);
         let ev = d.u32().unwrap();
-        assert_eq!(d.end().is_ok(), true);
+        assert!(d.end().is_ok());
         assert_eq!(v, ev)
     }
 
@@ -322,11 +322,6 @@ mod tests {
         assert_eq!(v3, ev3);
         assert_eq!(v4, ev4);
         assert_eq!(&bs1[..], &ebs1[..]);
-        assert_eq!(
-            is_end.is_ok(),
-            true,
-            "not reached end {:?}",
-            is_end.unwrap_err()
-        );
+        assert!(is_end.is_ok(), "not reached end {:?}", is_end.unwrap_err());
     }
 }

@@ -1903,9 +1903,9 @@ mod tests {
         }
     }
 
-    impl Into<Ledger> for ArbitraryEmptyLedger {
-        fn into(self) -> Ledger {
-            self.0
+    impl From<ArbitraryEmptyLedger> for Ledger {
+        fn from(val: ArbitraryEmptyLedger) -> Self {
+            val.0
         }
     }
 
@@ -1963,8 +1963,8 @@ mod tests {
             .set_ios(&[input], &[]);
 
         let witness = make_witness(
-            &block0_hash,
-            &address_data,
+            block0_hash,
+            address_data,
             &tx_builder.get_auth_data_for_witness().hash(),
         );
         let witnesses = vec![witness];
@@ -2036,7 +2036,7 @@ mod tests {
             &block0_hash,
             &sign_data_hash,
             &id,
-            &to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
+            to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
             SpendingCounter::zero(),
             value_to_sub,
         );
@@ -2046,7 +2046,7 @@ mod tests {
     fn account_ledger_with_initials(initials: &[(Identifier, Value)]) -> account::Ledger {
         let mut account_ledger = account::Ledger::new();
         for (id, initial_value) in initials {
-            account_ledger = account_ledger.add_account(&id, *initial_value, ()).unwrap();
+            account_ledger = account_ledger.add_account(id, *initial_value, ()).unwrap();
         }
         account_ledger
     }
@@ -2073,7 +2073,7 @@ mod tests {
             &wrong_block0_hash,
             &sign_data_hash,
             &id,
-            &to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
+            to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
             SpendingCounter::zero(),
             value_to_sub,
         );
@@ -2109,7 +2109,7 @@ mod tests {
             &wrong_block0_hash,
             &sign_data_hash,
             &id,
-            &to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
+            to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
             SpendingCounter::zero(),
             value_to_sub,
         );
@@ -2139,7 +2139,7 @@ mod tests {
             &wrong_block0_hash,
             &sign_data_hash,
             &non_existing_account.public_key().into(),
-            &to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
+            to_account_witness(&signed_tx.witnesses().iter().next().unwrap()),
             SpendingCounter::zero(),
             value_to_sub,
         );

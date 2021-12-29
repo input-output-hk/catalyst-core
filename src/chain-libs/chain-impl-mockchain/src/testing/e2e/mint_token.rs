@@ -24,7 +24,7 @@ pub fn mint_token_not_allowed_outside_block_0() {
         controller
             .mint_token(
                 &alice,
-                TestGen::mint_token_for_wallet(alice.public_key().clone().into()),
+                TestGen::mint_token_for_wallet(alice.public_key().into()),
                 &mut ledger,
             )
             .err()

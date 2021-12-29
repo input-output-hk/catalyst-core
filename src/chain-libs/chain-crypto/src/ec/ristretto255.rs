@@ -370,7 +370,7 @@ mod test {
 
     #[test]
     fn from_hash() {
-        let element = GroupElement::from_hash(&mut [1u8]);
+        let element = GroupElement::from_hash(&[1u8]);
 
         let element2 = GroupElement::from_bytes(&[
             32, 60, 29, 4, 97, 184, 42, 236, 79, 92, 154, 113, 205, 92, 7, 4, 122, 17, 166, 95,

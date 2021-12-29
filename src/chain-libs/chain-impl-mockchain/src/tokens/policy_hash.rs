@@ -56,7 +56,7 @@ mod tests {
     #[quickcheck_macros::quickcheck]
     fn policy_hash_serialization_bijection(ph: PolicyHash) -> TestResult {
         let ph_got = ph.as_ref();
-        let mut buf = ReadBuf::from(ph_got.as_ref());
+        let mut buf = ReadBuf::from(ph_got);
         let result = PolicyHash::read(&mut buf);
         let left = Ok(ph.clone());
         assert_eq!(left, result);

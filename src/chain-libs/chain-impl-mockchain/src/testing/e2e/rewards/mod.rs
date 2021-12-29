@@ -28,7 +28,7 @@ pub fn rewards_no_block() {
         .build()
         .unwrap();
 
-    assert_eq!(ledger.can_distribute_reward(), false);
+    assert!(!ledger.can_distribute_reward());
 
     ledger.distribute_rewards().unwrap();
 

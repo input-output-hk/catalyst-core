@@ -1479,7 +1479,7 @@ pub mod test {
         {
             let mut c: Cursor<Vec<u8>> = Cursor::new(Vec::new());
             let mut codec = Codec::new(c);
-            pack_decl_element(&decl_element, &mut codec)?;
+            pack_decl_element(decl_element, &mut codec)?;
             c = codec.into_inner();
             c.set_position(0);
             codec = Codec::new(c);

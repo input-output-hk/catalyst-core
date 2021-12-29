@@ -372,7 +372,7 @@ mod tests {
         crs: &Crs,
         vote: Vote,
     ) -> Ballot {
-        let (enc, proof) = pk.encrypt_and_prove_vote(rng, &crs, vote);
+        let (enc, proof) = pk.encrypt_and_prove_vote(rng, crs, vote);
         Ballot::try_from_vote_and_proof(enc, &proof, crs, pk).unwrap()
     }
 
@@ -599,9 +599,9 @@ mod tests {
     fn wrong_max_votes() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
-        let mut shared_string =
+        let shared_string =
             b"Example of a shared string. This should be VotePlan.to_id()".to_owned();
-        let h = Crs::from_hash(&mut shared_string);
+        let h = Crs::from_hash(&shared_string);
 
         let mc1 = MemberCommunicationKey::new(&mut rng);
         let mc2 = MemberCommunicationKey::new(&mut rng);

@@ -370,7 +370,7 @@ mod tests {
         let m = [1, 3, 4, 5, 6, 7];
 
         let encrypted = &k.public_key.hybrid_encrypt(&m, &mut rng);
-        let result = &k.secret_key.hybrid_decrypt(&encrypted);
+        let result = &k.secret_key.hybrid_decrypt(encrypted);
 
         assert_eq!(&m[..], &result[..])
     }

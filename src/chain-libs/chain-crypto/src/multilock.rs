@@ -264,7 +264,7 @@ mod test {
         let encrypted = encrypt(&mut r, app_info, &participant_pks, msg);
         for (i, sk) in participants.iter().enumerate() {
             let mut out = vec![0; msg.len()];
-            decrypt(app_info, &sk, &encrypted, &mut out).unwrap();
+            decrypt(app_info, sk, &encrypted, &mut out).unwrap();
             assert_eq!(out, msg, "cannot decrypt for participant {}", i);
         }
     }

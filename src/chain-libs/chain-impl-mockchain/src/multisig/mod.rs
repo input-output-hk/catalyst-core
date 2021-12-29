@@ -88,9 +88,8 @@ mod test {
             witness_builder.append(TreeIndex::D1(i3), pk3.clone(), sk3.sign(&msg).coerce());
             let witness = witness_builder.finalize();
 
-            assert_eq!(
+            assert!(
                 witness.verify(&decl, &msg),
-                true,
                 "multisignature [1+3] 2/3 failed"
             );
         }
@@ -102,9 +101,8 @@ mod test {
             witness_builder.append(TreeIndex::D1(i2), pk2, sk2.sign(&msg).coerce());
             let witness = witness_builder.finalize();
 
-            assert_eq!(
+            assert!(
                 witness.verify(&decl, &msg),
-                true,
                 "multisignature [3+2] 2/3 failed"
             );
         }
@@ -120,9 +118,8 @@ mod test {
             witness_builder.append(TreeIndex::D1(i3), pk3, sk3.sign(&msg).coerce());
             let witness = witness_builder.finalize();
 
-            assert_eq!(
-                witness.verify(&decl, &msg),
-                false,
+            assert!(
+                !witness.verify(&decl, &msg),
                 "multisignature mislabelled 2/3 succeeded"
             );
         }
@@ -133,9 +130,8 @@ mod test {
             witness_builder.append(TreeIndex::D1(i1), pk1, sk1.sign(&msg).coerce());
             let witness = witness_builder.finalize();
 
-            assert_eq!(
-                witness.verify(&decl, &msg),
-                false,
+            assert!(
+                !witness.verify(&decl, &msg),
                 "multisignature not enough threshold 2/3 succeeded"
             );
         }

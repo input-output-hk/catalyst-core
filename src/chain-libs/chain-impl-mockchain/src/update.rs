@@ -273,7 +273,7 @@ mod tests {
         block_date: BlockDate,
     ) -> Result<UpdateState, Error> {
         let update_proposal = UpdateProposal::new(ConfigParams(vec![config_param]), proposer.id());
-        update_state.apply_proposal(proposal_id, update_proposal, &settings, block_date)
+        update_state.apply_proposal(proposal_id, update_proposal, settings, block_date)
     }
 
     #[cfg(test)]
@@ -284,7 +284,7 @@ mod tests {
         settings: &Settings,
     ) -> Result<UpdateState, Error> {
         let signed_update_vote = UpdateVote::new(proposal_id, proposer.id());
-        update_state.apply_vote(&signed_update_vote, &settings)
+        update_state.apply_vote(&signed_update_vote, settings)
     }
 
     quickcheck! {

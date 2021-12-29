@@ -175,8 +175,8 @@ mod tests {
 
     #[quickcheck_macros::quickcheck]
     fn new_spending_counter(mut lane: usize, mut counter: u32) {
-        lane = lane % (1 << LANES_BITS);
-        counter = counter % (1 << UNLANES_BITS);
+        lane %= 1 << LANES_BITS;
+        counter %= 1 << UNLANES_BITS;
         let sc = SpendingCounter::new(lane, counter);
 
         assert_eq!(lane, sc.lane());

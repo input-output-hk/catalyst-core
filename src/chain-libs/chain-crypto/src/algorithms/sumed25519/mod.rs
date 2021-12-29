@@ -131,7 +131,7 @@ mod tests {
 
     #[test]
     fn public_from_binary_correct_size() {
-        SumEd25519_12::public_from_binary(&vec![0; SumEd25519_12::PUBLIC_KEY_SIZE]).unwrap();
+        SumEd25519_12::public_from_binary(&[0; SumEd25519_12::PUBLIC_KEY_SIZE]).unwrap();
     }
 
     #[test]

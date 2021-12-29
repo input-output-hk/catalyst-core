@@ -321,7 +321,7 @@ mod tests {
         pub fn fill(&self, mut ledger: Ledger<Address>) -> Ledger<Address> {
             for (key, value) in self.0.iter() {
                 let utxo = value.to_vec();
-                ledger = ledger.add(&key, &utxo.as_slice()).unwrap();
+                ledger = ledger.add(key, utxo.as_slice()).unwrap();
             }
             ledger
         }
@@ -373,7 +373,7 @@ mod tests {
 
             for (key, value) in arbitrary_utxos.0 {
                 let utxo = value.to_vec();
-                ledger = ledger.add(&key, &utxo.as_slice()).unwrap();
+                ledger = ledger.add(&key, utxo.as_slice()).unwrap();
             }
             ledger
         }

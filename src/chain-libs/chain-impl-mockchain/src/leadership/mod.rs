@@ -323,7 +323,7 @@ mod tests {
     pub fn generate_ledger_with_bft_leaders(
         leaders: Vec<PublicKey<Ed25519>>,
     ) -> (Vec<BftLeaderId>, Ledger) {
-        let leaders: Vec<BftLeaderId> = leaders.into_iter().map(|x| BftLeaderId(x)).collect();
+        let leaders: Vec<BftLeaderId> = leaders.into_iter().map(BftLeaderId).collect();
         let config = ConfigBuilder::new().with_leaders(&leaders);
         let test_ledger = LedgerBuilder::from_config(config)
             .build()
@@ -410,9 +410,9 @@ mod tests {
             bft::LeadershipData::new(&ledger).expect("leaders ids collection is empty");
         let bft_leadership_consensus = LeadershipConsensus::Bft(leadership_data);
 
-        for leader_index in 0..leaders_count - 1 {
+        for leader in leaders_keys.iter().cloned().take(leaders_count - 1) {
             let _leader_output = bft_leadership_consensus.is_leader(
-                &leaders_keys[leader_index].clone().into(),
+                &leader.into(),
                 BlockDate {
                     epoch: 0,
                     slot_id: leaders_count as u32,
@@ -496,10 +496,7 @@ mod tests {
         assert_eq!(leadership.epoch(), epoch);
         assert_eq!(
             leadership.date_at_slot(slot_id),
-            BlockDate {
-                epoch: 0,
-                slot_id: slot_id
-            }
+            BlockDate { epoch: 0, slot_id }
         );
         assert_eq!(leadership.stake_distribution(), None);
     }
@@ -555,8 +552,8 @@ mod tests {
 
         let leadership = Leadership::new(0, &test_ledger.ledger);
 
-        for i in 0..leaders_count {
-            let header = generate_header_for_leader(leaders_keys[i].clone(), i as u32);
+        for (i, key) in leaders_keys.iter().cloned().enumerate() {
+            let header = generate_header_for_leader(key, i as u32);
             assert!(leadership.verify(&header).success());
         }
     }

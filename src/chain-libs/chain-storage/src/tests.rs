@@ -336,8 +336,8 @@ fn branch_pruning() {
         .get_block(&second_branch_blocks[0].id.serialize_as_vec())
         .unwrap();
 
-    for i in 1..SECOND_BRANCH_LEN {
-        let block_result = store.get_block(&second_branch_blocks[i].id.serialize_as_vec());
+    for block in second_branch_blocks.iter().skip(1) {
+        let block_result = store.get_block(&block.id.serialize_as_vec());
         assert!(matches!(block_result, Err(Error::BlockNotFound)));
     }
 
@@ -774,14 +774,12 @@ fn permanent_store_prune_main_branch() {
         .prune_branch(&blocks.last().unwrap().id.serialize_as_vec())
         .unwrap();
 
-    for i in 0..=FLUSH_TO_BLOCK {
-        assert!(store
-            .block_exists(&blocks[i].id.serialize_as_vec())
-            .unwrap());
+    for block in blocks.iter().take(FLUSH_TO_BLOCK + 1) {
+        assert!(store.block_exists(&block.id.serialize_as_vec()).unwrap());
     }
 
-    for i in (FLUSH_TO_BLOCK + 1)..FLUSH_TO_BLOCK {
-        assert!(!store.block_exists(&blocks[i].serialize_as_vec()).unwrap());
+    for block in blocks.iter().skip(FLUSH_TO_BLOCK + 1) {
+        assert!(!store.block_exists(&block.serialize_as_vec()).unwrap());
     }
 
     assert_eq!(

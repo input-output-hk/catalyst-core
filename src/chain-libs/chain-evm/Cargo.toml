@@ -17,7 +17,7 @@ num = { version = "0.4.0", default-features = false, features = ["alloc"] }
 ripemd160 = { version = "0.9.1", default-features = false }
 rlp = { version = "0.5.0", default-features = false }
 sha2 = { version = "0.9.3", default-features = false }
-sha3 = { version = "0.9.1", default-features = false }
+sha3 = { version = "0.10.0", default-features = false }
 wee_alloc = { version = "0.4.5", default-features = false }
 logos = { version = "0.12", default-features = false, features = ["export_derive"] }
 ethabi = { version = "16.0", default-features = false }

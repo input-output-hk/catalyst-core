@@ -1,6 +1,7 @@
 use crate::{
     certificate::{ExternalProposalId, VotePlanId},
     date::BlockDate,
+    tokens::identifier::TokenIdentifier,
     transaction::UnspecifiedAccountIdentifier,
     vote::{Options, PayloadType, Tally, ValidatedPayload},
 };
@@ -16,6 +17,7 @@ pub struct VotePlanStatus {
     pub committee_end: BlockDate,
     pub committee_public_keys: Vec<MemberPublicKey>,
     pub proposals: Vec<VoteProposalStatus>,
+    pub voting_token: TokenIdentifier,
 }
 
 pub struct VoteProposalStatus {

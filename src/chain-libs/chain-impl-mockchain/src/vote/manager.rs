@@ -681,6 +681,7 @@ impl VotePlanManager {
             committee_end: self.plan().committee_end(),
             committee_public_keys,
             proposals,
+            voting_token: self.plan().voting_token().clone(),
         }
     }
 

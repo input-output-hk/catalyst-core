@@ -9,7 +9,11 @@ use quickcheck_macros::quickcheck;
 
 impl Arbitrary for Fragment {
     fn arbitrary<G: Gen>(g: &mut G) -> Self {
-        match g.next_u32() % 15 {
+        #[cfg(not(feature = "evm"))]
+        let r = g.next_u32() % 15;
+        #[cfg(feature = "evm")]
+        let r = g.next_u32() % 16;
+        match r {
             0 => Fragment::Initial(Arbitrary::arbitrary(g)),
             1 => Fragment::OldUtxoDeclaration(Arbitrary::arbitrary(g)),
             2 => Fragment::Transaction(Arbitrary::arbitrary(g)),
@@ -25,23 +29,23 @@ impl Arbitrary for Fragment {
             12 => Fragment::VoteTally(Arbitrary::arbitrary(g)),
             13 => Fragment::EncryptedVoteTally(Arbitrary::arbitrary(g)),
             14 => Fragment::MintToken(Arbitrary::arbitrary(g)),
+            #[cfg(feature = "evm")]
+            15 => Fragment::Evm(Arbitrary::arbitrary(g)),
             _ => unreachable!(),
         }
     }
 }
 
-#[quickcheck]
-fn fragment_raw_bijection(b: Fragment) -> TestResult {
-    let b_got = Fragment::from_raw(&b.to_raw()).unwrap();
-    TestResult::from_bool(b == b_got)
-}
-
-#[quickcheck]
-fn fragment_serialization_bijection(b: Fragment) -> TestResult {
-    serialization_bijection(b)
-}
-
 quickcheck! {
+    fn fragment_serialization_bijection(b: Fragment) -> TestResult {
+        serialization_bijection(b)
+    }
+
+    fn fragment_raw_bijection(b: Fragment) -> TestResult {
+        let b_got = Fragment::from_raw(&b.to_raw()).unwrap();
+        TestResult::from_bool(b == b_got)
+    }
+
     fn initial_ents_serialization_bijection(config_params: ConfigParams) -> TestResult {
         serialization_bijection_r(config_params)
     }

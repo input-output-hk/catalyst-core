@@ -36,6 +36,7 @@ error_chain! {
         ChainBech32Error(chain_crypto::bech32::Error);
         GlobError(glob::GlobError);
         ValgrindError(valgrind::Error);
+        ImportError(crate::cli::import::ImportError);
     }
 
     errors {

@@ -694,8 +694,8 @@ pub async fn command_update_forget(
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
-    let mut ledger = context_lock.state_mut().ledger_mut();
-    update_fragment_id(fragment_id, &mut ledger, FragmentRecieveStrategy::Forget)
+    let ledger = context_lock.state_mut().ledger_mut();
+    update_fragment_id(fragment_id, ledger, FragmentRecieveStrategy::Forget)
 }
 
 pub async fn command_update_reject(
@@ -703,8 +703,8 @@ pub async fn command_update_reject(
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
-    let mut ledger = context_lock.state_mut().ledger_mut();
-    update_fragment_id(fragment_id, &mut ledger, FragmentRecieveStrategy::Reject)
+    let ledger = context_lock.state_mut().ledger_mut();
+    update_fragment_id(fragment_id, ledger, FragmentRecieveStrategy::Reject)
 }
 
 pub async fn command_update_accept(
@@ -712,8 +712,8 @@ pub async fn command_update_accept(
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
-    let mut ledger = context_lock.state_mut().ledger_mut();
-    update_fragment_id(fragment_id, &mut ledger, FragmentRecieveStrategy::Accept)
+    let ledger = context_lock.state_mut().ledger_mut();
+    update_fragment_id(fragment_id, ledger, FragmentRecieveStrategy::Accept)
 }
 
 pub async fn command_update_pending(
@@ -721,8 +721,8 @@ pub async fn command_update_pending(
     context: ContextLock,
 ) -> Result<impl Reply, Rejection> {
     let mut context_lock = context.lock().unwrap();
-    let mut ledger = context_lock.state_mut().ledger_mut();
-    update_fragment_id(fragment_id, &mut ledger, FragmentRecieveStrategy::Pending)
+    let ledger = context_lock.state_mut().ledger_mut();
+    update_fragment_id(fragment_id, ledger, FragmentRecieveStrategy::Pending)
 }
 
 pub async fn command_error_code(

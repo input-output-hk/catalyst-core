@@ -19,7 +19,7 @@ use std::collections::HashSet;
 use thiserror::Error;
 use thor::BlockDateGenerator;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum FragmentRecieveStrategy {
     Reject,
     Accept,
@@ -360,6 +360,7 @@ fn is_transaction_valid<E>(tx: &Transaction<E>) -> bool {
 }
 
 #[derive(Error, Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum Error {
     #[error(transparent)]
     Ledger(#[from] chain_impl_mockchain::ledger::Error),
@@ -370,10 +371,11 @@ pub enum Error {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use jormungandr_automation::testing::configuration::Block0ConfigurationBuilder;
     use jormungandr_lib::interfaces::Initial;
     use jormungandr_lib::interfaces::InitialUTxO;
-    use jormungandr_testing_utils::testing::startup;
-    use jormungandr_testing_utils::testing::Block0ConfigurationBuilder;
+    use quickcheck_macros::quickcheck;
+    use thor::FragmentBuilder;
 
     pub fn block0_configuration(initials: Vec<InitialUTxO>) -> Block0Configuration {
         Block0ConfigurationBuilder::new()
@@ -381,10 +383,24 @@ mod tests {
             .build()
     }
 
+    use quickcheck::{Arbitrary, Gen};
+
+    impl Arbitrary for FragmentRecieveStrategy {
+        fn arbitrary<G: Gen>(g: &mut G) -> Self {
+            match u8::arbitrary(g) % 3 {
+                0 => FragmentRecieveStrategy::Pending,
+                1 => FragmentRecieveStrategy::Accept,
+                2 => FragmentRecieveStrategy::Reject,
+                3 => FragmentRecieveStrategy::Forget,
+                _ => unreachable!(),
+            }
+        }
+    }
+
     #[test]
     pub fn message_fragment_id() {
-        let mut alice = startup::create_new_account_address();
-        let bob = startup::create_new_account_address();
+        let alice = thor::Wallet::default();
+        let bob = thor::Wallet::default();
 
         let mut ledger_state = LedgerState::new(block0_configuration(vec![
             alice.to_initial_fund(1_000),
@@ -392,16 +408,70 @@ mod tests {
         ]))
         .unwrap();
 
-        let fragment = alice
-            .transaction_to(
-                &ledger_state.block0_hash().into(),
-                &ledger_state.fees(),
-                ledger_state.expiry_date().block_date(),
-                bob.address(),
-                1u64.into(),
-            )
+        let fragment_builder = FragmentBuilder::new(
+            &ledger_state.block0_hash().into(),
+            &ledger_state.fees(),
+            ledger_state.expiry_date().block_date(),
+        );
+        let fragment = fragment_builder
+            .transaction(&alice, bob.address(), 1u64.into())
             .unwrap();
 
+        assert!(ledger_state.received_fragments().contains(&fragment));
         assert_eq!(fragment.id(), ledger_state.message(fragment));
+    }
+
+    #[quickcheck]
+    pub fn fragment_strategy_test(fragment_strategy: FragmentRecieveStrategy) {
+        let alice = thor::Wallet::default();
+        let bob = thor::Wallet::default();
+
+        let mut ledger_state = LedgerState::new(block0_configuration(vec![
+            alice.to_initial_fund(1_000),
+            bob.to_initial_fund(1_000),
+        ]))
+        .unwrap();
+
+        ledger_state.set_fragment_strategy(fragment_strategy);
+
+        let fragment_builder = FragmentBuilder::new(
+            &ledger_state.block0_hash().into(),
+            &ledger_state.fees(),
+            ledger_state.expiry_date().block_date(),
+        );
+        let fragment = fragment_builder
+            .transaction(&alice, bob.address(), 1u64.into())
+            .unwrap();
+
+        assert_eq!(ledger_state.received_fragments().len(), 1);
+        assert!(ledger_state.received_fragments().contains(&fragment));
+        assert_eq!(fragment.id(), ledger_state.message(fragment.clone()));
+
+        match fragment_strategy {
+            FragmentRecieveStrategy::Pending => {
+                assert_eq!(ledger_state.fragment_logs().len(), 1);
+                let fragment_log = &ledger_state.fragment_logs()[0];
+                assert_eq!(fragment_log.fragment_id().into_hash(), fragment.id());
+                assert!(fragment_log.is_pending());
+            }
+            FragmentRecieveStrategy::Accept => {
+                assert_eq!(ledger_state.fragment_logs().len(), 1);
+                let fragment_log = &ledger_state.fragment_logs()[0];
+                assert_eq!(fragment_log.fragment_id().into_hash(), fragment.id());
+                assert!(fragment_log.is_in_a_block());
+            }
+            FragmentRecieveStrategy::Reject => {
+                assert_eq!(ledger_state.fragment_logs().len(), 1);
+                let fragment_log = &ledger_state.fragment_logs()[0];
+                assert_eq!(fragment_log.fragment_id().into_hash(), fragment.id());
+                assert!(fragment_log.is_rejected());
+            }
+            FragmentRecieveStrategy::Forget => {
+                assert_eq!(ledger_state.received_fragments().len(), 0);
+            }
+            FragmentRecieveStrategy::None => {
+                assert_eq!(ledger_state.received_fragments().len(), 1);
+            }
+        }
     }
 }

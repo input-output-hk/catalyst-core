@@ -52,7 +52,7 @@ impl MockState {
         Ok(Self {
             available: true,
             error_code: 400,
-            ledger_state: LedgerState::new(controller.settings().block0.clone())?,
+            ledger_state: LedgerState::new(controller.settings().block0)?,
             network_congestion: NetworkCongestion::new(&snapshot),
             vit_state: snapshot,
             version: VitVersion {

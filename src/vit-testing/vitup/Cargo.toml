@@ -71,3 +71,7 @@ quickcheck_macros = "0.9"
 version = "0.10.10"
 default-features = false
 features = ["blocking", "rustls-tls", "json"]
+
+[dev-dependencies]
+quickcheck = "0.9"
+quickcheck_macros = "0.9"

@@ -97,3 +97,82 @@ fn account_hex_to_address(
         ),
     )))
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use jormungandr_testing_utils::testing::jormungandr::ConfigurationBuilder;
+    use jormungandr_testing_utils::testing::startup;
+    use jormungandr_testing_utils::wallet::Wallet;
+    use quickcheck::TestResult;
+    use quickcheck_macros::quickcheck;
+
+    #[quickcheck]
+    pub fn test_calculate_stake(wallet_count: usize, committe_count: usize) -> TestResult {
+        if committe_count >= wallet_count {
+            return TestResult::discard();
+        }
+
+        let wallets: Vec<Wallet> =
+            std::iter::from_fn(|| Some(startup::create_new_account_address()))
+                .take(wallet_count)
+                .collect();
+        let wallet_initial_funds = 10;
+
+        let block0 = ConfigurationBuilder::new()
+            .with_funds(
+                wallets
+                    .iter()
+                    .map(|x| x.to_initial_fund(wallet_initial_funds))
+                    .collect(),
+            )
+            .build_block0();
+
+        let committees = wallets
+            .iter()
+            .take(committe_count)
+            .map(|x| x.address())
+            .collect();
+
+        let (total_stake, addresses) = calculate_stake(&committees, &block0);
+
+        for (_, value) in addresses {
+            assert_eq!(value, wallet_initial_funds);
+        }
+        TestResult::from_bool(
+            total_stake == ((wallet_count - committe_count) as u64 * wallet_initial_funds),
+        )
+    }
+
+    #[test]
+    pub fn test_calculate_rewards() {
+        let wallet_count = 10usize;
+
+        let wallets: Vec<Wallet> =
+            std::iter::from_fn(|| Some(startup::create_new_account_address()))
+                .take(wallet_count)
+                .collect();
+        let wallet_initial_funds = 1;
+
+        let addresses: AddressesVoteCount = wallets
+            .iter()
+            .take(wallet_count)
+            .map(|x| (x.address(), wallet_initial_funds))
+            .collect();
+
+        let rewards = calculate_reward_share(
+            wallet_initial_funds * wallet_count as u64,
+            &addresses.iter().map(|(x, y)| (x, *y)).collect(),
+            &wallets
+                .iter()
+                .take(wallet_count)
+                .map(|x| (x.address(), 1))
+                .collect(),
+            1,
+        );
+
+        for (_, value) in rewards {
+            assert_eq!((value * 10).round(), Rewards::from_num(1));
+        }
+    }
+}

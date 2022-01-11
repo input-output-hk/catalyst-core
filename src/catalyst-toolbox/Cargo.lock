@@ -406,6 +406,8 @@ dependencies = [
  "once_cell",
  "predicates 1.0.8",
  "qrcode",
+ "quickcheck",
+ "quickcheck_macros",
  "quircs",
  "rand 0.8.4",
  "rand_chacha 0.3.1",

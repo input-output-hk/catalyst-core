@@ -402,21 +402,21 @@ impl VitBackendSettingsBuilder {
     pub fn print_report(&self) {
         let parameters = self.parameters();
 
+        let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
+            convert_to_human_date(parameters, self.block0_date);
+
         println!("Fund id: {}", parameters.fund_id);
         println!(
             "refresh timestamp\t(registration_snapshot_time):\t\t\t{:?}",
             parameters.snapshot_time
         );
 
-        let (vote_start_timestamp, tally_start_timestamp, tally_end_timestamp) =
-            convert_to_human_date(parameters, self.block0_date);
-
         println!(
-            "vote start timestamp\t(fund_start_time, chain_vote_start_time):\t{:?}",
+            "vote start timestamp:\t(fund_start_time, chain_vote_start_time):\t{:?}",
             vote_start_timestamp
         );
         println!(
-            "tally start timestamp\t(fund_end_time, chain_vote_end_time):\t\t{:?}",
+            "tally start timestamp:\t(fund_end_time, chain_vote_end_time):\t\t{:?}",
             tally_start_timestamp
         );
         println!(
@@ -424,7 +424,11 @@ impl VitBackendSettingsBuilder {
             tally_end_timestamp
         );
         println!(
-            "next vote start time\t(next_fund_start_time):\t\t\t\t{:?}",
+            "next refresh timestamp:\t(next registration_snapshot_time):\t\t{:?}",
+            parameters.next_snapshot_time
+        );
+        println!(
+            "next vote start time:\t(next_fund_start_time):\t\t\t\t{:?}",
             parameters.next_vote_start_time
         );
     }

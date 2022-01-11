@@ -1,18 +1,20 @@
-pub mod convert;
 pub mod diff;
 pub mod generate;
+pub mod import;
 pub mod start;
+pub mod time;
 pub mod validate;
 
 use crate::cli::generate::{CommitteeIdCommandArgs, QrCommandArgs, SnapshotCommandArgs};
 use crate::cli::start::AdvancedStartCommandArgs;
 use crate::cli::start::MockStartCommandArgs;
 use crate::error::Result;
-use convert::ConvertCommand;
 use diff::DiffCommand;
 use generate::DataCommandArgs;
+use import::ImportCommand;
 use start::QuickStartCommandArgs;
 use structopt::StructOpt;
+use time::TimeCommand;
 use validate::ValidateCommand;
 
 #[derive(StructOpt, Debug)]
@@ -25,8 +27,10 @@ pub enum VitCliCommand {
     Diff(DiffCommand),
     /// validate static data
     Validate(ValidateCommand),
-    // convert data
-    Convert(ConvertCommand),
+    // import data
+    Import(ImportCommand),
+    // convert time
+    Time(TimeCommand),
 }
 
 impl VitCliCommand {
@@ -36,7 +40,8 @@ impl VitCliCommand {
             Self::Generate(generate_command) => generate_command.exec(),
             Self::Diff(diff_command) => diff_command.exec(),
             Self::Validate(validate_command) => validate_command.exec(),
-            Self::Convert(convert_command) => convert_command.exec(),
+            Self::Import(import_command) => import_command.exec().map_err(Into::into),
+            Self::Time(time_command) => time_command.exec(),
         }
     }
 }
